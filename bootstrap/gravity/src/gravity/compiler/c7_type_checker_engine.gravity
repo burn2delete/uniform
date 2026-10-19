@@ -9413,15 +9413,34 @@
               (let [members (get type :element-types) n (count members) work (+ 1 n)]
                 (if (> n 1024) {:status :rejected :reason :type-width :work-count 1}
                   (if (> work budget) {:status :rejected :reason :work-limit :work-count work}
-                    (loop [remaining members]
+                    (loop [remaining members family nil]
                       (if (= 0 (count remaining))
-                        {:status :accepted :input-element-count n :work-count work}
-                        (if (if (keyword? (first remaining)) (= :gravity.type/string (first remaining)) false)
-                          (recur (rest remaining))
-                          {:status :rejected :reason :string-member-type-required :work-count work}))))))
+                        (if (= :gravity.type/keyword family)
+                          {:status :accepted :input-element-count n :input-element-type :gravity.type/keyword :work-count work}
+                          {:status :accepted :input-element-count n :work-count work})
+                        (let [member (first remaining)
+                              expected (if (= nil family)
+                                         (if (if (keyword? member) (= :gravity.type/keyword member) false)
+                                           :gravity.type/keyword :gravity.type/string) family)]
+                          (if (if (keyword? member) (= expected member) false)
+                            (recur (rest remaining) expected)
+                            {:status :rejected :reason (if (= :gravity.type/keyword expected) :keyword-member-type-required :string-member-type-required)
+                             :work-count work})))))))
               {:status :rejected :reason :finite-string-vector-required :work-count 1})
             {:status :rejected :reason :finite-string-vector-required :work-count 1})))
       {:status :rejected :reason :unary-type-input-required :work-count 1})))
+
+(defn sh08-st-keyword-policy []
+  {:version :sh08-keyword-vector-set-construction-v1
+   :operation :persistent-set-from-keyword-vector :operand-evaluation :once :operand-position :non-tail
+   :construction :persistent-set :payload-evaluation :none :input-preserved? true
+   :duplicates :gravity-keyword-value-equality :semantic-deduplication :before-provider-insertion
+   :order :unspecified :normalization :none :allocation :normal-invocation-even-empty
+   :value-work {:model :gravity/keyword-vector-set-logical-content-work-v1
+                :formula :one-plus-two-n-plus-pairs-plus-n-plus-one-times-total-units
+                :representation :jvm-utf16-code-units :limit 65536
+                :validation :all-keyword-members-before-print-compare-hash-or-insert
+                :provider-cpu-bound :not-established}})
 
 (defn sh08-st-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -9468,8 +9487,8 @@
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
-               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
-      {:kind :gravity.type/applied-set-conversion :version :sh08-set-conversion-v1
+               (if (if (= nil (first remaining)) true (if (keyword? (first remaining)) (= :gravity.type/unknown (first remaining)) false)) false (recur (rest remaining)))))] )
+      (let [descriptor {:kind :gravity.type/applied-set-conversion :version :sh08-set-conversion-v1
        :operation 'set :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-set-from-string-vector
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
@@ -9488,7 +9507,15 @@
        :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :construction-policy :input-element-count :allocation-condition :operand-type :profile :target :evaluation-order]} nil)) nil))
+                      :callee-body :construction-policy :input-element-count :allocation-condition :operand-type :profile :target :evaluation-order]}]
+        (if (= :gravity.type/keyword (get validation :input-element-type))
+          (assoc descriptor :version :sh08-keyword-set-conversion-v1
+            :intrinsic :gravity.collections/persistent-set-from-keyword-vector
+            :input-policy {:version :sh08-keyword-vector-set-input-v1 :family :finite-homogeneous-keyword-vector
+                           :element-type :gravity.type/keyword :maximum-input-elements 1024
+                           :output-type :gravity.type/set :output-refinements :none}
+            :construction-policy (sh08-st-keyword-policy)
+            :invalidation (conj (get descriptor :invalidation) :input-policy)) descriptor)) nil)) nil))
 
 (defn sh08-st-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-set-conversion-constraint-v1 :application descriptor}

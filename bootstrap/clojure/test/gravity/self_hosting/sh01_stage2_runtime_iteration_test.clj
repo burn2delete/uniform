@@ -3015,7 +3015,7 @@
                  'p15-s23-runtime-module-id? 1 'p15-s23-runtime-module-source? 1
                  'p15-s23-runtime-namespace-read-source? 2 'p15-s23-runtime-namespace-read-valid? 2
                  'p15-s23-runtime-initializer-work 2 'p15-s23-runtime-initializer-type? 2
-                 'p15-s23-runtime-keyword-set-contains-work 3 'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2
+                 'p15-s23-runtime-keyword-set-contains-work 3 'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2 'p15-s23-runtime-keyword-vector-set-work 2
                  'p15-s23-runtime-module-census 2 'p15-s23-runtime-instruction-children 2
                  'p15-s23-runtime-module-reads-work 3 'p15-s23-runtime-initialize-module 2
                  'p15-s23-runtime-keyword-set-domain 2 'p15-s23-runtime-keyword-set-equality-work 3
@@ -12843,6 +12843,143 @@
             instruction (cardinality (conversion {:op :function-call :function 'produce :args []}))]
         (is (= [1 "operand\n" :normal]
                (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "" {'produce function} ['main])))))))
+
+(deftest current-gravity-keyword-vector-set-conversion-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'set-conversion-input)
+        derive (ns-resolve upstream 'set-conversion-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
+    (doseq [type [{:kind :gravity.type/vector :shape :literal :element-types []}
+                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 3 :gravity.type/keyword))}
+                  :gravity.type/never]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+            result (derive input 65536) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings
+                     :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-st-call-fact [descriptor module])}
+                     :ledger [(c7 'sh08-st-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
+            compile #(lower 'p15-s23-typed-compile-node % :call %2)
+            compiled (compile context 65536)]
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (when-not (= :complete (:status compiled))
+          (throw (ex-info "Set conversion lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+        (is (= {:op :builtin-call :function 'set :args [{:op :local :name 'value}]} (:value compiled)))
+        (is (= compiled (compile context (:work-count compiled))))
+        (is (= :rejected (:status (compile context (dec (:work-count compiled))))))
+        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
+              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 65536)
+              failed (compile changed 65536)]
+          (is (= :rejected (:status failed)))
+          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
+          (is (= own (:work-count (compile context own)))))
+        (doseq [changed [(assoc-in descriptor [:construction-policy :order] :input-order)
+                         (assoc-in descriptor [:construction-policy :value-work :provider-cpu-bound] :proven)
+                         (assoc-in descriptor [:construction-policy :operand-position] :tail)
+                         (assoc descriptor :direct-effects [:io/write])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
+                         (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :version :forged)
+                         (assoc-in descriptor [:input-policy :version] :forged)
+                         (assoc-in descriptor [:input-policy :output-refinements] :member-domain)
+                         (assoc-in descriptor [:construction-policy :duplicates] :printed-spelling)]]
+          (let [forged (-> context (assoc-in [:types :operator] changed)
+                           (assoc :call-facts {:call (c7 'sh08-st-call-fact [changed module])}
+                                  :ledger [(c7 'sh08-st-constraint [changed])]))]
+            (is (= :rejected (:status (compile forged 65536))))))
+        (let [visits (atom 0)
+              hostile (reify clojure.lang.IHashEq
+                        (hasheq [_] (swap! visits inc) (throw (AssertionError. "unvalidated predicate row ID hashed")))
+                        clojure.lang.Seqable
+                        (seq [_] (swap! visits inc) (throw (AssertionError. "unvalidated predicate row ID traversed")))
+                        Object
+                        (hashCode [_] (swap! visits inc) (throw (AssertionError. "unvalidated predicate row ID hashed"))))
+              row (assoc-in (first (:ledger context)) [:lhs :core-node-id] hostile)]
+          (is (= :rejected (:status (compile (update context :ledger conj row) 65536))))
+          (is (zero? @visits)))
+        (doseq [[case-index mutate] (map-indexed vector [#(assoc % :ledger [])
+                        #(assoc-in % [:ledger 0 :lhs] {:core-node-id :call :projection :wrong})
+                        #(assoc-in % [:ledger 0 :lhs :extra] true)
+                        #(assoc-in % [:ledger 0 :lhs] 7) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)])]
+          (is (= :rejected (:status (compile (mutate context) 65536))) (str "predicate context mutation " case-index)))))
+  ))
+
+(deftest current-gravity-keyword-vector-set-conversion-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        build #(invoke 'p15-s23-runtime-set-conversion-work %1 %2)
+        keyword-work #(invoke 'p15-s23-runtime-keyword-vector-set-work %1 %2)
+        literal (fn [value] {:op :literal :value value})
+        conversion (fn [operand] {:op :builtin-call :function 'set :args [operand]})
+        cardinality (fn [operand] {:op :builtin-call :function 'count :args [operand]})
+        say (fn [value] {:op :do :body [{:op :println :args [(literal "operand")] :effect :io/write :capability :io/stdout} value]})
+        execute #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        reservation (fn [values] (let [n (count values) units (reduce + 0 (map #(count (str %)) values))]
+                                   (+ 1 (* 2 n) (quot (* n (dec n)) 2) (* (inc n) units))))
+        same-print-left (clojure.lang.Keyword/intern nil "a/b")
+        same-print-right (clojure.lang.Keyword/intern "a" "b")]
+    (is (= (str same-print-left) (str same-print-right)))
+    (is (= false (invoke 'p15-s23-runtime-atomic-equality same-print-left same-print-right)))
+    (doseq [[values expected-count] [[[:one] 1] [[:one :one] 1] [[:left :right :left] 2]
+                                    [[:space/a :other/a :a] 3] [[same-print-left same-print-right same-print-left] 2]]]
+      (let [original (vec values) result (build values 65536) work (reservation values)]
+        (is (= :accepted (:status result)))
+        (is (set? (:value result)))
+        (is (= expected-count (count (:value result)) (:insertions result)))
+        (doseq [value values] (is (contains? (:value result) value)))
+        (is (= original values))
+        (is (= work (:work-count result)))
+        (is (= :gravity/keyword-vector-set-logical-content-work-v1 (:value-work-model result)))
+        (is (= :not-established (:provider-cpu-bound result)))
+        (is (<= (:comparison-attempts result) (quot (* (count values) (dec (count values))) 2)))
+        (is (= result (build values work)))
+        (is (= result (build values 1000000)))
+        (let [limited (build values (dec work))]
+          (is (= :set-conversion-work-limit (:reason limited)))
+          (is (= 0 (:comparison-attempts limited) (:insertions limited))))
+        (is (= [expected-count "operand\n" :normal] (execute (cardinality (conversion (say (literal values)))))))))
+    (is (= :gravity/string-set-logical-content-work-v1 (:value-work-model (build [] 65536))))
+    (is (= [0 "" :normal] (execute (cardinality (conversion (literal []))))))
+    (let [callbacks (atom 0) prints (atom 0) insertions (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "invalid conversion member hashed")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "invalid conversion member compared")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "invalid conversion member printed"))))
+          original-str str original-conj conj
+          result (with-redefs [clojure.core/str (fn [& args] (when (= [:bk-valid-before-late] args) (swap! prints inc)) (apply original-str args))
+                               clojure.core/conj (fn [collection & values] (when (set? collection) (swap! insertions + (count values))) (apply original-conj collection values))]
+                   (build [:bk-valid-before-late :second opaque] 65536))]
+      (is (= :set-conversion-keyword-vector-required (:reason result)))
+      (is (= 0 (:comparison-attempts result) (:insertions result)))
+      (is (= 0 @callbacks @prints @insertions)))
+    (doseq [values [nil '(:one) #{:one} [nil] [1] ["text"] [:one nil] [:one "late"] [:one :two []]]]
+      (is (= :set-conversion-keyword-vector-required (:reason (keyword-work values 65536)))))
+    (let [wide (vec (repeat 1024 :a)) rejected (build wide 65536)
+          content (build [(keyword (apply str (repeat 65536 "x")))] 65536)]
+      (is (= :set-conversion-work-limit (:reason rejected) (:reason content)))
+      (is (= 65537 (:work-count rejected) (:work-count content)))
+      (is (= 0 (:comparison-attempts rejected) (:insertions rejected) (:comparison-attempts content) (:insertions content)))
+      (is (= :set-conversion-value-width (:reason (build (conj wide :extra) 65536)))))
+    (doseq [budget [nil -1 1.5]]
+      (is (= :set-conversion-work-limit (:reason (build [:a] budget)))))
+    (let [payload (String. "original Keyword conversion transfer")
+          actual (execute (conversion (say {:op :throw :value (literal payload)})))]
+      (is (identical? payload (first actual)))
+      (is (= ["operand\n" :thrown] (subvec actual 1))))
+    (let [fatal (AssertionError. "original Keyword conversion failure") original-str str
+          actual (with-redefs [clojure.core/str (fn [& args] (if (= [:one] args) (throw fatal) (apply original-str args)))]
+                   (seed-throw-test-capture #(build [:one] 65536)))]
+      (is (identical? fatal actual)))))
 
 (deftest current-gravity-set-count-lowering-runtime-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
