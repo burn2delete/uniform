@@ -788,6 +788,32 @@ below rerun under a new label, and not complete profile/capability or closure
 coverage. SH-05.1, SH-05.6 and SH-06.6 remain open and the resolver remains
 development-unadmitted.
 
+### Same-target capability-edge source composition
+
+The distinct `sh06-b-source-capability-boundary-composition` check ran at
+development revision `df73bc8d` plus its exact test/fixture changes and passed
+one test/40 assertions. It constructed a genuine accepted/verified hosted/JVM
+`gravity.io` library and a hosted/JVM caller declaring the required
+`:io/write` effect and `:io/stdout` capability. The accepted caller's imported
+binding, reference, origin and enriched dependency metadata join the actual
+verified library artifact through the ordinary module-input API.
+
+A second caller retained the effect declaration but omitted the capability.
+C5 rejected it with `C5-CAPABILITY` and `:missing-import-capability`, with the
+authenticated namespace-header syntax locator, header source span, alias,
+structured remediation and empty candidate list. Its diagnostic dependency
+record precedes enrichment: its empty capability/effect vectors and header
+artifact identity are not the verified callee contract. The test checks the
+actual required capability against the separately verified library instead.
+
+Selected work took 89.058 seconds after 7.058 seconds of namespace loading with
+a 2 GiB heap. All three G sources used fresh construction; the library's Q
+fixture and two new Q caller fixtures received byte/parser parity only. These are import
+metadata and resolution checks, not execution of IO, proof of provider or
+deployment grants, downstream C6 execution, or current-closure admission.
+SH-05.1, SH-05.6 and SH-06.6 remain open and the resolver remains
+development-unadmitted.
+
 ### Target-edge source coverage limit
 
 A bounded attempt at development revision `8179c8e3` tried to exercise a real

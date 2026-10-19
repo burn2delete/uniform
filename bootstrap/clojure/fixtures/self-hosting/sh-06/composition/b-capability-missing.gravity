@@ -1,0 +1,6 @@
+(ns example.b-capability-missing
+  (:profile :hosted) (:target :jvm)
+  (:requires [gravity.io :as io])
+  (:exports [forward])
+  (:effects #{:io/write}) (:capabilities #{}) (:safety :safe))
+(defn forward [value] (io/write value))
