@@ -56,8 +56,16 @@
    (range)
    (partition-all 16 values)))
 
-(defn sh06-resolution-artifact-identity-input
-  [artifact]
+(defn- sh06-resolution-product-identity-chunks [artifact]
+  {:binding-id-chunks
+   (sh06-resolution-identity-chunks
+    (mapv :binding-id (get-in artifact [:binding-table :bindings])))
+   :resolution-chunks
+   (sh06-resolution-identity-chunks
+    (mapv #(dissoc % :source-span) (:resolution-table artifact)))})
+
+(defn- sh06-resolution-artifact-identity-input-with-chunks
+  [artifact chunks]
   {:domain :gravity/sh06-resolution-artifact-v1
    :kind (:kind artifact)
    :slice (:slice artifact)
@@ -78,11 +86,9 @@
    :upstream-trace-id
    (get-in artifact [:sh05-macro-artifact :macro-expansion-trace-id])
    :binding-id-chunks
-   (sh06-resolution-identity-chunks
-    (mapv :binding-id (get-in artifact [:binding-table :bindings])))
+   (:binding-id-chunks chunks)
    :resolution-chunks
-   (sh06-resolution-identity-chunks
-    (mapv #(dissoc % :source-span) (:resolution-table artifact)))
+   (:resolution-chunks chunks)
    :dependency-graph-id
    (reader-canonical-hash
     {:domain :gravity/sh06-dependency-graph-v1
@@ -92,13 +98,17 @@
    :invalidation-id
    (get-in artifact [:incremental-invalidation-keys :invalidation-id])})
 
+(defn sh06-resolution-artifact-identity-input [artifact]
+  (sh06-resolution-artifact-identity-input-with-chunks
+   artifact (sh06-resolution-product-identity-chunks artifact)))
+
 (defn sh06-resolution-artifact-id
   [artifact]
   (reader-canonical-hash
    (sh06-resolution-artifact-identity-input artifact)))
 
-(defn sh06-resolution-envelope-summary
-  [artifact]
+(defn- sh06-resolution-envelope-summary-with-chunks
+  [artifact chunks]
   {:slice :SH-06
    :artifact-id (:artifact-id artifact)
    :analysis-artifact-id
@@ -113,11 +123,13 @@
    :reference-count (count (:resolution-table artifact))
    :dependency-edge-count (count (get-in artifact [:dependency-graph :edges]))
    :binding-id-chunks
-   (sh06-resolution-identity-chunks
-    (mapv :binding-id (get-in artifact [:binding-table :bindings])))
+   (:binding-id-chunks chunks)
    :resolution-chunks
-   (sh06-resolution-identity-chunks
-    (mapv #(dissoc % :source-span) (:resolution-table artifact)))})
+   (:resolution-chunks chunks)})
+
+(defn sh06-resolution-envelope-summary [artifact]
+  (sh06-resolution-envelope-summary-with-chunks
+   artifact (sh06-resolution-product-identity-chunks artifact)))
 
 (defn sh06-resolution-sh02-descriptor
   [source-path binding summary]
