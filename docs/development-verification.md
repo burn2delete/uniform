@@ -4594,8 +4594,9 @@ L2 expression order is not a Map enumeration guarantee. After fresh original
 C5 verification, the constructor joins retained C2 child occurrences to the
 actual `defn` expansion and derives Map evaluation/diagnostic order separately
 from host-map callsite coordinates. Public reconstruction repeats the join;
-there is no new caller-supplied proof input. A no-import dependency must also
-use the current module constructor: an incompatible legacy raw plan rejects.
+there is no new caller-supplied proof input. No-import dependencies are also
+reconstructed with the current source-order context: incompatible legacy raw
+plans reject.
 
 The first supported module subset requires distinct literal Keyword keys in
 every evaluated function-body Map, including pure Maps. This is a real local
