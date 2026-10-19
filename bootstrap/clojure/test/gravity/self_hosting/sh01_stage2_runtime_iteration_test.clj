@@ -22398,3 +22398,158 @@
           (is (= :rejected (:status non-tail) (:status rejected)))
           (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
+
+(deftest current-gravity-character-set-contains-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] [["accepted" "local-runtime-character-set-membership" 7]
+                                         ["rejected" "character-set-membership-numeric-member" 2]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)]
+        (is (= g q))
+        (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))
+    (let [c17-path (.getPath (io/file root "bootstrap/gravity/src/gravity/compiler/w5_c17_plugin_executor.gravity"))
+          owner (first (filter #(and (seq? %) (= 'defn (first %)) (= 'w5-c17-hex-character? (second %)))
+                               (bootstrap/read-forms c17-path (slurp c17-path))))
+          original (second (nth owner 3))
+          positive-path (.getPath (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-character-set-membership.gravity"))
+          producer (first (filter #(and (seq? %) (= 'defn (first %)) (= 'hex-values (second %)))
+                                 (bootstrap/read-forms positive-path (slurp positive-path))))]
+      (is (= 16 (count original)))
+      (is (= (list 'quote original) (nth producer 3))))))
+
+
+(deftest current-gravity-character-set-contains-authenticated-composition
+  ;; One changed G positive and one changed G negative; Q has byte/parser coverage only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-character-set-membership.gravity"
+        path (.getPath (io/file root relative)) products (fresh relative)
+        _ (println (pr-str {:bq-product-elapsed relative :timing (:development-timing products)}))
+        input (select-keys products [:request :typed :verification])
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Character-Set membership C7 source prerequisite rejected" {:relative relative :diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Character-Set membership C7 verification prerequisite rejected" {:relative relative})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        t0 (System/nanoTime)
+        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        descriptors (mapv :applied-character-set-contains (filter #(= :direct-character-set-contains (:dispatch %)) (:call-type-facts facts)))
+        rows (filterv #(= :sh08-character-set-contains-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        membership-ir (filterv #(and (= :builtin-call (:op %)) (= 'contains? (:function %))) instructions)
+        binding (seal (:request input) (:typed input) (:verification input))
+        t2 (System/nanoTime)
+        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t3 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects)) (throw (ex-info "Character-Set C8 prerequisite rejected" {:effects effects})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t4 (System/nanoTime)
+        _ (is (= :passed (:status effect-verification)))
+        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "Character-Set C8 verification rejected" {:verification effect-verification})))
+        graph (:effect-graph effects)
+        hex-values (set "0123456789abcdef")
+        cases [['hex-values hex-values] ['present true] ['absent false] ['reordered true]
+               ['left-transfer false] ['right-transfer false] ['main false]]
+        seed-cases (set ['hex-values 'present 'absent 'reordered 'main])
+        t5 (System/nanoTime)
+        results (mapv (fn [[function expected]]
+                        (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                               [{:op :function-call :function function :args []}
+                                                {} "" (:functions assembled) []])]
+                          (is (= [expected "" :normal] actual) (str function))
+                          (when (contains? seed-cases function)
+                            (let [reference (atom nil)
+                                  output (with-out-str (reset! reference (original runtime assembled function [])))]
+                              (is (= [@reference output :normal] actual) (str function " same emitted IR parity"))))
+                          actual)) cases)
+        t6 (System/nanoTime)]
+    (is (= 7 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= 7 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 6 (count descriptors) (count rows) (count membership-ir)))
+    (is (= {:normal 4 :not-invoked 2} (frequencies (map :application descriptors))))
+    (is (= 7 (count cases) (count results)))
+    (doseq [descriptor descriptors]
+      (let [id (:call-core-node-id descriptor) policy (:membership-policy descriptor)
+            invoked? (= :normal (:application descriptor))]
+        (is (= 'contains? (:operation descriptor)))
+        (is (= :gravity.type/applied-character-set-contains (:kind descriptor)))
+        (is (= :sh08-character-set-contains-v1 (:version descriptor)))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= :gravity.collections/character-set-membership (:intrinsic descriptor)))
+        (is (= (if invoked? :gravity.type/bool :gravity.type/never) (:return descriptor) (:result-type descriptor)))
+        (is (= :finite-persistent-character-set (:input policy)))
+        (is (= :character-only (:members policy) (:needle policy)))
+        (is (= :all-before-hit-or-miss (:domain-validation policy)))
+        (is (= :validated-before-result (:member-uniqueness policy)))
+        (is (= :gravity/character-set-membership-logical-content-work-v1 (:value-work-model policy)))
+        (is (= :existing-atomic-character-ir-values (:character-premise policy)))
+        (is (= :c2-owned (:source-decoding policy)))
+        (is (= :not-established (:host-surrogate-rejection policy) (:carrier-text-codepoint-consistency policy)))
+        (is (= policy (get-in (first (filter #(= id (get-in % [:lhs :core-node-id])) rows)) [:solution :membership-policy])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
+        (is (= #{} (get-in graph [:nodes id :direct])))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (get-in graph [:nodes id :dependencies])))))
+    (doseq [function ['present 'absent 'reordered 'main 'left-transfer 'right-transfer]]
+      (is (= :gravity.type/bool (get-in functions [function :return]))))
+    (doseq [function ['hex-values 'present 'absent 'reordered 'main]]
+      (is (= #{} (get-in graph [:functions (get-in functions [function :function-id]) :inferred]))))
+    (let [descriptor (first descriptors) policy (:membership-policy descriptor)
+          forged-policy (assoc policy :member-uniqueness :assumed)
+          forged (assoc descriptor :membership-policy forged-policy)
+          hostile (walk/prewalk #(cond (= descriptor %) forged (= policy %) forged-policy :else %) (:typed input))
+          failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) (assoc input :typed hostile)))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :rejected (:status (last @verified)))))
+    (let [id (:call-core-node-id (first descriptors)) forged (reseal effects (update-in graph [:nodes id :dependencies] pop))]
+      (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding forged)))))
+    (is (= 2 (count @verified)))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/character-set-membership-numeric-member.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:bq-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(and (= ["C7-TYPE-MISMATCH" :character-set-contains-operand-type-required] ((juxt :rule :reason) %))
+                      (= [:gravity.type/integer] (get-in % [:actual-type 0 :element-types]))) diagnostics) (pr-str diagnostics))
+      (println (pr-str {:bq-character-set-contains-negative true :diagnostics diagnostics})))
+    (println (pr-str {:bq-character-set-contains-positive true :function-table-entry-invocations (count results)
+                      :same-emitted-ir-seed-control-entries (count seed-cases) :genuine-caught-transfer-entries 2
+                      :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
+                      :c17-basis :quoted-sixteen-character-value-adaptation :whole-c17-helper-coverage false
+                      :source-character-controls :ascii-hex :supplementary-and-hostile-ir :focused-only
+                      :authority :non-authoritative
+                      :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
+                                   :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
+                      :clock :monotonic-nanoseconds :nested-work :included}))))
