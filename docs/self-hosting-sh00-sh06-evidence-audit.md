@@ -356,46 +356,44 @@ macro positions or rule consumers invalidate this structural coverage decision.
 
 - **SH-05.1:** The structural census above already identifies the selected
   executable macro positions, separate from quotation and rule DATA. The
-  required subset is `defn`; distinct macro, envelope, syntax and resolver
-  subject compositions exercise it. The reader's 275-definition subject is
-  still unrun. General user `defmacro`, recursive expansion and syntax-quote
+  required subset is `defn`; distinct macro, envelope, syntax, resolver and
+  reader subject compositions exercise it at their recorded cohorts. General
+  user `defmacro`, recursive expansion and syntax-quote
   remain unsupported, but none was required by the selected census. That is
   not general L4 support or execution of every declared function body.
 - **SH-05.6:** The recorded compositions compare real expansions with the
   prior-stage reference and preserve hygiene, reused bindings, origins and
   source maps through actual C5 and hosted C6. The later tests below cover
   coherent outer-origin rejection at public C5 and wrong binding-selection
-  rejection at hosted C6. The reader subject still needs the corresponding
-  coverage. Policy-request negatives are not arbitrary effectful macro-code
+  rejection at hosted C6. The reader's corresponding scoped composition is
+  recorded below. Policy-request negatives are not arbitrary effectful macro-code
   execution; current-closure admission still needs its selected stable cohort
   and applicable provenance, equivalence, bootstrap and independent review.
 - **SH-06.6:** Real module graph fixtures cover imports/exports, privacy,
   missing/stale origins, cycles, ambiguity, aliases, lexical scope and hosted
   consumption. Later same-JVM profile and capability cases and both hostile
   ingress checks extend that evidence, with the exact failure qualifications
-  recorded below. Reader source consumption remains unrun. Cross-target source
+  recorded below. Reader source consumption is now recorded below. Cross-target source
   import remains unreachable under the JVM-only frontdoor, despite normalized
   C5 policy coverage. Stable-cohort freshness and admission evidence remain
   separate requirements; the resolver stays `:development-unadmitted`.
 
 No further small, demonstrated composition gap was identified in this bounded
 frontend after those additions. Do not add marginal tests or rerun unchanged
-subjects merely to increase a score. The conditional next subject is the
-existing `sh06-b-frontend-reader-development-coverage` selector, with its
-existing runner and 2 GiB heap, in one exclusive window after deliberately
-selecting the relevant stable-cohort or migration question. Its entire reader
-source is the subject; 275 definitions do not mean 275 function bodies execute.
-The prior resolver duration does not establish reader fit or cost.
+subjects merely to increase a score. The reader run below addresses a genuine
+previously unrun subject, not a stamp refresh or migration-only obligation.
+The five subject results retain their distinct tested cohorts; they do not
+combine into one fresh, complete current-compiler admission package.
 
-That decision must name the five frontend owners, analyzed population, P15
-rule DATA, loaded implementation/toolchain inputs (including emitter freshness
-bytes), options, grants, profile/target, dependency exports and preservation
-contracts. Ordinary SH-07 implementation must not wait for it. If the chosen
-construction fails within its existing bounds, preserve the result before any
-successor. Use the bounded construction/verification cost follow-up below to
+Select the next endpoint from the actual build graph below. Name its executing
+owners, analyzed population, rule DATA, loaded implementation/toolchain inputs
+(including emitter freshness bytes), options, grants, profile/target, dependency
+exports and preservation contracts. Ordinary SH-07 implementation must not wait
+for this evidence work. If a chosen construction fails within its bounds,
+preserve the result before any successor. Use the bounded cost follow-up to
 identify retained products or duplicate same-invocation work before choosing a
-representation correction; do not raise caps, cache proof, prune sources or
-invent another wrapper/lane. All three groups remain open.
+representation correction; do not raise caps, cache proof, prune required
+sources or invent another wrapper/lane. All three groups remain open.
 
 ### Generated-code composition and diagnostic repair
 
@@ -927,6 +925,82 @@ wrapper or verifier override was added. This establishes bounded hosted-C6
 consumer rejection, not Gravity-C6 implementation execution, current-closure
 migration or milestone completion. The reader subject remains unrun, all three
 partial groups remain open, and the resolver remains development-unadmitted.
+
+### Reader frontend composition
+
+The genuinely unrun reader subject was selected at clean
+`2a4ea770fa97892ae7ba7620655f2129a428d039`, tree
+`550d82b1040172bde0f37be75709b9991c72373f`, for this development question:
+does the selected defn-only frontend compose the complete reader source through
+macro expansion, real C5 resolution and hosted C6? No earlier subject was
+replayed and no test, fixture, inventory pin or compiler code changed.
+
+`sh06-b-frontend-reader-development-coverage` passed one test/19 assertions,
+zero failures/errors, at 2 GiB. The original command completed exit 0
+(`6fcac2`, session `50112`, terminal `5f863b`). Raw output and the standard
+non-authoritative timing record are
+`/tmp/b-reader-2a4ea770-source-v1-20261019.log` and `.edn`.
+Selected work took 1,647.946 seconds after 6.950 seconds loading the namespace.
+The brief String-predicate focused batch ran concurrently in its separate
+worktree; these observations are not isolated benchmarks or a speedup claim.
+
+The actual source has 275 expanded `defn` forms and 23 `def` forms, yielding
+298 definition records and 7,868 resolved references. The owner artifact is
+`sha256:159b2cb1e2d4fc50e5cc0097df889c35701c18469b7ac74d56c7b718512341ec`.
+Checks passed for complete source streams, original syntax/source joins,
+introduced/reused origins, macro-parent identity, reference/binding bijection,
+fresh C5 verification, prior-stage expansion parity and authenticated hosted
+C6 consumption. The hosted result has 8,506 Core nodes, a passed verifier and
+complete source mapping. The scoped parser observer recorded zero owner reads
+and zero forbidden subject-read attempts during consumption; it is not an
+all-I/O census. Source/test/toolchain pins and the clean worktree remained
+unchanged; no Java survivor was observed after completion.
+
+This completes the selected reader-subject development composition, not
+execution of 275 function bodies or every path of its 231-function SH03 plan.
+P15 compiler rules remain DATA, emitter bytes are a freshness input rather than
+executed lowering, and hosted Stage0 C6 plus the declared seed/coordinator TCB
+remain in use. Earlier unrun-reader descriptions are superseded only for this
+recorded subject result. The three partial groups remain open for the complete
+declared compiler population and applicable evidence; the resolver remains
+development-unadmitted. No 69-file migration, full language, target, self-hosting
+or seedless completion follows.
+
+### Next compiler input: actual build graph, not directory counts
+
+The existing ordinary pipeline reaches a stage named `:checked-core` through
+`gravity/authenticated_artifact_pipeline/01-pipeline-schema-version.clj` and
+`04-envelope-valid.clj`. Its original `sh07-core-from-resolution-artifact`
+route in component `00898` uses `00885-sh07-core-source-relative-path.clj` to
+compile `bootstrap/gravity/src/gravity/checked_core.gravity` with the existing
+raw3 seed and authenticate its source, exports and header. Component `00894`
+then executes `sh07-build-core-template` and the owning verifiers. That makes
+`checked_core.gravity` a genuinely required additional analyzed subject when
+extending this endpoint to Gravity-owned Core lowering, not every file in the
+69+5 inventory. Analyzing that source is distinct from executing it on accepted
+and rejected Core requests. The facade's stage name is not C1's fully checked
+MIR input: `00898` still records C7 through C10 as pending.
+
+| Population | Actual endpoint and classification |
+| --- | --- |
+| `checked_core.gravity` | Required for the selected ordinary Gravity-owned Core endpoint; one next source-composition question, with exact census and bounds determined before execution. |
+| `compiler/c6_call_arity_legality.gravity` | Separately executable B48/test and SH25 subject, not imported by that ordinary root; its header makes no public-routing claim. |
+| C7 engine, `effects.gravity` and the C8 compatibility module | Required when the endpoint asks for typed/effect-checked facts; actual C8 wrapping requires `gravity.effects`. Not automatically executed by hosted C6. |
+| P15 emitter, `gravity/runtime.gravity` and P15 runtime compatibility source | Required for their actual lowering/execution endpoint; frontend emitter freshness alone does not execute them. |
+| C6-C10, MIR and later backend owners | Separate explicit routes: `00701` selects the C6-C10 bridge; `00726` contains the C11/MIR source declaration at line 149 as well as earlier verification code; `00733` binds MIR and `00743` consumes it. Later C13/C14/B1 bindings use `00748`/`00750`. Select the real route, not a filename or declared module record. |
+| W5, build and meta additions | Conditional standalone executors/record validators, not imports into the inspected ordinary roots. Their own claims require their actual inputs; supplied records do not establish compiler builds, rebuilds or execution. |
+| `stdlib/self_hosting_core.gravity` | Explicitly experimental; runtime-provider/full-library integration remains pending. |
+| Seven B51 sources | Held outside this endpoint under the existing scoped ownership, not silently excluded to manufacture acceptance. |
+| Other targets and P15 native sources | Optional only relative to the present JVM endpoint; required for their own future target/native claims. Native plan emission and runtime-driver DATA/contract paths are separate, not current all-target execution. |
+
+This bounded call trace found no newly required unsupported macro. It does not
+declare a complete 74-node execution graph or authorize a larger proof run by
+count alone. Choose a concrete next source/semantic question, reuse valid
+unchanged evidence where applicable and retain every actual obstruction.
+Authoritative migration separately needs its deliberately selected coherent
+compiler/source/toolchain/provider/target cohort and required fresh provenance,
+equivalence, bootstrap and independent-review evidence. Ordinary semantic work
+does not wait for that admission decision.
 
 ### Invalidation and reuse
 
