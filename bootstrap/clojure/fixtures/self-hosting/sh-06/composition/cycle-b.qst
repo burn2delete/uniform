@@ -1,0 +1,5 @@
+(ns example.cycle.b
+  (:profile :meta) (:target :jvm)
+  (:requires [example.cycle.a :as a]) (:exports [forward])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn forward [x] (a/identity x))

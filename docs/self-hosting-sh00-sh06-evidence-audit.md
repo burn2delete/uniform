@@ -297,3 +297,205 @@ E06-R was conditional; E06-C closes the original corpus condition, not every
 later gate or present revision. Recovery is not a signed, independently
 reauthenticated acceptance package for HEAD. This report, focused projection
 tests and documentation validation do not change the existing 7/30 count.
+
+## Bounded current frontend closure
+
+The next development coverage endpoint is ordinary C2 -> C3 -> C4 -> C5 ->
+hosted Stage0 C6 under `:meta/:jvm`. This is an explicit bounded selection,
+not the full compiler, all 69 directory inputs or authoritative migration.
+C4/C5, L4/L12, BOOT3 and TEST2 govern the stage and preservation obligations.
+The implementation, analyzed subjects and future release closure are separate:
+
+| Role | Selected inputs and limits |
+| --- | --- |
+| Executed Gravity owners | `compiler/authenticated_envelope.gravity`, `bootstrap/reader.gravity`, `bootstrap/syntax.gravity`, `macro.gravity`, `resolution.gravity`, relative to `bootstrap/gravity/src/gravity/` |
+| Reader execution subset | The selected `sh03-*` function closure, not every entry in the full reader source subject |
+| Required rule DATA | `bootstrap/gravity/p15_s23/compiler.gravity`, whose interpreted emitter rules support the temporary seed compiler |
+| Required freshness input | P15 `emitter.gravity` enters the resolver toolchain key; this is not execution of its Gravity lowering body |
+| Temporary implementation/TCB | Clojure source/header projection, expression/function seed compilation, plan construction, generic execution, digest/codecs, SH02-SH06 adapters/verifiers, diagnostics and hosted C6, plus declared Clojure/JDK/filesystem support |
+| Initial analyzed subjects | The five selected owner sources, rule DATA separately labelled, and the actual artifact-backed module fixtures used by C5 import tests |
+| Compatibility subjects | Gravity C3/C4/C5 facades package records; they do not replace the executed owners or gain authentication credit |
+| Optional for this endpoint | Later passes, backends and runtime/emitter execution; these are not optional for their eventual language/target claims |
+| Experimental/source inventory | Preserve each module's declared status; declarations and record validators are not execution evidence |
+| Held | The seven B51 sources remain outside this ordinary frontend selection with existing restrictions intact |
+
+The actual leaf plan route includes the existing `00575`/`00576` temporary
+expression/function compiler, `00580` plan construction and `00593` generic
+executor. P15 rule DATA is read by `00644`. Resolver `00874` includes emitter
+freshness. `00042-sh06-c6-lowering-from-resolution-artifact.clj` delegates through
+`00041` to `gravity.c6-core-lowering`, whose configuration explicitly identifies
+hosted Stage0 lowering. It does not execute `gravity.checked-core`. Importing
+an authenticated namespace description also does not execute its functions.
+No Gravity emitter/runtime, backend, native, target or seedless credit follows.
+
+The subject selection is a next bounded coverage obligation, not a statement
+that all five full sources have already passed at this revision. Its exact
+macro positions and dependency graph must be inventoried before complete
+coverage is claimed. Reader subset execution cannot be relabeled as whole-reader
+execution, and optional/held exclusions cannot be extended to a broader claim.
+
+A bounded reader-only structural census at this revision found 606 top-level
+`defn` subjects and 34 top-level `def` subjects in the five sources:
+envelope 72/2, reader 275/23, syntax 102/3, macro 46/3 and resolver 111/3.
+P15 rule DATA separately contains one top-level `defn` and 27 `def` forms.
+Each file also has one `ns`. The read used `*read-eval* false`, a 512 MiB heap,
+no project loading, no source evaluation and no macro expansion; source bytes
+remained unchanged from `3a816435`.
+
+Respecting quotation and catalog DATA, the census found no nested executable
+macro position or required unsupported macro. The actual macro recipe introduces
+`def`/`fn` and reuses bodies without further required macro calls. In particular,
+P15's nested `(defn name params body)` is raw rule DATA, and its sole actual
+function returns quoted DATA. This justifies the defn-only behavior selection,
+not general recursive/user macro support or a Gravity corpus pass. The selected
+leaf plans contain 562 function declarations, including 231 reader functions;
+neither declaration count says that every function executed. New subjects,
+macro positions or rule consumers invalidate this structural coverage decision.
+
+### Remaining criteria by partial group
+
+- **SH-05.1:** Inventory actual executable macro positions, distinguishing
+  quoted data and rule records. `gravity.macro` implements `defn`; general user
+  `defmacro`, recursive macro evaluation and general syntax-quote are explicitly
+  outside its present subset. If selected executable subjects require them,
+  they are real semantic gaps. The existing one-pass top-level-defn adapter and
+  legacy external/local macro route do not supply that coverage.
+- **SH-05.6:** Compare selected real expansions and rejection behavior with
+  the prior-stage reference; exercise generated syntax through actual C5 and
+  hosted C6. Preserve hygiene, reused bindings, macro call/definition origins
+  and source mapping, with existing coherent trace/origin tamper checks.
+  Policy-request negatives do not demonstrate arbitrary effectful macro code.
+- **SH-06.6:** Execute the declared subject population and real module graph;
+  retain alias/import/export/privacy/source identities, lexical scope and
+  authenticated downstream consumption. Existing normalized cycle, ambiguity,
+  profile and target kernels remain useful but are not all authentic
+  multi-module source compilations. Coherent binding and changed-input
+  rejection remain required. The resolver stays `:development-unadmitted`.
+
+### Generated-code composition and diagnostic repair
+
+The direct test `sh06-generated-defn-shadowing-and-diagnostic-composition` in
+`sh06_resolution_adapter_test.clj` uses paired sources in the SH-06
+`composition/` directory. The initial run used local development inputs based
+on `3a816435`, not an admitted successor to the historical audit. The accepted
+definition shadows a namespace function
+with its parameter and then uses sequential/nested lexical bindings. The
+rejected variant substitutes an unresolved body reference, not scenario DATA.
+
+The first run completed FAILED: one test, 38 passes, three failures, zero errors.
+It built the accepted Gravity/QST pair and the Gravity negative; negative QST
+has byte-parity coverage only. Positive reference expansion equality, three
+distinct selected local binding IDs, current C5 verification, generated Core
+mapping and authenticated hosted-C6 consumption without source rereading all
+passed. It does not establish canonical Gravity C6 execution or type checking.
+
+Two failed expectations incorrectly assumed a direct `:source` field inside
+the macro call-site span. The test now compares that span directly with the
+retained expanded syntax span; this expectation edit has not replayed the
+unchanged positive products and is not a new green result.
+
+The third failure exposed a concrete preservation gap: the unresolved generated body
+correctly reports `C5-UNRESOLVED`, symbol, namespace and actual source, with the
+C4 artifact ID in facts, but its public diagnostic omits the generated-origin
+chain. L12 requires generation provenance on a generated-code failure. The
+repair carries authenticated macro origin/call-site data through the existing
+source-artifact diagnostic transport, not through a new schema or pin. It joins
+the actual reference-check rejection to its exact bounded ordinal, reference
+identity/source and unique authenticated expanded owner. Module-level failures
+may use the first reference as a display location; those are not causal macro
+evidence. Unknown/mismatched/ambiguous/no-chain cases rethrow the same exception.
+A valid augmentation retains every original field/message and the original
+exception as cause. Only the existing owner's origin vector is attached.
+
+Final focused transport checks passed one test / 90 assertions. Earlier 76/80/87
+passing refinements overlap and are not additive coverage. Independent review
+caught a missing one-candidate unresolved-core-availability case in the overly
+broad zero-candidate guard; the final guard follows actual reason-specific
+cardinality and preserves that diagnostic's origin too. Resolver semantics,
+raw request/result schemas, migration pins and limits are unchanged.
+
+The changed `sh06-generated-unresolved-origin-composition` and new
+`sh06-source-module-cycle-composition` passed two tests / 26 assertions at
+2 GiB on the development candidate based on `c7484e92`. Seven checks establish
+the actual rejected generated body now carries exactly its authenticated
+expanded owner's origin. The 19 cycle checks establish genuine accepted and
+verified A0/B artifacts, retained dependency/source/binding identity and the
+candidate A1 rejection described below. This exercises four Gravity-source
+cases; QST has byte parity only. The earlier accepted shadowing pair was not
+rebuilt. Its original 38-pass/three-fail aggregate remains failed; the corrected
+span expectations have no new execution credit. Language boundary passed 6/11.
+
+Selected source checking took 137.154 seconds after 7.360 seconds of loading:
+26.287 seconds for the changed origin negative and 110.867 for the new cycle.
+These are test intervals, not a constructor/verification/allocation breakdown.
+This closes the specific diagnostic gap and adds real cycle composition
+coverage, not current-cohort migration. All three partial groups remain open.
+
+Use the existing direct runner for this affected composition, not a full corpus:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh06-resolution-adapter-test \
+  --exact sh06-generated-unresolved-origin-composition \
+  --exact sh06-source-module-cycle-composition --fail-fast
+```
+
+For local transport edits, start with
+`sh06-generated-diagnostic-origin-transport-development-kernel` in that same
+namespace. Do not repeat unchanged source products for a reporting update.
+
+The initial failed combined composition took 95.307 seconds after 6.941 seconds of
+namespace loading, at 2 GiB. No per-stage construction breakdown was measured;
+neither that interval nor the number of checks establishes scheduling overhead
+or a speedup. Verification-product representation measurement/redesign remains
+a separate bounded follow-up, not another wrapper or proof lane.
+
+One concrete follow-up candidate is the existing
+`sh04-syntax-strip-host-metadata` traversal in `00853`: it recursively rebuilds
+collection structure for both arguments and results at SH04/SH05/SH06 invocation
+boundaries, even when metadata is absent. An accepted C5 run invokes builder,
+template verifier and resolved verifier, so it has six such crossings before
+additional replay or module recursion. This is statically observable work, not
+evidence that it dominates CPU time or allocation; nested persistent artifact
+references alone do not prove physical copying.
+
+At the next already-needed changed-candidate composition, measure bounded
+scalar time/call counts at existing stage boundaries, separating cleaning,
+Gravity execution and canonical/digest work. Record successful/rejected paths
+separately and allocation only if available without broadening the task. Do not
+rerun unchanged products for this measurement. Only if the observations justify
+it, investigate preserving unchanged immutable collection structure inside that
+one traversal while still removing all nested metadata. Require unchanged
+values/families, canonical bytes/IDs, diagnostics, complete traversal/bounds
+and hostile-carrier rejection; every builder/verifier must still run freshly.
+This would be materialization optimization, not proof/result caching or a
+schema/provenance reduction. No representation code has changed here.
+
+The executed source graph check uses distinct immutable `cycle-a0`,
+`cycle-b` and `cycle-a1` fixture pairs. B retains its genuine A0 artifact;
+candidate A1 supplies only B as its direct dependency. The rejected cycle is
+the authenticated logical namespace graph A -> B -> A, with A1 the candidate
+revision of namespace A, not a third graph node. This is not mutually accepted
+cyclic artifacts or B rebuilt against A1. It also checks that a graph-level
+failure receives no unrelated macro-origin chain. The test checks both distinct
+directed edge endpoints, not an exact edge-row cardinality. QST byte parity is
+not execution; neither cyclic artifact acceptance nor package revision selection
+is established.
+
+### Invalidation and reuse
+
+Unchanged source bytes are only one reuse condition. Preserve compatible
+compiler/toolchain, macro versions/environment, reader options, grants,
+profile/target, dependency artifacts/exports and preservation contracts.
+Reader changes invalidate affected forms and downstream syntax; syntax/hygiene
+changes invalidate affected traces and binding/source maps; macro recipe or
+policy changes invalidate expansion consumers; resolver catalog/import/export
+changes invalidate binding graphs and their consumers. Seed compiler, rule DATA
+or generic executor changes can invalidate execution even with unchanged
+Gravity owners. Unrelated target implementation changes outside this selected
+closure do not automatically require frontend replay.
+
+A stable migration decision still requires its fresh provenance, equivalence,
+bootstrap and independent-review evidence under BOOT3/D9. None is renewed here.
+Keep historical 36/37, later SH-07 41/42 and present 69+5 inventories distinct;
+do not rerun an obsolete full corpus to rediscover known count drift.

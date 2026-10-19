@@ -549,6 +549,251 @@
           (is (not= (get-in caller [:incremental-invalidation-keys :invalidation-id])
                     (get-in changed [:incremental-invalidation-keys :invalidation-id]))))))))
 
+(deftest sh06-generated-defn-shadowing-and-diagnostic-composition
+  ;; C4 -> real C5 -> hosted Stage0 C6. This does not execute Gravity C6,
+  ;; typecheck the function, admit a module revision or renew corpus evidence.
+  (doseq [name ["generated-shadow" "generated-unresolved"]]
+    (is (= (slurp (fixture-path "composition" name ".gravity"))
+           (slurp (fixture-path "composition" name ".qst")))))
+  (let [results
+        (mapv
+         (fn [extension]
+           (let [source (fixture-path "composition" "generated-shadow" extension)
+                 expanded (bootstrap/sh05-macro-file-artifact source)
+                 reference (bootstrap/macro-file-artifact source)
+                 resolved (bootstrap/sh06-resolution-artifact-from-sh05-artifact source expanded)
+                 trace (first (:macro-expansion-trace expanded))
+                 syntax (second (:expanded-syntax-stream expanded))
+                 bindings (get-in resolved [:binding-table :bindings])
+                 rows (:resolution-table resolved)
+                 lexical (filter #(= :local-lexical-binding (:resolution-order %)) rows)
+                 original-reader bootstrap/read-source-form-records
+                 reads (atom 0)
+                 core (with-redefs [bootstrap/read-source-form-records
+                                    (fn [p text]
+                                      (when (= p source)
+                                        (swap! reads inc)
+                                        (throw (ex-info "Hosted C6 reread generated source" {})))
+                                      (original-reader p text))]
+                        (bootstrap/sh06-c6-lowering-from-resolution-artifact resolved))]
+             (is (= :accepted (:status expanded) (:status resolved)))
+             (is (= (:expanded-forms reference) (:expanded-forms expanded)))
+             (is (= '(def shadow (fn [shadow] (let [next shadow] (let [shadow next] shadow))))
+                    (:form syntax)))
+             (is (= 'defn (:macro trace)))
+             (is (seq (:generated-origin trace)))
+             (is (seq (:origin syntax)))
+             (is (= (:span syntax) (:call-site-span trace)))
+             (is (= 3 (count lexical)))
+             (is (= 3 (count (set (map :binding-id lexical)))))
+             (is (every? (set (map :binding-id bindings)) (map :binding-id lexical)))
+             (is (= :passed (:status (verification resolved))))
+             (is (= :gravity/stage0-c6-core-lowering-artifact (:kind core)))
+             (is (= :passed (get-in core [:core-verifier-report :status])))
+             (is (= (:artifact-id resolved) (get-in core [:c5-name-resolution-artifact :artifact-id])))
+             (is (some :generated? (get-in core [:surface-to-core-map :entries])))
+             (is (zero? @reads))
+             {:expanded (:artifact-id expanded) :resolved (:artifact-id resolved)}))
+         [".gravity" ".qst"])]
+    (is (= (first results) (second results)))))
+
+(deftest sh06-generated-diagnostic-origin-transport-development-kernel
+  ;; Normalized transport checks only; parent authentication is a caller premise.
+  ;; No source product, resolver admission or migration evidence is constructed.
+  (let [source "<generated-origin-kernel>.gravity"
+        canonical (private-bootstrap-var 'reader-canonical-hash)
+        span {:byte-start 10 :byte-end 40 :line-start 2 :line-end 2}
+        owner-id (sha256-text "expanded-owner")
+        artifact-id (sha256-text "parent")
+        revision-id (sha256-text "source")
+        stream-id (sha256-text "expanded-stream")
+        origin [{:kind :source :span span}
+                {:kind :generated :producer {:kind :macro :name 'gravity.core/defn}
+                 :inputs [(sha256-text "call")]}]
+        owner {:syntax/id owner-id :span span :origin origin}
+        reference {:syntax-id (canonical {:domain :gravity/sh06-reference-syntax-v1
+                                         :owner-syntax-id owner-id :ordinal 1
+                                         :symbol 'missing :position :expression})
+                   :symbol 'missing :qualifier nil :name 'missing :position :expression
+                   :scope-chain [] :source-span span
+                   :semantic-span (assoc span :ordinal 1)}
+        expanded {:artifact-id artifact-id :expanded-syntax-stream-id stream-id
+                  :expanded-syntax-stream [(assoc owner :syntax/id (sha256-text "unrelated")
+                                                       :origin [{:kind :generated :producer :unrelated}]) owner]
+                  :gravity-macro-boundary {:authenticated-sh04-artifact
+                                           {:gravity-syntax-boundary
+                                            {:reader-source-revision {:revision-id revision-id}}}}}
+        request {:module {:namespace 'example.generated :profile :meta :target :jvm
+                          :c4-artifact-id artifact-id :source-revision-id revision-id}
+                 :references [reference] :provenance {:actual-source-path source}
+                 :macro-expansion-binding {:c4-artifact-id artifact-id :source-revision-id revision-id
+                                           :macro-result-id stream-id}}
+        details {:reason :no-legal-binding :qualifier nil :name 'missing
+                 :position :expression :scope-chain [] :candidate-count 0}
+        error (try
+                (bootstrap/c5-resolution-fail!
+                 "C5-UNRESOLVED" source
+                 {:source-span (assoc span :source source) :symbol 'missing :syntax-id (:syntax-id reference)
+                  :namespace 'example.generated :profile :meta :target :jvm :candidate-bindings []}
+                 {:diagnostic-id "original-diagnostic-id" :severity :error :remediation "original-remediation"
+                  :facts {:reason :no-legal-binding :rule-specific details :semantic-span (:semantic-span reference)
+                          :source-revision-id revision-id :c4-artifact-id artifact-id :fail-closed true}})
+                (catch clojure.lang.ExceptionInfo e e))
+        diagnostic (ex-data error)
+        recover (private-bootstrap-var 'sh06-resolution-diagnostic-origin)
+        candidate (private-bootstrap-var 'sh06-resolution-source-artifact-candidate)
+        transport (fn [parent input problem]
+                    (with-redefs-fn
+                      {(private-bootstrap-var 'sh06-authenticated-sh05-parent!) (fn [& _] :authenticated-test-premise)
+                       (private-bootstrap-var 'sh06-authenticated-source-snapshot!) (fn [& _] :snapshot)
+                       (private-bootstrap-var 'sh06-resolution-module-request) (fn [& _] input)
+                       (private-bootstrap-var 'sh06-resolution-current-binding!) (fn [& _] {})
+                       (private-bootstrap-var 'sh06-resolution-run-request!) (fn [& _] (throw problem))}
+                      #(try (candidate source parent true)
+                            (catch clojure.lang.ExceptionInfo e e))))
+        carried (transport expanded request error)]
+    (is (= origin (recover source expanded request diagnostic)))
+    (is (= origin (:origin-chain (ex-data carried))))
+    (is (= diagnostic (dissoc (ex-data carried) :origin-chain)))
+    (is (= (.getMessage error) (.getMessage carried)))
+    (is (identical? error (.getCause carried)))
+    ;; The existing reference checker also reports UNRESOLVED for a single
+    ;; malformed core candidate. Its reason and candidate count remain intact.
+    (let [malformed (-> diagnostic
+                        (assoc :candidate-bindings [{:name 'missing :binding-class :core}])
+                        (assoc-in [:facts :reason] :malformed-core-binding-availability)
+                        (assoc-in [:facts :rule-specific :reason] :malformed-core-binding-availability)
+                        (assoc-in [:facts :rule-specific :candidate-count] 1))
+          problem (ex-info "malformed candidate" malformed)
+          result (transport expanded request problem)]
+      (is (= origin (recover source expanded request malformed)))
+      (is (= origin (:origin-chain (ex-data result))))
+      (is (= malformed (dissoc (ex-data result) :origin-chain)))
+      (doseq [changed [(assoc-in malformed [:facts :rule-specific :candidate-count] 0)
+                       (assoc malformed :candidate-bindings [])
+                       (assoc-in malformed [:facts :reason] :no-legal-binding)
+                       (assoc-in malformed [:facts :rule-specific :reason] :no-legal-binding)]]
+        (is (nil? (recover source expanded request changed)))))
+    (doseq [ordinal [nil 0 -1 2 1.5 "1" 999999999999999999999999N]]
+      (is (nil? (recover source expanded request (assoc-in diagnostic [:facts :semantic-span :ordinal] ordinal)))))
+    (doseq [changed [(dissoc diagnostic :syntax-id)
+                     (assoc diagnostic :syntax-id (sha256-text "changed"))
+                     (assoc diagnostic :symbol 'other)
+                     (assoc-in diagnostic [:source-span :source] "<other>.gravity")
+                     (assoc-in diagnostic [:facts :semantic-span :byte-end] 41)
+                     (assoc-in diagnostic [:facts :rule-specific :position] :operator)
+                     (assoc-in diagnostic [:facts :rule-specific :scope-chain] [:unrelated])
+                     (update-in diagnostic [:facts :rule-specific] dissoc :qualifier)
+                     (assoc-in diagnostic [:facts :rule-specific :candidate-count] -1)
+                     (assoc-in diagnostic [:facts :rule-specific :candidate-count] 1)
+                     (assoc diagnostic :id "C5-CYCLE")
+                     (assoc diagnostic :candidate-bindings [:unexpected])
+                     (assoc diagnostic :namespace 'other)
+                     (assoc diagnostic :active-profile :core)
+                     (assoc diagnostic :target :wasm)
+                     (assoc-in diagnostic [:facts :source-revision-id] (sha256-text "changed"))
+                     (assoc-in diagnostic [:facts :c4-artifact-id] (sha256-text "changed"))
+                     (assoc-in diagnostic [:facts :rule-specific] 7)
+                     (assoc diagnostic :origin-chain [:already-present])]]
+      (is (nil? (recover source expanded request changed)))
+      (let [problem (ex-info "preserved" changed)]
+        (is (identical? problem (transport expanded request problem)))))
+    (doseq [changed [(assoc request :references nil)
+                     (assoc request :references {})
+                     (assoc-in request [:references 0 :syntax-id] (sha256-text "changed"))
+                     (assoc-in request [:references 0 :symbol] 'other)
+                     (assoc-in request [:references 0 :source-span :byte-end] 41)
+                     (assoc-in request [:provenance :actual-source-path] "<other>.gravity")
+                     (assoc-in request [:macro-expansion-binding :c4-artifact-id] (sha256-text "changed"))
+                     (assoc-in request [:macro-expansion-binding :source-revision-id] (sha256-text "changed"))
+                     (assoc-in request [:macro-expansion-binding :macro-result-id] (sha256-text "changed"))]]
+      (is (nil? (recover source expanded changed diagnostic))))
+    (doseq [changed [(assoc expanded :expanded-syntax-stream [])
+                     (assoc expanded :expanded-syntax-stream [owner owner])
+                     (assoc expanded :expanded-syntax-stream [(assoc owner :syntax/id (sha256-text "changed"))])
+                     (assoc expanded :expanded-syntax-stream [(assoc-in owner [:span :byte-end] 41)])
+                     (assoc expanded :expanded-syntax-stream [(assoc owner :origin [])])
+                     (assoc expanded :expanded-syntax-stream [(assoc owner :origin [{:kind :source :span span}])])]]
+      (is (nil? (recover source changed request diagnostic)))
+      (is (identical? error (transport changed request error))))
+    ;; Even a FIRST generated reference's exact display coordinates are not
+    ;; causal evidence for a dependency-cycle/import/binding rejection.
+    (doseq [[id reason] [["C5-CYCLE" :namespace-dependency-cycle]
+                         ["C5-UNRESOLVED" :malformed-authoritative-record]
+                         ["C5-UNRESOLVED" :missing-module-artifact]
+                         ["C5-CAPABILITY" :missing-import-capability]]]
+      (let [ordinary (-> diagnostic (assoc :id id)
+                         (assoc-in [:facts :reason] reason)
+                         (assoc-in [:facts :rule-specific] {:reason reason :dependency-edges []}))
+            problem (ex-info "ordinary" ordinary)]
+        (is (nil? (recover source expanded request ordinary)))
+        (is (identical? problem (transport expanded request problem)))
+        (is (= ordinary (ex-data (transport expanded request problem))))))))
+
+(deftest sh06-generated-unresolved-origin-composition
+  ;; Select only the changed rejection path after a diagnostic transport fix;
+  ;; unchanged positive C5/C6 products need not be reconstructed for this check.
+  (let [source (fixture-path "composition" "generated-unresolved" ".gravity")
+        expanded (bootstrap/sh05-macro-file-artifact source)
+        failure (try
+                  (bootstrap/sh06-resolution-artifact-from-sh05-artifact source expanded)
+                  {:unexpected-success true}
+                  (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+    (is (= :accepted (:status expanded)))
+    (is (= "C5-UNRESOLVED" (:id failure)) (pr-str failure))
+    (is (= 'missing-generated-value (:symbol failure)))
+    (is (= source (get-in failure [:source-span :source])))
+    ;; L12 requires generation provenance when generated code fails checking.
+    (is (seq (:origin-chain failure)) (pr-str failure))
+    (is (= (:origin (second (:expanded-syntax-stream expanded)))
+           (:origin-chain failure)))
+    (is (nil? (:unexpected-success failure)))))
+
+(deftest sh06-source-module-cycle-composition
+  ;; A0 is an earlier immutable dependency of B, not an accepted A1 artifact.
+  ;; This checks a supplied authenticated logical namespace graph; it does not
+  ;; construct mutually accepted cyclic artifacts or select package revisions.
+  (doseq [name ["cycle-a0" "cycle-b" "cycle-a1"]]
+    (is (= (slurp (fixture-path "composition" name ".gravity"))
+           (slurp (fixture-path "composition" name ".qst")))))
+  (let [a0-path (fixture-path "composition" "cycle-a0" ".gravity")
+        b-path (fixture-path "composition" "cycle-b" ".gravity")
+        a1-path (fixture-path "composition" "cycle-a1" ".gravity")
+        inputs (fn [artifact] {:artifact :gravity/sh06-module-inputs
+                               :schema-version 1 :module-artifacts [artifact]})
+        a0 (bootstrap/compiler-c5-resolution-file-artifact a0-path)
+        b (bootstrap/compiler-c5-resolution-file-artifact b-path (inputs a0))
+        retained (get-in b [:gravity-resolution-boundary :module-inputs :module-artifacts 0])
+        alias (first (get-in b [:alias-table :aliases]))
+        imported (first (filter #(and (= :import (:binding-class %)) (= 'identity (:name %)))
+                                (get-in b [:binding-table :bindings])))
+        a0-definition (first (filter #(and (= :namespace (:binding-class %)) (= 'identity (:name %)))
+                                     (get-in a0 [:binding-table :bindings])))
+        failure (try
+                  (bootstrap/compiler-c5-resolution-file-artifact a1-path (inputs b))
+                  {:unexpected-success true}
+                  (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+    (is (= :accepted (:status a0) (:status b)))
+    (is (= :passed (:status (verification a0)) (:status (verification b))))
+    (is (= a0 retained))
+    (is (= a0-path (get-in retained [:provenance :source-path])))
+    (is (not= a0-path a1-path))
+    (is (= (:artifact-id a0) (:dependency-artifact-id alias) (:definition-artifact-id imported)))
+    (is (= (:definition-syntax-id a0-definition) (:definition-syntax-id imported)))
+    (is (= (:binding-id a0-definition) (get-in imported [:semantic-span :origin-binding-id])))
+    (is (some #(and (= 'example.cycle.b (:from %)) (= 'example.cycle.a (:to %)))
+              (get-in b [:dependency-graph :edges])))
+    (is (= "C5-CYCLE" (:id failure)) (pr-str failure))
+    (is (= :namespace-dependency-cycle (get-in failure [:facts :reason])) (pr-str failure))
+    (is (= 'example.cycle.a (:namespace failure)))
+    (is (= a1-path (get-in failure [:source-span :source])))
+    (is (= #{['example.cycle.a 'example.cycle.b] ['example.cycle.b 'example.cycle.a]}
+           (set (map (juxt :from :to) (get-in failure [:facts :rule-specific :dependency-edges])))))
+    ;; The rejection is graph-level, even if the producer used its first
+    ;; generated reference as a diagnostic location. No causal macro is known.
+    (is (empty? (:origin-chain failure)))
+    (is (nil? (:unexpected-success failure)))))
+
 (deftest sh06-ordinary-seed-build-does-not-call-public-frontdoors
   (let [frontdoors (mapv required-var '[compiler-c4-macro-source-artifact compiler-c5-resolution-source-artifact compiler-c6-lowering-source-artifact])
         forbidden (fn [& _] (throw (ex-info "Seed compilation reached a public frontdoor" {:id "SH06-SEED-FRONTDOOR"})))

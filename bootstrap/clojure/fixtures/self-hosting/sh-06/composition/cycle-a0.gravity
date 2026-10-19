@@ -1,0 +1,5 @@
+; Immutable predecessor A0, retained by B; not the candidate A1 revision.
+(ns example.cycle.a
+  (:profile :meta) (:target :jvm) (:exports [identity])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn identity [x] x)
