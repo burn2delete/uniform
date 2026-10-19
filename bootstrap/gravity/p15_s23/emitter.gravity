@@ -6543,7 +6543,10 @@
         receiver-type (get types (get receiver :node-id))]
     (if (if (vector? args) (if (= 2 (count args))
           (if (= :literal (get key-node :core-form))
-            (if (= :keyword (get (get key-node :attributes) :literal-kind))
+            (if (if (= :keyword (get (get key-node :attributes) :literal-kind))
+                  (if (keyword? (get (get key-node :attributes) :value))
+                    (if (vector? (get key-node :children)) (if (= 0 (count (get key-node :children)))
+                      (if (vector? (get key-node :resolved-binding-ids)) (= 0 (count (get key-node :resolved-binding-ids))) false) false) false) false) false)
               (if (= :gravity.type/map receiver-type) true
                 (if (map? receiver-type) (= :gravity.type/map (get receiver-type :kind)) false)) false) false) false) false)
       (if (= :reference (get receiver :core-form))
@@ -6798,6 +6801,7 @@
   (p15-s23-typed-project part [:coordinate :key :key-node-id :value-node-id :key-data-origin :value-data-origin]))
 
 (defn p15-s23-pc-ancestry-work [entries key budget]
+  (if (keyword? key)
   (loop [remaining entries out [] used 0]
     (if (= 0 (count remaining)) {:status :accepted :value out :work-count used}
       (let [entry (first remaining)]
@@ -6827,7 +6831,8 @@
                     (if (map? selected) (recur (rest remaining) (conj out data) total)
                       {:status :rejected :reason :map-get-private-first-entry-presence-required :work-count total})
                     (assoc measured :work-count total)))
-                {:status :rejected :reason :map-get-source-mismatch :work-count prefix}))))))))
+                {:status :rejected :reason :map-get-source-mismatch :work-count prefix})))))))
+    {:status :rejected :reason :map-get-private-first-entry-presence-required :work-count 0}))
 
 (defn p15-s23-pc-parent-data-work [descriptor inner-key budget]
   (let [proof (get descriptor :presence-proof) entries (get proof :entries)

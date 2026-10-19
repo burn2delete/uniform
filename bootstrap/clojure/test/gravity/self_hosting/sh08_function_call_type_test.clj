@@ -11606,6 +11606,18 @@
         (is (not= :accepted (:status result)))))
     (let [changed (assoc-in nodes [:input :evaluation :owner-function-syntax-id] opaque)]
       (is (= :rejected (:status (invoke-c7 'sh08-pc-parent-parameter [route core changed bindings 65536])))))
+    (let [changed (-> input
+                      (assoc-in [:nodes :inner-key :attributes :value] opaque)
+                      (update-in [:core :nodes] #(mapv (fn [n] (if (= :inner-key (:node-id n))
+                                                               (assoc-in n [:attributes :value] opaque) n)) %)))]
+      (is (= :not-applicable (:status (invoke-c7 'sh08-pc-candidate
+                                     [(:core changed) node call (:nodes changed) types 65536]))))
+      (is (= :rejected (:status (private-first-entry-derived changed)))))
+    (is (= :rejected (:status (invoke-c7 'sh08-pc-ancestry-work
+                                [(get-in input [:parent-result :descriptor :presence-proof :entries]) opaque 0]))))
+    (doseq [changed-nodes [(assoc-in nodes [:inner-key :children] [:unexpected])
+                           (assoc-in nodes [:inner-key :resolved-binding-ids] [:unexpected])]]
+      (is (= :not-applicable (:status (invoke-c7 'sh08-pc-candidate [core node call changed-nodes types 0])))))
     (is (zero? @callbacks))
     (doseq [legacy [(private-entry-get-input) (map-present-get-input :file)]]
       (is (= {:status :not-applicable :work-count 0}
