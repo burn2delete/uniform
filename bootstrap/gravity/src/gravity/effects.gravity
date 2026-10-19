@@ -4874,7 +4874,7 @@
            (if (= 2 (count args)) (body-mg-present-operands? arguments args nodes) (body-mg-operands? arguments invoked?))
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
-               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+               (if (if (= nil (first remaining)) true (= :gravity.type/unknown (first remaining))) false (recur (rest remaining)))))] )
       (let [header {:kind :gravity.type/applied-map-get :version :sh08-map-get-v1
        :operation 'get :semantic-owner 'gravity.collections :intrinsic :gravity.collections/map-lookup-default
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
@@ -4924,7 +4924,12 @@
                        (let [call (first remaining)
                              selected? (body-mg-binding? (get bindings (get call :operator-binding-id)) (get core :module))
                              width (body-mg-member-count (get (get facts :type-table) (first (get call :argument-node-ids))))
-                             private? (if selected? (= 2 (count (get call :argument-node-ids))) false)]
+                             private? (if (if selected? (= 2 (count (get call :argument-node-ids))) false)
+                                        (let [receiver (get (get facts :type-table) (get (get call :argument-node-ids) 0))
+                                              key-type (get (get facts :type-table) (get (get call :argument-node-ids) 1))]
+                                          (if (= :gravity.type/map receiver) true
+                                            (if (map? receiver) (= :gravity.type/map (get receiver :kind))
+                                              (if (= :gravity.type/never receiver) (= :gravity.type/keyword key-type) false)))) false)]
                          (recur (rest remaining) (+ selected (if selected? 1 0))
                            (+ members (if selected? (+ width (if (= 2 (count (get call :argument-node-ids))) (+ 1 (* 2 width)) 0)) 0))
                            (if private? (conj private-calls call) private-calls)))))

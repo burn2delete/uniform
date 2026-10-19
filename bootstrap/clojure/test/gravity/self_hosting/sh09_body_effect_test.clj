@@ -5311,7 +5311,9 @@
     (is (= :body-deferred-work-limit (:reason (leaf 'body-mg-context request facts bindings 0))))
     (let [good (:type result)
           bad {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
-          coherent (clojure.walk/postwalk-replace {good bad} facts)
+          ;; Public entry always rebuilds this private, same-invocation context.
+          coherent (assoc (clojure.walk/postwalk-replace {good bad} facts)
+                          :map-get-context (:map-get-context facts))
           changed-context (leaf 'body-mg-context request coherent bindings 65536)]
       (is (= :rejected (:status changed-context)))
       (is (false? (leaf 'body-mg-present-call-valid? core coherent bindings node call edge nodes))))
@@ -5342,3 +5344,17 @@
                      (assoc-in descriptor [:presence-proof :entry-census :exports] ['without-path])
                      (assoc descriptor :version :sh08-map-get-present-v1)]]
       (is (false? (valid changed))))))
+
+(deftest body-vector-index-get-map-context-compatibility-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        base ((ns-resolve upstream 'vector-loop-get-input) 3)
+        input ((ns-resolve upstream 'vector-loop-nth-completed) base)
+        result ((ns-resolve upstream 'vector-loop-nth-derived) input 65536)
+        core (:core input) descriptor (:descriptor result)
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms input)))}}}
+        facts {:type-table (assoc (:types input) :nth-op descriptor :read (:type result))}
+        context (leaf 'body-mg-context request facts (:bindings input) 65536)]
+    (is (= :accepted (:status result) (:status context)))
+    (is (= :sh08-vector-get-loop-v1 (:version descriptor)))
+    (is (= {} (get-in context [:context :private-selected-checks])))))

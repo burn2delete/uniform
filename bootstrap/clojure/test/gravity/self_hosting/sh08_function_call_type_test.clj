@@ -11206,3 +11206,60 @@
       (is (= type (get-in input [:descriptor :result-type])))
       (is (= :accepted (:status checked) (:status actual)))
       (is (= 0 (:work-count checked))))))
+
+(deftest sh08-private-entry-vector-get-scoped-consumer-development-kernel
+  ;; Complete normalized function roots retain the existing private-entry premise.
+  (let [base (private-entry-vector-get-input [[\a] [\b]])
+        callers (mapv (fn [i]
+                        (let [id (keyword (str "caller-fn-" i)) owner (keyword (str "caller-" i))]
+                          {:node-id id :core-form :fn :children [(keyword (str "entry-" i))] :attributes {}
+                           :source {:form-id owner :syntax-id owner}
+                           :evaluation {:kind :function-creation :order []}})) [0 1])
+        records (mapv (fn [record]
+                        (if (= :helper-form (:function-syntax-id record)) record
+                          (assoc record :body-core-node-id (if (= :caller-0 (:function-syntax-id record)) :entry-0 :entry-1)
+                                        :fixed-arity 0 :parameter-binding-ids []))) (get-in base [:core :function-records]))
+        core (assoc (:core base) :nodes (into (get-in base [:core :nodes]) callers) :function-records records
+                    :root-core-node-ids [:helper-def :caller-fn-0 :caller-fn-1])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (-> base (assoc :core core :nodes nodes)
+                  (assoc-in [:products :function-index] (into {} (map (juxt :function-syntax-id identity) records))))
+        result (map-present-get-derived input) type (:type result) descriptor (:descriptor result)
+        types (assoc (:types input) :operator descriptor :present-get type :entry-0 type :entry-1 type)
+        functions (into {} (map (fn [record]
+                                  [(:function-syntax-id record)
+                                   {:function-id (:function-syntax-id record) :body-core-node-id (:body-core-node-id record)
+                                    :parameters (if (= :helper-form (:function-syntax-id record))
+                                                  [{:binding-id :span-binding :type (get-in input [:binding-types :span-binding])}] [])
+                                    :return type :latent-effects [] :capabilities [] :thrown-error-effects []}]) records))
+        bindings (vec (vals (:bindings input))) calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+        direct {:status :accepted :throws {:helper-form []} :constraints [] :diagnostics [] :work-count 0}
+        check #(invoke-c7 'sh08-tc-products [core %1 functions bindings direct %2])
+        own (invoke-c7 'sh08-mg-inferred-work [core (:node input) (:call input) (:edge input) nodes (:bindings input) types calls 65536])
+        visits (atom {})
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var (fn [& arguments]
+                                (swap! visits update (nth arguments 2) (fnil inc 0))
+                                (apply original-trace arguments))}
+                   #(check types 65536))
+        ;; 34 rooted nodes: source/header reservation 531, owner traversal 34.
+        prefix 565]
+    (is (= 34 (count (:nodes core))))
+    (is (= :accepted (:status result) (:status own) (:status accepted)))
+    (is (= [] (get-in accepted [:throws :helper-form])))
+    (is (= 1 (get @visits 'sh08-mg-inferred-work 0) (get @visits 'sh08-pe-finish 0))
+        "The owning consumer measures and reconstructs the private result once")
+    (is (= 6 (get @visits 'sh08-lc-type-work 0))
+        "Three selected Vector representations are paid at each of two entries")
+    (is (zero? (get @visits 'sh08-io-descriptor 0)) "Map get skips the unrelated IO probe")
+    (is (zero? (get @visits 'sh08-mg-inferred-call-valid? 0)) "The paid result is reused by the scoped consumer")
+    (is (= accepted (check types (:work-count accepted))))
+    (is (= :rejected (:status (check types (dec (:work-count accepted))))))
+    (let [limit (+ prefix (dec (:work-count own))) rejected (check types limit)]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :map-get-work-limit] ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= limit (:work-count rejected))))
+    (let [changed (assoc-in types [:operator :version] :sh08-map-get-present-v1)]
+      (is (= :rejected (:status (check changed 65536)))))))
