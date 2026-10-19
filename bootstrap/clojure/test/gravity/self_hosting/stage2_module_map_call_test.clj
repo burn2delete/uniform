@@ -104,6 +104,42 @@
       (is (= expected (:id original)))
       (is (= original (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites definition)))))))
 
+(deftest stage2-module-map-wrapped-arity-diagnostic-development-kernel
+  ;; Supplied bindings/callee DATA with conditional origin join, NOT C5 proof.
+  ;; Use the original reference producer and original route/arity forwarder.
+  (let [body '{:z (leaf/identity (do (println "never") :first) :extra)
+               :a (leaf/identity :later :extra :extra)}
+        source (supplied-source body [:z :a]) [caller syntax] (reference-input source body)
+        primary {:source "normalized-map.gravity" :file :source-id :byte-start 9 :byte-end 999}
+        syntax (assoc syntax :span {:primary primary :all [primary]})
+        request (bootstrap/sh06-resolution-analysis-inputs {} {:expanded-syntax-stream [syntax]} {})
+        refs (:references request) imported (filterv #(= 'leaf/identity (:symbol %)) refs)
+        import-binding {:binding-id :import :binding-class :import :semantic-span {:ordinary-module-artifact-id :leaf}}
+        callee {:functions {'identity {:params '[value]}}}
+        caller (assoc caller :syntax [syntax] :request request :module-id :caller
+                      :artifact {:binding-table {:bindings [{:binding-id :main :binding-class :namespace :name 'main :definition-syntax-id :root}
+                                                            import-binding]}
+                                 :gravity-resolution-boundary {:resolved-analysis {:resolution-table
+                                                                                  (mapv #(hash-map :syntax-id (:syntax-id %) :binding-id :import) imported)}}})
+        failure (atom nil) visits (atom 0)
+        output (with-out-str
+                 (with-redefs [bootstrap/p15-s23-stage2-module-origin!
+                               (fn [actual-caller actual-binding actual-callee]
+                                 (when-not (and (identical? caller actual-caller) (= import-binding actual-binding)
+                                                (identical? callee actual-callee))
+                                   (throw (ex-info "Unexpected normalized origin join" {:id :normalized-origin-mismatch})))
+                                 (swap! visits inc) {:name 'identity})]
+                   (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-module-routes
+                                                 caller {:leaf callee})))))]
+    (is (= "L2-FUNCTION-ARITY" (:id @failure)))
+    (is (= [1 2] [(:expected-arity @failure) (:actual-arity @failure)]))
+    (is (= (:source-span (first imported)) (:source-span @failure)))
+    (is (= "normalized-map.gravity" (get-in @failure [:source-span :primary :source])))
+    (is (= [primary] (get-in @failure [:source-span :all])))
+    (is (nil? (get-in @failure [:source-span :source])))
+    (is (= 1 @visits))
+    (is (= "" output))))
+
 (deftest stage2-module-map-authenticated-composition
   ;; Six G C5 attempts; Q only parser parity. Original fresh public gates remain.
   (let [leaf-path (fixture "modules" "module-map-leaf" ".gravity") path (fixture "modules" "module-map-caller" ".gravity")
@@ -160,4 +196,4 @@
         (is (= "" output))
         (when (= label :arity)
           (is (= [1 2] [(:expected-arity @failure) (:actual-arity @failure)]))
-          (is (= path (get-in @failure [:source-span :source]))))))))
+          (is (= path (get-in @failure [:source-span :primary :source]))))))))
