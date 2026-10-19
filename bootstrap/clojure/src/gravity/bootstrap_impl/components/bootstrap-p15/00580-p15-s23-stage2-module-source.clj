@@ -181,6 +181,8 @@
                   (into (if qualified? [{:function (:name definition) :path path :symbol op :form form}] [])
                         (mapcat (fn [index arg] (walk arg (conj path index) blocked?))
                                 (range 1 (count form)) (rest form)))))
+              (vector? form)
+              (vec (mapcat (fn [index item] (walk item (conj path index) blocked?)) (range (count form)) form))
               (coll? form)
               (mapcat #(walk % path true) (if (map? form) (mapcat identity form) form))
               :else []))]

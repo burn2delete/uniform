@@ -56,8 +56,8 @@
     (is (= [] (bootstrap/p15-s23-stage2-module-call-sites
                 {:name 'data :body ['(loop [payload '(leaf/hidden :data)] payload)]})))
     (doseq [body ['(fn [x] (loop [y x] (leaf/identity y)))
-                  '[(loop [x :value] (leaf/identity x))]
-                  '(loop [x [(leaf/identity :value)]] x)
+                  '{:blocked (loop [x :value] (leaf/identity x))}
+                  '(loop [x #{(leaf/identity :value)}] x)
                   '(loop [x :value] {:key (leaf/identity x)})]]
       (is (= :unsupported-nested-module-call
              (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites {:name 'bad :body [body]})) [:facts :reason]))))
