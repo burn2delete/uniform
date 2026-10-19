@@ -3130,6 +3130,34 @@ admission, the three partial evidence groups, full SH-07, self-hosting, target
 coverage, seed retirement and release status remain unchanged. Direct focused
 and affected-source commands are in the development-verification guide.
 
+### Binary same-type fixed-integral inequality: development implementation
+
+Development checkpoint `6a7dbeca` extends the existing binary `not=` rule to
+I8/I16/I32/I64/U8/U16/U32/U64 of the same established type, including Never
+in either operand position. All 24 supported type configurations are checked.
+The 72 ordered cross-fixed or generic-Integer/fixed pairs reject; other
+unsupported numeric, nullable and collection domains do not become legal.
+Old Integer, nonnumeric and Never/Never descriptors are preserved.
+
+The three existing owners independently reconstruct a fixed-family numeric
+record, complete constraint solution and source-owned evidence joins. The
+record names the actual fixed type and retains the existing math/math.core
+original-value policy without conversions, arithmetic, overflow or rounding.
+Lowering owns its equality/false/true IR, not an invented source equality fact.
+Runtime, seed, public APIs and IR schemas are unchanged.
+
+The single focused run passed 23 tests / 18,153 assertions: six new kernels /
+5,186 assertions and seventeen adjacent regressions / 12,967. The adjacent
+count is 32 below the earlier Integer batch because two old C7 frontiers each
+remove sixteen newly legal fixed/Never rejection assertions. Mixed-family
+negative coverage remains. Exact and short budgets, coherent numeric-record
+and whole-ledger forgeries, actual child-budget meters, all eight runtime/seed
+families and both transfer positions pass. Every normally returning test entry
+first checks Integer representation and signed/unsigned range, including
+64-bit values adjacent above 2^53; no clamping, conversion or wrapping occurs.
+These are conditional type-conforming development kernels, not arbitrary-host
+width admission, source composition, current-cohort migration or self-hosting.
+
 ### Binary represented-Integer inequality: development implementation
 
 Development checkpoints `792f132b` and `a9267856` extend the existing binary
