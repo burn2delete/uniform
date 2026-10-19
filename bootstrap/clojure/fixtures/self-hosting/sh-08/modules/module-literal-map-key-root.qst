@@ -1,0 +1,25 @@
+; Raw UTF-8 supplementary String keys exercise L1 scalar source transport.
+(ns example.module-literal-map-key-root
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-literal-map-key-leaf :as leaf]) (:exports [main])
+  (:effects #{:io/write :memory/allocate}) (:capabilities #{:io/stdout}) (:safety :safe))
+
+(defn main []
+  (let [packet {"z" (leaf/identity (do (println "z") :z))
+                "b" (do (println "b") (leaf/w5-trust-provenance-diagnostic-catalog))
+                "y" [(leaf/identity (do (println "y") :y))]
+                "a" (loop [again true]
+                      (if again (recur (leaf/identity (do (println "a") false))) :a))
+                "x" (leaf/pair (leaf/identity (do (println "xl") :left))
+                                (leaf/identity (do (println "xr") :right)))
+                ":tag" (leaf/identity (do (println "string-tag") :string))
+                :tag (leaf/identity (do (println "keyword-tag") :keyword))
+                "😀" (leaf/identity (do (println "smile") :smile))
+                "😁" (leaf/identity (do (println "beam") :beam))
+                "\u0064" (leaf/identity (do (println "escaped-d") :escaped))}
+        catalog (get packet "b")]
+    [(get packet "z") (get packet "y") (get packet "a") (get packet "x")
+     (get packet ":tag") (get packet :tag) (get packet "😀") (get packet "😁") (get packet "d")
+     (get (get catalog :remediation) "W5-TRUST-SCHEMA")
+     (get (get catalog :remediation) :non-authority)
+     '(leaf/hidden {0 :inert "data" :quoted})]))

@@ -1,0 +1,52 @@
+; Unchanged catalog/ID subjects from w5_trust_provenance_verifier.gravity.
+; This fixture is not that whole W5 module or an authority artifact.
+(ns example.module-literal-map-key-leaf
+  (:profile :meta) (:target :jvm) (:exports [identity pair w5-trust-provenance-diagnostic-catalog])
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))
+
+(def w5-trust-diagnostic-ids
+  ["W5-TRUST-SCHEMA" "W5-TRUST-TARGET" "W5-TRUST-UPSTREAM"
+   "W5-TRUST-LINEAGE" "W5-TRUST-DEPENDENCY" "W5-TRUST-LOCK"
+   "W5-TRUST-ENVIRONMENT" "W5-TRUST-TOOLCHAIN" "W5-TRUST-RECIPE"
+   "W5-TRUST-DIVERSITY" "W5-TRUST-ANCHOR" "W5-TRUST-ATTESTATION"
+   "W5-TRUST-SBOM" "W5-TRUST-SIGNATURE" "W5-TRUST-REVOCATION"
+   "W5-TRUST-UNSAFE-AUDIT" "W5-TRUST-TCB" "W5-TRUST-EQUIVALENCE"
+   "W5-TRUST-REPLAY" "W5-TRUST-AUTHORITY" "W5-TRUST-REVIEW"
+   "W5-TRUST-SUBSTITUTION"])
+
+(defn w5-trust-provenance-diagnostic-catalog []
+  {:artifact :gravity/w5-trust-provenance-diagnostic-catalog
+   :schema-version 1
+   :diagnostics w5-trust-diagnostic-ids
+   :remediation
+   {"W5-TRUST-SCHEMA" :provide-exact-versioned-request
+    "W5-TRUST-TARGET" :use-exact-linux-x86-64-llvm-elf-sysv-scope
+    "W5-TRUST-UPSTREAM" :bind-each-upstream-artifact-by-content-id
+    "W5-TRUST-LINEAGE" :repair-acyclic-reachable-compiler-lineage
+    "W5-TRUST-DEPENDENCY" :bind-locked-complete-dependency-graph
+    "W5-TRUST-LOCK" :record-complete-offline-lock-content
+    "W5-TRUST-ENVIRONMENT" :declare-hermetic-build-environment
+    "W5-TRUST-TOOLCHAIN" :bind-independent-toolchain-files-and-target
+    "W5-TRUST-RECIPE" :bind-recipe-to-source-lock-environment-toolchain
+    "W5-TRUST-DIVERSITY" :provide-independent-diverse-rebuilds
+    "W5-TRUST-ANCHOR" :verify-distinct-trust-anchors-and-roots
+    "W5-TRUST-ATTESTATION" :bind-signed-attestation-to-exact-subject
+    "W5-TRUST-SBOM" :include-dependencies-capabilities-generated-and-blobs
+    "W5-TRUST-SIGNATURE" :sign-canonical-manifest-provenance-and-sbom
+    "W5-TRUST-REVOCATION" :record-current-release-blocking-revocations
+    "W5-TRUST-UNSAFE-AUDIT" :attach-reviewed-unsafe-island-audit
+    "W5-TRUST-TCB" :derive-and-list-every-residual-trusted-component
+    "W5-TRUST-EQUIVALENCE" :bind-independent-stage-equivalence-report
+    "W5-TRUST-REPLAY" :bind-native-linux-replay-not-container-evidence
+    "W5-TRUST-AUTHORITY" :keep-seed-boundary-and-nonauthority-explicit
+    "W5-TRUST-REVIEW" :obtain-independent-sol-review
+    "W5-TRUST-SUBSTITUTION" :recompute-verification-result
+    :non-authority {:authority :non-authority
+                    :clojure-seed-boundary? true
+                    :self-hosted? false
+                    :release? false
+                    :public-authority? false}}})
+
+(defn identity [value] value)
+(defn pair [left right] [left right])
+(defn hidden [value] :private)

@@ -63,8 +63,8 @@
                                [:duplicate-child (assoc-in source (into path [index :children]) [(first children) (first children)])]
                                [:collapsed-key (assoc-in source (into path [key-index :value]) (:value (first (filter #(= (first children) (:form-id %)) records))))]]]
         (is (= "BOOT2006" (:id (diagnostic #(context altered)))) label))
-      (is (= :map-source-distinct-keyword-bijection
-             (get-in (diagnostic #(context (normalized-source {"key" true} []))) [:facts :reason]))))
+      (is (= :map-source-distinct-literal-key-bijection
+             (get-in (diagnostic #(context (normalized-source {0 true} []))) [:facts :reason]))))
     (let [quoted '(quote {:z (println "never") :a (leaf/hidden :data)}) source (normalized-source quoted [:z :a])]
       (is (= {} (:p15-s23-stage2-map-order (context source))))
       (is (= {:op :quote :value (second quoted)}
