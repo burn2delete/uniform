@@ -5107,8 +5107,8 @@ components `00575` and `00580` preserve exact source-order callsite paths throug
 nested scopes, shadowing and multiple body forms. C5 export/origin joins,
 separate module plans, fresh bundle reconstruction and route/arity checks before
 arguments are unchanged. No public API, compiler IR, type/effect rule or new
-authority channel is introduced. Imported calls under `loop`, nested functions
-and collection expressions remain unsupported; quoted DATA stays inert.
+authority channel is introduced. At that revision, imported calls under `loop`,
+nested functions and collection expressions were unsupported; quoted DATA stays inert.
 
 The dedicated cheap checks passed two tests / 25 assertions. The actual Gravity
 source composition passed one test / 19 assertions: it executed all five
@@ -5166,12 +5166,63 @@ speedup measurement. The complete source test was not repeated to refresh a
 stamp. Focused commands and the separate composition trigger are in the
 development-verification guide.
 
-Imported calls under loop, nested functions and collection expressions remain
-unsupported. Effects extraction still needs its exact function/dependency
+At that revision, imported calls under loop, nested functions and collection
+expressions were unsupported. Effects extraction still needs its exact function/dependency
 boundary and demonstrated token-bound fit; this change does not close the
 retained C9 source failure. Checked imported user-call effects, general module
 initialization, authoritative migration, milestone completion, self-hosting and
 release remain outstanding.
+
+### Loop-context compiler-module calls: development increment
+
+The existing module-call path now supports qualified imports in symbol-only
+sequential loop initializers, bodies, conditions and recur arguments. The
+`00575` loop compiler threads the existing callsite paths only in module-route
+context; raw/B51 contexts retain their original module value. The existing
+`00580` walker retains function/collection blocking and inert quotation. A
+one-line caller join supplies the verified source path for diagnostics, not
+an authority channel. Runtime, bundle schema and public interfaces are unchanged.
+
+The initial cheap selections passed three new tests / 53 assertions and two
+existing let tests / 25 assertions. Independent audit then found a real
+diagnostic-order problem before source execution: a later malformed loop could
+hide an earlier non-tail recur. The failure-path-only correction delegates to
+the existing whole-definition body validator, preserving parameter count,
+tail position, source order and complete diagnostic fields. It adds no valid
+path validation pass or copied parser. The changed diagnostic selector alone
+then passed 35 assertions, including four complete walker/original diagnostic
+parity controls for earlier recur and throw-arity errors.
+
+The corrected new-namespace coverage is four distinct selectors / 104
+assertions across runs: unchanged path / parity checks (20 / six), corrected
+diagnostics (35), and one genuine source composition (43). The older 27
+diagnostic assertions are not counted twice, and no single green four-selector
+batch is claimed. The original results and statically rejected code remain in
+history; there was no failed source attempt or source replay.
+
+The actual Gravity composition constructed ordinary C5 leaf/root artifacts,
+an independent leaf plan and the public module bundle. Both finite loop
+backedges ran, returned `["outer" "inner"]` and preserved initializer/body/
+recur-argument output order and lexical shadowing. Ten actual source routes
+retain their callee origins. Private import rejection, a C5-accepted wrong-arity
+caller rejected before output, and a coherently resealed callsite mutation
+rejected before output all passed. Q fixtures provide byte/parser parity only.
+The source selection took 199.835 seconds after 6.699 seconds of loading at
+2 GiB, below its monitored ten-minute ceiling; these inclusive timings are not
+a benchmark, hard deadline or exclusive phase-cost claim.
+
+Final affected regressions passed four SH-01 tests / 97 assertions, one
+transitive-routing test / 17 assertions and six language-boundary tests / 11
+assertions. Together with the unchanged-path reuse described above and the
+existing let checks, scoped coverage is 17 unique tests / 254 assertions,
+zero failures or errors across the recorded selections. LOC validation passed
+for 2,020 files, maximum 250 lines and zero exceptions.
+
+Commands are in the development-verification guide. Imported collection and
+nested-function contexts, general module initialization, checked user-call
+effects, Effects token-bound fit and the retained C9 source integration remain
+open. This does not establish current-cohort admission, milestone completion,
+self-hosting or release support.
 
 ### Hosted compiler-module construction: development increment
 
