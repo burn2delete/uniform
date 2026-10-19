@@ -3130,6 +3130,62 @@ admission, the three partial evidence groups, full SH-07, self-hosting, target
 coverage, seed retirement and release status remain unchanged. Direct focused
 and affected-source commands are in the development-verification guide.
 
+### Binary represented-Integer inequality: development implementation
+
+Development checkpoints `792f132b` and `a9267856` extend the existing binary
+`not=` rule to Integer/Integer and Integer/Never in either order. Old
+Never/Never and nonnumeric descriptors remain unchanged. Integer mixed with
+another normal family, fixed-width types, Float/Decimal/Ratio, nullable Integer,
+collections and unresolved types remain outside this increment. The old
+numeric negative now uses `7.5`; rejecting Integer `7` would test an obsolete
+implementation frontier rather than the new supported behavior.
+
+C7, effects and the emitter independently reconstruct a versioned numeric
+record, its complete constraint solution and source-owned ledger. The outer
+inequality policy names the Integer domain, while the nested math/math.core
+policy preserves existing equality's original-value comparison without
+conversion, arithmetic, overflow or rounding. Its mode is `:proof-required`
+and safety is `:proven-safe`; no source `=` fact or old equality application
+is invented. Runtime, seed, public APIs and IR schemas are unchanged.
+
+One focused run passed all seventeen tests / 12,999 assertions: six new kernels
+/ 818 assertions and eleven adjacent equality/inequality regressions / 12,181.
+The actual scoped consumer boundary confirms prefix work separately from the
+success-only suffix. Tests cover exact and short budgets, opaque type guards,
+coherent numeric-record forgeries, complete C8 ledgers, original failures,
+non-tail transfers and 81 normally returning type-conforming Integer pairs,
+including adjacent values above 2^53. They are development kernels, not source
+or arbitrary-host-value admission.
+
+The separate fixture check passed one test / six assertions. The genuine
+changed Gravity positive and changed Decimal/Never negative then passed one
+test / 157 assertions. Six Gravity entries and four same-emitted-IR seed
+controls cover literal equality/difference, actual count-produced Integers and
+both transfer positions. Five descriptors, rows and owned equality IR sites
+retain all numeric metadata; no source equality row appears. Two fresh public
+C7 assembly gates include a numeric-mode forgery, and fresh C8 construction,
+verification and a resealed dependency-deletion rejection pass. The negative
+retains primary `C7-TYPE-MISMATCH` /
+`:atomic-inequality-operand-type-required` and secondary
+`C7-ANNOTATION` / unresolved Unknown diagnostics; only the primary is the
+rejection oracle. Q fixtures provide byte/parser parity, not typed execution.
+
+These three completed selections total nineteen tests / 13,162 assertions,
+with no failures, errors or unrun selectors. No earlier source input or focused
+selection was replayed. The source run took 214.207 seconds after 11.086
+seconds of loading at 2 GiB, below its monitored ten-minute ceiling. Positive
+C5 construction, C6 construction and C6 verification took 38.199, 36.784 and
+41.022 seconds respectively; C7 construction/verification took 2.400/1.104.
+These inclusive caller timings distinguish product work from namespace loading;
+they do not establish exclusive cost, a speedup, a hard deadline or the cause
+of the earlier large-Core interruption.
+
+Direct commands are in the development-verification guide. This supports the
+new comparison over real count results, not a copied numeric `not=` compiler
+body or whole consumer module. Full numeric/profile/target support, current
+cohort migration, the three partial evidence groups, complete SH-07,
+self-hosting and release claims remain outstanding.
+
 ### Nil value classification: development implementation
 
 STD2 defines unary `nil?`: nil classifies true; false and empty collections do
