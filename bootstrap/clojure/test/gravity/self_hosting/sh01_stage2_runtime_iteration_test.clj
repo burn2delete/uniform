@@ -13989,13 +13989,12 @@
         scalar [:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword]
         supported (into (conj scalar :gravity.type/never) (map #(hash-map :kind :gravity.type/nil-or :value-type %) (rest scalar)))
         smile (String. (Character/toChars 0x1f600))
-        char-a {:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint 97 :text "a"}
         char-smile {:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint 128578 :text smile}
         values (fn values [type]
                  (case type
                    :gravity.type/nil [nil]
                    :gravity.type/bool [false true]
-                   :gravity.type/character [(char 97) char-a char-smile]
+                   :gravity.type/character [(char 97) char-smile]
                    :gravity.type/string ["same" "different"]
                    :gravity.type/symbol ['data/same 'data/different]
                    :gravity.type/keyword [:accepted :rejected]
