@@ -1,0 +1,7 @@
+(ns self-hosting.sh08.literal-character-set-duplicate
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [values]))
+
+(defn values []
+  #{\😀 \😀})

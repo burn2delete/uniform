@@ -22739,3 +22739,175 @@
     (doseq [values [[\a :mixed] [:mixed \a]]]
       (is (= :set-literal-character-domain-required (:reason (work values 65536))))
       (is (= :invalid-local-runtime-instruction (get-in (evaluate (set-ir (literal-instructions values))) [0 :reason]))))))
+
+(deftest current-gravity-literal-character-set-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] [["accepted" "local-runtime-literal-character-set" 8]
+                                         ["rejected" "literal-character-set-mixed" 1]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)]
+        (is (= g q))
+        (let [g-forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+              q-forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))]
+          (is (= g-forms q-forms))
+          (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) g-forms)))))))
+    (let [stem "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/literal-character-set-duplicate"
+          g (slurp (io/file root (str stem ".gravity"))) q (slurp (io/file root (str stem ".qst")))]
+      (is (= g q))
+      (doseq [extension [".gravity" ".qst"]]
+        (let [path (.getPath (io/file root (str stem extension)))
+              failure (diagnostic #(bootstrap/p15-s23-stage2-c2-c3-front-end-products path (slurp path)))]
+          (is (= "C2-SET" (:id failure)))
+          (is (= :duplicate-set-entry (get-in failure [:reader-state :reason])))
+          (is (false? (get-in failure [:reader-state :result-committed?]))))))
+    (let [path (.getPath (io/file root "bootstrap/gravity/src/gravity/compiler/w5_c17_plugin_executor.gravity"))
+          helper (first (filter #(and (seq? %) (= 'defn (first %)) (= 'w5-c17-hex-character? (second %)))
+                                (bootstrap/read-forms path (slurp path))))
+          fixture (.getPath (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-literal-character-set.gravity"))
+          forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact fixture))]
+      (is (= helper (first (filter #(and (seq? %) (= 'defn (first %)) (= 'w5-c17-hex-character? (second %))) forms)))))))
+
+(deftest current-gravity-literal-character-set-authenticated-composition
+  ;; Two changed G products; Q parser and C2 duplicate checks are a separate cheap kernel.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-literal-character-set.gravity"
+        path (.getPath (io/file root relative)) products (fresh relative)
+        _ (println (pr-str {:br-product-elapsed relative :timing (:development-timing products)}))
+        input (select-keys products [:request :typed :verification])
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Literal Character-Set C7 prerequisite rejected" {:relative relative :diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Literal Character-Set C7 verification rejected" {:relative relative})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        t0 (System/nanoTime)
+        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        constructors (filterv #(and (= :collection-literal (:core-form %)) (= :set (get-in % [:attributes :literal-kind]))) (:nodes core))
+        quotes (filterv #(= :quote (:core-form %)) (:nodes core))
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        set-ir (filterv #(= :set-literal (:op %)) instructions)
+        binding (seal (:request input) (:typed input) (:verification input))
+        t2 (System/nanoTime)
+        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t3 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects)) (throw (ex-info "Literal Character-Set C8 prerequisite rejected" {:effects effects})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t4 (System/nanoTime)
+        _ (is (= :passed (:status effect-verification)))
+        _ (when-not (= :passed (:status effect-verification))
+            (throw (ex-info "Literal Character-Set C8 verification rejected" {:verification effect-verification})))
+        graph (:effect-graph effects)
+        scalar (bootstrap/sh03-reader-host-character-value! "<character-set-source-expectation>" {:codepoint 0x1f600})
+        other-scalar (bootstrap/sh03-reader-host-character-value! "<character-set-source-expectation>" {:codepoint 0x1f601})
+        specs [['w5-c17-hex-character? [\a] true] ['w5-c17-hex-character? [\g] false]
+               ['present [] true] ['absent [] false] ['reordered [] true]
+               ['supplementary-values [] #{scalar other-scalar}] ['supplementary-hit [] true]
+               ['empty-values [] #{}] ['main [] true]]
+        t5 (System/nanoTime)
+        results (mapv (fn [[function arguments expected]]
+                        (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                               [{:op :function-call :function function :args (literal-instructions arguments)} {} "" (:functions assembled) []])
+                              reference (atom nil)
+                              reference-output (with-out-str (reset! reference (original runtime assembled function arguments)))]
+                          (is (= [expected "" :normal] actual) (str function))
+                          (is (= [@reference reference-output :normal] actual) (str function " seed interpreter on emitted IR"))
+                          actual)) specs)
+        t6 (System/nanoTime)]
+    (is (= 8 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 4 (count constructors) (count set-ir) (get-in assembled [:instruction-summary :set-literal])))
+    (is (= 20 (reduce + 0 (map #(count (:items %)) set-ir))))
+    (is (= 24 (get-in assembled [:instruction-summary :literal])))
+    (is (= 0 (count quotes) (count (filter #(= :quote (:op %)) instructions))))
+    (is (some #(empty? (:items %)) set-ir))
+    (doseq [instruction set-ir]
+      (is (= #{:op :items} (set (keys instruction))))
+      (doseq [item (:items instruction)]
+        (is (= #{:op :value} (set (keys item))))
+        (is (= :literal (:op item)))
+        (is (or (char? (:value item)) (= :gravity/unicode-scalar-character (get-in item [:value :artifact]))))))
+    (doseq [constructor constructors]
+      (let [id (:node-id constructor) type (get-in facts [:type-table id]) record (get-in graph [:nodes id])]
+        (is (= {:kind :gravity.type/set :shape :literal :element-types (vec (repeat (count (:children constructor)) :gravity.type/character))} type))
+        (is (= #{:memory/allocate} (:direct record)))
+        (is (true? (get-in record [:allocation :normal-completion-possible?])))
+        (is (= :normal-operand-completion (get-in record [:allocation :condition])))
+        (is (= (:children constructor) (:evaluated-children record)))))
+    (doseq [quoted quotes]
+      (is (= #{} (get-in graph [:nodes (:node-id quoted) :direct]))))
+    (doseq [name ['w5-c17-hex-character? 'present 'absent 'reordered 'supplementary-values 'supplementary-hit 'empty-values 'main]]
+      (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+    (let [id (:node-id (first constructors))
+          hostile (assoc-in (:typed input) [:type-table id] :gravity.type/set)
+          failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) (assoc input :typed hostile)))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :rejected (:status (last @verified))))
+      (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding
+                                (reseal effects (assoc-in graph [:nodes id :direct] #{})))))))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/literal-character-set-mixed.gravity"
+          path (.getPath (io/file root relative)) negative (fresh relative)
+          input (select-keys negative [:request :typed :verification])]
+      (println (pr-str {:br-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+      (is (= :passed (get-in input [:verification :status])))
+      (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+        (throw (ex-info "Mixed Character-Set fixture upstream C7 prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics]) :verification (:verification input)})))
+      (let [artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+            parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+            raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+            definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+            binding (seal (:request input) (:typed input) (:verification input))
+            effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+            verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)]
+        (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        (is (= :passed (:status verification)))
+        (when-not (and (= :accepted (:status effects)) (= :passed (:status verification)))
+          (throw (ex-info "Mixed Character-Set fixture upstream C8 prerequisite rejected" {:effects effects :verification verification})))
+        (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'values) input))))]
+          (is (= "P15S23Q002" (:id failure)))
+          (is (= :unsupported-typed-set-member (:reason failure)))
+          (is (= :passed (:status (last @verified))))
+          (println (pr-str {:br-mixed-member-lowering-rejection failure})))))
+    (is (= 3 (count @verified)))
+    (is (= [:passed :rejected :passed] (mapv :status @verified)))
+    (println (pr-str {:br-literal-character-set-positive true :function-table-entry-invocations (count results)
+                      :source-products {:g-positive 1 :g-upstream-accepted-lowering-rejected 1 :q-typed-products 0}
+                      :seed-interpreter-on-emitted-ir-entries 9
+                      :c17-basis :unchanged-hex-character-helper :source-character-controls :ascii-hex-and-supplementary
+                      :evaluated-set-constructors 4 :evaluated-character-members 20
+                      :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
+                                   :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
+                      :clock :monotonic-nanoseconds :authority :non-authoritative :nested-work :included}))))
