@@ -50,7 +50,7 @@
             compiled (bootstrap/p15-s23-stage2-seed-compile-collection emitter module #{} value)]
         (is (= keys (mapv #(get-in % [:key :value]) (:entries compiled))))
         (is (= keys (mapv #(get-in % [:value :body 1 :value]) (:entries compiled))))
-        (is (= value (into {} (map (fn [entry] [(get-in entry [:key :value]) (get-in entry [:value :body 1 :value])])) (:entries compiled))))
+        (is (= (zipmap keys keys) (into {} (map (fn [entry] [(get-in entry [:key :value]) (get-in entry [:value :body 1 :value])])) (:entries compiled))))
         (is (= :map-source-order-mismatch
                (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-map-entries
                                     (assoc-in module [:p15-s23-stage2-map-order ['main [0]] :entry-order] [0 0]) value [0])) [:facts :reason])))))
