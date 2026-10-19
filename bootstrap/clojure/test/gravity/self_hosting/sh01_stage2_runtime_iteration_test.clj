@@ -13988,8 +13988,7 @@
         evaluate (fn [ir env] (invoke 'p15-s23-runtime-evaluate-closed-instruction ir env ""))
         scalar [:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword]
         supported (into (conj scalar :gravity.type/never) (map #(hash-map :kind :gravity.type/nil-or :value-type %) (rest scalar)))
-        smile (String. (Character/toChars 0x1f600))
-        char-smile {:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint 128578 :text smile}
+        char-smile (bootstrap/sh03-reader-host-character-value! "<atomic-inequality-kernel>" {:codepoint 0x1f600})
         values (fn values [type]
                  (case type
                    :gravity.type/nil [nil]

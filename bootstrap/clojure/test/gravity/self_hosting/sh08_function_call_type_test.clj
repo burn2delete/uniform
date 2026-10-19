@@ -3877,6 +3877,7 @@
 (deftest sh08-atomic-inequality-throw-consumer-development-kernel
   ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
   (let [reads (atom 0) hashes (atom 0) frames (atom []) type-reads (atom 0) measurements (atom 0) unrelated-probes (atom 0)
+        child-budgets (atom [])
         backing {:kind :gravity.type/nil-or :value-type :gravity.type/string}
         observe (fn [key fallback]
                   (swap! reads inc)
@@ -3923,16 +3924,22 @@
                    {trace-var (fn [& arguments]
                                 (let [callee (nth arguments 2) prior @frames]
                                   (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                                  (when (= 'sh08-ane-inferred-call callee)
+                                    (swap! child-budgets conj (last (nth arguments 3))))
                                   (when (contains? '#{sh08-io-descriptor sh08-ae-source} callee) (swap! unrelated-probes inc))
                                   (reset! frames (conj prior callee))
                                   (try (apply original-trace arguments) (finally (reset! frames prior)))))}
                          #(check core types 65536))
-        prefix (- (:work-count accepted) (:work-count measured))]
+        ;; Observe the actual child boundary: successful verification also has suffix work.
+        prefix (- 65536 (first @child-budgets))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
     (is (= 2 @type-reads) "The nullable carrier has two field reads during owning validation")
     (is (= 1 @measurements))
+    (is (= 1 (count @child-budgets)))
+    (is (= 123 prefix))
+    (is (= 124 (- (:work-count accepted) prefix (:work-count measured))))
     (is (zero? @unrelated-probes))
     (println (pr-str {:bl-type-visit-breakdown {:all-member-reads @reads :owning-validation-reads @type-reads
                                               :owning-measurements @measurements :unrelated-probes @unrelated-probes :hashes @hashes}}))
