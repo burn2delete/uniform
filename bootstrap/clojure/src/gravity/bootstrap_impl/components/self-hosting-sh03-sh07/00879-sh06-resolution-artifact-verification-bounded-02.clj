@@ -48,7 +48,9 @@
         (or (:resolved-verification expected-run) {:status :failed})
         projections (when (map? analysis)
                       (sh06-resolution-product-projections analysis))
-        summary (sh06-resolution-envelope-summary artifact)
+        identity-chunks (sh06-resolution-product-identity-chunks artifact)
+        summary (sh06-resolution-envelope-summary-with-chunks
+                 artifact identity-chunks)
         expected-descriptor
         (when binding
           (sh06-resolution-sh02-descriptor source-path binding summary))
@@ -146,7 +148,10 @@
          :resolution-table-current?
          (= (:resolution-table projections) (:resolution-table artifact))
          :artifact-identity-current?
-         (= (:artifact-id artifact) (sh06-resolution-artifact-id artifact))
+         (= (:artifact-id artifact)
+            (reader-canonical-hash
+             (sh06-resolution-artifact-identity-input-with-chunks
+              artifact identity-chunks)))
          :fresh-sh02-envelope-verified? envelope-ok?
          :exact-artifact-shape?
          (= sh06-resolution-artifact-keys (set (keys artifact)))

@@ -170,9 +170,13 @@
           :capability-based-proof nil
           :diagnostics []}
          projections)
-        artifact-id (sh06-resolution-artifact-id artifact-base)
+        identity-chunks (sh06-resolution-product-identity-chunks artifact-base)
+        artifact-id (reader-canonical-hash
+                     (sh06-resolution-artifact-identity-input-with-chunks
+                      artifact-base identity-chunks))
         artifact-with-id (assoc artifact-base :artifact-id artifact-id)
-        summary (sh06-resolution-envelope-summary artifact-with-id)
+        summary (sh06-resolution-envelope-summary-with-chunks
+                 artifact-with-id identity-chunks)
         descriptor
         (sh06-resolution-sh02-descriptor source-path binding summary)
         envelope
