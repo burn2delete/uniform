@@ -7154,16 +7154,22 @@
   (let [limit (if (< budget 65536) budget 65536)]
     (if (< limit 1) {:status :rejected :reason :work-limit :work-count 1}
       (if (if (vector? arguments) (= 2 (count arguments)) false)
-        (loop [index 0 used 1]
-          (if (= index 2) {:status :accepted :work-count used}
+        (loop [index 0 used 1 integer-seen? false atomic-seen? false]
+          (if (= index 2)
+            (if (if integer-seen? atomic-seen? false)
+              {:status :rejected :reason :unsupported-inequality-type-pair :work-count used}
+              (if integer-seen? {:status :accepted :work-count used :comparison-domain :integer}
+                {:status :accepted :work-count used}))
             (let [next (+ used 1)]
               (if (> next limit) {:status :rejected :reason :work-limit :work-count next}
                 (let [type (get arguments index)]
                   (if (keyword? type)
-                    (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string
-                                     :gravity.type/symbol :gravity.type/keyword :gravity.type/never} type)
-                      (recur (+ index 1) next)
-                      {:status :rejected :reason :nonnumeric-atomic-type-required :work-count next})
+                    (if (= :gravity.type/integer type)
+                      (recur (+ index 1) next true atomic-seen?)
+                      (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string
+                                       :gravity.type/symbol :gravity.type/keyword :gravity.type/never} type)
+                        (recur (+ index 1) next integer-seen? (if (= :gravity.type/never type) atomic-seen? true))
+                        {:status :rejected :reason :nonnumeric-atomic-type-required :work-count next}))
                     (if (map? type)
                       (let [work (+ used 3)]
                         (if (> work limit) {:status :rejected :reason :work-limit :work-count work}
@@ -7173,7 +7179,7 @@
                                     (if (keyword? value)
                                       (contains? #{:gravity.type/bool :gravity.type/character :gravity.type/string
                                                    :gravity.type/symbol :gravity.type/keyword} value) false)) false) false)
-                            (recur (+ index 1) work)
+                            (recur (+ index 1) work integer-seen? true)
                             {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})))
                       {:status :rejected :reason :nonnumeric-atomic-type-required :work-count next})))))))
         {:status :rejected :reason :binary-type-input-required :work-count 1}))))
@@ -7226,7 +7232,7 @@
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
                (if (if (= nil (first remaining)) true (= :gravity.type/unknown (first remaining))) false (recur (rest remaining)))))] )
-      {:kind :gravity.type/applied-atomic-inequality :version :sh08-atomic-inequality-v1
+      (let [header {:kind :gravity.type/applied-atomic-inequality :version :sh08-atomic-inequality-v1
        :operation 'not= :semantic-owner 'gravity.core :intrinsic :gravity.core/atomic-value-inequality
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
@@ -7243,16 +7249,34 @@
        :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :inequality-policy  :operand-type :profile :target :evaluation-order]} nil)) nil) nil))
+                      :callee-body :inequality-policy  :operand-type :profile :target :evaluation-order]}]
+        (if (= :integer (get validation :comparison-domain))
+          (assoc header :numeric-equality {:version :sh08-integer-inequality-v1
+                           :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core
+                           :integer-type :gravity.type/integer :numeric-mode :proof-required :safety :proven-safe
+                           :safety-rule :same-integral-value-equality-no-conversion-overflow-or-rounding
+                           :equality-policy {:domain :same-integral-type :comparison :original-integer-values
+                                             :conversion :none :arithmetic :none :overflow :impossible
+                                             :rounding :none :cross-type :unsupported}}
+                 :inequality-policy {:operation :complement-of-binary-atomic-value-equality
+                           :domain [:integer] :operand-evaluation :left-to-right-once :operand-position :non-tail
+                           :nil-bearing :unsupported :cross-family :unsupported :identity :unobserved
+                           :coercion :none :normalization :none :locale :none :numeric :same-established-integer
+                           :collections :unsupported :construction :none :lowering :owned-equality-branch-complement
+                           :entry-contract :type-conforming-typed-calls}
+                 :invalidation (conj (conj (conj (conj (get header :invalidation) :numeric-equality) :integral-type) :numeric-mode) :value-policy))
+          header)) nil)) nil) nil))
 
 (defn p15-s23-ane-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-atomic-inequality-constraint-v1 :application descriptor}
    :kind :equality :producer-rule :sh08-atomic-inequality-v1
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :atomic-inequality}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
-   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+   :solution (let [solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects)
-              }
+              }]
+                (if (contains? descriptor :numeric-equality)
+                  (assoc solution :numeric-equality (get descriptor :numeric-equality)) solution))
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
 
