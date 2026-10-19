@@ -1,0 +1,45 @@
+(ns self-hosting.sh08.keyword-set-membership
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [hit-values literal-values missing-values empty-values namespaced-values local-values sequenced-values left-transfer right-transfer main]))
+
+(defn base-values []
+  '#{:artifact :manifest})
+
+(defn hit-values [] :- Bool
+  (contains? '#{:artifact :manifest} :artifact))
+
+(defn literal-values [] :- Bool
+  (contains? #{:artifact :manifest} :manifest))
+
+(defn missing-values [] :- Bool
+  (contains? '#{:artifact} :manifest))
+
+(defn empty-values [] :- Bool
+  (contains? '#{} :artifact))
+
+(defn namespaced-values [] :- Bool
+  (contains? '#{:build/mode :run/mode} :run/mode))
+
+(defn local-values [] :- Bool
+  (let [items (base-values)]
+    (contains? items :artifact)))
+
+(defn sequenced-values [] :- Bool
+  (contains? (do '#{:before-set} '#{:artifact})
+             (do :before-needle :artifact)))
+
+(defn left-transfer [] :- Bool
+  (try
+    (contains? (do '#{:before-set} (throw "stop"))
+               (do :unreached :artifact))
+    (catch String problem false)))
+
+(defn right-transfer [] :- Bool
+  (try
+    (contains? (do '#{:before-set} '#{:artifact})
+               (do :before-needle (throw "stop")))
+    (catch String problem false)))
+
+(defn main [] :- Bool
+  (local-values))

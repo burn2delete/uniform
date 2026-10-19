@@ -2992,6 +2992,64 @@ include nested work and assertions, not exclusive cost or speedup evidence.
 This is not execution of the whole W5 helper, native/other-target support,
 current-closure admission or broader SH-07/self-hosting completion.
 
+### Finite Keyword-Set membership: development implementation
+
+STD3 Set membership now has a generic value-equality law. The implementation
+frontier is binary `contains?` on the existing finite literal-Keyword Set type
+with an independently established Keyword needle, returning Bool or preserving
+Never transfer. C7, effects and typed lowering independently reconstruct the
+Set-specific descriptor and original source/type/call joins. Existing Map
+queries, closed type grammar, seed operation and IR shape remain unchanged.
+The runtime validates the complete actual Keyword domain and within-Set
+uniqueness before either hit or miss; it uses actual Keyword value equality,
+not host Set lookup/hash or printed identity. The query adds no semantic
+collection construction or allocation fact. Runtime projection is now 51
+functions with unchanged exports.
+
+Focused V3 at `eb88c2fa` passed all 13 tests / 1,262 assertions: six new
+membership kernels / 527 assertions and seven adjacent Map, evaluated-Set and
+Set-equality regressions / 735 assertions. Execution was 5.272473459 seconds
+with a 2 GiB heap; namespace loading was separate. Independent review accepted
+this component evidence. It is neither a CPU bound nor source integration.
+V1 remains failed (286 pass / 1 fail, eleven selected vars unrun): a test
+incorrectly rejected the public empty-Map route. V2 remains failed (960 pass /
+1 fail, three selected vars unrun): the unchanged one-read meter found an
+unrelated integral-ordering probe hashing a composite Set type. The narrow fix skips
+that probe only after this invocation authenticates Set membership; ordinary
+integral-ordering and Map behavior are untouched. Both failed snapshots remain in Git.
+Early review also closed an uncharged repeated validation and an emitter ID
+guard that did not dominate structural comparison. No test threshold was
+weakened to close those findings.
+
+Paired fixture preflight passed 1 test / 6 assertions (bytes, parser and
+definition counts only). Source V1 at `8de847dc` passed 1 test / 159
+assertions, including six runtime-loader assertions, in 214.936999208 seconds
+selected execution with a 2 GiB heap. It ran one Gravity accepted fixture and
+one Gravity rejected fixture; QST typed products were not run. The accepted
+module has 11 functions and ten direct runtime table-entry activations, eight
+same-emitted-IR seed interpreter comparisons and two caught-transfer entries.
+These are not independent raw-source compiler/lowerer comparisons or a count
+of all dynamic helper calls. Source pure `do` operands do not observe I/O
+ordering; normalized runtime controls supply observable order/once evidence.
+Eight new membership descriptors cover seven normal calls and one not-invoked
+call; the left-transfer case retains one old Map not-invoked descriptor. Nine
+binary membership IR instructions and one two-Keyword evaluated Set constructor
+are checked, not a dynamic-allocation census. C8 preserves operand dependencies
+and adds no query allocation. Two tracked public C7 gates accept assembly and
+reject a membership-policy forgery; a resealed C8 dependency forgery rejects.
+The String-needle fixture reaches accepted C5 and passed C6, then rejects at
+C7 with `C7-TYPE-MISMATCH/:keyword-set-contains-operand-type-required` followed
+by `C7-ANNOTATION/:unsupported-or-unresolved-core-node-type`.
+
+Width remains 1,024 and logical work allowance 65,536. For N actual members,
+stored Keyword representation units C and needle units Q, reservation is
+`2 + 2N + choose(N,2) + (N+1)(C+Q)`, guarded before products/comparisons.
+This accounts logical validation/comparison work, not provider CPU or heap.
+Bare Sets, other member families, general collection membership, List-to-Set
+conversion, flow refinement, whole-W5 support and authoritative migration
+remain outside this slice. SH-07 and the three current-closure evidence groups
+remain open; the resolver remains development-unadmitted.
+
 ### Evaluated literal-Keyword Sets: development implementation
 
 The typed emitter and Gravity runtime have a bounded body-construction path
