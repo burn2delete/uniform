@@ -10555,7 +10555,7 @@
     (let [limit (+ prefix (dec (:work-count measured)))
           rejected (check core types limit)]
       (is (= :rejected (:status rejected)))
-      (is (= ["C7-GENERIC" :vector-inequality-work-limit]
+      (is (= ["C7-GENERIC" :atomic-inequality-work-limit]
              ((juxt :rule :reason) (first (:diagnostics rejected)))))
       (is (= (+ prefix (:work-count measured)) (:work-count rejected))))
     (doseq [[changed-core changed-types]
