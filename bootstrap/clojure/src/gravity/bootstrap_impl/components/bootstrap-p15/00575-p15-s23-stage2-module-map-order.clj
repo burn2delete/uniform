@@ -93,6 +93,91 @@
       (mapv (fn [slot] (into [slot] (get entries slot))) order))
     (mapv (fn [slot [k v]] [slot k v]) (range) (sort-by (fn [[k v]] (pr-str [k v])) form))))
 
+(defn p15-s23-stage2-module-map-reference-index [caller syntax definition]
+  ;; Index actual C5 enumeration, not source evaluation order or name counts.
+  ;; Scope/resolution/binding authority remains the original verified C5 rows.
+  (let [refs (get-in caller [:request :references]) rows (atom []) work (atom 0)
+        module {:p15-s23-stage2-map-order (:map-order caller)
+                :p15-s23-sh07-enclosing-function (:name definition)}
+        fail (fn [reason] (p15-s23-stage2-module-fail! reason {:function (:name definition)}))
+        charge! (fn [amount] (when (> (swap! work + amount) 65536) (fail :map-reference-work-limit)))
+        emit! (fn [symbol position path] (swap! rows conj {:symbol symbol :position position :path path}))]
+    (charge! (count refs))
+    (letfn [(walk [actual seed path position depth]
+              (charge! 1)
+              (when (> depth 64) (fail :map-reference-depth-limit))
+              (cond
+                (symbol? actual)
+                (do (when-not (= actual seed) (fail :map-reference-value-mismatch)) (emit! actual position nil))
+                (seq? actual)
+                (let [op (first actual)]
+                  (when-not (and (seq? seed) (= (count actual) (count seed)) (= op (first seed)) (symbol? op))
+                    (fail :map-reference-call-shape))
+                  (when (contains? '#{def defn fn defconst match try syntax-quote} op)
+                    (fail :unsupported-map-reference-form))
+                  (emit! op :operator path)
+                  (cond
+                    (= 'quote op) (when-not (= 2 (count actual)) (fail :map-reference-quote-shape))
+                    (contains? '#{let loop} op)
+                    (let [bindings (second actual) target (second seed)]
+                      (charge! (count bindings))
+                      (when-not (and (vector? bindings) (even? (count bindings)) (= (count bindings) (count target))
+                                     (every? symbol? (take-nth 2 bindings))
+                                     (= (vec (take-nth 2 bindings)) (vec (take-nth 2 target))))
+                        (fail :unsupported-map-reference-bindings))
+                      (doseq [slot (range 1 (count bindings) 2)]
+                        (walk (get bindings slot) (get target slot) (when path (conj path 1 slot)) :expression (inc depth)))
+                      (doseq [slot (range 2 (count actual))]
+                        (walk (nth actual slot) (nth seed slot) (when path (conj path slot)) :expression (inc depth))))
+                    :else (doseq [slot (range 1 (count actual))]
+                            (walk (nth actual slot) (nth seed slot) (when path (conj path slot)) position (inc depth)))))
+                (map? actual)
+                (let [entries (if (map? seed) (vec seed) []) host-keys (mapv first entries) slots (zipmap host-keys (range))]
+                  (charge! (* 2 (count actual)))
+                  (when-not (and (map? seed) (= (count actual) (count seed)) (every? keyword? (keys actual))
+                                 (= (set (keys actual)) (set host-keys))) (fail :map-reference-key-bijection))
+                  (when path (p15-s23-stage2-module-map-entries module seed path))
+                  (doseq [[key value] actual]
+                    (let [slot (get slots key)]
+                      (walk key key (when path (conj path (* 2 slot))) :expression (inc depth))
+                      (walk value (get seed key) (when path (conj path (inc (* 2 slot)))) :expression (inc depth)))))
+                (vector? actual)
+                (do (when-not (and (vector? seed) (= (count actual) (count seed))) (fail :map-reference-vector-shape))
+                    (doseq [slot (range (count actual))]
+                      (walk (get actual slot) (get seed slot) (when path (conj path slot)) position (inc depth))))
+                (set? actual)
+                (do (when-not (and (set? seed) (= actual seed)) (fail :map-reference-set-shape))
+                    ;; Imports here were already rejected by the inherited Set fence.
+                    (doseq [item actual] (walk item item nil position (inc depth))))
+                (not= actual seed) (fail :map-reference-value-mismatch)))]
+      (let [form (:form syntax) function (when (seq? form) (nth form 2 nil)) params (:params definition)
+            owned (filterv #(= (:span syntax) (:source-span (second %))) (mapv vector (range 1 (inc (count refs))) refs))]
+        (when-not (and (seq? form) (= 'def (first form)) (= 3 (count form)) (= (:name definition) (second form))
+                       (seq? function) (= 'fn (first function)) (= params (second function))
+                       (vector? params) (every? symbol? params) (= (count (:body definition)) (- (count function) 2)))
+          (fail :unsupported-map-reference-header))
+        (charge! (+ (count params) (count owned)))
+        (emit! 'def :operator nil) (emit! 'fn :operator nil)
+        (doseq [[slot actual seed] (map vector (range) (drop 2 function) (:body definition))]
+          (walk actual seed [slot] :expression 0))
+        (when-not (= (count owned) (count @rows)) (fail :map-reference-owner-census))
+        (doseq [[[ordinal reference] row] (map vector owned @rows)]
+          (let [symbol (:symbol row) position (:position row)]
+            (when-not (and (= symbol (:symbol reference)) (= position (:position reference))
+                           (= (some-> (namespace symbol) clojure.core/symbol) (:qualifier reference))
+                           (= (clojure.core/symbol (name symbol)) (:name reference))
+                           (= (sh06-resolution-semantic-span (:span syntax) ordinal) (:semantic-span reference))
+                           (= (:syntax-id reference) (reader-canonical-hash
+                              {:domain :gravity/sh06-reference-syntax-v1 :owner-syntax-id (:syntax/id syntax)
+                               :ordinal ordinal :symbol symbol :position position})))
+              (fail :map-reference-occurrence-mismatch))))
+        (let [selected (filterv #(and (= :operator (:position (second %))) (namespace (:symbol (second %))))
+                                (mapv vector owned @rows))
+              index (into {} (map (fn [[[ _ reference] row]] [(:path row) reference])) selected)]
+          (when-not (and (= (count selected) (count index)) (every? vector? (keys index)))
+            (fail :map-reference-path-bijection))
+          index)))))
+
 (defn p15-s23-stage2-seed-compile-collection [emitter module locals form]
   (let [rules (:collection-rules emitter) path (:p15-s23-sh07-callsite-path module [])
         child-module (fn [slot] (if (contains? module :p15-s23-stage2-map-order)

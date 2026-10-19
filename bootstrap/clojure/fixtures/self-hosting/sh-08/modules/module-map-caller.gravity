@@ -1,0 +1,21 @@
+(ns example.module-map-caller
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-map-leaf :as leaf]) (:exports [main])
+  (:effects #{:io/write :memory/allocate}) (:capabilities #{:io/stdout}) (:safety :safe))
+
+(defn main []
+  (let [prefix "kept"
+        packet {:z (leaf/identity (do (println "z") prefix))
+                :b (let [prefix :shadow] (leaf/identity (do (println "b") prefix)))
+                :y [(leaf/identity (do (println "y") :y))]
+                :a (loop [again true]
+                     (if again (recur (leaf/identity (do (println "a") false))) :a))
+                :x (leaf/pair (leaf/identity (do (println "xl") :left))
+                              (leaf/identity (do (println "xr") :right)))
+                :c {:inner (leaf/identity (do (println "c") :c))}
+                :w (leaf/identity (do (println "w") :w))
+                :d '(leaf/hidden :data)
+                :v (leaf/identity (do (println "v") :v))}]
+    [(get packet :z) (get packet :b) (get packet :y) (get packet :a)
+     (get packet :x) (get (get packet :c) :inner) (get packet :w)
+     (get packet :d) (get packet :v)]))

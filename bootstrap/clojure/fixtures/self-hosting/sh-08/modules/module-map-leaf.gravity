@@ -1,0 +1,7 @@
+(ns example.module-map-leaf
+  (:profile :meta) (:target :jvm) (:exports [identity pair])
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))
+
+(defn identity [value] value)
+(defn pair [left right] [left right])
+(defn hidden [value] :private)
