@@ -1,0 +1,22 @@
+(ns example.runtime-keyword-predicate
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn classify-source-id [span]
+  (keyword? (get span :source-id)))
+
+(defn classify-choice [flag]
+  (keyword? (if flag :picked nil)))
+
+(defn main []
+  (if (classify-source-id {:source-id :origin})
+    (if (classify-source-id {:source-id :untrusted.namespace/admin})
+      (if (classify-choice true)
+        (if (classify-choice false) false true)
+        false)
+      false)
+    false))

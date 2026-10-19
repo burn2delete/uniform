@@ -42,6 +42,18 @@ All behavior must be deterministic except where the caller passes an explicitly 
 - Type and var helpers: `type-of`, `var`, `var?`, `deref-var`, and `resolve-var` where the active profile allows vars.
 - Simple reducers: `reduce`, `fold`, and `into` as protocol dispatch points, with concrete collection behavior owned by STD3.
 
+## Keyword Family Predicate
+
+Unary `(keyword? value)` returns Bool true exactly when the normally evaluated
+value belongs to the Keyword family, and false for every other normally
+evaluated value. Its operand follows ordinary L2 evaluation exactly once;
+operand effects are preserved, and a control transfer aborts invocation.
+Classification does not evaluate stored payloads, mutate the value or itself
+allocate a collection. Keyword-like spelling does not make a String or Symbol
+a Keyword. A qualified Keyword is still a value, not a namespace binding
+or capability grant. `gravity.core` owns this predicate; existing profile,
+target, effect, capability and safety legality requirements still apply.
+
 ## Dependencies
 
 - `D1` for source forms, syntax objects, namespaces, vars, and metadata.
@@ -102,6 +114,7 @@ If the function read a file, the effect checker would reject the `:core` compila
 ## Conformance Criteria
 
 - Core examples compile without capabilities in `:core`.
+- Keyword family classification preserves ordinary unary evaluation and transfers, distinguishes actual Keywords from other values regardless of keyword-like spelling, and neither evaluates payloads nor grants namespace or capability authority.
 - All exported functions have type, effect, allocation, error, profile, and stability metadata.
 - Equality and hash fixtures produce the same Gravity-level result across targets.
 - Restricted profiles reject dynamic vars, host-dependent errors, and unbounded allocation.
