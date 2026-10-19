@@ -3155,8 +3155,44 @@ and whole-ledger forgeries, actual child-budget meters, all eight runtime/seed
 families and both transfer positions pass. Every normally returning test entry
 first checks Integer representation and signed/unsigned range, including
 64-bit values adjacent above 2^53; no clamping, conversion or wrapping occurs.
-These are conditional type-conforming development kernels, not arbitrary-host
-width admission, source composition, current-cohort migration or self-hosting.
+These focused kernels alone do not establish source composition or arbitrary
+host width admission.
+
+The separate paired-fixture check passed one test / six assertions. The first
+genuine changed Gravity composition then passed one test / 535 assertions:
+nine compiled functions retain nine not= descriptors, ledger rows and owned
+equality IR sites, eight fixed-family records plus the generic Integer control.
+Twenty-eight actual fixed-helper entries cover signed/unsigned bounds and
+adjacent large 64-bit values, with one generic main entry; the same 29 entries
+also pass through the seed interpreter over the emitted IR. Actual signatures
+and every argument's Integer representation/range are checked before each
+route. No source Integer conversion or width-checking activation is invented.
+
+Two public C7 assembly gates include a fully propagated fixed-mode forgery.
+Fresh C8 construction/verification and a resealed dependency-deletion rejection
+pass. The changed I8/U8 Gravity negative passes C5/C6 and rejects at C7 with
+the expected mixed-domain diagnostic; a secondary unresolved-annotation
+diagnostic is also retained. The oracle matches the required diagnostic rather
+than assuming it is first or sole. Q remains byte/parser parity only.
+
+The three selections total 25 tests / 18,694 assertions, zero failures, errors
+or unrun selectors. The source selection took 214.867 seconds after 12.029
+seconds of loading at 2 GiB. Its positive C5 construction and C6 construction/
+verification took 41.326, 37.439 and 41.977 seconds respectively. These are
+inclusive existing-call timings, not exclusive costs, a benchmark, hard
+deadline, speedup or a diagnosis of the interrupted large-Core attempt.
+No earlier source product was reconstructed for a green label. Conditional
+typed-entry execution does not establish arbitrary-host/FFI admission,
+current-cohort migration, complete numeric support or self-hosting.
+
+Source evidence belongs to checkpoint `b0522928`; the focused batch belongs
+to `6a7dbeca`. After the normal main merge, the combined candidate passed
+the separate language boundary (six tests / 11 assertions) and LOC validation
+(2,020 source files, zero exceptions, maximum 250 lines). The original BN
+production, fixture, harness and runtime bytes are unchanged. Independent
+compatibility review checked that the disjoint module-vector routing change
+does not alter this typed raw-plan path; no unaffected source composition was
+repeated. These checks do not renew historical authoritative fingerprints.
 
 ### Binary represented-Integer inequality: development implementation
 

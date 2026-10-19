@@ -3849,6 +3849,23 @@ conditional type-conforming execution, not implicit source Integer conversion,
 host FFI admission or runtime width validation. Never transfers still preserve
 their original identity, non-tail restrictions and left-to-right effects.
 
+When those producer/consumer facts or lowering change, select the new paired
+fixtures and affected source composition separately:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-fixed-integral-inequality-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-fixed-integral-inequality-authenticated-composition --fail-fast
+```
+
+This uses compiled helpers with explicit fixed-type signatures, not implicitly
+converted source Integer literals. Paired Q sources provide byte/parser parity
+only. Do not reconstruct earlier unchanged Integer or atomic source products
+merely to refresh a green label.
+
 ### Nil value classification
 
 For unary `(nil? value)`, edit the existing C7 engine, effects and typed emitter
