@@ -1,0 +1,14 @@
+(ns self-hosting.sh08.integer-inequality
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [equal-integers different-integers different-counts transferred-left transferred-right main]))
+
+(defn equal-integers [] (not= 7 7))
+(defn different-integers [] (not= 7 8))
+(defn different-counts []
+  (not= (count [:artifact]) (count [:artifact :manifest])))
+(defn transferred-left []
+  (try (not= (throw "left") (do [] 7)) (catch String problem false)))
+(defn transferred-right []
+  (try (not= (do [] 7) (throw "right")) (catch String problem false)))
+(defn main [] (different-counts))

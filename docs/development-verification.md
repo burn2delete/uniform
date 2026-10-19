@@ -3710,11 +3710,12 @@ do not reconstruct expensive products solely to change a historical label.
 ### Binary nonnumeric atomic inequality
 
 For binary `not=`, edit the C7 engine, `gravity.effects` and the typed emitter.
-STD2 owns the complement-of-applicable-equality law. The current executable
-subset is Nil, Bool, Character, String, Symbol, Keyword, their five existing
+STD2 owns the complement-of-applicable-equality law. This nonnumeric increment
+supports Nil, Bool, Character, String, Symbol, Keyword, their five existing
 nil-or-atomic carriers, and Never. Both operand domains are checked even when
 one transfers. Numeric, collection, callable, Unknown and malformed domains
-remain outside this increment; no first-class or variadic operation is added.
+remain outside this increment; the separate Integer extension is below. No
+first-class or variadic operation is added.
 
 Start with the owning focused checks, retaining adjacent `=`/nil-equality
 regressions when changing their shared dispatch:
@@ -3751,6 +3752,64 @@ boundaries as recorded in the backlog; do not reconstruct that unchanged input
 merely to change its historical label. Runtime and seed production files are
 unchanged. This is development implementation, not migration, whole W5 execution,
 other-target support, self-hosting or release evidence.
+
+### Binary represented-Integer inequality
+
+The same C7, effects and emitter owners extend binary `not=` to the existing
+represented `Integer` equality domain. Select exactly Integer/Integer,
+Integer/Never or Never/Integer; the old Never/Never atomic path is unchanged.
+Do not broaden the atomic whitelist or infer fixed-width, cross-numeric,
+Float/Decimal/Ratio or nullable-Integer support. Integer/Keyword still rejects.
+The old numeric rejection fixture now uses `7.5`, because Integer `7` is no
+longer an unsupported operand. This is an implementation frontier change,
+not a change to STD2's complement law.
+
+The versioned numeric record preserves existing Integer equality's original
+values, no conversion/arithmetic/overflow/rounding, `:proof-required` mode and
+`:proven-safe` rule. Numeric semantics remain owned by `gravity.math` and its
+Layer0 owner; the actual source operation remains `gravity.core/not=`. All
+three passes reconstruct the complete descriptor and constraint solution.
+Lowering still owns its equality/false/true IR and creates no source `=` fact.
+Runtime, seed, public APIs and instruction schemas are unchanged.
+
+Start with the new owning kernels, alongside affected atomic-inequality and
+integral-equality regressions:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-integer-inequality-development-kernel \
+  --exact sh08-integer-inequality-throw-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-integer-inequality-source-development-kernel \
+  --exact current-gravity-integer-inequality-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-integer-inequality-lowering-runtime-development-kernel \
+  --exact current-gravity-integer-inequality-transfer-fence-development-kernel --fail-fast
+```
+
+Select the affected real composition separately when these producer/consumer
+facts or lowering behavior change:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-integer-inequality-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-integer-inequality-authenticated-composition --fail-fast
+```
+
+That selection uses one changed Gravity positive and one changed Gravity
+negative. Count-produced Integers are concrete supported inputs; this is not
+execution of a whole compiler consumer. Q sources provide byte/parser parity
+only. Type-conforming runtime entries, actual pre-child work, preserved
+operand effects and original transfers remain required. The seed reference
+uses the same emitted IR and excludes typed catches it cannot interpret.
+Focused results and this bounded composition do not establish another target,
+authoritative migration, complete numeric support or self-hosting.
 
 ### Nil value classification
 
