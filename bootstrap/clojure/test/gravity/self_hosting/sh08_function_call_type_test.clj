@@ -11342,3 +11342,71 @@
       (is (= :rejected (:status (unroll (assoc-in core [:lexical-bindings 0 :mutability] :mutable) bindings 65536))))
       (is (= :rejected (:status (unroll (assoc core :mutations [{:target-binding-id :signature-binding}]) bindings 65536))))
       (is (= :rejected (:status (unroll core (assoc-in bindings [:signature-binding :definition-syntax-id] :different) 65536)))))))
+
+(deftest sh08-private-first-entry-source-spine-development-kernel
+  ;; Normalized parent BT premise plus current C6 data; full forms are checked separately.
+  (let [values [[(array-map :algorithm :sha256 :status :verified)]
+                [(array-map :algorithm :sha512 :status :rejected)]]
+        input (private-entry-vector-get-input values)
+        result (map-present-get-derived input) descriptor (:descriptor result)
+        entries (get-in descriptor [:presence-proof :entries]) vector-type (:type result)
+        map-type (first (:element-types vector-type))
+        project (fn [entry nodes budget] (invoke-c7 'sh08-pc-current-entry [entry :file :algorithm vector-type map-type nodes budget]))
+        authenticate (fn [projection nodes forms budget] (invoke-c7 'sh08-pc-authenticate-entry [projection nodes forms budget]))]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= 2 (count entries)))
+    (when (= :accepted (:status result))
+      (doseq [[entry expected] (map vector entries [:sha256 :sha512])]
+        (let [projection (project entry (:nodes input) 65536)
+              checked (when (= :accepted (:status projection))
+                        (authenticate projection (:nodes input) (:forms input) (- 65536 (:work-count projection))))]
+          (is (= :accepted (:status projection) (:status checked)) (pr-str {:projection projection :source checked}))
+          (when (= :accepted (:status projection) (:status checked))
+            (is (= :gravity.type/keyword (get-in projection [:row :selection :type])))
+            (is (= expected (get-in projection [:row :selection :part :shape :domain :values 0])))
+            (is (= 3 (count (get-in projection [:row :selection :source-spine]))))
+            (is (= (:row projection) (:row checked)))
+            (is (= projection (project entry (:nodes input) (:work-count projection))))
+            (is (= :map-get-work-limit (:reason (project entry (:nodes input) (dec (:work-count projection))))))
+            (is (= checked (authenticate projection (:nodes input) (:forms input) (:work-count checked))))
+            (is (= :map-get-work-limit (:reason (authenticate projection (:nodes input) (:forms input) (dec (:work-count checked)))))))))
+      (let [base (private-entry-vector-get-input [[(array-map :other :sha256 :status :verified)]
+                                                  [(array-map :other :sha512 :status :rejected)]])
+            derived (map-present-get-derived base) entry (first (get-in derived [:descriptor :presence-proof :entries]))
+            forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :key] :algorithm)
+            rejected (project forged (:nodes base) 65536)]
+        (is (= vector-type (:type derived)))
+        (is (= :map-get-private-first-entry-presence-required (:reason rejected)))
+        (is (= :rejected (:status rejected))))
+      (let [entry (first entries)
+            forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :key] :other)
+            id (get-in entry [:selected-part :value-node-id])
+            graph (assoc-in (:nodes input) [id :attributes :quoted-value] [(array-map :other :sha256 :status :verified)])
+            projection (invoke-c7 'sh08-pc-current-entry [forged :file :other vector-type map-type graph 65536])
+            checked (when (= :accepted (:status projection))
+                      (authenticate projection graph (:forms input) (- 65536 (:work-count projection))))]
+        ;; Coherent current C6 data satisfies the limited premise; unchanged C2 forms reject the forgery.
+        (is (= :accepted (:status projection)) (pr-str projection))
+        (is (= :rejected (:status checked)))
+        (is (= :map-get-source-mismatch (:reason checked))))
+      (let [entry (first entries) id (get-in entry [:selected-part :value-node-id])
+            graph (assoc-in (:nodes input) [id :attributes :quoted-value]
+                            [(array-map :status :verified :algorithm :sha256)])
+            projection (project entry graph 65536)
+            checked (when (= :accepted (:status projection))
+                      (authenticate projection graph (:forms input) (- 65536 (:work-count projection))))]
+        (is (= :accepted (:status projection) (:status checked)) "Map key lookup has no host enumeration-order premise"))
+      (let [entry (first entries) id (get-in entry [:selected-part :value-node-id])
+            graph (assoc-in (:nodes input) [id :attributes :quoted-value]
+                            [(array-map :algorithm :sha256 :status :verified) (array-map :algorithm :sha256 :status :verified)])]
+        (is (= :rejected (:status (project entry graph 65536)))))
+      (let [entry (first entries) other (second entries)
+            swapped (assoc entry :argument-node-id (:argument-node-id other) :argument-source (:argument-source other))]
+        (is (= :rejected (:status (project swapped (:nodes input) 65536)))))
+      (let [entry (first entries) id (:argument-node-id entry)
+            graph (assoc-in (:nodes input) [id :core-form] :reference)]
+        (is (= :rejected (:status (project entry graph 65536)))))
+      (let [entry (first entries)
+            forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :value-data-origin :data-path] [999])
+            rejected (project forged (:nodes input) 65536)]
+        (is (= :rejected (:status rejected)))))))
