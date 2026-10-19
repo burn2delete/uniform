@@ -1,0 +1,26 @@
+(ns example.runtime-literal-keyword-set
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [empty-values literal-values local-values equal-values cardinality quoted-data main]))
+
+(defn empty-values []
+  #{})
+
+(defn literal-values []
+  #{:artifact :manifest :diagnostic})
+
+(defn local-values []
+  (let [items #{:build/mode :run/mode}]
+    items))
+
+(defn equal-values []
+  (= #{:artifact :manifest} '#{:manifest :artifact}))
+
+(defn cardinality []
+  (count #{:artifact :manifest}))
+
+(defn quoted-data []
+  '#{:stored (println "never")})
+
+(defn main []
+  (equal-values))

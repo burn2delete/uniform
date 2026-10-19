@@ -2992,6 +2992,74 @@ include nested work and assertions, not exclusive cost or speedup evidence.
 This is not execution of the whole W5 helper, native/other-target support,
 current-closure admission or broader SH-07/self-hosting completion.
 
+### Evaluated literal-Keyword Sets: development implementation
+
+The typed emitter and Gravity runtime have a bounded body-construction path
+for finite literal Sets of Keywords, including empty Sets. C7/C8 production
+is unchanged: their existing finite Set types and normal allocation facts feed
+the new lowering and execution path. The lowerer authenticates the actual
+owner, ordered child/source/type joins and values, then compiles the children
+into existing `:set-literal`/`:items` IR. Cached parent `:source-value` is not
+used to construct the result. Dedicated failure handling retains the owning
+charge, successful prefix and failed child's reported work.
+
+Closed runtime Set instructions admit only literal Keyword children. The
+constructor validates the complete actual domain, prepays bounded logical
+content/pair work, rejects duplicate Keyword value classes, then inserts.
+It does not silently deduplicate malformed literal/IR inputs. This preserves
+L1's literal uniqueness rule, unlike the existing conversion operation.
+Instruction traversal includes Set items; evaluated Set module initializers
+remain unsupported while quoted Sets remain separate inert DATA.
+
+The corrected focused batch passed seven tests/624 assertions: three owning
+kernels (72 lowering, 16 C8 allocation, 148 runtime) and four adjacent Vector,
+conversion and Set-equality regressions (388). Counts include existing loader
+checks, not 624 distinct new behaviors. The execution envelope took 6.253
+seconds after 9.938 seconds of namespace loading at 2 GiB; this is development
+feedback, not an isolated performance comparison or provider CPU/heap bound.
+
+The first batch stopped after five tests with 307 passes, one failure and two
+errors; two selectors were unrun. Opaque malformed owner/child IDs reached
+eager structural equality before their type guards. The narrow repair moves
+bounded ID validation before those checks without weakening the hostile
+tests. Cached-value isolation passed in that failed batch. Commit `b757b3d3`
+preserves the original tested candidate; `7d930eeb` preserves the complete
+corrected focused-test source before additive source checks. Independent review
+accepted the corrected implementation and focused actuals. Genuine source
+composition subsequently passed. The fixture check passed
+one test/13 assertions: six positive/String-member byte/parser/function-count
+checks, one duplicate-pair byte check and three C2 rejection checks per syntax.
+Both duplicate literals reject as `C2-SET`/`:duplicate-set-entry` with no result
+committed. This is public reader rejection, not a typed Q product or migration.
+The fixture check took 5.067 seconds after 9.752 seconds of loading at 2 GiB.
+
+The changed source composition passed one test/115 assertions (109 composition
+plus six existing runtime-loader checks). It constructed one accepted G
+program and one G program accepted by C5/C6/C7/C8 but rejected by the public
+typed lowerer with `P15S23Q002`/`:unsupported-typed-set-member`. Both C7 and C8
+fresh verifications passed before that rejection. This is a lowering frontier,
+not a language-wide prohibition on String-member Sets.
+
+The accepted program has seven functions and five static evaluated Set IR
+instructions, including empty construction, nine literal Keyword children and
+two quotes. Seven top-level Gravity-runtime function-table entries completed,
+with seven reference executions through the seed interpreter on the same
+emitted IR, not independent raw-source compilation/lowering. Allocation facts
+include empty construction; quoted payloads remain inert. Source operands are
+pure and do not independently observe once-only order. Three additional tracked
+public C7 gates passed/rejected/passed for assembly, a type forgery and negative
+compilation. A resealed C8 missing-allocation forgery also rejected; this is not
+an all-field tamper claim. Q remains byte/parser/C2-rejection coverage only.
+
+The source selector took 192.446 seconds after 10.193 seconds of namespace
+loading at 2 GiB. Inclusive nested construction/verification intervals are
+development observations, not benchmark evidence. Runtime has 50 functions,
+with one new private constructor helper and unchanged exports; no new seed,
+IR operation, namespace or public API was introduced. Keyword List conversion,
+`keys` ordering, arbitrary effectful Set members and evaluated Set module
+initializers remain separate work. These results do not admit a module revision
+or establish broader SH-07, W5, native or self-hosting support.
+
 ### Finite Keyword-Set equality: development implementation
 
 Binary `=` has a bounded JVM component path for two independently established
