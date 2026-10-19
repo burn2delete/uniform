@@ -1,0 +1,10 @@
+(ns example.rejected-set-conversion-member
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [probe])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn probe []
+  (set ["a" :late]))

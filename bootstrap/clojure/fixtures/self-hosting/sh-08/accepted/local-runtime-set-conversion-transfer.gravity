@@ -1,0 +1,16 @@
+(ns example.runtime-set-conversion-transfer
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn caught [value :- Keyword]
+  (try
+    (if (= (count (set [])) 0)
+      (= (count (set (throw value))) 0)
+      false)
+    (catch Keyword problem (= problem value))))
+
+(defn main [] (caught :problem))

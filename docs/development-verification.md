@@ -3598,6 +3598,64 @@ native-width or authoritative migration support. Rejected QST fixture parity
 is not negative source-compilation evidence. Record actual results and limits
 in the backlog.
 
+### Set conversion and cardinality
+
+STD3 owns persistent Set conversion and cardinality. The current bounded
+development constructor accepts a finite, independently established String
+Vector on the JVM target and returns a bare Set type. It does not invent
+cardinality, ordering or member facts. Normal construction declares possible
+allocation even for an empty input; operand transfers prevent invocation and
+preserve their effects. Set count is a separate outer-family query and is not
+restricted to String members or allowed to evaluate stored payloads.
+
+The owning files remain `c7_type_checker_engine.gravity`, `effects.gravity`,
+`p15_s23/emitter.gravity` and `runtime.gravity`. Their focused checks use the
+existing direct runner:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-set-conversion-development-kernel \
+  --exact sh08-set-count-development-kernel \
+  --exact sh08-set-conversion-throw-consumer-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-set-conversion-source-development-kernel \
+  --exact current-gravity-set-count-source-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-set-conversion-lowering-runtime-development-kernel \
+  --exact current-gravity-set-count-lowering-runtime-development-kernel \
+  --exact current-gravity-set-target-and-association-eligibility-development-kernel --fail-fast
+```
+
+The runtime validates every actual String member before hashing or insertion.
+Its existing 65,536-unit component allowance reserves logical content work
+`1 + 2*n + n*C + n*(n-1)/2`, with at most 1,024 input members and `C` the total
+JVM UTF-16 representation length. Products are checked against the allowance
+before multiplication. This is not a public String-count policy, normalization
+rule, host-provider CPU bound or native/realtime claim. Supported values can
+still exceed the explicit work allowance; that rejection is not a new language
+ban on larger Sets.
+
+When changing the public typed/effected/lowered composition, exercise the
+affected accepted and rejected source fixtures as well as these kernels.
+Run the affected composition separately from the edit loop:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-set-conversion-fixtures-development-kernel \
+  --exact current-gravity-set-conversion-authenticated-composition --fail-fast
+```
+
+Preserve the distinction between normalized JVM/WASM eligibility checks and
+actual target execution. Set equality, iteration, other conversion families,
+whole-W5 execution and authoritative migration remain separate work; none is
+established by these focused checks.
+
 ### Legacy bounded self-recursive body analysis
 
 The same body interface also recognizes C7's existing named, capture-free,

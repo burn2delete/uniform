@@ -41,17 +41,31 @@
                          :digest (bootstrap/p15-s23-c11-mir-digest preimage) :status :passed}}))
 (defn- fresh-type-products [relative]
   (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [c5 (bootstrap/compiler-c5-resolution-file-artifact (path relative))
+  (let [t0 (System/nanoTime)
+        c5 (bootstrap/compiler-c5-resolution-file-artifact (path relative))
+        t1 (System/nanoTime)
         artifact (bootstrap/sh07-core-from-resolution-artifact c5)
+        t2 (System/nanoTime)
         report (bootstrap/sh07-core-artifact-verification artifact)
+        t3 (System/nanoTime)
         coordinator ((sh08-helper 'coordinator-verification) artifact report)
+        t4 (System/nanoTime)
         context ((sh08-helper 'b47-context) artifact report coordinator)
+        t5 (System/nanoTime)
         request {:canonical-core-artifact (:canonical-core-artifact context)
                  :b47-context context :coordinator-verification coordinator}
         invoke (sh08-helper 'invoke-c7)
         typed (invoke 'sh08-function-type-core-artifact [request])
-        verification (invoke 'sh08-verify-function-type-result [request typed])]
-    {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification}))
+        t6 (System/nanoTime)
+        verification (invoke 'sh08-verify-function-type-result [request typed])
+        t7 (System/nanoTime)]
+    {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+     :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                          :boundary :existing-public-call-elapsed :nested-work :included
+                          :c5-construction (- t1 t0) :c6-construction (- t2 t1)
+                          :c6-verification (- t3 t2) :coordinator-verification (- t4 t3)
+                          :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                          :c7-verification (- t7 t6)}}))
 
 (defn- fresh-products [relative]
   (let [{:keys [request typed verification] :as products} (fresh-type-products relative)]
@@ -2733,6 +2747,78 @@
         ids (into {} (map-indexed (fn [i n] [(:node-id n) (sha (+ 30000 i))]) (:nodes core)))
         renamed (clojure.walk/postwalk-replace ids (assoc data :core core :forms forms))]
     (assoc renamed :node-id-map ids)))
+
+(deftest current-gravity-set-conversion-source-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'set-conversion-input) derive (ns-resolve upstream 'set-conversion-derived)
+        c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [type [{:kind :gravity.type/vector :shape :literal :element-types []}
+                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 3 :gravity.type/string))}
+                  :gravity.type/never]]
+      (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [type])
+            result (derive input 65536) descriptor (:descriptor result)
+            facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
+                   :call-type-facts [(c7 'sh08-st-call-fact [descriptor module])]
+                   :constraint-ledger [(c7 'sh08-st-constraint [descriptor])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            context (leaf 'body-st-context request facts bindings 65536)
+            checked (assoc facts :set-conversion-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            invoked? (not= :gravity.type/never type)
+            operand-effects (if invoked? #{:io/write} #{:error/throw})
+            graph {:operator {:type descriptor :transitive #{}} :arg0 {:type type :transitive operand-effects}}
+            record (leaf 'body-node-record node nil graph (:type result))]
+        (is (= :accepted (:status context)) (pr-str context))
+        (is (= context (leaf 'body-st-context request facts bindings (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-st-context request facts bindings (dec (:work-count context))))))
+        (is (true? (valid checked)))
+        (is (true? (leaf 'body-st-node? node checked core)))
+        (is (= (if invoked? #{:memory/allocate} #{}) (:direct record)))
+        (is (= (if invoked? #{:memory/allocate :io/write} #{:error/throw}) (:transitive record)))
+        (is (= invoked? (get-in record [:allocation :normal-completion-possible?])))
+        (is (= :runtime-value-dependent (get-in record [:allocation :extent :result-cardinality])))
+        (is (= (:input-element-count descriptor) (get-in record [:allocation :extent :upper-bound])))
+        (doseq [changed [(assoc checked :constraint-ledger [])
+                         (update checked :constraint-ledger into (:constraint-ledger checked))
+                         (update checked :constraint-ledger conj (assoc-in (first (:constraint-ledger checked)) [:lhs :core-node-id] :orphan))
+                         (assoc-in checked [:call-type-facts 0 :effects] [:io/write])]]
+          (is (false? (valid changed))))
+        (doseq [changed [(assoc-in descriptor [:construction-policy :order] :input-order)
+                         (assoc-in descriptor [:construction-policy :value-work :provider-cpu-bound] :proven)
+                         (assoc descriptor :input-element-count 123)
+                         (assoc descriptor :direct-effects [:io/write])
+                         (assoc descriptor :operand-type-work 0)]]
+          (let [forged (-> checked (assoc-in [:type-table :operator] changed)
+                           (assoc :call-type-facts [(c7 'sh08-st-call-fact [changed module])]
+                                  :constraint-ledger [(c7 'sh08-st-constraint [changed])]))]
+            (is (false? (valid forged)))))
+        (is (= :rejected (:status (leaf 'body-st-context (assoc-in request [:b47-context :authenticated-core-request :forms] 7) facts bindings 65536))))
+        (is (= :rejected (:status (leaf 'body-st-context request (assoc-in facts [:type-table :arg0] :gravity.type/unknown) bindings 65536))))))))
+
+(deftest current-gravity-set-count-source-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'integral-ordering-input) c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [type [:gravity.type/set
+                  {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/integer]}
+                  {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/unknown]}]]
+      (let [{:keys [core node call edge nodes bindings types forms module]} (input-fn 'count [type])
+            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
+                   :call-type-facts [(c7 'sh08-cq-call-fact [descriptor module])]
+                   :constraint-ledger [(c7 'sh08-cq-constraint [descriptor])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            context (leaf 'body-cq-context request facts bindings 65536)
+            checked (assoc facts :count-context (:context context))]
+        (is (= :accepted (:status context)))
+        (is (true? (leaf 'body-call-joins-with-foreign-valid? core checked bindings {})))
+        (is (= (c7 'sh08-cq-finish [(c7 'sh08-cq-source [core node call edge nodes bindings types module])])
+               (leaf 'body-cq-finish (leaf 'body-cq-source core node call edge nodes bindings types module))))
+        (let [record (leaf 'body-node-record node nil {:operator {:type descriptor :transitive #{}} :arg0 {:type type :transitive #{}}}
+                           :gravity.type/integer)]
+          (is (= #{} (:direct record) (:transitive record)))
+          (is (nil? (:allocation record))))))))
 
 (deftest current-gravity-integer-predicate-source-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)

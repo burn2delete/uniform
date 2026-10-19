@@ -702,6 +702,50 @@
   (let [result (p15-s23-runtime-vector-equality-work left right 65536)]
     (if (= :accepted (get result :status)) (get result :value) :unsupported)))
 
+(defn p15-s23-runtime-set-conversion-work [values budget]
+  ; This quota is a logical content-work reservation in the selected JVM
+  ; representation, not a host hash-trie CPU, native, or realtime bound.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [limit (if (< budget 65536) budget 65536)]
+      (if (vector? values)
+        (let [n (count values)]
+          (if (if (< n 0) true (> n 1024)) {:status :rejected :reason :set-conversion-value-width :work-count 1}
+            (let [base (+ 1 (* 2 n))]
+            (if (> base limit)
+              {:status :rejected :reason :set-conversion-work-limit :work-count base :work-count-kind :validation-reservation}
+              (loop [index 0 units 0]
+                (if (= index n)
+                  (let [remaining (- limit base)
+                        pairs-fit? (if (<= n 1) true (<= n (quot (* 2 remaining) (- n 1))))]
+                    (if (= false pairs-fit?)
+                      {:status :rejected :reason :set-conversion-work-limit :work-count (+ limit 1)
+                       :work-count-kind :exceeded-allowance-lower-bound}
+                      (let [pairs (if (<= n 1) 0 (quot (* n (- n 1)) 2))
+                            content-left (- remaining pairs)
+                            content-fits? (if (= n 0) true (<= units (quot content-left n)))]
+                        (if (= false content-fits?)
+                          {:status :rejected :reason :set-conversion-work-limit :work-count (+ limit 1)
+                           :work-count-kind :exceeded-allowance-lower-bound}
+                          (let [work (+ base pairs (* n units))]
+                            ; Every member and the complete reservation precede
+                            ; the first operation that can hash or insert a value.
+                            {:status :accepted :value (set values) :work-count work
+                             :work-count-kind :exact-logical-content-reservation
+                             :input-element-count n :representation-units units
+                             :value-work-model :gravity/string-set-logical-content-work-v1
+                             :representation :jvm-utf16-code-units :provider-cpu-bound :not-established})))))
+                  (let [value (get values index)]
+                    (if (string? value)
+                      (let [length (count value)]
+                        (if (> length (- limit units))
+                          {:status :rejected :reason :set-conversion-work-limit :work-count (+ limit 1)
+                           :work-count-kind :exceeded-allowance-lower-bound}
+                          (recur (+ index 1) (+ units length))))
+                      {:status :rejected :reason :set-conversion-string-vector-required
+                       :work-count base :work-count-kind :validation-reservation}))))))))
+        {:status :rejected :reason :set-conversion-string-vector-required :work-count 0}))
+    {:status :rejected :reason :set-conversion-work-limit :work-count 0}))
+
 (defn p15-s23-runtime-evaluate-in-instance
   [instruction environment output functions path targets pool]
   (if (contains? #{:gravity.runtime/indexed-private-self-unit-addition :gravity.runtime/indexed-private-self-vector-get}
@@ -816,7 +860,7 @@
                   (if (contains? '#{nth conj contains? dissoc} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
-                  (if (contains? '#{integer? vector? count first rest empty?} function)
+                  (if (contains? '#{set integer? vector? count first rest empty?} function)
                     (if (= fields #{:op :function :args}) (if (= 1 (count arguments)) (map? (first arguments)) false) false)
                   (if (= function 'get)
                     (if (= fields #{:op :function :args})
@@ -909,14 +953,21 @@
                    arguments environment output [] functions path [] pool)]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
-              (if (contains? '#{integer? vector? first rest empty?} function)
+              (if (contains? '#{set integer? vector? first rest empty?} function)
+                (if (= function 'set)
+                  (let [conversion (p15-s23-runtime-set-conversion-work left 65536)]
+                    (if (= :accepted (get conversion :status))
+                      [(get conversion :value) (second arguments-result) :normal]
+                      [{:diagnostic "P15S23X002" :reason (get conversion :reason) :operation operation
+                        :work-count (get conversion :work-count) :work-count-kind (get conversion :work-count-kind)}
+                       (second arguments-result) :rejected]))
                 (if (contains? '#{integer? vector?} function)
                   [(if (= function 'integer?) (integer? left) (vector? left)) (second arguments-result) :normal]
                 (if (list? left)
                   [(if (= function 'empty?) (= 0 (count left))
                      (if (= function 'first) (first left) (rest left))) (second arguments-result) :normal]
                   [{:diagnostic "P15S23X002" :reason :list-query-persistent-list-required :operation operation}
-                   (second arguments-result) :rejected]))
+                   (second arguments-result) :rejected])))
               (if (= function 'get)
                 (if (if (map? left) (if (string? right) true (keyword? right)) false)
                   [(get left right (get values 2)) (second arguments-result) :normal]
@@ -969,7 +1020,7 @@
                   [{:diagnostic "P15S23X002" :reason :vector-nth-vector-integer-and-bounds-required :operation operation}
                    (second arguments-result) :rejected])
               (if (= function 'count)
-                (if (if (list? left) true (if (map? left) true (vector? left)))
+                (if (if (list? left) true (if (map? left) true (if (set? left) true (vector? left))))
                   [(count left) (second arguments-result) :normal]
                   [{:diagnostic "P15S23X002" :reason :collection-count-map-or-vector-required :operation operation}
                    (second arguments-result) :rejected])

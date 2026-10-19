@@ -2733,6 +2733,86 @@ outside this increment. Direct focused commands remain in
 `development-verification.md`; ordinary edits require no authority-admission
 maintenance.
 
+### Finite Set conversion and cardinality: development implementation
+
+The owning C7, C8, typed emitter and runtime support unary `set` on an
+independently established finite String Vector and unary `count` on an
+established Set. The compatibility bindings keep `gravity.collections`
+semantic ownership. Conversion returns a persistent bare Set without inferred
+member, order or cardinality facts; this is a development frontier, not a
+String-only restriction on the language's Set contract. Set count is shallow
+and returns a nonnegative Integer, including zero for the empty Set, without
+walking or executing members. Quoted heterogeneous payloads remain inert.
+
+Conversion evaluates its operand once in the ordinary non-tail position,
+preserves effects and transfers, and records possible allocation even for an
+empty result. Never prevents construction. Full member validation precedes
+hashing/insertion, so a late invalid member cannot cause earlier unchecked
+hash work. The bounded JVM implementation accepts at most 1,024 input entries
+and reserves `1 + 2n + n*C + n(n-1)/2` logical work, where C is their total JVM
+UTF-16 representation length. Division-based fit checks precede multiplication
+against the existing 65,536 component allowance. This conservative content
+reservation is not opaque host hash-trie CPU evidence, a public String-count
+unit policy, Unicode normalization, native execution or a realtime guarantee.
+
+The first focused attempt failed: two tests, 84 passes and one error. Existing
+count lowering passed; runtime plan construction then rejected a malformed
+new `if` with two operands. The other twelve selected tests were unrun, not
+passes. Independent review also caught a misplaced JVM eligibility clause on
+the existing assoc binding instead of the new Set binding. Both narrow fixes
+were applied without changing the failed attempt. A separate syntax-only probe
+read 48 runtime forms and checked 751 `if` forms with no malformed arity; that
+is parsing evidence, not semantic execution.
+
+The corrected focused batch passed 14 tests/1,471 assertions in 5.369 seconds
+of selected work, after 9.474 seconds loading SH01 and 1.048 seconds loading
+the C7 namespace, at 2 GiB. It includes seven new Set selectors (442
+assertions), a 12-assertion cross-owner Set-target/assoc-preservation check,
+and affected existing count/integer-predicate regressions. The new throwing-
+consumer checks preserve resource classification and prepaid semantic work.
+Exact/one-less component budgets, equal-but-distinct String instances,
+`FB`/`Ea` provider-hash collision, Unicode exactness, empty/duplicate inputs,
+inert payloads, source/descriptor tamper rejection and normal-versus-Never
+allocation facts are covered. These component checks are independently accepted;
+they are not whole-source budgets, WASM execution or authoritative migration.
+
+Fixture preflight passed one test/20 assertions for all six paired programs
+and the unchanged W5 `w5-se-unique-values?` body. The subsequent changed-source
+composition passed one test/283 assertions (277 composition checks plus six
+runtime-source loader checks). Eight fresh products cover four accepted
+Gravity/QST chains and four Gravity negatives. The unchanged W5 helper takes
+independently inferred same-width String Vector entries; no annotation,
+recursive companion or new polymorphic inference was introduced. All eighteen
+top-level function-table entry invocations completed, including the separate
+normal/typed-catch program. This is not a census of nested activations.
+
+The run exercised C5/C6/C7 acceptance and verification, independent C8
+construction/verification, paired typed/effect/lowering comparisons, five
+additionally tracked public C7 gates, descriptor-field integrity tampering
+and re-sealed C8 graph-allocation deletion. The C7 descriptor tamper is not a
+coherently re-sealed all-field proof forgery, and C8 graph deletion is not an
+undeclared-allocation source-program negative. The four complete negative
+vectors retain `set-conversion-operand-type-required` for Unknown and mixed
+members, or `set-conversion-arity-mismatch` for zero/two operands, followed by
+`unsupported-or-unresolved-core-node-type`. They are not single-diagnostic
+results. Negative QST fixtures received byte/parser parity only.
+
+Selected source work took 680.209 seconds after 9.863 seconds of namespace
+loading at 2 GiB. Existing-call timing observations separate loading from
+construction/verification: per product, C5 construction took 21.994-31.250
+seconds, C6 construction 21.910-32.552, and C6 verification 26.524-36.758.
+These intervals include nested work and are not exclusive CPU attribution or
+a representation-cost proof. No metric-only source replay was performed.
+Before redesigning products, use the bounded duplicate-verification tracing
+follow-up in the SH-00--SH-06 audit at a concrete changed composition or stable
+migration decision; do not add another lane, wrapper or proof cache.
+
+Set equality/iteration, general sequence and other member-family conversion,
+full W5 execution, native/other-target execution and fresh authoritative
+migration remain outstanding. This increment does not complete SH-07,
+self-hosting, seed retirement or release. Direct focused tests are development
+feedback, not renewed authority for earlier compiler snapshots.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared

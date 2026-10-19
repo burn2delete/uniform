@@ -2815,6 +2815,7 @@
                  'p15-s23-runtime-module-id? 1 'p15-s23-runtime-module-source? 1
                  'p15-s23-runtime-namespace-read-source? 2 'p15-s23-runtime-namespace-read-valid? 2
                  'p15-s23-runtime-initializer-work 2 'p15-s23-runtime-initializer-type? 2
+                 'p15-s23-runtime-set-conversion-work 2
                  'p15-s23-runtime-module-census 2 'p15-s23-runtime-instruction-children 2
                  'p15-s23-runtime-module-reads-work 3 'p15-s23-runtime-initialize-module 2
                  'p15-s23-runtime-vector-domain 2 'p15-s23-runtime-vector-equality-work 3 'p15-s23-runtime-vector-equality 2
@@ -2829,7 +2830,7 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)
         builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
         calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
-    (is (= 46 (count selected) (count (set (map second selected)))))
+    (is (= 47 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest forms))))
     (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
@@ -9976,6 +9977,185 @@
       (is (identical? second-error (first key-throw))))
     (is (= 0 @observed))))
 
+(deftest current-gravity-set-conversion-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        original (slurp (io/file root "bootstrap/gravity/src/gravity/self_hosting/w5_stage_equivalence_verifier.gravity"))
+        positive (slurp (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-set-conversion.gravity"))
+        body (first (re-seq #"(?s)\(defn w5-se-unique-values\? .*?\n\n" original))]
+    (is (string? body))
+    (is (str/includes? positive (str/trim body))))
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] [["accepted" "local-runtime-set-conversion" 4]
+                                         ["accepted" "local-runtime-set-conversion-transfer" 2]
+                                         ["rejected" "set-conversion-unknown" 1]
+                                         ["rejected" "set-conversion-member" 1]
+                                         ["rejected" "set-conversion-zero" 1]
+                                         ["rejected" "set-conversion-two" 1]]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            path (.getPath (io/file root (str relative ".gravity"))) text (slurp path)
+            q-path (.getPath (io/file root (str relative ".qst")))]
+        (is (= text (slurp q-path)))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms path text)))))
+        (is (= (bootstrap/read-forms path text) (bootstrap/read-forms q-path (slurp q-path))))))))
+
+(deftest current-gravity-set-conversion-authenticated-composition
+  ;; One changed source composition, with elapsed intervals at existing calls.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result))
+                                                   result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        cases
+        (mapv (fn [[name extension]]
+                (let [transfer? (= name "local-runtime-set-conversion-transfer")
+                      relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/" name extension)
+                      path (.getPath (io/file root relative)) products (fresh relative)
+                      _ (println (pr-str {:az-product-elapsed relative :timing (:development-timing products)}))
+                      input (select-keys products [:request :typed :verification])
+                      _ (is (= :accepted (get-in products [:c5 :status])))
+                      _ (is (= :passed (get-in products [:report :status])))
+                      _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                      _ (when-not (= :accepted (get-in input [:typed :status]))
+                          (throw (ex-info "Set conversion C7 source prerequisite rejected" {:name name :extension extension :diagnostics (get-in input [:typed :diagnostics])})))
+                      _ (is (= :passed (get-in input [:verification :status])))
+                      _ (when-not (= :passed (get-in input [:verification :status]))
+                          (throw (ex-info "Set conversion C7 source verification prerequisite rejected" {:name name :extension extension})))
+                      artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                      parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                      raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                      definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                      t0 (System/nanoTime)
+                      assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                      t1 (System/nanoTime)
+                      core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                      conversions (mapv :applied-set-conversion (filter #(= :direct-set-conversion (:dispatch %)) (:call-type-facts facts)))
+                      queries (mapv :applied-collection-count (filter #(= :direct-collection-count (:dispatch %)) (:call-type-facts facts)))
+                      functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                      instructions (filter #(and (map? %) (= :builtin-call (:op %))) (tree-seq coll? seq (:functions assembled)))
+                      conversion-ir (filter #(= 'set (:function %)) instructions)
+                      binding (seal (:request input) (:typed input) (:verification input))
+                      t2 (System/nanoTime)
+                      effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                      t3 (System/nanoTime)
+                      _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                      _ (when-not (= :accepted (:status effects))
+                          (throw (ex-info "Set conversion C8 source prerequisite rejected" {:name name :extension extension :diagnostics (:diagnostics effects)})))
+                      effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                      t4 (System/nanoTime)
+                      _ (is (= :passed (:status effect-verification)))
+                      _ (when-not (= :passed (:status effect-verification))
+                          (throw (ex-info "Set conversion C8 source verification prerequisite rejected" {:name name :extension extension})))
+                      graph (:effect-graph effects)
+                      specs (if transfer? [['caught [:problem] true] ['main [] true]]
+                                [['w5-se-unique-values? [["a" "b" "c"]] true]
+                                 ['w5-se-unique-values? [["a" "b" "a"]] false]
+                                 ['w5-se-unique-values? [["FB" "Ea" "x"]] true]
+                                 ['w5-se-unique-values? [["\u00e9" "e\u0301" "x"]] true]
+                                 ['empty-set-count [] true] ['heterogeneous-set-count [] true] ['main [] true]])
+                      t5 (System/nanoTime)
+                      results (mapv (fn [[function args expected]]
+                                      (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                                             [{:op :function-call :function function :args (literal-instructions args)}
+                                                              {} "" (:functions assembled) []])]
+                                        (is (= [expected "" :normal] result) (str name extension " " function " " args))
+                                        result)) specs)
+                      t6 (System/nanoTime)]
+                  (is (= (if transfer? 2 4) (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+                  (is (= (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+                  (is (= 2 (count conversions) (count conversion-ir)
+                           (count (filter #(= :sh08-set-conversion-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+                  (is (= (if transfer? {:normal 1 :not-invoked 1} {:normal 2}) (frequencies (map :application conversions))))
+                  (doseq [descriptor conversions]
+                    (let [id (:call-core-node-id descriptor) invoked? (= :normal (:application descriptor))
+                          allocation (get-in graph [:nodes id :allocation])]
+                      (is (= :sh08-set-conversion-v1 (:version descriptor)))
+                      (is (= 'gravity.collections (:semantic-owner descriptor)))
+                      (is (= (if invoked? :gravity.type/set :gravity.type/never) (:return descriptor) (:result-type descriptor)))
+                      (is (= [:memory/allocate] (:latent-effects descriptor)))
+                      (is (= (if invoked? [:memory/allocate] []) (:direct-effects descriptor)))
+                      (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
+                      (is (= :not-established (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
+                      (is (= (if invoked? #{:memory/allocate} #{}) (get-in graph [:nodes id :direct])))
+                      (is (= invoked? (:normal-completion-possible? allocation)))
+                      (is (= :runtime-value-dependent (get-in allocation [:extent :result-cardinality])))
+                      (is (= (:input-element-count descriptor) (get-in allocation [:extent :upper-bound])))
+                      (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (get-in graph [:nodes id :dependencies])))
+                      (when-not invoked? (is (contains? (get-in graph [:nodes id :transitive]) :error/throw)))))
+                  (doseq [descriptor queries]
+                    (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+                    (is (nil? (get-in graph [:nodes (:call-core-node-id descriptor) :allocation]))))
+                  (is (some #(= :established-persistent-set (get-in % [:query-semantics :normal-input])) queries))
+                  (doseq [instruction conversion-ir]
+                    (is (= #{:op :function :args} (set (keys instruction))))
+                    (is (= 1 (count (:args instruction)))))
+                  (doseq [[function record] functions] (is (= :gravity.type/bool (:return record)) (str function)))
+                  (doseq [[function compiled] (:functions assembled)]
+                    (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
+                  (when-not transfer?
+                    (let [wrapper (first (filter #(= 'w5-se-unique-values? (:definition-name %)) (:function-records core)))]
+                      (is (not (contains? wrapper :signature)))
+                      (is (= [{:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 3 :gravity.type/string))}]
+                             (mapv :type (get-in functions ['w5-se-unique-values? :parameters]))))
+                      (is (nil? (:recursive-proof facts)))
+                      (is (= #{0 3} (set (map :input-element-count conversions))))))
+                  (println (pr-str {:az-set-conversion-positive name :extension extension :function-table-entry-invocations (count results)
+                                    :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0)
+                                                 :c8-construction (- t3 t2) :c8-verification (- t4 t3)
+                                                 :entry-execution-including-expectations (- t6 t5)}
+                                    :clock :monotonic-nanoseconds :authority :non-authoritative :nested-work :included}))
+                  {:name name :input input :module module :definitions definitions :assembled assembled :conversions conversions
+                   :binding binding :effects effects :graph graph :results results}))
+              (for [name ["local-runtime-set-conversion" "local-runtime-set-conversion-transfer"]
+                    extension [".gravity" ".qst"]] [name extension]))
+        {:keys [input module definitions conversions binding effects graph]} (first cases)
+        descriptor (first conversions)
+        forged (assoc-in descriptor [:construction-policy :value-work :provider-cpu-bound] :proven)
+        hostile (walk/prewalk #(if (= % descriptor) forged %) (:typed input))
+        failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function
+                                                 emitter module (get definitions 'w5-se-unique-values?) (assoc input :typed hostile)))))]
+    (doseq [[left right] (partition 2 cases)]
+      (is (= (get-in left [:input :typed :identity-input]) (get-in right [:input :typed :identity-input])))
+      (is (= (:graph left) (:graph right)))
+      (is (= (:results left) (:results right)))
+      (is (= (typed-functions-without-source-path (get-in left [:assembled :functions]))
+             (typed-functions-without-source-path (get-in right [:assembled :functions])))))
+    (is (= "P15S23Q002" (:id failure)))
+    (is (= :rejected (:status (last @verified))))
+    (is (= 5 (count @verified)))
+    (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding
+                              (reseal effects (update-in graph [:nodes (:call-core-node-id descriptor)] dissoc :allocation))))))
+    (doseq [suffix ["unknown" "member" "zero" "two"]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/set-conversion-" suffix ".gravity"))
+            diagnostics (get-in products [:typed :diagnostics])]
+        (println (pr-str {:az-product-elapsed (str "set-conversion-" suffix) :timing (:development-timing products)}))
+        (is (= :accepted (get-in products [:c5 :status])) suffix)
+        (is (= :passed (get-in products [:report :status])) suffix)
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (vector? diagnostics) suffix)
+        (is (seq diagnostics) suffix)
+        (is (every? #(and (string? (:rule %)) (keyword? (:reason %))) diagnostics) (pr-str [suffix diagnostics]))
+        (is (= ["C7-TYPE-MISMATCH" (if (contains? #{"unknown" "member"} suffix)
+                                       :set-conversion-operand-type-required :set-conversion-arity-mismatch)]
+               ((juxt :rule :reason) (first diagnostics))) (pr-str [suffix diagnostics]))
+        (println (pr-str {:az-set-conversion-negative suffix :diagnostics diagnostics}))))))
+
 (deftest current-gravity-integer-predicate-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
@@ -10493,6 +10673,202 @@
       (is (= ["C6-VERIFY" :core-lowering :recur-tail-position-required]
              [(:rule failure) (:stage failure) (get-in failure [:facts :reason])]))
       (is (= 'example.not-non-tail-recur (:namespace failure))))))
+
+(deftest current-gravity-set-target-and-association-eligibility-development-kernel
+  ;; Normalized binding eligibility is not a WASM compilation claim.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'set-conversion-input) c7 (ns-resolve upstream 'invoke-c7)
+        input (input-fn [:gravity.type/never]) binding (get-in input [:bindings :ordering-binding])
+        association (assoc binding :name 'assoc)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)]
+    (doseq [target [:jvm :wasm]]
+      (let [module (assoc (:module input) :target target)]
+        (is (true? (c7 'sh08-ma-binding? [association module])))
+        (is (true? (body 'body-ma-binding? association module)))
+        (is (true? (lower 'p15-s23-ma-binding? association module)))
+        (is (= (= :jvm target) (c7 'sh08-st-binding? [binding module])))
+        (is (= (= :jvm target) (body 'body-st-binding? binding module)))
+        (is (= (= :jvm target) (lower 'p15-s23-st-binding? binding module)))))))
+
+(deftest current-gravity-set-conversion-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'set-conversion-input)
+        derive (ns-resolve upstream 'set-conversion-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
+    (doseq [type [{:kind :gravity.type/vector :shape :literal :element-types []}
+                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 3 :gravity.type/string))}
+                  :gravity.type/never]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+            result (derive input 65536) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings
+                     :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-st-call-fact [descriptor module])}
+                     :ledger [(c7 'sh08-st-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
+            compile #(lower 'p15-s23-typed-compile-node % :call %2)
+            compiled (compile context 65536)]
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (when-not (= :complete (:status compiled))
+          (throw (ex-info "Set conversion lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+        (is (= {:op :builtin-call :function 'set :args [{:op :local :name 'value}]} (:value compiled)))
+        (is (= compiled (compile context (:work-count compiled))))
+        (is (= :rejected (:status (compile context (dec (:work-count compiled))))))
+        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
+              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 65536)
+              failed (compile changed 65536)]
+          (is (= :rejected (:status failed)))
+          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
+          (is (= own (:work-count (compile context own)))))
+        (doseq [changed [(assoc-in descriptor [:construction-policy :order] :input-order)
+                         (assoc-in descriptor [:construction-policy :value-work :provider-cpu-bound] :proven)
+                         (assoc-in descriptor [:construction-policy :operand-position] :tail)
+                         (assoc descriptor :direct-effects [:io/write])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
+                         (assoc descriptor :operand-type-work 0)]]
+          (let [forged (-> context (assoc-in [:types :operator] changed)
+                           (assoc :call-facts {:call (c7 'sh08-st-call-fact [changed module])}
+                                  :ledger [(c7 'sh08-st-constraint [changed])]))]
+            (is (= :rejected (:status (compile forged 65536))))))
+        (doseq [[case-index mutate] (map-indexed vector [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)])]
+          (is (= :rejected (:status (compile (mutate context) 65536))) (str "predicate context mutation " case-index)))))
+    (let [runtime-plan (:plan (typed-catch-runtime-projection))
+          invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan name (vec args)))
+          build (fn [values budget] (invoke 'p15-s23-runtime-set-conversion-work values budget))
+          literal (fn [value] {:op :literal :value value})
+          conversion (fn [operand] {:op :builtin-call :function 'set :args [operand]})
+          cardinality (fn [operand] {:op :builtin-call :function 'count :args [operand]})
+          say (fn [value] {:op :do :body [{:op :println :args [(literal "operand")] :effect :io/write :capability :io/stdout} value]})
+          execute (fn [instruction] (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "" {} []))
+          smile (String. (Character/toChars 0x1f600))]
+      ;; Assert the selected provider hash route before claiming a distinct-value collision.
+      (is (not= "FB" "Ea"))
+      (is (= (clojure.lang.Util/hasheq "FB") (clojure.lang.Util/hasheq "Ea")))
+      (doseq [[values expected-count work units]
+              [[[] 0 1 0] [["a"] 1 4 1] [["a" "b" "a"] 2 19 3] [["" ""] 1 6 0]
+               [["FB" "Ea"] 2 14 4] [["\u00e9" "e\u0301" smile] 3 25 5]]]
+        (let [result (build values 65536) original (vec values)]
+          (is (= :accepted (:status result)))
+          (is (= expected-count (count (:value result))))
+          (is (every? #(contains? (:value result) %) values))
+          (is (= work (:work-count result)))
+          (is (= units (:representation-units result)))
+          (is (= :exact-logical-content-reservation (:work-count-kind result)))
+          (is (= :not-established (:provider-cpu-bound result)))
+          (is (= result (build values work)))
+          (is (= :set-conversion-work-limit (:reason (build values (dec work)))))
+          (is (= original values))
+          (is (= [expected-count "" :normal] (execute (cardinality (conversion (literal values))))))
+          (is (= [expected-count "operand\n" :normal] (execute (cardinality (conversion (say (literal values)))))))))
+      (let [left (String. "repeat") right (String. "repeat")]
+        (is (not (identical? left right)))
+        (is (= left right))
+        (is (= 1 (count (:value (build [left right] 65536))))))
+      (doseq [values [nil '("a") #{"a"} [1] ["a" :late] ["a" nil]]]
+        (is (= :set-conversion-string-vector-required (:reason (build values 65536)))))
+      (is (= :set-conversion-value-width (:reason (build (vec (repeat 1025 "")) 65536))))
+      (doseq [budget [nil -1 "bad"]]
+        (is (= :set-conversion-work-limit (:reason (build ["a"] budget)))))
+      (let [wide (build (vec (repeat 1024 "")) 65536)
+            content (build [(apply str (repeat 65536 "x"))] 65536)]
+        (is (= :set-conversion-work-limit (:reason wide) (:reason content)))
+        (is (= :exceeded-allowance-lower-bound (:work-count-kind wide) (:work-count-kind content))))
+      (let [visits (atom 0)
+            hostile (reify clojure.lang.IHashEq
+                      (hasheq [_] (swap! visits inc) (throw (AssertionError. "invalid Set member hashed")))
+                      clojure.lang.Seqable
+                      (seq [_] (swap! visits inc) (throw (AssertionError. "invalid Set member traversed")))
+                      Object
+                      (hashCode [_] (swap! visits inc) (throw (AssertionError. "invalid Set member hashed"))))
+            invalid ["a" "b" hostile]
+            rejected (build invalid 65536)]
+        (is (= :set-conversion-string-vector-required (:reason rejected)))
+        (is (= :validation-reservation (:work-count-kind rejected)))
+        (is (= ["operand\n" :rejected] (subvec (execute (conversion (say (literal invalid)))) 1)))
+        (is (zero? @visits)))
+      (is (= [:problem "operand\n" :thrown]
+             (execute (conversion (say {:op :throw :value (literal :problem)})))))
+      (is (= ["caught" "" :normal]
+             (execute {:op :try :protected (conversion {:op :throw :value (literal "caught")})
+                       :handlers [{:type :gravity.type/string :name 'error :body {:op :local :name 'error}}]})))
+      (doseq [instruction [{:op :builtin-call :function 'set :args []}
+                           {:op :builtin-call :function 'set :args [(say (literal ["a"])) (literal ["b"])]}
+                           (assoc (conversion (say (literal ["a"]))) :work-budget 65537)]]
+        (is (= ["" :rejected] (subvec (execute instruction) 1))))
+      (let [target "set-target" instruction {:op :loop :target target :bindings []
+                                             :body [(conversion {:op :recur :target target :args []})]}]
+        (is (= ["" :rejected] (subvec (execute instruction) 1))))
+      (let [function {:name 'produce :arity 0 :params [] :instructions [(say (literal ["a" "a"]))]}
+            instruction (cardinality (conversion {:op :function-call :function 'produce :args []}))]
+        (is (= [1 "operand\n" :normal]
+               (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "" {'produce function} ['main])))))))
+
+(deftest current-gravity-set-count-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'integral-ordering-input) c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
+    (doseq [type [:gravity.type/set
+                  {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/integer]}
+                  {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/unknown]}]]
+      (let [{:keys [core node call edge nodes bindings types forms module]} (input-fn 'count [type])
+            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call :gravity.type/integer)
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-cq-call-fact [descriptor module])}
+                     :ledger [(c7 'sh08-cq-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
+            compile #(lower 'p15-s23-typed-compile-node % :call %2) compiled (compile context 65536)]
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= {:op :builtin-call :function 'count :args [{:op :local :name 'value}]} (:value compiled)))
+        (is (= compiled (compile context (:work-count compiled))))
+        (is (= :rejected (:status (compile context (dec (:work-count compiled))))))
+        (doseq [changed [(assoc context :ledger [])
+                         (update context :ledger into (:ledger context))
+                         (update context :ledger conj (assoc-in (first (:ledger context)) [:lhs :core-node-id] :orphan))
+                         (assoc-in context [:call-facts :call :effects] [:memory/allocate])
+                         (assoc-in context [:forms :arg0 :parent-form-id] :sibling)]]
+          (is (= :rejected (:status (compile changed 65536)))))
+        (let [changed (assoc-in descriptor [:query-semantics :normal-input] :established-string-set)
+              forged (-> context (assoc-in [:types :operator] changed)
+                         (assoc :call-facts {:call (c7 'sh08-cq-call-fact [changed module])}
+                                :ledger [(c7 'sh08-cq-constraint [changed])]))]
+          (is (= :rejected (:status (compile forged 65536)))))))
+    (let [runtime-plan (:plan (typed-catch-runtime-projection))
+          evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan 'p15-s23-runtime-evaluate-in-context [% {} "" {} []])
+          query (fn [value] {:op :builtin-call :function 'count :args [{:op :quote :value value}]})]
+      (doseq [[value n] [[#{} 0] [#{:keyword 7} 2] ['#{(println "stored") :keyword 7} 3]]]
+        (is (= [n "" :normal] (evaluate (query value)))))
+      (let [active (atom false) visits (atom 0)
+            payload (reify clojure.lang.IHashEq
+                      (hasheq [_] (if @active (do (swap! visits inc) (throw (AssertionError. "Set count hashed member"))) 17))
+                      clojure.lang.Seqable
+                      (seq [_] (swap! visits inc) (throw (AssertionError. "Set count traversed member"))))
+            stored (hash-set payload :stored)]
+        (reset! active true)
+        (is (= [2 "" :normal] (evaluate (query stored))))
+        (is (zero? @visits)))
+      (let [say {:op :println :args [{:op :literal :value "once"}] :effect :io/write :capability :io/stdout}
+            operand {:op :quote :value #{:keyword 7}}]
+        (is (= [2 "once\n" :normal] (evaluate {:op :builtin-call :function 'count :args [{:op :do :body [say operand]}]})))
+        (is (= [:problem "once\n" :thrown]
+               (evaluate {:op :builtin-call :function 'count :args [{:op :do :body [say {:op :throw :value {:op :literal :value :problem}}]}]})))))))
 
 (deftest current-gravity-integer-predicate-lowering-runtime-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -11533,9 +11909,9 @@
         evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
         literal (fn [value] {:op :literal :value value}) query (fn [operand] {:op :builtin-call :function 'count :args [operand]})]
     (doseq [[value n] [[{} 0] [[] 0] [{:value [1 2 3]} 1] [[{:a 1} [2 3] nil] 3]
-                      [{"string key" #{1 2} [:vector :key] '(arbitrary data)} 2]]]
+                      [{"string key" #{1 2} [:vector :key] '(arbitrary data)} 2] [#{1 2} 2]]]
       (is (= [n "" :normal] (evaluate (query (literal value))))))
-    (doseq [value [nil "abc" 7 true #{1 2} (seq [1 2])]]
+    (doseq [value [nil "abc" 7 true (seq [1 2])]]
       (is (= :collection-count-map-or-vector-required (get-in (evaluate (query (literal value))) [0 :reason]))))
     (doseq [instruction [{:op :builtin-call :function 'count :args []}
                          {:op :builtin-call :function 'count :args [(literal {}) (literal [])]}

@@ -1,0 +1,27 @@
+(ns example.runtime-set-conversion
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-se-unique-values? [values]
+  (if (= (count values) (count (set values))) true false))
+
+(defn empty-set-count []
+  (= (count (set [])) 0))
+
+(defn heterogeneous-set-count []
+  (= (count '#{:stored 7 (println "stored")}) 3))
+
+(defn main []
+  (if (w5-se-unique-values? ["a" "b" "c"])
+    (if (w5-se-unique-values? ["a" "b" "a"])
+      false
+      (if (w5-se-unique-values? ["FB" "Ea" "x"])
+        (if (w5-se-unique-values? ["\u00e9" "e\u0301" "x"])
+          (if (empty-set-count) (heterogeneous-set-count) false)
+          false)
+        false))
+    false))

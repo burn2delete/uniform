@@ -1,0 +1,10 @@
+(ns example.rejected-set-conversion-unknown
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [probe])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn probe [value]
+  (set value))

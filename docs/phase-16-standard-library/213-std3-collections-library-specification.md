@@ -50,6 +50,29 @@ Collection semantics are owned by `gravity.collections`; a `gravity.core`
 compatibility binding does not change that ownership. Existing profile,
 target, effect, capability and safety legality requirements still apply.
 
+## Persistent Set Conversion And Cardinality
+
+For a finite Vector whose stored values support Gravity equality and hashing,
+`(set items)` returns a persistent Set containing one representative of each
+value-equality class in the Vector. Duplicate occurrences do not add members;
+an empty Vector produces an empty Set. This rule does not promise an iteration
+order, object identity or physical sharing. The original Vector is unchanged,
+and stored payloads are not evaluated.
+
+The unary operand follows ordinary L2 evaluation exactly once; a control
+transfer aborts invocation. The selected representation must declare possible
+allocation, including empty conversion, and storage/lifetime policy under
+effects, ownership and profile rules. Value equality and hashing follow STD2;
+a host representation must not silently substitute different value rules.
+
+For a persistent Set, `(count items)` returns the non-negative integer number
+of distinct stored members, including zero for an empty Set. It evaluates its
+operand normally, preserves transfers and the original Set, and does not
+evaluate stored payloads. Collection semantics belong to `gravity.collections`;
+a `gravity.core` compatibility binding does not change that ownership. These
+rules do not grant arbitrary sequence conversion, every member family or
+profile support, or Set equality and iteration implementation support.
+
 ## Persistent Vector Value Equality
 
 For two persistent Vectors whose stored values support Gravity equality,
@@ -206,6 +229,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 
 - Persistent operations preserve old collection values in all supported profiles.
 - Vector family classification distinguishes Vector and non-Vector values, preserves ordinary unary evaluation and transfers, and neither evaluates stored payloads nor invents member or bounds facts.
+- Persistent Set conversion covers empty, unique and duplicate Vector values under supported Gravity equality/hash rules, preserves ordinary evaluation and transfers and the old value, and declares allocation/storage policy; Set cardinality counts distinct stored members without evaluating payloads or promising iteration order.
 - Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
 - Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
