@@ -11211,8 +11211,8 @@
   ;; Complete normalized function roots retain the existing private-entry premise.
   (let [base (private-entry-vector-get-input [[\a] [\b]])
         callers (mapv (fn [i]
-                        (let [id (keyword (str "caller-fn-" i)) owner (keyword (str "caller-" i))]
-                          {:node-id id :core-form :fn :children [(keyword (str "entry-" i))] :attributes {}
+                        (let [owner (keyword (str "caller-" i))]
+                          {:node-id owner :core-form :fn :children [(keyword (str "entry-" i))] :attributes {} :resolved-binding-ids []
                            :source {:form-id owner :syntax-id owner}
                            :evaluation {:kind :function-creation :order []}})) [0 1])
         records (mapv (fn [record]
@@ -11220,7 +11220,7 @@
                           (assoc record :body-core-node-id (if (= :caller-0 (:function-syntax-id record)) :entry-0 :entry-1)
                                         :fixed-arity 0 :parameter-binding-ids []))) (get-in base [:core :function-records]))
         core (assoc (:core base) :nodes (into (get-in base [:core :nodes]) callers) :function-records records
-                    :root-core-node-ids [:helper-def :caller-fn-0 :caller-fn-1])
+                    :root-core-node-ids [:helper-def :caller-0 :caller-1])
         nodes (into {} (map (juxt :node-id identity) (:nodes core)))
         input (-> base (assoc :core core :nodes nodes)
                   (assoc-in [:products :function-index] (into {} (map (juxt :function-syntax-id identity) records))))
@@ -11247,7 +11247,8 @@
         ;; 34 rooted nodes: source/header reservation 531, owner traversal 34.
         prefix 565]
     (is (= 34 (count (:nodes core))))
-    (is (= :accepted (:status result) (:status own) (:status accepted)))
+    (is (= :accepted (:status result) (:status own) (:status accepted)) (pr-str {:derived result :measured own :consumer accepted}))
+    (when (= :accepted (:status result) (:status own) (:status accepted))
     (is (= [] (get-in accepted [:throws :helper-form])))
     (is (= 1 (get @visits 'sh08-mg-inferred-work 0) (get @visits 'sh08-pe-finish 0))
         "The owning consumer measures and reconstructs the private result once")
@@ -11262,4 +11263,4 @@
       (is (= ["C7-GENERIC" :map-get-work-limit] ((juxt :rule :reason) (first (:diagnostics rejected)))))
       (is (= limit (:work-count rejected))))
     (let [changed (assoc-in types [:operator :version] :sh08-map-get-present-v1)]
-      (is (= :rejected (:status (check changed 65536)))))))
+      (is (= :rejected (:status (check changed 65536))))))))

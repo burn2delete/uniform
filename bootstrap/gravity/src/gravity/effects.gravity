@@ -5007,6 +5007,8 @@
         forms (get (get facts :map-get-context) :forms)
         input (get (get descriptor :presence-proof) :operand-shape)
         expected (if (map? header)
+                   (if (= :not-invoked (get header :application))
+                     (body-mg-present-finish header input)
                    (let [paid (get (get (get facts :map-get-context) :private-selected-checks) (get node :node-id))
                          fields [:kind :operation :semantic-owner :intrinsic :resolution :operator-node-id :operator-binding-id
                                  :call-core-node-id :source :operator-source :source-call :source-edge :source-binding :argument-types
@@ -5026,7 +5028,7 @@
                                                (= (get entry :argument-type) (get types argument-id))
                                                (= (get entry :argument-types) (body-io-child-types args types))])
                                            (recur (rest remaining) (rest calls)) false))))) paid nil) nil))
-                         paid) nil)) nil)
+                         paid) nil))) nil)
         rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-get-v1)
                           :lhs {:core-node-id (get node :node-id) :projection :map-get})]
     (if (map? expected)
