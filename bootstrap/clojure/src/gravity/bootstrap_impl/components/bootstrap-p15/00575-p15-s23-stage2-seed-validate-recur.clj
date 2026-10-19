@@ -1,3 +1,4 @@
+(declare p15-s23-stage2-module-map-entries)
 (defn- p15-s23-stage2-seed-throw-arity! [module form]
   (when-not (= 2 (count form))
     (fail! "L2-THROW-ILLEGAL" "seed throw requires exactly one operand"
@@ -9,15 +10,16 @@
   ;; Source forms are untrusted at this boundary.  Carry tail context on an
   ;; explicit worklist so deeply nested rejected input cannot consume the host
   ;; call stack before producing a structured diagnostic.
-  (loop [pending [[form target-arity tail-position?]]
+  (loop [pending [[form target-arity tail-position? (:p15-s23-sh07-callsite-path module [])]]
          observed 0]
     (when (> observed 262144)
       (p15-s23-stage2-seed-recur-fail!
        module form target-arity nil :validation-form-limit))
     (if (empty? pending)
       :passed
-      (let [[current current-target current-tail?] (peek pending)
+      (let [[current current-target current-tail? path] (peek pending)
             pending (pop pending)
+            map-items (when (map? current) (p15-s23-stage2-module-map-entries module current path))
             tasks
             (cond
               (seq? current)
@@ -132,47 +134,29 @@
 
               (map? current)
               (mapv #(vector % current-target false)
-                    (mapcat identity (sort-by pr-str current)))
+                    (mapcat rest map-items))
 
               (set? current)
               (mapv #(vector % current-target false)
                     (sort-by pr-str current))
 
               :else
-              [])]
+              [])
+            paths (cond
+                    (seq? current)
+                    (case (first current)
+                      quote []
+                      if (mapv #(conj path %) [1 2 3])
+                      (let loop) (into (mapv #(conj path 1 %) (range 1 (count (second current)) 2))
+                                       (map #(conj path %) (range 2 (count current))))
+                      (mapv #(conj path %) (range 1 (count current))))
+                    (map? current) (vec (mapcat (fn [[index _ _]] [(conj path (* 2 index)) (conj path (inc (* 2 index)))]) map-items))
+                    (coll? current) (mapv #(conj path %) (range (count current)))
+                    :else [])
+            tasks (mapv (fn [task child-path] (conj task child-path)) tasks paths)]
         ;; `pending` is a LIFO vector.  Reverse newly discovered tasks so
         ;; diagnostics retain deterministic left-to-right source order.
         (recur (into pending (reverse tasks)) (inc observed))))))
-
-(defn p15-s23-stage2-seed-compile-collection
-  [emitter module locals form]
-  (let [collection-rules (:collection-rules emitter)]
-    (cond
-      (vector? form)
-      {:op (get-in collection-rules [:vector :op] :vector-literal)
-       :items (mapv (fn [index item]
-                      (p15-s23-stage2-seed-compile-expr emitter
-                       (if (contains? module :p15-s23-stage2-module-routes)
-                         (assoc module :p15-s23-sh07-callsite-path (conj (:p15-s23-sh07-callsite-path module []) index)) module)
-                       locals item)) (range (count form)) form)}
-
-      (map? form)
-      {:op (get-in collection-rules [:map :op] :map-literal)
-       :entries (mapv (fn [[k v]]
-                        {:key (p15-s23-stage2-seed-compile-expr
-                               emitter module locals k)
-                         :value (p15-s23-stage2-seed-compile-expr
-                                 emitter module locals v)})
-                      (sort-by (fn [[k v]] (pr-str [k v])) form))}
-
-      (set? form)
-      {:op (get-in collection-rules [:set :op] :set-literal)
-       :items (mapv #(p15-s23-stage2-seed-compile-expr emitter module locals %)
-                    (sort-by pr-str form))}
-
-      :else
-      {:op (get-in collection-rules [:literal :op] :literal)
-       :value form})))
 
 (defn p15-s23-stage2-seed-compile-let
   [emitter module locals bindings body]

@@ -1,0 +1,11 @@
+(ns example.module-map-order-root
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-map-order-leaf :as leaf]) (:exports [main])
+  (:effects #{:io/write :memory/allocate}) (:capabilities #{:io/stdout}) (:safety :safe))
+(defn observe [label value] (println label) value)
+(defn main []
+  (let [packet (leaf/packet)
+        result {:z (observe "root-z" (get packet :z))
+                :a (observe "root-a" (get packet :a))}]
+    [(get packet :v) (get result :z) (get result :a)
+     '{:inert (println "NEVER") :private (leaf/hidden :data)}]))

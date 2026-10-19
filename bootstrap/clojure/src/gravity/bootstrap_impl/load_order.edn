@@ -868,6 +868,7 @@
  {:resource "gravity/bootstrap_impl/components/foundation/00573-hosted-core-compiled-app-proof-source-artifact.clj", :reader-line 85422, :owner :foundation, :first-form "hosted-core-compiled-app-proof-source-artifact"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00574-p15-s23-stage2-plan-emitter-required-preserves.clj", :reader-line 85500, :owner :bootstrap-p15, :first-form "p15-s23-stage2-plan-emitter-required-preserves"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00575-p15-s23-stage2-seed-validate-recur.clj", :reader-line 85642, :owner :bootstrap-p15, :first-form "p15-s23-stage2-seed-validate-recur!"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00575-p15-s23-stage2-module-map-order.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-module-map-order"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00576-p15-s23-stage2-seed-compile-expr.clj", :reader-line 85862, :owner :bootstrap-p15, :first-form "p15-s23-stage2-seed-compile-expr"}
  {:resource "gravity/bootstrap_impl/components/foundation/00577-p15-s23-stage2-compiler-artifact-binding.clj", :reader-line 86033, :owner :foundation, :first-form "*p15-s23-stage2-compiler-artifact-binding*"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00578-p15-s23-stage2-runtime-execute-function.clj", :reader-line 86035, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-execute-function"}
