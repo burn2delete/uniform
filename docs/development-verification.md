@@ -2390,7 +2390,9 @@ Do not construct another source product for each malformed proof field.
 
 For an immutable private function parameter, L5 permits entry-specific key
 facts when every normally invoking incoming call independently establishes the
-key and selected scalar type. Edit the same C7, effect and emitter owners, not a new
+key and independently established selected stored type. The original development
+subset supported scalar results; this was not a scalar-only L5 requirement.
+Edit the same C7, effect and emitter owners, not a new
 admission wrapper. Preserve each caller's distinct source, Map shape and key
 coordinate; equal member types do not imply equal keys or a common deep shape.
 
@@ -2428,6 +2430,45 @@ It preserves W5's original unannotated span helper, reuses accepted products
 for C8/lowering/runtime checks, and does not migrate W5 or admit a compiler
 revision. Do not repeat unchanged upstream construction for every mutant or
 subsequent documentation edit.
+
+The finite-Vector result extension uses the existing exact positional Vector
+type, including fully validated nested finite Map types. Every normal entry
+must establish the same selected type; empty Vector is a valid `get` result
+but does not satisfy `first`'s nonempty requirement. Bare, unknown-length,
+malformed or incompletely established Vector results remain unsupported.
+The extension does not establish inner Map keys from member types or create a
+common deep parameter shape. Runtime lookup and public interfaces are unchanged.
+
+Run the owning development kernels for changes to this extension:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-private-entry-vector-get-development-kernel \
+  --exact sh08-private-entry-vector-get-rejection-development-kernel \
+  --exact sh08-private-entry-vector-get-scoped-consumer-development-kernel \
+  --exact sh08-finite-present-result-compatibility-development-kernel \
+  --exact body-private-entry-vector-get-development-kernel \
+  --exact body-vector-index-get-map-context-compatibility-development-kernel \
+  --exact current-gravity-private-entry-vector-get-development-kernel --fail-fast
+```
+
+These check recursive validation before comparison, failed-work accounting,
+the actual owning consumer's exact/short budget and invocation-local reuse,
+coherent forgeries and existing Map/Vector lookup routes. Internal paid context
+is freshly derived by the public C8 build and verification path, not an input
+authority or persisted success cache. A private-leaf test must preserve that
+precondition when mutating public facts.
+
+For affected source integration, select
+`current-gravity-private-entry-vector-get-authenticated-composition` in the
+SH01 namespace; its `*-fixtures-development-kernel` companion provides cheap
+G/Q parser feedback. The composition executes the current Gravity runtime.
+The seed does not support emitted `:keyword-map-lookup`, so these entries have
+no same-emitted-IR seed comparisons. Returned Map observations do not establish
+Gravity Map equality. This is not whole-C17 execution or authoritative migration.
 
 ### Module-local literal initialization and reads
 
