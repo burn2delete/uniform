@@ -150,8 +150,11 @@
     (cond
       (vector? form)
       {:op (get-in collection-rules [:vector :op] :vector-literal)
-       :items (mapv #(p15-s23-stage2-seed-compile-expr emitter module locals %)
-                    form)}
+       :items (mapv (fn [index item]
+                      (p15-s23-stage2-seed-compile-expr emitter
+                       (if (contains? module :p15-s23-stage2-module-routes)
+                         (assoc module :p15-s23-sh07-callsite-path (conj (:p15-s23-sh07-callsite-path module []) index)) module)
+                       locals item)) (range (count form)) form)}
 
       (map? form)
       {:op (get-in collection-rules [:map :op] :map-literal)
