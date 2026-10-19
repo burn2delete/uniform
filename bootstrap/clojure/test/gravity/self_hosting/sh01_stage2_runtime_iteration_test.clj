@@ -22189,6 +22189,12 @@
                        (assoc (first (:ledger context)) :lhs opaque)
                        (assoc-in (first (:ledger context)) [:lhs :core-node-id] [opaque])]]
             (is (= :rejected (:status (compile (update context :ledger conj row) 65536)))))
+          (let [other-call (assoc call :core-node-id :other :operator-node-id opaque)
+                other-node (assoc node :node-id :other)
+                other-row (assoc-in (first (:ledger context)) [:lhs :core-node-id] :other)
+                candidate (-> context (assoc-in [:calls :other] other-call)
+                              (assoc-in [:nodes :other] other-node) (update :ledger conj other-row))]
+            (is (= :rejected (:status (compile candidate 65536)))))
           (is (= 0 @callbacks)))
         (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
                         #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
