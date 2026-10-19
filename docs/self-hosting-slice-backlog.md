@@ -5516,6 +5516,53 @@ exceptions, maximum 250 lines. No old source composition was replayed.
 Focused implementation and this affected composition do not establish
 authoritative migration, milestone or self-hosting completion.
 
+### Ordinary C5 recognition of the declared List predicate: development repair
+
+A deliberately selected real runtime producer-consumer check exposed a
+declaration mismatch, not a passing whole-module composition. The retained
+candidate `536d7395` stopped naturally during dependency C5 construction with
+`C5-UNRESOLVED` for operator `list?` in `gravity.runtime`: one test, zero
+passes, zero failed assertions and one error. Execution took 565.702 seconds
+after 8.986 seconds of namespace loading at 2 GiB, before the monitored
+ten-minute bound. No timeout or OOM was observed. Caller C5, both module
+bundles, routes, runtime execution and all 59 planned semantic checks were
+unrun. Its separate cheap interface test passed one test / ten assertions;
+that is AST feedback, not accepted dependency construction.
+
+The ordinary request catalog omitted `list?` even though the existing seed
+builtin declarations, executor and B51 catalog already recognize it. The
+repair adds only that name to `00870` plus a dedicated focused test. It does
+not change the Gravity resolver algorithm, seed or runtime semantics, import
+policy, public interfaces, profiles or target implementation support.
+
+The new check passed on its first run: one test / 47 assertions at 512 MiB,
+using three tiny genuine source attempts and the original fresh C5 verifier.
+It checks unqualified and qualified core identity/provenance, lexical
+shadowing and quote inertness; an unknown lookalike and unimported
+`clojure.core/list?` reject without a returned artifact. Execution took 67.391
+seconds after 7.295 seconds of loading. These are inclusive development
+observations, not a benchmark. LOC validation passed 2,021 source files,
+zero exceptions, maximum 250 lines.
+
+Catalog insertion can shift sorted core-row ordinals and derived identities.
+Affected request, consumer and authoritative evidence must be reassessed at
+their declared revisions; no corpus count/hash, old receipt or historical
+status is repinned. This recognition check does not complete a typed List
+predicate, current-closure resolution or any open SH-05/SH-06 group. The
+resolver remains development-unadmitted. The failed runtime attempt is not
+retroactively accepted and is not replayed after this repair.
+
+The public C5 route includes C2/C3/SH05 construction and fresh verification,
+resolution construction and, on successful construction, replay. This attempt
+stopped at its first resolution-template rejection, before C5 construction-proof
+replay; hosted C6 was not reached. The phase marker does not isolate those
+costs or establish a heap/GC cause, and
+does not explain the separate incomplete Checked-Core attempt. A bounded
+follow-up may distinguish those existing boundaries on a deliberately small
+subject before considering representation changes. No new lane, wrapper,
+acceptance cache, increased limit or unchanged large-subject retry is selected.
+Ordinary semantic implementation continues independently.
+
 ### Evaluated literal-Character Sets: development increment
 
 The existing typed emitter and runtime extend evaluated Set construction to
