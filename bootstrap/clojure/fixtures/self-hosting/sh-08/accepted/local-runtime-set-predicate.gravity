@@ -1,0 +1,46 @@
+(ns self-hosting.sh08.set-predicate
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [converted-values aggregate-control finite-set empty-set map-value vector-value list-value scalar-value nil-value transferred main]))
+
+(defn sh10-identity-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (set? value))))
+
+(defn converted-values []
+  (set ["artifact" "manifest" "artifact"]))
+
+(defn aggregate-control [] :- Bool
+  (sh10-identity-aggregate? (converted-values)))
+
+(defn finite-set [] :- Bool
+  (set? '#{:artifact "stored" 7 (println "unreached")}))
+
+(defn empty-set [] :- Bool
+  (set? #{}))
+
+(defn map-value [] :- Bool
+  (set? {:stored false}))
+
+(defn vector-value [] :- Bool
+  (set? [nil false :member]))
+
+(defn list-value [] :- Bool
+  (set? '(println "unreached")))
+
+(defn scalar-value [] :- Bool
+  (set? :member))
+
+(defn nil-value [] :- Bool
+  (set? nil))
+
+(defn transferred [] :- Bool
+  (try
+    (set? (throw "stop"))
+    (catch String problem false)))
+
+(defn main [] :- Bool
+  (aggregate-control))

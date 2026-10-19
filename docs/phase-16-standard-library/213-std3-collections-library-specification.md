@@ -62,6 +62,18 @@ ordering facts. `gravity.collections` owns the semantics; a `gravity.core`
 compatibility binding does not change that ownership. Existing profile,
 target, effect, capability and safety legality requirements still apply.
 
+## Set Family Predicate
+
+Unary `(set? value)` returns Bool true exactly when the normally evaluated
+value belongs to the Set family, and false for every other normally evaluated
+value. Its operand follows ordinary L2 evaluation exactly once; operand
+effects are preserved, and a control transfer aborts invocation. Classification
+does not evaluate stored payloads, mutate the value or itself construct a
+collection. This rule does not select member-type, cardinality, enumeration,
+flow-typing, representation or profile policy; their governing requirements
+still apply. `gravity.collections` owns the semantics; a `gravity.core`
+compatibility binding does not change that ownership.
+
 ## Persistent Set Conversion And Cardinality
 
 For a finite Vector whose stored values support Gravity equality and hashing,
@@ -270,6 +282,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Persistent operations preserve old collection values in all supported profiles.
 - Vector family classification distinguishes Vector and non-Vector values, preserves ordinary unary evaluation and transfers, and neither evaluates stored payloads nor invents member or bounds facts.
 - Map family classification distinguishes Map and non-Map values, preserves ordinary unary evaluation and transfers, and neither evaluates stored keys/values nor invents key, member, presence or cardinality facts.
+- Set family classification distinguishes Set and non-Set values, preserves ordinary unary evaluation and transfers, and does not evaluate stored payloads, mutate the value or construct a collection.
 - Persistent Set conversion covers empty, unique and duplicate Vector values under supported Gravity equality/hash rules, preserves ordinary evaluation and transfers and the old value, and declares allocation/storage policy; Set cardinality counts distinct stored members without evaluating payloads or promising iteration order.
 - Persistent Set equality covers empty, reordered and differing membership under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and does not evaluate stored payloads or depend on enumeration order or object identity.
 - Persistent Set membership covers empty, present and absent values under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and neither evaluates stored payloads nor depends on enumeration order or object identity.

@@ -2992,6 +2992,68 @@ include nested work and assertions, not exclusive cost or speedup evidence.
 This is not execution of the whole W5 helper, native/other-target support,
 current-closure admission or broader SH-07/self-hosting completion.
 
+### Set family classification: development implementation
+
+STD3 defines unary Set-family classification under ordinary L2 evaluation.
+The existing C7 engine, effects, typed emitter and Gravity runtime now carry a
+distinct Set-predicate descriptor, call fact and ledger rule. Valid closed
+first-order operand families are supported: bare and finite Sets classify
+true, other valid families false, and Never transfers. Unknown/Dynamic,
+malformed carriers and unsupported callable types remain typing rejections.
+This does not add annotation grammar, polymorphism, an IR operation, seed
+primitive or public API. The runtime remains 51 functions with unchanged
+exports; classification itself is shallow, with no member counting,
+enumeration, hashing, equality, mutation or collection construction. A
+throwing Set-provider control observes zero payload callbacks.
+
+Focused V1 at `90619dca` remains FAILED: 13 tests / 1,747 passes / one
+failure / no errors, with one selected C8 test unrun. The normalized whole-C8
+fixture omitted its actual module record and therefore rejected before the
+new context/ledger path. The correction supplies the existing module; it does
+not relax coverage validation. A separately reviewed malformed-call guard was
+also moved before ID-vector construction, with scalar/empty/oversized argument
+and scalar-child controls checking rejection without hostile callbacks.
+Targeted V2 at `2a0d02ee` passed four C8 tests / 294 assertions: 92 Map,
+63 Set-conversion, six whole-analyzer and 133 Set-predicate assertions. The
+analyzer checks acceptance, exact/one-less budget, and missing/duplicate/orphan
+ledger rows. Its execution was 3.610710917 seconds with a 2 GiB heap.
+
+Independent review accepted the component evidence and proportionate reuse of
+unchanged V1 C7/runtime/lowering successes. Across the two runs, all 14 unique
+focused selectors have passing observations: 1,883 assertions after excluding
+the failed consumer's three passing assertions and 155 overlapping adjacent
+C8 assertions. That union is not one successful 14-test run. Seven new kernels
+account for 857 assertions and seven adjacent regressions for 1,026. Initial
+review also caught omitted context installation/ledger wiring and a missed
+integral-ordering-probe skip; those actual-file omissions were corrected before
+the first JVM run. No threshold, type grammar or validator was weakened.
+
+Paired preflight passed 1 test / 7 assertions: six byte/parser/definition-count
+checks and an AST-equality check against the actual C9 aggregate helper.
+Source V1 at `bb505894` passed 1 test / 172 assertions, including six runtime
+loader assertions, in 227.950724334 seconds selected execution with a 2 GiB
+heap. One Gravity accepted fixture and one Gravity arity rejection ran; QST
+typed products did not. Twelve functions, 15 calls and nine Set-predicate
+descriptors (eight normal, one not-invoked) are checked. Eleven direct runtime
+table entries include ten seed-interpreter comparisons on the same emitted IR
+and one caught transfer, not a count of all dynamic helper invocations or an
+independent raw-source compiler comparison. One evaluated Set instruction is
+checked. The copied C9 helper body runs only on a monomorphic bare Set produced
+by existing String-Vector conversion; this is not a full C9 module build or
+generic polymorphism. Separate functions cover finite heterogeneous quoted
+Sets and non-Set values. Source pure operands do not independently observe I/O
+ordering; normalized runtime controls provide that evidence.
+
+Accepted and freshly verified C7/C8 products precede execution. Two additional
+tracked C7 gates accept assembly and reject a predicate-policy forgery; a
+resealed C8 dependency deletion rejects. The negative reaches accepted C5 and
+passed C6, then rejects at C7. Its test asserts primary
+`C7-TYPE-MISMATCH/:set-predicate-arity-mismatch`; the raw diagnostic vector also
+contains `C7-ANNOTATION/:unsupported-or-unresolved-core-node-type` as secondary.
+Complete C9/W5 helper support, broader targets and authoritative migration
+remain separate claims. The three current-closure
+evidence groups remain open and the resolver remains development-unadmitted.
+
 ### Finite Keyword-Set membership: development implementation
 
 STD3 Set membership now has a generic value-equality law. The implementation
