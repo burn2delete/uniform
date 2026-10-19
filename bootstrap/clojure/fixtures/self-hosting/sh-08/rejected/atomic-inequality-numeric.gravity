@@ -3,5 +3,5 @@
   (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe)
   (:exports [main]))
 
-;; Both domains remain checked when the first operand cannot return normally.
-(defn main [] (not= (throw "stop") 7))
+;; Nonintegral numeric values remain outside this implementation frontier, even with Never.
+(defn main [] (not= (throw "stop") 7.5))
