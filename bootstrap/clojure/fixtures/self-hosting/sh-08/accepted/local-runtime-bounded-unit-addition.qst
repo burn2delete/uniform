@@ -1,0 +1,34 @@
+(ns example.runtime-unit-addition
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn forward [middle :- Keyword]
+  (let [payloads [:keep middle :keep]]
+    (loop [cursor 0]
+      (if (< cursor (count payloads))
+        (recur (+ cursor 1))
+        cursor))))
+
+(defn mixed [choose-plus :- Bool middle :- Keyword]
+  (let [payloads [:keep middle :keep]
+        access payloads]
+    (loop [cursor 0]
+      (if (< cursor (count payloads))
+        (let [stored (get access cursor)]
+          (if (= stored :stop)
+            (throw stored)
+            (if choose-plus
+              (recur (+ cursor 1))
+              (recur (inc cursor)))))
+        cursor))))
+
+(defn caught [choose-plus :- Bool]
+  (try
+    (do (mixed choose-plus :stop) false)
+    (catch Keyword problem (= problem :stop))))
+
+(defn main []
+  (do (forward :keep) (mixed true :keep)))

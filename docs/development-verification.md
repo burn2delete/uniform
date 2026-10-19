@@ -2724,6 +2724,41 @@ fresh verification, typed lowering, effects and function-table execution.
 Do not repeat an unchanged composition to repair a reporting label or refresh
 migration status.
 
+### Binary unit steps in bounded loops
+
+For exact `(+ original-counter 1)` inside the bounded strict-loop domain, edit
+the existing C7 engine, `gravity/effects.gravity`, P15 emitter and
+`gravity/runtime.gravity`. Start with the owning component, not a corpus proof:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-bounded-unit-addition-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-bounded-unit-addition-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-bounded-unit-addition-lowering-development-kernel \
+  --exact current-gravity-bounded-unit-addition-runtime-development-kernel --fail-fast
+```
+
+Use `sh08-bounded-unit-addition-cold-two-loop-development-kernel` for the cold
+mixed-step/get/lexical-type dependency, and
+`sh08-bounded-unit-access-current-lexical-development-kernel` for exact immutable
+initializer propagation and budget guards. Neither substitutes for source
+composition. The cold source-prefix selector is a more expensive diagnostic
+tool when real frontend shape matters; it is not the default inner loop.
+
+The complete incoming census reconstructs each actual inc or binary unit step;
+all-inc v1 and mixed v2 evidence are not interchangeable. Both binary operands
+remain evaluated in order, runtime guards remain, and Never does not establish
+a numeric invariant. This is not general addition or ordinary-call induction.
+When these producer/consumer behaviors change, the existing affected integration
+selector is `current-gravity-bounded-unit-addition-authenticated-composition`.
+Its recorded result and limitations are in the backlog. Do not replay it for
+unchanged source or to refresh authoritative migration status.
+
 ### Direct integral ordering
 
 The C7 engine, `gravity/effects.gravity` and existing emitter own direct binary

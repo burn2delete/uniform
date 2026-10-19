@@ -5872,6 +5872,365 @@
       (is (= prior routed))
       (is (= :rejected (:status routed))))))
 
+(defn- bounded-unit-addition-input [input id]
+  (let [call (first (filter #(= id (:core-node-id %)) (get-in input [:core :calls])))
+        op (:operator-node-id call) slot (first (:argument-node-ids call))
+        unit-id (keyword (str (name id) "-unit"))
+        source {:form-id unit-id :syntax-id unit-id :semantic-span nil :origin-chain [] :generated-origin nil}
+        unit {:node-id unit-id :core-form :literal :children [] :attributes {:literal-kind :integer :value 1}
+              :resolved-binding-ids [] :source source :binding-context :body :evaluation {:kind :left-to-right :order []}}
+        children [op slot unit-id]
+        nodes (-> (:nodes input) (assoc unit-id unit)
+                  (assoc-in [op :attributes :symbol] '+) (assoc-in [op :attributes :binding-id] '+)
+                  (assoc-in [op :attributes :definition-syntax-id] '+) (assoc-in [op :resolved-binding-ids] ['+])
+                  (assoc-in [id :children] children) (assoc-in [id :resolved-binding-ids] ['+])
+                  (assoc-in [id :attributes] {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                                            :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
+                  (assoc-in [id :evaluation] {:kind :operator-then-arguments
+                                             :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}))
+        call (assoc call :operator-binding-id '+ :argument-node-ids [slot unit-id] :ordered-evaluation-node-ids children)]
+    (-> input (assoc :nodes nodes)
+        (assoc-in [:bindings '+] (assoc (get-in input [:bindings 'inc]) :binding-id '+ :name '+ :definition-syntax-id '+))
+        (assoc-in [:types unit-id] :gravity.type/integer)
+        (update-in [:core :nodes] #(vec (mapcat (fn [node] (if (= id (:node-id node)) [unit (nodes id)] [(nodes (:node-id node))])) %)))
+        (update-in [:core :calls] #(mapv (fn [entry] (if (= id (:core-node-id entry)) call entry)) %))
+        (update-in [:core :call-edges] #(mapv (fn [entry] (if (= id (:call-core-node-id entry))
+                                                          (assoc entry :callee-binding-id '+ :callee-definition-syntax-id '+
+                                                                       :argument-core-node-ids [slot unit-id] :ordered-evaluation-node-ids children)
+                                                          entry)) %))
+        (assoc-in [:forms op :value] '+) (assoc-in [:forms id :child-form-ids] children)
+        (assoc-in [:forms unit-id] {:form-id unit-id :syntax-id unit-id :source-span nil :origin-chain [] :generated-origin nil
+                                   :kind :integer :value 1 :parent-form-id id :child-form-ids []}))))
+
+(defn- bounded-unit-addition-derived [{:keys [core nodes bindings types forms]} id budget]
+  (invoke-c7 'sh08-si-derive [core (nodes id)
+                             (first (filter #(= id (:core-node-id %)) (:calls core)))
+                             (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))
+                             nodes bindings types forms budget]))
+
+(defn- bounded-unit-addition-completed [input]
+  (reduce (fn [out call]
+            (let [result (bounded-unit-addition-derived out (:core-node-id call) 65536)]
+              (-> out (update :step-results (fnil conj []) result)
+                  (assoc-in [:types (:operator-node-id call)] (:descriptor result)))))
+          input (filter #(contains? '#{inc +} (:operator-binding-id %)) (get-in input [:core :calls]))))
+
+(deftest sh08-bounded-unit-addition-development-kernel
+  (doseq [extent [0 1 3 1024]]
+    (let [{:keys [core nodes bindings types] :as input} (bounded-unit-addition-input (bounded-successor-input extent) :increment)
+          result (bounded-unit-addition-derived input :increment 65536)
+          descriptor (:descriptor result) proof (:range-proof descriptor)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (when (= :accepted (:status result))
+        (is (= [:gravity.type/applied-bounded-unit-addition :sh08-bounded-unit-addition-v1 '+ 'gravity.math 'gravity.math.core]
+               ((juxt :kind :version :operation :semantic-owner :layer0-owner) descriptor)))
+        (is (= [:gravity.type/integer :gravity.type/integer] (:argument-types descriptor)))
+        (is (= :sh08-bounded-unit-step-v2 (:version proof)))
+        (is (= ['+] (mapv :operation (:step-sources proof))))
+        (is (= [:proven-safe :retained :not-authorized] ((juxt :outcome :runtime-guards :check-elision) proof)))
+        (is (true? (invoke-c7 'sh08-si-proof-closed? [proof core (nodes :increment) nodes bindings types])))
+        (is (true? (invoke-c7 'sh08-si-step-forms-valid? [proof core nodes (:forms input)])))
+        (is (= :sh08-bounded-unit-addition-v1 (get-in result [:constraint :producer-rule])))
+        (is (= :numeric-unit-addition (get-in result [:constraint :lhs :projection])))
+        (is (= result (bounded-unit-addition-derived input :increment (:work-count result))))
+        (is (= :bounded-successor-work-limit (:reason (bounded-unit-addition-derived input :increment (dec (:work-count result)))))))))
+  (let [base (bounded-unit-addition-input (bounded-successor-two-backedges (bounded-successor-input 3)) :increment)
+        {:keys [core nodes bindings types forms] :as input} (bounded-unit-addition-completed base)
+        descriptors (mapv :descriptor (:step-results input))]
+    (is (= [:accepted :accepted] (mapv :status (:step-results input))))
+    (is (= [:sh08-bounded-unit-addition-v1 :sh08-bounded-successor-v2] (mapv :version descriptors)))
+    (doseq [[id descriptor] (map vector [:increment :increment-2] descriptors)]
+      (let [proof (:range-proof descriptor)
+            valid #(invoke-c7 'sh08-si-inferred-call-valid?
+                              [core (nodes id) (first (filter (fn [call] (= id (:core-node-id call))) (:calls core)))
+                               (first (filter (fn [edge] (= id (:call-core-node-id edge))) (:call-edges core)))
+                               nodes bindings (assoc types (:operator-node-id descriptor) %)])]
+        (is (= ['+ 'inc] (mapv :operation (:step-sources proof))))
+        (is (= 2 (count (:incoming-transfers proof)) (count (:backedge-paths proof)) (count (:step-sources proof))))
+        (is (true? (valid descriptor)))
+        (doseq [changed [(assoc-in descriptor [:range-proof :version] :sh08-bounded-successor-v1)
+                         (update-in descriptor [:range-proof :step-sources] pop)
+                         (assoc-in descriptor [:range-proof :step-sources 0 :unit-source :value] 2)
+                         (assoc-in descriptor [:range-proof :step-sources 0 :unit-node :attributes :value] 2)
+                         (assoc-in descriptor [:range-proof :step-sources 1 :operation] '+)
+                         (assoc-in descriptor [:range-proof :incoming-transfers] [(first (:incoming-transfers proof))])
+                         (assoc-in descriptor [:range-proof :check-elision] :authorized)]]
+          (is (false? (valid changed))))))
+    (let [context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
+                   :loop-core (assoc core :binding-table (vec (vals bindings))) :loop-work-left 65536}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {}
+                              {:choice-binding :gravity.type/bool} 16 context])]
+      (is (= :converged (:convergence-status inferred)) (pr-str (:diagnostics inferred)))
+      (is (= :gravity.type/integer (get-in inferred [:type-table :increment]) (get-in inferred [:type-table :increment-2])))
+      (is (= #{:sh08-bounded-unit-addition-v1 :sh08-bounded-successor-v2}
+             (set (map :producer-rule (filter #(contains? #{:sh08-bounded-unit-addition-v1 :sh08-bounded-successor-v2} (:producer-rule %))
+                                             (:constraints inferred))))))))
+  (let [input (bounded-unit-addition-input (bounded-successor-input 3) :increment)]
+    (doseq [changed [(assoc-in input [:nodes :increment-unit :attributes :value] 2)
+                     (assoc-in input [:forms :increment-unit :value] 2)
+                     (assoc-in input [:nodes :increment-unit :core-form] :reference)
+                     (assoc-in input [:types :increment-unit] :gravity.type/never)
+                     (assoc-in input [:types :inc-slot] :gravity.type/never)
+                     (assoc-in input [:types :inc-slot] :gravity.type/i64)
+                     (assoc-in input [:forms :increment-unit :parent-form-id] :guard)
+                     (assoc-in input [:bindings '+ :namespace] 'example)
+                     (assoc-in input [:core :recur-transfers] [])
+                     (assoc-in input [:nodes :exit :attributes :binding-id] :other)
+                     (assoc-in input [:forms :less-op :value] '<=)]]
+      (is (= :rejected (:status (bounded-unit-addition-derived changed :increment 65536)))))
+    (is (= :bounded-successor-work-limit (:reason (bounded-unit-addition-derived input :increment 0)))))
+  (doseq [base [(vector-loop-nth-input 3 false) (vector-loop-get-input 3)]]
+    (let [input (bounded-unit-addition-completed (bounded-unit-addition-input base :increment))
+          result (vector-loop-nth-derived input 65536) descriptor (:descriptor result)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= :sh08-bounded-unit-addition-v1 (get-in descriptor [:bounds-proof :loop-invariant :version])))
+      (is (= :sh08-bounded-unit-step-v2 (get-in descriptor [:bounds-proof :loop-invariant :range-proof :version])))))
+  (let [result (bounded-successor-derived (bounded-successor-input 3) 65536) descriptor (:descriptor result)]
+    (is (= :sh08-bounded-successor-v1 (:version descriptor) (get-in descriptor [:range-proof :version]) (get-in result [:constraint :producer-rule])))
+    (is (not (contains? (:range-proof descriptor) :step-sources)))))
+
+(deftest sh08-bounded-unit-addition-work-guards-development-kernel
+  (let [input (bounded-unit-addition-completed (bounded-unit-addition-input (vector-loop-get-input 3) :increment))
+        {:keys [core nodes bindings types forms]} input
+        call (get (:calls core) 2) edge (get (:call-edges core) 2)
+        visits (atom 0)
+        ;; A noncanonical raw probe must not be traversed below the O(1) reservation.
+        calls (reify clojure.lang.Counted (count [_] 2048)
+                clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved calls traversal"))))]
+    (doseq [budget [0 1]]
+      (let [result (invoke-c7 'sh08-vl-derive [(assoc core :calls calls) (nodes :read) call edge nodes bindings types forms budget])]
+        (is (= :vector-get-loop-work-limit (:reason result)))
+        (is (pos? (:work-count result)))))
+    (is (zero? @visits))
+    (let [proof (get-in types [:inc-op :range-proof])
+          touched (atom 0)
+          record (reify clojure.lang.ILookup
+                   (valAt [_ _] (swap! touched inc) (throw (AssertionError. "oversized step inspected")))
+                   (valAt [_ _ _] (swap! touched inc) (throw (AssertionError. "oversized step inspected"))))]
+      (doseq [steps [7 nil {} [nil] (vec (repeat 2048 record))]]
+        (is (false? (invoke-c7 'sh08-si-step-forms-valid? [(assoc proof :step-sources steps) core nodes forms]))))
+      (is (zero? @touched)))))
+
+(deftest sh08-bounded-unit-addition-incoming-census-development-kernel
+  (let [base (bounded-unit-addition-input (bounded-successor-two-backedges (bounded-successor-input 3)) :increment)]
+    (doseq [changed [(-> base (assoc-in [:nodes :increment-unit :attributes :value] 2)
+                             (assoc-in [:forms :increment-unit :value] 2))
+                     (assoc-in base [:types :increment-unit] :gravity.type/never)]]
+      (doseq [id [:increment :increment-2]]
+        (let [result (bounded-unit-addition-derived changed id 65536)]
+          (is (= :rejected (:status result)) (pr-str [id (:reason result)])))))))
+
+(defn- bounded-unit-addition-cold-two-loops []
+  ;; No descriptor or type-table seeds: independent loops share only core bindings.
+  (let [forward (bounded-unit-addition-input (bounded-successor-input 3) :increment)
+        mixed0 (bounded-unit-addition-input (bounded-successor-two-backedges (vector-loop-get-input 3)) :increment)
+        src (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        ref (-> (get-in mixed0 [:nodes :nth-index])
+                (assoc :node-id :stored-ref :source (src :stored-ref) :resolved-binding-ids [:stored])
+                (assoc-in [:attributes :binding-id] :stored))
+        stop {:node-id :stored-throw :core-form :throw :children [:stored-ref] :attributes {}
+              :resolved-binding-ids [] :source (src :stored-throw) :binding-context :body
+              :evaluation {:kind :left-to-right :order [{:index 0 :core-node-id :stored-ref}]}}
+        owner (-> (get-in mixed0 [:nodes :check])
+                  (assoc :core-form :let :children [:read :stored-throw :choice] :resolved-binding-ids [:stored]
+                         :attributes {:body-count 2 :binding-vector-form-id :stored-bindings :binding-vector-syntax-id :stored-bindings}
+                         :evaluation {:kind :left-to-right :order [{:index 0 :core-node-id :read}
+                                                                   {:index 1 :core-node-id :stored-throw}
+                                                                   {:index 2 :core-node-id :choice}]}))
+        branch (assoc-in (get-in mixed0 [:nodes :branch]) [:children 1] :check)
+        ordered (vec (mapcat (fn [n] (case (:node-id n)
+                                      :check [owner] :branch [branch] :read [n ref stop] [n]))
+                            (get-in mixed0 [:core :nodes])))
+        record {:let-core-node-id :check :ordinal 0 :name 'stored :binding-id :stored
+                :definition-form-id :stored-name :definition-syntax-id :stored-name :binding-scope-id :body
+                :initializer-form-id :read :initializer-syntax-id :read :initializer-scope-id :body
+                :initializer-node-id :read :mutability :immutable}
+        fm (fn [id kind value parent children]
+             {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+              :kind kind :value value :parent-form-id parent :child-form-ids children})
+        mixed (-> mixed0 (assoc-in [:core :nodes] ordered)
+                  (update-in [:core :lexical-bindings] conj record)
+                  (assoc-in [:bindings :stored] {:binding-id :stored :name 'stored :binding-class :lexical
+                                                :scope-id :body :definition-syntax-id :stored-name})
+                  (assoc-in [:forms :branch :child-form-ids 2] :check)
+                  (assoc-in [:forms :choice :parent-form-id] :check)
+                  (assoc-in [:forms :read :parent-form-id] :stored-bindings)
+                  (update :forms merge {:check (fm :check :list nil :branch [:let-op :stored-bindings :stored-throw :choice])
+                                        :stored-bindings (fm :stored-bindings :vector nil :check [:stored-name :read])
+                                        :stored-name (fm :stored-name :symbol 'stored :stored-bindings [])
+                                        :stored-ref (fm :stored-ref :symbol 'stored :stored-throw [])
+                                        :stored-throw (fm :stored-throw :list nil :check [:throw-op :stored-ref])}))
+        rename (fn [input prefix]
+                 (let [ids (set (concat (keys (:forms input)) (map :node-id (get-in input [:core :nodes]))
+                                        [:slot :values-binding :choice-binding :stored :target :body :outer]))
+                       replacements (into {} (map (fn [id] [id (keyword prefix (name id))]) ids))]
+                   (walk/postwalk
+                    (fn [value]
+                      (if (map? value)
+                        (reduce (fn [out k]
+                                  (let [v (get out k)]
+                                    (if (and (keyword? v) (= prefix (namespace v)))
+                                      (assoc out k (keyword (name v))) out)))
+                                (if (contains? value (keyword prefix "loop-bindings"))
+                                  (-> value (assoc :loop-bindings (get value (keyword prefix "loop-bindings")))
+                                      (dissoc (keyword prefix "loop-bindings"))) value)
+                                [:core-form :target-kind :kind]) value))
+                    (walk/postwalk-replace replacements (dissoc input :types :nodes)))))
+        a (rename forward "forward") b (rename mixed "mixed")
+        core (reduce (fn [out k] (assoc out k (vec (concat (get-in a [:core k]) (get-in b [:core k])))))
+                     (:core a) [:nodes :calls :call-edges :lexical-bindings :loop-bindings :recur-targets :recur-transfers])
+        core (update core :call-edges #(mapv (fn [i e] (assoc e :ordinal i)) (range) %))]
+    {:core core :nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+     :bindings (merge (:bindings a) (:bindings b)) :forms (merge (:forms a) (:forms b))}))
+
+(deftest sh08-bounded-unit-addition-cold-two-loop-development-kernel
+  (let [{:keys [core nodes bindings forms]} (bounded-unit-addition-cold-two-loops)
+        context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
+                 :loop-core (assoc core :binding-table (vec (vals bindings))) :loop-work-left 65536}
+        inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                           [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {}
+                            {:mixed/choice-binding :gravity.type/bool} 24 context])
+        types (:type-table inferred)]
+    (println (pr-str {:av-cold-two-loop (select-keys inferred [:convergence-status :round-count :type-join-work-left])
+                      :diagnostics (:diagnostics inferred)}))
+    (is (= :converged (:convergence-status inferred)))
+    (is (= [] (:diagnostics inferred)))
+    (is (<= 0 (:type-join-work-left inferred) 65536))
+    (is (= :gravity.type/keyword (types :mixed/read) (types :mixed/stored-ref)
+           (get-in inferred [:binding-types :mixed/stored])) )
+    (is (= :gravity.type/never (types :mixed/stored-throw)))
+    (doseq [id [:forward/inc-op :mixed/inc-op :mixed/inc-op-2]]
+      (let [descriptor (types id)]
+        (is (= :sh08-bounded-unit-step-v2 (get-in descriptor [:range-proof :version])))
+        (is (true? (invoke-c7 'sh08-si-proof-closed?
+                             [(:range-proof descriptor) core (nodes (:call-core-node-id descriptor)) nodes bindings types])))))
+    (is (= ['+ 'inc] (mapv :operation (get-in types [:mixed/inc-op :range-proof :step-sources]))))))
+
+(deftest sh08-bounded-unit-access-current-lexical-development-kernel
+  (doseq [addition? [false true] access [:get :nth]]
+    (let [base (if (= :get access) (vector-loop-get-input 3) (vector-loop-nth-input 3 false))
+          input (if addition? (bounded-unit-addition-completed (bounded-unit-addition-input base :increment))
+                          (vector-loop-nth-completed base))
+          {:keys [core nodes bindings types forms]} input
+          selected-type (if (= :get access) :gravity.type/keyword :gravity.type/bool)
+          reference (-> (nodes :nth-index) (assoc :node-id :stored-ref :resolved-binding-ids [:stored])
+                        (assoc-in [:attributes :binding-id] :stored))
+          unvisited-reference (-> reference (assoc :node-id :unvisited-ref :resolved-binding-ids [:unvisited])
+                                  (assoc-in [:attributes :binding-id] :unvisited))
+          lexical [{:binding-id :stored :initializer-node-id :read :mutability :immutable}
+                   {:binding-id :unvisited :initializer-node-id :future :mutability :immutable}]
+          sequence [(nodes :nth-op) (nodes :nth-vector) (nodes :nth-index) (nodes :read) reference unvisited-reference]
+          seeds {:values-binding (types :values) :slot :gravity.type/integer :unvisited :gravity.type/string}
+          context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
+                   :prior-type-table types :cold-round-work 1 :loop-work-left 65536}
+          pass #(invoke-c7 'sh08-ft-infer-pass-with-context
+                           [sequence % [] [] [] {} seeds (assoc context :loop-work-left %2)])
+          result (pass lexical 65536)
+          v1-work (:loop-work-count result)
+          current-type (get-in result [:type-table :stored-ref])]
+      (is (= selected-type (get-in result [:type-table :read])))
+      (is (= (if addition? selected-type :gravity.type/unknown) current-type))
+      (is (= [] (:diagnostics result)))
+      (is (= :gravity.type/string (get-in result [:type-table :unvisited-ref])))
+      (when addition?
+        (let [mutable (pass (assoc-in lexical [0 :mutability] :mutable) 65536)
+              wrong (pass (assoc-in lexical [0 :initializer-node-id] :future) 65536)
+              low (pass lexical (dec v1-work))]
+          (is (= :gravity.type/unknown (get-in mutable [:type-table :stored-ref])
+                 (get-in wrong [:type-table :stored-ref])))
+          (is (= :bounded-unit-access-lexical-work-limit (get-in low [:diagnostics 0 :reason])))
+          (is (= v1-work (:loop-work-count low)))
+          (is (= :gravity.type/unknown (get-in low [:type-table :stored-ref])))))
+      (when addition?
+        (let [pending (invoke-c7 'sh08-ft-infer-pass-with-context
+                                 [[(nodes :nth-op) (nodes :nth-vector) (nodes :read) reference]
+                                  lexical [] [] [] {} seeds context])]
+          (is (= :gravity.type/unknown (get-in pending [:type-table :read])
+                 (get-in pending [:type-table :stored-ref])))))
+      (let [never-sequence [(nodes :nth-op)
+                            (assoc (nodes :nth-vector) :core-form :throw :children [])
+                            (nodes :nth-index) (nodes :read) reference]
+            never (invoke-c7 'sh08-ft-infer-pass-with-context
+                             [never-sequence lexical [] [] [] {} seeds context])]
+        (is (= :gravity.type/unknown (get-in never [:type-table :stored-ref])))))))
+
+(deftest sh08-bounded-unit-addition-cold-source-development-kernel
+  ;; Diagnostic prefix only: authentic frontend input and the existing cold inference owner.
+  ;; This does not build or verify a complete C7 product or execute guest code.
+  (let [source (fixture-path "accepted" "local-runtime-bounded-unit-addition" ".gravity")
+        resolution (bootstrap/compiler-c5-resolution-file-artifact source)
+        artifact (bootstrap/sh07-core-from-resolution-artifact resolution)
+        boundary (:gravity-core-boundary artifact)
+        original-core (:canonical-core-artifact boundary)
+        bindings (get-in boundary [:authenticated-core-request :binding-table])
+        forms (get-in boundary [:authenticated-core-request :forms])
+        shape (invoke-c7 'sh08-validate-core-shape [original-core])
+        products (invoke-c7 'sh08-bm-products [original-core (invoke-c7 'sh08-ft-products-valid? [original-core shape bindings]) forms])
+        core (assoc original-core :sh08-private-self-parameter-premise nil)
+        functions (invoke-c7 'sh08-ft-function-skeletons [(:function-records products) (:module core)])
+        quoted (invoke-c7 'sh08-qd-products [(:nodes shape) forms (:module core)])
+        handlers (invoke-c7 'sh08-eh-source-products [core forms bindings 65536])
+        seeds (invoke-c7 'sh08-eh-seed-bindings [(invoke-c7 'sh08-ft-declaration-seeds [functions {}]) (:seeds handlers {})])
+        context {:boolean-matches (:boolean-matches products) :quote-types (:type-table quoted) :imported-functions {}
+                 :loop-core (invoke-c7 'sh08-ft-loop-working-core [core bindings])
+                 :lookup-core (when (seq (:keyword-lookups core)) core) :lookup-nodes (:node-table products)
+                 :lookup-forms forms :lookup-bindings bindings :ordering-core core :loop-work-left 65536
+                 :shape-call-products (assoc products :module (:module core))}
+        rounds (+ (count (:match-pattern-records core)) (count (:loop-bindings core))
+                  (invoke-c7 'sh08-ft-inference-round-bound [(:nodes shape) (:function-records products) (:calls products) (:lexical-bindings products)]))
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                            [(:nodes shape) (:node-table products) (:lexical-bindings products) (:definitions products)
+                             (:calls products) (:call-edges products) functions seeds rounds context])
+        types (:type-table inference) nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        binding-index (into {} (map (juxt :binding-id identity) bindings))
+        form-index (into {} (map (juxt :form-id identity) forms))
+        selected (filter #(contains? '#{+ inc get} (:name (binding-index (:operator-binding-id %)))) (:calls core))
+        observations
+        (mapv (fn [call]
+                (let [descriptor (types (:operator-node-id call))]
+                  {:call call :binding (select-keys (binding-index (:operator-binding-id call))
+                                                   [:binding-id :name :kind :namespace :package :binding-class :type-ref :effects :capabilities :safety :profile-set :target-set])
+                   :arguments (mapv (fn [id] {:node (select-keys (nodes id) [:node-id :core-form :attributes :source])
+                                             :form (form-index (get-in nodes [id :source :form-id])) :type (types id)})
+                                    (:argument-node-ids call))
+                   :operator-type (if (map? descriptor) (select-keys descriptor [:kind :version :operation :result-type]) descriptor)
+                   :result-type (types (:core-node-id call))}))
+              selected)]
+    (println (pr-str {:av-cold-source (select-keys inference [:convergence-status :round-count :round-bound :type-join-work-left :loop-work-count])
+                      :source-counts {:nodes (count (:nodes core)) :forms (count forms) :calls (count (:calls core))
+                                      :functions (count (:function-records core)) :transfers (count (:recur-transfers core))}
+                      :diagnostics (mapv #(select-keys % [:rule :reason :expected :actual :work-count]) (:diagnostics inference))
+                      :operations observations}))
+    (is (= :accepted (:status products)))
+    (is (= :converged (:convergence-status inference)))
+    (is (= [] (:diagnostics inference)))
+    ;; The local compiled test plan injects only the inference outcome.
+    ;; The real constructor and direct-throw checker choose and render diagnostics.
+    (let [primary {:node {} :rule "C7-GENERIC" :reason :private-self-work-limit
+                   :expected :remaining-type-join-units :actual -788}
+          raw {:convergence-status :resource-limit :round-count 6 :round-bound rounds
+               :type-join-work-left -788 :function-types functions :binding-types seeds
+               :type-table {} :constraints [] :diagnostics [primary]}
+          render (fn [status]
+                   (let [plan (assoc-in @c7-plan
+                                        [:functions 'sh08-ft-infer-acyclic-with-context :instructions]
+                                        [{:op :literal :value (assoc raw :convergence-status status)}])]
+                     (bootstrap/p15-s23-stage2-runtime-execute-function
+                      {:engine :gravity-sh08-diagnostic-priority-test :compiler-artifact-plan? true}
+                      plan 'sh08-ft-function-type-core-artifact-with-imports [original-core bindings forms {}])))
+          resource (render :resource-limit)
+          legacy (render :nonconverged)
+          expected (invoke-c7 'sh08-ft-render-inference-diagnostics [[primary] nodes (:module core)])]
+      (is (= :rejected (:status resource) (:status legacy)))
+      (is (= expected (:diagnostics resource)))
+      (is (= ["C7-GENERIC" :private-self-work-limit :remaining-type-join-units -788]
+             ((juxt :rule :reason :expected-type :actual-type) (first (:diagnostics resource)))))
+      (is (= :typed-throw-payload-type-required (get-in legacy [:diagnostics 0 :reason]))))
+    (doseq [call selected]
+      (is (= (if (= 'get (:name (binding-index (:operator-binding-id call)))) :gravity.type/keyword :gravity.type/integer)
+             (types (:core-node-id call)))))))
+
 (deftest sh08-integral-ordering-development-kernel
   (doseq [operation '[< <= > >=]
           type [:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
