@@ -43,9 +43,11 @@
                         slots (zipmap (map first entries) (range)) order (mapv slots keys)]
                     (when-not (and (= :map kind) (even? (count items))
                                    (= (count keys) (count entries) (count (set keys)))
-                                   (every? #(and (= :keyword (:kind %)) (keyword? (:value %))) (map first pairs))
+                                   (every? #(case (:kind %)
+                                              :keyword (keyword? (:value %))
+                                              :string (string? (:value %)) false) (map first pairs))
                                    (every? some? order) (= (set order) (set (range (count entries)))))
-                      (fail :map-source-distinct-keyword-bijection record))
+                      (fail :map-source-distinct-literal-key-bijection record))
                     (swap! orders assoc [function path]
                            {:source-form-id (:form-id record) :source-children (:children record)
                             :host-keys (mapv first entries) :entry-order order})
@@ -134,7 +136,7 @@
                 (map? actual)
                 (let [entries (if (map? seed) (vec seed) []) host-keys (mapv first entries) slots (zipmap host-keys (range))]
                   (charge! (* 2 (count actual)))
-                  (when-not (and (map? seed) (= (count actual) (count seed)) (every? keyword? (keys actual))
+                  (when-not (and (map? seed) (= (count actual) (count seed)) (every? #(or (keyword? %) (string? %)) (keys actual))
                                  (= (set (keys actual)) (set host-keys))) (fail :map-reference-key-bijection))
                   (when path (p15-s23-stage2-module-map-entries module seed path))
                   (doseq [[key value] actual]

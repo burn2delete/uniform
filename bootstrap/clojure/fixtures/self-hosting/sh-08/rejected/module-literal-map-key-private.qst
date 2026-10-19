@@ -1,0 +1,6 @@
+(ns example.module-literal-map-key-private
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-literal-map-key-leaf :as leaf]) (:exports [main])
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))
+
+(defn main [] {"z" (leaf/hidden :private) :tag :after})
