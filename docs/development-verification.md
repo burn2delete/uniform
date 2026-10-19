@@ -3866,6 +3866,66 @@ converted source Integer literals. Paired Q sources provide byte/parser parity
 only. Do not reconstruct earlier unchanged Integer or atomic source products
 merely to refresh a green label.
 
+### Binary finite persistent Vector inequality
+
+For binary `not=` over established finite positional Vector types, change the
+existing C7 engine, effects checker and typed emitter. Reuse their existing
+Vector equality domain and owned `if (= left right) false true` IR; runtime,
+seed, public interfaces and type grammar do not change. Each pass reconstructs
+the complete versioned collections policy and the original `not=` constraint,
+call fact and ledger. Do not manufacture a source `=` fact.
+
+Both complete type domains are validated before an early value mismatch.
+Supported recursive members are Vector, Nil, Bool, Character, String, Symbol,
+Keyword and the five existing closed nullable nonnumeric atomic types. Empty
+and differently shaped/length Vectors compare normally; static type equality
+is not required. Width 1,024, depth 128 and work 65,536 remain the existing
+finite limits. Numeric members, unknown/bare Vector types, other collections,
+whole nullable Vectors and nested Never remain unsupported. Top-level Never
+preserves non-tail control transfer when the other operand establishes this
+Vector domain; Never/Never retains the existing atomic rule.
+
+Start with these focused checks and affected equality/inequality regressions:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-vector-inequality-development-kernel \
+  --exact sh08-vector-inequality-throw-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-vector-inequality-source-development-kernel \
+  --exact current-gravity-vector-inequality-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-inequality-lowering-runtime-development-kernel \
+  --exact current-gravity-vector-inequality-transfer-fence-development-kernel --fail-fast
+```
+
+Direct domain/derivation checks retain the Vector-specific work-limit reason.
+The containing C7 verifier reports its existing atomic-inequality work-limit
+reason and charged work. The private inferred-call check retains the
+underlying subtype reason and exact work.
+Neither boundary may discard failed-child work or assume the scalar ceiling.
+
+For changed producer/consumer facts or lowering, separately select the paired
+fixture check and one affected source composition:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-inequality-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-inequality-authenticated-composition --fail-fast
+```
+
+This uses the W5 seven-Keyword value with a fresh producer and new inequality
+expressions, not a copied or unchanged W5 inequality helper. Q fixtures provide
+byte/parser parity only. Do not repeat unchanged Vector equality, numeric
+inequality or whole-W5 source compositions to refresh a label. Focused results
+are development feedback, not authoritative migration or self-hosting proof.
+
 ### Nil value classification
 
 For unary `(nil? value)`, edit the existing C7 engine, effects and typed emitter
