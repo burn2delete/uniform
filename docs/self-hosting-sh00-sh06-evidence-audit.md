@@ -1027,6 +1027,42 @@ and bounded cost before running it; neither this census nor a directory count
 authorizes a larger corpus, bound growth or an unchanged proof replay. All
 three partial groups remain open and the resolver remains development-unadmitted.
 
+### Checked-Core composition: incomplete bounded attempt
+
+Commit `b99989e30a64690c69f614839e3fac3af4d16ae6` selected this one
+source through the unchanged frontend helper. One actual direct invocation used
+2 GiB on 2026-10-19, from 08:50:41 UTC until the coordinator stopped the owned
+JVM after the preselected 09:50:14 UTC monitored ceiling. Identity was checked
+at 09:50:19 UTC before TERM; the original tool returned exit 143 and the PID
+was absent afterward. This was a coordinator interruption, not an observed
+semantic rejection, OOM, verifier failure or completed test pass. The ceiling
+was monitored, not an independently enforced hard invocation deadline.
+
+The retained log reached `:c5-after` with 404 definitions and 20,209 references,
+then `:hosted-c6-before`. It contains no returned hosted-C6 summary or final test
+counters, and the requested timing receipt was absent. Reaching those printed
+boundaries does not establish that all assertions passed. The original source
+and test hashes were unchanged after termination. Raw output remains at
+`/tmp/b-checked-core-b99989e3-source-v1-20261019.log` (SHA256
+`d83290fad2ed7e6864574cb25c44f6c4b6982e398d40c8310e19efc2f56c1c28`);
+the selector and exact tested inputs remain recoverable in the original commit.
+
+The new four-line selector was removed in a subsequent normal commit rather
+than adding a newly unvalidated, potentially hour-long default regression.
+The existing helper, tests and compiler are unchanged. Checked-Core remains a
+required, open source-composition question for the selected Core endpoint;
+removing this selector neither excludes it from that closure nor closes any of
+the three partial groups. There is no unchanged retry or bound increase here.
+
+One one-second OS sample during construction exited 0, but its mostly unknown
+JIT frames were inconclusive. Neither that snapshot nor these overlapping-run
+timings establish a dominant owner, allocation/GC cause or speedup. The next
+action is the bounded existing-helper cost follow-up described above: separate
+artifact construction from redundant test-only verification and public consumer
+verification before selecting another concrete experiment. Any representation
+redesign remains outside ordinary SH-07 development and requires its own scoped
+decision; no cache, verifier skip or admission wrapper is introduced here.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible
