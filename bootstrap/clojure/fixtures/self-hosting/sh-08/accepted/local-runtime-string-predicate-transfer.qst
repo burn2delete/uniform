@@ -1,0 +1,16 @@
+(ns example.runtime-string-predicate-transfer
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn caught [value :- String]
+  (try
+    (if (string? "ready")
+      (string? (throw value))
+      false)
+    (catch String problem (= problem value))))
+
+(defn main [] (caught "problem"))

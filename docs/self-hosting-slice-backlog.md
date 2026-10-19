@@ -2941,6 +2941,57 @@ boundaries; they do not establish exclusive cost, speedup or representation
 dominance. Native/other-target execution, current-closure admission and broader
 SH-07/self-hosting completion remain outstanding.
 
+### String family classification: development implementation
+
+Unary `string?` has a bounded JVM path through C7, C8, typed lowering and
+runtime. STD4's `gravity.text` owns the semantics behind the existing core
+compatibility spelling. Actual Strings classify true, including empty, NUL,
+supplementary and combining values; other supported established closed values
+classify false. Nil-or-String operands retain their independent type evidence
+and classify their actual value. Unknown, Dynamic and unsupported Text/Bytes
+families remain implementation frontiers, not language-wide bans.
+
+Operand evaluation remains once-only and non-tail, with effects and control
+transfers preserved; Never prevents invocation. The query performs no payload
+execution, conversion, normalization, text scan, own collection construction or
+type-flow refinement. It independently establishes no Unicode-boundary, length
+or indexing fact. Existing String-validity obligations remain at their owning
+boundaries. C7/C8/emitter reconstruct current source, binding, descriptor,
+ordered rows and cumulative work; runtime executes shallow unary IR without
+coercing host text carriers. The new JVM fence does not alter existing
+predicate eligibility, and runtime retains 47 functions and its public exports.
+
+The combined focused batch passed nine tests/1,613 assertions: four String
+kernels (816), four adjacent Keyword regressions (784), and fixture preflight
+(13). Kernel totals include existing runtime-loader checks. Fixture preflight
+checks four exact W5 runtime-field subexpression occurrences plus byte/parser
+parity and definition counts for three source pairs; it does not execute the
+unchanged W5 validator. The batch took 4.396 seconds after SH01/C7 loading of
+10.617/1.193 seconds at 2 GiB, while the separate reader composition ran.
+These inclusive timings are not isolated performance comparisons. Independent
+review accepted the actual focused results.
+
+The changed-source composition subsequently passed one test/159 assertions
+(153 composition assertions plus six runtime-loader checks) at 2 GiB. It
+constructed two positive `.gravity` products and one arity rejection, invoked
+seven top-level function-table entries and passed three additionally tracked
+public C7 gates. The zero-arity diagnostic vector contains the primary
+`C7-TYPE-MISMATCH`/`:string-predicate-arity-mismatch` and secondary
+`C7-ANNOTATION`/`:unsupported-or-unresolved-core-node-type`. C5/C6 statuses are
+asserted; accepted C7/C8 results guard both positive executions. The negative
+C7 verifier is invoked, but its status is not separately asserted.
+
+Descriptor-field tampering and a resealed C8 dependency deletion were rejected;
+neither case claims all-field resealing. The paired `.qst` evidence remains
+the earlier byte/parser preflight, not fresh typed/effect/lowering/result
+equivalence. The original focused-test source is preserved in commit
+`4213a7f739f46aa851c3a80c40b9b84993c1ecfc`; the later source-only selection
+change does not relabel that earlier execution. The source selector took
+258.466 seconds after 9.484 seconds of SH01 loading. These elapsed boundaries
+include nested work and assertions, not exclusive cost or speedup evidence.
+This is not execution of the whole W5 helper, native/other-target support,
+current-closure admission or broader SH-07/self-hosting completion.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared

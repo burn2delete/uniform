@@ -31,6 +31,15 @@ language semantics or prerequisites for explicit local test selection. The
 repository language boundary, source LOC limit and host resource limits remain
 implementation constraints, separate from proof authority.
 
+Keep paired source fixtures first-class. For extension-independent behavior
+with unchanged reader, canonical identity and source-path projection, one real
+source composition plus explicit paired byte/parser checks can be proportionate.
+Record which spelling actually ran; parser parity does not establish fresh
+paired typed/effect/lowering/runtime equivalence. Renew the affected paired
+composition when extension handling, reader transport, canonical identity or
+path projection changes, or a concrete cross-extension regression requires it.
+A new primitive alone does not require rebuilding every product twice.
+
 For SH-07, change `bootstrap/gravity/src/gravity/checked_core.gravity` (the
 owning Gravity pass), not only the hosted C6 compatibility facade. The thin
 adapter lives in
@@ -3742,6 +3751,55 @@ clojure -J-Xmx2g -M:dev-test \
 
 Compiling one predicate/projection subexpression is not execution of an unchanged W5
 validator, current-closure migration or self-hosting completion.
+
+### String family classification
+
+STD4's `gravity.text` owns unary `string?` semantics behind the existing core
+compatibility spelling. Edit C7, C8, typed lowering and runtime, then run:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-string-predicate-development-kernel \
+  --exact sh08-string-predicate-throw-consumer-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-string-predicate-source-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-predicate-lowering-runtime-development-kernel --fail-fast
+```
+
+Classification distinguishes actual Strings, including empty Strings, from
+other supported independently established closed values. Nil-or-String operands
+classify their actual value; Unknown and Dynamic remain implementation
+frontiers. It preserves once-only non-tail operand evaluation, effects and
+transfers without conversion, payload execution or type-flow refinement. It
+does not independently validate Unicode or establish normalization, length or
+indexing facts; existing String validity obligations remain at their owning
+boundaries. It grants no new collection allocation, capability, export or
+profile permission.
+Text/view/Bytes or host-carrier convertibility does not establish String type.
+
+Use changed source composition when the public typed/effected/lowered boundary
+changes, and record its actual result separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-predicate-fixtures-development-kernel \
+  --exact current-gravity-string-predicate-authenticated-composition --fail-fast
+```
+
+This selector constructs the two positive Gravity programs and one Gravity
+arity rejection. Paired `.qst` fixtures receive byte/parser checks only; no
+fresh paired typed/effect/lowering/result equivalence is claimed. Both positive
+programs retain current C7/C8 verification and execution guards, and both
+forgery checks remain. Compiling the W5 runtime record's String field checks
+is not executing its unchanged validator, admitting
+a compiler revision or completing self-hosting.
 
 ### Legacy bounded self-recursive body analysis
 
