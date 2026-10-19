@@ -3276,7 +3276,8 @@ The final focused batch passed 33 tests / 20,053 assertions: six new kernels /
 validation runs once with prefix 123 and child budget 65,413, without unrelated
 probes; exact/short budgets retain failed-child work. Direct derivation keeps
 the Vector-specific work-limit reason; the containing C7 verifier keeps its
-existing atomic-inequality resource diagnostic and private subtype reason.
+existing atomic-inequality resource diagnostic and charged work. The private
+inferred-call check retains the underlying subtype reason and exact work.
 Complete C8 ledgers, independently reconstructed policies, coherently changed
 records, owned IR, transfer identity and non-tail restrictions are checked.
 

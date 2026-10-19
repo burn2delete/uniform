@@ -3904,7 +3904,8 @@ clojure -J-Xmx2g -M:dev-test \
 
 Direct domain/derivation checks retain the Vector-specific work-limit reason.
 The containing C7 verifier reports its existing atomic-inequality work-limit
-reason while retaining the private subtype reason and exact charged work.
+reason and charged work. The private inferred-call check retains the
+underlying subtype reason and exact work.
 Neither boundary may discard failed-child work or assume the scalar ceiling.
 
 For changed producer/consumer facts or lowering, separately select the paired
