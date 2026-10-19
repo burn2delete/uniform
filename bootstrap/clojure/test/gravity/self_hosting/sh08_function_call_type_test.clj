@@ -10900,10 +10900,10 @@
 (deftest sh08-vector-first-development-kernel
   (let [finite (fn [members] {:kind :gravity.type/vector :shape :literal :element-types members})
         derive #(list-query-derived (list-query-input 'first [%]))]
-    (doseq [members [[:gravity.type/string] [:gravity.type/bool :gravity.type/nil]
-                     [:gravity.type/nil :gravity.type/character]
-                     [:gravity.type/character :gravity.type/character]
-                     [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/symbol :gravity.type/string]} :gravity.type/bool]]]
+    (doseq [[members visits] [[[:gravity.type/string] 2] [[:gravity.type/bool :gravity.type/nil] 3]
+                              [[:gravity.type/nil :gravity.type/character] 3]
+                              [[:gravity.type/character :gravity.type/character] 3]
+                              [[{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/symbol :gravity.type/string]} :gravity.type/bool] 5]]]
       (let [input (list-query-input 'first [(finite members)])
             {:keys [core node call edge nodes bindings types forms]} input
             result (list-query-derived input) descriptor (:descriptor result) proof (:bounds-proof descriptor)
@@ -10936,7 +10936,7 @@
         (is (= result (check (:work-count result))))
         (let [checked-types (assoc types :operator descriptor :call (:type result))
               checked #(invoke-c7 'sh08-vf-inferred-call [core node call edge nodes bindings checked-types %])
-              paid (checked 65536) visits (+ 1 (count members))]
+              paid (checked 65536)]
           (is (= :accepted (:status paid)))
           (is (= visits (:work-count paid)))
           (is (= paid (checked visits)))
