@@ -11075,6 +11075,7 @@
 (defn- private-vector-value-type [value]
   (cond (nil? value) :gravity.type/nil (boolean? value) :gravity.type/bool
         (char? value) :gravity.type/character (keyword? value) :gravity.type/keyword
+        (symbol? value) :gravity.type/symbol
         (string? value) :gravity.type/string (integer? value) :gravity.type/integer
         (vector? value) {:kind :gravity.type/vector :shape :literal :element-types (mapv private-vector-value-type value)}
         (map? value) {:kind :gravity.type/map :shape :literal
