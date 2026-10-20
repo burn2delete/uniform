@@ -4120,6 +4120,103 @@ Public fresh C6 was not invoked. Full B14/backend execution, recursive Set
 domain transport, other targets, current-closure admission, SH-07 completion,
 self-hosting and release remain separate gates.
 
+### Inferred String-Set private values: development increment
+
+The existing C7, C8 and typed emitter owners retain a closed inference-only
+String-Set member domain through insertion and private inferred ordinary
+self-calls. The representation is exactly
+`{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}`.
+Independently established insertion derives it, subsequent insertion preserves
+it, and membership and count consume it. It carries no extent, literal ancestry,
+presence fact or equality support. Bare Set and a quoted empty entry do not
+establish this domain. No Set annotation grammar or declared-recursion rule was
+added; declared-self predicates and the List-only parameter premises are
+unchanged.
+
+Inference still requires complete independently typed normal entries, the same
+monomorphic parameter vector, current use/export/escape and self-call census,
+an independent cold-body return witness, and complete self-argument checking.
+Non-invoked entries do not supply a witness; a callee's Never result is not an
+argument-invocation guard. C8 and both lowering proof consumers reconstruct
+the same domain. Insertion and String-membership descriptor, constraint and
+fact identities advance to version two with explicit carrier-schema and
+invalidation metadata. Old version-one evidence is not relabeled as current.
+The runtime remains unchanged at 55 private functions: full actual-domain,
+uniqueness, width and work checks remain necessary, since the carrier proves
+no static size bound.
+
+Static candidate `179f4c13` remained unrun. Review found that the generic
+closed-value walker would reject the richer insertion result, regressing
+predicates and List construction which previously accepted the bare Set.
+Successor `b166cbd4` recognizes only the exact carrier in the existing paid
+homogeneous branch and still visits its actual String leaf. Three owner
+kernels check direct and nested exact/one-short costs, insertion-produced
+values through List and predicate descriptor paths, and malformed opaque
+records without callbacks. No general homogeneous-collection rule, cap increase
+or acceptance cache was introduced.
+
+The first non-fail-fast carrier batch at `b166cbd4` remains failed: 34 tests,
+3,038 passes, three failures and three errors. All selectors completed; 28
+other tests passed. Two rejected Keyword/Character membership cases exposed
+diagnostic-family changes in the new homogeneous branch. A pre-existing String
+membership assertion still expected finite String-Set equality to reject,
+although that behavior had already been implemented by PR100. Three opaque-key
+guard tests errored during hosted `array-map` duplicate-key checks, before
+calling the candidate guards. These are distinct outcomes, not three production
+callback failures. The raw log and timing receipt preserve the complete batch.
+Selected execution took 15.829 seconds after 13.397 seconds of namespace loading;
+the corrected cases require separate targeted feedback, not relabeling this
+aggregate as passed.
+
+The narrow correction `f2df013b` restores existing needle-family rejection and
+quota reasons in all three membership owners, constructs deliberately malformed
+opaque-key fixtures without invoking host key equality, and corrects the stale
+finite-String equality expectation. A separate 12-selector non-fail-fast batch
+passed 1,569 assertions with zero failures or errors. The three new guard
+kernels each completed 69 assertions, including their previously unexecuted
+opaque-key tails. The other nine checks cover Keyword, Character and String
+membership across C7, C8 and lowering. Selected execution took 8.226 seconds
+after 13.681 seconds of namespace loading at 2 GiB.
+
+Twenty-six unchanged complete passing tests from the first batch, totaling
+1,982 assertions, were not replayed. The corrected batch also reran two affected
+previously passing checks and added four family-owner checks. These are separate
+results, not one green 38-test run. The initial failed batch and unexecuted
+`179f4c13` remain preserved. Source composition is a separate integration gate.
+
+The affected source composition at `ad9ae36f` passed one test/79 assertions
+(73 composition plus six existing loader checks), returning `[true true false]`.
+Three normal caller entries independently seed the String-Set domain through
+insertion; the private helper retains `[Bool String carrier]`, an independent
+Bool return witness and a complete four-call census including its self-call.
+Four version-two insertion facts/rows and one membership fact/row pass original
+C7/C8 verification and assembly's public C7 gate. The emitted plan contains two
+functions, nine calls and three inert quoted empty Sets, not evaluated Set
+constructors or module initializers. Both function bodies retain inferred and
+latent allocation; namespace initialization effects stay empty. One closed-plan
+entry runs against the unchanged 55-function runtime; no seed control runs.
+
+The genuine direct-empty-entry negative reaches C7 and is rejected with
+`C7-ANNOTATION`/`:private-self-independent-entry-types-required`. Its retained
+diagnostic has nil source IDs and span in the existing aggregate failure path;
+this establishes the rejection, not source-rich diagnostic conformance. A
+bounded follow-up should carry the offending entry's existing census/source
+coordinates into that diagnostic. No negative C8/runtime ran and Q remains
+parser-only.
+
+Selected source execution took 165.782 seconds after 11.825 seconds of namespace
+loading at 2 GiB. Positive/negative C5 construction took 33.867/28.371 seconds,
+fresh development C6-session construction 42.442/38.298 seconds and same-catalog
+replay 4.218/3.875 seconds. C8 construction/verification took 1.050/0.057 seconds;
+assembly including public C7 verification took 3.451 seconds and closed-plan
+execution 0.174 seconds. These inclusive nested observations distinguish
+verification-product construction from loading, not isolated benchmarks or
+speedup evidence. Public fresh C6 was not invoked. Homogeneous Set equality,
+B14's empty-only entry, heterogeneous record ingress, indexed recursion,
+whole-B14 execution, other targets and authoritative migration remain separate.
+Separate language-boundary checks passed six tests/eleven assertions; LOC
+validation passed 2,021 source files, zero exceptions and maximum 250 lines.
+
 ### B14 accepted-result source readability: development repair
 
 The retained String-Set parser error exposed nine repeated fields in the
