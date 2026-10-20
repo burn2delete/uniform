@@ -23256,8 +23256,41 @@
         (is (= (:children constructor) (:evaluated-children record)))
         (is (true? (get-in record [:allocation :normal-completion-possible?])))
         (is (= :normal-operand-completion (get-in record [:allocation :condition])))))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/literal-character-set-mixed.gravity"
+          negative (fresh relative) negative-input (select-keys negative [:request :typed :verification])]
+      (println (pr-str {:literal-string-set-negative-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :accepted (get-in negative-input [:typed :status])) (pr-str (get-in negative-input [:typed :diagnostics])))
+      (is (= :passed (get-in negative-input [:verification :status])))
+      (when-not (and (= :accepted (get-in negative [:c5 :status])) (= :passed (get-in negative [:report :status]))
+                     (= :accepted (get-in negative-input [:typed :status])) (= :passed (get-in negative-input [:verification :status])))
+        (throw (ex-info "Mixed Set negative upstream prerequisite rejected" {:diagnostics (get-in negative-input [:typed :diagnostics])})))
+      (let [binding (seal (:request negative-input) (:typed negative-input) (:verification negative-input))
+            effects (c8 'build-body-effect-result (:typed negative-input) (:verification negative-input) binding)
+            _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+            _ (when-not (= :accepted (:status effects))
+                (throw (ex-info "Mixed Set negative C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+            verification (c8 'verify-body-effect-result (:typed negative-input) (:verification negative-input) binding effects)
+            _ (is (= :passed (:status verification)))
+            _ (when-not (= :passed (:status verification)) (throw (ex-info "Mixed Set negative C8 verification rejected" {})))
+            artifact (get-in negative-input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+            parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+            path (.getPath (io/file root relative))
+            raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+            definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+            failure (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                   (fn [runtime plan function args]
+                                     (let [result (original runtime plan function args)]
+                                       (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                      (diagnostic #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'values) negative-input)))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :unsupported-typed-set-member (:reason failure)))
+        (is (= 2 (count @verified)))
+        (is (= [:passed :passed] (mapv :status @verified)))
+        (println (pr-str {:literal-string-set-mixed-lowering-rejection failure}))))
     (println (pr-str {:literal-string-set-composition :completed :runtime-result result
-                      :source-products {:g-positive 1 :g-negative 0 :q-typed-products 0}
+                      :source-products {:g-positive 1 :g-upstream-accepted-lowering-rejected 1 :q-typed-products 0}
                       :function-table-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
                       :runtime-function-count 54 :membership-support :not-established
                       :whole-validator-coverage false :authority :non-authoritative
