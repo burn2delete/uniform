@@ -9150,8 +9150,8 @@ node rejected during checked-Core preflight. Both construction and verification
 report that node's operation, span and generated origins rather than the
 enclosing conditional. Dominance failures also retain the responsible value ID.
 The block is `:not-applicable` because preflight has not established a verified
-CFG. Malformed or missing-source and aggregate failures retain the original
-fallback. Valid MIR, diagnostic tags/reasons, precedence, public report fields
+CFG. Failures with malformed or missing source metadata, and aggregate failures,
+retain the original fallback. Valid MIR, diagnostic tags/reasons, precedence, public report fields
 and operational limits are unchanged.
 
 The original focused regression exposed 50 attribution failures among 129

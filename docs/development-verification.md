@@ -185,8 +185,9 @@ clojure -J-Xmx512m -M:dev-test \
 
 Construction and verification must report the first offending node's operation,
 span and generated origins, not the enclosing conditional. No verified CFG
-exists on this rejection path, so its block is `:not-applicable`. Keep malformed
-or missing-source and aggregate failures on their existing fallback. Accepted
+exists on this rejection path, so its block is `:not-applicable`. Keep failures
+with malformed or missing source metadata, and aggregate failures, on their
+existing fallback. Accepted
 MIR, public report fields, rejection precedence and resource limits are unchanged.
 Use the existing diamond, malformed checked-Core and fact-loss selectors for
 affected regression feedback. Supplied checked-Core tests exercise this ingress;
