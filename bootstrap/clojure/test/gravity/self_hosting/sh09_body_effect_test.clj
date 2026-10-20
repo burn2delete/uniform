@@ -6308,6 +6308,31 @@
                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "effects insertion ID hash")))
                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "effects insertion ID equality")))
                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "effects insertion ID printing"))))]
+    ;; Existing zero-argument local-call constraints have no producer rule.
+    ;; This selector leaves those rows to the existing owning validators.
+    (let [membership (first (:constraint-ledger facts))
+          local-row {:constraint-id-request {:domain :gravity/sh08-function-call-constraint-v1
+                                            :call-core-node-id :local-call :callee-function-syntax-id :callee}
+                     :kind :equality :lhs :callee :rhs [] :origin []
+                     :profile :meta :target :jvm :status :solved :diagnostics []}]
+      (let [with-local-row (update facts :constraint-ledger conj local-row)
+            recomputed (leaf 'body-mc-context request with-local-row bindings 65536)
+            joined (assoc with-local-row :map-contains-context (:context recomputed))]
+        (is (= :accepted (:status recomputed)))
+        (is (= recomputed (leaf 'body-mc-context request with-local-row bindings (:work-count recomputed))))
+        (is (true? (leaf 'body-ksm-call-valid? core joined bindings node call edge nodes))))
+      (doseq [bad [nil opaque [opaque] {:opaque opaque}]]
+        (is (false? (leaf 'body-ksm-call-valid? core
+                          (assoc-in facts [:constraint-ledger 0 :producer-rule] bad) bindings node call edge nodes)))
+        (is (zero? @callbacks)))
+      (is (true? (leaf 'body-sysm-ledger-ids? [local-row membership])))
+      (is (true? (leaf 'body-sysm-ledger-ids? [membership local-row])))
+      (is (true? (leaf 'body-sysm-ledger-ids? [(assoc local-row :producer-rule nil) membership])))
+      (doseq [bad [opaque [opaque] {:opaque opaque}]]
+        (is (false? (leaf 'body-sysm-ledger-ids? [(assoc local-row :producer-rule bad) membership])))
+        (is (zero? @callbacks))
+        (is (false? (leaf 'body-sysm-ledger-ids? [(assoc-in membership [:lhs :core-node-id] bad) local-row])))
+        (is (zero? @callbacks))))
     (is (= :accepted (:status prepared)))
     (is (true? (leaf 'body-ksm-call-valid? core facts bindings node call edge nodes)))
     (doseq [bad [opaque [opaque] {:opaque opaque}]

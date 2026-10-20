@@ -7201,6 +7201,7 @@
   (loop [remaining ledger]
     (if (= 0 (count remaining)) true
       (let [row (first remaining) producer (get row :producer-rule)]
+        (if (nil? producer) (recur (rest remaining))
         (if (keyword? producer)
           (if (contains? #{:sh08-keyword-set-contains-v1 :sh08-character-set-contains-v1 :sh08-string-set-contains-v2 :sh08-symbol-set-contains-v1} producer)
             (let [lhs (get row :lhs)]
@@ -7209,7 +7210,7 @@
                           (if (keyword? (first fields)) (recur (rest fields)) false)))
                       (if (keyword? (get lhs :projection)) (body-sse-ids? [(get lhs :core-node-id)] 1) false) false) false) false)
                 (recur (rest remaining)) false))
-            (recur (rest remaining))) false)))))
+            (recur (rest remaining))) false))))))
 
 (defn body-ksm-call-valid? [core facts bindings node call edge nodes]
   (if (if (body-sse-call-ids? node call)
