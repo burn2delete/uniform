@@ -676,6 +676,17 @@
             (is (= (:span source) (:source-span observed)))
             (is (= (:generated-origin source) (:origin-chain observed)))
             (is (= expected observed))))
+        ;; Defensive internal context only: do not skip a malformed first
+        ;; expected source in favor of the later valid operation mismatch.
+        (let [malformed (mutate wrong-then else-path)
+              context (invoke c11-plan 'sh12-branch-join-fact-context [mir malformed])
+              context (assoc-in context [:expected-operations 1 :source] nil)
+              helper (if (= family :effects)
+                       'sh12-branch-join-effect-rejection 'sh12-branch-join-safety-rejection)
+              report (invoke c11-plan helper [checked mir malformed context])
+              expected (invoke c11-plan 'sh12-branch-join-diagnostic [id reason checked malformed])]
+          (is (= :rejected (:status report)))
+          (is (= [expected] (:diagnostics report))))
         (let [aggregates
               (if (= family :effects)
                 [[(assoc wrong-then :effect-table {}) id reason]
