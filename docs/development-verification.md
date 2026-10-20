@@ -113,6 +113,40 @@ inputs are normalized DATA. They are integration checks, not fast
 `*-development-kernel` tests. Their bodies and coverage remain available;
 renaming them does not require replaying an unchanged expensive proof.
 
+### Explicit bounded closure and storage escapes (SH-10)
+
+For normalized ownership events, change
+`bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity`.
+L10, SAFE3 and C9 govern this boundary. The existing `:escape-borrow` operation
+accepts `:function-return`, `:closure-capture` and `:global-or-static-storage`
+only with an active borrow and an explicit finite destination interval no
+longer than the owner's interval. Outliving or inactive borrows reject;
+unknown destinations and malformed or unbounded coordinates fail closed.
+
+This is an explicit normalized-event interface, not source-level lifetime
+inference or permission to assert a false finite bound for global storage.
+The existing owned-mutable and runtime-borrow scenario validators preserve the
+same destination restriction. Their acquisition rules remain distinct.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh10-bounded-escape-destination-test \
+  --exact sh10-bounded-escape-fixtures-development-kernel \
+  --exact sh10-bounded-escape-transitions-development-kernel \
+  --exact sh10-bounded-escape-adapter-development-kernel --fail-fast
+```
+
+The paired fixtures are in `bootstrap/clojure/fixtures/self-hosting/sh-10/`,
+under `accepted/` and `rejected/`, named `bounded-escape-destinations`.
+The Gravity fixture requests and original C9 pass execute; QST receives byte
+and reader parity checks only. Adapter tests use explicitly supplied records,
+not a fresh C8 producer or authoritative proof. They check original request
+construction, source/origin preservation and result-substitution rejection.
+Use the existing ownership-transition tests for affected state-machine
+regressions. C10's current read-only ingress does not consume these lifecycle
+results; C10/MIR escape propagation and automatic lifetime inference remain
+separate implementation work. No migration or milestone status changes follow.
+
 ### First stored value of a proven-nonempty Vector
 
 STD3 defines `first` on a persistent nonempty Vector as its stored index-zero
