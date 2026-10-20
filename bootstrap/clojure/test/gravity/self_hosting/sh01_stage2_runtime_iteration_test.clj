@@ -23614,7 +23614,7 @@
       (is (= :accepted (get-in negative [:c5 :status])))
       (is (= :passed (get-in negative [:report :status])))
       (is (= :rejected (get-in negative [:typed :status])))
-      (is (some #(= ["C7-VERIFY" :map-get-private-first-entry-presence-required]
+      (is (some #(= ["C7-ANNOTATION" :map-get-private-first-entry-presence-required]
                     ((juxt :rule :reason) %)) diagnostics) (pr-str diagnostics)))
     (println (pr-str {:bu-private-first-entry-composition :completed
                       :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
