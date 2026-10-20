@@ -335,6 +335,27 @@ truthiness nodes; a truthful type/truthiness adapter is still a separate source
 integration dependency. A retained source-form ID is not a file/origin anchor.
 Do not relabel supplied checked-Core execution as fresh source provenance.
 
+For the separate bounded truthiness prerequisite, run
+`sh13-normalizes-selected-scalar-truthiness` in the control-flow namespace and
+`sh13-executes-original-scalar-truthiness-before-branching` in the branch-join
+namespace. The new pure normalized `:truthy` opcode requires one defined Bool,
+i64 or Keyword operand and a Bool result. Within this supported domain, only
+`false` yields false; zero, negative integers and Keywords yield true. Nil,
+Strings and collections remain unsupported here, not redefined as truthy.
+
+The original producer bridge adds exactly the six-node `[2,1,1]` layout:
+literal input and truthiness in entry, then two literal arms. Its new
+`:truthiness` projection role retains original IDs, source/fact rows, full CFG
+and selected trace, with 506 fuel remaining under 512. The SH-12 source-path
+gate preserves the existing `if-path + :condition` prefix and additionally
+accepts only source-op `:truthy` at the exact `if-path + :truthy` path. Bridge
+input must be at `if-path + :test`; retained metadata must have fixed
+`:false-values [nil false]` and canonical Bool result type. It is not a caller
+truthiness policy. Check wrong operators, suffixed paths, contradictory
+metadata and unselected-arm domains, plus the existing diamond and layouts.
+This explicitly adds an upstream accepted path and normalized opcode/role;
+it does not adapt actual C6 type families or renew pinned source authority.
+
 ### Normalized MIR constant-fold result types
 
 For the fixed-i64 C13 fold domain, edit

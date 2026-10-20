@@ -9782,6 +9782,43 @@ migration remain outstanding. Consumers must account for the new normalized
 opcode/projection domains when selecting a future stable migration revision;
 no historical proof is repinned or renewed by this development merge.
 
+### Bounded scalar truthiness: executable increment
+
+The same C11 interpreter now executes one pure normalized `:truthy` operation
+over an already-defined Bool, i64 or Keyword value, producing Bool. False
+selects false; every other supported value selects true. Nil, Strings and
+collections are rejected by this bounded interface. This does not change L2's
+source truthiness law, where Nil is false, or implement its complete domain.
+
+The original SH-12 builder/verifier and same interpreter compose a new exact
+six-node `[2,1,1]` diamond: literal input, truthiness, two literal arms and the
+original join/return records. A new `:truthiness` projection role preserves
+original IDs, source/fact rows, CFG, incoming value and selected trace. The
+literal executes once; fuel remaining is 506 within the unchanged 512 bound.
+Existing five/seven/eight/nine-node domains remain unchanged.
+
+The initial attempt at `6d3fe73d` failed: one bridge test, 178 passes, 480
+failures and 48 secondary errors across 706 assertions; the normalized test
+was unrun. The original upstream gate rejected the actual truthiness source
+path before execution, and later test projections encountered absent outputs.
+The changed candidate `a03adc37` preserves the old condition-path prefix and
+additionally accepts only original source-op `:truthy` at exact
+`if-path + :truthy`. The bridge requires input at `if-path + :test`, fixed
+`[nil false]` metadata and canonical Bool result type. Wrong operators,
+suffixed/unrelated paths, contradictory metadata, malformed operands, unsupported
+types, unselected-arm errors and altered MIR/results reject. This is an
+explicit upstream accepted-path-domain addition, not an unchanged interface.
+
+The changed tests passed 2/869 assertions (722 bridge and 147 normalized).
+Fourteen affected existing selectors passed 4,671 assertions; six boundary
+tests passed 11. Thus 22 tests/5,551 assertions passed across three invocations,
+excluding the failed attempt. LOC separately passed 2,021 files, zero
+exceptions, maximum 250. These supplied G/Q constructor witnesses do not
+establish fresh C6/C10 source adaptation, actual source provenance, native
+execution, general truthiness, SH-13 completion or authoritative migration.
+The different C6 type family and stable C11 source binding remain separate
+integration/admission dependencies; no historical proof was refreshed.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
