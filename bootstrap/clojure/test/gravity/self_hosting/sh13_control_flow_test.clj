@@ -682,3 +682,71 @@
                         "C11-ORIGIN")
         (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
                                                 [missing [true] accepted]))))))))
+
+(deftest sh13-forwards-defined-scalar-local-values
+  ;; Normalized supplied MIR; :local forwards SSA values, not lexical or
+  ;; upstream source authority. The original constructors supply all fields.
+  (is (contains? (:operation-set (invoke-engine 'sh13-control-flow-policy [])) :local))
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (module plan 'sh13-branch-module)
+          op (invoke plan 'sh13-operation
+                     [:choose/condition-copy :local [:condition] :bool 0 1])
+          entry-path [:functions 0 :blocks 0]
+          with-local (-> base (assoc-in (conj entry-path :operations) [op])
+                         (assoc-in (into entry-path [:terminator :condition])
+                                   :choose/condition-copy))
+          check-rejected
+          (fn [operation rule]
+            (let [subject (assoc-in with-local (conj entry-path :operations) [operation])
+                  result (run subject [true])]
+              (is (= :rejected (:status result)))
+              (is (= rule (get-in result [:diagnostics 0 :rule])))
+              (is (nil? (:execution result)))
+              (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                    [subject [true] result]))))))]
+      (doseq [[condition expected] [[true 42] [false 7]]]
+        (let [result (run with-local [condition])]
+          (is (= :accepted (:status result)))
+          (is (= expected (get-in result [:execution :value])))
+          (is (= 1 (count (filter #(= :choose/condition-copy (:operation %))
+                                 (get-in result [:execution :trace])))))
+          (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                [with-local [condition] result]))))))
+      (doseq [[type left right] [[:i64 -9223372036854775808 9223372036854775807]
+                                [:bool false true] [:keyword :left/value :right/value]]
+              condition [true false]]
+        (let [copy1 (invoke plan 'sh13-operation [:choose/copy1 :local [:choose/forty-two] type 10 11])
+              copy2 (invoke plan 'sh13-operation [:choose/copy2 :local [:choose/copy1] type 11 12])
+              subject (-> base
+                          (assoc-in [:functions 0 :return-type] type)
+                          (assoc-in [:functions 0 :blocks 1 :operations 0 :type] type)
+                          (assoc-in [:functions 0 :blocks 1 :operations 0 :literal] left)
+                          (update-in [:functions 0 :blocks 1 :operations] into [copy1 copy2])
+                          (assoc-in [:functions 0 :blocks 1 :terminator :arguments] [:choose/copy2])
+                          (assoc-in [:functions 0 :blocks 2 :operations 0 :type] type)
+                          (assoc-in [:functions 0 :blocks 2 :operations 0 :literal] right)
+                          (assoc-in [:functions 0 :blocks 3 :param-types] [type]))
+              result (run subject [condition])]
+          (is (= :accepted (:status result)))
+          (is (= (if condition left right) (get-in result [:execution :value])))
+          (is (= (if condition [:choose/forty-two :choose/copy1 :choose/copy2]
+                                [:choose/seven])
+                 (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+          (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                [subject [condition] result]))))))
+      (doseq [operands [[] [:condition :condition]]]
+        (check-rejected (assoc op :operands operands) "C11-TYPE"))
+      (check-rejected (assoc op :operands [:missing]) "C11-DOMINANCE")
+      (check-rejected (assoc op :type :i64) "C11-TYPE")
+      (check-rejected (assoc op :type :dynamic) "C11-TYPE")
+      (check-rejected (assoc op :effects #{:io/write} :ordering :sequence) "C11-EFFECT")
+      (check-rejected (assoc op :ordering :sequence) "C11-EFFECT")
+      (check-rejected (assoc op :profile :wrong) "C11-MODULE")
+      (check-rejected (assoc-in op [:facts :type] :wrong) "C11-VERIFY")
+      (check-rejected (assoc op :operands nil) "C11-ORIGIN")
+      (check-rejected (assoc op :source-span nil) "C11-ORIGIN")
+      (check-rejected (assoc op :op-id :condition :result :condition) "C11-DOMINANCE")
+      (let [result (run with-local [true])]
+        (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                [with-local [true]
+                                                 (assoc-in result [:execution :value] :forged)]))))))))

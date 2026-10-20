@@ -253,16 +253,29 @@ diagnostics. Include branch execution, runtime-bound and recomputation controls
 when changing either predicate. This is typed MIR validation, not a change to
 source-language truthiness or fresh upstream admission.
 
+### Scalar SSA forwarding in normalized MIR
+
+For a pure scalar copy, edit `c11_mir_specification.gravity` and run
+`sh13-forwards-defined-scalar-local-values` in
+`gravity.self-hosting.sh13-control-flow-test`. The additive normalized opcode
+`:local` forwards exactly one already-defined SSA operand of the same i64,
+Bool or Keyword type. It consumes one existing interpreter step and retains
+the original operation ID in the trace. Missing operands, arity/type mismatches,
+duplicate results, effects and earlier source/fact failures still reject.
+Include conditional execution, loop/indirect-call, return and conditional
+dominance controls when changing this operation. A normalized value copy is
+not proof of source lexical binding or fresh upstream adaptation.
+
 ### Execute an original SH-12 diamond
 
 For the bounded original-MIR handoff, edit `c11_mir_specification.gravity` and
 run the existing direct development runner against
-`gravity.self-hosting.sh13-branch-join-execution-test`. Its ten selectors cover
+`gravity.self-hosting.sh13-branch-join-execution-test`. Its eleven selectors cover
 the interface, literal and computed conditions, original MIR tampering and
 subset/result rejection:
 
 ```bash
-clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --exact sh13-executes-typed-integer-less-than-conditions --exact sh13-executes-integer-less-than-only-in-the-selected-arm --exact sh13-executes-integer-equality-only-in-the-selected-arm --exact sh13-composes-entry-and-selected-arm-comparisons --exact sh13-preserves-literal-keyword-return-values --fail-fast
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --exact sh13-executes-typed-integer-less-than-conditions --exact sh13-executes-integer-less-than-only-in-the-selected-arm --exact sh13-executes-integer-equality-only-in-the-selected-arm --exact sh13-composes-entry-and-selected-arm-comparisons --exact sh13-preserves-literal-keyword-return-values --exact sh13-executes-branch-local-scalar-let-with-original-identities --fail-fast
 ```
 
 `sh13-run-branch-join-mir` takes the retained checked-Core and original MIR;
@@ -303,6 +316,24 @@ loop/indirect-call controls when changing this handoff. Calls, loops, effectful
 nodes, runtime checks and broader MIR remain outside the new entrypoint. These
 supplied checked-Core checks do not establish fresh C10/source ingress, generic
 MIR acceptance, native execution or authoritative migration.
+
+The separate eight-node lexical layout has a literal Bool condition, one
+branch-local scalar `let` and one matching literal arm. The initializer,
+binding, local reference and scope retain their original SSA IDs. Validate
+actual Symbol names, resolved binding ID, one non-shadowing binding, plural
+`:bindings` paths, operand order and source/fact records in both arms before
+execution. The initializer executes once when selected; three forwarding
+operations preserve the value, with scope forwarding its local-result operand.
+Fuel is 504 selected or 507 skipped under the same 512-step bound. This adds
+three projection roles (`:lexical-binding`, `:local-reference`, `:lexical-scope`)
+and an eight-row domain, not new public keys/arities. It excludes combined
+entry comparisons, two lexical arms, parameters, captures and collections.
+
+These witnesses use supplied SH-12 `:gravity.type/*` scalar facts and retained
+lexical records. Actual C6/C10 emits a different `:gravity/*` type family and
+truthiness nodes; a truthful type/truthiness adapter is still a separate source
+integration dependency. A retained source-form ID is not a file/origin anchor.
+Do not relabel supplied checked-Core execution as fresh source provenance.
 
 ### Normalized target-lowering type consistency
 

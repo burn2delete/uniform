@@ -620,3 +620,140 @@
   (is (false? (invoke 'sh13-branch-join-arm-valid?
                       [{:opcode :constant} {:opcode :constant} {:opcode :integer-lt}]
                       :gravity.type/keyword))))
+
+(defn- with-scalar-let [extension base placement]
+  ;; Exact C6 operand/path/name family, represented in the supplied SH12 type
+  ;; family. This is NOT fresh C6/C10 source adaptation or a type-ID relabeler.
+  (let [nodes (:core-nodes base)
+        if-node (first (filter #(= :if (:source-operation %)) nodes))
+        scope-id ((:operands if-node) (if (= placement :then) 1 2))
+        index (.indexOf (mapv :node-id nodes) scope-id)
+        target (nodes index) path (:path target) type (:type target)
+        start (get-in target [:source :span :start])
+        make (fn [name args]
+               ((existing 'invoke) (get (existing 'accepted-plans) extension) name args))
+        prefix (str "sh13:" (name placement) ":let:")
+        value-id (str prefix "value") binding-id (str prefix "binding")
+        local-id (str prefix "local")
+        value (make 'sh12-branch-join-node
+                    [value-id (into path [:bindings 0 :expr]) :literal [] type
+                     (get-in target [:attributes :value]) (inc start) (+ start 2)])
+        binding (-> (make 'sh12-branch-join-node
+                          [binding-id (into path [:bindings 0 :binder])
+                           :let-binding [value-id] type nil (+ start 3) (+ start 4)])
+                    (update :attributes assoc :name 'stored :shadowed-binding nil
+                            :source-form-id (str prefix "name-form")))
+        local (-> (make 'sh12-branch-join-node
+                        [local-id (into path [:body 0]) :local [binding-id]
+                         type nil (+ start 5) (+ start 6)])
+                  (update :attributes assoc :name 'stored :resolved-binding binding-id))
+        scope (-> (make 'sh12-branch-join-node
+                        [scope-id path :let [binding-id local-id] type nil start (+ start 7)])
+                  (assoc-in [:attributes :binding-count] 1))]
+    (reduce (fn [core node]
+              (let [id (:node-id node)]
+                (-> core
+                    (assoc-in [:type-facts id] (make 'sh12-branch-join-type-fact [id type]))
+                    (assoc-in [:effect-facts id] (make 'sh12-branch-join-effect-fact [id]))
+                    (assoc-in [:ownership-facts id] (make 'sh12-branch-join-ownership-fact [id]))
+                    (assoc-in [:capability-facts id] (make 'sh12-branch-join-capability-fact [id]))
+                    (assoc-in [:safety-facts id] (:safety node))
+                    (assoc-in [:profile-facts id] {:profile :meta :target :jvm}))))
+            (assoc base :core-nodes
+                   (into (into (subvec nodes 0 index) [value binding local scope])
+                         (subvec nodes (inc index))))
+            [value binding local scope])))
+
+(deftest sh13-executes-branch-local-scalar-let-with-original-identities
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]
+          condition [true false]
+          [type left right] [[:gravity.type/i64 -9223372036854775808 9223372036854775807]
+                             [:gravity.type/bool false true]
+                             [:gravity.type/keyword :left/value :right/value]]]
+    (let [core (with-scalar-let extension
+                 (scalar-core (checked extension) condition type left right) placement)
+          mir (build core) result (run core mir)
+          nodes (:core-nodes core) ids (mapv :node-id nodes)
+          rows (get-in result [:projection :operations])
+          if-node (first (filter #(= :if (:source-operation %)) nodes))
+          scope-id ((:operands if-node) (if (= placement :then) 1 2))
+          scope-index (.indexOf ids scope-id)
+          alias-ids (subvec ids (- scope-index 3) (inc scope-index))
+          selected? (= placement (if condition :then :else))
+          expected-ids (into [(ids 0)]
+                            (if selected? alias-ids
+                                [((:operands if-node) (if condition 1 2))]))
+          coordinates (coordinates core mir)
+          incoming (first (filter #(= (coordinates placement) (:predecessor %))
+                                  (get-in mir [:control-flow-graph :join :incoming])))
+          operations (into {} (for [block (vals (get-in mir [:functions (:entrypoint core) :blocks]))
+                                   op (:instructions block)] [(:op-id op) op]))]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :accepted (:status result)))
+      (is (= (if condition left right) (get-in result [:execution :value])))
+      (is (= (if selected? 504 507) (get-in result [:execution :fuel])))
+      (is (= expected-ids (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+      (is (= (if selected? 1 0)
+             (count (filter #(= (alias-ids 0) (:operation %)) (get-in result [:execution :trace])))))
+      (is (= 8 (count rows)))
+      (is (= ids (mapv :operation-id rows)))
+      (is (= (mapv :source nodes) (mapv :source rows)))
+      (is (= (mapv #(get-in operations [% :facts]) ids) (mapv :facts rows)))
+      (is (= [:literal :lexical-binding :local-reference :lexical-scope]
+             (mapv :role (subvec rows (- scope-index 3) (inc scope-index)))))
+      (is (= scope-id (:value incoming)))
+      (is (= (:control-flow-graph mir) (get-in result [:projection :control-flow-graph])))
+      (is (= :passed (:status (verify core mir result))))))
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]]
+    (let [core (with-scalar-let extension
+                 (scalar-core (checked extension) (= placement :else)
+                              :gravity.type/i64 11 22) placement)
+          nodes (:core-nodes core) ids (mapv :node-id nodes)
+          scope-id ((:operands (first (filter #(= :if (:source-operation %)) nodes)))
+                    (if (= placement :then) 1 2))
+          scope-index (.indexOf ids scope-id)
+          value-index (- scope-index 3) binding-index (- scope-index 2)
+          local-index (dec scope-index)]
+      ;; This arm is unselected; every lexical/source/type premise still joins.
+      (doseq [bad [(assoc-in core [:core-nodes value-index :attributes :value] nil)
+                  (assoc-in core [:core-nodes binding-index :attributes :name] 'different)
+                  (assoc-in core [:core-nodes local-index :attributes :name] "stored")
+                  (assoc-in core [:core-nodes local-index :attributes :resolved-binding] "other")
+                  (assoc-in core [:core-nodes binding-index :attributes :source-form-id] nil)
+                  (assoc-in core [:core-nodes binding-index :attributes :shadowed-binding] "outer")
+                  (update-in core [:core-nodes binding-index :attributes] dissoc :shadowed-binding)
+                  (assoc-in core [:core-nodes scope-index :attributes :binding-count] 2)
+                  (assoc-in core [:core-nodes local-index :path]
+                            (conj (pop (get-in core [:core-nodes local-index :path])) 1))
+                  (assoc-in core [:core-nodes local-index :operands] [(ids value-index)])
+                  (assoc-in core [:core-nodes scope-index :operands] [(ids local-index) (ids binding-index)])
+                  (with-integer-comparison extension core :condition :integer-eq 0 0)
+                  (with-scalar-let extension core (if (= placement :then) :else :then))]]
+        (let [result (run bad (build bad))]
+          (is (= :passed (get-in result [:upstream-verification :status])))
+          (is (= :rejected (:status result)))
+          (is (= :bounded-execution-subset (get-in result [:diagnostics 0 :missing-fact])))
+          (is (nil? (:execution result)))))
+      (let [mir (build core) result (run core mir)
+            path [:functions (:entrypoint core) :blocks ((coordinates core mir) placement)
+                  :instructions 2]]
+        (doseq [bad [(assoc-in mir (conj path :operands) [(ids value-index)])
+                    (assoc-in mir (into path [:source :span :start]) 999)]]
+          (let [original (invoke 'sh12-verify-branch-join-mir core bad)
+                rejection (run core bad)]
+            (is (= :rejected (:status rejection)))
+            (is (= (:diagnostics original) (:diagnostics rejection)))
+            (is (nil? (:execution rejection)))))
+        (is (= :rejected (:status (verify core mir (assoc-in result [:projection :operations local-index :role] :literal))))))
+      ;; Direct new-helper supplied-DATA guards: no callback-based ID/name join.
+      (let [callbacks (atom [])
+            opaque (proxy [Object] []
+                     (equals [_] (swap! callbacks conj :equals) false)
+                     (hashCode [] (swap! callbacks conj :hash) 0))
+            mir (build core)
+            operations (get-in mir [:functions (:entrypoint core) :blocks
+                                   ((coordinates core mir) placement) :instructions])]
+        (doseq [bad [(assoc-in core [:core-nodes binding-index :attributes :name] opaque)
+                    (assoc-in core [:core-nodes local-index :attributes :resolved-binding] opaque)]]
+          (is (false? (invoke 'sh13-branch-join-let-arm-valid? bad operations :gravity.type/i64)))
+          (is (empty? @callbacks)))))))

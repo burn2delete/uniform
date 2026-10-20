@@ -9643,6 +9643,50 @@ unsupported layouts, DFG/operand tampering and result recomputation. This does
 not establish fresh C10/source ingress, generic MIR, native execution, whole
 compiler execution, SH-13 completion or authoritative migration.
 
+### Scalar SSA forwarding and branch-local let: executable increment
+
+C11's existing interpreter now supports one pure scalar SSA forwarding opcode,
+`:local`. It requires exactly one already-defined operand of matching i64,
+Bool or Keyword type, preserving earlier definition/effect/fact/source checks.
+It forwards the value without reevaluating its producer, retains the original
+operation ID in the trace and consumes one existing fuel step. This explicitly
+extends the normalized operation domain; no new interpreter, cache or wrapper
+is introduced.
+
+The original SH-12 producer/verifier handoff now executes exactly one
+branch-local scalar `let` in layouts `[1,4,1]` or `[1,1,4]`: literal initializer,
+binding, local reference and scope, opposite a matching literal arm. Both arms
+validate before execution. Actual Symbol names, scalar IDs, resolved binding,
+one non-shadowing binding, original operand order and plural `:bindings` paths
+join the supplied source/fact records. Scope forwards its second operand, the
+local-reference result, not the binder. The initializer executes once when
+selected. Its three original alias IDs remain visible in forwarding traces.
+
+This adds three projection roles and an eight-row domain; public keys/arities
+are unchanged. Existing five/seven/nine-node results remain. Depth 32 and fuel
+512 remain, leaving 504 for selected lexical execution and 507 when skipped.
+No parameters, cross-block captures, collections, two lexical arms, combined
+entry-comparison/let layout or general lexical interpreter is enabled.
+
+The first attempt `ea8cebe7` exited 2 during test namespace compilation, with
+zero tests/assertions and no timing receipt. Two test delimiters had closed a
+local test scope too early. The test-only correction `3fd567c6` leaves production
+and bridge-test bytes unchanged. Its focused invocation passes all 16 tests/
+4811 assertions: 163 new normalized-forwarding, 588 new bridge assertions and
+4060 affected regressions. Separate boundary checks pass 6/11, giving 22 tests/
+4822 assertions across two passing invocations. Source LOC passes 2021 files,
+zero exceptions, maximum 250. The failed load epoch is not semantic evidence.
+
+These are original G/Q normalized constructors and supplied SH-12 checked-Core
+lexical witnesses, not actual C6/C10 adaptation. C6's `:gravity/*` type family
+and truthiness nodes still require a separately validated adapter to this
+`:gravity.type/*` interface. Retained lexical attributes/source-form IDs do not
+independently establish real source provenance. Fresh source ingress, native
+execution, whole compiler/helper behavior, SH-13 completion and authoritative
+migration remain outstanding. Consumers must account for the new normalized
+opcode/projection domains when selecting a future stable migration revision;
+no historical proof is repinned or renewed by this development merge.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
