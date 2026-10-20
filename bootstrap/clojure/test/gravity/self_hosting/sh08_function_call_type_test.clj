@@ -11890,7 +11890,9 @@
                      #(private-first-entry-local-derived changed table (:types changed) 65536))]
         (is (= :accepted (:status result)))
         (is (= 1 @full-calls) "A changed nonselected argument reconstructs BU DATA")
-        (is (= :gravity.type/integer (get-in result [:descriptor :presence-proof :entries 0 :argument-types 1]))))
+        (is (= :gravity.type/integer (get-in changed [:parent-result :descriptor :presence-proof :entries 0 :argument-types 1])))
+        (is (some #{[:other-0 true :gravity.type/integer false nil nil]}
+              (get-in result [:local-private-product :dependencies 3]))))
       (let [changed (refresh (assoc-in data [:types :other-0] :gravity.type/never))
             result (private-first-entry-local-derived changed table (:types changed) 65536)]
         (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
