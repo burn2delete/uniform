@@ -193,6 +193,56 @@ Use the existing diamond, malformed checked-Core and fact-loss selectors for
 affected regression feedback. Supplied checked-Core tests exercise this ingress;
 they do not establish fresh C10 composition, nested CFG support or migration.
 
+### List family classification
+
+STD3 owns unary `list?`. The current JVM typed development route accepts independently
+established bare, positional and homogeneous List types and the existing closed
+value-type families. It returns Bool for normal operands and preserves Never
+transfer. Unknown, dynamic, callable and malformed type carriers remain outside
+this route; the complete existing List-construction type validator still runs.
+Classification supplies no member, length, nonempty or branch-narrowing facts.
+
+The owners are the C7 type engine, `effects.gravity`, the P15 typed emitter and
+the existing closed-plan dispatch in `src/gravity/runtime.gravity`. Start with:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --fail-fast \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-list-predicate-development-kernel \
+  --exact current-gravity-list-predicate-source-development-kernel \
+  --exact current-gravity-list-predicate-lowering-runtime-development-kernel \
+  --exact current-gravity-list-predicate-closed-runtime-development-kernel
+```
+
+Use the companion ID-guard and consumer selectors for source-join changes, and
+the existing Set/Vector predicate and List construction/query controls for
+affected regressions. Lowering emits the original unary builtin-call shape;
+the operand runs once, non-tail, with effects and transfers preserved. Empty
+and nonempty persistent Lists classify true; Cons and sequence-view compiler
+DATA do not become List values merely because a trusted carrier admits them.
+The runtime extension changes existing dispatch only, not its helper/export
+count. Paired fixtures live under SH-08 as `local-runtime-list-predicate` and
+`list-predicate-arity-two`. Parser parity and normalized tests do not establish
+fresh source composition, authoritative migration or whole-runtime support.
+
+For a stable change to this composition, run its affected source selector once:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --fail-fast \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-list-predicate-authenticated-composition
+```
+
+It builds one accepted Gravity program and one arity typing negative through
+fresh development sessions, C7 and the affected downstream path. Q remains
+parser-only; public fresh C6 admission and a same-IR seed control are separate.
+Keep failed attempts and reuse unaffected focused results after a narrow fix.
+The named timing intervals are inclusive development observations, not isolated
+benchmarks; the post-assembly interval also includes projection and runtime-plan
+acquisition before execution.
+
 ### First stored value of a proven-nonempty Vector
 
 STD3 defines `first` on a persistent nonempty Vector as its stored index-zero
