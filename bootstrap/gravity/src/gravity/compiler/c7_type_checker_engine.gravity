@@ -10270,34 +10270,6 @@
                     {:status :not-applicable :work-count charge})
                   (assoc measured :work-count charge))))))))))
 
-(defn sh08-pc-local-parent-values [descriptor]
-  ; Positional DATA avoids allocating another field-labelled dependency artifact.
-  ; This is a consumed dependency projection, not whole BT/BS artifact identity.
-  (if (map? descriptor)
-    (let [fields [:kind :version :operation :semantic-owner :intrinsic :resolution
-                  :call-core-node-id :operator-node-id :operator-binding-id :key-node-id :key
-                  :application :argument-types :parameter-types :return :result-type
-                  :latent-effects :direct-effects :capabilities :thrown-error-effects :profile :target
-                  :bounds-proof :head-proof]
-          values (loop [remaining fields out []]
-                   (if (= 0 (count remaining)) out
-                     (recur (rest remaining) (conj out (get descriptor (first remaining))))))
-          source (get descriptor :source) operator (get descriptor :operator-source) binding (get descriptor :source-binding)
-          proof (get descriptor :presence-proof) entries (if (map? proof) (get proof :entries) nil)]
-      [values (if (map? source) [(get source :form-id) (get source :syntax-id)] [source])
-       (if (map? operator) [(get operator :form-id) (get operator :syntax-id)] [operator])
-       (if (map? binding) [(get binding :binding-id) (get binding :definition-syntax-id)] [binding])
-       (if (map? proof) (get proof :kind) [proof]) (if (map? proof) (get proof :key) nil)
-       (if (vector? entries)
-         (loop [remaining entries out []]
-           (if (= 0 (count remaining)) out
-             (let [entry (first remaining)]
-               (recur (rest remaining)
-                 (conj out (if (map? entry)
-                             [(get entry :call-core-node-id) (get entry :argument-node-id)
-                              (get entry :entry) (get entry :argument-types)] [entry])))))) [entries])])
-    [descriptor]))
-
 (defn sh08-pc-from-parent [route parent node nodes types bindings forms context budget]
   (let [core (get context :source-core) id (get node :node-id)
         key-id (get (get (get (get context :calls) id) :argument-node-ids) 1)
@@ -10318,9 +10290,9 @@
                (get matched :reason) nil :current-private-get-parent (get route :get-node-id)) :work-count used))))
 
 (defn sh08-pc-local-after-parent [route parent node nodes types bindings forms context budget]
-  ; This table is produced only by the lexical inference loop, initially empty.
-  ; Complete immutable Core/forms/census stay in that invocation. Every attempt
-  ; freshly reconstructs BT and BS; only constructed BU source DATA is reused.
+  ; The lexical loop starts with {} and owns all derived parent proof outputs.
+  ; Core/forms/topology stay immutable. Each attempt freshly derives BT and BS;
+  ; only round-varying semantic inputs select previously constructed BU DATA.
   (let [core (get context :source-core) table (get context :private-first-entry-products)
         eligible (sh08-pc-local-inputs-work (get parent :descriptor) types (get context :prior-types {}) nodes budget)
         prefix (get eligible :work-count)]
@@ -10333,38 +10305,35 @@
               used (+ prefix (get first-result :work-count))
               call (get (get context :calls) (get node :node-id))
               header (sh08-mg-source core node call (get (get context :edges) (get node :node-id)) nodes bindings types (get core :module))
-              current-parent (get types (get (get route :get-call) :operator-node-id))
-              current-first (get types (get first-call :operator-node-id))
-              descriptors [(get parent :descriptor) current-parent (get first-result :descriptor) current-first]
-              widths (loop [remaining descriptors total 0 valid true]
-                       (if (= 0 (count remaining)) {:width total :valid valid}
-                         (let [descriptor (first remaining) proof (if (map? descriptor) (get descriptor :presence-proof) nil)
-                               entries (if (map? proof) (get proof :entries) nil) width (if (vector? entries) (count entries) 0)]
-                           (recur (rest remaining) (+ total width) (if valid (<= width 1024) false)))))
-              links (sh08-pc-links route) charge (+ used 128 (* 4 (count table))
-                      (* 4 (count (get core :function-records))) (* 8 (get widths :width)) (* 8 (count links)))]
+              links (sh08-pc-links route)
+              charge (+ used 32 (* 4 (count table)) (* 4 (count (get core :function-records))) (* 8 (count links)))]
           (if (> charge budget) {:status :rejected :reason :map-get-work-limit :work-count charge}
-            (if (if (= :accepted (get first-result :status)) (if (map? header) (get widths :valid) false) false)
-              (let [parent-values (loop [remaining descriptors out []]
-                                    (if (= 0 (count remaining)) out
-                                      (recur (rest remaining) (conj out (sh08-pc-local-parent-values (first remaining))))))
-                    link-values (loop [remaining links out []]
+            (if (if (= :accepted (get first-result :status)) (map? header) false)
+              (let [link-values (loop [remaining links out []]
                                   (if (= 0 (count remaining)) out
                                     (let [link (first remaining) record (get link :binding-record)
                                           ref-id (get link :reference-core-node-id) init-id (get record :initializer-node-id)]
-                                      (recur (rest remaining) (conj out
-                                        [ref-id (get record :binding-id) (get record :let-core-node-id) (get record :ordinal) init-id
-                                         (get types ref-id) (get types init-id)])))))
-                    dependencies [[(get header :application) (get header :argument-types) (get header :key-node-id) (get header :key)
-                                   (get header :profile) (get header :target)]
-                                  parent-values (get eligible :entry-inputs) (get eligible :type-inputs) link-values]
+                                      (recur (rest remaining)
+                                        (conj out [(get record :binding-id) (get types ref-id) (get types init-id)])))))
+                    dependencies [[(get header :application) (get header :argument-types)]
+                                  [(get parent :type) (get (get first-result :descriptor) :argument-types) (get first-result :type)]
+                                  (get eligible :entry-inputs) (get eligible :type-inputs) link-values]
                     measured (sh08-pc-evidence-work dependencies (- budget charge)) spent (+ charge (get measured :work-count))]
                 (if (= :accepted (get measured :status))
-                  (let [prior (get table (get node :node-id)) previous (get prior :descriptor)
-                        same? (if (map? previous)
+                  (let [vector-type (get parent :type) map-type (get first-result :type)
+                        consistent? (if (= vector-type (get types (get route :get-node-id))
+                                           (first (get (get first-result :descriptor) :argument-types)))
+                                      (if (= map-type (get types (get route :first-node-id)) (first (get header :argument-types)))
+                                        (loop [i 0]
+                                          (if (= i (count link-values)) true
+                                            (let [expected (if (< i (count (get route :receiver-links))) map-type vector-type)
+                                                  row (get link-values i)]
+                                              (if (= expected (get row 1) (get row 2)) (recur (+ i 1)) false)))) false) false)
+                        prior (get table (get node :node-id)) previous (get prior :descriptor)
+                        same? (if consistent? (if (map? previous)
                                 (if (= :sh08-map-get-private-first-entry-v1 (get previous :version))
                                   (if (sh08-pc-selected-type? (get previous :result-type))
-                                    (= dependencies (get prior :dependencies)) false) false) false)
+                                    (= dependencies (get prior :dependencies)) false) false) false) false)
                         checked (if same?
                                   (let [descriptor (sh08-pc-finish header route
                                                      {:type (get previous :result-type) :rows (get (get previous :presence-proof) :entries)})]

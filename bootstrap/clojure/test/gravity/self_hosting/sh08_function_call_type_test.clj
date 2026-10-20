@@ -11733,9 +11733,14 @@
             observed (trace #(build input table prior 65536))]
         (is (= :accepted (get-in observed [:result :status])))
         (is (zero? (:full-calls observed)) "A concrete current type does not consult prior fallback"))
+      ;; Provided parent proof metadata belongs to the standalone/full boundary.
       (doseq [data [(assoc-in input [:types :first-operator :bounds-proof :selected-index] 1)
-                    (assoc-in input [:types :operator :key] :other)
-                    (assoc-in input [:types :signature-reference :member-types 1] :gravity.type/integer)
+                    (assoc-in input [:types :operator :key] :other)]]
+        (let [observed (trace #(build data nil (:types data) 65536))]
+          (is (= :rejected (get-in observed [:result :status])))
+          (is (not= :map-get-work-limit (get-in observed [:result :reason])))))
+      ;; Reference/initializer types remain genuine inputs of the local path.
+      (doseq [data [(assoc-in input [:types :signature-reference :member-types 1] :gravity.type/integer)
                     (assoc-in input [:types :signatures-reference :element-types 0 :member-types 1] :gravity.type/integer)]]
         (let [observed (trace #(build data table (:types data) 65536))]
           (is (= :rejected (get-in observed [:result :status])))
@@ -11747,7 +11752,7 @@
                                       (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque dependency compared")))
                                       (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque dependency hashed"))))
             data (assoc-in input [:types :first-operator :bounds-proof :selected-index] opaque)
-            observed (trace #(build data table (:types data) 65536))]
+            observed (trace #(build data nil (:types data) 65536))]
         (let [row (invoke-c7 'sh08-pc-observed-type [:selected {:selected opaque} {}])
               rejected (invoke-c7 'sh08-pc-evidence-work [row 65536])]
           (is (= :map-get-source-mismatch (:reason rejected))))
