@@ -11748,6 +11748,14 @@
                                       (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque dependency hashed"))))
             data (assoc-in input [:types :first-operator :bounds-proof :selected-index] opaque)
             observed (trace #(build data table (:types data) 65536))]
+        (let [row (invoke-c7 'sh08-pc-observed-type [:selected {:selected opaque} {}])
+              rejected (invoke-c7 'sh08-pc-evidence-work [row 65536])]
+          (is (= :map-get-source-mismatch (:reason rejected))))
+        (doseq [nodes [(assoc-in (:nodes input) [:input-0 :core-form] opaque)
+                       (assoc-in (:nodes input) [:input-0 :attributes :literal-kind] opaque)]]
+          (is (= :not-applicable
+                 (:status (invoke-c7 'sh08-pc-local-inputs-work
+                            [(get-in input [:parent-result :descriptor]) (:types input) (:types input) nodes 65536])))))
         (is (= :rejected (get-in observed [:result :status])))
         (is (zero? @callbacks))))
     (let [core {:calls [] :call-edges [] :nodes [] :function-records [] :module (:module input)}

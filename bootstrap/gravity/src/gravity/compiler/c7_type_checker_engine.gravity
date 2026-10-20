@@ -10208,7 +10208,8 @@
 
 (defn sh08-pc-observed-type [id types prior]
   (let [present? (contains? types id) value (get types id)
-        fallback? (sh08-ft-unknown? (get types id :gravity.type/unknown))]
+        fallback? (if (= nil value) true
+                    (if (keyword? value) (= :gravity.type/unknown value) false))]
     [id present? value fallback?
      (if fallback? (contains? prior id) nil) (if fallback? (get prior id) nil)]))
 
@@ -10255,8 +10256,10 @@
                               (if (map? node)
                                 (if collection?
                                   (if (vector? children)
-                                    (if (<= width 1024) (contains? #{:map :vector} (get (get node :attributes) :literal-kind)) false) false)
-                                  (if (contains? #{:literal :quote} kind)
+                                    (if (<= width 1024)
+                                      (let [family (get (get node :attributes) :literal-kind)]
+                                        (if (keyword? family) (contains? #{:map :vector} family) false)) false) false)
+                                  (if (if (keyword? kind) (contains? #{:literal :quote} kind) false)
                                     (if (vector? children) (= 0 (count children)) false) false)) false) true)
                           (let [next (if (if walk? collection? false)
                                        (loop [remaining children out tail]
