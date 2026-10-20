@@ -2439,6 +2439,48 @@ unchanged source construction to refresh a stamp. Logical work and selected
 hostile-provider checks do not establish arbitrary provider CPU/heap bounds,
 native execution, whole-compiler consumption or authoritative migration.
 
+### Finite Symbol-Set insertion: focused feedback
+
+STD3's same preserve-equal/add-absent `conj` law applies to independently finite
+literal Symbol Sets (zero through 1,024 members) and a Symbol value. Change the
+existing C7, effects, typed emitter and runtime insertion owners. Original
+Symbol namespace/name equality applies; display units account work only.
+The result is a bare Set, not member, shape or cardinality evidence.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-symbol-set-insertion-development-kernel \
+  --exact sh08-symbol-set-insertion-throw-consumer-development-kernel \
+  --exact sh08-symbol-set-insertion-id-guard-development-kernel \
+  --exact body-symbol-set-insertion-development-kernel \
+  --exact body-symbol-set-insertion-id-guard-development-kernel \
+  --exact current-gravity-symbol-set-insertion-lowering-development-kernel \
+  --exact current-gravity-symbol-set-insertion-lowering-id-guard-development-kernel \
+  --exact current-gravity-symbol-set-insertion-transfer-fence-development-kernel \
+  --exact current-gravity-symbol-set-insertion-runtime-development-kernel \
+  --exact current-gravity-symbol-set-insertion-fixtures-development-kernel --fail-fast
+```
+
+Retain Keyword/String insertion, List/Vector updates and Symbol membership
+regressions for shared dispatch changes. Guard IDs and paid family discovery,
+independently reconstruct selected policy/source/ledger/allocation joins and
+validate the complete actual domain, coherence, uniqueness and remaining work
+before hit or miss. Normal invocation declares possible allocation even on a
+hit. Preserve the scoped Never routes; selected callback checks do not promise
+universally unchanged provider reads or arbitrary provider CPU containment.
+
+For a changed composition, separately run the exact SH01 selector
+`current-gravity-symbol-set-insertion-authenticated-composition`. It covers
+empty, absent and present insertion consumed by `count`, plus a Character-Set
+with Symbol value rejection. Fresh C6 development sessions/replay are not
+fresh public C6 verification; QST is parser-only. There is no Symbol homogeneous
+carrier, nested insertion inference, Symbol-Set equality or dynamic loop join.
+The compiler's seen-Symbol scan is only a motivating subexpression, not an
+executed whole helper. Reuse valid unchanged evidence without a stamp refresh.
+
 ### Inferred String-Set carriers: private value feedback
 
 The closed inference carrier

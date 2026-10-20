@@ -1,0 +1,12 @@
+(ns self-hosting.sh08.finite-symbol-set-insertion
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  [(count (conj '#{} 'assoc))
+   (count (conj '#{assoc} 'gravity.core/assoc))
+   (count (gravity.core/conj '#{gravity.core/assoc} 'gravity.core/assoc))])
