@@ -9819,6 +9819,43 @@ execution, general truthiness, SH-13 completion or authoritative migration.
 The different C6 type family and stable C11 source binding remain separate
 integration/admission dependencies; no historical proof was refreshed.
 
+### Explicit Nil scalar transport and truthiness: executable increment
+
+The normalized C11 interpreter and original-producer bridge extend their
+scalar domain with explicit Nil. This is not only a condition exception:
+matching constants, parameters, local chains, branch/backedge arguments,
+direct and allowlisted indirect calls/results, returns and existing typed
+exits can transport Nil. Same-type Nil equality is true. Arithmetic, integer
+ordering, mixed-type equality and existing effect violations remain rejected.
+The original interpreter now yields false for Nil and false, preserving L2's
+law for the supported scalar subset.
+
+Nil constants require explicit field presence. Normalized records must contain
+`:literal nil`; bridge payloads must contain `:value nil`, and every original
+Nil constant must be an original `:literal` node whose attributes contain
+`:value nil`. Missing fields cannot become fabricated Nil through a defaulting
+lookup. Validation covers unselected and lexical arms before execution.
+Original `:implicit-nil` and `:quote` nodes remain excluded by this bridge
+subset; actual C6 generated origins and type-family adaptation are not claimed.
+
+Nil returns work in the existing five-node literal, six-node truthiness,
+seven-node entry-comparison and eight-node lexical layouts. Their old fuel,
+source/fact, incoming-value and trace rules remain. Computed comparison arms
+still return Bool. No public keys, arities, opcodes, projection roles or bounds
+were added; the scalar type/value domain explicitly grew.
+
+The first frozen candidate `4e2e2abc` remained unrun: static review found one
+test scope delimiter and an incoherent Nil-arm fixture. The two test-only
+corrections at `8a0993d4` left production unchanged. Its first execution passed
+both new tests/584 assertions (294 bridge and 290 normalized), including
+missing-field, wrong-value/type, source/fact, arity, effect and recomputation
+rejections. Seventeen affected existing selectors passed 6,070 assertions and
+six language-boundary tests passed 11: 25 tests/6,665 assertions across three
+passing invocations. LOC separately passed 2,021 files, zero exceptions,
+maximum 250. There is no failed execution to relabel. These supplied constructor
+results do not establish fresh source ingress, native execution, milestone
+completion or authoritative migration.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's

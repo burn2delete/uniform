@@ -338,10 +338,10 @@ Do not relabel supplied checked-Core execution as fresh source provenance.
 For the separate bounded truthiness prerequisite, run
 `sh13-normalizes-selected-scalar-truthiness` in the control-flow namespace and
 `sh13-executes-original-scalar-truthiness-before-branching` in the branch-join
-namespace. The new pure normalized `:truthy` opcode requires one defined Bool,
-i64 or Keyword operand and a Bool result. Within this supported domain, only
-`false` yields false; zero, negative integers and Keywords yield true. Nil,
-Strings and collections remain unsupported here, not redefined as truthy.
+namespace. The pure normalized `:truthy` opcode requires one defined Bool,
+i64, Keyword or explicit Nil operand and a Bool result. False and Nil yield
+false; zero, negative integers and Keywords yield true. Strings and collections
+remain unsupported here, not redefined as truthy.
 
 The original producer bridge adds exactly the six-node `[2,1,1]` layout:
 literal input and truthiness in entry, then two literal arms. Its new
@@ -355,6 +355,24 @@ truthiness policy. Check wrong operators, suffixed paths, contradictory
 metadata and unselected-arm domains, plus the existing diamond and layouts.
 This explicitly adds an upstream accepted path and normalized opcode/role;
 it does not adapt actual C6 type families or renew pinned source authority.
+
+For explicit Nil transport, run
+`sh13-carries-explicit-nil-through-existing-scalar-transfers` in the control-flow
+namespace and `sh13-executes-explicit-nil-carriers-without-fabricating-values`
+in the branch-join namespace. This is a scalar-carrier extension, not an
+input-only condition exception: existing matching local, parameter, branch,
+backedge, allowed call, return, typed-exit and same-type equality paths carry
+Nil. Existing effect and type checks still apply; arithmetic, ordering and
+mixed-type equality do not become legal.
+
+A normalized Nil constant must contain an explicit `:literal` key with Nil.
+The original-producer bridge requires both an explicit payload `:value` and
+an original `:literal` node whose attributes contain `:value nil`. Check all
+nodes before execution, including unselected and lexical arms. A missing field
+is not a Nil witness. Original `:implicit-nil` and `:quote` nodes remain outside
+this bridge subset. Retain existing Bool/Nil separation, source/effect, schema,
+argument-arity and result-substitution controls. This extends the declared Nil
+value/projection domain, not public keys, arities, opcodes, roles or limits.
 
 ### Normalized MIR constant-fold result types
 
