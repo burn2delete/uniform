@@ -54,6 +54,23 @@ spelling does not establish an implemented `gravity.text` export or grant
 profile, target or host-service permission. Convertibility to String does not
 make Bytes, an arbitrary Text/view value or a host text carrier a String.
 
+## Character Family Predicate
+
+Unary `(char? value)` returns Bool true exactly when the normally evaluated
+value belongs to the Character family, including BMP and supplementary Unicode
+Characters, and false for every other normally evaluated value. Empty Strings,
+one-scalar Strings and ordinary Maps that resemble an implementation's
+supplementary Character carrier are not Characters. Classification follows the
+Gravity value family, not String length, convertibility or carrier field names.
+
+The operand evaluates exactly once under L2; its effects remain visible and a
+control transfer aborts invocation. Classification does not evaluate stored
+payloads, coerce or mutate the value, or itself allocate a collection. It
+establishes no flow refinement, encoding, Unicode validation, normalization or
+text-boundary fact. `gravity.text` owns this law; the core compatibility
+spelling establishes no implemented `gravity.text` export or new profile,
+target or host-service permission.
+
 ## Binary String Concatenation
 
 The binary String overload of the existing compatibility spelling
@@ -131,6 +148,7 @@ If `n` is outside the valid range, the operation returns a checked text error or
 ## Conformance Criteria
 
 - String family classification distinguishes actual Strings, including empty Strings, from other values without conversion, normalization, payload execution or new authority, and preserves operand effects and transfers.
+- Character family classification accepts BMP and supplementary Characters, rejects Strings and ordinary carrier-shaped Maps, preserves once-only operand effects and transfers, and adds no refinement or Unicode validation fact.
 - Binary String concatenation preserves exact scalar sequences and operand order, retains operand transfers and effects, and rejects invocation without the required allocation allowance.
 - UTF-8 fixtures distinguish valid, invalid, incomplete, overlong, and boundary-sensitive inputs.
 - Normalization fixtures record Unicode version and produce stable results across targets.

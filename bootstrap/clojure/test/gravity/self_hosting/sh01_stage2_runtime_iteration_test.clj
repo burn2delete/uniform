@@ -14417,6 +14417,178 @@
         (is (= [true "operand\n" :normal]
                (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "" {'produce function} ['main])))))))
 
+(deftest current-gravity-character-predicate-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'character-predicate-input)
+        derive (ns-resolve upstream 'character-predicate-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        supplementary (bootstrap/sh03-reader-host-character-value! "<character-predicate-kernel>" {:codepoint 0x1f600})
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
+    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+          ip-input (ns-resolve upstream 'integer-predicate-input)]
+      (doseq [target [:jvm :wasm]
+              [input name expected] [[(input-fn [:gravity.type/map]) 'chp (= target :jvm)]
+                                     [(ip-input [:gravity.type/integer]) 'ip true]]]
+        (let [binding (get-in input [:bindings :ordering-binding]) module (assoc (:module input) :target target)]
+          (is (= expected (c7 (symbol (str "sh08-" name "-binding?")) [binding module])))
+          (is (= expected (body (symbol (str "body-" name "-binding?")) binding module)))
+          (is (= expected (lower (symbol (str "p15-s23-" name "-binding?")) binding module))))))
+    (doseq [type [:gravity.type/character :gravity.type/string :gravity.type/nil :gravity.type/integer
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/bool}
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/character}
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/string}
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/symbol}
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}
+                  :gravity.type/bool :gravity.type/set :gravity.type/map :gravity.type/keyword :gravity.type/never
+                  {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/string]}
+                  {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
+                  {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+            result (derive input 65536) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings
+                     :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-chp-call-fact [descriptor module])}
+                     :ledger [(c7 'sh08-chp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
+            compile #(lower 'p15-s23-typed-compile-node % :call %2)
+            compiled (compile context 65536)]
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (when-not (= :complete (:status compiled))
+          (throw (ex-info "Nil predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+        (let [operand {:op :local :name 'value}
+              expected (cond
+                         (= :gravity.type/character type) {:op :do :body [operand {:op :literal :value true}]}
+                         (= :gravity.type/never type) operand
+                         (= {:kind :gravity.type/nil-or :value-type :gravity.type/character} type)
+                         {:op :if :test {:op :builtin-call :function '= :args [operand {:op :literal :value nil}]}
+                          :then {:op :literal :value false} :else {:op :literal :value true}}
+                         :else {:op :do :body [operand {:op :literal :value false}]})]
+          (is (= expected (:value compiled)))
+          (is (not-any? #(and (map? %) (= 'char? (:function %))) (tree-seq coll? seq (:value compiled))))
+          (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context)))))
+        (is (= compiled (compile context (:work-count compiled))))
+        (is (= :rejected (:status (compile context (dec (:work-count compiled))))))
+        ;; Values and entries below conform to the authenticated normalized operand type.
+        ;; Runtime activation does not provide an argument-type guard or an FFI contract.
+        (let [plan (:plan (typed-catch-runtime-projection))
+              execute (fn [ir env] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [ir env ""]))
+              values (cond
+                       (= :gravity.type/character type) [(char 0) (char 65) (char 0xe9) supplementary]
+                       (= :gravity.type/string type) ["" "A" (String. (Character/toChars 0x1f600))]
+                       (= :gravity.type/nil type) [nil]
+                       (= :gravity.type/bool type) [false true]
+                       (= :gravity.type/integer type) [7]
+                       (= :gravity.type/map type) [{} supplementary {:code (list 'println "unreached")} ]
+                       (= :gravity.type/set type) [#{}]
+                       (= :gravity.type/keyword type) [:data]
+                       (= :gravity.type/nil-or (:kind type))
+                       (case (:value-type type)
+                         :gravity.type/bool [nil false true]
+                         :gravity.type/character [nil (char 65) supplementary]
+                         :gravity.type/string [nil "nil"]
+                         :gravity.type/symbol [nil 'unresolved/data]
+                         :gravity.type/keyword [nil :nil])
+                       :else [])
+              literal (fn [value] {:op :literal :value value})
+              local {:op :local :name 'value}
+              say (fn [operand] {:op :do :body [{:op :println :args [(literal "operand")] :effect :io/write :capability :io/stdout} operand]})]
+          (doseq [value values]
+            (is (= [(if (= :gravity.type/character type) true
+                      (if (= {:kind :gravity.type/nil-or :value-type :gravity.type/character} type) (some? value) false)) "" :normal] (execute (:value compiled) {'value value})))
+            (let [ir (walk/postwalk-replace {local (say (literal value))} (:value compiled))]
+              (is (= [(if (= :gravity.type/character type) true
+                      (if (= {:kind :gravity.type/nil-or :value-type :gravity.type/character} type) (some? value) false)) "operand\n" :normal] (execute ir {})))))
+          (when (seq values)
+            (let [payload (String. "original transfer")
+                  transfer {:op :throw :value (literal payload)}
+                  ir (walk/postwalk-replace {local (say transfer)} (:value compiled))
+                  actual (execute ir {})]
+              (is (= ["operand\n" :thrown] (subvec actual 1)))
+              (is (identical? payload (first actual)))))
+          (when (= :gravity.type/nil type)
+            (let [fatal (AssertionError. "original Nil operand failure") original-str str
+                  ir (walk/postwalk-replace {local (say (literal nil))} (:value compiled))
+                  observed (with-redefs [clojure.core/str (fn [& values] (if (= ["operand"] values) (throw fatal) (apply original-str values)))]
+                             (seed-throw-test-capture #(execute ir {})))]
+              (is (identical? fatal observed))))
+          (is (= ["" :rejected]
+                 (subvec (execute {:op :builtin-call :function 'char? :args [(literal nil)]} {}) 1))))
+        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
+              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 65536)
+              failed (compile changed 65536)]
+          (is (= :rejected (:status failed)))
+          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
+          (is (= own (:work-count (compile context own)))))
+        (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
+                         (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
+                         (assoc-in descriptor [:query-semantics :operand-position] :tail)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
+                         (assoc descriptor :operand-type-work 0)
+                         (assoc-in descriptor [:character-query-classification :version] :forged)
+                         (assoc-in descriptor [:character-query-classification :operand-type] :gravity.type/unknown)
+                         (assoc-in descriptor [:character-query-classification :case] :forged)
+                         (assoc-in descriptor [:character-query-classification :lowering] :forged)
+                         (assoc-in descriptor [:query-semantics :coercion] :truthiness)
+                         (assoc-in descriptor [:query-semantics :truthiness] :observed)
+                         (assoc-in descriptor [:query-semantics :operation] :truthiness-test)]]
+          (let [forged (-> context (assoc-in [:types :operator] changed)
+                           (assoc :call-facts {:call (c7 'sh08-chp-call-fact [changed module])}
+                                  :ledger [(c7 'sh08-chp-constraint [changed])]))]
+            (is (= :rejected (:status (compile forged 65536))))))
+        (let [visits (atom 0)
+              hostile (reify clojure.lang.IHashEq
+                        (hasheq [_] (swap! visits inc) (throw (AssertionError. "unvalidated predicate row ID hashed")))
+                        clojure.lang.Seqable
+                        (seq [_] (swap! visits inc) (throw (AssertionError. "unvalidated predicate row ID traversed")))
+                        Object
+                        (hashCode [_] (swap! visits inc) (throw (AssertionError. "unvalidated predicate row ID hashed"))))
+              row (assoc-in (first (:ledger context)) [:lhs :core-node-id] hostile)]
+          (is (= :rejected (:status (compile (update context :ledger conj row) 65536))))
+          (is (zero? @visits)))
+        (doseq [[case-index mutate] (map-indexed vector [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)])]
+          (is (= :rejected (:status (compile (mutate context) 65536))) (str "predicate context mutation " case-index)))))
+    ))
+
+(deftest current-gravity-character-predicate-inert-payload-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input ((ns-resolve upstream 'character-predicate-input) [:gravity.type/map])
+        result ((ns-resolve upstream 'character-predicate-derived) input 65536)
+        c7 (ns-resolve upstream 'invoke-c7)
+        descriptor (:descriptor result)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        context {:core (:core input) :nodes (:nodes input) :forms (:forms input) :bindings (:bindings input)
+                 :types (assoc (:types input) :operator descriptor :call (:type result))
+                 :calls {:call (:call input)} :edges {:call (:edge input)} :call-order {:call 0}
+                 :call-facts {:call (c7 'sh08-chp-call-fact [descriptor (:module input)])}
+                 :ledger [(c7 'sh08-chp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types (:types input)}
+        lowered (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-typed-compile-node [context :call 65536])
+        callbacks (atom 0) active (atom false)
+        key (reify clojure.lang.IHashEq
+              (hasheq [_] (if @active (do (swap! callbacks inc) (throw (AssertionError. "Character predicate hashed payload"))) 17))
+              clojure.lang.Seqable
+              (seq [_] (swap! callbacks inc) (throw (AssertionError. "Character predicate traversed payload"))))
+        stored (hash-map key :stored :code (list 'println "unreached"))
+        runtime-plan (:plan (typed-catch-runtime-projection))]
+    (is (= :complete (:status lowered)))
+    (reset! active true)
+    (is (= [false "" :normal]
+           (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+             'p15-s23-runtime-evaluate-closed-instruction [(:value lowered) {'value stored} ""])))
+    (is (zero? @callbacks))))
+
 (deftest current-gravity-nil-predicate-lowering-runtime-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
