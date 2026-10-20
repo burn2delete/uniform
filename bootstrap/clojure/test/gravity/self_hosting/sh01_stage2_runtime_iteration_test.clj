@@ -26841,7 +26841,25 @@
                         #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
                         #(assoc-in % [:types :arg0] (finite [:gravity.type/integer]))
                         #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)]]
-          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+          (is (= :rejected (:status (compile (mutate context) 65536)))))
+        (let [callbacks (atom 0)
+              opaque (proxy [Object] []
+                       (hashCode [] (swap! callbacks inc) (throw (AssertionError. "producer operator ID hash")))
+                       (equals [_] (swap! callbacks inc) (throw (AssertionError. "producer operator ID equality")))
+                       (toString [] (swap! callbacks inc) (throw (AssertionError. "producer operator ID print"))))
+              second-id :second-string-set-call
+              row (assoc-in (first (:ledger context)) [:lhs :core-node-id] second-id)]
+          (doseq [bad-id [opaque [opaque] {:opaque opaque}]]
+            (let [candidate (-> context
+                                (update :ledger conj row)
+                                (assoc-in [:calls second-id] (assoc call :core-node-id second-id :operator-node-id bad-id))
+                                (assoc-in [:nodes second-id] (assoc node :node-id second-id)))
+                  domain (invoke 'p15-s23-kse-domain arguments 65536)
+                  failure (compile candidate 65536)]
+              (is (= :rejected (:status failure)))
+              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))) (:work-count domain))
+                     (:work-count failure)))
+              (is (zero? @callbacks)))))))))
 
 (deftest current-gravity-string-set-inequality-lowering-runtime-development-kernel
   ;; Normalized typed lowering and existing-IR compatibility, not source/FFI admission.

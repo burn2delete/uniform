@@ -9753,10 +9753,14 @@
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
      :dispatch :direct-keyword-set-equality :applied-keyword-set-equality descriptor :effect-facts-source :audited-keyword-set-value-intrinsic}]
       (if (= :sh08-string-set-equality-v1 (get descriptor :version))
-        (assoc (dissoc fact :applied-keyword-set-equality)
-          :fact-id-request {:domain :gravity/sh08-string-set-equality-call-type-fact-v1 :application descriptor}
-          :dispatch :direct-string-set-equality :applied-string-set-equality descriptor
-          :effect-facts-source :audited-string-set-value-intrinsic) fact))))
+        {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-string-set-equality-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-value-intrinsic} fact))))
 
 (defn body-kse-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
