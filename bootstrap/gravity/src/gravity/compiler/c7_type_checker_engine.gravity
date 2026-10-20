@@ -5568,7 +5568,7 @@
           (recur next (get core :call-edges) next work touched))
         (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)
               local? (= :local-function (get edge :classification))
-              intrinsic? (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
+              intrinsic? (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-vector-first}
                             (get (get types (first (get (get nodes (get edge :call-core-node-id)) :children))) :kind))
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (if local? false (= false intrinsic?)) false)
@@ -5859,7 +5859,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-vector-first}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (sh08-bm-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))
@@ -5898,7 +5898,7 @@
                             (let [edge (first edges) call (get calls (get edge :call-core-node-id))
                                   node (get nodes (get edge :call-core-node-id))
                                   vector? (if (contains? scope (get edge :caller-function-syntax-id))
-                                            (contains? #{:gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains} (get (get types (first (get node :children))) :kind)) false)
+                                            (contains? #{:gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains} (get (get types (first (get node :children))) :kind)) false)
                                   predicate? (if (contains? scope (get edge :caller-function-syntax-id))
                                                (if (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-ip-binding? (get binding-index (get call :operator-binding-id)) (get core :module))))))))))) true (sh08-vp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) false)
                                   vector-first? (if (contains? scope (get edge :caller-function-syntax-id))
@@ -5927,7 +5927,7 @@
                                               (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get (get types (first (get node :children))) :kind))
                                               (sh08-kse-inferred-call core node call edge nodes binding-index types
                                                 (- budget initial (get owners :work-count) work))
-                                              (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains} (get (get types (first (get node :children))) :kind))
+                                              (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains} (get (get types (first (get node :children))) :kind))
                                                 (sh08-ksm-inferred-call core node call edge nodes binding-index types
                                                   (- budget initial (get owners :work-count) work))
                                                 (if (= :gravity.type/applied-list-equality (get (get types (get call :operator-node-id)) :kind))
@@ -5971,7 +5971,7 @@
                                                 (get (get owners :owners) (get edge :call-core-node-id)))])) false)
                                       (let [node (get nodes (get edge :call-core-node-id))
                                             descriptor (if get2? nil
-                                                       (if (contains? #{:gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-keyword-set-contains :gravity.type/applied-set-conversion :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first} (get (get types (first (get node :children))) :kind))
+                                                       (if (contains? #{:gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-keyword-set-contains :gravity.type/applied-set-conversion :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-vector-first} (get (get types (first (get node :children))) :kind))
                                                          nil
                                                          (sh08-io-descriptor core node call edge nodes binding-index types (get core :module))))]
                                         (if (map? descriptor) (= descriptor (get types (first (get node :children))))
@@ -6025,7 +6025,7 @@
                         (assoc (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-reconstruction-visits (+ initial validation-work))
                           :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (= :rejected (get owners :status)) owners
-                        (if (contains? #{:list-inequality-work-limit :list-equality-work-limit :string-set-insertion-work-limit :keyword-set-insertion-work-limit :keyword-set-contains-work-limit :keyword-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :list-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :vector-first-work-limit :map-get-work-limit} (get checked-edges :reason))
+                        (if (contains? #{:list-inequality-work-limit :list-equality-work-limit :string-set-insertion-work-limit :keyword-set-insertion-work-limit :keyword-set-contains-work-limit :keyword-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :list-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :symbol-set-contains-work-limit :vector-first-work-limit :map-get-work-limit} (get checked-edges :reason))
                           (assoc (sh08-th-error "C7-GENERIC" (get checked-edges :reason) {} :bounded-reconstruction-visits (+ initial validation-work))
                             :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (if (= bad-edge nil) (= false recursive?) false)
@@ -6066,6 +6066,7 @@
             (if (contains? #{:string-set-insertion-source-mismatch :string-set-insertion-operand-type-required :string-set-insertion-type-width :string-set-insertion-arity-mismatch
                             :keyword-set-insertion-source-mismatch :keyword-set-insertion-operand-type-required :keyword-set-insertion-type-width :keyword-set-insertion-arity-mismatch :keyword-set-contains-source-mismatch :keyword-set-contains-operand-type-required
                             :keyword-set-contains-arity-mismatch :keyword-set-contains-type-width
+                            :symbol-set-contains-source-mismatch :symbol-set-contains-operand-type-required :symbol-set-contains-type-width
                             :keyword-set-equality-source-mismatch :keyword-set-equality-operand-type-required
                             :keyword-set-equality-arity-mismatch :keyword-set-equality-type-width
                             :string-set-equality-source-mismatch :string-set-equality-operand-type-required :string-set-equality-type-width
@@ -11069,8 +11070,51 @@
      (contains? (set (get binding :profile-set)) (get module :profile))
      (contains? (set (get binding :target-set)) :all)]) false))
 
-(defn sh08-ksm-domain [arguments budget]
+(defn sh08-sysm-selected? [arguments]
+  (if (if (vector? arguments) (= 2 (count arguments)) false)
+    (let [items (get arguments 0) needle (get arguments 1)]
+      (if (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle))
+        (if (= :gravity.type/never items) (= :gravity.type/symbol needle)
+        (if (if (map? items) (if (= 3 (count items))
+              (if (loop [fields (keys items)] (if (= 0 (count fields)) true
+                    (if (keyword? (first fields)) (recur (rest fields)) false)))
+                (if (= :gravity.type/set (get items :kind))
+                  (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false) false) false)
+          (let [members (get items :element-types)]
+            (if (= 0 (count members)) (= :gravity.type/symbol needle)
+              (if (= :gravity.type/symbol (get members 0))
+                (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle)) false))) false))
+        false)) false))
+
+(defn sh08-sysm-domain [arguments budget]
+  ; STD3 membership: Symbol spelling is inert DATA, never binding authority.
   (let [limit (if (< budget 65536) budget 65536)]
+    (if (< limit 2) {:status :rejected :reason :keyword-set-contains-work-limit :work-count 2}
+      (if (if (vector? arguments) (= 2 (count arguments)) false)
+        (let [items (get arguments 0) needle (get arguments 1)]
+          (if (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle))
+            (if (= :gravity.type/never items)
+              {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil :membership-family :symbol}
+              (if (if (map? items) (if (= 3 (count items))
+                    (if (loop [fields (keys items)] (if (= 0 (count fields)) true
+                          (if (keyword? (first fields)) (recur (rest fields)) false)))
+                      (if (= :gravity.type/set (get items :kind))
+                        (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false) false) false)
+                (let [members (get items :element-types) n (count members)]
+                  (if (> n 1024) {:status :rejected :reason :symbol-set-contains-type-width :work-count 2}
+                    (if (> n (- limit 2)) {:status :rejected :reason :symbol-set-contains-work-limit :work-count (+ 2 n)}
+                      (if (loop [i 0] (if (= i n) true
+                            (if (= :gravity.type/symbol (get members i)) (recur (+ i 1)) false)))
+                        {:status :accepted :work-count (+ 2 n) :argument-types arguments :set-member-count n :membership-family :symbol}
+                        {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count (+ 2 n)}))))
+                {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count 2}))
+            {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count 2}))
+        {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}))))
+
+(defn sh08-ksm-domain [arguments budget]
+  (if (if (>= budget 2) (sh08-sysm-selected? arguments) false)
+    (sh08-sysm-domain arguments budget)
+    (let [limit (if (< budget 65536) budget 65536)]
     (if (if (vector? arguments) (= 2 (count arguments)) false)
       (if (< limit 2) {:status :rejected :reason :keyword-set-contains-work-limit :work-count 2}
         (let [items (get arguments 0) needle (get arguments 1)
@@ -11119,10 +11163,32 @@
                                  :work-count (+ 2 n)}))))))))
                 {:status :rejected :reason type-reason :work-count 2})))
             {:status :rejected :reason :keyword-set-contains-operand-type-required :work-count 2})))
-      {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0})))
+      {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}))))
+
+(defn sh08-sysm-source-ids? [node call nodes bindings module]
+  (if (sh08-sse-call-ids? node call)
+    (let [operator (get nodes (get call :operator-node-id)) binding (get bindings (get call :operator-binding-id))]
+      (if (sh08-sse-ids? [(get operator :node-id) (get (get operator :source) :form-id)
+                         (get (get operator :source) :syntax-id) (get binding :binding-id)] 4)
+        (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+          (if (loop [items (get binding :profile-set)]
+                (if (= 0 (count items)) true (if (keyword? (first items)) (recur (rest items)) false)))
+            (if (loop [items (get binding :target-set)]
+                  (if (= 0 (count items)) true (if (keyword? (first items)) (recur (rest items)) false)))
+              (if (if (symbol? (get (get operator :attributes) :symbol)) (keyword? (get module :profile)) false)
+                (sh08-ft-all-true?
+                  [(= (get node :node-id) (get call :core-node-id))
+                   (= (get operator :node-id) (get call :operator-node-id) (first (get node :children)))
+                   (= (get binding :binding-id) (get call :operator-binding-id))
+                   (= (get call :argument-node-ids) (vec (rest (get node :children))))
+                   (= [(get call :operator-binding-id)] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                   (contains? '#{contains? gravity.core/contains?} (get (get operator :attributes) :symbol))
+                   (= :jvm (get module :target)) (sh08-mc-binding? binding module)]) false)
+              false) false) false) false)) false))
 
 (defn sh08-ksm-source [core node call edge nodes bindings types module validation]
-  (if (if (vector? (get call :argument-node-ids))
+  (if (if (= :symbol (get validation :membership-family)) (sh08-sysm-source-ids? node call nodes bindings module) true)
+    (if (if (vector? (get call :argument-node-ids))
         (if (= 2 (count (get call :argument-node-ids)))
           (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false)
   (if (loop [remaining (conj (conj (conj (conj (conj (get call :argument-node-ids) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id)) (get (get node :source) :syntax-id))]
@@ -11164,7 +11230,29 @@
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
           ])
-      (if (= :character (get validation :membership-family))
+      (if (= :symbol (get validation :membership-family))
+        {:kind :gravity.type/applied-symbol-set-contains :version :sh08-symbol-set-contains-v1
+       :operation 'contains? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/symbol-set-membership
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :membership-policy {:input :finite-persistent-symbol-set :members :symbol-only :needle :symbol-only
+                           :comparison :guarded-atomic-symbol-leaf :operand-evaluation :set-then-value-once
+                           :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
+                           :budget :full-worst-case-reservation
+                           :value-work-model :gravity/symbol-set-membership-logical-content-work-v1
+                           :representation-unit-policy :jvm-utf16-symbol-display-for-work-only
+                           :symbol-equality :original-namespace-and-name :normalization :none :coercion :none
+                           :resolution-authority :none :operand-position :non-tail :payload-evaluation :none :mutation :none
+                           :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
+                           :provider-cpu-bound :not-established}
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :membership-domain :member-value-policy :profile :target :evaluation-order]}
+        (if (= :character (get validation :membership-family))
         (assoc {:kind :gravity.type/applied-keyword-set-contains :version :sh08-keyword-set-contains-v1
        :operation 'contains? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/keyword-set-membership
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
@@ -11239,10 +11327,20 @@
        :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :membership-domain :member-value-policy :profile :target :evaluation-order]})) nil)) nil) nil))
+                      :callee-body :membership-domain :member-value-policy :profile :target :evaluation-order]}))) nil)) nil) nil)
+    nil))
 
 (defn sh08-ksm-constraint [descriptor]
-  {:constraint-id-request {:domain (if (= :gravity.type/applied-character-set-contains (get descriptor :kind))
+  (if (= :gravity.type/applied-symbol-set-contains (get descriptor :kind))
+    {:constraint-id-request {:domain :gravity/sh08-symbol-set-contains-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-symbol-set-contains-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :symbol-set-contains}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects) :membership-policy (get descriptor :membership-policy)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []}
+    {:constraint-id-request {:domain (if (= :gravity.type/applied-character-set-contains (get descriptor :kind))
                                             :gravity/sh08-character-set-contains-constraint-v1 (if (= :gravity.type/applied-string-set-contains (get descriptor :kind)) :gravity/sh08-string-set-contains-constraint-v2 :gravity/sh08-keyword-set-contains-constraint-v1)) :application descriptor}
    :kind :equality :producer-rule (if (= :gravity.type/applied-character-set-contains (get descriptor :kind))
                                   :sh08-character-set-contains-v1 (if (= :gravity.type/applied-string-set-contains (get descriptor :kind)) :sh08-string-set-contains-v2 :sh08-keyword-set-contains-v1))
@@ -11250,13 +11348,23 @@
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution (let [solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
                              :direct-effects (get descriptor :direct-effects)}]
-               (if (contains? #{:gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains} (get descriptor :kind))
+               (if (contains? #{:gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains} (get descriptor :kind))
                  (assoc solution :membership-policy (get descriptor :membership-policy)) solution))
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []})
+   :status :solved :diagnostics []}))
 
 (defn sh08-ksm-call-fact [descriptor module]
-  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+  (if (= :gravity.type/applied-symbol-set-contains (get descriptor :kind))
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-symbol-set-contains-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-symbol-set-contains :applied-symbol-set-contains descriptor :effect-facts-source :audited-symbol-set-membership-intrinsic})
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     (if (= :gravity.type/applied-string-set-contains (get descriptor :kind))
       {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-string-set-contains-call-type-fact-v2 :application descriptor}
@@ -11282,7 +11390,7 @@
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-keyword-set-contains :applied-keyword-set-contains descriptor :effect-facts-source :audited-keyword-set-membership-intrinsic}))))
+     :dispatch :direct-keyword-set-contains :applied-keyword-set-contains descriptor :effect-facts-source :audited-keyword-set-membership-intrinsic})))))
 
 (defn sh08-ksm-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -11294,6 +11402,7 @@
   (let [args (get call :argument-node-ids) base (+ 64 (count args) (count (get core :function-records)))]
     (if (> base limit)
       (assoc (sh08-sm-failure "C7-GENERIC" :keyword-set-contains-work-limit nil :remaining-type-join-units limit) :work-count base)
+      (if (sh08-sse-call-ids? node call)
       (let [domain (sh08-ksm-domain (sh08-ft-ordered-child-types args types) (- limit base))
             work (+ base (get domain :work-count))]
         (if (= :accepted (get domain :status))
@@ -11301,7 +11410,7 @@
                 owner (if (if (keyword? owner-id) true (if (string? owner-id) (= 71 (count owner-id)) false)) (get forms owner-id) nil)
                 ids (get owner :child-form-ids)
                 header (sh08-ksm-source core node call edge nodes bindings types (get core :module) domain)]
-            (if (if (map? header)
+            (if (if (if (map? header) (if (= :symbol (get domain :membership-family)) (sh08-ksin-call-forms? node nodes forms) true) false)
                   (sh08-ft-all-true?
                     [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner))
                      (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
@@ -11317,16 +11426,20 @@
               (let [descriptor (sh08-ksm-finish header)]
                 {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
                  :constraint (sh08-ksm-constraint descriptor) :work-count work})
-              (assoc (sh08-sm-failure "C7-VERIFY" (if (= :character (get domain :membership-family)) :character-set-contains-source-mismatch
-                           (if (= :string (get domain :membership-family)) :string-set-contains-source-mismatch :keyword-set-contains-source-mismatch)) nil :exact-operator-set-needle-source
+              (assoc (sh08-sm-failure "C7-VERIFY" (if (= :symbol (get domain :membership-family)) :symbol-set-contains-source-mismatch
+                         (if (= :character (get domain :membership-family)) :character-set-contains-source-mismatch
+                           (if (= :string (get domain :membership-family)) :string-set-contains-source-mismatch :keyword-set-contains-source-mismatch))) nil :exact-operator-set-needle-source
                        (get node :node-id)) :work-count work)))
           (assoc (sh08-sm-failure
-                   (if (contains? #{:keyword-set-contains-work-limit :character-set-contains-work-limit :string-set-contains-work-limit} (get domain :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
-                   (get domain :reason) nil (if (contains? #{:character-set-contains-work-limit :character-set-contains-type-width :character-set-contains-operand-type-required} (get domain :reason))
+                   (if (contains? #{:keyword-set-contains-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :symbol-set-contains-work-limit} (get domain :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
+                   (get domain :reason) nil (if (contains? #{:symbol-set-contains-work-limit :symbol-set-contains-type-width :symbol-set-contains-operand-type-required} (get domain :reason))
+                     :established-finite-symbol-set-and-symbol
+                     (if (contains? #{:character-set-contains-work-limit :character-set-contains-type-width :character-set-contains-operand-type-required} (get domain :reason))
                      :established-finite-character-set-and-character
                      (if (contains? #{:string-set-contains-work-limit :string-set-contains-type-width :string-set-contains-operand-type-required} (get domain :reason))
-                       :established-finite-string-set-and-string :established-finite-keyword-set-and-keyword)) (sh08-ft-ordered-child-types args types))
-                 :work-count work)))))
+                       :established-finite-string-set-and-string :established-finite-keyword-set-and-keyword))) (sh08-ft-ordered-child-types args types))
+                 :work-count work)))
+      (assoc (sh08-sm-failure "C7-VERIFY" :keyword-set-contains-source-mismatch nil :closed-membership-source-identities nil) :work-count base))))
     (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :keyword-set-contains-arity-mismatch nil :binary-membership-call nil) :work-count 64))))
 
 (defn sh08-ksm-inferred-call [core node call edge nodes bindings types budget]
@@ -11334,15 +11447,18 @@
   (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
   (let [base (+ 64 (count (get call :argument-node-ids)) (count (get core :function-records)))]
     (if (> base limit) {:status :rejected :reason :keyword-set-contains-work-limit :work-count base}
+      (if (sh08-sse-call-ids? node call)
       (let [domain (sh08-ksm-domain (sh08-ft-ordered-child-types (get call :argument-node-ids) types) (- limit base))
             work (+ base (get domain :work-count))]
         (if (= :accepted (get domain :status))
           (let [header (sh08-ksm-source core node call edge nodes bindings types (get core :module) domain)]
             (if (if (map? header) (= (get types (get call :operator-node-id)) (sh08-ksm-finish header)) false)
               {:status :accepted :work-count work}
-              {:status :rejected :reason (if (= :character (get domain :membership-family)) :character-set-contains-source-mismatch
-                           (if (= :string (get domain :membership-family)) :string-set-contains-source-mismatch :keyword-set-contains-source-mismatch)) :work-count work}))
-          (assoc domain :work-count work)))))
+              {:status :rejected :reason (if (= :symbol (get domain :membership-family)) :symbol-set-contains-source-mismatch
+                         (if (= :character (get domain :membership-family)) :character-set-contains-source-mismatch
+                           (if (= :string (get domain :membership-family)) :string-set-contains-source-mismatch :keyword-set-contains-source-mismatch))) :work-count work}))
+          (assoc domain :work-count work)))
+      {:status :rejected :reason :keyword-set-contains-source-mismatch :work-count base})))
     {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 64})))
 
 (defn sh08-mc-source [core node call edge nodes bindings types module]
@@ -11455,29 +11571,42 @@
                      (get (get context :ordering-core) :module)) false))
 
 (defn sh08-mc-inferred-call-valid? [core node call edge nodes bindings types]
-  (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains} (get (get types (get call :operator-node-id)) :kind))
+  (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains} (get (get types (get call :operator-node-id)) :kind))
     (= :accepted (get (sh08-ksm-inferred-call core node call edge nodes bindings types 65536) :status))
       (let [header (sh08-mc-source core node call edge nodes bindings types (get core :module))]
     (if (map? header) (= (get types (get call :operator-node-id)) (sh08-mc-finish header)) false))))
 
 (defn sh08-mc-step [node types binding-types functions context budget]
-  (let [core (get context :ordering-core)
-        call (get (get context :ordering-operators) (first (get node :children)))
-        edge (get (get context :ordering-edges) (get node :node-id)) args (get call :argument-node-ids)
-        set? (if (if (vector? args) (= 2 (count args)) false)
-               (if (<= (+ 66 (count (get core :function-records))) budget)
-                 (if (if (= :gravity.type/set (get types (get args 0))) true
-                       (= :gravity.type/set (get (get types (get args 0)) :kind))) true
-                   (if (= :gravity.type/never (get types (get args 0)))
-                     (let [needle (get types (get args 1))]
-                       (if (keyword? needle)
-                         (if (= :gravity.type/character needle) true (= :gravity.type/string needle))
-                         true)) false)) false) false)]
-    (if set?
-      (sh08-ksm-derive core node call edge (get context :lookup-nodes) (get context :ordering-bindings)
-        types (get context :association-forms) budget)
-      (sh08-mc-derive core node call edge (get context :lookup-nodes) (get context :ordering-bindings)
-        types (get context :association-forms) budget))))
+  (let [core (get context :ordering-core) operator-id (first (get node :children)) id (get node :node-id)]
+    (if (sh08-sse-ids? [operator-id id] 2)
+      (let [call (get (get context :ordering-operators) operator-id)
+            edge (get (get context :ordering-edges) id) args (get call :argument-node-ids)
+            work (+ 64 (count args) (count (get core :function-records)))]
+        (if (> work budget)
+          (assoc (sh08-sm-failure "C7-GENERIC" :map-contains-work-limit nil :remaining-type-join-units budget) :work-count work)
+          (if (if (vector? args) (= 2 (count args)) false)
+            (if (sh08-sse-ids? args 2)
+              (let [receiver (get types (get args 0)) needle (get types (get args 1))
+                    set? (if (if (= :gravity.type/set receiver) true
+                                   (if (map? receiver) (= :gravity.type/set (get receiver :kind)) false)) true
+                           (if (= :gravity.type/never receiver)
+                             (if (keyword? needle)
+                               (if (= :gravity.type/symbol needle) true
+                                 (if (= :gravity.type/character needle) true (= :gravity.type/string needle))) true) false))]
+                (if set?
+                  (sh08-ksm-derive core node call edge (get context :lookup-nodes) (get context :ordering-bindings)
+                    types (get context :association-forms) budget)
+                  (sh08-mc-derive core node call edge (get context :lookup-nodes) (get context :ordering-bindings)
+                    types (get context :association-forms) budget)))
+              (assoc (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :closed-membership-step-keys nil) :work-count work))
+            (sh08-mc-derive core node call edge (get context :lookup-nodes) (get context :ordering-bindings)
+              types (get context :association-forms) budget))))
+      (let [children (get node :children)
+            work (+ 64 (if (vector? children) (if (> (count children) 0) (- (count children) 1) 0) 0)
+                    (count (get core :function-records)))]
+        (if (> work budget)
+          (assoc (sh08-sm-failure "C7-GENERIC" :map-contains-work-limit nil :remaining-type-join-units budget) :work-count work)
+          (assoc (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :closed-membership-step-keys nil) :work-count work))))))
 
 ; STD3/L2: classify independently established closed values. A Bool result
 ; supplies no occurrence, member, length, bounds, or range refinement.
@@ -18280,8 +18409,8 @@
                            (sh08-lq-call-fact intrinsic module) (sh08-lc-call-fact intrinsic module)) (sh08-sc-call-fact intrinsic module))
                        (if (= :gravity.type/applied-map-get (get intrinsic :kind))
                        (sh08-mg-call-fact intrinsic module)
-                       (if (contains? #{:gravity.type/applied-map-contains :gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains} (get intrinsic :kind))
-                       (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains} (get intrinsic :kind))
+                       (if (contains? #{:gravity.type/applied-map-contains :gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains} (get intrinsic :kind))
+                       (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains} (get intrinsic :kind))
                          (sh08-ksm-call-fact intrinsic module) (sh08-mc-call-fact intrinsic module))
                        (if (contains? #{:gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality} (get intrinsic :kind))
                        (if (contains? #{:gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality} (get intrinsic :kind))

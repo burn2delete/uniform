@@ -14364,3 +14364,235 @@
     (doseq [path [[:nodes :operator :node-id] [:bindings :ordering-binding :binding-id]
                   [:forms :arg0 :form-id] [:forms :arg0 :parent-form-id]]]
       (is (= :rejected (:status (derive (assoc-in input path :unrelated))))))))
+
+(deftest sh08-symbol-set-contains-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        k :gravity.type/symbol derive keyword-set-contains-derived]
+    (doseq [[arguments expected-limit-reason]
+            [[[(finite []) k] :keyword-set-contains-work-limit]
+             [[(finite [k k]) k] :symbol-set-contains-work-limit]
+             [[(finite [k]) :gravity.type/never] :symbol-set-contains-work-limit]
+             [[:gravity.type/never k] :keyword-set-contains-work-limit]]]
+      (let [{:keys [core nodes forms bindings products binding-types] :as input} (map-contains-input arguments)
+            result (derive input 65536) descriptor (:descriptor result)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+            established (assoc (:types input) :operator descriptor)
+            check #(invoke-c7 'sh08-ksm-inferred-call [core (:node input) (:call input) (:edge input) nodes bindings %1 %2])
+            checked (check established 65536)]
+        (is (= :accepted (:status result) (:status checked)))
+        (is (= :gravity.type/applied-symbol-set-contains (:kind descriptor)))
+        (is (= :sh08-symbol-set-contains-v1 (:version descriptor)))
+        (is (= arguments (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= (if (some #{:gravity.type/never} arguments) :gravity.type/never :gravity.type/bool) (:type result)))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= 'contains? (:operation descriptor)))
+        (is (= :gravity.collections/symbol-set-membership (:intrinsic descriptor)))
+        (is (= :original-namespace-and-name (get-in descriptor [:membership-policy :symbol-equality])))
+        (is (= :none (get-in descriptor [:membership-policy :resolution-authority]) (get-in descriptor [:membership-policy :coercion])))
+        (is (= (:membership-policy descriptor) (get-in (invoke-c7 'sh08-ksm-constraint [descriptor]) [:solution :membership-policy])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= :guarded-atomic-symbol-leaf (get-in descriptor [:membership-policy :comparison])))
+        (is (= :none (get-in descriptor [:membership-policy :construction]) (get-in descriptor [:membership-policy :refinement])))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= [(invoke-c7 'sh08-ksm-constraint [descriptor])] (:constraints inferred)))
+        (is (= :direct-symbol-set-contains (:dispatch (invoke-c7 'sh08-ksm-call-fact [descriptor (:module input)]))))
+        (is (= result (derive input (:work-count result))))
+        (is (= expected-limit-reason
+               (:reason (derive input (dec (:work-count result))))))
+        (is (= checked (check established (:work-count checked))))
+        (is (= expected-limit-reason
+               (:reason (check established (dec (:work-count checked))))))
+        (doseq [changed [(assoc-in established [:operator :membership-policy :comparison] :identity)
+                         (assoc-in established [:operator :membership-policy :refinement] :key-presence)
+                         (assoc-in established [:operator :set-member-count] 99)
+                         (assoc-in established [:operator :type-domain-work-count] 0)
+                         (assoc-in established [:operator :direct-effects] [:memory/allocate])]]
+          (is (= :rejected (:status (check changed 65536)))))))
+    (doseq [needle [k :gravity.type/never]]
+      (let [input (map-contains-input [:gravity.type/never needle])
+            direct (derive input 65536)
+            context {:ordering-core (:core input) :ordering-operators {:operator (:call input)} :ordering-edges {:call (:edge input)}
+                     :lookup-nodes (:nodes input) :ordering-bindings (:bindings input) :association-forms (:forms input)}
+            routed (invoke-c7 'sh08-mc-step [(:node input) (:types input) {} {} context 65536])]
+        (is (= :gravity.type/never (:type direct) (:type routed)))
+        (is (= :not-invoked (get-in direct [:descriptor :application])))
+        (is (= (if (= :gravity.type/symbol needle) :gravity.type/applied-symbol-set-contains :gravity.type/applied-map-contains)
+               (get-in routed [:descriptor :kind])))))
+    (doseq [bad [:gravity.type/set :gravity.type/unknown :gravity.type/map :gravity.type/nil
+                 (assoc (finite []) :extra true) {:kind :gravity.type/set :shape :homogeneous :element-type k}
+                 (finite [:gravity.type/string]) (finite [:gravity.type/unknown]) (finite [:gravity.type/never])]]
+      (is (= :rejected (:status (derive (map-contains-input [bad k]) 65536)))))
+    (doseq [needle [nil :gravity.type/unknown :gravity.type/nil :gravity.type/bool
+                    {:kind :gravity.type/nil-or :value-type k}]
+            items [(finite []) (finite [k]) :gravity.type/never]]
+      (is (= :keyword-set-contains-operand-type-required (:reason (derive (map-contains-input [items needle]) 65536)))))
+    (doseq [arguments [[] [(finite [])] [(finite []) k k]]]
+      (is (= :keyword-set-contains-arity-mismatch (:reason (derive (map-contains-input arguments) 65536)))))
+    (let [input (map-contains-input [(finite [k]) k])]
+      (doseq [mutate [#(assoc-in % [:core :module :target] :native)
+                      #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :evaluation-order] :needle-first)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'get)]]
+        (is (= :symbol-set-contains-source-mismatch (:reason (derive (mutate input) 65536))))))
+    (let [domain #(invoke-c7 'sh08-ksm-domain [%1 %2])]
+      (is (= :accepted (:status (domain [(finite (repeat 1024 k)) k] 65536))))
+      (is (= :symbol-set-contains-type-width (:reason (domain [(finite (repeat 1025 k)) k] 65536))))
+      (is (= :symbol-set-contains-work-limit (:reason (domain [(finite (repeat 1024 k)) k] 100)))))
+    (doseq [bad [:gravity.type/keyword :gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64
+                 :gravity.type/decimal :gravity.type/ratio
+                 {:kind :gravity.type/nil-or :value-type :gravity.type/symbol}]]
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad]) 65536))))
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]) 65536)))))
+    (doseq [legacy [:gravity.type/keyword :gravity.type/character :gravity.type/string]]
+      (let [reads (atom 0) members (proxy [clojure.lang.APersistentVector] []
+                                     (count [] 1)
+                                     (nth [_] (swap! reads inc) legacy))
+            receiver {:kind :gravity.type/set :shape :literal :element-types members}
+            domain (invoke-c7 'sh08-ksm-domain [[receiver legacy] 65536])]
+        (is (= :accepted (:status domain)))
+        (is (= 3 (:work-count domain)))
+        (is (= 1 @reads) "a known legacy needle does not probe the new Symbol receiver route")))
+    (let [rejected (derive (map-contains-input [(finite [k :gravity.type/string]) k]) 65536)]
+      (is (= :symbol-set-contains-operand-type-required (:reason rejected)))
+      (is (= :established-finite-symbol-set-and-symbol (:expected rejected))))
+    (doseq [arguments [[(finite []) :gravity.type/never] [:gravity.type/never :gravity.type/never]]]
+      (let [domain (invoke-c7 'sh08-ksm-domain [arguments 65536])]
+        (is (= :accepted (:status domain)))
+        (is (= 2 (:work-count domain)))
+        (is (not (contains? domain :membership-family)))))
+    (is (= :rejected (:status (invoke-c7 'sh08-kse-domain [[(finite [k]) (finite [k])] 65536]))))
+))
+
+(deftest sh08-symbol-set-contains-throw-consumer-development-kernel
+  ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
+  (let [reads (atom 0) backing [:gravity.type/symbol]
+        members (proxy [clojure.lang.APersistentVector] []
+                  (count [] (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i)))
+        nested {:kind :gravity.type/set :shape :literal :element-types members}
+        input (map-contains-input [nested :gravity.type/symbol])
+        record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
+                :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
+        function {:node-id :predicate-fn :core-form :fn :children [:call] :attributes {}
+                  :source {:form-id :predicate-form :syntax-id :predicate-function}
+                  :evaluation {:kind :function-creation :order []}}
+        nodes (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function) (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc (:edge input) :caller-function-syntax-id :predicate-function :caller-function-core-node-id :predicate-fn)
+        core (assoc (:core input) :nodes (conj nodes function) :function-records [record]
+                    :call-edges [edge] :root-core-node-ids [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7 'sh08-ksm-derive [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input) 65536])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function {:function-id :predicate-function :body-core-node-id :call
+                                       :parameters [] :return :gravity.type/bool :latent-effects []
+                                       :capabilities [] :thrown-error-effects []}}
+        direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
+        check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
+        measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
+        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
+        prefix 123
+        _ (reset! reads 0)
+        accepted (check core types 65536)]
+    (is (= 2 @reads) "one classified prefix probe precedes one complete measured Symbol domain walk")
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (let [limit (+ prefix (dec (:work-count measured)))
+          rejected (check core types limit)]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :symbol-set-contains-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= (+ prefix (:work-count (invoke-c7 'sh08-ksm-inferred-call
+                       [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
+             (:work-count rejected))))
+    (doseq [[changed-core changed-types]
+            [[core (assoc-in types [:operator :membership-policy :comparison] :identity)]
+             [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/symbol)))]
+             [core (assoc-in types [:arg0 :element-types] [:gravity.type/symbol :gravity.type/string])]
+             [core (assoc types :arg0 :gravity.type/unknown)]
+             [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7 'sh08-ksm-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
+            rejected (check changed-core changed-types 65536)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+
+(deftest sh08-symbol-set-contains-id-guard-development-kernel
+  (let [finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]}
+        input (map-contains-input [finite :gravity.type/symbol])
+        derive (fn [x] (invoke-c7 'sh08-ksm-derive [(:core x) (:node x) (:call x) (:edge x) (:nodes x) (:bindings x) (:types x) (:forms x) 65536]))
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "insertion ID hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "insertion ID equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "insertion ID printing"))))]
+    (is (= :accepted (:status (derive input))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]
+            path [[:call :core-node-id] [:call :operator-node-id] [:call :operator-binding-id]
+                  [:call :argument-node-ids 0] [:call :argument-node-ids 1]
+                  [:node :node-id] [:node :children 0] [:node :children 1] [:node :children 2]
+                  [:node :source :form-id] [:node :source :syntax-id]
+                  [:nodes :operator :node-id] [:nodes :operator :source :form-id]
+                  [:nodes :operator :attributes :symbol] [:bindings :ordering-binding :binding-id]
+                  [:forms :call :child-form-ids 0] [:forms :call :child-form-ids 1] [:forms :call :child-form-ids 2]
+                  [:forms :operator :value] [:forms :arg0 :syntax-id]]]
+      (let [result (derive (assoc-in input path bad))]
+        (is (= :rejected (:status result)))
+        (is (zero? @callbacks))))
+    (doseq [path [[:nodes :operator :node-id] [:bindings :ordering-binding :binding-id]
+                  [:forms :arg0 :form-id] [:forms :arg0 :parent-form-id]]]
+      (is (= :rejected (:status (derive (assoc-in input path :unrelated))))))))
+
+(deftest sh08-symbol-set-contains-step-guard-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        base (map-contains-input [(finite [:gravity.type/symbol]) :gravity.type/symbol])
+        context (fn [input] {:ordering-core (:core input) :ordering-operators {:operator (:call input)}
+                            :ordering-edges {:call (:edge input)} :lookup-nodes (:nodes input)
+                            :ordering-bindings (:bindings input) :association-forms (:forms input)})
+        step (fn [input budget] (invoke-c7 'sh08-mc-step [(:node input) (:types input) {} {} (context input) budget]))
+        owned (fn [name input budget] (invoke-c7 name [(:core input) (:node input) (:call input) (:edge input)
+                                                      (:nodes input) (:bindings input) (:types input) (:forms input) budget]))
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "STEP lookup hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "STEP lookup equality"))))]
+    (doseq [bad [opaque [opaque] {:opaque opaque}]
+            [path expected-full] [[[:node :children 0] :map-contains-source-mismatch]
+                                  [[:node :node-id] :map-contains-source-mismatch]
+                                  [[:call :argument-node-ids 0] :map-contains-source-mismatch]
+                                  [[:call :argument-node-ids 1] :map-contains-source-mismatch]
+                                  [[:call :operator-node-id] :keyword-set-contains-source-mismatch]
+                                  [[:call :operator-binding-id] :keyword-set-contains-source-mismatch]]
+            budget [0 1 65536]]
+      (let [result (step (assoc-in base path bad) budget)]
+        (is (= :rejected (:status result)))
+        (is (= 66 (:work-count result)))
+        (is (= (if (< budget 66) :map-contains-work-limit expected-full) (:reason result)))
+        (is (zero? @callbacks))))
+    (doseq [[arguments owner] [[[(finite [:gravity.type/symbol]) :gravity.type/symbol] 'sh08-ksm-derive]
+                               [[:gravity.type/never :gravity.type/symbol] 'sh08-ksm-derive]
+                               [[(finite [:gravity.type/symbol]) :gravity.type/never] 'sh08-ksm-derive]
+                               [[(finite []) :gravity.type/never] 'sh08-ksm-derive]
+                               [[:gravity.type/never :gravity.type/keyword] 'sh08-mc-derive]
+                               [[:gravity.type/never :gravity.type/never] 'sh08-mc-derive]]]
+      (let [input (map-contains-input arguments)]
+        (is (= (owned owner input 65536) (step input 65536)))
+        (doseq [budget [0 1]]
+          (is (= (owned 'sh08-mc-derive input budget) (step input budget))))))
+    (doseq [arguments [[] [:arg0] [:arg0 :arg1 :arg0]] budget [0 1 65536]]
+      (let [input (assoc-in base [:call :argument-node-ids] arguments)]
+        (is (= (owned 'sh08-mc-derive input budget) (step input budget)))))))

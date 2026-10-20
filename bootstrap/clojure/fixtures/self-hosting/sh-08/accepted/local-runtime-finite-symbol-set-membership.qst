@@ -1,0 +1,15 @@
+(ns self-hosting.sh08.finite-symbol-set-membership
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn operation []
+  'gravity.core/assoc)
+
+(defn main []
+  [(contains? '#{} 'assoc)
+   (contains? '#{assoc gravity.core/assoc} 'assoc)
+   (gravity.core/contains? '#{assoc gravity.core/assoc} (operation))
+   (contains? '#{assoc} 'missing)
+   (contains? '#{left/name} 'right/name)
+   (contains? '#{println} 'println)])
