@@ -1231,6 +1231,84 @@
     (is (= :private-self-work-limit (reason census types (dec (:work-count result)))))
     (is (= :private-self-work-limit (reason census types 0)))))
 
+(deftest current-gravity-private-self-entry-diagnostic-source-development-kernel
+  ;; Normalized source-rich DATA exercises the original owning algorithms; it
+  ;; is not a fresh C5/C6 authentication or whole-source composition claim.
+  (let [module {:namespace 'private.entry.diagnostics :profile :meta :target :jvm}
+        calls [{:core-node-id :entry-a :argument-node-ids [:arg-a]}
+               {:core-node-id :entry-b :argument-node-ids [:arg-b]}
+               {:core-node-id :self-call :argument-node-ids [:self-arg]}]
+        edges (mapv (fn [i call]
+                      {:ordinal i :call-core-node-id (:core-node-id call)
+                       :caller-function-syntax-id (if (= i 2) :self :main)
+                       :callee-function-syntax-id :self :classification :local-function})
+                    (range) calls)
+        census {:function-record {:function-syntax-id :self :fixed-arity 1}
+                :calls calls :edges edges}
+        nodes (into {}
+                    (map-indexed
+                     (fn [i id]
+                       [id (assoc (node id :call [(keyword (str "op-" i)) (keyword (str "arg-" i))] {} :main)
+                                  :resolved-binding-ids [:helper-binding]
+                                  :source {:form-id (keyword (str "form-" i))
+                                           :syntax-id (keyword (str "syntax-" i))
+                                           :semantic-span {:source "private-entry-diagnostics.gravity"
+                                                           :line-start (+ 10 i) :column-start 3
+                                                           :byte-start (* 20 i) :byte-end (+ 17 (* 20 i))}
+                                           :origin-chain [{:input (keyword (str "input-" i))}]
+                                           :generated-origin [{:generated-by (keyword (str "macro-" i))}]})])
+                     [:entry-a :entry-b]))
+        types {:arg-a :gravity.type/string :arg-b :gravity.type/string :self-arg :gravity.type/unknown}
+        derive #(invoke-c7 'sh08-is-entry-values [census nodes %1 %2])
+        render #(invoke-c7 'sh08-ft-recursive-diagnostic [% module])
+        accepted (derive types 65536)
+        source-fields [:core-node-id :syntax-id :source-span :binding-id :origin-chain :generated-origin]
+        expectation :bounded-named-self-recursive-fixed-arity-positive-positional-literal-base]
+    (is (= :accepted (:status accepted)))
+    (is (= [:gravity.type/string] (:parameter-types accepted)))
+    (is (= 2 (:normal-entry-count accepted)))
+    (is (= [:entry-a :entry-b] (mapv :call-core-node-id (:entries accepted))))
+    (is (not (contains? accepted :node)))
+    (is (= accepted (derive types (:work-count accepted))))
+    (is (= :private-self-work-limit (:reason (derive types (dec (:work-count accepted))))))
+    (doseq [[changed reason id ordinal]
+            [[(assoc types :arg-b :gravity.type/unknown) :private-self-independent-entry-types-required :entry-b 1]
+             [(assoc types :arg-b :gravity.type/bool) :private-self-entry-type-conflict :entry-b 1]
+             [(assoc types :arg-a :gravity.type/unknown :arg-b :gravity.type/unknown)
+              :private-self-independent-entry-types-required :entry-a 0]
+             [(assoc types :arg-a :gravity.type/never :arg-b :gravity.type/unknown)
+              :private-self-independent-entry-types-required :entry-b 1]]]
+      (let [result (derive changed 65536) selected (nodes id) source (:source selected)
+            diagnostic (render result)
+            expected-source {:core-node-id id :syntax-id (:syntax-id source)
+                             :source-span (:semantic-span source) :binding-id :helper-binding
+                             :origin-chain (:origin-chain source) :generated-origin (:generated-origin source)}]
+        (is (= [:rejected reason] [(:status result) (:reason result)]))
+        (is (= id (get-in result [:entry :call-core-node-id])))
+        (is (= (calls ordinal) (get-in result [:entry :source-call])))
+        (is (= (edges ordinal) (get-in result [:entry :source-edge])))
+        (is (= source (get-in result [:entry :source])))
+        ;; These are the demonstrated missing fields on the unchanged base.
+        (is (= selected (:node result)))
+        (is (= expected-source (select-keys diagnostic source-fields)))
+        (is (= (str "SH08-C7:C7-ANNOTATION:" id ":" reason) (:diagnostic-id diagnostic)))
+        (is (= ["C7-ANNOTATION" reason expectation reason :meta :jvm]
+               ((juxt :rule :reason :expected-type :actual-type :profile :target) diagnostic)))
+        (is (= expected-source (select-keys (:diagnostic-id-request diagnostic) source-fields)))
+        (is (= (invoke-c7 'sh08-ft-diagnostic ["C7-ANNOTATION" selected module expectation reason reason {}])
+               diagnostic))
+        (is (= result (derive changed (:work-count result))))
+        (is (= :private-self-work-limit (:reason (derive changed (dec (:work-count result))))))))
+    (let [transfer (derive (assoc types :arg-a :gravity.type/never) 65536)]
+      (is (= :accepted (:status transfer)))
+      (is (= 1 (:normal-entry-count transfer)))
+      (is (= [false true] (mapv :normal-invocation? (:entries transfer)))))
+    ;; An old source-less rejection still has its original formatter behavior.
+    (let [legacy {:status :rejected :reason :recursive-argument-shape}]
+      (is (= (invoke-c7 'sh08-ft-diagnostic
+                       ["C7-ANNOTATION" nil module expectation :recursive-argument-shape :recursive-argument-shape {}])
+             (render legacy))))))
+
 (deftest current-gravity-private-self-value-projections-development-kernel
   (let [{:keys [core bindings forms]} (private-self-string-proof-data)
         nodes (into {} (map (juxt :node-id identity) (:nodes core)))
