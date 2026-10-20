@@ -28470,3 +28470,194 @@
         (is (= '[insert-matches? main] (mapv second definitions)))
         (is (= '[again :- Bool value :- String seen] (nth helper 2)))
         (is (= 'Bool (nth helper 4)))))))
+
+(deftest current-gravity-string-set-carrier-equality-authenticated-composition
+  ;; One carrier comparison composition and one genuine bare-Set private-entry negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "String-Set carrier comparison fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "String-Set carrier comparison development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:string-set-carrier-equality-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "String-Set carrier comparison upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "String-Set carrier comparison C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "String-Set carrier comparison C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/string-set-carrier-equality.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) (:input positive)))
+        t1 (System/nanoTime)
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        proof (:recursive-proof facts) premise (:parameter-value-premise proof)
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        helper (get functions 'insert-matches?) main (get functions 'main)
+        insertions (mapv :applied-string-set-insertion (filter #(= :direct-string-set-insertion (:dispatch %)) (:call-type-facts facts)))
+        equalities (mapv :applied-string-set-equality (filter #(= :direct-string-set-equality (:dispatch %)) (:call-type-facts facts)))
+        inequalities (mapv :applied-atomic-inequality (filter #(= :direct-atomic-inequality (:dispatch %)) (:call-type-facts facts)))
+        equality-rows (filterv #(= :sh08-string-set-carrier-equality-v1 (:producer-rule %)) (:constraint-ledger facts))
+        inequality-rows (filterv #(= :sh08-string-set-carrier-inequality-v1 (:producer-rule %)) (:constraint-ledger facts))
+        manifest (:module-initialization assembled) roots (:roots manifest) initializers (:initializers manifest)
+        globals (filterv #(= :literal (:kind %)) roots)
+        instructions (filter map? (tree-seq coll? seq (concat (vals (:functions assembled)) (map :instruction initializers))))
+        conj-ir (filterv #(and (= :builtin-call (:op %)) (= 'conj (:function %))) instructions)
+        eq-ir (filterv #(and (= :builtin-call (:op %)) (= '= (:function %))) instructions)
+        complement-ir (filterv #(and (= :if (:op %)) (= {:op :literal :value false} (:then %))
+                                    (= {:op :literal :value true} (:else %))) instructions)
+        quote-ir (filterv #(= :quote (:op %)) instructions) graph (:effect-graph effects)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        scoped-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        scoped-original @scoped-var events (atom [])
+        execution (with-redefs-fn
+                    {scoped-var (fn [& args]
+                                  (let [callee (nth args 2)]
+                                    (when (= 'p15-s23-runtime-keyword-set-construction-work callee) (swap! events conj :constructor))
+                                    (when (= 'p15-s23-runtime-activate-function-in-instance callee)
+                                      (when (= 'main (:name (first (nth args 3)))) (swap! events conj :entry))))
+                                  (apply scoped-original args))}
+                    #(original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)]))
+        t2 (System/nanoTime)]
+    (is (= 2 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 3 (count (:definitions core)) (count roots)))
+    (is (= 20 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= :gravity/sh08-private-self-value-proof-v1 (:domain proof)))
+    (is (= :closed-private-self-use-census-v1 (get-in premise [:source-census :kind])))
+    (is (= 3 (get-in premise [:entry-values :normal-entry-count])))
+    (is (= [:gravity.type/bool :gravity.type/string carrier] (:parameter-types proof) (get-in premise [:entry-values :parameter-types])))
+    (is (= :gravity.type/bool (:inferred-return-type proof) (:return helper) (get-in proof [:return-witness :return-type])))
+    (is (= [carrier] (mapv :type (drop 2 (:parameters helper)))))
+    (is (= 4 (count (:incoming-call-node-ids proof)) (count (get-in premise [:source-census :calls]))))
+    (is (= carrier (get-in facts [:type-table (get-in proof [:self-call :argument-node-ids 2])])))
+    (is (= 10 (count insertions) (count conj-ir) (count quote-ir)))
+    (is (= 4 (count equalities) (count equality-rows)))
+    (is (= 2 (count inequalities) (count inequality-rows) (count complement-ir)))
+    (is (= 6 (count eq-ir)))
+    (is (= #{[:homogeneous-string-set :finite-string-set] [:finite-string-set :homogeneous-string-set]
+             [:homogeneous-string-set :homogeneous-string-set]} (set (map :operand-domains equalities))))
+    (is (= #{[:homogeneous-string-set :finite-string-set] [:finite-string-set :homogeneous-string-set]}
+           (set (map #(get-in % [:string-set-equality :operand-domains]) inequalities))))
+    (is (= :p15-s23-module-literals-v1 (:version manifest)))
+    (is (= :fresh-per-closed-plan-execution (:instance-policy manifest)))
+    (is (= '[expected insert-matches? main] (mapv :name roots)))
+    (is (= [:literal :function :function] (mapv :kind roots)))
+    (is (= 1 (count globals) (count initializers) (get-in assembled [:instruction-summary :set-literal])))
+    (is (= [2] (mapv #(count (:items (:instruction %))) initializers)))
+    (is (= [:gravity.type/string :gravity.type/string] (get-in (first globals) [:type :element-types])))
+    (is (= 4 (count (filter #(= :namespace-read (:op %)) instructions))))
+    (is (= 55 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= [true true false true true false true true] (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= [:constructor :entry] @events))
+    (is (= (mapv :binding-id globals) (get-in execution [:module-initialization :initialized-binding-ids])))
+    (is (= #{:memory/allocate} (get-in graph [:namespace :inferred])))
+    (doseq [function [helper main]]
+      (let [summary (get-in graph [:functions (:function-id function)])]
+        (is (= #{:memory/allocate} (:inferred summary) (:latent summary)))))
+    (doseq [descriptor equalities]
+      (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+            row (first (filter #(= id (get-in % [:lhs :core-node-id])) equality-rows))]
+        (is (= :sh08-string-set-carrier-equality-v1 (:version descriptor)))
+        (is (= :independently-established-string-sets (get-in descriptor [:equality-policy :domain])))
+        (is (= :not-established (get-in descriptor [:equality-policy :static-cardinality]) (get-in descriptor [:equality-policy :operand-extent])))
+        (is (not (contains? descriptor :operand-counts)))
+        (is (= (:operand-domains descriptor) (get-in row [:solution :operand-domains])))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (doseq [descriptor inequalities]
+      (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+            row (first (filter #(= id (get-in % [:lhs :core-node-id])) inequality-rows))]
+        (is (= :sh08-string-set-carrier-inequality-v1 (:version descriptor)))
+        (is (= 'not= (:operation descriptor)))
+        (is (= :sh08-string-set-carrier-equality-v1 (get-in descriptor [:string-set-equality :equality-version])))
+        (is (= :not-established (get-in descriptor [:string-set-equality :type-domain :static-cardinality])))
+        (is (not (contains? (:string-set-equality descriptor) :operand-counts)))
+        (is (= (:string-set-equality descriptor) (get-in row [:solution :string-set-equality])))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/string-set-carrier-bare-entry.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(= :private-self-independent-entry-types-required (:reason %)) diagnostics) (pr-str diagnostics))
+      (println (pr-str {:string-set-carrier-equality-typing-negative diagnostics :timing (:development-timing negative)})))
+    (println (pr-str {:string-set-carrier-equality-composition :completed :runtime-result (:entrypoint-result execution)
+                      :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                      :closed-plan-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count (count (:functions runtime-plan))
+                      :whole-b14-execution false :bare-set-entry-inference false :indexed-recursion false
+                      :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0) :closed-plan-execution (- t2 t1))}))))
