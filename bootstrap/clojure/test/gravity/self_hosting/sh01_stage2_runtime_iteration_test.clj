@@ -670,7 +670,7 @@
           (is (= 0 (:comparison-attempts result) (:insertions result))))
         (is (= :rejected (last (evaluate (set-ir (literal-instructions values)))))))
       (is (= 0 @callbacks)))
-    (doseq [values [[nil] ["text"] [1] ['symbol] [[]] [#{}]]]
+    (doseq [values [[nil] ["text" :mixed] [1] ['symbol] [[]] [#{}]]]
       (is (= :set-literal-keyword-domain-required (:reason (work values 65536)))))
     (doseq [values [nil '(:one) #{:one}]]
       (is (= :set-literal-keyword-domain-required (:reason (work values 65536)))))
@@ -685,7 +685,7 @@
       (is (= :set-literal-value-width (:reason (work (conj wide :extra) 65536)))))
     (let [label {:op :println :args [(lit "never")] :effect :io/write :capability :io/stdout}
           marked {:op :do :body [label (lit :one)]}]
-      (doseq [bad [{:op :set-literal} (set-ir nil) (set-ir '()) (set-ir [42]) (set-ir [(lit "text")])
+      (doseq [bad [{:op :set-literal} (set-ir nil) (set-ir '()) (set-ir [42]) (set-ir [(lit "text") (lit :mixed)])
                    (set-ir [{:op :quote :value :one}]) (set-ir [marked])
                    (set-ir [{:op :throw :value (lit :stop)}])
                    (set-ir [(assoc (lit :one) :extra true)]) (assoc (set-ir [(lit :one)]) :extra true)
@@ -22981,7 +22981,7 @@
                       #(assoc-in % [:types :set] :gravity.type/never)
                       #(assoc-in % [:types :set :extra] true)]]
         (is (= :rejected (:status (compile (mutate context) 65536)))))
-      (is (= :unsupported-typed-set-member (get-in (compile (typed-character-set-kernel-context ["unsupported"]) 65536) [:facts :reason])))
+      (is (= :unsupported-typed-set-member (get-in (compile (typed-character-set-kernel-context ["unsupported" \a]) 65536) [:facts :reason])))
       (is (= :duplicate-typed-set-character (get-in (compile (typed-character-set-kernel-context [\a \a]) 65536) [:facts :reason])))
       (is (= :typed-set-width-limit (get-in (own (typed-character-set-kernel-context (vec (repeat 1025 \a))) 65536) [:facts :reason])))
       (is (= :typed-lowering-work-limit (get-in (own (typed-character-set-kernel-context (vec (repeat 1024 \a))) 65536) [:facts :reason]))))
@@ -23008,6 +23008,123 @@
     (doseq [values [[\a :mixed] [:mixed \a] [\a "text"]]]
       (is (= :rejected (:status (compile (typed-character-set-kernel-context values) 65536)))))
 ))
+
+
+(deftest current-gravity-literal-string-set-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        own #(invoke 'p15-s23-typed-compile-keyword-set %1 (get-in %1 [:nodes :set]) %2)
+        compile #(invoke 'p15-s23-typed-compile-node %1 :set %2)
+        context typed-character-set-kernel-context
+        reservation (fn [values] (let [n (count values)]
+                                  (+ 12 (* 14 n) (quot (* n (dec n)) 2)
+                                     (* (inc n) 2 (reduce + 0 (map count values))))))]
+    (doseq [values [[] [""] [".gravity" ".qst"] ["Aa" "BB"] ["\u00e9" "e\u0301"] ["\ud83d\ude00" "\n" "\u0000"]]]
+      (let [input (context values) charge (reservation values) total (+ charge (count values))
+            result (compile input 65536)]
+        (is (= :complete (:status result)))
+        (is (= {:op :set-literal :items (literal-instructions values)} (:value result)))
+        (is (= total (:work-count result)))
+        (is (= result (compile input total)))
+        (is (= result (compile (assoc input :tail? false) total)))
+        (when (seq values)
+          (is (= :typed-lowering-work-limit (get-in (own input (dec charge)) [:facts :reason])))
+          (is (= charge (:work-count (own input (dec charge)))))
+          (doseq [prefix (range (count values))]
+            (let [id (get-in input [:nodes :set :children prefix])
+                  child (invoke 'p15-s23-typed-compile-node (assoc input :tail? false) id 0)
+                  failed (own input (+ charge prefix))]
+              (is (= :rejected (:status child) (:status failed)))
+              (is (= (:facts child) (:facts failed)))
+              (is (= (+ charge prefix (:work-count child)) (:work-count failed))))))))
+    (doseq [values [["duplicate" (String. (.toCharArray "duplicate"))] ["" ""]]]
+      (is (= :duplicate-typed-set-string (get-in (compile (context values) 65536) [:facts :reason]))))
+    (doseq [values [["text" :mixed] [:mixed "text"] ["text" \a]]]
+      (is (= :unsupported-typed-set-member (get-in (compile (context values) 65536) [:facts :reason]))))
+    (let [input (context ["left" "right"])]
+      (doseq [mutate [#(assoc-in % [:nodes :set-item-0 :attributes :value] "stale")
+                      #(assoc-in % [:forms :set-item-form-0 :syntax-id] :stale)
+                      #(assoc-in % [:types :set-item-0] :gravity.type/unknown)
+                      #(assoc-in % [:nodes :set-item-0 :core-form] :call)
+                      #(assoc-in % [:nodes :set :children] [:set-item-1 :set-item-0])
+                      #(assoc-in % [:types :set :element-types] [:gravity.type/string])]]
+        (is (= :rejected (:status (compile (mutate input) 65536))))))
+    (let [input (context ["x"]) huge (apply str (repeat 40000 "x"))
+          malformed (assoc-in input [:nodes :set-item-0 :attributes :value] huge)]
+      (is (= :typed-lowering-work-limit (get-in (own malformed 65536) [:facts :reason])))
+      (is (= 65537 (:work-count (own malformed 65536)))))
+    (is (= :typed-set-width-limit (get-in (own (context (vec (repeat 1025 ""))) 65536) [:facts :reason])))
+    (is (= :typed-lowering-work-limit (get-in (own (context (vec (repeat 1024 ""))) 65536) [:facts :reason])))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hashed")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque compared")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque printed"))))
+          input (context ["x"])]
+      (doseq [changed [(assoc-in input [:forms :set-item-form-0 :value] opaque)
+                       (assoc-in input [:nodes :set-item-0 :attributes :value] opaque)
+                       (assoc-in input [:nodes :set :children 0] opaque)
+                       (assoc-in input [:nodes :set :source :form-id] opaque)]]
+        (is (= :rejected (:status (own changed 65536))))
+        (is (= 12 (:work-count (own changed 0)))))
+      (is (= 0 @callbacks)))))
+
+(deftest current-gravity-literal-string-set-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        work #(invoke 'p15-s23-runtime-keyword-set-construction-work %1 %2)
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        ir #(hash-map :op :set-literal :items (literal-instructions %))
+        reservation (fn [values] (let [n (count values)]
+                                  (+ 1 (* 2 n) (quot (* n (dec n)) 2)
+                                     (* (inc n) (reduce + 0 (map count values))))))]
+    (is (= (.hashCode "Aa") (.hashCode "BB")))
+    (doseq [values [[] [""] [".gravity" ".qst"] ["Aa" "BB"] ["\u00e9" "e\u0301"] ["\ud83d\ude00" "\n" "\u0000"]]]
+      (let [result (work values 65536) charge (reservation values) n (count values)]
+        (is (= :accepted (:status result)))
+        (is (= (set values) (:value result)))
+        (is (= n (:insertions result) (count (:value result))))
+        (is (= (quot (* n (dec n)) 2) (:comparison-attempts result)))
+        (is (= charge (:work-count result)))
+        (is (= :exact-logical-content-reservation (:work-count-kind result)))
+        (is (= :not-established (:provider-cpu-bound result)))
+        (when (seq values) (is (= :gravity/literal-string-set-logical-content-work-v1 (:value-work-model result))))
+        (is (= result (work values charge)))
+        (is (= result (work values 1000000)))
+        (let [failed (work values (dec charge))]
+          (is (= :set-literal-work-limit (:reason failed)))
+          (is (= 0 (:insertions failed) (:comparison-attempts failed))))
+        (is (= [(set values) "" :normal] (evaluate (ir values))))))
+    (let [left "decoded" right (String. (.toCharArray left))]
+      (is (not (identical? left right)))
+      (doseq [values [[left right] ["" ""]]]
+        (let [result (work values 65536)]
+          (is (= :duplicate-set-literal-string (:reason result)))
+          (is (= 0 (:insertions result)))
+          (is (= 1 (:comparison-attempts result)))
+          (is (= (reservation values) (:work-count result)))
+          (is (= :duplicate-set-literal-string (get-in (evaluate (ir values)) [0 :reason]))))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hashed")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque compared")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque printed"))))]
+      (doseq [value [opaque (StringBuilder. "text") :keyword \a nil 1 [] #{}]
+              values [["text" value] [value "text"]]]
+        (let [result (work values 65536)]
+          (is (= :rejected (:status result)))
+          (is (= 0 (:insertions result) (:comparison-attempts result)))
+          (is (= :invalid-local-runtime-instruction (get-in (evaluate (ir values)) [0 :reason])))))
+      (is (= 0 @callbacks)))
+    (doseq [values [(vec (repeat 1024 "")) [(apply str (repeat 40000 "x"))]]]
+      (let [result (work values 65536)]
+        (is (= :set-literal-work-limit (:reason result)))
+        (is (= 65537 (:work-count result)))
+        (is (= 0 (:insertions result) (:comparison-attempts result)))))
+    (is (= :set-literal-value-width (:reason (work (vec (repeat 1025 "")) 65536))))
+    (doseq [instruction [{:op :set-literal :items [{:op :do :body [{:op :literal :value "x"}]}]}
+                         {:op :set-literal :items [{:op :quote :value "x"}]}]]
+      (is (= :invalid-local-runtime-instruction (get-in (evaluate instruction) [0 :reason]))))))
 
 (deftest current-gravity-literal-character-set-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
