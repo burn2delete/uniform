@@ -1025,5 +1025,5 @@
         (is (= :rejected (:status result)))
         (is (= :rejected (get-in result [:upstream-verification :status])))
         (is (nil? (:execution result)))
-        (is (= :passed (:status (verify core mutant result)))))
+        (is (= :passed (:status (verify core mutant result))))
         (is (= :rejected (:status (verify core mir (assoc-in accepted [:projection :operations index :role] :literal)))))))))
