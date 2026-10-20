@@ -29696,9 +29696,28 @@
                   [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/bool]}
                    {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/bool]}]]]
       (let [rename {:operator :other-operator :arg0 :other-arg0 :arg1 :other-arg1 :call :other-call}
-            foreign (walk/postwalk-replace rename ((ns-resolve upstream 'atomic-inequality-input) pair))
-            foreign-edge (assoc (:edge foreign) :ordinal 1)
-            foreign-core (assoc (:core foreign) :call-edges [foreign-edge])
+            remap-id #(get rename % %)
+            base ((ns-resolve upstream 'atomic-inequality-input) pair)
+            node-list (mapv (fn [n]
+                              (cond-> (-> n (update :node-id remap-id) (update :children #(mapv remap-id %))
+                                          (update :source #(-> % (update :form-id remap-id) (update :syntax-id remap-id)))
+                                          (update :resolved-binding-ids #(mapv remap-id %))
+                                          (update-in [:evaluation :order] #(mapv (fn [e] (update e :core-node-id remap-id)) %)))
+                                (contains? (:attributes n) :binding-id) (update-in [:attributes :binding-id] remap-id)))
+                            (get-in base [:core :nodes]))
+            forms (into {} (map (fn [f]
+                                  (let [f (-> f (update :form-id remap-id) (update :syntax-id remap-id)
+                                                (update :parent-form-id remap-id) (update :child-form-ids #(mapv remap-id %)))]
+                                    [(:form-id f) f])) (vals (:forms base))))
+            call (-> (:call base) (update :core-node-id remap-id) (update :operator-node-id remap-id)
+                     (update :argument-node-ids #(mapv remap-id %)) (update :ordered-evaluation-node-ids #(mapv remap-id %)))
+            foreign-edge (-> (:edge base) (assoc :ordinal 1) (update :call-core-node-id remap-id)
+                             (update :argument-core-node-ids #(mapv remap-id %))
+                             (update :ordered-evaluation-node-ids #(mapv remap-id %)))
+            foreign-core (assoc (:core base) :nodes node-list :calls [call] :call-edges [foreign-edge])
+            foreign (assoc base :core foreign-core :node (last node-list) :call call :edge foreign-edge :forms forms
+                                :nodes (into {} (map (juxt :node-id identity) node-list))
+                                :types (into {} (map (fn [[id t]] [(remap-id id) t]) (:types base))))
             result (c7 'sh08-ane-derive [foreign-core (:node foreign) (:call foreign) foreign-edge (:nodes foreign)
                                        (:bindings foreign) (:types foreign) (:forms foreign) 65536])
             descriptor (:descriptor result)
