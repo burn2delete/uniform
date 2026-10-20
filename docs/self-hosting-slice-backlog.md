@@ -6652,6 +6652,54 @@ general conversion-result inference and whole compiler-validator execution
 remain outside this increment. Focused and traceability results do not close
 authoritative migration, SH-07, self-hosting or release gates.
 
+### Finite Symbol-Set membership: development increment
+
+The existing C7, effects, typed emitter and runtime owners implement binary
+membership for independently finite literal Symbol Sets and a Symbol needle,
+including empty Sets and the bounded Never transfers. Original namespace/name
+values determine equality. Display units only account work. Full domain,
+uniqueness, source/policy/constraint and ordered-ledger checks precede results;
+runtime remains at 56 functions. There is no new grammar, export or builtin,
+Symbol-Set equality/insertion, homogeneous carrier or recursive transport.
+
+Focused coverage is 32 distinct selectors and 3,713 passing assertions across
+three qualified revisions, not one same-revision batch: 15 retained/1,595 at
+`0252cece`, 12 retained/1,609 at `bc69b988`, and five changed C8 selectors/509 at
+`6dc46dfc`. The eleven new selectors contribute 1,242 assertions. Earlier
+focused failure `50656` recorded 2,123 passes/one failure across 19 tests and
+13 skipped selectors: the new dispatcher inspected a receiver before a known
+wrong-family needle. The production early-needle guard repaired that behavior;
+the old one-read oracle was not relaxed.
+
+The first source attempt `7042` at `8c470986` failed with four passes, one
+failure and one error before C8 verification, assembly, entry or the negative
+subject. A new whole-ledger guard rejected a legitimate ordinary local-call
+row lacking a selected producer. The narrow C8 correction preserves the full
+selected Symbol-row census. Its first focused attempt `16648` failed loading
+unsupported `nil?`, with one error, zero passes and four unrun selectors.
+Using supported constant-left `(= nil producer)` at `6dc46dfc` passed all five
+affected selectors/509 assertions. All failed results remain separate.
+
+The changed source composition then naturally passed one test/125 assertions:
+119 composition checks and six runtime-loader checks. One Gravity positive
+and one typing negative use fresh C5, development C6 sessions and same-catalog
+replay, then C7 construction/verification. The positive also reaches independent
+C8 construction/verification, an observed public C7 assembly gate and one
+closed runtime entry. Two functions, seven calls, six queries, one local call
+and twelve quotes produce `[false true true false false true]` with empty
+stdout. Membership nodes and the local producer are pure; the main function's
+Vector allocation remains declared, inferred and latent. The Character-Set
+with Symbol needle rejects at C7 using the existing Keyword-family fallback
+diagnostic, with exact actual types, Core/syntax/binding/span and the secondary
+annotation diagnostic retained. Negative C8/runtime are not invoked.
+
+Execution took 144.415 seconds after 12.565 seconds of namespace loading at
+2 GiB. Nested product construction and replay are included; these are not
+phase-isolated runtime benchmarks. The scheduling deadline is not containment
+or a lease. QST checks are parser-only; there is no seed reference entry,
+fresh public C6 verification, whole compiler-consumer execution, native result,
+renewed admission, SH-07 completion or self-hosting claim.
+
 ### Flat Generic Integer Vector comparison: development increment
 
 The existing C7, C8, emitter and runtime Vector comparison owners support flat

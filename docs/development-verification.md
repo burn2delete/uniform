@@ -5316,6 +5316,44 @@ only. Fresh development C6 sessions and same-catalog replay are not fresh public
 C6 authority verification. This is the compiler predicate subexpression, not
 execution of an unchanged full provenance validator or admission of a revision.
 
+### Finite Symbol-Set membership
+
+STD3's binary `contains?` also accepts independently established finite literal
+Symbol Sets (zero through 1,024 members) and a Symbol needle. STD2's original
+Symbol namespace/name value law applies, not name resolution or display-string
+equality. Edit the existing C7, effects, typed emitter and runtime membership
+owners. Start with `sh08-symbol-set-contains-development-kernel` and the
+throw-consumer, ID-guard and step-guard selectors in
+`gravity.self-hosting.sh08-function-call-type-test`, using the direct
+`-J-Xmx2g -M:dev-test --namespace ... --exact ... --fail-fast` command above.
+Run the two `body-symbol-set-contains-*` selectors in
+`gravity.self-hosting.sh09-body-effect-test` and the lowering, runtime,
+transfer-fence and lowering-ID-guard selectors named
+`current-gravity-symbol-set-contains-*` in the SH01 runtime namespace.
+
+Preserve the exact policy/constraint/source joins, independent full-ledger
+validation, Never transfers and existing family diagnostic priority. Guard
+opaque IDs before lookup. A known wrong needle must not inspect the receiver
+first. Ordinary producerless local-call rows are unselected by the Symbol
+policy, not invalid; a selected malformed Symbol row still rejects.
+
+Runtime checks the complete actual Symbol domain, coherent cardinality and
+enumeration, uniqueness and worst-case work before hit or miss. Original
+Symbol equality answers the query; UTF-16 display units only account work.
+No Set lookup/hash authority, coercion or new builtin is needed. Operands run
+once left-to-right and non-tail. Query nodes are pure; allocation in an operand
+or enclosing result remains visible. Finite-provider assumptions and the
+existing 65,536-work limit remain unchanged, not a hostile-provider CPU bound.
+
+For changed composition, separately select
+`current-gravity-symbol-set-contains-fixtures-development-kernel` and
+`current-gravity-symbol-set-contains-authenticated-composition`. The tiny
+Gravity subject includes one local Symbol-producing call and six membership
+queries, plus a Character-Set/Symbol typing rejection. QST is parser-only.
+Development C6 sessions/replay do not invoke fresh public C6 verification.
+This does not add Symbol-Set equality/insertion, homogeneous Symbol carriers,
+recursive transport, native execution or authoritative migration evidence.
+
 ### Evaluated literal-Keyword Sets
 
 For the bounded JVM slice, edit the existing typed emitter and runtime owners.
