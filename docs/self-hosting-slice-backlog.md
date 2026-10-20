@@ -6127,6 +6127,64 @@ establish Integer digit-size, provider CPU or peak-memory containment. This is
 development progress, not whole C6 validator execution, authoritative admission,
 SH-07 completion, self-hosting or release evidence.
 
+### Flat Vector comparison with Keyword-Set leaves: development increment
+
+The existing C7, C8, emitter and runtime Vector comparison owners compose
+finite Keyword-Set value equality into flat Vector `=` and `not=`. Both
+Vectors must be flat when either has a Set leaf, including an empty Set.
+Corresponding Sets require independently established finite all-Keyword types;
+corresponding Integers retain Generic Integer equality. Set-only and
+Set-plus-Integer cases use a new policy while prior recursive nonnumeric and
+flat Integer no-Set versions, identities and work remain unchanged. The new
+Set-leaf case retains the existing Set equality JVM restriction.
+
+Runtime fully validates every Set leaf by owned self-equality before any
+Vector length/value mismatch. Actual corresponding Set comparison invokes the
+owned helper again. Every invocation gets the current remaining aggregate
+Vector allowance, and its reported reservation is charged once. No per-leaf
+reset, acceptance cache, hash/identity shortcut or new helper/export/opcode
+was added. Failed reservation lower bounds are not executed-step counts or
+provider CPU/peak-memory guarantees. Nested quota reasons map to the Vector
+category while the containing C7 inequality verifier retains its atomic category.
+
+The first frozen focused run passed 19 tests/3,597 assertions with no failures
+or errors: 1,630 new and 1,967 adjacent assertions. It covers empty Set policy,
+Set-only/Integer policy joins, source/fact/ledger tampering, target restrictions,
+both transfer fences, exact/short budgets and old versions. Later malformed
+members and duplicate Keyword value classes reject before an earlier mismatch.
+Separate aggregate tests exhaust domain validation and actual pair comparison;
+the measured owning consumer has one child measurement and no unrelated probes.
+
+The paired owning-C2 parser selection passed one test/eight assertions. One
+changed-source composition passed one test/145 assertions (139 composition
+checks plus six existing runtime-loader checks) in 156.019 seconds selected
+execution after 12.147 seconds namespace loading at 2 GiB. The single function
+returned `[true false false true]` for reordered/equal and changed-member Sets
+through equality and its natural complements. Original C7/C8 verification and
+an additional observed public C7 assembly gate passed. Eight source calls,
+four comparison policies, thirteen Vector constructors, eight Set constructors
+and sixteen Set-member Keywords matched their current source/type/IR records.
+All twenty-one constructor allocations remain distinct from comparison query
+direct-none effects. Runtime still has 54 functions; one main entry ran, with
+zero seed control executions.
+
+The finite String-Set-leaf negative passed C5 and C6 development checks, then
+rejected in C7 with `C7-TYPE-MISMATCH` and
+`:vector-equality-operand-type-required`. Its full type and secondary unresolved
+annotation diagnostic are retained; the assertion establishes primary presence
+and type, not an exact-only diagnostic vector. It has no accepted C8/lowering
+claim. Q is parser-only. Fresh C6 development sessions and same-catalog replay
+are not fresh public C6 verification. These inclusive timings are diagnostic
+observations, not phase-isolated performance evidence. No failed source epoch
+or replay occurred in this increment.
+Separate language-boundary checks passed six tests/11 assertions; LOC validation
+passed 2,021 source files, zero exceptions, maximum 250 physical lines.
+
+Bare, mixed, String or numeric Set domains and nested Set-containing Vectors
+remain unsupported. This increment does not infer finite Keyword types from
+`set(keys actual)`, execute unchanged List-compatibility/C6/C17 helpers, admit
+the current compiler closure or close SH-07, self-hosting or release gates.
+
 ### Compiler-module literal String/Keyword keys: development increment
 
 The temporary module constructor now accepts distinct literal String or
