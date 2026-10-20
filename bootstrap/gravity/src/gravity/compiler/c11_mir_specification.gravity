@@ -8209,11 +8209,12 @@
     {:function function :graph graph
      :entry entry :then then-block :else else-block :join join-block
      :operations
-     (conj (conj (conj (conj (get entry :instructions)
-                             (get (get then-block :instructions) 0))
-                       (get (get else-block :instructions) 0))
-                 (get (get join-block :instructions) 0))
-           (get (get join-block :instructions) 1))}))
+     (c11-copy-vector
+      (get join-block :instructions)
+      (c11-copy-vector
+       (get else-block :instructions)
+       (c11-copy-vector
+        (get then-block :instructions) (get entry :instructions))))}))
 
 (defn sh13-branch-join-pure-nodes? [checked-core nodes]
   (if (= 0 (count nodes))
@@ -8277,6 +8278,23 @@
           false))
       false)))
 
+(defn sh13-branch-join-layout-valid? [entry then-ops else-ops]
+  (let [widths [(count entry) (count then-ops) (count else-ops)]]
+    (if (= widths [1 1 1]) true
+      (if (= widths [3 1 1]) true
+        (if (= widths [1 3 1]) true (= widths [1 1 3]))))))
+
+(defn sh13-branch-join-arm-valid? [operations type]
+  (if (= 1 (count operations))
+    (sh13-branch-join-literal-valid? (get operations 0) type)
+    (if (= 3 (count operations))
+      (if (= type :gravity.type/bool)
+        (if (= :integer-lt (get (get operations 2) :opcode))
+          (sh13-branch-join-entry-valid? operations)
+          false)
+        false)
+      false)))
+
 (defn sh13-branch-join-shape-valid? [checked-core mir context]
   (let [function (get context :function)
         graph (get context :graph)
@@ -8286,26 +8304,27 @@
         join (get context :join)
         entry-operations (get entry :instructions)
         entry-count (count entry-operations)
+        then-operations (get then-block :instructions)
+        else-operations (get else-block :instructions)
         condition (get entry-operations (- entry-count 1))
-        then-op (get (get then-block :instructions) 0)
-        else-op (get (get else-block :instructions) 0)
+        then-op (get then-operations (- (count then-operations) 1))
+        else-op (get else-operations (- (count else-operations) 1))
         join-op (get (get join :instructions) 0)
         root-op (get (get join :instructions) 1)
         type (get function :returns)]
-    (if (= [1 4 (+ entry-count 4) entry-count 1 1 2 []
-            :meta :jvm :jvm #{} #{} #{} 0 [(get condition :result)]]
+    (if (= [1 4 (count (get context :operations)) 2 []
+            :meta :jvm :jvm #{} #{} #{} 0 [(get condition :result)] true]
            [(count (get mir :functions)) (count (get function :blocks))
             (count (get checked-core :core-nodes))
-            (count (get entry :instructions))
-            (count (get then-block :instructions))
-            (count (get else-block :instructions))
             (count (get join :instructions)) (get function :params)
             (get mir :profile) (get mir :source-target)
             (get mir :target-request) (get function :latent-effects)
             (get function :capabilities)
             (get (get checked-core :source-core-input) :declared-effects)
             (count (get mir :runtime-check-table))
-            (get (get entry :terminator) :operands)])
+            (get (get entry :terminator) :operands)
+            (sh13-branch-join-layout-valid?
+             entry-operations then-operations else-operations)])
       (if (= [[:conditional-join :if
                [(get condition :result) (get then-op :result)
                 (get else-op :result)] type]
@@ -8321,8 +8340,8 @@
               (get (get entry :terminator) :successors)])
         (if (= (get (get graph :join) :value-id) (get join-op :result))
           (if (sh13-branch-join-entry-valid? entry-operations)
-            (if (sh13-branch-join-literal-valid? then-op type)
-              (if (sh13-branch-join-literal-valid? else-op type)
+            (if (sh13-branch-join-arm-valid? then-operations type)
+              (if (sh13-branch-join-arm-valid? else-operations type)
                 (sh13-branch-join-pure-nodes?
                  checked-core (get checked-core :core-nodes))
                 false)
@@ -8376,15 +8395,14 @@
                 :type :bool
                 :operands (get operation :operands)}))))))
 
-(defn sh13-branch-join-frame-arm [context arm index]
+(defn sh13-branch-join-frame-arm [context arm]
   (let [block (get context arm)
         incoming
         (sh13-find-by-key
          (get (get (get context :graph) :join) :incoming)
          :predecessor (get block :block-id) 0)]
     {:block-id (get block :block-id) :params []
-     :operations [(sh13-branch-join-frame-literal
-                   (get (get context :operations) index))]
+     :operations (sh13-branch-join-frame-entry (get block :instructions) 0 [])
      :terminator {:opcode :branch
                   :target (get (get context :join) :block-id)
                   :arguments [(get incoming :value)]}}))
@@ -8408,8 +8426,8 @@
                       :then-arguments []
                       :else-target (get (get context :else) :block-id)
                       :else-arguments []}}
-        (sh13-branch-join-frame-arm context :then entry-count)
-        (sh13-branch-join-frame-arm context :else (+ entry-count 1))
+        (sh13-branch-join-frame-arm context :then)
+        (sh13-branch-join-frame-arm context :else)
         {:block-id (get (get context :join) :block-id) :params [if-id]
          :operations [] :terminator {:opcode :return :value if-id}}]}]}))
 
