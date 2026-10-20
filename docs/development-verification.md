@@ -247,12 +247,12 @@ source-language truthiness or fresh upstream admission.
 
 For the bounded original-MIR handoff, edit `c11_mir_specification.gravity` and
 run the existing direct development runner against
-`gravity.self-hosting.sh13-branch-join-execution-test`. Its five selectors cover
+`gravity.self-hosting.sh13-branch-join-execution-test`. Its six selectors cover
 the interface, literal and computed conditions, original MIR tampering and
 subset/result rejection:
 
 ```bash
-clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --fail-fast
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --exact sh13-executes-typed-integer-less-than-conditions --fail-fast
 ```
 
 `sh13-run-branch-join-mir` takes the retained checked-Core and original MIR;
@@ -262,7 +262,8 @@ private frames for the existing interpreter. A supplied verification report is
 not an input. The normalized `sh13-run-module` interface remains unchanged.
 
 Support is one zero-argument, four-block pure diamond. Its condition is either
-a literal Bool or equality of two bounded signed-i64 literals; its arms are
+a literal Bool, equality or strict less-than of two bounded signed-i64 literals;
+its arms are
 homogeneous literal signed-i64 or Bool values, followed by a join and a
 function-result alias. The computed condition must have exactly two ordered
 i64 operand IDs, a Bool result and a nonconstant payload marker. Original SH-12
@@ -273,9 +274,10 @@ the selected arm value explicitly into the join. Only that arm executes.
 Frame fuel is not a count of original MIR instructions. The result's input IDs
 and projection are dependency views, not complete content-hash authentication.
 The computed case explicitly extends the projection domain with seven rows
-and an `:integer-equality` role; existing keys and public arities are unchanged.
+and an `:integer-equality` or `:integer-less-than` role; existing keys and public
+arities are unchanged. Other ordering comparisons and arithmetic are excluded.
 Five-node results remain unchanged. The same 512-unit frame fuel leaves 507
-for literal conditions and 505 for this computed case, not a larger budget.
+for literal conditions and 505 for either computed case, not a larger budget.
 
 Include the existing SH-12 diamond and normalized SH-13 branch, recursion and
 loop/indirect-call controls when changing this handoff. Calls, loops, effectful
