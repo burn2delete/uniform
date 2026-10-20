@@ -366,6 +366,39 @@ public C6 verification or authoritative migration. Do not repeat it for unrelate
 document or downstream-only edits. Private Character carrier tests retain their
 existing representation premise; they are not a new Unicode validator.
 
+### Finite persistent List value inequality
+
+STD2's binary complement law extends to the supported STD3 List equality
+domain above. `not=` preserves the same accepted/rejected frontier, ordinary
+left-to-right operand evaluation and non-tail transfer rules. C7, C8 and typed
+lowering use their existing ANE owners; each local type classification consumes
+its existing List equality validator once with the remaining budget. There is
+no runtime change: lowering emits an owned conditional around one builtin `=`,
+with false/true branches. It does not emit a runtime builtin `not=`.
+
+Start with these direct focused selectors, using `-J-Xmx2g -M:dev-test` and
+the namespace/`--exact`/`--fail-fast` interface:
+
+- `sh08-list-inequality-development-kernel` in `gravity.self-hosting.sh08-function-call-type-test`.
+- `current-gravity-list-inequality-consumer-development-kernel` in `gravity.self-hosting.sh09-body-effect-test`.
+- `current-gravity-list-inequality-lowering-runtime-development-kernel` and `current-gravity-list-inequality-transfer-fence-development-kernel` in `gravity.self-hosting.sh01-stage2-runtime-iteration-test`.
+
+Include the paid-domain, ID, throw-consumer and old inequality-family selectors
+when their owning paths change. C8's ANE context prepares paid type checks and
+indexes; `body-ane-call-valid?` consumes the guarded source joins afterward.
+Test rejection at that actual consumer rather than adding a repeated source
+walk to preparation. Preserve existing missing-child-work accounting instead
+of inventing a default work unit. Callback observations apply to the selected
+malformed fixtures, not arbitrary hostile DATA or provider CPU bounds.
+
+For affected source composition, select
+`current-gravity-list-inequality-authenticated-composition` in the SH01 namespace.
+It exercises one fresh Gravity positive and one numeric-List typing negative;
+QST parity is parser-only. Fresh C5 plus development C6-session/replay, C7, C8,
+assembly and one closed entry provide development feedback, not fresh public
+C6 verification or migration. Do not repeat this composition for unrelated
+documentation or disjoint downstream changes without demonstrated invalidation.
+
 ### List family classification
 
 STD3 owns unary `list?`. The current JVM typed development route accepts independently
@@ -6728,6 +6761,8 @@ performance-regression, proof, conformance, release, self-hosting, or
 seed-retirement authority, and it does not make results comparable across
 different source, JVM, host, profile, target, or runtime conditions. Omitting
 `--timing-receipt` preserves the existing command output and behavior.
+This option belongs to `-M:dev-test`, not the compatibility `-M:test` runner.
+Run from the repository root so the intended `deps.edn` selects that runner.
 Receipts are published only after a selected test run returns normally;
 namespace-load or fixture exceptions retain the runner's existing error path
 and do not publish a partial receipt.
