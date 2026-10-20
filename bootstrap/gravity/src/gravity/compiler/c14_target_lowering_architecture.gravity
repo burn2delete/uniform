@@ -3611,10 +3611,12 @@
         false))))
 
 (defn sh17-mir-definition-order-valid? [mir]
-  (let [blocks (get (first (get mir :functions)) :blocks)]
+  (let [function (first (get mir :functions))
+        blocks (get function :blocks)]
     (loop [block-index 0
            operation-ids #{}
-           result-ids #{}]
+           result-ids #{}
+           result-types {}]
       (if (= block-index (count blocks))
         true
         (let [block (get blocks block-index)
@@ -3622,10 +3624,12 @@
               state
               (loop [operation-index 0
                      seen-operations operation-ids
-                     seen-results result-ids]
+                     seen-results result-ids
+                     seen-types result-types]
                 (if (= operation-index (count operations))
                   {:operation-ids seen-operations
-                   :result-ids seen-results}
+                   :result-ids seen-results
+                   :result-types seen-types}
                   (let [operation (get operations operation-index)
                         operation-id (get operation :operation-id)
                         result-id (get operation :result-id)]
@@ -3637,15 +3641,22 @@
                              (get operation :operands) seen-results)
                           (recur (+ operation-index 1)
                                  (conj seen-operations operation-id)
-                                 (conj seen-results result-id))
+                                 (conj seen-results result-id)
+                                 (assoc seen-types result-id
+                                        (get operation :type)))
                           nil))))))]
           (if (= state nil)
             false
             (if (contains? (get state :result-ids)
                            (get (get block :terminator) :value-id))
-              (recur (+ block-index 1)
-                     (get state :operation-ids)
-                     (get state :result-ids))
+              (if (= (get (get state :result-types)
+                          (get (get block :terminator) :value-id))
+                     (get function :return-type))
+                (recur (+ block-index 1)
+                       (get state :operation-ids)
+                       (get state :result-ids)
+                       (get state :result-types))
+                false)
               false)))))))
 
 (defn sh17-mir-valid? [mir]
