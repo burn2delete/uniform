@@ -233,6 +233,37 @@ dispatch and earlier operand/profile/fact/effect diagnostics, plus valid call
 arity, type and execution behavior. Include invalid-MIR, recursion, constant
 arity and return-dominance checks when changing this boundary.
 
+### Execute an original SH-12 diamond
+
+For the bounded original-MIR handoff, edit `c11_mir_specification.gravity` and
+run the existing direct development runner against
+`gravity.self-hosting.sh13-branch-join-execution-test`. Its four selectors cover
+the interface, execution, original MIR tampering and subset/result rejection:
+
+```bash
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --fail-fast
+```
+
+`sh13-run-branch-join-mir` takes the retained checked-Core and original MIR;
+`sh13-verify-branch-join-execution` also takes the proposed execution result.
+Each run calls the original SH-12 canonical-projection verifier before creating
+private frames for the existing interpreter. A supplied verification report is
+not an input. The normalized `sh13-run-module` interface remains unchanged.
+
+Support is one zero-argument, four-block pure diamond: a literal Bool condition,
+homogeneous literal signed-i64 or Bool arms, a join and a function-result alias.
+Validate both arms before execution, including the unselected arm. Preserve
+original CFG incoming values, IDs, fact references and source records; transfer
+the selected arm value explicitly into the join. Only that arm executes.
+Frame fuel is not a count of original MIR instructions. The result's input IDs
+and projection are dependency views, not complete content-hash authentication.
+
+Include the existing SH-12 diamond and normalized SH-13 branch, recursion and
+loop/indirect-call controls when changing this handoff. Calls, loops, effectful
+nodes, runtime checks and broader MIR remain outside the new entrypoint. These
+supplied checked-Core checks do not establish fresh C10/source ingress, generic
+MIR acceptance, native execution or authoritative migration.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
