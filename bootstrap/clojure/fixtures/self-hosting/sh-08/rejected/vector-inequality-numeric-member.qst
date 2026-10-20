@@ -4,6 +4,6 @@
   (:exports [numeric-member main]))
 
 (defn numeric-member [] :- Bool
-  (not= [] [7]))
+  (not= [] [[7]]))
 
 (defn main [] :- Bool true)

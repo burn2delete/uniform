@@ -1,0 +1,10 @@
+(ns self-hosting.sh08.flat-integer-vector-comparison
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  [(= [(count [false]) :node] [1 :node])
+   (= [(count []) :node] [1 :node])
+   (not= [(count [false]) :node] [1 :node])
+   (not= [(count []) :node] [1 :node])])

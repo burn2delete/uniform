@@ -6078,6 +6078,55 @@ general conversion-result inference and whole compiler-validator execution
 remain outside this increment. Focused and traceability results do not close
 authoritative migration, SH-07, self-hosting or release gates.
 
+### Flat Generic Integer Vector comparison: development increment
+
+The existing C7, C8, emitter and runtime Vector comparison owners support flat
+Vectors containing Generic Integer leaves with `=` and its `not=` complement.
+Corresponding Integer positions must both be Integer. Both complete domains
+and overlapping type compatibility are checked before length/value mismatch.
+The comparison reuses original-value scalar Integer equality without numeric
+conversion, widening or arithmetic. Legacy recursive nonnumeric descriptors,
+identities and work remain unchanged; new Integer cases use a distinct policy.
+
+The first focused run is retained as FAILED: 21 tests, 6,444 passes, two
+failures and no errors. Both failures were a new equality transfer test's
+incorrect zero default for failed-child work; the existing equality owner uses
+one. A one-line test-only correction passed the affected test's 32 assertions.
+The other twenty tests retain 6,414 passing assertions without replay. Thus
+nonduplicated focused coverage is 21 tests/6,446 passing assertions across
+runs, not a clean full-batch rerun. Production bytes did not change to fix the
+test. Controls cover full domains, version/source/fact/ledger tampering, exact
+and short work, measured owning consumers, runtime values and transfer fences.
+
+The paired owning-C2 parser selection passed one test/11 assertions. The one
+actual changed-source composition passed one test/103 assertions at 2 GiB:
+148.082 seconds selected execution after 11.745 seconds namespace loading.
+One function returned `[true false false true]` from count-produced
+Integer/Keyword Vector equality and its natural inequality complements.
+Original C7/C8 verification and an additional observed public C7 assembly gate
+passed. Eight source calls produce two equality and two source-inequality
+policies; thirteen Vector constructors retain their allocation effects while
+the comparison queries have no direct allocation effect. Runtime still has
+54 functions; one main entry ran, with no seed control execution.
+
+The nested-Integer inequality negative passed C5 and C6 development checks,
+then rejected in C7 with `C7-TYPE-MISMATCH` and
+`:atomic-inequality-operand-type-required`. The unresolved-node annotation
+diagnostic is also retained; the assertion establishes the primary diagnostic
+and nested type, not an exact-only diagnostic vector. That negative has no
+C8/lowering acceptance claim. Q remains parser-only. Fresh C6 development
+sessions and same-catalog replay are not fresh public C6 verification. Inclusive
+timings are diagnostic observations, not phase-isolated performance evidence.
+Separate language-boundary checks passed six tests/11 assertions; LOC validation
+passed 2,021 source files, zero exceptions, maximum 250 physical lines.
+
+Nested numeric Vectors, fixed-width numeric leaves, Float/Decimal/ratio,
+Nil-or-Integer, unknown members and Set-valued leaves remain unsupported.
+Existing width/depth/work limits are unchanged; structural work units do not
+establish Integer digit-size, provider CPU or peak-memory containment. This is
+development progress, not whole C6 validator execution, authoritative admission,
+SH-07 completion, self-hosting or release evidence.
+
 ### Compiler-module literal String/Keyword keys: development increment
 
 The temporary module constructor now accepts distinct literal String or
