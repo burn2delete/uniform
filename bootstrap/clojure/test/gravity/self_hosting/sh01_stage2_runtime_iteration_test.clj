@@ -605,7 +605,7 @@
                       #(assoc-in % [:types :set] :gravity.type/never)
                       #(assoc-in % [:types :set :extra] true)]]
         (is (= :rejected (:status (compile (mutate context) 65536)))))
-      (is (= :unsupported-typed-set-member (get-in (compile (typed-keyword-set-kernel-context ["unsupported"]) 65536) [:facts :reason])))
+      (is (= :unsupported-typed-set-member (get-in (compile (typed-keyword-set-kernel-context ["unsupported" :mixed]) 65536) [:facts :reason])))
       (is (= :duplicate-typed-set-keyword (get-in (compile (typed-keyword-set-kernel-context [:same :same]) 65536) [:facts :reason])))
       (is (= :typed-set-width-limit (get-in (own (typed-keyword-set-kernel-context (vec (repeat 1025 :wide))) 65536) [:facts :reason])))
       (is (= :typed-lowering-work-limit (get-in (own (typed-keyword-set-kernel-context (vec (repeat 1024 :wide))) 65536) [:facts :reason]))))
@@ -670,7 +670,7 @@
           (is (= 0 (:comparison-attempts result) (:insertions result))))
         (is (= :rejected (last (evaluate (set-ir (literal-instructions values)))))))
       (is (= 0 @callbacks)))
-    (doseq [values [[nil] ["text"] [1] ['symbol] [[]] [#{}]]]
+    (doseq [values [[nil] [:mixed "text"] [1] ['symbol] [[]] [#{}]]]
       (is (= :set-literal-keyword-domain-required (:reason (work values 65536)))))
     (doseq [values [nil '(:one) #{:one}]]
       (is (= :set-literal-keyword-domain-required (:reason (work values 65536)))))
@@ -685,7 +685,7 @@
       (is (= :set-literal-value-width (:reason (work (conj wide :extra) 65536)))))
     (let [label {:op :println :args [(lit "never")] :effect :io/write :capability :io/stdout}
           marked {:op :do :body [label (lit :one)]}]
-      (doseq [bad [{:op :set-literal} (set-ir nil) (set-ir '()) (set-ir [42]) (set-ir [(lit "text")])
+      (doseq [bad [{:op :set-literal} (set-ir nil) (set-ir '()) (set-ir [42]) (set-ir [(lit "text") (lit :mixed)])
                    (set-ir [{:op :quote :value :one}]) (set-ir [marked])
                    (set-ir [{:op :throw :value (lit :stop)}])
                    (set-ir [(assoc (lit :one) :extra true)]) (assoc (set-ir [(lit :one)]) :extra true)
@@ -6365,7 +6365,7 @@
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
     (doseq [[disposition name functions] [["accepted" "local-runtime-literal-keyword-set" 7]
-                                         ["rejected" "literal-set-string-member" 1]]]
+                                         ["rejected" "literal-character-set-mixed" 1]]]
       (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
             g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
             g (slurp g-path) q (slurp q-path)]
@@ -6485,7 +6485,7 @@
       (is (= :rejected (:status (last @verified))))
       (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding
                                 (reseal effects (assoc-in graph [:nodes id :direct] #{})))))))
-    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/literal-set-string-member.gravity"
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/literal-character-set-mixed.gravity"
           path (.getPath (io/file root relative)) negative (fresh relative)
           input (select-keys negative [:request :typed :verification])]
       (println (pr-str {:be-product-elapsed relative :timing (:development-timing negative)}))
@@ -6494,7 +6494,7 @@
       (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
       (is (= :passed (get-in input [:verification :status])))
       (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
-        (throw (ex-info "String-member fixture upstream C7 prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics]) :verification (:verification input)})))
+        (throw (ex-info "Mixed-member fixture upstream C7 prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics]) :verification (:verification input)})))
       (let [artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
             parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
             raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
@@ -6505,12 +6505,12 @@
         (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
         (is (= :passed (:status verification)))
         (when-not (and (= :accepted (:status effects)) (= :passed (:status verification)))
-          (throw (ex-info "String-member fixture upstream C8 prerequisite rejected" {:effects effects :verification verification})))
-        (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'main) input))))]
+          (throw (ex-info "Mixed-member fixture upstream C8 prerequisite rejected" {:effects effects :verification verification})))
+        (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'values) input))))]
           (is (= "P15S23Q002" (:id failure)))
           (is (= :unsupported-typed-set-member (:reason failure)))
           (is (= :passed (:status (last @verified))))
-          (println (pr-str {:be-string-member-lowering-rejection failure})))))
+          (println (pr-str {:be-mixed-member-lowering-rejection failure})))))
     (is (= 3 (count @verified)))
     (is (= [:passed :rejected :passed] (mapv :status @verified)))
     (println (pr-str {:be-literal-keyword-set-positive true :function-table-entry-invocations (count results)
@@ -22981,7 +22981,7 @@
                       #(assoc-in % [:types :set] :gravity.type/never)
                       #(assoc-in % [:types :set :extra] true)]]
         (is (= :rejected (:status (compile (mutate context) 65536)))))
-      (is (= :unsupported-typed-set-member (get-in (compile (typed-character-set-kernel-context ["unsupported"]) 65536) [:facts :reason])))
+      (is (= :unsupported-typed-set-member (get-in (compile (typed-character-set-kernel-context ["unsupported" \a]) 65536) [:facts :reason])))
       (is (= :duplicate-typed-set-character (get-in (compile (typed-character-set-kernel-context [\a \a]) 65536) [:facts :reason])))
       (is (= :typed-set-width-limit (get-in (own (typed-character-set-kernel-context (vec (repeat 1025 \a))) 65536) [:facts :reason])))
       (is (= :typed-lowering-work-limit (get-in (own (typed-character-set-kernel-context (vec (repeat 1024 \a))) 65536) [:facts :reason]))))
@@ -23008,6 +23008,295 @@
     (doseq [values [[\a :mixed] [:mixed \a] [\a "text"]]]
       (is (= :rejected (:status (compile (typed-character-set-kernel-context values) 65536)))))
 ))
+
+
+(deftest current-gravity-literal-string-set-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        own #(invoke 'p15-s23-typed-compile-keyword-set %1 (get-in %1 [:nodes :set]) %2)
+        compile #(invoke 'p15-s23-typed-compile-node %1 :set %2)
+        context typed-character-set-kernel-context
+        reservation (fn [values] (let [n (count values)]
+                                  (+ 12 (* 14 n) (quot (* n (dec n)) 2)
+                                     (* (inc n) 2 (reduce + 0 (map count values))))))]
+    (doseq [values [[] [""] [".gravity" ".qst"] ["Aa" "BB"] ["\u00e9" "e\u0301"] ["\ud83d\ude00" "\n" "\u0000"]]]
+      (let [input (context values) charge (reservation values) total (+ charge (count values))
+            result (compile input 65536)]
+        (is (= :complete (:status result)))
+        (is (= {:op :set-literal :items (literal-instructions values)} (:value result)))
+        (is (= total (:work-count result)))
+        (is (= result (compile input total)))
+        (is (= result (compile (assoc input :tail? false) total)))
+        (when (seq values)
+          (is (= :typed-lowering-work-limit (get-in (own input (dec charge)) [:facts :reason])))
+          (is (= charge (:work-count (own input (dec charge)))))
+          (doseq [prefix (range (count values))]
+            (let [id (get-in input [:nodes :set :children prefix])
+                  child (invoke 'p15-s23-typed-compile-node (assoc input :tail? false) id 0)
+                  failed (own input (+ charge prefix))]
+              (is (= :rejected (:status child) (:status failed)))
+              (is (= (:facts child) (:facts failed)))
+              (is (= (+ charge prefix (get child :work-count 1)) (:work-count failed))))))))
+    (doseq [values [["duplicate" (String. (.toCharArray "duplicate"))] ["" ""]]]
+      (is (= :duplicate-typed-set-string (get-in (compile (context values) 65536) [:facts :reason]))))
+    (doseq [values [["text" :mixed] [:mixed "text"] ["text" \a]]]
+      (is (= :unsupported-typed-set-member (get-in (compile (context values) 65536) [:facts :reason]))))
+    (let [input (context ["left" "right"])]
+      (doseq [mutate [#(assoc-in % [:nodes :set-item-0 :attributes :value] "stale")
+                      #(assoc-in % [:forms :set-item-form-0 :syntax-id] :stale)
+                      #(assoc-in % [:types :set-item-0] :gravity.type/unknown)
+                      #(assoc-in % [:nodes :set-item-0 :core-form] :call)
+                      #(assoc-in % [:nodes :set :children] [:set-item-1 :set-item-0])
+                      #(assoc-in % [:types :set :element-types] [:gravity.type/string])]]
+        (is (= :rejected (:status (compile (mutate input) 65536))))))
+    (let [input (context ["x"]) huge (apply str (repeat 40000 "x"))
+          malformed (assoc-in input [:nodes :set-item-0 :attributes :value] huge)]
+      (is (= :typed-lowering-work-limit (get-in (own malformed 65536) [:facts :reason])))
+      (is (= 65537 (:work-count (own malformed 65536)))))
+    (is (= :typed-set-width-limit (get-in (own (context (vec (repeat 1025 ""))) 65536) [:facts :reason])))
+    (is (= :typed-lowering-work-limit (get-in (own (context (vec (repeat 1024 ""))) 65536) [:facts :reason])))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hashed")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque compared")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque printed"))))
+          input (context ["x"])]
+      (doseq [changed [(assoc-in input [:forms :set-item-form-0 :value] opaque)
+                       (assoc-in input [:nodes :set-item-0 :attributes :value] opaque)
+                       (assoc-in input [:nodes :set :children 0] opaque)
+                       (assoc-in input [:nodes :set :source :form-id] opaque)]]
+        (is (= :rejected (:status (own changed 65536))))
+        (is (= 12 (:work-count (own changed 0)))))
+      (is (= 0 @callbacks)))))
+
+(deftest current-gravity-literal-string-set-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        work #(invoke 'p15-s23-runtime-keyword-set-construction-work %1 %2)
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        ir #(hash-map :op :set-literal :items (literal-instructions %))
+        reservation (fn [values] (let [n (count values)]
+                                  (+ 1 (* 2 n) (quot (* n (dec n)) 2)
+                                     (* (inc n) (reduce + 0 (map count values))))))]
+    (is (= (.hashCode "Aa") (.hashCode "BB")))
+    (doseq [values [[] [""] [".gravity" ".qst"] ["Aa" "BB"] ["\u00e9" "e\u0301"] ["\ud83d\ude00" "\n" "\u0000"]]]
+      (let [result (work values 65536) charge (reservation values) n (count values)]
+        (is (= :accepted (:status result)))
+        (is (= (set values) (:value result)))
+        (is (= n (:insertions result) (count (:value result))))
+        (is (= (quot (* n (dec n)) 2) (:comparison-attempts result)))
+        (is (= charge (:work-count result)))
+        (is (= :exact-logical-content-reservation (:work-count-kind result)))
+        (is (= :not-established (:provider-cpu-bound result)))
+        (when (seq values) (is (= :gravity/literal-string-set-logical-content-work-v1 (:value-work-model result))))
+        (is (= result (work values charge)))
+        (is (= result (work values 1000000)))
+        (let [failed (work values (dec charge))]
+          (is (= :set-literal-work-limit (:reason failed)))
+          (is (= 0 (:insertions failed) (:comparison-attempts failed))))
+        (is (= [(set values) "" :normal] (evaluate (ir values))))))
+    (let [left "decoded" right (String. (.toCharArray left))]
+      (is (not (identical? left right)))
+      (doseq [values [[left right] ["" ""]]]
+        (let [result (work values 65536)]
+          (is (= :duplicate-set-literal-string (:reason result)))
+          (is (= 0 (:insertions result)))
+          (is (= 1 (:comparison-attempts result)))
+          (is (= (reservation values) (:work-count result)))
+          (is (= :duplicate-set-literal-string (get-in (evaluate (ir values)) [0 :reason]))))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hashed")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque compared")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque printed"))))]
+      (doseq [value [opaque (StringBuilder. "text") :keyword \a nil 1 [] #{}]
+              values [["text" value] [value "text"]]]
+        (let [result (work values 65536)]
+          (is (= :rejected (:status result)))
+          (is (= 0 (:insertions result) (:comparison-attempts result)))
+          (is (= :invalid-local-runtime-instruction (get-in (evaluate (ir values)) [0 :reason])))))
+      (is (= 0 @callbacks)))
+    (doseq [values [(vec (repeat 1024 "")) [(apply str (repeat 40000 "x"))]]]
+      (let [result (work values 65536)]
+        (is (= :set-literal-work-limit (:reason result)))
+        (is (= 65537 (:work-count result)))
+        (is (= 0 (:insertions result) (:comparison-attempts result)))))
+    (is (= :set-literal-value-width (:reason (work (vec (repeat 1025 "")) 65536))))
+    (doseq [instruction [{:op :set-literal :items [{:op :do :body [{:op :literal :value "x"}]}]}
+                         {:op :set-literal :items [{:op :quote :value "x"}]}]]
+      (is (= :invalid-local-runtime-instruction (get-in (evaluate instruction) [0 :reason]))))))
+
+
+(deftest current-gravity-literal-string-set-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [name ["local-runtime-literal-string-set" "literal-set-string-member"]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            q (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))]
+        (is (= (slurp g-path) (slurp q-path)))
+        (is (= g q))
+        (is (= 1 (count (filter #(and (seq? %) (= 'defn (first %))) g))))))
+    (let [stem "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/literal-string-set-duplicate"]
+      (is (= (slurp (io/file root (str stem ".gravity"))) (slurp (io/file root (str stem ".qst")))))
+      (doseq [extension [".gravity" ".qst"]]
+        (let [path (.getPath (io/file root (str stem extension)))
+              failure (diagnostic #(bootstrap/p15-s23-stage2-c2-c3-front-end-products path (slurp path)))]
+          (is (= "C2-SET" (:id failure)))
+          (is (= :duplicate-set-entry (get-in failure [:reader-state :reason])))
+          (is (false? (get-in failure [:reader-state :result-committed?]))))))))
+
+(deftest current-gravity-literal-string-set-authenticated-composition
+  ;; One G positive and one upstream-accepted lowering negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "Literal String Set fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "Literal String Set development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-literal-string-set.gravity"
+        products (fresh relative) input (select-keys products [:request :typed :verification])
+        _ (println (pr-str {:literal-string-set-product-elapsed relative :timing (:development-timing products)}))
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Literal String Set C7 prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Literal String Set C7 verification rejected" {})))
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        constructors (filterv #(and (= :collection-literal (:core-form %)) (= :set (get-in % [:attributes :literal-kind]))) (:nodes core))
+        binding (seal (:request input) (:typed input) (:verification input))
+        t0 (System/nanoTime) effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t1 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects))
+            (throw (ex-info "Literal String Set C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t2 (System/nanoTime)
+        _ (is (= :passed (:status effect-verification)))
+        _ (when-not (= :passed (:status effect-verification))
+            (throw (ex-info "Literal String Set C8 verification rejected" {})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        path (.getPath (io/file root relative))
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                (fn [runtime plan function args]
+                                  (let [result (original runtime plan function args)]
+                                    (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t3 (System/nanoTime)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                         [{:op :function-call :function 'main :args []} {} "" (:functions assembled) []])
+        t4 (System/nanoTime)
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        set-ir (filterv #(= :set-literal (:op %)) instructions) graph (:effect-graph effects)]
+    (is (= 1 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 1 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 54 (count (:functions runtime-plan))))
+    (is (= [[#{".gravity" ".qst"} 2] "" :normal] result))
+    (is (= 2 (count constructors) (count set-ir) (get-in assembled [:instruction-summary :set-literal])))
+    (is (= 4 (reduce + 0 (map #(count (:items %)) set-ir))))
+    (is (empty? (filter #(or (= :quote (:op %)) (= :keyword-set-contains (:op %))) instructions)))
+    (doseq [instruction set-ir]
+      (is (= #{:op :items} (set (keys instruction))))
+      (is (= #{".gravity" ".qst"} (set (map :value (:items instruction)))))
+      (is (every? #(and (= :literal (:op %)) (= #{:op :value} (set (keys %)))) (:items instruction))))
+    (doseq [constructor constructors]
+      (let [id (:node-id constructor) record (get-in graph [:nodes id])]
+        (is (= {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string :gravity.type/string]}
+               (get-in facts [:type-table id])))
+        (is (= #{:memory/allocate} (:direct record)))
+        (is (= (:children constructor) (:evaluated-children record)))
+        (is (true? (get-in record [:allocation :normal-completion-possible?])))
+        (is (= :normal-operand-completion (get-in record [:allocation :condition])))))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/literal-character-set-mixed.gravity"
+          negative (fresh relative) negative-input (select-keys negative [:request :typed :verification])]
+      (println (pr-str {:literal-string-set-negative-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :accepted (get-in negative-input [:typed :status])) (pr-str (get-in negative-input [:typed :diagnostics])))
+      (is (= :passed (get-in negative-input [:verification :status])))
+      (when-not (and (= :accepted (get-in negative [:c5 :status])) (= :passed (get-in negative [:report :status]))
+                     (= :accepted (get-in negative-input [:typed :status])) (= :passed (get-in negative-input [:verification :status])))
+        (throw (ex-info "Mixed Set negative upstream prerequisite rejected" {:diagnostics (get-in negative-input [:typed :diagnostics])})))
+      (let [binding (seal (:request negative-input) (:typed negative-input) (:verification negative-input))
+            effects (c8 'build-body-effect-result (:typed negative-input) (:verification negative-input) binding)
+            _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+            _ (when-not (= :accepted (:status effects))
+                (throw (ex-info "Mixed Set negative C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+            verification (c8 'verify-body-effect-result (:typed negative-input) (:verification negative-input) binding effects)
+            _ (is (= :passed (:status verification)))
+            _ (when-not (= :passed (:status verification)) (throw (ex-info "Mixed Set negative C8 verification rejected" {})))
+            artifact (get-in negative-input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+            parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+            path (.getPath (io/file root relative))
+            raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+            definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+            failure (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                   (fn [runtime plan function args]
+                                     (let [result (original runtime plan function args)]
+                                       (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                      (diagnostic #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'values) negative-input)))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :unsupported-typed-set-member (:reason failure)))
+        (is (= 2 (count @verified)))
+        (is (= [:passed :passed] (mapv :status @verified)))
+        (println (pr-str {:literal-string-set-mixed-lowering-rejection failure}))))
+    (println (pr-str {:literal-string-set-composition :completed :runtime-result result
+                      :source-products {:g-positive 1 :g-upstream-accepted-lowering-rejected 1 :q-typed-products 0}
+                      :function-table-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count 54 :membership-support :not-established
+                      :whole-validator-coverage false :authority :non-authoritative
+                      :elapsed-ns {:c8-construction (- t1 t0) :c8-verification (- t2 t1)
+                                   :assembly-including-public-c7-verification (- t3 t2) :entry-execution (- t4 t3)}
+                      :clock :monotonic-nanoseconds :nested-work :included}))))
 
 (deftest current-gravity-literal-character-set-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
@@ -23068,7 +23357,7 @@
       (is (= :set-literal-value-width (:reason (work (conj wide (char 1024)) 65536)))))
     (let [label {:op :println :args [(lit "never")] :effect :io/write :capability :io/stdout}
           marked {:op :do :body [label (lit \a)]}]
-      (doseq [bad [{:op :set-literal} (set-ir nil) (set-ir '()) (set-ir [42]) (set-ir [(lit "text")])
+      (doseq [bad [{:op :set-literal} (set-ir nil) (set-ir '()) (set-ir [42]) (set-ir [(lit "text") (lit \a)])
                    (set-ir [{:op :quote :value :one}]) (set-ir [marked])
                    (set-ir [{:op :throw :value (lit :stop)}])
                    (set-ir [(assoc (lit \a) :extra true)]) (assoc (set-ir [(lit \a)]) :extra true)

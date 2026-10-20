@@ -11789,7 +11789,7 @@
                 (if (= false (if (= b 0) true (<= a (quot (- limit base) b))))
                   (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node)
                     :work-count (+ limit 1) :work-count-kind :exceeded-allowance-lower-bound)
-                  (let [charge (+ base (* a b)) forms (get context :forms)
+                  (let [structural-charge (+ base (* a b)) forms (get context :forms)
                         owner-id (get (get node :source) :form-id)
                         owner-id? (if (keyword? owner-id) true (if (string? owner-id) (= 71 (count owner-id)) false))
                         owner (if owner-id?
@@ -11797,6 +11797,7 @@
                         ids (get owner :child-form-ids) attrs (get node :attributes)
                         type (get (get context :types) (get node :node-id)) elements (get type :element-types)
                         characters? (if (vector? elements) (= :gravity.type/character (get elements 0)) false)
+                        strings? (if (vector? elements) (= :gravity.type/string (get elements 0)) false)
                         child-ids? (loop [i 0]
                                      (if (= i n) true
                                        (let [id (get children i)]
@@ -11820,7 +11821,32 @@
                                    (p15-s23-typed-ordered-node? node :left-to-right)
                                    (map? type) (= 3 (if (map? type) (count type) 0)) (= :gravity.type/set (get type :kind))
                                    (= :literal (get type :shape)) (vector? elements) (= n (if (vector? elements) (count elements) 0))]) false)
+                        content
+                        (if (if header? strings? false)
+                          (let [measured (loop [i 0 units 0]
+                                           (if (= i n) {:status :accepted :units units}
+                                             (let [child (get (get context :nodes) (get children i))
+                                                   form (get forms (get ids i))
+                                                   value (get form :value) attribute (get (get child :attributes) :value)]
+                                               (if (if (string? value) (string? attribute) false)
+                                                 (let [source-size (count value) attribute-size (count attribute)
+                                                       remaining (- limit units)]
+                                                   (if (> source-size remaining)
+                                                     {:status :rejected :reason :typed-lowering-work-limit}
+                                                     (if (> attribute-size (- remaining source-size))
+                                                       {:status :rejected :reason :typed-lowering-work-limit}
+                                                       (recur (+ i 1) (+ units source-size attribute-size)))))
+                                                 {:status :rejected :reason :unsupported-typed-set-member}))))]
+                            (if (= :accepted (get measured :status))
+                              (if (> (get measured :units) (quot (- limit structural-charge) (+ n 1)))
+                                {:status :rejected :reason :typed-lowering-work-limit :work-count (+ limit 1)}
+                                {:status :accepted :work-count (+ structural-charge (* (+ n 1) (get measured :units)))})
+                              (assoc measured :work-count
+                                (if (= :typed-lowering-work-limit (get measured :reason)) (+ limit 1) structural-charge))))
+                          {:status :accepted :work-count structural-charge})
+                        charge (get content :work-count)
                         checked
+                        (if (= :accepted (get content :status))
                         (if header?
                           (loop [i 0 values []]
                             (if (= i n) {:status :accepted :values values}
@@ -11859,10 +11885,15 @@
                                           (if (= :character (get form :kind) (get attr :literal-kind))
                                             (if (= :literal (get child :core-form))
                                               (= :gravity.type/character (get elements i) (get (get context :types) id)) false) false) false) false))
+                                      (if strings?
+                                        (if (string? value) (if (string? (get attr :value))
+                                          (if (= :string (get form :kind) (get attr :literal-kind))
+                                            (if (= :literal (get child :core-form))
+                                              (= :gravity.type/string (get elements i) (get (get context :types) id)) false) false) false) false)
                                       (if (keyword? value) (if (keyword? (get attr :value))
                                         (if (= :keyword (get form :kind)) (if (= :literal (get child :core-form))
                                           (if (= :keyword (get attr :literal-kind))
-                                            (= :gravity.type/keyword (get elements i) (get (get context :types) id)) false) false) false) false) false))
+                                            (= :gravity.type/keyword (get elements i) (get (get context :types) id)) false) false) false) false) false)))
                                   (if (p15-s23-typed-all
                                         [id? form-id? (map? child) (map? form) (= id (get child :node-id))
                                          (= form-id (get form :form-id)) (= owner-id (get form :parent-form-id))
@@ -11873,7 +11904,7 @@
                                     (recur (+ i 1) (conj values value))
                                     {:status :rejected :reason :typed-set-source-or-type-mismatch})
                                   {:status :rejected :reason :unsupported-typed-set-member}))))
-                          {:status :rejected :reason :typed-set-source-or-type-mismatch})
+                          {:status :rejected :reason :typed-set-source-or-type-mismatch}) content)
                         unique? (if (= :accepted (get checked :status))
                                   (let [values (get checked :values)]
                                     (loop [i 0]
@@ -11890,7 +11921,8 @@
                     (if (= false (= :accepted (get checked :status)))
                       (assoc (p15-s23-typed-node-error (get checked :reason) node) :work-count charge)
                       (if (= false unique?)
-                        (assoc (p15-s23-typed-node-error (if characters? :duplicate-typed-set-character :duplicate-typed-set-keyword) node) :work-count charge)
+                        (assoc (p15-s23-typed-node-error (if characters? :duplicate-typed-set-character
+                          (if strings? :duplicate-typed-set-string :duplicate-typed-set-keyword)) node) :work-count charge)
                         (loop [i 0 items [] used charge]
                           (if (= i n)
                             (assoc (p15-s23-compiler-result {:op :set-literal :items items}) :work-count used)

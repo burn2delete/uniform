@@ -4458,7 +4458,9 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 The composition selects one accepted G program and one upstream-accepted,
-lowering-rejected String-member program. Q gets byte/parser checks, plus the
+lowering-rejected mixed Character/String-member program. The original
+String-only rejection is historical: homogeneous literal Strings now have the
+separate construction extension below. Q gets byte/parser checks, plus the
 separate C2 duplicate diagnostic, not typed-product parity. Reference execution
 uses the seed interpreter on the same emitted IR, not independent raw-source
 compilation. Listing these commands does not claim that they passed.
@@ -4511,6 +4513,60 @@ requires actual evaluated Set instructions and allocation, including
 supplementary values; the mixed-member negative must pass upstream checks
 before typed lowering rejects it. QST is not a typed-product comparison.
 Seed controls use the same emitted IR, not an independent raw-source compiler.
+
+### Evaluated literal-String Sets
+
+Edit the existing typed emitter and runtime owners. C7's finite literal member
+types and C8's constructor allocation apply unchanged. The bounded JVM slice
+accepts homogeneous, distinct literal Strings through the existing
+`:set-literal` instruction; empty construction retains its legacy path. Start
+with the two direct checks and the adjacent Keyword/Character constructors:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-literal-string-set-lowering-development-kernel \
+  --exact current-gravity-literal-string-set-runtime-development-kernel \
+  --exact current-gravity-literal-keyword-set-lowering-development-kernel \
+  --exact current-gravity-literal-keyword-set-runtime-development-kernel \
+  --exact current-gravity-literal-character-set-lowering-development-kernel \
+  --exact current-gravity-literal-character-set-runtime-development-kernel --fail-fast
+```
+
+Validate the complete String domain before comparisons. Lowering reserves the
+actual source and attribute String content before checking their equality or
+member distinctness, preserving all source/child/type/evaluation joins. Runtime
+reserves `1 + 2*n + n*(n-1)/2 + (n+1)*U`, with `U` the sum of selected JVM
+UTF-16 representation units, then checks Gravity String uniqueness before any
+host Set insertion. The 1,024-member and 65,536-work limits are unchanged;
+representation units are not language String cardinality or a provider CPU
+bound. Equal-content distinct objects are duplicate literal values, while
+same-hash distinct Strings remain distinct. Do not reuse Vector-to-Set
+conversion's deduplication semantics.
+
+This enables an evaluated constructor such as `#{".gravity" ".qst"}`, not
+String-Set membership or execution of its whole compiler consumer. Mixed or
+computed members and evaluated Set module initializers remain unsupported
+implementation frontiers. Quoted Sets are inert. Constructor allocation remains
+explicit, and affected source composition is separate from normalized checks
+and authoritative migration.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-literal-string-set-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-literal-string-set-authenticated-composition --fail-fast
+```
+
+Preflight checks paired owning-C2 values and duplicate-literal rejection. The
+composition selects one accepted extension-Set/count program and the existing
+mixed Character/String program, which must pass upstream checks before lowering
+rejects it. QST has byte/parser checks only. Fresh development C6 sessions and
+same-catalog replay are not fresh public C6 authority verification. The old
+String-only negative is now an accepted fixture; its historical rejection is
+not a current language restriction or a reason to replay the old large positive.
 
 ### Finite Keyword-Set value equality
 
