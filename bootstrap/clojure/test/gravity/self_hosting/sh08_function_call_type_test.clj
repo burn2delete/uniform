@@ -12738,7 +12738,7 @@
     (doseq [bad [:gravity.type/unknown :gravity.type/set :gravity.type/string
                  {:kind :gravity.type/set :shape :literal}
                  (assoc (finite []) :extra true)
-                 {:kind :gravity.type/set :shape :homogeneous :element-type k}
+                 {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/keyword}
                  (finite [k :gravity.type/keyword]) (finite [:gravity.type/unknown])
                  (finite [:gravity.type/never]) (finite [{:kind :gravity.type/nil-or :value-type k}])]
             other [(finite []) :gravity.type/never]
@@ -12885,7 +12885,7 @@
     (doseq [bad [:gravity.type/set :gravity.type/unknown :gravity.type/dynamic :gravity.type/nil k
                  {:kind :gravity.type/nil-or :value-type (s [])}
                  (assoc (s []) :extra true) {:kind :gravity.type/set :shape :literal}
-                 {:kind :gravity.type/set :shape :homogeneous :element-type k}]
+                 {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/keyword}]
             pair [[bad (s [])] [(s []) bad]]]
       (is (= :rejected (:status (atomic-inequality-derived (atomic-inequality-input pair) 65536)))))
     (doseq [pair [[(s []) (inequality-vector-type [])] [(inequality-vector-type []) (s [])]]]
