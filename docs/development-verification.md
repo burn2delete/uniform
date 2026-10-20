@@ -233,6 +233,16 @@ dispatch and earlier operand/profile/fact/effect diagnostics, plus valid call
 arity, type and execution behavior. Include invalid-MIR, recursion, constant
 arity and return-dominance checks when changing this boundary.
 
+For normalized Bool value boundaries, run
+`sh13-normalized-bool-values-exclude-nil-and-nonbooleans` in the same
+`gravity.self-hosting.sh13-control-flow-test` namespace. Both parameter values
+and constant payloads must be actual `true` or `false`; Nil is not Bool and
+must not reach execution as a false condition. Check constants in unselected
+blocks too. Preserve earlier module, profile, fact, origin, effect and dominance
+diagnostics. Include branch execution, runtime-bound and recomputation controls
+when changing either predicate. This is typed MIR validation, not a change to
+source-language truthiness or fresh upstream admission.
+
 ### Execute an original SH-12 diamond
 
 For the bounded original-MIR handoff, edit `c11_mir_specification.gravity` and
