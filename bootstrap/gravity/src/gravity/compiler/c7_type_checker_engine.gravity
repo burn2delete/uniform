@@ -7961,8 +7961,9 @@
     (if (loop [remaining (if (= 0 (count args)) [] (if (= 1 (count args)) [(get args 0)] [(get args 0) (get args 1)]))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false)))
       (let [receiver (get types (get args 0) :gravity.type/unknown)]
     (if (if (= 2 (count args))
-          (if (contains? #{nil :gravity.type/unknown} receiver) true
-            (contains? #{nil :gravity.type/unknown} (get types (get args 1) :gravity.type/unknown))) false)
+          (if (if (= nil receiver) true (if (keyword? receiver) (= :gravity.type/unknown receiver) false)) true
+            (let [value-type (get types (get args 1) :gravity.type/unknown)]
+              (if (= nil value-type) true (if (keyword? value-type) (= :gravity.type/unknown value-type) false)))) false)
       (if (< budget 2)
         (assoc (sh08-sm-failure "C7-GENERIC" :conj-dispatch-work-limit nil :remaining-type-join-units budget) :work-count 2)
         {:status :deferred :type :gravity.type/unknown :work-count 2})

@@ -13063,6 +13063,18 @@
           (is (= :rejected (:status (invoke-c7 'sh08-pl-derive [core node bad-call edge nodes bindings types forms 65536]))))
           (is (= :rejected (:status (invoke-c7 'sh08-ssin-inferred-call [core node bad-call edge nodes bindings types 65536]))))
           (is (zero? @callbacks)))))
+    (let [input (list-prepend-input (finite [s]) s)
+          {:keys [core node call edge nodes bindings types forms]} input
+          context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
+                   :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
+          callbacks (atom 0) opaque (proxy [Object] []
+                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "unpaid type hash")))
+                                     (equals [_] (swap! callbacks inc) (throw (AssertionError. "unpaid type equality")))
+                                     (toString [] (swap! callbacks inc) (throw (AssertionError. "unpaid type print"))))]
+      (doseq [changed [(assoc types :arg0 (finite [s opaque])) (assoc types :arg1 opaque)]
+              budget [0 1 65536]]
+        (is (= :rejected (:status (invoke-c7 'sh08-va-step [node changed {} {} context budget]))))
+        (is (zero? @callbacks))))
     (let [bare :gravity.type/set]
       (is (= :rejected (:status (measure [bare s] 65536))))
       (is (= :rejected (:status (invoke-c7 'sh08-kse-domain [[bare (finite [s])] 65536]))))
