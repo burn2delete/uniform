@@ -1,0 +1,21 @@
+(ns self-hosting.sh08.finite-list-inequality
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn payload []
+  (list "seed"))
+
+(defn main []
+  [(not= '() '())
+   (not= '("same") '("different"))
+   (not= '(false nil :key "seed") '(false nil :key "seed"))
+   (not= '(:left :right) '(:right :left))
+   (not= '("same") '("same" "extra"))
+   (not= '(("nested" nil)) '(("nested" nil)))
+   (not= '(("nested")) '((:nested)))
+   (not= '(("nested")) '(("nested" "extra")))
+   (not= '(\A \😀) '(\A \😀))
+   (not= '((println "inert")) '((println "inert")))
+   (not= (payload) '("seed"))
+   (not= (list "seed" false) '("seed" false))])

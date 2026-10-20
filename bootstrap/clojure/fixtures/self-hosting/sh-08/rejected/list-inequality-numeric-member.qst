@@ -1,0 +1,7 @@
+(ns self-hosting.sh08.list-inequality-numeric-member
+  (:profile :meta) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [] :- Bool
+  (not= '(1) '(1)))
