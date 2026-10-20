@@ -9301,6 +9301,25 @@ assertions. These normalized G/Q constructor/executor checks are not fresh
 authenticated SH-12 ingress, native execution, SH-13 completion or
 authoritative migration. Public schemas and resource limits are unchanged.
 
+### MIR later-callee parameter carriers: development repair
+
+SH-13 call-signature validation now checks that a callee's parameters are a
+Vector before counting them. A call in an earlier function can reach a later
+function before the latter's ordinary shape validation. Malformed parameter
+carriers now reject with `C11-MODULE` instead of raising a host exception or
+reporting an incidental type mismatch. Missing-callee, dispatch and earlier
+operand/profile/fact/effect checks retain their priority. Valid calls and
+execution recomputation remain unchanged; no schema or interface was added.
+
+The unchanged-engine regression completed 216 assertions with 168 passes,
+46 failures and two errors. The errors came from the original recomputation
+verifier counting scalar parameters; they are retained failed evidence.
+The repaired regression passes all 216 assertions. With return-dominance,
+constant-arity, invalid-MIR and recursion controls, the focused batch passes
+5 tests and 582 assertions. These normalized G/Q constructors and execution
+checks do not establish fresh authenticated SH-12 ingress, native execution,
+SH-13 completion or authoritative migration. Resource limits are unchanged.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
