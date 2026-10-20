@@ -8265,12 +8265,14 @@
             comparison (get operations 2)]
         (if (sh13-branch-join-literal-valid? left :gravity.type/i64)
           (if (sh13-branch-join-literal-valid? right :gravity.type/i64)
-            (= [:integer-eq :integer-eq
-                [(get left :result) (get right :result)]
-                :gravity.type/bool :not-applicable]
-               [(get comparison :opcode) (get comparison :source-operation)
-                (get comparison :operands) (get comparison :type)
-                (get comparison :constant-payload)])
+            (let [opcode (get comparison :opcode)]
+              (if (if (= opcode :integer-eq) true (= opcode :integer-lt))
+                (= [opcode opcode [(get left :result) (get right :result)]
+                    :gravity.type/bool :not-applicable]
+                   [opcode (get comparison :source-operation)
+                    (get comparison :operands) (get comparison :type)
+                    (get comparison :constant-payload)])
+                false))
             false)
           false))
       false)))
@@ -8342,8 +8344,10 @@
               :role (if (= :constant (get operation :opcode)) :literal
                         (if (= :integer-eq (get operation :opcode))
                           :integer-equality
-                          (if (= :conditional-join (get operation :opcode))
-                            :edge-join :function-result-alias)))
+                          (if (= :integer-lt (get operation :opcode))
+                            :integer-less-than
+                            (if (= :conditional-join (get operation :opcode))
+                              :edge-join :function-result-alias))))
               :operands (get operation :operands)
               :constant-payload (get operation :constant-payload)
               :source-type (get operation :type)
@@ -8366,7 +8370,10 @@
        (conj result
              (if (= :constant (get operation :opcode))
                (sh13-branch-join-frame-literal operation)
-               {:op-id (get operation :op-id) :opcode :eq :type :bool
+               {:op-id (get operation :op-id)
+                :opcode (if (= :integer-eq (get operation :opcode)) :eq
+                            (if (= :integer-lt (get operation :opcode)) :lt nil))
+                :type :bool
                 :operands (get operation :operands)}))))))
 
 (defn sh13-branch-join-frame-arm [context arm index]
