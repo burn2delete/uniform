@@ -2555,11 +2555,25 @@ use that instance's binding-ID pool through calls and `recur`; direct expression
 evaluation does not implicitly initialize a module or accept a caller's pool.
 Unquoted collection literals remain evaluated constructors, not quoted DATA.
 
+Direct root Set initializers additionally support distinct literal Keywords,
+including an empty Set. The existing emitter closure and runtime census/type
+join own this extension; nested evaluated Sets, computed members and other
+member families remain outside it. Preflight validates exact IR, full Keyword
+domain and uniqueness without constructing the guest Set. Its logical
+reservation includes the later bounded type-member check. All initializers and
+function namespace reads must validate before any initialization occurs. Only
+the existing evaluator then constructs each binding once into the instance
+pool; repeated reads do not reconstruct it.
+
 ```bash
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
   --exact current-gravity-module-literal-runtime-development-kernel \
   --exact current-gravity-module-literal-emitter-development-kernel
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-module-keyword-set-emitter-development-kernel \
+  --exact current-gravity-module-keyword-set-runtime-development-kernel --fail-fast
 ```
 
 For a stable changed integration, select
@@ -2573,6 +2587,23 @@ this literal-only implementation. A derived
 constructor-occurrence count is not an allocation-event measurement. The
 fixture's explicit allocation allowance does not migrate the full W5 module,
 whose current empty effect declaration remains a separate integration issue.
+
+For changed Keyword-Set initialization, select the paired parser and its tiny
+accepted/lowering-rejected composition separately instead of replaying the
+unchanged generic module source products:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-module-keyword-set-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-module-keyword-set-authenticated-composition --fail-fast
+```
+
+Constructor-function call tracing and validated constructor occurrences are
+not physical allocation-event measurements. Q remains parser-only; this does
+not establish whole-W5 legality, other targets or authoritative migration.
 
 ### Map key membership
 
@@ -4622,8 +4653,9 @@ force; this is not Vector-to-Set conversion's deduplication behavior.
 The current component limits are width 1,024 and work allowance 65,536;
 fitting the width does not imply that comparison/content work fits.
 
-Quoted Sets remain inert, and evaluated Set module initializers remain outside
-this slice. Character literals have the separate extension below; other member
+Quoted Sets remain inert. Direct evaluated Keyword-Set module initializers
+use the separate [module initialization boundary](#module-local-literal-initialization-and-reads).
+Character literals have the separate extension below; other member
 families or arbitrary effectful Set children, Keyword List
 conversion, `keys` ordering and whole-W5 execution are separate frontiers.
 Pure literal children cannot independently observe once-only evaluation order.

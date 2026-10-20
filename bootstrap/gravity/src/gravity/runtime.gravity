@@ -155,8 +155,65 @@
         (p15-s23-runtime-namespace-read-source? instruction (get entry :definition)) false)) false))
 
 (defn p15-s23-runtime-initializer-work [instruction budget]
-  ; This measures a closed constructor/data tree, not arbitrary guest code.
-  (loop [pending [{:value instruction :mode :instruction :depth 0}] work 0 constructors {}]
+  ; Root Set preflight reserves direct IR validation, content and the later type join.
+  (if (= :set-literal (get instruction :op))
+    (let [input (get instruction :items)]
+    (if (if (integer? budget) (>= budget 0) false)
+      (let [limit (if (< budget 65536) budget 65536)]
+        (if (if (map? instruction) (if (= 2 (count instruction))
+              (if (contains? instruction :op) (if (contains? instruction :items) (vector? input) false) false) false) false)
+          (let [n (count input)]
+            (if (> n 1024) {:status :rejected :reason :unsupported-module-initializer :work-count 1}
+              (let [base (+ 1 (* 3 n))]
+                (if (> base limit)
+                  {:status :rejected :reason :module-initialization-work-limit :work-count base :work-count-kind :validation-reservation}
+                  (let [checked (loop [i 0 values []]
+                                  (if (= i n) {:status :accepted :values values}
+                                    (let [item (get input i)]
+                                      (if (if (map? item) (if (= 2 (count item))
+                                            (if (contains? item :op) (if (contains? item :value)
+                                              (if (= :literal (get item :op)) (keyword? (get item :value)) false) false) false) false) false)
+                                        (recur (+ i 1) (conj values (get item :value)))
+                                        {:status :rejected :reason :unsupported-module-initializer}))))]
+                    (if (= false (= :accepted (get checked :status)))
+                      (assoc checked :work-count base :work-count-kind :validation-reservation)
+                      (let [values (get checked :values)
+                            measured (loop [i 0 units 0]
+                                       (if (= i n) {:status :accepted :units units}
+                                         (let [size (count (str (get values i)))]
+                                           (if (> size (- limit units))
+                                             {:status :rejected :reason :module-initialization-work-limit :work-count (+ limit 1)
+                                              :work-count-kind :exceeded-allowance-lower-bound}
+                                             (recur (+ i 1) (+ units size))))))]
+                        (if (= false (= :accepted (get measured :status))) measured
+                          (let [units (get measured :units) half (quot n 2) previous (if (> n 0) (- n 1) 0)
+                                a (if (= n (+ half half)) half n) b (if (= n (+ half half)) previous (quot previous 2))]
+                            (if (= false (if (= b 0) true (<= a (quot (- limit base) b))))
+                              {:status :rejected :reason :module-initialization-work-limit :work-count (+ limit 1)
+                               :work-count-kind :exceeded-allowance-lower-bound}
+                              (let [pairs (* a b) remaining (- limit base pairs)]
+                                (if (> units (quot remaining (+ n 1)))
+                                  {:status :rejected :reason :module-initialization-work-limit :work-count (+ limit 1)
+                                   :work-count-kind :exceeded-allowance-lower-bound}
+                                  (let [work (+ base pairs (* (+ n 1) units))
+                                        distinct (loop [i 0 attempts 0]
+                                                   (if (= i n) {:status :accepted :comparison-attempts attempts}
+                                                     (let [checked (loop [j (+ i 1) used attempts]
+                                                                     (if (= j n) {:status :accepted :comparison-attempts used}
+                                                                       (let [equal (p15-s23-runtime-atomic-equality (get values i) (get values j))
+                                                                             next-attempt (+ used 1)]
+                                                                         (if (= false equal) (recur (+ j 1) next-attempt)
+                                                                           {:status :rejected :reason :unsupported-module-initializer
+                                                                            :initializer-reason :duplicate-set-literal-keyword
+                                                                            :comparison-attempts next-attempt}))))]
+                                                       (if (= :accepted (get checked :status))
+                                                         (recur (+ i 1) (get checked :comparison-attempts)) checked))))]
+                                    (assoc (if (= :accepted (get distinct :status)) (assoc distinct :constructors {:set-literal 1}) distinct)
+                                      :work-count work :work-count-kind :exact-logical-content-reservation
+                                      :provider-cpu-bound :not-established))))))))))))))
+          {:status :rejected :reason :unsupported-module-initializer :work-count 0}))
+      {:status :rejected :reason :module-initialization-work-limit :work-count 0}))
+    (loop [pending [{:value instruction :mode :instruction :depth 0}] work 0 constructors {}]
     (if (= 0 (count pending)) {:status :accepted :work-count work :constructors constructors}
       (let [frame (get pending (- (count pending) 1)) value (get frame :value) mode (get frame :mode)
             depth (get frame :depth) tail (subvec pending 0 (- (count pending) 1))
@@ -204,7 +261,7 @@
               (recur added next-work
                 (if (if (= mode :instruction) (contains? #{:map-literal :vector-literal} op) false)
                   (assoc constructors op (+ 1 (get constructors op 0))) constructors)))
-            {:status :rejected :reason :unsupported-module-initializer :work-count next-work}))))))
+            {:status :rejected :reason :unsupported-module-initializer :work-count next-work})))))))
 
 (defn p15-s23-runtime-initializer-type? [definition instruction]
   (let [type (get definition :type) kind (if (map? type) (get type :kind) type)
@@ -212,7 +269,16 @@
     (if (= :gravity.type/vector kind) (if (= :vector-literal op) true (if (= :quote op) (vector? value) false))
     (if (= :gravity.type/map kind) (if (= :map-literal op) true (if (= :quote op) (map? value) false))
     (if (= :gravity.type/list kind) (if (= :quote op) (seq? value) false)
-    (if (= :gravity.type/set kind) (if (= :quote op) (set? value) false)
+    (if (= :gravity.type/set kind)
+      (if (= :set-literal op)
+        (let [members (get type :element-types) items (get instruction :items)]
+          (if (if (map? type) (if (= 3 (count type))
+                (if (contains? type :kind) (if (contains? type :shape) (contains? type :element-types) false) false) false) false)
+            (if (if (= :literal (get type :shape)) (if (vector? members) (vector? items) false) false)
+              (if (if (= (count members) (count items)) (<= (count items) 1024) false)
+                (loop [i 0] (if (= i (count members)) true
+                  (if (= :gravity.type/keyword (get members i)) (recur (+ i 1)) false))) false) false) false))
+        (if (= :quote op) (set? value) false))
       (if (contains? #{:literal :quote} op)
         (if (= :gravity.type/nil kind) (= nil value)
         (if (= :gravity.type/bool kind) (boolean? value)

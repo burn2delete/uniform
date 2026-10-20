@@ -622,7 +622,7 @@
         (is (= :rejected (:status (own changed 65536))))
         (is (= 12 (:work-count (own changed 0)))))
       (is (= 0 @callbacks)))
-    (let [context (typed-keyword-set-kernel-context [:left])
+    (let [context (typed-keyword-set-kernel-context ["unsupported"])
           closure (invoke 'p15-s23-typed-initializer-closure context :set 65536)]
       (is (= :unsupported-typed-module-initializer (:reason closure))))))
 
@@ -701,8 +701,8 @@
       (is (= {:status :accepted :work-count 2 :children [hidden]} children))
       (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-instruction-children instruction 1))))
       (is (= :namespace-read-without-initialized-definition (:reason read-check)))
-      (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit :one)]) 65536))))
-      (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}}
+      (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit "unsupported")]) 65536))))
+      (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}}
                           (set-ir [(lit :one)])))))
     (let [payload '#{:data (println "never")} quoted {:op :quote :value payload}
           result (evaluate quoted)]
@@ -24326,7 +24326,7 @@
       (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-instruction-children instruction 1))))
       (is (= :namespace-read-without-initialized-definition (:reason read-check)))
       (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit \a)]) 65536))))
-      (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}}
+      (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}}
                           (set-ir [(lit \a)])))))
     (let [payload '#{:data (println "never")} quoted {:op :quote :value payload}
           result (evaluate quoted)]
@@ -25931,3 +25931,409 @@
                       :elapsed-ns {:c8-construction (- t1 t0) :c8-verification (- t2 t1)
                                    :assembly-including-public-c7-verification (- t3 t2) :entry-execution (- t4 t3)}
                       :clock :monotonic-nanoseconds :nested-work :included}))))
+
+(deftest current-gravity-module-keyword-set-emitter-development-kernel
+  (let [base (walk/postwalk (fn [value] (if (string? value) (str "sha256:" (bootstrap/sha256-hex value)) value))
+                            (module-literal-emitter-input))
+        input (fn [values]
+                (let [{:keys [context ref definition]} base
+                      owner-id (:value-core-node-id definition) def-id (:definition-core-node-id definition)
+                      owner (get-in context [:nodes owner-id]) ids (:children owner)
+                      kept (subvec ids 0 (count values)) removed (set (subvec ids (count values)))
+                      positions (zipmap kept (range)) old-type (:type definition)
+                      type {:kind :gravity.type/set :shape :literal :element-types (vec (repeat (count values) :gravity.type/keyword))}
+                      raw (list 'def 'modes (set values))
+                      convert (fn [node]
+                                (cond (= owner-id (:node-id node))
+                                      (-> node (assoc :children kept)
+                                          (assoc :attributes {:literal-kind :set :element-count (count values) :source-value (set values)})
+                                          (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) kept)))
+                                      (contains? positions (:node-id node))
+                                      (assoc-in node [:attributes :value] (nth values (positions (:node-id node))))
+                                      :else node))
+                      nodes (mapv convert (remove #(removed (:node-id %)) (get-in context [:core :nodes])))
+                      forms (apply dissoc (:forms context) (map #(get-in context [:nodes % :source :form-id]) removed))
+                      forms (reduce (fn [out id]
+                                      (assoc-in out [(get-in context [:nodes id :source :form-id]) :value] (nth values (positions id))))
+                                    forms kept)
+                      forms (-> forms
+                                (assoc-in [(get-in owner [:source :form-id]) :kind] :set)
+                                (assoc-in [(get-in owner [:source :form-id]) :value] (set values))
+                                (assoc-in [(get-in owner [:source :form-id]) :child-form-ids]
+                                          (mapv #(get-in context [:nodes % :source :form-id]) kept))
+                                (assoc-in [(get-in definition [:definition-source :form-id]) :value] raw))
+                      types (apply dissoc (walk/postwalk-replace {old-type type} (:types context)) removed)
+                      active (-> context (assoc :nodes (into {} (map (juxt :node-id identity) nodes)) :forms forms :types types)
+                                 (assoc-in [:core :nodes] nodes)
+                                 (assoc-in [:raw-roots (get-in definition [:definition-source :form-id])] raw)
+                                 (assoc-in [:core :evaluation-order]
+                                           (mapv (fn [node] (let [evaluation (:evaluation node)]
+                                                             {:core-node-id (:node-id node) :kind (:kind evaluation) :region (:region evaluation)
+                                                              :owner-function-syntax-id (:owner-function-syntax-id evaluation)
+                                                              :children (mapv :core-node-id (:order evaluation))})) nodes)))]
+                  {:context active :ref ref :definition (assoc definition :type type)
+                   :owner-id owner-id :def-id def-id :ids kept}))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        prepare #(invoke 'p15-s23-typed-module-initialization-context %)]
+    (doseq [values [[] [:one] [:proven-safe :runtime-checked :rejected :unsafe-island]]]
+      (let [{:keys [context ref definition owner-id]} (input values)
+            result (prepare context) manifest (get-in result [:value :module-initialization])
+            closure (invoke 'p15-s23-typed-initializer-closure context owner-id 65536)
+            expected {:op :set-literal :items (literal-instructions values)}
+            active (assoc (:value result) :current-function (get-in context [:records 'getter]))
+            lowered (invoke 'p15-s23-typed-compile-node active (:node-id ref) 65536)]
+        (is (= :accepted (:status closure)))
+        (is (= (+ 1 (* 3 (count values))) (:work-count closure)))
+        (is (= closure (invoke 'p15-s23-typed-initializer-closure context owner-id (:work-count closure))))
+        (is (= :typed-lowering-work-limit
+               (:reason (invoke 'p15-s23-typed-initializer-closure context owner-id (dec (:work-count closure))))))
+        (is (= :complete (:status result)) (pr-str result))
+        (is (= [{:ordinal 0 :binding-id (:binding-id definition) :instruction expected}] (:initializers manifest)))
+        (is (= (cond-> {:set-literal 1} (seq values) (assoc :literal (count values)))
+               (get-in result [:value :initializer-summary])))
+        (is (= [0 1 2] (mapv :ordinal (:roots manifest))))
+        (let [exact (prepare (assoc context :budget (:work-count result)))]
+          (is (= (dissoc (:value result) :budget) (dissoc (:value exact) :budget)))
+          (is (= (:work-count result) (:work-count exact)))
+          (is (= 0 (get-in exact [:value :budget]))))
+        (is (= :typed-lowering-work-limit (get-in (prepare (assoc context :budget (dec (:work-count result)))) [:facts :reason])))
+        (is (= :complete (:status lowered)))
+        (is (= :namespace-read (get-in lowered [:value :op])))
+        (is (= (:type definition) (get-in lowered [:value :type])))
+        (is (= lowered (invoke 'p15-s23-typed-compile-node active (:node-id ref) (:work-count lowered))))
+        (is (= :typed-lowering-work-limit
+               (get-in (invoke 'p15-s23-typed-compile-node active (:node-id ref) (dec (:work-count lowered))) [:facts :reason])))))
+    (let [{:keys [context owner-id def-id ids]} (input [:left :right])
+          child (first ids)
+          typed (fn [type] (-> context (assoc-in [:types owner-id] type) (assoc-in [:types def-id] type)))]
+      (doseq [changed [(assoc-in context [:nodes child :core-form] :quote)
+                       (assoc-in context [:nodes child :core-form] :call)
+                       (assoc-in context [:nodes child :attributes :value] "unsupported")
+                       (assoc-in context [:nodes child :attributes :literal-kind] :string)
+                       (assoc-in context [:nodes owner-id :evaluation :order] [])
+                       (assoc-in context [:forms (get-in context [:nodes child :source :form-id]) :parent-form-id] :sibling)
+                       (typed :gravity.type/set)
+                       (typed {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string :gravity.type/string]})
+                       (typed {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]})
+                       (typed {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/keyword] :extra true})]]
+        (is (= :rejected (:status (prepare changed)))))
+      (let [nested (assoc-in context [:nodes :outer] {:node-id :outer :core-form :collection-literal :children [owner-id]
+                                                     :attributes {:literal-kind :vector}})]
+        (is (= :unsupported-typed-module-initializer
+               (:reason (invoke 'p15-s23-typed-initializer-closure nested :outer 65536))))))))
+
+(deftest current-gravity-module-keyword-set-runtime-development-kernel
+  (let [rt (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt name (vec args)))
+        execute #(invoke 'p15-s23-runtime-execute-closed-plan %)
+        lit #(hash-map :op :literal :value %)
+        input (fn [values]
+                (let [base (module-literal-runtime-input) old-type (get-in base [:definition :type])
+                      type {:kind :gravity.type/set :shape :literal :element-types (vec (repeat (count values) :gravity.type/keyword))}
+                      initializer {:op :set-literal :items (mapv lit values)}]
+                  (walk/postwalk-replace {old-type type (:initializer base) initializer} base)))
+        reservation (fn [values]
+                      (let [n (count values) units (reduce + 0 (map #(count (str %)) values))]
+                        (+ 1 (* 3 n) (quot (* n (dec n)) 2) (* (inc n) units))))
+        constructor-calls (atom 0)
+        scoped-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped-var
+        a (clojure.lang.Keyword/intern nil "a/b") b (clojure.lang.Keyword/intern "a" "b")]
+    (with-redefs-fn
+      {scoped-var (fn [& args]
+                    (when (= 'p15-s23-runtime-keyword-set-construction-work (nth args 2))
+                      (swap! constructor-calls inc))
+                    (apply original args))}
+      (fn []
+        (doseq [values [[] [:one] [:proven-safe :runtime-checked :rejected :unsafe-island] [a b]]]
+          (reset! constructor-calls 0)
+          (let [{:keys [plan initializer definition read]} (input values)
+                checked (invoke 'p15-s23-runtime-initializer-work initializer 65536)
+                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan 65536)]
+            (is (= :accepted (:status checked) (:status census)) (pr-str checked))
+            (is (= charge (:work-count checked)))
+            (is (= :exact-logical-content-reservation (:work-count-kind checked)))
+            (is (= :not-established (:provider-cpu-bound checked)))
+            (is (= {:set-literal 1} (:constructors checked)))
+            (is (= (quot (* (count values) (dec (count values))) 2) (:comparison-attempts checked)))
+            (is (= checked (invoke 'p15-s23-runtime-initializer-work initializer charge)))
+            (is (= :module-initialization-work-limit
+                   (:reason (invoke 'p15-s23-runtime-initializer-work initializer (dec charge)))))
+            (is (true? (invoke 'p15-s23-runtime-initializer-type? definition initializer)))
+            (is (= census (invoke 'p15-s23-runtime-module-census plan (:work-count census))))
+            (is (= :module-initialization-work-limit
+                   (:reason (invoke 'p15-s23-runtime-module-census plan (dec (:work-count census))))))
+            (is (= 0 @constructor-calls))
+            (let [first-run (execute plan) pair (:entrypoint-result first-run)]
+              (is (= :complete (:status first-run)) (pr-str first-run))
+              (is (= [(set values) (set values)] pair))
+              (is (identical? (first pair) (second pair)))
+              (is (= 1 @constructor-calls))
+              (is (= {"binding-modes" {:set-literal 1}}
+                     (get-in first-run [:module-initialization :validated-constructor-occurrences])))
+              (is (= ["binding-modes"] (get-in first-run [:module-initialization :initialized-binding-ids])))
+              (is (= :complete (:status (execute plan))))
+              (is (= 2 @constructor-calls)))
+            ;; An external caller cannot smuggle an initialized pool into a direct read.
+            (is (= :rejected (get (invoke 'p15-s23-runtime-evaluate-closed-instruction read
+                                          {:namespace-pool {"binding-modes" #{:forged}}} "") 2)))))
+        (let [{:keys [plan definition root initializer]} (input [:left :right])
+              unused (assoc (root 3 :literal 'unused) :type (:type definition))
+              two (-> plan (update-in [:module-initialization :roots] conj unused)
+                           (update-in [:module-initialization :initializers] conj
+                                      {:ordinal 3 :binding-id (:binding-id unused) :instruction initializer}))]
+          (reset! constructor-calls 0)
+          (let [result (execute two)]
+            (is (= :complete (:status result)))
+            (is (= 2 @constructor-calls))
+            (is (= ["binding-modes" "binding-unused"]
+                   (get-in result [:module-initialization :initialized-binding-ids])))
+            (is (= {"binding-modes" {:set-literal 1} "binding-unused" {:set-literal 1}}
+                   (get-in result [:module-initialization :validated-constructor-occurrences]))))
+          (doseq [bad [(assoc-in two [:module-initialization :initializers 1 :instruction]
+                                {:op :set-literal :items [(lit :duplicate) (lit :duplicate)]})
+                       (assoc-in two [:module-initialization :initializers 1 :instruction]
+                                 {:op :set-literal :items [(lit "unsupported")]})
+                       (assoc-in two [:functions 'getter :instructions 0 :binding-id] "missing")
+                       (assoc-in two [:module-initialization :roots 0 :type :element-types]
+                                 (vec (repeat 100000 :gravity.type/keyword)))
+                       (update-in two [:module-initialization :initializers] pop)]]
+            (reset! constructor-calls 0)
+            (let [result (execute bad)]
+              (is (= :rejected (:status result)) (pr-str result))
+              (is (= "" (:stdout result)))
+              (is (= 0 @constructor-calls)))))
+        (doseq [bad-items [[(lit "string")] [(lit :a) (lit "mixed")] [(lit 1)]
+                           [{:op :quote :value :a}] [{:op :namespace-read :binding-id "missing"}]
+                           [{:op :throw :value (lit :stop)}] [(assoc (lit :a) :extra true)]]]
+          (is (= :unsupported-module-initializer
+                 (:reason (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items bad-items} 65536)))))
+        (let [duplicate {:op :set-literal :items [(lit :same) (lit :same)]}
+              result (invoke 'p15-s23-runtime-initializer-work duplicate 65536)]
+          (is (= :unsupported-module-initializer (:reason result)))
+          (is (= :duplicate-set-literal-keyword (:initializer-reason result)))
+          (is (= (reservation [:same :same]) (:work-count result)))
+          (is (= 1 (:comparison-attempts result))))
+        (let [long-key (keyword (apply str (repeat 20000 "x")))
+              limited (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items [(lit long-key)]} 100)]
+          (is (= :module-initialization-work-limit (:reason limited)))
+          (is (= 101 (:work-count limited)))
+          (is (= :exceeded-allowance-lower-bound (:work-count-kind limited))))
+        (let [long-key (keyword (apply str (repeat 20000 "x")))
+              {:keys [plan definition root initializer]} (input [long-key])
+              unused (assoc (root 3 :literal 'unused) :type (:type definition))
+              two (-> plan (update-in [:module-initialization :roots] conj unused)
+                           (update-in [:module-initialization :initializers] conj
+                                      {:ordinal 3 :binding-id (:binding-id unused) :instruction initializer}))
+              one (invoke 'p15-s23-runtime-initializer-work initializer 65536)
+              census (invoke 'p15-s23-runtime-module-census two 65536)]
+          (is (= :accepted (:status one)))
+          (is (= (reservation [long-key]) (:work-count one)))
+          (is (= :module-initialization-work-limit (:reason census)))
+          (is (= 65537 (:work-count census)))
+          (is (= :exceeded-allowance-lower-bound (:work-count-kind census)))
+          (reset! constructor-calls 0)
+          (let [result (execute two)]
+            (is (= :rejected (:status result)))
+            (is (= "" (:stdout result)))
+            (is (= 0 @constructor-calls))))
+        (let [callbacks (atom 0)
+              opaque (proxy [Object] []
+                       (equals [_] (swap! callbacks inc) (throw (AssertionError. "payload equality")))
+                       (hashCode [] (swap! callbacks inc) (throw (AssertionError. "payload hash")))
+                       (toString [] (swap! callbacks inc) (throw (AssertionError. "payload printing"))))]
+          (doseq [values [[opaque] [:valid opaque] [opaque :valid]]]
+            (is (= :unsupported-module-initializer
+                   (:reason (invoke 'p15-s23-runtime-initializer-work {:op :set-literal :items (mapv lit values)} 65536)))))
+          (is (= 0 @callbacks)))
+        (let [{:keys [initializer definition]} (input [:one])]
+          (doseq [type [:gravity.type/set
+                        {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}
+                        {:kind :gravity.type/set :shape :literal :element-types []}
+                        {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword] :extra true}]]
+            (is (false? (invoke 'p15-s23-runtime-initializer-type? (assoc definition :type type) initializer))))
+          (is (= :unsupported-module-initializer
+                 (:reason (invoke 'p15-s23-runtime-initializer-work {:op :vector-literal :items [initializer]} 65536)))))))))
+
+(deftest current-gravity-module-keyword-set-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        definition-text "(def w5-pipeline-safe1-outcomes\n  #{:proven-safe :runtime-checked :rejected :unsafe-island})"
+        w5 (slurp (io/file root "bootstrap/gravity/src/gravity/compiler/w5_compiler_pipeline_verifier.gravity"))]
+    (is (str/includes? w5 definition-text))
+    (doseq [[disposition name definitions] [["accepted" "module-keyword-set-initializer" 2]
+                                           ["rejected" "module-keyword-set-initializer-string" 1]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            q (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))
+            main (first (filter #(and (seq? %) (= 'defn (first %)) (= 'main (second %))) g))
+            defs (filter #(and (seq? %) (= 'def (first %))) g)]
+        (is (= (slurp g-path) (slurp q-path)))
+        (is (= g q))
+        (is (= 1 (count (filter #(and (seq? %) (= 'defn (first %))) g))))
+        (is (= definitions (count defs)))
+        (if (= disposition "accepted")
+          (do (is (str/includes? (slurp g-path) definition-text))
+              (is (= 3 (count (last main)))))
+          (is (= #{"unsupported"} (nth (first defs) 2))))))))
+
+(deftest current-gravity-module-keyword-set-authenticated-composition
+  ;; One G module initializer positive and one upstream-accepted lowering negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "Module Keyword-Set initializer fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "Module Keyword-Set initializer development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:module-keyword-set-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "Module Set upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "Module Set C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "Module Set C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/module-keyword-set-initializer.gravity")
+        {:keys [input module definitions effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        assemble (fn [prepared]
+                   (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                 (fn [runtime plan function args]
+                                   (let [result (original runtime plan function args)]
+                                     (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                     (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module prepared)
+                       (vec (sort-by key (:definitions prepared))) (:input prepared))))
+        t0 (System/nanoTime) assembled (assemble positive) t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        manifest (:module-initialization assembled) roots (:roots manifest) initializers (:initializers manifest)
+        globals (filterv #(= :literal (:kind %)) roots)
+        set-nodes (filterv #(and (= :collection-literal (:core-form %)) (= :set (get-in % [:attributes :literal-kind]))) (:nodes core))
+        read-nodes (filterv #(and (= :reference (:core-form %)) (= :namespace (get-in % [:attributes :binding-class]))
+                                  (= 'w5-pipeline-safe1-outcomes (get-in % [:attributes :symbol]))) (:nodes core))
+        instructions (filter map? (tree-seq coll? seq (concat (vals (:functions assembled)) (map :instruction initializers))))
+        set-ir (filterv #(= :set-literal (:op %)) instructions) graph (:effect-graph effects)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        scoped-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        scoped-original @scoped-var events (atom [])
+        execution (with-redefs-fn
+                    {scoped-var (fn [& args]
+                                  (let [callee (nth args 2)]
+                                    (when (= 'p15-s23-runtime-keyword-set-construction-work callee) (swap! events conj :constructor))
+                                    (when (= 'p15-s23-runtime-activate-function-in-instance callee)
+                                      (when (= 'main (:name (first (nth args 3)))) (swap! events conj :entry))))
+                                  (apply scoped-original args))}
+                    #(original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)]))
+        t2 (System/nanoTime)]
+    (is (= 1 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 3 (count (:definitions core)) (count roots)))
+    (is (= 3 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= :p15-s23-module-literals-v1 (:version manifest)))
+    (is (= :fresh-per-closed-plan-execution (:instance-policy manifest)))
+    (is (= [0 1 2] (mapv :ordinal roots)))
+    (is (= '[w5-pipeline-safe1-outcomes unused-safety-outcomes main] (mapv :name roots)))
+    (is (= [:literal :literal :function] (mapv :kind roots)))
+    (is (= [:private :private] (mapv :visibility globals)))
+    (is (= 2 (count globals) (count initializers) (count set-nodes) (count set-ir) (get-in assembled [:instruction-summary :set-literal])))
+    (is (= [4 0] (mapv #(count (:items (:instruction %))) initializers)))
+    (is (= [4 0] (mapv #(count (:element-types (:type %))) globals)))
+    (is (= #{:proven-safe :runtime-checked :rejected :unsafe-island} (set (map :value (:items (:instruction (first initializers)))))))
+    (is (= 1 (get-in assembled [:instruction-summary :vector-literal])))
+    (is (= 3 (count read-nodes) (count (filter #(= :namespace-read (:op %)) instructions))))
+    (is (every? #(= (:binding-id (first globals)) (:binding-id %)) (filter #(= :namespace-read (:op %)) instructions)))
+    (is (empty? (filter #(= :quote (:op %)) instructions)))
+    (is (= 54 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= [4 true false] (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= [:constructor :constructor :entry] @events))
+    (is (= (mapv :binding-id globals) (get-in execution [:module-initialization :initialized-binding-ids])))
+    (is (= (into {} (map #(vector (:binding-id %) {:set-literal 1}) globals)) (get-in execution [:module-initialization :validated-constructor-occurrences])))
+    (is (= #{:memory/allocate} (get-in graph [:namespace :inferred])))
+    (doseq [node set-nodes]
+      (let [record (get-in graph [:nodes (:node-id node)])]
+        (is (= #{:memory/allocate} (:direct record)))
+        (is (true? (get-in record [:allocation :normal-completion-possible?])))
+      ))
+    (doseq [node read-nodes]
+      (let [record (get-in graph [:nodes (:node-id node)])]
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+      ))
+    (let [negative (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/module-keyword-set-initializer-string.gravity")
+          failure (diagnostic #(assemble negative))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :unsupported-typed-module-initializer (:reason failure)))
+      (is (= 2 (count @verified)))
+      (is (= [:passed :passed] (mapv :status @verified)))
+      (println (pr-str {:module-keyword-set-typing-accepted-lowering-rejected failure :c8-timing (:timing negative)})))
+    (println (pr-str {:module-keyword-set-composition :completed :runtime-result (:entrypoint-result execution)
+                      :source-products {:g-positive 1 :g-upstream-accepted-lowering-rejected 1 :q-typed-products 0}
+                      :closed-plan-entry-invocations 1 :constructor-function-invocations 2 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count 54 :unused-literal-definition-initialized true
+                      :w5-namespace-effect-legality-established false :whole-w5-execution false
+                      :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0) :closed-plan-execution (- t2 t1))}))
+  ))

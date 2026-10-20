@@ -1,0 +1,14 @@
+(ns self-hosting.sh08.module-keyword-set-initializer
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(def w5-pipeline-safe1-outcomes
+  #{:proven-safe :runtime-checked :rejected :unsafe-island})
+
+(def unused-safety-outcomes #{})
+
+(defn main []
+  [(count w5-pipeline-safe1-outcomes)
+   (contains? w5-pipeline-safe1-outcomes :runtime-checked)
+   (contains? w5-pipeline-safe1-outcomes :unknown-outcome)])

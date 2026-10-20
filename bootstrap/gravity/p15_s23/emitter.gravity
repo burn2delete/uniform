@@ -12837,15 +12837,21 @@
     (if (= 0 (count pending)) {:status :accepted :work-count work}
       (let [frame (get pending (- (count pending) 1)) node (get (get context :nodes) (get frame :id))
             kind (get node :core-form) children (get node :children) depth (get frame :depth)
+            keyword-member? (get frame :keyword-member? false)
+            set-root? (if (= depth 0) (if (= :collection-literal kind) (= :set (get (get node :attributes) :literal-kind)) false) false)
             width (if (vector? children) (count children) 0) total (+ work 1 (* 2 width))]
         (if (> total budget) {:status :rejected :reason :typed-lowering-work-limit :work-count total}
           (if (if (if (map? node) (vector? children) false) (<= depth 128) false)
-            (if (if (contains? #{:literal :quote} kind) (= 0 width)
-                    (if (= :collection-literal kind) (contains? #{:vector :map} (get (get node :attributes) :literal-kind)) false))
+            (if (if keyword-member?
+                  (if (= :literal kind) (if (= 0 width)
+                    (if (= :keyword (get (get node :attributes) :literal-kind)) (keyword? (get (get node :attributes) :value)) false) false) false)
+                  (if (contains? #{:literal :quote} kind) (= 0 width)
+                    (if (= :collection-literal kind) (if set-root? true (contains? #{:vector :map} (get (get node :attributes) :literal-kind))) false)))
               (recur
                 (loop [remaining children out (subvec pending 0 (- (count pending) 1))]
                   (if (= 0 (count remaining)) out
-                    (recur (rest remaining) (conj out {:id (first remaining) :depth (+ depth 1)})))) total)
+                    (recur (rest remaining) (conj out (if set-root? {:id (first remaining) :depth (+ depth 1) :keyword-member? true}
+                                              {:id (first remaining) :depth (+ depth 1)}))))) total)
               {:status :rejected :reason :unsupported-typed-module-initializer :work-count total})
             {:status :rejected :reason :unsupported-typed-module-initializer :work-count total}))))))
 
