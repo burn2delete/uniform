@@ -160,6 +160,81 @@ The direct checks are listed in `docs/development-verification.md`. This is an
 ownership-legality increment, not full SH-10, downstream C10/MIR propagation,
 authoritative migration, native support or self-hosting completion.
 
+### Standalone inferred String-Set comparison: development increment
+
+C7, C8 and typed lowering now support standalone binary `=` and `not=` when
+at least one operand has the exact inferred homogeneous String-Set carrier.
+The other operand must independently establish the same carrier or a complete
+finite all-String Set, including empty. Both normal domains are checked; Never
+preserves transfer behavior without accepting a malformed normal counterpart.
+Unknown cardinality and extent remain unknown. Bare/unknown/mixed-member types
+do not gain support, and the unchanged finite/Vector domain helpers still
+reject String-Set leaves inside Vectors.
+
+Separate carrier comparison versions preserve complete source, binding,
+constraint and fact joins without invented operand counts. `not=` retains its
+original source identity and owned equality/branch complement. The unchanged
+55-function runtime validates actual contents, uniqueness and worst-case work.
+Focused checks cover once-only ordered evaluation, transfers, mixed old/new
+ledger producers, exact quotas, coherent substitutions and callback-free
+malformed source-ID rejection. Generic emitter guards do not restrict legal
+Symbol name tables or all calls to binary shape.
+
+The first focused epoch at `1c2427fb` failed: 25 tests completed with 7,916
+passes, four failures and no errors; eleven selected variables were skipped.
+All sixteen lowering/runtime tests and all three new C7 tests passed. Four
+old negative assertions still expected the now-supported homogeneous String
+carrier to reject. Test-only successor `9d644b07` changes that negative and the
+matching unrun inequality case to genuinely unsupported homogeneous Keyword
+Sets. It does not change production or fixtures.
+
+The second epoch completed eight tests with 1,244 passes, 56 failures and no
+errors; four variables were skipped. Corrected C7 and four old C8 controls
+passed. The new C8 composed fixture supplied Keyword node IDs to a graph
+interface requiring SHA IDs, causing fourteen graph prerequisites and their
+follow-on assertions to fail. Test-only successor `173709b1` applies the
+existing graph fixture identity bridge and prints the rejected graph on a
+prerequisite failure; production validation is unchanged. Its affected and
+previously unrun five-variable batch passed 1,032 assertions.
+
+Complete passing coverage is partitioned as 24 variables/7,751 assertions from
+the first epoch, seven/1,084 from the second and five/1,032 from the third:
+36 distinct variables/9,867 assertions. This is not one clean 36-test run.
+Both failed aggregates, skipped tails and exact tested commits remain retained;
+passing unchanged checks were not replayed. Real source composition is a
+separate affected integration boundary, not implied by these normalized checks.
+
+The one affected source invocation at `70e391e6` passed one test/102 assertions
+(96 composition plus six existing loader checks), returning
+`[true true false true true false true true]`. Its accepted G fixture has two
+functions, three definitions, twenty calls, ten insertions, four carrier
+equalities, two carrier inequalities and ten inert quoted Sets. One evaluated
+module Set initializer runs before the single plan entry; four namespace reads
+consume it. Original C7/C8 verification and assembly's public C7 gate pass.
+Comparison nodes themselves remain pure; actual initializer and function
+allocation remains visible in the correct namespace and function summaries.
+
+The genuine `(set ["seed"])` private-entry negative reaches C7 and rejects
+with `C7-ANNOTATION`/`:private-self-independent-entry-types-required`. Its
+existing aggregate diagnostic still has nil source IDs/span; this is a known
+separate diagnostic-preservation follow-up, not source-rich conformance. No
+negative C8/runtime runs. Q has parser parity only; public fresh C6, seed
+control and whole-B14 execution were not invoked.
+
+Selected source execution took 162.790 seconds after 11.909 seconds of
+namespace loading. Positive/negative C5 construction took 32.350/24.029 seconds;
+fresh development C6 sessions took 45.886/36.265 seconds and same-catalog replay
+4.113/3.121 seconds. Positive C7 construction/verification took 3.002/1.660
+seconds, C8 construction/verification 1.442/0.130 seconds, assembly including
+public C7 verification 3.717 seconds, and closed-plan execution 0.155 seconds.
+These inclusive nested development observations separate construction from
+loading; they are not isolated benchmarks or speedup evidence. The expensive
+composition ran once, not again for notes or migration labels.
+
+No new annotation grammar, declared-self expansion, whole-B14 execution,
+broader collection equality, target support or authoritative migration follows.
+SH-07 remains partial and the existing completion counts are unchanged.
+
 ### Qualified current-namespace var objects: development increment
 
 The owning `gravity.checked-core` pass now lowers `(var demo.value/answer)`

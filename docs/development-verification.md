@@ -1983,7 +1983,8 @@ The closed inference carrier
 `{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}`
 records only the String member domain. Independently typed String-Set insertion
 can establish it; further insertion preserves it and membership can consume it.
-It does not record an extent, presence fact, literal origin or equality domain.
+It does not record an extent, presence fact, literal origin or comparison
+descriptor. Standalone comparison uses the separate checked rule below.
 It introduces no `(Set String)` annotation or declared-recursion expansion.
 
 Keep C7, C8 and typed lowering's inference-only validators consistent. Normal
@@ -2032,6 +2033,60 @@ Normalized helper tests and Q
 parser checks are not that source composition, current-closure admission or
 whole-B14 execution. B14's empty entry, heterogeneous record ingress and indexed
 recursion remain separate implementation boundaries.
+
+### Standalone inferred String-Set comparison
+
+The carrier above can participate in standalone binary `=` and `not=` after
+both operand domains are independently established. At least one operand must
+be the exact homogeneous String-Set carrier; the other may be the same carrier
+or a fully checked finite all-String Set, including empty. Never retains its
+ordinary non-invocation behavior; it does not excuse an invalid normal operand.
+Bare, unknown, mixed-member and malformed types remain unsupported.
+
+Change the existing C7, C8 and typed emitter owners. The separate paid carrier
+rule retains unknown cardinality and extent, distinct carrier comparison
+identities, complete source/fact/constraint joins and original `not=` ownership.
+It never invents operand counts. Existing finite Set and Vector domain helpers
+remain unchanged; this does not enable String-Set leaves in Vector comparison.
+The existing runtime String-Set helper still validates complete actual member
+domains, uniqueness and worst-case work; no runtime helper is added.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-string-set-carrier-equality-development-kernel \
+  --exact sh08-string-set-carrier-inequality-development-kernel \
+  --exact body-string-set-carrier-comparison-development-kernel \
+  --exact current-gravity-string-set-carrier-comparison-lowering-development-kernel \
+  --exact current-gravity-string-set-carrier-equality-fixtures-development-kernel --fail-fast
+```
+
+Select the matching source-ID, transfer-fence and mixed-ledger kernels when
+changing those boundaries, plus affected existing finite/atomic/Vector tests.
+Direct source-ID guards precede keyed lookups and reject opaque/composite IDs
+without hashing, equality or printing callbacks. Generic emitter guards cover
+Core lookup IDs only, not legitimate Symbol-keyed name tables or arbitrary
+call arities. The C8 graph fixture must use its established SHA-shaped node
+identities; Keyword IDs accepted by narrower helper tests are not graph inputs.
+
+These are focused stage checks, not fresh source construction or authoritative
+migration. Validate the changed real source composition separately: inferred
+private entries and a self-call, finite module-root comparisons, `not=`, and a
+genuinely bare Set entry rejection. Keep the module root out of the private
+helper's captures. Paired parser checks alone do not establish paired typed
+execution, whole-B14 support, another target or self-hosting.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-set-carrier-equality-authenticated-composition --fail-fast
+```
+
+This selects one G positive and one G typing negative. Fresh development C6
+session construction and same-catalog replay are not public fresh C6 admission.
+Do not repeat the composition for unchanged code, notes or historical labels.
 
 ### Homogeneous List returns: declaration feedback
 
