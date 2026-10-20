@@ -452,3 +452,82 @@
                (get-in verification [:diagnostics 0 :diagnostic-id])))
         (is (= :source-span-or-origin-fact
                (get-in verification [:diagnostics 0 :missing-fact])))))))
+
+(deftest sh12-node-local-preflight-diagnostics-preserve-source
+  ;; Supplied checked-Core DATA exercises the original C11 ingress, not C10
+  ;; source authentication. Distinct spans/origins make an if-node fallback fail.
+  (let [then-id "sh12:branch-join:then"
+        else-id "sh12:branch-join:else"
+        checked
+        (update (checked-core ".gravity") :core-nodes
+                (fn [nodes]
+                  (mapv (fn [node]
+                          (if (#{then-id else-id} (:node-id node))
+                            (-> node
+                                (assoc-in [:source :generated?] true)
+                                (assoc-in [:source :generated-origin]
+                                          [{:kind :macro-expansion
+                                            :source-id (:node-id node)}]))
+                            node))
+                        nodes)))
+        nodes (into {} (map (juxt :node-id identity) (:core-nodes checked)))
+        mir (build-mir checked)
+        bad-type #(assoc-in % [:type-facts %2 :type] :gravity.type/bool)
+        cases
+        [[(bad-type checked then-id) then-id "C11-TYPE"
+          :type-fact-or-operation-schema]
+         [(bad-type checked else-id) else-id "C11-TYPE"
+          :type-fact-or-operation-schema]
+         [(bad-type (bad-type checked else-id) then-id) then-id "C11-TYPE"
+          :type-fact-or-operation-schema]
+         [(assoc-in checked [:effect-facts then-id :direct] #{:io/write})
+          then-id "C11-EFFECT" :effect-fact-or-ordering]
+         [(assoc-in checked [:ownership-facts else-id :value-id] "wrong:value")
+          else-id "C11-VERIFY" :ownership-fact]
+         [(assoc-in checked [:core-nodes 1 :operands] :malformed)
+          then-id "C11-DOMINANCE" :core-node-operands]]]
+    (is (= :gravity/mir-module (:artifact mir)))
+    (is (= mir (invoke c11-plan 'c11-build-target-independent-mir [checked])))
+    (is (= :passed (:status (verify-mir checked mir))))
+    (doseq [[malformed node-id diagnostic-id missing-fact] cases
+            [phase report] [[:construction (build-mir malformed)]
+                            [:verification (verify-mir malformed mir)]]]
+      (let [observed (diagnostic report)
+            source (:source (get nodes node-id))
+            legacy (invoke c11-plan 'sh12-branch-join-diagnostic
+                           [diagnostic-id missing-fact malformed
+                            (when (= phase :verification) mir)])
+            expected (assoc legacy :operation-id node-id
+                            :value-id (if (= "C11-DOMINANCE" diagnostic-id)
+                                        node-id :not-applicable)
+                            :block :not-applicable
+                            :source-span (:span source)
+                            :origin-chain (:generated-origin source))]
+        (is (= :rejected (:status report)))
+        (is (= phase (:phase report)))
+        (is (= 1 (count (:diagnostics report))))
+        (is (= stable-diagnostic-fields (set (keys observed))))
+        (is (= diagnostic-id (:diagnostic-id observed)))
+        (is (= missing-fact (:missing-fact observed)))
+        (is (= node-id (:operation-id observed)))
+        (is (= (:span source) (:source-span observed)))
+        (is (= (:generated-origin source) (:origin-chain observed)))
+        (is (= :not-applicable (:block observed)))
+        (is (= expected observed))))
+    ;; Missing/malformed source and aggregate problems retain original fallback.
+    (doseq [[malformed diagnostic-id missing-fact]
+            [[(assoc-in checked [:core-nodes 1 :source] nil)
+              "C11-ORIGIN" :source-span-or-origin-fact]
+             [(assoc-in checked [:core-nodes 2 :source :generated-origin] [])
+              "C11-ORIGIN" :source-span-or-origin-fact]
+             [(dissoc checked :core-nodes) "C11-MODULE" :checked-core-shape]
+             [(assoc-in checked [:type-facts else-id :fact-id]
+                        (get-in checked [:type-facts then-id :fact-id]))
+              "C11-TYPE" :unique-type-fact-identity]]
+            [phase report] [[:construction (build-mir malformed)]
+                            [:verification (verify-mir malformed mir)]]]
+      (let [expected (invoke c11-plan 'sh12-branch-join-diagnostic
+                             [diagnostic-id missing-fact malformed
+                              (when (= phase :verification) mir)])]
+        (is (= :rejected (:status report)))
+        (is (= [expected] (:diagnostics report)))))))
