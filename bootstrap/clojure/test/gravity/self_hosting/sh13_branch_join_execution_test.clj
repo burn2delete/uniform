@@ -621,6 +621,91 @@
                       [{:opcode :constant} {:opcode :constant} {:opcode :integer-lt}]
                       :gravity.type/keyword))))
 
+(defn- with-scalar-truthiness [extension base type value]
+  ;; Original supplied SH12 constructors, not fresh C6 adaptation. The input
+  ;; type family remains gravity.type/*; no source type ID is relabeled.
+  (let [nodes (:core-nodes base)
+        if-node (first (filter #(= :if (:source-operation %)) nodes))
+        id (first (:operands if-node))
+        index (.indexOf (mapv :node-id nodes) id)
+        target (nodes index) path (:path if-node)
+        make (fn [name args]
+               ((existing 'invoke) (get (existing 'accepted-plans) extension) name args))
+        value-id "sh13:truthiness:input"
+        input (make 'sh12-branch-join-node
+                    [value-id (conj path :test) :literal [] type value 0 1])
+        truthy (-> target (assoc :path (conj path :truthy) :source-operation :truthy
+                                :operands [value-id])
+                   (update :attributes assoc :false-values [nil false]
+                           :result-type :gravity.type/bool))]
+    (-> base
+        (assoc :core-nodes (into (into (subvec nodes 0 index) [input truthy])
+                                (subvec nodes (inc index))))
+        (assoc-in [:type-facts value-id] (make 'sh12-branch-join-type-fact [value-id type]))
+        (assoc-in [:effect-facts value-id] (make 'sh12-branch-join-effect-fact [value-id]))
+        (assoc-in [:ownership-facts value-id] (make 'sh12-branch-join-ownership-fact [value-id]))
+        (assoc-in [:capability-facts value-id] (make 'sh12-branch-join-capability-fact [value-id]))
+        (assoc-in [:safety-facts value-id] (:safety input))
+        (assoc-in [:profile-facts value-id] {:profile :meta :target :jvm}))))
+
+(deftest sh13-executes-original-scalar-truthiness-before-branching
+  (doseq [extension [".gravity" ".qst"]
+          [type value truth] [[:gravity.type/bool false false] [:gravity.type/bool true true]
+                             [:gravity.type/i64 0 true] [:gravity.type/i64 -1 true]
+                             [:gravity.type/i64 Long/MIN_VALUE true]
+                             [:gravity.type/i64 Long/MAX_VALUE true]
+                             [:gravity.type/keyword :left/value true]
+                             [:gravity.type/keyword :right/value true]]
+          [result-type left right] [[:gravity.type/i64 11 22]
+                                    [:gravity.type/bool false true]
+                                    [:gravity.type/keyword :left/value :right/value]]]
+    (let [core (with-scalar-truthiness extension
+                 (scalar-core (checked extension) true result-type left right) type value)
+          mir (build core) result (run core mir) nodes (:core-nodes core)
+          ids (mapv :node-id nodes) rows (get-in result [:projection :operations])
+          coordinates (coordinates core mir)
+          selected (coordinates (if truth :then :else))]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :accepted (:status result)))
+      (is (= (if truth left right) (get-in result [:execution :value])))
+      (is (= 506 (get-in result [:execution :fuel])))
+      (is (= [(ids 0) (ids 1) (ids (if truth 2 3))]
+             (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+      (is (= 1 (count (filter #(= (ids 0) (:operation %)) (get-in result [:execution :trace])))))
+      (is (= 6 (count rows)))
+      (is (= ids (mapv :operation-id rows)))
+      (is (= [:literal :truthiness] (mapv :role (subvec rows 0 2))))
+      (is (= (mapv :source nodes) (mapv :source rows)))
+      (is (= (:control-flow-graph mir) (get-in result [:projection :control-flow-graph])))
+      (is (= ((:operands (first (filter #(= :if (:source-operation %)) nodes))) (if truth 1 2))
+             (:value (first (filter #(= selected (:predecessor %))
+                                    (get-in mir [:control-flow-graph :join :incoming]))))))
+      (is (= :passed (:status (verify core mir result))))))
+  (doseq [extension [".gravity" ".qst"]]
+    (let [base (with-scalar-truthiness extension (checked extension) :gravity.type/i64 0)
+          mir (build base) accepted (run base mir)
+          candidates [(assoc-in base [:core-nodes 0 :attributes :value] nil)
+                      (assoc-in base [:core-nodes 1 :operands] [])
+                      (assoc-in base [:core-nodes 1 :operands] ["sh13:truthiness:input" "sh13:truthiness:input"])
+                      (assoc-in base [:core-nodes 1 :attributes :false-values] [false])
+                      (assoc-in base [:core-nodes 1 :attributes :result-type] :gravity.type/i64)
+                      (assoc-in base [:core-nodes 1 :path] [:wrong])
+                      (assoc-in base [:core-nodes 3 :attributes :value] nil)]]
+      (doseq [core candidates]
+        (let [candidate-mir (build core) result (run core candidate-mir)]
+          (is (= :rejected (:status result)))
+          (is (nil? (:execution result)))
+          (is (nil? (:projection result)))
+          (is (= :passed (:status (verify core candidate-mir result))))))
+      (let [ep [:functions (:entrypoint base) :blocks (:entry (coordinates base mir)) :instructions 1]
+            mutant (assoc-in mir (conj ep :source-operation) :literal)
+            result (run base mutant)]
+        (is (= :rejected (:status result)))
+        (is (= :rejected (get-in result [:upstream-verification :status])))
+        (is (nil? (:execution result)))
+        (is (= :passed (:status (verify base mutant result)))))
+      (is (= :rejected (:status (verify base mir (assoc-in accepted [:execution :value] :forged))))))))
+
 (defn- with-scalar-let [extension base placement]
   ;; Exact C6 operand/path/name family, represented in the supplied SH12 type
   ;; family. This is NOT fresh C6/C10 source adaptation or a type-ID relabeler.
