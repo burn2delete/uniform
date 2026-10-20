@@ -411,3 +411,110 @@
           (doseq [candidate [(assoc-in result [:execution :value] :forged)
                              (assoc-in result [:projection :operations 0 :role] :forged)]]
             (is (= :rejected (:status (verify core mir candidate))))))))))
+
+(deftest sh13-preserves-literal-keyword-return-values
+  ;; Actual c11-opcode outputs are supplied literal DATA here, not a lowering
+  ;; or execution claim for the whole c11-opcode helper or a fresh C10 input.
+  (let [constant (invoke 'c11-opcode {:source-operation :literal})
+        less-than (invoke 'c11-opcode {:source-operation :integer-lt})]
+    (is (= :constant constant))
+    (is (= :integer-lt less-than))
+    (doseq [extension [".gravity" ".qst"]
+            [operation left right condition then-value else-value]
+            [[nil nil nil true constant less-than]
+             [nil nil nil false constant less-than]
+             [nil nil nil true :left/value :right/value]
+             [nil nil nil false :left/value :right/value]
+             [:integer-eq 0 0 true :io/write :pure]
+             [:integer-eq 0 1 false :io/write :pure]
+             [:integer-lt -9223372036854775808 9223372036854775807
+              true constant less-than]
+             [:integer-lt 9223372036854775807 -9223372036854775808
+              false constant less-than]]]
+      (let [base (scalar-core (checked extension) condition
+                              :gravity.type/keyword then-value else-value)
+            core (if operation
+                   (with-integer-comparison extension base :condition operation left right)
+                   base)
+            mir (build core) result (run core mir)
+            nodes (:core-nodes core) ids (mapv :node-id nodes)
+            rows (get-in result [:projection :operations])
+            expected (if condition then-value else-value)
+            types (mapv :type nodes)]
+        (is (= :passed (get-in result [:upstream-verification :status])))
+        (is (= :accepted (:status result)))
+        (is (= :returned (get-in result [:execution :status])))
+        (is (= expected (get-in result [:execution :value])))
+        (is (= (namespace expected) (namespace (get-in result [:execution :value]))))
+        (is (= (name expected) (name (get-in result [:execution :value]))))
+        (is (= (if operation 505 507) (get-in result [:execution :fuel])))
+        (is (= ids (mapv :operation-id rows)))
+        (is (= types (mapv :source-type rows)))
+        (is (= (mapv {:gravity.type/i64 :i64 :gravity.type/bool :bool
+                      :gravity.type/keyword :keyword} types)
+               (mapv :runtime-type rows)))
+        (is (= (mapv :source nodes) (mapv :source rows)))
+        (is (= (mapv #(get-in core [:type-facts % :fact-id]) ids)
+               (mapv #(get-in % [:facts :type-fact-id]) rows)))
+        (is (= (mapv #(get-in % [:attributes :value])
+                     (filter #(= :literal (:source-operation %)) nodes))
+               (mapv #(get-in % [:constant-payload :value])
+                     (filter #(= :literal (:role %)) rows))))
+        (is (= :passed (:status (verify core mir result)))))))
+  ;; Both arms are validated, even when the bad typed Keyword is unselected.
+  (doseq [extension [".gravity" ".qst"] condition [true false]
+          value [":constant" 'constant nil true 7 [] {} '() #{}]]
+    (let [core (scalar-core (checked extension) condition :gravity.type/keyword
+                            (if condition :constant value)
+                            (if condition value :integer-lt))
+          mir (build core) result (run core mir)]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :rejected (:status result)))
+      (is (= :bounded-execution-subset
+             (get-in result [:diagnostics 0 :missing-fact])))
+      (is (nil? (:projection result)))
+      (is (nil? (:execution result)))
+      (is (= :passed (:status (verify core mir result))))))
+  (let [core (scalar-core (checked ".gravity") true
+                          :gravity.type/keyword :left/value :right/value)
+        quoted (assoc-in core [:core-nodes 2 :source-operation] :quote)
+        quoted-result (run quoted (build quoted))
+        mir (build core) result (run core mir)
+        then-id (:then (coordinates core mir))
+        path [:functions (:entrypoint core) :blocks then-id :instructions 0]]
+    (is (= :passed (get-in quoted-result [:upstream-verification :status])))
+    (is (= :bounded-execution-subset
+           (get-in quoted-result [:diagnostics 0 :missing-fact])))
+    (is (nil? (:execution quoted-result)))
+    (doseq [mutant [(assoc-in mir (into path [:constant-payload :value]) :right/value)
+                    (assoc-in mir (into path [:facts :type-fact-id]) "forged")
+                    (assoc-in mir (into path [:source :span :start]) 999)]]
+      (let [original (invoke 'sh12-verify-branch-join-mir core mutant)
+            rejection (run core mutant)]
+        (is (= :rejected (:status original)))
+        (is (= (:diagnostics original) (:diagnostics rejection)))
+        (is (nil? (:execution rejection)))))
+    (doseq [candidate [(assoc-in result [:execution :value] :right/value)
+                       (assoc-in result [:projection :operations 1 :runtime-type] :bool)
+                       (assoc-in result [:projection :operations 1 :role] :integer-less-than)]]
+      (is (= :rejected (:status (verify core mir candidate))))))
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (equals [_] (swap! callbacks conj :equals)
+                   (throw (ex-info "opaque equality invoked" {})))
+                 (hashCode [] (swap! callbacks conj :hash)
+                   (throw (ex-info "opaque hash invoked" {}))))]
+    (doseq [value [opaque [opaque] {:value opaque}]]
+      (is (false? (invoke 'sh13-branch-join-literal-valid?
+                          {:opcode :constant :source-operation :literal
+                           :operands [] :type :gravity.type/keyword
+                           :constant-payload {:present? true :value value}}
+                          :gravity.type/keyword)))
+      (is (empty? @callbacks))))
+  (is (false? (invoke 'sh13-branch-join-entry-valid?
+                      [{:opcode :constant :source-operation :literal :operands []
+                        :type :gravity.type/keyword
+                        :constant-payload {:present? true :value :condition}}])))
+  (is (false? (invoke 'sh13-branch-join-arm-valid?
+                      [{:opcode :constant} {:opcode :constant} {:opcode :integer-lt}]
+                      :gravity.type/keyword))))

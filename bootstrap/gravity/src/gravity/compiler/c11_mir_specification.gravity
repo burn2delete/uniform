@@ -8245,7 +8245,8 @@
 (defn sh13-branch-join-runtime-type [type]
   (if (= type :gravity.type/i64)
     :i64
-    (if (= type :gravity.type/bool) :bool nil)))
+    (if (= type :gravity.type/bool) :bool
+      (if (= type :gravity.type/keyword) :keyword nil))))
 
 (defn sh13-branch-join-literal-valid? [operation type]
   (if (= [:constant :literal [] type true]
@@ -8255,7 +8256,8 @@
     (let [value (get (get operation :constant-payload) :value)]
       (if (= type :gravity.type/bool)
         (if (= true value) true (= false value))
-        (if (= type :gravity.type/i64) (sh13-i64? value) false)))
+        (if (= type :gravity.type/i64) (sh13-i64? value)
+          (if (= type :gravity.type/keyword) (keyword? value) false))))
     false))
 
 (defn sh13-branch-join-entry-valid? [operations]
