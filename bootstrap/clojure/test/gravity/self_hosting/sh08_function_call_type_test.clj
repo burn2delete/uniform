@@ -11694,15 +11694,17 @@
       (is (= :map-get-source-mismatch (:reason result))))
     (is (zero? @callbacks))))
 
+(defn- private-first-entry-local-derived [data table prior budget]
+  (let [{:keys [core node nodes types binding-types bindings forms products]} data
+        context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536])
+                  :source-core core :budget-left budget :prior-types prior
+                  :private-first-entry-products table)]
+    (invoke-c7 'sh08-mg-present-derive
+      [node nodes types binding-types {} (:lexical-bindings core) bindings forms {} context budget])))
+
 (deftest sh08-private-first-entry-local-products-development-kernel
   (let [input (private-first-entry-source-input [])
-        build (fn [data table prior budget]
-                (let [{:keys [core node nodes types binding-types bindings forms products]} data
-                      context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536])
-                                :source-core core :budget-left budget :prior-types prior
-                                :private-first-entry-products table)]
-                  (invoke-c7 'sh08-mg-present-derive
-                    [node nodes types binding-types {} (:lexical-bindings core) bindings forms {} context budget])))
+        build private-first-entry-local-derived
         first-result (build input {} (:types input) 65536)
         table {:inner-get (:local-private-product first-result)}
         scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped) original @scoped
@@ -11772,6 +11774,78 @@
       (is (= :converged (:convergence-status clean)))
       (is (not (contains? clean :private-first-entry-products)))
       (is (not (contains? clean :products))))))
+
+(deftest sh08-private-first-entry-local-all-arguments-development-kernel
+  ;; An unused second parameter still participates in entry normality. This is
+  ;; direct development DATA; no C5/C6 admission or source authority is claimed.
+  (let [base (private-first-entry-source-input [])
+        binding {:binding-id :other-binding :name 'other :kind :local :binding-class :lexical}
+        additions (into {}
+                    (map (fn [i]
+                           (let [id (keyword (str "other-" i)) owner (keyword (str "entry-" i))
+                                 call (get-in base [:nodes owner]) source {:form-id id :syntax-id id :semantic-span nil
+                                                                          :origin-chain [] :generated-origin []}]
+                             [owner {:id id
+                                     :node {:node-id id :core-form :literal :children [] :resolved-binding-ids [] :source source
+                                            :attributes {:literal-kind :keyword :value :unused}
+                                            :evaluation {:kind :value :order []
+                                                         :owner-function-syntax-id (get-in call [:evaluation :owner-function-syntax-id])}}
+                                     :form {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin []
+                                            :kind :keyword :value :unused :parent-form-id owner :child-form-ids [] :scope-id nil}}])) [0 1]))
+        calls (mapv (fn [call]
+                      (if-let [extra (additions (:core-node-id call))]
+                        (-> call (update :argument-node-ids conj (:id extra))
+                                 (update :ordered-evaluation-node-ids conj (:id extra))) call)) (get-in base [:core :calls]))
+        call-index (into {} (map (juxt :core-node-id identity) calls))
+        edges (mapv (fn [edge]
+                      (if-let [extra (additions (:call-core-node-id edge))]
+                        (-> edge (update :argument-core-node-ids conj (:id extra))
+                                 (update :ordered-evaluation-node-ids conj (:id extra))) edge)) (get-in base [:core :call-edges]))
+        sequence (vec (mapcat (fn [node]
+                               (if-let [extra (additions (:node-id node))]
+                                 (let [children (:ordered-evaluation-node-ids (call-index (:node-id node)))]
+                                   [(:node extra) (-> node (assoc :children children)
+                                     (assoc-in [:attributes :argument-count] 2) (assoc-in [:attributes :argument-child-indexes] [1 2])
+                                     (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))])
+                                 [(if (= :helper-fn (:node-id node)) (update node :resolved-binding-ids conj :other-binding) node)]))
+                             (get-in base [:core :nodes])))
+        records (mapv #(if (= :helper-form (:function-syntax-id %))
+                         (-> % (update :parameter-binding-ids conj :other-binding) (assoc :fixed-arity 2)) %)
+                       (get-in base [:core :function-records]))
+        core (-> (:core base) (assoc :nodes sequence :calls calls :call-edges edges :function-records records)
+                 (update-in [:preserved-resolution :binding-table] conj binding))
+        forms (reduce (fn [out [owner extra]]
+                        (-> out (assoc (:id extra) (:form extra)) (update-in [owner :child-form-ids] conj (:id extra))))
+                      (:forms base) additions)
+        data (-> base (assoc :core core :nodes (into {} (map (juxt :node-id identity) sequence)) :forms forms)
+                 (assoc-in [:bindings :other-binding] binding) (assoc-in [:binding-types :other-binding] :gravity.type/keyword)
+                 (update :types merge {:other-0 :gravity.type/keyword :other-1 :gravity.type/keyword})
+                 (assoc :products (assoc (:products base) :calls calls :call-edges edges
+                                    :function-index (into {} (map (juxt :function-syntax-id identity) records)))))
+        refresh (fn [input]
+                  (let [parent-input (assoc input :node (get-in input [:nodes :present-get])
+                                           :call (get call-index :present-get)
+                                           :edge (first (filter #(= :present-get (:call-core-node-id %)) edges)))
+                        parent (map-present-get-derived parent-input)]
+                    (-> input (assoc :parent-result parent)
+                        (assoc-in [:types :operator] (:descriptor parent))
+                        (assoc-in [:types :present-get] (:type parent))
+                        (assoc-in [:types :signatures-reference] (:type parent)))))
+        data (refresh data) first-result (private-first-entry-local-derived data {} (:types data) 65536)
+        table {:inner-get (:local-private-product first-result)}]
+    (is (= :accepted (:status first-result)) (pr-str (select-keys first-result [:status :reason :work-count])))
+    (when (= :accepted (:status first-result))
+      (let [changed (refresh (assoc-in data [:types :other-0] :gravity.type/never))
+            result (private-first-entry-local-derived changed table (:types changed) 65536)]
+        (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+        (is (= :gravity.type/keyword (:type result)))
+        (is (= [:not-invoked :invoked] (mapv :entry (get-in result [:descriptor :presence-proof :entries]))))
+        (is (nil? (get-in result [:descriptor :presence-proof :entries 0 :selection]))))
+      (let [changed (refresh (-> data (assoc-in [:types :other-0] :gravity.type/never)
+                                      (assoc-in [:types :other-1] :gravity.type/never)))
+            result (private-first-entry-local-derived changed table (:types changed) 65536)]
+        (is (= :rejected (:status result)))
+        (is (not= :gravity.type/keyword (:type result)))))))
 
 (deftest sh08-private-first-entry-reviewed-guards-development-kernel
   (let [literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
