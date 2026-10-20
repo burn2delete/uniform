@@ -853,6 +853,49 @@
           {:status :rejected :reason domain-reason :work-count 2 :comparison-attempts 0})))
     {:status :rejected :reason :keyword-set-contains-work-limit :work-count 0 :comparison-attempts 0}))
 
+(defn p15-s23-runtime-string-set-insertion-work [items value budget]
+  ; Typed calls establish immutable finite String Sets with coherent enumeration.
+  ; Reserve a complete trusted-result rebuild before membership can decide hit/miss.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [limit (if (< budget 65536) budget 65536)]
+      (if (< limit 2)
+        {:status :rejected :reason :string-set-insertion-work-limit :work-count 2 :insertions 0}
+        (if (if (set? items) (string? value) false)
+          (let [n (count items)]
+            (if (if (< n 0) true (> n 1024))
+              {:status :rejected :reason :string-set-insertion-value-width :work-count 2 :insertions 0}
+              (let [construction (+ 1 (* 2 n)) base (+ 2 construction)]
+                (if (> base limit)
+                  {:status :rejected :reason :string-set-insertion-work-limit :work-count base
+                   :work-count-kind :logical-reservation-including-failed-attempt :insertions 0}
+                  (let [checked (p15-s23-runtime-keyword-set-contains-work items value (- limit base))
+                        work (+ base (get checked :work-count))]
+                    (if (= :accepted (get checked :status))
+                      (let [present? (= true (get checked :value))
+                            result (if present? items
+                                     (loop [remaining items i 0 out #{}]
+                                       (if (= i n) (conj out value)
+                                         (recur (rest remaining) (+ i 1) (conj out (first remaining))))))]
+                        {:status :accepted :value result :member-present? present? :input-element-count n
+                         :work-count work :work-count-kind :exact-logical-insertion-reservation
+                         :comparison-attempts (get checked :comparison-attempts)
+                         :representation-units (get checked :representation-units) :representation :jvm-utf16-code-units
+                         :construction-reservation construction :insertions (if present? 0 (+ n 1))
+                         :value-work-model :gravity/string-set-insertion-logical-content-work-v1
+                         :provider-cpu-bound :not-established})
+                      {:status :rejected
+                       :reason (if (= :string-set-contains-work-limit (get checked :reason))
+                                 :string-set-insertion-work-limit :string-set-insertion-value-domain-required)
+                       :member-reason (get checked :reason) :domain-failure (get checked :domain-failure)
+                       :work-count work :work-count-kind (if (= :exceeded-allowance-lower-bound (get checked :work-count-kind))
+                                                          :exceeded-allowance-lower-bound
+                                                          (if (= :exact-logical-membership-reservation (get checked :work-count-kind))
+                                                            :exact-logical-insertion-reservation :logical-reservation-including-failed-attempt))
+                       :comparison-attempts (get checked :comparison-attempts) :insertions 0
+                       :provider-cpu-bound :not-established}))))))
+          {:status :rejected :reason :string-set-insertion-value-domain-required :work-count 2 :insertions 0})))
+    {:status :rejected :reason :string-set-insertion-work-limit :work-count 0 :insertions 0}))
+
 (defn p15-s23-runtime-character-set-contains-work [items needle budget]
   ; Existing atomic Character IR values, not Unicode source decoding.
   ; Reserve complete validation, distinctness and membership before comparing.
@@ -1703,12 +1746,19 @@
                     [{:diagnostic "P15S23X002" :reason :bounded-successor-counter-and-range-required :operation operation}
                      (second arguments-result) :rejected]))
               (if (= function 'conj)
-                (if (list? left)
+                (if (set? left)
+                  (let [result (p15-s23-runtime-string-set-insertion-work left right 65536)]
+                    (if (= :accepted (get result :status))
+                      [(get result :value) (second arguments-result) :normal]
+                      [{:diagnostic "P15S23X002" :reason (get result :reason) :operation operation
+                        :work-count (get result :work-count) :work-count-kind (get result :work-count-kind)}
+                       (second arguments-result) :rejected]))
+                  (if (list? left)
                   [(conj left right) (second arguments-result) :normal]
                 (if (if (vector? left) (< (count left) 1024) false)
                   [(conj left right) (second arguments-result) :normal]
                   [{:diagnostic "P15S23X002" :reason :vector-append-vector-and-extent-required :operation operation}
-                   (second arguments-result) :rejected]))
+                   (second arguments-result) :rejected])))
               (if (= function 'nth)
                 (if (if (vector? left) (if (integer? right) (if (<= 0 right) (< right (count left)) false) false) false)
                   [(get left right) (second arguments-result) :normal]

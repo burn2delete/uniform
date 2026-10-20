@@ -1858,6 +1858,64 @@ source path and semantic rejection cases. Do not rebuild unchanged source
 products to repeat a green aggregate; do not update admission fingerprints for
 ordinary development.
 
+### Persistent String-Set insertion: focused feedback
+
+STD3's binary Set insertion preserves existing equal members and adds only an
+absent value class. Change the owning C7, C8, typed emitter and runtime paths,
+preserving the separate List-prepend and Vector-append behavior. The bounded
+String slice requires independently established finite all-String Set input
+and a String value. Its normal result is only a bare Set: no exact cardinality,
+literal ancestry or retained member-type evidence is invented.
+
+Start with the direct kernels and affected List/Vector, Set-count and String
+membership/equality regressions:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-string-set-insertion-development-kernel \
+  --exact sh08-string-set-insertion-throw-consumer-development-kernel \
+  --exact body-string-set-insertion-development-kernel \
+  --exact current-gravity-string-set-insertion-lowering-development-kernel \
+  --exact current-gravity-string-set-insertion-transfer-fence-development-kernel \
+  --exact current-gravity-string-set-insertion-runtime-development-kernel
+```
+
+Check complete String domains and value-class uniqueness before hit/miss or
+construction, including equal-but-distinct Strings, Unicode distinctions,
+exact/short budgets, original-value preservation and unsupported families.
+Content and construction steps consume the existing remaining allowance;
+logical work and helper-call counts are not provider CPU, peak-memory or
+physical-allocation measurements. Normal invocation declares possible
+allocation and storage retention even when the member is already present.
+Ordinary once-only operand evaluation and transfers remain observable.
+
+Compiler checks retain source, binding, producer and type joins. Validate
+closed scalar IDs before lookups and avoid hashing composite type records
+before their paid validation. C8's collection-family census is closed; emitter
+failures retain owner, completed-prefix and failed-child work. Current private
+helper inventory is a code/closure fact, not an authority-admission prerequisite.
+
+Use the paired fixture selector
+`current-gravity-string-set-insertion-fixtures-development-kernel` for cheap
+G/Q parser feedback. A stable affected composition must separately exercise
+`count` of insertion results and a genuine rejected member family. Bare output
+does not qualify for a further finite-input insertion, String membership or
+String-Set equality without independently established member-domain evidence.
+That transport and whole B14 recursion are later slices. Focused checks are
+development feedback, not current-closure migration or release evidence.
+
+For that affected boundary, run only the existing
+`current-gravity-string-set-insertion-authenticated-composition` selector in
+the SH01 namespace on the stable revision. It checks empty, absent and present
+insertion through actual C7/C8, lowering and one closed-plan entry, plus a
+Character-member C7 negative. Its fresh C6 development session and same-catalog
+replay are not independent public C6 admission. Q remains parser-only. Reuse
+unchanged passing focused results; do not repeat source-product construction
+merely to obtain another green aggregate.
+
 ### Homogeneous List returns: declaration feedback
 
 The explicit `(List T)` return slice is in development. L5 requires the body
