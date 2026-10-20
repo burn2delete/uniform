@@ -2504,12 +2504,13 @@
               :root-core-node-ids [(sha 6)] :call-edges [{:call-core-node-id (sha 8) :callee-function-syntax-id (sha 20)}]}
         facts {:module (:module core) :function-type-table [{:function-id (sha 20) :body-core-node-id (sha 4) :latent-effects [:memory/allocate]}]
                :type-table (zipmap (map sha (range 1 9)) (repeat :value))}
-        result (leaf 'body-derive-nodes core facts) graph (leaf 'body-build-graph core facts (:nodes result))]
+        result (leaf 'body-derive-nodes core facts) graph (leaf 'body-build-graph core facts (:nodes result))
+        function-id (:function-id (first (:function-type-table facts)))]
     (is (= :accepted (:status result)))
     (is (= #{:memory/allocate} (get-in graph [:nodes (sha 3) :direct]) (get-in graph [:nodes (sha 4) :direct])))
     (is (= #{} (get-in graph [:nodes (sha 5) :direct]) (get-in graph [:nodes (sha 5) :transitive])))
     (is (= #{:memory/allocate} (get-in graph [:nodes (sha 5) :latent]) (get-in graph [:nodes (sha 8) :transitive])))
-    (is (= #{:memory/allocate} (get-in graph [:functions (sha 20) :inferred])))
+    (is (= #{:memory/allocate} (get-in graph [:functions function-id :inferred]) (get-in graph [:functions function-id :latent])))
     (is (= #{} (get-in graph [:namespace :inferred])))
     (is (= :accepted (:status (leaf 'body-allowance-check core facts graph 65536))))
     (is (= "C8-UNDECLARED" (:rule (leaf 'body-allowance-check core

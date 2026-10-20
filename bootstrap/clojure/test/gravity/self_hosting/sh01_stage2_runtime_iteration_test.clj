@@ -27842,6 +27842,7 @@
         count-ir (filterv #(and (= :builtin-call (:op %)) (= 'count (:function %))) instructions)
         quote-ir (filterv #(= :quote (:op %)) instructions)
         graph (:effect-graph effects)
+        function-summary (get-in graph [:functions (:function-id (first (:function-type-table facts)))])
         runtime-plan (:plan (typed-catch-runtime-projection))
         execution (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)])
         t2 (System/nanoTime)]
@@ -27858,7 +27859,7 @@
     (is (= [1 2 1] (:entrypoint-result execution)))
     (is (= "" (:stdout execution)))
     (is (= #{} (get-in graph [:namespace :inferred])))
-    (is (= #{:memory/allocate} (:inferred (first (vals (:functions graph)))) (:latent (first (vals (:functions graph))))))
+    (is (= #{:memory/allocate} (:inferred function-summary) (:latent function-summary)))
     (is (= #{#{} #{"B14-COVERAGE"}} (set (map :value quote-ir))))
     (is (= [:quote :quote :quote] (mapv :core-form source-quotes)))
     (is (= #{:no-evaluation} (set (map #(get-in % [:evaluation :kind]) source-quotes))))
