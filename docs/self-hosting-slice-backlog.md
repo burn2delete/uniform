@@ -9587,6 +9587,30 @@ and condition values, invalid unselected operands, source/incoming/MIR tampering
 and recomputation. No C10/source ingress, whole-helper lowering, generic MIR,
 native execution, SH-13 completion or authoritative migration is claimed.
 
+### MIR conditional-condition dominance: development repair
+
+Normalized conditional branches now report `C11-DOMINANCE` when the condition
+is not in the current block's parameter/ordered-operation type table, rather
+than falling through to `C11-TYPE`. Defined non-Bool values retain the type
+diagnostic. The membership check follows existing opcode/source/origin and
+whole-block operation gates, precedes the Bool check, and leaves the original
+then-before-else target ordering intact. No accepted language, schema, public
+interface, runtime behavior or resource bound changes.
+
+The test-only RED commit `ac0c13f0` completed 124 assertions with 114 passes and
+ten failures, all the wrong TYPE rule for undefined conditions. That failed
+epoch is retained. The corrected `254ff6f1` passes five focused tests/560
+assertions: 124 new, 20 conditional execution, 12 loop/indirect calls, 102 return
+dominance and 302 branch-carrier assertions. Separate boundary checks pass
+6/11, giving 11 tests/571 assertions across two passing selections, not one
+batch. Source LOC passes 2021 files, zero exceptions, maximum 250 lines.
+
+Original G/Q normalized constructors, the executor and recomputing verifier
+cover missing/Nil/absent/later-block conditions, defined i64, competing bad
+targets, earlier source/opcode/profile gates, valid results 42/7/120 and result
+substitution. These supplied normalized inputs do not establish fresh source
+or C10 ingress, native execution, SH-13 completion or authoritative migration.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
