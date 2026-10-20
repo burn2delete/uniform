@@ -9320,6 +9320,26 @@ constant-arity, invalid-MIR and recursion controls, the focused batch passes
 checks do not establish fresh authenticated SH-12 ingress, native execution,
 SH-13 completion or authoritative migration. Resource limits are unchanged.
 
+### Normalized MIR Bool values: development repair
+
+Normalized SH-13 parameters and constant payloads typed Bool now require actual
+`true` or `false`. Nil previously passed a vacant set-lookup comparison and
+could execute as a false condition; invalid Bool constants could also pass
+whole-module preflight, including in unselected blocks. Both local Bool checks
+now reject nil and non-Bool values with `C11-TYPE` before execution. Valid Bool
+execution and earlier diagnostic priorities are preserved. The generic
+membership helper, other value domains and original-MIR bridge are unchanged;
+this does not define source-language truthiness.
+
+The unchanged-engine regression completed 530 assertions with 478 passes and
+52 failures, retaining actual nil acceptance and direct invalid-payload hash
+callback failures. That attempt remains failed. The repaired regression passes
+all 530 assertions; branch, runtime-bound and recomputation controls bring the
+focused batch to 4 tests and 568 assertions. Separate language-boundary checks
+pass 6 tests and 11 assertions. These normalized G/Q checks do not establish
+fresh source or authenticated SH-12 ingress, native execution, SH-13 completion
+or authoritative migration. Public schemas and resource limits are unchanged.
+
 ### Original SH-12 diamond execution: bounded development composition
 
 The original SH-12 branch/join MIR can now execute through two explicit C11
