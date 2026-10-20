@@ -5,8 +5,8 @@
             [gravity.bootstrap :as bootstrap]
             [gravity.reader-host-oracle :as host-reader]))
 
-; Later JVM clearance command (intentionally not run in this change):
-; clojure -M:test --namespace gravity.self-hosting.w5-b14-backend-conformance-verifier-test
+;; The full stage2 plan/record suite is separate from the reader-only development
+;; check selected by --exact w5-b14-accepted-result-hosted-reader-regression.
 
 (defn- repository-root []
   (let [resource
