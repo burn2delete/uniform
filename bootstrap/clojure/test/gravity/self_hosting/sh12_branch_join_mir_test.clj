@@ -559,6 +559,8 @@
          [(wrong-type (wrong-type mir else-path) then-path) then-path]
          [(assoc-in mir (conj then-path :facts :type-fact-id) "wrong:type-fact")
           then-path]
+         [(assoc-in wrong-then [:data-flow-graph :values "sh12:branch-join:then" :type]
+                    :gravity.type/bool) then-path]
          [(-> (wrong-type mir else-path)
               (assoc-in (conj else-path :source) {:span :forged :generated-origin [:forged]})
               (assoc-in (conj else-path :block-id) "forged:block")) else-path]]]
@@ -585,6 +587,17 @@
         (is (= (:span source) (:source-span observed)))
         (is (= (:generated-origin source) (:origin-chain observed)))
         (is (= expected observed))))
+    ;; A malformed first expected source cannot redirect to a later mismatch.
+    ;; This defensive helper input is not a freshly constructed MIR product.
+    (let [malformed (wrong-type wrong-then else-path)
+          context (invoke c11-plan 'sh12-branch-join-fact-context [mir malformed])
+          context (assoc-in context [:expected-operations 1 :source] nil)
+          report (invoke c11-plan 'sh12-branch-join-type-rejection
+                         [checked mir malformed context])
+          expected (invoke c11-plan 'sh12-branch-join-diagnostic
+                           ["C11-TYPE" :type-fact-or-operation-schema checked malformed])]
+      (is (= :rejected (:status report)))
+      (is (= [expected] (:diagnostics report))))
     ;; Original earlier/aggregate failures must not become operation diagnoses.
     (doseq [[malformed id missing]
             [[(assoc wrong-then :type-table {})
