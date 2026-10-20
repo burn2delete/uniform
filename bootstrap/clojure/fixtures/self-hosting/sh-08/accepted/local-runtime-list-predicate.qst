@@ -1,0 +1,23 @@
+(ns self-hosting.sh08.list-predicate
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn classify-bare [value :- List] :- Bool
+  (list? value))
+
+(defn classify-strings [value :- (List String)] :- Bool
+  (gravity.core/list? value))
+
+(defn main []
+  [(list? '())
+   (list? '("seed" false))
+   (classify-bare (list "seed"))
+   (classify-strings (list "seed"))
+   (list? (rest (list "seed")))
+   (list? (conj '() "seed"))
+   (list? [])
+   (list? '#{})
+   (list? {})
+   (list? nil)
+   (list? "seed")])

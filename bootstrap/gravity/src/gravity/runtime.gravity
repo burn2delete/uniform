@@ -1563,7 +1563,7 @@
                   (if (contains? '#{nth conj contains? dissoc} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
-                  (if (contains? '#{set string? keyword? map? integer? vector? count first rest empty? set? symbol? boolean?} function)
+                  (if (contains? '#{set string? keyword? map? integer? vector? count first rest empty? set? symbol? boolean? list?} function)
                     (if (= fields #{:op :function :args}) (if (= 1 (count arguments)) (map? (first arguments)) false) false)
                   (if (= function 'get)
                     (if (= fields #{:op :function :args})
@@ -1671,7 +1671,7 @@
                    arguments environment output [] functions path [] pool)]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
-              (if (contains? '#{set string? keyword? map? integer? vector? first rest empty? set? symbol? boolean?} function)
+              (if (contains? '#{set string? keyword? map? integer? vector? first rest empty? set? symbol? boolean? list?} function)
                 (if (= function 'set)
                   (let [conversion (p15-s23-runtime-set-conversion-work left 65536)]
                     (if (= :accepted (get conversion :status))
@@ -1679,8 +1679,8 @@
                       [{:diagnostic "P15S23X002" :reason (get conversion :reason) :operation operation
                         :work-count (get conversion :work-count) :work-count-kind (get conversion :work-count-kind)}
                        (second arguments-result) :rejected]))
-                (if (contains? '#{string? keyword? map? integer? vector? set? symbol? boolean?} function)
-                  [(if (= function 'string?) (string? left) (if (= function 'keyword?) (keyword? left) (if (= function 'boolean?) (boolean? left) (if (= function 'symbol?) (symbol? left) (if (= function 'set?) (set? left) (if (= function 'map?) (map? left) (if (= function 'integer?) (integer? left) (vector? left)))))))) (second arguments-result) :normal]
+                (if (contains? '#{string? keyword? map? integer? vector? set? symbol? boolean? list?} function)
+                  [(if (= function 'string?) (string? left) (if (= function 'keyword?) (keyword? left) (if (= function 'boolean?) (boolean? left) (if (= function 'symbol?) (symbol? left) (if (= function 'list?) (list? left) (if (= function 'set?) (set? left) (if (= function 'map?) (map? left) (if (= function 'integer?) (integer? left) (vector? left))))))))) (second arguments-result) :normal]
                 (if (if (= function 'first) (vector? left) false)
                   (if (> (count left) 0)
                     [(get left 0) (second arguments-result) :normal]
