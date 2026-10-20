@@ -9440,6 +9440,31 @@ production-source limit. This is supplied checked-Core composition, not actual
 C10/source ingress, generic MIR, other ordering/arithmetic, native execution,
 SH-13 completion or authoritative migration.
 
+### Original MIR selected-arm comparison: executable increment
+
+The original SH-12 to SH-13 handoff also executes a strict integer less-than
+comparison inside exactly one branch of a literal-Bool diamond. The other arm
+is a literal Bool. This covers a missing placement of an existing operation,
+not a new opcode or general branch-body grammar. The closed instruction-width
+layouts are entry/then/else `[1,1,1]`, `[3,1,1]`, `[1,3,1]` or `[1,1,3]`.
+Entry-plus-arm computations, two computed arms and arm equality are excluded.
+
+Both complete arms undergo signature, payload, purity and original verifier
+checks before execution. The join uses each arm's last original result ID and
+the original CFG incoming value. All seven source/fact projection rows remain,
+including an unselected comparison; only the selected arm executes. This is an
+additive placement-domain extension, not new projection roles, keys or public
+arities. The same depth-32/fuel-512 interpreter leaves 505 when the comparison
+executes and 507 when it is skipped. No comparison is hoisted into the entry.
+
+All seven focused tests pass 1589 assertions on the current candidate: the
+previous six/913 plus 676 selected-arm assertions. These cover both branch
+positions and condition values, comparison outcomes and signed endpoints,
+selected-only traces, source/fact/incoming joins, unselected invalid operands,
+unsupported layouts, MIR tampering and recomputation. Supplied checked-Core
+composition does not establish actual C10/source ingress, generic MIR, native
+execution, SH-13 completion or authoritative migration.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
