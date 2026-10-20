@@ -684,7 +684,9 @@
   (doseq [extension [".gravity" ".qst"]]
     (let [base (with-scalar-truthiness extension (checked extension) :gravity.type/i64 0)
           mir (build base) accepted (run base mir)
-          candidates [(assoc-in base [:core-nodes 0 :attributes :value] nil)
+          candidates [(with-scalar-truthiness extension (checked extension) :gravity.type/string "text")
+                      (with-scalar-truthiness extension (checked extension) :gravity.type/nil nil)
+                      (assoc-in base [:core-nodes 0 :attributes :value] nil)
                       (assoc-in base [:core-nodes 1 :operands] [])
                       (assoc-in base [:core-nodes 1 :operands] ["sh13:truthiness:input" "sh13:truthiness:input"])
                       (assoc-in base [:core-nodes 1 :attributes :false-values] [false])
