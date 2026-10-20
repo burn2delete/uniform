@@ -35,7 +35,9 @@
              sh12-verify-authenticated-c10-mir
              sh13-control-flow-policy
              sh13-run-module
-             sh13-verify-execution])
+             sh13-verify-execution
+             sh13-run-branch-join-mir
+             sh13-verify-branch-join-execution])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -8190,3 +8192,233 @@
        :diagnostic-id "C11-VERIFY"
        :rule "C11-VERIFY"
        :reason :execution-result-substitution}]}))
+
+; This execution ingress retains the original checked-Core/MIR pair.  Its
+; private frame is not a normalized SH13 artifact or a replacement verifier.
+(defn sh13-branch-join-context [checked-core mir]
+  (let [function (get (get mir :functions) (get checked-core :entrypoint))
+        blocks (get function :blocks)
+        graph (get mir :control-flow-graph)
+        entry (get blocks (get graph :entry))
+        successors (get (get entry :terminator) :successors)
+        then-block (get blocks (get successors 0))
+        else-block (get blocks (get successors 1))
+        join (get graph :join)
+        join-block (get blocks (get join :block-id))]
+    {:function function :graph graph
+     :entry entry :then then-block :else else-block :join join-block
+     :operations [(get (get entry :instructions) 0)
+                  (get (get then-block :instructions) 0)
+                  (get (get else-block :instructions) 0)
+                  (get (get join-block :instructions) 0)
+                  (get (get join-block :instructions) 1)]}))
+
+(defn sh13-branch-join-pure-nodes? [checked-core nodes]
+  (if (= 0 (count nodes))
+    true
+    (let [node (first nodes)
+          id (get node :node-id)
+          effects (get (get checked-core :effect-facts) id)
+          capabilities (get (get checked-core :capability-facts) id)
+          ownership (get (get checked-core :ownership-facts) id)
+          safety (get node :safety)]
+      (if (= [#{} #{} #{} #{} #{} #{} #{} #{} #{} #{}
+              :persistent-immutable :persistent-immutable :forbidden
+              :proven-safe nil nil]
+             [(get node :effects)
+              (get (get node :attributes) :intrinsic-effects)
+              (get (get node :attributes) :intrinsic-capabilities)
+              (get effects :direct) (get effects :latent)
+              (get effects :transitive) (get effects :residual)
+              (get capabilities :required) (get capabilities :granted)
+              (get node :capabilities #{})
+              (get (get node :ownership) :model)
+              (get ownership :model) (get ownership :mutation)
+              (get safety :outcome) (get safety :check)
+              (get safety :unsafe-audit)])
+        (sh13-branch-join-pure-nodes? checked-core (rest nodes))
+        false))))
+
+(defn sh13-branch-join-runtime-type [type]
+  (if (= type :gravity.type/i64)
+    :i64
+    (if (= type :gravity.type/bool) :bool nil)))
+
+(defn sh13-branch-join-literal-valid? [operation type]
+  (if (= [:constant :literal [] type true]
+         [(get operation :opcode) (get operation :source-operation)
+          (get operation :operands) (get operation :type)
+          (get (get operation :constant-payload) :present?)])
+    (sh13-value-type-valid?
+     (get (get operation :constant-payload) :value)
+     (sh13-branch-join-runtime-type type))
+    false))
+
+(defn sh13-branch-join-shape-valid? [checked-core mir context]
+  (let [function (get context :function)
+        graph (get context :graph)
+        entry (get context :entry)
+        then-block (get context :then)
+        else-block (get context :else)
+        join (get context :join)
+        operations (get context :operations)
+        condition (get operations 0)
+        then-op (get operations 1)
+        else-op (get operations 2)
+        join-op (get operations 3)
+        root-op (get operations 4)
+        type (get function :returns)]
+    (if (= [1 4 5 1 1 1 2 [] :meta :jvm :jvm #{} #{} #{} 0]
+           [(count (get mir :functions)) (count (get function :blocks))
+            (count (get checked-core :core-nodes))
+            (count (get entry :instructions))
+            (count (get then-block :instructions))
+            (count (get else-block :instructions))
+            (count (get join :instructions)) (get function :params)
+            (get mir :profile) (get mir :source-target)
+            (get mir :target-request) (get function :latent-effects)
+            (get function :capabilities)
+            (get (get checked-core :source-core-input) :declared-effects)
+            (count (get mir :runtime-check-table))])
+      (if (= [[:conditional-join :if
+               [(get condition :result) (get then-op :result)
+                (get else-op :result)] type]
+              [:function-boundary :function [(get join-op :result)] type]
+              (get join-op :result) (get root-op :op-id)
+              [(get then-block :block-id) (get else-block :block-id)]]
+             [[(get join-op :opcode) (get join-op :source-operation)
+               (get join-op :operands) (get join-op :type)]
+              [(get root-op :opcode) (get root-op :source-operation)
+               (get root-op :operands) (get root-op :type)]
+              (get (get (get join :terminator) :operands) 0)
+              (get function :fn-id)
+              (get (get entry :terminator) :successors)])
+        (if (= (get (get graph :join) :value-id) (get join-op :result))
+          (if (sh13-branch-join-literal-valid? condition :gravity.type/bool)
+            (if (sh13-branch-join-literal-valid? then-op type)
+              (if (sh13-branch-join-literal-valid? else-op type)
+                (sh13-branch-join-pure-nodes?
+                 checked-core (get checked-core :core-nodes))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-branch-join-projection-rows [operations index result]
+  (if (= index 5)
+    result
+    (let [operation (get operations index)]
+      (sh13-branch-join-projection-rows
+       operations (+ index 1)
+       (conj result
+             {:operation-id (get operation :op-id)
+              :result-id (get operation :result)
+              :role (if (< index 3) :literal
+                        (if (= index 3) :edge-join :function-result-alias))
+              :operands (get operation :operands)
+              :constant-payload (get operation :constant-payload)
+              :source-type (get operation :type)
+              :runtime-type (sh13-branch-join-runtime-type (get operation :type))
+              :facts (get operation :facts) :source (get operation :source)
+              :alias-of (if (= index 4)
+                          (get (get operations 3) :result) nil)})))))
+
+(defn sh13-branch-join-frame-literal [operation]
+  {:op-id (get operation :op-id) :opcode :const :operands []
+   :type (sh13-branch-join-runtime-type (get operation :type))
+   :literal (get (get operation :constant-payload) :value)})
+
+(defn sh13-branch-join-frame-arm [context arm index]
+  (let [block (get context arm)
+        incoming
+        (sh13-find-by-key
+         (get (get (get context :graph) :join) :incoming)
+         :predecessor (get block :block-id) 0)]
+    {:block-id (get block :block-id) :params []
+     :operations [(sh13-branch-join-frame-literal
+                   (get (get context :operations) index))]
+     :terminator {:opcode :branch
+                  :target (get (get context :join) :block-id)
+                  :arguments [(get incoming :value)]}}))
+
+(defn sh13-branch-join-frame [context]
+  (let [function (get context :function)
+        operations (get context :operations)
+        condition (get operations 0)
+        if-id (get (get operations 3) :result)]
+    {:functions
+     [{:fn-id (get function :fn-id) :params []
+       :maximum-call-depth (get (sh13-control-flow-policy) :maximum-call-depth)
+       :entry-block (get (get context :entry) :block-id)
+       :blocks
+       [{:block-id (get (get context :entry) :block-id) :params []
+         :operations [(sh13-branch-join-frame-literal condition)]
+         :terminator {:opcode :conditional-branch
+                      :condition (get condition :result)
+                      :then-target (get (get context :then) :block-id)
+                      :then-arguments []
+                      :else-target (get (get context :else) :block-id)
+                      :else-arguments []}}
+        (sh13-branch-join-frame-arm context :then 1)
+        (sh13-branch-join-frame-arm context :else 2)
+        {:block-id (get (get context :join) :block-id) :params [if-id]
+         :operations [] :terminator {:opcode :return :value if-id}}]}]}))
+
+(defn sh13-branch-join-input-bindings [checked-core mir]
+  {:checked-core-artifact-id (get checked-core :artifact-id)
+   :mir-module-id (get mir :module-id)})
+
+(defn sh13-branch-join-execution-result
+  [checked-core mir verification projection execution diagnostics]
+  {:artifact :gravity/sh13-branch-join-execution :schema-version 1
+   :status (if (= :returned (get execution :status)) :accepted :rejected)
+   :input-bindings (sh13-branch-join-input-bindings checked-core mir)
+   :upstream-verification verification :projection projection
+   :execution execution :diagnostics diagnostics
+   :clojure-seed-boundary? true :self-hosted? false
+   :nonclaims [:fresh-c10-ingress :generic-mir-execution
+               :calls-loops-errors :backend-native-execution :release]})
+
+(defn sh13-run-branch-join-mir [checked-core mir]
+  (let [verification (sh12-verify-branch-join-mir checked-core mir)]
+    (if (= :passed (get verification :status))
+      (let [context (sh13-branch-join-context checked-core mir)]
+        (if (sh13-branch-join-shape-valid? checked-core mir context)
+          (let [execution
+                (sh13-execute-function
+                 (sh13-branch-join-frame context)
+                 (get (get context :function) :fn-id) [] 0
+                 (get (sh13-control-flow-policy) :maximum-execution-steps) [])
+                projection
+                {:function-id (get (get context :function) :fn-id)
+                 :entry-block (get (get context :entry) :block-id)
+                 :control-flow-graph (get context :graph)
+                 :return-value-id (get (get (get context :graph) :join) :value-id)
+                 :operations
+                 (sh13-branch-join-projection-rows
+                  (get context :operations) 0 [])}]
+            (sh13-branch-join-execution-result
+             checked-core mir verification projection execution
+             (if (= :returned (get execution :status)) []
+               [(sh12-branch-join-diagnostic
+                 "C11-VERIFY" :bounded-execution-result checked-core mir)])))
+          (sh13-branch-join-execution-result
+           checked-core mir verification nil nil
+           [(sh12-branch-join-diagnostic
+             "C11-VERIFY" :bounded-execution-subset checked-core mir)])))
+      (sh13-branch-join-execution-result
+       checked-core mir verification nil nil (get verification :diagnostics)))))
+
+(defn sh13-verify-branch-join-execution [checked-core mir candidate]
+  (let [expected (sh13-run-branch-join-mir checked-core mir)
+        matches (= expected candidate)]
+    {:artifact :gravity/sh13-branch-join-execution-verification
+     :schema-version 1
+     :status (if matches :passed :rejected)
+     :input-bindings (sh13-branch-join-input-bindings checked-core mir)
+     :diagnostics
+     (if matches []
+       [(sh12-branch-join-diagnostic
+         "C11-VERIFY" :execution-result-substitution checked-core mir)])}))
