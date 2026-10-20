@@ -8840,6 +8840,33 @@ recomputation. Authenticated SH-15 input, complete C11 MIR adaptation,
 remaining proof-class replay, whole-function translation validation,
 target-lowering proof preservation, a self-hosted certificate checker, and
 SH-16 completion remain pending.
+
+The subsequent normalized C13 development repair requires an explicit `:i64`
+result before folding a constant addition. Previously, bounded numeric operands
+could produce a constant while retaining an unrelated declared result type;
+recomputing verification repeated that same defect. The owning
+`sh16-constant-folds-only-an-established-i64-result-domain` regression covers
+both normalized request constructors, signed boundaries, accepted i64 folds,
+unsupported canonical type IDs, diagnostic priority and tamper recomputation.
+Nonconstant and audited unsafe-island operations retain their existing
+unchanged/no-fold behavior; this does not introduce general opaque-type
+interpretation or require rejecting every non-i64 operation.
+
+The initial regression attempt recorded 156 passes and 80 failures in 236
+assertions. Those failures included incorrect test oracles, not exclusively
+the production defect. The first guarded attempt recorded 230 passes and six
+failures in 236 assertions, with seven remaining selectors unrun. Correcting
+only the test's String-as-identifier assumption and earlier diagnostic
+expectation produced eight passing selectors and 325 assertions: 236 new and
+89 adjacent pipeline, schema, recomputation and check-elision assertions.
+The separate language-boundary run passed six tests and 11 assertions, for
+14 tests and 336 assertions across the two passing invocations. The production
+Clojure LOC validator passed 2,021 files with zero exceptions and maximum 250.
+Both failed attempts remain distinct historical results. Focused supplied-MIR
+execution supports this development behavior, not fresh C11 source ingress,
+native execution, renewed authority or milestone completion. Historical C13
+source measurements above are not evidence for this changed revision.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
