@@ -5464,3 +5464,46 @@
     (is (= :map-get-work-limit
            (:reason (check [] (vec (repeat 10000 {:producer-rule opaque :lhs {:extra opaque}}))))))
     (is (zero? @callbacks))))
+
+(deftest body-private-first-entry-reference-values-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input ((ns-resolve upstream 'private-first-entry-source-input) [])
+        derived ((ns-resolve upstream 'private-first-entry-derived) input)
+        _ (is (= :accepted (:status derived)))
+        _ (when-not (= :accepted (:status derived))
+            (throw (ex-info "Private first-entry reference guard prerequisite rejected" {})))
+        facts ((ns-resolve upstream 'private-first-entry-facts) input derived)
+        {:keys [core node call nodes bindings]} input
+        route (leaf 'body-pc-route core node call nodes bindings 65536)
+        descriptor (get (:type-table facts) (:operator-node-id (:get-call route)))
+        check (fn [value budget] (leaf 'body-pc-carried-parent-work value :applied-map-get :algorithm budget))
+        checked (check descriptor 65536)
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque reference compared")))
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque reference hashed")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque reference printed"))))
+        paths [[:kind] [:version] [:operation] [:semantic-owner] [:intrinsic] [:resolution]
+               [:call-core-node-id] [:operator-node-id] [:operator-binding-id] [:key-node-id] [:key]
+               [:application] [:profile] [:target] [:result-type] [:latent-effects] [:direct-effects]
+               [:capabilities] [:thrown-error-effects] [:source :form-id] [:source :syntax-id]
+               [:operator-source :form-id] [:operator-source :syntax-id]
+               [:source-binding :binding-id] [:source-binding :definition-syntax-id]]]
+    (is (= :accepted (:status checked)))
+    (is (= (leaf 'body-pc-parent-reference descriptor) (:value checked)))
+    (is (= checked (check descriptor (:work-count checked))))
+    (is (= :map-get-work-limit (:reason (check descriptor (dec (:work-count checked))))))
+    (is (= false (get-in (check (assoc descriptor :application false) 65536) [:value :application])))
+    (is (= nil (get-in (check (assoc descriptor :key nil) 65536) [:value :key])))
+    ;; Each dynamic slot and every nested raw key/value is still walked.
+    (doseq [path paths]
+      (is (= :map-get-source-mismatch (:reason (check (assoc-in descriptor path opaque) 65536))))
+      (is (zero? @callbacks)))
+    (doseq [value [(assoc descriptor :result-type {:kind :gravity.type/vector :element-types [opaque]})
+                   (assoc descriptor :capabilities [opaque])
+                   (assoc descriptor :result-type (array-map opaque :gravity.type/keyword))]]
+      (is (= :map-get-source-mismatch (:reason (check value 65536))))
+      (is (zero? @callbacks)))
+    (is (= :map-get-work-limit (:reason (check (assoc descriptor :kind opaque) 0))))
+    (is (zero? @callbacks))))

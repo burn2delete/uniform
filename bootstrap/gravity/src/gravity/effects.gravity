@@ -6237,19 +6237,30 @@
       (assoc rebuilt :work-count total))))
 
 (defn body-pc-carried-parent-work [descriptor applied-key inner-key budget]
-  ; Carriers refer to the independently validated parent. Their BU dependency
-  ; view omits the parent proof payload and preserves the consumed header.
-  (let [reference (body-pc-parent-reference descriptor)
-        walked (body-pc-evidence-work reference budget)]
-    (if (= :accepted (get walked :status))
-      (if (if (= :applied-map-get applied-key)
-            (if (= :gravity.type/applied-map-get (get reference :kind))
-              (= :sh08-map-get-private-entry-v1 (get reference :version)) false)
-            (if (= :applied-vector-first applied-key)
-              (if (= :gravity.type/applied-vector-first (get reference :kind))
-                (= :sh08-vector-first-v1 (get reference :version)) false) false))
-        (assoc walked :value reference)
-        {:status :rejected :reason :map-get-source-mismatch :work-count (get walked :work-count)}) walked)))
+  ; Reference keys are fixed program text. Pay construction before reads,
+  ; then walk every independent supplied value, including nested Map keys.
+  (let [fields [:kind :version :operation :semantic-owner :intrinsic :resolution :call-core-node-id :operator-node-id
+                :operator-binding-id :key-node-id :key :application :profile :target :result-type
+                :latent-effects :direct-effects :capabilities :thrown-error-effects
+                :source-ids :operator-source-ids :binding-source-ids]
+        base (+ 32 (* 4 (count fields)))]
+    (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
+      (let [reference (body-pc-parent-reference descriptor)
+            values (loop [remaining fields out []]
+                     (if (= 0 (count remaining)) out
+                       (recur (rest remaining) (conj out (get reference (first remaining))))))
+            walked (body-pc-evidence-work values (- budget base))
+            used (+ base (get walked :work-count))]
+        (if (= :accepted (get walked :status))
+          (if (if (= :applied-map-get applied-key)
+                (if (= :gravity.type/applied-map-get (get reference :kind))
+                  (= :sh08-map-get-private-entry-v1 (get reference :version)) false)
+                (if (= :applied-vector-first applied-key)
+                  (if (= :gravity.type/applied-vector-first (get reference :kind))
+                    (= :sh08-vector-first-v1 (get reference :version)) false) false))
+            {:status :accepted :work-count used :value reference}
+            {:status :rejected :reason :map-get-source-mismatch :work-count used})
+          (assoc walked :work-count used))))))
 
 (defn body-pc-fact-data [fact applied-key application applied]
   {:fields (body-pc-without fact (conj #{:fact-id-request} applied-key))
