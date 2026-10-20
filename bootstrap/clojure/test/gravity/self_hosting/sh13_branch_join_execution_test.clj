@@ -197,3 +197,53 @@
       ;; Same declared IDs and selected result do not authenticate new input.
       (is (= (:artifact-id base) (:artifact-id other)))
       (is (= :rejected (:status (verify other other-mir result)))))))
+
+(defn- integer-condition-core [extension left right type]
+  (let [base (scalar-core (checked extension) true type (if (= type :gravity.type/bool) false 11) (if (= type :gravity.type/bool) true 22))
+        make (fn [name args] ((existing 'invoke) (get (existing 'accepted-plans) extension) name args))
+        ids ["sh13:condition:left" "sh13:condition:right"]
+        nodes (mapv (fn [id value index] (make 'sh12-branch-join-node
+                      [id [:entry :body :condition index] :literal [] :gravity.type/i64 value index (inc index)])) ids [left right] [0 1])
+        condition (make 'sh12-branch-join-node [(get-in base [:core-nodes 0 :node-id])
+                    [:entry :body :condition] :integer-eq ids :gravity.type/bool nil 0 4])]
+    (reduce (fn [core node]
+              (let [id (:node-id node)]
+                (-> core
+                    (assoc-in [:type-facts id] (make 'sh12-branch-join-type-fact [id :gravity.type/i64]))
+                    (assoc-in [:effect-facts id] (make 'sh12-branch-join-effect-fact [id]))
+                    (assoc-in [:ownership-facts id] (make 'sh12-branch-join-ownership-fact [id]))
+                    (assoc-in [:capability-facts id] (make 'sh12-branch-join-capability-fact [id]))
+                    (assoc-in [:safety-facts id] (:safety node)) (assoc-in [:profile-facts id] {:profile :meta :target :jvm}))))
+            (-> base (assoc :core-nodes (into (conj nodes condition) (rest (:core-nodes base))))
+                (assoc-in [:safety-facts (:node-id condition)] (:safety condition))) nodes)))
+
+(deftest sh13-executes-typed-integer-equality-conditions
+  (doseq [extension [".gravity" ".qst"]]
+    (doseq [[left right type expected] [[0 0 :gravity.type/i64 11] [0 1 :gravity.type/i64 22]
+             [-9223372036854775808 -9223372036854775808 :gravity.type/i64 11]
+             [-9223372036854775808 9223372036854775807 :gravity.type/i64 22]
+             [0 0 :gravity.type/bool false] [0 1 :gravity.type/bool true]]]
+      (let [core (integer-condition-core extension left right type) mir (build core) result (run core mir)
+            ids (mapv :node-id (:core-nodes core)) rows (get-in result [:projection :operations])]
+        (is (= :accepted (:status result))) (is (= :passed (get-in result [:upstream-verification :status])))
+        (is (= expected (get-in result [:execution :value]))) (is (= 505 (get-in result [:execution :fuel])))
+        (is (= (conj (subvec ids 0 3) (ids (if (= left right) 3 4)))
+               (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+        (is (= ids (mapv :operation-id rows))) (is (= (mapv :source (:core-nodes core)) (mapv :source rows)))
+        (is (= [:literal :literal :integer-equality :literal :literal :edge-join :function-result-alias] (mapv :role rows)))
+        (is (= (mapv #(get-in core [:type-facts % :fact-id]) ids) (mapv #(get-in % [:facts :type-fact-id]) rows)))
+        (is (= :passed (:status (verify core mir result))))))
+    (let [core (integer-condition-core extension 0 1 :gravity.type/i64) id (get-in core [:core-nodes 0 :node-id])]
+      (doseq [bad [(assoc-in core [:core-nodes 0 :attributes :value] nil)
+                  (assoc-in core [:core-nodes 2 :operands] [id])
+                  (-> core (assoc-in [:core-nodes 0 :type] :gravity.type/bool)
+                      (assoc-in [:core-nodes 0 :attributes :value] true)
+                      (assoc-in [:type-facts id :type] :gravity.type/bool) (assoc-in [:type-facts id :type-id] :gravity.type/bool))]]
+        (let [mir (build bad) result (run bad mir)]
+          (is (= :passed (get-in result [:upstream-verification :status]))) (is (= :rejected (:status result)))
+          (is (= :bounded-execution-subset (get-in result [:diagnostics 0 :missing-fact]))) (is (nil? (:execution result)))))
+      (let [mir (build core) result (run core mir) entry (get-in mir [:control-flow-graph :entry])
+            bad (assoc-in mir [:functions (:entrypoint core) :blocks entry :instructions 2 :operands] [id id])
+            rejection (run core bad)]
+        (is (= :rejected (:status rejection))) (is (nil? (:execution rejection)))
+        (is (= :rejected (:status (verify core mir (assoc-in result [:execution :value] 11)))))))))
