@@ -722,7 +722,7 @@
         (is (= [:nil/value :nil/local :nil/copy]
                (mapv :operation (filter :operation (get-in result [:execution :trace])))))
         (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
-                                                [candidate [] (update result :execution dissoc :value)]))))))
+                                                [candidate [] (update result :execution dissoc :value)])))))
       (doseq [[opcode status] [[:return :returned] [:error-return :error]
                                [:throw :thrown] [:panic :panic]]]
         (let [effects (if (= opcode :throw) #{:error/throw} #{})

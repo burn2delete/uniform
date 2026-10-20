@@ -858,7 +858,7 @@
                  [[(with-scalar-truthiness extension (checked extension) :gravity.type/nil nil) 22 506]
                   [(with-scalar-truthiness extension base :gravity.type/nil nil) nil 506]]
                  (for [right [0 1]]
-                   [(integer-condition-core extension :integer-eq 0 right :gravity.type/nil) nil 505])
+                   [(with-integer-comparison extension base :condition :integer-eq 0 right) nil 505])
                  (for [placement [:then :else] condition [true false]]
                    [(with-scalar-let extension
                       (scalar-core (checked extension) condition :gravity.type/nil nil nil) placement)
