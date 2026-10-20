@@ -9186,6 +9186,30 @@ failure attribution at the existing boundary, not fresh C10 composition,
 general MIR coverage, SH-12 completion or authoritative migration. Accepted
 MIR, diagnostic identifiers, public schemas and resource limits are unchanged.
 
+### C7 invocation-local index construction: development repair
+
+Fixed-point inference now prepares its four immutable source-join lookup
+indexes once per invocation rather than once per admitted round. The original
+standalone pass remains a fresh-preparation wrapper; public verification also
+starts a fresh invocation. Preparation remains after the original round and
+cold-work guards. Round-varying types, shapes, private products and remaining
+work are not cached. Index input domains, duplicate-last behavior and forms-Map
+identity are preserved; caller-supplied lookup indexes are overwritten.
+
+Five focused tests pass 263 assertions. The cold-inference comparison executes
+six rounds using 46,030 logical work units. Complete results match an
+original-delegating fresh-per-round reference at budget 65,536, the exact used
+budget and one unit below it. Each normal index is built once. The comparison
+explicitly records its unused initial preparation separately from six forced
+per-round preparations (seven observed total); seven is not the legacy count.
+Standalone freshness, Map passthrough, duplicate-last and opaque-ID early
+rejection controls pass. No C5/C6 source construction is repeated.
+
+This removes repeated lookup construction, not logical ancestry work. It does
+not close the retained C17 work-limit deficit, establish a dominant cost or
+demonstrate a wall-time speedup. The held C17 subject, provenance/equivalence
+gates and authoritative migration status remain unchanged.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established

@@ -6836,10 +6836,55 @@
         skeletons (invoke-c7 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
         context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms)) :lookup-bindings (vec (vals bindings))
                  :boolean-matches [] :shape-call-products products}
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        observe (fn [mode thunk]
+                  (let [preparing (atom nil) fresh-depth (atom 0)
+                        counts (atom {:preparations 0 :round-preparations 0 :rounds 0
+                                      :indexes {} :round-indexes {} :source-inputs-valid? true})
+                        result (with-redefs-fn
+                                 {scoped
+                                  (fn [runtime plan callee args scope]
+                                    (cond
+                                      (= 'sh08-ft-source-join-context callee)
+                                      (let [prior @preparing]
+                                        (reset! preparing (first args))
+                                        (swap! counts update :preparations inc)
+                                        (when (pos? @fresh-depth) (swap! counts update :round-preparations inc))
+                                        (try (original runtime plan callee args scope)
+                                             (finally (reset! preparing prior))))
+
+                                      (and (= 'sh08-ft-infer-pass-products-prepared callee) (zero? @fresh-depth))
+                                      (do
+                                        (swap! counts update :rounds inc)
+                                        (if (= :fresh-per-round mode)
+                                          (do (swap! fresh-depth inc)
+                                              (try (original runtime plan 'sh08-ft-infer-pass-products args scope)
+                                                   (finally (swap! fresh-depth dec))))
+                                          (original runtime plan callee args scope)))
+
+                                      (and @preparing (= 'sh08-ft-index callee))
+                                      (let [[records key-name] args
+                                            expected (case key-name
+                                                       :operator-node-id (get-in @preparing [:ordering-core :calls])
+                                                       :call-core-node-id (get-in @preparing [:ordering-core :call-edges])
+                                                       :binding-id (:lookup-bindings @preparing)
+                                                       :form-id (:lookup-forms @preparing))]
+                                        (swap! counts update-in [:indexes key-name] (fnil inc 0))
+                                        (when (pos? @fresh-depth)
+                                          (swap! counts update-in [:round-indexes key-name] (fnil inc 0)))
+                                        (swap! counts update :source-inputs-valid? #(and % (= expected records)))
+                                        (original runtime plan callee args scope))
+
+                                      :else (original runtime plan callee args scope)))} thunk)]
+                    {:result result :counts @counts}))
         run (fn [budget] (invoke-c7 'sh08-ft-infer-acyclic-with-context
                                    [(:nodes core) nodes [] (:definitions core) (:calls core) (:call-edges core)
                                     skeletons {} 100 (assoc context :loop-work-left budget)]))
-        inferred (run 65536) used (- 65536 (:type-join-work-left inferred))]
+        observed (observe :reuse #(run 65536))
+        inferred (:result observed) used (- 65536 (:type-join-work-left inferred))
+        exact-observed (observe :reuse #(run used))
+        below-observed (observe :reuse #(run (dec used)))]
     (println "AO normalized cold inference" {:rounds (:round-count inferred) :cumulative-work used
                                              :remaining-work (:type-join-work-left inferred)})
     (is (= 66 (count (:nodes core))))
@@ -6853,13 +6898,76 @@
     (is (= 5 (count (filter #(= :sh08-map-get-private-entry-v1 (:version %)) (vals (:type-table inferred))))))
     (doseq [record (:function-records core)]
       (is (= :gravity.type/map (get-in inferred [:function-types (:function-syntax-id record) :return :kind]))))
-    (let [exact (run used) below (run (dec used))]
+    (let [exact (:result exact-observed) below (:result below-observed)]
       (is (= :converged (:convergence-status exact)))
       (is (= 0 (:type-join-work-left exact)))
       (is (= (:type-table inferred) (:type-table exact)))
       (is (= (:function-types inferred) (:function-types exact)))
       (is (seq (:diagnostics below)))
-      (is (some #(= :map-get-work-limit (:reason %)) (:diagnostics below))))))
+      (is (some #(= :map-get-work-limit (:reason %)) (:diagnostics below))))
+    ;; The reference delegates every round through the actual fresh wrapper.
+    ;; Its unused initial preparation remains observed and is reported separately.
+    (doseq [budget [65536 used (dec used)]]
+      (let [normal (cond (= budget 65536) observed (= budget used) exact-observed :else below-observed)
+            reference (observe :fresh-per-round #(run budget))
+            rounds (get-in normal [:counts :rounds])
+            four-indexes (zipmap [:operator-node-id :call-core-node-id :binding-id :form-id] (repeat 1))]
+        (is (= (:result normal) (:result reference)) "Full results, including work and diagnostics, remain equal")
+        (is (= (:round-count (:result normal)) rounds (get-in reference [:counts :rounds])))
+        (is (= 1 (get-in normal [:counts :preparations])))
+        (is (= four-indexes (get-in normal [:counts :indexes])))
+        (is (= 0 (get-in normal [:counts :round-preparations])))
+        (is (= rounds (get-in reference [:counts :round-preparations])))
+        (is (= (inc rounds) (get-in reference [:counts :preparations])))
+        (is (= (update-vals four-indexes #(* % rounds)) (get-in reference [:counts :round-indexes])))
+        (is (= (update-vals four-indexes #(* % (inc rounds))) (get-in reference [:counts :indexes])))
+        (is (true? (get-in normal [:counts :source-inputs-valid?])))
+        (is (true? (get-in reference [:counts :source-inputs-valid?])))
+        (println "C7 source-join index comparison"
+                 {:budget budget :rounds rounds :remaining-work (get-in normal [:result :type-join-work-left])
+                  :normal (:counts normal) :fresh-reference (:counts reference)})))
+    (let [first-call (first (:calls core)) first-edge (first (:call-edges core))
+          first-binding (first (:lookup-bindings context)) first-form (first (:lookup-forms context))
+          later-call (assoc first-call :duplicate :last) later-edge (assoc first-edge :duplicate :last)
+          later-binding (assoc first-binding :duplicate :last) later-form (assoc first-form :duplicate :last)
+          changed (assoc context
+                    :ordering-core (assoc core :calls [first-call later-call] :call-edges [first-edge later-edge])
+                    :lookup-bindings [first-binding later-binding] :lookup-forms [first-form later-form]
+                    :ordering-operators {:forged true} :ordering-edges {:forged true}
+                    :ordering-bindings {:forged true} :association-forms {:forged true})
+          prepared (invoke-c7 'sh08-ft-source-join-context [changed])
+          mapped (invoke-c7 'sh08-ft-source-join-context [(assoc changed :lookup-forms forms)])]
+      (is (= {(:operator-node-id first-call) later-call} (:ordering-operators prepared)))
+      (is (= {(:call-core-node-id first-edge) later-edge} (:ordering-edges prepared)))
+      (is (= {(:binding-id first-binding) later-binding} (:ordering-bindings prepared)))
+      (is (= {(:form-id first-form) later-form} (:association-forms prepared)))
+      (is (identical? forms (:association-forms mapped)))
+      (doseq [ctx [context (assoc context :lookup-forms forms)]]
+        (let [invoke #(invoke-c7 'sh08-ft-infer-pass-with-context
+                       [(:nodes core) [] (:definitions core) (:calls core) (:call-edges core) skeletons {} ctx])
+              one (observe :reuse invoke) two (observe :reuse invoke)
+              expected (cond-> {:operator-node-id 1 :call-core-node-id 1 :binding-id 1}
+                         (not (map? (:lookup-forms ctx))) (assoc :form-id 1))]
+          (is (= (:result one) (:result two)))
+          (is (= 1 (get-in one [:counts :preparations]) (get-in two [:counts :preparations])))
+          (is (= expected (get-in one [:counts :indexes]) (get-in two [:counts :indexes])))
+          (is (true? (get-in one [:counts :source-inputs-valid?])))
+          (is (true? (get-in two [:counts :source-inputs-valid?]))))))
+    (let [callbacks (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "early inference ID hash")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "early inference ID equality"))))
+          poisoned {:ordering-core {:calls [{:operator-node-id opaque}] :call-edges [{:call-core-node-id opaque}]}
+                    :lookup-bindings [{:binding-id opaque}] :lookup-forms [{:form-id opaque}]}]
+      (doseq [[rounds budget cold status] [[0 65536 0 :nonconverged] [0 0 1 :nonconverged]
+                                         [1 0 1 :resource-limit]]]
+        (let [seen (observe :reuse #(invoke-c7 'sh08-ft-infer-acyclic-with-context
+                                     [[] {} [] [] [] [] {} {} rounds
+                                      (assoc poisoned :loop-work-left budget :cold-round-work cold)]))]
+          (is (= status (get-in seen [:result :convergence-status])))
+          (is (= 0 (get-in seen [:result :round-count]) (get-in seen [:counts :preparations])))
+          (is (= {} (get-in seen [:counts :indexes])))
+          (is (zero? @callbacks)))))))
 
 (deftest sh08-map-present-get-development-kernel
   (doseq [[key expected coordinate] [[:file :gravity.type/string 1] [:line :gravity.type/integer 3] [:kind :gravity.type/keyword 5]
