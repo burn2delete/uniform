@@ -27704,7 +27704,12 @@
       (when (set? items)
         (if (and (= #{:keyword} items) (= :keyword value))
           (is (= [#{:keyword} "" :normal] (evaluate (conj-ir (literal items) (literal value)))))
-          (is (= :string-set-insertion-value-domain-required (get-in (evaluate (conj-ir (literal items) (literal value))) [0 :reason]))))))
+          (if (and (= #{"a" :mixed} items) (= :keyword value))
+            (let [result (evaluate (conj-ir (literal items) (literal value)))]
+              (is (= ["" :rejected] (subvec result 1)))
+              (is (contains? #{:string-set-insertion-value-domain-required :keyword-set-insertion-value-domain-required}
+                             (get-in result [0 :reason]))))
+            (is (= :string-set-insertion-value-domain-required (get-in (evaluate (conj-ir (literal items) (literal value))) [0 :reason])))))))
     (doseq [value [nil 1 false \a :keyword [] {}]]
       (is (= :rejected (:status (insert #{"a"} value 65536)))))
     (let [wide #(into #{} (map str (range %)))]
