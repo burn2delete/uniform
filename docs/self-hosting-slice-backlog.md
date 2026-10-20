@@ -9611,6 +9611,38 @@ targets, earlier source/opcode/profile gates, valid results 42/7/120 and result
 substitution. These supplied normalized inputs do not establish fresh source
 or C10 ingress, native execution, SH-13 completion or authoritative migration.
 
+### Original MIR composed comparison placements: executable increment
+
+The bounded original handoff now composes a computed entry condition with one
+computed Bool arm, matching the operation placement of compiler frontier/visited
+count guards. Literal signed-i64 witnesses exercise Eq/Lt combinations, not
+actual count, collection, variable or whole-helper ingress. Only layouts
+entry/then/else `[3,3,1]` and `[3,1,3]` are added. The original SH-12 producer
+and verifier, exact Eq/Lt signatures, both-arm pretrace validation, canonical
+source/fact/DFG joins and original incoming-value transfer remain unchanged.
+
+This is an additive placement and nine-row projection-cardinality domain,
+not new opcodes, roles, keys, public arities or interpreter machinery. Existing
+five- and seven-node outputs remain. Both computed arms and all three computed
+placements still reject. The same depth-32/fuel-512 interpreter leaves 503 when
+the computed arm executes and 505 when skipped, without increasing a bound.
+
+The first attempt at `96bbd40a` exited 1 after 208 passes and one test-helper
+arity error; nine other selected tests were unrun. It remains failed. A one-line
+test-only correction at `bcd4435d` calls the two-argument coordinates helper
+before selecting the arm. Production is unchanged by that correction. The
+corrected invocation passes all ten tests/3802 assertions, including 864 new
+and all prior 2938; the earlier 208 are not added again. Separate normalized
+branch controls pass 1/20 and boundary checks 6/11: 17 tests/3833 assertions
+across three passing selections. Source LOC passes 2021 files, zero exceptions,
+maximum 250 lines.
+
+The new cases cover entry/arm Eq-Lt combinations, mirrors and selected/skipped
+arms, nine ordered source/fact rows, incoming IDs, invalid unselected domains,
+unsupported layouts, DFG/operand tampering and result recomputation. This does
+not establish fresh C10/source ingress, generic MIR, native execution, whole
+compiler execution, SH-13 completion or authoritative migration.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
