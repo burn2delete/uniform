@@ -325,7 +325,7 @@
     [-9223372036854775808 -9223372036854775808 :gravity.type/i64 false 22]
     [0 1 :gravity.type/bool true false] [1 0 :gravity.type/bool false true]]))
 
-(deftest sh13-executes-integer-less-than-only-in-the-selected-arm
+(defn- check-selected-comparison-arm [operation role cases]
   (doseq [extension [".gravity" ".qst"] placement [:then :else]]
     (letfn [(base [condition]
               (scalar-core (checked extension) condition
@@ -334,11 +334,8 @@
               (with-integer-comparison
                 extension (base condition) placement operation left right))]
       (doseq [condition [true false]
-              [left right less?]
-              [[0 1 true] [1 0 false] [1 1 false]
-               [-9223372036854775808 9223372036854775807 true]
-               [9223372036854775807 -9223372036854775808 false]]]
-        (let [core (arm condition left right :integer-lt)
+              [left right comparison-result] cases]
+        (let [core (arm condition left right operation)
               mir (build core) result (run core mir)
               nodes (:core-nodes core) ids (mapv :node-id nodes)
               if-node (first (filter #(= :if (:source-operation %)) nodes))
@@ -355,7 +352,7 @@
                                       (get-in mir [:control-flow-graph :join :incoming])))]
           (is (= :accepted (:status result)))
           (is (= :passed (get-in result [:upstream-verification :status])))
-          (is (= (if selected? less? (not condition))
+          (is (= (if selected? comparison-result (not condition))
                  (get-in result [:execution :value])))
           (is (= (if selected? 505 507) (get-in result [:execution :fuel])))
           (is (= operation-ids
@@ -365,7 +362,7 @@
           (is (= (mapv :source nodes) (mapv :source rows)))
           (is (= (mapv #(get-in core [:type-facts % :fact-id]) ids)
                  (mapv #(get-in % [:facts :type-fact-id]) rows)))
-          (is (= :integer-less-than (:role (rows (.indexOf ids computed-id)))))
+          (is (= role (:role (rows (.indexOf ids computed-id)))))
           (is (= computed-id (:value incoming)))
           (is (= (:control-flow-graph mir)
                  (get-in result [:projection :control-flow-graph])))
@@ -373,9 +370,9 @@
       ;; All these invalid computations are in the UNSELECTED arm. The full
       ;; typed subset is checked before entering the interpreter at all.
       (let [condition (= placement :else)
-            core (arm condition 0 1 :integer-lt)
+            core (arm condition 0 1 operation)
             nodes (:core-nodes core) ids (mapv :node-id nodes)
-            comparison (first (filter #(= :integer-lt (:source-operation %)) nodes))
+            comparison (first (filter #(= operation (:source-operation %)) nodes))
             id (first (:operands comparison))
             left-index (.indexOf ids id)
             comparison-index (.indexOf ids (:node-id comparison))]
@@ -389,7 +386,7 @@
                     (with-integer-comparison extension core :condition :integer-lt 0 1)
                     (with-integer-comparison extension core
                       (if (= placement :then) :else :then) :integer-lt 0 1)
-                    (arm condition 0 1 :integer-eq)]]
+                    (arm condition 0 1 :integer-lte)]]
           (let [mir (build bad) rejection (run bad mir)]
             (is (= :passed (get-in rejection [:upstream-verification :status])))
             (is (= :rejected (:status rejection)))
@@ -411,6 +408,24 @@
           (doseq [candidate [(assoc-in result [:execution :value] :forged)
                              (assoc-in result [:projection :operations 0 :role] :forged)]]
             (is (= :rejected (:status (verify core mir candidate))))))))))
+
+(deftest sh13-executes-integer-less-than-only-in-the-selected-arm
+  (check-selected-comparison-arm
+   :integer-lt :integer-less-than
+   [[0 1 true] [1 0 false] [1 1 false]
+    [-9223372036854775808 9223372036854775807 true]
+    [9223372036854775807 -9223372036854775808 false]]))
+
+(deftest sh13-executes-integer-equality-only-in-the-selected-arm
+  ;; The compiler's recursive-component validator compares a component's
+  ;; function count with one inside a selected arm. These literal witnesses
+  ;; cover that operation/placement, not the helper's full record ingress.
+  (check-selected-comparison-arm
+   :integer-eq :integer-equality
+   [[1 1 true] [0 1 false] [1 0 false] [-1 -1 true]
+    [-9223372036854775808 -9223372036854775808 true]
+    [9223372036854775807 9223372036854775807 true]
+    [-9223372036854775808 9223372036854775807 false]]))
 
 (deftest sh13-preserves-literal-keyword-return-values
   ;; Actual c11-opcode outputs are supplied literal DATA here, not a lowering
