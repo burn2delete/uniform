@@ -1807,13 +1807,14 @@
                      (second arguments-result) :rejected]))
               (if (= function 'conj)
                 (if (set? left)
-                  (if (if (keyword? right) (if (= 0 (count left)) true (keyword? (first left))) false)
+                  (let [symbols? (if (symbol? right) (if (= 0 (count left)) true (symbol? (first left))) false)]
+                    (if (if symbols? true (if (keyword? right) (if (= 0 (count left)) true (keyword? (first left))) false))
                     (let [n (count left) construction (+ 1 (* 2 n)) base (+ 2 construction)]
                     (if (if (< n 0) true (> n 1024))
-                      [{:diagnostic "P15S23X002" :reason :keyword-set-insertion-value-width :operation operation :work-count 2}
+                      [{:diagnostic "P15S23X002" :reason (if symbols? :symbol-set-insertion-value-width :keyword-set-insertion-value-width) :operation operation :work-count 2}
                        (second arguments-result) :rejected]
                       (if (> base 65536)
-                        [{:diagnostic "P15S23X002" :reason :keyword-set-insertion-work-limit :operation operation
+                        [{:diagnostic "P15S23X002" :reason (if symbols? :symbol-set-insertion-work-limit :keyword-set-insertion-work-limit) :operation operation
                           :work-count base :work-count-kind :logical-reservation-including-failed-attempt}
                          (second arguments-result) :rejected]
                         (let [checked (p15-s23-runtime-keyword-set-contains-work left right (- 65536 base))
@@ -1824,8 +1825,8 @@
                                  (if (= i n) (conj out right)
                                    (recur (rest remaining) (+ i 1) (conj out (first remaining))))))
                              (second arguments-result) :normal]
-                            [{:diagnostic "P15S23X002" :reason (if (= :keyword-set-contains-work-limit (get checked :reason))
-                                                                             :keyword-set-insertion-work-limit :keyword-set-insertion-value-domain-required)
+                            [{:diagnostic "P15S23X002" :reason (if (= (if symbols? :symbol-set-contains-work-limit :keyword-set-contains-work-limit) (get checked :reason))
+                                                                             (if symbols? :symbol-set-insertion-work-limit :keyword-set-insertion-work-limit) (if symbols? :symbol-set-insertion-value-domain-required :keyword-set-insertion-value-domain-required))
                               :operation operation :member-reason (get checked :reason) :domain-failure (get checked :domain-failure)
                               :work-count work :work-count-kind (if (= :exceeded-allowance-lower-bound (get checked :work-count-kind))
                                                                :exceeded-allowance-lower-bound
@@ -1837,7 +1838,7 @@
                       [(get result :value) (second arguments-result) :normal]
                       [{:diagnostic "P15S23X002" :reason (get result :reason) :operation operation
                         :work-count (get result :work-count) :work-count-kind (get result :work-count-kind)}
-                       (second arguments-result) :rejected])))
+                       (second arguments-result) :rejected]))))
                   (if (list? left)
                   [(conj left right) (second arguments-result) :normal]
                 (if (if (vector? left) (< (count left) 1024) false)

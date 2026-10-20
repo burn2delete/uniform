@@ -4550,6 +4550,47 @@
             {:status :rejected :reason :string-set-insertion-operand-type-required :work-count 2})))
         {:status :rejected :reason :string-set-insertion-arity-mismatch :work-count 2}))))
 
+(defn p15-s23-syin-selected? [arguments]
+  ; Preserve existing routes for ambiguous Never and known legacy member values.
+  (if (if (vector? arguments) (= 2 (count arguments)) false)
+    (let [receiver (get arguments 0) value (get arguments 1)]
+      (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
+      (if (if (map? receiver) (if (= 3 (count receiver))
+            (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
+                  (if (keyword? (first fields)) (recur (rest fields)) false)))
+              (if (= :gravity.type/set (get receiver :kind))
+                (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false) false)
+        (let [members (get receiver :element-types)]
+          (if (= 0 (count members)) (= :gravity.type/symbol value)
+            (if (= :gravity.type/symbol (get members 0))
+              (if (= :gravity.type/symbol value) true (= :gravity.type/never value)) false))) false)) false)))
+
+(defn p15-s23-syin-type-work [arguments budget]
+  ; STD3: finite Symbol input is checked completely; the result retains no member facts.
+  (let [limit (if (< budget 65536) budget 65536)]
+    (if (< limit 2) {:status :rejected :reason :symbol-set-insertion-work-limit :work-count 2}
+      (if (if (vector? arguments) (= 2 (count arguments)) false)
+        (let [receiver (get arguments 0) value (get arguments 1)
+              construction (if (= :gravity.type/never value) 0 3)]
+          (if (if (map? receiver) (if (= 3 (count receiver))
+                (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
+                      (if (keyword? (first fields)) (recur (rest fields)) false)))
+                  (if (= :gravity.type/set (get receiver :kind))
+                    (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false) false)
+            (let [members (get receiver :element-types) width (count members) work (+ 2 width construction)]
+              (if (> width 1024) {:status :rejected :reason :symbol-set-insertion-type-width :work-count 2}
+                (if (> work limit) {:status :rejected :reason :symbol-set-insertion-work-limit :work-count work}
+                  (if (loop [i 0] (if (= i width) true
+                        (if (= :gravity.type/symbol (get members i)) (recur (+ i 1)) false)))
+                    (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
+                      {:status :accepted :collection-family :symbol-set-insertion :argument-types arguments
+                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never :gravity.type/set)
+                       :operand-work (+ 2 width) :result-work 0 :construction-work construction :work-count work}
+                      {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count work})
+                    {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count work}))))
+            {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count 2}))
+        {:status :rejected :reason :symbol-set-insertion-arity-mismatch :work-count 2}))))
+
 (defn p15-s23-ksin-selected? [arguments]
   ; Preserve the String route for ambiguous empty-Set/Never and wrong families.
   (if (if (vector? arguments) (= 2 (count arguments)) false)
@@ -4592,9 +4633,11 @@
 
 (defn p15-s23-pl-type-work [arguments budget]
   (if (if (= :gravity.type/set (get arguments 0)) true (if (map? (get arguments 0)) (= :gravity.type/set (get (get arguments 0) :kind)) false))
-    (if (p15-s23-ksin-selected? arguments)
+    (if (if (< budget 2) false (p15-s23-syin-selected? arguments))
+      (p15-s23-syin-type-work arguments budget)
+      (if (p15-s23-ksin-selected? arguments)
       (p15-s23-ksin-type-work arguments budget)
-      (p15-s23-ssin-type-work arguments budget))
+      (p15-s23-ssin-type-work arguments budget)))
   (if (= 2 (count arguments))
     (let [checked (p15-s23-lc-type-work arguments budget) used (get checked :work-count)]
       (if (= :accepted (get checked :status))
@@ -4673,7 +4716,7 @@
                               (recur (+ i 1))) false) false) false) false)))) false) false) false) false)) false))
 
 (defn p15-s23-pl-source [core node call edge nodes bindings types module validation]
-  (if (if (= :keyword-set-insertion (get validation :collection-family))
+  (if (if (if (= :symbol-set-insertion (get validation :collection-family)) true (= :keyword-set-insertion (get validation :collection-family)))
         (p15-s23-ksin-source-ids? node call nodes bindings module) true)
     (if (if (vector? (get call :argument-node-ids))
         (if (= 2 (count (get call :argument-node-ids)))
@@ -4707,7 +4750,40 @@
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
            (= :accepted (get validation :status))] )
-      (if (= :keyword-set-insertion (get validation :collection-family))
+      (if (= :symbol-set-insertion (get validation :collection-family))
+        (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
+          {:kind :gravity.type/applied-symbol-set-insertion :version :sh08-symbol-set-insertion-v1
+       :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-symbol-set-insertion
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :insertion-semantics {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
+                           :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
+                           :member-domain :independently-established-symbol-only :member-equality :guarded-atomic-symbol-value
+                           :symbol-equality :original-namespace-and-name :normalization :none :locale :none :coercion :none
+                           :resolution-authority :none :representation-unit-policy :jvm-utf16-symbol-display-for-work-only
+                           :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
+                           :operand-evaluation :left-to-right-once :operand-position :non-tail
+                           :result-evidence :bare-set-only :cardinality-analysis :none
+                           :domain-validation :complete-and-unique-before-hit-miss-or-construction
+                           :budget :full-remaining-membership-and-construction-reservation
+                           :value-work-model :gravity/symbol-set-insertion-logical-content-work-v1
+                           :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
+       :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
+       :storage-policy {:representation :development-persistent-symbol-set :input :preserved
+                        :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
+                        :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
+                        :physical-sharing :unpromised :enumeration :unobserved}
+       :input-extent (get validation :input-extent)
+       :result-extent nil
+       :operand-type-work (get validation :operand-work) :result-type-work (get validation :result-work)
+       :type-construction-work (get validation :construction-work) :result-type (get validation :result-type)
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :set-member-domain :inserted-value :insertion-semantics :member-equality :representation-work :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+        (if (= :keyword-set-insertion (get validation :collection-family))
         (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
           {:kind :gravity.type/applied-keyword-set-insertion :version :sh08-keyword-set-insertion-v1
        :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-keyword-set-insertion
@@ -4790,11 +4866,21 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :list-suffix :prepended-value :allocation-policy :storage-policy :profile :target :evaluation-order]})) nil)) nil)
+                      :callee-body :list-suffix :prepended-value :allocation-policy :storage-policy :profile :target :evaluation-order]}))) nil)) nil)
     nil))
 
 (defn p15-s23-pl-constraint [descriptor]
-  (if (= :sh08-keyword-set-insertion-v1 (get descriptor :version))
+  (if (= :sh08-symbol-set-insertion-v1 (get descriptor :version))
+    {:constraint-id-request {:domain :gravity/sh08-symbol-set-insertion-constraint-v1 :application descriptor}
+     :kind :equality :producer-rule :sh08-symbol-set-insertion-v1
+     :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :symbol-set-insertion}
+     :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+     :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+                :direct-effects (get descriptor :direct-effects) :insertion-semantics (get descriptor :insertion-semantics)
+                :allocation-policy (get descriptor :allocation-policy) :storage-policy (get descriptor :storage-policy)}
+     :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+     :status :solved :diagnostics []}
+    (if (= :sh08-keyword-set-insertion-v1 (get descriptor :version))
     {:constraint-id-request {:domain :gravity/sh08-keyword-set-insertion-constraint-v1 :application descriptor}
      :kind :equality :producer-rule :sh08-keyword-set-insertion-v1
      :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :keyword-set-insertion}
@@ -4816,10 +4902,20 @@
                {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects)})
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []}))
+   :status :solved :diagnostics []})))
 
 (defn p15-s23-pl-call-fact [descriptor module]
-  (if (= :sh08-keyword-set-insertion-v1 (get descriptor :version))
+  (if (= :sh08-symbol-set-insertion-v1 (get descriptor :version))
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+      {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-symbol-set-insertion-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-symbol-set-insertion :applied-symbol-set-insertion descriptor :effect-facts-source :audited-symbol-set-insertion-intrinsic})
+    (if (= :sh08-keyword-set-insertion-v1 (get descriptor :version))
     (let [source (get descriptor :source) edge (get descriptor :source-edge)]
       {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-keyword-set-insertion-call-type-fact-v1 :application descriptor}
@@ -4846,7 +4942,7 @@
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-list-prepend :applied-list-prepend descriptor :effect-facts-source :audited-collection-intrinsic}))))
+     :dispatch :direct-list-prepend :applied-list-prepend descriptor :effect-facts-source :audited-collection-intrinsic})))))
 
 
 (defn p15-s23-pl-finish [header]
@@ -4856,7 +4952,7 @@
   (loop [remaining (get context :ledger)]
     (if (= 0 (count remaining)) true
       (let [row (first remaining) producer (get row :producer-rule)]
-        (if (if (keyword? producer) (contains? #{:sh08-vector-append-v1 :sh08-list-prepend-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1} producer) false)
+        (if (if (keyword? producer) (contains? #{:sh08-vector-append-v1 :sh08-list-prepend-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v1} producer) false)
           (let [lhs (get row :lhs) id (get lhs :core-node-id)]
             (if (if (map? lhs) (if (= 2 (count lhs)) (p15-s23-sse-ids? [id] 1) false) false)
               (let [call (get (get context :calls) id) node (get (get context :nodes) id)]
@@ -4881,12 +4977,14 @@
                   validation (p15-s23-pl-type-work [(get (get context :types) (get args 0) :gravity.type/unknown)
                                                    (get (get context :types) (get args 1) :gravity.type/unknown)] (- budget base row-work))
                   charge (+ base row-work (get validation :work-count))]
-              (if (contains? #{:list-prepend-work-limit :string-set-insertion-work-limit :keyword-set-insertion-work-limit} (get validation :reason))
+              (if (contains? #{:list-prepend-work-limit :string-set-insertion-work-limit :keyword-set-insertion-work-limit :symbol-set-insertion-work-limit} (get validation :reason))
                 (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
                 (if (= false (= :accepted (get validation :status)))
                   (assoc (p15-s23-typed-node-error (get validation :reason) node) :work-count charge)
-      (if (if (= :keyword-set-insertion (get validation :collection-family))
-            (p15-s23-ksin-ledger-ids? context) true)
+      (if (if (= :symbol-set-insertion (get validation :collection-family))
+            (p15-s23-ksin-ledger-ids? context)
+            (if (= :keyword-set-insertion (get validation :collection-family))
+            (p15-s23-ksin-ledger-ids? context) true))
       (let [edge (get (get context :edges) id)
             forms (get context :forms) nodes (get context :nodes)
             owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
@@ -4896,10 +4994,12 @@
                    (if (= 0 (count remaining)) out
                      (let [row (first remaining)]
                        (recur (rest remaining)
-                         (if (if (if (keyword? (get row :producer-rule)) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1} (get row :producer-rule)) false)
+                         (if (if (if (keyword? (get row :producer-rule)) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v1} (get row :producer-rule)) false)
                                (= id (get (get row :lhs) :core-node-id)) false) (conj out row) out)))))]
         (if (if (if (map? descriptor)
-              (if (= :keyword-set-insertion (get validation :collection-family)) (p15-s23-ksin-call-forms? node nodes forms) true) false)
+              (if (= :symbol-set-insertion (get validation :collection-family))
+            (p15-s23-ksin-call-forms? node nodes forms)
+            (if (= :keyword-set-insertion (get validation :collection-family)) (p15-s23-ksin-call-forms? node nodes forms) true)) false)
               (p15-s23-typed-all
                 [(= descriptor (get (get context :types) (get call :operator-node-id)))
                  (= (get descriptor :result-type) (get (get context :types) id))
@@ -4918,11 +5018,11 @@
                              (= (get child :source) (p15-s23-typed-source form))
                              (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
                          (recur (+ i 1)) false))))]) false)
-          (if (contains? #{:sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1} (get descriptor :version))
+          (if (contains? #{:sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v1} (get descriptor :version))
             (if (loop [remaining (get context :ledger)]
               (if (= 0 (count remaining)) true
                 (let [row (first remaining) producer (get row :producer-rule)]
-                  (if (if (keyword? producer) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1} producer) false)
+                  (if (if (keyword? producer) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v1} producer) false)
                     (let [row-id (get (get row :lhs) :core-node-id)
                           source-call (if (if (keyword? row-id) true (if (string? row-id) (= 71 (count row-id)) false))
                                         (get (get context :calls) row-id) nil)
@@ -4930,9 +5030,11 @@
                           op-id (get source-call :operator-node-id)
                           source-type (if (if (map? source-call) (if (keyword? op-id) true (if (string? op-id) (= 71 (count op-id)) false)) false)
                                         (get (get context :types) op-id) nil)
-                          expected-kind (if (= :sh08-keyword-set-insertion-v1 producer) :gravity.type/applied-keyword-set-insertion
+                          expected-kind (if (= :sh08-symbol-set-insertion-v1 producer)
+            :gravity.type/applied-symbol-set-insertion
+            (if (= :sh08-keyword-set-insertion-v1 producer) :gravity.type/applied-keyword-set-insertion
                                           (if (= :sh08-string-set-insertion-v2 producer) :gravity.type/applied-string-set-insertion
-                                          (if (= :sh08-list-prepend-v1 producer) :gravity.type/applied-list-prepend :gravity.type/applied-vector-append)))]
+                                          (if (= :sh08-list-prepend-v1 producer) :gravity.type/applied-list-prepend :gravity.type/applied-vector-append))))]
                       (if (p15-s23-typed-all
                             [(map? source-call) (map? source-node)
                              (= row-id (get source-call :core-node-id) (get source-node :node-id))
@@ -4956,9 +5058,11 @@
               (assoc (p15-s23-compiler-result {:op :builtin-call :function 'conj :args (get compiled :value)})
                 :work-count (+ charge (get compiled :work-count)))
               (assoc compiled :work-count (+ charge (get compiled :work-count 0))))))
-          (assoc (p15-s23-typed-node-error (if (= :keyword-set-insertion (get validation :collection-family)) :unsupported-or-mismatched-typed-keyword-set-insertion
+          (assoc (p15-s23-typed-node-error (if (= :symbol-set-insertion (get validation :collection-family))
+            :unsupported-or-mismatched-typed-symbol-set-insertion
+            (if (= :keyword-set-insertion (get validation :collection-family)) :unsupported-or-mismatched-typed-keyword-set-insertion
                                         (if (= :string-set-insertion (get validation :collection-family))
-                                        :unsupported-or-mismatched-typed-string-set-insertion :unsupported-or-mismatched-typed-list-prepend)) node) :work-count charge)))
+                                        :unsupported-or-mismatched-typed-string-set-insertion :unsupported-or-mismatched-typed-list-prepend))) node) :work-count charge)))
       (assoc (p15-s23-typed-node-error :typed-conj-source-identities-required node) :work-count charge)))))
               (assoc (p15-s23-typed-node-error :typed-conj-source-id-required node) :work-count base)))))))))
 
@@ -13010,9 +13114,9 @@
       (if (= :gravity.type/applied-integral-equality (get (get (get context :types) (first (get node :children))) :kind))
         (p15-s23-typed-compile-integral-equality context node budget) (p15-s23-typed-compile-equality context node budget)))
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
-        (contains? #{:gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion}
+        (contains? #{:gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion}
           (get (get (get context :types) (first (get node :children))) :kind)) false)
-    (if (contains? #{:gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion} (get (get (get context :types) (first (get node :children))) :kind))
+    (if (contains? #{:gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion} (get (get (get context :types) (first (get node :children))) :kind))
       (p15-s23-typed-compile-prepend context node budget) (p15-s23-typed-compile-append context node budget))
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
         (contains? #{:gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition} (get (get (get context :types) (first (get node :children))) :kind)) false)
