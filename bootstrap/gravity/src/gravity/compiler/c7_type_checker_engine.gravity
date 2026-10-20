@@ -10234,7 +10234,7 @@
                                (if (vector? next)
                                  (recur (+ i 1) next
                                    (conj rows [(get entry :call-core-node-id) (get entry :argument-node-id)
-                                               (get entry :entry) (get entry :argument-types)]) charge)
+                                               (get entry :entry)]) charge)
                                  {:status :not-applicable :work-count charge}))
                              {:status :not-applicable :work-count charge})))))]
         (if (contains? seeded :status) seeded

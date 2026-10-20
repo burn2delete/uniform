@@ -11835,6 +11835,62 @@
         table {:inner-get (:local-private-product first-result)}]
     (is (= :accepted (:status first-result)) (pr-str (select-keys first-result [:status :reason :work-count])))
     (when (= :accepted (:status first-result))
+      (let [observe (fn [input prior]
+                      (invoke-c7 'sh08-pc-local-inputs-work
+                        [(get-in input [:parent-result :descriptor]) (:types input) prior (:nodes input) 65536]))
+            baseline (observe data (:types data))
+            row-for (fn [result id] (first (filter #(= id (first %)) (:type-inputs result))))
+            entries (get-in data [:parent-result :descriptor :presence-proof :entries])]
+        (is (= :accepted (:status baseline)))
+        (is (= (mapv (juxt :call-core-node-id :argument-node-id :entry) entries)
+               (:entry-inputs baseline)))
+        (is (every? #(= 3 (count %)) (:entry-inputs baseline)))
+        (is (= [:other-0 true :gravity.type/keyword false nil nil] (row-for baseline :other-0)))
+        ;; Every incoming argument remains an observation, including unused
+        ;; arguments and arguments of entries that no longer return normally.
+        (doseq [value [:gravity.type/integer :gravity.type/never]]
+          (let [changed (refresh (assoc-in data [:types :other-0] value))
+                observed (observe changed (:types changed))]
+            (is (= :accepted (:status observed)))
+            (is (= [:other-0 true value false nil nil] (row-for observed :other-0)))
+            (is (not= (:type-inputs baseline) (:type-inputs observed)))))
+        (doseq [[input prior expected]
+                [[(update data :types dissoc :other-0) (:types data)
+                  [:other-0 false nil true true :gravity.type/keyword]]
+                 [(assoc-in data [:types :other-0] :gravity.type/unknown) (:types data)
+                  [:other-0 true :gravity.type/unknown true true :gravity.type/keyword]]
+                 [(update data :types dissoc :other-0) (dissoc (:types data) :other-0)
+                  [:other-0 false nil true false nil]]]]
+          (let [observed (observe input prior)]
+            (is (= :accepted (:status observed)))
+            (is (= expected (row-for observed :other-0)))
+            (is (not= (:type-inputs baseline) (:type-inputs observed)))))
+        ;; The selected collection's child observations keep current presence,
+        ;; concrete values, and precisely the prior fallback that is consulted.
+        (doseq [[input prior expected]
+                [[(assoc-in data [:types :entry-value-0-0] :gravity.type/integer) (:types data)
+                  [:entry-value-0-0 true :gravity.type/integer false nil nil]]
+                 [(update data :types dissoc :entry-value-0-0)
+                  (assoc (:types data) :entry-value-0-0 :gravity.type/integer)
+                  [:entry-value-0-0 false nil true true :gravity.type/integer]]
+                 [(assoc-in data [:types :entry-value-0-0] :gravity.type/unknown)
+                  (assoc (:types data) :entry-value-0-0 :gravity.type/string)
+                  [:entry-value-0-0 true :gravity.type/unknown true true :gravity.type/string]]]]
+          (let [observed (observe input prior)]
+            (is (= :accepted (:status observed)))
+            (is (= expected (row-for observed :entry-value-0-0)))
+            (is (not= (:type-inputs baseline) (:type-inputs observed))))))
+      (let [changed (refresh (assoc-in data [:types :other-0] :gravity.type/integer))
+            scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+            original @scoped full-calls (atom 0)
+            result (with-redefs-fn
+                     {scoped (fn [& args]
+                               (when (= 'sh08-pc-from-parent (nth args 2)) (swap! full-calls inc))
+                               (apply original args))}
+                     #(private-first-entry-local-derived changed table (:types changed) 65536))]
+        (is (= :accepted (:status result)))
+        (is (= 1 @full-calls) "A changed nonselected argument reconstructs BU DATA")
+        (is (= :gravity.type/integer (get-in result [:descriptor :presence-proof :entries 0 :argument-types 1]))))
       (let [changed (refresh (assoc-in data [:types :other-0] :gravity.type/never))
             result (private-first-entry-local-derived changed table (:types changed) 65536)]
         (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
