@@ -113,6 +113,65 @@ inputs are normalized DATA. They are integration checks, not fast
 `*-development-kernel` tests. Their bodies and coverage remain available;
 renaming them does not require replaying an unchanged expensive proof.
 
+### Explicit bounded closure and storage escapes (SH-10)
+
+For normalized ownership events, change
+`bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity`.
+L10, SAFE3 and C9 govern this boundary. The existing `:escape-borrow` operation
+accepts `:function-return`, `:closure-capture` and `:global-or-static-storage`
+only with an active borrow and an explicit finite destination interval no
+longer than the owner's interval. Outliving or inactive borrows reject;
+unknown destinations and malformed or unbounded coordinates fail closed.
+
+This is an explicit normalized-event interface, not source-level lifetime
+inference or permission to assert a false finite bound for global storage.
+The existing owned-mutable and runtime-borrow scenario validators preserve the
+same destination restriction. Their acquisition rules remain distinct.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh10-bounded-escape-destination-test \
+  --exact sh10-bounded-escape-fixtures-development-kernel \
+  --exact sh10-bounded-escape-transitions-development-kernel \
+  --exact sh10-bounded-escape-adapter-development-kernel --fail-fast
+```
+
+The paired fixtures are in `bootstrap/clojure/fixtures/self-hosting/sh-10/`,
+under `accepted/` and `rejected/`, named `bounded-escape-destinations`.
+The Gravity fixture requests and original C9 pass execute; QST receives byte
+and reader parity checks only. Adapter tests use explicitly supplied records,
+not a fresh C8 producer or authoritative proof. They check original request
+construction, source/origin preservation and result-substitution rejection.
+Use the existing ownership-transition tests for affected state-machine
+regressions. C10's current read-only ingress does not consume these lifecycle
+results; C10/MIR escape propagation and automatic lifetime inference remain
+separate implementation work. No migration or milestone status changes follow.
+
+### Exclusive owner writes (SH-10)
+
+The same C9 owner checks normalized `:write` events for initialized, available
+owned-mutable values. Direct owner writes require no active immutable or
+mutable borrow. Ending one of several immutable borrows is insufficient.
+Move, consume and initialization errors keep their existing precedence;
+persistent immutable values remain read-only. Write events cannot name a
+borrow or any move/escape destination. `:initialize` remains separate.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh10-owner-write-test \
+  --exact sh10-owner-write-fixtures-development-kernel \
+  --exact sh10-owner-write-transitions-development-kernel \
+  --exact sh10-owner-write-shape-and-adapter-fences-development-kernel --fail-fast
+```
+
+Paired `owner-write` fixtures under the same SH-10 accepted/rejected directories
+construct lifecycle requests; the original Gravity C9 implementation analyzes
+them. This tests ownership legality and preserved diagnostics, not physical
+storage mutation. Existing return/escape/borrow/move cases are proportionate
+regressions. Both current pure-C8 adapter families still reject writes: a
+normalized ownership fact does not manufacture mutation effects or authority.
+Effectful source integration, C10/MIR propagation and migration remain separate.
+
 ### First stored value of a proven-nonempty Vector
 
 STD3 defines `first` on a persistent nonempty Vector as its stored index-zero

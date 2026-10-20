@@ -390,13 +390,15 @@
    :availability-states #{:available :moved :consumed}
    :events #{:initialize
              :read
+             :write
              :borrow-immutable
              :borrow-mutable
              :end-borrow
              :move
              :consume
              :escape-borrow}
-   :escape-destinations #{:function-return}
+   :escape-destinations #{:function-return :closure-capture
+                          :global-or-static-storage}
    :diagnostics ["L10-UNINIT-READ"
                  "C9-USE-AFTER-MOVE"
                  "C9-USE-AFTER-CONSUME"
@@ -555,6 +557,7 @@
        (sh10-member?
         #{:initialize
           :read
+          :write
           :borrow-immutable
           :borrow-mutable
           :end-borrow
@@ -571,10 +574,16 @@
                 (sh10-lifetime-coordinate?
                  (get event :destination-lifetime-end))
                  (sh10-member?
-                  #{:function-return}
+                  #{:function-return :closure-capture
+                    :global-or-static-storage}
                   (get event :escape-destination))
                  false))
-             true)
+             (if (= :write (get event :op))
+               (if (= nil (get event :borrow-id))
+                 (if (= nil (get event :destination-owner))
+                   (if (= nil (get event :destination-lifetime-end))
+                     (= nil (get event :escape-destination)) false) false) false)
+               true))
            false)
          false)
        false))
@@ -673,6 +682,13 @@
   (let [operation (get event :op)
         immutable-count (get state :immutable-borrow-count)
         mutable-id (get state :mutable-borrow-id)]
+    (if (= operation :write)
+      (if (sh10-active-borrow? state)
+        (sh10-transition-rejected
+         request event state "C9-MUT-ALIAS"
+         :owner-write-during-active-borrow
+         :end-all-borrows-before-owner-write)
+        (sh10-transition-accepted request event state state))
     (if (= operation :read)
       (if (= nil mutable-id)
         (sh10-transition-accepted request event state state)
@@ -825,7 +841,7 @@
                     (sh10-transition-rejected
                      request event state "C9-UNSAFE"
                      :unsupported-ownership-event
-                     :use-a-bounded-sh10-ownership-event)))))))))))
+                     :use-a-bounded-sh10-ownership-event))))))))))))
 
 (defn sh10-transition [request event state]
   (if (sh10-valid-event-shape? event)
@@ -858,7 +874,12 @@
 (defn sh10-result-scope [request]
   (if (= :persistent-immutable (get request :ownership-kind))
     :persistent-immutable-read-only
-    :owned-mutable-initialization-borrow-move-consume))
+    (loop [remaining (get request :events)]
+      (if (= 0 (count remaining))
+        :owned-mutable-initialization-borrow-move-consume
+        (if (= :write (get (first remaining) :op))
+          :owned-mutable-owner-write
+          (recur (rest remaining)))))))
 
 (defn sh10-run-events [request remaining state facts]
   (if (= (count remaining) 0)
@@ -1210,7 +1231,8 @@
    :accepted-events
    #{:initialize :read :borrow-immutable :end-borrow :move :consume
      :escape-borrow}
-   :escape-destinations #{:function-return}
+   :escape-destinations #{:function-return :closure-capture
+                          :global-or-static-storage}
    :profile :meta
    :target :jvm
    :diagnostics ["L10-UNINIT-READ"
@@ -1264,7 +1286,9 @@
     (if (= nil (get event :destination-owner))
       (if (sh10-lifetime-coordinate?
            (get event :destination-lifetime-end))
-        (= :function-return (get event :escape-destination))
+        (sh10-member? #{:function-return :closure-capture
+                        :global-or-static-storage}
+                      (get event :escape-destination))
         false)
       false)))
 

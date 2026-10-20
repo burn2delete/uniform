@@ -1,0 +1,24 @@
+(ns gravity.self-hosting.sh10.bounded-escape-destinations.rejected
+  (:profile :meta) (:target :jvm) (:exports [inactive-escape-request])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Explicit normalized lifecycle DATA: the borrow ended before the escape.
+(defn inactive-escape-event [id operation destination end]
+  {:event-id id :op operation :borrow-id :borrow
+   :destination-owner nil :destination-lifetime-end end
+   :escape-destination destination :control-path [:normal :inactive-escape]
+   :source-span {:source "bounded-escape-destinations.gravity" :start-byte 21 :end-byte 29}
+   :origin-chain [{:generated-by :bounded-escape-fixture :input :ended-borrow}]})
+
+(defn inactive-escape-request [destination]
+  {:artifact :gravity/sh10-normalized-ownership-request
+   :request-id :inactive-escape :value-id :value :owner-id :owner
+   :ownership-kind :owned-mutable :initialization :initialized
+   :availability :available :owner-lifetime-end 10
+   :events [(inactive-escape-event :begin :borrow-immutable nil nil)
+            (inactive-escape-event :end :end-borrow nil nil)
+            (inactive-escape-event :escape :escape-borrow destination 8)]
+   :type-fact-id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :effect-fact-id "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+   :source-span {:source "bounded-escape-destinations.gravity" :start-byte 0 :end-byte 30}
+   :origin-chain [] :profile :meta :target :jvm})

@@ -104,6 +104,62 @@ local improvement. Stale authoritative evidence stays stale until an explicit
 stable-module migration decision re-establishes it. Preparation documents,
 review counts and scheduler changes are not executable progress.
 
+### Explicit bounded borrow destinations: SH-10 development increment
+
+The existing C9 normalized ownership state machine now recognizes the contract's
+`:closure-capture` and `:global-or-static-storage` destinations alongside
+`:function-return`. Each escape still requires an active borrow and a valid
+explicit destination endpoint no greater than the owner's endpoint. Outliving
+and inactive borrows reject with existing C9 diagnostics and event lineage;
+unknown destinations and malformed endpoints fail closed. Both existing
+scenario validators use the same destination restriction without broadening
+their different acquisition rules.
+
+The Gravity C9 implementation and accepted/rejected request fixtures execute in
+three focused tests, passing 257 assertions at development commit `05a0b1f1`.
+Four existing ownership-transition regressions passed 424 assertions; the
+language-boundary checks passed six tests and 11 assertions. The Clojure LOC
+validator passed for 2,021 source files with maximum 250 physical lines. These are
+separate completed selections, not one whole-suite run.
+Paired QST fixtures receive byte/reader parity only. The adapter tests validate
+explicitly supplied records and source/result joins; they are not fresh C8
+production or admission evidence. The direct workflow is documented in
+`docs/development-verification.md`.
+
+This checks explicit bounded intervals, not inferred source closure/global
+lifetimes or a real storage provider. A false finite bound cannot justify
+unbounded global storage. C10's read-only ingress does not consume these
+lifecycle results, so C10/MIR escape propagation remains separate. SH-10 stays
+partial; migration, self-hosting, release and milestone counts are unchanged.
+
+### Exclusive owner writes: SH-10 development increment
+
+C9 now analyzes normalized direct-owner `:write` events. Initialized, available
+owned-mutable values accept writing only without active borrows; immutable or
+mutable aliases reject with `C9-MUT-ALIAS` and the original event lineage.
+Ending only one of several immutable borrows does not permit writing. Existing
+moved, consumed and uninitialized errors retain precedence. Persistent values
+remain read-only, and write events cannot name a borrowed-access or destination
+field. Initialization remains an explicit separate operation.
+
+The first owner-write draft `0f0e4c2f` was unrun. Successor `d7df09e6` uses only
+existing binary nil checks rather than adding an unnecessary variadic-equality
+requirement to this compiler client. Its three focused tests passed 129
+assertions, executing Gravity fixture request constructors and the original
+C9 analysis and verifier. Seven existing transition/escape regressions passed
+681 assertions; six language-boundary tests passed 11 assertions. The Clojure
+LOC validator passed for 2,021 files with maximum 250 physical lines. These
+are separate completed selections, not a whole-suite result.
+QST has byte/reader parity only. No physical storage
+write or effectful source composition ran. Both pure-C8 scenario families
+still reject writes; no mutation effect or authority is inferred from these
+normalized requests. Requests without writes preserve their earlier scope;
+new write scope is derived from current validated events.
+
+The direct checks are listed in `docs/development-verification.md`. This is an
+ownership-legality increment, not full SH-10, downstream C10/MIR propagation,
+authoritative migration, native support or self-hosting completion.
+
 ### Qualified current-namespace var objects: development increment
 
 The owning `gravity.checked-core` pass now lowers `(var demo.value/answer)`

@@ -156,7 +156,7 @@
     (is (= :owned-mutable (:ownership-kind policy)))
     (is (contains? (:events policy) :borrow-immutable))
     (is (contains? (:events policy) :move))
-    (is (= #{:function-return}
+    (is (= #{:function-return :closure-capture :global-or-static-storage}
            (:escape-destinations policy)))
     (is (some #{:region-lifetimes} (:pending policy)))
     (is (some #{:authenticated-effectful-or-nonprimitive-sh09-adapter}
