@@ -2241,6 +2241,64 @@ other target gates, authoritative migration, self-hosting and release remain
 outstanding. This is executable development progress, not completion credit
 for those broader boundaries or a performance benchmark.
 
+### Module-local literal Keyword-Set initialization: development increment
+
+Three existing functions in the typed emitter and runtime extend the module
+literal boundary to direct root Set definitions containing distinct literal
+Keywords, including empty Sets. C7/C8, public interfaces, runtime function inventory,
+IR operations and the binding-ID pool are unchanged. Nested evaluated Sets,
+computed members, other member families and arbitrary initializer code remain
+outside this increment; quoted DATA retains its old behavior.
+
+Before initialization, exact Set IR and its complete Keyword domain and
+uniqueness are validated without constructing a guest Set. For `n` members and
+`U` existing UTF-16 representation units, the logical census reservation is
+`1 + 3*n + n*(n-1)/2 + (n+1)*U`. The extra `n` beyond the existing constructor
+reservation pays the later finite-type member join, whose shape/cardinality
+guards run before traversal. Width 1,024 and aggregate module allowance 65,536
+remain separate limits. Failed reservations preserve lower-bound meaning;
+these units do not establish provider CPU, heap or physical allocation bounds.
+
+The first executed focused batch passed ten tests/1,045 assertions: 202 new
+and 843 adjacent assertions. Two test-input corrections preceded execution:
+an obsolete supported-Keyword rejection moved to String, and normalized emitter
+inputs gained the required source value and coherent synthetic identities.
+Earlier unexecuted candidates remain in Git; no failed JVM epoch is claimed. Runtime
+instrumentation observed no guest constructor calls during census or rejection
+of a later malformed initializer/read, one call for repeated reads of one
+binding, two calls for two bindings, and construction again on a fresh module
+execution. These are helper-invocation observations and validated constructor
+occurrences, not physical allocation-event measurements.
+
+The owning-C2 paired parser check passed one test/12 assertions, including
+exact W5 definition-text reuse. The one changed-source composition passed
+one test/59 assertions (53 composition plus six existing loader checks) in
+137.992 seconds selected execution after 11.870 seconds namespace loading
+at 2 GiB. Its exact safety-outcomes definition and unused empty Set produced
+two initialized bindings before the single main entry, whose count and membership
+queries used three pooled reads and returned `[4 true false]`. The observed guest trace was two constructor
+calls followed by entry. Three definitions/roots, one function, three calls,
+two Set initializer instructions and one body Vector retained their current
+source/type/manifest records. C8 preserved namespace and Set allocation while
+the reads added no direct allocation. Runtime function inventory remains 54.
+
+Both fixtures passed original C7/C8 verification and an observed public C7
+assembly gate. The String-Set initializer negative then rejected at lowering
+with `P15S23Q002` and `:unsupported-typed-module-initializer`, without runtime
+entry. Its existing wrapper missing-fact/remediation fields remain in the
+diagnostic; the assertion checks primary ID/reason, not an exact-only record.
+Q is parser-only, seed controls are zero, and fresh C6 development sessions
+plus same-catalog replay are not fresh public C6 verification. Inclusive
+timings are not phase-isolated performance evidence. No source replay or
+failed executed epoch occurred in this increment.
+Separate language-boundary checks passed six tests/11 assertions; LOC validation
+passed 2,021 source files, zero exceptions, maximum 250 physical lines.
+
+Whole W5 namespace legality, including its current empty effect declaration,
+other targets, authoritative migration, SH-07, self-hosting and release gates
+remain separate. Exact definition-form reuse in an allocation-allowed fixture
+does not establish an unchanged full compiler-module build.
+
 ### Finite persistent Vector value equality: development implementation
 
 Binary `=` now compares actual persistent Vector values when both operands
