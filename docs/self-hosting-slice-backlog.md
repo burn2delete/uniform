@@ -9347,7 +9347,8 @@ assertions remain tied to that earlier revision; review confirmed unchanged
 outcomes for its true/false and signed-i64 inputs. Three affected/previously
 unrun selectors pass 145 assertions on the corrected revision, including
 direct invalid-payload callback controls. This is four distinct tests and 409
-assertions across two passing selections, not one clean four-test rerun.
+passing assertions retained from two invocations, not one clean four-test run;
+the first invocation's aggregate result remains failed.
 
 Separate affected controls pass normalized SH-13 3 tests/46 assertions and
 the original SH-12 diamond 1 test/98 assertions. Language-boundary checks pass
