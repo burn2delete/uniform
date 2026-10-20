@@ -501,3 +501,54 @@
         (is (= :rejected
                (:status (invoke-engine 'sh13-verify-execution
                                        [subject [true] (run base [true])]))))))))
+
+(deftest sh13-callee-parameter-carriers-are-validated-before-counting
+  ;; A genuine normalized fixture call targets a later function record.
+  (let [observe (fn [f]
+                  (try {:value (f)}
+                       (catch Throwable error
+                         {:host-error (.getName (class error))})))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [original (module plan 'sh13-factorial-module)
+            call (invoke plan 'sh13-call
+                         [:factorial/pre-call :add-one [:n] :i64 :direct #{} 30 31])
+            operations-path [:functions 1 :blocks 0 :operations]
+            call-path (conj operations-path 0)
+            callee-path [:functions 3 :params]
+            base (update-in original operations-path #(into [call] %))
+            check-rejected
+            (fn [subject rule]
+              (let [observed (observe #(run subject [5])) result (:value observed)
+                    verification
+                    (observe #(invoke-engine 'sh13-verify-execution
+                                             [subject [5] result]))]
+                (is (nil? (:host-error observed)))
+                (is (= :rejected (:status result)))
+                (is (= rule (get-in result [:diagnostics 0 :rule])))
+                (is (nil? (:execution result)))
+                (is (nil? (:host-error verification)))
+                (is (= :passed (get-in verification [:value :status])))))
+            result (run base [5])]
+        (is (= :accepted (:status result)))
+        (is (= 120 (get-in result [:execution :value])))
+        (is (some #(= :factorial/pre-call (:operation %))
+                  (get-in result [:execution :trace])))
+        (is (some #(and (= :enter (:event %)) (= :add-one (:function %)))
+                  (get-in result [:execution :trace])))
+        (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                              [base [5] result]))))
+        (doseq [params [7 true :bad nil {} {0 :x} '(:x) ":x" #{:x}]]
+          (check-rejected (assoc-in base callee-path params) "C11-MODULE"))
+        (let [malformed (assoc-in base callee-path 7)]
+          (doseq [[subject rule]
+                  [[(assoc-in malformed (conj call-path :callee) :missing) "C11-VERIFY"]
+                   [(assoc-in malformed (conj call-path :dispatch) :wrong) "C11-VERIFY"]
+                   [(assoc-in base (conj call-path :operands) []) "C11-TYPE"]
+                   [(assoc-in base (conj call-path :type) :bool) "C11-TYPE"]
+                   [(assoc-in malformed (conj call-path :operands) [:missing]) "C11-DOMINANCE"]
+                   [(assoc-in malformed (conj call-path :profile) :wrong) "C11-MODULE"]
+                   [(assoc-in malformed (conj call-path :facts :type) :wrong) "C11-VERIFY"]
+                   [(assoc-in malformed (conj call-path :effects) #{:error/throw}) "C11-EFFECT"]]]
+            (check-rejected subject rule))
+          (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                  [malformed [5] result])))))))))
