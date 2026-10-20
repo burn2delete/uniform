@@ -2269,6 +2269,54 @@ replay are not independent public C6 admission. Q remains parser-only. Reuse
 unchanged passing focused results; do not repeat source-product construction
 merely to obtain another green aggregate.
 
+### Finite Keyword-Set insertion: focused feedback
+
+STD3's same Set `conj` law applies to independently established finite literal
+Keyword Sets and a Keyword value: preserve present equal members and add only
+absent values. Edit the existing C7, C8, typed emitter and runtime owners. The
+result is a bare Set, not a homogeneous carrier or evidence of cardinality,
+membership or recursive parameter specialization. `count` can consume it;
+nested insertion still needs independently established member evidence.
+
+Use the direct development runner from the repository root:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-keyword-set-insertion-development-kernel \
+  --exact sh08-keyword-set-insertion-throw-consumer-development-kernel \
+  --exact sh08-keyword-set-insertion-id-guard-development-kernel \
+  --exact body-keyword-set-insertion-development-kernel \
+  --exact body-keyword-set-insertion-id-guard-development-kernel \
+  --exact current-gravity-keyword-set-insertion-lowering-development-kernel \
+  --exact current-gravity-keyword-set-insertion-lowering-id-guard-development-kernel \
+  --exact current-gravity-keyword-set-insertion-transfer-fence-development-kernel \
+  --exact current-gravity-keyword-set-insertion-runtime-development-kernel \
+  --exact current-gravity-keyword-set-insertion-fixtures-development-kernel \
+  --fail-fast
+```
+
+Include existing String insertion, List prepend, Vector append and Keyword
+membership regressions when editing shared dispatch or budget handling. Preserve
+the old empty-Set/Never String route and pure wrong-family diagnostics. An
+unsupported mixed Set has no promised enumeration order: its public rejection
+may name the selected String or Keyword domain; direct String-helper rejection
+remains exact. Check full member validity and uniqueness before hit/miss,
+remaining membership plus trusted-rebuild work, opaque-ID fences, original
+source/fact/ledger joins, once-only operands and both transfer positions.
+
+For changed source-to-runtime composition, select only
+`current-gravity-keyword-set-insertion-authenticated-composition` in the SH01
+namespace on a stable revision. It checks one positive program through C7/C8,
+assembly and one closed entry, plus one Character-Set typing rejection. This
+uses fresh C5 and a fresh C6 development session with same-catalog replay,
+not independent public C6 admission. Q fixtures are parser-only. Do not repeat
+unchanged source construction to refresh a stamp. Logical work and selected
+hostile-provider checks do not establish arbitrary provider CPU/heap bounds,
+native execution, whole-compiler consumption or authoritative migration.
+
 ### Inferred String-Set carriers: private value feedback
 
 The closed inference carrier

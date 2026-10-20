@@ -4168,6 +4168,61 @@ recursive accumulator-domain transport remain outside this increment. Full
 B14/backend execution, other targets, current-closure admission, SH-07,
 self-hosting and release require separate evidence.
 
+### Finite Keyword-Set insertion: development increment
+
+The existing C7, C8, typed emitter and runtime now support binary `conj` of an
+independently established finite all-Keyword literal Set and a Keyword value.
+STD3's existing rule preserves equal members and adds only absent values.
+The normal result is a bare Set; no member, presence, cardinality or private
+recursive-carrier facts are invented. The existing empty-Set/Never String route
+and List/Vector behavior remain. A nonempty Keyword receiver with Never retains
+the non-invoked result/effect rules. Bare, mixed and other unsupported input
+domains reject; this does not enable nested insertion without new evidence.
+
+Complete actual Keyword domains and uniqueness validate before hit/miss. One
+unchanged membership helper consumes the remaining allowance after reserving
+trusted result construction; absent values rebuild a trusted persistent Set.
+Present values may retain input storage, but only value preservation is promised.
+Both normal branches retain possible allocation and storage obligations.
+Selected hostile receivers and opaque IDs are tested, not arbitrary host-provider
+CPU, memory or callback behavior. The runtime remains 56 functions, and the
+String insertion helper is unchanged. The compiler's guard-Set insertion site
+motivates this slice; the whole compiler module was not executed.
+
+The first focused launch at `c696cb31` exited 2 during namespace loading: a new
+test referenced a later-defined helper. No tests completed and no timing receipt
+was produced. Test-only relocation `8433bc1f` then ran 11 tests with 1456 passes,
+one failure and zero errors; 18 tests were skipped by fail-fast. The failure was
+an obsolete exact String-domain diagnostic oracle for an unsupported unordered
+mixed Set selected by the new Keyword route. That aggregate remains failed.
+
+Test-only correction `c6208ba6` permits the selected String/Keyword rejection
+label only for that mixed public case and explicitly requires rejection. Exact
+direct-String and pure wrong-family labels remain. Production and fixture bytes
+are unchanged by either correction. Ten complete green selectors/1291 assertions
+from the failed aggregate and the corrected 19 selectors/1965 assertions cover
+all 29 distinct focused selectors/3256 passing assertions. This is two retained
+passing partitions, not one green 29-test run. Ten new selectors contribute 918.
+
+One source composition at `70fd49b4` completed naturally: 1 test/96 assertions,
+90 composition plus six loader checks. One Gravity function contains three
+insertions, three counts and three inert quoted Sets; one closed entry returns
+`[1 2 1]` with empty output. C7/C8 construction and verification, allocation,
+storage, bare-Set and source joins pass; assembly invokes public C7 verification
+once within its observation. Namespace effects are empty and main's latent and
+inferred effects are exactly allocation. The genuine Character-Set/Keyword
+negative rejects with the existing String-fallback type diagnostic and actual
+types/Core/syntax/binding/span, retaining secondary count-Unknown and annotation
+diagnostics. No negative C8 or runtime was invoked.
+
+The source run took 143.274301916 seconds in selected execution after
+13.726984834 seconds of loading. Timings are inclusive development observations,
+not isolated runtime benchmarks or a speedup claim. Q's earlier ten assertions
+are parser-only; there is no Q typed composition, public fresh C6 verification,
+seed control, native execution, whole-consumer execution or migration credit.
+Language-boundary checks pass 6/11; source LOC passes 2021 files, zero exceptions,
+maximum 250. SH-07 completion and current-closure admission remain outstanding.
+
 ### Persistent String-Set insertion: development increment
 
 STD3 now explicitly defines binary Set `conj` to preserve existing equal member
