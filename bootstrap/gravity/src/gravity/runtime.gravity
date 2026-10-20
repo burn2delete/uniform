@@ -687,45 +687,50 @@
     {:status :rejected :reason :keyword-set-equality-work-limit :work-count 0 :comparison-attempts 0}))
 
 (defn p15-s23-runtime-keyword-set-contains-work [items needle budget]
-  ; Complete domains and distinctness precede hit/miss; printing measures cost only.
+  ; String calls require authenticated typing and a type-conforming immutable finite Set.
+  ; Its cardinality and enumeration agree; arbitrary lying host providers are outside this premise.
+  ; Complete homogeneous domains and Gravity distinctness precede hit/miss.
   (if (if (integer? budget) (>= budget 0) false)
-    (let [limit (if (< budget 65536) budget 65536)]
+    (let [limit (if (< budget 65536) budget 65536) strings? (string? needle)
+          work-reason (if strings? :string-set-contains-work-limit :keyword-set-contains-work-limit)
+          width-reason (if strings? :string-set-contains-value-width :keyword-set-contains-value-width)
+          domain-reason (if strings? :string-set-contains-value-domain-required :keyword-set-contains-value-domain-required)]
       (if (< limit 2)
-        {:status :rejected :reason :keyword-set-contains-work-limit :work-count 2 :comparison-attempts 0}
-        (if (if (set? items) (keyword? needle) false)
+        {:status :rejected :reason work-reason :work-count 2 :comparison-attempts 0}
+        (if (if (set? items) (if strings? (string? needle) (keyword? needle)) false)
           (let [n (count items)]
             (if (if (< n 0) true (> n 1024))
-              {:status :rejected :reason :keyword-set-contains-value-width :work-count 2 :comparison-attempts 0}
+              {:status :rejected :reason width-reason :work-count 2 :comparison-attempts 0}
               (let [base (+ 2 (* 2 n))]
                 (if (> base limit)
-                  {:status :rejected :reason :keyword-set-contains-work-limit :work-count base
+                  {:status :rejected :reason work-reason :work-count base
                    :work-count-kind :validation-reservation :comparison-attempts 0}
                   (let [checked (loop [remaining items i 0 values []]
                                   (if (= i n)
                                     (if (= 0 (count remaining)) {:status :accepted :values values}
-                                      {:status :rejected :reason :keyword-set-contains-value-domain-required})
+                                      {:status :rejected :reason domain-reason})
                                     (let [value (first remaining)]
-                                      (if (keyword? value) (recur (rest remaining) (+ i 1) (conj values value))
-                                        {:status :rejected :reason :keyword-set-contains-value-domain-required}))))]
+                                      (if (if strings? (string? value) (keyword? value)) (recur (rest remaining) (+ i 1) (conj values value))
+                                        {:status :rejected :reason domain-reason}))))]
                     (if (= false (= :accepted (get checked :status)))
                       (assoc checked :work-count base :work-count-kind :validation-reservation :comparison-attempts 0)
                       (let [values (get checked :values)
                             measured (loop [i 0 units 0]
                                        (if (> i n) {:status :accepted :units units}
-                                         (let [value (if (= i n) needle (get values i)) size (count (str value))]
+                                         (let [value (if (= i n) needle (get values i)) size (if strings? (count value) (count (str value)))]
                                            (if (> size (- limit units))
-                                             {:status :rejected :reason :keyword-set-contains-work-limit :work-count (+ limit 1)
+                                             {:status :rejected :reason work-reason :work-count (+ limit 1)
                                               :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0}
                                              (recur (+ i 1) (+ units size))))))]
                         (if (= false (= :accepted (get measured :status))) measured
                           (let [units (get measured :units) half (quot n 2) previous (if (> n 0) (- n 1) 0)
                                 a (if (= n (+ half half)) half n) b (if (= n (+ half half)) previous (quot previous 2))]
                             (if (= false (if (= b 0) true (<= a (quot (- limit base) b))))
-                              {:status :rejected :reason :keyword-set-contains-work-limit :work-count (+ limit 1)
+                              {:status :rejected :reason work-reason :work-count (+ limit 1)
                                :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0}
                               (let [pairs (* a b) remaining (- limit base pairs)]
                                 (if (> units (quot remaining (+ n 1)))
-                                  {:status :rejected :reason :keyword-set-contains-work-limit :work-count (+ limit 1)
+                                  {:status :rejected :reason work-reason :work-count (+ limit 1)
                                    :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0}
                                   (let [work (+ base pairs (* (+ n 1) units))
                                         distinct (loop [i 0 attempts 0]
@@ -733,31 +738,34 @@
                                                      (let [checked (loop [j (+ i 1) used attempts]
                                                                      (if (= j n) {:status :accepted :comparison-attempts used}
                                                                        (let [left (get values i) right (get values j)]
-                                                                         (if (if (keyword? left) (keyword? right) false)
+                                                                         (if (if strings? (if (string? left) (string? right) false)
+                                                                                   (if (keyword? left) (keyword? right) false))
                                                                            (let [equal (p15-s23-runtime-atomic-equality left right) next-attempt (+ used 1)]
                                                                              (if (= false equal) (recur (+ j 1) next-attempt)
-                                                                               {:status :rejected :reason :keyword-set-contains-value-domain-required
-                                                                                :domain-failure :duplicate-keyword-class :comparison-attempts next-attempt}))
-                                                                           {:status :rejected :reason :keyword-set-contains-value-domain-required :comparison-attempts used}))))]
+                                                                               {:status :rejected :reason domain-reason
+                                                                                :domain-failure (if strings? :duplicate-string-class :duplicate-keyword-class) :comparison-attempts next-attempt}))
+                                                                           {:status :rejected :reason domain-reason :comparison-attempts used}))))]
                                                        (if (= :accepted (get checked :status))
                                                          (recur (+ i 1) (get checked :comparison-attempts)) checked))))
                                         result (if (= :accepted (get distinct :status))
                                                  (loop [i 0 attempts (get distinct :comparison-attempts)]
                                                    (if (= i n) {:status :accepted :value false :comparison-attempts attempts}
                                                      (let [member (get values i)]
-                                                       (if (if (keyword? member) (keyword? needle) false)
+                                                       (if (if strings? (if (string? member) (string? needle) false)
+                                                                     (if (keyword? member) (keyword? needle) false))
                                                          (let [equal (p15-s23-runtime-atomic-equality member needle) next-attempt (+ attempts 1)]
                                                            (if (= true equal)
                                                              {:status :accepted :value true :comparison-attempts next-attempt}
                                                              (if (= false equal) (recur (+ i 1) next-attempt)
-                                                               {:status :rejected :reason :keyword-set-contains-value-domain-required :comparison-attempts next-attempt})))
-                                                         {:status :rejected :reason :keyword-set-contains-value-domain-required :comparison-attempts attempts}))))
+                                                               {:status :rejected :reason domain-reason :comparison-attempts next-attempt})))
+                                                         {:status :rejected :reason domain-reason :comparison-attempts attempts}))))
                                                  distinct)]
                                     (assoc result :work-count work :work-count-kind :exact-logical-membership-reservation
                                       :input-element-count n :representation-units units :representation :jvm-utf16-code-units
-                                      :value-work-model :gravity/keyword-set-membership-logical-content-work-v1
+                                      :value-work-model (if strings? :gravity/string-set-membership-logical-content-work-v1
+                                                         :gravity/keyword-set-membership-logical-content-work-v1)
                                       :provider-cpu-bound :not-established))))))))))))))
-          {:status :rejected :reason :keyword-set-contains-value-domain-required :work-count 2 :comparison-attempts 0})))
+          {:status :rejected :reason domain-reason :work-count 2 :comparison-attempts 0})))
     {:status :rejected :reason :keyword-set-contains-work-limit :work-count 0 :comparison-attempts 0}))
 
 (defn p15-s23-runtime-character-set-contains-work [items needle budget]
@@ -1496,9 +1504,11 @@
                    (second arguments-result) :rejected])
               (if (= function 'contains?)
                 (if (set? left)
-                  (let [result (if (if (char? right) true (map? right))
-                                  (p15-s23-runtime-character-set-contains-work left right 65536)
-                                  (p15-s23-runtime-keyword-set-contains-work left right 65536))]
+                  (let [result (if (string? right)
+                                  (p15-s23-runtime-keyword-set-contains-work left right 65536)
+                                  (if (if (char? right) true (map? right))
+                                    (p15-s23-runtime-character-set-contains-work left right 65536)
+                                    (p15-s23-runtime-keyword-set-contains-work left right 65536)))]
                     (if (= :accepted (get result :status))
                       [(get result :value) (second arguments-result) :normal]
                       [{:diagnostic "P15S23X002" :reason (get result :reason) :operation operation
