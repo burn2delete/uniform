@@ -9163,6 +9163,70 @@ These supplied checked-Core inputs test the existing producer/consumer ingress;
 they do not establish fresh C10 source composition, nested conditionals, loops,
 C12 anchors, C14 widening, SH-12 completion or authoritative migration.
 
+### Typed List family predicate: development increment
+
+The current JVM route supports unary `list?` for independently established
+closed operand types, including bare, positional and homogeneous Lists.
+C7 retains an explicit applied predicate and source-dependent constraints;
+C8 reconstructs the joins independently. Normal operands return Bool and
+Never preserves transfer. Unknown, dynamic, callable and malformed type
+carriers remain unsupported by this typed subset. No member, cardinality,
+nonempty or branch-refinement facts are inferred.
+
+Typed lowering emits the ordinary unary builtin call with its operand compiled
+once in non-tail position. The existing Gravity closed-plan evaluator now
+dispatches `list?`, with no new helper/export and the same 55 functions.
+PersistentList and EmptyList values classify true; Cons and vector-sequence
+views classify false. Their admission as compiler DATA does not make them
+Gravity List values. Classification does not evaluate stored payloads or
+construct a collection; operand effects and control transfers are preserved.
+
+The first focused run completed 14 of 23 selected tests: 2,233 passing and five
+failing assertions. Thirteen complete green variables with 2,217 assertions
+were retained, including all eight SH01 selections. The failed
+List throw-consumer exposed omitted List rejection reasons in C7's shared
+error/work forwarding; nine variables were skipped. That failed epoch remains
+distinct from the narrow consumer correction and affected follow-up checks.
+The correction forwards the List-specific rejection reason and actual charged
+work without changing accepted paths, work charges or old-family behavior.
+Its affected/skipped selection passed 10 tests and 1,259 assertions. Combined
+nonoverlapping coverage initially reached 23 variables and 3,476 assertions
+across two selections, not one clean 23-test run. Before source execution,
+review found that the new STEP lookup guard preempted arity diagnostics.
+The guard now checks only its actual lookup keys before delegating arity to
+the owning derivation. Two affected C7 kernels passed 715 assertions,
+including two new zero/two-operand STEP checks. Final nonoverlapping focused
+coverage is 11 retained variables/1,504 assertions, 10 corrected variables/1,259
+assertions and two affected variables/715 assertions: 23 variables/3,478
+assertions across three selections. Unaffected green variables were not replayed.
+
+The one affected source invocation passed one test and 151 assertions
+(145 composition plus six loader checks). The accepted Gravity program's
+three functions and 18 calls include 11 List predicates, three List
+constructors, one rest, one prepend, two local calls and four inert quotes.
+Original C7/C8 construction and verification, assembly's public C7 gate and
+one closed-plan entry passed, producing
+`[true true true true true true false false false false false]`.
+Predicate records remain pure and non-refining; actual producer allocation
+stays in the main function, not the namespace or classification helpers.
+
+The arity negative reaches C7 and rejects with
+`C7-TYPE-MISMATCH`/`:list-predicate-arity-mismatch`, retaining Core, syntax and
+binding identities and a source span. A secondary unresolved-node annotation
+also remains; this is not an exact-only diagnostic claim. The negative does
+not enter C8 or runtime. Q has parser parity only. Public fresh C6 admission,
+same-IR seed control, whole-runtime/B14 support, authoritative migration and
+SH-07 completion remain separate; milestone counts are unchanged.
+
+Source execution took 149.549 seconds after 11.724 seconds of namespace
+loading. Positive/negative C5 construction took 32.385/21.265 seconds and
+development C6 session construction 43.842/31.177 seconds. Positive C7
+construction/verification took 2.351/1.066 seconds; C8 took 0.931/0.050 seconds.
+These are inclusive development observations, not a benchmark or speedup
+claim. The post-assembly interval includes projection and runtime-plan
+acquisition as well as execution. No source construction was repeated for
+the focused corrections or these notes.
+
 ## Beyond First Self-Hosting
 
 After `SH-29`, target expansion becomes a separate matrix. Each canonical
