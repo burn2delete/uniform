@@ -593,7 +593,7 @@
           (is (= (first (:invalidation-ledger baseline))
                  (first (:invalidation-ledger result))))
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
-      (doseq [type [:bool :keyword :foreign/type :gravity.type/i64 "custom-integer"]]
+      (doseq [type [:bool :keyword :foreign/type :gravity.type/i64 'custom-integer]]
         (let [subject (assoc-in base [:operations 0 :type] type)
               result (optimize subject) op (get-in subject [:operations 0])]
           (is (= :rejected (:status result)))
@@ -609,7 +609,7 @@
         (check-rejected (assoc subject :mir-verified false) "C13-CONTRACT")
         (check-rejected (assoc subject :source-span nil) "C13-PRESERVE")
         (check-rejected (assoc subject :nondeterministic-choice true) "C13-NONDETERMINISM")
-        (check-rejected (assoc-in subject [:operations 0 :op-id] nil) "C13-CONTRACT")
+        (check-rejected (assoc-in subject [:operations 0 :op-id] nil) "C13-VERIFY")
         (check-rejected (update subject :operations conj (first (:operations subject))) "C13-VERIFY")
         (check-rejected (-> subject
                             (assoc-in [:operations 0 :dead] true)
