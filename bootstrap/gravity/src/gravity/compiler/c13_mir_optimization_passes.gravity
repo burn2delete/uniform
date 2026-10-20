@@ -1627,7 +1627,9 @@
               :contract)
             :safety)
           (if (= :branch-if (get operation :opcode))
-            (if (sh16-member? #{true false} (get operation :condition))
+            (if (if (= true (get operation :condition))
+                  true
+                  (= false (get operation :condition)))
               (if (sh16-canonical-identifier?
                    (get operation :then-block))
                 (if (sh16-canonical-identifier?
@@ -1758,7 +1760,9 @@
 
 (defn sh16-simplifiable-branch? [operation]
   (if (= :branch-if (get operation :opcode))
-    (sh16-member? #{true false} (get operation :condition))
+    (if (= true (get operation :condition))
+      true
+      (= false (get operation :condition)))
     false))
 
 (defn sh16-elidable-runtime-check? [operation]
