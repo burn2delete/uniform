@@ -263,6 +263,43 @@ type-before-effect-before-safety rejection order. Terminator/value-only errors
 retain their fallback. Attribution must use only the original fact views and
 fresh expected MIR; this check does not establish new safety proofs.
 
+### Finite persistent List value equality
+
+STD3 owns ordered List equality. The current JVM typed route supports binary
+`=` for complete finite positional Lists, including empty and nested Lists,
+with Nil, Bool, Character, String, Symbol and Keyword leaves. It compares stored
+values at runtime, not type identity. Bare/homogeneous/unknown Lists, numeric
+and callable leaves, other collection families, nil-or unions, nested Never
+and corresponding nested-List/scalar pairs remain unsupported. Top-level Never
+retains the existing non-invoked route; supported normal domains are still
+validated completely. This subset does not restrict the eventual language law.
+
+Owners are `c7_type_checker_engine.gravity` (`sh08-le-*`), `effects.gravity`
+(`body-le-*`), `emitter.gravity` (`p15-s23-le-*` and typed lowering), and
+`runtime.gravity` (`p15-s23-runtime-list-equality-work`). Start with these exact
+selectors through the direct `-M:dev-test --namespace ... --exact ... --fail-fast`
+interface, using `-J-Xmx2g`:
+
+- `sh08-list-equality-development-kernel` in `gravity.self-hosting.sh08-function-call-type-test`.
+- `current-gravity-list-equality-consumer-development-kernel` in `gravity.self-hosting.sh09-body-effect-test`.
+- `current-gravity-list-equality-lowering-development-kernel` and `current-gravity-list-equality-runtime-development-kernel` in `gravity.self-hosting.sh01-stage2-runtime-iteration-test`.
+
+Include the owning ID, transfer, budget and old equality-family controls when
+those paths change. Both complete domains and all corresponding pairs must
+be checked before returning even false; one cumulative budget covers validation
+and comparison. Existing atomic, Vector and Set helpers keep their domains.
+The current runtime inventory is 56 functions; historical 55-function evidence
+is not rewritten or treated as current.
+
+For affected source composition, the same SH01 namespace contains
+`current-gravity-list-equality-authenticated-composition`: one accepted Gravity
+source and one typed Map-shaped-Character rejection, with QST parser parity
+separate. Despite its historical naming convention, this is development
+integration using fresh C5 and development C6-session/replay products, not fresh
+public C6 verification or authoritative migration. Do not repeat it for unrelated
+document or downstream-only edits. Private Character carrier tests retain their
+existing representation premise; they are not a new Unicode validator.
+
 ### List family classification
 
 STD3 owns unary `list?`. The current JVM typed development route accepts independently

@@ -10242,6 +10242,179 @@
          (= [(body-kse-constraint descriptor)] rows)]) false))
     false))
 
+(defn body-le-domain [arguments budget]
+  (let [limit (if (< budget 65536) budget 65536)]
+    (if (if (vector? arguments) (= 2 (count arguments)) false)
+      (let [checked
+            (loop [pending [[(get arguments 1) 0 true] [(get arguments 0) 0 true]] work 0]
+              (if (= 0 (count pending)) {:status :accepted :work-count work :argument-types arguments}
+                (if (>= work limit) {:status :rejected :reason :list-equality-work-limit :work-count work}
+                  (let [frame (get pending (- (count pending) 1)) type (get frame 0) depth (get frame 1) outer? (get frame 2)
+                        tail (subvec pending 0 (- (count pending) 1)) used (+ work 1)]
+                    (if (> depth 128) {:status :rejected :reason :list-equality-type-depth :work-count used}
+                      (if (if outer? (= :gravity.type/never type)
+                            (if (keyword? type)
+                              (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string
+                                           :gravity.type/symbol :gravity.type/keyword} type) false))
+                        (recur tail used)
+                        (if (if (map? type)
+                              (if (= 3 (count type))
+                                (if (loop [fields (keys type)]
+                                      (if (= 0 (count fields)) true
+                                        (if (keyword? (first fields)) (recur (rest fields)) false)))
+                                  (if (= #{:kind :shape :element-types} (set (keys type)))
+                                    (if (= :gravity.type/list (get type :kind))
+                                      (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false) false) false)
+                          (let [members (get type :element-types) n (count members)]
+                            (if (> n 1024) {:status :rejected :reason :list-equality-type-width :work-count used}
+                              (if (> (+ used (count tail) n) limit)
+                                {:status :rejected :reason :list-equality-work-limit :work-count used}
+                                (recur (loop [i (- n 1) out tail]
+                                         (if (< i 0) out
+                                           (recur (- i 1) (conj out [(get members i) (+ depth 1) false])))) used))))
+                          {:status :rejected :reason :list-equality-operand-type-required :work-count used})))))))]
+        ; Both complete domains are established before pair compatibility or any value comparison.
+        (if (= :accepted (get checked :status))
+          (if (if (= :gravity.type/never (get arguments 0)) true (= :gravity.type/never (get arguments 1))) checked
+            (loop [pending [[(get arguments 0) (get arguments 1)]] work (get checked :work-count)]
+              (if (= 0 (count pending)) {:status :accepted :work-count work :argument-types arguments}
+                (if (>= work limit) {:status :rejected :reason :list-equality-work-limit :work-count work}
+                  (let [pair (get pending (- (count pending) 1)) left (get pair 0) right (get pair 1)
+                        tail (subvec pending 0 (- (count pending) 1)) used (+ work 1)]
+                    (if (map? left)
+                      (if (map? right)
+                        (let [a (get left :element-types) b (get right :element-types)
+                              n (if (< (count a) (count b)) (count a) (count b))]
+                          (if (> (+ used (count tail) n) limit)
+                            {:status :rejected :reason :list-equality-work-limit :work-count used}
+                            (recur (loop [i (- n 1) out tail]
+                                     (if (< i 0) out
+                                       (recur (- i 1) (conj out [(get a i) (get b i)])))) used)))
+                        {:status :rejected :reason :list-equality-pair-type-required :work-count used})
+                      (if (map? right)
+                        {:status :rejected :reason :list-equality-pair-type-required :work-count used}
+                        (recur tail used)))))))) checked))
+      {:status :rejected :reason :list-equality-arity-mismatch :work-count 0})))
+
+(defn body-le-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+    (if (loop [items (get binding :profile-set)]
+          (if (= 0 (count items)) true (if (keyword? (first items)) (recur (rest items)) false)))
+      (if (loop [items (get binding :target-set)]
+            (if (= 0 (count items)) true (if (keyword? (first items)) (recur (rest items)) false)))
+        (body-ae-binding? binding module) false) false) false))
+
+(defn body-le-source [core node call edge nodes bindings types module validation]
+  ; Closed lexical callers supply this invocation's freshly paid LE-domain result.
+  (if (body-sse-call-ids? node call)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (body-io-child-types args types)
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (body-sse-ids? [(get operator :node-id) (get (get operator :source) :form-id)
+                            (get (get operator :source) :syntax-id) (get binding :binding-id)] 4)
+(if (body-all?
+          [(= (get operator :node-id) (get call :operator-node-id))
+           (= (get binding :binding-id) bid)
+           (= :accepted (get validation :status)) (= arguments (get validation :argument-types))
+           (= :jvm (get module :target))
+           (= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (body-le-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (if (symbol? (get (get operator :attributes) :symbol)) (contains? '#{= gravity.core/=} (get (get operator :attributes) :symbol)) false)
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+          ])
+      {:kind :gravity.type/applied-list-equality :version :sh08-list-equality-v1
+       :operation '= :semantic-owner 'gravity.collections :intrinsic :gravity.collections/list-value-equality
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :equality-policy {:domain :finite-persistent-lists :members :recursive-list-and-supported-atomic
+                         :count :equal :order :corresponding-values :leaves :original-values
+                         :nil-bearing :unsupported :cross-family :unsupported
+                         :nested-list-versus-atomic :unsupported
+                         :identity :unobserved :payload-evaluation :none :mutation :none :numeric :unsupported}
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :equality-domain :value-policy :profile :target :evaluation-order]}
+      nil) nil)) nil))
+
+(defn body-le-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-list-equality-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-list-equality-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :list-equality}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects) :equality-policy (get descriptor :equality-policy)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn body-le-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-list-equality-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-list-equality :applied-list-equality descriptor :effect-facts-source :audited-list-value-intrinsic}))
+
+(defn body-le-finish [header]
+  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
+    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+
+(defn body-le-call-valid? [core facts bindings node call edge nodes]
+  (if (body-sse-call-ids? node call)
+(let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
+        validation (get (get (get facts :equality-context) :list-domains) (get node :node-id))
+        header (body-le-source core node call edge nodes bindings types (get core :module) validation)
+        forms (get (get facts :equality-context) :forms)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-list-equality-v1)
+                          :lhs {:core-node-id (get node :node-id) :projection :list-equality})]
+    (if (if (map? header)
+          (if (body-sse-ids? [(get owner :form-id) (get owner :syntax-id)] 2) (body-sse-ids? ids 3) false) false)
+      (body-all?
+        [(= descriptor (body-le-finish header)) (= (get descriptor :result-type) (get types (get node :node-id)))
+         (= :list (get owner :kind)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0) (count (get node :children)))
+         (= (get node :source) (get (body-ma-form-node {} owner) :source))
+         (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+             :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+         (loop [i 0]
+           (if (= i 3) true
+             (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+               (if (if (body-sse-ids? [(get form :form-id) (get form :syntax-id)
+                                           (get (get child :source) :form-id) (get (get child :source) :syntax-id)] 4)
+                     (body-all? [(= (get owner :form-id) (get form :parent-form-id))
+                     (= (get child :source) (get (body-ma-form-node {} form) :source))
+                     (if (= i 0)
+                                   (if (symbol? (get form :value))
+                                     (= (get (get child :attributes) :symbol) (get form :value)) false) true)]) false)
+                 (recur (+ i 1)) false))))
+         (= (body-le-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
+         (= [(body-le-constraint descriptor)] rows)]) false)) false))
+
 (defn body-ve-domain [arguments budget]
   (let [limit (if (< budget 65536) budget 65536)]
   ; Positional types suffice for a value query; no constructor identity is used.
@@ -10531,14 +10704,15 @@
                             (recur (rest remaining)) false)))
                     (recur (rest groups)) false)))
               (let [nodes (body-index (get core :nodes) :node-id) indexed-forms (body-index forms :form-id)]
-              (loop [remaining (get core :calls) used base checks {} keyword-checks {}]
+              (loop [remaining (get core :calls) used base checks {} keyword-checks {} list-checks {}]
                 (if (= 0 (count remaining))
                   (let [context {:forms indexed-forms :nodes nodes
                                  :calls (body-index (get core :calls) :core-node-id) :edges (body-index (get core :call-edges) :call-core-node-id)
                                  :bindings bindings}]
                     {:status :accepted :work-count used
                      :context (let [context (if (= 0 (count checks)) context (assoc context :vector-domains checks))]
-                                (if (= 0 (count keyword-checks)) context (assoc context :keyword-set-domains keyword-checks)))})
+                                (let [context (if (= 0 (count keyword-checks)) context (assoc context :keyword-set-domains keyword-checks))]
+                                  (if (= 0 (count list-checks)) context (assoc context :list-domains list-checks))))})
                   (let [call (first remaining) args (get call :argument-node-ids)]
                     (if (body-ae-binding? (get bindings (get call :operator-binding-id)) (get core :module))
                       (if (if (body-sse-ids? [(get call :core-node-id) (get call :operator-node-id) (get call :operator-binding-id)] 3)
@@ -10549,7 +10723,18 @@
                               vector? (if (= :gravity.type/applied-vector-equality (get (get types (get call :operator-node-id)) :kind)) true
                                         (if (= :gravity.type/vector (get (get arguments 0) :kind)) true
                                           (= :gravity.type/vector (get (get arguments 1) :kind))))]
-                          (if (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get (get types (get call :operator-node-id)) :kind)) true
+                          (if (if (= :gravity.type/applied-list-equality (get (get types (get call :operator-node-id)) :kind)) true
+                                  (if (= :gravity.type/list (get arguments 0)) true
+                                    (if (= :gravity.type/list (get arguments 1)) true
+                                      (if (= :gravity.type/list (get (get arguments 0) :kind)) true
+                                        (= :gravity.type/list (get (get arguments 1) :kind))))))
+                            (let [validation (body-le-domain arguments (- budget used)) work (+ used (get validation :work-count))]
+                              (if (if (> work budget) true (= :list-equality-work-limit (get validation :reason)))
+                                (assoc (body-failure :body-deferred-work-limit) :work-count work)
+                                (if (= :accepted (get validation :status))
+                                  (recur (rest remaining) work checks keyword-checks (assoc list-checks (get call :core-node-id) validation))
+                                  (assoc (body-failure :body-list-equality-operand-type-required) :work-count work))))
+(if (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get (get types (get call :operator-node-id)) :kind)) true
                                 (if (= :gravity.type/set (get arguments 0)) true
                                   (if (= :gravity.type/set (get arguments 1)) true
                                     (if (= :gravity.type/set (get (get arguments 0) :kind)) true
@@ -10560,7 +10745,7 @@
                                 (assoc (body-failure :body-deferred-work-limit) :work-count work)
                                 (if (= :accepted (get validation :status))
                                   (recur (rest remaining) work checks
-                                    (assoc keyword-checks (get call :core-node-id) validation))
+                                    (assoc keyword-checks (get call :core-node-id) validation) list-checks)
                                   (assoc (body-failure :body-keyword-set-equality-operand-type-required) :work-count work))))
                             (if vector?
                             (let [validation (body-ve-domain arguments (- budget used))
@@ -10569,15 +10754,19 @@
                                 (assoc (body-failure :body-deferred-work-limit) :work-count work)
                                 (if (= :accepted (get validation :status))
                                   (recur (rest remaining) work
-                                    (assoc checks (get call :core-node-id) (assoc validation :argument-types arguments)) keyword-checks)
+                                    (assoc checks (get call :core-node-id) (assoc validation :argument-types arguments)) keyword-checks list-checks)
                                   (assoc (body-failure :body-vector-equality-operand-type-required) :work-count work))))
-                            (recur (rest remaining) used checks keyword-checks))))
+                            (recur (rest remaining) used checks keyword-checks list-checks)))))
                         (assoc (body-failure :body-equality-binary-call-required) :work-count used))
-                      (recur (rest remaining) used checks keyword-checks))))))
+                      (recur (rest remaining) used checks keyword-checks list-checks))))))
               (assoc (body-failure :body-atomic-equality-source-identities-required) :work-count base))))))))))
 
 (defn body-ae-call-valid? [core facts bindings node call edge nodes]
-  (if (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get (get (get facts :type-table) (get call :operator-node-id)) :kind)) true
+  (if (body-sse-call-ids? node call)
+    (if (if (= :gravity.type/applied-list-equality (get (get (get facts :type-table) (get call :operator-node-id)) :kind)) true
+            (contains? (get (get facts :equality-context) :list-domains) (get node :node-id)))
+      (body-le-call-valid? core facts bindings node call edge nodes)
+(if (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get (get (get facts :type-table) (get call :operator-node-id)) :kind)) true
           (contains? (get (get facts :equality-context) :keyword-set-domains) (get node :node-id)))
     (body-kse-call-valid? core facts bindings node call edge nodes)
       (if (if (= :gravity.type/applied-vector-equality (get (get (get facts :type-table) (get call :operator-node-id)) :kind)) true
@@ -10609,7 +10798,7 @@
                      (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
                  (recur (+ i 1)) false))))
          (= (body-ae-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
-         (= [(body-ae-constraint descriptor)] rows)]) false))))))
+         (= [(body-ae-constraint descriptor)] rows)]) false)))))) false))
 
 (defn body-ae-node? [node facts core]
   (let [context (get facts :equality-context) id (get node :node-id)]
@@ -11636,7 +11825,7 @@
                                        (if (= 0 (count remaining)) out
                                          (let [row (first remaining)]
                                            (recur (rest remaining)
-                                             (if (contains? #{:sh08-atomic-equality-v1 :sh08-vector-equality-v1 :sh08-flat-integer-vector-equality-v1 :sh08-flat-keyword-set-vector-equality-v1 :sh08-integral-equality-v1 :sh08-keyword-set-equality-v1 :sh08-string-set-equality-v1 :sh08-string-set-carrier-equality-v1} (get row :producer-rule))
+                                             (if (contains? #{:sh08-list-equality-v1 :sh08-atomic-equality-v1 :sh08-vector-equality-v1 :sh08-flat-integer-vector-equality-v1 :sh08-flat-keyword-set-vector-equality-v1 :sh08-integral-equality-v1 :sh08-keyword-set-equality-v1 :sh08-string-set-equality-v1 :sh08-string-set-carrier-equality-v1} (get row :producer-rule))
                                                (conj out row) out))))))
                     (= not-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-not-v1))
                     (= vector-predicate-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-vector-predicate-v1))
@@ -11736,12 +11925,13 @@
                 (conj append-rows (body-pl-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))
                 (if (= :direct-vector-append (get (get call-facts id) :dispatch))
                   (conj append-rows (body-va-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) append-rows))
-              (if (contains? #{:direct-atomic-equality :direct-vector-equality :direct-integral-equality :direct-keyword-set-equality :direct-string-set-equality} (get (get call-facts id) :dispatch))
+              (if (contains? #{:direct-list-equality :direct-atomic-equality :direct-vector-equality :direct-integral-equality :direct-keyword-set-equality :direct-string-set-equality} (get (get call-facts id) :dispatch))
                 (conj equality-rows
-                  (if (contains? #{:direct-vector-equality :direct-keyword-set-equality :direct-string-set-equality} (get (get call-facts id) :dispatch))
+                  (if (contains? #{:direct-list-equality :direct-vector-equality :direct-keyword-set-equality :direct-string-set-equality} (get (get call-facts id) :dispatch))
                     (if (contains? #{:direct-keyword-set-equality :direct-string-set-equality} (get (get call-facts id) :dispatch))
                       (body-kse-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))
-                      (body-ve-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))
+                      (if (= :direct-list-equality (get (get call-facts id) :dispatch))
+                        (body-le-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))) (body-ve-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))))
                     (if (= :direct-integral-equality (get (get call-facts id) :dispatch))
                       (body-ie-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))
                       (body-ae-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))))) equality-rows)
@@ -13123,7 +13313,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (body-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))

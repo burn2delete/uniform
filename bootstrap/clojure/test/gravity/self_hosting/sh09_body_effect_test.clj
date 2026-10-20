@@ -6526,3 +6526,160 @@
         (is (nil? (:context empty-context)))
         (is (false? (leaf 'body-listp-call-valid? core checked bindings node changed-call edge nodes)))
         (is (zero? @callbacks))))))
+
+(deftest body-list-equality-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'atomic-equality-input) c7 (sh08-helper 'invoke-c7)
+        finite #(hash-map :kind :gravity.type/list :shape :literal :element-types (vec %))
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
+        k :gravity.type/keyword s :gravity.type/string]
+    (doseq [arguments [[(finite []) (finite [])] [(finite [k s]) (finite [s k])]
+                       [(finite [(finite [s])]) (finite [(finite [k])])]
+                       [:gravity.type/never (finite [k])] [(finite [s]) :gravity.type/never]]]
+      (let [base (input-fn arguments) ids (zipmap (keys (:nodes base)) (map sha (range 1350 1360)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
+            types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+            result (c7 'sh08-le-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-le-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-le-constraint [descriptor])]}
+            prepare #(leaf 'body-ae-context request % (:bindings base) %2)
+            context (prepare facts 65536)
+            facts (assoc facts :equality-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :call)])
+            validation (get-in context [:context :list-domains (ids :call)])
+            coherent (fn [changed]
+                       (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                           (assoc :call-type-facts [(c7 'sh08-le-call-fact [changed (:module base)])]
+                                  :constraint-ledger [(c7 'sh08-le-constraint [changed])])))]
+        (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str graph))
+        (is (= :accepted (:status validation)))
+        (is (= arguments (:argument-types validation)))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record) (:transitive record)))
+        (is (nil? (:allocation record)))
+        (is (= (mapv ids [:operator :arg0 :arg1]) (:dependencies record) (:evaluated-children record)))
+        (is (nil? (:call-body-dependency record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= context (prepare facts (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (prepare facts (dec (:work-count context))))))
+        (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
+                         (assoc descriptor :kind :gravity.type/applied-atomic-equality)
+                         (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc-in descriptor [:equality-policy :leaves] :type-family-constants)
+                         (assoc-in descriptor [:equality-policy :identity] :observed)
+                         (assoc-in descriptor [:equality-policy :nested-vector-versus-atomic] :coerce)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)]]
+          (is (false? (valid (coherent changed)))))
+        (doseq [changed [(assoc facts :constraint-ledger [])
+                         (update facts :constraint-ledger into (:constraint-ledger facts))
+                         (update-in facts [:equality-context :list-domains] dissoc (ids :call))
+                         (assoc-in facts [:type-table (ids :arg0)] (finite [:gravity.type/integer]))]]
+          (is (false? (valid changed))))
+        (let [bad (assoc-in facts [:type-table (ids :arg0)] (finite [:gravity.type/i64]))]
+          (is (= :body-list-equality-operand-type-required (:reason (prepare bad 65536)))))
+        (let [wrong-arity (assoc-in request [:canonical-core-artifact :nodes 3 :children] [(ids :operator)])]
+          (is (= :body-equality-binary-call-required
+                 (:reason (leaf 'body-ae-context wrong-arity facts (:bindings base) 65536)))))
+        (is (false? (leaf 'body-graph-equations-valid? core facts {}
+                          (assoc-in (:nodes graph) [(ids :call) :direct] #{:memory/allocate}))))))))
+
+(deftest current-gravity-list-equality-consumer-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        base ((ns-resolve upstream 'atomic-equality-input) [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
+                                                                 {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}])
+        ids (zipmap (keys (:nodes base)) (map sha (range 1300 1310)))
+        convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                    (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+        node-list (mapv convert-node (get-in base [:core :nodes]))
+        call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                 (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+        edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                 (update :ordered-evaluation-node-ids #(mapv ids %)))
+        core (merge (:core base) {:nodes node-list :calls [call] :call-edges [edge]
+                                 :root-core-node-ids [(ids :call)] :definitions [] :lexical-bindings []
+                                 :match-branch-records [] :match-pattern-records [] :match-decision-skeletons []
+                                 :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
+        input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                          :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
+        result ((ns-resolve upstream 'list-equality-derived) input 65536) descriptor (:descriptor result)
+        invoke (ns-resolve upstream 'invoke-c7)
+        facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
+                     {:module (:module base)
+                      :type-table (assoc (:types input) (ids :operator) descriptor (ids :call) (:type result))
+                      :function-type-table [] :local-binding-facts []
+                      :call-type-facts [(invoke 'sh08-le-call-fact [descriptor (:module base)])]
+                      :constraint-ledger [(invoke 'sh08-le-constraint [descriptor])]})
+        preimage (assoc (select-keys core [:root-core-node-ids :definitions :function-records :call-edges :calls
+                                           :evaluation-order :lexical-bindings :match-branch-records :match-decision-skeletons :match-pattern-records])
+                        :nodes (leaf 'body-throw-semantic-nodes core))
+        core (assoc core :identity-preimage preimage)
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request
+                    {:forms (vec (vals (:forms base))) :binding-table (vec (vals (:bindings base)))}}}
+        analyze #(leaf 'body-analyze-module request %1 {} %2)
+        analyzed (analyze facts 65536) work (:work-count analyzed)]
+    (is (= :accepted (:status result) (:status analyzed)) (pr-str analyzed))
+    (when (= :accepted (:status analyzed))
+      (is (= analyzed (analyze facts work)))
+      (is (= :rejected (:status (analyze facts (dec work))))))
+    (doseq [changed [(assoc facts :constraint-ledger [])
+                     (update facts :constraint-ledger into (:constraint-ledger facts))
+                     (update facts :constraint-ledger conj (assoc-in (first (:constraint-ledger facts)) [:lhs :core-node-id] (sha 1399)))]]
+      (is (= :rejected (:status (analyze changed 65536)))))))
+
+(deftest body-list-equality-id-guard-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'atomic-equality-input) c7 (sh08-helper 'invoke-c7)
+        finite #(hash-map :kind :gravity.type/list :shape :literal :element-types (vec %))
+        {:keys [core node call edge nodes bindings types forms module]} (input-fn [(finite [:gravity.type/string]) (finite [:gravity.type/string])])
+        result (c7 'sh08-le-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        facts {:type-table (assoc types :operator descriptor :call :gravity.type/bool)
+               :call-type-facts [(c7 'sh08-le-call-fact [descriptor module])]
+               :constraint-ledger [(c7 'sh08-le-constraint [descriptor])]}
+        prepared (leaf 'body-ae-context request facts bindings 65536)
+        facts (assoc facts :equality-context (:context prepared))
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "List effects ID hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "List effects ID equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "List effects ID printing"))))]
+    (is (= :accepted (:status prepared)))
+    (is (true? (leaf 'body-le-call-valid? core facts bindings node call edge nodes)))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]
+            slot [[:calls 0 :core-node-id] [:calls 0 :operator-node-id] [:calls 0 :operator-binding-id]
+                  [:calls 0 :argument-node-ids 0] [:calls 0 :argument-node-ids 1]
+                  [:nodes 3 :node-id] [:nodes 3 :children 0] [:nodes 3 :children 1] [:nodes 3 :children 2]
+                  [:nodes 3 :source :form-id] [:nodes 3 :source :syntax-id]]]
+      (let [changed (assoc-in core slot bad)]
+        (is (= :rejected (:status (leaf 'body-ae-context (assoc request :canonical-core-artifact changed) facts bindings 65536))))
+        (is (false? (leaf 'body-le-call-valid? changed facts bindings (last (:nodes changed)) (first (:calls changed)) edge nodes)))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}] i (range 3)]
+      (let [changed (assoc-in request [:b47-context :authenticated-core-request :forms]
+                              (mapv #(if (= :call (:form-id %)) (assoc-in % [:child-form-ids i] bad) %) (vals forms)))]
+        (is (= :rejected (:status (leaf 'body-ae-context changed facts bindings 65536))))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]]
+      (let [changed-nodes (assoc-in nodes [:operator :attributes :symbol] bad)
+            validation (get-in prepared [:context :list-domains :call])]
+        (is (nil? (leaf 'body-le-source core node call edge changed-nodes bindings types module validation)))
+        (is (false? (leaf 'body-le-call-valid? core facts bindings node call edge changed-nodes)))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]]
+      (is (false? (leaf 'body-le-call-valid? core (assoc-in facts [:equality-context :forms :operator :value] bad)
+                        bindings node call edge nodes)))
+      (is (zero? @callbacks)))))

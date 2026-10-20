@@ -9360,6 +9360,53 @@ claim. The post-assembly interval includes projection and runtime-plan
 acquisition as well as execution. No source construction was repeated for
 the focused corrections or these notes.
 
+### Finite List value equality: executable development increment
+
+Binary `=` now compares ordered stored values of independently established
+finite positional Lists, including empty and paired nested Lists, with supported
+nonnumeric atomic leaves. Equal types can yield unequal values; counts, order
+and corresponding values determine the result. Both operands follow ordinary
+left-to-right evaluation and transfers, payloads stay inert and original values
+are preserved. No member, cardinality or flow facts are invented. Bare or
+homogeneous Lists, unknown/numeric/callable members, nil-or unions, other
+collection families, nested Never and paired nested-List/scalar comparisons
+remain unsupported. Nil itself is a supported leaf, not a nil-or union.
+
+C7, independent C8 reconstruction, typed lowering and one bounded runtime
+helper implement this route. Complete operand domains and pair compatibility
+precede any false result under one cumulative budget. The tested malformed
+source/identity and ledger controls reject without callback leakage; the ledger
+uses a single paid scan. Prefix quota exhaustion retains its resource diagnostic. Existing atomic,
+Vector and Set helper bodies/domains are preserved. The new runtime helper makes
+the current inventory 56 functions; old 55-function records remain historical.
+
+Focused coverage is 25 distinct tests and 4,072 passing assertions across three
+selections: retained atomic runtime 49, corrected Set runtime 171, then 23 tests
+with 3,852 assertions. It is not one clean 25-test run. The first aggregate
+218P/2F/0E (23 skipped) exposed mixed-family dispatch regression; the second
+171P/0F/1E (22 skipped) exposed an inappropriate host-reader fixture oracle for
+a supplementary Character. Both failures are preserved; the fixture now uses
+the owning C2 G/Q parser rather than changing reader semantics.
+
+One source composition passes 183 assertions (177 composition plus six loader
+checks). Its two functions and 15 calls include 12 actual equality instructions,
+two List constructors, one local call and 22 inert quotes. All 12 Bool results
+match, including genuine C2 BMP/supplementary Characters, nested values,
+different contents/order/lengths and stored false/Nil. The typed Map-shaped
+Character negative produces `C7-TYPE-MISMATCH`/`:list-equality-operand-type-required`
+with actual Map types and Core/syntax/binding/span data, plus a secondary
+annotation diagnostic. Negative C8/runtime execution is not claimed.
+
+Boundary checks pass 6/11; LOC validation passes 2,021 source files, zero
+exceptions and maximum 250 physical lines. The source check took 161.113 seconds
+selected plus 12.582 seconds namespace loading. Positive inclusive C5/C6
+construction intervals were about 34.56/45.12 seconds; these observations
+separate product construction from test loading, not provider CPU time or a
+speedup benchmark. The post-assembly interval includes runtime-plan acquisition.
+No old source corpus or hour-long C17 subject was replayed. Public fresh C6,
+seed-control execution, whole-project migration, full SH-07, self-hosting and
+release remain unestablished by this slice.
+
 ## Beyond First Self-Hosting
 
 After `SH-29`, target expansion becomes a separate matrix. Each canonical
