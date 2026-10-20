@@ -9320,6 +9320,42 @@ constant-arity, invalid-MIR and recursion controls, the focused batch passes
 checks do not establish fresh authenticated SH-12 ingress, native execution,
 SH-13 completion or authoritative migration. Resource limits are unchanged.
 
+### Original SH-12 diamond execution: bounded development composition
+
+The original SH-12 branch/join MIR can now execute through two explicit C11
+entrypoints: `sh13-run-branch-join-mir` and
+`sh13-verify-branch-join-execution`. They retain the checked-Core/MIR pair and
+freshly invoke the original canonical-projection verifier, rather than trusting
+a caller's report or relabelling the module as normalized SH-13 evidence.
+Private frames reuse the existing interpreter; normalized runtime entrypoints
+and the separate non-executable C12 proof-reference adapter are unchanged.
+
+Support is a pure zero-argument single diamond with a literal Bool condition
+and homogeneous literal signed-i64 or Bool results. Original operation/value
+IDs, incoming CFG edges, fact references and source records remain visible.
+The selected arm value transfers into the original if-value join parameter;
+the root function boundary is a recorded alias, not an extra computation.
+Both arms are checked before execution. Calls, loops, additional operations,
+effects, runtime checks and unsafe behavior are excluded. Existing depth/fuel
+limits apply to interpreter frames, not exact original instruction counts.
+
+The first run failed: 309 passing assertions and four failures across two
+tests exposed acceptance of an unselected nil Bool payload. The local new
+literal check was corrected without changing the generic runtime helper.
+That failed attempt remains failed. The valid execution selector's 264
+assertions remain tied to that earlier revision; review confirmed unchanged
+outcomes for its true/false and signed-i64 inputs. Three affected/previously
+unrun selectors pass 145 assertions on the corrected revision, including
+direct invalid-payload callback controls. This is four distinct tests and 409
+assertions across two passing selections, not one clean four-test rerun.
+
+Separate affected controls pass normalized SH-13 3 tests/46 assertions and
+the original SH-12 diamond 1 test/98 assertions. Language-boundary checks pass
+6 tests/11 assertions. The result's input IDs and fact/source projection do not
+claim full input-content authentication. Fresh C10/source ingress, generic MIR
+execution, native execution, SH-13 completion and authoritative migration remain
+outstanding; no milestone status is promoted by this bounded composition.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
