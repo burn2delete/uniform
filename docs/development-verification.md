@@ -208,7 +208,7 @@ Once module validation rejects, return its original diagnostic without the
 executor's entry lookup or argument checks, not a host exception. Preserve
 accepted execution and original verification recomputation.
 
-### Normalized target-lowering return types
+### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
 `c14_target_lowering_architecture.gravity` and run
@@ -219,6 +219,13 @@ duplicate-definition and operand/return-defined checks. Include existing
 three-target, normalized-schema, target-substitution and result-substitution
 selectors when changing this boundary. These supplied normalized requests do
 not establish fresh upstream verification or native backend execution.
+
+For the existing normalized integer opcodes, also run
+`sh17-integer-operations-check-their-declared-signatures`: `:integer-add`
+requires two declared Integers and an Integer result; `:integer-eq` requires
+two declared Integers and a Bool result. Check signatures after existing
+duplicate-definition and operand-defined gates. This does not select integer
+widths, overflow behavior, coercion or constant-value typing.
 
 ### C11 node-local preflight diagnostics
 

@@ -3610,6 +3610,20 @@
         (recur (+ index 1))
         false))))
 
+(defn sh17-integer-operation-signature-valid? [operation result-types]
+  (let [opcode (get operation :opcode)
+        operands (get operation :operands)]
+    (if (contains? #{:integer-add :integer-eq} opcode)
+      (if (= (count operands) 2)
+        (if (= (get result-types (get operands 0)) :gravity/integer)
+          (if (= (get result-types (get operands 1)) :gravity/integer)
+            (= (get operation :type)
+               (if (= opcode :integer-add) :gravity/integer :gravity/bool))
+            false)
+          false)
+        false)
+      true)))
+
 (defn sh17-mir-definition-order-valid? [mir]
   (let [function (first (get mir :functions))
         blocks (get function :blocks)]
@@ -3639,11 +3653,14 @@
                         nil
                         (if (sh17-operands-defined?
                              (get operation :operands) seen-results)
-                          (recur (+ operation-index 1)
-                                 (conj seen-operations operation-id)
-                                 (conj seen-results result-id)
-                                 (assoc seen-types result-id
-                                        (get operation :type)))
+                          (if (sh17-integer-operation-signature-valid?
+                               operation seen-types)
+                            (recur (+ operation-index 1)
+                                   (conj seen-operations operation-id)
+                                   (conj seen-results result-id)
+                                   (assoc seen-types result-id
+                                          (get operation :type)))
+                            nil)
                           nil))))))]
           (if (= state nil)
             false

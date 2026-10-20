@@ -441,3 +441,59 @@
             accepted (build base)]
         (is (= :rejected (:status (verify incompatible accepted))))
         (is (= :result-substitution (reason (verify incompatible accepted))))))))
+
+(deftest sh17-integer-operations-check-their-declared-signatures
+  ;; Normalized declarations only: no integer evaluation, widths or overflow.
+  (doseq [backend [:llvm :c :wasm]
+          [opcode result-type] [[:integer-add :gravity/integer]
+                                [:integer-eq :gravity/bool]]]
+    (let [base (request backend "/checkout-integer-signature")
+          function-path [:mir :functions 0]
+          ops-path (conj function-path :blocks 0 :operations)
+          left (get-in base (conj ops-path 0))
+          right (operation :op/right :constant [] :value/right (digest "6"))
+          arithmetic (assoc (operation :op/arithmetic opcode
+                                       [:value/constant :value/right]
+                                       :value/arithmetic (digest "7"))
+                            :type result-type)
+          returned (assoc (get-in base (conj ops-path 1))
+                          :type result-type :operands [:value/arithmetic])
+          input (-> base
+                    (assoc-in ops-path [left right arithmetic returned])
+                    (assoc-in (conj function-path :return-type) result-type)
+                    (assoc-in (conj function-path :blocks 0 :terminator :value-id)
+                              :value/arithmetic)
+                    (assoc :source-map
+                           [(get-in base [:source-map 0])
+                            (source-entry :op/right (digest "6") "/checkout-integer-signature")
+                            (source-entry :op/arithmetic (digest "7") "/checkout-integer-signature")
+                            (get-in base [:source-map 1])]))
+          result (build input)
+          check-rejected
+          (fn [hostile]
+            (let [rejected (build hostile)]
+              (is (= :rejected (:status rejected)))
+              (is (= :invalid-normalized-request (reason rejected)))
+              (is (nil? (:target-program rejected)))
+              (is (= :passed (:status (verify hostile rejected))))))]
+      (is (= :accepted (:status result)))
+      (is (= [backend opcode]
+             (get-in result [:target-program 0 :operations 2 :target-opcode])))
+      (is (= result-type (get-in result [:target-program 0 :operations 2 :type])))
+      (is (= :passed (:status (verify input result))))
+      (doseq [operands [[] [:value/constant]
+                        [:value/constant :value/right :value/right]
+                        [:value/missing :value/right]
+                        [:value/return :value/right]]]
+        (check-rejected (assoc-in input (conj ops-path 2 :operands) operands)))
+      (doseq [index [0 1] type [:gravity/bool :gravity/nil]]
+        (check-rejected (assoc-in input (conj ops-path index :type) type)))
+      (let [wrong-type (if (= result-type :gravity/bool)
+                         :gravity/integer :gravity/bool)
+            hostile (-> input
+                        (assoc-in (conj ops-path 2 :type) wrong-type)
+                        (assoc-in (conj ops-path 3 :type) wrong-type)
+                        (assoc-in (conj function-path :return-type) wrong-type))]
+        (check-rejected hostile)
+        (is (= :rejected (:status (verify hostile result)))))
+      (check-rejected (assoc-in input (conj ops-path 2 :operation-id) :op/constant)))))
