@@ -1027,3 +1027,16 @@
         (is (nil? (:execution result)))
         (is (= :passed (:status (verify core mutant result))))
         (is (= :rejected (:status (verify core mir (assoc-in accepted [:projection :operations index :role] :literal)))))))))
+
+(deftest sh13-do-arms-keep-the-literal-condition-placement-boundary
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]
+          operation [:integer-eq :integer-lt]]
+    (let [base (with-two-expression-do extension (checked extension) placement
+                 :gravity.type/bool false :gravity.type/i64 7)
+          core (with-integer-comparison extension base :condition operation 0 1)
+          mir (build core) result (run core mir)]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :rejected (:status result)))
+      (is (nil? (:execution result)))
+      (is (nil? (:projection result)))
+      (is (= :passed (:status (verify core mir result)))))))
