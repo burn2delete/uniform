@@ -13564,16 +13564,17 @@
       (is (= ["C7-GENERIC" :list-predicate-work-limit]
              ((juxt :rule :reason) (first (:diagnostics rejected)))))
       (is (= limit (:work-count rejected))))
-    (doseq [[changed-core changed-types]
-            [[core (assoc-in types [:operator :query-semantics :refinement] :integer)]
-             [core (assoc types :arg0 :gravity.type/unknown)]
-             [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+    (doseq [[changed-core changed-types expected-reason]
+            [[core (assoc-in types [:operator :query-semantics :refinement] :integer) :list-predicate-source-mismatch]
+             [core (assoc types :arg0 :gravity.type/unknown) :list-predicate-operand-type-required]
+             [(assoc-in core [:calls 0 :argument-node-ids] []) types :list-predicate-arity-mismatch]]]
       (let [c (first (:calls changed-core))
             own (invoke-c7 'sh08-listp-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
             rejected (check changed-core changed-types 65536)]
         (is (= :rejected (:status own)))
         (is (= :rejected (:status rejected)))
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= expected-reason (:reason own) (get-in rejected [:diagnostics 0 :reason])))
         (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
 
 (deftest sh08-list-predicate-id-guard-development-kernel
