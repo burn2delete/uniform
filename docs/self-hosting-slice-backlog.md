@@ -8848,9 +8848,10 @@ recomputing verification repeated that same defect. The owning
 `sh16-constant-folds-only-an-established-i64-result-domain` regression covers
 both normalized request constructors, signed boundaries, accepted i64 folds,
 unsupported canonical type IDs, diagnostic priority and tamper recomputation.
-Nonconstant and audited unsafe-island operations retain their existing
-unchanged/no-fold behavior; this does not introduce general opaque-type
-interpretation or require rejecting every non-i64 operation.
+Nonconstant additions remain unchanged; audited unsafe-island additions
+outside the explicit fold domain may be accepted without folding. This does
+not introduce general opaque-type interpretation or require rejecting every
+non-i64 operation.
 
 The initial regression attempt recorded 156 passes and 80 failures in 236
 assertions. Those failures included incorrect test oracles, not exclusively
