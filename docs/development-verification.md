@@ -371,8 +371,8 @@ existing representation premise; they are not a new Unicode validator.
 STD2's binary complement law extends to the supported STD3 List equality
 domain above. `not=` preserves the same accepted/rejected frontier, ordinary
 left-to-right operand evaluation and non-tail transfer rules. C7, C8 and typed
-lowering use their existing ANE owners; each local type classification consumes
-its existing List equality validator once with the remaining budget. There is
+lowering use their existing ANE owners; each selected List-domain classification
+consumes its existing List equality validator once with the remaining budget. There is
 no runtime change: lowering emits an owned conditional around one builtin `=`,
 with false/true branches. It does not emit a runtime builtin `not=`.
 

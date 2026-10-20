@@ -9532,7 +9532,8 @@ Operands evaluate left-to-right once and remain non-tail; stored payloads are
 inert and no flow or member facts are inferred.
 
 The existing C7, C8 and emitter ANE routes each consume their local List equality
-domain once, retaining actual work and source/fact reconstruction. Lowering
+domain once for a selected List-domain classification, retaining actual work
+and source/fact reconstruction. Lowering
 uses one owned conditional around one builtin equality, not constant folding
 or a runtime inequality function. Runtime inventory remains 56; existing
 atomic, Vector, Set and List equality helpers are unchanged. The selected
