@@ -4574,18 +4574,19 @@
                           complete? (loop [values arguments]
                                       (if (= 0 (count values)) true
                                         (if (sh08-is-value-type? (first values)) (recur (rest values)) false)))
+                          entry-node (get nodes (get call :core-node-id))
                           entry {:call-core-node-id (get call :core-node-id)
                                  :caller-function-syntax-id (get edge :caller-function-syntax-id)
-                                 :source-call call :source-edge edge :source (get (get nodes (get call :core-node-id)) :source)
+                                 :source-call call :source-edge edge :source (get entry-node :source)
                                  :argument-node-ids args :argument-types arguments
                                  :normal-invocation? invoked? :invocation-guard :all-operand-types-normal
                                  :callee-result-is-not-invocation-guard true}]
                       (if (if invoked? (= false complete?) false)
                         {:status :rejected :reason :private-self-independent-entry-types-required
-                         :entry entry :work-count used}
+                         :node entry-node :entry entry :work-count used}
                         (if (if invoked? (if (= selected nil) false (= false (= selected arguments))) false)
                           {:status :rejected :reason :private-self-entry-type-conflict
-                           :expected selected :actual arguments :entry entry :work-count used}
+                           :expected selected :actual arguments :node entry-node :entry entry :work-count used}
                           (recur (rest remaining) (rest remaining-edges) (conj entries entry)
                             (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count) used)))))
                   {:status :rejected :reason :private-self-entry-census-mismatch :work-count used}))))))
