@@ -396,7 +396,8 @@
              :move
              :consume
              :escape-borrow}
-   :escape-destinations #{:function-return}
+   :escape-destinations #{:function-return :closure-capture
+                          :global-or-static-storage}
    :diagnostics ["L10-UNINIT-READ"
                  "C9-USE-AFTER-MOVE"
                  "C9-USE-AFTER-CONSUME"
@@ -571,7 +572,8 @@
                 (sh10-lifetime-coordinate?
                  (get event :destination-lifetime-end))
                  (sh10-member?
-                  #{:function-return}
+                  #{:function-return :closure-capture
+                    :global-or-static-storage}
                   (get event :escape-destination))
                  false))
              true)
@@ -1210,7 +1212,8 @@
    :accepted-events
    #{:initialize :read :borrow-immutable :end-borrow :move :consume
      :escape-borrow}
-   :escape-destinations #{:function-return}
+   :escape-destinations #{:function-return :closure-capture
+                          :global-or-static-storage}
    :profile :meta
    :target :jvm
    :diagnostics ["L10-UNINIT-READ"
@@ -1264,7 +1267,9 @@
     (if (= nil (get event :destination-owner))
       (if (sh10-lifetime-coordinate?
            (get event :destination-lifetime-end))
-        (= :function-return (get event :escape-destination))
+        (sh10-member? #{:function-return :closure-capture
+                        :global-or-static-storage}
+                      (get event :escape-destination))
         false)
       false)))
 
