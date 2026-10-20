@@ -701,7 +701,7 @@
       (is (= {:status :accepted :work-count 2 :children [hidden]} children))
       (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-instruction-children instruction 1))))
       (is (= :namespace-read-without-initialized-definition (:reason read-check)))
-      (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit :one)]) 65536))))
+      (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit "unsupported")]) 65536))))
       (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}}
                           (set-ir [(lit :one)])))))
     (let [payload '#{:data (println "never")} quoted {:op :quote :value payload}
