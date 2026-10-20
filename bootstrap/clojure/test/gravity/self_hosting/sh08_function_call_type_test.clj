@@ -4464,6 +4464,27 @@
     (is (= {:status :deferred :type :gravity.type/unknown :work-count 2} (step 2)))
     (is (= :character-predicate-work-limit (:reason (step 1))))))
 
+(deftest sh08-character-predicate-step-id-guard-development-kernel
+  (let [callbacks (atom 0)
+        hostile (proxy [Object] []
+                  (equals [_] (swap! callbacks inc) (throw (AssertionError. "Character step compared opaque input")))
+                  (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Character step hashed opaque input"))))
+        base (character-predicate-input [:gravity.type/keyword])
+        step (fn [input budget]
+               (let [{:keys [core node call edge nodes bindings types forms]} input
+                     context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
+                              :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}]
+                 (invoke-c7 'sh08-chp-step [node types {} {} context budget])))]
+    (doseq [budget [0 65536]
+            changed [(assoc-in base [:node :children] [hostile :arg0])
+                     (assoc-in base [:call :argument-node-ids] [hostile])
+                     (assoc-in base [:node :node-id] hostile)]]
+      (is (= (if (zero? budget) :character-predicate-work-limit :character-predicate-source-mismatch)
+             (:reason (step changed budget)))))
+    (is (= :character-predicate-operand-type-required
+           (:reason (step (assoc-in base [:types :arg0] hostile) 65536))))
+    (is (zero? @callbacks))))
+
 (deftest sh08-nil-predicate-development-kernel
   ;; Closed normalized operand facts; this does not grant source admission.
   (let [families [:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string

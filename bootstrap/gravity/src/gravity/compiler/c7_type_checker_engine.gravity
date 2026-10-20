@@ -12111,16 +12111,28 @@
         {:status :rejected :reason :character-predicate-arity-mismatch :work-count base}))))
 
 (defn sh08-chp-step [node types binding-types functions context budget]
-  (let [core (get context :ordering-core)
-        call (get (get context :ordering-operators) (first (get node :children)))
-        args (get call :argument-node-ids)]
-    (if (if (vector? args) (if (= 1 (count args))
-          (sh08-ft-unknown? (get types (first args) :gravity.type/unknown)) false) false)
-      (if (< budget 2)
-        (assoc (sh08-sm-failure "C7-GENERIC" :character-predicate-work-limit nil :remaining-type-join-units budget) :work-count 2)
-        {:status :deferred :type :gravity.type/unknown :work-count 2})
-      (sh08-chp-derive core node call (get (get context :ordering-edges) (get node :node-id))
-        (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))))
+  (if (< budget 2)
+    (assoc (sh08-sm-failure "C7-GENERIC" :character-predicate-work-limit nil :remaining-type-join-units budget) :work-count 2)
+    (let [core (get context :ordering-core) children (get node :children)
+          operator-id (if (vector? children) (get children 0) nil) node-id (get node :node-id)
+          valid? (if (if (keyword? operator-id) true (if (string? operator-id) (= 71 (count operator-id)) false))
+                   (if (keyword? node-id) true (if (string? node-id) (= 71 (count node-id)) false)) false)]
+      (if valid?
+        (let [call (get (get context :ordering-operators) operator-id) args (get call :argument-node-ids)
+              unary? (if (vector? args) (= 1 (count args)) false)
+              argument-id (if unary? (get args 0) nil)
+              argument-valid? (if unary? (if (keyword? argument-id) true
+                                          (if (string? argument-id) (= 71 (count argument-id)) false)) true)]
+          (if argument-valid?
+            (let [type (if unary? (get types argument-id :gravity.type/unknown) nil)
+                  unknown? (if unary? (if (= nil type) true
+                                        (if (keyword? type) (= :gravity.type/unknown type) false)) false)]
+              (if unknown?
+                {:status :deferred :type :gravity.type/unknown :work-count 2}
+                (sh08-chp-derive core node call (get (get context :ordering-edges) node-id)
+                  (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget)))
+            (assoc (sh08-sm-failure "C7-VERIFY" :character-predicate-source-mismatch nil :scalar-operand-identity nil) :work-count 2)))
+        (assoc (sh08-sm-failure "C7-VERIFY" :character-predicate-source-mismatch nil :scalar-operator-and-node-identities nil) :work-count 2)))))
 
 (defn sh08-nilp-classification [type]
   (if (= :gravity.type/never type)

@@ -8537,12 +8537,18 @@
                                  source-call (if (if (keyword? row-id) true (if (string? row-id) (= 71 (count row-id)) false))
                                                (get (get context :calls) row-id) nil)
                                  source-node (if (map? source-call) (get nodes row-id) nil)
-                                 source-type (get (get context :types) (get source-call :operator-node-id))]
-                             (if (p15-s23-typed-all [(= row-id (get source-call :core-node-id) (get source-node :node-id))
+                                 source-operator-id (if (map? source-call) (get source-call :operator-node-id) nil)
+                                 source-type (if (if (keyword? source-operator-id) true
+                                                   (if (string? source-operator-id) (= 71 (count source-operator-id)) false))
+                                               (get (get context :types) source-operator-id) nil)]
+                             (if (if (map? source-call)
+                                   (if (if (keyword? source-operator-id) true
+                                         (if (string? source-operator-id) (= 71 (count source-operator-id)) false))
+                                     (p15-s23-typed-all [(= row-id (get source-call :core-node-id) (get source-node :node-id))
                                    (map? source-call) (map? source-node)
                                    (= :gravity.type/applied-character-predicate (get source-type :kind))
                                    (= source-call (get source-type :source-call))
-                                   (= row (p15-s23-chp-constraint source-type))])
+                                   (= row (p15-s23-chp-constraint source-type))]) false) false)
                                (recur (rest remaining)) false))))
                        (= descriptor (get (get context :types) (get call :operator-node-id)))
                        (= (get descriptor :result-type) (get (get context :types) id))

@@ -14589,6 +14589,42 @@
              'p15-s23-runtime-evaluate-closed-instruction [(:value lowered) {'value stored} ""])))
     (is (zero? @callbacks))))
 
+(deftest current-gravity-character-predicate-other-producer-id-guard-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        base ((ns-resolve upstream 'character-predicate-input) [:gravity.type/character])
+        second-input (walk/postwalk-replace {:call :second-call :operator :second-operator :arg0 :second-arg} base)
+        derive (ns-resolve upstream 'character-predicate-derived) c7 (ns-resolve upstream 'invoke-c7)
+        first-result (derive base 65536) second-result (derive second-input 65536)
+        descriptor (:descriptor first-result) second-descriptor (:descriptor second-result)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        context {:core (:core base) :nodes (merge (:nodes base) (:nodes second-input))
+                 :forms (merge (:forms base) (:forms second-input)) :bindings (:bindings base)
+                 :types (merge (:types base) (:types second-input)
+                           {:operator descriptor :call (:type first-result)
+                            :second-operator second-descriptor :second-call (:type second-result)})
+                 :calls {:call (:call base) :second-call (:call second-input)}
+                 :edges {:call (:edge base) :second-call (:edge second-input)} :call-order {:call 0 :second-call 0}
+                 :call-facts {:call (c7 'sh08-chp-call-fact [descriptor (:module base)])
+                              :second-call (c7 'sh08-chp-call-fact [second-descriptor (:module base)])}
+                 :ledger [(c7 'sh08-chp-constraint [descriptor]) (c7 'sh08-chp-constraint [second-descriptor])]
+                 :locals {:arg0 'value} :parameter-types (:types base)}
+        compile (fn [ctx budget]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-typed-compile-character-predicate
+                    [ctx (get-in base [:nodes :call]) budget]))
+        callbacks (atom 0)
+        hostile (proxy [Object] []
+                  (equals [_] (swap! callbacks inc) (throw (AssertionError. "Character ledger compared opaque operator")))
+                  (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Character ledger hashed opaque operator"))))
+        forged (assoc-in context [:calls :second-call :operator-node-id] hostile)]
+    (is (= :accepted (:status first-result) (:status second-result)))
+    (is (= :complete (:status (compile context 65536))))
+    (doseq [budget [0 65536]]
+      (is (= :rejected (:status (compile forged budget)))))
+    (is (zero? @callbacks))))
+
 (deftest current-gravity-nil-predicate-lowering-runtime-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
