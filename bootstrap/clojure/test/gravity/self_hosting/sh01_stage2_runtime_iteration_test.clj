@@ -29634,8 +29634,11 @@
                       (assoc-in [:nodes :set-item-0 :attributes] {:literal-kind :character :value (char 97)})
                       (assoc-in [:types :set-item-0] :gravity.type/symbol)
                       (assoc-in [:types :set :element-types] [:gravity.type/symbol]))]
-      (is (= {:op :set-literal :items [{:op :literal :value (char 97)}]}
-             (:value (invoke 'p15-s23-typed-compile-node context :set 65536)))))
+      ;; Character-backed DATA tagged Symbol cannot establish a supported constructor.
+      (let [rejected (invoke 'p15-s23-typed-compile-node context :set 65536)]
+        (is (= :rejected (:status rejected)))
+        (is (= :unsupported-typed-set-member (get-in rejected [:facts :reason])))
+        (is (nil? (:value rejected)))))
 ))
 
 (deftest current-gravity-symbol-set-contains-transfer-fence-development-kernel
