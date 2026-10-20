@@ -313,3 +313,70 @@
                'sh13-verify-execution
                [module [4] substituted])
               [:diagnostics 0 :rule]))))))
+
+(deftest sh13-branch-transfers-require-vector-carriers
+  ;; Original Gravity fixture constructors supply normalized MIR, not fresh
+  ;; authenticated SH12 products. Host exceptions are observed, never accepted.
+  (let [observe (fn [f]
+                  (try {:value (f)}
+                       (catch Throwable error
+                         {:host-error (.getName (class error))})))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (module plan 'sh13-branch-module)
+            entry-path [:functions 0 :blocks 0 :terminator]
+            branch-path [:functions 0 :blocks 1 :terminator]
+            check-rejected
+            (fn [malformed rule]
+              (let [observed (observe #(run malformed [true]))
+                    result (:value observed)
+                    verification
+                    (observe #(invoke-engine 'sh13-verify-execution
+                                             [malformed [true] result]))]
+                (is (nil? (:host-error observed)))
+                (is (= :rejected (:status result)))
+                (is (= rule (get-in result [:diagnostics 0 :rule])))
+                (is (nil? (:execution result)))
+                (is (nil? (:host-error verification)))
+                (is (= :passed (get-in verification [:value :status])))))]
+        (doseq [[subject args expected]
+                [[base [true] 42] [base [false] 7]
+                 [(module plan 'sh13-loop-module) [4] 10]
+                 [(module plan 'sh13-indirect-module) [41] 42]]]
+          (let [result (run subject args)]
+            (is (= :accepted (:status result)))
+            (is (= expected (get-in result [:execution :value])))
+            (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                  [subject args result]))))))
+        (doseq [arguments [nil 7 {0 :choose/forty-two}
+                           (list :choose/forty-two) "x"]]
+          (check-rejected (assoc-in base (conj branch-path :arguments) arguments)
+                          "C11-TYPE"))
+        ;; Check both arms statically, even when runtime would select the other.
+        (doseq [field [:then-arguments :else-arguments]
+                arguments [nil 7 {} '() ""]]
+          (check-rejected (assoc-in base (conj entry-path field) arguments)
+                          "C11-TYPE"))
+        (doseq [field [:then-arguments :else-arguments]]
+          (check-rejected (update-in base entry-path dissoc field) "C11-TYPE"))
+        (doseq [[malformed rule]
+                [[(-> base
+                      (assoc-in (conj branch-path :target) :missing)
+                      (assoc-in (conj branch-path :arguments) 7)) "C11-BLOCK"]
+                 [(-> base
+                      (assoc-in (conj entry-path :then-target) :missing)
+                      (assoc-in (conj entry-path :else-arguments) 7)) "C11-BLOCK"]
+                 [(-> base
+                      (assoc-in (conj entry-path :then-arguments) [:missing])
+                      (assoc-in (conj entry-path :else-target) :missing)) "C11-TYPE"]
+                 [(-> base
+                      (assoc-in (conj entry-path :then-target) :choose/join)
+                      (assoc-in (conj entry-path :then-arguments) [:missing])
+                      (assoc-in (conj entry-path :else-arguments) 7)) "C11-DOMINANCE"]
+                 [(assoc-in base (conj branch-path :arguments) [:missing :extra]) "C11-TYPE"]
+                 [(assoc-in base (conj branch-path :arguments) [:missing]) "C11-DOMINANCE"]]]
+          (check-rejected malformed rule))
+        (let [malformed (assoc-in base (conj entry-path :else-arguments) nil)
+              result (:value (observe #(run malformed [true])))
+              substituted (assoc result :status :accepted)]
+          (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                  [malformed [true] substituted])))))))))
