@@ -204,8 +204,8 @@ SH-13 completion evidence.
 
 For module rejection before entry lookup, run
 `sh13-rejects-malformed-modules-before-entry-lookup` in the same namespace.
-Invalid module carriers must return the original module diagnostic before
-entry traversal or argument checks, not escape as host exceptions. Preserve
+Once module validation rejects, return its original diagnostic without the
+executor's entry lookup or argument checks, not a host exception. Preserve
 accepted execution and original verification recomputation.
 
 ### C11 node-local preflight diagnostics
