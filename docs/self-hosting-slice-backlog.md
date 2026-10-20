@@ -8840,6 +8840,34 @@ recomputation. Authenticated SH-15 input, complete C11 MIR adaptation,
 remaining proof-class replay, whole-function translation validation,
 target-lowering proof preservation, a self-hosted certificate checker, and
 SH-16 completion remain pending.
+
+The subsequent normalized C13 development repair requires an explicit `:i64`
+result before folding a constant addition. Previously, bounded numeric operands
+could produce a constant while retaining an unrelated declared result type;
+recomputing verification repeated that same defect. The owning
+`sh16-constant-folds-only-an-established-i64-result-domain` regression covers
+both normalized request constructors, signed boundaries, accepted i64 folds,
+unsupported canonical type IDs, diagnostic priority and tamper recomputation.
+Nonconstant additions remain unchanged; audited unsafe-island additions
+outside the explicit fold domain may be accepted without folding. This does
+not introduce general opaque-type interpretation or require rejecting every
+non-i64 operation.
+
+The initial regression attempt recorded 156 passes and 80 failures in 236
+assertions. Those failures included incorrect test oracles, not exclusively
+the production defect. The first guarded attempt recorded 230 passes and six
+failures in 236 assertions, with seven remaining selectors unrun. Correcting
+only the test's String-as-identifier assumption and earlier diagnostic
+expectation produced eight passing selectors and 325 assertions: 236 new and
+89 adjacent pipeline, schema, recomputation and check-elision assertions.
+The separate language-boundary run passed six tests and 11 assertions, for
+14 tests and 336 assertions across the two passing invocations. The production
+Clojure LOC validator passed 2,021 files with zero exceptions and maximum 250.
+Both failed attempts remain distinct historical results. Focused supplied-MIR
+execution supports this development behavior, not fresh C11 source ingress,
+native execution, renewed authority or milestone completion. Historical C13
+source measurements above are not evidence for this changed revision.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
@@ -9642,6 +9670,50 @@ arms, nine ordered source/fact rows, incoming IDs, invalid unselected domains,
 unsupported layouts, DFG/operand tampering and result recomputation. This does
 not establish fresh C10/source ingress, generic MIR, native execution, whole
 compiler execution, SH-13 completion or authoritative migration.
+
+### Scalar SSA forwarding and branch-local let: executable increment
+
+C11's existing interpreter now supports one pure scalar SSA forwarding opcode,
+`:local`. It requires exactly one already-defined operand of matching i64,
+Bool or Keyword type, preserving earlier definition/effect/fact/source checks.
+It forwards the value without reevaluating its producer, retains the original
+operation ID in the trace and consumes one existing fuel step. This explicitly
+extends the normalized operation domain; no new interpreter, cache or wrapper
+is introduced.
+
+The original SH-12 producer/verifier handoff now executes exactly one
+branch-local scalar `let` in layouts `[1,4,1]` or `[1,1,4]`: literal initializer,
+binding, local reference and scope, opposite a matching literal arm. Both arms
+validate before execution. Actual Symbol names, scalar IDs, resolved binding,
+one non-shadowing binding, original operand order and plural `:bindings` paths
+join the supplied source/fact records. Scope forwards its second operand, the
+local-reference result, not the binder. The initializer executes once when
+selected. Its three original alias IDs remain visible in forwarding traces.
+
+This adds three projection roles and an eight-row domain; public keys/arities
+are unchanged. Existing five/seven/nine-node results remain. Depth 32 and fuel
+512 remain, leaving 504 for selected lexical execution and 507 when skipped.
+No parameters, cross-block captures, collections, two lexical arms, combined
+entry-comparison/let layout or general lexical interpreter is enabled.
+
+The first attempt `ea8cebe7` exited 2 during test namespace compilation, with
+zero tests/assertions and no timing receipt. Two test delimiters had closed a
+local test scope too early. The test-only correction `3fd567c6` leaves production
+and bridge-test bytes unchanged. Its focused invocation passes all 16 tests/
+4811 assertions: 163 new normalized-forwarding, 588 new bridge assertions and
+4060 affected regressions. Separate boundary checks pass 6/11, giving 22 tests/
+4822 assertions across two passing invocations. Source LOC passes 2021 files,
+zero exceptions, maximum 250. The failed load epoch is not semantic evidence.
+
+These are original G/Q normalized constructors and supplied SH-12 checked-Core
+lexical witnesses, not actual C6/C10 adaptation. C6's `:gravity/*` type family
+and truthiness nodes still require a separately validated adapter to this
+`:gravity.type/*` interface. Retained lexical attributes/source-form IDs do not
+independently establish real source provenance. Fresh source ingress, native
+execution, whole compiler/helper behavior, SH-13 completion and authoritative
+migration remain outstanding. Consumers must account for the new normalized
+opcode/projection domains when selecting a future stable migration revision;
+no historical proof is repinned or renewed by this development merge.
 
 ### Normalized C14 return-type consistency: development repair
 
