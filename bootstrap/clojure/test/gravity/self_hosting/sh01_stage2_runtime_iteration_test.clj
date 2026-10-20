@@ -27937,6 +27937,25 @@
     (is (true? (invoke 'p15-s23-ss-type? [carrier])))
     (is (true? (invoke 'p15-s23-is-value-type? [carrier])))
     (is (false? (invoke 'p15-s23-ds-type? [carrier])))
+    (let [produced (:result-type (invoke 'p15-s23-ssin-type-work [[{:kind :gravity.type/set :shape :literal :element-types []} s] 65536]))
+          checked (invoke 'p15-s23-lc-type-work [[produced] 2])
+          nested {:kind :gravity.type/list :shape :literal :element-types [produced]}]
+      (is (= carrier produced))
+      (is (= {:status :accepted :work-count 2} checked))
+      (is (= {:status :rejected :reason :work-limit :work-count 1} (invoke 'p15-s23-lc-type-work [[produced] 1])))
+      (is (= {:status :accepted :work-count 3} (invoke 'p15-s23-lc-type-work [[nested] 3])))
+      (is (= :work-limit (:reason (invoke 'p15-s23-lc-type-work [[nested] 2]))))
+      (require 'gravity.self-hosting.sh08-function-call-type-test)
+      (doseq [[input-name family expected] [['list-construction-input "lc" nested]
+                                           ['keyword-predicate-input "kp" b]
+                                           ['set-predicate-input "setp" b]]]
+        (let [input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test input-name) [produced])
+              {:keys [core node call edge nodes bindings types module]} input
+              header (invoke (symbol (str "p15-s23-" family "-source")) [core node call edge nodes bindings types module checked])
+              descriptor (invoke (symbol (str "p15-s23-" family "-finish")) [header])]
+          (is (map? header))
+          (is (= [produced] (:argument-types descriptor)))
+          (is (= expected (:result-type descriptor) (:return descriptor))))))
     (is (= :accepted (:status result)))
     (is (= [b s carrier] (:parameter-types result)))
     (is (= 2 (:normal-entry-count result)))
@@ -27973,6 +27992,7 @@
                      (array-map :kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string)
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'p15-s23-is-value-type? [wrong])))
+        (is (= :rejected (:status (invoke 'p15-s23-lc-type-work [[wrong] 65536]))))
         (is (zero? @callbacks)))))))
 
 (deftest current-gravity-string-set-carrier-fixtures-development-kernel

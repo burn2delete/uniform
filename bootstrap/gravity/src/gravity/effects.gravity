@@ -3822,7 +3822,7 @@
                         (loop [fields (keys type)]
                           (if (= 0 (count fields)) true
                             (if (keyword? (first fields)) (recur (rest fields)) false))) false) false)
-                  (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (if (keyword? (get type :element-type)) (body-hl-type? type) false)
+                  (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (if (body-ss-type? type) true (if (keyword? (get type :element-type)) (body-hl-type? type) false))
                         nil-bearing? (if (keyword? (get type :value-type)) (body-ni-type? type) false)
                         children (if nil-bearing? [(get type :value-type)]
                                    (if homogeneous? [(get type :element-type)] (get type (if members? :member-types :element-types))))
