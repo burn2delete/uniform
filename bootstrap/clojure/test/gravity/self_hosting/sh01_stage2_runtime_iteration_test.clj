@@ -14743,20 +14743,32 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         base ((ns-resolve upstream 'character-predicate-input) [:gravity.type/character])
-        second-input (walk/postwalk-replace {:call :second-call :operator :second-operator :arg0 :second-arg} base)
+        second-input (let [renamed (walk/postwalk-replace {:call :second-call :operator :second-operator :arg0 :second-arg} base)
+                           ;; The normalized IDs overlap fixed Core vocabulary.
+                           ;; Restore semantic tags in every node representation.
+                           restore-node (fn [node]
+                                          (cond-> node
+                                            (= :second-call (:node-id node)) (assoc :core-form :call)
+                                            (= :second-operator (:node-id node)) (assoc-in [:attributes :position] :operator)))]
+                       (-> renamed (update :node restore-node)
+                           (update :nodes #(into {} (map (fn [[id node]] [id (restore-node node)]) %)))
+                           (update-in [:core :nodes] #(mapv restore-node %))
+                           (assoc-in [:edge :ordinal] 1) (assoc-in [:core :call-edges 0 :ordinal] 1)))
         derive (ns-resolve upstream 'character-predicate-derived) c7 (ns-resolve upstream 'invoke-c7)
         first-result (derive base 65536) second-result (derive second-input 65536)
         descriptor (:descriptor first-result) second-descriptor (:descriptor second-result)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
-        context {:core (:core base) :nodes (merge (:nodes base) (:nodes second-input))
+        context {:core (assoc (:core base) :nodes (into (get-in base [:core :nodes]) (get-in second-input [:core :nodes]))
+                          :calls [(:call base) (:call second-input)] :call-edges [(:edge base) (:edge second-input)])
+                 :nodes (merge (:nodes base) (:nodes second-input))
                  :forms (merge (:forms base) (:forms second-input)) :bindings (:bindings base)
                  :types (merge (:types base) (:types second-input)
                            {:operator descriptor :call (:type first-result)
                             :second-operator second-descriptor :second-call (:type second-result)})
                  :calls {:call (:call base) :second-call (:call second-input)}
-                 :edges {:call (:edge base) :second-call (:edge second-input)} :call-order {:call 0 :second-call 0}
+                 :edges {:call (:edge base) :second-call (:edge second-input)} :call-order {:call 0 :second-call 1}
                  :call-facts {:call (c7 'sh08-chp-call-fact [descriptor (:module base)])
                               :second-call (c7 'sh08-chp-call-fact [second-descriptor (:module base)])}
                  :ledger [(c7 'sh08-chp-constraint [descriptor]) (c7 'sh08-chp-constraint [second-descriptor])]
