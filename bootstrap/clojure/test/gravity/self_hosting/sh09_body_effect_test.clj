@@ -6833,8 +6833,11 @@
         (is (zero? @callbacks))))
     (doseq [bad [opaque [opaque] {:opaque opaque}] i (range 3)]
       (let [changed (assoc-in request [:b47-context :authenticated-core-request :forms]
-                              (mapv #(if (= :call (:form-id %)) (assoc-in % [:child-form-ids i] bad) %) (vals forms)))]
-        (is (= :rejected (:status (leaf 'body-ane-context changed facts bindings 65536))))
+                              (mapv #(if (= :call (:form-id %)) (assoc-in % [:child-form-ids i] bad) %) (vals forms)))
+            changed-context (leaf 'body-ane-context changed facts bindings 65536)]
+        (is (= :accepted (:status changed-context)))
+        (is (false? (leaf 'body-ane-call-valid? core
+                          (assoc facts :atomic-inequality-context (:context changed-context)) bindings node call edge nodes)))
         (is (zero? @callbacks))))
     (doseq [bad [opaque [opaque] {:opaque opaque}]]
       (let [changed-nodes (assoc-in nodes [:operator :attributes :symbol] bad)
