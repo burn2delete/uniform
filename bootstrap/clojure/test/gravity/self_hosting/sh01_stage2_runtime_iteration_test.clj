@@ -27988,8 +27988,8 @@
                                     (equals [_] (swap! callbacks inc) (throw (AssertionError. "carrier equality"))))]
       (doseq [wrong [(assoc carrier :element-type opaque) (assoc carrier :element-type [opaque])
                      (assoc carrier :shape opaque) (assoc carrier :kind opaque)
-                     (array-map :kind :gravity.type/list :shape :homogeneous opaque :gravity.type/string)
-                     (array-map :kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string)
+                     (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/list :shape :homogeneous opaque :gravity.type/string]))
+                     (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string]))
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'p15-s23-is-value-type? [wrong])))
         (is (= :rejected (:status (invoke 'p15-s23-lc-type-work [[wrong] 65536]))))

@@ -10910,10 +10910,10 @@
                   {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil}))
               (if (if (map? items) (= :homogeneous (get items :shape)) false)
                 (if (< limit 3)
-                  {:status :rejected :reason :string-set-contains-work-limit :work-count 3}
+                  {:status :rejected :reason work-reason :work-count 3}
                   (if (if (sh08-ss-type? items) (if strings? true (= :gravity.type/never needle)) false)
                     {:status :accepted :work-count 3 :argument-types arguments :set-member-count nil :membership-family :string}
-                    {:status :rejected :reason :string-set-contains-operand-type-required :work-count 3}))
+                    {:status :rejected :reason type-reason :work-count 3}))
               (if (if (map? items) (if (= 3 (count items))
                     (if (= :gravity.type/set (get items :kind))
                       (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false) false)

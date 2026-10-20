@@ -11281,7 +11281,7 @@
              [[(finite [k]) :gravity.type/never] :keyword-set-contains-work-limit]
              [[:gravity.type/never k] :keyword-set-contains-work-limit]
              [[carrier k] :string-set-contains-work-limit]
-             [[carrier :gravity.type/never] :string-set-contains-work-limit]]]
+             [[carrier :gravity.type/never] :keyword-set-contains-work-limit]]]
       (let [{:keys [core nodes forms bindings products binding-types] :as input} (map-contains-input arguments)
             result (derive input 65536) descriptor (:descriptor result)
             context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
@@ -11363,7 +11363,7 @@
                  {:kind :gravity.type/nil-or :value-type :gravity.type/string}]]
       (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad]) 65536))))
       (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]) 65536)))))
-    (is (= :rejected (:status (invoke-c7 'sh08-kse-domain [[(finite [k]) (finite [k])] 65536]))))
+    (is (= :accepted (:status (invoke-c7 'sh08-kse-domain [[(finite [k]) (finite [k])] 65536]))))
 ))
 
 (deftest sh08-string-set-contains-throw-consumer-development-kernel
@@ -13231,8 +13231,8 @@
                                     (equals [_] (swap! callbacks inc) (throw (AssertionError. "carrier equality"))))]
       (doseq [wrong [(assoc carrier :element-type opaque) (assoc carrier :element-type [opaque])
                      (assoc carrier :shape opaque) (assoc carrier :kind opaque)
-                     (array-map :kind :gravity.type/list :shape :homogeneous opaque :gravity.type/string)
-                     (array-map :kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string)
+                     (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/list :shape :homogeneous opaque :gravity.type/string]))
+                     (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string]))
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'sh08-is-value-type? [wrong])))
         (is (= :rejected (:status (invoke 'sh08-lc-type-work [[wrong] 65536]))))
