@@ -392,3 +392,52 @@
            (reason (verify input deep-candidate))))
     (is (= :candidate-structural-bound
            (reason (verify input sequence-candidate))))))
+
+(deftest sh17-return-types-match-the-defined-returned-value
+  ;; Supplied normalized MIR declarations, not fresh authenticated SH16 input.
+  (doseq [backend [:llvm :c :wasm]]
+    (let [base (request backend "/checkout-return-type")
+          function-path [:mir :functions 0]
+          operations-path (conj function-path :blocks 0 :operations)
+          terminator-path (conj function-path :blocks 0 :terminator)
+          bool-request (-> base
+                           (assoc-in (conj function-path :return-type)
+                                     :gravity/bool)
+                           (assoc-in (conj operations-path 0 :type)
+                                     :gravity/bool)
+                           (assoc-in (conj operations-path 1 :type)
+                                     :gravity/bool))
+          check-rejected
+          (fn [input]
+            (let [result (build input)]
+              (is (= :rejected (:status result)))
+              (is (= "C14-INPUT" (get-in result [:diagnostics 0 :diagnostic-id])))
+              (is (= :invalid-normalized-request (reason result)))
+              (is (nil? (:target-program result)))
+              (is (= :passed (:status (verify input result))))))]
+      (doseq [input [base bool-request]]
+        (let [result (build input)]
+          (is (= :accepted (:status result)))
+          (is (= :passed (:status (verify input result))))
+          (is (= (get-in input (conj operations-path 0 :type))
+                 (get-in result [:target-program 0 :operations 0 :type])))
+          (is (= (get-in base [:c11-revision])
+                 (get-in result [:identity-input :c11-revision])))))
+      ;; Do not mistake the last operation for the terminator-selected value.
+      (check-rejected (assoc-in base (conj function-path :return-type)
+                                :gravity/bool))
+      (check-rejected (assoc-in bool-request (conj function-path :return-type)
+                                :gravity/integer))
+      (check-rejected (assoc-in base (conj operations-path 0 :type)
+                                :gravity/bool))
+      (check-rejected (assoc-in base (conj terminator-path :value-id)
+                                :value/missing))
+      (check-rejected (assoc-in base (conj operations-path 1 :result-id)
+                                :value/constant))
+      (check-rejected (assoc-in base (conj operations-path 0 :operands)
+                                [:value/return]))
+      (let [incompatible (assoc-in base (conj function-path :return-type)
+                                   :gravity/bool)
+            accepted (build base)]
+        (is (= :rejected (:status (verify incompatible accepted))))
+        (is (= :result-substitution (reason (verify incompatible accepted))))))))
