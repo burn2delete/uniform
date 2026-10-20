@@ -4412,6 +4412,73 @@ seed controls interpret the same emitted IR, not an independent raw-source
 compiler. Supplementary and hostile Character carriers remain focused IR
 controls rather than claims about this ASCII hex source subject.
 
+### Finite String-Set membership
+
+STD3 owns binary `contains?` on an independently established finite Set of
+Strings and a String needle, including empty Sets. Edit the existing C7, C8,
+typed emitter and runtime membership owners; no new constructor, instruction
+or export is required. Start with the focused checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-string-set-contains-development-kernel \
+  --exact sh08-string-set-contains-throw-consumer-development-kernel \
+  --exact sh08-string-set-contains-dispatch-guard-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-string-set-contains-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-set-contains-lowering-development-kernel \
+  --exact current-gravity-string-set-contains-runtime-development-kernel \
+  --exact current-gravity-string-set-contains-transfer-fence-development-kernel --fail-fast
+```
+
+Retain source/binding/type/fact/ordered-ledger reconstruction, exact String
+descriptor identity, full work accounting and existing Keyword/Character
+regressions. Set then needle evaluate once, non-tail; transfers abort invocation.
+Every normally evaluated operand must retain its domain evidence even when the
+other operand transfers. Bare, unknown or mixed Set types and wrong needle
+families are unsupported, not ordinary false results.
+
+Runtime validates all members and the needle, reserves content/comparison work
+and rejects duplicate value classes before searching. String equality is exact
+and case-sensitive, with no normalization or host hash/lookup authority.
+Reservation is `2 + 2*n + n*(n-1)/2 + (n+1)*U`, where `U` includes all member
+and needle JVM UTF-16 representation units. Width 1,024 and work 65,536 remain
+separate bounds; units are not language String cardinality or provider CPU time.
+
+This runtime path assumes authenticated typing and type-conforming immutable,
+finite Set providers whose cardinality and enumeration agree. Detectable
+malformed-provider controls do not authenticate arbitrary host Set impostors.
+Dishonest or infinite host/FFI providers have no claimed CPU or peak-memory
+containment; do not add an eager snapshot to imply that guarantee. Membership
+uses no insertion or conversion, evaluates no stored payloads and establishes
+no flow, cardinality or enumeration facts. It adds no source-level allocation
+effect; its internal accumulator does not establish physical host
+allocation-freedom. Allocation in a Set-valued operand remains visible under
+the existing constructor rules.
+
+For a changed upstream/downstream composition, run the paired parser check and
+the tiny source selection separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-set-contains-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-set-contains-authenticated-composition --fail-fast
+```
+
+The source selection exercises a String-annotated helper containing the actual
+extension-Set expression, with `.gravity`, `.qst` and `.txt` callers, plus a
+numeric-Set/String-needle C7 rejection. QST has owning-C2 byte/parser checks
+only. Fresh development C6 sessions and same-catalog replay are not fresh public
+C6 authority verification. This is the compiler predicate subexpression, not
+execution of an unchanged full provenance validator or admission of a revision.
+
 ### Evaluated literal-Keyword Sets
 
 For the bounded JVM slice, edit the existing typed emitter and runtime owners.
