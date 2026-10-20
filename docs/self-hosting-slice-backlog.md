@@ -9210,6 +9210,26 @@ not close the retained C17 work-limit deficit, establish a dominant cost or
 demonstrate a wall-time speedup. The held C17 subject, provenance/equivalence
 gates and authoritative migration status remain unchanged.
 
+### C11 effect/safety diagnostic attribution: development repair
+
+The single-diamond verifier now attributes the first operation effect or safety
+fact mismatch to the operation, block, span and generated origins in freshly
+rebuilt expected MIR. Candidate location metadata is ignored. The original
+Boolean validators and their operation projections are unchanged. Aggregate
+effect tables, ordering graph and latent effects, or safety/runtime-check/proof
+tables, retain priority. Terminator/value-only failures retain their fallback;
+the existing type-before-effect-before-safety order remains intact. An invalid
+first expected source keeps the original fallback rather than skipping ahead.
+
+The initial regression completed 175 assertions with 105 passes and 70
+attribution failures; it is retained as failed evidence. The expanded regression
+passes 179 assertions, including four defensive internal-context fallback
+checks. The focused batch passes 5 tests and 939 assertions with operation-type,
+preflight, fact-loss and runtime-check-preservation controls. These supplied
+checked-Core/MIR checks change failure attribution only. They do not add safety
+proofs, fresh C10 source composition, general MIR coverage, SH-12 completion or
+authoritative admission. Accepted MIR, schemas and resource limits are unchanged.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established
