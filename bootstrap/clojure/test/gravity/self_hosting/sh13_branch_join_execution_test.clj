@@ -685,7 +685,7 @@
     (let [base (with-scalar-truthiness extension (checked extension) :gravity.type/i64 0)
           mir (build base) accepted (run base mir)
           candidates [(with-scalar-truthiness extension (checked extension) :gravity.type/string "text")
-                      (with-scalar-truthiness extension (checked extension) :gravity.type/nil nil)
+                      (with-scalar-truthiness extension (checked extension) :gravity.type/unit nil)
                       (assoc-in base [:core-nodes 0 :attributes :value] nil)
                       (assoc-in base [:core-nodes 1 :operands] [])
                       (assoc-in base [:core-nodes 1 :operands] ["sh13:truthiness:input" "sh13:truthiness:input"])
@@ -846,3 +846,66 @@
                     (assoc-in core [:core-nodes local-index :attributes :resolved-binding] opaque)]]
           (is (false? (invoke 'sh13-branch-join-let-arm-valid? bad operations :gravity.type/i64)))
           (is (empty? @callbacks)))))))
+
+(deftest sh13-executes-explicit-nil-carriers-without-fabricating-values
+  ;; The shared scalar mapping admits Nil returns/let arms as well as tests.
+  ;; These are supplied SH12 constructors, not C6-generated source evidence.
+  (doseq [extension [".gravity" ".qst"]]
+    (let [base (scalar-core (checked extension) true :gravity.type/nil nil nil)
+          cases (concat
+                 (for [condition [true false]]
+                   [(scalar-core (checked extension) condition :gravity.type/nil nil nil) nil 507])
+                 [[(with-scalar-truthiness extension (checked extension) :gravity.type/nil nil) 22 506]
+                  [(with-scalar-truthiness extension base :gravity.type/nil nil) nil 506]]
+                 (for [right [0 1]]
+                   [(integer-condition-core extension :integer-eq 0 right :gravity.type/nil) nil 505])
+                 (for [placement [:then :else] condition [true false]]
+                   [(with-scalar-let extension
+                      (scalar-core (checked extension) condition :gravity.type/nil nil nil) placement)
+                    nil (if (= placement (if condition :then :else)) 504 507)]))]
+      (doseq [[core expected fuel] cases]
+        (let [mir (build core) result (run core mir)
+              rows (get-in result [:projection :operations])]
+          (is (= :passed (get-in result [:upstream-verification :status])))
+          (is (= :accepted (:status result)))
+          (is (= :returned (get-in result [:execution :status])))
+          (is (contains? (:execution result) :value))
+          (is (= expected (get-in result [:execution :value])))
+          (is (= fuel (get-in result [:execution :fuel])))
+          (is (every? #(= :nil (:runtime-type %))
+                      (filter #(= :gravity.type/nil (:source-type %)) rows)))
+          (is (= (mapv :source (:core-nodes core)) (mapv :source rows)))
+          (is (= (:control-flow-graph mir) (get-in result [:projection :control-flow-graph])))
+          (is (= :passed (:status (verify core mir result))))
+          (is (= :rejected (:status (verify core mir (update result :execution dissoc :value)))))))
+      (let [mir (build base) accepted (run base mir)
+            ep [:functions (:entrypoint base) :blocks (:then (coordinates base mir)) :instructions 0]
+            op (get-in mir ep)]
+        (doseq [bad [(dissoc (:constant-payload op) :value)
+                    {:present? false :value nil} {:present? true :value false}]]
+          (is (false? (invoke 'sh13-branch-join-literal-valid?
+                              (assoc op :constant-payload bad) :gravity.type/nil)))
+          (let [mutant (assoc-in mir (conj ep :constant-payload) bad) result (run base mutant)]
+            (is (= :rejected (:status result)))
+            (is (nil? (:execution result)))
+            (is (= :passed (:status (verify base mutant result))))))
+        ;; C11 currently synthesizes payload presence from get. Retained original
+        ;; source attributes must therefore establish explicit Nil independently,
+        ;; including in the arm that would not execute.
+        (doseq [core [(update-in base [:core-nodes 1 :attributes] dissoc :value)
+                      (update-in base [:core-nodes 2 :attributes] dissoc :value)
+                      (assoc-in base [:core-nodes 1 :attributes :value] false)
+                      (assoc-in base [:core-nodes 1 :source-operation] :implicit-nil)
+                      (assoc-in base [:core-nodes 1 :source-operation] :quote)]]
+          (let [candidate-mir (build core) result (run core candidate-mir)]
+            (is (= :rejected (:status result)))
+            (is (nil? (:execution result)))
+            (is (nil? (:projection result)))
+            (is (= :passed (:status (verify core candidate-mir result))))))
+        (let [mutant (assoc-in mir (into ep [:facts :type-fact-id]) "forged")
+              result (run base mutant)]
+          (is (= :rejected (:status result)))
+          (is (= :rejected (get-in result [:upstream-verification :status])))
+          (is (nil? (:execution result)))
+          (is (= :passed (:status (verify base mutant result)))))
+        (is (= :rejected (:status (verify base mir (assoc-in accepted [:execution :value] false)))))))))

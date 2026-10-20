@@ -683,9 +683,101 @@
         (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
                                                 [missing [true] accepted]))))))))
 
+(deftest sh13-carries-explicit-nil-through-existing-scalar-transfers
+  ;; Original normalized constructors supply records, not authenticated C11
+  ;; evidence. Adding Nil enables every existing matching scalar transfer.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [make (fn [name args] (invoke plan name args))
+          base (module plan 'sh13-branch-module)
+          constant (make 'sh13-constant [:nil/value nil :nil 0 1])
+          local (make 'sh13-operation [:nil/local :local [:nil/value] :nil 1 2])
+          copy (make 'sh13-operation [:nil/copy :local [:nil/local] :nil 2 3])
+          function (fn [id params types result-type operations exit effects]
+                     (make 'sh13-function
+                           [id params types result-type effects false :nil/entry
+                            [(make 'sh13-block
+                                   [:nil/entry params types operations exit 0 10])] 0 10]))
+          exit (fn [opcode value] (make 'sh13-value-exit [opcode value 8 9]))
+          subject (fn [f] (assoc base :entry-function (:fn-id f) :functions [f]))
+          single (fn [ops result-type value]
+                   (subject (function :nil/main [] [] result-type ops (exit :return value) #{})))
+          check (fn [candidate arguments status value]
+                  (let [result (run candidate arguments)]
+                    (is (= :accepted (:status result)))
+                    (is (= status (get-in result [:execution :status])))
+                    (is (contains? (:execution result) :value))
+                    (is (= value (get-in result [:execution :value])))
+                    (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                          [candidate arguments result]))))
+                    result))
+          reject (fn [candidate arguments rule]
+                   (let [result (run candidate arguments)]
+                     (is (= :rejected (:status result)))
+                     (is (= rule (get-in result [:diagnostics 0 :rule])))
+                     (is (nil? (:execution result)))
+                     (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                           [candidate arguments result]))))))]
+      (let [candidate (single [constant local copy] :nil :nil/copy)
+            result (check candidate [] :returned nil)]
+        (is (= [:nil/value :nil/local :nil/copy]
+               (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+        (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                [candidate [] (update result :execution dissoc :value)]))))))
+      (doseq [[opcode status] [[:return :returned] [:error-return :error]
+                               [:throw :thrown] [:panic :panic]]]
+        (let [effects (if (= opcode :throw) #{:error/throw} #{})
+              f (function :nil/exit [:input] [:nil] :nil [] (exit opcode :input) effects)]
+          (check (subject f) [nil] status nil)
+          (when (= opcode :throw)
+            (reject (subject (assoc f :latent-effects #{})) [nil] "C11-EFFECT"))))
+      (doseq [dispatch [:direct :indirect]]
+        (let [id (function :nil/id [:input] [:nil] :nil [] (exit :return :input) #{})
+              call (make 'sh13-call [:nil/call :nil/id [:nil/value] :nil dispatch
+                                    (if (= dispatch :indirect) #{:nil/id} #{}) 1 2])
+              caller (function :nil/main [] [] :nil [constant call] (exit :return :nil/call) #{})
+              candidate (assoc base :entry-function :nil/main :functions [caller id])]
+          (check candidate [] :returned nil)
+          (reject (assoc-in candidate [:functions 1 :param-types] [:bool]) [] "C11-TYPE")
+          (reject (assoc-in candidate [:functions 0 :blocks 0 :operations 1 :operands] []) [] "C11-TYPE")
+          (when (= dispatch :indirect)
+            (reject (assoc-in candidate [:functions 0 :blocks 0 :operations 1 :allowed-callees] #{})
+                    [] "C11-VERIFY"))))
+      (let [eq (make 'sh13-operation [:nil/equal :eq [:nil/value :nil/value] :bool 1 2])
+            truthy (make 'sh13-operation [:nil/truthy :truthy [:nil/value] :bool 1 2])]
+        (check (single [constant eq] :bool :nil/equal) [] :returned true)
+        (check (single [constant truthy] :bool :nil/truthy) [] :returned false)
+        (doseq [opcode [:add :sub :mul :lt]]
+          (let [op (assoc eq :opcode opcode :type (if (= opcode :lt) :bool :i64))]
+            (reject (single [constant op] (:type op) :nil/equal) [] "C11-TYPE")))
+        (let [number (make 'sh13-constant [:nil/number 0 :i64 1 2])]
+          (reject (single [constant number (assoc eq :operands [:nil/value :nil/number])]
+                          :bool :nil/equal) [] "C11-TYPE")))
+      ;; Nil survives an actual backedge and the final block argument.
+      (let [true-op (make 'sh13-constant [:nil/again true :bool 0 1])
+            false-op (make 'sh13-constant [:nil/stop false :bool 2 3])
+            blocks [(make 'sh13-block [:nil/entry [:input] [:nil] [true-op]
+                                      (make 'sh13-branch [:nil/loop [:input :nil/again] 1 2]) 0 2])
+                    (make 'sh13-block [:nil/loop [:carry :again] [:nil :bool] [false-op]
+                                      (make 'sh13-conditional [:again :nil/loop [:carry :nil/stop]
+                                                               :nil/done [:carry] 3 4]) 2 4])
+                    (make 'sh13-block [:nil/done [:value] [:nil] [] (exit :return :value) 4 9])]
+            f (make 'sh13-function [:nil/loop-main [:input] [:nil] :nil #{} false :nil/entry blocks 0 9])
+            result (check (subject f) [nil] :returned nil)]
+        (is (= 2 (count (filter #(= :nil/stop (:operation %)) (get-in result [:execution :trace]))))))
+      (doseq [[op rule] [[(dissoc constant :literal) "C11-TYPE"]
+                        [(assoc constant :literal false) "C11-TYPE"]
+                        [(assoc constant :operands [:missing]) "C11-DOMINANCE"]
+                        [(assoc constant :type :bool) "C11-TYPE"]
+                        [(assoc constant :source-span nil) "C11-ORIGIN"]
+                        [(assoc constant :effects #{:io/write} :ordering :sequence) "C11-EFFECT"]
+                        [(assoc constant :profile :wrong) "C11-MODULE"]]]
+        (reject (single [op] :nil :nil/value) [] rule))
+      (let [f (function :nil/param [:input] [:nil] :nil [] (exit :return :input) #{})]
+        (doseq [value [false 0 :value "nil"]] (reject (subject f) [value] "C11-TYPE"))
+        (reject (subject f) [] "C11-TYPE")))))
+
 (deftest sh13-normalizes-selected-scalar-truthiness
-  ;; This normalized operation has a closed scalar operand domain. Nil remains
-  ;; outside that domain; this is not a new definition of source truthiness.
+  ;; Existing non-Nil representatives; explicit Nil carrier cases are above.
   (is (contains? (:operation-set (invoke-engine 'sh13-control-flow-policy [])) :truthy))
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [base (module plan 'sh13-branch-module)
@@ -721,7 +813,7 @@
       (check-rejected (assoc-in subject (into ep [:operations 0 :operands]) [:missing])
                       [true] "C11-DOMINANCE")
       (check-rejected (assoc-in subject (into ep [:operations 0 :type]) :i64) [true] "C11-TYPE")
-      (doseq [type [:nil :string :dynamic]]
+      (doseq [type [:unit :string :dynamic]]
         (check-rejected (-> subject (assoc-in [:functions 0 :param-types] [type])
                             (assoc-in (conj ep :param-types) [type])) [nil] "C11-TYPE"))
       (check-rejected subject [nil] "C11-TYPE")

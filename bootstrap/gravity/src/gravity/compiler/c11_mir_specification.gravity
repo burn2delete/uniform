@@ -7209,7 +7209,9 @@
           (if (= true value) true (= false value)))
         (if (= :keyword (get operation :type))
           (keyword? (get operation :literal))
-          false)))
+          (if (= :nil (get operation :type))
+            (if (contains? operation :literal) (= nil (get operation :literal)) false)
+            false))))
     true))
 
 (defn sh13-call-error [module function operation]
@@ -7298,7 +7300,8 @@
 
 (defn sh13-forward-type-valid? [type]
   (if (= :i64 type) true
-    (if (= :bool type) true (= :keyword type))))
+    (if (= :bool type) true
+      (if (= :keyword type) true (= :nil type)))))
 
 (defn sh13-operation-type-error
   [module function operation types]
@@ -7938,7 +7941,8 @@
           (sh13-continued-value
            operation
            (if (= opcode :truthy)
-             (if (= false (get operands 0)) false true)
+             (if (= nil (get operands 0)) false
+               (if (= false (get operands 0)) false true))
              (get operands 0))
            next-fuel next-trace)
         (if (= opcode :add)
@@ -8163,7 +8167,7 @@
       (if (= true value) true (= false value))
       (if (= value-type :keyword)
         (keyword? value)
-        false))))
+        (if (= value-type :nil) (= nil value) false)))))
 
 (defn sh13-argument-values-valid?
   [arguments argument-types index]
@@ -8245,6 +8249,18 @@
        (c11-copy-vector
         (get then-block :instructions) (get entry :instructions))))}))
 
+(defn sh13-branch-join-explicit-nil-node? [node]
+  (if (= :gravity.type/nil (get node :type))
+    (if (= :constant (c11-opcode node))
+      (if (= :literal (get node :source-operation))
+        (let [attrs (get node :attributes)]
+          (if (map? attrs)
+            (if (contains? attrs :value) (= nil (get attrs :value)) false)
+            false))
+        false)
+      true)
+    true))
+
 (defn sh13-branch-join-pure-nodes? [checked-core nodes]
   (if (= 0 (count nodes))
     true
@@ -8268,14 +8284,17 @@
               (get ownership :model) (get ownership :mutation)
               (get safety :outcome) (get safety :check)
               (get safety :unsafe-audit)])
-        (sh13-branch-join-pure-nodes? checked-core (rest nodes))
+        (if (sh13-branch-join-explicit-nil-node? node)
+          (sh13-branch-join-pure-nodes? checked-core (rest nodes))
+          false)
         false))))
 
 (defn sh13-branch-join-runtime-type [type]
   (if (= type :gravity.type/i64)
     :i64
     (if (= type :gravity.type/bool) :bool
-      (if (= type :gravity.type/keyword) :keyword nil))))
+      (if (= type :gravity.type/keyword) :keyword
+        (if (= type :gravity.type/nil) :nil nil)))))
 
 (defn sh13-branch-join-literal-valid? [operation type]
   (if (= [:constant :literal [] type true]
@@ -8286,7 +8305,10 @@
       (if (= type :gravity.type/bool)
         (if (= true value) true (= false value))
         (if (= type :gravity.type/i64) (sh13-i64? value)
-          (if (= type :gravity.type/keyword) (keyword? value) false))))
+          (if (= type :gravity.type/keyword) (keyword? value)
+            (if (= type :gravity.type/nil)
+              (if (contains? (get operation :constant-payload) :value) (= nil value) false)
+              false)))))
     false))
 
 (defn sh13-branch-join-entry-valid? [operations]
