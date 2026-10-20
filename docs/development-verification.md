@@ -225,6 +225,14 @@ Preserve earlier source-span and origin checks. Include constant-arity,
 invalid-MIR, structured-exit and branch-execution selectors for affected
 regression feedback; this does not admit a new upstream compiler revision.
 
+For calls to later normalized functions, run
+`sh13-callee-parameter-carriers-are-validated-before-counting` in the same
+namespace. Check the callee's parameter Vector before counting it; malformed
+carriers reject with `C11-MODULE`, not a host exception. Preserve missing-callee,
+dispatch and earlier operand/profile/fact/effect diagnostics, plus valid call
+arity, type and execution behavior. Include invalid-MIR, recursion, constant
+arity and return-dominance checks when changing this boundary.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit

@@ -7264,6 +7264,7 @@
     (let [callee (sh13-function module (get operation :callee))]
       (if (= nil callee)
         :verify
+        (if (vector? (get callee :params))
         (if (= (count (get operation :operands))
                (count (get callee :params)))
           (let [argument-error
@@ -7284,7 +7285,8 @@
                   :effect)
                 :type)
               argument-error))
-          :type)))
+          :type)
+        :module)))
     nil))
 
 (defn sh13-operation-type-error
