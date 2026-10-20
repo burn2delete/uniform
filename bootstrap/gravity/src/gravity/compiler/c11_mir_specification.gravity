@@ -8251,7 +8251,7 @@
           (get (get operation :constant-payload) :present?)])
     (let [value (get (get operation :constant-payload) :value)]
       (if (= type :gravity.type/bool)
-        (if (= value true) true (= value false))
+        (if (= true value) true (= false value))
         (if (= type :gravity.type/i64) (sh13-i64? value) false)))
     false))
 

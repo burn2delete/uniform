@@ -140,6 +140,22 @@
         (is (= :passed (:status (verify core mutant result))))))))
 
 (deftest sh13-execution-subset-and-result-substitution-fail-closed
+  ;; The NEW literal gate must reject arbitrary values without hashing or
+  ;; calling equality on them. ArrayMap values/vectors do not hash this object
+  ;; while constructing these direct-helper, supplied-DATA controls.
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (equals [_] (swap! callbacks conj :equals)
+                   (throw (ex-info "opaque equality invoked" {})))
+                 (hashCode [] (swap! callbacks conj :hash)
+                   (throw (ex-info "opaque hash invoked" {}))))]
+    (doseq [value [opaque [opaque] {:value opaque}]]
+      (is (false? (invoke 'sh13-branch-join-literal-valid?
+                          {:opcode :constant :source-operation :literal
+                           :operands [] :type :gravity.type/bool
+                           :constant-payload {:present? true :value value}}
+                          :gravity.type/bool)))
+      (is (empty? @callbacks))))
   (let [base (checked ".gravity")
         invalids [(scalar-core base true :gravity.type/i64 11 "unselected")
                   (scalar-core base false :gravity.type/i64 [] 22)
