@@ -1,0 +1,24 @@
+(ns gravity.self-hosting.sh10.bounded-escape-destinations.accepted
+  (:profile :meta) (:target :jvm) (:exports [bounded-escape-request])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Explicit normalized lifecycle DATA, not inferred closure/global storage.
+(defn bounded-escape-event [id operation destination end]
+  {:event-id id :op operation :borrow-id :borrow
+   :destination-owner nil :destination-lifetime-end end
+   :escape-destination destination :control-path [:normal :bounded-escape]
+   :source-span {:source "bounded-escape-destinations.gravity" :start-byte 7 :end-byte 12}
+   :origin-chain [{:generated-by :bounded-escape-fixture :input :owned-value}]})
+
+(defn bounded-escape-request [destination end]
+  {:artifact :gravity/sh10-normalized-ownership-request
+   :request-id :bounded-escape :value-id :value :owner-id :owner
+   :ownership-kind :owned-mutable :initialization :initialized
+   :availability :available :owner-lifetime-end 10
+   :events [(bounded-escape-event :begin :borrow-immutable nil nil)
+            (bounded-escape-event :escape :escape-borrow destination end)
+            (bounded-escape-event :end :end-borrow nil nil)]
+   :type-fact-id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :effect-fact-id "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+   :source-span {:source "bounded-escape-destinations.gravity" :start-byte 0 :end-byte 20}
+   :origin-chain [] :profile :meta :target :jvm})
