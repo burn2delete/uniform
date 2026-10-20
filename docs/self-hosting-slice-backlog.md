@@ -9559,6 +9559,31 @@ a sum of repeated epochs. The direct raw-stage0/hosted-interpreter route does
 not execute the changed Gravity `conj` branch; the join alone does not prove
 that the original results were invalid. No source proof was repeated.
 
+### Original MIR selected-arm integer equality: executable increment
+
+The same bounded computed-arm route now accepts integer equality as well as
+strict less-than. The compiler's recursive-component check compares a function
+count with one inside a selected branch; literal witnesses cover that operation
+and placement, not the whole helper or variable/record ingress. The Bool-only
+arm gate reuses the existing exact entry-comparison validator: two ordered
+bounded signed-i64 literals, matching opcode/source operation, Bool result and
+nonconstant payload marker. Both arms validate before execution.
+
+No opcode, projection role, layout, public key/arity, interpreter or resource
+bound changes. The original incoming comparison result transfers to the join;
+the selected comparison consumes fuel to 505, while skipping it leaves 507
+from the same 512. Multiple computed placements, nested CFG, Keyword equality,
+other comparisons, variables and calls remain unsupported.
+
+The current candidate passes all nine bridge tests/2938 assertions: 884 new
+equality-arm assertions and all previous 2054, including the 676 less-than-arm
+assertions. The shared test helper preserves the existing less-than cases;
+only the now-supported equality rejection changes to unsupported `integer-lte`.
+Cases cover equality and inequality, signed endpoints, both branch positions
+and condition values, invalid unselected operands, source/incoming/MIR tampering
+and recomputation. No C10/source ingress, whole-helper lowering, generic MIR,
+native execution, SH-13 completion or authoritative migration is claimed.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
