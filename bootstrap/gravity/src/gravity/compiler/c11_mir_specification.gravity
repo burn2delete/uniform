@@ -7418,10 +7418,12 @@
        (if (sh13-source-span-valid? (get terminator :source-span))
          (if (sh13-origin-chain-valid? (get terminator :origin-chain))
            (if (= opcode :return)
-             (if (= (get types (get terminator :value))
-                    (get function :return-type))
-               nil
-               :type)
+             (if (contains? types (get terminator :value))
+               (if (= (get types (get terminator :value))
+                      (get function :return-type))
+                 nil
+                 :type)
+               :dominance)
              (if (sh13-member? #{:error-return :throw :panic} opcode)
                (if (contains? types (get terminator :value))
                  (if (= (get types (get terminator :value))

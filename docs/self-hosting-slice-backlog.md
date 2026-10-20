@@ -9282,6 +9282,25 @@ checks pass 6 tests and 11 assertions. These original G/Q normalized module
 constructors and execution checks do not establish fresh authenticated SH-12
 ingress, native execution, SH-13 completion or authoritative migration.
 
+### MIR normal return dominance diagnostics: development repair
+
+Normal SH-13 returns now classify unavailable value IDs as `C11-DOMINANCE`,
+matching C11's use-before-definition rule and existing error-return, throw and
+panic validation. Defined values with the wrong return type remain
+`C11-TYPE`; earlier source-span and origin failures retain their priority.
+This changes diagnostic classification, not the accepted MIR language or
+runtime behavior. Existing branch execution returns 42 and factorial returns
+120 with verification recomputation preserved.
+
+The unchanged-engine regression completed 102 assertions with 98 passes and
+four failures, all normal-return diagnostic mismatches. That failed attempt
+is retained. The repaired regression passes all 102 assertions; the affected
+constant-arity, invalid-MIR, structured-exit and branch batch passes 5 tests
+and 396 assertions. Separate language-boundary checks pass 6 tests and 11
+assertions. These normalized G/Q constructor/executor checks are not fresh
+authenticated SH-12 ingress, native execution, SH-13 completion or
+authoritative migration. Public schemas and resource limits are unchanged.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
