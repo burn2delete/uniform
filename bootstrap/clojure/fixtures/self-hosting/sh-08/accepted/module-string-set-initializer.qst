@@ -1,0 +1,14 @@
+(ns self-hosting.sh08.module-string-set-initializer
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(def w5-b14-diagnostic-set
+  #{"B14-COVERAGE" "B14-TARGET" "B14-POSITIVE" "B14-NEGATIVE"
+    "B14-DIFFERENTIAL" "B14-METADATA" "B14-ARTIFACT"
+    "B14-NONDETERMINISM" "B14-SKIP" "B14-EVIDENCE"})
+
+(defn main []
+  [(contains? w5-b14-diagnostic-set "B14-COVERAGE")
+   (contains? w5-b14-diagnostic-set "B14-UNKNOWN")
+   (count w5-b14-diagnostic-set)])
