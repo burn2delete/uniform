@@ -561,6 +561,72 @@
       (is (= "C13-SAFETY" (get-in result [:diagnostics 0 :rule])))
       (is (= :safety (get-in result [:diagnostics 0 :reason]))))))
 
+(deftest sh16-constant-folds-only-an-established-i64-result-domain
+  ;; Supplied normalized requests are not authenticated C11 input. Opaque type
+  ;; IDs are not declared globally invalid: they lack this selected fold's
+  ;; explicit :i64 result premise and must not be guessed from their spelling.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-mixed-optimization-request)
+          baseline (optimize base)
+          operation (get-in base [:operations 0])
+          check-rejected
+          (fn [subject rule]
+            (let [result (optimize subject)]
+              (is (= :rejected (:status result)))
+              (is (= rule (get-in result [:diagnostics 0 :rule])))
+              (is (nil? (:optimized-operations result)))
+              (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))]
+      (doseq [[left right expected]
+              [[2 3 5] [9223372036854775806 1 9223372036854775807]
+               [-9223372036854775807 -1 -9223372036854775808]
+               [-9223372036854775808 0 -9223372036854775808]]]
+        (let [subject (assoc-in base [:operations 0 :operands] [left right])
+              result (optimize subject) folded (first (:optimized-operations result))]
+          (is (= :accepted (:status result)))
+          (is (= :const (:opcode folded)))
+          (is (= :i64 (:type folded)))
+          (is (= [expected] (:operands folded)))
+          (is (= (:source-span operation) (:source-span folded)))
+          (is (= (:origin-chain operation) (:origin-chain folded)))
+          (is (= (:safety-outcome operation) (:safety-outcome folded)))
+          (is (= [:op/add] (get-in result [:decision-log 0 :changed-operations])))
+          (is (= (first (:invalidation-ledger baseline))
+                 (first (:invalidation-ledger result))))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
+      (doseq [type [:bool :keyword :foreign/type :gravity.type/i64 "custom-integer"]]
+        (let [subject (assoc-in base [:operations 0 :type] type)
+              result (optimize subject) op (get-in subject [:operations 0])]
+          (is (= :rejected (:status result)))
+          (is (= "C13-SAFETY" (get-in result [:diagnostics 0 :rule])))
+          (is (= :safety (get-in result [:diagnostics 0 :reason])))
+          (is (nil? (:optimized-operations result)))
+          (is (= (:source-span subject) (get-in result [:diagnostics 0 :source-span])))
+          (is (= (:origin-chain subject) (get-in result [:diagnostics 0 :origin-chain])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
+          (is (false? (invoke-engine 'sh16-foldable-add? [op])))
+          (is (= op (invoke-engine 'sh16-transform-operation [op])))))
+      (let [subject (assoc-in base [:operations 0 :type] :bool)]
+        (check-rejected (assoc subject :mir-verified false) "C13-CONTRACT")
+        (check-rejected (assoc subject :source-span nil) "C13-PRESERVE")
+        (check-rejected (assoc subject :nondeterministic-choice true) "C13-NONDETERMINISM")
+        (check-rejected (assoc-in subject [:operations 0 :op-id] nil) "C13-CONTRACT")
+        (check-rejected (update subject :operations conj (first (:operations subject))) "C13-VERIFY")
+        (check-rejected (-> subject
+                            (assoc-in [:operations 0 :dead] true)
+                            (assoc-in [:operations 0 :effects] #{:io/write})) "C13-EFFECT")
+        (is (= :rejected (:status (invoke-engine 'sh16-verify [subject baseline])))))
+      ;; These unchanged paths do not assert general typed-input validation.
+      ;; A nonconstant add is not folded; an audited unsafe-island bypasses the
+      ;; normal foldability ingress gate but still must not create a bad const.
+      (doseq [op [(assoc operation :type :foreign/type :constant-operands false)
+                  (assoc operation :type :bool :safety-outcome :unsafe-island
+                         :unsafe-audit-id :audit/supplied)]]
+        (let [subject (assoc-in base [:operations 0] op) result (optimize subject)]
+          (is (= :accepted (:status result)))
+          (is (= op (first (:optimized-operations result))))
+          (is (false? (get-in result [:decision-log 0 :changed?])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))))))
+
 (deftest sh16-rejects-irrelevant-fields-and-noncanonical-identifiers
   (let [base
         (request accepted-gravity-plan 'sh16-no-change-request)
