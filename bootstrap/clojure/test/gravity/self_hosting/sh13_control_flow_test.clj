@@ -463,3 +463,41 @@
                         "C11-ORIGIN")
         (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
                                                 [nonzero [5] accepted]))))))))
+
+(deftest sh13-return-values-must-be-defined-before-type-checking
+  ;; Supplied normalized MIR, through original G/Q constructors and execution.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (module plan 'sh13-branch-module)
+          exit-path [:functions 0 :blocks 3 :terminator]
+          check-rejected
+          (fn [subject rule]
+            (let [result (run subject [true])]
+              (is (= :rejected (:status result)))
+              (is (= rule (get-in result [:diagnostics 0 :rule])))
+              (is (nil? (:execution result)))
+              (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                    [subject [true] result]))))))]
+      (doseq [[subject arguments expected]
+              [[base [true] 42]
+               [(module plan 'sh13-factorial-module) [5] 120]]]
+        (let [result (run subject arguments)]
+          (is (= :accepted (:status result)))
+          (is (= expected (get-in result [:execution :value])))
+          (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                [subject arguments result]))))))
+      (doseq [opcode [:return :error-return :throw :panic]]
+        (let [subject (assoc-in base (conj exit-path :opcode) opcode)]
+          (check-rejected (assoc-in subject (conj exit-path :value) :missing)
+                          "C11-DOMINANCE")
+          (check-rejected (update-in subject exit-path dissoc :value)
+                          "C11-DOMINANCE")))
+      (check-rejected (assoc-in base [:functions 0 :return-type] :bool)
+                      "C11-TYPE")
+      (let [subject (assoc-in base (conj exit-path :value) :missing)]
+        (check-rejected (assoc-in subject (conj exit-path :source-span) nil)
+                        "C11-ORIGIN")
+        (check-rejected (assoc-in subject (conj exit-path :origin-chain) [])
+                        "C11-ORIGIN")
+        (is (= :rejected
+               (:status (invoke-engine 'sh13-verify-execution
+                                       [subject [true] (run base [true])]))))))))
