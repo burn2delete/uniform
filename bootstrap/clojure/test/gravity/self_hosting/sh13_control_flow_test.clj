@@ -552,3 +552,78 @@
             (check-rejected subject rule))
           (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
                                                   [malformed [5] result])))))))))
+
+(deftest sh13-normalized-bool-values-exclude-nil-and-nonbooleans
+  ;; Supplied normalized MIR executes the original public run/recompute APIs;
+  ;; no checked-Core provenance or new bridge execution is implied here.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (module plan 'sh13-branch-module)
+          booleans (-> base
+                       (assoc-in [:functions 0 :return-type] :bool)
+                       (assoc-in [:functions 0 :blocks 1 :operations 0 :type] :bool)
+                       (assoc-in [:functions 0 :blocks 1 :operations 0 :literal] true)
+                       (assoc-in [:functions 0 :blocks 2 :operations 0 :type] :bool)
+                       (assoc-in [:functions 0 :blocks 2 :operations 0 :literal] false)
+                       (assoc-in [:functions 0 :blocks 3 :param-types] [:bool]))
+          good (run booleans [true])]
+      (letfn [(reject [subject arguments rule]
+                (let [result (run subject arguments)]
+                  (is (= :rejected (:status result)))
+                  (is (= rule (get-in result [:diagnostics 0 :rule])))
+                  (is (nil? (:execution result)))
+                  (is (= (:source-span subject)
+                         (get-in result [:diagnostics 0 :source-span])))
+                  (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                        [subject arguments result]))))
+                  (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                          [subject arguments good]))))))]
+        (doseq [[argument expected] [[true 42] [false 7]]]
+          (let [result (run base [argument])]
+            (is (= :accepted (:status result)))
+            (is (= expected (get-in result [:execution :value])))
+            (is (= :returned (get-in result [:execution :status])))))
+        (doseq [argument [true false]]
+          (let [result (run booleans [argument])]
+            (is (= :accepted (:status result)))
+            (is (= argument (get-in result [:execution :value])))
+            (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                  [booleans [argument] result]))))))
+        (doseq [value [nil 0 :false "false" [] {} '()]]
+          (reject base [value] "C11-TYPE")
+          (doseq [block [1 2] condition [true false]]
+            ;; The unselected arm is validated as well as the selected one.
+            (reject (assoc-in booleans
+                              [:functions 0 :blocks block :operations 0 :literal]
+                              value)
+                    [condition] "C11-TYPE")))
+        (let [path [:functions 0 :blocks 1 :operations 0]
+              bad (assoc-in booleans (conj path :literal) nil)]
+          (doseq [[subject rule]
+                  [[(assoc bad :artifact :wrong) "C11-MODULE"]
+                   [(assoc-in bad (conj path :profile) :wrong) "C11-MODULE"]
+                   [(assoc-in bad (into path [:facts :type]) :wrong) "C11-VERIFY"]
+                   [(assoc-in bad (conj path :origin-chain) []) "C11-ORIGIN"]
+                   [(assoc-in bad (conj path :effects) #{:error/throw}) "C11-EFFECT"]
+                   [(assoc-in bad (conj path :operands) [:missing]) "C11-DOMINANCE"]]]
+            (reject subject [nil] rule)))
+        (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                [booleans [true]
+                                                 (assoc-in good [:execution :value] nil)])))))))
+  ;; Direct NEW regression controls expose the old hashing seam without
+  ;; hashing the fixture object during construction or claiming source proof.
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (equals [_] (swap! callbacks conj :equals)
+                   (throw (ex-info "opaque equality invoked" {})))
+                 (hashCode [] (swap! callbacks conj :hash)
+                   (throw (ex-info "opaque hash invoked" {}))))]
+    (doseq [value [opaque [opaque] {:value opaque}]]
+      (is (false? (try (invoke-engine 'sh13-value-type-valid? [value :bool])
+                       (catch Exception _ ::callback-threw))))
+      (is (empty? @callbacks))
+      (reset! callbacks [])
+      (is (false? (try (invoke-engine 'sh13-literal-type-valid?
+                                     [{:opcode :const :type :bool :literal value}])
+                       (catch Exception _ ::callback-threw))))
+      (is (empty? @callbacks))
+      (reset! callbacks []))))
