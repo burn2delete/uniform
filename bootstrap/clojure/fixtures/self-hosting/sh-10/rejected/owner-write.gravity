@@ -1,0 +1,22 @@
+(ns gravity.self-hosting.sh10.owner-write.rejected
+  (:profile :meta) (:target :jvm) (:exports [aliased-owner-write-request])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; A supplied lifecycle with an active alias at the owner write.
+(defn aliased-owner-write-request [acquisition]
+  {:artifact :gravity/sh10-normalized-ownership-request
+   :request-id :aliased-owner-write :value-id :value :owner-id :owner
+   :ownership-kind :owned-mutable :initialization :initialized
+   :availability :available :owner-lifetime-end 10
+   :events [{:event-id :borrow :op acquisition :borrow-id :borrow
+             :source-span {:source "owner-write.gravity" :start-byte 0 :end-byte 3}
+             :origin-chain [] :control-path [:normal :borrow]}
+            {:event-id :write :op :write :borrow-id nil
+             :destination-owner nil :destination-lifetime-end nil :escape-destination nil
+             :source-span {:source "owner-write.gravity" :start-byte 4 :end-byte 9}
+             :origin-chain [{:generated-by :aliased-owner-write-fixture}]
+             :control-path [:normal :aliased-owner-write]}]
+   :type-fact-id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :effect-fact-id "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+   :source-span {:source "owner-write.gravity" :start-byte 0 :end-byte 10}
+   :origin-chain [] :profile :meta :target :jvm})

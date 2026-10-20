@@ -147,6 +147,31 @@ regressions. C10's current read-only ingress does not consume these lifecycle
 results; C10/MIR escape propagation and automatic lifetime inference remain
 separate implementation work. No migration or milestone status changes follow.
 
+### Exclusive owner writes (SH-10)
+
+The same C9 owner checks normalized `:write` events for initialized, available
+owned-mutable values. Direct owner writes require no active immutable or
+mutable borrow. Ending one of several immutable borrows is insufficient.
+Move, consume and initialization errors keep their existing precedence;
+persistent immutable values remain read-only. Write events cannot name a
+borrow or any move/escape destination. `:initialize` remains separate.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh10-owner-write-test \
+  --exact sh10-owner-write-fixtures-development-kernel \
+  --exact sh10-owner-write-transitions-development-kernel \
+  --exact sh10-owner-write-shape-and-adapter-fences-development-kernel --fail-fast
+```
+
+Paired `owner-write` fixtures under the same SH-10 accepted/rejected directories
+construct lifecycle requests; the original Gravity C9 implementation analyzes
+them. This tests ownership legality and preserved diagnostics, not physical
+storage mutation. Existing return/escape/borrow/move cases are proportionate
+regressions. Both current pure-C8 adapter families still reject writes: a
+normalized ownership fact does not manufacture mutation effects or authority.
+Effectful source integration, C10/MIR propagation and migration remain separate.
+
 ### First stored value of a proven-nonempty Vector
 
 STD3 defines `first` on a persistent nonempty Vector as its stored index-zero
