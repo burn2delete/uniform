@@ -9461,7 +9461,11 @@ All seven focused tests pass 1589 assertions on the current candidate: the
 previous six/913 plus 676 selected-arm assertions. These cover both branch
 positions and condition values, comparison outcomes and signed endpoints,
 selected-only traces, source/fact/incoming joins, unselected invalid operands,
-unsupported layouts, MIR tampering and recomputation. Supplied checked-Core
+unsupported layouts, MIR tampering and recomputation. Separate normalized
+branch controls pass 1 test/20 assertions and language-boundary checks 6/11:
+14 tests/1620 assertions across three passing invocations, not one batch.
+Clojure source LOC validation passes for 2021 files, zero exceptions, maximum
+250 lines. Supplied checked-Core
 composition does not establish actual C10/source ingress, generic MIR, native
 execution, SH-13 completion or authoritative migration.
 
