@@ -683,6 +683,56 @@
         (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
                                                 [missing [true] accepted]))))))))
 
+(deftest sh13-normalizes-selected-scalar-truthiness
+  ;; This normalized operation has a closed scalar operand domain. Nil remains
+  ;; outside that domain; this is not a new definition of source truthiness.
+  (is (contains? (:operation-set (invoke-engine 'sh13-control-flow-policy [])) :truthy))
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (module plan 'sh13-branch-module)
+          op (invoke plan 'sh13-operation
+                     [:choose/truthy :truthy [:condition] :bool 0 1])
+          ep [:functions 0 :blocks 0]
+          subject (-> base (assoc-in (conj ep :operations) [op])
+                      (assoc-in (into ep [:terminator :condition]) :choose/truthy))
+          check-rejected
+          (fn [candidate arguments rule]
+            (let [result (run candidate arguments)]
+              (is (= :rejected (:status result)))
+              (is (= rule (get-in result [:diagnostics 0 :rule])))
+              (is (nil? (:execution result)))
+              (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                    [candidate arguments result]))))))]
+      (doseq [[type value truth] [[:bool false false] [:bool true true]
+                                [:i64 0 true] [:i64 -1 true]
+                                [:i64 Long/MIN_VALUE true] [:i64 Long/MAX_VALUE true]
+                                [:keyword :left/value true] [:keyword :right/value true]]]
+        (let [candidate (-> subject (assoc-in [:functions 0 :param-types] [type])
+                            (assoc-in (conj ep :param-types) [type]))
+              result (run candidate [value])]
+          (is (= :accepted (:status result)))
+          (is (= (if truth 42 7) (get-in result [:execution :value])))
+          (is (= [:choose/truthy (if truth :choose/forty-two :choose/seven)]
+                 (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+          (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                [candidate [value] result]))))))
+      (doseq [operands [[] [:condition :condition]]]
+        (check-rejected (assoc-in subject (into ep [:operations 0 :operands]) operands)
+                        [true] "C11-TYPE"))
+      (check-rejected (assoc-in subject (into ep [:operations 0 :operands]) [:missing])
+                      [true] "C11-DOMINANCE")
+      (check-rejected (assoc-in subject (into ep [:operations 0 :type]) :i64) [true] "C11-TYPE")
+      (doseq [type [:nil :string :dynamic]]
+        (check-rejected (-> subject (assoc-in [:functions 0 :param-types] [type])
+                            (assoc-in (conj ep :param-types) [type])) [nil] "C11-TYPE"))
+      (check-rejected subject [nil] "C11-TYPE")
+      (check-rejected (-> subject
+                          (assoc-in (into ep [:operations 0 :effects]) #{:io/write})
+                          (assoc-in (into ep [:operations 0 :ordering]) :sequence)) [true] "C11-EFFECT")
+      (check-rejected (assoc-in subject (into ep [:operations 0 :source-span]) nil) [true] "C11-ORIGIN")
+      (let [result (run subject [false])]
+        (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                [subject [false] (assoc-in result [:execution :value] 42)]))))))))
+
 (deftest sh13-forwards-defined-scalar-local-values
   ;; Normalized supplied MIR; :local forwards SSA values, not lexical or
   ;; upstream source authority. The original constructors supply all fields.
