@@ -14453,6 +14453,15 @@
                  {:kind :gravity.type/nil-or :value-type :gravity.type/symbol}]]
       (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad]) 65536))))
       (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]) 65536)))))
+    (doseq [legacy [:gravity.type/keyword :gravity.type/character :gravity.type/string]]
+      (let [reads (atom 0) members (proxy [clojure.lang.APersistentVector] []
+                                     (count [] 1)
+                                     (nth [_] (swap! reads inc) legacy))
+            receiver {:kind :gravity.type/set :shape :literal :element-types members}
+            domain (invoke-c7 'sh08-ksm-domain [[receiver legacy] 65536])]
+        (is (= :accepted (:status domain)))
+        (is (= 3 (:work-count domain)))
+        (is (= 1 @reads) "a known legacy needle does not probe the new Symbol receiver route")))
     (let [rejected (derive (map-contains-input [(finite [k :gravity.type/string]) k]) 65536)]
       (is (= :symbol-set-contains-operand-type-required (:reason rejected)))
       (is (= :established-finite-symbol-set-and-symbol (:expected rejected))))

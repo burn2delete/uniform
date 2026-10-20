@@ -7794,7 +7794,8 @@
 (defn p15-s23-sysm-selected? [arguments]
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (let [items (get arguments 0) needle (get arguments 1)]
-      (if (= :gravity.type/never items) (= :gravity.type/symbol needle)
+      (if (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle))
+        (if (= :gravity.type/never items) (= :gravity.type/symbol needle)
         (if (if (map? items) (if (= 3 (count items))
               (if (loop [fields (keys items)] (if (= 0 (count fields)) true
                     (if (keyword? (first fields)) (recur (rest fields)) false)))
@@ -7803,7 +7804,8 @@
           (let [members (get items :element-types)]
             (if (= 0 (count members)) (= :gravity.type/symbol needle)
               (if (= :gravity.type/symbol (get members 0))
-                (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle)) false))) false))) false))
+                (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle)) false))) false))
+        false)) false))
 
 (defn p15-s23-sysm-domain [arguments budget]
   ; STD3 membership: Symbol spelling is inert DATA, never binding authority.
