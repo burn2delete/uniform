@@ -172,6 +172,24 @@ regressions. Both current pure-C8 adapter families still reject writes: a
 normalized ownership fact does not manufacture mutation effects or authority.
 Effectful source integration, C10/MIR propagation and migration remain separate.
 
+### C7 inference index construction
+
+For invocation-local source-join index construction, edit
+`c7_type_checker_engine.gravity` and run
+`sh08-private-entry-get-cold-inference-development-kernel` in
+`gravity.self-hosting.sh08-function-call-type-test` using the direct development
+runner. Include the structural-match, nonconvergence, monotone-return and
+List-if inference controls when changing fixed-point preparation.
+
+The four immutable lookup indexes are prepared once per admitted inference
+invocation, after existing early round/work rejection guards. Standalone calls
+and verifier invocations prepare independently. Preserve original index inputs,
+duplicate-last behavior, Map passthrough, every round-varying fact and logical
+work charge. No caller-supplied prepared flag, cross-invocation acceptance cache
+or budget increase is justified by this optimization. The focused comparison
+checks complete outputs and rejection budgets; it is not a source migration
+proof or a wall-time benchmark.
+
 ### C11 node-local preflight diagnostics
 
 For source-valid checked-Core nodes rejected by the existing single-diamond
