@@ -627,3 +627,58 @@
                        (catch Exception _ ::callback-threw))))
       (is (empty? @callbacks))
       (reset! callbacks []))))
+
+(deftest sh13-conditional-values-must-be-defined-before-type-checking
+  ;; Supplied normalized MIR from original G/Q constructors, not fresh C10.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (module plan 'sh13-branch-module)
+          path [:functions 0 :blocks 0 :terminator]
+          operation-path [:functions 0 :blocks 0 :operations]
+          number (invoke plan 'sh13-constant [:choose/number 1 :i64 0 1])
+          with-number (assoc-in base operation-path [number])
+          accepted (run base [true])
+          check-rejected
+          (fn [subject rule]
+            (let [result (run subject [true])]
+              (is (= :rejected (:status result)))
+              (is (= rule (get-in result [:diagnostics 0 :rule])))
+              (is (nil? (:execution result)))
+              (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                    [subject [true] result]))))))]
+      (doseq [[subject arguments expected]
+              [[base [true] 42] [base [false] 7]
+               [(module plan 'sh13-factorial-module) [5] 120]]]
+        (let [result (run subject arguments)]
+          (is (= :accepted (:status result)))
+          (is (= expected (get-in result [:execution :value])))
+          (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                [subject arguments result]))))))
+      (doseq [condition [:missing nil :choose/forty-two]]
+        (check-rejected (assoc-in base (conj path :condition) condition)
+                        "C11-DOMINANCE"))
+      (check-rejected (update-in base path dissoc :condition) "C11-DOMINANCE")
+      (check-rejected (assoc-in with-number (conj path :condition) :choose/number)
+                      "C11-TYPE")
+      ;; The condition's definition/type precedes either target's validation.
+      (let [bad-target (assoc-in base (conj path :then-target) :missing-target)]
+        (check-rejected (assoc-in bad-target (conj path :condition) :missing)
+                        "C11-DOMINANCE")
+        (check-rejected bad-target "C11-BLOCK")
+        (check-rejected (-> with-number
+                            (assoc-in (conj path :condition) :choose/number)
+                            (assoc-in (conj path :then-target) :missing-target))
+                        "C11-TYPE"))
+      ;; Existing source/opcode and whole-block operation checks still win.
+      (let [missing (assoc-in base (conj path :condition) :missing)]
+        (check-rejected (assoc-in missing (conj path :source-span) nil)
+                        "C11-ORIGIN")
+        (check-rejected (assoc-in missing (conj path :origin-chain) [])
+                        "C11-ORIGIN")
+        (check-rejected (assoc-in missing (conj path :opcode) :unsupported)
+                        "C11-BLOCK")
+        (check-rejected (assoc-in missing operation-path [(assoc number :profile :wrong)])
+                        "C11-MODULE")
+        (check-rejected (assoc-in missing operation-path [(assoc number :source-span nil)])
+                        "C11-ORIGIN")
+        (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                [missing [true] accepted]))))))))

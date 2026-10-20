@@ -9559,6 +9559,90 @@ a sum of repeated epochs. The direct raw-stage0/hosted-interpreter route does
 not execute the changed Gravity `conj` branch; the join alone does not prove
 that the original results were invalid. No source proof was repeated.
 
+### Original MIR selected-arm integer equality: executable increment
+
+The same bounded computed-arm route now accepts integer equality as well as
+strict less-than. The compiler's recursive-component check compares a function
+count with one inside a selected branch; literal witnesses cover that operation
+and placement, not the whole helper or variable/record ingress. The Bool-only
+arm gate reuses the existing exact entry-comparison validator: two ordered
+bounded signed-i64 literals, matching opcode/source operation, Bool result and
+nonconstant payload marker. Both arms validate before execution.
+
+No opcode, projection role, layout, public key/arity, interpreter or resource
+bound changes. The original incoming comparison result transfers to the join;
+the selected comparison consumes fuel to 505, while skipping it leaves 507
+from the same 512. Multiple computed placements, nested CFG, Keyword equality,
+other comparisons, variables and calls remain unsupported.
+
+The current candidate passes all nine bridge tests/2938 assertions: 884 new
+equality-arm assertions and all previous 2054, including the 676 less-than-arm
+assertions. The shared test helper preserves the existing less-than cases;
+only the now-supported equality rejection changes to unsupported `integer-lte`.
+Separate normalized branch controls pass 1 test/20 assertions and boundary
+checks 6/11: 16 tests/2969 assertions across three passing invocations, not one
+batch. Source LOC passes 2021 files, zero exceptions, maximum 250 lines.
+Cases cover equality and inequality, signed endpoints, both branch positions
+and condition values, invalid unselected operands, source/incoming/MIR tampering
+and recomputation. No C10/source ingress, whole-helper lowering, generic MIR,
+native execution, SH-13 completion or authoritative migration is claimed.
+
+### MIR conditional-condition dominance: development repair
+
+Normalized conditional branches now report `C11-DOMINANCE` when the condition
+is not in the current block's parameter/ordered-operation type table, rather
+than falling through to `C11-TYPE`. Defined non-Bool values retain the type
+diagnostic. The membership check follows existing opcode/source/origin and
+whole-block operation gates, precedes the Bool check, and leaves the original
+then-before-else target ordering intact. No accepted language, schema, public
+interface, runtime behavior or resource bound changes.
+
+The test-only RED commit `ac0c13f0` completed 124 assertions with 114 passes and
+ten failures, all the wrong TYPE rule for undefined conditions. That failed
+epoch is retained. The corrected `254ff6f1` passes five focused tests/560
+assertions: 124 new, 20 conditional execution, 12 loop/indirect calls, 102 return
+dominance and 302 branch-carrier assertions. Separate boundary checks pass
+6/11, giving 11 tests/571 assertions across two passing selections, not one
+batch. Source LOC passes 2021 files, zero exceptions, maximum 250 lines.
+
+Original G/Q normalized constructors, the executor and recomputing verifier
+cover missing/Nil/absent/later-block conditions, defined i64, competing bad
+targets, earlier source/opcode/profile gates, valid results 42/7/120 and result
+substitution. These supplied normalized inputs do not establish fresh source
+or C10 ingress, native execution, SH-13 completion or authoritative migration.
+
+### Original MIR composed comparison placements: executable increment
+
+The bounded original handoff now composes a computed entry condition with one
+computed Bool arm, matching the operation placement of compiler frontier/visited
+count guards. Literal signed-i64 witnesses exercise Eq/Lt combinations, not
+actual count, collection, variable or whole-helper ingress. Only layouts
+entry/then/else `[3,3,1]` and `[3,1,3]` are added. The original SH-12 producer
+and verifier, exact Eq/Lt signatures, both-arm pretrace validation, canonical
+source/fact/DFG joins and original incoming-value transfer remain unchanged.
+
+This is an additive placement and nine-row projection-cardinality domain,
+not new opcodes, roles, keys, public arities or interpreter machinery. Existing
+five- and seven-node outputs remain. Both computed arms and all three computed
+placements still reject. The same depth-32/fuel-512 interpreter leaves 503 when
+the computed arm executes and 505 when skipped, without increasing a bound.
+
+The first attempt at `96bbd40a` exited 1 after 208 passes and one test-helper
+arity error; nine other selected tests were unrun. It remains failed. A one-line
+test-only correction at `bcd4435d` calls the two-argument coordinates helper
+before selecting the arm. Production is unchanged by that correction. The
+corrected invocation passes all ten tests/3802 assertions, including 864 new
+and all prior 2938; the earlier 208 are not added again. Separate normalized
+branch controls pass 1/20 and boundary checks 6/11: 17 tests/3833 assertions
+across three passing selections. Source LOC passes 2021 files, zero exceptions,
+maximum 250 lines.
+
+The new cases cover entry/arm Eq-Lt combinations, mirrors and selected/skipped
+arms, nine ordered source/fact rows, incoming IDs, invalid unselected domains,
+unsupported layouts, DFG/operand tampering and result recomputation. This does
+not establish fresh C10/source ingress, generic MIR, native execution, whole
+compiler execution, SH-13 completion or authoritative migration.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's

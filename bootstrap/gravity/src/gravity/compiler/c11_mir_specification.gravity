@@ -7447,7 +7447,8 @@
                   (get terminator :target)
                   (get terminator :arguments)
                   types)
-                 (if (= :bool (get types (get terminator :condition)))
+                 (if (contains? types (get terminator :condition))
+                  (if (= :bool (get types (get terminator :condition)))
                    (let [then-error
                          (sh13-target-arguments-error
                           function
@@ -7461,7 +7462,8 @@
                           (get terminator :else-arguments)
                           types)]
                      (if (= nil then-error) else-error then-error))
-                   :type))))
+                   :type)
+                  :dominance))))
            :origin)
          :origin)
        :block)
@@ -8284,16 +8286,16 @@
   (let [widths [(count entry) (count then-ops) (count else-ops)]]
     (if (= widths [1 1 1]) true
       (if (= widths [3 1 1]) true
-        (if (= widths [1 3 1]) true (= widths [1 1 3]))))))
+        (if (= widths [1 3 1]) true
+          (if (= widths [1 1 3]) true
+            (if (= widths [3 3 1]) true (= widths [3 1 3]))))))))
 
 (defn sh13-branch-join-arm-valid? [operations type]
   (if (= 1 (count operations))
     (sh13-branch-join-literal-valid? (get operations 0) type)
     (if (= 3 (count operations))
       (if (= type :gravity.type/bool)
-        (if (= :integer-lt (get (get operations 2) :opcode))
-          (sh13-branch-join-entry-valid? operations)
-          false)
+        (sh13-branch-join-entry-valid? operations)
         false)
       false)))
 

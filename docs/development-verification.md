@@ -225,6 +225,16 @@ Preserve earlier source-span and origin checks. Include constant-arity,
 invalid-MIR, structured-exit and branch-execution selectors for affected
 regression feedback; this does not admit a new upstream compiler revision.
 
+For conditional-branch value classification, run
+`sh13-conditional-values-must-be-defined-before-type-checking` in the same
+namespace. Check that the condition is defined before checking its Bool type:
+missing, Nil and later-block value IDs report `C11-DOMINANCE`; defined non-Bool
+values remain `C11-TYPE`. Preserve earlier opcode/source/origin and operation
+checks, then condition definition/type, then the original then-before-else
+target checks. Include conditional execution, loop/indirect-call, return
+dominance and branch-carrier selectors. This repairs a rejected-input
+diagnostic, not accepted behavior, schemas, interpreter or authority status.
+
 For calls to later normalized functions, run
 `sh13-callee-parameter-carriers-are-validated-before-counting` in the same
 namespace. Check the callee's parameter Vector before counting it; malformed
@@ -247,12 +257,12 @@ source-language truthiness or fresh upstream admission.
 
 For the bounded original-MIR handoff, edit `c11_mir_specification.gravity` and
 run the existing direct development runner against
-`gravity.self-hosting.sh13-branch-join-execution-test`. Its eight selectors cover
+`gravity.self-hosting.sh13-branch-join-execution-test`. Its ten selectors cover
 the interface, literal and computed conditions, original MIR tampering and
 subset/result rejection:
 
 ```bash
-clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --exact sh13-executes-typed-integer-less-than-conditions --exact sh13-executes-integer-less-than-only-in-the-selected-arm --exact sh13-preserves-literal-keyword-return-values --fail-fast
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --exact sh13-executes-typed-integer-less-than-conditions --exact sh13-executes-integer-less-than-only-in-the-selected-arm --exact sh13-executes-integer-equality-only-in-the-selected-arm --exact sh13-composes-entry-and-selected-arm-comparisons --exact sh13-preserves-literal-keyword-return-values --fail-fast
 ```
 
 `sh13-run-branch-join-mir` takes the retained checked-Core and original MIR;
@@ -266,10 +276,10 @@ a literal Bool, equality or strict less-than of two bounded signed-i64 literals;
 its arms are homogeneous literal signed-i64, Bool or Keyword values. Validate
 actual Keyword payloads with `keyword?`, not declared types or String spelling;
 preserve namespaced Keyword values without coercion. Alternatively, a
-literal Bool condition may select between one strict less-than comparison of
-two signed-i64 literals and one literal Bool arm. A join and function-result
-alias follow. Entry and arm computations cannot be combined, and both arms
-cannot compute comparisons. Each comparison must have exactly two ordered
+literal or computed Bool condition may select between one equality or strict
+less-than comparison of two signed-i64 literals and one literal Bool arm.
+A join and function-result alias follow. Entry and one arm may both compute;
+both arms cannot compute comparisons. Each comparison must have exactly two ordered
 i64 operand IDs, a Bool result and a nonconstant payload marker. Original SH-12
 verification alone does not establish that primitive signature.
 Validate both arms before execution, including the unselected arm. Preserve
@@ -277,14 +287,15 @@ original CFG incoming values, IDs, fact references and source records; transfer
 the selected arm value explicitly into the join. Only that arm executes.
 Frame fuel is not a count of original MIR instructions. The result's input IDs
 and projection are dependency views, not complete content-hash authentication.
-The computed case explicitly extends the projection domain with seven rows
+The computed cases explicitly extend the projection domain with seven or nine rows
 and an `:integer-equality` or `:integer-less-than` role; existing keys and public
 arities are unchanged. Keyword arms add only the projection runtime-type value
 `:keyword`, not a new role or grammar. Conditions and computed-arm results
 remain Bool-only. Other ordering comparisons and arithmetic are excluded.
 Five-node results remain unchanged. The same 512-unit frame fuel leaves 507
-for literal-only execution and 505 when a comparison executes, not a larger
-budget. An unselected comparison arm consumes no execution fuel: its complete
+for literal-only execution, 505 when one comparison executes and 503 when both
+entry and selected arm comparisons execute, not a larger budget.
+An unselected comparison arm consumes no execution fuel: its complete
 original source/fact projection and pre-execution validation still remain.
 
 Include the existing SH-12 diamond and normalized SH-13 branch, recursion and
