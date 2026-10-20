@@ -8249,9 +8249,10 @@
          [(get operation :opcode) (get operation :source-operation)
           (get operation :operands) (get operation :type)
           (get (get operation :constant-payload) :present?)])
-    (sh13-value-type-valid?
-     (get (get operation :constant-payload) :value)
-     (sh13-branch-join-runtime-type type))
+    (let [value (get (get operation :constant-payload) :value)]
+      (if (= type :gravity.type/bool)
+        (if (= value true) true (= value false))
+        (if (= type :gravity.type/i64) (sh13-i64? value) false)))
     false))
 
 (defn sh13-branch-join-shape-valid? [checked-core mir context]
