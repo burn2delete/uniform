@@ -483,7 +483,9 @@
          [(assoc-in checked [:effect-facts then-id :direct] #{:io/write})
           then-id "C11-EFFECT" :effect-fact-or-ordering]
          [(assoc-in checked [:ownership-facts else-id :value-id] "wrong:value")
-          else-id "C11-VERIFY" :ownership-fact]]]
+          else-id "C11-VERIFY" :ownership-fact]
+         [(assoc-in checked [:core-nodes 1 :operands] :malformed)
+          then-id "C11-DOMINANCE" :core-node-operands]]]
     (is (= :gravity/mir-module (:artifact mir)))
     (is (= mir (invoke c11-plan 'c11-build-target-independent-mir [checked])))
     (is (= :passed (:status (verify-mir checked mir))))
@@ -496,6 +498,8 @@
                            [diagnostic-id missing-fact malformed
                             (when (= phase :verification) mir)])
             expected (assoc legacy :operation-id node-id
+                            :value-id (if (= "C11-DOMINANCE" diagnostic-id)
+                                        node-id :not-applicable)
                             :block :not-applicable
                             :source-span (:span source)
                             :origin-chain (:generated-origin source))]
