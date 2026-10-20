@@ -15599,7 +15599,7 @@
       (is (= :passed (get-in negative [:report :status])))
       (is (= :rejected (get-in negative [:typed :status])))
       (is (some #(and (= ["C7-TYPE-MISMATCH" :atomic-inequality-operand-type-required] ((juxt :rule :reason) %))
-                      (= [:gravity.type/integer] (get-in % [:actual-type 1 :element-types]))) diagnostics) (pr-str diagnostics))
+                      (= [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/integer]}] (get-in % [:actual-type 1 :element-types]))) diagnostics) (pr-str diagnostics))
       (println (pr-str {:bo-vector-inequality-negative true :diagnostics diagnostics})))
     (println (pr-str {:bo-vector-inequality-positive true :function-table-entry-invocations (count results)
                       :same-emitted-ir-seed-control-entries (count results)
@@ -22881,6 +22881,168 @@
           (is (= :rejected (:status non-tail) (:status rejected)))
           (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
+
+
+
+(deftest current-gravity-flat-integer-vector-comparison-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] [["accepted" "flat-integer-vector-comparison" 1]
+                                         ["rejected" "vector-value-equality-numeric-member" 2]
+                                         ["rejected" "vector-inequality-numeric-member" 2]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            q (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))
+            definition (fn [name] (first (filter #(and (seq? %) (= 'defn (first %)) (= name (second %))) g)))]
+        (is (= (slurp g-path) (slurp q-path)))
+        (is (= g q))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) g))))
+        (when (= name "vector-value-equality-numeric-member")
+          (is (= '(= [[1]] [[1]]) (last (definition 'main)))))
+        (when (= name "vector-inequality-numeric-member")
+          (is (= '(not= [] [[7]]) (last (definition 'numeric-member)))))))))
+(deftest current-gravity-flat-integer-vector-comparison-authenticated-composition
+  ;; One G count-Vector positive and one nested-Integer typing negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "Integer Vector comparison fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "Integer Vector comparison development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/flat-integer-vector-comparison.gravity"
+        products (fresh relative) input (select-keys products [:request :typed :verification])
+        _ (println (pr-str {:flat-integer-vector-comparison-product-elapsed relative :timing (:development-timing products)}))
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Integer Vector comparison C7 prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Integer Vector comparison C7 verification rejected" {})))
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        equalities (mapv :applied-vector-equality (filter #(= :direct-vector-equality (:dispatch %)) (:call-type-facts facts)))
+        inequalities (mapv :applied-atomic-inequality (filter #(= :direct-atomic-inequality (:dispatch %)) (:call-type-facts facts)))
+        constructors (filterv #(and (= :collection-literal (:core-form %)) (= :vector (get-in % [:attributes :literal-kind]))) (:nodes core))
+        binding (seal (:request input) (:typed input) (:verification input))
+        t0 (System/nanoTime) effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t1 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects))
+            (throw (ex-info "Integer Vector comparison C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t2 (System/nanoTime)
+        _ (is (= :passed (:status effect-verification)))
+        _ (when-not (= :passed (:status effect-verification))
+            (throw (ex-info "Integer Vector comparison C8 verification rejected" {})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        path (.getPath (io/file root relative))
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                (fn [runtime plan function args]
+                                  (let [result (original runtime plan function args)]
+                                    (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t3 (System/nanoTime)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                         [{:op :function-call :function 'main :args []} {} "" (:functions assembled) []])
+        t4 (System/nanoTime)
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        vector-ir (filterv #(= :vector-literal (:op %)) instructions) graph (:effect-graph effects)]
+    (is (= 1 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 8 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 54 (count (:functions runtime-plan))))
+    (is (= [[true false false true] "" :normal] result))
+    (is (= 13 (count constructors) (count vector-ir) (get-in assembled [:instruction-summary :vector-literal])))
+    (is (= 2 (count equalities) (count inequalities)
+             (count (filter #(= :if (:op %)) instructions))))
+    (is (= 4 (count (filter #(and (= :builtin-call (:op %)) (= '= (:function %))) instructions))))
+    (is (= 4 (count (filter #(and (= :builtin-call (:op %)) (= 'count (:function %))) instructions))))
+    (is (empty? (filter #(= :quote (:op %)) instructions)))
+    (doseq [descriptor (concat equalities inequalities)]
+      (let [equality? (= '= (:operation descriptor))
+            policy (if equality? descriptor (:vector-equality descriptor))
+            id (:call-core-node-id descriptor) record (get-in graph [:nodes id])]
+        (is (= (if equality? :sh08-flat-integer-vector-equality-v1 :sh08-flat-integer-vector-inequality-v1) (:version policy)))
+        (is (= :same-established-generic-integer-leaves (get-in policy [:equality-policy :numeric])))
+        (is (= 'gravity.math (get-in policy [:numeric-equality :semantic-owner])))
+        (is (= :proof-required (get-in policy [:numeric-equality :numeric-mode])))
+        (is (= :proven-safe (get-in policy [:numeric-equality :safety])))
+        (is (= :gravity.type/bool (:result-type descriptor) (get-in facts [:type-table id])))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (is (= 8 (count (filter #(= {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/integer :gravity.type/keyword]}
+                                (get-in facts [:type-table (:node-id %)])) constructors))))
+    (doseq [constructor constructors]
+      (let [record (get-in graph [:nodes (:node-id constructor)])]
+        (is (= #{:memory/allocate} (:direct record)))
+        (is (= (:children constructor) (:evaluated-children record)))
+        (is (true? (get-in record [:allocation :normal-completion-possible?])))))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/vector-inequality-numeric-member.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:flat-integer-vector-comparison-negative-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(and (= ["C7-TYPE-MISMATCH" :atomic-inequality-operand-type-required] ((juxt :rule :reason) %))
+                      (= [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/integer]}] (get-in % [:actual-type 1 :element-types]))) diagnostics)
+          (pr-str diagnostics))
+      (println (pr-str {:flat-integer-vector-comparison-typing-negative diagnostics})))
+
+    (println (pr-str {:flat-integer-vector-comparison-composition :completed :runtime-result result
+                      :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                      :function-table-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count 54 :numeric-vector-support :flat-generic-integer-only
+                      :whole-validator-coverage false :authority :non-authoritative
+                      :elapsed-ns {:c8-construction (- t1 t0) :c8-verification (- t2 t1)
+                                   :assembly-including-public-c7-verification (- t3 t2) :entry-execution (- t4 t3)}
+                      :clock :monotonic-nanoseconds :nested-work :included}))))
 
 (deftest current-gravity-character-set-contains-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
