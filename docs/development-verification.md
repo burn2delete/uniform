@@ -247,12 +247,12 @@ source-language truthiness or fresh upstream admission.
 
 For the bounded original-MIR handoff, edit `c11_mir_specification.gravity` and
 run the existing direct development runner against
-`gravity.self-hosting.sh13-branch-join-execution-test`. Its six selectors cover
+`gravity.self-hosting.sh13-branch-join-execution-test`. Its seven selectors cover
 the interface, literal and computed conditions, original MIR tampering and
 subset/result rejection:
 
 ```bash
-clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --exact sh13-executes-typed-integer-less-than-conditions --fail-fast
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --exact sh13-executes-typed-integer-less-than-conditions --exact sh13-executes-integer-less-than-only-in-the-selected-arm --fail-fast
 ```
 
 `sh13-run-branch-join-mir` takes the retained checked-Core and original MIR;
@@ -263,9 +263,11 @@ not an input. The normalized `sh13-run-module` interface remains unchanged.
 
 Support is one zero-argument, four-block pure diamond. Its condition is either
 a literal Bool, equality or strict less-than of two bounded signed-i64 literals;
-its arms are
-homogeneous literal signed-i64 or Bool values, followed by a join and a
-function-result alias. The computed condition must have exactly two ordered
+its arms are homogeneous literal signed-i64 or Bool values. Alternatively, a
+literal Bool condition may select between one strict less-than comparison of
+two signed-i64 literals and one literal Bool arm. A join and function-result
+alias follow. Entry and arm computations cannot be combined, and both arms
+cannot compute comparisons. Each comparison must have exactly two ordered
 i64 operand IDs, a Bool result and a nonconstant payload marker. Original SH-12
 verification alone does not establish that primitive signature.
 Validate both arms before execution, including the unselected arm. Preserve
@@ -277,7 +279,9 @@ The computed case explicitly extends the projection domain with seven rows
 and an `:integer-equality` or `:integer-less-than` role; existing keys and public
 arities are unchanged. Other ordering comparisons and arithmetic are excluded.
 Five-node results remain unchanged. The same 512-unit frame fuel leaves 507
-for literal conditions and 505 for either computed case, not a larger budget.
+for literal-only execution and 505 when a comparison executes, not a larger
+budget. An unselected comparison arm consumes no execution fuel: its complete
+original source/fact projection and pre-execution validation still remain.
 
 Include the existing SH-12 diamond and normalized SH-13 branch, recursion and
 loop/indirect-call controls when changing this handoff. Calls, loops, effectful
