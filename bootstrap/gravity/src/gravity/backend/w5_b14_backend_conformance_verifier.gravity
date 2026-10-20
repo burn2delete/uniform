@@ -1282,16 +1282,7 @@
    :identity-input (w5-b14-identity-input-from-request request)
    :provenance (get request :provenance)
    :residual-boundaries #{:clojure-stage2-compiler-plan
-                          :jvm-stage2-runtime}
-   :unsupported-platforms w5-b14-unsupported-platform-values
-   :unsupported-targets w5-b14-unsupported-target-values
-   :unsupported-target-policies w5-b14-unsupported-target-policies
-   :cross-target-inference? false
-   :darwin-fallback? false
-   :candidate-invokes-clojure? false
-   :candidate-links-jvm? false
-   :candidate-fallback? false
-   :no-fallback? true})
+                          :jvm-stage2-runtime}})
 
 (defn w5-b14-conformance-execute
   [request]

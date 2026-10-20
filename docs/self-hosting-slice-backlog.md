@@ -4037,6 +4037,30 @@ recursive accumulator-domain transport remain outside this increment. Full
 B14/backend execution, other targets, current-closure admission, SH-07,
 self-hosting and release require separate evidence.
 
+### B14 accepted-result source readability: development repair
+
+The retained String-Set parser error exposed nine repeated fields in the
+single evaluated Map returned by `w5-b14-accepted-result`. Removing only the
+redundant trailing pairs preserves all 43 fields, the nine retained values,
+fourteen request projections and the incomplete/nonauthority/target flags.
+The exact diagnostic Set definition used by the comparison witness is unchanged.
+
+One reader-only regression passed 26 assertions at 512 MiB: hosted whole-source
+reading, exact definition/Map shape and a bounded hosted duplicate-key negative.
+It did not force the namespace's delayed compiler plans or execute the result
+function. The selected check took 24.127 milliseconds after 7.355 seconds of
+namespace loading; these are development observations, not benchmarks.
+The stale test-header clearance instruction now distinguishes this direct
+reader check from the full stage2 plan/record suite.
+
+This repairs an actual hosted-reader obstruction, not a newly selected canonical
+Gravity duplicate-Map-key law. B14 source identity changed; old B14 provenance
+and dependent artifacts are not renewed or interchangeable. The proposed first
+frontend/Core cohort selection and endpoint are unchanged; broader backend-conformance
+admission still requires its selected fresh evidence. Hosted readability is
+not a B14 compiler build, backend execution, conformance, self-hosting or release
+result. The historical failed parser run remains failed at its original revision.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared
