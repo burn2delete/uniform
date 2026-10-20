@@ -208,6 +208,18 @@ Once module validation rejects, return its original diagnostic without the
 executor's entry lookup or argument checks, not a host exception. Preserve
 accepted execution and original verification recomputation.
 
+### Normalized target-lowering return types
+
+For C14's declared return-type consistency boundary, edit
+`c14_target_lowering_architecture.gravity` and run
+`sh17-return-types-match-the-defined-returned-value` in
+`gravity.self-hosting.sh17-target-lowering-hardening-test`. The terminator's
+selected value must have the function's declared return type. Preserve prior
+duplicate-definition and operand/return-defined checks. Include existing
+three-target, normalized-schema, target-substitution and result-substitution
+selectors when changing this boundary. These supplied normalized requests do
+not establish fresh upstream verification or native backend execution.
+
 ### C11 node-local preflight diagnostics
 
 For source-valid checked-Core nodes rejected by the existing single-diamond

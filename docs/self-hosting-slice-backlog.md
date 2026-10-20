@@ -9264,6 +9264,24 @@ and verification recomputation. This normalized boundary repair establishes
 neither authenticated SH-12 ingress nor broader CFG support, SH-13 completion,
 native execution or authoritative migration. Schemas and limits are unchanged.
 
+### Normalized C14 return-type consistency: development repair
+
+C14 now rejects a normalized function when its terminator-selected value's
+declared definition type differs from its declared return type. The same
+bounded definition-order traversal records types after the original duplicate
+and operand-defined checks; the return-type comparison follows the original
+return-value-defined check. This adds no type grammar, opcode, ABI rule or
+schema and does not repin the historical C11 revision.
+
+The regression initially completed 120 assertions with 78 passes and 42
+failures; that failed result is retained. It now passes all 120 assertions.
+Together with normalized-schema, three-target, target-substitution and
+result-substitution controls, the batch passes 5 tests and 239 assertions.
+Matching Integer and Bool declarations and incompatible returns are checked
+through the original builder and recomputing verifier for LLVM, C and Wasm
+normalized requests. This is neither fresh authenticated C11/SH-16 ingress,
+native code generation/execution, SH-17 completion nor authoritative migration.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established
