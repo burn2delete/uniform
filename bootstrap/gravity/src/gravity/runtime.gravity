@@ -1759,7 +1759,7 @@
                     [{:diagnostic "P15S23X002" :reason :map-contains-map-and-key-domain-required :operation operation}
                      (second arguments-result) :rejected]))
               (if (= function '=)
-                (if (if (list? left) true (list? right))
+                (if (if (list? left) (list? right) false)
                   (let [result (p15-s23-runtime-list-equality-work left right 65536)]
                     (if (= :accepted (get result :status))
                       [(get result :value) (second arguments-result) :normal]
