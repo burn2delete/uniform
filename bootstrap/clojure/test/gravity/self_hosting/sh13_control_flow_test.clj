@@ -426,3 +426,40 @@
                  (:status (invoke-engine 'sh13-verify-execution
                                          [subject [true]
                                           (assoc result :status :accepted)])))))))))
+
+(deftest sh13-constants-have-no-value-operands
+  ;; Normalized fixture MIR through the original executor and recompute gate.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (module plan 'sh13-factorial-module)
+          operation-path [:functions 1 :blocks 0 :operations 0]
+          accepted (run base [5])
+          check-rejected
+          (fn [subject rule]
+            (let [result (run subject [5])]
+              (is (= :rejected (:status result)))
+              (is (= rule (get-in result [:diagnostics 0 :rule])))
+              (is (nil? (:execution result)))
+              (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                    [subject [5] result]))))))]
+      (is (= [] (get-in base (conj operation-path :operands))))
+      (is (= :accepted (:status accepted)))
+      (is (= 120 (get-in accepted [:execution :value])))
+      (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                            [base [5] accepted]))))
+      (doseq [operands [[:n] [:n :n]]]
+        (check-rejected (assoc-in base (conj operation-path :operands) operands)
+                        "C11-TYPE"))
+      ;; Existing checks still take precedence over the constant arity check.
+      (check-rejected (assoc-in base (conj operation-path :operands) [:missing])
+                      "C11-DOMINANCE")
+      (let [nonzero (assoc-in base (conj operation-path :operands) [:n])]
+        (check-rejected (assoc-in nonzero (conj operation-path :profile) :wrong)
+                        "C11-MODULE")
+        (check-rejected (assoc-in nonzero (conj operation-path :facts :type) :wrong)
+                        "C11-VERIFY")
+        (check-rejected (assoc-in nonzero (conj operation-path :effects) #{:io/write})
+                        "C11-EFFECT")
+        (check-rejected (assoc-in nonzero (conj operation-path :operands) nil)
+                        "C11-ORIGIN")
+        (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                [nonzero [5] accepted]))))))))
