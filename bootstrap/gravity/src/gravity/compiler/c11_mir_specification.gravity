@@ -2730,7 +2730,14 @@
           (sh12-branch-join-node-problem checked-core (first nodes))]
       (if (= problem nil)
         (sh12-branch-join-nodes-problem checked-core (rest nodes))
-        problem))))
+        (let [node (first nodes)]
+          (if (map? node)
+            (if (sh12-branch-join-nonempty-string? (get node :node-id))
+              (if (sh12-branch-join-node-source-valid? node)
+                (assoc problem :node node)
+                problem)
+              problem)
+            problem))))))
 
 (defn sh12-branch-join-node-ids-unique? [nodes seen]
   (if (= (count nodes) 0)
@@ -2991,6 +2998,29 @@
   (= :accepted
      (get (sh12-branch-join-checked-core-preflight checked-core) :status)))
 
+(defn sh12-branch-join-preflight-rejection
+  [phase preflight checked-core mir]
+  (let [diagnostic-id (get preflight :diagnostic-id)
+        report
+        (sh12-branch-join-rejection
+         phase diagnostic-id (get preflight :missing-fact) checked-core mir)
+        node (get preflight :node)]
+    (if (= node nil)
+      report
+      (let [source (get node :source)
+            diagnostic (first (get report :diagnostics))]
+        (assoc report :diagnostics
+               [(assoc diagnostic
+                       :operation-id (get node :node-id)
+                       :value-id
+                       (if (= diagnostic-id "C11-DOMINANCE")
+                         (get node :node-id)
+                         :not-applicable)
+                       ; Preflight rejected before a CFG was established.
+                       :block :not-applicable
+                       :source-span (get source :span)
+                       :origin-chain (get source :generated-origin))])))))
+
 (defn sh12-branch-join-block-dominates?
   [mir definition-block consumer-block]
   (let [dominance
@@ -3159,11 +3189,8 @@
           (sh12-branch-join-rejection
            :construction "C11-DOMINANCE"
            :definitions-uses-or-edge-dominance checked-core mir)))
-      (sh12-branch-join-rejection
-       :construction
-       (get preflight :diagnostic-id)
-       (get preflight :missing-fact)
-       checked-core nil))))
+      (sh12-branch-join-preflight-rejection
+       :construction preflight checked-core nil))))
 
 (defn sh12-branch-join-operation-ids [operations result]
   (if (= (count operations) 0)
@@ -3797,11 +3824,8 @@
            :verification "C11-MODULE" :mir-module-artifact checked-core mir))
         (sh12-branch-join-rejection
          :verification "C11-MODULE" :mir-module-carrier checked-core mir))
-      (sh12-branch-join-rejection
-       :verification
-       (get preflight :diagnostic-id)
-       (get preflight :missing-fact)
-       checked-core mir))))
+      (sh12-branch-join-preflight-rejection
+       :verification preflight checked-core mir))))
 
 ; C11 owns this additive proof-reference adapter.  It is intentionally not an
 ; executable load and does not route through the legacy SH12 checked-core

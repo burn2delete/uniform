@@ -9143,6 +9143,26 @@ results with missing diagnostic metadata remain historical observations; no
 C5/C6 construction or expensive source proof was repeated for this repair.
 Authoritative migration and full SH-07 completion remain outstanding.
 
+### C11 node-local diagnostic attribution: development repair
+
+The existing single-diamond MIR ingress now retains the first source-valid
+node rejected during checked-Core preflight. Both construction and verification
+report that node's operation, span and generated origins rather than the
+enclosing conditional. Dominance failures also retain the responsible value ID.
+The block is `:not-applicable` because preflight has not established a verified
+CFG. Failures with malformed or missing source metadata, and aggregate failures,
+retain the original fallback. Valid MIR, diagnostic tags/reasons, precedence, public report fields
+and operational limits are unchanged.
+
+The original focused regression exposed 50 attribution failures among 129
+assertions on the unchanged engine. The final regression adds a separate
+malformed-operands/dominance case and passes 151 assertions. Together with
+the existing accepted diamond, malformed checked-Core and MIR fact-loss
+controls, the focused batch passes 4 tests and 1,597 assertions.
+These supplied checked-Core inputs test the existing producer/consumer ingress;
+they do not establish fresh C10 source composition, nested conditionals, loops,
+C12 anchors, C14 widening, SH-12 completion or authoritative migration.
+
 ## Beyond First Self-Hosting
 
 After `SH-29`, target expansion becomes a separate matrix. Each canonical
