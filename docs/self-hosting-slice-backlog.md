@@ -9524,6 +9524,41 @@ Clojure source LOC validation passes for 2021 files, zero exceptions, maximum
 composition does not establish actual C10/source ingress, generic MIR, native
 execution, SH-13 completion or authoritative migration.
 
+### Original MIR literal Keyword returns: executable increment
+
+The bounded handoff now returns actual Keyword literals from homogeneous arms
+in the existing five-node literal-condition or seven-node entry-comparison
+layouts. Existing compiler helpers such as `c11-opcode` return Keyword markers;
+those marker values motivate and exercise the value domain, not whole-helper
+lowering. Two local bridge predicates map the existing canonical Keyword type
+to runtime `:keyword` and require an actual `keyword?` payload in both arms
+before execution. String lookalikes, Symbols and other payloads cannot borrow
+the declared type. Namespaced values are preserved without coercion.
+
+This adds the projection runtime-type value `:keyword`, not new roles, keys,
+arities, instruction counts, grammar or interpreter machinery. Bool/i64 outputs,
+depth 32 and fuel 512 remain unchanged. Entry conditions and three-instruction
+computed-arm results remain Bool-only; Keyword conditions and comparison
+results are not enabled. Original source/fact and canonical MIR checks remain.
+
+At `7d100933`, all eight focused tests pass 2054 assertions, including 465 new
+Keyword assertions and all prior 1589. Separate normalized branch controls
+pass 1/20 and language-boundary checks 6/11: 15 tests/2085 assertions across
+three passing invocations. Source LOC passes 2021 files, zero exceptions,
+maximum 250. Cases cover selection, namespaced marker values, unselected
+invalid payloads, zero-callback guards, source/fact/MIR tampering, recomputation
+and result substitution. No actual C10/source ingress, generic MIR, native
+execution, whole-helper lowering, SH-13 completion or migration is claimed.
+
+After joining the finite Keyword-Set insertion development merge, both MIR
+implementation/test files remained byte-identical. A conservative combined
+check at `81ccfee4` passed all eight bridge tests plus the normalized branch
+control: 9 tests/2074 assertions in one invocation. With retained boundary
+6/11, this covers 15 distinct tests/2085 assertions, not additional behavior or
+a sum of repeated epochs. The direct raw-stage0/hosted-interpreter route does
+not execute the changed Gravity `conj` branch; the join alone does not prove
+that the original results were invalid. No source proof was repeated.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
