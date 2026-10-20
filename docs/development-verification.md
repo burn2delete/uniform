@@ -2533,6 +2533,14 @@ is independently checked. A cheap diagnostic over retained development inputs ca
 identify repeated construction before another source run, but reconstructed
 tables and isolated constructor success do not establish source convergence.
 
+Every incoming argument's current presence/value and consulted prior fallback
+remain dependencies, including nonselected and noninvoked arguments. The private
+reuse carrier need not also duplicate those same type trees in its entry-ID
+rows. Likewise, removing C7's discarded temporary ancestry view does not remove
+the demanded source projection. Neither correction establishes the larger
+unchanged C17 helper's budget fit; its pending composition is tracked separately
+in the backlog, not used as an ordinary-edit admission gate.
+
 ### Module-local literal initialization and reads
 
 Edit the typed emitter and Gravity runtime for this boundary, not the seed's

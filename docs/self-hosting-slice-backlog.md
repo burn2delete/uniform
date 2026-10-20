@@ -5670,6 +5670,43 @@ Unchanged whole C17, Q typed products,
 current-closure admission, SH-07, self-hosting and release completion remain
 unproved.
 
+### C7 private-entry construction work: development follow-up
+
+Two internal corrections remove actual discarded construction, not proof
+obligations: C7 no longer builds an equality-only temporary ancestry view,
+and its invocation-local dependency data no longer copies argument type trees
+already retained by every argument's current/fallback observations. Fresh
+BT/BS derivation, nonselected and noninvoked arguments, source joins, public
+descriptors and the 65,536-unit budget remain unchanged. The corrected focused
+batch passed nine tests / 244 assertions. An earlier new assertion read a
+field from the wrong proof owner; that failed batch remains recorded.
+The retained negative now reaches the full-projection `C7-ANNOTATION` presence
+diagnostic rather than the earlier parent-match `C7-VERIFY` branch. The exact
+source-test assertion follows that owner; nine extracted-expression checks
+passed on the changed development replay, with zero source re-executions.
+The isolated candidate also passed four existing C8/emitter composition kernels
+/ 167 assertions on normalized inputs. These are affected integration checks,
+not fresh source construction or authoritative migration.
+
+The unchanged C17 signature-label helper remains a separate unsupported
+composition, not an admission prerequisite for ordinary edits. Its six-function,
+four-entry development candidate passed exact helper AST and direct fixture
+checks, but its single typed-source attempt stopped at C7's work limit after
+C5 and fresh C6 development-session checks passed. C8, typed assembly and
+runtime did not run. The candidate is retained separately, not merged as a
+passing integration test. Direct signature-label results are not cryptographic
+verification, plugin execution or whole-C17 support.
+
+Retained-input diagnostics measured savings of 17,588 temporary-ancestry units
+and 1,484 duplicate-type units, but still failed the first inner query. A
+transparent static lower bound also rules out the proposed adjacent-field plus
+cross-key prefix fix: it remains over budget before leaves and C2 authentication.
+No speculative prefix table, source-guard deletion, budget increase or source
+retry follows. The bounded follow-up is an exact construction-ownership design
+at the existing BT/BS-to-BU boundary, preserving artifacts, diagnostic order,
+core-only versus C2 validation, and fresh per-invocation reconstruction.
+These work counts are not heap, elapsed-time or speedup claims.
+
 ### Proven-nonempty Vector first: development increment
 
 STD3 now explicitly defines the first stored value of a nonempty persistent
