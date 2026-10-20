@@ -4037,6 +4037,89 @@ recursive accumulator-domain transport remain outside this increment. Full
 B14/backend execution, other targets, current-closure admission, SH-07,
 self-hosting and release require separate evidence.
 
+### Persistent String-Set insertion: development increment
+
+STD3 now explicitly defines binary Set `conj` to preserve existing equal member
+classes and add only an absent value class, without changing the original Set.
+The semantic rule agrees with ordinary Clojure Set insertion; no object-identity,
+physical-sharing, enumeration or allocation-free guarantee follows from it.
+
+The existing C7, C8, emitter and runtime owners implement the bounded String
+case: independently established finite all-String Set input and a String value.
+The normal result is deliberately a bare Set, with no invented cardinality,
+literal ancestry or retained member-domain evidence. `count` can consume it;
+another finite-domain insertion, membership or equality needs independently
+established domain evidence. Private inferred accumulator transport remains a
+separate slice, not an implicit consequence of insertion.
+
+Both complete actual member domains and value-class uniqueness validate before
+either hit or miss. The full logical content/comparison and trusted construction
+reservation precedes member comparison. Guarded String value equality decides
+membership, not receiver Set lookup, hashing, equivalence or construction hooks.
+An absent member uses the trusted persistent rebuild; a present member may retain
+the original storage. Logical work is not a provider CPU, peak-heap or physical
+allocation measurement. Normal invocation retains possible allocation and storage
+obligations on both branches; ordinary operand evaluation and transfer semantics
+are preserved. The runtime private closure now has 55 functions; this inventory
+is an implementation fact, not an authority-admission gate.
+
+The first frozen candidate `8e957a91` remained unrun. Independent review found
+that shared dispatcher Unknown probes hashed composite types before their paid
+validation. The narrow successor `f8587224` uses nil-left and keyword-guarded
+probes, with direct dispatcher opaque-member and opaque-inserted-type controls
+at allowances zero, one and 65,536 requiring zero callbacks.
+
+One non-fail-fast focused batch passed 22 tests/2,469 assertions with zero
+failures or errors: six new semantic kernels/705 assertions, one paired G/Q
+parser kernel/ten assertions and fifteen adjacent kernels/1,754 assertions.
+The original process completed naturally with exit zero. Selected execution
+took 11.767 seconds; namespace loading took 14.086 seconds, with C8 already
+loaded. These are development observations, not benchmarks or migration proof.
+The new normalized transfer controls cover the inserted-value position;
+receiver Never remains in adjacent-owner coverage and runtime controls cover
+both throwing operand positions.
+
+The first affected source composition at `e0abb872` remains a failed aggregate:
+one test/83 assertions, 82 passes, one failure and zero errors. It completed
+the actual closed-plan result `[1 2 1]` for empty, absent and present insertion,
+all three insertion/count source joins, allocation/storage rows, public C7
+assembly verification and the genuine Character-member C7 negative. Three
+inert quoted receivers are not evaluated Set constructors; no module initializer
+runs, and `count` consumes the bare result as Integer without invented extent.
+The full rejected diagnostic vector retains the primary String-insertion type
+error, a downstream count type error and an unresolved-node annotation error;
+the test asserts presence of the primary, not an exact-only diagnostic vector.
+No negative C8 or runtime ran; Q remains parser-only and no seed control ran.
+
+The sole failing expectation put function-body allocation in the namespace
+initialization effect set. C8 correctly leaves that set empty for a module
+containing only a function definition; the function's body effects are latent
+at definition time. The test-only correction checks empty namespace effects
+and the actual main function's allocation summary. This does not change the
+compiler, fixtures or the already accepted focused results, and does not turn
+the failed source aggregate into a passing run. The corrected full source test
+was not re-executed; unchanged source products were not rebuilt merely to obtain
+a green aggregate.
+
+The existing original C8 constructor-allocation regression separately passed
+one test/107 assertions after the exact function-ID scope correction. It
+exercises the actual node derivation and graph builder, checks inferred and
+latent allocation on the function, empty namespace initialization effects and
+the original allowance checks. Selected execution took 1.446 seconds after
+8.084 seconds of namespace loading. Separate language-boundary checks passed
+six tests/eleven assertions; LOC validation passed 2,021 source files, zero
+exceptions and maximum 250 physical lines. No production change was needed
+after the first successful focused batch.
+
+That source envelope took 146.482 seconds after 12.359 seconds of namespace
+loading at 2 GiB. Positive/negative C5 construction took 31.360/24.490 seconds,
+fresh development C6-session construction 37.685/33.918 seconds and same-catalog
+replay 3.274/3.061 seconds. These inclusive observations separate verification
+product construction from startup; they are not isolated phase benchmarks.
+Public fresh C6 was not invoked. Full B14/backend execution, recursive Set
+domain transport, other targets, current-closure admission, SH-07 completion,
+self-hosting and release remain separate gates.
+
 ### B14 accepted-result source readability: development repair
 
 The retained String-Set parser error exposed nine repeated fields in the
