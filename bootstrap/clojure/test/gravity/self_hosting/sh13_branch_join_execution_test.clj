@@ -691,6 +691,8 @@
                       (assoc-in base [:core-nodes 1 :operands] ["sh13:truthiness:input" "sh13:truthiness:input"])
                       (assoc-in base [:core-nodes 1 :attributes :false-values] [false])
                       (assoc-in base [:core-nodes 1 :attributes :result-type] :gravity.type/i64)
+                      (assoc-in base [:core-nodes 1 :source-operation] :local)
+                      (update-in base [:core-nodes 1 :path] conj :extra)
                       (assoc-in base [:core-nodes 1 :path] [:wrong])
                       (assoc-in base [:core-nodes 3 :attributes :value] nil)]]
       (doseq [core candidates]

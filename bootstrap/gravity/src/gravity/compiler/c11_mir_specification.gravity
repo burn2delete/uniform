@@ -2849,8 +2849,12 @@
                 (c11-find-node-by-id nodes (first (rest (rest operands))))
                 if-path (get if-node :path)]
             (if (= (get condition :type) :gravity.type/bool)
-              (if (c11-path-prefix?
-                   (conj if-path :condition) (get condition :path))
+              (if (if (c11-path-prefix?
+                       (conj if-path :condition) (get condition :path))
+                    true
+                    (if (= :truthy (get condition :source-operation))
+                      (= (conj if-path :truthy) (get condition :path))
+                      false))
                 (if (sh12-branch-join-node-before?
                      nodes (get condition :node-id) (get if-node :node-id))
                   (if (= (get then-node :type) (get else-node :type))
