@@ -11694,6 +11694,72 @@
       (is (= :map-get-source-mismatch (:reason result))))
     (is (zero? @callbacks))))
 
+(deftest sh08-private-first-entry-local-products-development-kernel
+  (let [input (private-first-entry-source-input [])
+        build (fn [data table prior budget]
+                (let [{:keys [core node nodes types binding-types bindings forms products]} data
+                      context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536])
+                                :source-core core :budget-left budget :prior-types prior
+                                :private-first-entry-products table)]
+                  (invoke-c7 'sh08-mg-present-derive
+                    [node nodes types binding-types {} (:lexical-bindings core) bindings forms {} context budget])))
+        first-result (build input {} (:types input) 65536)
+        table {:inner-get (:local-private-product first-result)}
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped) original @scoped
+        full-calls (atom 0)
+        trace (fn [thunk]
+                (reset! full-calls 0)
+                (let [result (with-redefs-fn
+                               {scoped (fn [& args]
+                                         (when (= 'sh08-pc-from-parent (nth args 2)) (swap! full-calls inc))
+                                         (apply original args))} thunk)]
+                  {:result result :full-calls @full-calls}))]
+    (is (= :accepted (:status first-result)) (pr-str (select-keys first-result [:status :reason :work-count])))
+    (when (= :accepted (:status first-result))
+      (let [{:keys [result full-calls]} (trace #(build input table (:types input) 65536))]
+        (is (= :accepted (:status result)))
+        (is (zero? full-calls))
+        (is (= (:descriptor first-result) (:descriptor result)))
+        (is (= (:constraint first-result) (:constraint result)))
+        (is (< (:work-count result) (:work-count first-result)))
+        (is (= result (build input table (:types input) (:work-count result))))
+        (is (= :map-get-work-limit (:reason (build input table (:types input) (dec (:work-count result)))))))
+      (let [data (-> input (assoc-in [:types :inner-get] :gravity.type/keyword)
+                           (assoc-in [:types :inner-operator] (:descriptor first-result)))
+            observed (trace #(build data table (:types data) 65536))]
+        (is (= :accepted (get-in observed [:result :status])))
+        (is (zero? (:full-calls observed)) "Constructed BU outputs are not input dependencies"))
+      (let [prior (assoc (:types input) :entry-value-0-0 :gravity.type/integer)
+            observed (trace #(build input table prior 65536))]
+        (is (= :accepted (get-in observed [:result :status])))
+        (is (zero? (:full-calls observed)) "A concrete current type does not consult prior fallback"))
+      (doseq [data [(assoc-in input [:types :first-operator :bounds-proof :selected-index] 1)
+                    (assoc-in input [:types :operator :key] :other)
+                    (assoc-in input [:types :signature-reference :member-types 1] :gravity.type/integer)
+                    (assoc-in input [:types :signatures-reference :element-types 0 :member-types 1] :gravity.type/integer)]]
+        (let [observed (trace #(build data table (:types data) 65536))]
+          (is (= :rejected (get-in observed [:result :status])))
+          (is (not= :map-get-work-limit (get-in observed [:result :reason])))))
+      (let [data (update input :types dissoc :entry-value-0-0)
+            observed (trace #(build data table (:types input) 65536))]
+        (is (= 1 (:full-calls observed)) "Presence and consulted fallback changes reconstruct the proof"))
+      (let [callbacks (atom 0) opaque (proxy [Object] []
+                                      (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque dependency compared")))
+                                      (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque dependency hashed"))))
+            data (assoc-in input [:types :first-operator :bounds-proof :selected-index] opaque)
+            observed (trace #(build data table (:types data) 65536))]
+        (is (= :rejected (get-in observed [:result :status])))
+        (is (zero? @callbacks))))
+    (let [core {:calls [] :call-edges [] :nodes [] :function-records [] :module (:module input)}
+          context {:ordering-core core :lookup-bindings [] :lookup-forms [] :boolean-matches []
+                   :shape-call-products {:calls [] :call-edges [] :function-index {} :definitions []} :loop-work-left 65536}
+          infer (fn [ctx] (invoke-c7 'sh08-ft-infer-acyclic-with-context [[] {} [] [] [] [] {} {} 2 ctx]))
+          clean (infer context) poisoned (infer (assoc context :private-first-entry-products table))]
+      (is (= clean poisoned))
+      (is (= :converged (:convergence-status clean)))
+      (is (not (contains? clean :private-first-entry-products)))
+      (is (not (contains? clean :products))))))
+
 (deftest sh08-private-first-entry-reviewed-guards-development-kernel
   (let [literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
                                :attributes {:literal-kind :keyword :value value}})
