@@ -4815,8 +4815,9 @@ STD3 owns Set value equality. The bounded development slice uses binary `=`
 for two independently established finite Sets whose complete member domains
 are Keywords, including empty Sets. Each operand keeps its own type evidence;
 equal type vectors, constructor identity and enumeration order are not equality
-premises. Bare Set types and unknown or other member domains remain separate
-implementation frontiers, not language-wide prohibitions.
+premises. Bare Set types and unknown member domains remain separate
+implementation frontiers, not language-wide prohibitions. The String family
+uses the separate comparison extension below.
 
 Change the existing C7, C8, typed emitter and runtime owners. Start with the
 owning kernels and affected adjacent equality regressions, not fresh upstream
@@ -4865,6 +4866,70 @@ unchanged. These checks do not establish evaluated Set-literal lowering,
 Keyword List conversion, `keys` ordering, whole-W5 execution, other-target
 support or authoritative migration. Record actual outcomes in the backlog;
 listing a command is not evidence that it passed.
+
+### Finite String-Set value comparison
+
+STD3's Set equality and STD2's binary inequality complement govern this
+extension. Change the existing C7, C8, emitter and runtime Set-comparison
+owners. The bounded domain is two independently established finite literal
+String-Set types, including empty Sets; bare Sets, mixed families and unknown
+member domains do not acquire support from this rule. String equality is exact,
+without normalization, locale, coercion or printed-spelling comparison.
+
+Start with the existing direct owning checks, alongside the affected Keyword
+Set and Keyword-Set Vector regressions:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-string-set-equality-development-kernel \
+  --exact sh08-string-set-equality-throw-consumer-development-kernel \
+  --exact sh08-string-set-inequality-development-kernel \
+  --exact sh08-string-set-inequality-throw-consumer-development-kernel \
+  --exact body-string-set-equality-development-kernel \
+  --exact current-gravity-string-set-inequality-source-development-kernel \
+  --exact current-gravity-string-set-equality-lowering-development-kernel \
+  --exact current-gravity-string-set-inequality-lowering-runtime-development-kernel \
+  --exact current-gravity-string-set-inequality-transfer-fence-development-kernel \
+  --exact current-gravity-string-set-equality-transfer-fence-development-kernel \
+  --exact current-gravity-string-set-equality-runtime-development-kernel --fail-fast
+```
+
+Validate both full member domains and within-operand value distinctness before
+cardinality or membership mismatch, reserving full worst-case content and pair
+work within the remaining allowance. Native String representation units are
+accounting, not Unicode-scalar counts or a provider CPU/heap guarantee. Host
+Set equality, lookup and hashing do not decide the result. The hosting path
+must itself support every operation used by these owning functions.
+
+Keep Keyword and neutral-empty policy identities unchanged. Widening shared
+Set helpers must not admit String-Set leaves in Vector equality or inequality:
+those callers retain explicit Keyword-only fences. `not=` keeps original
+source/type facts and the owned equality/branch complement, with ordinary
+left-to-right, once-only, non-tail operand evaluation and transfer handling.
+Actual affected source composition remains separate from these normalized
+checks; no constructor/membership proof, whole B14 execution or authoritative
+migration follows from this comparison slice. Listing commands is not a
+passing result.
+
+For changed composition, select the tiny paired definition witness and its
+authenticated composition separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-set-comparison-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-set-comparison-authenticated-composition --fail-fast
+```
+
+The witness checks exact B14 definition text and its isolated parsed form,
+not whole-B14 readability. Three quoted comparison Sets remain inert and
+separate from the single evaluated initializer. Q receives parser checks only;
+fresh development C6-session replay does not replace public fresh C6 admission.
 
 ### Map family classification
 
