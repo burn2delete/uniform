@@ -733,7 +733,7 @@
                                 [:choose/seven])
                  (mapv :operation (filter :operation (get-in result [:execution :trace])))))
           (is (= :passed (:status (invoke-engine 'sh13-verify-execution
-                                                [subject [condition] result])))))))
+                                                [subject [condition] result]))))))
       (doseq [operands [[] [:condition :condition]]]
         (check-rejected (assoc op :operands operands) "C11-TYPE"))
       (check-rejected (assoc op :operands [:missing]) "C11-DOMINANCE")
@@ -749,4 +749,4 @@
       (let [result (run with-local [true])]
         (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
                                                 [with-local [true]
-                                                 (assoc-in result [:execution :value] :forged)])))))))))
+                                                 (assoc-in result [:execution :value] :forged)]))))))))
