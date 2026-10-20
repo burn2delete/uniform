@@ -155,7 +155,7 @@
         (p15-s23-runtime-namespace-read-source? instruction (get entry :definition)) false)) false))
 
 (defn p15-s23-runtime-initializer-work [instruction budget]
-  ; Root Set preflight reserves direct IR validation, content and the later type join.
+  ; Root Set preflight reserves fixed family selection, direct IR validation, content and the later type join.
   (if (= :set-literal (get instruction :op))
     (let [input (get instruction :items)]
     (if (if (integer? budget) (>= budget 0) false)
@@ -167,20 +167,22 @@
               (let [base (+ 1 (* 3 n))]
                 (if (> base limit)
                   {:status :rejected :reason :module-initialization-work-limit :work-count base :work-count-kind :validation-reservation}
-                  (let [checked (loop [i 0 values []]
-                                  (if (= i n) {:status :accepted :values values}
-                                    (let [item (get input i)]
+                  (let [checked (loop [i 0 values [] strings? nil]
+                                  (if (= i n) {:status :accepted :values values :strings? (if (= nil strings?) false strings?)}
+                                    (let [item (get input i) value (if (map? item) (get item :value) nil)]
                                       (if (if (map? item) (if (= 2 (count item))
                                             (if (contains? item :op) (if (contains? item :value)
-                                              (if (= :literal (get item :op)) (keyword? (get item :value)) false) false) false) false) false)
-                                        (recur (+ i 1) (conj values (get item :value)))
+                                              (if (= :literal (get item :op))
+                                                (if (= nil strings?) (if (keyword? value) true (string? value))
+                                                  (if strings? (string? value) (keyword? value))) false) false) false) false) false)
+                                        (recur (+ i 1) (conj values value) (if (= nil strings?) (string? value) strings?))
                                         {:status :rejected :reason :unsupported-module-initializer}))))]
                     (if (= false (= :accepted (get checked :status)))
                       (assoc checked :work-count base :work-count-kind :validation-reservation)
-                      (let [values (get checked :values)
+                      (let [values (get checked :values) strings? (get checked :strings?)
                             measured (loop [i 0 units 0]
                                        (if (= i n) {:status :accepted :units units}
-                                         (let [size (count (str (get values i)))]
+                                         (let [size (if strings? (count (get values i)) (count (str (get values i))))]
                                            (if (> size (- limit units))
                                              {:status :rejected :reason :module-initialization-work-limit :work-count (+ limit 1)
                                               :work-count-kind :exceeded-allowance-lower-bound}
@@ -204,7 +206,7 @@
                                                                              next-attempt (+ used 1)]
                                                                          (if (= false equal) (recur (+ j 1) next-attempt)
                                                                            {:status :rejected :reason :unsupported-module-initializer
-                                                                            :initializer-reason :duplicate-set-literal-keyword
+                                                                            :initializer-reason (if strings? :duplicate-set-literal-string :duplicate-set-literal-keyword)
                                                                             :comparison-attempts next-attempt}))))]
                                                        (if (= :accepted (get checked :status))
                                                          (recur (+ i 1) (get checked :comparison-attempts)) checked))))]
@@ -264,6 +266,8 @@
             {:status :rejected :reason :unsupported-module-initializer :work-count next-work})))))))
 
 (defn p15-s23-runtime-initializer-type? [definition instruction]
+  ; Module census first validates this same immutable IR with initializer-work.
+  ; That reservation covers fixed family projection and the bounded n member-type reads.
   (let [type (get definition :type) kind (if (map? type) (get type :kind) type)
         op (get instruction :op) value (get instruction :value)]
     (if (= :gravity.type/vector kind) (if (= :vector-literal op) true (if (= :quote op) (vector? value) false))
@@ -276,8 +280,12 @@
                 (if (contains? type :kind) (if (contains? type :shape) (contains? type :element-types) false) false) false) false)
             (if (if (= :literal (get type :shape)) (if (vector? members) (vector? items) false) false)
               (if (if (= (count members) (count items)) (<= (count items) 1024) false)
-                (loop [i 0] (if (= i (count members)) true
-                  (if (= :gravity.type/keyword (get members i)) (recur (+ i 1)) false))) false) false) false))
+                (if (= 0 (count members)) true
+                  (let [value (get (get items 0) :value)
+                        expected (if (string? value) :gravity.type/string (if (keyword? value) :gravity.type/keyword nil))]
+                    (if (= nil expected) false
+                      (loop [i 0] (if (= i (count members)) true
+                        (if (= expected (get members i)) (recur (+ i 1)) false)))))) false) false) false))
         (if (= :quote op) (set? value) false))
       (if (contains? #{:literal :quote} op)
         (if (= :gravity.type/nil kind) (= nil value)
