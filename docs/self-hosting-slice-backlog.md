@@ -6667,8 +6667,8 @@ three qualified revisions, not one same-revision batch: 15 retained/1,595 at
 `0252cece`, 12 retained/1,609 at `bc69b988`, and five changed C8 selectors/509 at
 `6dc46dfc`. The eleven new selectors contribute 1,242 assertions. Earlier
 focused failure `50656` recorded 2,123 passes/one failure across 19 tests and
-13 skipped selectors: the new dispatcher inspected a receiver before a known
-wrong-family needle. The production early-needle guard repaired that behavior;
+13 skipped selectors: a known legacy-family needle triggered the new Symbol
+receiver probe. The production early-needle guard repaired that behavior;
 the old one-read oracle was not relaxed.
 
 The first source attempt `7042` at `8c470986` failed with four passes, one

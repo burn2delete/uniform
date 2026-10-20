@@ -5331,10 +5331,10 @@ Run the two `body-symbol-set-contains-*` selectors in
 transfer-fence and lowering-ID-guard selectors named
 `current-gravity-symbol-set-contains-*` in the SH01 runtime namespace.
 
-Preserve the exact policy/constraint/source joins, independent full-ledger
-validation, Never transfers and existing family diagnostic priority. Guard
-opaque IDs before lookup. A known wrong needle must not inspect the receiver
-first. Ordinary producerless local-call rows are unselected by the Symbol
+Preserve the exact policy/constraint/source joins, independent full selected-family
+ledger/census validation, Never transfers and existing family diagnostic priority.
+Guard opaque IDs before lookup. A known legacy-family needle must not trigger
+the new Symbol receiver probe. Ordinary producerless local-call rows are unselected by the Symbol
 policy, not invalid; a selected malformed Symbol row still rejects.
 
 Runtime checks the complete actual Symbol domain, coherent cardinality and
