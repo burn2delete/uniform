@@ -5951,12 +5951,15 @@
   (let [base (+ 32 (* 8 (if (vector? facts) (count facts) 0)) (* 8 (if (vector? ledger) (count ledger) 0)))]
     (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
       (if (if (vector? facts) (vector? ledger) false)
-        (let [selectors {:facts (loop [remaining facts out []]
-                                  (if (= 0 (count remaining)) out
-                                    (recur (rest remaining) (conj out (body-project (first remaining) [:call-core-node-id])))))
-                         :rows (loop [remaining ledger out []]
-                                 (if (= 0 (count remaining)) out
-                                   (recur (rest remaining) (conj out (body-project (first remaining) [:producer-rule :lhs])))))}
+        ; This internal flat view retains every dynamic selector, including
+        ; each complete lhs, without allocating and walking fixed wrapper keys.
+        (let [fact-selectors (loop [remaining facts out []]
+                               (if (= 0 (count remaining)) out
+                                 (recur (rest remaining) (conj out (get (first remaining) :call-core-node-id)))))
+              selectors (loop [remaining ledger out fact-selectors]
+                          (if (= 0 (count remaining)) out
+                            (let [row (first remaining)]
+                              (recur (rest remaining) (conj out [(get row :producer-rule) (get row :lhs)])))))
               measured (body-pc-evidence-work selectors (- budget base))
               prefix (+ base (get measured :work-count))]
           (if (= :accepted (get measured :status))
@@ -5975,8 +5978,9 @@
   (let [gated (body-pc-parent-parameter route core nodes bindings budget) gate-work (get gated :work-count)
         parent-call (get route :get-call) parent-node (get nodes (get route :get-node-id))
         reusable? (if (map? prior-parent)
-                    (if (= :sh08-map-get-private-entry-v1 (get prior-parent :version))
-                      (= parent-call (get prior-parent :source-call)) false) false)
+                    (if (= :gravity.type/applied-map-get (get prior-parent :kind))
+                      (if (= :sh08-map-get-private-entry-v1 (get prior-parent :version))
+                        (= parent-call (get prior-parent :source-call)) false) false) false)
         reserved (if (= :accepted (get gated :status))
                    (if reusable? {:status :accepted :work-count 0}
                      (body-pe-reserve core (get nodes (get (get parent-call :argument-node-ids) 0)) nodes bindings (- budget gate-work))) gated)

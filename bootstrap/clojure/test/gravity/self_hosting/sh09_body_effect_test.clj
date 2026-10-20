@@ -5390,6 +5390,7 @@
         (is (= (:descriptor fresh) (:descriptor reused)))
         (is (< (:work-count reused) (:work-count fresh)))
         (is (= fresh (check (assoc-in parent [:source-call :core-node-id] :changed-parent) 65536)))
+        (is (= fresh (check (assoc parent :kind :gravity.type/applied-vector-first) 65536)))
         (is (= fresh (check nil (:work-count fresh))))
         (is (= :map-get-work-limit (:reason (check nil (dec (:work-count fresh)))))))
       (is (= context (build request facts (:work-count context))))
