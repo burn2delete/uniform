@@ -5915,6 +5915,57 @@ Character-Set equality and generic conversion remain outside this bounded
 increment, not newly illegal Gravity. Focused and affected-composition results
 do not establish current-closure admission, full SH-07, self-hosting or release.
 
+### Evaluated literal-String Sets: development increment
+
+The existing typed emitter and runtime construct homogeneous, distinct literal
+String Sets, including empty construction through the unchanged legacy path.
+C7 finite member types and C8 allocation semantics are unchanged. Lowering
+validates actual source/attribute String values and reserves their content work
+before equality, preserving source, child, type and evaluation joins. Runtime
+validates the complete homogeneous domain, prepays logical content/comparison
+work and rejects duplicate Gravity String values before host Set insertion.
+There is no new instruction, function, public export or C7/C8 interface.
+The existing 1,024-member/65,536-work bounds remain; selected JVM UTF-16 units
+describe representation work, not String cardinality or provider CPU bounds.
+
+The first six-kernel run completed 711 passes, five failures and ten errors.
+The failures came from newly legal single-String cases and a mixed-input
+first-family diagnostic expectation; the errors came from new test arithmetic
+omitting the emitter's existing failed-child default charge of one. A four-line
+test-only correction then passed all six
+kernels/726 assertions: 247 new String checks and 479 Keyword/Character
+regressions. Production bytes did not change between those runs. Same-hash
+distinct Strings, equal-content distinct objects, composed/decomposed values,
+supplementary Strings, empty values, malformed domains, stale joins, exact and
+short work budgets, and zero-callback opaque values are included.
+
+Two fixture kernels separately passed 26 assertions, including owning-C2
+G/Q values and decoded duplicate-literal rejection. The former String-only
+negative pair is moved byte-identically to accepted fixtures; the old Keyword
+composition now selects the unchanged mixed Character/String negative and its
+actual `values` function. Its earlier String-only rejection remains historical,
+not a current unsupported case. The old large positive was not replayed merely
+to update that frontier.
+
+One actual source composition then passed one test/47 assertions (41 composition
+checks plus six existing runtime-loader checks) in 131.732 seconds after 10.996
+seconds loading SH01 at 2 GiB. The accepted one-function program constructed two unquoted Sets
+with four literal String children, retained constructor allocation, and returned
+`[#{".gravity" ".qst"} 2]` through the 54-function runtime. Original
+C7 and C8 verification guarded the positive composition. The existing mixed
+Character/String program independently passed fresh upstream checks and C8
+verification, then rejected at `P15S23Q002/:unsupported-typed-set-member`.
+Two additionally observed public C7 verification gates passed, one for each
+lowering boundary. QST has no typed-product comparison, and no seed reference
+execution is claimed. Fresh development C6 sessions and same-catalog replay
+are not fresh public C6 authority verification. Inclusive elapsed boundaries
+are not a speedup claim.
+
+String-Set membership, computed or mixed members, evaluated Set module
+initializers and whole compiler-consumer execution remain outside this slice.
+Focused checks and traceability do not admit a stable module revision or close
+SH-07, self-hosting or release gates.
+
 ### Finite Character-Set membership: development increment
 
 The C7 engine, effects, typed emitter and runtime extend binary `contains?`
