@@ -9374,9 +9374,9 @@ remain unsupported. Nil itself is a supported leaf, not a nil-or union.
 
 C7, independent C8 reconstruction, typed lowering and one bounded runtime
 helper implement this route. Complete operand domains and pair compatibility
-precede any false result under one cumulative budget. New source/identity guards
-and a single paid ledger scan reject malformed inputs without callback leakage;
-prefix quota exhaustion retains its resource diagnostic. Existing atomic,
+precede any false result under one cumulative budget. The tested malformed
+source/identity and ledger controls reject without callback leakage; the ledger
+uses a single paid scan. Prefix quota exhaustion retains its resource diagnostic. Existing atomic,
 Vector and Set helper bodies/domains are preserved. The new runtime helper makes
 the current inventory 56 functions; old 55-function records remain historical.
 
