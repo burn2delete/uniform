@@ -3485,9 +3485,51 @@
             {:status :rejected :reason :string-set-insertion-operand-type-required :work-count 2})))
         {:status :rejected :reason :string-set-insertion-arity-mismatch :work-count 2}))))
 
+(defn body-ksin-selected? [arguments]
+  ; Preserve the String route for ambiguous empty-Set/Never and wrong families.
+  (if (if (vector? arguments) (= 2 (count arguments)) false)
+    (let [receiver (get arguments 0) value (get arguments 1)]
+      (if (if (map? receiver) (if (= 3 (count receiver))
+            (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
+                  (if (keyword? (first fields)) (recur (rest fields)) false)))
+              (if (= :gravity.type/set (get receiver :kind))
+                (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false) false)
+        (let [members (get receiver :element-types)]
+          (if (= 0 (count members)) (= :gravity.type/keyword value)
+            (if (= :gravity.type/keyword (get members 0))
+              (if (= :gravity.type/keyword value) true (= :gravity.type/never value)) false))) false)) false))
+
+(defn body-ksin-type-work [arguments budget]
+  ; STD3: finite Keyword input is checked completely; the result retains no member facts.
+  (let [limit (if (< budget 65536) budget 65536)]
+    (if (< limit 2) {:status :rejected :reason :keyword-set-insertion-work-limit :work-count 2}
+      (if (if (vector? arguments) (= 2 (count arguments)) false)
+        (let [receiver (get arguments 0) value (get arguments 1)
+              construction (if (= :gravity.type/never value) 0 3)]
+          (if (if (map? receiver) (if (= 3 (count receiver))
+                (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
+                      (if (keyword? (first fields)) (recur (rest fields)) false)))
+                  (if (= :gravity.type/set (get receiver :kind))
+                    (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false) false)
+            (let [members (get receiver :element-types) width (count members) work (+ 2 width construction)]
+              (if (> width 1024) {:status :rejected :reason :keyword-set-insertion-type-width :work-count 2}
+                (if (> work limit) {:status :rejected :reason :keyword-set-insertion-work-limit :work-count work}
+                  (if (loop [i 0] (if (= i width) true
+                        (if (= :gravity.type/keyword (get members i)) (recur (+ i 1)) false)))
+                    (if (if (= :gravity.type/keyword value) true (= :gravity.type/never value))
+                      {:status :accepted :collection-family :keyword-set-insertion :argument-types arguments
+                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never :gravity.type/set)
+                       :operand-work (+ 2 width) :result-work 0 :construction-work construction :work-count work}
+                      {:status :rejected :reason :keyword-set-insertion-operand-type-required :work-count work})
+                    {:status :rejected :reason :keyword-set-insertion-operand-type-required :work-count work}))))
+            {:status :rejected :reason :keyword-set-insertion-operand-type-required :work-count 2}))
+        {:status :rejected :reason :keyword-set-insertion-arity-mismatch :work-count 2}))))
+
 (defn body-pl-type-work [arguments budget]
   (if (if (= :gravity.type/set (get arguments 0)) true (if (map? (get arguments 0)) (= :gravity.type/set (get (get arguments 0) :kind)) false))
-    (body-ssin-type-work arguments budget)
+    (if (body-ksin-selected? arguments)
+      (body-ksin-type-work arguments budget)
+      (body-ssin-type-work arguments budget))
   (if (= 2 (count arguments))
     (let [checked (body-lc-type-work arguments budget) used (get checked :work-count)]
       (if (= :accepted (get checked :status))
@@ -3522,8 +3564,53 @@
          :type-check-reason (get checked :reason) :work-count used}))
     {:status :rejected :reason :list-prepend-arity-mismatch :work-count 0})))
 
+(defn body-ksin-source-ids? [node call nodes bindings module]
+  (if (body-sse-call-ids? node call)
+    (let [operator (get nodes (get call :operator-node-id)) binding (get bindings (get call :operator-binding-id))]
+      (if (body-sse-ids? [(get operator :node-id) (get (get operator :source) :form-id)
+                         (get (get operator :source) :syntax-id) (get binding :binding-id)] 4)
+        (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+          (if (loop [items (get binding :profile-set)]
+                (if (= 0 (count items)) true (if (keyword? (first items)) (recur (rest items)) false)))
+            (if (loop [items (get binding :target-set)]
+                  (if (= 0 (count items)) true (if (keyword? (first items)) (recur (rest items)) false)))
+              (if (if (symbol? (get (get operator :attributes) :symbol)) (keyword? (get module :profile)) false)
+                (body-all?
+                  [(= (get node :node-id) (get call :core-node-id))
+                   (= (get operator :node-id) (get call :operator-node-id) (first (get node :children)))
+                   (= (get binding :binding-id) (get call :operator-binding-id))
+                   (= (get call :argument-node-ids) (vec (rest (get node :children))))
+                   (= [(get call :operator-binding-id)] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                   (contains? '#{conj gravity.core/conj} (get (get operator :attributes) :symbol))
+                   (= :jvm (get module :target)) (body-va-binding? binding module)]) false)
+              false) false) false) false)) false))
+
+(defn body-ksin-call-forms? [node nodes forms]
+  (if (body-sse-ids? [(get (get node :source) :form-id) (get (get node :source) :syntax-id)] 2)
+    (let [source (get node :source) owner (get forms (get source :form-id))
+          ids (get owner :child-form-ids) children (get node :children)]
+      (if (if (body-sse-ids? [(get owner :form-id) (get owner :syntax-id)] 2)
+            (if (vector? children) (if (= 3 (count children)) (body-sse-ids? ids 3) false) false) false)
+        (if (= (get source :form-id) (get owner :form-id))
+          (if (= :list (get owner :kind))
+            (if (= source (get (body-ma-form-node {} owner) :source))
+              (loop [i 0]
+                (if (= i 3) true
+                  (let [form (get forms (get ids i)) child (get nodes (get children i))]
+                    (if (body-sse-ids? [(get form :form-id) (get form :syntax-id)
+                                     (get (get child :source) :form-id) (get (get child :source) :syntax-id)] 4)
+                      (if (= (get ids i) (get form :form-id) (get (get child :source) :form-id))
+                        (if (= (get owner :form-id) (get form :parent-form-id))
+                          (if (= (get child :source) (get (body-ma-form-node {} form) :source))
+                            (if (= i 0)
+                              (if (symbol? (get form :value))
+                                (if (= (get (get child :attributes) :symbol) (get form :value)) (recur (+ i 1)) false) false)
+                              (recur (+ i 1))) false) false) false) false)))) false) false) false) false)) false))
+
 (defn body-pl-source [core node call edge nodes bindings types module validation]
-  (if (if (vector? (get call :argument-node-ids))
+  (if (if (= :keyword-set-insertion (get validation :collection-family))
+        (body-ksin-source-ids? node call nodes bindings module) true)
+    (if (if (vector? (get call :argument-node-ids))
         (if (= 2 (count (get call :argument-node-ids)))
           (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false)
   (let [children (get node :children) operator (get nodes (get call :operator-node-id))
@@ -3555,7 +3642,39 @@
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
            (= :accepted (get validation :status))] )
-      (if (= :string-set-insertion (get validation :collection-family))
+      (if (= :keyword-set-insertion (get validation :collection-family))
+        (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
+          {:kind :gravity.type/applied-keyword-set-insertion :version :sh08-keyword-set-insertion-v1
+       :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-keyword-set-insertion
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :insertion-semantics {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
+                           :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
+                           :member-domain :independently-established-keyword-only :member-equality :guarded-atomic-keyword-value
+                           :normalization :none :locale :none :coercion :none
+                           :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
+                           :operand-evaluation :left-to-right-once :operand-position :non-tail
+                           :result-evidence :bare-set-only :cardinality-analysis :none
+                           :domain-validation :complete-and-unique-before-hit-miss-or-construction
+                           :budget :full-remaining-membership-and-construction-reservation
+                           :value-work-model :gravity/keyword-set-insertion-logical-content-work-v1
+                           :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
+       :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
+       :storage-policy {:representation :development-persistent-keyword-set :input :preserved
+                        :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
+                        :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
+                        :physical-sharing :unpromised :enumeration :unobserved}
+       :input-extent (get validation :input-extent)
+       :result-extent nil
+       :operand-type-work (get validation :operand-work) :result-type-work (get validation :result-work)
+       :type-construction-work (get validation :construction-work) :result-type (get validation :result-type)
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :set-member-domain :inserted-value :insertion-semantics :member-equality :representation-work :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+        (if (= :string-set-insertion (get validation :collection-family))
         (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
           {:kind :gravity.type/applied-string-set-insertion :version :sh08-string-set-insertion-v2
        :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-string-set-insertion
@@ -3606,10 +3725,21 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :list-suffix :prepended-value :allocation-policy :storage-policy :profile :target :evaluation-order]}) nil)) nil))
+                      :callee-body :list-suffix :prepended-value :allocation-policy :storage-policy :profile :target :evaluation-order]})) nil)) nil)
+    nil))
 
 (defn body-pl-constraint [descriptor]
-  {:constraint-id-request {:domain (if (= :sh08-string-set-insertion-v2 (get descriptor :version)) :gravity/sh08-string-set-insertion-constraint-v2 :gravity/sh08-list-prepend-constraint-v1) :application descriptor}
+  (if (= :sh08-keyword-set-insertion-v1 (get descriptor :version))
+    {:constraint-id-request {:domain :gravity/sh08-keyword-set-insertion-constraint-v1 :application descriptor}
+     :kind :equality :producer-rule :sh08-keyword-set-insertion-v1
+     :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :keyword-set-insertion}
+     :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+     :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+                :direct-effects (get descriptor :direct-effects) :insertion-semantics (get descriptor :insertion-semantics)
+                :allocation-policy (get descriptor :allocation-policy) :storage-policy (get descriptor :storage-policy)}
+     :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+     :status :solved :diagnostics []}
+    {:constraint-id-request {:domain (if (= :sh08-string-set-insertion-v2 (get descriptor :version)) :gravity/sh08-string-set-insertion-constraint-v2 :gravity/sh08-list-prepend-constraint-v1) :application descriptor}
    :kind :equality :producer-rule (if (= :sh08-string-set-insertion-v2 (get descriptor :version)) :sh08-string-set-insertion-v2 :sh08-list-prepend-v1)
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection (if (= :sh08-string-set-insertion-v2 (get descriptor :version)) :string-set-insertion :list-prepend)}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
@@ -3621,10 +3751,20 @@
                {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects)})
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []})
+   :status :solved :diagnostics []}))
 
 (defn body-pl-call-fact [descriptor module]
-  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+  (if (= :sh08-keyword-set-insertion-v1 (get descriptor :version))
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+      {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-keyword-set-insertion-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-keyword-set-insertion :applied-keyword-set-insertion descriptor :effect-facts-source :audited-keyword-set-insertion-intrinsic})
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     (if (= :sh08-string-set-insertion-v2 (get descriptor :version))
       {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-string-set-insertion-call-type-fact-v2 :application descriptor}
@@ -3641,7 +3781,7 @@
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-list-prepend :applied-list-prepend descriptor :effect-facts-source :audited-collection-intrinsic})))
+     :dispatch :direct-list-prepend :applied-list-prepend descriptor :effect-facts-source :audited-collection-intrinsic}))))
 
 
 (defn body-pl-finish [header]
@@ -3653,7 +3793,7 @@
       (if (= (set (keys families)) (set (keys rows))) {:status :accepted :rows rows}
         (body-failure :body-conj-constraint-census))
       (let [row (first remaining) producer (get row :producer-rule)]
-        (if (if (keyword? producer) (contains? #{:sh08-vector-append-v1 :sh08-list-prepend-v1 :sh08-string-set-insertion-v2} producer) false)
+        (if (if (keyword? producer) (contains? #{:sh08-vector-append-v1 :sh08-list-prepend-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1} producer) false)
           (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)
                 closed? (if (map? lhs) (if (= 2 (count lhs))
                             (if (keyword? (get lhs :projection))
@@ -3661,9 +3801,10 @@
                 family (if closed? (get families id) nil)]
             (if (if closed? (if (contains? families id) (= false (contains? rows id)) false) false)
               (if (= [producer (get (get row :lhs) :projection)]
-                     (if (= family :string-set-insertion) [:sh08-string-set-insertion-v2 :string-set-insertion]
+                     (if (= family :keyword-set-insertion) [:sh08-keyword-set-insertion-v1 :keyword-set-insertion]
+                       (if (= family :string-set-insertion) [:sh08-string-set-insertion-v2 :string-set-insertion]
                        (if (= family :list-prepend) [:sh08-list-prepend-v1 :list-prepend]
-                         (if (= family :vector-append) [:sh08-vector-append-v1 :vector-append] nil))))
+                         (if (= family :vector-append) [:sh08-vector-append-v1 :vector-append] nil)))))
                 (recur (rest remaining) (assoc rows id row)) (body-failure :body-conj-constraint-family))
               (body-failure :body-conj-constraint-census)))
           (recur (rest remaining) rows))))))
@@ -3718,8 +3859,8 @@
                                                                              (get types (get args 1) :gravity.type/unknown)] (- budget work))
                                               total (+ work (get validation :work-count))]
                                           (if (= :accepted (get validation :status))
-                                            (recur (rest remaining) total (assoc checks id validation) (assoc families id (if (= :string-set-insertion (get validation :collection-family)) :string-set-insertion :list-prepend)))
-                                            (assoc (body-failure (if (contains? #{:list-prepend-work-limit :string-set-insertion-work-limit} (get validation :reason))
+                                            (recur (rest remaining) total (assoc checks id validation) (assoc families id (if (= :keyword-set-insertion (get validation :collection-family)) :keyword-set-insertion (if (= :string-set-insertion (get validation :collection-family)) :string-set-insertion :list-prepend))))
+                                            (assoc (body-failure (if (contains? #{:list-prepend-work-limit :string-set-insertion-work-limit :keyword-set-insertion-work-limit} (get validation :reason))
                                                                   :body-deferred-work-limit (get validation :reason))) :work-count total))))
                                         (if (> (+ work 1024) budget)
                                           (assoc (body-failure :body-deferred-work-limit) :work-count (+ work 1024))
@@ -3727,7 +3868,8 @@
                               (recur (rest remaining) used checks families))))))))))))))))
 
 (defn body-pl-call-valid? [core facts bindings node call edge nodes]
-  (let [types (get facts :type-table)
+  (if (body-sse-call-ids? node call)
+    (let [types (get facts :type-table)
         validation (get (get (get facts :append-context) :type-checks) (get node :node-id))
         descriptor (get types (get call :operator-node-id))
         header (body-pl-source core node call edge nodes bindings types (get core :module) validation)
@@ -3735,7 +3877,8 @@
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
         row (get (get (get facts :append-context) :conj-rows) (get node :node-id))
         rows (if (map? row) [row] [])]
-    (if (map? header)
+    (if (if (map? header)
+          (if (= :keyword-set-insertion (get validation :collection-family)) (body-ksin-call-forms? node nodes forms) true) false)
       (body-all?
         [(= descriptor (body-pl-finish header)) (= (get descriptor :result-type) (get types (get node :node-id)))
          (= :list (get owner :kind)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0) (count (get node :children)))
@@ -3750,7 +3893,8 @@
                      (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
                  (recur (+ i 1)) false))))
          (= (body-pl-call-fact descriptor (get core :module)) (get (get (get facts :append-context) :call-facts) (get node :node-id)))
-         (= [(body-pl-constraint descriptor)] rows)]) false)))
+         (= [(body-pl-constraint descriptor)] rows)]) false))
+    false))
 
 (defn body-va-call-valid? [core facts bindings node call edge nodes]
   (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
@@ -3779,7 +3923,7 @@
 (defn body-va-node? [node facts core]
   (let [context (get facts :append-context) id (get node :node-id)]
     (if (map? context)
-      (if (contains? #{:list-prepend :string-set-insertion} (get (get context :families) id))
+      (if (contains? #{:list-prepend :string-set-insertion :keyword-set-insertion} (get (get context :families) id))
         (body-pl-call-valid? core facts (get context :bindings) node (get (get context :calls) id)
                             (get (get context :edges) id) (get context :nodes))
         (if (= :vector-append (get (get context :families) id))
@@ -11888,7 +12032,7 @@
                                      (if (= 0 (count remaining)) out
                                        (let [row (first remaining)]
                                          (recur (rest remaining)
-                                           (if (contains? #{:sh08-vector-append-v1 :sh08-list-prepend-v1 :sh08-string-set-insertion-v2} (get row :producer-rule))
+                                           (if (contains? #{:sh08-vector-append-v1 :sh08-list-prepend-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1} (get row :producer-rule))
                                              (conj out row) out))))))
                     (= equality-rows (loop [remaining (get facts :constraint-ledger) out []]
                                        (if (= 0 (count remaining)) out
@@ -11990,7 +12134,7 @@
                 (conj nth-rows (body-vn-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) nth-rows)
               (if (contains? #{:direct-bounded-successor :direct-bounded-unit-addition} (get (get call-facts id) :dispatch))
                 (conj successor-rows (body-si-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) successor-rows)
-              (if (contains? #{:direct-list-prepend :direct-string-set-insertion} (get (get call-facts id) :dispatch))
+              (if (contains? #{:direct-list-prepend :direct-string-set-insertion :direct-keyword-set-insertion} (get (get call-facts id) :dispatch))
                 (conj append-rows (body-pl-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))
                 (if (= :direct-vector-append (get (get call-facts id) :dispatch))
                   (conj append-rows (body-va-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) append-rows))
@@ -12656,7 +12800,7 @@
                (if (= 0 (count remaining)) out (recur (rest remaining) (+ out (count (body-error-types graph (first remaining)))))))]
     (+ (if (if (= :collection-literal (get node :core-form)) true
               (if (= :call (get node :core-form))
-                (contains? #{:gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-set-conversion}
+                (contains? #{:gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-set-conversion}
                   (get (get (get graph (first (get node :children))) :type) :kind)) false))
          (* 2 (+ 1 (count ids))) 0)
        (if (= 0 size) 0 (* (+ 2 (count ids)) (+ 1 size))))))
@@ -12699,9 +12843,9 @@
 (defn body-append-allocation [node graph]
   (let [descriptor (get (get graph (first (get node :children))) :type)]
     (if (if (= :call (get node :core-form))
-          (contains? #{:gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion} (get descriptor :kind)) false)
-      (if (= :gravity.type/applied-string-set-insertion (get descriptor :kind))
-        {:rule-version :sh09-string-set-insertion-allocation-v1 :collection-kind :set
+          (contains? #{:gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion} (get descriptor :kind)) false)
+      (if (contains? #{:gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion} (get descriptor :kind))
+        {:rule-version (if (= :gravity.type/applied-keyword-set-insertion (get descriptor :kind)) :sh09-keyword-set-insertion-allocation-v1 :sh09-string-set-insertion-allocation-v1) :collection-kind :set
          :behavior :static-persistent-set-insertion :condition :normal-operand-completion
          :normal-completion-possible? (= :normal (get descriptor :application))
          :extent {:unit :insertion-operands :count 2 :result-cardinality :runtime-value-dependent}
@@ -13382,7 +13526,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (body-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))

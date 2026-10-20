@@ -6186,6 +6186,36 @@
           (is (= :rejected (:status (leaf 'body-va-context request (assoc facts :constraint-ledger (assoc (:constraint-ledger facts) 0 changed)) bindings 65536)))))
         (is (zero? @callbacks))))))
 
+(deftest body-keyword-set-insertion-id-guard-development-kernel
+  (let [finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+        {:keys [core node call edge nodes bindings facts request ids]} (prepend-effect-input finite :gravity.type/keyword 0)
+        prepared (leaf 'body-va-context request facts bindings 65536)
+        facts (assoc facts :append-context (:context prepared))
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "effects insertion ID hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "effects insertion ID equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "effects insertion ID printing"))))]
+    (is (= :accepted (:status prepared)))
+    (is (true? (leaf 'body-pl-call-valid? core facts bindings node call edge nodes)))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]
+            path [[:operator-node-id] [:operator-binding-id] [:argument-node-ids 0] [:argument-node-ids 1]]]
+      (is (false? (leaf 'body-pl-call-valid? core facts bindings node (assoc-in call path bad) edge nodes)))
+      (is (zero? @callbacks)))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]
+            path [[:node-id] [:children 0] [:children 1] [:children 2] [:source :form-id] [:source :syntax-id]]]
+      (is (false? (leaf 'body-pl-call-valid? core facts bindings (assoc-in node path bad) call edge nodes)))
+      (is (zero? @callbacks)))
+    (doseq [bad [opaque [opaque] {:opaque opaque}] i (range 3)]
+      (let [changed (assoc-in facts [:append-context :forms (ids :call) :child-form-ids i] bad)]
+        (is (false? (leaf 'body-pl-call-valid? core changed bindings node call edge nodes)))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]]
+      (is (false? (leaf 'body-pl-call-valid? core
+                        (assoc-in facts [:append-context :forms (ids :operator) :value] bad) bindings node call edge nodes)))
+      (is (false? (leaf 'body-pl-call-valid? core facts bindings node call edge
+                        (assoc-in nodes [(ids :operator) :attributes :symbol] bad))))
+      (is (zero? @callbacks)))))
+
 (deftest body-string-set-carrier-private-values-development-kernel
   ;; Independent original C8 reconstruction of inferred entry and return domains.
   (let [invoke (fn [function args] (apply leaf function args))]
@@ -6849,3 +6879,82 @@
       (is (false? (leaf 'body-ane-call-valid? core (assoc-in facts [:atomic-inequality-context :forms :operator :value] bad)
                         bindings node call edge nodes)))
       (is (zero? @callbacks)))))
+
+(deftest body-keyword-set-insertion-development-kernel
+  (let [s :gravity.type/keyword finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        carrier :gravity.type/set]
+    (doseq [[receiver value] [[(finite []) s] [(finite [s s]) s] [(finite [s]) :gravity.type/never]]]
+      (let [{:keys [core node call edge nodes bindings descriptor facts request ids]} (prepend-effect-input receiver value 0)
+            context (leaf 'body-va-context request facts bindings 65536)
+            facts (assoc facts :append-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (:node-id node)]) normal? (not= value :gravity.type/never)
+            coherent (fn [changed]
+                       (let [fact ((sh08-helper 'invoke-c7) 'sh08-pl-call-fact [changed (:module core)])
+                             row ((sh08-helper 'invoke-c7) 'sh08-pl-constraint [changed])]
+                         (-> facts (assoc-in [:type-table (:operator-node-id call)] changed)
+                             (assoc :call-type-facts [fact] :constraint-ledger [row])
+                             (assoc-in [:append-context :call-facts (:node-id node)] fact)
+                             (assoc-in [:append-context :conj-rows (:node-id node)] row))))]
+        (is (= :accepted (:status context) (:status graph)) (pr-str [context graph]))
+        (is (true? (valid facts)))
+        (is (= :keyword-set-insertion (get-in context [:context :families (:node-id node)])))
+        (is (= (if normal? carrier :gravity.type/never) (:result-type descriptor)))
+        (is (= (if normal? #{:memory/allocate} #{}) (:direct record) (:transitive record)))
+        (is (= :sh09-keyword-set-insertion-allocation-v1 (get-in record [:allocation :rule-version])))
+        (is (= normal? (get-in record [:allocation :normal-completion-possible?])))
+        (is (= :runtime-value-dependent (get-in record [:allocation :extent :result-cardinality])))
+        (is (= (:storage-policy descriptor) (get-in record [:allocation :storage-policy])))
+        (is (= context (leaf 'body-va-context request facts bindings (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-va-context request facts bindings (dec (:work-count context))))))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (doseq [changed [(assoc descriptor :kind :gravity.type/applied-list-prepend)
+                         (assoc descriptor :result-type (finite [s]) :return (finite [s]))
+                         (assoc descriptor :result-extent 1)
+                         (assoc-in descriptor [:insertion-semantics :present-class] :reject-duplicate)
+                         (assoc-in descriptor [:allocation-policy :behavior] :never)
+                         (assoc-in descriptor [:storage-policy :physical-sharing] :required)]]
+          (is (false? (valid (coherent changed)))))
+        (doseq [changed [(update-in graph [:nodes (:node-id node)] dissoc :allocation)
+                         (assoc-in graph [:nodes (:node-id node) :allocation :normal-completion-possible?] (not normal?))
+                         (assoc-in graph [:nodes (:node-id node) :allocation :storage-policy :physical-sharing] :required)]]
+          (is (false? (leaf 'body-graph-equations-valid? core facts {} (:nodes changed)))))
+        (is (= :rejected (:status (leaf 'body-va-context request (assoc-in facts [:type-table (ids :arg0)] :gravity.type/set) bindings 65536))))
+        (is (false? (valid (assoc-in facts [:type-table (ids :arg1)] :gravity.type/string))))
+        (when-not normal?
+          (let [operands {(:operator-node-id call) {:type descriptor :direct #{} :transitive #{}}
+                          (ids :arg0) {:type receiver :direct #{:io/write} :transitive #{:io/write}}
+                          (ids :arg1) {:type :gravity.type/never :direct #{:error/throw} :transitive #{:error/throw}
+                                       :escaping-thrown-error-types [s] :escaping-thrown-errors #{s}}}
+                derived (leaf 'body-node-record node nil operands :gravity.type/never)]
+            (is (= #{} (:direct derived)))
+            (is (= #{:io/write :error/throw} (:transitive derived)))
+            (is (= [s] (:escaping-thrown-error-types derived)))))))
+    (let [inputs [(prepend-effect-input (finite [s]) s 0)
+                  (prepend-effect-input {:kind :gravity.type/list :shape :homogeneous :element-type s} s 1)
+                  (prepend-effect-input {:kind :gravity.type/vector :shape :literal :element-types [s]} s 2)]
+          core (assoc (:core (first inputs)) :nodes (vec (mapcat #(get-in % [:core :nodes]) inputs))
+                      :calls (mapv :call inputs) :call-edges (mapv :edge inputs))
+          forms (apply merge (map :forms inputs)) bindings (:bindings (first inputs))
+          facts {:module (:module core) :type-table (apply merge (map #(get-in % [:facts :type-table]) inputs))
+                 :function-type-table [] :call-type-facts (vec (mapcat #(get-in % [:facts :call-type-facts]) inputs))
+                 :constraint-ledger (vec (mapcat #(get-in % [:facts :constraint-ledger]) inputs))}
+          request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+          context (leaf 'body-va-context request facts bindings 65536) id (get-in inputs [0 :node :node-id])
+          checked (assoc facts :append-context (:context context)) row (first (:constraint-ledger facts))]
+      (is (= :accepted (:status context)) (pr-str context))
+      (is (= {:keyword-set-insertion 1 :list-prepend 1 :vector-append 1} (frequencies (vals (get-in context [:context :families])))))
+      (is (true? (leaf 'body-call-joins-with-foreign-valid? core checked bindings {})))
+      (doseq [ledger [(subvec (:constraint-ledger facts) 1) (conj (:constraint-ledger facts) row)
+                      (conj (:constraint-ledger facts) (assoc-in row [:lhs :core-node-id] :orphan))
+                      (assoc (:constraint-ledger facts) 0 (assoc row :producer-rule :sh08-vector-append-v1 :lhs {:core-node-id id :projection :vector-append}))]]
+        (is (= :rejected (:status (leaf 'body-va-context request (assoc facts :constraint-ledger ledger) bindings 65536)))))
+      (is (= :body-conj-constraint-family (:reason (leaf 'body-pl-conj-rows [row] {id :unknown-family}))))
+      (let [callbacks (atom 0) opaque (proxy [Object] [] (hashCode [] (swap! callbacks inc) (throw (AssertionError. "conj row ID hash"))))]
+        (doseq [changed [(assoc row :producer-rule opaque)
+                         (assoc-in row [:lhs :core-node-id] opaque)
+                         (assoc-in row [:lhs :core-node-id] [opaque])
+                         (assoc-in row [:lhs :core-node-id] {:opaque opaque})]]
+          (is (= :rejected (:status (leaf 'body-va-context request (assoc facts :constraint-ledger (assoc (:constraint-ledger facts) 0 changed)) bindings 65536)))))
+        (is (zero? @callbacks))))))
