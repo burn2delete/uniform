@@ -1701,7 +1701,9 @@ not a requirement for literal-constructor ancestry. Counts, positions and
 stored values matter; physical sharing and type identity do not decide the
 answer. That legacy recursive version excludes numeric members; see
 [Flat Generic Integer Vector comparison](#flat-generic-integer-vector-comparison)
-for its separate flat extension. Bare/unknown Vector types and other collection
+for its separate flat extension and
+[finite Keyword-Set leaves](#flat-vector-comparison-with-keyword-set-leaves)
+for bounded Set composition. Bare/unknown Vector types and other collection
 domains remain unsupported by this implementation, not forbidden by STD3.
 
 The integral path follows STD5 and SAFE9: two independently established
@@ -4060,7 +4062,8 @@ Keyword and the five existing closed nullable nonnumeric atomic types. Empty
 and differently shaped/length Vectors compare normally; static type equality
 is not required. Width 1,024, depth 128 and work 65,536 remain the existing
 finite limits. The legacy version excludes numeric members; the flat Generic
-Integer extension below is separate. Unknown/bare Vector types, other collections,
+Integer and finite Keyword-Set leaf extensions below are separate.
+Unknown/bare Vector types, other collection domains,
 whole nullable Vectors and nested Never remain unsupported. Top-level Never
 preserves non-tail control transfer when the other operand establishes this
 Vector domain; Never/Never retains the existing atomic rule.
@@ -4153,10 +4156,70 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-flat-integer-vector-comparison-authenticated-composition --fail-fast
 ```
 
-Mixed C6 rows with
-Set-valued leaves remain outside this domain. Paired Q sources establish
+Mixed C6 rows are not covered merely by this Integer extension. The following
+section separately covers finite Keyword-Set leaves, not arbitrary Sets.
+Paired Q sources establish
 parser parity only; focused tests and source composition are not authoritative
 migration, current-closure admission or self-hosting evidence.
+
+### Flat Vector comparison with Keyword-Set leaves
+
+STD3's Vector equality composes the existing finite Keyword-Set equality;
+STD2's `not=` remains its complement. Change the existing C7, C8, emitter and
+runtime Vector owners, not a new comparison wrapper. Independently established
+finite literal-shape all-Keyword Set types are supported as flat Vector leaves.
+When either Vector contains a Set, both Vectors must be flat.
+Corresponding Set positions require Set on both sides; corresponding Integer
+positions require Generic Integer. Even an empty Set selects the new closed
+policy. Preserve recursive nonnumeric and flat Integer no-Set versions and work.
+
+At runtime, before any Vector length/value mismatch, validate all Set leaves on both sides
+using full owned Set self-equality, including duplicate value classes. The
+subsequent corresponding Set comparison invokes owned equality again. Each
+call gets only the current remaining aggregate Vector allowance; charge each
+reported reservation once, including failed-attempt lower bounds. Do not reset
+the allowance per leaf or treat reservations as executed-step/CPU bounds.
+At the nested/domain boundary, quota failures use the Vector resource category,
+retaining the leaf reason; the containing C7 `not=` verifier keeps its existing
+atomic-inequality resource category. The new Set-leaf variant retains the
+existing Set equality JVM restriction.
+
+Use the existing direct focused tests, with both transfer-fence kernels when
+operand control flow changes:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-flat-keyword-set-vector-equality-inequality-development-kernel \
+  --exact sh08-flat-keyword-set-vector-inequality-throw-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-flat-keyword-set-vector-equality-development-kernel \
+  --exact current-gravity-flat-keyword-set-vector-inequality-source-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-flat-keyword-set-vector-equality-lowering-development-kernel \
+  --exact current-gravity-flat-keyword-set-vector-inequality-lowering-runtime-development-kernel \
+  --exact current-gravity-flat-keyword-set-vector-equality-runtime-development-kernel --fail-fast
+```
+
+Changed composition needs a tiny accepted/rejected source check separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-flat-keyword-set-vector-comparison-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-flat-keyword-set-vector-comparison-authenticated-composition --fail-fast
+```
+
+Do not replay unchanged Set construction or membership products. Bare, mixed,
+String or numeric Set domains and nested Set-containing Vectors remain outside
+this increment. No finite domain is inferred from `set(keys actual)` spelling;
+whole List-compatibility/C6 helpers, C17, migration and self-hosting remain
+separate. Existing immutable finite provider/cardinality-enumeration premises
+apply; no arbitrary host-provider CPU or peak-memory containment is established.
 
 ### Binary finite Keyword-Set inequality
 
