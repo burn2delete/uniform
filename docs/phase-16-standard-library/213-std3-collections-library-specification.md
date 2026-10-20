@@ -170,6 +170,21 @@ Ordinary L2 operand evaluation and control-transfer rules apply. This rule
 does not select numeric conversions, cross-collection equality, a storage
 representation or profile support; their governing contracts still apply.
 
+## Persistent List Value Equality
+
+For two persistent Lists whose stored values support Gravity equality,
+binary `(= left right)` returns Bool true exactly when their counts agree and
+corresponding stored values are equal under their applicable Gravity value
+rules. Empty Lists are equal. Position and order matter; object identity,
+physical sharing and type identity do not determine the result. Stored
+payloads are not evaluated, and both original Lists remain unchanged.
+
+Both operands follow ordinary L2 evaluation left to right, exactly once;
+a control transfer aborts invocation. Equality itself does not construct a
+collection. This rule does not select numeric conversions, cross-collection
+equality, variadic behavior, representation or profile support. Their governing
+requirements still apply; a compiler must state its supported equality domain.
+
 ## Persistent Vector Lookup With Established Bounds
 
 For a persistent Vector and an independently established integer index in
@@ -340,6 +355,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Persistent Set membership covers empty, present and absent values under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and neither evaluates stored payloads nor depends on enumeration order or object identity.
 - Binary persistent Set insertion covers empty input, absent values and equal existing members under applicable Gravity equality, preserves ordinary operand evaluation, transfers and original values, and declares allocation/storage policy without inventing cardinality, member-type, order or identity facts.
 - Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
+- Binary persistent List equality covers empty, equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules, without substituting type or object identity.
 - Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.
 - Proven-nonempty Vector first covers singleton and ordered multi-element values, stored false/nil, ordinary operand evaluation and transfers, inert payloads and original-value preservation without selecting an empty-Vector result policy.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
