@@ -182,7 +182,7 @@ Symbol name tables or all calls to binary shape.
 
 The first focused epoch at `1c2427fb` failed: 25 tests completed with 7,916
 passes, four failures and no errors; eleven selected variables were skipped.
-All sixteen lowering/runtime tests and all three new C7 tests passed. Four
+All sixteen selected SH01 tests and all three new C7 tests passed. Four
 old negative assertions still expected the now-supported homogeneous String
 carrier to reject. Test-only successor `9d644b07` changes that negative and the
 matching unrun inequality case to genuinely unsupported homogeneous Keyword
