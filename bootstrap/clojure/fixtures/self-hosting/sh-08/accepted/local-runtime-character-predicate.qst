@@ -8,7 +8,7 @@
 
 (defn main []
   [(char? \A)
-   (char? \u00E9)
+   (char? \😀)
    (char? "A")
    (char? "😀")
    (char? {:artifact :gravity/unicode-scalar-character :schema-version 1
