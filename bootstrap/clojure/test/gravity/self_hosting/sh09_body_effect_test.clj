@@ -5973,3 +5973,131 @@
           (let [other (if (= id :arg0) right left)
                 unsupported :gravity.type/decimal]
             (is (= :rejected (:status (leaf 'body-ane-context request (assoc-in facts [:type-table id] unsupported) bindings 65536))))))))))
+
+(deftest body-string-set-equality-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'atomic-equality-input) c7 (sh08-helper 'invoke-c7)
+        finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
+        k :gravity.type/string s :gravity.type/keyword]
+    (doseq [arguments [[(finite [k]) (finite [])] [(finite []) (finite [k])] [(finite [k k]) (finite [k])]
+                       [:gravity.type/never (finite [k])] [(finite [k]) :gravity.type/never]]]
+      (let [base (input-fn arguments) ids (zipmap (keys (:nodes base)) (map sha (range 1350 1360)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
+            types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+            result (c7 'sh08-kse-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-kse-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-kse-constraint [descriptor])]}
+            prepare #(leaf 'body-ae-context request % (:bindings base) %2)
+            context (prepare facts 65536)
+            facts (assoc facts :equality-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :call)])
+            validation (get-in context [:context :keyword-set-domains (ids :call)])
+            coherent (fn [changed]
+                       (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                           (assoc :call-type-facts [(c7 'sh08-kse-call-fact [changed (:module base)])]
+                                  :constraint-ledger [(c7 'sh08-kse-constraint [changed])])))]
+        (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str graph))
+        (is (= :accepted (:status validation)))
+        (is (= arguments (:argument-types validation)))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record) (:transitive record)))
+        (is (nil? (:allocation record)))
+        (is (= (mapv ids [:operator :arg0 :arg1]) (:dependencies record) (:evaluated-children record)))
+        (is (nil? (:call-body-dependency record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= context (prepare facts (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (prepare facts (dec (:work-count context))))))
+        (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
+                         (assoc descriptor :kind :gravity.type/applied-atomic-equality)
+                         (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc-in descriptor [:equality-policy :leaves] :type-family-constants)
+                         (assoc-in descriptor [:equality-policy :identity] :observed)
+                         (assoc-in descriptor [:equality-policy :nested-vector-versus-atomic] :coerce)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)]]
+          (is (false? (valid (coherent changed)))))
+        (doseq [changed [(assoc facts :constraint-ledger [])
+                         (update facts :constraint-ledger into (:constraint-ledger facts))
+                         (update-in facts [:equality-context :keyword-set-domains] dissoc (ids :call))
+                         (assoc-in facts [:type-table (ids :arg0)] (finite [:gravity.type/integer]))]]
+          (is (false? (valid changed))))
+        (let [bad (assoc-in facts [:type-table (ids :arg0)] (finite [:gravity.type/integer]))]
+          (is (= :body-keyword-set-equality-operand-type-required (:reason (prepare bad 65536)))))
+        (let [wrong-arity (assoc-in request [:canonical-core-artifact :nodes 3 :children] [(ids :operator)])]
+          (is (= :body-equality-binary-call-required
+                 (:reason (leaf 'body-ae-context wrong-arity facts (:bindings base) 65536)))))
+        (is (false? (leaf 'body-graph-equations-valid? core facts {}
+                          (assoc-in (:nodes graph) [(ids :call) :direct] #{:memory/allocate}))))))))
+
+(deftest current-gravity-string-set-inequality-source-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'atomic-inequality-input) derive (ns-resolve upstream 'atomic-inequality-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        pairs [[((ns-resolve upstream 'inequality-keyword-set-type) [:gravity.type/string]) ((ns-resolve upstream 'inequality-keyword-set-type) [])]
+                 [((ns-resolve upstream 'inequality-keyword-set-type) []) ((ns-resolve upstream 'inequality-keyword-set-type) [:gravity.type/string])]
+                 [((ns-resolve upstream 'inequality-keyword-set-type) [:gravity.type/string :gravity.type/string]) ((ns-resolve upstream 'inequality-keyword-set-type) [:gravity.type/string])]
+                 [((ns-resolve upstream 'inequality-keyword-set-type) [:gravity.type/string]) :gravity.type/never]
+                 [:gravity.type/never ((ns-resolve upstream 'inequality-keyword-set-type) [:gravity.type/string])]]]
+    (doseq [[left right] pairs]
+      (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
+            result (derive input 65536) descriptor (:descriptor result)
+            facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
+                   :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
+                   :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            context (leaf 'body-ane-context request facts bindings 65536)
+            checked (assoc facts :atomic-inequality-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            normal? (not-any? #{:gravity.type/never} [left right])
+            graph {:operator {:type descriptor :transitive #{}}
+                   :arg0 {:type left :transitive #{:io/write}} :arg1 {:type right :transitive #{:memory/allocate}}}
+            record (leaf 'body-node-record node nil graph (:type result))]
+        (is (= :accepted (:status context)) (pr-str context))
+        (is (= context (leaf 'body-ane-context request facts bindings (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-ane-context request facts bindings (dec (:work-count context))))))
+        (is (true? (valid checked)))
+        (is (= :sh08-string-set-inequality-v1 (get-in descriptor [:string-set-equality :version])))
+        (is (= (:string-set-equality descriptor) (get-in (first (:constraint-ledger facts)) [:solution :string-set-equality])))
+        (is (true? (leaf 'body-ane-node? node checked core)))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (when normal? (is (= #{:io/write :memory/allocate} (:transitive record))))
+        (doseq [changed [(assoc checked :constraint-ledger [])
+                         (update checked :constraint-ledger into (:constraint-ledger checked))
+                         (update checked :constraint-ledger conj (assoc-in (first (:constraint-ledger checked)) [:lhs :core-node-id] :orphan))
+                         (assoc-in checked [:call-type-facts 0 :effects] [:memory/allocate])]]
+          (is (false? (valid changed))))
+        (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
+                         (assoc-in descriptor [:inequality-policy :domain-validation] :cardinality-first)
+                         (assoc-in descriptor [:inequality-policy :coercion] :host)
+                         (assoc-in descriptor [:inequality-policy :operand-position] :tail)
+                         (assoc descriptor :direct-effects [:memory/allocate]) (assoc descriptor :operand-type-work 0)
+                         (dissoc descriptor :string-set-equality)
+                         (assoc-in descriptor [:string-set-equality :version] :forged)
+                         (assoc-in descriptor [:string-set-equality :operand-counts] [])
+                         (assoc-in descriptor [:string-set-equality :equality-policy :domain-validation] :first-mismatch)
+                         (assoc-in descriptor [:string-set-equality :equality-policy :member-uniqueness] :assumed)
+                         (assoc-in descriptor [:string-set-equality :equality-policy :order] :enumeration)]]
+          (let [forged (-> checked (assoc-in [:type-table :operator] changed)
+                           (assoc :call-type-facts [(c7 'sh08-ane-call-fact [changed module])]
+                                  :constraint-ledger [(c7 'sh08-ane-constraint [changed])]))]
+            (is (false? (valid forged)))))
+        (doseq [id [:arg0 :arg1]]
+          (let [other (if (= id :arg0) right left)
+                unsupported :gravity.type/decimal]
+            (is (= :rejected (:status (leaf 'body-ane-context request (assoc-in facts [:type-table id] unsupported) bindings 65536))))))))))

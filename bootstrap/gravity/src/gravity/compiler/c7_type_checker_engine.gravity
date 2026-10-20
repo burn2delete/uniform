@@ -5551,7 +5551,7 @@
           (recur next (get core :call-edges) next work touched))
         (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)
               local? (= :local-function (get edge :classification))
-              intrinsic? (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
+              intrinsic? (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
                             (get (get types (first (get (get nodes (get edge :call-core-node-id)) :children))) :kind))
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (if local? false (= false intrinsic?)) false)
@@ -5842,7 +5842,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-vector-first}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (sh08-bm-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))
@@ -5881,7 +5881,7 @@
                             (let [edge (first edges) call (get calls (get edge :call-core-node-id))
                                   node (get nodes (get edge :call-core-node-id))
                                   vector? (if (contains? scope (get edge :caller-function-syntax-id))
-                                            (contains? #{:gravity.type/applied-vector-equality :gravity.type/applied-keyword-set-equality :gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains} (get (get types (first (get node :children))) :kind)) false)
+                                            (contains? #{:gravity.type/applied-vector-equality :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality :gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains} (get (get types (first (get node :children))) :kind)) false)
                                   predicate? (if (contains? scope (get edge :caller-function-syntax-id))
                                                (if (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-ip-binding? (get binding-index (get call :operator-binding-id)) (get core :module))))))))))) true (sh08-vp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) false)
                                   vector-first? (if (contains? scope (get edge :caller-function-syntax-id))
@@ -5901,7 +5901,7 @@
                                             (sh08-vf-inferred-call core node call edge nodes binding-index types
                                               (- budget initial (get owners :work-count) work))
                                           (if vector?
-                                            (if (= :gravity.type/applied-keyword-set-equality (get (get types (first (get node :children))) :kind))
+                                            (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get (get types (first (get node :children))) :kind))
                                               (sh08-kse-inferred-call core node call edge nodes binding-index types
                                                 (- budget initial (get owners :work-count) work))
                                               (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains} (get (get types (first (get node :children))) :kind))
@@ -5996,7 +5996,7 @@
                         (assoc (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-reconstruction-visits (+ initial validation-work))
                           :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (= :rejected (get owners :status)) owners
-                        (if (contains? #{:keyword-set-contains-work-limit :keyword-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :vector-first-work-limit :map-get-work-limit} (get checked-edges :reason))
+                        (if (contains? #{:keyword-set-contains-work-limit :keyword-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :vector-first-work-limit :map-get-work-limit} (get checked-edges :reason))
                           (assoc (sh08-th-error "C7-GENERIC" (get checked-edges :reason) {} :bounded-reconstruction-visits (+ initial validation-work))
                             :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (if (= bad-edge nil) (= false recursive?) false)
@@ -6031,6 +6031,7 @@
                             :keyword-set-contains-arity-mismatch :keyword-set-contains-type-width
                             :keyword-set-equality-source-mismatch :keyword-set-equality-operand-type-required
                             :keyword-set-equality-arity-mismatch :keyword-set-equality-type-width
+                            :string-set-equality-source-mismatch :string-set-equality-operand-type-required :string-set-equality-type-width
                             :vector-predicate-source-mismatch :vector-predicate-operand-type-required :vector-predicate-arity-mismatch
                             :integer-predicate-source-mismatch :integer-predicate-operand-type-required :integer-predicate-arity-mismatch
                             :set-conversion-source-mismatch :set-conversion-operand-type-required :set-conversion-arity-mismatch :map-predicate-source-mismatch :map-predicate-operand-type-required :map-predicate-arity-mismatch  :keyword-predicate-source-mismatch :keyword-predicate-operand-type-required :keyword-predicate-arity-mismatch :string-predicate-source-mismatch :string-predicate-operand-type-required :string-predicate-arity-mismatch :set-predicate-arity-mismatch :set-predicate-operand-type-required :set-predicate-source-mismatch :symbol-predicate-arity-mismatch :symbol-predicate-operand-type-required :symbol-predicate-source-mismatch :boolean-predicate-arity-mismatch :boolean-predicate-operand-type-required :boolean-predicate-source-mismatch :nil-predicate-arity-mismatch :character-predicate-arity-mismatch :nil-predicate-operand-type-required :character-predicate-operand-type-required :nil-predicate-source-mismatch :character-predicate-source-mismatch :atomic-inequality-arity-mismatch :atomic-inequality-operand-type-required :atomic-inequality-source-mismatch :character-set-contains-type-width :string-set-contains-type-width :character-set-contains-arity-mismatch :string-set-contains-arity-mismatch :character-set-contains-operand-type-required :string-set-contains-operand-type-required :character-set-contains-source-mismatch :string-set-contains-source-mismatch :vector-first-source-mismatch :vector-first-nonempty-complete-positional-type-required :map-get-source-mismatch :map-get-private-entry-presence-required :map-get-private-entry-selected-type-required}
@@ -12409,11 +12410,16 @@
                                     (let [domain (sh08-kse-domain arguments (- limit work))
                                           total (+ work (get domain :work-count))]
                                       (if (= :accepted (get domain :status))
+                                        (if (= :string-set (get domain :comparison-domain))
+                                        {:status :accepted :comparison-domain :string-set
+                                         :string-set-domain-work (get domain :work-count)
+                                         :operand-counts (get domain :operand-counts) :work-count total}
                                         {:status :accepted :comparison-domain :keyword-set
                                          :keyword-set-domain-work (get domain :work-count)
-                                         :operand-counts (get domain :operand-counts) :work-count total}
-                                        {:status :rejected :reason (if (= :keyword-set-equality-work-limit (get domain :reason))
-                                                                    :keyword-set-inequality-work-limit (get domain :reason))
+                                         :operand-counts (get domain :operand-counts) :work-count total})
+                                        {:status :rejected :reason (if (= :string-set-equality-work-limit (get domain :reason)) :string-set-inequality-work-limit
+                                                                  (if (= :keyword-set-equality-work-limit (get domain :reason))
+                                                                    :keyword-set-inequality-work-limit (get domain :reason)))
                                          :work-count total}))
                                     {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})))
                               (if (if (= 2 size)
@@ -12631,7 +12637,38 @@
                         :keyword-set-leaf-equality) :set-member-domain) :member-value-policy) :aggregate-leaf-work)
                         :numeric-equality) :numeric-mode) :integral-type)))
                   result))
-              (if (= :keyword-set (get validation :comparison-domain))
+              (if (= :string-set (get validation :comparison-domain))
+                (if (= :jvm (get module :target))
+                  (assoc header :intrinsic :gravity.core/string-set-value-inequality
+                         :string-set-equality {:version :sh08-string-set-inequality-v1 :semantic-owner 'gravity.collections
+                            :equality-version :sh08-string-set-equality-v1
+                            :equality-policy (assoc {:domain :finite-persistent-string-sets :members :string-only
+                         :comparison :guarded-atomic-string-leaf :order :unobserved
+                         :domain-validation :both-complete-before-result
+                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :identity :unobserved :payload-evaluation :none :mutation :none
+                         :collection-construction :none :provider-cpu-bound :not-established}
+                              :strings :exact-valid-scalar-sequence :normalization :none :locale :none :conversion :none :numeric :unsupported
+                              :value-work-model :gravity/string-set-equality-logical-content-work-v1
+                              :entry-contract :type-conforming-typed-calls)
+                            :type-domain {:shape :literal :members :string-only :maximum-width 1024 :maximum-work 65536
+                                          :validation :both-complete-domains-before-value-comparison
+                                          :whole-nil-or-set :unsupported :nested-members :unsupported}
+                            :operand-counts (get validation :operand-counts)
+                            :domain-type-work (get validation :string-set-domain-work)}
+                         :inequality-policy (assoc {:operation :complement-of-binary-string-set-value-equality
+                            :domain :finite-persistent-string-sets :members :string-only
+                            :operand-evaluation :left-to-right-once :operand-position :non-tail
+                            :order :unobserved :domain-validation :both-complete-before-result
+                            :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                            :cross-collection :unsupported :nil-bearing :unsupported :identity :unobserved
+                            :coercion :none :normalization :none :locale :none :numeric :unsupported
+                            :collections :finite-persistent-string-sets :construction :none
+                            :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
+                            :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
+                           :strings :exact-valid-scalar-sequence :value-work-model :gravity/string-set-equality-logical-content-work-v1)
+                         :invalidation (conj (conj (conj (get header :invalidation) :string-set-equality) :equality-domain) :value-policy)) nil)
+                (if (= :keyword-set (get validation :comparison-domain))
                 (if (= :jvm (get module :target))
                   (assoc header :intrinsic :gravity.core/keyword-set-value-inequality
                          :keyword-set-equality {:version :sh08-keyword-set-inequality-v1 :semantic-owner 'gravity.collections
@@ -12658,7 +12695,7 @@
                             :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
                             :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
                          :invalidation (conj (conj (conj (get header :invalidation) :keyword-set-equality) :equality-domain) :value-policy)) nil)
-                header))))) nil)) nil) nil))
+                header)))))) nil)) nil) nil))
 
 (defn sh08-ane-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-atomic-inequality-constraint-v1 :application descriptor}
@@ -12672,8 +12709,10 @@
                   (assoc solution :numeric-equality (get descriptor :numeric-equality))
                   (if (contains? descriptor :vector-equality)
                     (assoc solution :vector-equality (get descriptor :vector-equality))
-                    (if (contains? descriptor :keyword-set-equality)
-                      (assoc solution :keyword-set-equality (get descriptor :keyword-set-equality)) solution))))
+                    (if (contains? descriptor :string-set-equality)
+                      (assoc solution :string-set-equality (get descriptor :string-set-equality))
+                      (if (contains? descriptor :keyword-set-equality)
+                      (assoc solution :keyword-set-equality (get descriptor :keyword-set-equality)) solution)))))
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
 
@@ -12688,7 +12727,8 @@
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
 
      :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source (if (contains? descriptor :vector-equality) :audited-vector-inequality-intrinsic
-       (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic))}))
+       (if (contains? descriptor :string-set-equality) :audited-string-set-inequality-intrinsic
+         (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic)))}))
 
 (defn sh08-ane-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -12707,8 +12747,8 @@
               work (+ base (get validation :work-count))
               owner (if (if (keyword? (get (get node :source) :form-id)) true (if (string? (get (get node :source) :form-id)) (= 71 (count (get (get node :source) :form-id))) false)) (get forms (get (get node :source) :form-id)) nil) ids (get owner :child-form-ids)]
           (if (= false (= :accepted (get validation :status)))
-            (assoc (sh08-sm-failure (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit} (get validation :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
-                     (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit} (get validation :reason)) (if (contains? #{:vector-inequality-work-limit :keyword-set-inequality-work-limit} (get validation :reason))
+            (assoc (sh08-sm-failure (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
+                     (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason)) (if (contains? #{:vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason))
                        (get validation :reason) :atomic-inequality-work-limit) :atomic-inequality-operand-type-required)
                      nil :two-supported-values-with-applicable-binary-equality arguments)
               :work-count work :type-check-reason (get validation :reason))
@@ -12754,7 +12794,7 @@
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
                 {:status :accepted :work-count work}
                 {:status :rejected :reason :atomic-inequality-source-mismatch :work-count work}))
-            {:status :rejected :reason (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit} (get validation :reason)) :atomic-inequality-work-limit
+            {:status :rejected :reason (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason)) :atomic-inequality-work-limit
                                           :atomic-inequality-operand-type-required)
              :type-check-reason (get validation :reason) :work-count work})) {:status :rejected :reason :atomic-inequality-source-mismatch :work-count base})
         {:status :rejected :reason :atomic-inequality-arity-mismatch :work-count base}))))
@@ -13645,7 +13685,7 @@
                      (get (get context :ordering-core) :module)) false))
 
 (defn sh08-ae-inferred-call-valid? [core node call edge nodes bindings types]
-  (if (= :gravity.type/applied-keyword-set-equality (get (get types (get call :operator-node-id)) :kind))
+  (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get (get types (get call :operator-node-id)) :kind))
     (= :accepted (get (sh08-kse-inferred-call core node call edge nodes bindings types 65536) :status))
       (if (= :gravity.type/applied-vector-equality (get (get types (get call :operator-node-id)) :kind))
     (= :accepted (get (sh08-ve-inferred-call core node call edge nodes bindings types 65536) :status))
@@ -13773,29 +13813,41 @@
         (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :integral-equality-arity-mismatch nil :binary-equality-call nil) :work-count work)))))
 
 (defn sh08-kse-domain [arguments budget]
-  ; Only independently finite literal Set domains establish Keyword membership.
+  ; Independent finite literal Set types establish one Keyword or String member family.
   (let [limit (if (< budget 65536) budget 65536)]
     (if (if (vector? arguments) (= 2 (count arguments)) false)
       (if (< limit 2) {:status :rejected :reason :keyword-set-equality-work-limit :work-count 2}
-        (loop [side 0 work 2 counts []]
-          (if (= side 2) {:status :accepted :work-count work :argument-types arguments :operand-counts counts}
-            (let [type (get arguments side)]
+        (loop [side 0 work 2 counts [] member-type nil]
+          (if (= side 2)
+            (let [result {:status :accepted :work-count work :argument-types arguments :operand-counts counts}]
+              (if (= :gravity.type/string member-type) (assoc result :comparison-domain :string-set) result))
+            (let [type (get arguments side) strings? (= :gravity.type/string member-type)]
               (if (= :gravity.type/never type)
-                (recur (+ side 1) work (conj counts nil))
+                (recur (+ side 1) work (conj counts nil) member-type)
                 (if (if (map? type) (if (= 3 (count type))
                       (if (= :gravity.type/set (get type :kind))
                         (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false)
                   (let [members (get type :element-types) width (count members)]
-                    (if (> width 1024) {:status :rejected :reason :keyword-set-equality-type-width :work-count work}
+                    (if (> width 1024)
+                      {:status :rejected :reason (if strings? :string-set-equality-type-width :keyword-set-equality-type-width) :work-count work}
                       (if (> width (- limit work))
-                        {:status :rejected :reason :keyword-set-equality-work-limit :work-count (+ work width)}
+                        {:status :rejected :reason (if strings? :string-set-equality-work-limit :keyword-set-equality-work-limit) :work-count (+ work width)}
                         (let [total (+ work width)
-                              valid? (loop [i 0]
-                                       (if (= i width) true
-                                         (if (= :gravity.type/keyword (get members i)) (recur (+ i 1)) false)))]
-                          (if valid? (recur (+ side 1) total (conj counts width))
-                            {:status :rejected :reason :keyword-set-equality-operand-type-required :work-count total})))))
-                  {:status :rejected :reason :keyword-set-equality-operand-type-required :work-count work}))))))
+                              checked (loop [i 0 family member-type]
+                                        (if (= i width) {:status :accepted :member-type family}
+                                          (let [member (get members i)]
+                                            (if (if (= :gravity.type/keyword member) true (= :gravity.type/string member))
+                                              (if (if (= nil family) true (= family member))
+                                                (recur (+ i 1) member)
+                                                {:status :rejected :member-type family})
+                                              {:status :rejected :member-type family}))))]
+                          (if (= :accepted (get checked :status))
+                            (recur (+ side 1) total (conj counts width) (get checked :member-type))
+                            {:status :rejected :reason (if (= :gravity.type/string (get checked :member-type))
+                                                        :string-set-equality-operand-type-required :keyword-set-equality-operand-type-required)
+                             :work-count total})))))
+                  {:status :rejected :reason (if strings? :string-set-equality-operand-type-required :keyword-set-equality-operand-type-required)
+                   :work-count work}))))))
       {:status :rejected :reason :keyword-set-equality-arity-mismatch :work-count 0})))
 
 (defn sh08-kse-source [core node call edge nodes bindings types module validation]
@@ -13833,7 +13885,7 @@
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
           ])
-      {:kind :gravity.type/applied-keyword-set-equality :version :sh08-keyword-set-equality-v1
+      (let [header {:kind :gravity.type/applied-keyword-set-equality :version :sh08-keyword-set-equality-v1
        :operation '= :semantic-owner 'gravity.collections :intrinsic :gravity.collections/keyword-set-value-equality
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
@@ -13849,28 +13901,48 @@
        :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :equality-domain :value-policy :profile :target :evaluation-order]} nil)) nil))
+                      :callee-body :equality-domain :value-policy :profile :target :evaluation-order]}]
+        (if (= :string-set (get validation :comparison-domain))
+          (assoc header :kind :gravity.type/applied-string-set-equality :version :sh08-string-set-equality-v1
+            :intrinsic :gravity.collections/string-set-value-equality
+            :equality-policy (assoc (get header :equality-policy) :domain :finite-persistent-string-sets :members :string-only
+                            :comparison :guarded-atomic-string-leaf :strings :exact-valid-scalar-sequence
+                            :normalization :none :locale :none :conversion :none :numeric :unsupported
+                            :value-work-model :gravity/string-set-equality-logical-content-work-v1
+                            :entry-contract :type-conforming-typed-calls)
+            :invalidation (conj (conj (get header :invalidation) :string-equality-policy) :representation-work))
+          header)) nil)) nil))
 
 (defn sh08-kse-constraint [descriptor]
-  {:constraint-id-request {:domain :gravity/sh08-keyword-set-equality-constraint-v1 :application descriptor}
-   :kind :equality :producer-rule :sh08-keyword-set-equality-v1
-   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :keyword-set-equality}
+  {:constraint-id-request {:domain (if (= :sh08-string-set-equality-v1 (get descriptor :version))
+                                     :gravity/sh08-string-set-equality-constraint-v1 :gravity/sh08-keyword-set-equality-constraint-v1) :application descriptor}
+   :kind :equality :producer-rule (if (= :sh08-string-set-equality-v1 (get descriptor :version))
+                            :sh08-string-set-equality-v1 :sh08-keyword-set-equality-v1)
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection (if (= :sh08-string-set-equality-v1 (get descriptor :version)) :string-set-equality :keyword-set-equality)}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
-   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
-              :direct-effects (get descriptor :direct-effects)}
+   :solution (if (= :sh08-string-set-equality-v1 (get descriptor :version))
+               (assoc {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)} :equality-policy (get descriptor :equality-policy))
+               {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)})
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
 
 (defn sh08-kse-call-fact [descriptor module]
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
-    {:artifact :gravity/c7-call-type-fact
+    (let [fact {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-keyword-set-equality-call-type-fact-v1 :application descriptor}
      :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
      :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-keyword-set-equality :applied-keyword-set-equality descriptor :effect-facts-source :audited-keyword-set-value-intrinsic}))
+     :dispatch :direct-keyword-set-equality :applied-keyword-set-equality descriptor :effect-facts-source :audited-keyword-set-value-intrinsic}]
+      (if (= :sh08-string-set-equality-v1 (get descriptor :version))
+        (assoc (dissoc fact :applied-keyword-set-equality)
+          :fact-id-request {:domain :gravity/sh08-string-set-equality-call-type-fact-v1 :application descriptor}
+          :dispatch :direct-string-set-equality :applied-string-set-equality descriptor
+          :effect-facts-source :audited-string-set-value-intrinsic) fact))))
 
 (defn sh08-kse-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -13903,11 +13975,11 @@
               (let [descriptor (sh08-kse-finish header)]
                 {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
                  :constraint (sh08-kse-constraint descriptor) :work-count work})
-              (assoc (sh08-sm-failure "C7-VERIFY" :keyword-set-equality-source-mismatch nil :exact-operator-left-right-source
+              (assoc (sh08-sm-failure "C7-VERIFY" (if (= :string-set (get domain :comparison-domain)) :string-set-equality-source-mismatch :keyword-set-equality-source-mismatch) nil :exact-operator-left-right-source
                        (get node :node-id)) :work-count work)))
           (assoc (sh08-sm-failure
-                   (if (= :keyword-set-equality-work-limit (get domain :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
-                   (get domain :reason) nil :two-established-finite-keyword-set-values (sh08-ft-ordered-child-types args types))
+                   (if (contains? #{:keyword-set-equality-work-limit :string-set-equality-work-limit} (get domain :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
+                   (get domain :reason) nil (if (= :string-set (get domain :comparison-domain)) :two-established-finite-string-set-values :two-established-finite-keyword-set-values) (sh08-ft-ordered-child-types args types))
                  :work-count work)))))
     (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :keyword-set-equality-arity-mismatch nil :binary-equality-call nil) :work-count 64))))
 
@@ -13922,7 +13994,7 @@
           (let [header (sh08-kse-source core node call edge nodes bindings types (get core :module) domain)]
             (if (if (map? header) (= (get types (get call :operator-node-id)) (sh08-kse-finish header)) false)
               {:status :accepted :work-count work}
-              {:status :rejected :reason :keyword-set-equality-source-mismatch :work-count work}))
+              {:status :rejected :reason (if (= :string-set (get domain :comparison-domain)) :string-set-equality-source-mismatch :keyword-set-equality-source-mismatch) :work-count work}))
           (assoc domain :work-count work)))))
     {:status :rejected :reason :keyword-set-equality-arity-mismatch :work-count 64})))
 
@@ -13974,10 +14046,13 @@
                 (if (if (= depth 1) (if (map? type) (= :gravity.type/set (get type :kind)) false) false)
                   (let [leaf (sh08-kse-domain [type type] (- limit work)) total (+ work (get leaf :work-count))]
                     (if (= :accepted (get leaf :status))
-                      (recur tail total integers? nested? true)
+                      (if (= :string-set (get leaf :comparison-domain))
+                        {:status :rejected :reason :vector-equality-operand-type-required
+                         :leaf-reason :keyword-set-equality-operand-type-required :work-count total}
+                        (recur tail total integers? nested? true))
                       (assoc leaf :leaf-reason (get leaf :reason) :work-count total
-                        :reason (if (= :keyword-set-equality-work-limit (get leaf :reason)) :vector-equality-work-limit
-                                  (if (= :keyword-set-equality-type-width (get leaf :reason)) :vector-equality-type-width
+                        :reason (if (contains? #{:keyword-set-equality-work-limit :string-set-equality-work-limit} (get leaf :reason)) :vector-equality-work-limit
+                                  (if (contains? #{:keyword-set-equality-type-width :string-set-equality-type-width} (get leaf :reason)) :vector-equality-type-width
                                     :vector-equality-operand-type-required)))))
                   (if (if (map? type)
                       (if (= 3 (count type))
@@ -17256,9 +17331,9 @@
                          (if (contains? #{:gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-set-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality} (get intrinsic :kind))
                            (if (= :gravity.type/applied-set-conversion (get intrinsic :kind))
                              (sh08-st-call-fact intrinsic module) (if (= :gravity.type/applied-atomic-inequality (get intrinsic :kind)) (sh08-ane-call-fact intrinsic module) (if (contains? #{:gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate} (get intrinsic :kind)) (if (= :gravity.type/applied-character-predicate (get intrinsic :kind)) (sh08-chp-call-fact intrinsic module) (sh08-nilp-call-fact intrinsic module)) (if (= :gravity.type/applied-boolean-predicate (get intrinsic :kind)) (sh08-boolp-call-fact intrinsic module) (if (= :gravity.type/applied-symbol-predicate (get intrinsic :kind)) (sh08-symp-call-fact intrinsic module) (if (= :gravity.type/applied-set-predicate (get intrinsic :kind)) (sh08-setp-call-fact intrinsic module) (if (= :gravity.type/applied-map-predicate (get intrinsic :kind)) (sh08-mapp-call-fact intrinsic module) (if (= :gravity.type/applied-keyword-predicate (get intrinsic :kind)) (sh08-kp-call-fact intrinsic module) (if (= :gravity.type/applied-string-predicate (get intrinsic :kind)) (sh08-strp-call-fact intrinsic module) (sh08-ip-call-fact intrinsic module)))))))))) (sh08-vp-call-fact intrinsic module)) (sh08-nt-call-fact intrinsic module))
-                       (if (contains? #{:gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality :gravity.type/applied-keyword-set-equality } (get intrinsic :kind))
-                       (if (contains? #{:gravity.type/applied-vector-equality :gravity.type/applied-keyword-set-equality} (get intrinsic :kind))
-                         (if (= :gravity.type/applied-keyword-set-equality (get intrinsic :kind))
+                       (if (contains? #{:gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality } (get intrinsic :kind))
+                       (if (contains? #{:gravity.type/applied-vector-equality :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get intrinsic :kind))
+                         (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get intrinsic :kind))
                          (sh08-kse-call-fact intrinsic module) (sh08-ve-call-fact intrinsic module))
                          (if (= :gravity.type/applied-integral-equality (get intrinsic :kind))
                            (sh08-ie-call-fact intrinsic module) (sh08-ae-call-fact intrinsic module)))
