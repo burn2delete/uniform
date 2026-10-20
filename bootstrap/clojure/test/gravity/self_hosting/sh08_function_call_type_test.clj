@@ -14681,6 +14681,24 @@
                                    (count [] 1)
                                    (nth [index] (swap! reads inc) s))
           receiver {:kind :gravity.type/set :shape :literal :element-types members}]
+      ;; Below the new paid prefix only the original Keyword selector probes.
+      (doseq [value [s :gravity.type/never] budget [0 1]]
+        (reset! reads 0)
+        (let [result (invoke-c7 'sh08-pl-type-work [[receiver value] budget])]
+          (is (= [:rejected :string-set-insertion-work-limit 2]
+                 ((juxt :status :reason :work-count) result)))
+          (is (= 1 @reads))))
+      ;; A selected Symbol receiver is classified once, then fully validated.
+      (doseq [value [s :gravity.type/never]]
+        (reset! reads 0)
+        (let [result (invoke-c7 'sh08-pl-type-work [[receiver value] 65536])]
+          (is (= :accepted (:status result)))
+          (is (= :symbol-set-insertion (:collection-family result)))
+          (is (= 2 @reads)))))
+    (let [reads (atom 0) members (proxy [clojure.lang.APersistentVector] []
+                                   (count [] 1)
+                                   (nth [index] (swap! reads inc) s))
+          receiver {:kind :gravity.type/set :shape :literal :element-types members}]
       (doseq [legacy [:gravity.type/keyword :gravity.type/string :gravity.type/character]]
         (reset! reads 0)
         (is (false? (invoke-c7 'sh08-syin-selected? [[receiver legacy]])))

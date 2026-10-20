@@ -7860,11 +7860,9 @@
   (if (if (= :gravity.type/set (get arguments 0)) true (if (map? (get arguments 0)) (= :gravity.type/set (get (get arguments 0) :kind)) false))
     (if (if (< budget 2) false (sh08-syin-selected? arguments))
       (sh08-syin-type-work arguments budget)
-      (if (sh08-syin-selected? arguments)
-            (sh08-syin-type-work arguments budget)
-            (if (sh08-ksin-selected? arguments)
+      (if (sh08-ksin-selected? arguments)
       (sh08-ksin-type-work arguments budget)
-      (sh08-ssin-type-work arguments budget))))
+      (sh08-ssin-type-work arguments budget)))
   (if (= 2 (count arguments))
     (let [checked (sh08-lc-type-work arguments budget) used (get checked :work-count)]
       (if (= :accepted (get checked :status))
