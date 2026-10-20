@@ -190,6 +190,18 @@ or budget increase is justified by this optimization. The focused comparison
 checks complete outputs and rejection budgets; it is not a source migration
 proof or a wall-time benchmark.
 
+### MIR branch argument carriers
+
+For normalized SH-13 branch transfers, edit `c11_mir_specification.gravity` and
+run `sh13-branch-transfers-require-vector-carriers` in
+`gravity.self-hosting.sh13-control-flow-test` with the direct development runner.
+Both conditional arms require Vector argument carriers before count or indexed
+access, even when execution selects the other arm. Preserve missing-target,
+arity/type and dominance precedence; missing/Nil is not an empty Vector.
+Use the existing invalid-MIR, recursion and runtime-bound checks for affected
+regression feedback. This boundary check is not authenticated SH-12 ingress or
+SH-13 completion evidence.
+
 ### C11 node-local preflight diagnostics
 
 For source-valid checked-Core nodes rejected by the existing single-diamond

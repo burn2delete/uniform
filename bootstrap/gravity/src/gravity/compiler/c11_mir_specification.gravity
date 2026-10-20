@@ -7381,12 +7381,14 @@
   (let [target (sh13-block function target-id)]
     (if (= nil target)
       :block
-      (if (= (count arguments) (count (get target :params)))
-        (if (sh13-vector-values-present?
-             arguments (set (keys types)) 0)
-          (sh13-target-argument-types-error
-           arguments (get target :param-types) types 0)
-          :dominance)
+      (if (vector? arguments)
+        (if (= (count arguments) (count (get target :params)))
+          (if (sh13-vector-values-present?
+               arguments (set (keys types)) 0)
+            (sh13-target-argument-types-error
+             arguments (get target :param-types) types 0)
+            :dominance)
+          :type)
         :type))))
 
 (defn sh13-target-argument-types-error

@@ -9230,6 +9230,24 @@ checked-Core/MIR checks change failure attribution only. They do not add safety
 proofs, fresh C10 source composition, general MIR coverage, SH-12 completion or
 authoritative admission. Accepted MIR, schemas and resource limits are unchanged.
 
+### MIR branch argument carriers: development repair
+
+Normalized SH-13 branch and conditional transfers now require Vector argument
+carriers before count or indexed access, including non-selected conditional
+arms. Missing/Nil, indexed Maps, Lists, Strings and scalars are not empty or
+valid argument vectors. Missing-target, arity/type and dominance precedence
+remain unchanged. Invalid modules reject before execution; valid G/Q branch,
+loop and indirect-call behavior and execution recomputation are preserved.
+
+The unchanged engine's regression completed 302 assertions with 122 failures,
+exposing host exceptions, accidental acceptance/execution and failed tamper
+rejection; that failed result is retained. The same regression now passes all
+302 assertions. With existing invalid-MIR, recursion and runtime-bound controls,
+the focused batch passes 4 tests and 512 assertions. These original Gravity/QST
+fixture constructors and the runtime test the normalized MIR boundary, not
+fresh authenticated SH-12 ingress, broader CFG support, SH-13 completion or
+authoritative migration. Public schemas and resource limits are unchanged.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established
