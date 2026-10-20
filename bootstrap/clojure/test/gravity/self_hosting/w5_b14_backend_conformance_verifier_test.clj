@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.reader-host-oracle :as host-reader]))
 
 ; Later JVM clearance command (intentionally not run in this change):
 ; clojure -M:test --namespace gravity.self-hosting.w5-b14-backend-conformance-verifier-test
@@ -122,6 +123,83 @@
    ["B14-EVIDENCE" :cross-record-links-required]
    "w5-b14-invalid-provenance-link-request"
    ["B14-EVIDENCE" :cross-record-links-required]})
+
+(deftest w5-b14-accepted-result-hosted-reader-regression
+  ;; Reader/source-shape coverage only: do not force any delayed compiler plan.
+  (let [source-path (path engine-source)
+        records (host-reader/read-source-form-records-host-oracle
+                 source-path (slurp source-path))
+        definitions (filter #(= '(defn w5-b14-accepted-result)
+                                (take 2 (:form %))) records)
+        definition (:form (first definitions))
+        body (nth definition 3 nil)
+        repeated-fields
+        '{:unsupported-platforms w5-b14-unsupported-platform-values
+          :unsupported-targets w5-b14-unsupported-target-values
+          :unsupported-target-policies w5-b14-unsupported-target-policies
+          :cross-target-inference? false :darwin-fallback? false
+          :candidate-invokes-clojure? false :candidate-links-jvm? false
+          :candidate-fallback? false :no-fallback? true}]
+    (is (seq records))
+    (is (= 'ns (first (:form (first records)))))
+    (is (= 1 (count definitions)))
+    (is (= '[request] (nth definition 2 nil)))
+    (is (= 4 (count definition)))
+    ;; Successful hosted reading rejects duplicate literal keys before a Map
+    ;; can collapse them; the complete expected key set guards omitted fields.
+    (is (= #{:artifact :status :scope :static-only? :target :candidate-target
+             :candidate-platform :unsupported-platforms :unsupported-targets
+             :unsupported-target-policies :cross-target-inference?
+             :darwin-fallback? :candidate-invokes-clojure? :candidate-links-jvm?
+             :candidate-fallback? :no-fallback? :supported-backend
+             :coverage-status :completion :release-eligible? :authority
+             :clojure-seed-boundary? :self-hosted? :release? :public-authority?
+             :non-authority :suite-manifest :fixture-matrix :target-availability
+             :positive-results :negative-results :differential-results
+             :metadata-report :artifact-report :nondeterminism-record
+             :skip-report :risk-coverage :evidence-pack :diagnostic-stream
+             :diagnostics :identity-input :provenance :residual-boundaries}
+           (set (keys body))))
+    (is (= repeated-fields (select-keys body (keys repeated-fields))))
+    (is (= {:artifact :gravity/w5-b14-conformance-result :status :accepted
+            :scope :stage2-static-only :static-only? true
+            :supported-backend :llvm :coverage-status :incomplete
+            :completion :incomplete :release-eligible? false
+            :authority :non-authority :clojure-seed-boundary? true
+            :self-hosted? false :release? false :public-authority? false
+            :non-authority {:authority :non-authority :clojure-seed-boundary? true
+                            :self-hosted? false :release? false :public-authority? false}
+            :diagnostics []
+            :residual-boundaries #{:clojure-stage2-compiler-plan :jvm-stage2-runtime}}
+           (select-keys body [:artifact :status :scope :static-only?
+                             :supported-backend :coverage-status :completion
+                             :release-eligible? :authority :clojure-seed-boundary?
+                             :self-hosted? :release? :public-authority?
+                             :non-authority :diagnostics :residual-boundaries])))
+    (is (= '{:target w5-b14-supported-target
+             :candidate-target w5-b14-supported-target
+             :candidate-platform w5-b14-supported-platform
+             :identity-input (w5-b14-identity-input-from-request request)}
+           (select-keys body [:target :candidate-target :candidate-platform
+                             :identity-input])))
+    (doseq [key [:suite-manifest :fixture-matrix :target-availability
+                 :positive-results :negative-results :differential-results
+                 :metadata-report :artifact-report :nondeterminism-record
+                 :skip-report :risk-coverage :evidence-pack :diagnostic-stream
+                 :provenance]]
+      (is (= (list 'get 'request key) (get body key)) key)))
+  ;; This negative describes only Clojure's hosted oracle, not a new L1 Map law.
+  (let [failure (try
+                  (host-reader/read-source-form-records-host-oracle
+                   "duplicate-result-fields.gravity"
+                   "{:unsupported-platforms [] :unsupported-platforms []}")
+                  nil
+                  (catch clojure.lang.ExceptionInfo ex (ex-data ex)))]
+    (is (= "C2-READER" (:id failure)))
+    (is (str/includes? (or (:cause-message failure) "")
+                       "Duplicate key: :unsupported-platforms"))
+    (is (= "duplicate-result-fields.gravity"
+           (get-in failure [:source-span :source])))))
 
 (deftest w5-b14-engine-and-fixtures-compile-through-stage2-plan
   (doseq [plan [engine-plan accepted-gravity-plan accepted-qst-plan
