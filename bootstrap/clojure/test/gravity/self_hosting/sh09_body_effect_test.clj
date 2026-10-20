@@ -6281,7 +6281,19 @@
                   [carrier (finite [s s])] [(finite [s]) carrier]
                   [carrier :gravity.type/never] [:gravity.type/never carrier]]]
       (let [equality? (= operation '=) family (if equality? "kse" "ane")
-            input ((sh08-helper (if equality? 'atomic-equality-input 'atomic-inequality-input)) pair)
+            base ((sh08-helper (if equality? 'atomic-equality-input 'atomic-inequality-input)) pair)
+            ids (zipmap (keys (:nodes base)) (map sha (range 1820 1830)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            mapped-call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                            (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            mapped-edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                            (update :ordered-evaluation-node-ids #(mapv ids %)))
+            input (assoc base :core (assoc (:core base) :nodes node-list :calls [mapped-call] :call-edges [mapped-edge])
+                              :node (last node-list) :nodes (into {} (map (juxt :node-id identity) node-list))
+                              :call mapped-call :edge mapped-edge
+                              :types (into {} (map (fn [[id type]] [(ids id) type]) (:types base))))
             {:keys [core node call edge nodes bindings types forms]} input
             result (c7 (symbol (str "sh08-" family "-derive")) [core node call edge nodes bindings types forms 65536])
             descriptor (:descriptor result) id (:node-id node) op-id (:operator-node-id call)
@@ -6298,7 +6310,7 @@
             graph (leaf 'body-derive-nodes-with-foreign core checked {} 65536) record (get-in graph [:nodes id])
             coherent (fn [changed] (-> checked (assoc-in [:type-table op-id] changed)
                                       (assoc :call-type-facts [(fact changed)] :constraint-ledger [(row changed)])))]
-        (is (= :accepted (:status result) (:status context) (:status graph)))
+        (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str graph))
         (is (true? (valid checked)))
         (is (= #{} (:direct record) (:transitive record)))
         (is (nil? (:allocation record)))
