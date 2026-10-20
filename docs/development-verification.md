@@ -1699,7 +1699,9 @@ complete ordered element types, recursively containing Vectors and the
 supported scalar or nil-bearing scalar alternatives. This is a value query,
 not a requirement for literal-constructor ancestry. Counts, positions and
 stored values matter; physical sharing and type identity do not decide the
-answer. Numeric members, bare/unknown Vector types and other collection
+answer. That legacy recursive version excludes numeric members; see
+[Flat Generic Integer Vector comparison](#flat-generic-integer-vector-comparison)
+for its separate flat extension. Bare/unknown Vector types and other collection
 domains remain unsupported by this implementation, not forbidden by STD3.
 
 The integral path follows STD5 and SAFE9: two independently established
@@ -1708,8 +1710,9 @@ It records `:proof-required` and `:proven-safe` because comparison performs
 no conversion or arithmetic and cannot overflow or round. The supported type
 families are Integer, I8/I16/I32/I64 and U8/U16/U32/U64. Generic Integer does not
 select a new machine-width or arbitrary-precision arithmetic policy. Mixed
-types, floating/decimal/ratio equality and numeric Vector members remain
-separate implementation frontiers.
+types and floating/decimal/ratio equality remain separate implementation
+frontiers. The flat Vector extension accepts Generic Integer only; fixed-width
+and nested numeric Vector members remain outside it.
 
 Use the owning type, effect, lowering and runtime kernels without rebuilding
 upstream products:
@@ -4056,7 +4059,8 @@ Supported recursive members are Vector, Nil, Bool, Character, String, Symbol,
 Keyword and the five existing closed nullable nonnumeric atomic types. Empty
 and differently shaped/length Vectors compare normally; static type equality
 is not required. Width 1,024, depth 128 and work 65,536 remain the existing
-finite limits. Numeric members, unknown/bare Vector types, other collections,
+finite limits. The legacy version excludes numeric members; the flat Generic
+Integer extension below is separate. Unknown/bare Vector types, other collections,
 whole nullable Vectors and nested Never remain unsupported. Top-level Never
 preserves non-tail control transfer when the other operand establishes this
 Vector domain; Never/Never retains the existing atomic rule.
@@ -4101,6 +4105,58 @@ expressions, not a copied or unchanged W5 inequality helper. Q fixtures provide
 byte/parser parity only. Do not repeat unchanged Vector equality, numeric
 inequality or whole-W5 source compositions to refresh a label. Focused results
 are development feedback, not authoritative migration or self-hosting proof.
+
+### Flat Generic Integer Vector comparison
+
+STD3's corresponding-value Vector equality now has a bounded Generic Integer
+extension, with STD2's `not=` complement. Edit the existing C7 engine, effects
+checker, typed emitter and runtime Vector helpers. Reuse exact original-value
+scalar Integer equality; do not add conversion, widening or arithmetic.
+
+When either Vector contains an Integer, both must be flat. Every overlapping
+Integer position must pair with Integer. Validate both complete domains and
+all overlapping compatibility before returning a length/value mismatch. Keep
+the legacy recursive nonnumeric version and its identities/work unchanged.
+Nested numeric Vectors, fixed-width numeric leaves, Float/Decimal/ratio,
+Nil-or-Integer and Unknown remain outside this increment. Existing finite
+limits are unchanged; logical visit units do not bound Integer digit size,
+provider CPU time or peak memory.
+
+Start with the existing direct focused tests, selecting the equality and
+inequality transfer-fence checks when operand control flow changes:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-flat-integer-vector-equality-inequality-development-kernel \
+  --exact sh08-flat-integer-vector-inequality-throw-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-flat-integer-vector-equality-development-kernel \
+  --exact current-gravity-flat-integer-vector-inequality-source-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-flat-integer-vector-equality-lowering-development-kernel \
+  --exact current-gravity-flat-integer-vector-inequality-lowering-runtime-development-kernel \
+  --exact current-gravity-flat-integer-vector-equality-runtime-development-kernel --fail-fast
+```
+
+Changed cross-pass behavior needs the affected tiny count-produced Vector
+source composition, not an unchanged whole C6 validator:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-flat-integer-vector-comparison-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-flat-integer-vector-comparison-authenticated-composition --fail-fast
+```
+
+Mixed C6 rows with
+Set-valued leaves remain outside this domain. Paired Q sources establish
+parser parity only; focused tests and source composition are not authoritative
+migration, current-closure admission or self-hosting evidence.
 
 ### Binary finite Keyword-Set inequality
 
