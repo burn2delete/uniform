@@ -3014,6 +3014,50 @@ boundaries; they do not establish exclusive cost, speedup or representation
 dominance. Native/other-target execution, current-closure admission and broader
 SH-07/self-hosting completion remain outstanding.
 
+### Character family classification: development implementation
+
+STD4 defines `char?` as Character-only: BMP and supplementary Character values
+classify true; Strings, including one-character Strings, and ordinary Maps
+resembling a Character carrier classify false. The current JVM development
+implementation uses independently established closed operand types in C7,
+fresh C8 reconstruction and typed lowering to existing instructions. Known
+families evaluate the operand before the Bool result; Nil-or-Character uses
+existing nil equality and `if`. Never preserves its original transfer.
+There is no new runtime builtin, export or instruction.
+
+Once-only non-tail evaluation, operand effects, control transfers, source/type
+joins, ordered producer census and cumulative work remain checked. The query
+does not execute stored payloads, coerce values, refine types, validate Unicode
+or establish text-boundary facts. Unknown, Dynamic and unsupported families
+remain implementation frontiers. Follow the Character section of the
+[development workflow](development-verification.md#character-family-classification)
+for focused checks and the separately selected source composition.
+
+The initial eight focused kernels passed 1,759 assertions. Independent review
+then found two lookup guards, repaired locally in the new C7 step and emitter
+sibling-ledger scan. The ten-kernel successor ran all bodies with 1,770 passes
+and two failures in a new sibling fixture's positive control; a further cheap
+run preserved that failure and exposed host-reader selection in the source
+fixture check. These were test-harness mistakes, not accepted negative controls.
+After restoring fixed fixture fields and selecting the existing owning C2
+reader, the two affected kernels passed all 13 assertions. Earlier failed runs
+remain recorded; these epochs are not relabeled as a single green aggregate.
+
+One actual changed-source composition then passed one test/84 assertions
+(78 composition checks plus six existing runtime-loader checks) in 156.352
+seconds, after 11.732 seconds loading SH01 at 2 GiB. One accepted
+`.gravity` program reached public C7 verification, C8 construction/verification,
+typed assembly and one runtime function-table entry invocation, returning
+`[true true false false false true]` for BMP Character, supplementary Character,
+one-character String, supplementary String, carrier-shaped Map and
+Nil-or-Character respectively. One zero-arity `.gravity` program rejected with
+`:character-predicate-arity-mismatch`. The existing runtime still has 54
+functions; no new predicate builtin is used. The `.qst` twins have owning-C2
+parser/byte checks only. Fresh development C6 sessions and same-catalog replay
+are not fresh public C6 verification. Timings include nested work and establish
+no speedup. Native/other-target execution, stable-revision admission and broader
+SH-07, self-hosting and release gates remain outstanding.
+
 ### String family classification: development implementation
 
 Unary `string?` has a bounded JVM path through C7, C8, typed lowering and

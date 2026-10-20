@@ -4705,6 +4705,62 @@ forgery checks remain. Compiling the W5 runtime record's String field checks
 is not executing its unchanged validator, admitting
 a compiler revision or completing self-hosting.
 
+### Character family classification
+
+STD4's `gravity.text` owns unary `char?` semantics behind the existing core
+compatibility spelling. Character values classify true, including supplementary
+characters. Strings, even one-character Strings, and ordinary Maps resembling a
+Character carrier classify false. The authority is the independently established
+Gravity operand type, not host representation or convertibility.
+
+The implementation owners are C7's `sh08-chp-*` helpers, C8's `body-chp-*`
+helpers and the emitter's `p15-s23-chp-*` helpers. Start with the focused checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-character-predicate-development-kernel \
+  --exact sh08-character-predicate-throw-consumer-development-kernel \
+  --exact sh08-character-predicate-id-guard-development-kernel \
+  --exact sh08-character-predicate-step-id-guard-development-kernel \
+  --exact sh08-character-predicate-unknown-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-character-predicate-source-development-kernel \
+  --exact current-gravity-character-predicate-consumer-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-character-predicate-lowering-runtime-development-kernel \
+  --exact current-gravity-character-predicate-inert-payload-development-kernel \
+  --exact current-gravity-character-predicate-other-producer-id-guard-development-kernel --fail-fast
+```
+
+These checks exercise normalized typed/effected/lowered inputs and the existing
+runtime, not fresh source compilation. Operand evaluation stays once-only and
+non-tail; effects and transfers survive, and Never prevents invocation.
+Nil-or-Character uses existing nil equality and conditional instructions, not a
+new runtime predicate. Unknown, Dynamic and unsupported type families remain
+implementation frontiers. No coercion, payload execution, type-flow refinement,
+Unicode validation, normalization or text-boundary fact follows from this query.
+Changes to the public typed/effected/lowered composition require the affected
+source composition check separately; neither level admits a stable compiler
+revision or establishes self-hosting completion.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-character-predicate-fixtures-development-kernel \
+  --exact current-gravity-character-predicate-authenticated-composition --fail-fast
+```
+
+The source check selects one accepted `.gravity` program and one arity
+rejection. Its fresh development C6 session and same-catalog replay are not a
+fresh public C6 authority verification. The paired `.qst` files have byte/parser
+checks only, not paired typed/effect/runtime equivalence. Keep actual outcomes
+separate from the existence of this selector.
+
 ### Legacy bounded self-recursive body analysis
 
 The same body interface also recognizes C7's existing named, capture-free,
