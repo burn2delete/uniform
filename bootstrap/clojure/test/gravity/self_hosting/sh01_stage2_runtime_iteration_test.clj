@@ -605,7 +605,7 @@
                       #(assoc-in % [:types :set] :gravity.type/never)
                       #(assoc-in % [:types :set :extra] true)]]
         (is (= :rejected (:status (compile (mutate context) 65536)))))
-      (is (= :unsupported-typed-set-member (get-in (compile (typed-keyword-set-kernel-context ["unsupported"]) 65536) [:facts :reason])))
+      (is (= :unsupported-typed-set-member (get-in (compile (typed-keyword-set-kernel-context ["unsupported" :mixed]) 65536) [:facts :reason])))
       (is (= :duplicate-typed-set-keyword (get-in (compile (typed-keyword-set-kernel-context [:same :same]) 65536) [:facts :reason])))
       (is (= :typed-set-width-limit (get-in (own (typed-keyword-set-kernel-context (vec (repeat 1025 :wide))) 65536) [:facts :reason])))
       (is (= :typed-lowering-work-limit (get-in (own (typed-keyword-set-kernel-context (vec (repeat 1024 :wide))) 65536) [:facts :reason]))))
@@ -670,7 +670,7 @@
           (is (= 0 (:comparison-attempts result) (:insertions result))))
         (is (= :rejected (last (evaluate (set-ir (literal-instructions values)))))))
       (is (= 0 @callbacks)))
-    (doseq [values [[nil] ["text" :mixed] [1] ['symbol] [[]] [#{}]]]
+    (doseq [values [[nil] [:mixed "text"] [1] ['symbol] [[]] [#{}]]]
       (is (= :set-literal-keyword-domain-required (:reason (work values 65536)))))
     (doseq [values [nil '(:one) #{:one}]]
       (is (= :set-literal-keyword-domain-required (:reason (work values 65536)))))
@@ -23038,7 +23038,7 @@
                   failed (own input (+ charge prefix))]
               (is (= :rejected (:status child) (:status failed)))
               (is (= (:facts child) (:facts failed)))
-              (is (= (+ charge prefix (:work-count child)) (:work-count failed))))))))
+              (is (= (+ charge prefix (get child :work-count 1)) (:work-count failed))))))))
     (doseq [values [["duplicate" (String. (.toCharArray "duplicate"))] ["" ""]]]
       (is (= :duplicate-typed-set-string (get-in (compile (context values) 65536) [:facts :reason]))))
     (doseq [values [["text" :mixed] [:mixed "text"] ["text" \a]]]
@@ -23185,7 +23185,7 @@
       (is (= :set-literal-value-width (:reason (work (conj wide (char 1024)) 65536)))))
     (let [label {:op :println :args [(lit "never")] :effect :io/write :capability :io/stdout}
           marked {:op :do :body [label (lit \a)]}]
-      (doseq [bad [{:op :set-literal} (set-ir nil) (set-ir '()) (set-ir [42]) (set-ir [(lit "text")])
+      (doseq [bad [{:op :set-literal} (set-ir nil) (set-ir '()) (set-ir [42]) (set-ir [(lit "text") (lit \a)])
                    (set-ir [{:op :quote :value :one}]) (set-ir [marked])
                    (set-ir [{:op :throw :value (lit :stop)}])
                    (set-ir [(assoc (lit \a) :extra true)]) (assoc (set-ir [(lit \a)]) :extra true)
