@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.module-set-initializer-character
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(def unsupported-outcomes #{\a})
+
+(defn main []
+  (count unsupported-outcomes))

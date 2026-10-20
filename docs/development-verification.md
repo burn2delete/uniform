@@ -2555,10 +2555,10 @@ use that instance's binding-ID pool through calls and `recur`; direct expression
 evaluation does not implicitly initialize a module or accept a caller's pool.
 Unquoted collection literals remain evaluated constructors, not quoted DATA.
 
-Direct root Set initializers additionally support distinct literal Keywords,
-including an empty Set. The existing emitter closure and runtime census/type
-join own this extension; nested evaluated Sets, computed members and other
-member families remain outside it. Preflight validates exact IR, full Keyword
+Direct root Set initializers additionally support distinct homogeneous literal
+Keywords or Strings, including an empty Set. The existing emitter closure and runtime census/type
+join own this extension; nested evaluated Sets, mixed or computed members and other
+member families remain outside it. Preflight validates exact IR, the full homogeneous
 domain and uniqueness without constructing the guest Set. Its logical
 reservation includes the later bounded type-member check. All initializers and
 function namespace reads must validate before any initialization occurs. Only
@@ -2574,6 +2574,10 @@ clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
   --exact current-gravity-module-keyword-set-emitter-development-kernel \
   --exact current-gravity-module-keyword-set-runtime-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-module-string-set-emitter-development-kernel \
+  --exact current-gravity-module-string-set-runtime-development-kernel --fail-fast
 ```
 
 For a stable changed integration, select
@@ -2601,9 +2605,26 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-module-keyword-set-authenticated-composition --fail-fast
 ```
 
+For the changed String family, use the corresponding tiny B14-definition
+fixture, without replaying the unchanged Keyword source composition:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-module-string-set-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-module-string-set-authenticated-composition --fail-fast
+```
+
 Constructor-function call tracing and validated constructor occurrences are
 not physical allocation-event measurements. Q remains parser-only; this does
 not establish whole-W5 legality, other targets or authoritative migration.
+The String extension uses native String representation units without formatting
+or normalization, under the same aggregate initializer allowance. The finite
+type join consumes prepaid member-type reads after validating shape and
+cardinality; it relies on the census having validated the same immutable IR,
+not on an independently authenticated caller-supplied type predicate.
 
 ### Map key membership
 
@@ -4653,7 +4674,7 @@ force; this is not Vector-to-Set conversion's deduplication behavior.
 The current component limits are width 1,024 and work allowance 65,536;
 fitting the width does not imply that comparison/content work fits.
 
-Quoted Sets remain inert. Direct evaluated Keyword-Set module initializers
+Quoted Sets remain inert. Direct evaluated Keyword/String-Set module initializers
 use the separate [module initialization boundary](#module-local-literal-initialization-and-reads).
 Character literals have the separate extension below; other member
 families or arbitrary effectful Set children, Keyword List
@@ -4699,7 +4720,7 @@ Preserve complete source occurrence, ordered child, parent and type joins;
 the cached aggregate value is not authority. Compile each original child once,
 non-tail, and retain failed-child work. The instruction remains the existing
 literal-only `:set-literal`/`:items` shape. Mixed families, arbitrary expression
-children and evaluated Set module initializers remain unsupported here.
+children and evaluated Character-Set module initializers remain unsupported here.
 
 Validate all Character values and reserve full logical work before comparing
 or inserting any member. Runtime reservation is
@@ -4762,10 +4783,12 @@ bound. Equal-content distinct objects are duplicate literal values, while
 same-hash distinct Strings remain distinct. Do not reuse Vector-to-Set
 conversion's deduplication semantics.
 
-This enables an evaluated constructor such as `#{".gravity" ".qst"}`, not
-String-Set membership or execution of its whole compiler consumer. Mixed or
-computed members and evaluated Set module initializers remain unsupported
-implementation frontiers. Quoted Sets are inert. Constructor allocation remains
+This constructor boundary enables an evaluated value such as `#{".gravity" ".qst"}`;
+membership has its own checks, and neither establishes whole compiler-consumer
+execution. Direct String-Set definitions use the separate
+[module initialization boundary](#module-local-literal-initialization-and-reads).
+Mixed/computed members and nested evaluated Set initializers remain unsupported.
+Quoted Sets are inert. Constructor allocation remains
 explicit, and affected source composition is separate from normalized checks
 and authoritative migration.
 
