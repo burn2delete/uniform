@@ -9377,6 +9377,38 @@ claim full input-content authentication. Fresh C10/source ingress, generic MIR
 execution, native execution, SH-13 completion and authoritative migration remain
 outstanding; no milestone status is promoted by this bounded composition.
 
+### Original MIR integer-equality conditions: executable increment
+
+The bounded SH-12 to SH-13 handoff now executes a computed condition of the
+form `(if (= left right) then-value else-value)` when both compared values
+are signed-i64 literals and the arms are homogeneous literal i64 or Bool.
+SH-12 already emits `:integer-eq`; this maps to the existing interpreter's
+equality operation. There is no new source grammar, opcode, argument carrier,
+general arithmetic route or duplicate interpreter.
+
+The seven-node case has two entry literals and one comparison. Before any
+execution, the new subset check validates both bounded i64 payloads, their
+exact ordered operand IDs, the Bool result and original opcode/source-operation
+and nonconstant payload marker. The original verifier's fact/type consistency
+does not by itself establish this primitive signature. Original verification,
+purity, both-arm checks, incoming-value transfer, source/fact references and
+root alias remain required. The explicit additive output-domain extension is
+seven projection rows with `:integer-equality`; keys and public arities are
+unchanged. Existing five-node outputs remain unchanged. The same interpreter
+limits apply: five-node frame fuel is 507 and seven-node fuel is 505 after
+execution from 512, without increasing a bound.
+
+All five handoff tests pass 559 assertions on the current candidate, including
+150 new assertions and rerun affected literal/interface/tamper cases. Separate
+normalized branch controls pass 1 test/20 assertions, original producer
+controls 1/98, and language-boundary checks 6/11. Thus 13 tests/688 assertions
+pass across four invocations, not one combined batch. Checks include true/false
+comparisons, signed endpoints, both result types, typed coherent rejection,
+original MIR tampering, recomputation and selected-only traces. Supplied
+checked-Core construction is not actual C10/source ingress; generic MIR,
+calls/loops/errors, native execution, SH-13 completion and authoritative
+migration remain outstanding.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
