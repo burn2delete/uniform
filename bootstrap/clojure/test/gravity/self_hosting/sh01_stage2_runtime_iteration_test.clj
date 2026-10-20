@@ -23148,7 +23148,7 @@
           (is (false? (get-in failure [:reader-state :result-committed?]))))))))
 
 (deftest current-gravity-literal-string-set-authenticated-composition
-  ;; One real G product. Q is parsed separately; this is not migration evidence.
+  ;; One G positive and one upstream-accepted lowering negative; Q is parser-only.
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
