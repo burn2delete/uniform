@@ -4499,7 +4499,35 @@
   (if (= :gravity.type/list type) true
     (if (map? type) (= :gravity.type/list (get type :kind)) false)))
 
+(defn p15-s23-ssin-type-work [arguments budget]
+  ; The result deliberately carries no literal member or cardinality evidence.
+  (let [limit (if (< budget 65536) budget 65536)]
+    (if (< limit 2)
+      {:status :rejected :reason :string-set-insertion-work-limit :work-count 2}
+      (if (if (vector? arguments) (= 2 (count arguments)) false)
+        (let [receiver (get arguments 0) value (get arguments 1)]
+          (if (if (map? receiver) (if (= 3 (count receiver))
+                (if (= :gravity.type/set (get receiver :kind))
+                  (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false)
+            (let [members (get receiver :element-types) width (count members) work (+ 2 width)]
+              (if (> width 1024)
+                {:status :rejected :reason :string-set-insertion-type-width :work-count 2}
+                (if (> work limit)
+                  {:status :rejected :reason :string-set-insertion-work-limit :work-count work}
+                  (let [valid? (loop [i 0]
+                                 (if (= i width) true
+                                   (if (= :gravity.type/string (get members i)) (recur (+ i 1)) false)))]
+                    (if (if valid? (if (= :gravity.type/string value) true (= :gravity.type/never value)) false)
+                      {:status :accepted :collection-family :string-set-insertion :argument-types arguments
+                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never :gravity.type/set)
+                       :operand-work work :result-work 0 :construction-work 0 :work-count work}
+                      {:status :rejected :reason :string-set-insertion-operand-type-required :work-count work})))))
+            {:status :rejected :reason :string-set-insertion-operand-type-required :work-count 2}))
+        {:status :rejected :reason :string-set-insertion-arity-mismatch :work-count 2}))))
+
 (defn p15-s23-pl-type-work [arguments budget]
+  (if (if (= :gravity.type/set (get arguments 0)) true (if (map? (get arguments 0)) (= :gravity.type/set (get (get arguments 0) :kind)) false))
+    (p15-s23-ssin-type-work arguments budget)
   (if (= 2 (count arguments))
     (let [checked (p15-s23-lc-type-work arguments budget) used (get checked :work-count)]
       (if (= :accepted (get checked :status))
@@ -4532,7 +4560,7 @@
                        :type-check-reason (get validation :reason) :work-count total})))))))
         {:status :rejected :reason (if (= :work-limit (get checked :reason)) :list-prepend-work-limit :list-prepend-operand-type-required)
          :type-check-reason (get checked :reason) :work-count used}))
-    {:status :rejected :reason :list-prepend-arity-mismatch :work-count 0}))
+    {:status :rejected :reason :list-prepend-arity-mismatch :work-count 0})))
 
 (defn p15-s23-pl-source [core node call edge nodes bindings types module validation]
   (if (if (vector? (get call :argument-node-ids))
@@ -4567,7 +4595,39 @@
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
            (= :accepted (get validation :status))] )
-      {:kind :gravity.type/applied-list-prepend :version :sh08-list-prepend-v1
+      (if (= :string-set-insertion (get validation :collection-family))
+        (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
+          {:kind :gravity.type/applied-string-set-insertion :version :sh08-string-set-insertion-v1
+       :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-string-set-insertion
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :insertion-semantics {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
+                           :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
+                           :member-domain :independently-finite-string-only :member-equality :native-string-value
+                           :strings :exact-valid-scalar-sequence :normalization :none :locale :none :coercion :none
+                           :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
+                           :operand-evaluation :left-to-right-once :operand-position :non-tail
+                           :result-evidence :bare-set-only :cardinality-analysis :none
+                           :domain-validation :complete-and-unique-before-hit-miss-or-construction
+                           :budget :full-remaining-membership-and-construction-reservation
+                           :value-work-model :gravity/string-set-insertion-logical-content-work-v1
+                           :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
+       :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
+       :storage-policy {:representation :development-persistent-string-set :input :preserved
+                        :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
+                        :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
+                        :physical-sharing :unpromised :enumeration :unobserved}
+       :input-extent (get validation :input-extent)
+       :result-extent nil
+       :operand-type-work (get validation :operand-work) :result-type-work (get validation :result-work)
+       :type-construction-work (get validation :construction-work) :result-type (get validation :result-type)
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :set-member-domain :inserted-value :insertion-semantics :member-equality :representation-work :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+        {:kind :gravity.type/applied-list-prepend :version :sh08-list-prepend-v1
        :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-list-prepend
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
@@ -4586,28 +4646,42 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :list-suffix :prepended-value :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)) nil))
+                      :callee-body :list-suffix :prepended-value :allocation-policy :storage-policy :profile :target :evaluation-order]}) nil)) nil))
 
 (defn p15-s23-pl-constraint [descriptor]
-  {:constraint-id-request {:domain :gravity/sh08-list-prepend-constraint-v1 :application descriptor}
-   :kind :equality :producer-rule :sh08-list-prepend-v1
-   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :list-prepend}
+  {:constraint-id-request {:domain (if (= :sh08-string-set-insertion-v1 (get descriptor :version)) :gravity/sh08-string-set-insertion-constraint-v1 :gravity/sh08-list-prepend-constraint-v1) :application descriptor}
+   :kind :equality :producer-rule (if (= :sh08-string-set-insertion-v1 (get descriptor :version)) :sh08-string-set-insertion-v1 :sh08-list-prepend-v1)
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection (if (= :sh08-string-set-insertion-v1 (get descriptor :version)) :string-set-insertion :list-prepend)}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
-   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+   :solution (if (= :sh08-string-set-insertion-v1 (get descriptor :version))
+               (assoc {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects)}
+                 :insertion-semantics (get descriptor :insertion-semantics)
+                 :allocation-policy (get descriptor :allocation-policy) :storage-policy (get descriptor :storage-policy))
+               {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)})
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
 
 (defn p15-s23-pl-call-fact [descriptor module]
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
-    {:artifact :gravity/c7-call-type-fact
+    (if (= :sh08-string-set-insertion-v1 (get descriptor :version))
+      {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-string-set-insertion-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-string-set-insertion :applied-string-set-insertion descriptor :effect-facts-source :audited-string-set-insertion-intrinsic}
+      {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-list-prepend-call-type-fact-v1 :application descriptor}
      :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
      :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-list-prepend :applied-list-prepend descriptor :effect-facts-source :audited-collection-intrinsic}))
+     :dispatch :direct-list-prepend :applied-list-prepend descriptor :effect-facts-source :audited-collection-intrinsic})))
 
 
 (defn p15-s23-pl-finish [header]
@@ -4624,10 +4698,13 @@
             (assoc (p15-s23-typed-node-error :typed-list-prepend-arity-required node) :work-count base)
             (if (= false (if (vector? (get node :children)) (= 3 (count (get node :children))) false))
               (assoc (p15-s23-typed-node-error :typed-list-prepend-call-shape-required node) :work-count base)
-            (let [validation (p15-s23-pl-type-work [(get (get context :types) (get args 0) :gravity.type/unknown)
-                                                   (get (get context :types) (get args 1) :gravity.type/unknown)] (- budget base))
-                  charge (+ base (get validation :work-count))]
-              (if (= :list-prepend-work-limit (get validation :reason))
+            (if (let [children (get node :children)] (loop [remaining (conj (conj (conj (conj (conj (conj (conj args (get children 0)) (get children 1)) (get children 2)) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))))
+              (let [receiver (get (get context :types) (get args 0))
+                  row-work (if (if (= :gravity.type/set receiver) true (if (map? receiver) (= :gravity.type/set (get receiver :kind)) false)) (* 3 (count (get context :ledger))) 0)
+                  validation (p15-s23-pl-type-work [(get (get context :types) (get args 0) :gravity.type/unknown)
+                                                   (get (get context :types) (get args 1) :gravity.type/unknown)] (- budget base row-work))
+                  charge (+ base row-work (get validation :work-count))]
+              (if (contains? #{:list-prepend-work-limit :string-set-insertion-work-limit} (get validation :reason))
                 (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
                 (if (= false (= :accepted (get validation :status)))
                   (assoc (p15-s23-typed-node-error (get validation :reason) node) :work-count charge)
@@ -4640,7 +4717,7 @@
                    (if (= 0 (count remaining)) out
                      (let [row (first remaining)]
                        (recur (rest remaining)
-                         (if (if (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1} (get row :producer-rule))
+                         (if (if (if (keyword? (get row :producer-rule)) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v1} (get row :producer-rule)) false)
                                (= id (get (get row :lhs) :core-node-id)) false) (conj out row) out)))))]
         (if (if (map? descriptor)
               (p15-s23-typed-all
@@ -4661,12 +4738,46 @@
                              (= (get child :source) (p15-s23-typed-source form))
                              (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
                          (recur (+ i 1)) false))))]) false)
-          (let [compiled (p15-s23-typed-compile-children context (get call :argument-node-ids) (- budget charge) [])]
+          (if (= :sh08-string-set-insertion-v1 (get descriptor :version))
+            (if (loop [remaining (get context :ledger)]
+              (if (= 0 (count remaining)) true
+                (let [row (first remaining) producer (get row :producer-rule)]
+                  (if (if (keyword? producer) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v1} producer) false)
+                    (let [row-id (get (get row :lhs) :core-node-id)
+                          source-call (if (if (keyword? row-id) true (if (string? row-id) (= 71 (count row-id)) false))
+                                        (get (get context :calls) row-id) nil)
+                          source-node (if (map? source-call) (get nodes row-id) nil)
+                          op-id (get source-call :operator-node-id)
+                          source-type (if (if (map? source-call) (if (keyword? op-id) true (if (string? op-id) (= 71 (count op-id)) false)) false)
+                                        (get (get context :types) op-id) nil)
+                          expected-kind (if (= :sh08-string-set-insertion-v1 producer) :gravity.type/applied-string-set-insertion
+                                          (if (= :sh08-list-prepend-v1 producer) :gravity.type/applied-list-prepend :gravity.type/applied-vector-append))]
+                      (if (p15-s23-typed-all
+                            [(map? source-call) (map? source-node)
+                             (= row-id (get source-call :core-node-id) (get source-node :node-id))
+                             (= expected-kind (get source-type :kind))
+                             (= source-call (get source-type :source-call))
+                             (= row (if (= :sh08-vector-append-v1 producer)
+                                      (p15-s23-va-constraint source-type) (p15-s23-pl-constraint source-type)))])
+                        (recur (rest remaining)) false))
+                    (recur (rest remaining))))))
+              (loop [remaining args values [] used charge]
+              (if (= 0 (count remaining))
+                (assoc (p15-s23-compiler-result {:op :builtin-call :function 'conj :args values}) :work-count used)
+                (let [child (p15-s23-typed-compile-node (assoc context :tail? false) (first remaining) (- budget used))
+                      total (+ used (get child :work-count 1))]
+                  (if (p15-s23-compiler-complete? child)
+                    (recur (rest remaining) (conj values (get child :value)) total)
+                    (assoc child :work-count total)))))
+              (assoc (p15-s23-typed-node-error :typed-conj-constraint-census node) :work-count charge))
+            (let [compiled (p15-s23-typed-compile-children context (get call :argument-node-ids) (- budget charge) [])]
             (if (p15-s23-compiler-complete? compiled)
               (assoc (p15-s23-compiler-result {:op :builtin-call :function 'conj :args (get compiled :value)})
                 :work-count (+ charge (get compiled :work-count)))
-              (assoc compiled :work-count (+ charge (get compiled :work-count 0)))))
-          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-list-prepend node) :work-count charge)))))))))))))
+              (assoc compiled :work-count (+ charge (get compiled :work-count 0))))))
+          (assoc (p15-s23-typed-node-error (if (= :string-set-insertion (get validation :collection-family))
+                                        :unsupported-or-mismatched-typed-string-set-insertion :unsupported-or-mismatched-typed-list-prepend) node) :work-count charge))))))
+              (assoc (p15-s23-typed-node-error :typed-conj-source-id-required node) :work-count base)))))))))
 
 (defn p15-s23-typed-compile-append [context node budget]
   (let [id (get node :node-id) core (get context :core)
@@ -11989,9 +12100,9 @@
       (if (= :gravity.type/applied-integral-equality (get (get (get context :types) (first (get node :children))) :kind))
         (p15-s23-typed-compile-integral-equality context node budget) (p15-s23-typed-compile-equality context node budget)))
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
-        (contains? #{:gravity.type/applied-vector-append :gravity.type/applied-list-prepend}
+        (contains? #{:gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion}
           (get (get (get context :types) (first (get node :children))) :kind)) false)
-    (if (= :gravity.type/applied-list-prepend (get (get (get context :types) (first (get node :children))) :kind))
+    (if (contains? #{:gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion} (get (get (get context :types) (first (get node :children))) :kind))
       (p15-s23-typed-compile-prepend context node budget) (p15-s23-typed-compile-append context node budget))
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
         (contains? #{:gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition} (get (get (get context :types) (first (get node :children))) :kind)) false)

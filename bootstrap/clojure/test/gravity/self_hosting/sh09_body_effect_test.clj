@@ -1595,8 +1595,9 @@
         core (assoc (:core base) :module module :nodes node-list :calls [call] :call-edges [edge])
         nodes (into {} (map (juxt :node-id identity) node-list)) node (get nodes (:core-node-id call))
         types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-        list? (or (= receiver :gravity.type/list) (= :gravity.type/list (:kind receiver)))
-        prefix (if list? "sh08-pl-" "sh08-va-")
+        prepend-owner? (or (= receiver :gravity.type/list) (= :gravity.type/list (:kind receiver))
+                           (= receiver :gravity.type/set) (= :gravity.type/set (:kind receiver)))
+        prefix (if prepend-owner? "sh08-pl-" "sh08-va-")
         result (c7 (symbol (str prefix "derive")) [core node call edge nodes (:bindings base) types forms 65536])
         descriptor (:descriptor result)
         facts {:module module :type-table (assoc types (:operator-node-id call) descriptor (:node-id node) (:type result))
@@ -6101,3 +6102,81 @@
           (let [other (if (= id :arg0) right left)
                 unsupported :gravity.type/decimal]
             (is (= :rejected (:status (leaf 'body-ane-context request (assoc-in facts [:type-table id] unsupported) bindings 65536))))))))))
+
+(deftest body-string-set-insertion-development-kernel
+  (let [s :gravity.type/string finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))]
+    (doseq [[receiver value] [[(finite []) s] [(finite [s s]) s] [(finite [s]) :gravity.type/never]]]
+      (let [{:keys [core node call edge nodes bindings descriptor facts request ids]} (prepend-effect-input receiver value 0)
+            context (leaf 'body-va-context request facts bindings 65536)
+            facts (assoc facts :append-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (:node-id node)]) normal? (not= value :gravity.type/never)
+            coherent (fn [changed]
+                       (let [fact ((sh08-helper 'invoke-c7) 'sh08-pl-call-fact [changed (:module core)])
+                             row ((sh08-helper 'invoke-c7) 'sh08-pl-constraint [changed])]
+                         (-> facts (assoc-in [:type-table (:operator-node-id call)] changed)
+                             (assoc :call-type-facts [fact] :constraint-ledger [row])
+                             (assoc-in [:append-context :call-facts (:node-id node)] fact)
+                             (assoc-in [:append-context :conj-rows (:node-id node)] row))))]
+        (is (= :accepted (:status context) (:status graph)) (pr-str [context graph]))
+        (is (true? (valid facts)))
+        (is (= :string-set-insertion (get-in context [:context :families (:node-id node)])))
+        (is (= (if normal? :gravity.type/set :gravity.type/never) (:result-type descriptor)))
+        (is (= (if normal? #{:memory/allocate} #{}) (:direct record) (:transitive record)))
+        (is (= :sh09-string-set-insertion-allocation-v1 (get-in record [:allocation :rule-version])))
+        (is (= normal? (get-in record [:allocation :normal-completion-possible?])))
+        (is (= :runtime-value-dependent (get-in record [:allocation :extent :result-cardinality])))
+        (is (= (:storage-policy descriptor) (get-in record [:allocation :storage-policy])))
+        (is (= context (leaf 'body-va-context request facts bindings (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-va-context request facts bindings (dec (:work-count context))))))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (doseq [changed [(assoc descriptor :kind :gravity.type/applied-list-prepend)
+                         (assoc descriptor :result-type (finite [s]) :return (finite [s]))
+                         (assoc descriptor :result-extent 1)
+                         (assoc-in descriptor [:insertion-semantics :present-class] :reject-duplicate)
+                         (assoc-in descriptor [:allocation-policy :behavior] :never)
+                         (assoc-in descriptor [:storage-policy :physical-sharing] :required)]]
+          (is (false? (valid (coherent changed)))))
+        (doseq [changed [(update-in graph [:nodes (:node-id node)] dissoc :allocation)
+                         (assoc-in graph [:nodes (:node-id node) :allocation :normal-completion-possible?] (not normal?))
+                         (assoc-in graph [:nodes (:node-id node) :allocation :storage-policy :physical-sharing] :required)]]
+          (is (false? (leaf 'body-graph-equations-valid? core facts {} (:nodes changed)))))
+        (is (= :rejected (:status (leaf 'body-va-context request (assoc-in facts [:type-table (ids :arg0)] :gravity.type/set) bindings 65536))))
+        (is (false? (valid (assoc-in facts [:type-table (ids :arg1)] :gravity.type/keyword))))
+        (when-not normal?
+          (let [operands {(:operator-node-id call) {:type descriptor :direct #{} :transitive #{}}
+                          (ids :arg0) {:type receiver :direct #{:io/write} :transitive #{:io/write}}
+                          (ids :arg1) {:type :gravity.type/never :direct #{:error/throw} :transitive #{:error/throw}
+                                       :escaping-thrown-error-types [s] :escaping-thrown-errors #{s}}}
+                derived (leaf 'body-node-record node nil operands :gravity.type/never)]
+            (is (= #{} (:direct derived)))
+            (is (= #{:io/write :error/throw} (:transitive derived)))
+            (is (= [s] (:escaping-thrown-error-types derived)))))))
+    (let [inputs [(prepend-effect-input (finite [s]) s 0)
+                  (prepend-effect-input {:kind :gravity.type/list :shape :homogeneous :element-type s} s 1)
+                  (prepend-effect-input {:kind :gravity.type/vector :shape :literal :element-types [s]} s 2)]
+          core (assoc (:core (first inputs)) :nodes (vec (mapcat #(get-in % [:core :nodes]) inputs))
+                      :calls (mapv :call inputs) :call-edges (mapv :edge inputs))
+          forms (apply merge (map :forms inputs)) bindings (:bindings (first inputs))
+          facts {:module (:module core) :type-table (apply merge (map #(get-in % [:facts :type-table]) inputs))
+                 :function-type-table [] :call-type-facts (vec (mapcat #(get-in % [:facts :call-type-facts]) inputs))
+                 :constraint-ledger (vec (mapcat #(get-in % [:facts :constraint-ledger]) inputs))}
+          request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+          context (leaf 'body-va-context request facts bindings 65536) id (get-in inputs [0 :node :node-id])
+          checked (assoc facts :append-context (:context context)) row (first (:constraint-ledger facts))]
+      (is (= :accepted (:status context)) (pr-str context))
+      (is (= {:string-set-insertion 1 :list-prepend 1 :vector-append 1} (frequencies (vals (get-in context [:context :families])))))
+      (is (true? (leaf 'body-call-joins-with-foreign-valid? core checked bindings {})))
+      (doseq [ledger [(subvec (:constraint-ledger facts) 1) (conj (:constraint-ledger facts) row)
+                      (conj (:constraint-ledger facts) (assoc-in row [:lhs :core-node-id] :orphan))
+                      (assoc (:constraint-ledger facts) 0 (assoc row :producer-rule :sh08-vector-append-v1 :lhs {:core-node-id id :projection :vector-append}))]]
+        (is (= :rejected (:status (leaf 'body-va-context request (assoc facts :constraint-ledger ledger) bindings 65536)))))
+      (is (= :body-conj-constraint-family (:reason (leaf 'body-pl-conj-rows [row] {id :unknown-family}))))
+      (let [callbacks (atom 0) opaque (proxy [Object] [] (hashCode [] (swap! callbacks inc) (throw (AssertionError. "conj row ID hash"))))]
+        (doseq [changed [(assoc row :producer-rule opaque)
+                         (assoc-in row [:lhs :core-node-id] opaque)
+                         (assoc-in row [:lhs :core-node-id] [opaque])
+                         (assoc-in row [:lhs :core-node-id] {:opaque opaque})]]
+          (is (= :rejected (:status (leaf 'body-va-context request (assoc facts :constraint-ledger (assoc (:constraint-ledger facts) 0 changed)) bindings 65536)))))
+        (is (zero? @callbacks))))))

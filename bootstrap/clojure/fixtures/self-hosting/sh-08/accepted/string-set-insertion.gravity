@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.string-set-insertion
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  [(count (conj '#{} "B14-COVERAGE"))
+   (count (conj '#{"B14-COVERAGE"} "B14-TARGET"))
+   (count (conj '#{"B14-COVERAGE"} "B14-COVERAGE"))])
