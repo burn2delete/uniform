@@ -12548,19 +12548,24 @@
                                                                 :vector-inequality-work-limit (get domain :reason))
                                      :work-count total}))
                                   (if (= :gravity.type/set kind)
-                                    (let [domain (sh08-kse-domain arguments (- limit work))
+                                    (let [domain (sh08-sse-domain arguments (- limit work))
                                           total (+ work (get domain :work-count))]
                                       (if (= :accepted (get domain :status))
+                                        (if (= :string-set-carrier (get domain :comparison-domain))
+                                        {:status :accepted :comparison-domain :string-set-carrier
+                                         :string-set-domain-work (get domain :work-count)
+                                         :operand-domains (get domain :operand-domains) :work-count total}
                                         (if (= :string-set (get domain :comparison-domain))
                                         {:status :accepted :comparison-domain :string-set
                                          :string-set-domain-work (get domain :work-count)
                                          :operand-counts (get domain :operand-counts) :work-count total}
                                         {:status :accepted :comparison-domain :keyword-set
                                          :keyword-set-domain-work (get domain :work-count)
-                                         :operand-counts (get domain :operand-counts) :work-count total})
-                                        {:status :rejected :reason (if (= :string-set-equality-work-limit (get domain :reason)) :string-set-inequality-work-limit
+                                         :operand-counts (get domain :operand-counts) :work-count total}))
+                                        {:status :rejected :reason (if (= :string-set-carrier-equality-work-limit (get domain :reason)) :string-set-carrier-inequality-work-limit
+                                                                (if (= :string-set-equality-work-limit (get domain :reason)) :string-set-inequality-work-limit
                                                                   (if (= :keyword-set-equality-work-limit (get domain :reason))
-                                                                    :keyword-set-inequality-work-limit (get domain :reason)))
+                                                                    :keyword-set-inequality-work-limit (get domain :reason))))
                                          :work-count total}))
                                     {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})))
                               (if (if (= 2 size)
@@ -12778,7 +12783,40 @@
                         :keyword-set-leaf-equality) :set-member-domain) :member-value-policy) :aggregate-leaf-work)
                         :numeric-equality) :numeric-mode) :integral-type)))
                   result))
-              (if (= :string-set (get validation :comparison-domain))
+              (if (= :string-set-carrier (get validation :comparison-domain))
+                (if (= :jvm (get module :target))
+                  (assoc header :version :sh08-string-set-carrier-inequality-v1 :intrinsic :gravity.core/string-set-value-inequality
+                         :string-set-equality {:version :sh08-string-set-carrier-inequality-v1 :semantic-owner 'gravity.collections
+                            :equality-version :sh08-string-set-carrier-equality-v1
+                            :equality-policy (assoc {:domain :independently-established-string-sets :members :string-only
+                         :comparison :guarded-atomic-string-leaf :order :unobserved
+                         :domain-validation :both-complete-before-result
+                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :identity :unobserved :payload-evaluation :none :mutation :none
+                         :collection-construction :none :provider-cpu-bound :not-established}
+                              :strings :exact-valid-scalar-sequence :normalization :none :locale :none :conversion :none :numeric :unsupported
+                              :value-work-model :gravity/string-set-equality-logical-content-work-v1
+                              :entry-contract :type-conforming-typed-calls)
+                            :type-domain {:shape :finite-or-homogeneous :carrier-schema :gravity/homogeneous-string-set-type-v1
+                                          :members :string-only :maximum-literal-width 1024 :maximum-work 65536
+                                          :static-cardinality :not-established :operand-extent :not-established
+                                          :validation :both-complete-domains-before-value-comparison
+                                          :whole-nil-or-set :unsupported :nested-members :unsupported}
+                            :operand-domains (get validation :operand-domains)
+                            :domain-type-work (get validation :string-set-domain-work)}
+                         :inequality-policy (assoc {:operation :complement-of-binary-string-set-value-equality
+                            :domain :independently-established-string-sets :members :string-only
+                            :operand-evaluation :left-to-right-once :operand-position :non-tail
+                            :order :unobserved :domain-validation :both-complete-before-result
+                            :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                            :cross-collection :unsupported :nil-bearing :unsupported :identity :unobserved
+                            :coercion :none :normalization :none :locale :none :numeric :unsupported
+                            :collections :independently-established-string-sets :construction :none
+                            :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
+                            :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
+                           :strings :exact-valid-scalar-sequence :value-work-model :gravity/string-set-equality-logical-content-work-v1)
+                         :invalidation (conj (conj (conj (conj (conj (conj (get header :invalidation) :inferred-member-carrier) :carrier-schema) :finite-member-types) :string-set-equality) :equality-domain) :value-policy)) nil)
+                (if (= :string-set (get validation :comparison-domain))
                 (if (= :jvm (get module :target))
                   (assoc header :intrinsic :gravity.core/string-set-value-inequality
                          :string-set-equality {:version :sh08-string-set-inequality-v1 :semantic-owner 'gravity.collections
@@ -12836,9 +12874,19 @@
                             :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
                             :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
                          :invalidation (conj (conj (conj (get header :invalidation) :keyword-set-equality) :equality-domain) :value-policy)) nil)
-                header)))))) nil)) nil) nil))
+                header))))))) nil)) nil) nil))
 
 (defn sh08-ane-constraint [descriptor]
+  (if (= :sh08-string-set-carrier-inequality-v1 (get descriptor :version))
+    {:constraint-id-request {:domain :gravity/sh08-string-set-carrier-inequality-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-string-set-carrier-inequality-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :string-set-carrier-inequality}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)
+              :inequality-policy (get descriptor :inequality-policy) :string-set-equality (get descriptor :string-set-equality)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []}
   {:constraint-id-request {:domain :gravity/sh08-atomic-inequality-constraint-v1 :application descriptor}
    :kind :equality :producer-rule :sh08-atomic-inequality-v1
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :atomic-inequality}
@@ -12855,9 +12903,19 @@
                       (if (contains? descriptor :keyword-set-equality)
                       (assoc solution :keyword-set-equality (get descriptor :keyword-set-equality)) solution)))))
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []})
+   :status :solved :diagnostics []}))
 
 (defn sh08-ane-call-fact [descriptor module]
+  (if (= :sh08-string-set-carrier-inequality-v1 (get descriptor :version))
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+      {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-string-set-carrier-inequality-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source :audited-string-set-carrier-inequality-intrinsic})
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-atomic-inequality-call-type-fact-v1 :application descriptor}
@@ -12869,7 +12927,7 @@
 
      :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source (if (contains? descriptor :vector-equality) :audited-vector-inequality-intrinsic
        (if (contains? descriptor :string-set-equality) :audited-string-set-inequality-intrinsic
-         (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic)))}))
+         (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic)))})))
 
 (defn sh08-ane-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -12888,8 +12946,8 @@
               work (+ base (get validation :work-count))
               owner (if (if (keyword? (get (get node :source) :form-id)) true (if (string? (get (get node :source) :form-id)) (= 71 (count (get (get node :source) :form-id))) false)) (get forms (get (get node :source) :form-id)) nil) ids (get owner :child-form-ids)]
           (if (= false (= :accepted (get validation :status)))
-            (assoc (sh08-sm-failure (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
-                     (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason)) (if (contains? #{:vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason))
+            (assoc (sh08-sm-failure (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
+                     (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason)) (if (contains? #{:vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason))
                        (get validation :reason) :atomic-inequality-work-limit) :atomic-inequality-operand-type-required)
                      nil :two-supported-values-with-applicable-binary-equality arguments)
               :work-count work :type-check-reason (get validation :reason))
@@ -13826,6 +13884,7 @@
                      (get (get context :ordering-core) :module)) false))
 
 (defn sh08-ae-inferred-call-valid? [core node call edge nodes bindings types]
+  (if (sh08-sse-call-ids? node call)
   (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality} (get (get types (get call :operator-node-id)) :kind))
     (= :accepted (get (sh08-kse-inferred-call core node call edge nodes bindings types 65536) :status))
       (if (= :gravity.type/applied-vector-equality (get (get types (get call :operator-node-id)) :kind))
@@ -13834,7 +13893,8 @@
       (let [header (sh08-ie-source core node call edge nodes bindings types (get core :module))]
         (if (map? header) (= header (get types (get call :operator-node-id))) false))
     (let [header (sh08-ae-source core node call edge nodes bindings types (get core :module))]
-      (if (map? header) (= (get types (get call :operator-node-id)) (sh08-ae-finish header)) false))))))
+      (if (map? header) (= (get types (get call :operator-node-id)) (sh08-ae-finish header)) false)))))
+    false))
 
 (defn sh08-ie-type? [type]
   (if (keyword? type)
@@ -13991,7 +14051,58 @@
                    :work-count work}))))))
       {:status :rejected :reason :keyword-set-equality-arity-mismatch :work-count 0})))
 
+(defn sh08-sse-ids? [ids width]
+  (if (vector? ids) (if (<= (count ids) 6) (if (= (count ids) width)
+    (loop [remaining ids]
+      (if (= 0 (count remaining)) true
+        (if (if (keyword? (first remaining)) true
+              (if (string? (first remaining)) (= 71 (count (first remaining))) false))
+          (recur (rest remaining)) false))) false) false) false))
+
+(defn sh08-sse-call-ids? [node call]
+  (if (if (map? node) (map? call) false)
+    (if (sh08-sse-ids? (get node :children) 3)
+      (if (sh08-sse-ids? (get call :argument-node-ids) 2)
+        (sh08-sse-ids? [(get node :node-id) (get call :core-node-id)
+                      (get call :operator-node-id) (get call :operator-binding-id)
+                      (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 6) false) false) false))
+
+(defn sh08-sse-domain [arguments budget]
+  ; Standalone carrier equality only. Vector Set leaves retain kse-domain.
+  (let [limit (if (< budget 65536) budget 65536)]
+    (if (< limit 2) (sh08-kse-domain arguments budget)
+      (if (if (vector? arguments) (= 2 (count arguments)) false)
+        (if (if (sh08-ss-type? (get arguments 0)) true (sh08-ss-type? (get arguments 1)))
+          (loop [side 0 work 2 domains []]
+            (if (= side 2)
+              {:status :accepted :comparison-domain :string-set-carrier :argument-types arguments
+               :operand-domains domains :carrier-schema :gravity/homogeneous-string-set-type-v1 :work-count work}
+              (let [type (get arguments side)]
+                (if (= :gravity.type/never type)
+                  (recur (+ side 1) work (conj domains :never))
+                  (let [paid (+ work 3)]
+                    (if (> paid limit)
+                      {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-work-limit :work-count paid}
+                      (if (sh08-ss-type? type)
+                        (recur (+ side 1) paid (conj domains :homogeneous-string-set))
+                        (if (if (map? type) (if (= 3 (count type))
+                              (if (= :gravity.type/set (get type :kind))
+                                (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false)
+                          (let [members (get type :element-types) width (count members) total (+ paid width)]
+                            (if (> width 1024)
+                              {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-type-width :work-count paid}
+                              (if (> total limit)
+                                {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-work-limit :work-count total}
+                                (if (loop [i 0] (if (= i width) true
+                                      (if (= :gravity.type/string (get members i)) (recur (+ i 1)) false)))
+                                  (recur (+ side 1) total (conj domains :finite-string-set))
+                                  {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-operand-type-required :work-count total}))))
+                          {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-operand-type-required :work-count paid}))))))))
+          (sh08-kse-domain arguments budget))
+        (sh08-kse-domain arguments budget)))))
+
 (defn sh08-kse-source [core node call edge nodes bindings types module validation]
+  (if (sh08-sse-call-ids? node call)
   (if (if (vector? (get call :argument-node-ids))
         (if (= 2 (count (get call :argument-node-ids)))
           (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false)
@@ -14026,6 +14137,29 @@
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
           ])
+      (if (= :string-set-carrier (get validation :comparison-domain))
+        {:kind :gravity.type/applied-string-set-equality :version :sh08-string-set-carrier-equality-v1
+       :operation '= :semantic-owner 'gravity.collections :intrinsic :gravity.collections/string-set-value-equality
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :operand-domains (get validation :operand-domains) :carrier-schema :gravity/homogeneous-string-set-type-v1 :type-domain-work-count (get validation :work-count)
+       :equality-policy {:domain :independently-established-string-sets :members :string-only
+                         :static-cardinality :not-established :operand-extent :not-established
+                         :comparison :guarded-atomic-string-leaf :strings :exact-valid-scalar-sequence
+                         :normalization :none :locale :none :conversion :none :numeric :unsupported
+                         :value-work-model :gravity/string-set-equality-logical-content-work-v1
+                         :entry-contract :type-conforming-typed-calls :order :unobserved
+                         :domain-validation :both-complete-before-result
+                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :identity :unobserved :payload-evaluation :none :mutation :none
+                         :collection-construction :none :provider-cpu-bound :not-established}
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :equality-domain :inferred-member-carrier :carrier-schema :finite-member-types
+                      :string-equality-policy :representation-work :value-policy :profile :target :evaluation-order]}
       (let [header {:kind :gravity.type/applied-keyword-set-equality :version :sh08-keyword-set-equality-v1
        :operation '= :semantic-owner 'gravity.collections :intrinsic :gravity.collections/keyword-set-value-equality
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
@@ -14052,9 +14186,20 @@
                             :value-work-model :gravity/string-set-equality-logical-content-work-v1
                             :entry-contract :type-conforming-typed-calls)
             :invalidation (conj (conj (get header :invalidation) :string-equality-policy) :representation-work))
-          header)) nil)) nil))
+          header))) nil)) nil)
+    nil))
 
 (defn sh08-kse-constraint [descriptor]
+  (if (= :sh08-string-set-carrier-equality-v1 (get descriptor :version))
+    {:constraint-id-request {:domain :gravity/sh08-string-set-carrier-equality-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-string-set-carrier-equality-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :string-set-carrier-equality}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects) :equality-policy (get descriptor :equality-policy)
+              :operand-domains (get descriptor :operand-domains) :carrier-schema (get descriptor :carrier-schema)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []}
   {:constraint-id-request {:domain (if (= :sh08-string-set-equality-v1 (get descriptor :version))
                                      :gravity/sh08-string-set-equality-constraint-v1 :gravity/sh08-keyword-set-equality-constraint-v1) :application descriptor}
    :kind :equality :producer-rule (if (= :sh08-string-set-equality-v1 (get descriptor :version))
@@ -14067,9 +14212,19 @@
                {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects)})
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []})
+   :status :solved :diagnostics []}))
 
 (defn sh08-kse-call-fact [descriptor module]
+  (if (= :sh08-string-set-carrier-equality-v1 (get descriptor :version))
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+      {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-string-set-carrier-equality-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-carrier-value-intrinsic})
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     (let [fact {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-keyword-set-equality-call-type-fact-v1 :application descriptor}
@@ -14087,7 +14242,7 @@
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-value-intrinsic} fact))))
+     :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-value-intrinsic} fact)))))
 
 (defn sh08-kse-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -14096,11 +14251,13 @@
 (defn sh08-kse-derive [core node call edge nodes bindings types forms budget]
   (let [limit (if (< budget 65536) budget 65536)]
   (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
-  (let [args (get call :argument-node-ids) base (+ 64 (count args) (count (get core :function-records)))
-        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
+  (let [args (get call :argument-node-ids) base (+ 64 (count args) (count (get core :function-records)))]
     (if (> base limit)
       (assoc (sh08-sm-failure "C7-GENERIC" :keyword-set-equality-work-limit nil :remaining-type-join-units limit) :work-count base)
-      (let [domain (sh08-kse-domain (sh08-ft-ordered-child-types args types) (- limit base))
+      (if (if (sh08-sse-call-ids? node call)
+            (sh08-sse-ids? (get (get forms (get (get node :source) :form-id)) :child-form-ids) 3) false)
+        (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+            domain (sh08-sse-domain (sh08-ft-ordered-child-types args types) (- limit base))
             work (+ base (get domain :work-count))]
         (if (= :accepted (get domain :status))
           (let [header (sh08-kse-source core node call edge nodes bindings types (get core :module) domain)]
@@ -14120,12 +14277,13 @@
               (let [descriptor (sh08-kse-finish header)]
                 {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
                  :constraint (sh08-kse-constraint descriptor) :work-count work})
-              (assoc (sh08-sm-failure "C7-VERIFY" (if (= :string-set (get domain :comparison-domain)) :string-set-equality-source-mismatch :keyword-set-equality-source-mismatch) nil :exact-operator-left-right-source
+              (assoc (sh08-sm-failure "C7-VERIFY" (if (= :string-set-carrier (get domain :comparison-domain)) :string-set-carrier-equality-source-mismatch (if (= :string-set (get domain :comparison-domain)) :string-set-equality-source-mismatch :keyword-set-equality-source-mismatch)) nil :exact-operator-left-right-source
                        (get node :node-id)) :work-count work)))
           (assoc (sh08-sm-failure
-                   (if (contains? #{:keyword-set-equality-work-limit :string-set-equality-work-limit} (get domain :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
-                   (get domain :reason) nil (if (= :string-set (get domain :comparison-domain)) :two-established-finite-string-set-values :two-established-finite-keyword-set-values) (sh08-ft-ordered-child-types args types))
-                 :work-count work)))))
+                   (if (contains? #{:keyword-set-equality-work-limit :string-set-equality-work-limit :string-set-carrier-equality-work-limit} (get domain :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
+                   (get domain :reason) nil (if (= :string-set-carrier (get domain :comparison-domain)) :two-independently-established-string-set-values (if (= :string-set (get domain :comparison-domain)) :two-established-finite-string-set-values :two-established-finite-keyword-set-values)) (sh08-ft-ordered-child-types args types))
+                 :work-count work)))
+        (assoc (sh08-sm-failure "C7-VERIFY" :keyword-set-equality-source-mismatch nil :closed-equality-source-identities nil) :work-count base))))
     (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :keyword-set-equality-arity-mismatch nil :binary-equality-call nil) :work-count 64))))
 
 (defn sh08-kse-inferred-call [core node call edge nodes bindings types budget]
@@ -14133,14 +14291,16 @@
   (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
   (let [base (+ 64 (count (get call :argument-node-ids)) (count (get core :function-records)))]
     (if (> base limit) {:status :rejected :reason :keyword-set-equality-work-limit :work-count base}
-      (let [domain (sh08-kse-domain (sh08-ft-ordered-child-types (get call :argument-node-ids) types) (- limit base))
+      (if (sh08-sse-call-ids? node call)
+        (let [domain (sh08-sse-domain (sh08-ft-ordered-child-types (get call :argument-node-ids) types) (- limit base))
             work (+ base (get domain :work-count))]
         (if (= :accepted (get domain :status))
           (let [header (sh08-kse-source core node call edge nodes bindings types (get core :module) domain)]
             (if (if (map? header) (= (get types (get call :operator-node-id)) (sh08-kse-finish header)) false)
               {:status :accepted :work-count work}
-              {:status :rejected :reason (if (= :string-set (get domain :comparison-domain)) :string-set-equality-source-mismatch :keyword-set-equality-source-mismatch) :work-count work}))
-          (assoc domain :work-count work)))))
+              {:status :rejected :reason (if (= :string-set-carrier (get domain :comparison-domain)) :string-set-carrier-equality-source-mismatch (if (= :string-set (get domain :comparison-domain)) :string-set-equality-source-mismatch :keyword-set-equality-source-mismatch)) :work-count work}))
+          (assoc domain :work-count work)))
+        {:status :rejected :reason :keyword-set-equality-source-mismatch :work-count base})))
     {:status :rejected :reason :keyword-set-equality-arity-mismatch :work-count 64})))
 
 (defn sh08-ve-domain [arguments budget]
@@ -14433,6 +14593,8 @@
     {:status :rejected :reason :vector-equality-arity-mismatch :work-count 64})))
 
 (defn sh08-ae-step [node types binding-types functions context budget]
+  (if (if (if (sh08-sse-ids? (get node :children) 3) (sh08-sse-ids? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3) false)
+        (sh08-sse-call-ids? node (get (get context :ordering-operators) (first (get node :children)))) false)
   (let [call (get (get context :ordering-operators) (first (get node :children)))
         edge (get (get context :ordering-edges) (get node :node-id))
         args (get call :argument-node-ids)
@@ -14460,7 +14622,8 @@
         (sh08-ie-derive (get context :ordering-core) node call edge
           (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget)
         (sh08-ae-derive (get context :ordering-core) node call edge
-          (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))))))
+          (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget)))))
+    (assoc (sh08-sm-failure "C7-VERIFY" :keyword-set-equality-source-mismatch nil :closed-equality-source-identities nil) :work-count 2)))
 
 (defn sh08-cq-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)

@@ -13237,3 +13237,167 @@
         (is (false? (invoke 'sh08-is-value-type? [wrong])))
         (is (= :rejected (:status (invoke 'sh08-lc-type-work [[wrong] 65536]))))
         (is (zero? @callbacks)))))))
+
+(deftest sh08-string-set-carrier-equality-development-kernel
+  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} s :gravity.type/string
+        finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        domain #(invoke-c7 'sh08-sse-domain [%1 %2])
+        derive (fn [{:keys [core node call edge nodes bindings types forms]} budget]
+                 (invoke-c7 'sh08-kse-derive [core node call edge nodes bindings types forms budget]))]
+    (doseq [pair [[carrier carrier] [carrier (finite [])] [(finite []) carrier]
+                 [carrier (finite [s s])] [(finite [s]) carrier]
+                 [carrier :gravity.type/never] [:gravity.type/never carrier]]]
+      (let [{:keys [core node call edge nodes bindings types forms products binding-types] :as input} (atomic-equality-input pair)
+            checked (domain pair 65536) result (derive input 65536) descriptor (:descriptor result)
+            expected (if (some #{:gravity.type/never} pair) :gravity.type/never :gravity.type/bool)
+            established (assoc types :operator descriptor :call expected)
+            check #(invoke-c7 'sh08-kse-inferred-call [core node call edge nodes bindings %1 %2])
+            validated (check established 65536)
+            context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
+                     :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10
+                        {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                         :lookup-bindings (vec (vals bindings)) :shape-call-products products}])]
+        (is (= :accepted (:status checked) (:status result) (:status validated)))
+        (is (= :string-set-carrier (:comparison-domain checked)))
+        (is (= :gravity.type/applied-string-set-equality (:kind descriptor)))
+        (is (= :sh08-string-set-carrier-equality-v1 (:version descriptor)))
+        (is (= expected (:type result) (:result-type descriptor)))
+        (is (= pair (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= :not-established (get-in descriptor [:equality-policy :static-cardinality]) (get-in descriptor [:equality-policy :operand-extent])))
+        (is (not (contains? descriptor :operand-counts)))
+        (is (= (:operand-domains checked) (:operand-domains descriptor)))
+        (is (= :sh08-string-set-carrier-equality-v1 (get-in result [:constraint :producer-rule])))
+        (is (= :string-set-carrier-equality (get-in result [:constraint :lhs :projection])))
+        (is (= :direct-string-set-equality (:dispatch (invoke-c7 'sh08-kse-call-fact [descriptor (:module core)]))))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)) (pr-str (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= [(:constraint result)] (:constraints inferred)))
+        (is (= :accepted (:status (invoke-c7 'sh08-ae-step [node types {} {} context 65536]))))
+        (is (true? (invoke-c7 'sh08-ae-inferred-call-valid? [core node call edge nodes bindings established])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= result (derive input (:work-count result))))
+        (is (= :rejected (:status (derive input (dec (:work-count result))))))
+        (is (= validated (check established (:work-count validated))))
+        (is (= :rejected (:status (check established (dec (:work-count validated))))))
+        (doseq [changed [(assoc descriptor :version :sh08-string-set-equality-v1)
+                         (assoc descriptor :operand-counts [0 0])
+                         (assoc descriptor :operand-domains [:finite-string-set :finite-string-set])
+                         (assoc-in descriptor [:equality-policy :static-cardinality] 0)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc-in descriptor [:source-edge :ordinal] 99)]]
+          (is (= :rejected (:status (check (assoc established :operator changed) 65536)))))))
+    (doseq [pair [[(finite []) (finite [])] [(finite [s]) (finite [s s])]
+                 [(finite [:gravity.type/keyword]) (finite [])] [:gravity.type/never :gravity.type/never]
+                 [(finite [:gravity.type/keyword]) (finite [s])] [:gravity.type/set (finite [s])]]
+            budget [0 1 2 3 65536]]
+      (is (= (invoke-c7 'sh08-kse-domain [pair budget]) (domain pair budget))))
+    (doseq [bad [:gravity.type/set :gravity.type/unknown :gravity.type/dynamic
+                 (assoc carrier :extra true) (assoc carrier :element-type :gravity.type/keyword)
+                 (finite [:gravity.type/keyword]) (finite [s :gravity.type/character])
+                 (finite [:gravity.type/never]) (finite [:gravity.type/unknown]) (finite [carrier])]]
+      (doseq [pair [[carrier bad] [bad carrier]]]
+        (is (= :rejected (:status (domain pair 65536))))))
+    (doseq [pair [[] [carrier] [carrier carrier carrier]]]
+      (is (= :rejected (:status (domain pair 65536)))))
+    (let [checked (domain [carrier carrier] 65536)]
+      (is (= 8 (:work-count checked)))
+      (is (= checked (domain [carrier carrier] 8)))
+      (is (= :string-set-carrier-equality-work-limit (:reason (domain [carrier carrier] 7))))
+      (is (= :string-set-carrier-equality-type-width (:reason (domain [carrier (finite (repeat 1025 s))] 65536))))
+      (is (= :rejected (:status (invoke-c7 'sh08-kse-domain [[carrier carrier] 65536]))))
+      (doseq [pair [[carrier carrier] [carrier (finite [s])]]]
+        (let [v #(hash-map :kind :gravity.type/vector :shape :literal :element-types [%])]
+          (is (= :rejected (:status (invoke-c7 'sh08-ve-domain [[(v (first pair)) (v (second pair))] 65536])))))))))
+
+(deftest sh08-string-set-carrier-equality-source-id-development-kernel
+  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
+        {:keys [core node call edge nodes bindings types forms]} (atomic-equality-input [carrier carrier])
+        validation (invoke-c7 'sh08-sse-domain [[carrier carrier] 65536])
+        derived (invoke-c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536])
+        established (assoc types :operator (:descriptor derived) :call :gravity.type/bool)
+        context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
+                 :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "source ID hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "source ID equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "source ID printing"))))]
+    (is (= :accepted (:status derived)))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]
+            [changed-node changed-call]
+            [[node (assoc call :argument-node-ids [bad :arg1])]
+             [node (assoc call :argument-node-ids [:arg0 bad])]
+             [node (assoc call :operator-node-id bad)] [node (assoc call :operator-binding-id bad)]
+             [node (assoc call :core-node-id bad)] [(assoc node :node-id bad) call]
+             [(assoc node :children [bad :arg0 :arg1]) call]
+             [(assoc node :children [:operator bad :arg1]) call]
+             [(assoc node :children [:operator :arg0 bad]) call]
+             [(assoc-in node [:source :form-id] bad) call] [(assoc-in node [:source :syntax-id] bad) call]]]
+      (doseq [budget [0 65536]]
+        (is (= :rejected (:status (invoke-c7 'sh08-kse-derive [core changed-node changed-call edge nodes bindings types forms budget]))))
+        (is (= :rejected (:status (invoke-c7 'sh08-kse-inferred-call [core changed-node changed-call edge nodes bindings established budget]))))
+        (is (= :rejected (:status (invoke-c7 'sh08-ae-step [changed-node established {} {} (assoc context :ordering-operators {:operator changed-call}) budget]))))
+        (is (zero? @callbacks)))
+      (is (nil? (invoke-c7 'sh08-kse-source [core changed-node changed-call edge nodes bindings types (:module core) validation])))
+      (is (false? (invoke-c7 'sh08-ae-inferred-call-valid? [core changed-node changed-call edge nodes bindings established])))
+      (is (zero? @callbacks)))
+    (doseq [bad [opaque [opaque] {:opaque opaque}] budget [0 65536]]
+      (let [owner-id (get-in node [:source :form-id])
+            changed (assoc-in forms [owner-id :child-form-ids] [:operator bad :arg1])]
+        (is (= :rejected (:status (invoke-c7 'sh08-kse-derive [core node call edge nodes bindings types changed budget]))))
+        (is (= :rejected (:status (invoke-c7 'sh08-ae-step [node established {} {} (assoc context :association-forms changed) budget]))))
+        (is (zero? @callbacks))))))
+
+(deftest sh08-string-set-carrier-inequality-development-kernel
+  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} s :gravity.type/string
+        finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))]
+    (doseq [pair [[carrier carrier] [carrier (finite [])] [(finite []) carrier]
+                 [carrier (finite [s s])] [(finite [s]) carrier]
+                 [carrier :gravity.type/never] [:gravity.type/never carrier]]]
+      (let [{:keys [core node call edge nodes bindings types forms] :as input} (atomic-inequality-input pair)
+            validation (invoke-c7 'sh08-ane-type-work [pair 65536])
+            result (atomic-inequality-derived input 65536) descriptor (:descriptor result)
+            expected (if (some #{:gravity.type/never} pair) :gravity.type/never :gravity.type/bool)
+            established (assoc types :operator descriptor :call expected)
+            check #(invoke-c7 'sh08-ane-inferred-call [core node call edge nodes bindings %1 %2])
+            checked (check established 65536)]
+        (is (= :accepted (:status result) (:status checked)))
+        (is (= :sh08-string-set-carrier-inequality-v1 (:version descriptor) (get-in descriptor [:string-set-equality :version])))
+        (is (= :sh08-string-set-carrier-equality-v1 (get-in descriptor [:string-set-equality :equality-version])))
+        (is (= 'not= (:operation descriptor)))
+        (is (= 'gravity.core (:semantic-owner descriptor)))
+        (is (= pair (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= call (:source-call descriptor)))
+        (is (= expected (:type result) (:result-type descriptor)))
+        (is (not (contains? validation :operand-counts)))
+        (is (not (contains? (:string-set-equality descriptor) :operand-counts)))
+        (is (= :not-established (get-in descriptor [:string-set-equality :type-domain :static-cardinality]) (get-in descriptor [:string-set-equality :type-domain :operand-extent])))
+        (is (= :left-to-right-once (get-in descriptor [:inequality-policy :operand-evaluation])))
+        (is (= :non-tail (get-in descriptor [:inequality-policy :operand-position])))
+        (is (= :owned-equality-branch-complement (get-in descriptor [:inequality-policy :lowering])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
+        (is (= :sh08-string-set-carrier-inequality-v1 (get-in result [:constraint :producer-rule])))
+        (is (= :string-set-carrier-inequality (get-in result [:constraint :lhs :projection])))
+        (is (= :direct-atomic-inequality (:dispatch (invoke-c7 'sh08-ane-call-fact [descriptor (:module core)]))))
+        (is (= result (atomic-inequality-derived input (:work-count result))))
+        (is (= :rejected (:status (atomic-inequality-derived input (dec (:work-count result))))))
+        (is (= checked (check established (:work-count checked))))
+        (is (= :rejected (:status (check established (dec (:work-count checked))))))
+        (doseq [changed [(assoc descriptor :version :sh08-atomic-inequality-v1)
+                         (assoc-in descriptor [:string-set-equality :operand-counts] [0 0])
+                         (assoc-in descriptor [:string-set-equality :equality-version] :sh08-string-set-equality-v1)
+                         (assoc-in descriptor [:inequality-policy :operand-evaluation] :right-to-left)
+                         (assoc descriptor :operand-type-work 0)]]
+          (is (= :rejected (:status (check (assoc established :operator changed) 65536)))))))
+    (doseq [bad [:gravity.type/set :gravity.type/unknown (finite [:gravity.type/keyword])
+                 (assoc carrier :extra true) (assoc carrier :element-type :gravity.type/keyword)
+                 (finite [s :gravity.type/character]) (finite [:gravity.type/never])]]
+      (doseq [pair (if (= bad (finite [:gravity.type/keyword]))
+                    [[carrier bad] [bad carrier]]
+                    [[carrier bad] [bad carrier] [:gravity.type/never bad] [bad :gravity.type/never]])]
+        (is (= :rejected (:status (invoke-c7 'sh08-ane-type-work [pair 65536]))))))
+    (let [v #(hash-map :kind :gravity.type/vector :shape :literal :element-types [%])]
+      (doseq [pair [[(v carrier) (v carrier)] [(v carrier) (v (finite [s]))]]]
+        (is (= :rejected (:status (invoke-c7 'sh08-ane-type-work [pair 65536]))))))))
