@@ -6320,7 +6320,7 @@
     (doseq [bad [(finite [:gravity.type/integer]) :gravity.type/i64 :gravity.type/decimal :gravity.type/unknown :gravity.type/never
                  :gravity.type/function {:kind :gravity.type/map :shape :literal :member-types []}
                  {:kind :gravity.type/list :shape :literal :element-types []}
-                 {:kind :gravity.type/set :shape :literal :element-types []}
+                 {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}
                  (nullable :gravity.type/integer)]]
       (is (= :rejected (:status (derive (atomic-equality-input [(finite [k bad]) (finite [])]) 65536)))))
     (let [input (atomic-equality-input [(finite [k]) (finite [s])])]
@@ -10706,7 +10706,7 @@
           (is (= :rejected (:status (check (assoc established :operator changed))))))))
     ;; The unequal outer widths cannot hide either invalid member domain.
     (doseq [bad (concat numeric [:gravity.type/unknown :gravity.type/dynamic :gravity.type/never
-                                {:kind :gravity.type/set :shape :literal :element-types []}
+                                {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}
                                 {:kind :gravity.type/nil-or :value-type :gravity.type/integer}])
             pair [[(v []) (v [bad])] [(v [:gravity.type/keyword bad]) (v [])]
                   [:gravity.type/never (v [bad])] [(v [(v [bad])]) (v [:gravity.type/keyword])]]]
@@ -12519,3 +12519,173 @@
     (is (= :unsupported (invoke-c7 'sh08-pc-value-kind [(char 97)])))
     (is (= :unsupported (invoke-c7 'sh08-pc-value-kind [{:artifact :gravity/unicode-scalar-character
                                                        :schema-version 1 :codepoint 0x1f600 :text (String. (Character/toChars 0x1f600))}])))))
+
+(deftest sh08-flat-keyword-set-vector-equality-inequality-development-kernel
+  (let [v #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec %))
+        st #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        ni #(hash-map :kind :gravity.type/nil-or :value-type %)
+        i :gravity.type/integer k :gravity.type/keyword s :gravity.type/string
+        ks (st [k]) empty-set (st [])
+        pairs [[(v [ks]) (v [ks])] [(v [empty-set]) (v [empty-set])] [(v [empty-set]) (v [ks])]
+               [(v [i k ks]) (v [i k ks])] [(v [ks (ni s)]) (v [ks :gravity.type/nil])]
+               [(v []) (v [ks])] [(v [ks]) (v [ks ks])]
+               [:gravity.type/never (v [ks])] [(v [ks]) :gravity.type/never]]
+        derive (fn [operation input budget]
+                 (let [{:keys [core node call edge nodes bindings types forms]} input]
+                   (invoke-c7 (if (= operation '=) 'sh08-ve-derive 'sh08-ane-derive)
+                              [core node call edge nodes bindings types forms budget])))]
+    (doseq [operation ['= 'not=] pair pairs]
+      (let [{:keys [core node call edge nodes bindings types forms module] :as input}
+            ((if (= operation '=) atomic-equality-input atomic-inequality-input) pair)
+            result (derive operation input 65536) descriptor (:descriptor result)
+            policy (if (= operation '=) descriptor (:vector-equality descriptor))
+            leaf (:keyword-set-leaf-equality policy)
+            numeric? (boolean (some #{i} (mapcat :element-types (filter map? pair))))
+            established (assoc types :operator descriptor :call (:type result))
+            check #(invoke-c7 (if (= operation '=) 'sh08-ve-inferred-call 'sh08-ane-inferred-call)
+                             [core node call edge nodes bindings %1 %2])
+            checked (check established 65536)]
+        (is (= :accepted (:status result) (:status checked)) (pr-str result))
+        (is (= operation (:operation descriptor) (get-in input [:nodes :operator :attributes :symbol])))
+        (is (= (if (= operation '=) :sh08-flat-keyword-set-vector-equality-v1 :sh08-flat-keyword-set-vector-inequality-v1)
+               (:version policy)))
+        (is (= :sh08-vector-keyword-set-leaf-equality-v1 (:version leaf)))
+        (is (= 'gravity.collections (:semantic-owner leaf)))
+        (is (= :sh08-keyword-set-equality-v1 (:equality-version leaf)))
+        (is (= :owned-self-equality-before-any-vector-result (:domain-validation leaf)))
+        (is (= :validated-before-any-vector-result (:member-uniqueness leaf)))
+        (is (= :owned-pair-equality-with-remaining-vector-allowance (:comparison-validation leaf)))
+        (is (= :aggregate-repeated-owned-leaf-reservations (:budget leaf)))
+        (is (= :none (:per-leaf-reset leaf) (:payload-evaluation leaf) (:mutation leaf) (:construction leaf)))
+        (is (= :not-established (:provider-cpu-bound leaf)))
+        (is (= numeric? (contains? policy :numeric-equality)))
+        (when numeric?
+          (is (= 'gravity.math (get-in policy [:numeric-equality :semantic-owner])))
+          (is (= :proof-required (get-in policy [:numeric-equality :numeric-mode])))
+          (is (= :none (get-in policy [:numeric-equality :equality-policy :conversion]))))
+        (is (= (if (some #{:gravity.type/never} pair) :gravity.type/never :gravity.type/bool) (:type result)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
+        (is (= result (derive operation input (:work-count result))))
+        (is (= :rejected (:status (derive operation input (dec (:work-count result))))))
+        (is (= checked (check established (:work-count checked))))
+        (is (= :rejected (:status (check established (dec (:work-count checked))))))
+        (doseq [changed [(assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :argument-types [(v []) (v [])])
+                         (if (= operation '=)
+                           (assoc descriptor :version :sh08-vector-equality-v1)
+                           (assoc-in descriptor [:vector-equality :version] :sh08-vector-inequality-v1))
+                         (if (= operation '=)
+                           (assoc-in descriptor [:keyword-set-leaf-equality :per-leaf-reset] :fresh-65536)
+                           (assoc-in descriptor [:vector-equality :keyword-set-leaf-equality :per-leaf-reset] :fresh-65536))
+                         (if (= operation '=)
+                           (update descriptor :keyword-set-leaf-equality dissoc :member-uniqueness)
+                           (update-in descriptor [:vector-equality :keyword-set-leaf-equality] dissoc :member-uniqueness))]]
+          (is (= :rejected (:status (check (assoc established :operator changed) 65536)))))
+        (when (= operation '=)
+          (is (= :sh08-flat-keyword-set-vector-equality-v1 (get-in result [:constraint :producer-rule])))
+          (is (= leaf (get-in result [:constraint :solution :keyword-set-leaf-equality])))
+          (is (= :gravity/sh08-flat-keyword-set-vector-equality-constraint-v1 (get-in result [:constraint :constraint-id-request :domain]))))
+        (when (= operation 'not=)
+          (is (= :sh08-flat-keyword-set-vector-equality-v1 (:equality-version policy)))
+          (is (= policy (get-in result [:constraint :solution :vector-equality]))))
+        (let [foreign (-> input (assoc-in [:core :module :target] :native) (assoc-in [:module :target] :native))]
+          (is (= :rejected (:status (derive operation foreign 65536)))))))
+    ;; Full domains precede outer-length and value-family mismatches.
+    (doseq [bad [ :gravity.type/set (st [s]) (st [k s]) (st [i]) (st [:gravity.type/never])
+                 (st [:gravity.type/unknown]) (ni ks) (v [k]) :gravity.type/i64
+                 :gravity.type/unknown :gravity.type/never]
+            pair [[(v [ks bad]) (v [])] [(v []) (v [ks bad])]
+                  [:gravity.type/never (v [ks bad])]]]
+      (is (= :rejected (:status (invoke-c7 'sh08-ve-domain [pair 65536]))))
+      (is (= :rejected (:status (atomic-inequality-derived (atomic-inequality-input pair) 65536)))))
+    (doseq [pair [[(v [ks]) (v [k])] [(v [ks i]) (v [ks k])]
+                  [(v [ks]) (v [i])] [(v [(v [ks])]) (v [])]]]
+      (is (= :rejected (:status (invoke-c7 'sh08-ve-domain [pair 65536])))))
+    (let [pair [(v [ks]) (v [ks])] domain (invoke-c7 'sh08-ve-domain [pair 65536])]
+      (is (= {:status :accepted :comparison-domain :flat-keyword-set-vector :integer-leaves? false :work-count 14} domain))
+      (is (= domain (invoke-c7 'sh08-ve-domain [pair 14])))
+      (is (= :vector-equality-work-limit (:reason (invoke-c7 'sh08-ve-domain [pair 13]))))
+      (is (= 14 (:work-count (invoke-c7 'sh08-ve-domain [pair 13]))))
+      (let [short (invoke-c7 'sh08-ve-domain [pair 4])]
+        (is (= :vector-equality-work-limit (:reason short)))
+        (is (= :keyword-set-equality-work-limit (:leaf-reason short)))
+        (is (= 5 (:work-count short)))))
+    (let [large (st (repeat 1000 k)) pair [(v (repeat 17 large)) (v (repeat 17 large))]
+          result (invoke-c7 'sh08-ve-domain [pair 65536])]
+      (is (= :accepted (:status (invoke-c7 'sh08-kse-domain [[large large] 65536]))))
+      (is (= :rejected (:status result)))
+      (is (= :vector-equality-work-limit (:reason result)))
+      (is (> (:work-count result) 65536)))
+    ;; Old paid outputs and descriptor identities remain distinct.
+    (is (= {:status :accepted :work-count 6} (invoke-c7 'sh08-ve-domain [[(v [k s]) (v [s k])] 65536])))
+    (is (= {:status :accepted :work-count 2} (invoke-c7 'sh08-ve-domain [[:gravity.type/never :gravity.type/never] 65536])))
+    (is (= {:status :accepted :comparison-domain :flat-integer-vector :work-count 6}
+           (invoke-c7 'sh08-ve-domain [[(v [i]) (v [i])] 65536])))))
+
+
+(deftest sh08-flat-keyword-set-vector-inequality-throw-consumer-development-kernel
+  ;; Observe the actual scoped child boundary, never total success minus child.
+  (let [frames (atom []) measurements (atom 0) unrelated-probes (atom 0) child-budgets (atom [])
+        input (atomic-inequality-input [(inequality-vector-type (repeat 32 {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]})) (inequality-vector-type (repeat 32 {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}))])
+        record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
+                :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
+        function {:node-id :predicate-fn :core-form :fn :children [:call] :attributes {}
+                  :source {:form-id :predicate-form :syntax-id :predicate-function}
+                  :evaluation {:kind :function-creation :order []}}
+        nodes (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function) (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc (:edge input) :caller-function-syntax-id :predicate-function :caller-function-core-node-id :predicate-fn)
+        core (assoc (:core input) :nodes (conj nodes function) :function-records [record]
+                    :call-edges [edge] :root-core-node-ids [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (atomic-inequality-derived input 65536)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function {:function-id :predicate-function :body-core-node-id :call
+                                       :parameters [] :return :gravity.type/bool :latent-effects []
+                                       :capabilities [] :thrown-error-effects []}}
+        direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
+        check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
+        measured (invoke-c7 'sh08-ane-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var (fn [& arguments]
+                                (let [callee (nth arguments 2) prior @frames]
+                                  (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                                  (when (= 'sh08-ane-inferred-call callee)
+                                    (swap! child-budgets conj (last (nth arguments 3))))
+                                  (when (contains? '#{sh08-io-descriptor sh08-ae-source} callee) (swap! unrelated-probes inc))
+                                  (reset! frames (conj prior callee))
+                                  (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                         #(check core types 65536))
+        ;; Observe the actual child boundary: successful verification also has suffix work.
+        prefix (- 65536 (first @child-budgets))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 1 @measurements))
+    (is (= 1 (count @child-budgets)))
+    (is (= 123 prefix))
+    (is (= 124 (- (:work-count accepted) prefix (:work-count measured))))
+    (is (zero? @unrelated-probes))
+    (println (pr-str {:keyword-set-vector-owning-type-check {:calls @measurements :prefix prefix :child-budgets @child-budgets :unrelated-probes @unrelated-probes}}))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (let [limit (+ prefix (dec (:work-count measured)))
+          rejected (check core types limit)]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :atomic-inequality-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= (+ prefix (:work-count measured)) (:work-count rejected))))
+    (doseq [[changed-core changed-types]
+            [[core (assoc-in types [:operator :inequality-policy :cross-family] :always-unequal)]
+             [core (assoc types :arg0 :gravity.type/unknown)]
+             [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7 'sh08-ane-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
+            rejected (check changed-core changed-types 65536)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))

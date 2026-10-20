@@ -8249,9 +8249,12 @@
                                   (let [domain (body-ve-domain arguments (- limit work))
                                       total (+ work (get domain :work-count))]
                                   (if (= :accepted (get domain :status))
-                                    (if (= :flat-integer-vector (get domain :comparison-domain))
+                                    (if (= :flat-keyword-set-vector (get domain :comparison-domain))
+                                      (assoc {:status :accepted :comparison-domain :vector :vector-domain-work (get domain :work-count) :work-count total} :vector-comparison-domain :flat-keyword-set-vector
+                                        :vector-integer-leaves? (get domain :integer-leaves?))
+                                      (if (= :flat-integer-vector (get domain :comparison-domain))
                                       (assoc {:status :accepted :comparison-domain :vector :vector-domain-work (get domain :work-count) :work-count total} :vector-comparison-domain :flat-integer-vector)
-                                      {:status :accepted :comparison-domain :vector :vector-domain-work (get domain :work-count) :work-count total})
+                                      {:status :accepted :comparison-domain :vector :vector-domain-work (get domain :work-count) :work-count total}))
                                     {:status :rejected :reason (if (= :vector-equality-work-limit (get domain :reason))
                                                                 :vector-inequality-work-limit (get domain :reason))
                                      :work-count total}))
@@ -8312,7 +8315,8 @@
                        :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
                        :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
     (if (body-all?
-          [(= :accepted (get validation :status))  (= :call (get node :core-form)) (= :reference (get operator :core-form))
+          [(= :accepted (get validation :status))
+           (if (= :flat-keyword-set-vector (get validation :vector-comparison-domain)) (= :jvm (get module :target)) true)  (= :call (get node :core-form)) (= :reference (get operator :core-form))
            (= 2 (count args)) (= expected-call call) (= expected-edge edge) (body-ane-binding? binding module)
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
@@ -8374,7 +8378,7 @@
                            :entry-contract :type-conforming-typed-calls}
                    :invalidation (conj (conj (conj (conj (get header :invalidation) :numeric-equality) :integral-type) :numeric-mode) :value-policy))
             (if (= :vector (get validation :comparison-domain))
-              (let [result (assoc header :intrinsic :gravity.core/vector-value-inequality
+              (let [result (let [result (assoc header :intrinsic :gravity.core/vector-value-inequality
                      :vector-equality {:version :sh08-vector-inequality-v1 :semantic-owner 'gravity.collections
                             :equality-version :sh08-vector-equality-v1
                             :equality-policy {:domain :finite-persistent-vectors :members :recursive-vector-and-supported-atomic
@@ -8429,6 +8433,56 @@
                       :integer-cross-family :unsupported :nested-vectors :unsupported
                       :nil-bearing :compare-original-nonnumeric-values :cross-family :actual-nonnumeric-value-families)
                     :invalidation (conj (conj (conj (get result :invalidation) :numeric-equality) :integral-type) :numeric-mode))
+                  result))]
+                (if (= :flat-keyword-set-vector (get validation :vector-comparison-domain))
+                  (let [policy (assoc (get result :vector-equality)
+                                 :version :sh08-flat-keyword-set-vector-inequality-v1
+                                 :equality-version :sh08-flat-keyword-set-vector-equality-v1
+                                 :equality-policy {:domain :finite-flat-persistent-vectors :members :supported-atomic-generic-integer-and-finite-keyword-set
+                         :count :equal :order :corresponding-values :leaves :original-values
+                         :nil-bearing :compare-original-nonnumeric-values :cross-family :actual-nonnumeric-value-families
+                         :integer-cross-family :unsupported :keyword-set-cross-family :unsupported :nested-vectors :unsupported
+                         :identity :unobserved :payload-evaluation :none :mutation :none
+                         :numeric (if (get validation :vector-integer-leaves?) :same-established-generic-integer-leaves :unsupported)
+                         :keyword-sets :independently-finite-keyword-only
+                         :budget :aggregate-remaining-vector-allowance :entry-contract :type-conforming-typed-calls}
+                                 :keyword-set-leaf-equality {:version :sh08-vector-keyword-set-leaf-equality-v1
+                            :semantic-owner 'gravity.collections :equality-version :sh08-keyword-set-equality-v1
+                            :domain :independently-finite-persistent-keyword-sets :members :keyword-only
+                            :comparison :guarded-atomic-keyword-leaf :order :unobserved
+                            :domain-validation :owned-self-equality-before-any-vector-result
+                            :member-uniqueness :validated-before-any-vector-result
+                            :comparison-validation :owned-pair-equality-with-remaining-vector-allowance
+                            :budget :aggregate-repeated-owned-leaf-reservations :per-leaf-reset :none
+                            :identity :unobserved :payload-evaluation :none :mutation :none :construction :none
+                            :provider-cpu-bound :not-established}
+                                 :type-domain {:shape :flat-literal-positional :maximum-width 1024 :maximum-depth 128
+                                           :maximum-work 65536 :scalar-leaves [:nil :boolean :character :string :symbol :keyword :integer]
+                                           :integer-type :gravity.type/integer :numeric-leaf-depth 1
+                                           :keyword-set-leaves :independently-finite-keyword-only :keyword-set-maximum-width 1024
+                                           :keyword-set-work :aggregate-remaining-vector-allowance
+                                           :nil-or-leaves :five-closed-nonnumeric-atomic-views
+                                           :whole-nil-or-vector :unsupported :nested-vectors :unsupported :nested-never :unsupported
+                                           :integer-cross-family :unsupported :keyword-set-cross-family :unsupported
+                                           :validation :both-complete-domains-and-overlapping-pairs-before-value-comparison})
+                        policy (if (get validation :vector-integer-leaves?)
+                                 (assoc policy :numeric-equality {:version :sh08-flat-integer-vector-leaf-equality-v1
+                          :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core
+                          :integer-type :gravity.type/integer :numeric-mode :proof-required :safety :proven-safe
+                          :safety-rule :same-integral-value-equality-no-conversion-overflow-or-rounding
+                          :equality-policy {:domain :same-integral-type :comparison :original-integer-values
+                                            :conversion :none :arithmetic :none :overflow :impossible
+                                            :rounding :none :cross-type :unsupported}}) policy)]
+                    (assoc result :vector-equality policy
+                      :inequality-policy (assoc (get result :inequality-policy)
+                        :domain :finite-flat-persistent-vectors :members :supported-atomic-generic-integer-and-finite-keyword-set
+                        :numeric (if (get validation :vector-integer-leaves?) :same-established-generic-integer-leaves :unsupported)
+                        :keyword-sets :independently-finite-keyword-only :budget :aggregate-remaining-vector-allowance
+                        :integer-cross-family :unsupported :keyword-set-cross-family :unsupported :nested-vectors :unsupported
+                        :nil-bearing :compare-original-nonnumeric-values :cross-family :actual-nonnumeric-value-families)
+                      :invalidation (conj (conj (conj (conj (conj (conj (conj (get result :invalidation)
+                        :keyword-set-leaf-equality) :set-member-domain) :member-value-policy) :aggregate-leaf-work)
+                        :numeric-equality) :numeric-mode) :integral-type)))
                   result))
               (if (= :keyword-set (get validation :comparison-domain))
                 (if (= :jvm (get module :target))
@@ -9667,8 +9721,8 @@
   ; Positional types suffice for a value query; no constructor identity is used.
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (if (< limit 2) {:status :rejected :reason :vector-equality-work-limit :work-count 2}
-      (loop [pending [[(get arguments 1) 0 true] [(get arguments 0) 0 true]] work 2 integers? false nested? false]
-        (if (= 0 (count pending)) (if integers?
+      (loop [pending [[(get arguments 1) 0 true] [(get arguments 0) 0 true]] work 2 integers? false nested? false sets? false]
+        (if (= 0 (count pending)) (if (if sets? true integers?)
             (if nested?
               {:status :rejected :reason :vector-equality-operand-type-required :work-count work}
               (let [left (get arguments 0) right (get arguments 1)
@@ -9679,10 +9733,17 @@
                 (if (> total limit)
                   {:status :rejected :reason :vector-equality-work-limit :work-count total}
                   (loop [i 0]
-                    (if (= i n) {:status :accepted :comparison-domain :flat-integer-vector :work-count total}
-                      (if (= (= :gravity.type/integer (get left-members i)) (= :gravity.type/integer (get right-members i)))
-                        (recur (+ i 1))
-                        {:status :rejected :reason :vector-equality-operand-type-required :work-count total}))))))
+                    (if (= i n)
+                      (if sets?
+                        {:status :accepted :comparison-domain :flat-keyword-set-vector :integer-leaves? integers? :work-count total}
+                        {:status :accepted :comparison-domain :flat-integer-vector :work-count total})
+                      (let [a (get left-members i) b (get right-members i)]
+                        (if (if (= (= :gravity.type/integer a) (= :gravity.type/integer b))
+                              (if sets?
+                                (= (if (map? a) (= :gravity.type/set (get a :kind)) false)
+                                   (if (map? b) (= :gravity.type/set (get b :kind)) false)) true) false)
+                          (recur (+ i 1))
+                          {:status :rejected :reason :vector-equality-operand-type-required :work-count total})))))))
             {:status :accepted :work-count work})
           (let [frame (get pending (- (count pending) 1)) tail (subvec pending 0 (- (count pending) 1))
                 type (get frame 0) depth (get frame 1) outer? (get frame 2)]
@@ -9699,8 +9760,16 @@
                                     (if (= 0 (count fields)) true
                                       (if (keyword? (first fields)) (recur (rest fields)) false)))
                                 (body-ni-type? type) false) false) false) false)))
-                (recur tail work (if (= :gravity.type/integer type) true integers?) nested?)
-                (if (if (map? type)
+                (recur tail work (if (= :gravity.type/integer type) true integers?) nested? sets?)
+                (if (if (= depth 1) (if (map? type) (= :gravity.type/set (get type :kind)) false) false)
+                  (let [leaf (body-kse-domain [type type] (- limit work)) total (+ work (get leaf :work-count))]
+                    (if (= :accepted (get leaf :status))
+                      (recur tail total integers? nested? true)
+                      (assoc leaf :leaf-reason (get leaf :reason) :work-count total
+                        :reason (if (= :keyword-set-equality-work-limit (get leaf :reason)) :vector-equality-work-limit
+                                  (if (= :keyword-set-equality-type-width (get leaf :reason)) :vector-equality-type-width
+                                    :vector-equality-operand-type-required)))))
+                  (if (if (map? type)
                       (if (= 3 (count type))
                         (if (= :gravity.type/vector (get type :kind))
                           (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false)
@@ -9712,8 +9781,8 @@
                         (let [children (loop [i (- (count members) 1) out tail]
                                        (if (< i 0) out
                                          (recur (- i 1) (conj out [(get members i) (+ depth 1) false]))))]
-                          (recur children total integers? (if (> depth 0) true nested?)))))))
-                  {:status :rejected :reason :vector-equality-operand-type-required :work-count work})))))))
+                          (recur children total integers? (if (> depth 0) true nested?) sets?))))))
+                  {:status :rejected :reason :vector-equality-operand-type-required :work-count work}))))))))
     {:status :rejected :reason :vector-equality-arity-mismatch :work-count 0})))
 
 (defn body-ve-source [core node call edge nodes bindings types module validation]
@@ -9739,7 +9808,8 @@
                        :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
                        :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
     (if (body-all?
-          [(= :accepted (get validation :status)) (= arguments (get validation :argument-types))
+          [(= :accepted (get validation :status))
+           (if (= :flat-keyword-set-vector (get validation :comparison-domain)) (= :jvm (get module :target)) true) (= arguments (get validation :argument-types))
            (= :call (get node :core-form)) (= :reference (get operator :core-form))
            (= 2 (count args)) (= expected-call call) (= expected-edge edge) (body-ae-binding? binding module)
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
@@ -9750,7 +9820,7 @@
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
           ])
-      (if (= :flat-integer-vector (get validation :comparison-domain))
+      (let [header (if (= :flat-integer-vector (get validation :comparison-domain))
         (assoc {:kind :gravity.type/applied-vector-equality :version :sh08-vector-equality-v1
        :operation '= :semantic-owner 'gravity.collections :intrinsic :gravity.collections/vector-value-equality
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
@@ -9798,29 +9868,74 @@
        :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :equality-domain :value-policy :profile :target :evaluation-order]}) nil)) nil))
+                      :callee-body :equality-domain :value-policy :profile :target :evaluation-order]})]
+        (if (= :flat-keyword-set-vector (get validation :comparison-domain))
+          (let [result (assoc header :version :sh08-flat-keyword-set-vector-equality-v1
+                         :equality-policy {:domain :finite-flat-persistent-vectors :members :supported-atomic-generic-integer-and-finite-keyword-set
+                         :count :equal :order :corresponding-values :leaves :original-values
+                         :nil-bearing :compare-original-nonnumeric-values :cross-family :actual-nonnumeric-value-families
+                         :integer-cross-family :unsupported :keyword-set-cross-family :unsupported :nested-vectors :unsupported
+                         :identity :unobserved :payload-evaluation :none :mutation :none
+                         :numeric (if (get validation :integer-leaves?) :same-established-generic-integer-leaves :unsupported)
+                         :keyword-sets :independently-finite-keyword-only
+                         :budget :aggregate-remaining-vector-allowance :entry-contract :type-conforming-typed-calls}
+                         :keyword-set-leaf-equality {:version :sh08-vector-keyword-set-leaf-equality-v1
+                            :semantic-owner 'gravity.collections :equality-version :sh08-keyword-set-equality-v1
+                            :domain :independently-finite-persistent-keyword-sets :members :keyword-only
+                            :comparison :guarded-atomic-keyword-leaf :order :unobserved
+                            :domain-validation :owned-self-equality-before-any-vector-result
+                            :member-uniqueness :validated-before-any-vector-result
+                            :comparison-validation :owned-pair-equality-with-remaining-vector-allowance
+                            :budget :aggregate-repeated-owned-leaf-reservations :per-leaf-reset :none
+                            :identity :unobserved :payload-evaluation :none :mutation :none :construction :none
+                            :provider-cpu-bound :not-established}
+                         :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                         :callee-body :equality-domain :value-policy :integral-type :numeric-mode :numeric-equality
+                         :keyword-set-leaf-equality :set-member-domain :member-value-policy :aggregate-leaf-work
+                         :profile :target :evaluation-order])]
+            (if (get validation :integer-leaves?)
+              (assoc result :numeric-equality {:version :sh08-flat-integer-vector-leaf-equality-v1
+                          :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core
+                          :integer-type :gravity.type/integer :numeric-mode :proof-required :safety :proven-safe
+                          :safety-rule :same-integral-value-equality-no-conversion-overflow-or-rounding
+                          :equality-policy {:domain :same-integral-type :comparison :original-integer-values
+                                            :conversion :none :arithmetic :none :overflow :impossible
+                                            :rounding :none :cross-type :unsupported}}) result))
+          header)) nil)) nil))
 
 (defn body-ve-constraint [descriptor]
-  {:constraint-id-request {:domain (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
-                                     :gravity/sh08-flat-integer-vector-equality-constraint-v1 :gravity/sh08-vector-equality-constraint-v1) :application descriptor}
-   :kind :equality :producer-rule (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
-                                     :sh08-flat-integer-vector-equality-v1 :sh08-vector-equality-v1)
+  {:constraint-id-request {:domain (if (= :sh08-flat-keyword-set-vector-equality-v1 (get descriptor :version))
+                                     :gravity/sh08-flat-keyword-set-vector-equality-constraint-v1
+                                   (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
+                                     :gravity/sh08-flat-integer-vector-equality-constraint-v1 :gravity/sh08-vector-equality-constraint-v1)) :application descriptor}
+   :kind :equality :producer-rule (if (= :sh08-flat-keyword-set-vector-equality-v1 (get descriptor :version))
+                                     :sh08-flat-keyword-set-vector-equality-v1
+                                   (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
+                                     :sh08-flat-integer-vector-equality-v1 :sh08-vector-equality-v1))
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-equality}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
-   :solution (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
+   :solution (if (= :sh08-flat-keyword-set-vector-equality-v1 (get descriptor :version))
+               (let [solution (assoc { :result-type (get descriptor :result-type) :application (get descriptor :application) :direct-effects (get descriptor :direct-effects)}
+                                :equality-policy (get descriptor :equality-policy)
+                                :keyword-set-leaf-equality (get descriptor :keyword-set-leaf-equality))]
+                 (if (contains? descriptor :numeric-equality)
+                   (assoc solution :numeric-equality (get descriptor :numeric-equality)) solution))
+               (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
                (assoc {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects)} :equality-policy (get descriptor :equality-policy)
                  :numeric-equality (get descriptor :numeric-equality))
                {:result-type (get descriptor :result-type) :application (get descriptor :application)
-              :direct-effects (get descriptor :direct-effects)})
+              :direct-effects (get descriptor :direct-effects)}))
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
 
 (defn body-ve-call-fact [descriptor module]
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     {:artifact :gravity/c7-call-type-fact
-     :fact-id-request {:domain (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
-                                  :gravity/sh08-flat-integer-vector-equality-call-type-fact-v1 :gravity/sh08-vector-equality-call-type-fact-v1) :application descriptor}
+     :fact-id-request {:domain (if (= :sh08-flat-keyword-set-vector-equality-v1 (get descriptor :version))
+                                  :gravity/sh08-flat-keyword-set-vector-equality-call-type-fact-v1
+                                (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
+                                  :gravity/sh08-flat-integer-vector-equality-call-type-fact-v1 :gravity/sh08-vector-equality-call-type-fact-v1)) :application descriptor}
      :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
      :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
@@ -9840,8 +9955,10 @@
         header (body-ve-source core node call edge nodes bindings types (get core :module) validation)
         forms (get (get facts :equality-context) :forms)
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
-        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
-                              :sh08-flat-integer-vector-equality-v1 :sh08-vector-equality-v1))
+        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule (if (= :sh08-flat-keyword-set-vector-equality-v1 (get descriptor :version))
+                              :sh08-flat-keyword-set-vector-equality-v1
+                            (if (= :sh08-flat-integer-vector-equality-v1 (get descriptor :version))
+                              :sh08-flat-integer-vector-equality-v1 :sh08-vector-equality-v1)))
                           :lhs {:core-node-id (get node :node-id) :projection :vector-equality})]
     (if (map? header)
       (body-all?
@@ -10976,7 +11093,7 @@
                                        (if (= 0 (count remaining)) out
                                          (let [row (first remaining)]
                                            (recur (rest remaining)
-                                             (if (contains? #{:sh08-atomic-equality-v1 :sh08-vector-equality-v1 :sh08-flat-integer-vector-equality-v1 :sh08-integral-equality-v1 :sh08-keyword-set-equality-v1} (get row :producer-rule))
+                                             (if (contains? #{:sh08-atomic-equality-v1 :sh08-vector-equality-v1 :sh08-flat-integer-vector-equality-v1 :sh08-flat-keyword-set-vector-equality-v1 :sh08-integral-equality-v1 :sh08-keyword-set-equality-v1} (get row :producer-rule))
                                                (conj out row) out))))))
                     (= not-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-not-v1))
                     (= vector-predicate-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-vector-predicate-v1))

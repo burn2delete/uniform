@@ -931,13 +931,15 @@
 (defn p15-s23-runtime-vector-domain [values budget]
   ; Integer leaves use the existing scalar original-value equality premise.
   ; Typed calls establish Generic Integer, immutable finite Vectors, and coherent positional storage.
-  ; These are logical visit/comparison units, not integer bit-size, CPU, or peak-memory bounds.
+  ; Set leaves use full owned self-equality validation with this Vector's remaining allowance.
+  ; Immutable finite providers have coherent cardinality/enumeration; arbitrary host impostors are outside this premise.
+  ; These are logical reservations, not digit-size, CPU, peak-memory, or executed-step bounds.
   (let [limit (if (< budget 65536) budget 65536)]
   (if (if (vector? values) (= 2 (count values)) false)
     (if (if (vector? (get values 0)) (vector? (get values 1)) false)
       (if (< limit 2) {:status :rejected :reason :vector-equality-work-limit :work-count 2}
-        (loop [pending [[(get values 1) 0] [(get values 0) 0]] work 2 integers? false nested? false]
-          (if (= 0 (count pending)) (if integers?
+        (loop [pending [[(get values 1) 0] [(get values 0) 0]] work 2 integers? false nested? false sets? false]
+          (if (= 0 (count pending)) (if (if sets? true integers?)
               (if nested?
                 {:status :rejected :reason :vector-value-equality-domain-required :work-count work}
                 (let [left (get values 0) right (get values 1)
@@ -946,10 +948,15 @@
                   (if (> total limit)
                     {:status :rejected :reason :vector-equality-work-limit :work-count total}
                     (loop [i 0]
-                      (if (= i n) {:status :accepted :comparison-domain :flat-integer-vector :work-count total}
-                        (if (= (integer? (get left i)) (integer? (get right i)))
-                          (recur (+ i 1))
-                          {:status :rejected :reason :vector-value-equality-domain-required :work-count total}))))))
+                      (if (= i n)
+                        (if sets?
+                          {:status :accepted :comparison-domain :flat-keyword-set-vector :work-count total}
+                          {:status :accepted :comparison-domain :flat-integer-vector :work-count total})
+                        (let [a (get left i) b (get right i)]
+                          (if (if (= (integer? a) (integer? b))
+                                (if sets? (= (set? a) (set? b)) true) false)
+                            (recur (+ i 1))
+                            {:status :rejected :reason :vector-value-equality-domain-required :work-count total})))))))
               {:status :accepted :work-count work})
             (let [frame (get pending (- (count pending) 1)) tail (subvec pending 0 (- (count pending) 1))
                   value (get frame 0) depth (get frame 1)]
@@ -963,10 +970,29 @@
                         (let [children (loop [i (- width 1) out tail]
                                          (if (< i 0) out
                                            (recur (- i 1) (conj out [(get value i) (+ depth 1)]))))]
-                          (recur children total integers? (if (> depth 0) true nested?)))))))
-                  (if (if (integer? value) (= depth 1) (= true (p15-s23-runtime-atomic-equality value value)))
-                    (recur tail work (if (integer? value) true integers?) nested?)
-                    {:status :rejected :reason :vector-value-equality-domain-required :work-count work})))))))
+                          (recur children total integers? (if (> depth 0) true nested?) sets?))))))
+                  (if (if (= depth 1) (set? value) false)
+                    (let [leaf (p15-s23-runtime-keyword-set-equality-work value value (- limit work))
+                          total (+ work (get leaf :work-count))]
+                      (if (= :accepted (get leaf :status))
+                        (if (= true (get leaf :value))
+                          (recur tail total integers? nested? true)
+                          {:status :rejected :reason :vector-value-equality-domain-required
+                           :leaf-reason :nonreflexive-keyword-set-domain :work-count total
+                           :work-count-kind :logical-reservation-including-failed-attempt :provider-cpu-bound :not-established})
+                        {:status :rejected
+                         :reason (if (= :keyword-set-equality-work-limit (get leaf :reason)) :vector-equality-work-limit
+                                   (if (= :keyword-set-equality-value-width (get leaf :reason)) :vector-equality-value-width
+                                     :vector-value-equality-domain-required))
+                         :leaf-reason (get leaf :reason) :leaf-work-count-kind (get leaf :work-count-kind)
+                         :leaf-comparison-attempts (get leaf :comparison-attempts)
+                         :work-count total
+                         :work-count-kind (if (= :exceeded-allowance-lower-bound (get leaf :work-count-kind))
+                                            :exceeded-allowance-lower-bound :logical-reservation-including-failed-attempt)
+                         :provider-cpu-bound :not-established}))
+                    (if (if (integer? value) (= depth 1) (= true (p15-s23-runtime-atomic-equality value value)))
+                    (recur tail work (if (integer? value) true integers?) nested? sets?)
+                    {:status :rejected :reason :vector-value-equality-domain-required :work-count work}))))))))
       {:status :rejected :reason :vector-value-equality-domain-required :work-count 0})
     {:status :rejected :reason :vector-value-equality-domain-required :work-count 0})))
 
@@ -993,10 +1019,26 @@
                       {:status :accepted :value false :work-count work})
                     {:status :accepted :value false :work-count work})
                   (if (vector? b) {:status :accepted :value false :work-count work}
-                    (let [equal (p15-s23-runtime-atomic-equality a b)]
+                    (if (set? a)
+                      (let [leaf (p15-s23-runtime-keyword-set-equality-work a b (- limit work))
+                            total (+ work (get leaf :work-count))]
+                        (if (= :accepted (get leaf :status))
+                          (if (= true (get leaf :value)) (recur tail total)
+                            {:status :accepted :value false :work-count total})
+                          {:status :rejected
+                         :reason (if (= :keyword-set-equality-work-limit (get leaf :reason)) :vector-equality-work-limit
+                                   (if (= :keyword-set-equality-value-width (get leaf :reason)) :vector-equality-value-width
+                                     :vector-value-equality-domain-required))
+                         :leaf-reason (get leaf :reason) :leaf-work-count-kind (get leaf :work-count-kind)
+                         :leaf-comparison-attempts (get leaf :comparison-attempts)
+                         :work-count total
+                         :work-count-kind (if (= :exceeded-allowance-lower-bound (get leaf :work-count-kind))
+                                            :exceeded-allowance-lower-bound :logical-reservation-including-failed-attempt)
+                         :provider-cpu-bound :not-established}))
+                      (let [equal (p15-s23-runtime-atomic-equality a b)]
                       (if (= true equal) (recur tail work)
                         (if (= false equal) {:status :accepted :value false :work-count work}
-                          {:status :rejected :reason :vector-value-equality-domain-required :work-count work})))))))))) domain))))
+                          {:status :rejected :reason :vector-value-equality-domain-required :work-count work}))))))))))) domain))))
 
 (defn p15-s23-runtime-vector-equality [left right]
   (let [result (p15-s23-runtime-vector-equality-work left right 65536)]
