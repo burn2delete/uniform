@@ -7201,7 +7201,8 @@
     (if (= :i64 (get operation :type))
       (sh13-i64? (get operation :literal))
       (if (= :bool (get operation :type))
-        (sh13-member? #{true false} (get operation :literal))
+        (let [value (get operation :literal)]
+          (if (= true value) true (= false value)))
         (if (= :keyword (get operation :type))
           (keyword? (get operation :literal))
           false)))
@@ -8130,7 +8131,7 @@
   (if (= value-type :i64)
     (sh13-i64? value)
     (if (= value-type :bool)
-      (sh13-member? #{true false} value)
+      (if (= true value) true (= false value))
       (if (= value-type :keyword)
         (keyword? value)
         false))))
