@@ -5440,3 +5440,27 @@
           (is (not= :body-deferred-work-limit (:reason failed)))))
       (let [changed-request (assoc-in request [:canonical-core-artifact :module :exports] ['without-path])]
         (is (= :rejected (:status (build changed-request facts 65536))))))))
+
+(deftest body-private-first-entry-selector-guards-development-kernel
+  (let [callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque selector compared")))
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque selector hashed")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque selector printed"))))
+        check (fn [facts ledger]
+                (leaf 'body-pc-parent-rows-work {} {} {} {} facts ledger {} :algorithm 65536))]
+    (doseq [[facts ledger]
+            [[[{:call-core-node-id opaque}] []]
+             [[] [{:producer-rule opaque :lhs {:core-node-id :outer :projection :map-get}}]]
+             [[] [{:producer-rule :sh08-map-get-v1 :lhs {:core-node-id opaque :projection :map-get}}]]
+             [[] [{:producer-rule :sh08-map-get-v1 :lhs {:core-node-id :outer :projection opaque}}]]
+             [[] [{:producer-rule :sh08-map-get-v1
+                   :lhs {:core-node-id :outer :projection :map-get :extra [opaque]}}]]]]
+      (let [result (check facts ledger)]
+        (is (= :map-get-source-mismatch (:reason result)))
+        (is (zero? @callbacks))))
+    (is (= :map-get-work-limit
+           (:reason (check (vec (repeat 10000 {:call-core-node-id opaque})) []))))
+    (is (= :map-get-work-limit
+           (:reason (check [] (vec (repeat 10000 {:producer-rule opaque :lhs {:extra opaque}}))))))
+    (is (zero? @callbacks))))
