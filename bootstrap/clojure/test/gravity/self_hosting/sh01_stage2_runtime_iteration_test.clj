@@ -27248,11 +27248,13 @@
         (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))))
     (let [owner-path (.getPath (io/file root "bootstrap/gravity/src/gravity/backend/w5_b14_backend_conformance_verifier.gravity"))
           witness-path (.getPath (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/string-set-comparison.gravity"))
-          owner (first (filter #(and (seq? %) (= 'def (first %)) (= 'w5-b14-diagnostic-set (second %)))
-                               (bootstrap/read-forms owner-path (slurp owner-path))))
+          definition-text "(def w5-b14-diagnostic-set\n  #{\"B14-COVERAGE\" \"B14-TARGET\" \"B14-POSITIVE\" \"B14-NEGATIVE\"\n    \"B14-DIFFERENTIAL\" \"B14-METADATA\" \"B14-ARTIFACT\"\n    \"B14-NONDETERMINISM\" \"B14-SKIP\" \"B14-EVIDENCE\"})"
+          owner (first (bootstrap/read-forms owner-path definition-text))
           forms (bootstrap/read-forms witness-path (slurp witness-path))
           witness (first (filter #(and (seq? %) (= 'def (first %))) forms))
           main (first (filter #(and (seq? %) (= 'defn (first %))) forms))]
+      (is (str/includes? (slurp owner-path) definition-text))
+      (is (str/includes? (slurp witness-path) definition-text))
       (is (= owner witness))
       (is (= 10 (count (nth witness 2))))
       (is (= '[= = not=] (mapv first (nth main 3)))))))
