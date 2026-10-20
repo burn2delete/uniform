@@ -217,6 +217,14 @@ invalid-MIR and recursion selectors for affected composition feedback. The
 original G/Q constructors, executor and recomputation verifier exercise this
 normalized boundary; they do not provide fresh authenticated SH-12 ingress.
 
+For value-return diagnostic classification, run
+`sh13-return-values-must-be-defined-before-type-checking` in the same namespace.
+An unavailable normal return value is `C11-DOMINANCE`, as for the existing
+structured exits; a defined value with the wrong type remains `C11-TYPE`.
+Preserve earlier source-span and origin checks. Include constant-arity,
+invalid-MIR, structured-exit and branch-execution selectors for affected
+regression feedback; this does not admit a new upstream compiler revision.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
