@@ -3970,6 +3970,73 @@ Evaluated Set-literal lowering, Keyword List conversion,
 `keys` ordering, whole-W5 execution, other targets and authoritative migration
 remain separate work; this is not broader SH-07 or self-hosting completion.
 
+### Finite String-Set comparison: development increment
+
+The existing C7, C8, emitter and runtime owners extend binary `=` and `not=`
+to independently established homogeneous finite String-Set domains. String
+applications carry distinct version, policy, constraint and call-fact identities;
+Keyword and neutral-empty outputs retain their previous identities and work.
+The shared Vector delegates explicitly retain Keyword-only Set leaves.
+No helper, public API, export, arity or instruction operation was added.
+
+Both complete actual domains and within-operand value distinctness validate
+before cardinality or membership can return false. The full worst-case
+content/pair reservation fits the current remaining allowance before member
+comparison; native String UTF-16 lengths are logical units, not semantic
+normalization or a provider CPU/heap bound. Guarded native String equality,
+not Set equality, hashing, lookup, object identity or printed spelling, decides
+member equality. Stored payloads stay inert and original values unchanged.
+Inequality retains its own source/type facts and the owned equality/branch
+complement, including ordinary operand evaluation and transfers.
+
+Static candidate `45f6a28e` remained unrun: review caught unsupported `dissoc`
+in three fact builders and an emitter sibling-producer operator-ID lookup
+before its scalar guard. The successor uses closed String fact maps and guards
+the lookup, with second-row opaque/composite-ID controls requiring zero
+callbacks and the unchanged four-per-ledger reservation.
+
+The first non-fail-fast batch at `8cc17f64` remains failed: 25 tests,
+4,397 passes, zero failures and one error. All 24 semantic kernels completed
+with 4,393 passing assertions (1,476 in eleven new kernels and 2,917 in thirteen
+adjacent kernels). The parser had four passes, then errored while unnecessarily
+reading the whole unchanged B14 namespace, reporting `C2-READER` and duplicate
+`:unsupported-platforms`. That result does not establish whole-B14 readability.
+The test-only successor confines the witness to exact definition bytes in the
+owner and fixture and parses only that isolated definition; unchanged semantic
+kernels are not replayed. The failed run and its raw log/receipt remain retained.
+The corrected parser passed one test/nine assertions. This is a separate
+test-only result, not a clean rerun of the original 25-test batch.
+
+The affected source composition passed one test/98 assertions (92 composition
+plus six existing loader checks) at `b8790053`, without changing production.
+It initializes B14's exact ten-String diagnostic definition and returns
+`[true false true]` from two equalities and one inequality. Two original String
+equality facts/rows and one original-source atomic-inequality fact/row join
+through original C7/C8 and the assembly's public C7 verification. The emitted
+plan has three equality instructions and one owned complement branch, not a
+runtime `not=` call. Three inert quote instructions join to the original RHS
+source values and have no direct allocation; one initializer constructor runs
+before entry, with three pooled reads. Runtime inventory remains 54 functions.
+The String-Set Vector negative retains primary `C7-TYPE-MISMATCH` with
+`:vector-equality-operand-type-required` and secondary `C7-ANNOTATION` with
+`:unsupported-or-unresolved-core-node-type`; the check asserts presence of the
+primary, not an exact-only diagnostic vector. No negative C8/runtime ran.
+
+The source envelope took 141.159 seconds after 11.307 seconds of namespace
+loading at 2 GiB. Positive/negative C5 construction took 31.647/23.217 seconds,
+fresh development C6-session construction 38.433/30.420 seconds and same-catalog
+replay 3.225/2.481 seconds. These inclusive, nested timings distinguish product
+construction from startup, not isolated phase benchmarks or speedup evidence.
+Public fresh C6 was not invoked, Q stayed parser-only and no seed control ran.
+The source attempt passed once; its earlier quote-oracle draft remained unrun.
+Separate language-boundary checks passed six tests/eleven assertions; LOC
+validation passed 2,021 source files, zero exceptions, maximum 250 lines.
+
+String-Set Vector leaves, bare/unknown or mixed Set domains, insertion and
+recursive accumulator-domain transport remain outside this increment. Full
+B14/backend execution, other targets, current-closure admission, SH-07,
+self-hosting and release require separate evidence.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared
