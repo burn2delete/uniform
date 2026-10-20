@@ -3676,6 +3676,65 @@
       false)
     false))
 
+(defn sh12-branch-join-first-fact-operation-mismatch
+  [expected-operations expected-views views]
+  (if (= (count expected-operations) 0)
+    nil
+    (if (= (first expected-views) (first views))
+      (sh12-branch-join-first-fact-operation-mismatch
+       (rest expected-operations) (rest expected-views) (rest views))
+      (first expected-operations))))
+
+(defn sh12-branch-join-operation-fact-rejection
+  [checked-core mir diagnostic-id missing-fact operation]
+  (let [report
+        (sh12-branch-join-rejection
+         :verification diagnostic-id missing-fact checked-core mir)]
+    (if (= operation nil)
+      report
+      ; The first mismatch wins; its source comes only from fresh expected MIR.
+      (if (sh12-branch-join-node-source-valid? operation)
+        (let [source (get operation :source)
+              diagnostic (first (get report :diagnostics))]
+          (assoc report :diagnostics
+                 [(assoc diagnostic
+                         :operation-id (get operation :op-id)
+                         :block (get operation :block-id)
+                         :source-span (get source :span)
+                         :origin-chain (get source :generated-origin))]))
+        report))))
+
+(defn sh12-branch-join-effect-rejection [checked-core expected mir context]
+  (let [operation
+        (if (= (get mir :effect-table) (get expected :effect-table))
+          (if (= (get mir :effect-order-graph) (get expected :effect-order-graph))
+            (if (= (get (get context :function) :latent-effects)
+                   (get (get context :expected-function) :latent-effects))
+              (sh12-branch-join-first-fact-operation-mismatch
+               (get context :expected-operations)
+               (sh12-branch-join-effect-operation-view (get context :expected-operations) [])
+               (sh12-branch-join-effect-operation-view (get context :operations) []))
+              nil)
+            nil)
+          nil)]
+    (sh12-branch-join-operation-fact-rejection
+     checked-core mir "C11-EFFECT" :effect-fact-or-ordering operation)))
+
+(defn sh12-branch-join-safety-rejection [checked-core expected mir context]
+  (let [operation
+        (if (= (get mir :safety-table) (get expected :safety-table))
+          (if (= (get mir :runtime-check-table) (get expected :runtime-check-table))
+            (if (= (get mir :proof-certificate-table) (get expected :proof-certificate-table))
+              (sh12-branch-join-first-fact-operation-mismatch
+               (get context :expected-operations)
+               (sh12-branch-join-safety-operation-view (get context :expected-operations) [])
+               (sh12-branch-join-safety-operation-view (get context :operations) []))
+              nil)
+            nil)
+          nil)]
+    (sh12-branch-join-operation-fact-rejection
+     checked-core mir "C11-SAFETY" :safety-outcome-or-runtime-check-fact operation)))
+
 (defn sh12-branch-join-origins-valid? [expected mir context]
   (if (= (get mir :source-map) (get expected :source-map))
     (if (= (get (get context :function) :source)
@@ -3833,13 +3892,10 @@
                                 (sh12-branch-join-rejection
                                  :verification "C11-ORIGIN"
                                  :source-span-or-origin-fact checked-core mir))
-                              (sh12-branch-join-rejection
-                               :verification "C11-SAFETY"
-                               :safety-outcome-or-runtime-check-fact
-                               checked-core mir))
-                            (sh12-branch-join-rejection
-                             :verification "C11-EFFECT"
-                             :effect-fact-or-ordering checked-core mir))
+                              (sh12-branch-join-safety-rejection
+                               checked-core expected mir context))
+                            (sh12-branch-join-effect-rejection
+                             checked-core expected mir context))
                           (sh12-branch-join-type-rejection
                            checked-core expected mir context)))
                       (sh12-branch-join-rejection

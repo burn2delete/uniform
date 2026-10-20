@@ -219,6 +219,13 @@ Type-table, function-return and value-only failures retain their aggregate
 fallback; earlier structural failures retain their original precedence. This
 failure-only diagnostic path does not widen accepted MIR or its public schema.
 
+For the corresponding effect or safety operation-fact failures, use
+`sh12-operation-effect-safety-diagnostics-preserve-expected-source`. Preserve the
+original aggregate checks before locating an operation, and the existing
+type-before-effect-before-safety rejection order. Terminator/value-only errors
+retain their fallback. Attribution must use only the original fact views and
+fresh expected MIR; this check does not establish new safety proofs.
+
 ### List family classification
 
 STD3 owns unary `list?`. The current JVM typed development route accepts independently
