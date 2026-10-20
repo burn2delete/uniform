@@ -9520,6 +9520,59 @@ No old source corpus or hour-long C17 subject was replayed. Public fresh C6,
 seed-control execution, whole-project migration, full SH-07, self-hosting and
 release remain unestablished by this slice.
 
+### Finite List value inequality: executable development increment
+
+Binary `not=` now complements binary List value equality for the same finite
+positional, nonnumeric domain, including empty and paired nested Lists. Nil
+leaves are supported; nil-or unions, unknown/bare/homogeneous Lists, numeric or
+callable members, nested Never, other collection families and paired
+nested-List/scalar comparisons remain unsupported. Top-level Never retains
+the existing non-invoked behavior after complete normal-domain validation.
+Operands evaluate left-to-right once and remain non-tail; stored payloads are
+inert and no flow or member facts are inferred.
+
+The existing C7, C8 and emitter ANE routes each consume their local List equality
+domain once for a selected List-domain classification, retaining actual work
+and source/fact reconstruction. Lowering
+uses one owned conditional around one builtin equality, not constant folding
+or a runtime inequality function. Runtime inventory remains 56; existing
+atomic, Vector, Set and List equality helpers are unchanged. The selected
+malformed identity, Symbol, form and mixed-ledger fixtures observe no selected
+opaque callbacks; this is not a universal hostile-DATA or CPU-bound claim.
+
+All 27 distinct focused selectors have passing results: retained partitions
+3 tests/6,984 assertions, 2/817, 14/5,369 and 8/1,423, totaling 14,593 passing
+assertions. This was not one green 27-test invocation. Three failed aggregate
+epochs remain failed: 7,452P/10F, 847P/2F and 5,494P/9F, all without errors.
+The corrections were test-only: identity remapping had changed semantic tags;
+one forgery was unchanged and two rejection cases were already valid; a
+missing-work default disagreed with the unchanged consumer; and C8 preparation
+was incorrectly expected to enforce the final consumer's source joins. No
+production gate was weakened or extra verification walk added. A wrong-directory
+launch and unsupported boundary timing option also failed before tests; their
+logs are retained separately, without test or no-JVM claims.
+
+One source composition passes 232 assertions, including six loader checks.
+Two functions and 15 calls produce 12 List-inequality descriptors/ledger rows,
+12 owned conditionals and underlying equality calls, two List constructors,
+one local call and 22 inert quotes. All 12 expected Bool complements pass,
+including genuine C2 BMP/supplementary Characters; stdout is empty. Function
+allocation effects and operand order survive, while the queries themselves
+have no direct allocation effect. A numeric-List negative rejects with
+`C7-TYPE-MISMATCH`/`:atomic-inequality-operand-type-required`, two actual
+List-of-Integer types and Core/syntax/binding/span references. A secondary
+annotation diagnostic is retained; negative C8/runtime execution is not claimed.
+
+Boundary checks pass 6/11; LOC validation reports 2,021 source files, zero
+exceptions and maximum 250 physical lines. Source selection took 163.923
+seconds plus 12.247 seconds namespace loading. Positive inclusive C5/C6
+construction intervals were about 35.48/46.65 seconds; negative intervals were
+24.75/33.53 seconds. These distinguish product construction from test loading,
+not provider CPU time or a speedup benchmark. The post-assembly interval includes
+projection and runtime-plan acquisition. No old corpus, seed-control entry or
+hour-long C17 subject was replayed. Public fresh C6, whole-project migration,
+full SH-07, self-hosting and release remain outstanding.
+
 ## Beyond First Self-Hosting
 
 After `SH-29`, target expansion becomes a separate matrix. Each canonical

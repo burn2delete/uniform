@@ -6022,7 +6022,7 @@
                         (assoc (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-reconstruction-visits (+ initial validation-work))
                           :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (= :rejected (get owners :status)) owners
-                        (if (contains? #{:list-equality-work-limit :string-set-insertion-work-limit :keyword-set-contains-work-limit :keyword-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :list-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :vector-first-work-limit :map-get-work-limit} (get checked-edges :reason))
+                        (if (contains? #{:list-inequality-work-limit :list-equality-work-limit :string-set-insertion-work-limit :keyword-set-contains-work-limit :keyword-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :list-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :vector-first-work-limit :map-get-work-limit} (get checked-edges :reason))
                           (assoc (sh08-th-error "C7-GENERIC" (get checked-edges :reason) {} :bounded-reconstruction-visits (+ initial validation-work))
                             :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (if (= bad-edge nil) (= false recursive?) false)
@@ -12712,7 +12712,15 @@
                           (let [size (count type)]
                             (if (= 3 size)
                               (let [kind (get type :kind)]
-                                (if (= :gravity.type/vector kind)
+                                (if (= :gravity.type/list kind)
+                                  (let [domain (sh08-le-domain arguments (- limit work)) total (+ work (get domain :work-count))]
+                                    (if (= :accepted (get domain :status))
+                                      {:status :accepted :comparison-domain :list :list-domain-work (get domain :work-count)
+                                       :list-domain domain :work-count total}
+                                      {:status :rejected :reason (if (= :list-equality-work-limit (get domain :reason))
+                                                                  :list-inequality-work-limit (get domain :reason))
+                                       :work-count total}))
+(if (= :gravity.type/vector kind)
                                   (let [domain (sh08-ve-domain arguments (- limit work))
                                       total (+ work (get domain :work-count))]
                                   (if (= :accepted (get domain :status))
@@ -12745,7 +12753,7 @@
                                                                   (if (= :keyword-set-equality-work-limit (get domain :reason))
                                                                     :keyword-set-inequality-work-limit (get domain :reason))))
                                          :work-count total}))
-                                    {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})))
+                                    {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work}))))
                               (if (if (= 2 size)
                                 (if (= :gravity.type/nil-or (get type :kind))
                                   (let [value (get type :value-type)]
@@ -12766,9 +12774,32 @@
      (contains? (set (get binding :profile-set)) (get module :profile))
      (contains? (set (get binding :target-set)) :all)]) false))
 
+(defn sh08-ane-list-source-ids? [node call nodes bindings module]
+  (if (sh08-sse-call-ids? node call)
+    (let [operator (get nodes (get call :operator-node-id)) binding (get bindings (get call :operator-binding-id))]
+      (if (sh08-sse-ids? [(get operator :node-id) (get (get operator :source) :form-id)
+                         (get (get operator :source) :syntax-id) (get binding :binding-id)] 4)
+        (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+          (if (loop [items (get binding :profile-set)]
+                (if (= 0 (count items)) true (if (keyword? (first items)) (recur (rest items)) false)))
+            (if (loop [items (get binding :target-set)]
+                  (if (= 0 (count items)) true (if (keyword? (first items)) (recur (rest items)) false)))
+              (if (if (symbol? (get (get operator :attributes) :symbol)) (keyword? (get module :profile)) false)
+                (sh08-ft-all-true?
+                  [(= (get node :node-id) (get call :core-node-id))
+                   (= (get operator :node-id) (get call :operator-node-id) (first (get node :children)))
+                   (= (get binding :binding-id) (get call :operator-binding-id))
+                   (= (get call :argument-node-ids) (vec (rest (get node :children))))
+                   (= [(get call :operator-binding-id)] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                   (contains? '#{not= gravity.core/not=} (get (get operator :attributes) :symbol))
+                   (= :jvm (get module :target)) (sh08-ane-binding? binding module)]) false)
+              false) false) false) false)) false))
+
 (defn sh08-ane-source [core node call edge nodes bindings types module validation]
   ; Owning analysis supplies its freshly paid local ANE type-work classification.
-  (if (if (vector? (get call :argument-node-ids))
+  (if (if (= :list (get validation :comparison-domain))
+        (sh08-ane-list-source-ids? node call nodes bindings module) true)
+(if (if (vector? (get call :argument-node-ids))
         (if (= 2 (count (get call :argument-node-ids)))
           (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false)
   (if (loop [remaining (conj (conj (conj (conj (conj (get call :argument-node-ids) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id)) (get (get node :source) :syntax-id))] (if (= 0 (count remaining)) (loop [remaining (get node :children)] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false)))
@@ -12823,7 +12854,30 @@
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
                       :callee-body :inequality-policy  :operand-type :profile :target :evaluation-order]}]
-        (if (= :integer (get validation :comparison-domain))
+        (if (= :list (get validation :comparison-domain))
+          (if (= arguments (get (get validation :list-domain) :argument-types))
+            (assoc header :intrinsic :gravity.core/list-value-inequality
+              :list-equality {:version :sh08-list-inequality-v1 :semantic-owner 'gravity.collections
+                             :equality-version :sh08-list-equality-v1
+                             :equality-policy {:domain :finite-persistent-lists :members :recursive-list-and-supported-atomic
+                         :count :equal :order :corresponding-values :leaves :original-values
+                         :nil-bearing :unsupported :cross-family :unsupported
+                         :nested-list-versus-atomic :unsupported
+                         :identity :unobserved :payload-evaluation :none :mutation :none :numeric :unsupported}
+                             :type-domain {:shape :literal-positional :maximum-width 1024 :maximum-depth 128 :maximum-work 65536
+                                           :scalar-leaves [:nil :boolean :character :string :symbol :keyword]
+                                           :nil-or-leaves :unsupported :whole-nil-or-list :unsupported :nested-never :unsupported
+                                           :paired-nested-list-versus-atomic :unsupported
+                                           :validation :both-complete-domains-and-all-overlapping-pairs-before-value-comparison}
+                             :domain-type-work (get validation :list-domain-work)}
+              :inequality-policy {:operation :complement-of-binary-list-value-equality :domain :finite-persistent-lists
+                                  :operand-evaluation :left-to-right-once :operand-position :non-tail
+                                  :nil-bearing :unsupported :cross-family :unsupported :identity :unobserved
+                                  :coercion :none :normalization :none :locale :none :numeric :unsupported
+                                  :collections :finite-persistent-lists :construction :none
+                                  :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
+              :invalidation (conj (conj (conj (get header :invalidation) :list-equality) :list-domain) :value-policy)) nil)
+(if (= :integer (get validation :comparison-domain))
           (assoc header :numeric-equality {:version :sh08-integer-inequality-v1
                            :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core
                            :integer-type :gravity.type/integer :numeric-mode :proof-required :safety :proven-safe
@@ -13052,7 +13106,7 @@
                             :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
                             :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
                          :invalidation (conj (conj (conj (get header :invalidation) :keyword-set-equality) :equality-domain) :value-policy)) nil)
-                header))))))) nil)) nil) nil))
+                header)))))))) nil)) nil) nil) nil))
 
 (defn sh08-ane-constraint [descriptor]
   (if (= :sh08-string-set-carrier-inequality-v1 (get descriptor :version))
@@ -13072,14 +13126,16 @@
    :solution (let [solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects)
               }]
-                (if (contains? descriptor :numeric-equality)
+                (if (contains? descriptor :list-equality)
+                  (assoc solution :list-equality (get descriptor :list-equality) :inequality-policy (get descriptor :inequality-policy))
+                  (if (contains? descriptor :numeric-equality)
                   (assoc solution :numeric-equality (get descriptor :numeric-equality))
                   (if (contains? descriptor :vector-equality)
                     (assoc solution :vector-equality (get descriptor :vector-equality))
                     (if (contains? descriptor :string-set-equality)
                       (assoc solution :string-set-equality (get descriptor :string-set-equality))
                       (if (contains? descriptor :keyword-set-equality)
-                      (assoc solution :keyword-set-equality (get descriptor :keyword-set-equality)) solution)))))
+                      (assoc solution :keyword-set-equality (get descriptor :keyword-set-equality)) solution))))))
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []}))
 
@@ -13103,9 +13159,10 @@
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
 
-     :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source (if (contains? descriptor :vector-equality) :audited-vector-inequality-intrinsic
+     :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source (if (contains? descriptor :list-equality) :audited-list-inequality-intrinsic
+       (if (contains? descriptor :vector-equality) :audited-vector-inequality-intrinsic
        (if (contains? descriptor :string-set-equality) :audited-string-set-inequality-intrinsic
-         (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic)))})))
+         (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic))))})))
 
 (defn sh08-ane-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -13124,14 +13181,16 @@
               work (+ base (get validation :work-count))
               owner (if (if (keyword? (get (get node :source) :form-id)) true (if (string? (get (get node :source) :form-id)) (= 71 (count (get (get node :source) :form-id))) false)) (get forms (get (get node :source) :form-id)) nil) ids (get owner :child-form-ids)]
           (if (= false (= :accepted (get validation :status)))
-            (assoc (sh08-sm-failure (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
-                     (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason)) (if (contains? #{:vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason))
+            (assoc (sh08-sm-failure (if (contains? #{:list-inequality-work-limit :work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
+                     (if (contains? #{:list-inequality-work-limit :work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason)) (if (contains? #{:list-inequality-work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason))
                        (get validation :reason) :atomic-inequality-work-limit) :atomic-inequality-operand-type-required)
                      nil :two-supported-values-with-applicable-binary-equality arguments)
               :work-count work :type-check-reason (get validation :reason))
             (let [header (sh08-ane-source core node call edge nodes bindings types (get core :module) validation)]
               (if (if (if (map? header) (if (vector? ids) (if (= 3 (count ids)) (loop [remaining ids] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) false) false) false)
-                    (sh08-ft-all-true?
+                    (if (if (= :list (get validation :comparison-domain))
+                          (sh08-sse-ids? [(get owner :form-id) (get owner :syntax-id)] 2) true)
+(sh08-ft-all-true?
                       [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner))
                        (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
                        (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
@@ -13139,10 +13198,17 @@
                        (loop [i 0]
                          (if (= i 3) true
                            (let [form (get forms (get ids i)) child (get nodes (get children i))]
-                             (if (sh08-ft-all-true? [(= (get owner :form-id) (get form :parent-form-id))
+                             (if (if (if (= :list (get validation :comparison-domain))
+                                     (sh08-sse-ids? [(get form :form-id) (get form :syntax-id)
+                                                      (get (get child :source) :form-id) (get (get child :source) :syntax-id)] 4) true)
+                                  (sh08-ft-all-true? [(= (get owner :form-id) (get form :parent-form-id))
                                    (= (get child :source) (sh08-ma-form-source form))
-                                   (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
-                               (recur (+ i 1)) false))))]) false)
+                                   (if (= i 0)
+                                     (if (= :list (get validation :comparison-domain))
+                                       (if (symbol? (get form :value))
+                                         (= (get (get child :attributes) :symbol) (get form :value)) false)
+                                       (= (get form :value) (get (get child :attributes) :symbol))) true)]) false)
+                               (recur (+ i 1)) false))))]) false) false)
                 (let [descriptor (sh08-ane-finish header)]
                   {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
                    :constraint (sh08-ane-constraint descriptor) :work-count work})
@@ -13171,8 +13237,9 @@
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
                 {:status :accepted :work-count work}
                 {:status :rejected :reason :atomic-inequality-source-mismatch :work-count work}))
-            {:status :rejected :reason (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason)) :atomic-inequality-work-limit
-                                          :atomic-inequality-operand-type-required)
+            {:status :rejected :reason (if (= :list-inequality-work-limit (get validation :reason)) :list-inequality-work-limit
+                        (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason)) :atomic-inequality-work-limit
+                                          :atomic-inequality-operand-type-required))
              :type-check-reason (get validation :reason) :work-count work})) {:status :rejected :reason :atomic-inequality-source-mismatch :work-count base})
         {:status :rejected :reason :atomic-inequality-arity-mismatch :work-count base}))))
 
