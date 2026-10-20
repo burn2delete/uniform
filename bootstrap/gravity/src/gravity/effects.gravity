@@ -3490,7 +3490,7 @@
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (let [receiver (get arguments 0) value (get arguments 1)]
       (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
-      (if (if (map? receiver) (if (= 3 (count receiver))
+        (if (if (map? receiver) (if (= 3 (count receiver))
             (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
                   (if (keyword? (first fields)) (recur (rest fields)) false)))
               (if (= :gravity.type/set (get receiver :kind))
@@ -3498,7 +3498,8 @@
         (let [members (get receiver :element-types)]
           (if (= 0 (count members)) (= :gravity.type/symbol value)
             (if (= :gravity.type/symbol (get members 0))
-              (if (= :gravity.type/symbol value) true (= :gravity.type/never value)) false))) false)) false)))
+              (if (= :gravity.type/symbol value) true (= :gravity.type/never value)) false))) false)
+        false)) false))
 
 (defn body-syin-type-work [arguments budget]
   ; STD3: finite Symbol input is checked completely; the result retains no member facts.
