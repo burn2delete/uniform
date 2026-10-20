@@ -28168,3 +28168,496 @@
                       :whole-b14-execution false :empty-set-entry-inference false :indexed-recursion false
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0) :closed-plan-execution (- t2 t1))}))))
+
+(deftest current-gravity-string-set-carrier-comparison-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        c7 (ns-resolve upstream 'invoke-c7) input-fn (ns-resolve upstream 'atomic-equality-input)
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %)) s :gravity.type/string
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        rt (:plan (typed-catch-runtime-projection))
+        evaluate (fn [ir env] (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [ir env ""]))
+        literal (fn [v] {:op :literal :value v}) left {:op :local :name 'left} right {:op :local :name 'right}
+        values (fn [type] (cond (= carrier type) [#{} #{"seed"} #{"seed" "new"} (conj #{"seed" "new"} "new")]
+                               (empty? (:element-types type)) [#{}] :else [#{"seed"} #{"other"}]))]
+    (doseq [operation ['= 'not=] arguments [[carrier carrier] [carrier (finite [])] [(finite []) carrier]
+                                         [carrier (finite [s])] [(finite [s]) carrier]]]
+      (let [inequality? (= 'not= operation)
+            input ((ns-resolve upstream (if inequality? 'atomic-inequality-input 'atomic-equality-input)) arguments)
+            {:keys [core node nodes forms bindings types module call edge]} input
+            derive (if inequality? 'sh08-ane-derive 'sh08-kse-derive)
+            fact (if inequality? 'sh08-ane-call-fact 'sh08-kse-call-fact) constraint (if inequality? 'sh08-ane-constraint 'sh08-kse-constraint)
+            result (c7 derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0} :call-facts {:call (c7 fact [descriptor module])}
+                     :ledger [(c7 constraint [descriptor])] :locals {:arg0 'left :arg1 'right} :parameter-types types}
+            compile #(lower 'p15-s23-typed-compile-node %1 :call %2) compiled (compile context 65536)
+            eq-ir {:op :builtin-call :function '= :args [left right]}
+            expected (if inequality? {:op :if :test eq-ir :then (literal false) :else (literal true)} eq-ir)
+            coherent (fn [changed] (-> context (assoc-in [:types :operator] changed)
+                                      (assoc :call-facts {:call (c7 fact [changed module])} :ledger [(c7 constraint [changed])])))
+            policy (if inequality? (get-in descriptor [:string-set-equality :type-domain]) (:equality-policy descriptor))]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= expected (:value compiled)))
+        (is (= :not-established (:static-cardinality policy) (:operand-extent policy)))
+        (is (not (contains? descriptor :operand-counts)))
+        (is (= compiled (compile context (:work-count compiled))))
+        (is (= :rejected (:status (compile context (dec (:work-count compiled))))))
+        (doseq [changed [(assoc descriptor :version :forged) (assoc descriptor :argument-types [(finite []) (finite [])])
+                         (assoc descriptor :operand-counts [0 0]) (assoc descriptor :operand-domains [:finite-string-set :finite-string-set])
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (if inequality? (assoc-in descriptor [:string-set-equality :type-domain :static-cardinality] :known)
+                           (assoc-in descriptor [:equality-policy :static-cardinality] :known))]]
+          (is (= :rejected (:status (compile (coherent changed) 65536)))))
+        (doseq [changed [(assoc context :ledger []) (update context :ledger into (:ledger context))
+                         (update context :ledger conj (assoc-in (first (:ledger context)) [:lhs :core-node-id] :orphan))
+                         (assoc-in context [:types :arg0] :gravity.type/set)
+                         (assoc-in context [:forms :arg1 :parent-form-id] :sibling)
+                         (assoc-in context [:call-facts :call :direct-effects] [:memory/allocate])]]
+          (is (= :rejected (:status (compile changed 65536)))))
+        (doseq [a (values (first arguments)) b (values (second arguments))]
+          (let [answer (if inequality? (not= a b) (= a b))
+                marked (fn [label value] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} (literal value)]})
+                traced (walk/postwalk-replace {left (marked "left" a) right (marked "right" b)} expected)]
+            (is (= [answer "" :normal] (evaluate (:value compiled) {'left a 'right b})))
+            (is (= [answer "left\nright\n" :normal] (evaluate traced {})))))))))
+
+(deftest current-gravity-string-set-carrier-equality-source-id-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
+        {:keys [core node nodes forms bindings types module call edge]} ((ns-resolve upstream 'atomic-equality-input) [carrier carrier])
+        result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                 :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                 :call-facts {:call (c7 'sh08-kse-call-fact [descriptor module])} :ledger [(c7 'sh08-kse-constraint [descriptor])]
+                 :locals {:arg0 'left :arg1 'right} :parameter-types types}
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "comparison ID hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "comparison ID equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "comparison ID printing"))))]
+    (is (= :complete (:status (lower 'p15-s23-typed-compile-node context :call 65536))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]
+            slot [[:calls :call :argument-node-ids 0] [:calls :call :argument-node-ids 1]
+                  [:calls :call :operator-node-id] [:calls :call :operator-binding-id] [:calls :call :core-node-id]
+                  [:nodes :call :node-id] [:nodes :call :children 0] [:nodes :call :children 1] [:nodes :call :children 2]
+                  [:nodes :call :source :form-id] [:nodes :call :source :syntax-id]
+                  [:forms :call :child-form-ids 0] [:forms :call :child-form-ids 1] [:forms :call :child-form-ids 2]]
+            budget [0 65536]]
+      (let [changed (assoc-in context slot bad) changed-node (get-in changed [:nodes :call])]
+        (doseq [result [(lower 'p15-s23-typed-compile-node changed :call budget)
+                        (lower 'p15-s23-typed-compile-call changed changed-node budget)
+                        (lower 'p15-s23-typed-compile-keyword-set-equality changed changed-node budget)]]
+          (is (= :rejected (:status result))))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}] budget [0 65536]]
+      (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context bad budget))))
+      (is (zero? @callbacks)))))
+
+(deftest current-gravity-string-set-carrier-equality-transfer-fence-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'atomic-equality-input) derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input] ((ns-resolve upstream 'invoke-c7) 'sh08-kse-derive [core node call edge nodes bindings types forms budget])))
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        rt (:plan (typed-catch-runtime-projection))
+        payload (String. "original binary inequality transfer")
+        families [{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}]
+        make-context (fn [family position recur?]
+          (let [slot (if (zero? position) :arg0 :arg1) other (if (zero? position) :arg1 :arg0)
+                types (assoc [family family] position :gravity.type/never)
+                input (input-fn types) source (get-in input [:nodes slot :source])
+                operand (if recur?
+                          {:node-id slot :core-form :recur :children [] :source source :resolved-binding-ids []
+                           :attributes {:target-id :loop :target-kind :loop :arity 0 :semantic-rule "L2-RECUR-TARGET" :type-compatibility :pending-sh08}
+                           :evaluation {:kind :arguments-left-to-right-then-transfer :order []}}
+                          {:node-id slot :core-form :throw :children [:payload] :source source :evaluation {:order [{:index 0 :core-node-id :payload}]}})
+                payload-node (assoc (get-in input [:nodes slot]) :node-id :payload :core-form :literal
+                                    :attributes {:literal-kind :string :value payload}
+                                    :source (assoc source :form-id :payload :syntax-id :payload))
+                nodes (cond-> (assoc (:nodes input) slot operand) (not recur?) (assoc :payload payload-node))
+                base-form (get-in input [:forms slot]) op-id (if recur? :recur-op :throw-op)
+                forms (-> (:forms input) (assoc-in [slot :kind] :list)
+                          (assoc-in [slot :child-form-ids] (if recur? [op-id] [op-id :payload]))
+                          (assoc op-id (assoc base-form :form-id op-id :syntax-id op-id :parent-form-id slot :value (if recur? 'recur 'throw))))
+                forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
+                input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
+                          (update :types assoc :payload :gravity.type/string))
+                result (derive input 65536) descriptor (:descriptor result)
+                target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
+                transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
+                          :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
+                          :transfer-policy :nearest-lexical-recur-target :type-compatibility :pending-sh08}
+                premise {:kind :loop-recur-type :source-transfer transfer :source-target target :argument-types [] :slot-types []
+                         :result-type :gravity.type/never :normal-transfer? true :status :solved}
+                context {:core (:core input) :nodes nodes :forms forms :bindings (:bindings input)
+                         :types (assoc (:types input) :operator descriptor :call (:type result))
+                         :calls {:call (:call input)} :edges {:call (:edge input)} :call-order {:call 0}
+                         :call-facts {:call (c7 'sh08-kse-call-fact [descriptor (:module input)])}
+                         :ledger [(c7 'sh08-kse-constraint [descriptor])] :locals {other 'other} :parameter-types (:types input)
+                         :targets {:loop target} :nearest-target target :tail? true :transfers {slot transfer} :loop-binding-index {}}
+                row (lower 'p15-s23-typed-loop-row context premise operand)]
+            (is (= :accepted (:status result)))
+            {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
+    (doseq [family families position [0 1]]
+      (let [{:keys [context slot other]} (make-context family position false)
+            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot 65536)
+            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other 65536)
+            compiled (lower 'p15-s23-typed-compile-node context :call 65536)
+            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
+            actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
+        (is (= :complete (:status compiled)))
+        (is (= :throw (get-in compiled [:value :args position :op])))
+        (is (identical? payload (first actual)))
+        (is (= ["" :thrown] (subvec actual 1)))
+        (is (= compiled (lower 'p15-s23-typed-compile-node context :call (:work-count compiled))))
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call (dec (:work-count compiled))))))
+        (let [{:keys [context slot]} (make-context family position true)
+              direct (lower 'p15-s23-typed-compile-node context slot 65536)
+              non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot 65536)
+              rejected (lower 'p15-s23-typed-compile-node context :call 65536)
+              prefix (if (zero? position) 0 (:work-count other-child))]
+          ;; Recur here is normalized DATA: no source admission as an argument.
+          (is (= :complete (:status direct)))
+          (is (= {:op :recur :target :loop :args []} (:value direct)))
+          (is (= :rejected (:status non-tail) (:status rejected)))
+          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
+          (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
+
+(deftest current-gravity-string-set-carrier-inequality-transfer-fence-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'atomic-inequality-input) derive (ns-resolve upstream 'atomic-inequality-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        rt (:plan (typed-catch-runtime-projection))
+        payload (String. "original binary inequality transfer")
+        families [{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}]
+        make-context (fn [family position recur?]
+          (let [slot (if (zero? position) :arg0 :arg1) other (if (zero? position) :arg1 :arg0)
+                types (assoc [family family] position :gravity.type/never)
+                input (input-fn types) source (get-in input [:nodes slot :source])
+                operand (if recur?
+                          {:node-id slot :core-form :recur :children [] :source source :resolved-binding-ids []
+                           :attributes {:target-id :loop :target-kind :loop :arity 0 :semantic-rule "L2-RECUR-TARGET" :type-compatibility :pending-sh08}
+                           :evaluation {:kind :arguments-left-to-right-then-transfer :order []}}
+                          {:node-id slot :core-form :throw :children [:payload] :source source :evaluation {:order [{:index 0 :core-node-id :payload}]}})
+                payload-node (assoc (get-in input [:nodes slot]) :node-id :payload :core-form :literal
+                                    :attributes {:literal-kind :string :value payload}
+                                    :source (assoc source :form-id :payload :syntax-id :payload))
+                nodes (cond-> (assoc (:nodes input) slot operand) (not recur?) (assoc :payload payload-node))
+                base-form (get-in input [:forms slot]) op-id (if recur? :recur-op :throw-op)
+                forms (-> (:forms input) (assoc-in [slot :kind] :list)
+                          (assoc-in [slot :child-form-ids] (if recur? [op-id] [op-id :payload]))
+                          (assoc op-id (assoc base-form :form-id op-id :syntax-id op-id :parent-form-id slot :value (if recur? 'recur 'throw))))
+                forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
+                input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
+                          (update :types assoc :payload :gravity.type/string))
+                result (derive input 65536) descriptor (:descriptor result)
+                target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
+                transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
+                          :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
+                          :transfer-policy :nearest-lexical-recur-target :type-compatibility :pending-sh08}
+                premise {:kind :loop-recur-type :source-transfer transfer :source-target target :argument-types [] :slot-types []
+                         :result-type :gravity.type/never :normal-transfer? true :status :solved}
+                context {:core (:core input) :nodes nodes :forms forms :bindings (:bindings input)
+                         :types (assoc (:types input) :operator descriptor :call (:type result))
+                         :calls {:call (:call input)} :edges {:call (:edge input)} :call-order {:call 0}
+                         :call-facts {:call (c7 'sh08-ane-call-fact [descriptor (:module input)])}
+                         :ledger [(c7 'sh08-ane-constraint [descriptor])] :locals {other 'other} :parameter-types (:types input)
+                         :targets {:loop target} :nearest-target target :tail? true :transfers {slot transfer} :loop-binding-index {}}
+                row (lower 'p15-s23-typed-loop-row context premise operand)]
+            (is (= :accepted (:status result)))
+            {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
+    (doseq [family families position [0 1]]
+      (let [{:keys [context slot other]} (make-context family position false)
+            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot 65536)
+            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other 65536)
+            compiled (lower 'p15-s23-typed-compile-node context :call 65536)
+            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
+            actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
+        (is (= :complete (:status compiled)))
+        (is (= :throw (get-in compiled [:value :test :args position :op])))
+        (is (identical? payload (first actual)))
+        (is (= ["" :thrown] (subvec actual 1)))
+        (is (= compiled (lower 'p15-s23-typed-compile-node context :call (:work-count compiled))))
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call (dec (:work-count compiled))))))
+        (let [{:keys [context slot]} (make-context family position true)
+              direct (lower 'p15-s23-typed-compile-node context slot 65536)
+              non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot 65536)
+              rejected (lower 'p15-s23-typed-compile-node context :call 65536)
+              prefix (if (zero? position) 0 (:work-count other-child))]
+          ;; Recur here is normalized DATA: no source admission as an argument.
+          (is (= :complete (:status direct)))
+          (is (= {:op :recur :target :loop :args []} (:value direct)))
+          (is (= :rejected (:status non-tail) (:status rejected)))
+          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
+          (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
+
+(deftest current-gravity-string-set-carrier-mixed-comparison-ledger-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        effects (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [context id] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-typed-compile-node [context id 65536]))
+        ids {:call :sibling-call :operator :sibling-operator :arg0 :sibling-left :arg1 :sibling-right :ordering-binding :sibling-binding}]
+    (doseq [inequality? [false true]]
+      (let [input-fn (ns-resolve upstream (if inequality? 'atomic-inequality-input 'atomic-equality-input))
+            family (if inequality? "ane" "kse") derive (symbol (str "sh08-" family "-derive"))
+            fact (symbol (str "sh08-" family "-call-fact")) row (symbol (str "sh08-" family "-constraint"))
+            primary (input-fn [carrier carrier]) raw-sibling (input-fn (if inequality? [:gravity.type/bool :gravity.type/bool] [finite finite]))
+            renamed (into {} (map (fn [[k v]] [k (walk/postwalk-replace ids v)]) raw-sibling))
+            sibling (-> (walk/postwalk (fn [v] (if (map? v)
+                                                    (cond-> v (= :sibling-call (:core-form v)) (assoc :core-form :call)
+                                                              (= :sibling-operator (:position v)) (assoc :position :operator)) v)) renamed)
+                        (assoc-in [:edge :ordinal] 1) (assoc-in [:core :call-edges 0 :ordinal] 1))
+            inputs [primary sibling]
+            results (mapv (fn [{:keys [core node call edge nodes bindings types forms]}]
+                            (c7 derive [core node call edge nodes bindings types forms 65536])) inputs)
+            descriptors (mapv :descriptor results)
+            core (-> (:core primary) (assoc :nodes (vec (mapcat #(vals (:nodes %)) inputs)))
+                     (assoc :calls (mapv :call inputs) :call-edges (mapv :edge inputs)))
+            nodes (apply merge (map :nodes inputs)) forms (apply merge (map :forms inputs)) bindings (apply merge (map :bindings inputs))
+            types (reduce (fn [out [input result]] (assoc out (get-in input [:call :operator-node-id]) (:descriptor result)
+                                                        (get-in input [:node :node-id]) (:type result)))
+                          (apply merge (map :types inputs)) (map vector inputs results))
+            ledger (mapv #(c7 row [%]) descriptors) facts (mapv #(c7 fact [% (:module core)]) descriptors)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types types
+                     :calls (into {} (map (fn [input] [(get-in input [:node :node-id]) (:call input)]) inputs))
+                     :edges (into {} (map (fn [input] [(get-in input [:node :node-id]) (:edge input)]) inputs))
+                     :call-order {:call 0 :sibling-call 1} :call-facts (zipmap [:call :sibling-call] facts) :ledger ledger
+                     :locals {:arg0 'left :arg1 'right :sibling-left 'sibling-left :sibling-right 'sibling-right} :parameter-types types}
+            typed {:module (:module core) :type-table types :function-type-table [] :call-type-facts facts :constraint-ledger ledger}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            prepared (effects (if inequality? 'body-ane-context 'body-ae-context) request typed bindings 65536)
+            checked (assoc typed (if inequality? :atomic-inequality-context :equality-context) (:context prepared))]
+        (is (= [:accepted :accepted] (mapv :status results)))
+        (is (= 2 (count (set (map :producer-rule ledger)))))
+        (is (= :accepted (:status prepared)))
+        (is (true? (effects 'body-call-joins-with-foreign-valid? core checked bindings {})))
+        (doseq [[index id] [[0 :call] [1 :sibling-call]]]
+          (is (= :complete (:status (lower context id))))
+          (is (= :rejected (:status (lower (assoc context :ledger [(get ledger (- 1 index))]) id)))))
+        (is (= :rejected (:status (lower (update context :ledger conj (first ledger)) :call))))))))
+
+(deftest current-gravity-string-set-carrier-equality-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name] [["accepted" "string-set-carrier-equality"] ["rejected" "string-set-carrier-bare-entry"]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g)
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms) helper (first definitions)]
+        (is (= g q))
+        (is (= forms (bootstrap/read-forms q-path q)))
+        (is (= '[insert-matches? main] (mapv second definitions)))
+        (is (= '[again :- Bool value :- String seen] (nth helper 2)))
+        (is (= 'Bool (nth helper 4)))))))
+
+(deftest current-gravity-string-set-carrier-equality-authenticated-composition
+  ;; One carrier comparison composition and one genuine bare-Set private-entry negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "String-Set carrier comparison fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "String-Set carrier comparison development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:string-set-carrier-equality-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "String-Set carrier comparison upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "String-Set carrier comparison C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "String-Set carrier comparison C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/string-set-carrier-equality.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) (:input positive)))
+        t1 (System/nanoTime)
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        proof (:recursive-proof facts) premise (:parameter-value-premise proof)
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        helper (get functions 'insert-matches?) main (get functions 'main)
+        insertions (mapv :applied-string-set-insertion (filter #(= :direct-string-set-insertion (:dispatch %)) (:call-type-facts facts)))
+        equalities (mapv :applied-string-set-equality (filter #(= :direct-string-set-equality (:dispatch %)) (:call-type-facts facts)))
+        inequalities (mapv :applied-atomic-inequality (filter #(= :direct-atomic-inequality (:dispatch %)) (:call-type-facts facts)))
+        equality-rows (filterv #(= :sh08-string-set-carrier-equality-v1 (:producer-rule %)) (:constraint-ledger facts))
+        inequality-rows (filterv #(= :sh08-string-set-carrier-inequality-v1 (:producer-rule %)) (:constraint-ledger facts))
+        manifest (:module-initialization assembled) roots (:roots manifest) initializers (:initializers manifest)
+        globals (filterv #(= :literal (:kind %)) roots)
+        instructions (filter map? (tree-seq coll? seq (concat (vals (:functions assembled)) (map :instruction initializers))))
+        conj-ir (filterv #(and (= :builtin-call (:op %)) (= 'conj (:function %))) instructions)
+        eq-ir (filterv #(and (= :builtin-call (:op %)) (= '= (:function %))) instructions)
+        complement-ir (filterv #(and (= :if (:op %)) (= {:op :literal :value false} (:then %))
+                                    (= {:op :literal :value true} (:else %))) instructions)
+        quote-ir (filterv #(= :quote (:op %)) instructions) graph (:effect-graph effects)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        scoped-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        scoped-original @scoped-var events (atom [])
+        execution (with-redefs-fn
+                    {scoped-var (fn [& args]
+                                  (let [callee (nth args 2)]
+                                    (when (= 'p15-s23-runtime-keyword-set-construction-work callee) (swap! events conj :constructor))
+                                    (when (= 'p15-s23-runtime-activate-function-in-instance callee)
+                                      (when (= 'main (:name (first (nth args 3)))) (swap! events conj :entry))))
+                                  (apply scoped-original args))}
+                    #(original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)]))
+        t2 (System/nanoTime)]
+    (is (= 2 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 3 (count (:definitions core)) (count roots)))
+    (is (= 20 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= :gravity/sh08-private-self-value-proof-v1 (:domain proof)))
+    (is (= :closed-private-self-use-census-v1 (get-in premise [:source-census :kind])))
+    (is (= 3 (get-in premise [:entry-values :normal-entry-count])))
+    (is (= [:gravity.type/bool :gravity.type/string carrier] (:parameter-types proof) (get-in premise [:entry-values :parameter-types])))
+    (is (= :gravity.type/bool (:inferred-return-type proof) (:return helper) (get-in proof [:return-witness :return-type])))
+    (is (= [carrier] (mapv :type (drop 2 (:parameters helper)))))
+    (is (= 4 (count (:incoming-call-node-ids proof)) (count (get-in premise [:source-census :calls]))))
+    (is (= carrier (get-in facts [:type-table (get-in proof [:self-call :argument-node-ids 2])])))
+    (is (= 10 (count insertions) (count conj-ir) (count quote-ir)))
+    (is (= 4 (count equalities) (count equality-rows)))
+    (is (= 2 (count inequalities) (count inequality-rows) (count complement-ir)))
+    (is (= 6 (count eq-ir)))
+    (is (= #{[:homogeneous-string-set :finite-string-set] [:finite-string-set :homogeneous-string-set]
+             [:homogeneous-string-set :homogeneous-string-set]} (set (map :operand-domains equalities))))
+    (is (= #{[:homogeneous-string-set :finite-string-set] [:finite-string-set :homogeneous-string-set]}
+           (set (map #(get-in % [:string-set-equality :operand-domains]) inequalities))))
+    (is (= :p15-s23-module-literals-v1 (:version manifest)))
+    (is (= :fresh-per-closed-plan-execution (:instance-policy manifest)))
+    (is (= '[expected insert-matches? main] (mapv :name roots)))
+    (is (= [:literal :function :function] (mapv :kind roots)))
+    (is (= 1 (count globals) (count initializers) (get-in assembled [:instruction-summary :set-literal])))
+    (is (= [2] (mapv #(count (:items (:instruction %))) initializers)))
+    (is (= [:gravity.type/string :gravity.type/string] (get-in (first globals) [:type :element-types])))
+    (is (= 4 (count (filter #(= :namespace-read (:op %)) instructions))))
+    (is (= 55 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= [true true false true true false true true] (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= [:constructor :entry] @events))
+    (is (= (mapv :binding-id globals) (get-in execution [:module-initialization :initialized-binding-ids])))
+    (is (= #{:memory/allocate} (get-in graph [:namespace :inferred])))
+    (doseq [function [helper main]]
+      (let [summary (get-in graph [:functions (:function-id function)])]
+        (is (= #{:memory/allocate} (:inferred summary) (:latent summary)))))
+    (doseq [descriptor equalities]
+      (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+            row (first (filter #(= id (get-in % [:lhs :core-node-id])) equality-rows))]
+        (is (= :sh08-string-set-carrier-equality-v1 (:version descriptor)))
+        (is (= :independently-established-string-sets (get-in descriptor [:equality-policy :domain])))
+        (is (= :not-established (get-in descriptor [:equality-policy :static-cardinality]) (get-in descriptor [:equality-policy :operand-extent])))
+        (is (not (contains? descriptor :operand-counts)))
+        (is (= (:operand-domains descriptor) (get-in row [:solution :operand-domains])))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (doseq [descriptor inequalities]
+      (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+            row (first (filter #(= id (get-in % [:lhs :core-node-id])) inequality-rows))]
+        (is (= :sh08-string-set-carrier-inequality-v1 (:version descriptor)))
+        (is (= 'not= (:operation descriptor)))
+        (is (= :sh08-string-set-carrier-equality-v1 (get-in descriptor [:string-set-equality :equality-version])))
+        (is (= :not-established (get-in descriptor [:string-set-equality :type-domain :static-cardinality])))
+        (is (not (contains? (:string-set-equality descriptor) :operand-counts)))
+        (is (= (:string-set-equality descriptor) (get-in row [:solution :string-set-equality])))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/string-set-carrier-bare-entry.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(= :private-self-independent-entry-types-required (:reason %)) diagnostics) (pr-str diagnostics))
+      (println (pr-str {:string-set-carrier-equality-typing-negative diagnostics :timing (:development-timing negative)})))
+    (println (pr-str {:string-set-carrier-equality-composition :completed :runtime-result (:entrypoint-result execution)
+                      :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                      :closed-plan-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count (count (:functions runtime-plan))
+                      :whole-b14-execution false :bare-set-entry-inference false :indexed-recursion false
+                      :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0) :closed-plan-execution (- t2 t1))}))))

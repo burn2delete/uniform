@@ -1,0 +1,21 @@
+(ns self-hosting.sh08.string-set-carrier-equality
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(def expected #{"seed" "new"})
+
+(defn insert-matches? [again :- Bool value :- String seen] :- Bool
+  (if again
+    (insert-matches? false value (conj seen value))
+    (= seen '#{"seed" "new"})))
+
+(defn main []
+  [(insert-matches? true "new" (conj '#{} "seed"))
+   (insert-matches? true "new" (conj '#{"seed" "new"} "new"))
+   (insert-matches? false "other" (conj '#{} "seed"))
+   (= (conj '#{"seed"} "new") expected)
+   (= expected (conj '#{"seed"} "new"))
+   (not= (conj '#{"seed"} "new") expected)
+   (not= expected (conj '#{} "seed"))
+   (= (conj '#{"seed"} "new") (conj '#{"new"} "seed"))])

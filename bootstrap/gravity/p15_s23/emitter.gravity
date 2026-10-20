@@ -9231,19 +9231,24 @@
                                                                 :vector-inequality-work-limit (get domain :reason))
                                      :work-count total}))
                                   (if (= :gravity.type/set kind)
-                                    (let [domain (p15-s23-kse-domain arguments (- limit work))
+                                    (let [domain (p15-s23-sse-domain arguments (- limit work))
                                           total (+ work (get domain :work-count))]
                                       (if (= :accepted (get domain :status))
+                                        (if (= :string-set-carrier (get domain :comparison-domain))
+                                        {:status :accepted :comparison-domain :string-set-carrier
+                                         :string-set-domain-work (get domain :work-count)
+                                         :operand-domains (get domain :operand-domains) :work-count total}
                                         (if (= :string-set (get domain :comparison-domain))
                                         {:status :accepted :comparison-domain :string-set
                                          :string-set-domain-work (get domain :work-count)
                                          :operand-counts (get domain :operand-counts) :work-count total}
                                         {:status :accepted :comparison-domain :keyword-set
                                          :keyword-set-domain-work (get domain :work-count)
-                                         :operand-counts (get domain :operand-counts) :work-count total})
-                                        {:status :rejected :reason (if (= :string-set-equality-work-limit (get domain :reason)) :string-set-inequality-work-limit
+                                         :operand-counts (get domain :operand-counts) :work-count total}))
+                                        {:status :rejected :reason (if (= :string-set-carrier-equality-work-limit (get domain :reason)) :string-set-carrier-inequality-work-limit
+                                                                (if (= :string-set-equality-work-limit (get domain :reason)) :string-set-inequality-work-limit
                                                                   (if (= :keyword-set-equality-work-limit (get domain :reason))
-                                                                    :keyword-set-inequality-work-limit (get domain :reason)))
+                                                                    :keyword-set-inequality-work-limit (get domain :reason))))
                                          :work-count total}))
                                     {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})))
                               (if (if (= 2 size)
@@ -9461,7 +9466,40 @@
                         :keyword-set-leaf-equality) :set-member-domain) :member-value-policy) :aggregate-leaf-work)
                         :numeric-equality) :numeric-mode) :integral-type)))
                   result))
-              (if (= :string-set (get validation :comparison-domain))
+              (if (= :string-set-carrier (get validation :comparison-domain))
+                (if (= :jvm (get module :target))
+                  (assoc header :version :sh08-string-set-carrier-inequality-v1 :intrinsic :gravity.core/string-set-value-inequality
+                         :string-set-equality {:version :sh08-string-set-carrier-inequality-v1 :semantic-owner 'gravity.collections
+                            :equality-version :sh08-string-set-carrier-equality-v1
+                            :equality-policy (assoc {:domain :independently-established-string-sets :members :string-only
+                         :comparison :guarded-atomic-string-leaf :order :unobserved
+                         :domain-validation :both-complete-before-result
+                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :identity :unobserved :payload-evaluation :none :mutation :none
+                         :collection-construction :none :provider-cpu-bound :not-established}
+                              :strings :exact-valid-scalar-sequence :normalization :none :locale :none :conversion :none :numeric :unsupported
+                              :value-work-model :gravity/string-set-equality-logical-content-work-v1
+                              :entry-contract :type-conforming-typed-calls)
+                            :type-domain {:shape :finite-or-homogeneous :carrier-schema :gravity/homogeneous-string-set-type-v1
+                                          :members :string-only :maximum-literal-width 1024 :maximum-work 65536
+                                          :static-cardinality :not-established :operand-extent :not-established
+                                          :validation :both-complete-domains-before-value-comparison
+                                          :whole-nil-or-set :unsupported :nested-members :unsupported}
+                            :operand-domains (get validation :operand-domains)
+                            :domain-type-work (get validation :string-set-domain-work)}
+                         :inequality-policy (assoc {:operation :complement-of-binary-string-set-value-equality
+                            :domain :independently-established-string-sets :members :string-only
+                            :operand-evaluation :left-to-right-once :operand-position :non-tail
+                            :order :unobserved :domain-validation :both-complete-before-result
+                            :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                            :cross-collection :unsupported :nil-bearing :unsupported :identity :unobserved
+                            :coercion :none :normalization :none :locale :none :numeric :unsupported
+                            :collections :independently-established-string-sets :construction :none
+                            :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
+                            :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
+                           :strings :exact-valid-scalar-sequence :value-work-model :gravity/string-set-equality-logical-content-work-v1)
+                         :invalidation (conj (conj (conj (conj (conj (conj (get header :invalidation) :inferred-member-carrier) :carrier-schema) :finite-member-types) :string-set-equality) :equality-domain) :value-policy)) nil)
+                (if (= :string-set (get validation :comparison-domain))
                 (if (= :jvm (get module :target))
                   (assoc header :intrinsic :gravity.core/string-set-value-inequality
                          :string-set-equality {:version :sh08-string-set-inequality-v1 :semantic-owner 'gravity.collections
@@ -9519,9 +9557,19 @@
                             :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
                             :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
                          :invalidation (conj (conj (conj (get header :invalidation) :keyword-set-equality) :equality-domain) :value-policy)) nil)
-                header)))))) nil)) nil) nil))
+                header))))))) nil)) nil) nil))
 
 (defn p15-s23-ane-constraint [descriptor]
+  (if (= :sh08-string-set-carrier-inequality-v1 (get descriptor :version))
+    {:constraint-id-request {:domain :gravity/sh08-string-set-carrier-inequality-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-string-set-carrier-inequality-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :string-set-carrier-inequality}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)
+              :inequality-policy (get descriptor :inequality-policy) :string-set-equality (get descriptor :string-set-equality)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []}
   {:constraint-id-request {:domain :gravity/sh08-atomic-inequality-constraint-v1 :application descriptor}
    :kind :equality :producer-rule :sh08-atomic-inequality-v1
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :atomic-inequality}
@@ -9538,9 +9586,19 @@
                       (if (contains? descriptor :keyword-set-equality)
                       (assoc solution :keyword-set-equality (get descriptor :keyword-set-equality)) solution)))))
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []})
+   :status :solved :diagnostics []}))
 
 (defn p15-s23-ane-call-fact [descriptor module]
+  (if (= :sh08-string-set-carrier-inequality-v1 (get descriptor :version))
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+      {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-string-set-carrier-inequality-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source :audited-string-set-carrier-inequality-intrinsic})
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-atomic-inequality-call-type-fact-v1 :application descriptor}
@@ -9552,7 +9610,7 @@
 
      :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source (if (contains? descriptor :vector-equality) :audited-vector-inequality-intrinsic
        (if (contains? descriptor :string-set-equality) :audited-string-set-inequality-intrinsic
-         (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic)))}))
+         (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic)))})))
 
 (defn p15-s23-ane-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -9574,10 +9632,10 @@
                          (p15-s23-ane-source core node call edge nodes (get context :bindings) (get context :types) (get core :module) validation) nil)
                 descriptor (if (map? header) (p15-s23-ane-finish header) nil)
                 owner (if (if (keyword? (get (get node :source) :form-id)) true (if (string? (get (get node :source) :form-id)) (= 71 (count (get (get node :source) :form-id))) false)) (get forms (get (get node :source) :form-id)) nil) ids (get owner :child-form-ids)
-                producer-rows (p15-s23-pe-select (get context :ledger) :producer-rule :sh08-atomic-inequality-v1)
-                producer-ids? (loop [remaining producer-rows] (if (= 0 (count remaining)) true (let [lhs (get (first remaining) :lhs) row-id (get lhs :core-node-id)] (if (if (map? lhs) (if (= 2 (count lhs)) (if (= :atomic-inequality (get lhs :projection)) (if (keyword? row-id) true (if (string? row-id) (= 71 (count row-id)) false)) false) false) false) (recur (rest remaining)) false))))
-                rows (if producer-ids? (p15-s23-pe-select producer-rows :lhs {:core-node-id id :projection :atomic-inequality}) [])]
-            (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit} (get validation :reason))
+                producer-rows (loop [remaining (get context :ledger) out []] (if (= 0 (count remaining)) out (recur (rest remaining) (if (if (= :sh08-atomic-inequality-v1 (get (first remaining) :producer-rule)) true (= :sh08-string-set-carrier-inequality-v1 (get (first remaining) :producer-rule))) (conj out (first remaining)) out))))
+                producer-ids? (loop [remaining producer-rows] (if (= 0 (count remaining)) true (let [lhs (get (first remaining) :lhs) row-id (get lhs :core-node-id) projection (if (= :sh08-string-set-carrier-inequality-v1 (get (first remaining) :producer-rule)) :string-set-carrier-inequality :atomic-inequality)] (if (if (map? lhs) (if (= 2 (count lhs)) (if (= projection (get lhs :projection)) (if (keyword? row-id) true (if (string? row-id) (= 71 (count row-id)) false)) false) false) false) (recur (rest remaining)) false))))
+                rows (if producer-ids? (p15-s23-pe-select producer-rows :lhs {:core-node-id id :projection (if (= :sh08-string-set-carrier-inequality-v1 (get descriptor :version)) :string-set-carrier-inequality :atomic-inequality)}) [])]
+            (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit :string-set-inequality-work-limit :string-set-carrier-inequality-work-limit} (get validation :reason))
               (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count work)
               (if (if (if producer-ids? (if (map? descriptor) (if (vector? ids) (if (= 3 (count ids)) (loop [remaining ids] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) false) false) false) false)
                     (p15-s23-typed-all
@@ -10494,7 +10552,58 @@
                    :work-count work}))))))
       {:status :rejected :reason :keyword-set-equality-arity-mismatch :work-count 0})))
 
+(defn p15-s23-sse-ids? [ids width]
+  (if (vector? ids) (if (<= (count ids) 6) (if (= (count ids) width)
+    (loop [remaining ids]
+      (if (= 0 (count remaining)) true
+        (if (if (keyword? (first remaining)) true
+              (if (string? (first remaining)) (= 71 (count (first remaining))) false))
+          (recur (rest remaining)) false))) false) false) false))
+
+(defn p15-s23-sse-call-ids? [node call]
+  (if (if (map? node) (map? call) false)
+    (if (p15-s23-sse-ids? (get node :children) 3)
+      (if (p15-s23-sse-ids? (get call :argument-node-ids) 2)
+        (p15-s23-sse-ids? [(get node :node-id) (get call :core-node-id)
+                      (get call :operator-node-id) (get call :operator-binding-id)
+                      (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 6) false) false) false))
+
+(defn p15-s23-sse-domain [arguments budget]
+  ; Standalone carrier equality only. Vector Set leaves retain kse-domain.
+  (let [limit (if (< budget 65536) budget 65536)]
+    (if (< limit 2) (p15-s23-kse-domain arguments budget)
+      (if (if (vector? arguments) (= 2 (count arguments)) false)
+        (if (if (p15-s23-ss-type? (get arguments 0)) true (p15-s23-ss-type? (get arguments 1)))
+          (loop [side 0 work 2 domains []]
+            (if (= side 2)
+              {:status :accepted :comparison-domain :string-set-carrier :argument-types arguments
+               :operand-domains domains :carrier-schema :gravity/homogeneous-string-set-type-v1 :work-count work}
+              (let [type (get arguments side)]
+                (if (= :gravity.type/never type)
+                  (recur (+ side 1) work (conj domains :never))
+                  (let [paid (+ work 3)]
+                    (if (> paid limit)
+                      {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-work-limit :work-count paid}
+                      (if (p15-s23-ss-type? type)
+                        (recur (+ side 1) paid (conj domains :homogeneous-string-set))
+                        (if (if (map? type) (if (= 3 (count type))
+                              (if (= :gravity.type/set (get type :kind))
+                                (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false)
+                          (let [members (get type :element-types) width (count members) total (+ paid width)]
+                            (if (> width 1024)
+                              {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-type-width :work-count paid}
+                              (if (> total limit)
+                                {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-work-limit :work-count total}
+                                (if (loop [i 0] (if (= i width) true
+                                      (if (= :gravity.type/string (get members i)) (recur (+ i 1)) false)))
+                                  (recur (+ side 1) total (conj domains :finite-string-set))
+                                  {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-operand-type-required :work-count total}))))
+                          {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-operand-type-required :work-count paid}))))))))
+          (p15-s23-kse-domain arguments budget))
+        (p15-s23-kse-domain arguments budget)))))
+
 (defn p15-s23-kse-source [core node call edge nodes bindings types module validation]
+  (if (p15-s23-sse-call-ids? node call)
   (if (if (vector? (get call :argument-node-ids))
         (if (= 2 (count (get call :argument-node-ids)))
           (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false)
@@ -10529,6 +10638,29 @@
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
           ])
+      (if (= :string-set-carrier (get validation :comparison-domain))
+        {:kind :gravity.type/applied-string-set-equality :version :sh08-string-set-carrier-equality-v1
+       :operation '= :semantic-owner 'gravity.collections :intrinsic :gravity.collections/string-set-value-equality
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :operand-domains (get validation :operand-domains) :carrier-schema :gravity/homogeneous-string-set-type-v1 :type-domain-work-count (get validation :work-count)
+       :equality-policy {:domain :independently-established-string-sets :members :string-only
+                         :static-cardinality :not-established :operand-extent :not-established
+                         :comparison :guarded-atomic-string-leaf :strings :exact-valid-scalar-sequence
+                         :normalization :none :locale :none :conversion :none :numeric :unsupported
+                         :value-work-model :gravity/string-set-equality-logical-content-work-v1
+                         :entry-contract :type-conforming-typed-calls :order :unobserved
+                         :domain-validation :both-complete-before-result
+                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :identity :unobserved :payload-evaluation :none :mutation :none
+                         :collection-construction :none :provider-cpu-bound :not-established}
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :equality-domain :inferred-member-carrier :carrier-schema :finite-member-types
+                      :string-equality-policy :representation-work :value-policy :profile :target :evaluation-order]}
       (let [header {:kind :gravity.type/applied-keyword-set-equality :version :sh08-keyword-set-equality-v1
        :operation '= :semantic-owner 'gravity.collections :intrinsic :gravity.collections/keyword-set-value-equality
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
@@ -10555,9 +10687,20 @@
                             :value-work-model :gravity/string-set-equality-logical-content-work-v1
                             :entry-contract :type-conforming-typed-calls)
             :invalidation (conj (conj (get header :invalidation) :string-equality-policy) :representation-work))
-          header)) nil)) nil))
+          header))) nil)) nil)
+    nil))
 
 (defn p15-s23-kse-constraint [descriptor]
+  (if (= :sh08-string-set-carrier-equality-v1 (get descriptor :version))
+    {:constraint-id-request {:domain :gravity/sh08-string-set-carrier-equality-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-string-set-carrier-equality-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :string-set-carrier-equality}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects) :equality-policy (get descriptor :equality-policy)
+              :operand-domains (get descriptor :operand-domains) :carrier-schema (get descriptor :carrier-schema)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []}
   {:constraint-id-request {:domain (if (= :sh08-string-set-equality-v1 (get descriptor :version))
                                      :gravity/sh08-string-set-equality-constraint-v1 :gravity/sh08-keyword-set-equality-constraint-v1) :application descriptor}
    :kind :equality :producer-rule (if (= :sh08-string-set-equality-v1 (get descriptor :version))
@@ -10570,9 +10713,19 @@
                {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects)})
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []})
+   :status :solved :diagnostics []}))
 
 (defn p15-s23-kse-call-fact [descriptor module]
+  (if (= :sh08-string-set-carrier-equality-v1 (get descriptor :version))
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+      {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-string-set-carrier-equality-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-carrier-value-intrinsic})
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     (let [fact {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-keyword-set-equality-call-type-fact-v1 :application descriptor}
@@ -10590,7 +10743,7 @@
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-value-intrinsic} fact))))
+     :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-value-intrinsic} fact)))))
 
 (defn p15-s23-kse-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -10600,20 +10753,24 @@
   (let [id (get node :node-id) core (get context :core)
         charge (+ 66 (count (get core :function-records)) (* 4 (count (get context :ledger))))]
     (if (< budget charge) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
-      (let [call (get (get context :calls) id) edge (get (get context :edges) id)
+      (if (if (if (p15-s23-sse-ids? (get node :children) 3) (p15-s23-sse-ids? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3) false)
+          (if (p15-s23-sse-call-ids? node (get (get context :calls) id))
+            (p15-s23-sse-ids? (get (get (get context :forms) (get (get node :source) :form-id)) :child-form-ids) 3) false) false)
+        (let [call (get (get context :calls) id) edge (get (get context :edges) id)
             forms (get context :forms) nodes (get context :nodes)
             owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
             args (get call :argument-node-ids)
             domain (if (if (vector? args) (= 2 (count args)) false)
-                     (p15-s23-kse-domain (p15-s23-io-child-types args (get context :types)) (- budget charge))
+                     (p15-s23-sse-domain (p15-s23-io-child-types args (get context :types)) (- budget charge))
                      {:status :rejected :work-count 0})
             charge (+ charge (get domain :work-count))
             header (if (= :accepted (get domain :status))
                      (p15-s23-kse-source core node call edge nodes (get context :bindings) (get context :types) (get core :module) domain) nil)
             descriptor (if (map? header) (p15-s23-kse-finish header) nil)
-            strings? (= :string-set (get domain :comparison-domain))
-            producer-rows (p15-s23-pe-select (get context :ledger) :producer-rule (if strings? :sh08-string-set-equality-v1 :sh08-keyword-set-equality-v1))
-            rows (p15-s23-pe-select producer-rows :lhs {:core-node-id id :projection (if strings? :string-set-equality :keyword-set-equality)})]
+            carrier? (= :string-set-carrier (get domain :comparison-domain))
+        strings? (if carrier? true (= :string-set (get domain :comparison-domain)))
+            producer-rows (p15-s23-pe-select (get context :ledger) :producer-rule (if carrier? :sh08-string-set-carrier-equality-v1 (if strings? :sh08-string-set-equality-v1 :sh08-keyword-set-equality-v1)))
+            rows (p15-s23-pe-select producer-rows :lhs {:core-node-id id :projection (if carrier? :string-set-carrier-equality (if strings? :string-set-equality :keyword-set-equality))})]
         (if (> charge budget) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
         (if (if (map? descriptor)
               (p15-s23-typed-all
@@ -10660,7 +10817,8 @@
                   (if (p15-s23-compiler-complete? compiled)
                     (recur (rest remaining) (conj values (get compiled :value)) total)
                     (assoc compiled :work-count total))))))
-          (assoc (p15-s23-typed-node-error (if strings? :unsupported-or-mismatched-typed-string-set-equality :unsupported-or-mismatched-typed-keyword-set-equality) node) :work-count charge)))))))
+          (assoc (p15-s23-typed-node-error (if strings? :unsupported-or-mismatched-typed-string-set-equality :unsupported-or-mismatched-typed-keyword-set-equality) node) :work-count charge))))
+        (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-string-set-equality node) :work-count charge)))))
 
 (defn p15-s23-ve-domain [arguments budget]
   (let [limit (if (< budget 65536) budget 65536)]
@@ -12100,6 +12258,7 @@
                                (if homogeneous? true (= version :sh08-homogeneous-list-parameter-v1))))))) row))
 
 (defn p15-s23-typed-compile-call [context node budget]
+  (if (p15-s23-sse-ids? [(get node :node-id) (first (get node :children))] 2)
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
         (contains? #{:gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-vector-first}
           (get (get (get context :types) (first (get node :children))) :kind)) false)
@@ -12259,7 +12418,8 @@
                 :work-count (+ charge (get compiled :work-count)))
               (assoc compiled :work-count (+ charge (get compiled :work-count 0)))))
           (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-direct-call node) :work-count charge)))))
-      (p15-s23-typed-node-error :malformed-typed-call-family node))))))))))))))))
+      (p15-s23-typed-node-error :malformed-typed-call-family node)))))))))))))))
+    (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-string-set-equality node) :work-count 1)))
 
 (defn p15-s23-typed-compile-keyword-set [context node budget]
   ; This literal-only constructor uses the existing Set IR and evaluates its children.
@@ -13232,8 +13392,10 @@
         (assoc (p15-s23-typed-node-error :typed-reference-outside-parameters node) :work-count work)))))
 
 (defn p15-s23-typed-compile-node [context id budget]
-  (let [node (get (get context :nodes) id) form (get node :core-form) children (get node :children)
-        source (get (get context :forms) (get (get node :source) :form-id)) type (get (get context :types) id)]
+  (let [node (if (p15-s23-sse-ids? [id] 1) (get (get context :nodes) id) nil) form (get node :core-form) children (get node :children)
+        source (if (if (= nil (get (get node :source) :form-id)) true
+                     (p15-s23-sse-ids? [(get (get node :source) :form-id)] 1))
+                 (get (get context :forms) (get (get node :source) :form-id)) nil) type (if (p15-s23-sse-ids? [id] 1) (get (get context :types) id) nil)]
     (if (<= budget 0) (p15-s23-typed-node-error :typed-lowering-work-limit node)
       (if (if (map? node) (if (= nil type) false
                          (if (= :gravity.type/unknown type) false (p15-s23-ni-valid-view? type))) false)
