@@ -7292,7 +7292,9 @@
   (let [opcode (get operation :opcode)
         operands (get operation :operands)]
     (if (= opcode :const)
-      (if (sh13-literal-type-valid? operation) nil :type)
+      (if (= 0 (count operands))
+        (if (sh13-literal-type-valid? operation) nil :type)
+        :type)
       (if (= opcode :call)
         (sh13-call-signature-error module function operation types)
         (if (sh13-member? #{:add :sub :mul} opcode)

@@ -208,6 +208,15 @@ Once module validation rejects, return its original diagnostic without the
 executor's entry lookup or argument checks, not a host exception. Preserve
 accepted execution and original verification recomputation.
 
+For constant instruction arity, run
+`sh13-constants-have-no-value-operands` in the same namespace. Normalized
+`:const` instructions require an empty operand Vector; defined but unused
+operands are not legal. Keep schema, profile, fact, effect and dominance
+diagnostics ahead of this type check. Include the branch-carrier, module-entry,
+invalid-MIR and recursion selectors for affected composition feedback. The
+original G/Q constructors, executor and recomputation verifier exercise this
+normalized boundary; they do not provide fresh authenticated SH-12 ingress.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
