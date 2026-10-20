@@ -10337,7 +10337,7 @@
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
-           (contains? '#{= gravity.core/=} (get (get operator :attributes) :symbol))
+           (if (symbol? (get (get operator :attributes) :symbol)) (contains? '#{= gravity.core/=} (get (get operator :attributes) :symbol)) false)
            (= :operator-then-arguments (get (get node :evaluation) :kind))
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
@@ -10408,7 +10408,9 @@
                                            (get (get child :source) :form-id) (get (get child :source) :syntax-id)] 4)
                      (body-all? [(= (get owner :form-id) (get form :parent-form-id))
                      (= (get child :source) (get (body-ma-form-node {} form) :source))
-                     (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)]) false)
+                     (if (= i 0)
+                                   (if (symbol? (get form :value))
+                                     (= (get (get child :attributes) :symbol) (get form :value)) false) true)]) false)
                  (recur (+ i 1)) false))))
          (= (body-le-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
          (= [(body-le-constraint descriptor)] rows)]) false)) false))

@@ -6672,4 +6672,14 @@
       (let [changed (assoc-in request [:b47-context :authenticated-core-request :forms]
                               (mapv #(if (= :call (:form-id %)) (assoc-in % [:child-form-ids i] bad) %) (vals forms)))]
         (is (= :rejected (:status (leaf 'body-ae-context changed facts bindings 65536))))
-        (is (zero? @callbacks))))))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]]
+      (let [changed-nodes (assoc-in nodes [:operator :attributes :symbol] bad)
+            validation (get-in prepared [:context :list-domains :call])]
+        (is (nil? (leaf 'body-le-source core node call edge changed-nodes bindings types module validation)))
+        (is (false? (leaf 'body-le-call-valid? core facts bindings node call edge changed-nodes)))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]]
+      (is (false? (leaf 'body-le-call-valid? core (assoc-in facts [:equality-context :forms :operator :value] bad)
+                        bindings node call edge nodes)))
+      (is (zero? @callbacks)))))

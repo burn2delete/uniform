@@ -11069,7 +11069,7 @@
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
-           (contains? '#{= gravity.core/=} (get (get operator :attributes) :symbol))
+           (if (symbol? (get (get operator :attributes) :symbol)) (contains? '#{= gravity.core/=} (get (get operator :attributes) :symbol)) false)
            (= :operator-then-arguments (get (get node :evaluation) :kind))
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
@@ -11124,16 +11124,7 @@
 (let [id (get node :node-id) core (get context :core)
         charge (+ 66 (count (get core :function-records)) (count (get context :ledger)))]
     (if (< budget charge) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
-      (if (loop [remaining (get context :ledger)]
-            (if (= 0 (count remaining)) true
-              (let [row (first remaining)]
-                (if (= :sh08-list-equality-v1 (get row :producer-rule))
-                  (let [row-id (get (get row :lhs) :core-node-id)]
-                    (if (p15-s23-sse-ids? [row-id] 1)
-                      (if (p15-s23-sse-call-ids? (get (get context :nodes) row-id) (get (get context :calls) row-id))
-                        (recur (rest remaining)) false) false))
-                  (recur (rest remaining))))))
-(let [call (get (get context :calls) id) edge (get (get context :edges) id)
+      (let [call (get (get context :calls) id) edge (get (get context :edges) id)
             forms (get context :forms) nodes (get context :nodes)
             owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
             args (get call :argument-node-ids)
@@ -11147,12 +11138,18 @@
                      (p15-s23-le-source core node call edge nodes (get context :bindings) (get context :types) (get core :module) domain) nil)
             descriptor (if (map? header) (p15-s23-le-finish header) nil)
             rows (loop [remaining (get context :ledger) out []]
-                   (if (= 0 (count remaining)) out
+                   (if (= 0 (count remaining)) {:status :accepted :rows out}
                      (let [row (first remaining)]
-                       (recur (rest remaining)
-                         (if (if (contains? #{:sh08-list-equality-v1} (get row :producer-rule))
-                               (= {:core-node-id id :projection :list-equality} (get row :lhs)) false) (conj out row) out)))))]
-        (if (> charge budget) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
+                       (if (= :sh08-list-equality-v1 (get row :producer-rule))
+                         (let [row-id (get (get row :lhs) :core-node-id)]
+                           (if (p15-s23-sse-ids? [row-id] 1)
+                             (if (p15-s23-sse-call-ids? (get (get context :nodes) row-id) (get (get context :calls) row-id))
+                               (recur (rest remaining)
+                                 (if (= {:core-node-id id :projection :list-equality} (get row :lhs)) (conj out row) out))
+                               {:status :rejected}) {:status :rejected}))
+                         (recur (rest remaining) out)))))]
+        (if (if (> charge budget) true (= :list-equality-work-limit (get domain :reason)))
+          (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
         (if (if (if (map? descriptor)
                   (if (p15-s23-sse-ids? [(get owner :form-id) (get owner :syntax-id)] 2) (p15-s23-sse-ids? ids 3) false) false)
               (p15-s23-typed-all
@@ -11160,7 +11157,8 @@
                  (= (get descriptor :result-type) (get (get context :types) id))
                  (= (get edge :ordinal) (get (get context :call-order) id))
                  (= (get (get context :current-function) :function-syntax-id) (get edge :caller-function-syntax-id))
-                 (= [(p15-s23-le-constraint descriptor)] rows)
+                 (= :accepted (get rows :status))
+                 (= [(p15-s23-le-constraint descriptor)] (get rows :rows))
                  (= (p15-s23-le-call-fact descriptor (get core :module)) (get (get context :call-facts) id))
                  (= :list (get owner :kind)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0) (count (get node :children)))
                  (= (get node :source) (p15-s23-typed-source owner))
@@ -11173,7 +11171,9 @@
                                                    (get (get child :source) :form-id) (get (get child :source) :syntax-id)] 4)
                              (p15-s23-typed-all [(= (get owner :form-id) (get form :parent-form-id))
                              (= (get child :source) (p15-s23-typed-source form))
-                             (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)]) false)
+                             (if (= i 0)
+                                   (if (symbol? (get form :value))
+                                     (= (get (get child :attributes) :symbol) (get form :value)) false) true)]) false)
                          (recur (+ i 1)) false))))]) false)
           (loop [remaining args values [] used charge]
             (if (= 0 (count remaining))
@@ -11185,8 +11185,7 @@
                   (if (p15-s23-compiler-complete? compiled)
                     (recur (rest remaining) (conj values (get compiled :value)) total)
                     (assoc compiled :work-count total))))))
-          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-list-equality node) :work-count charge))))
-      (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-list-equality node) :work-count charge))))
+          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-list-equality node) :work-count charge))))))
     (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-list-equality node) :work-count 2)))
 
 (defn p15-s23-ve-domain [arguments budget]

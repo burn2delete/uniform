@@ -29077,6 +29077,35 @@
             (is (= :rejected (:status source-failure) (:status domain-failure)))
             (is (pos? (:work-count source-failure)))
             (is (pos? (:work-count domain-failure)))))
+        (let [prefix (+ 66 (count (:function-records core)) (count (:ledger context)))
+              domain (invoke 'p15-s23-le-domain arguments 1)
+              scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+              original @scoped child-calls (atom 0)
+              limited (with-redefs-fn
+                        {scoped (fn [& args]
+                                  (when (= 'p15-s23-typed-compile-node (nth args 2)) (swap! child-calls inc))
+                                  (apply original args))}
+                        #(invoke 'p15-s23-typed-compile-list-equality context node (inc prefix)))]
+          (is (= :list-equality-work-limit (:reason domain)))
+          (is (= :typed-lowering-work-limit (get-in limited [:facts :reason])))
+          (is (= (+ prefix (:work-count domain)) (:work-count limited)))
+          (is (<= (:work-count limited) (inc prefix)))
+          (is (zero? @child-calls)))
+        ;; A finite original-delegating vector records physical row reads in this NEW owning helper.
+        (let [backing (into (:ledger context) (repeat 5 {:producer-rule :unrelated}))
+              reads (atom [])
+              observed-rows (proxy [clojure.lang.APersistentVector] []
+                              (count [] (count backing))
+                              (nth [i] (swap! reads conj i) (nth backing i)))
+              own #(invoke 'p15-s23-typed-compile-list-equality % node 65536)
+              original-result (own (assoc context :ledger backing))
+              observed-result (own (assoc context :ledger observed-rows))
+              base-result (own context)]
+          (is (= :complete (:status observed-result)))
+          (is (= original-result observed-result))
+          (is (= (count backing) (count @reads)))
+          (is (= (vec (range (count backing))) (vec (sort @reads))))
+          (is (= 5 (- (:work-count observed-result) (:work-count base-result)))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -29128,7 +29157,22 @@
                         (assoc-in [:calls id] (assoc call :core-node-id id :operator-node-id bad))
                         (assoc-in [:nodes id] (assoc node :node-id id)))]
         (is (= :rejected (:status (lower 'p15-s23-typed-compile-node changed :call 65536))))
-        (is (zero? @callbacks))))))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]]
+      (let [changed (-> context (assoc-in [:nodes :operator :attributes :symbol] bad) (assoc-in [:forms :operator :value] bad))
+            validation (lower 'p15-s23-le-domain [(get types :arg0) (get types :arg1)] 65536)]
+        (is (nil? (lower 'p15-s23-le-source core node call edge (:nodes changed) bindings types module validation)))
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-list-equality changed node 65536))))
+        (is (zero? @callbacks)))
+      (let [unrelated {:producer-rule bad :lhs {:core-node-id :unrelated :projection :list-equality}}
+            changed (update context :ledger conj unrelated)
+            compiled (lower 'p15-s23-typed-compile-list-equality changed node 65536)]
+        (is (= :complete (:status compiled)))
+        (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value compiled)))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]]
+      (is (= :rejected (:status (lower 'p15-s23-typed-compile-list-equality (assoc-in context [:forms :operator :value] bad) node 65536))))
+      (is (zero? @callbacks)))))
 
 (deftest current-gravity-list-equality-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
@@ -29170,7 +29214,8 @@
                  (assoc supplementary :extra true) (dissoc supplementary :text)
                  (assoc supplementary :codepoint opaque) (assoc supplementary :text opaque)
                  (assoc supplementary :schema-version opaque)
-                 (array-map :artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint 0x1f600 opaque "ignored")]]
+                 (clojure.lang.PersistentArrayMap.
+                   (object-array [:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint 0x1f600 opaque "ignored"]))]]
       (doseq [[left right] [[(list "a" bad) (list "b")] [(list "a") (list "b" bad)]
                             [(list bad) '()] ['() (list bad)]]]
         (is (= :rejected (:status (compare-list left right 65536))))
@@ -29282,10 +29327,10 @@
     (doseq [[disposition name] [["accepted" "local-runtime-finite-list-equality"] ["rejected" "list-equality-unsupported-member"]]]
       (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
             g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
-            g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g)
+            g (slurp g-path) q (slurp q-path) forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
             definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
         (is (= g q))
-        (is (= forms (bootstrap/read-forms q-path q)))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
         (if (= "accepted" disposition)
           (do (is (= '[payload main] (mapv second definitions)))
               (is (= 12 (count (last (last definitions))))))

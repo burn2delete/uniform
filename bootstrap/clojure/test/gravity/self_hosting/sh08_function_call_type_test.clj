@@ -13891,6 +13891,18 @@
       (let [type (finite [bad]) result (invoke-c7 'sh08-le-domain [[type (finite [])] 65536])]
         (is (= :rejected (:status result)))
         (is (zero? @callbacks))))
-    (let [type (array-map :kind :gravity.type/list :shape :literal opaque [])]
+    (let [type (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/list :shape :literal opaque []]))]
       (is (= :rejected (:status (invoke-c7 'sh08-le-domain [[type (finite [])] 65536]))))
+      (is (zero? @callbacks)))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]]
+      (let [changed-nodes (assoc-in nodes [:operator :attributes :symbol] bad)
+            changed-forms (assoc-in forms [:operator :value] bad)
+            validation (invoke-c7 'sh08-le-domain [[(get types :arg0) (get types :arg1)] 65536])]
+        (is (nil? (invoke-c7 'sh08-le-source [core node call edge changed-nodes bindings types (:module core) validation])))
+        (is (= :rejected (:status (invoke-c7 'sh08-le-derive [core node call edge changed-nodes bindings types changed-forms 65536]))))
+        (is (= :rejected (:status (invoke-c7 'sh08-le-inferred-call [core node call edge changed-nodes bindings table 65536]))))
+        (is (zero? @callbacks))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]]
+      (is (= :rejected (:status (invoke-c7 'sh08-le-derive [core node call edge nodes bindings types
+                                                         (assoc-in forms [:operator :value] bad) 65536]))))
       (is (zero? @callbacks)))))
