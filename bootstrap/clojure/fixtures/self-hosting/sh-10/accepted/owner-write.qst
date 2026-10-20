@@ -1,0 +1,32 @@
+(ns gravity.self-hosting.sh10.owner-write.accepted
+  (:profile :meta) (:target :jvm)
+  (:exports [owner-write-request write-read-request write-after-end-request])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; These functions construct normalized analysis DATA; they do not mutate storage.
+(defn owner-write-event [id operation borrow]
+  {:event-id id :op operation :borrow-id borrow
+   :destination-owner nil :destination-lifetime-end nil :escape-destination nil
+   :source-span {:source "owner-write.gravity" :start-byte 3 :end-byte 9}
+   :origin-chain [{:generated-by :owner-write-fixture}]
+   :control-path [:normal :owner-access]})
+
+(defn owner-write-request [events]
+  {:artifact :gravity/sh10-normalized-ownership-request
+   :request-id :owner-write :value-id :value :owner-id :owner
+   :ownership-kind :owned-mutable :initialization :initialized
+   :availability :available :owner-lifetime-end 10 :events events
+   :type-fact-id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :effect-fact-id "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+   :source-span {:source "owner-write.gravity" :start-byte 0 :end-byte 10}
+   :origin-chain [] :profile :meta :target :jvm})
+
+(defn write-read-request []
+  (owner-write-request [(owner-write-event :write :write nil)
+                        (owner-write-event :read :read nil)]))
+
+(defn write-after-end-request [acquisition]
+  (owner-write-request [(owner-write-event :acquire acquisition :borrow)
+                        (owner-write-event :end :end-borrow :borrow)
+                        (owner-write-event :write :write nil)
+                        (owner-write-event :read :read nil)]))

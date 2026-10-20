@@ -390,6 +390,7 @@
    :availability-states #{:available :moved :consumed}
    :events #{:initialize
              :read
+             :write
              :borrow-immutable
              :borrow-mutable
              :end-borrow
@@ -556,6 +557,7 @@
        (sh10-member?
         #{:initialize
           :read
+          :write
           :borrow-immutable
           :borrow-mutable
           :end-borrow
@@ -576,7 +578,10 @@
                     :global-or-static-storage}
                   (get event :escape-destination))
                  false))
-             true)
+             (if (= :write (get event :op))
+               (= nil (get event :borrow-id) (get event :destination-owner)
+                  (get event :destination-lifetime-end) (get event :escape-destination))
+               true))
            false)
          false)
        false))
@@ -675,6 +680,13 @@
   (let [operation (get event :op)
         immutable-count (get state :immutable-borrow-count)
         mutable-id (get state :mutable-borrow-id)]
+    (if (= operation :write)
+      (if (sh10-active-borrow? state)
+        (sh10-transition-rejected
+         request event state "C9-MUT-ALIAS"
+         :owner-write-during-active-borrow
+         :end-all-borrows-before-owner-write)
+        (sh10-transition-accepted request event state state))
     (if (= operation :read)
       (if (= nil mutable-id)
         (sh10-transition-accepted request event state state)
@@ -827,7 +839,7 @@
                     (sh10-transition-rejected
                      request event state "C9-UNSAFE"
                      :unsupported-ownership-event
-                     :use-a-bounded-sh10-ownership-event)))))))))))
+                     :use-a-bounded-sh10-ownership-event))))))))))))
 
 (defn sh10-transition [request event state]
   (if (sh10-valid-event-shape? event)
@@ -860,7 +872,12 @@
 (defn sh10-result-scope [request]
   (if (= :persistent-immutable (get request :ownership-kind))
     :persistent-immutable-read-only
-    :owned-mutable-initialization-borrow-move-consume))
+    (loop [remaining (get request :events)]
+      (if (= 0 (count remaining))
+        :owned-mutable-initialization-borrow-move-consume
+        (if (= :write (get (first remaining) :op))
+          :owned-mutable-owner-write
+          (recur (rest remaining)))))))
 
 (defn sh10-run-events [request remaining state facts]
   (if (= (count remaining) 0)
