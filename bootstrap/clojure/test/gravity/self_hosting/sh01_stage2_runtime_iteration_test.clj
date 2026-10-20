@@ -10794,7 +10794,11 @@
       (let [result (evaluate (query (literal items) (literal :hit)))]
         (is (= (if (map? items) [false "" :normal] [(first result) "" :rejected]) result))))
     (doseq [needle [nil 'symbol false 1 [] {}] items [#{} #{:hit}]]
-      (is (= :keyword-set-contains-value-domain-required (:reason (work items needle 65536)))))
+      (if (and (= 'symbol needle) (empty? items))
+        (let [result (work items needle 65536)]
+          (is (= :accepted (:status result)))
+          (is (= false (:value result))))
+        (is (= :keyword-set-contains-value-domain-required (:reason (work items needle 65536))))))
     (let [wide (into #{} (map #(keyword (str "member" %)) (range 1024))) result (work wide :missing 65536)]
       (is (= :keyword-set-contains-work-limit (:reason result)))
       (is (= 65537 (:work-count result)))
@@ -29522,6 +29526,326 @@
         context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                  :calls {:call call} :edges {:call edge} :call-order {:call 0}
                  :call-facts {:call (c7 'sh08-pl-call-fact [descriptor module])} :ledger [(c7 'sh08-pl-constraint [descriptor])]
+                 :locals {:arg0 'items :arg1 'value} :parameter-types types}
+        compile #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-typed-compile-node [% :call 65536])
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "lowering insertion ID hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "lowering insertion ID equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "lowering insertion ID printing"))))]
+    (is (= :complete (:status (compile context))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]
+            path [[:calls :call :operator-node-id] [:calls :call :operator-binding-id]
+                  [:calls :call :argument-node-ids 0] [:calls :call :argument-node-ids 1]
+                  [:nodes :operator :node-id] [:nodes :operator :attributes :symbol]
+                  [:bindings :ordering-binding :binding-id]
+                  [:forms :call :child-form-ids 0] [:forms :call :child-form-ids 1] [:forms :call :child-form-ids 2]
+                  [:forms :operator :value] [:forms :arg0 :syntax-id]
+                  [:ledger 0 :lhs :core-node-id]]]
+      (is (= :rejected (:status (compile (assoc-in context path bad)))))
+      (is (zero? @callbacks)))))
+
+(deftest current-gravity-symbol-set-contains-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'map-contains-input)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
+        k :gravity.type/symbol s :gravity.type/string
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never] [:gravity.type/never k]]]
+      (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
+            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
+            descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-ksm-call-fact [descriptor module])} :ledger [(c7 'sh08-ksm-constraint [descriptor])]
+                     :locals {:arg0 'left :arg1 'right} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node %1 :call %2) lowered (compile context 65536)
+            coherent (fn [changed]
+                       (-> context (assoc-in [:types :operator] changed)
+                           (assoc :call-facts {:call (c7 'sh08-ksm-call-fact [changed module])}
+                                  :ledger [(c7 'sh08-ksm-constraint [changed])])))]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (let [limited (compile context (dec (:work-count lowered)))
+                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
+                own #(invoke 'p15-s23-typed-compile-keyword-set-contains %1 node %2)
+                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
+                domain-check (invoke 'p15-s23-ksm-domain [(finite [:gravity.type/integer]) (second arguments)] 65536)
+                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) 65536)
+                domain-failure (own bad-domain 65536)]
+            (is (= :typed-lowering-work-limit (get-in limited [:facts :reason])))
+            (is (= (:work-count lowered) (:work-count limited)))
+            (is (= base (:work-count (own context (dec base)))))
+            (is (= (+ base 2) (:work-count (own context base))))
+            (is (= charge (:work-count source-failure)))
+            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
+            (is (= (inc charge) (:work-count (own context charge))))
+            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+              (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
+                                  (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
+                                  (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
+                    child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id 65536)
+                    failure (compile candidate 65536)]
+                (is (= :rejected (:status child) (:status failure)))
+                (is (= (:facts child) (:facts failure)))
+                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+        (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
+                         (assoc descriptor :kind :gravity.type/applied-atomic-equality)
+                         (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc-in descriptor [:membership-policy :comparison] :identity)
+                         (assoc-in descriptor [:membership-policy :member-uniqueness] :not-validated)
+                         (assoc-in descriptor [:membership-policy :budget] :traversal-dependent)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)]]
+          (is (= :rejected (:status (compile (coherent changed) 65536)))))
+        (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "producer ID hashed")))
+                                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "producer ID compared"))))]
+          (doseq [row [(assoc-in (first (:ledger context)) [:lhs :core-node-id] opaque)
+                       (assoc (first (:ledger context)) :lhs opaque)
+                       (assoc-in (first (:ledger context)) [:lhs :core-node-id] [opaque])]]
+            (is (= :rejected (:status (compile (update context :ledger conj row) 65536)))))
+          (let [other-call (assoc call :core-node-id :other :operator-node-id opaque)
+                other-node (assoc node :node-id :other)
+                other-row (assoc-in (first (:ledger context)) [:lhs :core-node-id] :other)
+                candidate (-> context (assoc-in [:calls :other] other-call)
+                              (assoc-in [:nodes :other] other-node) (update :ledger conj other-row))]
+            (is (= :rejected (:status (compile candidate 65536)))))
+          (is (= 0 @callbacks)))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] {:opaque true}))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:types :arg0] (finite [:gravity.type/integer]))
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))
+    (let [context (-> (typed-keyword-set-kernel-context ["a"])
+                      (assoc-in [:forms :set-item-form-0 :kind] :character)
+                      (assoc-in [:forms :set-item-form-0 :value] (char 97))
+                      (assoc-in [:nodes :set-item-0 :attributes] {:literal-kind :character :value (char 97)})
+                      (assoc-in [:types :set-item-0] :gravity.type/symbol)
+                      (assoc-in [:types :set :element-types] [:gravity.type/symbol]))]
+      (is (= {:op :set-literal :items [{:op :literal :value (char 97)}]}
+             (:value (invoke 'p15-s23-typed-compile-node context :set 65536)))))
+))
+
+(deftest current-gravity-symbol-set-contains-transfer-fence-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'map-contains-input) derive (ns-resolve upstream 'keyword-set-contains-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        rt (:plan (typed-catch-runtime-projection))
+        payload (String. "original Symbol membership transfer")
+        families [{:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]}]
+        make-context (fn [family position recur?]
+          (let [slot (if (zero? position) :arg0 :arg1) other (if (zero? position) :arg1 :arg0)
+                types (assoc [family :gravity.type/symbol] position :gravity.type/never)
+                input (input-fn types) source (get-in input [:nodes slot :source])
+                operand (if recur?
+                          {:node-id slot :core-form :recur :children [] :source source :resolved-binding-ids []
+                           :attributes {:target-id :loop :target-kind :loop :arity 0 :semantic-rule "L2-RECUR-TARGET" :type-compatibility :pending-sh08}
+                           :evaluation {:kind :arguments-left-to-right-then-transfer :order []}}
+                          {:node-id slot :core-form :throw :children [:payload] :source source :evaluation {:order [{:index 0 :core-node-id :payload}]}})
+                payload-node (assoc (get-in input [:nodes slot]) :node-id :payload :core-form :literal
+                                    :attributes {:literal-kind :string :value payload}
+                                    :source (assoc source :form-id :payload :syntax-id :payload))
+                nodes (cond-> (assoc (:nodes input) slot operand) (not recur?) (assoc :payload payload-node))
+                base-form (get-in input [:forms slot]) op-id (if recur? :recur-op :throw-op)
+                forms (-> (:forms input) (assoc-in [slot :kind] :list)
+                          (assoc-in [slot :child-form-ids] (if recur? [op-id] [op-id :payload]))
+                          (assoc op-id (assoc base-form :form-id op-id :syntax-id op-id :parent-form-id slot :value (if recur? 'recur 'throw))))
+                forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
+                input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
+                          (update :types assoc :payload :gravity.type/string))
+                result (derive input 65536) descriptor (:descriptor result)
+                target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
+                transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
+                          :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
+                          :transfer-policy :nearest-lexical-recur-target :type-compatibility :pending-sh08}
+                premise {:kind :loop-recur-type :source-transfer transfer :source-target target :argument-types [] :slot-types []
+                         :result-type :gravity.type/never :normal-transfer? true :status :solved}
+                context {:core (:core input) :nodes nodes :forms forms :bindings (:bindings input)
+                         :types (assoc (:types input) :operator descriptor :call (:type result))
+                         :calls {:call (:call input)} :edges {:call (:edge input)} :call-order {:call 0}
+                         :call-facts {:call (c7 'sh08-ksm-call-fact [descriptor (:module input)])}
+                         :ledger [(c7 'sh08-ksm-constraint [descriptor])] :locals {other 'other} :parameter-types (:types input)
+                         :targets {:loop target} :nearest-target target :tail? true :transfers {slot transfer} :loop-binding-index {}}
+                row (lower 'p15-s23-typed-loop-row context premise operand)]
+            (is (= :accepted (:status result)))
+            {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
+    (doseq [family families position [0 1]]
+      (let [{:keys [context slot other]} (make-context family position false)
+            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot 65536)
+            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other 65536)
+            compiled (lower 'p15-s23-typed-compile-node context :call 65536)
+            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
+            actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (if (zero? position) 'accepted #{'accepted})} ""])]
+        (is (= :complete (:status compiled)))
+        (is (= :throw (get-in compiled [:value :args position :op])))
+        (is (identical? payload (first actual)))
+        (is (= ["" :thrown] (subvec actual 1)))
+        (is (= compiled (lower 'p15-s23-typed-compile-node context :call (:work-count compiled))))
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call (dec (:work-count compiled))))))
+        (let [{:keys [context slot]} (make-context family position true)
+              direct (lower 'p15-s23-typed-compile-node context slot 65536)
+              non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot 65536)
+              rejected (lower 'p15-s23-typed-compile-node context :call 65536)
+              prefix (if (zero? position) 0 (:work-count other-child))]
+          ;; Recur here is normalized DATA: no source admission as an argument.
+          (is (= :complete (:status direct)))
+          (is (= {:op :recur :target :loop :args []} (:value direct)))
+          (is (= :rejected (:status non-tail) (:status rejected)))
+          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
+          (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
+
+(deftest current-gravity-symbol-set-contains-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        work #(invoke 'p15-s23-runtime-keyword-set-contains-work %1 %2 %3)
+        literal (fn [value] {:op :literal :value value})
+        query (fn [items needle] {:op :builtin-call :function 'contains? :args [items needle]})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        charge (fn [items needle]
+                 (let [n (count items) units (+ (count (str needle)) (reduce + 0 (map #(count (str %)) items)))]
+                   (+ 2 (* 2 n) (quot (* n (dec n)) 2) (* (inc n) units))))]
+    (doseq [[items needle expected] [[#{} 'absent false] [#{'one} 'one true] [#{'one} 'other false]
+                                    [#{'left 'right} 'right true] [#{'left 'right} 'missing false]
+                                    [#{'space/name} 'space/name true] [#{'space/name} 'other/name false]
+                                    [#{'A} 'a false] [#{'gravity.core/println} 'gravity.core/println true]]]
+      (let [result (work items needle 65536) n (count items) reserved (charge items needle)]
+        (is (= :accepted (:status result)))
+        (is (= expected (:value result)))
+        (is (= reserved (:work-count result)))
+        (is (= :exact-logical-membership-reservation (:work-count-kind result)))
+        (is (= :gravity/symbol-set-membership-logical-content-work-v1 (:value-work-model result)))
+        (is (= :not-established (:provider-cpu-bound result)))
+        (is (<= (:comparison-attempts result) (+ (quot (* n (dec n)) 2) n)))
+        (is (= result (work items needle reserved)))
+        (let [limited (work items needle (dec reserved))]
+          (is (= :symbol-set-contains-work-limit (:reason limited)))
+          (is (= 0 (:comparison-attempts limited))))
+        (is (= [expected "" :normal] (evaluate (query (literal items) (literal needle)))))))
+    (let [left (symbol nil "a/b") right (symbol "a" "b")
+          copy (with-meta (symbol "a" "b") {:copied true})]
+      (is (= (str left) (str right)))
+      (is (= false (:value (work #{left} right 65536))))
+      (is (= true (:value (work #{right} copy 65536)))))
+    (let [callbacks (atom 0)
+          protected (fn [members]
+                      (reify clojure.lang.IPersistentSet
+                        (count [_] (count members)) (seq [_] (seq members))
+                        (cons [_ _] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
+                        (empty [_] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
+                        (equiv [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
+                        (contains [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
+                        (get [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
+                        (disjoin [_ _] (swap! callbacks inc) (throw (AssertionError. "Set mutation")))
+                        Object
+                        (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
+                        (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "Set hash")))))
+          opaque (proxy [Object] []
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equality")))
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "member printing"))))]
+      (is (= true (:value (work (protected '[a b]) 'a 65536))))
+      (is (= false (:value (work (protected '[a b]) 'missing 65536))))
+      (doseq [items [(protected [opaque]) (protected ['hit opaque]) (protected [opaque 'hit])]
+              needle ['hit 'missing]]
+        (let [result (work items needle 65536)]
+          (is (= :rejected (:status result)))
+          (is (= 0 (:comparison-attempts result)))))
+      (doseq [needle ['same 'missing]]
+        (let [items (protected ['same (with-meta 'same {:copy true})]) result (work items needle 65536)]
+          (is (= :symbol-set-contains-value-domain-required (:reason result)))
+          (is (= :duplicate-symbol-class (:domain-failure result)))
+          (is (= (charge items needle) (:work-count result)))
+          (is (= :exact-logical-membership-reservation (:work-count-kind result)))))
+      (let [result (work (protected ['hit "not-a-Symbol"]) 'hit 65536)]
+        (is (= :symbol-set-contains-value-domain-required (:reason result)))
+        (is (= 0 (:comparison-attempts result))))
+      (is (= :keyword-set-contains-value-domain-required (:reason (work (protected ['hit]) opaque 65536))))
+      (is (zero? @callbacks)))
+    (doseq [[items needle expected-reason] [[#{:hit} 'hit :keyword-set-contains-value-domain-required]
+                                           [#{"hit"} 'hit :keyword-set-contains-value-domain-required]
+                                           [#{'hit} :hit :keyword-set-contains-value-domain-required]
+                                           [#{'hit} "hit" :string-set-contains-value-domain-required]]]
+      (is (= expected-reason (:reason (work items needle 65536)))))
+    (doseq [budget [0 1]]
+      (let [result (work #{'a} 'a budget)]
+        (is (= :keyword-set-contains-work-limit (:reason result)))
+        (is (= 2 (:work-count result)))
+        (is (= 0 (:comparison-attempts result)))))
+    (let [exact (symbol (apply str (repeat 65534 "x"))) over (symbol (apply str (repeat 65535 "x")))
+          accepted (work #{} exact 65536) rejected (work #{} over 65536)]
+      (is (= 65536 (charge #{} exact) (:work-count accepted)))
+      (is (= :accepted (:status accepted)))
+      (is (= false (:value accepted)))
+      (is (= :symbol-set-contains-work-limit (:reason rejected)))
+      (is (= 65537 (:work-count rejected)))
+      (is (= 0 (:comparison-attempts rejected))))
+    (let [wide (into #{} (map #(symbol (str "member" %)) (range 1024))) result (work wide 'missing 65536)]
+      (is (= :symbol-set-contains-work-limit (:reason result)))
+      (is (= 65537 (:work-count result)))
+      (is (= 0 (:comparison-attempts result)))
+      (is (= :symbol-set-contains-value-width (:reason (work (conj wide 'extra) 'missing 65536)))))
+    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
+          payload (Object.) escape {:op :throw :value (literal payload)}
+          left (evaluate (query (say "set" escape) (say "unreached" (literal 'key))))
+          right (evaluate (query (say "set" (literal #{'key})) (say "needle" escape)))]
+      (is (= [true "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{'key})) (say "needle" (literal 'key))))))
+      (is (= [false "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{})) (say "needle" (literal 'key))))))
+      (is (identical? payload (first left)))
+      (is (identical? payload (first right)))
+      (is (= ["set\n" :thrown] (subvec left 1)))
+      (is (= ["set\nneedle\n" :thrown] (subvec right 1))))
+    (let [failure (AssertionError. "original Symbol work representation failure") original-str str
+          observed (with-redefs [clojure.core/str (fn [& values]
+                                                  (if (= ['explode] values) (throw failure) (apply original-str values)))]
+                     (seed-throw-test-capture #(work #{} 'explode 65536)))]
+      (is (identical? failure observed)))))
+
+(deftest current-gravity-symbol-set-contains-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name] [["accepted" "local-runtime-finite-symbol-set-membership"] ["rejected" "symbol-set-membership-character-member"]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path) forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
+        (is (= g q))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
+        (if (= "accepted" disposition)
+          (do (is (= '[operation main] (mapv second definitions)))
+              (is (= 6 (count (last (last definitions))))))
+          (do (is (= '[main] (mapv second definitions)))
+              (is (= 2 (count (rest (last (first definitions))))))))))))
+
+(deftest current-gravity-symbol-set-contains-lowering-id-guard-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        c7 (ns-resolve upstream 'invoke-c7) input-fn (fn [receiver needle] ((ns-resolve upstream 'map-contains-input) [receiver needle]))
+        finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]}
+        {:keys [core node nodes forms bindings types module call edge]} (input-fn finite :gravity.type/symbol)
+        result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                 :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                 :call-facts {:call (c7 'sh08-ksm-call-fact [descriptor module])} :ledger [(c7 'sh08-ksm-constraint [descriptor])]
                  :locals {:arg0 'items :arg1 'value} :parameter-types types}
         compile #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-typed-compile-node [% :call 65536])
         callbacks (atom 0) opaque (proxy [Object] []

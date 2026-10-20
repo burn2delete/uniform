@@ -782,7 +782,12 @@
           domain-reason (if strings? :string-set-contains-value-domain-required :keyword-set-contains-value-domain-required)]
       (if (< limit 2)
         {:status :rejected :reason work-reason :work-count 2 :comparison-attempts 0}
-        (if (if (set? items) (if strings? (string? needle) (keyword? needle)) false)
+        (let [symbols? (if (symbol? needle) (if (set? items)
+                             (if (= 0 (count items)) true (symbol? (first items))) false) false)
+              work-reason (if symbols? :symbol-set-contains-work-limit work-reason)
+              width-reason (if symbols? :symbol-set-contains-value-width width-reason)
+              domain-reason (if symbols? :symbol-set-contains-value-domain-required domain-reason)]
+          (if (if (set? items) (if strings? (string? needle) (if symbols? (symbol? needle) (keyword? needle))) false)
           (let [n (count items)]
             (if (if (< n 0) true (> n 1024))
               {:status :rejected :reason width-reason :work-count 2 :comparison-attempts 0}
@@ -795,7 +800,7 @@
                                     (if (= 0 (count remaining)) {:status :accepted :values values}
                                       {:status :rejected :reason domain-reason})
                                     (let [value (first remaining)]
-                                      (if (if strings? (string? value) (keyword? value)) (recur (rest remaining) (+ i 1) (conj values value))
+                                      (if (if strings? (string? value) (if symbols? (symbol? value) (keyword? value))) (recur (rest remaining) (+ i 1) (conj values value))
                                         {:status :rejected :reason domain-reason}))))]
                     (if (= false (= :accepted (get checked :status)))
                       (assoc checked :work-count base :work-count-kind :validation-reservation :comparison-attempts 0)
@@ -824,11 +829,12 @@
                                                                      (if (= j n) {:status :accepted :comparison-attempts used}
                                                                        (let [left (get values i) right (get values j)]
                                                                          (if (if strings? (if (string? left) (string? right) false)
-                                                                                   (if (keyword? left) (keyword? right) false))
+                                                                                   (if symbols? (if (symbol? left) (symbol? right) false)
+                                                                                     (if (keyword? left) (keyword? right) false)))
                                                                            (let [equal (p15-s23-runtime-atomic-equality left right) next-attempt (+ used 1)]
                                                                              (if (= false equal) (recur (+ j 1) next-attempt)
                                                                                {:status :rejected :reason domain-reason
-                                                                                :domain-failure (if strings? :duplicate-string-class :duplicate-keyword-class) :comparison-attempts next-attempt}))
+                                                                                :domain-failure (if strings? :duplicate-string-class (if symbols? :duplicate-symbol-class :duplicate-keyword-class)) :comparison-attempts next-attempt}))
                                                                            {:status :rejected :reason domain-reason :comparison-attempts used}))))]
                                                        (if (= :accepted (get checked :status))
                                                          (recur (+ i 1) (get checked :comparison-attempts)) checked))))
@@ -837,7 +843,8 @@
                                                    (if (= i n) {:status :accepted :value false :comparison-attempts attempts}
                                                      (let [member (get values i)]
                                                        (if (if strings? (if (string? member) (string? needle) false)
-                                                                     (if (keyword? member) (keyword? needle) false))
+                                                                     (if symbols? (if (symbol? member) (symbol? needle) false)
+                                                                       (if (keyword? member) (keyword? needle) false)))
                                                          (let [equal (p15-s23-runtime-atomic-equality member needle) next-attempt (+ attempts 1)]
                                                            (if (= true equal)
                                                              {:status :accepted :value true :comparison-attempts next-attempt}
@@ -848,9 +855,10 @@
                                     (assoc result :work-count work :work-count-kind :exact-logical-membership-reservation
                                       :input-element-count n :representation-units units :representation :jvm-utf16-code-units
                                       :value-work-model (if strings? :gravity/string-set-membership-logical-content-work-v1
-                                                         :gravity/keyword-set-membership-logical-content-work-v1)
+                                                         (if symbols? :gravity/symbol-set-membership-logical-content-work-v1
+                                                           :gravity/keyword-set-membership-logical-content-work-v1))
                                       :provider-cpu-bound :not-established))))))))))))))
-          {:status :rejected :reason domain-reason :work-count 2 :comparison-attempts 0})))
+          {:status :rejected :reason domain-reason :work-count 2 :comparison-attempts 0}))))
     {:status :rejected :reason :keyword-set-contains-work-limit :work-count 0 :comparison-attempts 0}))
 
 (defn p15-s23-runtime-string-set-insertion-work [items value budget]
