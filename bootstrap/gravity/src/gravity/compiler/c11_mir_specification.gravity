@@ -7447,7 +7447,8 @@
                   (get terminator :target)
                   (get terminator :arguments)
                   types)
-                 (if (= :bool (get types (get terminator :condition)))
+                 (if (contains? types (get terminator :condition))
+                  (if (= :bool (get types (get terminator :condition)))
                    (let [then-error
                          (sh13-target-arguments-error
                           function
@@ -7461,7 +7462,8 @@
                           (get terminator :else-arguments)
                           types)]
                      (if (= nil then-error) else-error then-error))
-                   :type))))
+                   :type)
+                  :dominance))))
            :origin)
          :origin)
        :block)

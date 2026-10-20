@@ -225,6 +225,16 @@ Preserve earlier source-span and origin checks. Include constant-arity,
 invalid-MIR, structured-exit and branch-execution selectors for affected
 regression feedback; this does not admit a new upstream compiler revision.
 
+For conditional-branch value classification, run
+`sh13-conditional-values-must-be-defined-before-type-checking` in the same
+namespace. Check that the condition is defined before checking its Bool type:
+missing, Nil and later-block value IDs report `C11-DOMINANCE`; defined non-Bool
+values remain `C11-TYPE`. Preserve earlier opcode/source/origin and operation
+checks, then condition definition/type, then the original then-before-else
+target checks. Include conditional execution, loop/indirect-call, return
+dominance and branch-carrier selectors. This repairs a rejected-input
+diagnostic, not accepted behavior, schemas, interpreter or authority status.
+
 For calls to later normalized functions, run
 `sh13-callee-parameter-carriers-are-validated-before-counting` in the same
 namespace. Check the callee's parameter Vector before counting it; malformed
