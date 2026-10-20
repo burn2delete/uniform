@@ -28878,3 +28878,161 @@
               (is (= '[value :- List] (nth (first definitions) 2))))
           (do (is (= '[main] (mapv second definitions)))
               (is (= 2 (count (rest (last (first definitions))))))))))))
+
+(deftest current-gravity-list-predicate-authenticated-composition
+  ;; One typed List-family composition and one arity typing negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "List predicate fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "List predicate development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:list-predicate-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "List predicate upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "List predicate C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "List predicate C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-list-predicate.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) (:input positive)))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        bare (get functions 'classify-bare) homogeneous (get functions 'classify-strings) main (get functions 'main)
+        predicates (mapv :applied-list-predicate (filter #(= :direct-list-predicate (:dispatch %)) (:call-type-facts facts)))
+        rows (filterv #(= :sh08-list-predicate-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
+        predicate-ir (filterv #(and (= :builtin-call (:op %)) (= 'list? (:function %))) instructions)
+        constructor-ir (filterv #(and (= :builtin-call (:op %)) (= 'list (:function %))) instructions)
+        rest-ir (filterv #(and (= :builtin-call (:op %)) (= 'rest (:function %))) instructions)
+        prepend-ir (filterv #(and (= :builtin-call (:op %)) (= 'conj (:function %))) instructions)
+        graph (:effect-graph effects) runtime-plan (:plan (typed-catch-runtime-projection))
+        execution (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)])
+        t2 (System/nanoTime)]
+    (is (= 3 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 18 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 11 (count predicates) (count rows) (count predicate-ir)))
+    (is (= 2 (count (filter #(= :function-call (:op %)) instructions))))
+    (is (= 3 (count constructor-ir)))
+    (is (= 1 (count rest-ir) (count prepend-ir)))
+    (is (= 4 (count (filter #(= :quote (:op %)) instructions))))
+    (is (= 0 (get-in assembled [:instruction-summary :set-literal] 0)))
+    (is (empty? (get-in assembled [:module-initialization :initializers])))
+    (is (= [:gravity.type/list] (mapv :type (:parameters bare))))
+    (is (= [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}]
+           (mapv :type (:parameters homogeneous))))
+    (is (= :gravity.type/bool (:return bare) (:return homogeneous)))
+    (is (some #(= [:gravity.type/list] (:argument-types %)) predicates))
+    (is (some #(= [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}] (:argument-types %)) predicates))
+    (is (some #(= [{:kind :gravity.type/list :shape :literal :element-types []}] (:argument-types %)) predicates))
+    (is (= 55 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= [true true true true true true false false false false false] (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= #{} (get-in graph [:namespace :inferred])))
+    (doseq [function [bare homogeneous]]
+      (let [summary (get-in graph [:functions (:function-id function)])]
+        (is (= #{} (:inferred summary) (:latent summary)))))
+    (let [summary (get-in graph [:functions (:function-id main)])]
+      (is (= #{:memory/allocate} (:inferred summary) (:latent summary))))
+    (doseq [descriptor predicates]
+      (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+            row (first (filter #(= id (get-in % [:lhs :core-node-id])) rows))]
+        (is (= :gravity.type/applied-list-predicate (:kind descriptor)))
+        (is (= :sh08-list-predicate-v1 (:version descriptor)))
+        (is (= ['list? 'gravity.collections] [(:operation descriptor) (:semantic-owner descriptor)]))
+        (is (= :gravity.type/bool (:result-type descriptor) (get-in facts [:type-table id])))
+        (is (= {:operation :list-family-classification :operand-evaluation :once :operand-position :non-tail
+                :construction :none :payload-evaluation :none :mutation :none :refinement :none} (:query-semantics descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (= descriptor (:dependencies row)))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (println (pr-str {:list-predicate-positive-observations {:runtime-status (:status execution) :runtime-result (:entrypoint-result execution)
+                                                          :functions (count (:functions assembled)) :predicate-calls (count predicates)}
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                         :closed-plan-execution (- t2 t1))}))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/list-predicate-arity-two.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(= :list-predicate-arity-mismatch (:reason %)) diagnostics) (pr-str diagnostics))
+      (println (pr-str {:list-predicate-typing-negative diagnostics :timing (:development-timing negative)})))
+    (println (pr-str {:list-predicate-composition :completed :runtime-result (:entrypoint-result execution)
+                      :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                      :closed-plan-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count (count (:functions runtime-plan))
+                      :member-refinement false :cardinality-refinement false :flow-narrowing false :whole-b14-execution false
+                      :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0) :closed-plan-execution (- t2 t1))}))))
