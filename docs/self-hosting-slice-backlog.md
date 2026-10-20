@@ -6017,6 +6017,67 @@ evaluated Character-Set construction was outside this membership increment.
 Character-Set equality, generic conversion and whole-C17 execution remain
 unsupported by this increment. SH-07 and authoritative admission remain open.
 
+### Finite String-Set membership: development increment
+
+The existing C7, C8, typed emitter and runtime membership owners support a
+finite all-String Set and String needle, including empty Sets. Distinct closed
+String descriptor, fact, producer and policy identities preserve independent
+operand typing, source/binding joins, complete ordered-ledger reconstruction
+and measured work. Keyword/Character behavior and the existing 1,024-member
+and 65,536-work limits remain unchanged. Normal operands retain domain checks
+even when another operand transfers; legacy Never dispatch is preserved.
+
+Runtime validates the full String domain and needle, prepays logical content,
+pair and search work, rejects duplicate value classes, then answers hit or miss
+using exact case-sensitive String equality. No normalization, host Set lookup,
+hash authority, insertion or conversion is used to answer membership. The query
+adds no source-level allocation effect; physical host allocation-freedom is not
+established. Existing constructor allocation in an operand remains visible. There is no
+new function, export, opcode or constructor interface.
+
+The first frozen focused run passed 17 tests/2,207 assertions: 764 new String
+checks and 1,443 adjacent Keyword/Character membership and String-constructor
+checks. Before any JVM run, review caught an early type-hashing path in the
+new Never selector; the local guard and direct zero-callback controls are part
+of the passing candidate. The tests cover domain/source/fact/ledger tampering,
+exact and short budgets, owning-consumer work, non-tail transfer handling,
+empty/hit/miss/reordered and supplementary Strings, equal-content distinct
+objects, hash collisions, duplicate classes and malformed later members.
+The paired owning-C2 fixture preflight separately passed one test/six assertions.
+
+The actual changed-source composition then passed one test/42 assertions
+(36 composition checks plus six existing runtime-loader checks) in 153.750
+seconds after 11.527 seconds loading SH01 at 2 GiB. A String-annotated helper
+executed the extension-Set membership expression for three callers, producing
+`[true true false]`. The positive has two functions, four call facts, one String
+membership descriptor/ledger row and one evaluated Set instruction with two
+literal String children. Original C7 and C8 verification passed, as did an
+additional observed public C7 assembly gate. C8 retains constructor allocation
+and no direct query allocation effect. One top-level runtime entry is counted;
+runtime still has 54 functions.
+
+The numeric-Set/String-needle negative passed fresh C5/C6 development checks
+and rejected in C7 with `C7-TYPE-MISMATCH` and
+`:string-set-contains-operand-type-required`. Its printed diagnostic vector also
+retains the unresolved-core-node annotation diagnostic. That negative has no
+C8 or lowering acceptance claim. QST has parser-only evidence, and no seed
+reference execution is claimed. Fresh development C6 sessions and same-catalog
+replay are not fresh public C6 authority verification. Inclusive timings are
+not phase-isolated performance or speedup evidence.
+
+The selected runtime assumes authenticated typing and type-conforming immutable
+finite Set providers with coherent cardinality and enumeration. Detectable
+inconsistent host views are robustness checks, not exhaustive host-provider
+authentication. No eager snapshot or new seed primitive was added to pursue
+that separate boundary. Dishonest or infinite host/FFI providers have no claimed
+CPU or peak-memory containment. Representation work units do not define String
+cardinality or establish a provider CPU bound.
+
+Bare, unknown or mixed Set types, wrong needle families, String-Set equality,
+general conversion-result inference and whole compiler-validator execution
+remain outside this increment. Focused and traceability results do not close
+authoritative migration, SH-07, self-hosting or release gates.
+
 ### Compiler-module literal String/Keyword keys: development increment
 
 The temporary module constructor now accepts distinct literal String or
