@@ -38,6 +38,20 @@ Implementations may vary by backend, but equality, iteration order where specifi
 - Protocols: `Seqable`, `Associative`, `Indexed`, `Counted`, `Reducible`, `Buildable`, `Hashable`, and `ComparableCollection`.
 - Bounded systems APIs: `fixed-vector`, `ring-buffer`, `static-map`, and `memory-view`.
 
+## List Family Predicate
+
+Unary `(list? value)` returns Bool true exactly when the normally evaluated
+value belongs to the persistent List family, including the empty List, and
+false for every other normally evaluated value. A traversal view or another
+collection family is not a List merely because it can be traversed.
+Its operand follows ordinary L2 evaluation exactly once; operand effects are
+preserved, and a control transfer aborts invocation. Classification neither
+evaluates stored payloads, mutates the value nor itself constructs a collection.
+It establishes no member types, length, nonemptiness or flow-typing facts.
+Collection semantics are owned by `gravity.collections`; a `gravity.core`
+compatibility binding does not change that ownership. Existing profile,
+target, effect, capability and safety legality requirements still apply.
+
 ## Vector Family Predicate
 
 Unary `(vector? value)` returns Bool true exactly when the normally evaluated
@@ -317,6 +331,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 ## Conformance Criteria
 
 - Persistent operations preserve old collection values in all supported profiles.
+- List family classification includes empty Lists, distinguishes other collection families and traversal views, preserves ordinary unary evaluation and transfers, and neither evaluates payloads nor invents member, cardinality or flow-typing facts.
 - Vector family classification distinguishes Vector and non-Vector values, preserves ordinary unary evaluation and transfers, and neither evaluates stored payloads nor invents member or bounds facts.
 - Map family classification distinguishes Map and non-Map values, preserves ordinary unary evaluation and transfers, and neither evaluates stored keys/values nor invents key, member, presence or cardinality facts.
 - Set family classification distinguishes Set and non-Set values, preserves ordinary unary evaluation and transfers, and does not evaluate stored payloads, mutate the value or construct a collection.
