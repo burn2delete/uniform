@@ -1,0 +1,10 @@
+(ns self-hosting.sh08.flat-keyword-set-vector-comparison
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  [(= [(count [false]) :literal #{:kind :shape}] [1 :literal #{:shape :kind}])
+   (= [(count [false]) :literal #{:kind :shape}] [1 :literal #{:shape :other}])
+   (not= [(count [false]) :literal #{:kind :shape}] [1 :literal #{:shape :kind}])
+   (not= [(count [false]) :literal #{:kind :shape}] [1 :literal #{:shape :other}])])
