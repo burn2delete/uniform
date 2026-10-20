@@ -193,6 +193,14 @@ Use the existing diamond, malformed checked-Core and fact-loss selectors for
 affected regression feedback. Supplied checked-Core tests exercise this ingress;
 they do not establish fresh C10 composition, nested CFG support or migration.
 
+For operation type or type-fact mismatches after those preflight gates, use
+`sh12-operation-type-diagnostics-preserve-expected-source` in the same namespace.
+The diagnostic must identify the first mismatch in canonical operation order
+using freshly rebuilt expected MIR, never candidate-supplied source metadata.
+Type-table, function-return and value-only failures retain their aggregate
+fallback; earlier structural failures retain their original precedence. This
+failure-only diagnostic path does not widen accepted MIR or its public schema.
+
 ### List family classification
 
 STD3 owns unary `list?`. The current JVM typed development route accepts independently

@@ -3593,6 +3593,44 @@
       false)
     false))
 
+(defn sh12-branch-join-first-type-operation-mismatch
+  [expected-operations operations]
+  (if (= (count expected-operations) 0)
+    nil
+    (let [expected-operation (first expected-operations)
+          operation (first operations)]
+      (if (= (sh12-branch-join-type-operation-view [expected-operation] [])
+             (sh12-branch-join-type-operation-view [operation] []))
+        (sh12-branch-join-first-type-operation-mismatch
+         (rest expected-operations) (rest operations))
+        expected-operation))))
+
+(defn sh12-branch-join-type-rejection [checked-core expected mir context]
+  (let [report
+        (sh12-branch-join-rejection
+         :verification "C11-TYPE" :type-fact-or-operation-schema checked-core mir)
+        operation
+        (if (= (get mir :type-table) (get expected :type-table))
+          (if (= (get (get context :function) :returns)
+                 (get (get context :expected-function) :returns))
+            (sh12-branch-join-first-type-operation-mismatch
+             (get context :expected-operations) (get context :operations))
+            nil)
+          nil)]
+    (if (= operation nil)
+      report
+      ; Do not skip an unlocatable first mismatch or trust candidate metadata.
+      (if (sh12-branch-join-node-source-valid? operation)
+        (let [source (get operation :source)
+              diagnostic (first (get report :diagnostics))]
+          (assoc report :diagnostics
+                 [(assoc diagnostic
+                         :operation-id (get operation :op-id)
+                         :block (get operation :block-id)
+                         :source-span (get source :span)
+                         :origin-chain (get source :generated-origin))]))
+        report))))
+
 (defn sh12-branch-join-effects-valid? [expected mir context]
   (if (= (get mir :effect-table) (get expected :effect-table))
     (if (= (get mir :effect-order-graph)
@@ -3802,9 +3840,8 @@
                             (sh12-branch-join-rejection
                              :verification "C11-EFFECT"
                              :effect-fact-or-ordering checked-core mir))
-                          (sh12-branch-join-rejection
-                           :verification "C11-TYPE"
-                           :type-fact-or-operation-schema checked-core mir)))
+                          (sh12-branch-join-type-rejection
+                           checked-core expected mir context)))
                       (sh12-branch-join-rejection
                        :verification "C11-DOMINANCE"
                        :data-flow-carrier checked-core mir))
