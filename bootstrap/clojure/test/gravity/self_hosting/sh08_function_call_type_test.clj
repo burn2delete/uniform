@@ -3383,31 +3383,6 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
         (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
 
-(deftest sh08-keyword-set-insertion-id-guard-development-kernel
-  (let [finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
-        input (list-prepend-input finite :gravity.type/keyword)
-        derive (fn [x] (invoke-c7 'sh08-pl-derive [(:core x) (:node x) (:call x) (:edge x) (:nodes x) (:bindings x) (:types x) (:forms x) 65536]))
-        callbacks (atom 0) opaque (proxy [Object] []
-                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "insertion ID hash")))
-                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "insertion ID equality")))
-                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "insertion ID printing"))))]
-    (is (= :accepted (:status (derive input))))
-    (doseq [bad [opaque [opaque] {:opaque opaque}]
-            path [[:call :core-node-id] [:call :operator-node-id] [:call :operator-binding-id]
-                  [:call :argument-node-ids 0] [:call :argument-node-ids 1]
-                  [:node :node-id] [:node :children 0] [:node :children 1] [:node :children 2]
-                  [:node :source :form-id] [:node :source :syntax-id]
-                  [:nodes :operator :node-id] [:nodes :operator :source :form-id]
-                  [:nodes :operator :attributes :symbol] [:bindings :ordering-binding :binding-id]
-                  [:forms :call :child-form-ids 0] [:forms :call :child-form-ids 1] [:forms :call :child-form-ids 2]
-                  [:forms :operator :value] [:forms :arg0 :syntax-id]]]
-      (let [result (derive (assoc-in input path bad))]
-        (is (= :rejected (:status result)))
-        (is (zero? @callbacks))))
-    (doseq [path [[:nodes :operator :node-id] [:bindings :ordering-binding :binding-id]
-                  [:forms :arg0 :form-id] [:forms :arg0 :parent-form-id]]]
-      (is (= :rejected (:status (derive (assoc-in input path :unrelated))))))))
-
 
 
 (deftest sh08-keyword-set-contains-dispatch-guard-development-kernel
@@ -3622,6 +3597,8 @@
         (is (= :rejected (:status rejected)))
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
         (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+
+
 
 (deftest sh08-keyword-vector-set-conversion-development-kernel
   (let [vector-type (fn [n] {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat n :gravity.type/keyword))})]
@@ -14362,3 +14339,28 @@
         (is (= :rejected (:status rejected)))
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
         (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+
+(deftest sh08-keyword-set-insertion-id-guard-development-kernel
+  (let [finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+        input (list-prepend-input finite :gravity.type/keyword)
+        derive (fn [x] (invoke-c7 'sh08-pl-derive [(:core x) (:node x) (:call x) (:edge x) (:nodes x) (:bindings x) (:types x) (:forms x) 65536]))
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "insertion ID hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "insertion ID equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "insertion ID printing"))))]
+    (is (= :accepted (:status (derive input))))
+    (doseq [bad [opaque [opaque] {:opaque opaque}]
+            path [[:call :core-node-id] [:call :operator-node-id] [:call :operator-binding-id]
+                  [:call :argument-node-ids 0] [:call :argument-node-ids 1]
+                  [:node :node-id] [:node :children 0] [:node :children 1] [:node :children 2]
+                  [:node :source :form-id] [:node :source :syntax-id]
+                  [:nodes :operator :node-id] [:nodes :operator :source :form-id]
+                  [:nodes :operator :attributes :symbol] [:bindings :ordering-binding :binding-id]
+                  [:forms :call :child-form-ids 0] [:forms :call :child-form-ids 1] [:forms :call :child-form-ids 2]
+                  [:forms :operator :value] [:forms :arg0 :syntax-id]]]
+      (let [result (derive (assoc-in input path bad))]
+        (is (= :rejected (:status result)))
+        (is (zero? @callbacks))))
+    (doseq [path [[:nodes :operator :node-id] [:bindings :ordering-binding :binding-id]
+                  [:forms :arg0 :form-id] [:forms :arg0 :parent-form-id]]]
+      (is (= :rejected (:status (derive (assoc-in input path :unrelated))))))))
