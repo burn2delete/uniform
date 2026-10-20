@@ -335,6 +335,45 @@ truthiness nodes; a truthful type/truthiness adapter is still a separate source
 integration dependency. A retained source-form ID is not a file/origin anchor.
 Do not relabel supplied checked-Core execution as fresh source provenance.
 
+For the separate bounded truthiness prerequisite, run
+`sh13-normalizes-selected-scalar-truthiness` in the control-flow namespace and
+`sh13-executes-original-scalar-truthiness-before-branching` in the branch-join
+namespace. The pure normalized `:truthy` opcode requires one defined Bool,
+i64, Keyword or explicit Nil operand and a Bool result. False and Nil yield
+false; zero, negative integers and Keywords yield true. Strings and collections
+remain unsupported here, not redefined as truthy.
+
+The original producer bridge adds exactly the six-node `[2,1,1]` layout:
+literal input and truthiness in entry, then two literal arms. Its new
+`:truthiness` projection role retains original IDs, source/fact rows, full CFG
+and selected trace, with 506 fuel remaining under 512. The SH-12 source-path
+gate preserves the existing `if-path + :condition` prefix and additionally
+accepts only source-op `:truthy` at the exact `if-path + :truthy` path. Bridge
+input must be at `if-path + :test`; retained metadata must have fixed
+`:false-values [nil false]` and canonical Bool result type. It is not a caller
+truthiness policy. Check wrong operators, suffixed paths, contradictory
+metadata and unselected-arm domains, plus the existing diamond and layouts.
+This explicitly adds an upstream accepted path and normalized opcode/role;
+it does not adapt actual C6 type families or renew pinned source authority.
+
+For explicit Nil transport, run
+`sh13-carries-explicit-nil-through-existing-scalar-transfers` in the control-flow
+namespace and `sh13-executes-explicit-nil-carriers-without-fabricating-values`
+in the branch-join namespace. This is a scalar-carrier extension, not an
+input-only condition exception: existing matching local, parameter, branch,
+backedge, allowed call, return, typed-exit and same-type equality paths carry
+Nil. Existing effect and type checks still apply; arithmetic, ordering and
+mixed-type equality do not become legal.
+
+A normalized Nil constant must contain an explicit `:literal` key with Nil.
+The original-producer bridge requires both an explicit payload `:value` and
+an original `:literal` node whose attributes contain `:value nil`. Check all
+nodes before execution, including unselected and lexical arms. A missing field
+is not a Nil witness. Original `:implicit-nil` and `:quote` nodes remain outside
+this bridge subset. Retain existing Bool/Nil separation, source/effect, schema,
+argument-arity and result-substitution controls. This extends the declared Nil
+value/projection domain, not public keys, arities, opcodes, roles or limits.
+
 ### Normalized MIR constant-fold result types
 
 For the fixed-i64 C13 fold domain, edit
@@ -360,6 +399,17 @@ non-i64 additions fail the existing `C13-SAFETY` gate; other nonconstant or
 audited unsafe-island operations may remain accepted unchanged without folding.
 This is not a general type checker, fresh authenticated C11 ingress, native
 execution, authoritative migration or SH-16 completion.
+
+For normalized C13 branch simplification, run
+`sh16-simplifies-only-established-boolean-conditions` in the same namespace.
+Only actual `true` and `false` conditions select their respective destination.
+On the ordinary branch-validation path, Nil and other non-Bools reject with
+`C13-CONTRACT` before transformation;
+earlier source, nondeterminism, duplicate-operation and effect gates retain
+priority. The private simplification predicate also refuses these values.
+Keep source/origin, invalidation-ledger and recomputing-verifier controls.
+This is the fixed normalized Bool interface, not a change to source-level
+truthiness or a general rewrite of membership helpers.
 
 ### Normalized target-lowering type consistency
 

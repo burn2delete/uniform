@@ -216,6 +216,56 @@
             (invoke-engine
              'sh16-verify [gravity-request gravity-result]))))))
 
+(deftest sh16-simplifies-only-established-boolean-conditions
+  ;; Supplied normalized MIR is not fresh authenticated C11 input. Nil is not
+  ;; a Bool condition and must not become an unconditional else transfer.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-mixed-optimization-request)
+          baseline (optimize base)
+          branch (get-in base [:operations 1])
+          check-rejected
+          (fn [subject rule]
+            (let [result (optimize subject)]
+              (is (= :rejected (:status result)))
+              (is (= rule (get-in result [:diagnostics 0 :rule])))
+              (is (nil? (:optimized-operations result)))
+              (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))]
+      (doseq [[condition destination] [[true :block/then] [false :block/else]]]
+        (let [subject (assoc-in base [:operations 1 :condition] condition)
+              result (optimize subject)
+              output (get-in result [:optimized-operations 1])]
+          (is (= :accepted (:status result)))
+          (is (= :branch (:opcode output)))
+          (is (= [destination] (:operands output)))
+          (is (= (:source-span branch) (:source-span output)))
+          (is (= (:origin-chain branch) (:origin-chain output)))
+          (is (= (:effects branch) (:effects output)))
+          (is (= [:op/branch] (get-in result [:decision-log 1 :changed-operations])))
+          (is (= (get-in baseline [:invalidation-ledger 1])
+                 (get-in result [:invalidation-ledger 1])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
+      (doseq [condition [nil 0 "false" :false [] {}]]
+        (let [subject (assoc-in base [:operations 1 :condition] condition)
+              result (optimize subject)]
+          (check-rejected subject "C13-CONTRACT")
+          (is (= :contract (get-in result [:diagnostics 0 :reason])))
+          (is (= (:source-span subject) (get-in result [:diagnostics 0 :source-span])))
+          (is (= (:origin-chain subject) (get-in result [:diagnostics 0 :origin-chain])))
+          (is (false? (invoke-engine 'sh16-simplifiable-branch?
+                                    [(assoc branch :condition condition)])))
+          (is (= (assoc branch :condition condition)
+                 (invoke-engine 'sh16-transform-operation
+                                [(assoc branch :condition condition)])))))
+      (let [subject (assoc-in base [:operations 1 :condition] nil)]
+        (check-rejected (assoc subject :mir-verified false) "C13-CONTRACT")
+        (check-rejected (assoc subject :source-span nil) "C13-PRESERVE")
+        (check-rejected (assoc subject :nondeterministic-choice true) "C13-NONDETERMINISM")
+        (check-rejected (update subject :operations conj branch) "C13-VERIFY")
+        (check-rejected (-> subject
+                            (assoc-in [:operations 0 :dead] true)
+                            (assoc-in [:operations 0 :effects] #{:io/write})) "C13-EFFECT")
+        (is (= :rejected (:status (invoke-engine 'sh16-verify [subject baseline]))))))))
+
 (deftest sh16-elides-check-only-with-matching-dominating-proof
   (let [request
         (request accepted-gravity-plan 'sh16-proof-elision-request)

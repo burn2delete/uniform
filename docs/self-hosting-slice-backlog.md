@@ -8916,6 +8916,25 @@ execution supports this development behavior, not fresh C11 source ingress,
 native execution, renewed authority or milestone completion. Historical C13
 source measurements above are not evidence for this changed revision.
 
+A second bounded C13 repair rejects non-Bool normalized branch conditions
+before simplification. The old Set-membership helper vacantly treated Nil as
+present, allowing it to become an unconditional else transfer. Only the two
+owning Bool-domain checks changed; generic membership helpers and other flag
+domains remain untouched. True and false preserve their selected destination,
+source/origin, effects and invalidation records. On the ordinary branch-validation
+path, Nil and representative other non-Bools reject with `C13-CONTRACT`;
+earlier validation gates keep priority.
+
+The actual RED attempt passed 170 and failed 16 of 186 assertions, with no
+errors; all sixteen failures exposed the Nil path across the two normalized
+constructors, not test-oracle errors. The changed candidate passed nine tests
+and 511 assertions (186 new plus 325 adjacent), followed by six boundary tests
+and 11 assertions: 15 tests/522 assertions across two passing invocations.
+LOC validation separately passed 2,021 files, zero exceptions, maximum 250.
+Independent review accepted both code and actual results. This establishes
+normalized optimizer behavior, not source truthiness, fresh C11 integration,
+authoritative migration or SH-16 completion.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
@@ -9762,6 +9781,80 @@ execution, whole compiler/helper behavior, SH-13 completion and authoritative
 migration remain outstanding. Consumers must account for the new normalized
 opcode/projection domains when selecting a future stable migration revision;
 no historical proof is repinned or renewed by this development merge.
+
+### Bounded scalar truthiness: executable increment
+
+The same C11 interpreter now executes one pure normalized `:truthy` operation
+over an already-defined Bool, i64 or Keyword value, producing Bool. False
+selects false; every other supported value selects true. Nil, Strings and
+collections are rejected by this bounded interface. This does not change L2's
+source truthiness law, where Nil is false, or implement its complete domain.
+
+The original SH-12 builder/verifier and same interpreter compose a new exact
+six-node `[2,1,1]` diamond: literal input, truthiness, two literal arms and the
+original join/return records. A new `:truthiness` projection role preserves
+original IDs, source/fact rows, CFG, incoming value and selected trace. The
+literal executes once; fuel remaining is 506 within the unchanged 512 bound.
+Existing five/seven/eight/nine-node domains remain unchanged.
+
+The initial attempt at `6d3fe73d` failed: one bridge test, 178 passes, 480
+failures and 48 secondary errors across 706 assertions; the normalized test
+was unrun. The original upstream gate rejected the actual truthiness source
+path before execution, and later test projections encountered absent outputs.
+The changed candidate `a03adc37` preserves the old condition-path prefix and
+additionally accepts only original source-op `:truthy` at exact
+`if-path + :truthy`. The bridge requires input at `if-path + :test`, fixed
+`[nil false]` metadata and canonical Bool result type. Wrong operators,
+suffixed/unrelated paths, contradictory metadata, malformed operands, unsupported
+types, unselected-arm errors and altered MIR/results reject. This is an
+explicit upstream accepted-path-domain addition, not an unchanged interface.
+
+The changed tests passed 2/869 assertions (722 bridge and 147 normalized).
+Fourteen affected existing selectors passed 4,671 assertions; six boundary
+tests passed 11. Thus 22 tests/5,551 assertions passed across three invocations,
+excluding the failed attempt. LOC separately passed 2,021 files, zero
+exceptions, maximum 250. These supplied G/Q constructor witnesses do not
+establish fresh C6/C10 source adaptation, actual source provenance, native
+execution, general truthiness, SH-13 completion or authoritative migration.
+The different C6 type family and stable C11 source binding remain separate
+integration/admission dependencies; no historical proof was refreshed.
+
+### Explicit Nil scalar transport and truthiness: executable increment
+
+The normalized C11 interpreter and original-producer bridge extend their
+scalar domain with explicit Nil. This is not only a condition exception:
+matching constants, parameters, local chains, branch/backedge arguments,
+direct and allowlisted indirect calls/results, returns and existing typed
+exits can transport Nil. Same-type Nil equality is true. Arithmetic, integer
+ordering, mixed-type equality and existing effect violations remain rejected.
+The original interpreter now yields false for Nil and false, preserving L2's
+law for the supported scalar subset.
+
+Nil constants require explicit field presence. Normalized records must contain
+`:literal nil`; bridge payloads must contain `:value nil`, and every original
+Nil constant must be an original `:literal` node whose attributes contain
+`:value nil`. Missing fields cannot become fabricated Nil through a defaulting
+lookup. Validation covers unselected and lexical arms before execution.
+Original `:implicit-nil` and `:quote` nodes remain excluded by this bridge
+subset; actual C6 generated origins and type-family adaptation are not claimed.
+
+Nil returns work in the existing five-node literal, six-node truthiness,
+seven-node entry-comparison and eight-node lexical layouts. Their old fuel,
+source/fact, incoming-value and trace rules remain. Computed comparison arms
+still return Bool. No public keys, arities, opcodes, projection roles or bounds
+were added; the scalar type/value domain explicitly grew.
+
+The first frozen candidate `4e2e2abc` remained unrun: static review found one
+test scope delimiter and an incoherent Nil-arm fixture. The two test-only
+corrections at `8a0993d4` left production unchanged. Its first execution passed
+both new tests/584 assertions (294 bridge and 290 normalized), including
+missing-field, wrong-value/type, source/fact, arity, effect and recomputation
+rejections. Seventeen affected existing selectors passed 6,070 assertions and
+six language-boundary tests passed 11: 25 tests/6,665 assertions across three
+passing invocations. LOC separately passed 2,021 files, zero exceptions,
+maximum 250. There is no failed execution to relabel. These supplied constructor
+results do not establish fresh source ingress, native execution, milestone
+completion or authoritative migration.
 
 ### Normalized C14 return-type consistency: development repair
 
