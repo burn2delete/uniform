@@ -8483,7 +8483,7 @@
         root-op (get (get join :instructions) 1)
         type (get function :returns)]
     (if (= [1 4 (count (get context :operations)) 2 []
-            :meta :jvm :jvm #{} #{} #{} 0 [(get condition :result)] true]
+            :meta :jvm :jvm #{} #{} #{} 0 [(get condition :result)] true true]
            [(count (get mir :functions)) (count (get function :blocks))
             (count (get checked-core :core-nodes))
             (count (get join :instructions)) (get function :params)
@@ -8494,7 +8494,10 @@
             (count (get mir :runtime-check-table))
             (get (get entry :terminator) :operands)
             (sh13-branch-join-layout-valid?
-             entry-operations then-operations else-operations)])
+             entry-operations then-operations else-operations)
+            (if (= 1 entry-count) true
+              (if (= :sequence (get then-op :opcode)) false
+                (if (= :sequence (get else-op :opcode)) false true)))])
       (if (= [[:conditional-join :if
                [(get condition :result) (get then-op :result)
                 (get else-op :result)] type]
