@@ -23474,3 +23474,119 @@
           (is (= [expected "" :normal]
                  (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
                    'p15-s23-runtime-evaluate-in-context [(:value lowered) {'signature value} "" {} []]))))))))
+
+(deftest current-gravity-private-first-entry-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        read-pair (fn [disposition name]
+                    (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+                          g-path (.getPath (io/file root (str stem ".gravity")))
+                          q-path (.getPath (io/file root (str stem ".qst")))
+                          g (slurp g-path) q (slurp q-path)
+                          forms (bootstrap/read-forms g-path g)]
+                      (is (= g q))
+                      (is (= forms (bootstrap/read-forms q-path q)))
+                      (is (= 2 (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+                      {:text g :forms forms}))
+        positive (read-pair "accepted" "private-first-entry")
+        negative (read-pair "rejected" "private-first-entry-missing-key")
+        helper '(defn signature-algorithm [package]
+                  (let [signatures (get package :signatures)
+                        signature (first signatures)]
+                    (get signature :algorithm)))]
+    (is (= helper (second (:forms positive)) (second (:forms negative))))
+    (is (= (.replace ^String (:text positive) ":algorithm :sha256" ":scheme :sha256") (:text negative)))))
+
+(deftest current-gravity-private-first-entry-authenticated-composition
+  ;; A minimal real private-entry chain. Full C17 and Q typed products are unrun.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/private-first-entry.gravity"
+        products (fresh relative) input (select-keys products [:request :typed :verification])
+        _ (println (pr-str {:bu-product-elapsed relative :timing (:development-timing products)}))
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Private first-entry C7 source prerequisite rejected"
+                           {:diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Private first-entry C7 source verification prerequisite rejected" {})))
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        gets (mapv :applied-map-get (filter #(= :direct-map-get (:dispatch %)) (:call-type-facts facts)))
+        firsts (mapv :applied-vector-first (filter #(= :direct-vector-first (:dispatch %)) (:call-type-facts facts)))
+        outer (first (filter #(= :sh08-map-get-private-entry-v1 (:version %)) gets))
+        inner (first (filter #(= :sh08-map-get-private-first-entry-v1 (:version %)) gets))
+        proof (:presence-proof inner) entries (:entries proof)
+        binding (seal (:request input) (:typed input) (:verification input))
+        t0 (System/nanoTime) effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t1 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects))
+            (throw (ex-info "Private first-entry C8 source prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t2 (System/nanoTime)
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        path (.getPath (io/file root relative))
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                (fn [runtime plan function args]
+                                  (let [result (original runtime plan function args)]
+                                    (when (= function 'sh08-verify-function-type-result) (swap! verified conj result))
+                                    result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t3 (System/nanoTime)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                         [{:op :function-call :function 'main :args []} {} "" (:functions assembled) []])
+        t4 (System/nanoTime)
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))]
+    (is (= :passed (:status effect-verification)))
+    (is (= 2 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 4 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 2 (count gets)))
+    (is (= 1 (count firsts) (count entries)))
+    (is (= :private-first-entry-key-presence (:kind proof)))
+    (is (= #{:kind :get-call-core-node-id :first-call-core-node-id :receiver-links :vector-links :entries :selected-type}
+           (set (keys proof))))
+    (is (= (:call-core-node-id outer) (:get-call-core-node-id proof)))
+    (is (= (:call-core-node-id (first firsts)) (:first-call-core-node-id proof)))
+    (is (= :gravity.type/keyword (:return inner) (:result-type inner) (:selected-type proof)))
+    (is (= [:invoked] (mapv :entry entries)))
+    (is (= [[:signatures 0 :algorithm]] (mapv #(get-in % [:selection :logical-path]) entries)))
+    (is (= 2 (count (filter #(= :keyword-map-lookup (:op %)) instructions))))
+    (is (= 1 (count (filter #(and (= :builtin-call (:op %)) (= 'first (:function %))) instructions))))
+    (doseq [descriptor (concat gets firsts)]
+      (is (= #{} (get-in effects [:effect-graph :nodes (:call-core-node-id descriptor) :direct]))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 54 (count (:functions runtime-plan))))
+    (is (= [:sha256 "" :normal] result))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/private-first-entry-missing-key.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:bu-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(= ["C7-ANNOTATION" :map-get-private-first-entry-presence-required]
+                    ((juxt :rule :reason) %)) diagnostics) (pr-str diagnostics)))
+    (println (pr-str {:bu-private-first-entry-composition :completed
+                      :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
+                      :function-table-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :seed-control-exclusion :compiler-owned-keyword-map-lookup-unsupported-by-seed
+                      :c17-unchanged-helper :unrun :whole-c17-caller-coverage false :cold-convergence :unproved
+                      :runtime-function-count 54 :authority :non-authoritative
+                      :elapsed-ns {:c8-construction (- t1 t0) :c8-verification (- t2 t1)
+                                   :assembly-including-public-c7-verification (- t3 t2)
+                                   :entry-execution (- t4 t3)}
+                      :clock :monotonic-nanoseconds :nested-work :included}))))
