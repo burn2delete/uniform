@@ -31263,3 +31263,174 @@
         (is (= 1 (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
         (is (= expected (count counts) (count insertions)))
         (is (every? #(and (= 3 (count %)) (= 'quote (first (second %)))) insertions))))))
+
+(deftest current-gravity-symbol-set-insertion-authenticated-composition
+  ;; One finite Symbol insertion composition and one Character-member typing negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "Symbol Set insertion fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "Symbol Set insertion development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:symbol-set-insertion-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "Symbol Set insertion upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "Symbol Set insertion C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "Symbol Set insertion C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-finite-symbol-set-insertion.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        main (first (:function-type-table facts))
+        insertions (mapv :applied-symbol-set-insertion (filter #(= :direct-symbol-set-insertion (:dispatch %)) (:call-type-facts facts)))
+        counts (mapv :applied-collection-count (filter #(= :direct-collection-count (:dispatch %)) (:call-type-facts facts)))
+        rows (filterv #(= :sh08-symbol-set-insertion-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
+        insertion-ir (filterv #(and (= :builtin-call (:op %)) (= 'conj (:function %))) instructions)
+        count-ir (filterv #(and (= :builtin-call (:op %)) (= 'count (:function %))) instructions)
+        graph (:effect-graph effects) runtime-plan (:plan (typed-catch-runtime-projection))
+        execution (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)])
+        t2 (System/nanoTime)]
+    (is (= 1 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 6 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 3 (count insertions) (count rows) (count insertion-ir) (count counts) (count count-ir)))
+    (is (= 6 (count (filter #(= :quote (:op %)) instructions))))
+    (is (empty? (filter #(= :function-call (:op %)) instructions)))
+    (is (empty? (get-in assembled [:module-initialization :initializers])))
+    (is (= 56 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= [1 2 1] (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= #{} (get-in graph [:namespace :inferred])))
+    (is (= #{:memory/allocate} (get-in graph [:functions (:function-id main) :inferred])
+           (get-in graph [:functions (:function-id main) :latent])))
+    (is (= {0 1, 1 2} (frequencies (map :input-extent insertions))))
+    (doseq [descriptor insertions]
+      (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+            row (first (filter #(= id (get-in % [:lhs :core-node-id])) rows))]
+        (is (= :gravity.type/applied-symbol-set-insertion (:kind descriptor)))
+        (is (= :sh08-symbol-set-insertion-v1 (:version descriptor)))
+        (is (= ['conj 'gravity.collections :gravity.collections/persistent-symbol-set-insertion]
+               [(:operation descriptor) (:semantic-owner descriptor) (:intrinsic descriptor)]))
+        (is (= :gravity.type/set (:result-type descriptor) (:return descriptor) (get-in facts [:type-table id])))
+        (is (nil? (:result-extent descriptor)))
+        (is (= [:persistent-set-insertion :value-equivalent-unchanged :add-supplied-value :bare-set-only :none]
+               ((juxt :operation :present-class :absent-class :result-evidence :cardinality-analysis) (:insertion-semantics descriptor))))
+        (is (nil? (get-in descriptor [:insertion-semantics :carrier-schema])))
+        (is (= [:independently-established-symbol-only :guarded-atomic-symbol-value]
+               ((juxt :member-domain :member-equality) (:insertion-semantics descriptor))))
+        (is (= [:original-namespace-and-name :none :none :none :jvm-utf16-symbol-display-for-work-only]
+               ((juxt :symbol-equality :normalization :coercion :resolution-authority :representation-unit-policy)
+                (:insertion-semantics descriptor))))
+        (is (= [:memory/allocate] (:direct-effects descriptor)))
+        (is (= #{:memory/allocate} (:direct record) (:transitive record)))
+        (is (= :sh09-symbol-set-insertion-allocation-v1 (get-in record [:allocation :rule-version])))
+        (is (= :runtime-value-dependent (get-in record [:allocation :extent :result-cardinality])))
+        (is (= (:storage-policy descriptor) (get-in record [:allocation :storage-policy])))
+        (is (= descriptor (:dependencies row)))
+        (is (= (:insertion-semantics descriptor) (get-in row [:solution :insertion-semantics])))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (doseq [descriptor counts]
+      (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+        (is (= [:gravity.type/set] (:argument-types descriptor)))
+        (is (= :gravity.type/integer (:result-type descriptor)))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (= #{:memory/allocate} (:transitive record)))))
+    (println (pr-str {:symbol-set-insertion-positive-observations {:runtime-status (:status execution) :runtime-result (:entrypoint-result execution)
+                                                                  :functions (count (:functions assembled)) :insertion-calls (count insertions)}
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                         :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/symbol-set-insertion-character-member.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])
+          diagnostic (first (filter #(= :string-set-insertion-operand-type-required (:reason %)) diagnostics))]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)) (pr-str diagnostics))
+      (is (= [{:kind :gravity.type/set :shape :literal :element-types [:gravity.type/character]} :gravity.type/symbol]
+             (:actual-type diagnostic)) (pr-str diagnostic))
+      (is (some? (:core-node-id diagnostic)))
+      (is (some? (:syntax-id diagnostic)))
+      (is (some? (:binding-id diagnostic)))
+      (is (map? (:source-span diagnostic)))
+      (println (pr-str {:symbol-set-insertion-typing-negative diagnostics :timing (:development-timing negative)})))
+    (println (pr-str {:symbol-set-insertion-composition :completed :runtime-result (:entrypoint-result execution)
+                      :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                      :closed-plan-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count (count (:functions runtime-plan))
+                      :member-domain :independently-finite-symbol-sets-and-symbol-value :result-evidence :bare-set-only
+                      :recursive-member-transport false :whole-compiler-consumer-execution false
+                      :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                         :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
