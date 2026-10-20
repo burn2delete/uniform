@@ -2299,6 +2299,65 @@ other targets, authoritative migration, SH-07, self-hosting and release gates
 remain separate. Exact definition-form reuse in an allocation-allowed fixture
 does not establish an unchanged full compiler-module build.
 
+### Module-local literal String-Set initialization: development increment
+
+The same three existing emitter/runtime initializer functions accept direct
+root Sets of distinct homogeneous String literals alongside Keyword literals.
+All members are validated and frozen as one actual family before content work
+or comparison. Native String UTF-16 units use `count` without formatting or
+normalization; Keyword and empty-Set work/results retain the previous path.
+The existing aggregate reservation, root-only scope, full preflight-before-
+construction and binding-ID pool remain. No C7/C8, public API, IR operation,
+helper, runtime function inventory or module manifest change was introduced.
+
+The finite-type join checks shape and bounded matching cardinality before its
+prepaid member-type reads, using the actual family of the first previously
+validated IR value. It rejects crossed String/Keyword declarations. This is
+the existing census-to-type-check lexical contract over the same immutable IR,
+not standalone authentication of arbitrary caller-supplied initializer IR.
+
+The first focused batch passed 13 tests/1,364 assertions with no failures or
+errors: 307 new, 1,045 adjacent semantic assertions and twelve affected parser
+assertions. Cases cover escapes, supplementary and normalization-distinct
+Strings, duplicate/mixed supplied records, exact/short and aggregate work,
+type/source forgeries, constructor ordering, unused definitions and pooled
+reads. A direct probe confirms String content does not pass through `str`.
+These are logical work/helper-call observations, not physical allocation,
+Unicode-scalar or grapheme counts, provider CPU or peak-memory guarantees.
+
+The former String rejection pair moved byte-for-byte to accepted, while active
+rejection checks now use Character initializers. Historical String rejection
+evidence remains true at its original revision. The affected old parser ran;
+the unchanged expensive Keyword source positive was not replayed.
+
+The new paired parser passed one test/17 assertions. One affected source
+composition then passed one test/61 assertions (55 composition plus six loader
+checks). It reuses B14's exact ten-String diagnostic Set definition in a tiny
+allocation-allowed module. The runtime returned `[true false 10]` for membership
+hit, miss and count, with one constructor-function invocation before entry.
+Two definitions/roots, one function, three calls, one Set initializer, one body
+Vector, three pooled reads and two String-membership descriptors were checked.
+Both G fixtures passed original C7/C8 and the assembly's public C7 verification;
+the Character fixture then rejected at lowering with `P15S23Q002` and
+`:unsupported-typed-module-initializer`, retaining the wrapper's existing
+missing-fact and remediation fields. It did not enter the runtime.
+
+The source execution envelope took 147.959 seconds after 11.491 seconds of
+namespace loading at 2 GiB. The two fixtures' inclusive C5 construction times
+were 30.507/24.379 seconds, fresh development C6-session construction
+38.022/32.840 seconds and same-catalog replay 3.354/3.143 seconds. These
+observations distinguish product construction from startup; nested work is
+included, so they are not independent phase benchmarks. Public fresh C6 was
+not invoked, Q remained parser-only and no seed control ran. Each first
+invocation passed without a failed/correction/replay epoch.
+Separate language-boundary checks passed six tests/eleven assertions; LOC
+validation passed 2,021 source files, zero exceptions, maximum 250 lines.
+
+Mixed, Character, computed and nested evaluated Set initializers remain outside
+this increment. Full B14/backend execution, String-Set equality, original
+namespace effect legality, authoritative migration, SH-07 completion,
+self-hosting and release remain separate gates.
+
 ### Finite persistent Vector value equality: development implementation
 
 Binary `=` now compares actual persistent Vector values when both operands
