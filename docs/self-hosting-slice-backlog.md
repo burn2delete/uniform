@@ -9183,7 +9183,7 @@ construct a collection; operand effects and control transfers are preserved.
 
 The first focused run completed 14 of 23 selected tests: 2,233 passing and five
 failing assertions. Thirteen complete green variables with 2,217 assertions
-were retained, including all eight lowering/runtime selections. The failed
+were retained, including all eight SH01 selections. The failed
 List throw-consumer exposed omitted List rejection reasons in C7's shared
 error/work forwarding; nine variables were skipped. That failed epoch remains
 distinct from the narrow consumer correction and affected follow-up checks.
