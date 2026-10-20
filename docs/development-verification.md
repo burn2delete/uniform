@@ -172,6 +172,26 @@ regressions. Both current pure-C8 adapter families still reject writes: a
 normalized ownership fact does not manufacture mutation effects or authority.
 Effectful source integration, C10/MIR propagation and migration remain separate.
 
+### C11 node-local preflight diagnostics
+
+For source-valid checked-Core nodes rejected by the existing single-diamond
+MIR preflight, edit `c11_mir_specification.gravity` and run the owning regression:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh12-branch-join-mir-test \
+  --exact sh12-node-local-preflight-diagnostics-preserve-source --fail-fast
+```
+
+Construction and verification must report the first offending node's operation,
+span and generated origins, not the enclosing conditional. No verified CFG
+exists on this rejection path, so its block is `:not-applicable`. Keep malformed
+or missing-source and aggregate failures on their existing fallback. Accepted
+MIR, public report fields, rejection precedence and resource limits are unchanged.
+Use the existing diamond, malformed checked-Core and fact-loss selectors for
+affected regression feedback. Supplied checked-Core tests exercise this ingress;
+they do not establish fresh C10 composition, nested CFG support or migration.
+
 ### First stored value of a proven-nonempty Vector
 
 STD3 defines `first` on a persistent nonempty Vector as its stored index-zero
