@@ -531,3 +531,75 @@
                               (when (= phase :verification) mir)])]
         (is (= :rejected (:status report)))
         (is (= [expected] (:diagnostics report)))))))
+
+(deftest sh12-operation-type-diagnostics-preserve-expected-source
+  ;; Supplied checked-Core ingress; candidate MIR metadata is not source authority.
+  (let [checked
+        (update (checked-core ".gravity") :core-nodes
+                (fn [nodes]
+                  (mapv (fn [node]
+                          (-> node
+                              (assoc-in [:source :generated?] true)
+                              (assoc-in [:source :generated-origin]
+                                        [{:kind :macro-expansion
+                                          :source-id (:node-id node)}])))
+                        nodes)))
+        mir (build-mir checked)
+        function-name (:entrypoint checked)
+        prefix [:functions function-name :blocks]
+        then-block (str (:artifact-id checked) ":mir:then")
+        else-block (str (:artifact-id checked) ":mir:else")
+        then-path (conj prefix then-block :instructions 0)
+        else-path (conj prefix else-block :instructions 0)
+        wrong-type #(assoc-in % (conj %2 :type) :gravity.type/bool)
+        wrong-then (wrong-type mir then-path)
+        cases
+        [[wrong-then then-path]
+         [(wrong-type mir else-path) else-path]
+         [(wrong-type (wrong-type mir else-path) then-path) then-path]
+         [(assoc-in mir (conj then-path :facts :type-fact-id) "wrong:type-fact")
+          then-path]
+         [(-> (wrong-type mir else-path)
+              (assoc-in (conj else-path :source) {:span :forged :generated-origin [:forged]})
+              (assoc-in (conj else-path :block-id) "forged:block")) else-path]]]
+    (is (= :gravity/mir-module (:artifact mir)))
+    (is (= mir (invoke c11-plan 'c11-build-target-independent-mir [checked])))
+    (is (= :passed (:status (verify-mir checked mir))))
+    (doseq [[malformed path] cases]
+      (let [report (verify-mir checked malformed)
+            operation (get-in mir path)
+            source (:source operation)
+            observed (diagnostic report)
+            expected
+            (assoc (invoke c11-plan 'sh12-branch-join-diagnostic
+                           ["C11-TYPE" :type-fact-or-operation-schema checked malformed])
+                   :operation-id (:op-id operation) :block (:block-id operation)
+                   :source-span (:span source) :origin-chain (:generated-origin source))]
+        (is (= :rejected (:status report)))
+        (is (= 1 (count (:diagnostics report))))
+        (is (= stable-diagnostic-fields (set (keys observed))))
+        (is (= "C11-TYPE" (:diagnostic-id observed)))
+        (is (= :type-fact-or-operation-schema (:missing-fact observed)))
+        (is (= (:op-id operation) (:operation-id observed)))
+        (is (= (:block-id operation) (:block observed)))
+        (is (= (:span source) (:source-span observed)))
+        (is (= (:generated-origin source) (:origin-chain observed)))
+        (is (= expected observed))))
+    ;; Original earlier/aggregate failures must not become operation diagnoses.
+    (doseq [[malformed id missing]
+            [[(assoc wrong-then :type-table {})
+              "C11-TYPE" :type-fact-or-operation-schema]
+             [(assoc-in wrong-then [:functions function-name :returns] :gravity.type/bool)
+              "C11-TYPE" :type-fact-or-operation-schema]
+             [(assoc-in mir [:data-flow-graph :values "sh12:branch-join:then" :type]
+                        :gravity.type/bool)
+              "C11-TYPE" :type-fact-or-operation-schema]
+             [(assoc wrong-then :module-id 'forged.module)
+              "C11-MODULE" :module-identity-or-target-independence]
+             [(assoc-in wrong-then (conj prefix then-block :instructions) [])
+              "C11-BLOCK" :block-terminator-or-control-flow-edge]]]
+      (let [report (verify-mir checked malformed)
+            expected (invoke c11-plan 'sh12-branch-join-diagnostic
+                             [id missing checked malformed])]
+        (is (= :rejected (:status report)))
+        (is (= [expected] (:diagnostics report)))))))
