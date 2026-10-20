@@ -9282,6 +9282,20 @@ through the original builder and recomputing verifier for LLVM, C and Wasm
 normalized requests. This is neither fresh authenticated C11/SH-16 ingress,
 native code generation/execution, SH-17 completion nor authoritative migration.
 
+The same normalized boundary now checks the existing integer-operation
+signatures: binary Integer addition returns Integer, and binary Integer
+equality returns Bool. Operand/result declarations are checked after original
+duplicate and operand-defined gates using the existing bounded type table;
+other opcode families are unchanged. This adds no widths, overflow semantics,
+coercions, constant-value typing, type grammar or native arithmetic execution.
+
+Its regression initially completed 294 assertions with 150 passes and 144
+failures; that failed result is retained. The same regression now passes 294
+assertions for LLVM/C/Wasm requests. With the existing return-type, schema,
+three-target and substitution controls, the batch passes 6 tests and 533
+assertions. These remain normalized-input and recomputation checks, not fresh
+upstream authentication, native execution or milestone-completion evidence.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established
