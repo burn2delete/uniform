@@ -23630,64 +23630,64 @@
 (deftest current-gravity-private-first-entry-session-wiring-development-kernel
   ;; Validate the actual local initializer using normalized callbacks only.
   ;; This constructs no source products and grants no compiler evidence.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [owner (the-ns 'gravity.self-hosting.sh01-stage2-runtime-iteration-test)
-      forms (binding [*read-eval* false *ns* owner]
-              (with-open [reader (java.io.PushbackReader. (io/reader (io/resource "gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj")))]
-                (loop [out []] (let [form (read {:eof ::end} reader)]
-                                (if (= ::end form) out (recur (conj out form)))))))
-      form (first (filter #(and (seq? %) (= 'deftest (first %))
-                               (= 'current-gravity-private-first-entry-authenticated-composition (second %))) forms))
-      body (first (filter #(and (seq? %) (= 'let (first %))) (drop 2 form)))
-      initializer (get (into {} (map vec (partition 2 (second body)))) 'fresh)
-      fresh (binding [*ns* owner]
-              (eval (list 'let ['root '(clojure.java.io/file "/tmp/bu-session-wiring-development")] initializer)))
-      events (atom []) sessions (atom []) mode (atom :ready) generation (atom 0)
-      upstream 'gravity.self-hosting.sh08-function-call-type-test
-      callbacks (fn [kind] (count (filter #(= kind (first %)) @events)))
-      rejected? (fn [message]
-                  (try (fresh "rejected.gravity") false
-                       (catch clojure.lang.ExceptionInfo error (= message (.getMessage error)))))
-]
+        forms (binding [*read-eval* false *ns* owner]
+                (with-open [reader (java.io.PushbackReader. (io/reader (io/resource "gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj")))]
+                  (loop [out []] (let [form (read {:eof ::end} reader)]
+                                  (if (= ::end form) out (recur (conj out form)))))))
+        form (first (filter #(and (seq? %) (= 'deftest (first %))
+                                 (= 'current-gravity-private-first-entry-authenticated-composition (second %))) forms))
+        body (first (filter #(and (seq? %) (= 'let (first %))) (drop 2 form)))
+        initializer (get (into {} (map vec (partition 2 (second body)))) 'fresh)
+        fresh (binding [*ns* owner]
+                (eval (list 'let ['root '(clojure.java.io/file "/tmp/bu-session-wiring-development")] initializer)))
+        events (atom []) sessions (atom []) mode (atom :ready) generation (atom 0)
+        upstream 'gravity.self-hosting.sh08-function-call-type-test
+        callbacks (fn [kind] (count (filter #(= kind (first %)) @events)))
+        rejected? (fn [message]
+                    (try (fresh "rejected.gravity") false
+                         (catch clojure.lang.ExceptionInfo error (= message (.getMessage error)))))]
     (with-redefs-fn
-                 {#'bootstrap/compiler-c5-resolution-file-artifact
-                  (fn [path] (let [candidate {:path path :generation (swap! generation inc)}]
-                               (swap! events conj [:c5 candidate]) candidate))
-                  #'bootstrap/sh07-core-verification-session
-                  (fn [candidate]
-                    (let [session {:status (if (= :failed-session @mode) :failed :ready)
-                                   :expected (when-not (= :missing-expected @mode) {:candidate candidate})}]
-                      (swap! events conj [:session candidate]) (swap! sessions conj session) session))
-                  #'bootstrap/sh07-core-artifact-verification-against-expected
-                  (fn [artifact session]
-                    (is (identical? artifact (:expected session)))
-                    (is (identical? session (peek @sessions)))
-                    (swap! events conj [:replay artifact])
-                    {:status (if (= :failed-replay @mode) :failed :passed)})
-                  #'bootstrap/sh07-core-artifact-verification
-                  (fn [& _] (swap! events conj [:public-c6]) (throw (AssertionError. "Original public C6 verifier invoked")))
-                  (ns-resolve upstream 'coordinator-verification)
-                  (fn [artifact report] (swap! events conj [:coordinator artifact report]) {:development true})
-                  (ns-resolve upstream 'b47-context)
-                  (fn [artifact report coordinator] (swap! events conj [:context artifact]) {:canonical-core-artifact artifact})
-                  (ns-resolve upstream 'invoke-c7)
-                  (fn [function arguments] (swap! events conj [:c7 function])
-                    {:status (if (= 'sh08-verify-function-type-result function) :passed :accepted)})}
-                 (fn []
-                   (let [one (fresh "one.gravity") two (fresh "two.gravity")]
-                     (is (= 2 (callbacks :session) (callbacks :replay) (callbacks :coordinator)))
-                     (is (= 4 (callbacks :c7)))
-                     (is (not= (:artifact one) (:artifact two)))
-                     (is (not (identical? (first @sessions) (second @sessions))))
-                     (is (not (contains? one :session)))
-                     (is (= :not-invoked (get-in one [:development-timing :public-c6-fresh-verification])))
-                     (is (= :fresh-development-session-and-same-catalog-replay (get-in two [:development-timing :boundary]))))
-                   (doseq [bad [:failed-session :missing-expected]]
-                     (reset! mode bad)
-                     (is (rejected? "Private first-entry fresh development session rejected"))
-                     (is (= 2 (callbacks :replay) (callbacks :coordinator))))
-                   (reset! mode :failed-replay)
-                   (is (rejected? "Private first-entry development replay rejected"))
-                   (is (= 3 (callbacks :replay)))
-                   (is (= 2 (callbacks :coordinator) (callbacks :context)))
-                   (is (= 4 (callbacks :c7)))
-                   (is (zero? (callbacks :public-c6)))))))
+      {#'bootstrap/compiler-c5-resolution-file-artifact
+       (fn [path] (let [candidate {:path path :generation (swap! generation inc)}]
+                    (swap! events conj [:c5 candidate]) candidate))
+       #'bootstrap/sh07-core-verification-session
+       (fn [candidate]
+         (let [session {:status (if (= :failed-session @mode) :failed :ready)
+                        :expected (when-not (= :missing-expected @mode) {:candidate candidate})}]
+           (swap! events conj [:session candidate]) (swap! sessions conj session) session))
+       #'bootstrap/sh07-core-artifact-verification-against-expected
+       (fn [artifact session]
+         (is (identical? artifact (:expected session)))
+         (is (identical? session (peek @sessions)))
+         (swap! events conj [:replay artifact])
+         {:status (if (= :failed-replay @mode) :failed :passed)})
+       #'bootstrap/sh07-core-artifact-verification
+       (fn [& _] (swap! events conj [:public-c6]) (throw (AssertionError. "Original public C6 verifier invoked")))
+       (ns-resolve upstream 'coordinator-verification)
+       (fn [artifact report] (swap! events conj [:coordinator artifact report]) {:development true})
+       (ns-resolve upstream 'b47-context)
+       (fn [artifact report coordinator] (swap! events conj [:context artifact]) {:canonical-core-artifact artifact})
+       (ns-resolve upstream 'invoke-c7)
+       (fn [function arguments] (swap! events conj [:c7 function])
+         {:status (if (= 'sh08-verify-function-type-result function) :passed :accepted)})}
+      (fn []
+        (let [one (fresh "one.gravity") two (fresh "two.gravity")]
+          (is (= 2 (callbacks :session) (callbacks :replay) (callbacks :coordinator)))
+          (is (= 4 (callbacks :c7)))
+          (is (not= (:artifact one) (:artifact two)))
+          (is (not (identical? (first @sessions) (second @sessions))))
+          (is (not (contains? one :session)))
+          (is (= :not-invoked (get-in one [:development-timing :public-c6-fresh-verification])))
+          (is (= :fresh-development-session-and-same-catalog-replay (get-in two [:development-timing :boundary]))))
+        (doseq [bad [:failed-session :missing-expected]]
+          (reset! mode bad)
+          (is (rejected? "Private first-entry fresh development session rejected"))
+          (is (= 2 (callbacks :replay) (callbacks :coordinator))))
+        (reset! mode :failed-replay)
+        (is (rejected? "Private first-entry development replay rejected"))
+        (is (= 3 (callbacks :replay)))
+        (is (= 2 (callbacks :coordinator) (callbacks :context)))
+        (is (= 4 (callbacks :c7)))
+        (is (zero? (callbacks :public-c6)))))))
