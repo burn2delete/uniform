@@ -9996,6 +9996,7 @@
 (defn sh08-pc-parent-data-work [descriptor inner-key budget]
   ; A BU dependency projection, not the identity of the entire BT artifact.
   ; Original BT/BS reconstruction owns the census and complete operand types.
+  ; The full current source projection owns demanded shape ancestry below.
   (let [proof (get descriptor :presence-proof) entries (get proof :entries)
         base (+ 112 (* 8 (if (vector? entries) (count entries) 0)))]
     (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
@@ -10005,12 +10006,10 @@
           (if (= :accepted (get rows :status))
             (let [data {:parent-reference (sh08-pc-parent-reference descriptor)
                         :proof-kind (get proof :kind) :proof-key (get proof :key) :entries (get rows :value)}
-                  measured (sh08-pc-evidence-work data (- budget prefix)) used (+ prefix (get measured :work-count))
-                  ancestry (if (= :accepted (get measured :status)) (sh08-pc-ancestry-work entries inner-key (- budget used)) measured)
-                  total (+ used (if (= :accepted (get measured :status)) (get ancestry :work-count) 0))]
-              (if (= :accepted (get ancestry :status))
-                {:status :accepted :work-count total :value (assoc data :ancestry (get ancestry :value))}
-                (assoc ancestry :work-count total)))
+                  measured (sh08-pc-evidence-work data (- budget prefix)) used (+ prefix (get measured :work-count))]
+              (if (= :accepted (get measured :status))
+                {:status :accepted :work-count used :value data}
+                (assoc measured :work-count used)))
             (assoc rows :work-count prefix)))
         {:status :rejected :reason :map-get-source-mismatch :work-count base}))))
 
