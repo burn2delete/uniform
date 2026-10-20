@@ -14043,6 +14043,7 @@
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
     (doseq [type [:gravity.type/set
+                  {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
                   {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/integer]}
                   {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/unknown]}]]
       (let [{:keys [core node call edge nodes bindings types forms module]} (input-fn 'count [type])
@@ -23336,7 +23337,8 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
-    (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never] [:gravity.type/never k]]]
+    (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never] [:gravity.type/never k]
+                       [{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} k] [{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} :gravity.type/never]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
             result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
             descriptor (:descriptor result)
@@ -23690,11 +23692,11 @@
       (is (= #{".gravity" ".qst"} (set (map :value (:items instruction)))))
       (is (every? #(and (= :literal (:op %)) (= #{:op :value} (set (keys %)))) (:items instruction))))
     (is (= 1 (count memberships)
-             (count (filter #(= :sh08-string-set-contains-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+             (count (filter #(= :sh08-string-set-contains-v2 (:producer-rule %)) (:constraint-ledger facts)))))
     (doseq [descriptor memberships]
       (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])]
         (is (= :gravity.type/applied-string-set-contains (:kind descriptor)))
-        (is (= :sh08-string-set-contains-v1 (:version descriptor)))
+        (is (= :sh08-string-set-contains-v2 (:version descriptor)))
         (is (= :gravity.type/bool (:result-type descriptor) (get-in facts [:type-table id])))
         (is (= :guarded-atomic-string-leaf (get-in descriptor [:membership-policy :comparison])))
         (is (= :gravity/string-set-membership-logical-content-work-v1 (get-in descriptor [:membership-policy :value-work-model])))
@@ -26745,7 +26747,7 @@
     (is (= (vec (repeat 10 :gravity.type/string)) (get-in (first globals) [:type :element-types])))
     (is (= 2 (count memberships)))
     (doseq [descriptor memberships]
-      (is (= :sh08-string-set-contains-v1 (:version descriptor)))
+      (is (= :sh08-string-set-contains-v2 (:version descriptor)))
     )
     (doseq [node set-nodes]
       (let [record (get-in graph [:nodes (:node-id node)])]
@@ -27473,8 +27475,9 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
         s :gravity.type/string homogeneous {:kind :gravity.type/set :shape :literal :element-types [s]}
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
         positional #(hash-map :kind :gravity.type/set :shape :literal :element-types %)]
-    (doseq [[receiver value] [[(positional []) s] [homogeneous s] [homogeneous :gravity.type/never]
+    (doseq [[receiver value] [[(positional []) s] [homogeneous s] [homogeneous :gravity.type/never] [carrier s] [carrier :gravity.type/never]
                               [(positional (vec (repeat 1024 s))) s]]]
       (let [{:keys [core node nodes forms bindings types module call edge] :as input} (input-fn receiver value)
             result (derive input) descriptor (:descriptor result)
@@ -27834,7 +27837,7 @@
         core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
         insertions (mapv :applied-string-set-insertion (filter #(= :direct-string-set-insertion (:dispatch %)) (:call-type-facts facts)))
         counts (mapv :applied-collection-count (filter #(= :direct-collection-count (:dispatch %)) (:call-type-facts facts)))
-        rows (filterv #(= :sh08-string-set-insertion-v1 (:producer-rule %)) (:constraint-ledger facts))
+        rows (filterv #(= :sh08-string-set-insertion-v2 (:producer-rule %)) (:constraint-ledger facts))
         node-index (into {} (map (juxt :node-id identity) (:nodes core)))
         source-quotes (mapv #(get node-index (first (get-in % [:source-call :argument-node-ids]))) insertions)
         instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
@@ -27869,8 +27872,8 @@
     (doseq [descriptor insertions]
       (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
             row (first (filter #(= id (get-in % [:lhs :core-node-id])) rows))]
-        (is (= :gravity.type/set (:result-type descriptor) (get-in facts [:type-table id])))
-        (is (= :bare-set-only (get-in descriptor [:insertion-semantics :result-evidence])))
+        (is (= {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} (:result-type descriptor) (get-in facts [:type-table id])))
+        (is (= :homogeneous-string-set-only (get-in descriptor [:insertion-semantics :result-evidence])))
         (is (nil? (:result-extent descriptor)))
         (is (= [:memory/allocate] (:direct-effects descriptor)))
         (is (= #{:memory/allocate} (:direct record)))
@@ -27880,7 +27883,7 @@
         (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
     (doseq [descriptor counts]
       (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])]
-        (is (= [:gravity.type/set] (:argument-types descriptor)))
+        (is (= [{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}] (:argument-types descriptor)))
         (is (= :gravity.type/integer (:result-type descriptor) (get-in facts [:type-table id])))
         (is (= [] (:direct-effects descriptor)))
         (is (= #{} (:direct record)))
@@ -27900,7 +27903,88 @@
     (println (pr-str {:string-set-insertion-composition :completed :runtime-result (:entrypoint-result execution)
                       :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
                       :closed-plan-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
-                      :runtime-function-count (count (:functions runtime-plan)) :bare-set-result true
+                      :runtime-function-count (count (:functions runtime-plan)) :homogeneous-string-set-result true
                       :b14-namespace-effect-legality-established false :whole-b14-execution false
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0) :closed-plan-execution (- t2 t1))}))))
+
+(deftest current-gravity-string-set-carrier-private-values-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function args))]
+  (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} b :gravity.type/bool s :gravity.type/string
+        record {:function-syntax-id :helper :fixed-arity 3 :body-core-node-id :body}
+        call (fn [id args] {:core-node-id id :argument-node-ids args})
+        edge (fn [id caller] {:call-core-node-id id :callee-function-syntax-id :helper
+                             :caller-function-syntax-id caller :classification :local-function})
+        census {:function-record record
+                :calls [(call :entry-0 [:again :value :seen]) (call :entry-1 [:other-again :other-value :other-seen])
+                        (call :self [:again :value :inserted])]
+                :edges [(edge :entry-0 :main) (edge :entry-1 :main) (edge :self :helper)]}
+        nodes {:entry-0 {:source {:form-id :entry-0}} :entry-1 {:source {:form-id :entry-1}}}
+        types {:again b :value s :seen carrier :other-again b :other-value s :other-seen carrier
+               :entry-0 :gravity.type/never :entry-1 b}
+        entries #(invoke 'p15-s23-is-entry-values [census nodes %1 %2])
+        result (entries types 65536)
+        return-nodes {:body {:node-id :body :core-form :if :children [:guard :self :answer]}
+                      :guard {:node-id :guard :core-form :reference :children []}
+                      :self {:node-id :self :core-form :call :children []}
+                      :answer {:node-id :answer :core-form :reference :children []}}
+        return-types {:guard b :self :gravity.type/unknown :answer carrier}
+        witness #(invoke 'p15-s23-is-return-witness [record return-nodes %1 %2])
+        returned (witness return-types 65536)]
+    (is (true? (invoke 'p15-s23-ss-type? [carrier])))
+    (is (true? (invoke 'p15-s23-is-value-type? [carrier])))
+    (is (false? (invoke 'p15-s23-ds-type? [carrier])))
+    (is (= :accepted (:status result)))
+    (is (= [b s carrier] (:parameter-types result)))
+    (is (= 2 (:normal-entry-count result)))
+    (is (every? :normal-invocation? (:entries result)))
+    (is (= result (entries types (:work-count result))))
+    (is (= :private-self-work-limit (:reason (entries types (dec (:work-count result))))))
+    (is (= :private-self-work-limit (:reason (entries types 0))))
+    (is (= :private-self-entry-type-conflict (:reason (entries (assoc types :other-value :gravity.type/keyword) 65536))))
+    (doseq [wrong [:gravity.type/set :gravity.type/unknown
+                   (assoc carrier :extra true) (assoc carrier :element-type :gravity.type/keyword)
+                   (assoc carrier :element-type carrier) (assoc carrier :kind :gravity.type/vector)]]
+      (is (false? (invoke 'p15-s23-is-value-type? [wrong])))
+      (is (= :private-self-independent-entry-types-required (:reason (entries (assoc types :seen wrong) 65536)))))
+    (let [abort (assoc types :again :gravity.type/never :other-again :gravity.type/never)]
+      (is (= :private-self-normal-entry-required (:reason (entries abort 65536)))))
+    (let [abort (assoc types :other-again :gravity.type/never :other-seen :gravity.type/unknown)
+          retained (entries abort 65536)]
+      (is (= :accepted (:status retained)))
+      (is (= 1 (:normal-entry-count retained)))
+      (is (= [b s carrier] (:parameter-types retained))))
+    (is (= :accepted (:status returned)))
+    (is (= carrier (:return-type returned)))
+    (is (= [:self] (:pending-return-node-ids returned)))
+    (is (= returned (witness return-types (:work-count returned))))
+    (is (= :private-self-work-limit (:reason (witness return-types (dec (:work-count returned))))))
+    (is (= :private-self-independent-return-required (:reason (witness (assoc return-types :answer :gravity.type/never) 65536))))
+    (is (= :private-self-return-value-type-required (:reason (witness (assoc return-types :answer :gravity.type/set) 65536))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "carrier hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "carrier equality"))))]
+      (doseq [wrong [(assoc carrier :element-type opaque) (assoc carrier :element-type [opaque])
+                     (assoc carrier :shape opaque) (assoc carrier :kind opaque)
+                     (array-map :kind :gravity.type/list :shape :homogeneous opaque :gravity.type/string)
+                     (array-map :kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string)
+                     {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
+        (is (false? (invoke 'p15-s23-is-value-type? [wrong])))
+        (is (zero? @callbacks)))))))
+
+(deftest current-gravity-string-set-carrier-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name] [["accepted" "string-set-carrier"] ["rejected" "string-set-carrier-empty-entry"]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g)
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms) helper (first definitions)]
+        (is (= g q))
+        (is (= forms (bootstrap/read-forms q-path q)))
+        (is (= '[member-after main] (mapv second definitions)))
+        (is (= '[again :- Bool value :- String seen] (nth helper 2)))
+        (is (= 'Bool (nth helper 4)))))))

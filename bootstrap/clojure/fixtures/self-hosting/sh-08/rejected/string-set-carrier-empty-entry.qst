@@ -1,0 +1,12 @@
+(ns self-hosting.sh08.string-set-carrier-empty-entry
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn member-after [again :- Bool value :- String seen] :- Bool
+  (if again
+    (member-after false value (conj seen value))
+    (contains? seen value)))
+
+(defn main []
+  (member-after true "new" '#{}))
