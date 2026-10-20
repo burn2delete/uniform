@@ -13961,7 +13961,7 @@
         (is (= result (derive input (:work-count result))))
         (is (= :list-inequality-work-limit (:reason (derive input (dec (:work-count result))))))
         (doseq [changed [(assoc descriptor :version :sh08-vector-equality-v1)
-                         (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc descriptor :semantic-owner 'gravity.collections)
                          (assoc-in descriptor [:list-equality :equality-policy :identity] :observed)
                          (assoc-in descriptor [:list-equality :equality-policy :nested-list-versus-atomic] :false)
                          (assoc descriptor :direct-effects [:memory/allocate])]]
@@ -13973,10 +13973,16 @@
         (is (= :accepted (:status result)))
         (is (= :gravity.type/never (:type result)))
         (is (= :not-invoked (get-in result [:descriptor :application])))))
+    (doseq [pair [[:gravity.type/string :gravity.type/never] [:gravity.type/never :gravity.type/string]]]
+      (let [result (derive (atomic-inequality-input pair) 65536)]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/never (:type result)))
+        (is (nil? (get-in result [:descriptor :list-equality])))))
     (doseq [bad [:gravity.type/list :gravity.type/unknown :gravity.type/vector :gravity.type/string
                  {:kind :gravity.type/list :shape :homogeneous :element-type s}
                  (assoc (finite []) :extra true) (dissoc (finite []) :shape)]
-            pair [[bad (finite [])] [(finite []) bad] [bad :gravity.type/never] [:gravity.type/never bad]]]
+            pair (cond-> [[bad (finite [])] [(finite []) bad]]
+                   (not= bad :gravity.type/string) (into [[bad :gravity.type/never] [:gravity.type/never bad]]))]
       (is (= :rejected (:status (derive (atomic-inequality-input pair) 65536)))))
     (doseq [bad [:gravity.type/integer :gravity.type/i64 :gravity.type/decimal :gravity.type/ratio :gravity.type/f64
                  :gravity.type/never :gravity.type/unknown :gravity.type/function :gravity.type/list
