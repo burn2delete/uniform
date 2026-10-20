@@ -5376,6 +5376,22 @@
     (when (= :accepted (:status result) (:status context))
       (is (= :sh08-map-get-private-first-entry-v1 (get-in context [:context :private-selected-checks :inner-get :version])))
       (is (true? (valid core current)))
+      ;; A parent absent from the earlier loop, or a mismatched prior call,
+      ;; takes the fully charged fresh path; local DATA reuse has the same result.
+      (let [route (leaf 'body-pc-route core node call nodes bindings 65536)
+            parent (get-in context [:context :private-selected-checks :present-get])
+            check (fn [prior budget]
+                    (leaf 'body-pc-full-work route prior core node call edge nodes bindings
+                      (:type-table facts) forms (:call-type-facts facts) (:constraint-ledger facts) budget))
+            fresh (check nil 65536)
+            reused (check parent 65536)]
+        (is (= :accepted (:status fresh)) (pr-str fresh))
+        (is (= :accepted (:status reused)) (pr-str reused))
+        (is (= (:descriptor fresh) (:descriptor reused)))
+        (is (< (:work-count reused) (:work-count fresh)))
+        (is (= fresh (check (assoc-in parent [:source-call :core-node-id] :changed-parent) 65536)))
+        (is (= fresh (check nil (:work-count fresh))))
+        (is (= :map-get-work-limit (:reason (check nil (dec (:work-count fresh)))))))
       (is (= context (build request facts (:work-count context))))
       (is (= :body-deferred-work-limit (:reason (build request facts (dec (:work-count context))))))
       (doseq [f [(assoc-in current [:type-table :operator :key] :changed)

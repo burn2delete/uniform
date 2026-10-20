@@ -5968,17 +5968,25 @@
             (assoc measured :work-count prefix)))
         {:status :rejected :reason :map-get-source-mismatch :work-count base}))))
 
-(defn body-pc-full-work [route core node call edge nodes bindings types forms facts ledger budget]
+(defn body-pc-full-work [route prior-parent core node call edge nodes bindings types forms facts ledger budget]
+  ; prior-parent is expected DATA from this fresh body-mg-context loop only.
+  ; The same immutable core/forms/types supplied to that earlier check are retained.
+  ; A missing or out-of-order parent uses the original reserved check below.
   (let [gated (body-pc-parent-parameter route core nodes bindings budget) gate-work (get gated :work-count)
         parent-call (get route :get-call) parent-node (get nodes (get route :get-node-id))
+        reusable? (if (map? prior-parent)
+                    (if (= :sh08-map-get-private-entry-v1 (get prior-parent :version))
+                      (= parent-call (get prior-parent :source-call)) false) false)
         reserved (if (= :accepted (get gated :status))
-                   (body-pe-reserve core (get nodes (get (get parent-call :argument-node-ids) 0)) nodes bindings (- budget gate-work)) gated)
+                   (if reusable? {:status :accepted :work-count 0}
+                     (body-pe-reserve core (get nodes (get (get parent-call :argument-node-ids) 0)) nodes bindings (- budget gate-work))) gated)
         prefix (+ gate-work (if (= :accepted (get gated :status)) (get reserved :work-count) 0))]
     (if (= :accepted (get reserved :status))
       (let [header (body-mg-source core parent-node parent-call (get route :get-edge) nodes bindings types (get core :module))
             supplied (get types (get parent-call :operator-node-id))
             parent (if (map? header)
-                     (body-pe-check-work header supplied core nodes bindings forms types (- budget prefix))
+                     (if reusable? {:status :accepted :descriptor prior-parent :work-count 0}
+                       (body-pe-check-work header supplied core nodes bindings forms types (- budget prefix)))
                      {:status :rejected :reason :map-get-source-mismatch :work-count 0})
             used (+ prefix (get parent :work-count))]
         (if (= :accepted (get parent :status))
@@ -6459,7 +6467,7 @@
                                              (body-by (get core :call-edges) :call-core-node-id id) nodes bindings (get facts :type-table) (get core :module))
                                     checked (if (map? header)
                                               (if composed?
-                                                (body-pc-full-work route core (get nodes id) call
+                                                (body-pc-full-work route (get checked-private (get route :get-node-id)) core (get nodes id) call
                                                   (body-by (get core :call-edges) :call-core-node-id id) nodes bindings
                                                   (get facts :type-table) (body-index forms :form-id)
                                                   (get facts :call-type-facts) (get facts :constraint-ledger) (- budget total))
