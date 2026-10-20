@@ -364,7 +364,8 @@ execution, authoritative migration or SH-16 completion.
 For normalized C13 branch simplification, run
 `sh16-simplifies-only-established-boolean-conditions` in the same namespace.
 Only actual `true` and `false` conditions select their respective destination.
-Nil and other non-Bools reject with `C13-CONTRACT` before transformation;
+On the ordinary branch-validation path, Nil and other non-Bools reject with
+`C13-CONTRACT` before transformation;
 earlier source, nondeterminism, duplicate-operation and effect gates retain
 priority. The private simplification predicate also refuses these values.
 Keep source/origin, invalidation-ledger and recomputing-verifier controls.

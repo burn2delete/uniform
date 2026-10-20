@@ -8921,8 +8921,9 @@ before simplification. The old Set-membership helper vacantly treated Nil as
 present, allowing it to become an unconditional else transfer. Only the two
 owning Bool-domain checks changed; generic membership helpers and other flag
 domains remain untouched. True and false preserve their selected destination,
-source/origin, effects and invalidation records. Nil and representative other
-non-Bools reject with `C13-CONTRACT`; earlier validation gates keep priority.
+source/origin, effects and invalidation records. On the ordinary branch-validation
+path, Nil and representative other non-Bools reject with `C13-CONTRACT`;
+earlier validation gates keep priority.
 
 The actual RED attempt passed 170 and failed 16 of 186 assertions, with no
 errors; all sixteen failures exposed the Nil path across the two normalized
