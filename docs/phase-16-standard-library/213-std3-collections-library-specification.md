@@ -111,6 +111,25 @@ Collection semantics remain owned by `gravity.collections`; a `gravity.core`
 compatibility binding does not grant profile, target, member-equality, hashing
 or representation support. Their governing requirements still apply.
 
+## Persistent Set Insertion
+
+For a persistent Set, binary `(conj items value)` returns a Set preserving
+the existing stored value-equality classes and adding the class of `value`
+only when no equal member is present. Inserting an equal value is not an
+error and leaves the Set value-equivalent to its input. The original Set is
+unchanged, and stored payloads are not evaluated. Equality and hashing follow
+the applicable Gravity member rules, not an unselected host policy.
+
+Both operands follow ordinary L2 evaluation left to right, exactly once;
+a control transfer aborts invocation. The selected representation must declare
+possible allocation and storage/lifetime policy for both present and absent
+values under effects, ownership and profile requirements. This rule promises
+neither iteration order, object identity, physical sharing nor allocation-free
+execution. It does not grant variadic, arbitrary-member or profile support,
+or infer a post-insertion cardinality or member-type fact without evidence.
+Collection semantics remain owned by `gravity.collections`; a `gravity.core`
+compatibility binding does not change that ownership.
+
 ## Persistent Set Value Equality
 
 For two persistent Sets whose stored members support Gravity equality,
@@ -304,6 +323,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Persistent Set conversion covers empty, unique and duplicate Vector values under supported Gravity equality/hash rules, preserves ordinary evaluation and transfers and the old value, and declares allocation/storage policy; Set cardinality counts distinct stored members without evaluating payloads or promising iteration order.
 - Persistent Set equality covers empty, reordered and differing membership under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and does not evaluate stored payloads or depend on enumeration order or object identity.
 - Persistent Set membership covers empty, present and absent values under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and neither evaluates stored payloads nor depends on enumeration order or object identity.
+- Binary persistent Set insertion covers empty input, absent values and equal existing members under applicable Gravity equality, preserves ordinary operand evaluation, transfers and original values, and declares allocation/storage policy without inventing cardinality, member-type, order or identity facts.
 - Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
 - Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.
 - Proven-nonempty Vector first covers singleton and ordered multi-element values, stored false/nil, ordinary operand evaluation and transfers, inert payloads and original-value preservation without selecting an empty-Vector result policy.
