@@ -13452,7 +13452,12 @@
         (is (= result (list-predicate-derived input (:work-count result))))
         (is (= :list-predicate-work-limit (:reason (list-predicate-derived input (dec (:work-count result))))))))
     (doseq [arguments [[] [:gravity.type/bool :gravity.type/bool]]]
-      (is (= :list-predicate-arity-mismatch (:reason (list-predicate-derived (list-predicate-input arguments) 65536)))))
+      (let [{:keys [core node call edge nodes bindings types forms] :as input} (list-predicate-input arguments)
+            result (list-predicate-derived input 65536)
+            context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
+                     :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}]
+        (is (= :list-predicate-arity-mismatch (:reason result)))
+        (is (= result (invoke-c7 'sh08-listp-step [node types {} {} context 65536])))))
     (doseq [type [nil :gravity.type/unknown :gravity.type/dynamic :gravity.type/function
                   {:kind :gravity.type/function :parameters [] :return :gravity.type/bool}
                   {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/never]}

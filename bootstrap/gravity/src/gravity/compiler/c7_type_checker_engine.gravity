@@ -11990,7 +11990,8 @@
         {:status :rejected :reason :list-predicate-arity-mismatch :work-count base}))))
 
 (defn sh08-listp-step [node types binding-types functions context budget]
-  (if (if (sh08-sse-ids? (get node :children) 2) (sh08-sse-ids? [(get node :node-id)] 1) false)
+  (if (if (if (vector? (get node :children)) (> (count (get node :children)) 0) false)
+        (sh08-sse-ids? [(get node :node-id) (first (get node :children))] 2) false)
   (sh08-listp-derive (get context :ordering-core) node
     (get (get context :ordering-operators) (first (get node :children)))
     (get (get context :ordering-edges) (get node :node-id))
