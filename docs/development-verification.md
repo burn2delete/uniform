@@ -2088,6 +2088,30 @@ This selects one G positive and one G typing negative. Fresh development C6
 session construction and same-catalog replay are not public fresh C6 admission.
 Do not repeat the composition for unchanged code, notes or historical labels.
 
+### Private-entry diagnostic source preservation
+
+For `:private-self-independent-entry-types-required` and
+`:private-self-entry-type-conflict`, the owning C7 `sh08-is-entry-values`
+rejection retains the actual indexed failing call node. The existing recursive
+diagnostic renderer then preserves its Core/syntax IDs, span, binding and
+source/generated origins. Do not reconstruct location from spelling, add a
+generic formatter fallback or change accepted entry/proof records.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-recursive-function-type-test \
+  --exact current-gravity-private-self-entry-diagnostic-source-development-kernel \
+  --exact current-gravity-private-self-entry-values-development-kernel \
+  --exact current-gravity-private-self-proof-development-kernel --fail-fast
+```
+
+These direct original-helper/renderer checks use normalized source-bearing
+inputs. Preserve first failing normal-entry selection, Never exclusions, exact
+work allowances, reasons and legacy source-less formatting. Diagnostic identity
+changes when its previously missing source fields become populated. Historical
+nil-location results remain historical; this focused repair does not renew
+their C5/C6 provenance or require an unchanged source composition to run again.
+
 ### Homogeneous List returns: declaration feedback
 
 The explicit `(List T)` return slice is in development. L5 requires the body

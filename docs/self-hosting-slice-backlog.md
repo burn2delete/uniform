@@ -9123,6 +9123,26 @@ development revisions do not inherit that authority. The complete
 core-form, mutation, recursion, exception, and pattern surface must pass the
 remaining executable gates before `SH-07` can receive completion credit.
 
+### Private self-entry diagnostic source: development repair
+
+The owning C7 entry-value analysis now retains the actual indexed caller node
+when rejecting missing independent entry types or conflicting entry types.
+The existing diagnostic renderer consequently receives the correct Core and
+syntax identities, span, binding and origin facts instead of a missing node.
+First normal-entry selection, Never-transfer exclusion, successful proofs,
+rejection reasons, work charges and legacy source-less formatting are unchanged.
+
+The new normalized source-bearing regression first exposed 20 missing-node and
+source-projection failures among 63 assertions on the unchanged implementation.
+After the repair, that regression and four existing entry/proof/resource
+controls passed 5 tests and 133 assertions. Language-boundary checks passed
+6 tests and 11 assertions; the Clojure size check reported 2,021 files, zero
+exceptions and a maximum of 250 physical lines. These are focused development
+results, not a new authenticated source execution. Earlier source-composition
+results with missing diagnostic metadata remain historical observations; no
+C5/C6 construction or expensive source proof was repeated for this repair.
+Authoritative migration and full SH-07 completion remain outstanding.
+
 ## Beyond First Self-Hosting
 
 After `SH-29`, target expansion becomes a separate matrix. Each canonical
