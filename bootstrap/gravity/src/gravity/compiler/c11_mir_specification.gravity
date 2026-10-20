@@ -8291,9 +8291,7 @@
     (sh13-branch-join-literal-valid? (get operations 0) type)
     (if (= 3 (count operations))
       (if (= type :gravity.type/bool)
-        (if (= :integer-lt (get (get operations 2) :opcode))
-          (sh13-branch-join-entry-valid? operations)
-          false)
+        (sh13-branch-join-entry-valid? operations)
         false)
       false)))
 

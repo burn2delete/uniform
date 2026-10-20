@@ -247,12 +247,12 @@ source-language truthiness or fresh upstream admission.
 
 For the bounded original-MIR handoff, edit `c11_mir_specification.gravity` and
 run the existing direct development runner against
-`gravity.self-hosting.sh13-branch-join-execution-test`. Its eight selectors cover
+`gravity.self-hosting.sh13-branch-join-execution-test`. Its nine selectors cover
 the interface, literal and computed conditions, original MIR tampering and
 subset/result rejection:
 
 ```bash
-clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --exact sh13-executes-typed-integer-less-than-conditions --exact sh13-executes-integer-less-than-only-in-the-selected-arm --exact sh13-preserves-literal-keyword-return-values --fail-fast
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh13-branch-join-execution-test --exact sh13-original-branch-join-interface-is-explicit --exact sh13-executes-original-verified-diamonds --exact sh13-rejects-original-mir-tampering-before-execution --exact sh13-execution-subset-and-result-substitution-fail-closed --exact sh13-executes-typed-integer-equality-conditions --exact sh13-executes-typed-integer-less-than-conditions --exact sh13-executes-integer-less-than-only-in-the-selected-arm --exact sh13-executes-integer-equality-only-in-the-selected-arm --exact sh13-preserves-literal-keyword-return-values --fail-fast
 ```
 
 `sh13-run-branch-join-mir` takes the retained checked-Core and original MIR;
@@ -266,7 +266,7 @@ a literal Bool, equality or strict less-than of two bounded signed-i64 literals;
 its arms are homogeneous literal signed-i64, Bool or Keyword values. Validate
 actual Keyword payloads with `keyword?`, not declared types or String spelling;
 preserve namespaced Keyword values without coercion. Alternatively, a
-literal Bool condition may select between one strict less-than comparison of
+literal Bool condition may select between one equality or strict less-than comparison of
 two signed-i64 literals and one literal Bool arm. A join and function-result
 alias follow. Entry and arm computations cannot be combined, and both arms
 cannot compute comparisons. Each comparison must have exactly two ordered
