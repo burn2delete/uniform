@@ -1863,9 +1863,10 @@ ordinary development.
 STD3's binary Set insertion preserves existing equal members and adds only an
 absent value class. Change the owning C7, C8, typed emitter and runtime paths,
 preserving the separate List-prepend and Vector-append behavior. The bounded
-String slice requires independently established finite all-String Set input
-and a String value. Its normal result is only a bare Set: no exact cardinality,
-literal ancestry or retained member-type evidence is invented.
+initial String slice required independently established finite all-String Set
+input and a String value and returned only a bare Set. The inference-carrier
+extension below retains the String member domain instead, without inventing
+exact cardinality, literal ancestry or presence evidence.
 
 Start with the direct kernels and affected List/Vector, Set-count and String
 membership/equality regressions:
@@ -1901,10 +1902,11 @@ helper inventory is a code/closure fact, not an authority-admission prerequisite
 Use the paired fixture selector
 `current-gravity-string-set-insertion-fixtures-development-kernel` for cheap
 G/Q parser feedback. A stable affected composition must separately exercise
-`count` of insertion results and a genuine rejected member family. Bare output
-does not qualify for a further finite-input insertion, String membership or
-String-Set equality without independently established member-domain evidence.
-That transport and whole B14 recursion are later slices. Focused checks are
+`count` of insertion results and a genuine rejected member family. A bare Set
+still does not qualify for String insertion, membership or equality without
+independently established member-domain evidence. The carrier below supplies
+that domain for insertion and membership, but not finite equality or whole
+B14 recursion. Focused checks are
 development feedback, not current-closure migration or release evidence.
 
 For that affected boundary, run only the existing
@@ -1915,6 +1917,62 @@ Character-member C7 negative. Its fresh C6 development session and same-catalog
 replay are not independent public C6 admission. Q remains parser-only. Reuse
 unchanged passing focused results; do not repeat source-product construction
 merely to obtain another green aggregate.
+
+### Inferred String-Set carriers: private value feedback
+
+The closed inference carrier
+`{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}`
+records only the String member domain. Independently typed String-Set insertion
+can establish it; further insertion preserves it and membership can consume it.
+It does not record an extent, presence fact, literal origin or equality domain.
+It introduces no `(Set String)` annotation or declared-recursion expansion.
+
+Keep C7, C8 and typed lowering's inference-only validators consistent. Normal
+private entries must independently establish the complete parameter vector;
+every use, escape, self-call and return witness retains its existing source,
+visibility, cold-inference and work checks. A String argument or expected Bool
+return cannot specialize an otherwise untyped empty Set. Do not widen the
+declared-self predicates or the List-only parameter evidence used by Vector
+append. Runtime membership and insertion still check complete actual domains
+under their existing size and work limits; the carrier is no static size proof.
+
+Start with the existing three owner kernels and paired parser check:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-string-set-carrier-private-values-development-kernel \
+  --exact body-string-set-carrier-private-values-development-kernel \
+  --exact current-gravity-string-set-carrier-private-values-development-kernel \
+  --exact current-gravity-string-set-carrier-fixtures-development-kernel
+```
+
+Include affected insertion, membership, count and generic value consumers, plus
+the existing private entry/witness/proof/census, declared-self, List and Vector
+regressions. Richer result information must not break previously accepted
+predicates or List construction. The bounded generic type walker validates the
+exact carrier and visits its String leaf; it does not admit arbitrary homogeneous
+collection schemas. Check exact and one-short allowances and malformed opaque
+records before relying on downstream descriptor equality.
+
+On a stable candidate, separately test one real private self-call whose caller
+seeds its Set using independently typed insertion, then queries membership.
+Pair it with an untyped empty-entry rejection using the existing source selector:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-set-carrier-authenticated-composition
+```
+
+This constructs fresh development products for the changed composition; it is
+not an authority stamp refresh. Reuse accepted unchanged focused results.
+Normalized helper tests and Q
+parser checks are not that source composition, current-closure admission or
+whole-B14 execution. B14's empty entry, heterogeneous record ingress and indexed
+recursion remain separate implementation boundaries.
 
 ### Homogeneous List returns: declaration feedback
 
