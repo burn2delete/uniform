@@ -335,6 +335,32 @@ truthiness nodes; a truthful type/truthiness adapter is still a separate source
 integration dependency. A retained source-form ID is not a file/origin anchor.
 Do not relabel supplied checked-Core execution as fresh source provenance.
 
+### Normalized MIR constant-fold result types
+
+For the fixed-i64 C13 fold domain, edit
+`bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity`
+and run the owning accepted/rejected regression:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh16-mir-optimization-test \
+  --exact sh16-constant-folds-only-an-established-i64-result-domain --fail-fast
+```
+
+Bounded numeric operands alone do not establish a result type. Folding requires
+the normalized operation's explicit `:type :i64`, in addition to existing
+constant, arity, signed-range and overflow checks. Preserve earlier contract,
+source, nondeterminism, identifier and effect diagnostics. Include the existing
+sequential-pipeline, no-op/schema, recomputation and proof-governed check-elision
+selectors for affected integration feedback.
+
+Canonical opaque type IDs remain Keywords or Symbols, not Strings. Their
+spelling does not establish i64 semantics. Ordinary explicitly constant
+non-i64 additions fail the existing `C13-SAFETY` gate; other nonconstant or
+audited unsafe-island operations may remain accepted unchanged without folding.
+This is not a general type checker, fresh authenticated C11 ingress, native
+execution, authoritative migration or SH-16 completion.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
