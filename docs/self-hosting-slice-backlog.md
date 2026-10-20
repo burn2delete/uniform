@@ -9264,6 +9264,24 @@ and verification recomputation. This normalized boundary repair establishes
 neither authenticated SH-12 ingress nor broader CFG support, SH-13 completion,
 native execution or authoritative migration. Schemas and limits are unchanged.
 
+### MIR constant instruction arity: development repair
+
+Normalized SH-13 `:const` instructions now require zero value operands. The
+existing constructor already emits an empty Vector; the executor previously
+ignored extraneous defined operands. Such instructions now reject with
+`C11-TYPE` before execution. Earlier schema, profile, fact, effect and dominance
+checks retain their priority; valid factorial execution and verification
+recomputation are unchanged. No opcode, public schema or limit was added.
+
+The unchanged-engine regression completed 66 assertions with 54 passes and 12
+failures, demonstrating acceptance and execution of malformed constants. That
+failed attempt is retained. The repaired regression passes all 66 assertions;
+with branch-carrier, module-entry, invalid-MIR and recursion controls, the
+focused batch passes 5 tests and 748 assertions. Separate language-boundary
+checks pass 6 tests and 11 assertions. These original G/Q normalized module
+constructors and execution checks do not establish fresh authenticated SH-12
+ingress, native execution, SH-13 completion or authoritative migration.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
