@@ -929,12 +929,28 @@
       domain)))
 
 (defn p15-s23-runtime-vector-domain [values budget]
+  ; Integer leaves use the existing scalar original-value equality premise.
+  ; Typed calls establish Generic Integer, immutable finite Vectors, and coherent positional storage.
+  ; These are logical visit/comparison units, not integer bit-size, CPU, or peak-memory bounds.
   (let [limit (if (< budget 65536) budget 65536)]
   (if (if (vector? values) (= 2 (count values)) false)
     (if (if (vector? (get values 0)) (vector? (get values 1)) false)
       (if (< limit 2) {:status :rejected :reason :vector-equality-work-limit :work-count 2}
-        (loop [pending [[(get values 1) 0] [(get values 0) 0]] work 2]
-          (if (= 0 (count pending)) {:status :accepted :work-count work}
+        (loop [pending [[(get values 1) 0] [(get values 0) 0]] work 2 integers? false nested? false]
+          (if (= 0 (count pending)) (if integers?
+              (if nested?
+                {:status :rejected :reason :vector-value-equality-domain-required :work-count work}
+                (let [left (get values 0) right (get values 1)
+                      n (if (< (count left) (count right)) (count left) (count right))
+                      total (+ work (* 2 n))]
+                  (if (> total limit)
+                    {:status :rejected :reason :vector-equality-work-limit :work-count total}
+                    (loop [i 0]
+                      (if (= i n) {:status :accepted :comparison-domain :flat-integer-vector :work-count total}
+                        (if (= (integer? (get left i)) (integer? (get right i)))
+                          (recur (+ i 1))
+                          {:status :rejected :reason :vector-value-equality-domain-required :work-count total}))))))
+              {:status :accepted :work-count work})
             (let [frame (get pending (- (count pending) 1)) tail (subvec pending 0 (- (count pending) 1))
                   value (get frame 0) depth (get frame 1)]
               (if (> depth 128) {:status :rejected :reason :vector-equality-value-depth :work-count work}
@@ -947,9 +963,9 @@
                         (let [children (loop [i (- width 1) out tail]
                                          (if (< i 0) out
                                            (recur (- i 1) (conj out [(get value i) (+ depth 1)]))))]
-                          (recur children total))))))
-                  (if (if (integer? value) false (= true (p15-s23-runtime-atomic-equality value value)))
-                    (recur tail work)
+                          (recur children total integers? (if (> depth 0) true nested?)))))))
+                  (if (if (integer? value) (= depth 1) (= true (p15-s23-runtime-atomic-equality value value)))
+                    (recur tail work (if (integer? value) true integers?) nested?)
                     {:status :rejected :reason :vector-value-equality-domain-required :work-count work})))))))
       {:status :rejected :reason :vector-value-equality-domain-required :work-count 0})
     {:status :rejected :reason :vector-value-equality-domain-required :work-count 0})))
