@@ -4223,6 +4223,48 @@ seed control, native execution, whole-consumer execution or migration credit.
 Language-boundary checks pass 6/11; source LOC passes 2021 files, zero exceptions,
 maximum 250. SH-07 completion and current-closure admission remain outstanding.
 
+### Finite Symbol-Set insertion: development increment
+
+The existing C7, effects, typed emitter and runtime owners apply STD3's binary
+Set insertion law to independently finite literal Symbol Sets and Symbol
+values. Original namespace/name equality preserves equal members and adds only
+absent values. Full actual domain, coherence, uniqueness and construction plus
+membership work precede the result. C8 records possible allocation, including
+hits. Runtime remains at 56 functions; results expose only bare Set evidence.
+
+The first frozen candidate `673c25ac` remained unrun after review found a
+duplicate C7 selector. Its removal added 14 direct quota/read controls. The
+first actual attempt at `aada88a8` failed while compiling the emitter: one
+test, zero passes, one error and 34 selectors unrun. Three new selectors had
+malformed two-operand `if` forms; an external static check had missed them.
+The narrow three-helper correction at `c755727f` passed all 35 focused tests/
+3,905 assertions in one current-revision batch: ten new selectors/989 and
+25 affected selectors/2,916. No passes were retained from the failed attempt.
+
+The first source composition at `9981231b` passed 1/102 assertions: 96
+composition checks and six runtime-loader checks. One function, six calls,
+three insertions, three count consumers and six quotes execute to `[1 2 1]`
+with empty stdout. Original C7/C8 construction and verification, an observed
+public C7 assembly gate and one closed entry were reached. Main retains
+inferred/latent allocation; namespace initialization is empty. The actual
+Character-Set/Symbol negative rejects at C7 using the existing String-family
+insertion reason, with concrete types/IDs/span and secondary count-unknown and
+annotation diagnostics retained. Negative C8/runtime are not invoked.
+
+The source run took 152.791 seconds after 12.882 seconds of namespace loading
+at 2 GiB. Nested product construction/replay dominates this small subject;
+these inclusive observations are not isolated runtime benchmarks. The monitor
+is not a hard deadline or containment lease. QST is parser-only; no seed entry,
+fresh public C6 verification, native execution or authority renewal is claimed.
+Symbol homogeneous carriers, nested insertion inference, Symbol-Set equality
+and a loop join for dynamic seen-Symbol scans remain separate work. This is
+not whole-helper execution, SH-07 completion or self-hosting evidence.
+The normal main join preserved all eleven implementation/test/fixture files;
+the added C11/C13 paths are outside this harness's executed dependencies.
+Final joined boundary checks passed 6/11 and LOC passed 2,021 files, zero
+exceptions, maximum 250. The source result retains its actual revision binding,
+not a claim that the joined revision repeated the source run.
+
 ### Persistent String-Set insertion: development increment
 
 STD3 now explicitly defines binary Set `conj` to preserve existing equal member
