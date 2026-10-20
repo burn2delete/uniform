@@ -2470,6 +2470,69 @@ The seed does not support emitted `:keyword-map-lookup`, so these entries have
 no same-emitted-IR seed comparisons. Returned Map observations do not establish
 Gravity Map equality. This is not whole-C17 execution or authoritative migration.
 
+### Private entry: get, first, then an inner literal key
+
+The C7, C8 and typed-emitter owners above also implement the narrow composed
+query `(get (first (get package :signatures)) :algorithm)`, including two
+immutable local bindings for the intermediate values. Each actual normal
+private entry must independently establish the outer key, a nonempty finite
+Vector, and the inner Map key. Member types alone do not prove key presence.
+The selected leaf is Nil, Bool, Integer, Keyword, String or Symbol; Character,
+arbitrary deep paths, dynamic Vector indices and public record ingress are not
+established by this increment. A quoted scalar embedded inside evaluated
+containers is also outside this route; Symbol controls use a wholly quoted
+container, not that mixed spelling. Runtime instructions and public APIs are unchanged.
+
+Use these direct kernels for the affected owners:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-private-first-entry-composed-development-kernel \
+  --exact sh08-private-first-entry-provenance-development-kernel \
+  --exact sh08-private-first-entry-local-products-development-kernel \
+  --exact sh08-private-first-entry-local-all-arguments-development-kernel \
+  --exact body-private-first-entry-composed-development-kernel \
+  --exact body-private-first-entry-selector-guards-development-kernel \
+  --exact body-private-first-entry-reference-values-development-kernel \
+  --exact current-gravity-private-first-entry-session-wiring-development-kernel \
+  --exact current-gravity-private-first-entry-composed-development-kernel --fail-fast
+```
+
+For changed source composition, use the SH01 namespace's
+`current-gravity-private-first-entry-authenticated-composition`; its
+`current-gravity-private-first-entry-fixtures-development-kernel` companion
+checks paired G/Q bytes and parsing cheaply. The source case is deliberately
+two functions and four calls, not the entire C17 helper. Q typed products and
+seed execution of emitted `:keyword-map-lookup` remain outside this check.
+
+The public C8 path reconstructs its internal context from current facts once.
+It does not accept a supplied paid context as authority. Within that invocation,
+checked parent references can be reused, but original parent source/type/census
+checks, the demanded C6/C2 source spine and downstream carriers remain checked.
+Quoted Map selection follows authenticated keys, not host enumeration order.
+The new dependency projection is not a copy of the whole old parent artifact.
+Bounded work counts include representation nodes and scalar characters; they
+are not elapsed time or heap measurements. Removing repeated walks or temporary
+wrappers must remove the actual work, not merely discount its charge. The
+65,536-unit ceiling is unchanged. Source provenance retains C6's bounded
+generated-origin Vector, including an empty Vector for ordinary forms; it is
+not erased or converted to a different representation. This is development
+validation, not migration.
+
+C7 may reuse constructed source DATA between rounds of one fresh inference
+invocation. This is not reusable acceptance: the table starts empty, is not a
+caller input or returned artifact, and does not cross builder or verifier calls.
+Fresh parent derivation and checks of the current semantic type dependencies
+still run and charge their work. Public verification reconstructs its expected
+result independently. Fixed parent-reference field names are prepaid before
+reads; every dynamic value is recursively walked, and each of eight carriers
+is independently checked. A cheap diagnostic over retained development inputs can
+identify repeated construction before another source run, but reconstructed
+tables and isolated constructor success do not establish source convergence.
+
 ### Module-local literal initialization and reads
 
 Edit the typed emitter and Gravity runtime for this boundary, not the seed's
@@ -5232,6 +5295,18 @@ replay of the revised harness. This removes statically unused construction,
 not a measured runtime bottleneck or a claimed speedup. No new lane, cache or
 authority shortcut is involved. Do not change a helper used by a live frozen
 composition.
+
+The private first-entry source test uses an existing, narrower development API:
+one fresh `sh07-core-verification-session` per current source candidate, its
+actual `:expected` artifact, and
+`sh07-core-artifact-verification-against-expected` with the same session. Require
+a ready session, a real expected artifact and a passed replay before typing.
+This retains the original full check catalog but avoids constructing that Core
+twice. It is development replay, not the original independent fresh C6 verifier
+or admission evidence. Keep sessions invocation-local and never reuse them
+across changed inputs or compiler revisions. The public authoritative verifier
+and other source helpers are unchanged; source-run status is recorded in the
+[private first-entry backlog](self-hosting-slice-backlog.md#private-first-entry-inner-key-lookup-development-increment).
 
 Bounded follow-up: observe one existing authentic-composition test on one
 stable revision. Separate upstream/projection, metadata stripping, Gravity

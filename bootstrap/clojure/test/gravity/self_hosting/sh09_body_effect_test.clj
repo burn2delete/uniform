@@ -5358,3 +5358,152 @@
     (is (= :accepted (:status result) (:status context)))
     (is (= :sh08-vector-get-loop-v1 (:version descriptor)))
     (is (= {} (get-in context [:context :private-selected-checks])))))
+
+(deftest body-private-first-entry-composed-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input ((ns-resolve upstream 'private-first-entry-source-input) [])
+        result ((ns-resolve upstream 'private-first-entry-derived) input)
+        facts ((ns-resolve upstream 'private-first-entry-facts) input result)
+        {:keys [core node call edge nodes bindings forms]} input
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        build (fn [r f budget] (leaf 'body-mg-context r f bindings budget))
+        context (build request facts 65536)
+        current (assoc facts :map-get-context (:context context))
+        valid (fn [c f] (leaf 'body-mg-present-call-valid? c f bindings node call edge nodes))]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :accepted (:status context)) (pr-str context))
+    (when (= :accepted (:status result) (:status context))
+      (is (= :sh08-map-get-private-first-entry-v1 (get-in context [:context :private-selected-checks :inner-get :version])))
+      (is (true? (valid core current)))
+      ;; A parent absent from the earlier loop, or a mismatched prior call,
+      ;; takes the fully charged fresh path; local DATA reuse has the same result.
+      (let [route (leaf 'body-pc-route core node call nodes bindings 65536)
+            parent (get-in context [:context :private-selected-checks :present-get])
+            check (fn [prior budget]
+                    (leaf 'body-pc-full-work route prior core node call edge nodes bindings
+                      (:type-table facts) forms (:call-type-facts facts) (:constraint-ledger facts) budget))
+            fresh (check nil 65536)
+            reused (check parent 65536)]
+        (is (= :accepted (:status fresh)) (pr-str fresh))
+        (is (= :accepted (:status reused)) (pr-str reused))
+        (is (= (:descriptor fresh) (:descriptor reused)))
+        (is (< (:work-count reused) (:work-count fresh)))
+        (is (= fresh (check (assoc-in parent [:source-call :core-node-id] :changed-parent) 65536)))
+        (is (= fresh (check (assoc parent :kind :gravity.type/applied-vector-first) 65536)))
+        (is (= fresh (check nil (:work-count fresh))))
+        (is (= :map-get-work-limit (:reason (check nil (dec (:work-count fresh)))))))
+      (is (= context (build request facts (:work-count context))))
+      (is (= :body-deferred-work-limit (:reason (build request facts (dec (:work-count context))))))
+      (doseq [f [(assoc-in current [:type-table :operator :key] :changed)
+                 (assoc-in current [:type-table :input :member-types 1] :gravity.type/unknown)
+                 (assoc-in current [:type-table :input-1 :member-types 1] :gravity.type/unknown)
+                 (assoc-in current [:type-table :signatures-reference :element-types 0] :gravity.type/unknown)
+                 (assoc-in current [:type-table :first-operator :bounds-proof :selected-index] 1)
+                 (assoc-in current [:call-type-facts 0 :effects] [:io/write])
+                 (assoc-in current [:constraint-ledger 1 :rhs] :gravity.type/string)
+                 (update current :call-type-facts conj (first (:call-type-facts current)))
+                 (update current :constraint-ledger conj (second (:constraint-ledger current)))]]
+        (is (false? (valid core f))))
+      (is (false? (valid (assoc-in core [:calls 0 :argument-node-ids 1] :inner-key) current)))
+      (let [first-edge-index (first (keep-indexed #(when (= :first-call (:call-core-node-id %2)) %1) (:call-edges core)))
+            payload-index (first (keep-indexed #(when (= :entry-value-0-0 (:node-id %2)) %1) (:nodes core)))]
+        (is (false? (valid (assoc-in core [:call-edges first-edge-index :ordinal] 99) current)))
+        (is (false? (valid (assoc-in core [:mutations] [{:target-binding-id :signature-binding}]) current)))
+        (is (= :rejected (:status (build (assoc request :canonical-core-artifact
+                       (assoc-in core [:nodes payload-index :attributes :quoted-value]
+                         [(array-map :algorithm :sha512 :status :verified)])) facts 65536))))
+        (is (false? (leaf 'body-mg-present-call-valid? core current
+                          (assoc-in bindings [:first-binding :definition-syntax-id] :changed) node call edge nodes)))
+        (is (= :body-deferred-work-limit (:reason (build
+                     (update-in request [:canonical-core-artifact :nodes] into (repeat 100000 {:node-id :oversized})) facts 65536)))))
+      (let [parent-index (first (keep-indexed #(when (= :present-get (:node-id %2)) %1) (:nodes core)))]
+        (is (false? (valid (assoc-in core [:nodes parent-index :source :syntax-id] :changed) current))))
+      (doseq [f [(assoc-in facts [:type-table :inner-operator :presence-proof :entries] [])
+                 (assoc-in facts [:type-table :inner-operator :presence-proof :get-call-core-node-id] :first-call)
+                 (update facts :call-type-facts #(vec (rest %)))
+                 (update facts :constraint-ledger #(vec (remove (fn [r] (= :sh08-vector-first-v1 (:producer-rule r))) %)))]]
+        (is (= :rejected (:status (build request f 65536)))))
+      (is (= :rejected (:status (build (assoc-in request [:b47-context :authenticated-core-request :forms]
+                                               (mapv #(if (= :inner-key (:form-id %)) (assoc % :value :scheme) %) (vals forms))) facts 65536))))
+      ;; Every supplied carrier copy is checked, even when its parent ID is unchanged.
+      (doseq [path [[:call-type-facts 0 :fact-id-request :application :key]
+                    [:call-type-facts 0 :applied-map-get :call-core-node-id]
+                    [:call-type-facts 1 :fact-id-request :application :operator-node-id]
+                    [:call-type-facts 1 :applied-vector-first :result-type]
+                    [:constraint-ledger 0 :constraint-id-request :application :call-core-node-id]
+                    [:constraint-ledger 0 :dependencies :key-node-id]
+                    [:constraint-ledger 1 :constraint-id-request :application :operator-binding-id]
+                    [:constraint-ledger 1 :dependencies :profile]]]
+        (let [failed (build request (assoc-in facts path :changed-copy) 65536)]
+          (is (= :rejected (:status failed)))
+          (is (not= :body-deferred-work-limit (:reason failed)))))
+      (let [changed-request (assoc-in request [:canonical-core-artifact :module :exports] ['without-path])]
+        (is (= :rejected (:status (build changed-request facts 65536))))))))
+
+(deftest body-private-first-entry-selector-guards-development-kernel
+  (let [callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque selector compared")))
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque selector hashed")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque selector printed"))))
+        check (fn [facts ledger]
+                (leaf 'body-pc-parent-rows-work {} {} {} {} facts ledger {} :algorithm 65536))]
+    (doseq [[facts ledger]
+            [[[{:call-core-node-id opaque}] []]
+             [[] [{:producer-rule opaque :lhs {:core-node-id :outer :projection :map-get}}]]
+             [[] [{:producer-rule :sh08-map-get-v1 :lhs {:core-node-id opaque :projection :map-get}}]]
+             [[] [{:producer-rule :sh08-map-get-v1 :lhs {:core-node-id :outer :projection opaque}}]]
+             [[] [{:producer-rule :sh08-map-get-v1
+                   :lhs {:core-node-id :outer :projection :map-get :extra [opaque]}}]]]]
+      (let [result (check facts ledger)]
+        (is (= :map-get-source-mismatch (:reason result)))
+        (is (zero? @callbacks))))
+    (is (= :map-get-work-limit
+           (:reason (check (vec (repeat 10000 {:call-core-node-id opaque})) []))))
+    (is (= :map-get-work-limit
+           (:reason (check [] (vec (repeat 10000 {:producer-rule opaque :lhs {:extra opaque}}))))))
+    (is (zero? @callbacks))))
+
+(deftest body-private-first-entry-reference-values-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input ((ns-resolve upstream 'private-first-entry-source-input) [])
+        derived ((ns-resolve upstream 'private-first-entry-derived) input)
+        _ (is (= :accepted (:status derived)))
+        _ (when-not (= :accepted (:status derived))
+            (throw (ex-info "Private first-entry reference guard prerequisite rejected" {})))
+        facts ((ns-resolve upstream 'private-first-entry-facts) input derived)
+        {:keys [core node call nodes bindings]} input
+        route (leaf 'body-pc-route core node call nodes bindings 65536)
+        descriptor (get (:type-table facts) (:operator-node-id (:get-call route)))
+        check (fn [value budget] (leaf 'body-pc-carried-parent-work value :applied-map-get :algorithm budget))
+        checked (check descriptor 65536)
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque reference compared")))
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque reference hashed")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque reference printed"))))
+        paths [[:kind] [:version] [:operation] [:semantic-owner] [:intrinsic] [:resolution]
+               [:call-core-node-id] [:operator-node-id] [:operator-binding-id] [:key-node-id] [:key]
+               [:application] [:profile] [:target] [:result-type] [:latent-effects] [:direct-effects]
+               [:capabilities] [:thrown-error-effects] [:source :form-id] [:source :syntax-id]
+               [:operator-source :form-id] [:operator-source :syntax-id]
+               [:source-binding :binding-id] [:source-binding :definition-syntax-id]]]
+    (is (= :accepted (:status checked)))
+    (is (= (leaf 'body-pc-parent-reference descriptor) (:value checked)))
+    (is (= checked (check descriptor (:work-count checked))))
+    (is (= :map-get-work-limit (:reason (check descriptor (dec (:work-count checked))))))
+    (is (= false (get-in (check (assoc descriptor :application false) 65536) [:value :application])))
+    (is (= nil (get-in (check (assoc descriptor :key nil) 65536) [:value :key])))
+    ;; Each dynamic slot and every nested raw key/value is still walked.
+    (doseq [path paths]
+      (is (= :map-get-source-mismatch (:reason (check (assoc-in descriptor path opaque) 65536))))
+      (is (zero? @callbacks)))
+    (doseq [value [(assoc descriptor :result-type {:kind :gravity.type/vector :element-types [opaque]})
+                   (assoc descriptor :capabilities [opaque])
+                   (assoc descriptor :result-type (array-map opaque :gravity.type/keyword))]]
+      (is (= :map-get-source-mismatch (:reason (check value 65536))))
+      (is (zero? @callbacks)))
+    (is (= :map-get-work-limit (:reason (check (assoc descriptor :kind opaque) 0))))
+    (is (zero? @callbacks))))

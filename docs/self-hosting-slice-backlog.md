@@ -5582,6 +5582,94 @@ do not execute the corrected source assertion. Boundary checks separately
 passed six tests / 11 assertions. Inner-key ancestry, unchanged full C17 execution,
 current-closure admission, SH-07 and self-hosting completion remain open.
 
+### Private first-entry inner-key lookup: development increment
+
+The C7, C8 and typed-emitter increment reconstructs the demanded chain
+`(get (first (get package :signatures)) :algorithm)`, including two immutable
+local aliases. Each normal private entry must independently establish the outer
+key, nonempty finite Vector, inner stored key and compatible leaf type. No
+common deep parameter shape is invented. Runtime instructions and the existing
+54-function development projection are unchanged.
+
+Focused development evidence includes these distinct affected batches; their
+overlapping assertions must not be added as independent coverage:
+
+- C7/C8/emitter composition and C6-origin compatibility: four tests / 137 passes.
+- C7 invocation-local construction reuse: three tests / 78 passes.
+- Unused-argument normality plus the existing reuse kernel: two tests / 37 passes,
+  including all seven new checks for one or all entries becoming non-invoked.
+- The latest C8 projection correction: two tests / 65 passes, including 13
+  unconditional malformed-selector checks.
+- C8/emitter reference-value traversal: four tests / 167 passes, including all
+  65 new value-walk guards. Fixed program-key names are prepaid before reads;
+  every dynamic value and all eight independent carrier comparisons remain.
+
+The scalar frontier is Nil, Bool, Integer, Keyword, String and Symbol, not
+Character. Symbol controls use a wholly quoted container; quoted scalars inside
+evaluated containers are unsupported. Arbitrary deep paths, dynamic indices,
+public record ingress, entry argument aliases and callee-return ancestry remain
+outside this increment.
+
+The accepted/rejected G/Q fixture pair has two functions and four calls.
+Byte/parser checks passed one test / eight assertions. The negative changes
+only the stored `:algorithm` key to `:scheme`, preserving its Keyword value/type.
+The first four source integration attempts exposed these failures:
+
+- The first run stopped at C7 `:map-get-source-mismatch`: two passes, one failure
+  and one prerequisite error. The corrected guard retains C6's bounded
+  generated-origin Vector; singleton normalized controls are not macro execution.
+- The next run stopped at C7's unchanged work limit with the same counts.
+- After the C7 correction, C5/C6 and fresh public C7 verification passed, but C8
+  construction hit `:body-deferred-work-limit`: four passes, one failure and one
+  prerequisite error.
+- After removing a redundant C8 projection, the next source run again passed
+  those upstream gates but reached `:list-if-join-work-limit` in C8, with four
+  passes, one failure and one prerequisite error.
+
+All failed attempts remain failures. C8 verification, whole-function assembly,
+runtime and the negative G product were not reached by those four source runs.
+
+The latest changed-source run reached all those stages: the positive returned
+`:sha256` through typed lowering and Gravity runtime execution, and the negative
+G product rejected the absent inner key. Its aggregate was 35 passes / one
+failure / zero errors, not a passing test: the rejection assertion expected
+`C7-ANNOTATION`, but this run's parent-match presence diagnostic came from
+`C7-VERIFY`.
+The failed aggregate remains retained. The exact corrected assertion was
+extracted from the test and checked against the retained actual diagnostics:
+nine assertions passed, including wrong-rule, wrong-reason and missing-field
+rejections. These were zero new source products, not another source execution
+or a relabeling of the failed aggregate.
+
+Bounded attribution separates representation work from scheduling. C7 reuses
+constructed source DATA only within one fresh empty-initialized inference
+invocation. Current semantic dependencies and fresh parent derivations are still
+checked and charged; no acceptance, status or prior work count is reused, and
+no table escapes into public results. Public verification independently rebuilds.
+C8 and lowering removed an equality-only temporary ancestry view, not the parent proof,
+demanded current C6/C2 source replay or independent fact/ledger checks.
+The 65,536-unit ceiling is unchanged.
+
+Retained-input diagnostics are useful feedback, not public acceptance. Early
+projections omitted actual binding populations and complete binding-record
+fields; their apparent budget fit did not establish real-source fit. The
+later diagnostic used the closed 18-field binding schema and owning fact
+constructors, fitting both C8 and whole-helper lowering under unchanged limits.
+That diagnostic alone did not establish source acceptance. No heap, OOM, scheduling bottleneck or
+general proof-product redesign follows from these work counts.
+
+The BU source test now uses the existing fresh development-session API to avoid
+a second C6 construction. Its durable extracted-initializer test passed one
+test / 22 wiring/guard assertions, with zero source products or compiler proofs;
+an earlier missing-require error remains retained. The latest source pair used
+this route with explicit non-authoritative timing labels. It did not invoke the
+original independent public C6 fresh verifier; the earlier source failures did.
+Original authoritative verifiers and shared source helpers remain unchanged.
+
+Unchanged whole C17, Q typed products,
+current-closure admission, SH-07, self-hosting and release completion remain
+unproved.
+
 ### Proven-nonempty Vector first: development increment
 
 STD3 now explicitly defines the first stored value of a nonempty persistent

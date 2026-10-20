@@ -11075,6 +11075,7 @@
 (defn- private-vector-value-type [value]
   (cond (nil? value) :gravity.type/nil (boolean? value) :gravity.type/bool
         (char? value) :gravity.type/character (keyword? value) :gravity.type/keyword
+        (symbol? value) :gravity.type/symbol
         (string? value) :gravity.type/string (integer? value) :gravity.type/integer
         (vector? value) {:kind :gravity.type/vector :shape :literal :element-types (mapv private-vector-value-type value)}
         (map? value) {:kind :gravity.type/map :shape :literal
@@ -11264,3 +11265,656 @@
       (is (= limit (:work-count rejected))))
     (let [changed (assoc-in types [:operator :version] :sh08-map-get-present-v1)]
       (is (= :rejected (:status (check changed 65536))))))))
+
+(deftest sh08-private-first-entry-core-helpers-development-kernel
+  ;; Current-C6 metadata controls; this checkpoint does not add composed typing.
+  (let [source (fn [id] {:form-id id :syntax-id id})
+        literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                               :attributes {:literal-kind :keyword :value value} :source (source id)})
+        collection (fn [id kind children] {:node-id id :core-form :collection-literal :children children
+                                           :resolved-binding-ids [] :source (source id)
+                                           :attributes {:literal-kind kind :element-count (count children)}})
+        node-list [(collection :package :map [:outer-key :signatures])
+                   (literal :outer-key :signatures) (collection :signatures :vector [:signature])
+                   (collection :signature :map [:algorithm-key :algorithm-value :status-key :status-value])
+                   (literal :algorithm-key :algorithm) (literal :algorithm-value :sha256)
+                   (literal :status-key :status) (literal :status-value :verified)]
+        nodes (into {} (map (juxt :node-id identity) node-list))
+        child (fn [cursor family key graph budget] (invoke-c7 'sh08-pc-core-child [cursor family key graph budget]))
+        outer (child {:source-kind :core :node-id :package} :map :signatures nodes 65536)
+        first-map (child (:cursor outer) :vector nil nodes 65536)
+        selected (child (:cursor first-map) :map :algorithm nodes 65536)
+        quote-node {:node-id :quoted :core-form :quote :children [] :resolved-binding-ids []
+                    :attributes {:quoted-kind :map :quoted-form-id :payload :quoted-syntax-id :payload
+                                 :quoted-value (array-map :signatures [(array-map :algorithm :sha256 :status :verified)])}
+                    :evaluation {:kind :no-evaluation :order []}}
+        quoted-nodes {:quoted quote-node}
+        quoted-outer (child {:source-kind :core :node-id :quoted} :map :signatures quoted-nodes 65536)
+        quoted-map (child (:cursor quoted-outer) :vector nil quoted-nodes 65536)
+        quoted-value (child (:cursor quoted-map) :map :algorithm quoted-nodes 65536)]
+    (is (= :accepted (:status outer) (:status first-map) (:status selected)))
+    (is (= :algorithm-value (get-in selected [:cursor :node-id])))
+    (is (= 0 (get-in first-map [:location :coordinate])))
+    (is (= outer (child {:source-kind :core :node-id :package} :map :signatures nodes (:work-count outer))))
+    (is (= :map-get-work-limit (:reason (child {:source-kind :core :node-id :package} :map :signatures nodes (dec (:work-count outer))))))
+    (is (= :accepted (:status quoted-outer) (:status quoted-map) (:status quoted-value)))
+    (is (= :sha256 (:value (invoke-c7 'sh08-pc-reanchor
+                            [(get-in quoted-value [:cursor :quote-core-node-id]) (get-in quoted-value [:cursor :selectors]) quoted-nodes 65536]))))
+    (is (= :quoted (get-in quoted-value [:location :quote-core-node-id])))
+    (is (= :map-get-private-entry-presence-required
+           (:reason (child (:cursor first-map) :map :algorithm (assoc-in nodes [:algorithm-key :attributes :value] :other) 65536))))
+    (let [changed (assoc-in quoted-nodes [:quoted :attributes :quoted-value]
+                            {:signatures [{:other :sha256 :status :verified}]})
+          outer (child {:source-kind :core :node-id :quoted} :map :signatures changed 65536)
+          head (child (:cursor outer) :vector nil changed 65536)]
+      (is (= :map-get-private-entry-presence-required (:reason (child (:cursor head) :map :algorithm changed 65536)))))
+    (is (= :rejected (:status (child {:source-kind :unknown :node-id :package} :map :signatures nodes 65536))))
+    (is (= :rejected (:status (child {:source-kind :core :node-id :package} :map [:signatures] nodes 65536))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque ID hashed")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque metadata printed"))))
+          rejected (child {:source-kind :core :node-id opaque} :map :signatures nodes 65536)
+          proof-rejected (invoke-c7 'sh08-pc-evidence-work [{:unexpected opaque} 65536])]
+      (is (= :rejected (:status rejected) (:status proof-rejected)))
+      (is (zero? @callbacks)))
+    (let [proof {:kind :private-first-entry-key-presence :parent-call-core-node-id :get :entries [{:entry :invoked :coordinate 0}]}
+          measured (invoke-c7 'sh08-pc-evidence-work [proof 65536])]
+      (is (= :accepted (:status measured)))
+      (is (= measured (invoke-c7 'sh08-pc-evidence-work [proof (:work-count measured)])))
+      (is (= :map-get-work-limit (:reason (invoke-c7 'sh08-pc-evidence-work [proof (dec (:work-count measured))])))))
+    (let [record {:binding-id :signature-binding :let-core-node-id :let :initializer-node-id :first-call :ordinal 0
+                  :mutability :immutable :definition-syntax-id :signature-definition :name 'signature
+                  :binding-scope-id :scope :initializer-form-id :first-form :initializer-syntax-id :first-syntax}
+          reference {:node-id :reference :core-form :reference :children [] :resolved-binding-ids [:signature-binding]
+                     :attributes {:binding-id :signature-binding :binding-class :lexical :symbol 'signature}
+                     :source (source :reference) :evaluation {:owner-function-syntax-id :helper}}
+          initializer {:node-id :first-call :core-form :call :source {:form-id :first-form :syntax-id :first-syntax}
+                       :evaluation {:owner-function-syntax-id :helper}}
+          graph {:reference reference :first-call initializer
+                 :let {:node-id :let :core-form :let :children [:first-call :reference] :resolved-binding-ids [:signature-binding]}}
+          binding {:binding-id :signature-binding :binding-class :lexical :mutability :immutable
+                   :definition-syntax-id :signature-definition :name 'signature :scope-id :scope}
+          core {:lexical-bindings [record] :mutations []} bindings {:signature-binding binding}
+          unroll (fn [c b budget] (invoke-c7 'sh08-pc-unroll [:reference c graph b budget]))
+          result (unroll core bindings 65536)]
+      (is (= :accepted (:status result)))
+      (is (= :first-call (:node-id result)))
+      (is (= [record] (mapv :binding-record (:links result))))
+      (is (= result (unroll core bindings (:work-count result))))
+      (is (= :map-get-work-limit (:reason (unroll core bindings (dec (:work-count result))))))
+      (is (= :rejected (:status (unroll (assoc core :lexical-bindings [record record]) bindings 65536))))
+      (is (= :rejected (:status (unroll (assoc-in core [:lexical-bindings 0 :mutability] :mutable) bindings 65536))))
+      (is (= :rejected (:status (unroll (assoc core :mutations [{:target-binding-id :signature-binding}]) bindings 65536))))
+      (is (= :rejected (:status (unroll core (assoc-in bindings [:signature-binding :definition-syntax-id] :different) 65536)))))))
+
+(deftest sh08-private-first-entry-source-spine-development-kernel
+  ;; Normalized parent BT premise plus current C6 data; full forms are checked separately.
+  (let [values [[(array-map :algorithm :sha256 :status :verified)]
+                [(array-map :algorithm :sha512 :status :rejected)]]
+        input (private-entry-vector-get-input values)
+        result (map-present-get-derived input) descriptor (:descriptor result)
+        entries (get-in descriptor [:presence-proof :entries]) vector-type (:type result)
+        map-type (first (:element-types vector-type))
+        project (fn [entry nodes budget] (invoke-c7 'sh08-pc-current-entry [entry :file :algorithm vector-type map-type nodes budget]))
+        authenticate (fn [projection nodes forms budget] (invoke-c7 'sh08-pc-authenticate-entry [projection nodes forms budget]))]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= 2 (count entries)))
+    (when (= :accepted (:status result))
+      (doseq [[entry expected] (map vector entries [:sha256 :sha512])]
+        (let [projection (project entry (:nodes input) 65536)
+              checked (when (= :accepted (:status projection))
+                        (authenticate projection (:nodes input) (:forms input) (- 65536 (:work-count projection))))]
+          (is (= :accepted (:status projection) (:status checked)) (pr-str {:projection projection :source checked}))
+          (when (= :accepted (:status projection) (:status checked))
+            (is (= :gravity.type/keyword (get-in projection [:row :selection :type])))
+            (is (= expected (get-in projection [:row :selection :part :shape :domain :values 0])))
+            (is (= 3 (count (get-in projection [:row :selection :source-spine]))))
+            (is (= (:row projection) (:row checked)))
+            (is (= projection (project entry (:nodes input) (:work-count projection))))
+            (is (= :map-get-work-limit (:reason (project entry (:nodes input) (dec (:work-count projection))))))
+            (is (= checked (authenticate projection (:nodes input) (:forms input) (:work-count checked))))
+            (is (= :map-get-work-limit (:reason (authenticate projection (:nodes input) (:forms input) (dec (:work-count checked)))))))))
+      (let [base (private-entry-vector-get-input [[(array-map :other :sha256 :status :verified)]
+                                                  [(array-map :other :sha512 :status :rejected)]])
+            derived (map-present-get-derived base) entry (first (get-in derived [:descriptor :presence-proof :entries]))
+            forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :key] :algorithm)
+            rejected (project forged (:nodes base) 65536)
+            missing (project entry (:nodes base) 65536)]
+        (is (= vector-type (:type derived)))
+        (is (= :map-get-private-entry-presence-required (:reason rejected)))
+        (is (= :rejected (:status missing)))
+        (is (= :map-get-private-first-entry-presence-required (:reason missing)))
+        (is (= :rejected (:status rejected))))
+      (let [entry (first entries)
+            forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :key] :other)
+            id (get-in entry [:selected-part :value-node-id])
+            graph (assoc-in (:nodes input) [id :attributes :quoted-value] [(array-map :other :sha256 :status :verified)])
+            projection (invoke-c7 'sh08-pc-current-entry [forged :file :other vector-type map-type graph 65536])
+            checked (when (= :accepted (:status projection))
+                      (authenticate projection graph (:forms input) (- 65536 (:work-count projection))))]
+        ;; Coherent current C6 data satisfies the limited premise; unchanged C2 forms reject the forgery.
+        (is (= :accepted (:status projection)) (pr-str projection))
+        (is (= :rejected (:status checked)))
+        (is (= :map-get-source-mismatch (:reason checked))))
+      (let [entry (first entries) id (get-in entry [:selected-part :value-node-id])
+            graph (assoc-in (:nodes input) [id :attributes :quoted-value]
+                            [(array-map :status :verified :algorithm :sha256)])
+            projection (project entry graph 65536)
+            checked (when (= :accepted (:status projection))
+                      (authenticate projection graph (:forms input) (- 65536 (:work-count projection))))]
+        (is (= :accepted (:status projection) (:status checked)) "Map key lookup has no host enumeration-order premise"))
+      (let [entry (first entries) id (get-in entry [:selected-part :value-node-id])
+            graph (assoc-in (:nodes input) [id :attributes :quoted-value]
+                            [(array-map :algorithm :sha256 :status :verified) (array-map :algorithm :sha256 :status :verified)])]
+        (is (= :rejected (:status (project entry graph 65536)))))
+      (let [entry (first entries) changed (assoc-in entry [:argument-source :syntax-id] :wrong-source)]
+        (is (= :rejected (:status (project changed (:nodes input) 65536)))))
+      (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "BU source hash")))
+                                        (toString [] (swap! callbacks inc) (throw (AssertionError. "BU source string"))))]
+        (is (= :rejected (:status (project (assoc (first entries) :argument-source opaque) (:nodes input) 65536))))
+        (is (zero? @callbacks)))
+      (let [entry (first entries) other (second entries)
+            swapped (assoc entry :argument-node-id (:argument-node-id other) :argument-source (:argument-source other))]
+        (is (= :rejected (:status (project swapped (:nodes input) 65536)))))
+      (let [entry (first entries) id (:argument-node-id entry)
+            graph (assoc-in (:nodes input) [id :core-form] :reference)]
+        (is (= :rejected (:status (project entry graph 65536)))))
+      (let [entry (first entries) projection (project entry (:nodes input) 65536)
+            form-id (get-in projection [:shapes 2 :source :form-id])
+            changed (assoc-in (:forms input) [form-id :form-id] :wrong-form)]
+        (is (= :accepted (:status projection)))
+        (is (= :rejected (:status (authenticate projection (:nodes input) changed (- 65536 (:work-count projection)))))))
+      (let [entry (first entries)
+            changed (assoc vector-type :element-types 7)]
+        (is (= :rejected (:status (invoke-c7 'sh08-pc-current-entry
+                                      [entry :file :algorithm changed map-type (:nodes input) 65536])))))
+      (let [entry (first entries)
+            forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :value-data-origin :data-path] [999])
+            rejected (project forged (:nodes input) 65536)]
+        (is (= :rejected (:status rejected)))))))
+
+(defn- private-first-entry-input
+  ([] (private-first-entry-input [[(array-map :algorithm :sha256 :status :verified)]
+                                [(array-map :algorithm :sha512 :status :rejected)]]))
+  ([values]
+   (let [base (private-entry-vector-get-input values)
+         source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+         form (fn [id kind value parent children]
+                {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                 :kind kind :value value :parent-form-id parent :child-form-ids children :scope-id :helper-scope})
+         node (fn [id kind children attrs ids]
+                {:node-id id :core-form kind :children children :attributes attrs :resolved-binding-ids ids :source (source id)
+                 :evaluation {:kind (if (= :call kind) :operator-then-arguments :left-to-right)
+                              :owner-function-syntax-id :helper-form
+                              :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}})
+         ref (fn [id name bid definition]
+               (node id :reference [] {:symbol name :position :expression :binding-id bid
+                                      :binding-class :lexical :definition-syntax-id definition} [bid]))
+         get-binding (get-in base [:call :operator-binding-id])
+         first-binding (assoc (get-in base [:bindings get-binding]) :binding-id :first-binding :name 'first
+                              :definition-syntax-id :first-definition)
+         first-op (node :first-operator :reference [] {:symbol 'first :position :operator :binding-id :first-binding
+                                                       :binding-class :core :definition-syntax-id :first-definition} [:first-binding])
+         inner-op (-> (get-in base [:nodes :operator]) (assoc :node-id :inner-operator :source (source :inner-operator)))
+         attrs (fn [n] {:operator-child-index 0 :argument-count n :argument-child-indexes (vec (range 1 (inc n)))
+                         :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
+         first-node (node :first-call :call [:first-operator :signatures-reference] (attrs 1) [:first-binding])
+         inner-node (node :inner-get :call [:inner-operator :signature-reference :inner-key] (attrs 2) [get-binding])
+         call (fn [id op bid args] {:core-node-id id :operator-node-id op :operator-binding-id bid :argument-node-ids args
+                                    :ordered-evaluation-node-ids (into [op] args) :evaluation-order :operator-then-arguments
+                                    :result-policy :call-result})
+         first-call (call :first-call :first-operator :first-binding [:signatures-reference])
+         inner-call (call :inner-get :inner-operator get-binding [:signature-reference :inner-key])
+         edge (fn [c ordinal definition]
+                {:ordinal ordinal :call-core-node-id (:core-node-id c) :caller-function-syntax-id :helper-form
+                 :caller-function-core-node-id :helper-fn :callee-binding-id (:operator-binding-id c)
+                 :callee-definition-syntax-id definition :callee-function-syntax-id nil :callee-function-core-node-id nil
+                 :argument-core-node-ids (:argument-node-ids c) :ordered-evaluation-node-ids (:ordered-evaluation-node-ids c)
+                 :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction})
+         first-edge (edge first-call 3 :first-definition)
+         inner-edge (edge inner-call 4 (get-in base [:bindings get-binding :definition-syntax-id]))
+         vector-let (node :vector-let :let [:present-get :entry-let]
+                      {:body-count 1 :binding-vector-form-id :vector-bindings :binding-vector-syntax-id :vector-bindings}
+                      [:signatures-binding])
+         entry-let (node :entry-let :let [:first-call :inner-get]
+                     {:body-count 1 :binding-vector-form-id :entry-bindings :binding-vector-syntax-id :entry-bindings}
+                     [:signature-binding])
+         records (mapv (fn [[owner name bid definition init]]
+                         {:let-core-node-id owner :ordinal 0 :name name :binding-id bid :definition-form-id definition
+                          :definition-syntax-id definition :binding-scope-id :helper-scope
+                          :initializer-form-id init :initializer-syntax-id init :initializer-scope-id :helper-scope
+                          :initializer-node-id init :visible-prior-binding-ids [] :mutability :immutable})
+                       [[:vector-let 'signatures :signatures-binding :signatures-name :present-get]
+                        [:entry-let 'signature :signature-binding :signature-name :first-call]])
+         added [vector-let entry-let first-op first-node inner-op inner-node
+                (ref :signatures-reference 'signatures :signatures-binding :signatures-name)
+                (ref :signature-reference 'signature :signature-binding :signature-name)
+                (node :inner-key :literal [] {:literal-kind :keyword :value :algorithm} [])]
+         ordered (into (mapv #(if (= :helper-fn (:node-id %)) (assoc % :children [:vector-let]) %) (get-in base [:core :nodes])) added)
+         core (-> (:core base) (assoc :nodes ordered :lexical-bindings records)
+                  (update :calls into [first-call inner-call]) (update :call-edges into [first-edge inner-edge])
+                  (update :function-records #(mapv (fn [r] (if (= :helper-form (:function-syntax-id r))
+                                                            (assoc r :body-core-node-id :vector-let) r)) %)))
+         forms (-> (:forms base)
+                   (assoc-in [:present-get :parent-form-id] :vector-bindings)
+                   (assoc-in [:present-get :scope-id] :helper-scope)
+                   (merge {:vector-let (form :vector-let :list nil :helper-form [:vector-let-op :vector-bindings :entry-let])
+                           :vector-let-op (form :vector-let-op :symbol 'let :vector-let [])
+                           :vector-bindings (form :vector-bindings :vector nil :vector-let [:signatures-name :present-get])
+                           :signatures-name (form :signatures-name :symbol 'signatures :vector-bindings [])
+                           :entry-let (form :entry-let :list nil :vector-let [:entry-let-op :entry-bindings :inner-get])
+                           :entry-let-op (form :entry-let-op :symbol 'let :entry-let [])
+                           :entry-bindings (form :entry-bindings :vector nil :entry-let [:signature-name :first-call])
+                           :signature-name (form :signature-name :symbol 'signature :entry-bindings [])
+                           :first-call (form :first-call :list nil :entry-bindings [:first-operator :signatures-reference])
+                           :first-operator (form :first-operator :symbol 'first :first-call [])
+                           :signatures-reference (form :signatures-reference :symbol 'signatures :first-call [])
+                           :inner-get (form :inner-get :list nil :entry-let [:inner-operator :signature-reference :inner-key])
+                           :inner-operator (form :inner-operator :symbol 'get :inner-get [])
+                           :signature-reference (form :signature-reference :symbol 'signature :inner-get [])
+                           :inner-key (form :inner-key :keyword :algorithm :inner-get [])}))
+         bindings (merge (:bindings base) {:first-binding first-binding}
+                         (into {} (map (fn [r] [(:binding-id r) {:binding-id (:binding-id r) :name (:name r)
+                                                                :kind :local :binding-class :lexical :scope-id :helper-scope
+                                                                :definition-syntax-id (:definition-syntax-id r)}]) records)))
+         products (assoc (:products base) :calls (:calls core) :call-edges (:call-edges core)
+                                           :function-index (into {} (map (juxt :function-syntax-id identity) (:function-records core))))
+         input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) ordered)) :forms forms
+                           :bindings bindings :products products)
+         parent (map-present-get-derived input)
+         vector-type (:type parent)
+         types (assoc (:types input) :operator (:descriptor parent) :present-get vector-type
+                       :signatures-reference vector-type :inner-key :gravity.type/keyword)
+         first-result (invoke-c7 'sh08-lq-derive [core first-node first-call first-edge (:nodes input) bindings types forms 65536])
+         map-type (:type first-result)]
+     (assoc input :node inner-node :call inner-call :edge inner-edge :parent-result parent :first-result first-result
+                  :types (assoc types :first-operator (:descriptor first-result) :first-call map-type :signature-reference map-type)
+                  :binding-types (assoc (:binding-types input) :signatures-binding vector-type :signature-binding map-type)))))
+
+(defn- private-first-entry-derived
+  ([input] (private-first-entry-derived input 65536))
+  ([{:keys [core node nodes types binding-types bindings forms products]} budget]
+   (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core :budget-left budget)]
+     (invoke-c7 'sh08-mg-present-derive [node nodes types binding-types {} (:lexical-bindings core) bindings forms {} context budget]))))
+
+(defn- private-first-entry-facts [input result]
+  (let [parent (:descriptor (:parent-result input)) first-descriptor (:descriptor (:first-result input))
+        descriptor (:descriptor result) module (:module input)]
+    {:type-table (assoc (:types input) :inner-operator descriptor :inner-get (:type result))
+     :call-type-facts [(invoke-c7 'sh08-mg-call-fact [parent module])
+                      (invoke-c7 'sh08-lq-call-fact [first-descriptor module])
+                      (invoke-c7 'sh08-mg-call-fact [descriptor module])]
+     :constraint-ledger [(invoke-c7 'sh08-mg-constraint [parent])
+                         (invoke-c7 'sh08-lq-constraint [first-descriptor])
+                         (invoke-c7 'sh08-mg-constraint [descriptor])]}))
+
+(deftest sh08-private-first-entry-composed-development-kernel
+  (let [input (private-first-entry-input) {:keys [core node nodes call edge bindings types forms]} input
+        result (private-first-entry-derived input) descriptor (:descriptor result)
+        established (assoc types :inner-operator descriptor :inner-get (:type result))
+        current-calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+        check (fn [c t budget] (invoke-c7 'sh08-mg-inferred-work
+                                [c node call edge (into {} (map (juxt :node-id identity) (:nodes c)))
+                                 bindings t (into {} (map (juxt :core-node-id identity) (:calls c))) budget]))]
+    (is (= :accepted (:status (:parent-result input)) (:status (:first-result input))) (pr-str input))
+    (is (= :accepted (:status result)) (pr-str result))
+    (when (= :accepted (:status result))
+      (is (= :sh08-map-get-private-first-entry-v1 (:version descriptor)))
+      (is (= :gravity.type/keyword (:type result)))
+      (is (every? (set (:invalidation descriptor)) [:mutations :immutable-binding-links :incoming-arguments :source-spine]))
+      (is (= [:sha256 :sha512] (mapv #(get-in % [:selection :part :shape :domain :values 0])
+                                     (get-in descriptor [:presence-proof :entries]))))
+      (is (= :present-get (get-in descriptor [:presence-proof :get-call-core-node-id])))
+      (is (= :first-call (get-in descriptor [:presence-proof :first-call-core-node-id])))
+      (is (= 1 (count (get-in descriptor [:presence-proof :receiver-links]))))
+      (is (= 1 (count (get-in descriptor [:presence-proof :vector-links]))))
+      (is (= result (private-first-entry-derived input (:work-count result))))
+      (is (= :map-get-work-limit (:reason (private-first-entry-derived input (dec (:work-count result))))))
+      (let [checked (check core established 65536)]
+        (is (= :accepted (:status checked)) (pr-str checked))
+        (is (= checked (check core established (:work-count checked))))
+        (is (= :map-get-work-limit (:reason (check core established (dec (:work-count checked)))))))
+      (is (= :rejected (:status (private-first-entry-derived (assoc-in input [:forms :inner-key :value] :scheme)))))
+      (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
+                       (assoc-in descriptor [:presence-proof :entries 0 :selection :key] :scheme)
+                       (assoc-in descriptor [:presence-proof :entries 0 :selection :source-spine 0 :source-kind] :forged)
+                       (assoc-in descriptor [:presence-proof :get-call-core-node-id] :first-call)
+                       (assoc-in descriptor [:presence-proof :receiver-links 0 :binding-record :mutability] :mutable)
+                       (assoc-in descriptor [:presence-proof :extra] true)]]
+        (is (= :rejected (:status (check core (assoc established :inner-operator changed) 65536)))))
+      (let [renamed (clojure.walk/postwalk-replace {:algorithm :scheme} established)]
+        (is (= :rejected (:status (check core renamed 65536)))))
+      (doseq [c [(update core :calls #(vec (remove (fn [c] (= :entry-1 (:core-node-id c))) %)))
+                 (assoc-in core [:mutations] [{:target-binding-id :signature-binding}])
+                 (assoc-in core [:lexical-bindings 0 :initializer-node-id] :first-call)]]
+        (is (= :rejected (:status (check c established 65536)))))
+      (let [missing (private-first-entry-input [[(array-map :algorithm :sha256 :status :verified)]
+                                               [(array-map :scheme :sha512 :status :rejected)]])]
+        (is (= :accepted (:status (:parent-result missing)) (:status (:first-result missing))))
+        (is (= :map-get-private-first-entry-presence-required (:reason (private-first-entry-derived missing)))))
+      (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "BU opaque hash")))
+                                        (toString [] (swap! callbacks inc) (throw (AssertionError. "BU opaque string"))))]
+        (is (= :rejected (:status (check core (assoc-in established [:inner-operator :presence-proof :get-call-core-node-id] opaque) 65536))))
+        (is (zero? @callbacks))))))
+
+(deftest sh08-private-first-entry-composed-owner-guards-development-kernel
+  (let [input (private-first-entry-input) {:keys [core node call nodes bindings types]} input
+        route (invoke-c7 'sh08-pc-route [core node call nodes bindings 65536])
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "BU owner hashed")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "BU owner compared")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "BU owner printed"))))]
+    (is (= :accepted (:status route)) (pr-str route))
+    (doseq [id [:inner-get :first-call :present-get]]
+      (let [changed-nodes (assoc-in nodes [id :evaluation :owner-function-syntax-id] opaque)
+            current-node (get changed-nodes :inner-get)
+            result (invoke-c7 'sh08-pc-route [core current-node call changed-nodes bindings 65536])]
+        (is (not= :accepted (:status result)))))
+    (let [changed (assoc-in nodes [:input :evaluation :owner-function-syntax-id] opaque)]
+      (is (= :rejected (:status (invoke-c7 'sh08-pc-parent-parameter [route core changed bindings 65536])))))
+    (let [changed (-> input
+                      (assoc-in [:nodes :inner-key :attributes :value] opaque)
+                      (update-in [:core :nodes] #(mapv (fn [n] (if (= :inner-key (:node-id n))
+                                                               (assoc-in n [:attributes :value] opaque) n)) %)))]
+      (is (= :not-applicable (:status (invoke-c7 'sh08-pc-candidate
+                                     [(:core changed) node call (:nodes changed) types 65536]))))
+      (is (= :rejected (:status (private-first-entry-derived changed)))))
+    (is (= :rejected (:status (invoke-c7 'sh08-pc-ancestry-work
+                                [(get-in input [:parent-result :descriptor :presence-proof :entries]) opaque 0]))))
+    (doseq [changed-nodes [(assoc-in nodes [:inner-key :children] [:unexpected])
+                           (assoc-in nodes [:inner-key :resolved-binding-ids] [:unexpected])]]
+      (is (= :not-applicable (:status (invoke-c7 'sh08-pc-candidate [core node call changed-nodes types 0])))))
+    (is (zero? @callbacks))
+    (doseq [legacy [(private-entry-get-input) (map-present-get-input :file)]]
+      (is (= {:status :not-applicable :work-count 0}
+             (invoke-c7 'sh08-pc-candidate [(:core legacy) (:node legacy) (:call legacy) (:nodes legacy) (:types legacy) 0]))))
+    (is (= :accepted (:status (invoke-c7 'sh08-pc-candidate [core node call nodes types 65536]))))))
+
+(deftest sh08-private-first-entry-scalar-leaves-development-kernel
+  (doseq [[pair expected] [[[false true] :gravity.type/bool]
+                          [[nil nil] :gravity.type/nil]
+                          [[1 2] :gravity.type/integer]
+                          [["one" "two"] :gravity.type/string]
+                          [['one 'two] :gravity.type/symbol]]]
+    (let [values (mapv #(vector (array-map :algorithm % :status :verified)) pair)
+          input (private-first-entry-input values) result (private-first-entry-derived input)]
+      (is (= :accepted (:status (:parent-result input)) (:status (:first-result input))))
+      (is (= :accepted (:status result)) (pr-str result))
+      (when (= :accepted (:status result))
+        (is (= expected (:type result)))
+        (is (= pair (mapv #(get-in % [:selection :part :shape :domain :values 0])
+                            (get-in result [:descriptor :presence-proof :entries])))))))
+  (let [input (private-first-entry-input [[(array-map :algorithm true :status 1)]
+                                          [(array-map :status false :algorithm 2)]])
+        result (private-first-entry-derived input)]
+    (is (= :accepted (:status (:parent-result input)) (:status (:first-result input))))
+    (is (= :map-get-private-first-entry-selected-type-required (:reason result)))))
+
+(defn- private-first-entry-source-input [origins]
+  (letfn [(rewrite [value]
+            (cond
+              (map? value) (let [result (into (empty value) (map (fn [[k v]] [k (rewrite v)]) value))]
+                             (if (contains? result :generated-origin) (assoc result :generated-origin origins) result))
+              (vector? value) (mapv rewrite value)
+              (seq? value) (apply list (map rewrite value))
+              :else value))]
+    (rewrite (private-first-entry-input))))
+
+(deftest sh08-private-first-entry-provenance-development-kernel
+  (let [origin {:origin-id (sha-id "1") :kind :macro-expansion :from-syntax-id (sha-id "2") :role :introduced-def}
+        source {:form-id :form :syntax-id :syntax :semantic-span nil :origin-chain [] :generated-origin []}
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque provenance compared")))
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque provenance hashed")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque provenance printed"))))]
+    (doseq [origins [[] [origin]]]
+      (let [input (private-first-entry-source-input origins) result (private-first-entry-derived input)]
+        (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+        (is (= :gravity.type/keyword (:type result)))
+        (is (= [origins origins] (mapv #(get-in % [:argument-source :generated-origin])
+                                       (get-in result [:descriptor :presence-proof :entries]))))
+        (is (= origins (get-in result [:descriptor :presence-proof :receiver-links 0 :reference-source :generated-origin])))
+        (is (= origins (get-in result [:descriptor :presence-proof :vector-links 0 :reference-source :generated-origin])))))
+    (doseq [origins [{} (vec (repeat 257 origin)) [{}] [(assoc origin :extra :unexpected)]
+                    [(assoc origin :origin-id opaque)] [(assoc origin :from-syntax-id opaque)]]]
+      (is (false? (invoke-c7 'sh08-pc-source-domain? [(assoc source :generated-origin origins)]))))
+    (let [input (private-first-entry-source-input [])
+          entry (first (get-in input [:parent-result :descriptor :presence-proof :entries]))
+          argument-id (:argument-node-id entry)
+          changed-source (assoc (:argument-source entry) :generated-origin [(assoc origin :role opaque)])
+          changed (assoc entry :argument-source changed-source)
+          result (invoke-c7 'sh08-pc-current-entry
+                   [changed :signatures :algorithm (get-in input [:parent-result :type])
+                    (get-in input [:first-result :type])
+                    (assoc-in (:nodes input) [argument-id :source] changed-source) 65536])]
+      (is (= :map-get-source-mismatch (:reason result))))
+    (is (zero? @callbacks))))
+
+(defn- private-first-entry-local-derived [data table prior budget]
+  (let [{:keys [core node nodes types binding-types bindings forms products]} data
+        context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536])
+                  :source-core core :budget-left budget :prior-types prior
+                  :private-first-entry-products table)]
+    (invoke-c7 'sh08-mg-present-derive
+      [node nodes types binding-types {} (:lexical-bindings core) bindings forms {} context budget])))
+
+(deftest sh08-private-first-entry-local-products-development-kernel
+  (let [input (private-first-entry-source-input [])
+        build private-first-entry-local-derived
+        first-result (build input {} (:types input) 65536)
+        table {:inner-get (:local-private-product first-result)}
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped) original @scoped
+        full-calls (atom 0)
+        trace (fn [thunk]
+                (reset! full-calls 0)
+                (let [result (with-redefs-fn
+                               {scoped (fn [& args]
+                                         (when (= 'sh08-pc-from-parent (nth args 2)) (swap! full-calls inc))
+                                         (apply original args))} thunk)]
+                  {:result result :full-calls @full-calls}))]
+    (is (= :accepted (:status first-result)) (pr-str (select-keys first-result [:status :reason :work-count])))
+    (when (= :accepted (:status first-result))
+      (let [{:keys [result full-calls]} (trace #(build input table (:types input) 65536))]
+        (is (= :accepted (:status result)))
+        (is (zero? full-calls))
+        (is (= (:descriptor first-result) (:descriptor result)))
+        (is (= (:constraint first-result) (:constraint result)))
+        (is (< (:work-count result) (:work-count first-result)))
+        (is (= result (build input table (:types input) (:work-count result))))
+        (is (= :map-get-work-limit (:reason (build input table (:types input) (dec (:work-count result)))))))
+      (let [data (-> input (assoc-in [:types :inner-get] :gravity.type/keyword)
+                           (assoc-in [:types :inner-operator] (:descriptor first-result)))
+            observed (trace #(build data table (:types data) 65536))]
+        (is (= :accepted (get-in observed [:result :status])))
+        (is (zero? (:full-calls observed)) "Constructed BU outputs are not input dependencies"))
+      (let [prior (assoc (:types input) :entry-value-0-0 :gravity.type/integer)
+            observed (trace #(build input table prior 65536))]
+        (is (= :accepted (get-in observed [:result :status])))
+        (is (zero? (:full-calls observed)) "A concrete current type does not consult prior fallback"))
+      ;; Provided parent proof metadata belongs to the standalone/full boundary.
+      (doseq [data [(assoc-in input [:types :first-operator :bounds-proof :selected-index] 1)
+                    (assoc-in input [:types :operator :key] :other)]]
+        (let [observed (trace #(build data nil (:types data) 65536))]
+          (is (= :rejected (get-in observed [:result :status])))
+          (is (not= :map-get-work-limit (get-in observed [:result :reason])))))
+      ;; Reference/initializer types remain genuine inputs of the local path.
+      (doseq [data [(assoc-in input [:types :signature-reference :member-types 1] :gravity.type/integer)
+                    (assoc-in input [:types :signatures-reference :element-types 0 :member-types 1] :gravity.type/integer)]]
+        (let [observed (trace #(build data table (:types data) 65536))]
+          (is (= :rejected (get-in observed [:result :status])))
+          (is (not= :map-get-work-limit (get-in observed [:result :reason])))))
+      (let [data (update input :types dissoc :entry-value-0-0)
+            observed (trace #(build data table (:types input) 65536))]
+        (is (= 1 (:full-calls observed)) "Presence and consulted fallback changes reconstruct the proof"))
+      (let [callbacks (atom 0) opaque (proxy [Object] []
+                                      (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque dependency compared")))
+                                      (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque dependency hashed"))))
+            data (assoc-in input [:types :first-operator :bounds-proof :selected-index] opaque)
+            observed (trace #(build data nil (:types data) 65536))]
+        (let [row (invoke-c7 'sh08-pc-observed-type [:selected {:selected opaque} {}])
+              rejected (invoke-c7 'sh08-pc-evidence-work [row 65536])]
+          (is (= :map-get-source-mismatch (:reason rejected))))
+        (doseq [nodes [(assoc-in (:nodes input) [:input-0 :core-form] opaque)
+                       (assoc-in (:nodes input) [:input-0 :attributes :literal-kind] opaque)]]
+          (is (= :not-applicable
+                 (:status (invoke-c7 'sh08-pc-local-inputs-work
+                            [(get-in input [:parent-result :descriptor]) (:types input) (:types input) nodes 65536])))))
+        (is (= :rejected (get-in observed [:result :status])))
+        (is (zero? @callbacks))))
+    (let [core {:calls [] :call-edges [] :nodes [] :function-records [] :module (:module input)}
+          context {:ordering-core core :lookup-bindings [] :lookup-forms [] :boolean-matches []
+                   :shape-call-products {:calls [] :call-edges [] :function-index {} :definitions []} :loop-work-left 65536}
+          infer (fn [ctx] (invoke-c7 'sh08-ft-infer-acyclic-with-context [[] {} [] [] [] [] {} {} 2 ctx]))
+          clean (infer context) poisoned (infer (assoc context :private-first-entry-products table))]
+      (is (= clean poisoned))
+      (is (= :converged (:convergence-status clean)))
+      (is (not (contains? clean :private-first-entry-products)))
+      (is (not (contains? clean :products))))))
+
+(deftest sh08-private-first-entry-local-all-arguments-development-kernel
+  ;; An unused second parameter still participates in entry normality. This is
+  ;; direct development DATA; no C5/C6 admission or source authority is claimed.
+  (let [base (private-first-entry-source-input [])
+        binding {:binding-id :other-binding :name 'other :kind :local :binding-class :lexical}
+        additions (into {}
+                    (map (fn [i]
+                           (let [id (keyword (str "other-" i)) owner (keyword (str "entry-" i))
+                                 call (get-in base [:nodes owner]) source {:form-id id :syntax-id id :semantic-span nil
+                                                                          :origin-chain [] :generated-origin []}]
+                             [owner {:id id
+                                     :node {:node-id id :core-form :literal :children [] :resolved-binding-ids [] :source source
+                                            :attributes {:literal-kind :keyword :value :unused}
+                                            :evaluation {:kind :value :order []
+                                                         :owner-function-syntax-id (get-in call [:evaluation :owner-function-syntax-id])}}
+                                     :form {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin []
+                                            :kind :keyword :value :unused :parent-form-id owner :child-form-ids [] :scope-id nil}}])) [0 1]))
+        calls (mapv (fn [call]
+                      (if-let [extra (additions (:core-node-id call))]
+                        (-> call (update :argument-node-ids conj (:id extra))
+                                 (update :ordered-evaluation-node-ids conj (:id extra))) call)) (get-in base [:core :calls]))
+        call-index (into {} (map (juxt :core-node-id identity) calls))
+        edges (mapv (fn [edge]
+                      (if-let [extra (additions (:call-core-node-id edge))]
+                        (-> edge (update :argument-core-node-ids conj (:id extra))
+                                 (update :ordered-evaluation-node-ids conj (:id extra))) edge)) (get-in base [:core :call-edges]))
+        sequence (vec (mapcat (fn [node]
+                               (if-let [extra (additions (:node-id node))]
+                                 (let [children (:ordered-evaluation-node-ids (call-index (:node-id node)))]
+                                   [(:node extra) (-> node (assoc :children children)
+                                     (assoc-in [:attributes :argument-count] 2) (assoc-in [:attributes :argument-child-indexes] [1 2])
+                                     (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))])
+                                 [(if (= :helper-fn (:node-id node)) (update node :resolved-binding-ids conj :other-binding) node)]))
+                             (get-in base [:core :nodes])))
+        records (mapv #(if (= :helper-form (:function-syntax-id %))
+                         (-> % (update :parameter-binding-ids conj :other-binding) (assoc :fixed-arity 2)) %)
+                       (get-in base [:core :function-records]))
+        core (-> (:core base) (assoc :nodes sequence :calls calls :call-edges edges :function-records records)
+                 (update-in [:preserved-resolution :binding-table] conj binding))
+        forms (reduce (fn [out [owner extra]]
+                        (-> out (assoc (:id extra) (:form extra)) (update-in [owner :child-form-ids] conj (:id extra))))
+                      (:forms base) additions)
+        data (-> base (assoc :core core :nodes (into {} (map (juxt :node-id identity) sequence)) :forms forms)
+                 (assoc-in [:bindings :other-binding] binding) (assoc-in [:binding-types :other-binding] :gravity.type/keyword)
+                 (update :types merge {:other-0 :gravity.type/keyword :other-1 :gravity.type/keyword})
+                 (assoc :products (assoc (:products base) :calls calls :call-edges edges
+                                    :function-index (into {} (map (juxt :function-syntax-id identity) records)))))
+        refresh (fn [input]
+                  (let [parent-input (assoc input :node (get-in input [:nodes :present-get])
+                                           :call (get call-index :present-get)
+                                           :edge (first (filter #(= :present-get (:call-core-node-id %)) edges)))
+                        parent (map-present-get-derived parent-input)]
+                    (-> input (assoc :parent-result parent)
+                        (assoc-in [:types :operator] (:descriptor parent))
+                        (assoc-in [:types :present-get] (:type parent))
+                        (assoc-in [:types :signatures-reference] (:type parent)))))
+        data (refresh data) first-result (private-first-entry-local-derived data {} (:types data) 65536)
+        table {:inner-get (:local-private-product first-result)}]
+    (is (= :accepted (:status first-result)) (pr-str (select-keys first-result [:status :reason :work-count])))
+    (when (= :accepted (:status first-result))
+      (let [changed (refresh (assoc-in data [:types :other-0] :gravity.type/never))
+            result (private-first-entry-local-derived changed table (:types changed) 65536)]
+        (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+        (is (= :gravity.type/keyword (:type result)))
+        (is (= [:not-invoked :invoked] (mapv :entry (get-in result [:descriptor :presence-proof :entries]))))
+        (is (nil? (get-in result [:descriptor :presence-proof :entries 0 :selection]))))
+      (let [changed (refresh (-> data (assoc-in [:types :other-0] :gravity.type/never)
+                                      (assoc-in [:types :other-1] :gravity.type/never)))
+            result (private-first-entry-local-derived changed table (:types changed) 65536)]
+        (is (= :rejected (:status result)))
+        (is (not= :gravity.type/keyword (:type result)))))))
+
+(deftest sh08-private-first-entry-reviewed-guards-development-kernel
+  (let [literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                               :attributes {:literal-kind :keyword :value value}})
+        nodes {:map {:node-id :map :core-form :collection-literal :children [:key :value]
+                     :attributes {:literal-kind :map :element-count 2}}
+               :key (literal :key :algorithm) :value (literal :value :sha256)}
+        child (fn [graph] (invoke-c7 'sh08-pc-core-child [{:source-kind :core :node-id :map} :map :algorithm graph 65536]))
+        visits (atom 0) trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @trace-var
+        results (with-redefs-fn
+                  {trace-var (fn [& args]
+                               (when (= 'sh08-pc-even-count? (nth args 2)) (swap! visits inc))
+                               (apply original args))}
+                  #(mapv child [(assoc-in nodes [:map :children] 7)
+                                (-> nodes (assoc-in [:map :children] (vec (repeat 2048 :key)))
+                                          (assoc-in [:map :attributes :element-count] 2048))]))]
+    (is (= [:rejected :rejected] (mapv :status results)))
+    (is (zero? @visits) "Reject non-Vector and oversized children before parity")
+    (is (false? (invoke-c7 'sh08-pc-even-count? [7])))
+    (is (= :rejected (:status (child (assoc-in nodes [:map :node-id] :other)))))
+    (is (= :rejected (:status (child (dissoc nodes :value)))))
+    (is (= :rejected (:status (child (assoc-in nodes [:key :children] [:value])))))
+    (is (= :rejected (:status (child (assoc-in nodes [:key :resolved-binding-ids] [:shadow])))))
+    (let [quote-node {:node-id :quoted :core-form :quote :children [] :resolved-binding-ids []
+                      :attributes {:quoted-kind :map :quoted-form-id :payload :quoted-syntax-id :payload
+                                   :quoted-value {:signatures [{:algorithm :sha256}]}}
+                      :evaluation {:kind :no-evaluation :order []}}
+          graph {:quoted quote-node}
+          step (fn [cursor family key] (invoke-c7 'sh08-pc-core-child [cursor family key graph 65536]))
+          outer (step {:source-kind :core :node-id :quoted} :map :signatures)
+          head (step (:cursor outer) :vector nil)
+          forged (assoc (:cursor head) :value {:algorithm :sha512} :data-path [999])
+          selected (step forged :map :algorithm)
+          anchored (invoke-c7 'sh08-pc-reanchor [(get-in selected [:cursor :quote-core-node-id])
+                                               (get-in selected [:cursor :selectors]) graph 65536])]
+      (is (= :accepted (:status selected) (:status anchored)))
+      (is (= :sha256 (:value anchored)) "Cached cursor values and physical paths have no authority")
+      (is (= [{:key :signatures} {:index 0} {:key :algorithm}] (get-in selected [:cursor :selectors])))
+      (is (not (contains? (:cursor selected) :value)))
+      (is (not (contains? (:location selected) :coordinate)))
+      (is (not (contains? (:location selected) :data-path)))
+      (is (= :rejected (:status (step {:source-kind :quoted-data :quote-core-node-id :quoted :selectors [{:key [:signatures]}]} :vector nil))))
+      (is (= :rejected (:status (step {:source-kind :quoted-data :quote-core-node-id :quoted :selectors [{:index 0} :bad]} :vector nil)))))
+    (let [record {:binding-id :binding :let-core-node-id :let :initializer-node-id :initializer :ordinal 0
+                  :mutability :immutable :definition-syntax-id :definition :name 'signature :binding-scope-id :scope
+                  :initializer-form-id :initializer-form :initializer-syntax-id :initializer-syntax}
+          reference {:node-id :reference :core-form :reference :children [] :resolved-binding-ids [:binding]
+                     :attributes {:binding-id :binding :binding-class :lexical :symbol 'signature}
+                     :source {:form-id :reference :syntax-id :reference} :evaluation {:owner-function-syntax-id :helper}}
+          initializer {:node-id :initializer :core-form :call :source {:form-id :initializer-form :syntax-id :initializer-syntax}
+                       :evaluation {:owner-function-syntax-id :helper}}
+          graph {:reference reference :initializer initializer
+                 :let {:node-id :let :core-form :let :children [:initializer :reference] :resolved-binding-ids [:binding]}}
+          core {:lexical-bindings [record] :mutations []}
+          bindings {:binding {:binding-id :binding :binding-class :lexical :mutability :immutable
+                              :definition-syntax-id :definition :name 'signature :scope-id :scope}}
+          unroll (fn [id c g] (invoke-c7 'sh08-pc-unroll [id c g bindings 65536]))]
+      (is (= :rejected (:status (unroll :absent core graph))))
+      (is (= :rejected (:status (unroll :initializer core (assoc-in graph [:initializer :node-id] :other)))))
+      (doseq [changed [(dissoc graph :let) (dissoc graph :initializer)
+                       (assoc-in graph [:let :node-id] :other) (assoc-in graph [:initializer :node-id] :other)
+                       (assoc graph :initializer 7)]]
+        (is (= :rejected (:status (unroll :reference core changed)))))
+      (let [cycle (assoc record :initializer-node-id :reference :initializer-form-id :reference :initializer-syntax-id :reference)
+            loop-core (assoc core :lexical-bindings [cycle])
+            loop-graph (assoc-in graph [:let :children 0] :reference)]
+        (is (= :rejected (:status (unroll :reference loop-core loop-graph))))))
+    (is (nil? (invoke-c7 'sh08-pc-literal-type [:character])))
+    (is (= :unsupported (invoke-c7 'sh08-pc-value-kind [(char 97)])))
+    (is (= :unsupported (invoke-c7 'sh08-pc-value-kind [{:artifact :gravity/unicode-scalar-character
+                                                       :schema-version 1 :codepoint 0x1f600 :text (String. (Character/toChars 0x1f600))}])))))

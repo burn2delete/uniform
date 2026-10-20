@@ -1,0 +1,12 @@
+(ns self-hosting.sh08.private-first-entry
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn signature-algorithm [package]
+  (let [signatures (get package :signatures)
+        signature (first signatures)]
+    (get signature :algorithm)))
+
+(defn main []
+  (signature-algorithm {:signatures [{:scheme :sha256}]}))
