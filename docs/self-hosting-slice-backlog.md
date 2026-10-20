@@ -9248,6 +9248,22 @@ fixture constructors and the runtime test the normalized MIR boundary, not
 fresh authenticated SH-12 ingress, broader CFG support, SH-13 completion or
 authoritative migration. Public schemas and resource limits are unchanged.
 
+### MIR module rejection before entry lookup: development repair
+
+SH-13 execution now defers entry lookup until its existing module validator
+succeeds. This prevents an unnecessary traversal of rejected `:functions`
+carriers while preserving the original module diagnostic, error priority and
+accepted execution. Some malformed cases already rejected correctly; this does
+not claim that every malformed carrier was previously accepted.
+
+The unchanged regression completed 182 assertions with 132 passes and 50
+failures before the repair; that failed result is retained. It now passes all
+182 assertions. The affected branch-carrier, invalid-MIR and runtime-bound batch
+passes 4 tests and 680 assertions using original G/Q constructors, execution
+and verification recomputation. This normalized boundary repair establishes
+neither authenticated SH-12 ingress nor broader CFG support, SH-13 completion,
+native execution or authoritative migration. Schemas and limits are unchanged.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established

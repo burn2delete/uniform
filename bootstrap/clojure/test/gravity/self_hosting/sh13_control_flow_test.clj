@@ -380,3 +380,49 @@
               substituted (assoc result :status :accepted)]
           (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
                                                   [malformed [true] substituted])))))))))
+
+(deftest sh13-rejects-malformed-modules-before-entry-lookup
+  ;; Original normalized constructors/runtime; not authenticated SH12 ingress.
+  (let [observe (fn [f]
+                  (try {:value (f)}
+                       (catch Throwable error
+                         {:host-error (.getName (class error))})))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (module plan 'sh13-branch-module)
+            check-rejected
+            (fn [subject arguments]
+              (let [expected (invoke-engine 'sh13-diagnostic [subject :module])
+                    observed (observe #(run subject arguments))
+                    result (:value observed)
+                    verification
+                    (observe #(invoke-engine 'sh13-verify-execution
+                                             [subject arguments result]))]
+                (is (nil? (:host-error observed)))
+                (is (= :rejected (:status result)))
+                (is (= [expected] (:diagnostics result)))
+                (is (nil? (:execution result)))
+                (is (nil? (:host-error verification)))
+                (is (= :passed (get-in verification [:value :status])))))]
+        (doseq [functions [nil 7 true :not-functions "functions"
+                           {} {0 (get-in base [:functions 0])}
+                           '() (list (get-in base [:functions 0])) #{}]]
+          (check-rejected (assoc base :functions functions) [true]))
+        (check-rejected (dissoc base :functions) [true])
+        ;; Earlier module failures still win, including over malformed arguments.
+        (check-rejected (assoc base :artifact :wrong :functions 7) 7)
+        (check-rejected (assoc base :profile :wrong :functions 7) nil)
+        (doseq [[subject arguments expected]
+                [[base [true] 42] [base [false] 7]
+                 [(module plan 'sh13-loop-module) [4] 10]
+                 [(module plan 'sh13-indirect-module) [41] 42]]]
+          (let [result (run subject arguments)]
+            (is (= :accepted (:status result)))
+            (is (= expected (get-in result [:execution :value])))
+            (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                  [subject arguments result]))))))
+        (let [subject (assoc base :functions nil)
+              result (run subject [true])]
+          (is (= :rejected
+                 (:status (invoke-engine 'sh13-verify-execution
+                                         [subject [true]
+                                          (assoc result :status :accepted)])))))))))

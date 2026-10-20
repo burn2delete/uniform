@@ -8138,9 +8138,9 @@
       false)))
 
 (defn sh13-run-module [module arguments]
-  (let [error (sh13-module-error module)
-        entry (sh13-function module (get module :entry-function))]
+  (let [error (sh13-module-error module)]
     (if (= nil error)
+      (let [entry (sh13-function module (get module :entry-function))]
       (if (vector? arguments)
         (if (= (count arguments) (count (get entry :params)))
           (if (sh13-argument-values-valid?
@@ -8163,7 +8163,7 @@
          :status :rejected
          :module-id (get module :module-id)
          :diagnostics [(sh13-diagnostic module :type)]
-         :pending (get (sh13-control-flow-policy) :pending)})
+         :pending (get (sh13-control-flow-policy) :pending)}))
       {:artifact :gravity/sh13-control-flow-execution
        :schema-version 1
        :status :rejected

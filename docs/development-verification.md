@@ -202,6 +202,12 @@ Use the existing invalid-MIR, recursion and runtime-bound checks for affected
 regression feedback. This boundary check is not authenticated SH-12 ingress or
 SH-13 completion evidence.
 
+For module rejection before entry lookup, run
+`sh13-rejects-malformed-modules-before-entry-lookup` in the same namespace.
+Once module validation rejects, return its original diagnostic without the
+executor's entry lookup or argument checks, not a host exception. Preserve
+accepted execution and original verification recomputation.
+
 ### C11 node-local preflight diagnostics
 
 For source-valid checked-Core nodes rejected by the existing single-diamond
