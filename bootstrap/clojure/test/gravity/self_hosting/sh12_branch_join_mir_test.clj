@@ -616,3 +616,85 @@
                              [id missing checked malformed])]
         (is (= :rejected (:status report)))
         (is (= [expected] (:diagnostics report)))))))
+
+(deftest sh12-operation-effect-safety-diagnostics-preserve-expected-source
+  ;; Supplied checked-Core DATA; only fresh expected MIR supplies attribution.
+  (let [checked
+        (update (checked-core ".gravity") :core-nodes
+                (fn [nodes]
+                  (mapv #(-> % (assoc-in [:source :generated?] true)
+                             (assoc-in [:source :generated-origin]
+                                       [{:kind :macro-expansion :source-id (:node-id %)}])) nodes)))
+        mir (build-mir checked)
+        function-name (:entrypoint checked)
+        prefix [:functions function-name :blocks]
+        then-block (str (:artifact-id checked) ":mir:then")
+        else-block (str (:artifact-id checked) ":mir:else")
+        then-path (conj prefix then-block :instructions 0)
+        else-path (conj prefix else-block :instructions 0)
+        terminator-path (conj prefix then-block :terminator :effects)
+        value-path [:data-flow-graph :values "sh12:branch-join:then"]]
+    (is (= :gravity/mir-module (:artifact mir)))
+    (is (= mir (invoke c11-plan 'c11-build-target-independent-mir [checked])))
+    (is (= :passed (:status (verify-mir checked mir))))
+    (doseq [[family id reason field value second-field third-field]
+            [[:effects "C11-EFFECT" :effect-fact-or-ordering
+              [:effects] #{:io/write} [:facts :effect-fact-id] [:ordering]]
+             [:safety "C11-SAFETY" :safety-outcome-or-runtime-check-fact
+              [:facts :safety-outcome-id] "wrong:outcome"
+              [:facts :safety-proof-id] [:facts :runtime-check-id]]]]
+      (let [mutate #(assoc-in % (into %2 field) value)
+            wrong-then (mutate mir then-path)
+            value-only (assoc-in mir (conj value-path family) :forged)
+            later-only (if (= family :effects)
+                         (assoc-in value-only terminator-path #{:io/write}) value-only)
+            cases
+            [[wrong-then then-path]
+             [(mutate mir else-path) else-path]
+             [(mutate (mutate mir else-path) then-path) then-path]
+             [(assoc-in mir (into then-path second-field) "wrong:fact") then-path]
+             [(mutate later-only then-path) then-path]
+             [(-> (mutate mir else-path)
+                  (assoc-in (conj else-path :source) {:span :forged :generated-origin [:forged]})
+                  (assoc-in (conj else-path :block-id) "forged:block")) else-path]
+             [(assoc-in mir (into then-path third-field) :forged) then-path]]]
+        (doseq [[malformed path] cases]
+          (let [report (verify-mir checked malformed)
+                operation (get-in mir path) source (:source operation)
+                observed (diagnostic report)
+                expected
+                (assoc (invoke c11-plan 'sh12-branch-join-diagnostic [id reason checked malformed])
+                       :operation-id (:op-id operation) :block (:block-id operation)
+                       :source-span (:span source) :origin-chain (:generated-origin source))]
+            (is (= :rejected (:status report)))
+            (is (= 1 (count (:diagnostics report))))
+            (is (= stable-diagnostic-fields (set (keys observed))))
+            (is (= id (:diagnostic-id observed)))
+            (is (= reason (:missing-fact observed)))
+            (is (= (:op-id operation) (:operation-id observed)))
+            (is (= (:block-id operation) (:block observed)))
+            (is (= (:span source) (:source-span observed)))
+            (is (= (:generated-origin source) (:origin-chain observed)))
+            (is (= expected observed))))
+        (let [aggregates
+              (if (= family :effects)
+                [[(assoc wrong-then :effect-table {}) id reason]
+                 [(assoc wrong-then :effect-order-graph :forged) id reason]
+                 [(assoc-in wrong-then [:functions function-name :latent-effects] #{:io/write}) id reason]
+                 [(assoc-in mir terminator-path #{:io/write}) id reason]]
+                [[(assoc wrong-then :safety-table {}) id reason]
+                 [(assoc wrong-then :runtime-check-table {:forged {}}) id reason]
+                 [(assoc wrong-then :proof-certificate-table {:forged {}}) id reason]
+                 [(assoc wrong-then :effect-table {}) "C11-EFFECT" :effect-fact-or-ordering]])]
+          (doseq [[malformed diagnostic-id missing]
+                  (into aggregates
+                        [[value-only id reason]
+                         [(assoc wrong-then :type-table {}) "C11-TYPE" :type-fact-or-operation-schema]
+                         [(assoc wrong-then :module-id 'forged.module) "C11-MODULE" :module-identity-or-target-independence]
+                         [(assoc-in wrong-then (conj prefix then-block :instructions) [])
+                          "C11-BLOCK" :block-terminator-or-control-flow-edge]])]
+            (let [report (verify-mir checked malformed)
+                  expected (invoke c11-plan 'sh12-branch-join-diagnostic
+                                   [diagnostic-id missing checked malformed])]
+              (is (= :rejected (:status report)))
+              (is (= [expected] (:diagnostics report))))))))))
