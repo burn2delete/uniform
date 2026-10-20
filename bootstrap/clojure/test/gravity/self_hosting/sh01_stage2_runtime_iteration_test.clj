@@ -11386,6 +11386,8 @@
 
 (deftest current-gravity-character-predicate-authenticated-composition
   ;; One real G positive and arity-negative; Q remains parser/byte evidence.
+  ;; Stage0 source uses BMP Characters; supplementary Characters use the
+  ;; existing focused typed-value transport, not this source composition.
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
@@ -11515,7 +11517,8 @@
     (println (pr-str {:character-predicate-composition :completed
                       :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
                       :function-table-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
-                      :runtime-function-count 54 :authority :non-authoritative
+                      :runtime-function-count 54 :g-character-frontier :bmp
+                      :supplementary-character-source :unrun-stage0-reader-unsupported :authority :non-authoritative
                       :elapsed-ns {:c8-construction (- t1 t0) :c8-verification (- t2 t1)
                                    :assembly-including-public-c7-verification (- t3 t2) :entry-execution (- t4 t3)}
                       :clock :monotonic-nanoseconds :nested-work :included}))))
@@ -14750,7 +14753,8 @@
                                           (cond-> node
                                             (= :second-call (:node-id node)) (assoc :core-form :call)
                                             (= :second-operator (:node-id node)) (assoc-in [:attributes :position] :operator)))]
-                       (-> renamed (update :node restore-node)
+                       (-> renamed (assoc :call (:second-call renamed)) (dissoc :second-call)
+                           (update :node restore-node)
                            (update :nodes #(into {} (map (fn [[id node]] [id (restore-node node)]) %)))
                            (update-in [:core :nodes] #(mapv restore-node %))
                            (assoc-in [:edge :ordinal] 1) (assoc-in [:core :call-edges 0 :ordinal] 1)))
