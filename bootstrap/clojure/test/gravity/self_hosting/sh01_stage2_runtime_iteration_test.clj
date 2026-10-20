@@ -11370,6 +11370,156 @@
       (is (= owner reused) "exact C6 helper body reuse; Bool-only control, no whole-module proof"))
 ))
 
+(deftest current-gravity-character-predicate-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name calls] [["accepted" "local-runtime-character-predicate" 6]
+                                     ["rejected" "character-predicate-zero" 1]]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            path (.getPath (io/file root (str relative ".gravity"))) text (slurp path)
+            q-path (.getPath (io/file root (str relative ".qst")))
+            forms (bootstrap/read-forms path text)]
+        (is (= text (slurp q-path)))
+        (is (= forms (bootstrap/read-forms q-path (slurp q-path))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+        (is (= calls (count (filter #(and (seq? %) (= 'char? (first %))) (tree-seq coll? seq forms)))))))))
+
+(deftest current-gravity-character-predicate-authenticated-composition
+  ;; One real G positive and arity-negative; Q remains parser/byte evidence.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "Character predicate fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "Character predicate development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-character-predicate.gravity"
+        products (fresh relative) input (select-keys products [:request :typed :verification])
+        _ (println (pr-str {:character-predicate-product-elapsed relative :timing (:development-timing products)}))
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Character predicate C7 source prerequisite rejected"
+                           {:diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Character predicate C7 source verification prerequisite rejected" {})))
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        predicates (mapv :applied-character-predicate (filter #(= :direct-character-predicate (:dispatch %)) (:call-type-facts facts)))
+        binding (seal (:request input) (:typed input) (:verification input))
+        t0 (System/nanoTime) effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t1 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects))
+            (throw (ex-info "Character predicate C8 source prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t2 (System/nanoTime)
+        _ (when-not (= :passed (:status effect-verification))
+            (throw (ex-info "Character predicate C8 source verification prerequisite rejected" {})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        path (.getPath (io/file root relative))
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                (fn [runtime plan function args]
+                                  (let [result (original runtime plan function args)]
+                                    (when (= function 'sh08-verify-function-type-result) (swap! verified conj result))
+                                    result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t3 (System/nanoTime)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                         [{:op :function-call :function 'main :args []} {} "" (:functions assembled) []])
+        t4 (System/nanoTime)
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))]
+    (is (= :passed (:status effect-verification)))
+    (is (= 1 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 6 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts)) (count predicates)
+             (count (filter #(= :sh08-character-predicate-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 54 (count (:functions runtime-plan))))
+    (is (= [[true true false false false true] "" :normal] result))
+    (is (= {[:gravity.type/character] 2 [:gravity.type/string] 2}
+           (frequencies (filter #(and (= 1 (count %)) (keyword? (first %))) (map :argument-types predicates)))))
+    (is (= {:known-character 2 :known-non-character 3 :nil-or-character 1}
+           (frequencies (map #(get-in % [:character-query-classification :case]) predicates))))
+    (doseq [descriptor predicates]
+      (let [id (:call-core-node-id descriptor) argument-id (get-in descriptor [:source-call :argument-node-ids 0])
+            argument (get nodes argument-id) type (first (:argument-types descriptor))
+            row (first (filter #(= {:core-node-id id :projection :character-predicate} (:lhs %)) (:constraint-ledger facts)))]
+        (is (= :sh08-character-predicate-v1 (:version descriptor)))
+        (is (= 'gravity.text (:semantic-owner descriptor)))
+        (is (= :normal (:application descriptor)))
+        (is (= :gravity.type/bool (:return descriptor) (:result-type descriptor)))
+        (is (= :none (get-in descriptor [:query-semantics :refinement])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
+        (is (= (:character-query-classification descriptor) (get-in row [:solution :character-query-classification])))
+        (is (= #{} (get-in effects [:effect-graph :nodes id :direct])))
+        (is (nil? (get-in effects [:effect-graph :nodes id :allocation])))
+        (when (= :gravity.type/character type) (is (= :character (get-in argument [:attributes :literal-kind]))))
+        (when (and (map? type) (= :gravity.type/map (:kind type)))
+          (is (= :collection-literal (:core-form argument)))
+          (is (= :map (get-in argument [:attributes :literal-kind]))))))
+    (is (not-any? #(and (= :builtin-call (:op %)) (= 'char? (:function %))) instructions))
+    (doseq [[_ function] (:functions assembled)]
+      (is (= path (get-in function [:typed-lowering-provenance :source :path]))))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/character-predicate-zero.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:character-predicate-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(= :character-predicate-arity-mismatch (:reason %)) diagnostics) (pr-str diagnostics)))
+    (println (pr-str {:character-predicate-composition :completed
+                      :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
+                      :function-table-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count 54 :authority :non-authoritative
+                      :elapsed-ns {:c8-construction (- t1 t0) :c8-verification (- t2 t1)
+                                   :assembly-including-public-c7-verification (- t3 t2) :entry-execution (- t4 t3)}
+                      :clock :monotonic-nanoseconds :nested-work :included}))))
+
 (deftest current-gravity-nil-predicate-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
