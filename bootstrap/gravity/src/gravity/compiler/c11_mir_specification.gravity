@@ -7001,7 +7001,7 @@
    :maximum-parameters 8
    :maximum-call-depth 32
    :maximum-execution-steps 512
-   :operation-set #{:const :add :sub :mul :eq :lt :call}
+   :operation-set #{:const :local :add :sub :mul :eq :lt :call}
    :terminator-set
    #{:return :error-return :throw :panic
      :branch :conditional-branch}
@@ -7133,7 +7133,7 @@
       false
       (if
        (sh13-member?
-        #{:const :add :sub :mul :eq :lt :call}
+        #{:const :local :add :sub :mul :eq :lt :call}
         (get operation :opcode))
        (if (vector? (get operation :operands))
          (if (= nil (get operation :type))
@@ -7292,6 +7292,10 @@
         :module)))
     nil))
 
+(defn sh13-forward-type-valid? [type]
+  (if (= :i64 type) true
+    (if (= :bool type) true (= :keyword type))))
+
 (defn sh13-operation-type-error
   [module function operation types]
   (let [opcode (get operation :opcode)
@@ -7300,6 +7304,12 @@
       (if (= 0 (count operands))
         (if (sh13-literal-type-valid? operation) nil :type)
         :type)
+      (if (= opcode :local)
+        (if (= 1 (count operands))
+          (if (sh13-forward-type-valid? (get operation :type))
+            (if (= (get operation :type) (get types (get operands 0))) nil :type)
+            :type)
+          :type)
       (if (= opcode :call)
         (sh13-call-signature-error module function operation types)
         (if (sh13-member? #{:add :sub :mul} opcode)
@@ -7325,7 +7335,7 @@
                     :type)
                   :type)
                 :type)
-              :type)))))))
+              :type))))))))
 
 (defn sh13-operations-error
   [module function operations index available types]
@@ -7914,6 +7924,8 @@
       (if (= opcode :const)
         (sh13-continued-value
          operation (get operation :literal) next-fuel next-trace)
+        (if (= opcode :local)
+          (sh13-continued-value operation (get operands 0) next-fuel next-trace)
         (if (= opcode :add)
           (if (sh13-add-safe? (get operands 0) (get operands 1))
             (sh13-continued-value
@@ -7954,7 +7966,7 @@
                        :value (get call-result :value)
                        :fuel (get call-result :fuel)
                        :trace (get call-result :trace)}
-                      call-result)))))))))))
+                      call-result))))))))))))
 
 (defn sh13-execute-operations
   [module function operations index values fuel depth trace]
@@ -8288,7 +8300,9 @@
       (if (= widths [3 1 1]) true
         (if (= widths [1 3 1]) true
           (if (= widths [1 1 3]) true
-            (if (= widths [3 3 1]) true (= widths [3 1 3]))))))))
+            (if (= widths [3 3 1]) true
+              (if (= widths [3 1 3]) true
+                (if (= widths [1 4 1]) true (= widths [1 1 4]))))))))))
 
 (defn sh13-branch-join-arm-valid? [operations type]
   (if (= 1 (count operations))
@@ -8298,6 +8312,61 @@
         (sh13-branch-join-entry-valid? operations)
         false)
       false)))
+
+(defn sh13-branch-join-forward-operation-valid?
+  [operation opcode source-operation operands type]
+  (= [opcode source-operation operands type :not-applicable]
+     [(get operation :opcode) (get operation :source-operation)
+      (get operation :operands) (get operation :type)
+      (get operation :constant-payload)]))
+
+(defn sh13-branch-join-let-arm-valid? [checked-core operations type]
+  (let [value (get operations 0) binding (get operations 1)
+        local (get operations 2) scope (get operations 3)
+        value-id (get value :op-id) binding-id (get binding :op-id)
+        local-id (get local :op-id) scope-id (get scope :op-id)]
+    (if (if (sh12-branch-join-nonempty-string? value-id)
+          (if (sh12-branch-join-nonempty-string? binding-id)
+            (if (sh12-branch-join-nonempty-string? local-id)
+              (sh12-branch-join-nonempty-string? scope-id) false) false) false)
+      (let [nodes (get checked-core :core-nodes)
+            binding-node (c11-find-node-by-id nodes binding-id)
+            local-node (c11-find-node-by-id nodes local-id)
+            scope-node (c11-find-node-by-id nodes scope-id)
+            value-node (c11-find-node-by-id nodes value-id)
+            binding-attrs (get binding-node :attributes)
+            local-attrs (get local-node :attributes)
+            name (get binding-attrs :name)
+            resolved (get local-attrs :resolved-binding)
+            path (get scope-node :path)]
+        (if (symbol? name)
+          (if (symbol? (get local-attrs :name))
+            (if (sh12-branch-join-nonempty-string? resolved)
+              (if (sh12-branch-join-nonempty-string? (get binding-attrs :source-form-id))
+                (if (sh13-branch-join-literal-valid? value type)
+                  (if (sh13-branch-join-forward-operation-valid?
+                       binding :local-binding :let-binding [value-id] type)
+                    (if (sh13-branch-join-forward-operation-valid?
+                         local :local :local [binding-id] type)
+                      (if (sh13-branch-join-forward-operation-valid?
+                           scope :lexical-scope :let [binding-id local-id] type)
+                        (= [name binding-id true nil 1
+                            (conj (conj (conj path :bindings) 0) :expr)
+                            (conj (conj (conj path :bindings) 0) :binder)
+                            (conj (conj path :body) 0)]
+                           [(get local-attrs :name) resolved
+                            (contains? binding-attrs :shadowed-binding)
+                            (get binding-attrs :shadowed-binding)
+                            (get (get scope-node :attributes) :binding-count)
+                            (get value-node :path) (get binding-node :path)
+                            (get local-node :path)])
+                        false) false) false) false) false) false) false) false))
+      false)))
+
+(defn sh13-branch-join-source-arm-valid? [checked-core operations type]
+  (if (= 4 (count operations))
+    (sh13-branch-join-let-arm-valid? checked-core operations type)
+    (sh13-branch-join-arm-valid? operations type)))
 
 (defn sh13-branch-join-shape-valid? [checked-core mir context]
   (let [function (get context :function)
@@ -8344,8 +8413,8 @@
               (get (get entry :terminator) :successors)])
         (if (= (get (get graph :join) :value-id) (get join-op :result))
           (if (sh13-branch-join-entry-valid? entry-operations)
-            (if (sh13-branch-join-arm-valid? then-operations type)
-              (if (sh13-branch-join-arm-valid? else-operations type)
+            (if (sh13-branch-join-source-arm-valid? checked-core then-operations type)
+              (if (sh13-branch-join-source-arm-valid? checked-core else-operations type)
                 (sh13-branch-join-pure-nodes?
                  checked-core (get checked-core :core-nodes))
                 false)
@@ -8369,8 +8438,11 @@
                           :integer-equality
                           (if (= :integer-lt (get operation :opcode))
                             :integer-less-than
-                            (if (= :conditional-join (get operation :opcode))
-                              :edge-join :function-result-alias))))
+                            (if (= :local-binding (get operation :opcode)) :lexical-binding
+                              (if (= :local (get operation :opcode)) :local-reference
+                                (if (= :lexical-scope (get operation :opcode)) :lexical-scope
+                                  (if (= :conditional-join (get operation :opcode))
+                                    :edge-join :function-result-alias)))))))
               :operands (get operation :operands)
               :constant-payload (get operation :constant-payload)
               :source-type (get operation :type)
@@ -8393,11 +8465,19 @@
        (conj result
              (if (= :constant (get operation :opcode))
                (sh13-branch-join-frame-literal operation)
+               (if (if (= :local-binding (get operation :opcode)) true
+                     (if (= :local (get operation :opcode)) true
+                       (= :lexical-scope (get operation :opcode))))
+                 {:op-id (get operation :op-id) :opcode :local
+                  :type (sh13-branch-join-runtime-type (get operation :type))
+                  :operands (if (= :lexical-scope (get operation :opcode))
+                              [(get (get operation :operands) 1)]
+                              (get operation :operands))}
                {:op-id (get operation :op-id)
                 :opcode (if (= :integer-eq (get operation :opcode)) :eq
                             (if (= :integer-lt (get operation :opcode)) :lt nil))
                 :type :bool
-                :operands (get operation :operands)}))))))
+                :operands (get operation :operands)})))))))
 
 (defn sh13-branch-join-frame-arm [context arm]
   (let [block (get context arm)
