@@ -8916,6 +8916,24 @@ execution supports this development behavior, not fresh C11 source ingress,
 native execution, renewed authority or milestone completion. Historical C13
 source measurements above are not evidence for this changed revision.
 
+A second bounded C13 repair rejects non-Bool normalized branch conditions
+before simplification. The old Set-membership helper vacantly treated Nil as
+present, allowing it to become an unconditional else transfer. Only the two
+owning Bool-domain checks changed; generic membership helpers and other flag
+domains remain untouched. True and false preserve their selected destination,
+source/origin, effects and invalidation records. Nil and representative other
+non-Bools reject with `C13-CONTRACT`; earlier validation gates keep priority.
+
+The actual RED attempt passed 170 and failed 16 of 186 assertions, with no
+errors; all sixteen failures exposed the Nil path across the two normalized
+constructors, not test-oracle errors. The changed candidate passed nine tests
+and 511 assertions (186 new plus 325 adjacent), followed by six boundary tests
+and 11 assertions: 15 tests/522 assertions across two passing invocations.
+LOC validation separately passed 2,021 files, zero exceptions, maximum 250.
+Independent review accepted both code and actual results. This establishes
+normalized optimizer behavior, not source truthiness, fresh C11 integration,
+authoritative migration or SH-16 completion.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:

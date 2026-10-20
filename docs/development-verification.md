@@ -361,6 +361,16 @@ audited unsafe-island operations may remain accepted unchanged without folding.
 This is not a general type checker, fresh authenticated C11 ingress, native
 execution, authoritative migration or SH-16 completion.
 
+For normalized C13 branch simplification, run
+`sh16-simplifies-only-established-boolean-conditions` in the same namespace.
+Only actual `true` and `false` conditions select their respective destination.
+Nil and other non-Bools reject with `C13-CONTRACT` before transformation;
+earlier source, nondeterminism, duplicate-operation and effect gates retain
+priority. The private simplification predicate also refuses these values.
+Keep source/origin, invalidation-ledger and recomputing-verifier controls.
+This is the fixed normalized Bool interface, not a change to source-level
+truthiness or a general rewrite of membership helpers.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
