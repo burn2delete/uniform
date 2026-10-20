@@ -5362,7 +5362,7 @@
 (deftest body-private-first-entry-composed-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input ((ns-resolve upstream 'private-first-entry-input))
+        input ((ns-resolve upstream 'private-first-entry-source-input) [])
         result ((ns-resolve upstream 'private-first-entry-derived) input)
         facts ((ns-resolve upstream 'private-first-entry-facts) input result)
         {:keys [core node call edge nodes bindings forms]} input

@@ -11653,6 +11653,47 @@
     (is (= :accepted (:status (:parent-result input)) (:status (:first-result input))))
     (is (= :map-get-private-first-entry-selected-type-required (:reason result)))))
 
+(defn- private-first-entry-source-input [origins]
+  (letfn [(rewrite [value]
+            (cond
+              (map? value) (let [result (into (empty value) (map (fn [[k v]] [k (rewrite v)]) value))]
+                             (if (contains? result :generated-origin) (assoc result :generated-origin origins) result))
+              (vector? value) (mapv rewrite value)
+              (seq? value) (apply list (map rewrite value))
+              :else value))]
+    (rewrite (private-first-entry-input))))
+
+(deftest sh08-private-first-entry-provenance-development-kernel
+  (let [origin {:origin-id (sha-id "1") :kind :macro-expansion :from-syntax-id (sha-id "2") :role :introduced-def}
+        source {:form-id :form :syntax-id :syntax :semantic-span nil :origin-chain [] :generated-origin []}
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque provenance compared")))
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque provenance hashed")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque provenance printed"))))]
+    (doseq [origins [[] [origin]]]
+      (let [input (private-first-entry-source-input origins) result (private-first-entry-derived input)]
+        (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+        (is (= :gravity.type/keyword (:type result)))
+        (is (= [origins origins] (mapv #(get-in % [:argument-source :generated-origin])
+                                       (get-in result [:descriptor :presence-proof :entries]))))
+        (is (= origins (get-in result [:descriptor :presence-proof :receiver-links 0 :reference-source :generated-origin])))
+        (is (= origins (get-in result [:descriptor :presence-proof :vector-links 0 :reference-source :generated-origin])))))
+    (doseq [origins [{} (vec (repeat 257 origin)) [{}] [(assoc origin :extra :unexpected)]
+                    [(assoc origin :origin-id opaque)] [(assoc origin :from-syntax-id opaque)]]]
+      (is (false? (invoke-c7 'sh08-pc-source-domain? [(assoc source :generated-origin origins)]))))
+    (let [input (private-first-entry-source-input [])
+          entry (first (get-in input [:parent-result :descriptor :presence-proof :entries]))
+          argument-id (:argument-node-id entry)
+          changed-source (assoc (:argument-source entry) :generated-origin [(assoc origin :role opaque)])
+          changed (assoc entry :argument-source changed-source)
+          result (invoke-c7 'sh08-pc-current-entry
+                   [changed :signatures :algorithm (get-in input [:parent-result :type])
+                    (get-in input [:first-result :type])
+                    (assoc-in (:nodes input) [argument-id :source] changed-source) 65536])]
+      (is (= :map-get-source-mismatch (:reason result))))
+    (is (zero? @callbacks))))
+
 (deftest sh08-private-first-entry-reviewed-guards-development-kernel
   (let [literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
                                :attributes {:literal-kind :keyword :value value}})

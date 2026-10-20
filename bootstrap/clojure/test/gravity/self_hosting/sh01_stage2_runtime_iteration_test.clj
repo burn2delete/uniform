@@ -23425,7 +23425,7 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         {:keys [core node nodes forms bindings types module call edge binding-types] :as input}
-        ((ns-resolve upstream 'private-first-entry-input))
+        ((ns-resolve upstream 'private-first-entry-source-input) [])
         result ((ns-resolve upstream 'private-first-entry-derived) input)
         facts ((ns-resolve upstream 'private-first-entry-facts) input result)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)

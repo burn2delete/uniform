@@ -9778,7 +9778,17 @@
     (sh08-ft-all-true? [(sh08-pc-id? (get source :form-id)) (sh08-pc-id? (get source :syntax-id))
       (if (= nil (get source :semantic-span)) true (map? (get source :semantic-span)))
       (if (vector? (get source :origin-chain)) (<= (count (get source :origin-chain)) 256) false)
-      (if (= nil (get source :generated-origin)) true (map? (get source :generated-origin)))]) false))
+      (if (= nil (get source :generated-origin)) true
+        (let [origins (get source :generated-origin)]
+          (if (vector? origins)
+            (if (<= (count origins) 256)
+              (loop [remaining origins]
+                (if (= 0 (count remaining)) true
+                  (let [origin (first remaining)]
+                    (if (sh08-pc-keys? origin #{:origin-id :kind :from-syntax-id :role})
+                      (if (sh08-pc-id? (get origin :origin-id))
+                        (if (sh08-pc-id? (get origin :from-syntax-id))
+                          (recur (rest remaining)) false) false) false)))) false) false)))]) false))
 
 (defn sh08-pc-links-domain? [links]
   (if (if (vector? links) (<= (count links) 128) false)
