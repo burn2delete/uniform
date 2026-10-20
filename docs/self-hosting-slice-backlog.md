@@ -9579,6 +9579,9 @@ The current candidate passes all nine bridge tests/2938 assertions: 884 new
 equality-arm assertions and all previous 2054, including the 676 less-than-arm
 assertions. The shared test helper preserves the existing less-than cases;
 only the now-supported equality rejection changes to unsupported `integer-lte`.
+Separate normalized branch controls pass 1 test/20 assertions and boundary
+checks 6/11: 16 tests/2969 assertions across three passing invocations, not one
+batch. Source LOC passes 2021 files, zero exceptions, maximum 250 lines.
 Cases cover equality and inequality, signed endpoints, both branch positions
 and condition values, invalid unselected operands, source/incoming/MIR tampering
 and recomputation. No C10/source ingress, whole-helper lowering, generic MIR,
