@@ -9163,6 +9163,29 @@ These supplied checked-Core inputs test the existing producer/consumer ingress;
 they do not establish fresh C10 source composition, nested conditionals, loops,
 C12 anchors, C14 widening, SH-12 completion or authoritative migration.
 
+### C11 operation-type diagnostic attribution: development repair
+
+After the existing single-diamond preflight and structural gates succeed, a
+changed operation type or type-fact reference now identifies the first
+mismatching operation in canonical order. Its operation ID, block, span and
+generated origins come from freshly rebuilt expected MIR, not candidate
+metadata. Type-table and function-return mismatches retain priority and their
+aggregate diagnostic. Value-only mismatches retain the existing fallback;
+simultaneous operation/value mismatches identify the operation, matching the
+original type-check order. An unlocatable first mismatch does not skip forward
+to a later operation. Earlier rejection gates remain unchanged.
+
+The initial regression completed 63 assertions with 25 failures, all in the
+five cases' attribution fields or complete diagnostic maps. That failed result
+is retained. The expanded regression passes 75 assertions, including aggregate
+and earlier-gate precedence, forged candidate metadata, simultaneous value
+failure and malformed expected-source fallback controls. With the accepted
+diamond, node-local preflight and fact-loss controls, the focused batch passes
+4 tests and 804 assertions. These supplied checked-Core/MIR tests establish
+failure attribution at the existing boundary, not fresh C10 composition,
+general MIR coverage, SH-12 completion or authoritative migration. Accepted
+MIR, diagnostic identifiers, public schemas and resource limits are unchanged.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established
