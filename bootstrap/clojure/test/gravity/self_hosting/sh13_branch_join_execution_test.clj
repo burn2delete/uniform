@@ -503,7 +503,7 @@
             (is (nil? (:execution result)))))
         (let [mir (build core) result (run core mir)
               path [:functions (:entrypoint core) :blocks
-                    (coordinates placement) :instructions 2]]
+                    ((coordinates core mir) placement) :instructions 2]]
           (doseq [bad [(assoc-in mir (conj path :operands) [])
                       (assoc-in mir [:data-flow-graph :definitions "forged"] {})]]
             (let [original (invoke 'sh12-verify-branch-join-mir core bad)
