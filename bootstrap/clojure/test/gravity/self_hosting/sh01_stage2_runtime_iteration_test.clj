@@ -25933,7 +25933,8 @@
                       :clock :monotonic-nanoseconds :nested-work :included}))))
 
 (deftest current-gravity-module-keyword-set-emitter-development-kernel
-  (let [base (module-literal-emitter-input)
+  (let [base (walk/postwalk (fn [value] (if (string? value) (str "sha256:" (bootstrap/sha256-hex value)) value))
+                            (module-literal-emitter-input))
         input (fn [values]
                 (let [{:keys [context ref definition]} base
                       owner-id (:value-core-node-id definition) def-id (:definition-core-node-id definition)
@@ -25945,7 +25946,7 @@
                       convert (fn [node]
                                 (cond (= owner-id (:node-id node))
                                       (-> node (assoc :children kept)
-                                          (assoc :attributes {:literal-kind :set :element-count (count values)})
+                                          (assoc :attributes {:literal-kind :set :element-count (count values) :source-value (set values)})
                                           (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) kept)))
                                       (contains? positions (:node-id node))
                                       (assoc-in node [:attributes :value] (nth values (positions (:node-id node))))
