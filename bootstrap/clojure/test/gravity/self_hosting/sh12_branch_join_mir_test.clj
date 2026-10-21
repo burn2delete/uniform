@@ -95,6 +95,190 @@
   [report]
   (first (:diagnostics report)))
 
+(def ^:private parameter-c6-plan
+  (delay (compile-plan "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")))
+
+(defn- parameter-input [source-path source-text]
+  ;; Original source-derived C2/C5 and raw seed plan; these are development
+  ;; DATA, not an authenticated frozen C6 source-binding or SH-07 Core.
+  (let [ingress ((ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
+                 source-path source-text)
+        plan @parameter-c6-plan hash (get-in plan [:source :sha256])
+        digest #(bootstrap/p15-s23-c6c10-canonical-digest source-path %)
+        manifest (bootstrap/p15-s23-c6c10-function-merkle-manifest source-path hash (:functions plan))
+        binding {:source-content-hash hash
+                 :plan-semantic-hash (digest (bootstrap/p15-s23-c6c10-plan-pin-input hash plan manifest))
+                 :builder-semantic-hash
+                 (digest {:domain :gravity/c6-c10-exported-builder-v1 :source-content-hash hash
+                          :definition (bootstrap/p15-s23-c6c10-path-neutral-value
+                                       hash (get-in plan [:functions 'c6-c10-build-checked-core-template]))})}]
+    (bootstrap/p15-s23-c6c10-private-builder-envelope source-path ingress binding)))
+
+(deftest sh12-current-c6-produces-a-resolved-bool-parameter-without-a-mir-instruction
+  (doseq [extension [".gravity" ".qst"]]
+    (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source" extension)
+          source-path (str (.resolve @root relative)) text (slurp source-path)
+          input (parameter-input source-path text)
+          evidence (:resolved-parameter input)
+          result (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+      (is (= :gravity/stage2-compiler-artifact-plan (get-in input [:stage2-plan :kind])))
+      (is (= :clojure-stage0-seed (get-in input [:stage2-plan :compiler :compiled-by])))
+      (is (= [:core :type 'gravity.core 'Bool]
+             ((juxt :binding-class :kind :namespace :name) (:type-binding evidence))))
+      (is (= [:lexical :local 'flag]
+             ((juxt :binding-class :kind :name) (:parameter-binding evidence))))
+      (is (= [:parameter-vector :parameter-name :annotation-marker :annotation-type]
+             (mapv :role (:coordinates evidence))))
+      (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+      (when (= :accepted (:status result))
+        (let [template (:artifact-template result) nodes (:core-nodes template)
+              binder (first (filter #(= :parameter (:source-operation %)) nodes))
+              local (first (filter #(= :local (:source-operation %)) nodes))
+              function (last nodes)
+              fresh (parameter-input source-path text)
+              replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [fresh])
+              verify (fn [candidate]
+                       (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                               [fresh candidate (:digest-requests replay)]))]
+          (is (= input fresh))
+          (is (= result replay))
+          (is (= :passed (:status (verify template))))
+          (is (= 7 (count nodes)))
+          (is (= :binding (:kind binder)))
+          (is (= [] (:operands binder)))
+          (is (not (contains? (:attributes binder) :value)))
+          (is (= :gravity/bool (:type binder)))
+          (is (= [(:node-id binder)] (:operands local)))
+          (is (= ['flag] (get-in function [:attributes :params])))
+          (is (= [:gravity/bool] (get-in function [:type :params])))
+          (is (= :gravity/bool (get-in function [:type :return])))
+          (is (= [(get-in template [:type-facts (:node-id binder) :type-id])]
+                 (get-in template [:typed-core :functions (:node-id function) :params])))
+          (is (= :resolved-bool-parameter-declaration
+                 (get-in template [:type-facts (:node-id binder) :producer-rule])))
+          (is (= :proven-safe (get-in binder [:safety :outcome])))
+          (is (true? (get-in template [:dependency-order-graph :all-lexical-bindings-resolve?])))
+          (is (= evidence (:resolved-parameter template)))
+          ;; This original C6 family is not the existing supplied SH-12 family;
+          ;; its rejection is not evidence of parameter-specific MIR support.
+          (doseq [report [(build-mir template)
+                          (invoke c11-plan 'sh13-run-branch-join-mir [template {}])]]
+            (is (= :rejected (:status report)))
+            (is (= ["C11-MODULE" :checked-core-shape]
+                   ((juxt :diagnostic-id :missing-fact) (diagnostic report)))))
+          ;; A genuine existing SH-12 MIR establishes the separate empty-params
+          ;; consumer fence, without fabricating a parameter instruction.
+          (let [checked (checked-core extension) mir (build-mir checked)
+                function-name (first (keys (:functions mir)))
+                mutated (assoc-in mir [:functions function-name :params] ['flag])
+                context (invoke c11-plan 'sh13-branch-join-context [checked mutated])
+                rejected (invoke c11-plan 'sh13-run-branch-join-mir [checked mutated])]
+            (is (= :passed (:status (verify-mir checked mir))))
+            (is (false? (invoke c11-plan 'sh13-branch-join-shape-valid? [checked mutated context])))
+            (is (= :rejected (:status rejected)))
+            (is (= ["C11-BLOCK" :block-terminator-or-control-flow-edge]
+                   ((juxt :diagnostic-id :missing-fact) (diagnostic rejected))))
+            (is (nil? (:execution rejected)))
+            (is (nil? (:projection rejected))))
+          ;; Invalid physical IDs are rejected as malformed DATA. The separate
+          ;; valid-hash substitution test below checks source reconstruction.
+          (let [substituted (assoc-in input [:resolved-parameter :sh06-artifact-id] "substituted")
+                forged (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [substituted])]
+            (is (= :rejected (:status (verify (:artifact-template forged))))))
+          (doseq [malformed [(dissoc input :resolved-parameter)
+                             (assoc-in input [:stage2-plan :kind] :gravity/stage2-hosted-core-compiled-plan)
+                             (update input :stage2-plan dissoc :compiler-artifact-plan?)
+                             (assoc-in input [:stage2-plan :compiler :compiled-by] :gravity-source)
+                             (assoc-in input [:stage2-plan :functions 'main :arity] 2)
+                             (assoc-in input [:stage2-plan :functions 'main :params] '[other])
+                             (assoc-in input [:resolved-parameter :extra] true)
+                             (assoc-in input [:resolved-parameter :source-content-hash] "other-source")
+                             (assoc-in input [:resolved-parameter :parameter-index] 1)
+                             (assoc-in input [:resolved-parameter :coordinates] [])
+                             (assoc-in input [:resolved-parameter :coordinates 1 :c2-form-id] "missing")
+                             (assoc-in input [:resolved-parameter :parameter-binding :binding-class] :core)
+                             (assoc-in input [:resolved-parameter :parameter-binding :definition-syntax-id] "other")
+                             (assoc-in input [:resolved-parameter :parameter-binding :namespace] 'other)
+                             (assoc-in input [:resolved-parameter :type-binding :kind] :var)
+                             (assoc-in input [:resolved-parameter :type-binding :namespace] 'other)
+                             (assoc-in input [:resolved-parameter :type-binding :name] 'I64)
+                             (assoc-in input [:resolved-parameter :type-binding :package :version] "forged")
+                             (assoc-in input [:resolved-parameter :type-resolution :position] :expression)
+                             (assoc-in input [:resolved-parameter :type-resolution :upstream-binding-id] "other")]]
+            (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [malformed])))))
+          (doseq [path [[:sh06-artifact-id] [:sh06-semantic-projection-id]
+                        [:projection-binding] [:root-syntax-id] [:function-syntax-id] [:function-scope-id]
+                        [:parameter-binding :binding-id] [:parameter-binding :upstream-binding-id]
+                        [:parameter-binding :definition-artifact-id] [:parameter-binding :definition-syntax-id]
+                        [:type-binding :binding-id] [:type-binding :upstream-binding-id]
+                        [:type-binding :definition-artifact-id] [:type-binding :definition-syntax-id]
+                        [:coordinates 0 :projected-form-id] [:coordinates 3 :projected-syntax-id]]
+                  value [nil "" 17 "sha256:not-a-digest"]]
+            (is (= :rejected
+                   (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                                    [(assoc-in input (into [:resolved-parameter] path) value)])))))
+          (doseq [malformed [(-> input
+                                (assoc-in [:resolved-parameter :type-binding :binding-id] nil)
+                                (assoc-in [:resolved-parameter :type-resolution :binding-id] nil))
+                             (assoc-in input [:resolved-parameter :parameter-binding :scope-id]
+                                       (:root-syntax-id evidence))
+                             (assoc-in input [:resolved-parameter :parameter-binding :profile-set] [:meta])
+                             (assoc-in input [:resolved-parameter :type-binding :profile-set] [:meta])
+                             (assoc-in input [:resolved-parameter :type-binding :target-set] [:jvm])
+                             (assoc-in input [:resolved-parameter :type-binding :semantic-span :ordinal] 13)
+                             (assoc-in input [:stage2-plan :module :exports] ['main])
+                             (assoc-in input [:stage2-plan :functions 'main :binding :visibility] :public)
+                             (assoc-in input [:authoritative-module :exports] [])]]
+            (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [malformed])))))
+          (doseq [candidate [(assoc-in template [:core-nodes 0 :type] :gravity/integer)
+                             (assoc-in template [:core-nodes 0 :attributes :parameter-index] 1)
+                             (assoc-in template [:core-nodes 1 :operands] [])
+                             (assoc template :lexical-binding-records [])]]
+            (is (= :rejected (:status (verify candidate))))))))))
+
+(deftest sh12-current-c6-replay-distinguishes-projection-substitution-from-source
+  ;; One actual source/C2/C5 reconstruction, not a second public C6 admission
+  ;; route. Same-input replay cannot authenticate a coherently replaced hash.
+  (let [path (str (.resolve @root
+                   "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        input (parameter-input path (slurp path))
+        replacement (get-in input [:resolved-parameter :projection-binding])
+        substituted (assoc-in input [:resolved-parameter :sh06-artifact-id] replacement)
+        original (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
+        forged (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [substituted])
+        verify (fn [source result candidate]
+                 (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                         [source candidate (:digest-requests result)]))]
+    (is (not= replacement (get-in input [:resolved-parameter :sh06-artifact-id])))
+    (is (= :accepted (:status original)))
+    (is (= :accepted (:status forged)))
+    (is (= :passed (:status (verify substituted forged (:artifact-template forged)))))
+    (is (= :rejected (:status (verify input original (:artifact-template forged)))))))
+
+(deftest sh12-current-c6-preserves-hosted-export-gate-before-module-checks
+  ;; Execute the ORIGINAL compiled export predicate, not a fabricated hosted
+  ;; packet or a replacement acceptance function. Public hosted admission is
+  ;; still outside this development fragment check.
+  (let [function (get-in @parameter-c6-plan [:functions 'c6-c10-build-checked-core-template])
+        body (:then (first (:instructions function)))
+        shape (first (filter #(= 'plan-shape-valid? (:name %)) (:bindings body)))
+        predicate (get-in shape [:expr :then :then :test])]
+    (is (= :let (:op body)))
+    (is (= '= (:function predicate)))
+    (doseq [[input module authoritative expected]
+            [[{} {:exports ['main]} {:exports []} true]
+             [{} {:exports []} {:exports ['main]} false]
+             [{} {} {:exports ['main]} false]
+             [{:resolved-parameter {}} {} {:exports ['main]} true]
+             [{:resolved-parameter {}} {} {:exports []} false]
+             [{:resolved-parameter {}} {} {} false]]]
+      (is (= expected
+             (bootstrap/p15-s23-stage2-runtime-execute-instruction
+              {:engine :gravity-sh12-branch-join-mir-test :compiler-artifact-plan? true}
+              @parameter-c6-plan
+              {'input input 'module module 'authoritative-module authoritative}
+              predicate))))))
+
 (def ^:private stable-diagnostic-fields
   #{:diagnostic-id :severity :stage :mir-module :function :block
     :operation-id :value-id :source-span :origin-chain :profile
