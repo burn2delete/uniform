@@ -104,6 +104,26 @@ local improvement. Stale authoritative evidence stays stale until an explicit
 stable-module migration decision re-establishes it. Preparation documents,
 review counts and scheduler changes are not executable progress.
 
+### C6 compiled-source aggregate binding: development maintenance
+
+The `00701` aggregate pin now includes the three declared compiler-identity
+fields added to the raw stage0-seed plan. A read-only inspection reproduced both
+the full current digest and, by diagnostic-only field removal, the retained old
+digest; source, function, builder and verifier identities remain unchanged.
+The focused original compile/validate test passed one test and 57 assertions at
+`d34881c5`; its identical two-file patch and unchanged raw dependencies retain
+that result after the maintenance-only split. Current boundary checks passed
+six tests and 11 assertions; LOC passed for 2,021 files, zero exceptions and
+maximum 250 physical lines. These are separate observations, not one run.
+
+The earlier `04d8b22b` source attempt remains failed with zero passes, zero
+failures and one error before all 212 semantic assertions. Its unvalidated C11
+family and harness are held separately and are not merged here. Public C6
+ingress still reaches the distinct live-expression-emitter binding in `00581`;
+no bypass or renewal is claimed. The old B44 coverage pin is not renewed.
+Current-emitter authentication, fresh C6/C11 composition, migration, bootstrap
+and completion evidence remain separate.
+
 ### Explicit bounded borrow destinations: SH-10 development increment
 
 The existing C9 normalized ownership state machine now recognizes the contract's

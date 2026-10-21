@@ -190,6 +190,23 @@ or budget increase is justified by this optimization. The focused comparison
 checks complete outputs and rejection budgets; it is not a source migration
 proof or a wall-time benchmark.
 
+### C6 compiled-source aggregate binding maintenance
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh07-c6-compiled-source-binding-test \
+  --exact sh07-c6-compiled-source-binding-retains-full-plan-identity --fail-fast
+```
+
+This original compile/validate check retains all three declared compiler-identity
+fields in the full aggregate preimage, its 139-function manifest and strict
+source/export pins. It rejects independently re-digested metadata mutations and
+the historical three-field-dropped aggregate. Updating `00701` preserves the raw
+stage0-seed boundary; it does not authenticate today's expression emitter.
+Public C6 subject ingress separately loads that live emitter through `00581`,
+whose retained source/semantic binding is not renewed by this development check.
+There is no new C6 subject, C11 acceptance, migration or bootstrap evidence.
+
 ### MIR branch argument carriers
 
 For normalized SH-13 branch transfers, edit `c11_mir_specification.gravity` and
