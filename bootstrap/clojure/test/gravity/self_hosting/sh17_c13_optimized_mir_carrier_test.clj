@@ -654,6 +654,9 @@
                            (assoc comparison :operands '())
                            (assoc comparison :operands {})
                            (assoc comparison :operands 7)
+                           (assoc comparison :constant-payload nil)
+                           (assoc comparison :constant-payload 7)
+                           (assoc comparison :constant-payload [])
                            (assoc comparison :constant-payload {:present? true :value nil})
                            (assoc comparison :constant-payload {:present? true :value 1})
                            (assoc comparison :constant-payload {:present? true})
@@ -661,9 +664,9 @@
                            (assoc comparison :constant-payload {:present? true :value true :extra 0})]]
           (is (= :unsupported-constant-source-operation
                  (bootstrap/p15-s23-b3-llvm-operation-rejection operations candidate labels))))
-        (doseq [[candidate reason] [[(assoc comparison :effects #{:io/write}) :program-effects-unsupported]
-                                    [(assoc comparison :capabilities #{:io/stdout}) :program-capabilities-unsupported]
-                                    [(assoc comparison :opcode :not-supported) :unsupported-mir-opcode]]]
+        (doseq [[candidate reason] [[(assoc comparison :effects #{:io/write} :constant-payload 7) :program-effects-unsupported]
+                                    [(assoc comparison :capabilities #{:io/stdout} :operands 7) :program-capabilities-unsupported]
+                                    [(assoc comparison :opcode :not-supported :constant-payload nil) :unsupported-mir-opcode]]]
           (is (= reason (bootstrap/p15-s23-b3-llvm-operation-rejection operations candidate labels))))
         ;; Legacy source branches are supplied controls, not a rewrite of the
         ;; actual C13 output's retained comparison ancestry.
