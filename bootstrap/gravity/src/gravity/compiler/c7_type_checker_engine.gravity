@@ -2778,8 +2778,9 @@
                                  (recur (rest remaining) (conj out [(first remaining) (+ depth 1)])))) work)))))
               (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
                     (if (symbol? value) true (if (string? value) true (if (number? value) true (char? value)))))))
+                ; Keyword atoms keep two visits without rendering a discarded name.
                 (let [work (+ used 2 (if (string? value) (count value)
-                                      (if (if (symbol? value) true (keyword? value)) (count (str value)) 0)))]
+                                      (if (symbol? value) (count (str value)) 0)))]
                   (if (> work budget) {:status :rejected :reason :loop-type-work-limit :work-count work}
                     (recur tail work)))
                 {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}))))))))
