@@ -95,10 +95,12 @@
   [report]
   (first (:diagnostics report)))
 
-(def ^:private parameter-c6-plan
-  (delay (compile-plan "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")))
+(def ^:private parameter-c6-source
+  "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")
 
-(defn- parameter-input [source-path source-text]
+(def ^:private parameter-c6-plan (delay (compile-plan parameter-c6-source)))
+
+(defn- parameter-source-products [source-path source-text]
   ;; Original source-derived C2/C5 and raw seed plan; these are development
   ;; DATA, not an authenticated frozen C6 source-binding or SH-07 Core.
   (let [ingress ((ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
@@ -106,13 +108,18 @@
         plan @parameter-c6-plan hash (get-in plan [:source :sha256])
         digest #(bootstrap/p15-s23-c6c10-canonical-digest source-path %)
         manifest (bootstrap/p15-s23-c6c10-function-merkle-manifest source-path hash (:functions plan))
-        binding {:source-content-hash hash
+        binding {:source-path (str (.resolve @root parameter-c6-source))
+                 :source-content-hash hash
                  :plan-semantic-hash (digest (bootstrap/p15-s23-c6c10-plan-pin-input hash plan manifest))
                  :builder-semantic-hash
                  (digest {:domain :gravity/c6-c10-exported-builder-v1 :source-content-hash hash
                           :definition (bootstrap/p15-s23-c6c10-path-neutral-value
                                        hash (get-in plan [:functions 'c6-c10-build-checked-core-template]))})}]
-    (bootstrap/p15-s23-c6c10-private-builder-envelope source-path ingress binding)))
+    {:ingress ingress :compiled-binding-data binding
+     :envelope (bootstrap/p15-s23-c6c10-private-builder-envelope source-path ingress binding)}))
+
+(defn- parameter-input [source-path source-text]
+  (:envelope (parameter-source-products source-path source-text)))
 
 (deftest sh12-current-c6-produces-a-resolved-bool-parameter-without-a-mir-instruction
   (doseq [extension [".gravity" ".qst"]]
@@ -278,6 +285,95 @@
               @parameter-c6-plan
               {'input input 'module module 'authoritative-module authoritative}
               predicate))))))
+
+(deftest sh12-current-c6-bool-parameter-becomes-an-entry-value-not-an-instruction
+  ;; Existing assembly attaches an EXPLICIT request to real current products.
+  ;; It is DATA composition, not pinned public C6/C11 source admission.
+  (doseq [extension [".gravity" ".qst"]]
+    (let [path (str (.resolve @root
+                     (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source" extension)))
+          text (slurp path) products (parameter-source-products path text)
+          input (:envelope products)
+          raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
+          fresh (parameter-source-products path text)
+          replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
+          upstream (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                           [(:envelope fresh) (:artifact-template raw) (:digest-requests replay)])
+          sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
+          context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
+          core (bootstrap/p15-s23-c6c10-public-artifact
+                context (:compiled-binding-data products) (:ingress products) sealed)
+          physical (:physical-provenance core)
+          request (:target-request-metadata core)
+          request-preimage {:domain :gravity/c6-c10-physical-request-binding-v1
+                            :artifact-id (:artifact-id core)
+                            :source-content-hash (:source-content-hash context)
+                            :target-request-metadata request
+                            :actual-paths (:actual-paths physical)
+                            :digest-graph-proof-id (:digest-graph-proof-id physical)}
+          mir (build-mir core)]
+      (is (= :accepted (:status raw)))
+      (is (= :passed (:status upstream)))
+      (is (= raw replay))
+      (is (= (:sealed-artifact-template sealed)
+             (dissoc core :target-request-metadata :physical-provenance)))
+      (is (= (:artifact-id core) (first (:root-digests sealed))
+             (:artifact-id (:sealed-artifact-template sealed))))
+      (is (= {:requested-target :jvm :source-target :jvm
+              :identity-bearing? false :downstream-lowering-required? true} request))
+      (is (= {:source path :gravity-c6-c10-source (str (.resolve @root parameter-c6-source))}
+             (:actual-paths physical)))
+      (is (= (:source-content-hash input) (:source-content-hash core)
+             (:source-content-hash context) (:source-content-hash physical)))
+      (is (= (get-in input [:front-end-products :source-unit-id]) (:c2-source-unit-id physical)))
+      (is (= (get-in input [:front-end-products :c3-artifact-id]) (:c3-artifact-id physical)))
+      (is (= (:binding-pins input) (:binding-pins physical)))
+      (is (= (get-in sealed [:graph-proof :graph-proof-id]) (:digest-graph-proof-id physical)))
+      (is (= (bootstrap/p15-s23-c6c10-canonical-digest path request-preimage)
+             (:request-binding-id physical)))
+      (is (= :gravity/mir-module (:artifact mir)) (pr-str (:diagnostics mir)))
+      (when (= :gravity/mir-module (:artifact mir))
+        (let [nodes (:core-nodes core) binder (first nodes)
+              binder-id (:node-id binder) local-id (:node-id (second nodes))
+              function (get-in mir [:functions 'main]) entry (:entry function)
+              operations (vec (mapcat :instructions (vals (:blocks function))))
+              values (get-in mir [:data-flow-graph :values])
+              definition {:value-id binder-id :parameter-index 0 :block-id entry}
+              verify #(verify-mir core %)]
+          (is (= :passed (:status (verify mir))))
+          (is (= (:artifact-id core) (:source-core mir)))
+          (is (= [:hosted :jvm :jvm request]
+                 ((juxt :profile :source-target :target-request :target-request-metadata) mir)))
+          (is (= [binder-id] (:params function)))
+          (is (= :gravity/bool (:returns function)))
+          (is (= 4 (count (:blocks function))))
+          (is (= 7 (count values)))
+          (is (= 6 (count operations)))
+          (is (not-any? #(= binder-id (:op-id %)) operations))
+          (is (= definition (get-in mir [:data-flow-graph :definitions binder-id])))
+          (is (= definition (:defined-by (get values binder-id))))
+          (is (= :parameter (:kind (get values binder-id))))
+          (is (= :not-applicable (:constant-payload (get values binder-id))))
+          (is (= (:source binder) (:source (get values binder-id)) (get-in mir [:source-map binder-id])))
+          (is (= [{:from binder-id :consumer-kind :operation :consumer-id local-id
+                   :consumer-block entry :operand-index 0 :edge-kind :operand}]
+                 (filterv #(= binder-id (:from %)) (get-in mir [:data-flow-graph :edges]))))
+          (doseq [node nodes]
+            (is (= (get-in core [:type-facts (:node-id node)])
+                   (get-in mir [:type-table (get-in core [:type-facts (:node-id node) :fact-id])]))))
+          (let [execution (invoke c11-plan 'sh13-run-branch-join-mir [core mir])]
+            (is (= :rejected (:status execution)))
+            (is (= ["C11-VERIFY" :bounded-execution-subset]
+                   ((juxt :diagnostic-id :missing-fact) (diagnostic execution))))
+            (is (nil? (:execution execution))))
+          (doseq [candidate [(assoc-in mir [:functions 'main :params] [])
+                             (assoc-in mir [:data-flow-graph :definitions binder-id :operation-id] nil)
+                             (assoc-in mir [:data-flow-graph :definitions binder-id :parameter-index] 1)
+                             (assoc-in mir [:data-flow-graph :values binder-id :kind] :instruction-result)
+                             (update mir :source-map dissoc binder-id)
+                             (assoc-in mir [:control-flow-graph :join :incoming] [])
+                             (assoc mir :source-core (:mapping-id core))]]
+            (is (= :rejected (:status (verify candidate))))))))))
 
 (def ^:private stable-diagnostic-fields
   #{:diagnostic-id :severity :stage :mir-module :function :block
