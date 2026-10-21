@@ -1875,16 +1875,16 @@
         forms (merge (:forms original) (:forms insertion))
         forms (-> forms
                   (assoc-in [:value-init-form :kind] :list) (assoc-in [:value-init-form :value] '(quote #{}))
-                  (assoc-in [:value-init-form :child-form-ids] [:empty-op :empty-data])
+                  (assoc-in [:value-init-form :child-form-ids] ["sha256:0000000000000000000000000000000000000000000000000000000000001b59" "sha256:0000000000000000000000000000000000000000000000000000000000001b5a"])
                   (assoc-in [:transfer-form :child-form-ids] [:recur-op :next-again-form :call])
                   (assoc-in [:call :parent-form-id] :transfer-form) (assoc-in [:call :scope-id] :value-scope)
                   (assoc-in [:arg0 :value] 'value) (assoc-in [:arg0 :scope-id] :value-scope)
                   (assoc-in [:arg1 :kind] :list) (assoc-in [:arg1 :value] '(quote assoc))
-                  (assoc-in [:arg1 :scope-id] :value-scope) (assoc-in [:arg1 :child-form-ids] [:member-op :member-data])
-                  (assoc :empty-op {:form-id :empty-op :syntax-id :empty-op :kind :symbol :value 'quote :parent-form-id :value-init-form :child-form-ids []}
-                         :empty-data {:form-id :empty-data :syntax-id :empty-data :kind :set :value #{} :parent-form-id :value-init-form :child-form-ids []}
-                         :member-op {:form-id :member-op :syntax-id :member-op :kind :symbol :value 'quote :parent-form-id :arg1 :child-form-ids []}
-                         :member-data {:form-id :member-data :syntax-id :member-data :kind :symbol :value 'assoc :parent-form-id :arg1 :child-form-ids []}))
+                  (assoc-in [:arg1 :scope-id] :value-scope) (assoc-in [:arg1 :child-form-ids] ["sha256:0000000000000000000000000000000000000000000000000000000000001b5b" "sha256:0000000000000000000000000000000000000000000000000000000000001b5c"])
+                  (assoc "sha256:0000000000000000000000000000000000000000000000000000000000001b59" {:form-id "sha256:0000000000000000000000000000000000000000000000000000000000001b59" :syntax-id "sha256:0000000000000000000000000000000000000000000000000000000000001b59" :kind :symbol :value 'quote :parent-form-id :value-init-form :child-form-ids []}
+                         "sha256:0000000000000000000000000000000000000000000000000000000000001b5a" {:form-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5a" :syntax-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5a" :kind :set :value #{} :parent-form-id :value-init-form :child-form-ids []}
+                         "sha256:0000000000000000000000000000000000000000000000000000000000001b5b" {:form-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5b" :syntax-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5b" :kind :symbol :value 'quote :parent-form-id :arg1 :child-form-ids []}
+                         "sha256:0000000000000000000000000000000000000000000000000000000000001b5c" {:form-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5c" :syntax-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5c" :kind :symbol :value 'assoc :parent-form-id :arg1 :child-form-ids []}))
         forms (into {} (map (fn [[id form]] [id (merge {:form-id id :syntax-id id :origin-chain [] :generated-origin []} form)]) forms))
         source (fn [form-id] (let [form (get forms form-id)]
                               {:form-id form-id :syntax-id (:syntax-id form) :semantic-span (:source-span form)
@@ -1895,8 +1895,8 @@
                             :attributes {:quoted-form-id payload-id :quoted-syntax-id payload-id :quoted-kind kind :quoted-value value}
                             :evaluation {:kind :no-evaluation :order []}))
         nodes (-> (merge (:nodes original) primitive) (dissoc :next-value)
-                  (assoc :value-init (quote-node (get-in original [:nodes :value-init]) :value-init-form :empty-data :set #{})
-                         :arg1 (quote-node (get primitive :arg1) :arg1 :member-data :symbol 'assoc))
+                  (assoc :value-init (quote-node (get-in original [:nodes :value-init]) :value-init-form "sha256:0000000000000000000000000000000000000000000000000000000000001b5a" :set #{})
+                         :arg1 (quote-node (get primitive :arg1) :arg1 "sha256:0000000000000000000000000000000000000000000000000000000000001b5c" :symbol 'assoc))
                   (assoc-in [:arg0 :attributes] {:binding-id :value}) (assoc-in [:arg0 :resolved-binding-ids] [:value])
                   (assoc-in [:transfer :children] [:next-again :call])
                   (assoc-in [:transfer :evaluation :order] [{:index 0 :core-node-id :next-again} {:index 1 :core-node-id :call}]))
@@ -2025,7 +2025,7 @@
       (is (= :rejected (:status rejected)))
       (is (= :loop-recur-slot-type-mismatch (:reason rejected)))
       (is (= [:bad carrier bad-type] ((juxt :core-node-id :expected :actual) rejected))))
-    (doseq [mutate [#(assoc-in % [:forms :member-data :value] "assoc")
+    (doseq [mutate [#(assoc-in % [:forms (get-in nodes [:arg1 :attributes :quoted-form-id]) :value] "assoc")
                     #(assoc-in % [:forms :member-data :parent-form-id] :other)
                     #(assoc-in % [:nodes :arg0 :resolved-binding-ids] [:again])
                     #(assoc-in % [:nodes :arg0 :binding-context] :other)]]

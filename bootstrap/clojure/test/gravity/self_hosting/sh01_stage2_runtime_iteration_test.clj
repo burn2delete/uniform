@@ -32174,7 +32174,7 @@
                     #(update-in % [:loop-rows [:loop-slot-type :value] :dependencies :loop-premise :member-invariant :entries] pop)
                     #(assoc-in % [:loop-rows [:loop-recur-type :transfer] :solution :member-invariant-bindings] [])
                     #(assoc-in % [:types :arg0] empty-type)
-                    #(assoc-in % [:forms :member-data :value] "assoc")]]
+                    #(assoc-in % [:forms (get-in context [:nodes :arg1 :attributes :quoted-form-id]) :value] "assoc")]]
       (is (= :rejected (:status (compile (mutate context) 65536)))))
     (let [callbacks (atom 0) opaque (proxy [Object] []
                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "lowered loop proof hash")))
