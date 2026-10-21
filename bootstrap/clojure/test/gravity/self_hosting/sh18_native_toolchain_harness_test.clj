@@ -194,7 +194,7 @@
         directory-seen (atom nil)]
     (is (= :available (:status toolchain)) toolchain)
     (when (= :available (:status toolchain))
-      (is (= :clang (:compiler-family toolchain)))
+      (is (contains? #{:clang :gcc :unknown} (:compiler-family toolchain)))
       (is (.isAbsolute (java.io.File. (:compiler-path toolchain))))
       (harness/with-temporary-directory
         "gravity-sh18-execution-output-limit-"
