@@ -20298,14 +20298,16 @@
      :diagnostics (if (map? diagnostic) [diagnostic] [])}))
 
 (defn sh08-im-scalar-type? [type]
-  ; Reuse the existing literal/atomic catalogs. Composite and callable import
-  ; signatures remain outside this first-order scalar boundary.
-  (loop [names [:nil :boolean :integer :decimal :ratio :character :string :keyword :symbol]]
-    (if (= (count names) 0)
-      (loop [atoms '[I8 I16 I32 I64 U8 U16 U32 U64 F32 F64 Bool String Symbol Keyword Ratio]]
-        (if (= (count atoms) 0) false
-          (if (= type (sh08-ft-atomic-type-id (first atoms))) true (recur (rest atoms)))))
-      (if (= type (sh08-primitive-type-from-literal-kind (first names))) true (recur (rest names))))))
+  ; Exact union of the nine literal and fifteen atomic catalog occurrences.
+  ; The family guard rejects composite/callable signatures without Vector tails.
+  (if (keyword? type)
+    (contains? '#{:gravity.type/nil :gravity.type/bool :gravity.type/integer
+                  :gravity.type/decimal :gravity.type/ratio :gravity.type/character
+                  :gravity.type/string :gravity.type/keyword :gravity.type/symbol
+                  :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
+                  :gravity.type/f32 :gravity.type/f64} type)
+    false))
 
 (defn sh08-im-declarations-consistent? [record function]
   (if (contains? record :signature)

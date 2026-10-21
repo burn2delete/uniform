@@ -4928,6 +4928,31 @@ body-analysis interface below requires the complete original producer requests.
 Type checking does not authorize target
 lowering, linking, effect execution or runtime behavior.
 
+### Scalar import catalog without Vector tails
+
+`sh08-im-scalar-type?` recognizes the same 19 Keyword type IDs supplied by the
+nine literal and fifteen atomic catalog occurrences. It now uses Keyword-family
+classification followed by membership in an inert quoted finite Set, replacing
+the two Vector-tail loops. Host nil, unknown, lookalike, composite and callable
+types still return Bool false; the actual nil type remains accepted. This
+does not expand the imported signature boundary or select Vector-rest behavior.
+
+The focused 512 MiB selection in the SH08 function-call namespace is
+`sh08-import-scalar-catalog-development-kernel`,
+`sh08-import-scalar-catalog-no-vector-tail-development-kernel`,
+`sh08-imported-function-types-development-kernel` and
+`sh08-imported-inferred-signatures-development-kernel`. The original-delegating
+observer covers both unary and generic dispatch: selected Keyword inputs use
+one membership query and no Vector tail; non-Keywords do not enter membership.
+Catalog mappings, complete producer signatures and identity/declaration rejects
+are checked separately from that operation observation.
+
+This repairs an actual compiler-source leaf dependency, not whole-helper source
+typing. Its unannotated parameter and the surrounding import helpers retain
+their independent typing requirements; `keyword?` grants no general flow
+narrowing. These direct checks do not refresh C5/C6/source, public packet,
+migration or performance evidence.
+
 ### Body-effect development
 
 The body-analysis owner is `bootstrap/gravity/src/gravity/effects.gravity`.
