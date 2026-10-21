@@ -214,6 +214,30 @@ and verifier. They do not establish compiler linkage, native execution or the
 complete SH-22 API closure. Historical SH07 source/digest pins are not updated;
 their evidence does not authenticate the changed library source revision.
 
+### Checked i64 multiplication in the bootstrap library
+
+The same STD1/STD5/SAFE9/D8-owned library executes `:checked-mul-i64` through
+the unchanged experimental `:meta` request interface. Binary arity, integer
+family and i64 range checks precede zero handling and sign-specific quotient
+thresholds. Divisors are nonzero and no threshold forms MIN/-1; multiplication
+runs only after the in-range guard. Results retain `:checked-i64`, no effects or
+capabilities and `:none` allocation. `STD5001` retains type/range/overflow failures
+and `STD1001` retains wrong arity; the owner-local operation surface grows to 15.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-checked-i64-multiplication-guards-actual-seed-quotient-thresholds \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity \
+  --exact sh22-policy-and-manifest-state-bounded-experimental-surface --fail-fast
+```
+
+The paired cases execute the actual seed quotient thresholds and Gravity product
+in both operand orders, including MIN/zero, signed endpoints and the square
+overflow boundary. They are not compiler linkage, native/provider, complete
+library or migration evidence. Historical SH07 source/digest pins remain
+unchanged and do not authenticate the revised library source.
+
 ### C6 compiled-source aggregate binding maintenance
 
 ```bash
