@@ -9453,6 +9453,30 @@ supplied normalized DATA, not fresh authenticated C11/source input, proof
 providers, native arithmetic, migration or performance evidence. No schema,
 API, pass or input bound is added.
 
+The next C13 executable increment propagates a mixed pair: exactly one actual
+established-reference join and one bounded i64 immediate, in either operand
+position. Prefix constants and folded intermediates can supply the reference;
+canonical ID kind checks precede lookup, and numeric atoms never borrow
+identifier meaning from a map key. Two immediates with a false constant flag
+stay unchanged. The existing two-reference/repeated-reference routes,
+whole-input unique definitions, pure/proven-safe/nondead frontier, barriers,
+signed overflow and MIN-right guard, source/result identity, post-fold DCE,
+invalidation and fresh verification remain intact. This is not general
+CFG/SSA propagation or a new opcode, type, API, schema, pass or input cap.
+
+The `58b732e0` RED run retained 564 passes and 96 failures in 660 assertions,
+without errors. Candidate `692ec6ca` passed 22 tests/3,356 assertions (660 new
+plus 2,696 controls), including both orders, prefix/folded producers, zero and
+signed endpoints, unsupported joins, explicit dead-proof behavior, original
+identity, recomputation and substitution rejection. Boundary checks separately
+passed 6/11: 28/3,367 across two passing invocations. LOC separately passed
+2,021 files, zero exceptions, maximum 250. RED results are not added to passing
+coverage. The observations retain their original `692ec6ca` execution binding;
+owned code/test bytes remain unchanged after the disjoint SH22 main join.
+Original G/Q constructors and public optimization/recomputation consume
+supplied normalized DATA, not fresh authenticated C6/C11/source inputs,
+proof-provider evidence, native arithmetic, migration or performance proof.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
