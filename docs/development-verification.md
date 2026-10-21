@@ -885,6 +885,26 @@ existing B3 and diamond selectors for affected composition. This is pure
 helper parity, not evidence that a public builder failed or that current
 public source, preflight, pin or native admission has been renewed.
 
+For external cross-target LLVM IR validation, set
+`GRAVITY_SH18_CC=/usr/bin/clang` and run
+`sh17-development-folded-bool-llvm-ir-passes-cross-target-clang` in the same
+namespace. Four supplied-DATA/current C13-to-C14-to-B3 outputs (linear and
+Integer-diamond true/false) go unchanged to Clang with
+`-target x86_64-unknown-linux-gnu -x ir -Werror=override-module -S`.
+A separate undefined-SSA mutation must complete with nonzero rejection. The
+existing SH18 harness discovers the explicit Clang and runs all five module
+calls serially: two identity probes allow five seconds and 1 MiB per stream;
+each module call allows ten seconds and 8 KiB per stream, with existing
+three-second process cleanup. Check IR before writing and assembly before
+reading/hashing against 64 KiB; the output check is not a filesystem quota.
+Retain exact argv, IR/assembly hashes, version, host target and requested target
+as nonauthoritative observations. The invoked `/usr/bin/clang` SHA identifies
+the Apple launcher only, not its effective Xcode engine or full toolchain
+closure. Host arm64 Darwin and requested x86_64 Linux are distinct. Do not
+rewrite emitted triples, link or execute generated programs, claim hard
+aggregate wall/memory containment, or infer public packet/native admission,
+fresh C11 output verification, migration or benchmark evidence from this check.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
