@@ -805,9 +805,17 @@
                [(assoc both :source-span nil) :preserve]
                [(assoc both :origin-chain []) :preserve]
                [(assoc both :nondeterministic-choice true) :nondeterminism]
-               [(update both :operations conj (first (:operations both))) :verify]
-               [(assoc both :operations (apply list (:operations both))) :contract]]]
+               [(update both :operations conj (first (:operations both))) :verify]]]
         (rejected subject reason nil))
+      (let [subject (assoc both :operations (apply list (:operations both)))
+            preflight (invoke-engine 'sh16-structural-preflight [subject])
+            result (optimize subject)]
+        (is (= :rejected (:status result)))
+        (is (= :request-structural-bound (get-in result [:diagnostics 0 :reason])))
+        (is (= result (invoke-engine 'sh16-structural-rejection
+                                    [subject preflight :request-structural-bound])))
+        (is (= :request-structural-bound
+               (get-in (invoke-engine 'sh16-verify [subject result]) [:diagnostics 0 :reason]))))
       (let [accepted (optimize base)]
         (is (= :accepted (:status accepted)))
         (is (= accepted (invoke-engine 'sh16-accepted-artifact [base])))
