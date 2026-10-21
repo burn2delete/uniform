@@ -8333,6 +8333,10 @@
 
 (defn sh13-branch-join-layout-valid? [entry then-ops else-ops]
   (let [widths [(count entry) (count then-ops) (count else-ops)]]
+    (if (= widths [2 3 1])
+      (= :sequence (get (get then-ops 2) :opcode))
+    (if (= widths [2 1 3])
+      (= :sequence (get (get else-ops 2) :opcode))
     (if (= widths [2 1 1]) true
     (if (= widths [1 1 1]) true
       (if (= widths [3 1 1]) true
@@ -8340,7 +8344,7 @@
           (if (= widths [1 1 3]) true
             (if (= widths [3 3 1]) true
               (if (= widths [3 1 3]) true
-                (if (= widths [1 4 1]) true (= widths [1 1 4])))))))))))
+                (if (= widths [1 4 1]) true (= widths [1 1 4])))))))))))))
 
 (defn sh13-branch-join-arm-valid? [operations type]
   (if (= 1 (count operations))
@@ -8401,10 +8405,42 @@
                         false) false) false) false) false) false) false) false))
       false)))
 
+(defn sh13-branch-join-do-arm-valid? [checked-core operations type]
+  (let [first-op (get operations 0) second-op (get operations 1)
+        scope (get operations 2)
+        first-id (get first-op :op-id) second-id (get second-op :op-id)
+        scope-id (get scope :op-id) first-type (get first-op :type)]
+    (if (sh12-branch-join-nonempty-string? first-id)
+      (if (sh12-branch-join-nonempty-string? second-id)
+        (if (sh12-branch-join-nonempty-string? scope-id)
+          (if (= nil (sh13-branch-join-runtime-type first-type))
+            false
+            (if (sh13-branch-join-literal-valid? first-op first-type)
+              (if (sh13-branch-join-literal-valid? second-op type)
+                (if (sh13-branch-join-forward-operation-valid?
+                     scope :sequence :do [first-id second-id] type)
+                  (let [nodes (get checked-core :core-nodes)
+                        node (c11-find-node-by-id nodes scope-id)
+                        path (get node :path)]
+                    (= [2 (conj (conj path :body) 0) (conj (conj path :body) 1)]
+                       [(get (get node :attributes) :body-count)
+                        (get (c11-find-node-by-id nodes first-id) :path)
+                        (get (c11-find-node-by-id nodes second-id) :path)]))
+                  false)
+                false)
+              false))
+          false)
+        false)
+      false)))
+
 (defn sh13-branch-join-source-arm-valid? [checked-core operations type]
   (if (= 4 (count operations))
     (sh13-branch-join-let-arm-valid? checked-core operations type)
-    (sh13-branch-join-arm-valid? operations type)))
+    (if (= 3 (count operations))
+      (if (= :sequence (get (get operations 2) :opcode))
+        (sh13-branch-join-do-arm-valid? checked-core operations type)
+        (sh13-branch-join-arm-valid? operations type))
+      (sh13-branch-join-arm-valid? operations type))))
 
 (defn sh13-branch-join-source-entry-valid? [checked-core operations]
   (if (= 2 (count operations))
@@ -8451,7 +8487,7 @@
         root-op (get (get join :instructions) 1)
         type (get function :returns)]
     (if (= [1 4 (count (get context :operations)) 2 []
-            :meta :jvm :jvm #{} #{} #{} 0 [(get condition :result)] true]
+            :meta :jvm :jvm #{} #{} #{} 0 [(get condition :result)] true true]
            [(count (get mir :functions)) (count (get function :blocks))
             (count (get checked-core :core-nodes))
             (count (get join :instructions)) (get function :params)
@@ -8462,7 +8498,11 @@
             (count (get mir :runtime-check-table))
             (get (get entry :terminator) :operands)
             (sh13-branch-join-layout-valid?
-             entry-operations then-operations else-operations)])
+             entry-operations then-operations else-operations)
+            (if (= 1 entry-count) true
+              (if (= 2 entry-count) true
+              (if (= :sequence (get then-op :opcode)) false
+                (if (= :sequence (get else-op :opcode)) false true))))])
       (if (= [[:conditional-join :if
                [(get condition :result) (get then-op :result)
                 (get else-op :result)] type]
@@ -8498,7 +8538,8 @@
        (conj result
              {:operation-id (get operation :op-id)
               :result-id (get operation :result)
-              :role (if (= :truthiness (get operation :opcode)) :truthiness
+              :role (if (= :sequence (get operation :opcode)) :sequence-result
+                    (if (= :truthiness (get operation :opcode)) :truthiness
                     (if (= :constant (get operation :opcode)) :literal
                         (if (= :integer-eq (get operation :opcode))
                           :integer-equality
@@ -8508,7 +8549,7 @@
                               (if (= :local (get operation :opcode)) :local-reference
                                 (if (= :lexical-scope (get operation :opcode)) :lexical-scope
                                   (if (= :conditional-join (get operation :opcode))
-                                    :edge-join :function-result-alias))))))))
+                                    :edge-join :function-result-alias)))))))))
               :operands (get operation :operands)
               :constant-payload (get operation :constant-payload)
               :source-type (get operation :type)
@@ -8536,10 +8577,12 @@
                   :operands (get operation :operands)}
                (if (if (= :local-binding (get operation :opcode)) true
                      (if (= :local (get operation :opcode)) true
-                       (= :lexical-scope (get operation :opcode))))
+                       (if (= :lexical-scope (get operation :opcode)) true
+                         (= :sequence (get operation :opcode)))))
                  {:op-id (get operation :op-id) :opcode :local
                   :type (sh13-branch-join-runtime-type (get operation :type))
-                  :operands (if (= :lexical-scope (get operation :opcode))
+                  :operands (if (if (= :lexical-scope (get operation :opcode)) true
+                                 (= :sequence (get operation :opcode)))
                               [(get (get operation :operands) 1)]
                               (get operation :operands))}
                {:op-id (get operation :op-id)
