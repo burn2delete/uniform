@@ -9083,6 +9083,25 @@ Independent review accepted both code and actual results. This establishes
 normalized optimizer behavior, not source truthiness, fresh C11 integration,
 authoritative migration or SH-16 completion.
 
+The next C13 repair preserves existing unsafe audit IDs through constant folding
+and Bool branch simplification. Previously, valid audited input passed ingress,
+but the transformed operation kept `:unsafe-island` while dropping its required
+audit ID and therefore failed post-pass verification. Conditional preservation
+fixes that output; safe output maps stay unchanged and input/post-pass validation
+is not loosened. The third shared retained-runtime-check callsite still rejects
+unsafe checks through its existing `:runtime-checked` requirement.
+
+At `c4d9980f`, the coherent RED regression recorded 86 passes and 66 failures in
+152 assertions, with no errors. Changed candidate `a891a8e3` passed ten tests and
+663 assertions (152 new plus 511 adjacent); the separate boundary run passed
+six tests and 11 assertions: 16 tests/674 assertions across two passing
+invocations. LOC separately passed 2,021 files, zero exceptions, maximum 250.
+The G/Q request constructors, audit/source/safety preservation, decision and
+invalidation records, rejected ingress and recomputation/substitution controls
+are development evidence for supplied normalized records. Their audit IDs are
+not audit-provider evidence, authenticated C11 or source construction, native
+execution or proof renewal. Historical failures remain retained separately.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
