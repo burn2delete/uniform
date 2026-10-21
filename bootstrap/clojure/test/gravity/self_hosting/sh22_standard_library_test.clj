@@ -338,6 +338,9 @@
               produced (handle producer) query (assoc get-base :arguments [(:value produced) :value])
               result (handle query) missing (assoc get-base :arguments [(:value produced) :missing])
               absent (handle missing)]
+          (let [[observed lookups] (observe query)]
+            (is (= result observed))
+            (is (= 1 lookups)))
           (doseq [[input candidate]
                   [[producer (assoc-in produced [:value :entries 0 1] nil)]
                    [producer (assoc-in produced [:identity-input :arguments 1] :missing)]
