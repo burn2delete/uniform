@@ -310,6 +310,82 @@
                          (assoc function :fixed-arity 2 :parameter-binding-ids [(sha 4) (sha 4)]
                                          :parameters [(first (:parameters function)) (first (:parameters function))]))))))
 
+(deftest sh08-import-scalar-catalog-development-kernel
+  ;; Original Gravity catalogs and consumer on normalized DATA; no source admission.
+  (let [literal-rows [[:nil :gravity.type/nil] [:boolean :gravity.type/bool]
+                      [:integer :gravity.type/integer] [:decimal :gravity.type/decimal]
+                      [:ratio :gravity.type/ratio] [:character :gravity.type/character]
+                      [:string :gravity.type/string] [:keyword :gravity.type/keyword] [:symbol :gravity.type/symbol]]
+        atomic-rows [['I8 :gravity.type/i8] ['I16 :gravity.type/i16] ['I32 :gravity.type/i32] ['I64 :gravity.type/i64]
+                     ['U8 :gravity.type/u8] ['U16 :gravity.type/u16] ['U32 :gravity.type/u32] ['U64 :gravity.type/u64]
+                     ['F32 :gravity.type/f32] ['F64 :gravity.type/f64] ['Bool :gravity.type/bool]
+                     ['String :gravity.type/string] ['Symbol :gravity.type/symbol] ['Keyword :gravity.type/keyword] ['Ratio :gravity.type/ratio]]
+        rows (into (mapv #(into ['sh08-primitive-type-from-literal-kind] %) literal-rows)
+                   (mapv #(into ['sh08-ft-atomic-type-id] %) atomic-rows))
+        types (set (map #(nth % 2) rows))
+        sha #(str "sha256:" (format "%064x" %))
+        record {:function-syntax-id (sha 1) :function-core-node-id (sha 2) :body-core-node-id (sha 3)
+                :definition-name 'identity :fixed-arity 1 :parameter-binding-ids [(sha 4)]}
+        function {:artifact :gravity/c7-function-type :function-id (sha 1) :function-core-node-id (sha 2) :body-core-node-id (sha 3)
+                  :definition-name 'identity :fixed-arity 1 :parameter-binding-ids [(sha 4)]
+                  :parameters [{:binding-id (sha 4) :type :gravity.type/string}] :return :gravity.type/string :status :inferred}
+        complete #(invoke-c7 'sh08-im-complete-signature? [record %])
+        rejected [nil false true 0 1.5 1/2 \x "gravity.type/string" 'gravity.type/string
+                  :gravity.type/unknown :gravity.type/never :gravity.type/list :gravity.type/vector :gravity.type/map
+                  :gravity.type/set :gravity.type/function :gravity.type/core-var :gravity.type/String :other/string
+                  {} [] #{:gravity.type/string} [:gravity.type/string] (list :gravity.type/string)
+                  {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string]}
+                  {:kind :gravity.type/function :parameters [] :return :gravity.type/string}]]
+    (is (= 24 (count rows)))
+    (is (= 19 (count types)))
+    (doseq [[catalog input expected] rows]
+      (is (= expected (invoke-c7 catalog [input])))
+      (is (true? (invoke-c7 'sh08-im-scalar-type? [expected]))))
+    (doseq [type types]
+      (is (true? (complete (-> function (assoc :return type) (assoc-in [:parameters 0 :type] type))))))
+    (doseq [value rejected]
+      (is (false? (invoke-c7 'sh08-im-scalar-type? [value])))
+      (is (false? (complete (assoc function :return value))))
+      (is (false? (complete (assoc-in function [:parameters 0 :type] value)))))))
+
+(defn- observe-import-scalar-builtins [value]
+  ;; Delegate unchanged arguments/results; count only this helper's loaded plan.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
+        unary (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin)
+        original-scoped @scoped original-builtin @builtin original-unary @unary plans (atom [])
+        counts (atom {:vector-tail-calls 0 :membership-calls 0})
+        result (with-redefs-fn
+          {scoped (fn [runtime plan callee args scope]
+                    (if (= 'sh08-im-scalar-type? callee)
+                      (do (swap! plans conj plan)
+                          (try (original-scoped runtime plan callee args scope) (finally (swap! plans pop))))
+                      (original-scoped runtime plan callee args scope)))
+           unary (fn [runtime plan callee value]
+                   (when (and (seq @plans) (identical? (peek @plans) plan)
+                              (= 'rest callee) (vector? value))
+                     (swap! counts update :vector-tail-calls inc))
+                   (original-unary runtime plan callee value))
+           builtin (fn [& args]
+                     (let [callee (nth args (- (count args) 2)) values (last args)]
+                       (when (and (seq @plans) (identical? (peek @plans) (nth args (- (count args) 3))))
+                         (when (and (= 'rest callee) (vector? (first values)))
+                           (swap! counts update :vector-tail-calls inc))
+                         (when (= 'contains? callee) (swap! counts update :membership-calls inc)))
+                       (apply original-builtin args)))}
+          #(invoke-c7 'sh08-im-scalar-type? [value]))]
+    (assoc @counts :result result)))
+
+(deftest sh08-import-scalar-catalog-no-vector-tail-development-kernel
+  ;; This checks the selected compiler-source dependency, not whole-helper typing.
+  (doseq [[value expected membership-calls]
+          [[:gravity.type/f64 true 1] [:gravity.type/unknown false 1]
+           [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string]} false 0]]]
+    (let [observed (observe-import-scalar-builtins value)]
+      (is (= expected (:result observed)))
+      (is (zero? (:vector-tail-calls observed)))
+      (is (= membership-calls (:membership-calls observed))))))
+
 (deftest sh08-imported-work-boundaries-development-kernel
   ;; Invocation-local memo/limit policy DATA. Public C7 always starts empty.
   (let [bounds (invoke-c7 'sh08-local-bounds-value [])
