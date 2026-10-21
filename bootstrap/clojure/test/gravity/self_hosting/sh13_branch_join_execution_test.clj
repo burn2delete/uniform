@@ -232,7 +232,10 @@
   ;; fabricated, erased, or replaced by an output-only interpreter shortcut.
   (let [root @(existing 'root)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"]
-    (doseq [[extension then-value else-value executable?] [["gravity" 1 0 true]]]
+    (doseq [[extension then-value else-value executable?]
+            [["gravity" 1 0 true]
+             ["qst" Long/MIN_VALUE Long/MAX_VALUE true]
+             ["gravity" 9223372036854775808N 0 false]]]
       (let [source (str (.resolve root (str relative "." extension)))
             temporary (java.io.File/createTempFile "gravity-sh13-parameter-let-" (str "." extension))]
         (try
@@ -299,8 +302,13 @@
                          [(assoc-in core [:core-nodes 8 :attributes :binding-count] 2) mir]
                          [(assoc-in core [:core-nodes 8 :operands] [if-id]) mir]
                          [(assoc-in core [:core-nodes 9 :operands] [if-id]) mir]
+                         [(assoc-in core [:core-nodes 3 :path] [:functions 'main :body 1]) mir]
+                         [(assoc-in core [:core-nodes 2 :attributes :source-form-id]
+                                    (get-in nodes [0 :attributes :source-form-id])) mir]
+                         [(assoc-in core [:core-nodes 2 :node-id] binder) mir]
                          [(assoc-in core [:type-facts local-binder :dependencies] []) mir]
                          [(assoc-in core [:core-nodes 6 :type] :gravity/bool) mir]
+                         [(assoc-in core [:core-nodes 6 :attributes :value] false) mir]
                          [(assoc-in core [:effect-facts local-binder :direct] #{:io/write}) mir]
                          [(assoc-in core [:proof-records scope :proof-id] nil) mir]
                          [(assoc-in core [:source-origin-table (get-in nodes [3 :source :origin-id])] nil) mir]
@@ -316,6 +324,34 @@
                 (is (= :rejected (:status (run core mir))))
                 (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
           (finally (.delete temporary)))))))
+
+(deftest sh13-preserves-simple-bool-parameter-after-let-forwarding
+  ;; One genuinely affected old family, not replay of the former three-source
+  ;; 254-second selector: the common role validator and private frame changed.
+  (let [path (str (.resolve @(existing 'root)
+                   "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        {:keys [raw upstream core mir]} (current-parameter-pair path)
+        nodes (:core-nodes core) binder (first nodes) id (:node-id binder)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream)))
+    (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
+    (is (= 7 (count nodes)))
+    (is (= :gravity/bool (get-in mir [:functions 'main :returns])))
+    (doseq [argument [true false]]
+      (let [result (argument-run-observation core mir [argument])]
+        (is (= :accepted (:status result)))
+        (is (= argument (get-in result [:execution :value])))
+        (is (= [argument] (:arguments result)))
+        (is (= 506 (get-in result [:execution :fuel])))
+        (is (= [(get-in nodes [1 :node-id]) (get-in nodes [2 :node-id])
+                (get-in nodes [(if argument 3 4) :node-id])]
+               (vec (keep :operation (get-in result [:execution :trace])))))
+        (is (= (get-in core [:type-facts id :fact-id])
+               (get-in result [:projection :parameters 0 :facts :type-fact-id])))
+        (is (= (get-in nodes [6 :type])
+               (:source-type (last (get-in result [:projection :operations])))))
+        (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                       core mir [argument] result))))))))
 
 (defn- scalar-core [core condition type then-value else-value]
   (let [values [condition then-value else-value nil nil]
