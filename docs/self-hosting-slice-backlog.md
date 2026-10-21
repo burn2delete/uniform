@@ -10918,6 +10918,25 @@ projection-role inspections after rejection, not comparison execution errors.
 This is development producer/consumer evidence, not fresh C6/C10 source
 composition, native execution, SH-13 completion or authoritative migration.
 
+### Two-sided MIR integer span guards: executable increment
+
+At `d3653edc`, the existing C11 layout gate accepts entry `<=` plus one `<=`
+arm in nine-row `[3,3,1]` or mirrored `[3,1,3]` diamonds. The opposite arm is
+a Bool literal, both arms validate, and selected/skipped computed arms leave
+fuel 503/505. C11's span predicates provide the two-sided guard client. Literal
+pairs model its relation without claiming member/parameter dataflow or whole
+helper execution. Existing seven-row and Eq/Lt behavior remains; mixed
+comparisons, truthiness and both-computed-arm `<=` layouts still reject.
+No opcode, role, public key, arity, interpreter or resource bound changes.
+
+Four passing invocations cover 29 tests / 9,956 assertions, with separate
+LOC 2,022 files / zero exceptions / maximum 250 lines. Preserve
+`/tmp/d-sh13-double-lte-*-v1-20261021` and its separate RED 276 passes / 360
+failures in 1/636. The prior entry/arm test counts become 384/1,152 solely
+because 36 now-supported composition assertions no longer expect rejection.
+No historical run is relabeled. Fresh source/native composition, SH-13
+completion and authoritative migration remain separate outstanding boundaries.
+
 ### MIR conditional-condition dominance: development repair
 
 Normalized conditional branches now report `C11-DOMINANCE` when the condition
