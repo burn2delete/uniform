@@ -2423,6 +2423,41 @@
                                       :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
                                       :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
 
+(defn- nonnegative-integer-quotient-input [values]
+  (let [base (integral-ordering-input 'quot (vec (repeat (count values) :gravity.type/integer)))
+        input (reduce (fn [input [index value]]
+                        (let [id (keyword (str "arg" index))]
+                          (-> input
+                              (assoc-in [:nodes id :core-form] :literal)
+                              (assoc-in [:nodes id :resolved-binding-ids] [])
+                              (assoc-in [:nodes id :attributes] {:literal-kind :integer :value value})
+                              (assoc-in [:nodes id :evaluation] {:kind :value :order []})
+                              (assoc-in [:forms id :kind] :integer)
+                              (assoc-in [:forms id :value] value))))
+                      base (map-indexed vector values))
+        module (assoc (:module input) :effects [:memory/allocate])
+        nodes (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes]))]
+    (-> input (assoc :module module :binding-types (:types input))
+        (assoc-in [:core :module] module) (assoc-in [:core :nodes] nodes)
+        (assoc :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module module}))))
+
+(deftest sh08-nonnegative-integer-quotient-literal-development-kernel
+  (doseq [values [[0 10] [127 10] [10 3] [(bigint "123456789012345678901234567890") 10]]]
+    (let [{:keys [core nodes forms bindings products binding-types] :as input} (nonnegative-integer-quotient-input values)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                   :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                     [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+          descriptor (get-in inferred [:type-table :operator])]
+      (is (= :converged (:convergence-status inferred)))
+      (is (= [] (:diagnostics inferred)))
+      (is (= :gravity.type/integer (get-in inferred [:type-table :call])))
+      (is (= :gravity.type/applied-nonnegative-integer-quotient (:kind descriptor)))
+      (is (= :proof-required (:numeric-mode descriptor)))
+      (is (= [:memory/allocate] (:direct-effects descriptor)))
+      (is (= :may-allocate-integer-result (get-in descriptor [:storage-policy :allocation])))
+      (is (= :nonnegative-euclidean-quotient (get-in descriptor [:quotient-policy :operation]))))))
+
 (defn- list-query-input [operation argument-types]
   (let [input (integral-ordering-input operation argument-types)]
     (assoc input :binding-types (:types input)
