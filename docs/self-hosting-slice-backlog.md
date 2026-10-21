@@ -10860,6 +10860,42 @@ and condition values, invalid unselected operands, source/incoming/MIR tampering
 and recomputation. No C10/source ingress, whole-helper lowering, generic MIR,
 native execution, SH-13 completion or authoritative migration is claimed.
 
+### Original MIR entry integer less-than-or-equal: executable increment
+
+C11/C12/C18 and L2/L5 govern a new bounded SH-12-to-SH-13 operation. The
+original producer already constructs and verifies `:integer-lte`. The existing
+normalized interpreter now accepts `:lte` over exactly two available signed-i64
+values and returns Bool using `<=`. The original producer bridge maps the
+opcode and retains the new `:integer-less-than-or-equal` projection role,
+original operation IDs, source/fact records, CFG, DFG and incoming values.
+
+Bridge support is entry-only: seven total rows with entry/then/else widths
+`[3,1,1]` and matching scalar literal arms. Both arms validate before execution. Explicit
+placement and arm fences continue rejecting computed-arm `<=` and an entry
+`<=` combined with computed Eq/Lt arms. Existing Eq/Lt arm behavior remains.
+Signed endpoints, equality and both branch outcomes execute once with the
+selected trace and fuel 505. Public keys/arities, depth 32 and fuel 512 are
+unchanged; the normalized opcode and projection domains grow explicitly.
+
+The test-only `23d32fc2` RED recorded 220 passes / 180 failures / zero errors
+in the new bridge test's 400 assertions. At `a20b282d`, the bridge passed
+1 / 400, the full normalized namespace 21 / 2,626, existing bridge controls
+16 / 7,274, original SH-12 producer controls 2 / 578 and boundary checks
+6 / 11. This is 46 tests / 10,889 assertions across five passing invocations,
+not a single batch or a sum including RED. LOC separately passed 2,022 files,
+zero exceptions, maximum 250 physical lines. Retain the original
+`/tmp/d-sh13-lte-*-v1-20261021` logs and timing records.
+
+Missing/extra operands, unavailable definitions, non-i64 or out-of-range
+values, unselected invalid arms, origin/effect violations, altered MIR or
+incoming IDs and substituted results reject. Verification recomputes through
+the existing interpreter; no new interpreter or wrapper is introduced. These
+are supplied constructor and fresh original MIR builder/verifier compositions,
+not fresh C6/C10 source ingress, native execution, whole-helper lowering,
+SH-13 completion or authoritative migration. Future stable migration must
+account for the changed normalized operation/projection domains; no historical
+proof is repinned by this development increment.
+
 ### MIR conditional-condition dominance: development repair
 
 Normalized conditional branches now report `C11-DOMINANCE` when the condition
