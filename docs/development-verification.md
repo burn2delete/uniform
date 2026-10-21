@@ -442,6 +442,20 @@ audited unsafe-island operations may remain accepted unchanged without folding.
 This is not a general type checker, fresh authenticated C11 ingress, native
 execution, authoritative migration or SH-16 completion.
 
+For the closed one-hop propagation route, run
+`sh16-propagates-only-unique-pure-prefix-i64-constants-into-one-add` in the same
+namespace. Only the first non-const operation after a pure, proven-safe,
+nondead const prefix can qualify: a pure, proven-safe, nondead
+`:i64`/`:integer-exact` ADD with two ordered references to distinct earlier
+one-payload i64 constants. Result IDs must be unique across the whole input.
+Fresh bounded indexing joins actual result IDs; the existing signed-i64
+overflow rule still governs folding. Unknown, forward, ambiguous, wrongly
+typed, unsafe, effectful or control-dependent joins do not authorize folding;
+unsupported cases stay unchanged unless existing ingress rejects them.
+Preserve original source/origin/result identity, input references, deterministic
+decision/invalidation records and fresh recomputation. This normalized linear
+subset is not general CFG/SSA propagation, fresh C11 input or native execution.
+
 For normalized C13 branch simplification, run
 `sh16-simplifies-only-established-boolean-conditions` in the same namespace.
 Only actual `true` and `false` conditions select their respective destination.
