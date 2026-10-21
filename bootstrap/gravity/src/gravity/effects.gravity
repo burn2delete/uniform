@@ -12658,7 +12658,7 @@
 
 (defn body-lsi-first-append [prefix suffix]
   (loop [remaining suffix out prefix]
-    (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining)))))
+    (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining))))))
 
 (defn body-lsi-first-sequence [value]
   (loop [remaining value out []]

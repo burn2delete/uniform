@@ -2735,7 +2735,7 @@
 
 (defn sh08-lsi-first-append [prefix suffix]
   (loop [remaining suffix out prefix]
-    (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining)))))
+    (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining))))))
 
 (defn sh08-lsi-first-sequence [value]
   (loop [remaining value out []]
