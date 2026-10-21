@@ -14499,6 +14499,53 @@
                   [:forms :arg0 :form-id] [:forms :arg0 :parent-form-id]]]
       (is (= :rejected (:status (derive (assoc-in input path :unrelated))))))))
 
+(deftest sh08-integer-set-contains-development-kernel
+  (let [i :gravity.type/integer nv :gravity.type/never
+        finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        domain #(invoke-c7 'sh08-ksm-domain [%1 %2])]
+    (doseq [arguments [[(finite []) i] [(finite [i i]) i] [(finite [i]) nv] [nv i]]]
+      (let [{:keys [core node call edge nodes bindings types] :as input} (map-contains-input arguments)
+            result (keyword-set-contains-derived input 65536) descriptor (:descriptor result)
+            established (assoc types :operator descriptor)
+            check #(invoke-c7 'sh08-ksm-inferred-call [core node call edge nodes bindings %1 %2])]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/applied-integer-set-contains (:kind descriptor)))
+        (is (= :sh08-integer-set-contains-v1 (:version descriptor)))
+        (is (= (if (some #{nv} arguments) nv :gravity.type/bool) (:type result)))
+        (is (= :proof-required (:numeric-mode descriptor)))
+        (is (= :original-integer-values (get-in descriptor [:membership-policy :comparison])))
+        (is (= :none (get-in descriptor [:membership-policy :conversion]) (get-in descriptor [:membership-policy :arithmetic])))
+        (is (= [] (:direct-effects descriptor) (:capabilities descriptor)))
+        (is (= (:membership-policy descriptor) (get-in (invoke-c7 'sh08-ksm-constraint [descriptor]) [:solution :membership-policy])))
+        (is (= :direct-integer-set-contains (:dispatch (invoke-c7 'sh08-ksm-call-fact [descriptor (:module input)]))))
+        (is (= :accepted (:status (check established 65536))))
+        (is (= result (keyword-set-contains-derived input (:work-count result))))
+        (is (= :rejected (:status (keyword-set-contains-derived input (dec (:work-count result))))))
+        (doseq [changed [(assoc-in established [:operator :membership-policy :comparison] :identity)
+                         (assoc-in established [:operator :membership-policy :conversion] :i64)
+                         (assoc-in established [:operator :numeric-mode] :wrapping)
+                         (assoc-in established [:operator :set-member-count] 99)]]
+          (is (= :rejected (:status (check changed 65536)))))
+        (doseq [mutate [#(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                        #(assoc-in % [:edge :evaluation-order] :needle-first)
+                        #(assoc-in % [:forms :operator :value] 'get)]]
+          (is (= :rejected (:status (keyword-set-contains-derived (mutate input) 65536)))))))
+    (doseq [bad [nil :gravity.type/unknown :gravity.type/never :gravity.type/decimal :gravity.type/ratio
+                 :gravity.type/f32 :gravity.type/f64 :gravity.type/i64 :gravity.type/u64 :gravity.type/character
+                 :gravity.type/symbol :gravity.type/keyword {:kind :gravity.type/nil-or :value-type i}]]
+      (is (= :rejected (:status (domain [(finite [i bad]) i] 65536))))
+      (when-not (= nv bad)
+        (is (= :rejected (:status (domain [(finite [i]) bad] 65536))))))
+    (doseq [bad [:gravity.type/set :gravity.type/unknown (assoc (finite []) :extra true)
+                 {:kind :gravity.type/set :shape :homogeneous :element-type i}]]
+      (is (= :rejected (:status (domain [bad i] 65536)))))
+    (let [wide [(finite (repeat 1024 i)) i] exact (domain wide 65536)]
+      (is (= :accepted (:status exact))))
+    (is (= :integer-set-contains-type-width (:reason (domain [(finite (repeat 1025 i)) i] 65536))))
+    (is (= :integer-set-contains-work-limit (:reason (domain [(finite [i i]) i] 3))))
+    (is (nil? (:membership-family (domain [(finite []) nv] 65536))))))
+
 (deftest sh08-symbol-set-contains-development-kernel
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/symbol derive keyword-set-contains-derived]
