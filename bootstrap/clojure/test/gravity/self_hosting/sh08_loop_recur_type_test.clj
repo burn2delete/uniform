@@ -2601,7 +2601,7 @@
                      (vector? value) (mapv #(rename nil %) value)
                      (seq? value) (apply list (map #(rename nil %) value))
                      (set? value) (set (map #(rename nil %) value))
-                     (contains? #{:core-form :kind :position :literal-kind :value :quoted-value :name} field) value
+                     (contains? #{:core-form :kind :position :literal-kind :value :quoted-value :name :projection} field) value
                      :else (get ids value value)))
           [converted converted-context] (rename nil [core context])
           converted (assoc converted :identity-preimage (select-keys converted [:loop-bindings :recur-targets :recur-transfers]))
