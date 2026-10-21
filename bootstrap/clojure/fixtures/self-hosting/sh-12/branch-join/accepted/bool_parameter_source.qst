@@ -1,0 +1,6 @@
+(ns gravity.sh12.bool-parameter-source
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [flag :- Bool] (if flag true false))

@@ -74,7 +74,10 @@
             (update :binding select-keys
                     p15-s23-c6c10-binding-projection-keys))
         selected
-        (-> (select-keys raw-plan p15-s23-c6c10-plan-projection-keys)
+        (-> (select-keys raw-plan
+                        (if (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
+                          p15-s23-c6c10-raw-plan-projection-keys
+                          p15-s23-c6c10-plan-projection-keys))
             (assoc :functions {'main projected-main})
             (update :source select-keys [:sha256])
             (update :module select-keys
@@ -149,11 +152,17 @@
           (p15-s23-c6c10-project-front-end source-path raw-front-end)
           _ (validate-ns-syntax! source-path (:forms raw-front-end))
           raw-module (parse-module source-path (:forms raw-front-end))
+          parameter? (= 1 (get-in (stage0-function-table raw-module) ['main :arity]))
+          resolved-parameter (when parameter?
+                               (p15-s23-c6c10-resolved-parameter source-path source-text front-end))
           emitter-rule
           (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
           raw-plan
-          (p15-s23-c6c10-private-stage2-plan
-           (:emitter emitter-rule) source-path source-text raw-module)
+          (if parameter?
+            (p15-s23-stage2-compiler-artifact-plan
+             (:emitter emitter-rule) source-path source-text)
+            (p15-s23-c6c10-private-stage2-plan
+             (:emitter emitter-rule) source-path source-text raw-module))
           plan
           (p15-s23-c6c10-project-plan
            source-path source-content-hash literal-authentication raw-plan)
@@ -161,12 +170,12 @@
           (p15-s23-c6c10-project-authoritative-module
            source-content-hash raw-module front-end)
           carrier-subject
-          {:front-end-products front-end
-           :stage2-plan plan
-           :authoritative-module authoritative-module}
+          (cond-> {:front-end-products front-end :stage2-plan plan
+                   :authoritative-module authoritative-module}
+            parameter? (assoc :resolved-parameter resolved-parameter))
           carrier-validation
           (p15-s23-c6c10-carrier-validation source-path carrier-subject)]
-      {:source-content-hash source-content-hash
+      (cond-> {:source-content-hash source-content-hash
        :front-end-products front-end
        :stage2-plan plan
        :authoritative-module authoritative-module
@@ -174,7 +183,8 @@
        :raw-plan-id (:plan-id raw-plan)
        :plan-emitter-rule
        {:source-rule-hash (:source-rule-hash emitter-rule)
-        :rule-record (:rule-record emitter-rule)}})))
+        :rule-record (:rule-record emitter-rule)}}
+        parameter? (assoc :resolved-parameter resolved-parameter)))))
 
 (defn p15-s23-c6c10-resolve-source-path
   []

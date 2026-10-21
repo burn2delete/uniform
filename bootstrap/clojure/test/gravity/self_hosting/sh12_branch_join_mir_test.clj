@@ -95,6 +95,70 @@
   [report]
   (first (:diagnostics report)))
 
+(def ^:private parameter-c6-plan
+  (delay (compile-plan "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")))
+
+(defn- parameter-input [source-path source-text]
+  ;; Original source-derived C2/C5 and raw seed plan; these are development
+  ;; DATA, not an authenticated frozen C6 source-binding or SH-07 Core.
+  (let [ingress ((ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
+                 source-path source-text)
+        plan @parameter-c6-plan hash (get-in plan [:source :sha256])
+        digest #(bootstrap/p15-s23-c6c10-canonical-digest source-path %)
+        manifest (bootstrap/p15-s23-c6c10-function-merkle-manifest source-path hash (:functions plan))
+        binding {:source-content-hash hash
+                 :plan-semantic-hash (digest (bootstrap/p15-s23-c6c10-plan-pin-input hash plan manifest))
+                 :builder-semantic-hash
+                 (digest {:domain :gravity/c6-c10-exported-builder-v1 :source-content-hash hash
+                          :definition (bootstrap/p15-s23-c6c10-path-neutral-value
+                                       hash (get-in plan [:functions 'c6-c10-build-checked-core-template]))})}]
+    (bootstrap/p15-s23-c6c10-private-builder-envelope source-path ingress binding)))
+
+(deftest sh12-current-c6-produces-a-resolved-bool-parameter-without-a-mir-instruction
+  (doseq [extension [".gravity" ".qst"]]
+    (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source" extension)
+          source-path (str (.resolve @root relative)) text (slurp source-path)
+          input (parameter-input source-path text)
+          evidence (:resolved-parameter input)
+          result (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+      (is (= :gravity/stage2-compiler-artifact-plan (get-in input [:stage2-plan :kind])))
+      (is (= :clojure-stage0-seed (get-in input [:stage2-plan :compiler :compiled-by])))
+      (is (= [:core :type 'gravity.core 'Bool]
+             ((juxt :binding-class :kind :namespace :name) (:type-binding evidence))))
+      (is (= [:lexical :local 'flag]
+             ((juxt :binding-class :kind :name) (:parameter-binding evidence))))
+      (is (= [:parameter-vector :parameter-name :annotation-marker :annotation-type]
+             (mapv :role (:coordinates evidence))))
+      (is (= :accepted (:status result)))
+      (when (= :accepted (:status result))
+        (let [template (:artifact-template result) nodes (:core-nodes template)
+              binder (first (filter #(= :parameter (:source-operation %)) nodes))
+              local (first (filter #(= :local (:source-operation %)) nodes))
+              function (last nodes)
+              fresh (parameter-input source-path text)
+              replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [fresh])
+              verify (fn [candidate]
+                       (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                               [fresh candidate (:digest-requests replay)]))]
+          (is (= input fresh))
+          (is (= result replay))
+          (is (= :passed (:status (verify template))))
+          (is (= 7 (count nodes)))
+          (is (= :binding (:kind binder)))
+          (is (= [] (:operands binder)))
+          (is (not (contains? (:attributes binder) :value)))
+          (is (= :gravity/bool (:type binder)))
+          (is (= [(:node-id binder)] (:operands local)))
+          (is (= ['flag] (get-in function [:attributes :params])))
+          (is (= [:gravity/bool] (get-in function [:type :params])))
+          (is (= :gravity/bool (get-in function [:type :return])))
+          (is (= :rejected (:status (build-mir template))))
+          (doseq [candidate [(assoc-in template [:core-nodes 0 :type] :gravity/integer)
+                             (assoc-in template [:core-nodes 0 :attributes :parameter-index] 1)
+                             (assoc-in template [:core-nodes 1 :operands] [])
+                             (assoc template :lexical-binding-records [])]]
+            (is (= :rejected (:status (verify candidate))))))))))
+
 (def ^:private stable-diagnostic-fields
   #{:diagnostic-id :severity :stage :mir-module :function :block
     :operation-id :value-id :source-span :origin-chain :profile

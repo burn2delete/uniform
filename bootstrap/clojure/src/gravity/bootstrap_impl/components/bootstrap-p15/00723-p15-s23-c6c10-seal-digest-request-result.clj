@@ -114,13 +114,16 @@
          {:domain :gravity/c6-c10-authenticated-stage2-plan-pin-v1
           :c3-semantic-hash c3-semantic-hash
           :plan-id (get-in ingress [:stage2-plan :plan-id])})]
-    {:c2-semantic-hash c2-semantic-hash
+    (cond-> {:c2-semantic-hash c2-semantic-hash
      :c3-semantic-hash c3-semantic-hash
      :plan-semantic-hash plan-semantic-hash
      :reader-integrity-hash reader-integrity-hash
      :builder-source-hash (:source-content-hash source-binding)
      :builder-plan-hash (:plan-semantic-hash source-binding)
-     :builder-function-hash (:builder-semantic-hash source-binding)}))
+     :builder-function-hash (:builder-semantic-hash source-binding)}
+      (contains? ingress :resolved-parameter)
+      (assoc :parameter-resolution-hash
+             (p15-s23-c6c10-canonical-digest source-path (:resolved-parameter ingress))))))
 
 (defn p15-s23-c6c10-private-builder-envelope
   [source-path ingress source-binding]
@@ -129,7 +132,7 @@
          (select-keys
           ingress
           [:source-content-hash :front-end-products :stage2-plan
-           :authoritative-module :carrier-validation])
+           :authoritative-module :carrier-validation :resolved-parameter])
          :kind :gravity/private-fresh-c2-c3-stage2-plan-envelope
          :scope :bounded-pure-hosted-safe-jvm-source
          :binding-pins
