@@ -214,6 +214,29 @@ out-of-range or absent-result policy, invent a host-null fallback, or select a
 representation or profile. Bounds must still be proven or runtime-checked under
 the requirements above; unestablished bounds are not implicitly safe.
 
+## Persistent Vector Slice With Established Bounds
+
+For a persistent Vector and independently established integer indexes in
+`0 <= start <= end <= (count items)`, ternary `(subvec items start end)`
+returns a persistent Vector containing the stored values at indexes from
+`start` inclusive to `end` exclusive, in their original order. Equal indexes
+produce an empty Vector. The original Vector is unchanged, and stored payloads
+are not evaluated.
+
+All three operands follow ordinary L2 evaluation left to right, exactly once;
+a control transfer aborts invocation. The selected representation must declare
+possible allocation, including empty and full slices, and whether result
+storage retains, borrows or copies input storage under ownership, lifetime,
+effect and profile requirements. This rule promises no object identity or
+physical sharing.
+
+Bounds must be proven or runtime-checked under the requirements above. This
+in-range rule does not define an out-of-range fallback or a host exception
+policy, grant two-operand or variadic support, or restrict the language rule
+to literal Vectors. `gravity.collections` owns the semantics; compatibility
+bindings do not grant representation or profile support. An implementation's
+supported proof and operand subset must be stated separately.
+
 ## Persistent Vector First With Established Nonempty Input
 
 For a persistent Vector containing at least one stored value, unary
@@ -374,6 +397,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
 - Binary persistent List equality covers empty, equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules, without substituting type or object identity.
 - Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.
+- Proven-in-range Vector slicing covers empty, full, prefix, middle and suffix ranges, preserves stored order, inert payloads and the original input, retains ordinary eager operand evaluation and transfers, and declares allocation/storage policy.
 - Proven-nonempty Vector first covers singleton and ordered multi-element values, stored false/nil, ordinary operand evaluation and transfers, inert payloads and original-value preservation without selecting an empty-Vector result policy.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.

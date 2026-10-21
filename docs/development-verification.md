@@ -6453,6 +6453,92 @@ Runtime remains 56 functions and all nine protected carrier predicates are
 unchanged. Whole helpers, native, migration, self-hosting and release remain
 outside this evidence.
 
+### Bounded Vector slice after authenticated String conversion
+
+The selected `subvec` development subset is ternary and JVM/meta. Its normal
+receiver is the independently reconstructed `vec` of an original finite ASCII
+String literal. Original nonnegative generic Integer literals must establish
+`0 <= start <= end <= receiver-count`; the result preserves the selected
+Character positions in start-inclusive/end-exclusive order. STD3 records the
+general persistent Vector law separately from this implementation subset.
+Aliases, parameters and arbitrary Vector receivers are not established.
+
+C7, C8 and typed lowering reconstruct the parent and nested child evidence,
+pay the actual child proof work again, and require unique original calls,
+edges, call facts and producer rows. Physical IDs, Symbols and nonnegative
+Integer ordinals precede selected lookups/comparisons. Every normal operand
+still proves itself when another is Never; Never suppresses cross-operand
+bounds, subtraction, result extent/member construction and direct parent
+allocation. Allocation already incurred by a normal child stays transitive.
+Normal empty/full slices retain possible allocation and declared allowance.
+Lowering emits the existing three-argument builtin call, with non-tail ordered
+operands. Runtime extracts the actual third value and checks actual Vector
+and Integer values, bounded range and original closed nested/literal shapes
+before slicing once. Runtime remains 56 functions; no runtime helper, IR
+key/op, context key, cap or host builtin was added.
+
+The original test-only RED `c49456f9` ran 1 / 63 with 49 failures.
+Initial C7 passed 1 / 63; one later test namespace compilation exited 2 before
+tests, then C7 passed 2 / 213. Stronger own-row and transfer/child-priority
+controls passed 3 / 237; initial C8 passed 1 / 237. Initial lowering ran
+1 / 251 with two failures because an empty selected-types mutation left two
+valid results unchanged; the corrected oracle passed 2 / 295. Scoped C7
+passed 1 / 23. The first 50-selector batch stopped at 20 / 1,239, zero
+failures and one error: host `array-map` construction called opaque equality
+before Gravity received the fixture. Direct PersistentArrayMap construction
+corrected that test. The coalesced implementation `52d6db10` passed
+50 / 3,369, including all ten slice selectors and prior controls.
+Boundary passed 6 / 11; LOC passed 2,022 files, zero exceptions, maximum 250.
+Raw prefixes `/tmp/vector-slice-*` retain each original receipt and failure.
+
+Boundary and LOC were briefly launched together with the first SOURCE 2 GiB
+focused batch and D's 512 MiB RED, exceeding the standing two-Java limit.
+The two default-heap starts were SOURCE's, not D's; all ended naturally.
+Later cheap JVM work was serialized. Those ordinary passes do not establish
+resource-protocol compliance for that overlap or source-proof credit.
+
+Both independent implementation reviews accepted `52d6db10`.
+The one history-preserving join `1f2cc242` has parents `52d6db10` and
+accepted main `3af20721` (PRs 197/198). It changed only C11 Gravity and the
+SH12/SH13 tests and preserved all 12 owned slice files. The actual source
+route, entire host source tree, checked_core.gravity, resolution.gravity and
+P15 compiler.gravity were unchanged across the join. C11's path is compiler
+inventory data here; the selected C6 route uses SH07 checked-core build/verify,
+and the C11-named digest helper is host canonical-value hashing.
+No repeated 50-test stamp or blanket proof reuse was claimed.
+
+The exact 185-line method at `f2490680`, tree `0527a021`, was listed once
+with 512 MiB, original PTY 69944/natural zero, executing zero tests.
+After both method/resource reviews and a concrete one-shot authorization,
+original PTY 98034 ran once and exited naturally zero: 1 / 68 passed.
+One positive G function contains one nested conversion and one slice and
+returns the seven Characters in `sha256:` with empty stdout. Fresh C7/C8,
+assembly-required public C7 verification and one closed-plan entry are checked.
+The G end-72 negative has a 71-Character receiver and rejects
+STD3002/:vector-slice-bounds-required with actual/expected types and
+Core/syntax/binding/span provenance. Fresh negative C7 verification was asserted
+and printed passed; the secondary annotation diagnostic remains. Negative
+C8/runtime were not invoked; QST remains parser-only, with zero typed products.
+
+Both final actual/resource reviews and the coordinator accepted this exact
+scoped receipt; its one-shot boundary is closed without replay.
+
+Preserve `/tmp/vector-slice-source-lease-20261021`: immutable inputs/command,
+preflight/locks, original log/EDN, monitor and postflight. Separate dependency,
+monitor-plan, launch-eligibility and namespace-only receipts retain the exact
+joined tuple, 15 input pins plus 11 route pins and actual launch environment.
+All remained unchanged. The executable-string SHA excludes the final newline;
+the 1,463-byte command-file SHA includes it. Source used 2 GiB, the canonical
+lock and existing memory-heavy broker (27 ms wait, released), a 600-second
+operational stop, 8 MiB log ceiling and 4 KiB tails. Ten observations had maximum
+gap 17.474 seconds; no signal, retry or cap growth occurred. Six free-lock and
+empty selected-process postchecks are snapshots, not hard OS/RSS/descendant
+guarantees. Selected time was 137.352 seconds, runner 137.354 seconds and
+namespace loading 13.548 seconds; the 152.103-second monitor interval is not a
+provider CPU benchmark. Public fresh C6, parameter grounding, general Vector
+receivers, full SHA execution, native, authoritative migration, self-hosting
+and release remain unestablished by this slice.
+
 ### ASCII literal String vector conversion
 
 STD4 defines String `vec` as conversion to a Vector with one Character per

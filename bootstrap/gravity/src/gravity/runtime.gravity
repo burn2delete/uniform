@@ -1504,7 +1504,11 @@
         (get (get instruction :proof) :kind))
     (p15-s23-runtime-evaluate-indexed-operation instruction environment output functions path pool)
   (let [operation (get instruction :op)
-        fields (if (map? instruction) (set (keys instruction)) #{})
+        fields (if (map? instruction)
+                 (if (loop [remaining (keys instruction)]
+                       (if (= 0 (count remaining)) true
+                         (if (keyword? (first remaining)) (recur (rest remaining)) false)))
+                   (set (keys instruction)) #{}) #{})
         arguments (get instruction :args)
         function (get instruction :function)
         comparison? (if (symbol? function) (contains? '#{= < <= > >=} function) false)
@@ -1634,6 +1638,10 @@
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
                   (if (contains? '#{vec set string? keyword? map? integer? vector? count first rest empty? set? symbol? boolean? list?} function)
                     (if (= fields #{:op :function :args}) (if (= 1 (count arguments)) (map? (first arguments)) false) false)
+                  (if (= function 'subvec)
+                    (if (= fields #{:op :function :args})
+                      (if (= 3 (count arguments))
+                        (if (map? (first arguments)) (if (map? (get arguments 1)) (map? (get arguments 2)) false) false) false) false)
                   (if (= function 'get)
                     (if (= fields #{:op :function :args})
                       (if (= 3 (count arguments))
@@ -1651,7 +1659,7 @@
                           (loop [remaining arguments]
                             (if (= 0 (count remaining)) true
                               (if (map? (first remaining)) (recur (rest remaining)) false))) false) false)
-                      (if (= function 'str) (contains? #{1 2} (count arguments)) false))))))))) false) false) false)
+                      (if (= function 'str) (contains? #{1 2} (count arguments)) false)))))))))) false) false) false)
           (if (= operation :println)
             (if (contains? fields :args)
               (if (vector? arguments)
@@ -1739,7 +1747,7 @@
                   (p15-s23-runtime-evaluate-arguments-in-context
                    arguments environment output [] functions path [] pool)]
               (if (= :normal (get arguments-result 2))
-              (let [values (first arguments-result) left (first values) right (second values)]
+              (let [values (first arguments-result) left (first values) right (second values) end (get values 2)]
               (if (contains? '#{set string? keyword? map? integer? vector? first rest empty? set? symbol? boolean? list?} function)
                 (if (= function 'set)
                   (let [conversion (p15-s23-runtime-set-conversion-work left 65536)]
@@ -1837,6 +1845,34 @@
                                  [(set (keys factor-ir)) (set (keys quotient-ir)) (set (keys count-ir)) (set (keys divisor-ir))])
                             [(* left right) (second arguments-result) :normal] rejected)
                           rejected) rejected) rejected) rejected))
+              (if (= function 'subvec)
+                (let [receiver-ir (first arguments) start-ir (get arguments 1) end-ir (get arguments 2)
+                      literal-ir (if (vector? (get receiver-ir :args)) (first (get receiver-ir :args)) nil)
+                      rejected [{:diagnostic "P15S23X002" :reason :vector-slice-closed-bounds-required :operation operation}
+                                (second arguments-result) :rejected]]
+                  (if (if (vector? left) (if (integer? right) (integer? end) false) false)
+                    (if (if (<= (count left) 1024) (<= 0 right end (count left)) false)
+                      (if (loop [remaining [receiver-ir literal-ir start-ir end-ir]]
+                            (if (= 0 (count remaining)) true
+                              (let [item (first remaining)]
+                                (if (map? item)
+                                  (if (loop [fields (keys item)]
+                                        (if (= 0 (count fields)) true
+                                          (if (keyword? (first fields)) (recur (rest fields)) false)))
+                                    (recur (rest remaining)) false) false))))
+                        (if (if (= #{:op :function :args} (set (keys receiver-ir)))
+                              (if (= :builtin-call (get receiver-ir :op))
+                                (if (symbol? (get receiver-ir :function))
+                                  (if (= 'vec (get receiver-ir :function))
+                                    (if (vector? (get receiver-ir :args)) (= 1 (count (get receiver-ir :args))) false) false) false) false) false)
+                          (if (if (= [#{:op :value} #{:op :value} #{:op :value}]
+                                     [(set (keys literal-ir)) (set (keys start-ir)) (set (keys end-ir))])
+                                (if (= [:literal :literal :literal] [(get literal-ir :op) (get start-ir :op) (get end-ir :op)])
+                                  (if (string? (get literal-ir :value))
+                                    (if (integer? (get start-ir :value)) (integer? (get end-ir :value)) false) false) false) false)
+                            (if (= [right end (count left)] [(get start-ir :value) (get end-ir :value) (count (get literal-ir :value))])
+                              [(subvec left right end) (second arguments-result) :normal] rejected)
+                            rejected) rejected) rejected) rejected) rejected))
               (if (= function 'vec)
                 (let [literal-ir (first arguments)
                       rejected [{:diagnostic "P15S23X002" :reason :string-character-vector-closed-ascii-literal-required :operation operation}
@@ -1961,7 +1997,7 @@
                          (>= left right)))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected])))))))))))))))
+                (second arguments-result) :rejected]))))))))))))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result
