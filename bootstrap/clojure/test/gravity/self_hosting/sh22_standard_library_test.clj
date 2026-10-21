@@ -109,6 +109,7 @@
     sh22-checked-add-request
     sh22-checked-sub-request
     sh22-checked-mul-request
+    sh22-checked-nonnegative-quot-request
     sh22-error-request
     sh22-file-read-request
     sh22-stdout-request
@@ -133,6 +134,8 @@
    ['sh22-checked-sub-request "STD5001" :integer-overflow]
    'sh22-mul-overflow-request
    ['sh22-checked-mul-request "STD5001" :integer-overflow]
+   'sh22-zero-divisor-request
+   ['sh22-checked-nonnegative-quot-request "STD5002" :positive-divisor-required]
    'sh22-missing-capability-request
    ['sh22-file-read-request "STD8001" :missing-io-authority]
    'sh22-missing-encoding-request
@@ -202,7 +205,7 @@
     (is (= 512 (:maximum-carrier-width policy)))
     (is (= 65536 (:maximum-carrier-nodes policy)))
     (is (true? (:experimental-opt-in-required policy)))
-    (is (= 20 (count (:operation-set policy))))
+    (is (= 21 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
     (is (contains? (:diagnostics policy) "STD8001"))
     (is (some #{:authenticated-sh19-runtime-services}
@@ -213,7 +216,7 @@
     (is (= 'gravity.stdlib.self-hosting-core (:module manifest)))
     (is (= :experimental (:stability manifest)))
     (is (empty? (:unsafe-islands manifest)))
-    (is (= 20 (count exports)))
+    (is (= 21 (count exports)))
     (is (every? #(= :experimental (:stability %)) exports))
     (is (every? #(= #{:meta} (:profiles %)) exports))
     (is (every? string? (map :type exports)))
@@ -666,7 +669,7 @@
                          [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
                          [(assoc base :allocation-policy :bounded-by-result) "STD1001" :allocation-policy-mismatch]
                          [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]
-                         [(assoc base :operation nil) "STD1001" :malformed-library-request]])]
+                         [(assoc base :operation nil) "STD8001" :missing-io-authority]])]
           (let [[result calls] (observe input)]
             (is (= :rejected (:status result)))
             (is (= rule (get-in result [:diagnostics 0 :rule])))

@@ -45,6 +45,7 @@
      :checked-add-i64
      :checked-sub-i64
      :checked-mul-i64
+     :checked-nonnegative-quot-i64
      :error-context
      :io-file-read
      :io-stdout
@@ -54,7 +55,7 @@
    :experimental-opt-in-required true
    :diagnostics
    #{"STD1001" "STD1002" "STD1003" "STD2004" "STD3001" "STD3002"
-     "STD4001" "STD5001" "STD8001" "STD8003"
+     "STD4001" "STD5001" "STD5002" "STD8001" "STD8003"
      "STD10003" "STD15001" "STD20001"}
    :pending
    [:authenticated-sh13-control-flow
@@ -148,6 +149,10 @@
      "I64 I64 -> (Result I64 NumericError)"
      #{} #{}
      :none ["STD5001"] #{:meta})
+    (sh22-export
+     :checked-nonnegative-quot-i64 :numeric
+     "I64 I64 -> (Result I64 NumericError)"
+     #{} #{} :none ["STD5001" "STD5002"] #{:meta})
     (sh22-export
      :error-context :core
      "Keyword Map (Vector Keyword) -> ErrorValue"
@@ -1003,6 +1008,36 @@
     :safety-outcome :proven-safe
     :allocation :none}))
 
+(defn sh22-checked-nonnegative-quot [request]
+  (let [arguments (get request :arguments)
+        dividend (get arguments 0)
+        divisor (get arguments 1)]
+    (if (= 2 (count arguments))
+      (if (integer? dividend)
+        (if (integer? divisor)
+          (let [policy (sh22-library-policy)
+                minimum (get policy :integer-minimum)
+                maximum (get policy :integer-maximum)]
+            (if (if (<= minimum dividend) (<= dividend maximum) false)
+              (if (if (<= minimum divisor) (<= divisor maximum) false)
+                ; STD5/SAFE9: this domain makes division total and keeps
+                ; 0 <= quotient <= dividend without signed-rounding policy.
+                (if (>= dividend 0)
+                  (if (> divisor 0)
+                    (sh22-accepted
+                     request
+                     {:artifact :gravity/result :variant :ok
+                      :value (quot dividend divisor)}
+                     {:numeric-mode :checked-i64 :safety-outcome :proven-safe
+                      :allocation :none})
+                    (sh22-rejected request "STD5002" :positive-divisor-required))
+                  (sh22-rejected request "STD5002" :nonnegative-dividend-required))
+                (sh22-rejected request "STD5001" :integer-out-of-range))
+              (sh22-rejected request "STD5001" :integer-out-of-range)))
+          (sh22-rejected request "STD5001" :expected-integer))
+        (sh22-rejected request "STD5001" :expected-integer))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
 (defn sh22-error-context [request]
   (let [arguments (get request :arguments)
         code (get arguments 0)
@@ -1384,7 +1419,9 @@
 
 (defn sh22-handle-valid-request [request]
   (let [operation (get request :operation)]
-    (if (= operation :ordered-set-contains-integer)
+    (if (= operation :checked-nonnegative-quot-i64)
+      (sh22-checked-nonnegative-quot request)
+      (if (= operation :ordered-set-contains-integer)
       (sh22-ordered-set-contains-integer request)
       (if (= operation :ordered-set-equal-keyword)
       (sh22-ordered-set-equal-keyword request)
@@ -1422,7 +1459,7 @@
                           (sh22-artifact-data request)
                           (if (= operation :meta-view)
                             (sh22-meta-view request)
-                            (sh22-canonical-data request))))))))))))))))))
+                            (sh22-canonical-data request)))))))))))))))))))
 
 (defn sh22-operation-effects [operation]
   (if
@@ -1445,7 +1482,9 @@
       #{}))))
 
 (defn sh22-operation-allocation [operation]
-  (if (= operation :ordered-set-contains-integer)
+  (if (= operation :checked-nonnegative-quot-i64)
+    :none
+    (if (= operation :ordered-set-contains-integer)
     :none
     (if (= operation :ordered-set-equal-keyword)
     :none
@@ -1471,7 +1510,7 @@
                        #{:io-file-read :io-stdout}
                        operation)
                     :provider-owned
-                    :bounded-by-result)))))))))))))
+                    :bounded-by-result))))))))))))))
 
 (defn sh22-operation-capabilities [operation]
   (if (= operation :io-file-read)
