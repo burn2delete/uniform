@@ -752,6 +752,67 @@
         (is (not (contains? retained :unsafe-audit-id))))
       (is (= baseline (optimize base))))))
 
+(deftest sh16-rejections-retain-the-first-failing-operation-source
+  ;; Supplied normalized locations are diagnostic DATA, not source admission.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (update (request plan 'sh16-mixed-optimization-request) :operations
+                       (fn [operations]
+                         (mapv (fn [index operation]
+                                 (assoc operation :origin-chain
+                                        [{:kind :generated :source-id :source/operation
+                                          :generator-id (keyword "generator" (str index))}]))
+                               (range) operations)))
+          bad-add (assoc-in base [:operations 0 :type] :bool)
+          bad-branch (assoc-in base [:operations 1 :condition] nil)
+          bad-check (-> base (assoc-in [:operations 3 :elide-requested] true)
+                        (assoc-in [:operations 3 :proof] {}))
+          both (assoc-in bad-add [:operations 3] (get-in bad-check [:operations 3]))
+          rejected
+          (fn [subject reason operation]
+            (let [result (optimize subject) diagnostic (first (:diagnostics result))
+                  legacy (invoke-engine 'sh16-diagnostic [subject reason])
+                  expected (if operation
+                             (assoc legacy :source-span (:source-span operation)
+                                    :origin-chain (:origin-chain operation)) legacy)
+                  mutant (assoc-in result [:diagnostics 0 :source-span :start] 999)
+                  altered (invoke-engine 'sh16-verify [subject mutant])]
+              (is (= :rejected (:status result)))
+              (is (= reason (:reason diagnostic)))
+              (is (= reason (invoke-engine 'sh16-request-error [subject])))
+              (is (= expected diagnostic))
+              (is (= (:source-span expected) (:source-span diagnostic)))
+              (is (= (:origin-chain expected) (:origin-chain diagnostic)))
+              (is (nil? (:optimized-operations result)))
+              (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
+              (is (= :rejected (:status altered)))
+              (is (= :optimization-result-substitution (get-in altered [:diagnostics 0 :reason])))))]
+      (doseq [[subject reason index]
+              [[bad-add :safety 0] [bad-branch :contract 1] [bad-check :proof 3]
+               [(assoc-in base [:operations 1 :effects] #{:io/write}) :effect 1]
+               [both :safety 0]
+               [(assoc-in bad-branch [:operations 3] (get-in bad-check [:operations 3])) :contract 1]]]
+        (rejected subject reason (get-in subject [:operations index])))
+      ;; Invalid first-operation metadata keeps the COMPLETE legacy location;
+      ;; never skip the first fault in search of a later usable source.
+      (doseq [subject [(assoc-in both [:operations 0 :source-span] nil)
+                       (update-in both [:operations 0] dissoc :source-span)
+                       (assoc-in both [:operations 0 :source-span :end] -1)
+                       (assoc-in both [:operations 0 :origin-chain] [])
+                       (assoc-in both [:operations 0 :origin-chain] nil)]]
+        (rejected subject :contract nil))
+      (doseq [[subject reason]
+              [[(assoc both :mir-verified false) :contract]
+               [(assoc both :source-span nil) :preserve]
+               [(assoc both :origin-chain []) :preserve]
+               [(assoc both :nondeterministic-choice true) :nondeterminism]
+               [(update both :operations conj (first (:operations both))) :verify]
+               [(assoc both :operations (apply list (:operations both))) :contract]]]
+        (rejected subject reason nil))
+      (let [accepted (optimize base)]
+        (is (= :accepted (:status accepted)))
+        (is (= accepted (invoke-engine 'sh16-accepted-artifact [base])))
+        (is (= :passed (:status (invoke-engine 'sh16-verify [base accepted]))))))))
+
 (deftest sh16-rejects-irrelevant-fields-and-noncanonical-identifiers
   (let [base
         (request accepted-gravity-plan 'sh16-no-change-request)
