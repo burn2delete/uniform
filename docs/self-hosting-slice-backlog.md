@@ -7147,6 +7147,35 @@ ownership review found no dependency on the changed SH22 UTF8/stdout owners;
 no replay was needed. Public fresh C6, native, authoritative migration, whole
 helpers, reader parameters, self-hosting and release remain unestablished.
 
+### SHA-prefix comparison: existing behavior composition
+
+The literal SHA-prefix expression now has combined development coverage:
+original ASCII-71 `vec`, proven slice 0..7 and finite Character-Vector equality
+produce true for the correct prefix and false for a same-length wrong prefix.
+Existing production passes; this is new composition coverage, not a compiler fix.
+Frozen `0ef4de19` passes 13 / 1,701, with four new selectors / 331 assertions
+and nine existing controls. Nested proof/fact/ledger rejection, Never, eager
+evaluation and allocation joins pass; LOC reports 2,022 / zero exceptions / 250.
+
+One history-preserving join brought accepted C11/SH13 progress from `a31ffda2`
+without changing owned or selected source-route bytes. At `cad84ea9`, the
+one-shot source run produced `[true false]` with two conversions, two slices,
+two equalities, fresh C7/C8 and public C7 assembly verification. The Map negative
+correctly produced C7-TYPE-MISMATCH/:vector-equality-operand-type-required,
+expected two-established-finite-vector-values, with fresh C7 verification passed.
+The aggregate is FAILED 77P/7F/0E in 1 / 84 because the test's atomic-diagnostic
+filter returned nil. The two-token oracle-only correction `5e139891` preserves
+that failed history. A separate retained printed-diagnostic DATA check passes
+1 / 30, including bounded wrong/missing/forged controls and the original raw-log
+hash; it has zero fresh compiler/source invocations and grants no green source
+selector credit. No unchanged producer was replayed. Detailed pre-test failure,
+source failure, resource and reconciliation receipts remain external under
+`/tmp/sha-prefix-comparison-*`; the default workflow is unchanged.
+
+String-parameter/alias grounding, String count policy, full SHA helpers,
+arbitrary receivers, public fresh C6, native, authoritative migration,
+self-hosting and release remain outside this coverage.
+
 ### Proven Vector slice: development increment
 
 The next dependency of the real SHA-prefix expression is ternary `subvec`
