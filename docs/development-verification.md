@@ -489,6 +489,16 @@ Test missing/corrupt proof rejection and decision/aggregate substitution through
 the original recomputing verifier. This reports supplied normalized proof DATA,
 not provider verification, fresh C11 input, native execution or admission.
 
+For C13 RETURN control preservation, run
+`sh16-unused-result-proofs-do-not-authorize-return-removal` in the same
+namespace. The normalized no-use/effect-free proof has no control-flow
+unreachability premise and cannot authorize deleting a RETURN; reject it with
+`C13-PROOF`. Preserve live returns, pure const/ADD/compute DCE, earlier proof,
+effect, safety and source diagnostics, and the existing runtime-check
+`C13-SAFETY` fence. Branch/branch-if policy is not changed by this repair.
+Use original optimization/recomputation controls over supplied normalized DATA;
+this adds no CFG proof, provider evidence, fresh C11 input or native execution.
+
 For C13 rejected-operation attribution, run
 `sh16-rejections-retain-the-first-failing-operation-source` in the same namespace.
 The original ordered checks retain the first failing operation and reason.

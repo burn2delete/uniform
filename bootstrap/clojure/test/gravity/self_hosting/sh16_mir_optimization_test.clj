@@ -216,6 +216,67 @@
             (invoke-engine
              'sh16-verify [gravity-request gravity-result]))))))
 
+(deftest sh16-unused-result-proofs-do-not-authorize-return-removal
+  ;; C11 RETURN is a control transfer. This normalized no-use proof has no
+  ;; CFG/unreachability premise, regardless of its supplied verified marker.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-no-change-request)
+          return (last (:operations base))
+          dead-return (assoc return :dead true
+                             :dead-proof {:proof-id :proof/return-unused
+                                          :operation-id (:op-id return)
+                                          :no-uses true :effect-free true :verified true})
+          input (assoc-in base [:operations 1] dead-return)
+          rejected (fn [subject rule]
+                     (let [result (optimize subject)]
+                       (is (= :rejected (:status result)))
+                       (is (= rule (get-in result [:diagnostics 0 :rule])))
+                       (is (nil? (:optimized-operations result)))
+                       (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
+          result (optimize input)
+          baseline (optimize base)]
+      (is (false? (invoke-engine 'sh16-result-id-used-from? [(:result return) (:operations input) 0])))
+      (is (false? (invoke-engine 'sh16-dead-proof-valid? [dead-return (:operations input)])))
+      (rejected input "C13-PROOF")
+      (is (= :proof (get-in result [:diagnostics 0 :reason])))
+      (is (= (:source-span return) (get-in result [:diagnostics 0 :source-span])))
+      (is (= (:origin-chain return) (get-in result [:diagnostics 0 :origin-chain])))
+      (is (= :accepted (:status baseline)))
+      (is (= (:operations base) (:optimized-operations baseline)))
+      (is (= return (last (:optimized-operations baseline))))
+      (is (= :passed (:status (invoke-engine 'sh16-verify [base baseline]))))
+      (is (= :rejected (:status (invoke-engine 'sh16-verify
+                                             [base (update baseline :optimized-operations pop)]))))
+      (is (= :rejected (:status (invoke-engine 'sh16-verify [input baseline]))))
+      (doseq [[subject rule]
+              [[(update-in input [:operations 1] dissoc :dead-proof) "C13-PROOF"]
+               [(assoc-in input [:operations 1 :dead-proof :operation-id] :op/other) "C13-PROOF"]
+               [(assoc-in input [:operations 1 :dead-proof :verified] false) "C13-PROOF"]
+               [(assoc-in input [:operations 1 :effects] #{:io/write}) "C13-EFFECT"]
+               [(assoc-in input [:operations 1 :safety-outcome] :rejected) "C13-SAFETY"]
+               [(assoc input :operations
+                       [(assoc (get-in (request plan 'sh16-mixed-optimization-request) [:operations 3])
+                               :dead true
+                               :dead-proof {:proof-id :proof/check-unused :operation-id :op/bounds-check
+                                            :no-uses true :effect-free true :verified true})]) "C13-SAFETY"]
+               [(assoc input :source-span nil) "C13-PRESERVE"]
+               [(update input :operations conj return) "C13-VERIFY"]]]
+        (rejected subject rule))
+      ;; The existing no-use/effect-free proof remains sufficient for pure
+      ;; value producers; RETURN is not a new spelling of those operations.
+      (doseq [operation [(first (:operations base))
+                         (first (:operations (request plan 'sh16-mixed-optimization-request)))
+                         (get-in (request plan 'sh16-mixed-optimization-request) [:operations 2])]]
+        (let [dead (assoc operation :op-id :op/dead-value :result :value/dead-value :dead true
+                          :dead-proof {:proof-id :proof/dead-value :operation-id :op/dead-value
+                                       :no-uses true :effect-free true :verified true})
+              subject (update base :operations #(into [dead] %))
+              optimized (optimize subject)]
+          (is (= :accepted (:status optimized)))
+          (is (= (:operations base) (:optimized-operations optimized)))
+          (is (= [:op/dead-value] (get-in optimized [:decision-log 2 :changed-operations])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject optimized])))))))))
+
 (deftest sh16-records-only-used-dce-and-runtime-proof-occurrences
   ;; Normalized proof IDs describe supplied records, not provider authority.
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]

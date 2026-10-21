@@ -9243,6 +9243,27 @@ invalidation, no-change records, rejected proofs and substituted usage. This is
 normalized proof DATA, not provider verification, fresh authenticated C11/source
 construction, native execution, admission or migration evidence.
 
+The next C13 semantic repair prevents an unused-result proof from authorizing
+RETURN removal. Previously a pure RETURN's artificial result could have no
+uses, satisfy the exact normalized dead-proof record and be deleted by DCE,
+losing the control transfer. That proof has no CFG/unreachability premise;
+the original proof gate now rejects this case with `C13-PROOF`. Live returns
+and valid pure const/ADD/compute deletion remain unchanged. Existing diagnostic
+priority and the runtime-check `C13-SAFETY` fence survive; branch/branch-if
+policy, schemas, bounds and public APIs are unchanged.
+
+The `f0ec0dad` RED run retained 96 passes and 14 failures in 110 assertions,
+without errors. Candidate `33d1d2c0` passed 16 tests/1,546 assertions: 118 new
+(the original 110 plus eight runtime-check safety assertions, not an oracle
+correction) and 1,428 adjacent. Boundary checks separately passed six tests/11
+assertions: 22/1,557 across two passing invocations. LOC separately passed
+2,021 files, zero exceptions, maximum 250. The normal join of SOURCE PR153
+preserved both owned files and changed no executed raw compiler-rule/host
+dependency; results retain their original candidate binding, not a joined
+replay. These G/Q supplied normalized proof records and fresh recomputation
+checks do not establish CFG proof, provider verification, fresh authenticated
+C11/source input, native execution or migration evidence.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
