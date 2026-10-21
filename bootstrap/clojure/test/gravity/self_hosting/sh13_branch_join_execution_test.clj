@@ -142,6 +142,91 @@
             (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
       (finally (.delete same-arms)))))
 
+(deftest sh13-executes-original-c6-bool-parameter-with-integer-arms
+  ;; These are actual source-derived Integer results, not i64-retagged Core.
+  ;; The existing argument API still accepts exactly one physical Bool.
+  (let [root @(existing 'root)
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"]
+    (doseq [[extension then-value else-value executable?]
+            [["gravity" 1 0 true]
+             ["qst" Long/MIN_VALUE Long/MAX_VALUE true]
+             ["gravity" 9223372036854775808N 0 false]]]
+      (let [source (str (.resolve root (str relative "." extension)))
+            temporary (java.io.File/createTempFile "gravity-sh13-integer-arms-" (str "." extension))]
+        (try
+          (spit temporary (str/replace (slurp source) "(if flag true false)"
+                                      (str "(if flag " then-value " " else-value ")")))
+          (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
+                verification (invoke 'sh12-verify-branch-join-mir core mir)
+                nodes (:core-nodes core) binder (first nodes) id (:node-id binder)
+                return-type (get-in nodes [6 :type])
+                outcomes (when (= :passed (:status verification))
+                           (mapv #(argument-run-observation core mir [%]) [true false]))]
+            (is (= :accepted (:status raw)))
+            (is (= :passed (:status upstream)))
+            (is (= :passed (:status verification)) (pr-str (:diagnostics verification)))
+            (when (= :passed (:status verification))
+              (is (= :gravity/integer (get-in return-type [:return])
+                     (get-in mir [:functions 'main :returns])))
+              (is (= [:gravity/bool :gravity/bool :gravity/bool
+                      :gravity/integer :gravity/integer :gravity/integer return-type]
+                     (mapv :type nodes)))
+              (is (= {:value-id id :parameter-index 0
+                      :block-id (get-in mir [:functions 'main :entry])}
+                     (get-in mir [:data-flow-graph :definitions id])))
+              (doseq [[argument result] (map vector [true false] outcomes)]
+                (if executable?
+                  (do
+                    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+                    (when (= :accepted (:status result))
+                      (is (= [argument] (:arguments result)))
+                      (is (= (if argument then-value else-value) (get-in result [:execution :value])))
+                      (is (= 506 (get-in result [:execution :fuel])))
+                      (is (= [(get-in nodes [1 :node-id]) (get-in nodes [2 :node-id])
+                              (get-in nodes [(if argument 3 4) :node-id])]
+                             (vec (keep :operation (get-in result [:execution :trace])))))
+                      (is (= [:gravity/bool :gravity/bool :gravity/integer :gravity/integer
+                              :gravity/integer return-type]
+                             (mapv :source-type (get-in result [:projection :operations]))))
+                      (is (= [:bool :bool :i64 :i64 :i64 :i64]
+                             (mapv :runtime-type (get-in result [:projection :operations]))))
+                      (is (= :gravity/bool (get-in result [:projection :parameters 0 :source-type])))
+                      (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                                     core mir [argument] result))))
+                      (doseq [candidate [(assoc result :arguments [(not argument)])
+                                         (assoc-in result [:execution :value] false)
+                                         (assoc-in result [:projection :operations 2 :source-type] :gravity.type/i64)
+                                         (assoc-in result [:projection :parameters 0 :definition :operation-id] nil)]]
+                        (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                                        core mir [argument] candidate)))))))
+                  (do
+                    ;; A wide unselected arm must reject too: C11 retains
+                    ;; mathematical Integer, but this interpreter is i64.
+                    (is (= :rejected (:status result)))
+                    (is (= :passed (get-in result [:upstream-verification :status])))
+                    (is (= ["C11-VERIFY" :bounded-execution-subset]
+                           ((juxt :diagnostic-id :missing-fact) (first (:diagnostics result)))))
+                    (is (nil? (:execution result))))))
+              (doseq [[bad-core bad-mir]
+                      [[(assoc-in core [:core-nodes 4 :type] :gravity/bool) mir]
+                       [(assoc-in core [:core-nodes 3 :attributes :value] false) mir]
+                       [(assoc-in core [:core-nodes 6 :type :return] :gravity/bool) mir]
+                       [(assoc-in core [:type-facts (get-in nodes [6 :node-id]) :return] :gravity/bool) mir]
+                       [(assoc-in core [:effect-facts id :direct] #{:io/write}) mir]
+                       [(assoc-in core [:proof-records (get-in nodes [4 :node-id]) :proof-id] nil) mir]
+                       [(assoc-in core [:source-origin-table (get-in nodes [3 :source :origin-id])] nil) mir]
+                       [core (assoc-in mir [:functions 'main :returns] :gravity/bool)]
+                       [core (assoc-in mir [:data-flow-graph :definitions id :operation-id] nil)]
+                       [core (assoc-in mir [:control-flow-graph :join :incoming] [])]]]
+                (let [original (invoke 'sh12-verify-branch-join-mir bad-core bad-mir)
+                      rejected (argument-run-observation bad-core bad-mir [nil])]
+                  (is (= :rejected (:status original) (:status rejected)))
+                  (is (= (:diagnostics original) (:diagnostics rejected)))
+                  (is (nil? (:execution rejected)))))
+              (is (= :rejected (:status (run core mir))))
+              (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))))
+          (finally (.delete temporary)))))))
+
 (defn- scalar-core [core condition type then-value else-value]
   (let [values [condition then-value else-value nil nil]
         types [:gravity.type/bool type type type type]]
