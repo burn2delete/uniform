@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.string-vector-unsupported-nonascii
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main [] (vec "\u00e9"))

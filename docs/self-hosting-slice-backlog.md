@@ -7147,6 +7147,95 @@ ownership review found no dependency on the changed SH22 UTF8/stdout owners;
 no replay was needed. Public fresh C6, native, authoritative migration, whole
 helpers, reader parameters, self-hosting and release remain unestablished.
 
+### ASCII literal String vector conversion: development increment
+
+The real SHA-prefix client in checked_core.gravity and resolution.gravity uses
+`(= (subvec (vec value) 0 7) [\s \h \a \2 \5 \6 \:])`.
+Finite Character-Vector equality was already implemented. Unary String `vec`
+is an earlier missing dependency. STD4 now states its general scalar-sequence
+law: one Character per Unicode scalar in original order, empty to empty,
+without normalization, coercion or supplementary-scalar splitting, retaining
+ordinary evaluation, transfers and possible allocation/storage policy.
+
+The implemented subset is original finite ASCII literals only, not a claim
+about the client's parameter. The current seed interface supplies no general
+scalar-code extractor; an explicit quoted NUL-through-DEL Character domain
+avoids adding a host builtin or treating surrogate units as valid Characters.
+Physical String/source widths and IDs precede walks and comparisons. Complete
+128-domain validation precedes result types or conversion; the existing
+1,024-width/65,536-work bounds remain. Unsupported non-ASCII, supplementary
+and malformed host text reject C7-ANNOTATION/:string-character-vector-unsupported-text
+without an invalid-Unicode claim. No alias, flow-refinement, parameter, subvec,
+generic-sequence or whole-SHA grounding follows.
+
+Each existing C7, C8 and emitter consumer reconstructs the original literal,
+resolved binding, ordered call/edge and source joins, complete positional
+Character result, unique call facts and ledger. Candidate metadata is compared
+against the independently derived descriptor. Normal direct/latent allocation
+and pending representation/provider/ownership survive even for empty input;
+Never preserves the transfer with no normal result extent or direct result
+allocation. The runtime checks the actual String and original closed literal
+shape, then validates all units before the existing conversion. Instrumented
+controls observe no conversion for unsupported/overwidth input. Runtime remains
+56 functions, with all nine protected carrier predicates unchanged. There is
+no new runtime function, IR key/op, wrapper, bridge, context key or cap. These
+are logical work and selected callback checks, not universal host/FFI containment.
+
+Retain the failed history. Original broader-BMP inference RED at `4a5a6192`
+was 1 / 36 with 32 failures; the separate ASCII revision also recorded 1 / 36
+with 32 failures before support. Initial ASCII inference then passed 1 / 36.
+One C7 namespace compilation and one SH01 namespace compilation exited 2 before
+tests. The first C7 proof test ran 1 / 108 with five oracle failures because
+it looked for nested diagnostics on a direct helper result; the corrected
+proof/scoped batch passed 2 / 131. First C8 passed 1 / 104; corrected-syntax
+lowering/runtime/transfer passed 3 / 176. Draft-only syntax repairs have no
+source-execution credit. Raw prefixes remain `/tmp/literal-string-vector-*`
+and `/tmp/ascii-string-vector-*`.
+
+The coalesced earlier candidate `88e67a9d` passed 39 / 2,420: nine new
+selectors, nine quotient, nine scaling, five concatenation, four shared scoped
+and three Set conversion controls. Boundary passed 6 / 11; LOC passed for 2,022
+files, zero exceptions, maximum 250 lines. Review found one actual metadata
+closure gap: each new source helper copied the edge ordinal without checking
+its physical Integer/nonnegative domain. Coherent nil/negative/opaque ordinal
+controls reproduced 12 failures in 3 / 231 at test-only `1468eef2`. The one
+grouped correction `e642fb32` guarded all three owners and passed 14 / 579,
+including ten ASCII selectors and four scoped controls. The earlier 39-test
+pass is not a post-correction replay.
+
+The exact 168-line source method at `e22f9f88` was namespace-listed without
+invocation, then ran once under the reviewed lease. Its form has 55 static
+assertion forms; execution counted 61 actual assertions: 1 / 61 passed, original
+PTY 57427/natural zero. One positive G function/call reached fresh C7/C8,
+assembly-required public C7 verification and one closed entry returning [\s \h \a \2 \5 \6 \:]
+with empty stdout. The valid non-ASCII G negative retained String type, ASCII
+expectation and Core/syntax/binding/span provenance; fresh negative C7
+verification was asserted and printed passed, with secondary C7-ANNOTATION
+retained. Negative C8/runtime were not invoked and QST remains parser-only.
+
+Preserve `/tmp/ascii-string-vector-source-lease-20261021`: 15 unchanged
+inputs including STD4 and C6 projection plus matching command/argv-env/CWD,
+actual 2 GiB heap, 132.879 seconds selected time and 12.919 seconds namespace
+loading. The 148.220-second monitor interval includes dispatch/poll completion,
+not provider CPU benchmarking. Ten observations had maximum gap 16.370 seconds;
+no limit crossing, signal, retry or bound growth occurred. Broker wait was
+20 ms and finally release was observed. Six free-lock/no-Java/Clojure/Clang
+postcheck observations are snapshots, without hard OS/RSS/descendant containment.
+Source stayed `e22f9f88` on `b29ae6c8` while main advanced to `6617b67f`.
+The one history-preserving join `990ce8c8` retained all 12 producer/method file
+bytes. Direct trace follows SH07 session/from-resolution/request/structural
+execution to checked_core.gravity and named SH07 build/verify functions, not
+the changed private C6-C10 pipeline. Its actual compiler/emitter, source route
+and projection are unchanged. The private C6 old zero-arity constructor is
+byte-identical after its name change and old hosted export precedence survives.
+That separate producer now supports one source-derived Bool parameter in its
+private Core family; existing MIR/runtime still reject that family. It does not
+ground the SHA String parameter. Post-join namespace listing checked combined
+load/discovery only; no fresh source proof was run or blanket validity claimed.
+Public fresh C6, full Unicode conversion, parameter/alias grounding, subvec,
+complete helpers, native, authoritative migration, self-hosting and release
+remain unestablished.
+
 ### Count-bounded quotient scaling: development increment
 
 The emitter's actual `(* 2 (quot (count bindings) 4))` subexpression motivates

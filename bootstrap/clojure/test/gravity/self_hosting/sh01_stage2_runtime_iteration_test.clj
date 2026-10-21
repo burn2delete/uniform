@@ -29854,6 +29854,179 @@
           (do (is (= '[main] (mapv second definitions)))
               (is (= 2 (count (rest (last (first definitions))))))))))))
 
+(defn- literal-string-vector-kernel-context [input]
+  (let [c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        {:keys [core node call edge nodes forms bindings types module]} input
+        result (c7 'sh08-scv-derive [core node call edge nodes bindings types forms 65536])
+        descriptor (:descriptor result)]
+    {:result result :descriptor descriptor
+     :context {:core core :nodes nodes :forms forms :bindings bindings
+               :types (assoc types (:operator-node-id call) descriptor (:core-node-id call) (:type result))
+               :calls {(:core-node-id call) call} :edges {(:core-node-id call) edge}
+               :call-order {(:core-node-id call) (:ordinal edge)}
+               :call-facts {(:core-node-id call) (c7 'sh08-scv-call-fact [descriptor module])}
+               :ledger [(c7 'sh08-scv-constraint [descriptor])]
+               :locals {} :parameter-types {} :tail? true}}))
+
+(deftest current-gravity-ascii-string-vector-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'literal-string-vector-input)
+        transfer (ns-resolve upstream 'literal-string-vector-transfer-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))]
+    (doseq [value ["" "sha256:" (apply str (map char (range 128))) (apply str (repeat 1024 \a)) nil]]
+      (let [base (if (nil? value) (transfer) (input value))
+            {:keys [context descriptor result]} (literal-string-vector-kernel-context base)
+            compile #(lower 'p15-s23-typed-compile-node %1 :call %2)
+            compiled (compile context 65536)]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= 'vec (get-in compiled [:value :function])))
+        (is (= #{:op :function :args} (set (keys (:value compiled)))))
+        (when (= :complete (:status compiled))
+          (is (= compiled (compile context (:work-count compiled))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count compiled))) [:facts :reason])))
+          (if (nil? value)
+            (is (= ["original vec transfer" "" :thrown]
+                   (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {} ""])))
+            (do (is (= {:op :builtin-call :function 'vec :args [{:op :literal :value value}]} (:value compiled)))
+                (is (= [(vec value) "" :normal]
+                       (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {} ""]))))))
+        (doseq [changed [(dissoc descriptor :kind) (assoc descriptor :kind nil)
+                         (assoc descriptor :kind (Object.)) (assoc descriptor :kind :gravity.type/applied-string-concat)
+                         (assoc-in descriptor [:conversion-policy :utf16-splitting] :allowed)
+                         (assoc-in descriptor [:conversion-proof :scalar-count] 99)
+                         (assoc-in descriptor [:storage-policy :allocation] :none)
+                         (assoc descriptor :direct-effects (if (nil? value) [:memory/allocate] []))]]
+          (let [candidate (-> context (assoc-in [:types :operator] changed)
+                              (assoc-in [:call-facts :call] (c7 'sh08-scv-call-fact [changed (:module base)]))
+                              (assoc :ledger [(c7 'sh08-scv-constraint [changed])]))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (when (= value "sha256:")
+          (let [callbacks (atom 0) opaque (proxy [Object] []
+                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII lowering ordinal hash")))
+                                         (equals [_] (swap! callbacks inc) (throw (AssertionError. "ASCII lowering ordinal equality"))))]
+            (doseq [ordinal [nil -1 opaque]]
+              (let [changed (assoc-in descriptor [:source-edge :ordinal] ordinal)
+                    candidate (-> context (assoc-in [:types :operator] changed)
+                                  (assoc-in [:edges :call :ordinal] ordinal) (assoc-in [:call-order :call] ordinal)
+                                  (assoc-in [:core :call-edges 0 :ordinal] ordinal)
+                                  (assoc-in [:call-facts :call] (c7 'sh08-scv-call-fact [changed (:module base)]))
+                                  (assoc :ledger [(c7 'sh08-scv-constraint [changed])]))]
+                (is (= :rejected (:status (compile candidate 65536))))))
+            (is (= :complete (:status (compile context 65536))))
+            (is (zero? @callbacks))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(assoc % :call-facts {}) #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:nodes :operator :attributes :symbol] 'identity)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-ascii-string-vector-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection)) literal #(hash-map :op :literal :value %)
+        query #(hash-map :op :builtin-call :function 'vec :args [%])
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])]
+    (doseq [value ["" "sha256:" (apply str (map char (range 128))) (apply str (repeat 1024 \a))]]
+      (is (= [(vec value) "" :normal] (evaluate (query (literal value))))))
+    (doseq [value ["e\u0301" "\u00E9" "\uD83D\uDE00" "\uD800" "\uDC00"
+                   (apply str (repeat 1025 \a)) nil 4 [\s \h \a]]]
+      (is (= :rejected (last (evaluate (query (literal value)))))))
+    (doseq [instruction [(query {:op :quote :value "sha256:"})
+                          (assoc (query (literal "sha256:")) :proof {:domain :forged})
+                          (assoc (query (literal "sha256:")) :args [])
+                          (assoc (query (literal "sha256:")) :args [(literal "a") (literal "b")])]]
+      (is (= :rejected (last (evaluate instruction)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII runtime hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "ASCII runtime equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "ASCII runtime formatting"))))]
+      (is (= :rejected (last (evaluate (query (literal opaque))))))
+      (is (= :rejected (last (evaluate (assoc (query (literal "sha256:")) :function opaque)))))
+      (is (zero? @callbacks)))
+    (let [original-into clojure.core/into conversions (atom 0)
+          observed-into (fn
+                          ([to from] (when (string? from) (swap! conversions inc)) (original-into to from))
+                          ([to xf from] (when (string? from) (swap! conversions inc)) (original-into to xf from)))]
+      (with-redefs [clojure.core/into observed-into]
+        (doseq [value ["\u00E9" "\uD83D\uDE00" "\uD800" (apply str (repeat 1025 \a))]]
+          (is (= :rejected (last (evaluate (query (literal value)))))))
+        (is (zero? @conversions))
+        (is (= [(vec "sha256:") "" :normal] (evaluate (query (literal "sha256:")))))
+        (is (= 1 @conversions))))
+    (let [payload (Object.) say (fn [value] {:op :do :body [{:op :println :args [(literal "operand")]
+                                                          :effect :io/write :capability :io/stdout} value]})
+          thrown (evaluate (query (say {:op :throw :value (literal payload)})))
+          unsupported (evaluate (query (say (literal "sha256:"))))]
+      (is (identical? payload (first thrown)))
+      (is (= ["operand\n" :thrown] (subvec thrown 1)))
+      (is (= ["operand\n" :rejected] (subvec unsupported 1))))))
+
+(deftest current-gravity-ascii-string-vector-transfer-fence-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input (ns-resolve upstream 'literal-string-vector-input)
+        transfer-input (ns-resolve upstream 'literal-string-vector-transfer-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        base (transfer-input) form (get-in base [:forms :arg0])
+        operand {:node-id :arg0 :core-form :recur :children [] :source (get-in base [:nodes :arg0 :source]) :resolved-binding-ids []
+                 :attributes {:target-id :loop :target-kind :loop :arity 0 :semantic-rule "L2-RECUR-TARGET" :type-compatibility :pending-sh08}
+                 :evaluation {:kind :arguments-left-to-right-then-transfer :order []}}
+        base (-> base (assoc-in [:nodes :arg0] operand)
+                 (assoc-in [:forms :arg0] (assoc form :kind :list :value '(recur) :child-form-ids [:vec-recur-op]))
+                 (assoc-in [:forms :vec-recur-op] (assoc form :form-id :vec-recur-op :syntax-id :vec-recur-op
+                                                            :parent-form-id :arg0 :kind :symbol :value 'recur :child-form-ids []))
+                 (update-in [:core :nodes] #(mapv (fn [n] (if (= :arg0 (:node-id n)) operand n)) %)))
+        context (:context (literal-string-vector-kernel-context base))
+        target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
+        transfer {:recur-core-node-id :arg0 :recur-form-id :arg0 :recur-syntax-id :arg0 :target-id :loop :target-kind :loop
+                  :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
+                  :transfer-policy :nearest-lexical-recur-target :type-compatibility :pending-sh08}
+        premise {:kind :loop-recur-type :source-transfer transfer :source-target target :argument-types [] :slot-types []
+                 :result-type :gravity.type/never :normal-transfer? true :status :solved}
+        context (assoc context :targets {:loop target} :nearest-target target :transfers {:arg0 transfer} :loop-binding-index {})
+        row (lower 'p15-s23-typed-loop-row context premise operand)
+        context (assoc context :loop-rows {[:loop-recur-type :arg0] row})
+        direct (lower 'p15-s23-typed-compile-node context :arg0 65536)
+        non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 65536)
+        rejected (lower 'p15-s23-typed-compile-node context :call 65536)]
+    (is (= :complete (:status direct)))
+    (is (= {:op :recur :target :loop :args []} (:value direct)))
+    (is (= :rejected (:status non-tail) (:status rejected)))
+    (is (= (:facts non-tail) (:facts rejected)))
+    (is (> (:work-count rejected) (get non-tail :work-count 0)))
+    (let [context (:context (literal-string-vector-kernel-context (input "sha256:")))
+          callbacks (atom 0) opaque (proxy [Object] []
+                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII lowering hash")))
+                                     (equals [_] (swap! callbacks inc) (throw (AssertionError. "ASCII lowering equality"))))]
+      (doseq [path [[:types :operator :kind] [:types :operator :conversion-proof :scalar-count]
+                    [:forms :operator :value] [:forms :call :child-form-ids 0]
+                    [:nodes :arg0 :source :form-id] [:forms :arg0 :value]]
+              budget [0 65536]]
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc-in context path opaque) :call budget))))
+        (is (zero? @callbacks)))
+      (is (= :complete (:status (lower 'p15-s23-typed-compile-node context :call 65536)))))))
+
+(deftest current-gravity-ascii-string-vector-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name expected] [["accepted" "local-runtime-ascii-string-vector" "sha256:"]
+                                        ["rejected" "string-vector-unsupported-nonascii" "\u00e9"]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)
+            forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
+        (is (= g q))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
+        (is (= '[main] (mapv second definitions)))
+        (is (= (list 'vec expected) (last (first definitions))))))))
+
 (deftest current-gravity-count-quotient-scaling-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
@@ -30968,6 +31141,176 @@
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest current-gravity-ascii-string-vector-authenticated-composition
+  ;; One original ASCII literal conversion and valid unsupported text; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "ASCII String vector fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "ASCII String vector development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:ascii-string-vector-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "ASCII String vector upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "ASCII String vector C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "ASCII String vector C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-ascii-string-vector.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        conversions (filterv #(= :direct-string-character-vector (:dispatch %)) (:call-type-facts facts))
+        descriptor (:applied-string-character-vector (first conversions)) proof (:conversion-proof descriptor)
+        rows (filterv #(= :sh08-string-character-vector-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
+        calls (filterv #(and (= :builtin-call (:op %)) (= 'vec (:function %))) instructions)
+        expected-type {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 7 :gravity.type/character))}
+        expected-value [\s \h \a \2 \5 \6 \:]
+        graph (:effect-graph effects) id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+        row (first rows) runtime-plan (:plan (typed-catch-runtime-projection))
+        execution (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)])
+        t2 (System/nanoTime)]
+    (is (= 1 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 1 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 1 (count conversions) (count rows) (count calls)))
+    (is (= {:op :builtin-call :function 'vec :args [{:op :literal :value "sha256:"}]} (first calls)))
+    (is (empty? (filter #(= :vector-literal (:op %)) instructions)))
+    (is (empty? (get-in assembled [:module-initialization :initializers])))
+    (is (= 56 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= expected-value (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= #{} (get-in graph [:namespace :inferred])))
+    (is (= #{:memory/allocate} (:inferred (first (vals (:functions graph))))))
+    (is (= :gravity.type/applied-string-character-vector (:kind descriptor)))
+    (is (= :sh08-string-character-vector-v1 (:version descriptor)))
+    (is (= ['vec 'gravity.text :gravity.text/string-character-vector]
+           [(:operation descriptor) (:semantic-owner descriptor) (:intrinsic descriptor)]))
+    (is (= expected-type (:result-type descriptor) (:return descriptor) (get-in facts [:type-table id])))
+    (is (= [:gravity.type/string] (:argument-types descriptor) (:parameter-types descriptor)))
+    (is (= :normal (:application descriptor)))
+    (is (= :gravity/string-character-vector-proof-v1 (:schema proof)))
+    (is (= :ascii (:validated-domain proof)))
+    (is (= 7 (:scalar-count proof)))
+    (is (= 3 (count (:source-forms proof))))
+    (is (= [:original-string-literal "sha256:"] ((juxt :kind :value) (:operand proof))))
+    (is (= :one-character-per-unicode-scalar (:law proof) (get-in descriptor [:conversion-policy :scalars])))
+    (is (= :original-ascii-string-literal (get-in descriptor [:conversion-policy :supported-domain])))
+    (is (= [:none :none] ((juxt :normalization :coercion) proof)))
+    (is (= [:original :none :none :forbidden :once true]
+           ((juxt :order :normalization :coercion :utf16-splitting :operand-evaluation :input-preserved?) (:conversion-policy descriptor))))
+    (is (= :may-allocate-character-vector (get-in descriptor [:storage-policy :allocation])))
+    (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+    (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
+    (is (= #{:memory/allocate} (:direct record) (:transitive record)))
+    (is (= [:sh09-string-character-vector-allocation-v1 :vector :possible-character-vector-storage true]
+           ((juxt :rule-version :value-kind :behavior :normal-completion-possible?) (:allocation record))))
+    (is (= {:unit :characters :count 7} (get-in record [:allocation :extent])))
+    (is (= descriptor (:dependencies row)))
+    (is (= expected-type (:rhs row) (get-in row [:solution :result-type])))
+    (is (= (:direct-effects descriptor) (get-in row [:solution :direct-effects])))
+    (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))
+    (println (pr-str {:ascii-string-vector-positive-observations
+                     {:runtime-status (:status execution) :runtime-result (:entrypoint-result execution)
+                      :functions (count (:functions assembled)) :conversion-calls (count conversions)
+                      :scalar-count (:scalar-count proof) :supported-domain (:validated-domain proof)
+                      :parameter-grounding :not-established :subvec-support :not-established}
+                     :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                        :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/string-vector-unsupported-nonascii.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])
+          diagnostic (first (filter #(= :string-character-vector-unsupported-text (:reason %)) diagnostics))]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (= :passed (get-in negative [:verification :status])) (pr-str (:verification negative)))
+      (is (= "C7-ANNOTATION" (:rule diagnostic)) (pr-str diagnostics))
+      (is (= [:gravity.type/string] (:actual-type diagnostic)))
+      (is (= :original-finite-ascii-string-literal (:expected-type diagnostic)))
+      (is (some? (:core-node-id diagnostic)))
+      (is (some? (:syntax-id diagnostic)))
+      (is (map? (:source-span diagnostic)))
+      (println (pr-str {:ascii-string-vector-typing-negative diagnostics
+                       :negative-c7-verification-status (get-in negative [:verification :status])
+                       :negative-c8-runtime :not-invoked :input-domain :valid-nonascii-outside-supported-subset
+                       :timing (:development-timing negative)})))
+    (println (pr-str {:ascii-string-vector-composition :completed :runtime-result (:entrypoint-result execution)
+                     :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                     :closed-plan-entry-invocations 1 :runtime-function-count (count (:functions runtime-plan))
+                     :reader-parameter-grounding :not-established :subvec-support :not-established
+                     :whole-compiler-consumer-execution false
+                     :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included}))))
+
 
 (deftest current-gravity-count-quotient-scaling-authenticated-composition
   ;; One sourced count-bounded product and one unsupported coefficient; Q is parser-only.

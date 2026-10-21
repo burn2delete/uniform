@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.ascii-string-vector
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main [] (vec "sha256:"))
