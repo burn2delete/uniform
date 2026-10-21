@@ -4371,6 +4371,43 @@ seen-Symbol scan remains a motivating subexpression, not whole-helper execution.
 SH-07 completion, current-closure admission, native/self-hosting and release
 evidence remain outstanding.
 
+### Grounded Symbol-Set loop invariants: development increment
+
+The existing C7/effects/typed-emitter owners now infer a Symbol member invariant
+for an independently empty Set loop slot with an independently grounded normal
+re-entry. The supported cold witness is v2 `conj` from an empty seed and a
+literal/quoted Symbol, including acyclic immutable aliases. All normal entries
+must be compatible empty Sets or the same carrier. Actual initializer and
+transfer types remain distinct from the invariant; a Never operand anywhere in
+the transfer tuple cannot ground it. C8 and lowering reconstruct the cold
+premises independently. Runtime and the nine protected signature predicates
+remain unchanged. General Set joins, private/recursive signatures, presence,
+cardinality, termination and whole compiler-helper execution are not added.
+
+At `608d64a3`, the complete focused batch passed 28 tests/3,348 assertions:
+four new selectors/187 and 24 controls/3,161. This covers original loop/function
+behavior, independent cold aliases, normal empty/carrier entries, Never before
+and after the candidate coordinate, exact/one-below work and opaque quote-child
+guards. Earlier load, scope, quote and evaluation-metadata fixture failures
+remain distinct; their partial passes are not added to this batch.
+
+The source composition at `44654c7d` completed naturally with 67 passes and one
+failed assertion out of 68. The real G alias-loop passed C7/C8 verification,
+one observed public C7 assembly gate and one closed runtime entry returning
+true with empty stdout. The G conflicting re-entry was rejected and freshly
+verified, with Keyword-Set actual type, Core/syntax/binding/span/constraint
+locations and secondary unresolved diagnostics. Its expected type was the
+actual empty initializer, not a carrier: inference remained pending and did not
+publish an invariant. The failed assertion expected that unestablished carrier.
+The test-only oracle correction does not relabel this failed receipt or rerun
+the unchanged source composition. Known-carrier selected conflicts and pending
+fallback have separate direct checks. At `93306d73`, the affected C7 kernel
+passed 77 assertions: 70 retained and seven new pending-fallback checks. The
+corrected source selector compiled but was not executed again. Q remains
+parser-only; these observations do not establish fresh public C6 verification,
+native execution, current-closure
+admission, SH-07 completion, self-hosting or seedless release.
+
 ### Persistent String-Set insertion: development increment
 
 STD3 now explicitly defines binary Set `conj` to preserve existing equal member

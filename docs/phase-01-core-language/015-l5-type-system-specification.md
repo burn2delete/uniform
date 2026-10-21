@@ -215,6 +215,31 @@ match, try, loop or recur joins. Effects, ownership, profile legality and other
 type obligations remain unchanged. An implementation's supported atomic
 families must be stated separately from the language rule.
 
+### Grounded Symbol-Set Loop Invariants
+
+For a loop slot initialized by an independently established empty persistent
+Set, local inference may establish a homogeneous Symbol-Set invariant when at
+least one normally invoking re-entry independently establishes that carrier
+and every normal re-entry establishes either an empty Set or the same carrier.
+Establish the member domain without assuming the invariant. An expected
+annotation, unknown value, circular self-reference or non-invoked transfer is
+not a grounding witness. A Never operand in any coordinate makes the whole
+transfer non-invoked for this purpose.
+
+Retain the actual initializer and every re-entry type, complete original target
+coverage, and source-bound compatibility premises. Keep the cold grounding
+derivation separate from later invariant-dependent reads. The binding's
+invariant type does not make the initializer type equal to it. An empty-only
+or self-preserving loop keeps its existing exact type without inventing a
+Symbol member domain.
+
+This rule establishes member types only. It adds no extent, presence,
+cardinality, termination, conversion, general union, other Set-family,
+function/private-signature or branch-join rule. Implementations must state
+their supported grounding derivations separately. Existing ownership, effects,
+profile and safety obligations remain, and L2 target, arity, tailness and
+evaluation rules are unchanged.
+
 ## Dynamic Values
 
 `Dynamic` is a type, not a loophole.
@@ -355,6 +380,7 @@ L5 rejects:
 - Homogeneous List return fixtures accept independently established matching finite, empty and homogeneous body types, retain return-specific compatibility evidence, and reject bare, unknown or mismatched member types without expected-type-driven inference.
 - Canonical `if` List-join fixtures preserve actual branch types and join-specific evidence, cover both branch orders and empty branches, and reject missing or incompatible independent element evidence without changing other control-flow joins.
 - Canonical `if` nil-bearing joins preserve independently established branch types through local inferred returns and value equality, reject conflicting/unknown evidence and non-nil return or Bool-guard narrowing, and retain exact and non-returning branch rules.
+- Symbol-Set loop invariant fixtures retain actual empty initialization and every original re-entry, require an independent normal grounding witness, reject circular, unknown, conflicting and non-invoked witness attempts, and preserve exact typing when no invariant is established.
 - Hosted fixtures accept checked dynamic behavior while constrained profile fixtures reject it.
 - Function type fixtures preserve latent effects into effect checking.
 - Schema fixtures prove generated types preserve validation semantics.

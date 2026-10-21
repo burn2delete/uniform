@@ -1863,3 +1863,315 @@
                                      (assoc-in [:recur-transfers 0 :target-kind] :loop)
                                      (assoc-in [:nodes 0 :attributes :target-id] :outer)
                                      (assoc-in [:nodes 0 :attributes :target-kind] :loop)) {} {} 65536]) [:issues 0 :rule]))))))
+
+(defn- symbol-set-loop-data []
+  ;; Source-linked normalized DATA exercises existing owners; it is not source admission.
+  (require 'gravity.self-hosting.sh01-stage2-runtime-iteration-test)
+  (let [module {:namespace 'example.symbol-loop :profile :meta :target :jvm :effects [:memory/allocate] :capabilities []}
+        base ((ns-resolve 'gravity.self-hosting.sh01-stage2-runtime-iteration-test 'typed-loop-kernel-data) module)
+        original (update (:context base) :nodes
+                         (fn [nodes] (into {} (map (fn [[id node]]
+                           [id (if (map? (:evaluation node)) node
+                                 (assoc node :evaluation
+                                   {:kind (case (:core-form node) :if :condition-then-exclusive-branch :fn :function-creation :value)
+                                    :owner-function-syntax-id nil
+                                    :order (mapv (fn [index child] {:index index :core-node-id child}) (range)
+                                             (case (:core-form node) :fn [] :if [(first (:children node))] (:children node)))}))]) nodes))))
+        empty-type {:kind :gravity.type/set :shape :literal :element-types []}
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+        insertion ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'list-prepend-input) carrier :gravity.type/symbol)
+        forms (merge (:forms original) (:forms insertion))
+        forms (-> forms
+                  (assoc-in [:value-init-form :kind] :list) (assoc-in [:value-init-form :value] '(quote #{}))
+                  (assoc-in [:value-init-form :child-form-ids] ["sha256:0000000000000000000000000000000000000000000000000000000000001b59" "sha256:0000000000000000000000000000000000000000000000000000000000001b5a"])
+                  (assoc-in [:transfer-form :child-form-ids] [:recur-op :next-again-form :call])
+                  (assoc-in [:call :parent-form-id] :transfer-form) (assoc-in [:call :scope-id] :value-scope)
+                  (assoc-in [:arg0 :value] 'value) (assoc-in [:arg0 :scope-id] :value-scope)
+                  (assoc-in [:arg1 :kind] :list) (assoc-in [:arg1 :value] '(quote assoc))
+                  (assoc-in [:arg1 :scope-id] :value-scope) (assoc-in [:arg1 :child-form-ids] ["sha256:0000000000000000000000000000000000000000000000000000000000001b5b" "sha256:0000000000000000000000000000000000000000000000000000000000001b5c"])
+                  (assoc "sha256:0000000000000000000000000000000000000000000000000000000000001b59" {:form-id "sha256:0000000000000000000000000000000000000000000000000000000000001b59" :syntax-id "sha256:0000000000000000000000000000000000000000000000000000000000001b59" :kind :symbol :value 'quote :parent-form-id :value-init-form :child-form-ids []}
+                         "sha256:0000000000000000000000000000000000000000000000000000000000001b5a" {:form-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5a" :syntax-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5a" :kind :set :value #{} :parent-form-id :value-init-form :child-form-ids []}
+                         "sha256:0000000000000000000000000000000000000000000000000000000000001b5b" {:form-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5b" :syntax-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5b" :kind :symbol :value 'quote :parent-form-id :arg1 :child-form-ids []}
+                         "sha256:0000000000000000000000000000000000000000000000000000000000001b5c" {:form-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5c" :syntax-id "sha256:0000000000000000000000000000000000000000000000000000000000001b5c" :kind :symbol :value 'assoc :parent-form-id :arg1 :child-form-ids []}))
+        forms (into {} (map (fn [[id form]] [id (merge {:form-id id :syntax-id id :origin-chain [] :generated-origin []} form)]) forms))
+        source (fn [form-id] (let [form (get forms form-id)]
+                              {:form-id form-id :syntax-id (:syntax-id form) :semantic-span (:source-span form)
+                               :origin-chain (:origin-chain form) :generated-origin (:generated-origin form)}))
+        primitive (into {} (map (fn [[id node]] [id (assoc node :binding-context :value-scope :source (source id))]) (:nodes insertion)))
+        quote-node (fn [node form-id payload-id kind value]
+                     (assoc node :core-form :quote :children [] :resolved-binding-ids [] :source (source form-id)
+                            :attributes {:quoted-form-id payload-id :quoted-syntax-id payload-id :quoted-kind kind :quoted-value value}
+                            :evaluation {:kind :no-evaluation :order []}))
+        nodes (-> (merge (:nodes original) primitive) (dissoc :next-value)
+                  (assoc :value-init (quote-node (get-in original [:nodes :value-init]) :value-init-form "sha256:0000000000000000000000000000000000000000000000000000000000001b5a" :set #{})
+                         :arg1 (quote-node (get primitive :arg1) :arg1 "sha256:0000000000000000000000000000000000000000000000000000000000001b5c" :symbol 'assoc))
+                  (assoc-in [:arg0 :attributes] {:binding-id :value}) (assoc-in [:arg0 :resolved-binding-ids] [:value])
+                  (assoc-in [:transfer :children] [:next-again :call])
+                  (assoc-in [:transfer :evaluation :order] [{:index 0 :core-node-id :next-again} {:index 1 :core-node-id :call}]))
+        bindings (merge (:bindings original) (:bindings insertion))
+        transfer (assoc (get-in original [:transfers :transfer]) :argument-node-ids [:next-again :call])
+        ids [:again-init :value-init :condition :next-again :operator :arg0 :arg1 :call :transfer :result :branch :loop-node :fn-node]
+        core {:module module :nodes (mapv nodes ids) :loop-bindings (:loop-bindings original)
+              :recur-targets [(get-in original [:targets "function-target"]) (get-in original [:targets "loop-target"])]
+              :recur-transfers [transfer] :lexical-bindings [] :function-records [] :definitions []
+              :calls [(:call insertion)] :call-edges [(:edge insertion)] :binding-table (vec (vals bindings))}
+        core (assoc core :identity-preimage (select-keys core [:loop-bindings :recur-targets :recur-transfers]))
+        types (merge (:types original) {:value-init empty-type :arg0 carrier :arg1 :gravity.type/symbol
+                                       :call carrier :result carrier :branch carrier :loop-node carrier})
+        derived (c7-invoke 'sh08-pl-derive [core (nodes :call) (:call insertion) (:edge insertion) nodes bindings types forms 65536])
+        descriptor (:descriptor derived) types (assoc types :operator descriptor)
+        quotes (c7-invoke 'sh08-qd-products [(:nodes core) (vec (vals forms)) module])
+        working (assoc core :loop-member-source {:forms forms :bindings bindings :nodes nodes})
+        checked (c7-invoke 'sh08-ft-loop-type-step [working types {} 65536])
+        rows (c7-invoke 'sh08-ft-loop-constraints [(:constraints checked) nodes module])
+        ledger (into (into (vec rows) (:constraints quotes))
+                     [(c7-invoke 'sh08-pl-constraint [descriptor])])
+        context (-> original (assoc :core core :nodes nodes :forms forms :bindings bindings :types types
+                                    :calls {:call (:call insertion)} :edges {:call (:edge insertion)} :call-order {:call 0}
+                                    :call-facts {:call (c7-invoke 'sh08-pl-call-fact [descriptor module])}
+                                    :ledger ledger :loop-rows (into {} (map (fn [row] [[(get-in row [:dependencies :loop-premise :kind]) (:lhs row)] row]) rows))
+                                    :transfers {:transfer transfer}))]
+    {:core core :working working :types types :nodes nodes :forms forms :bindings bindings
+     :carrier carrier :empty-type empty-type :derived derived :quotes quotes :checked checked :rows rows :context context}))
+
+(defn- symbol-set-loop-alias-data []
+  (let [{:keys [core types nodes forms bindings context] :as original} (symbol-set-loop-data)
+        record {:binding-id :member :mutability :immutable :initializer-node-id :arg1
+                :initializer-form-id :arg1 :initializer-syntax-id :arg1
+                :definition-syntax-id :member-name :binding-scope-id :value-scope}
+        alias-node {:node-id :member-use :core-form :reference :children [] :binding-context :value-scope
+                    :resolved-binding-ids [:member] :attributes {:binding-id :member}
+                    :source {:form-id :member-use :syntax-id :member-use :semantic-span nil :origin-chain [] :generated-origin []}
+                    :evaluation {:kind :value :owner-function-syntax-id nil :order []}}
+        forms (-> forms (assoc :member-use {:form-id :member-use :syntax-id :member-use :kind :symbol :value 'member
+                                            :scope-id :value-scope :parent-form-id :call :child-form-ids []
+                                            :origin-chain [] :generated-origin []})
+                        (assoc-in [:call :child-form-ids] [:operator :arg0 :member-use]))
+        bindings (assoc bindings :member {:binding-id :member :name 'member :kind :local :binding-class :lexical
+                                         :scope-id :value-scope :definition-syntax-id :member-name})
+        nodes (-> nodes (assoc :member-use alias-node)
+                        (assoc-in [:call :children] [:operator :arg0 :member-use])
+                        (assoc-in [:call :evaluation :order] [{:index 0 :core-node-id :operator}
+                           {:index 1 :core-node-id :arg0} {:index 2 :core-node-id :member-use}]))
+        call (assoc (first (:calls core)) :argument-node-ids [:arg0 :member-use]
+                                         :ordered-evaluation-node-ids [:operator :arg0 :member-use])
+        edge (assoc (first (:call-edges core)) :argument-core-node-ids [:arg0 :member-use]
+                                              :ordered-evaluation-node-ids [:operator :arg0 :member-use])
+        core (assoc core :nodes (into [alias-node] (mapv #(nodes (:node-id %)) (:nodes core)))
+                         :lexical-bindings [record] :binding-table (vec (vals bindings)) :calls [call] :call-edges [edge])
+        types (assoc types :member-use :gravity.type/symbol)
+        derived (c7-invoke 'sh08-pl-derive [core (nodes :call) call edge nodes bindings types forms 65536])
+        descriptor (:descriptor derived) types (assoc types :operator descriptor)
+        working (assoc core :loop-member-source {:forms forms :bindings bindings :nodes nodes})
+        checked (c7-invoke 'sh08-ft-loop-type-step [working types {} 65536])
+        rows (c7-invoke 'sh08-ft-loop-constraints [(:constraints checked) nodes (:module core)])
+        ledger (into (into rows (:constraints (:quotes original))) [(c7-invoke 'sh08-pl-constraint [descriptor])])
+        context (-> context (assoc :core core :nodes nodes :forms forms :bindings bindings :types types
+                                   :calls {:call call} :edges {:call edge} :ledger ledger
+                                   :call-facts {:call (c7-invoke 'sh08-pl-call-fact [descriptor (:module core)])}
+                                   :loop-rows (into {} (map (fn [row] [[(get-in row [:dependencies :loop-premise :kind]) (:lhs row)] row]) rows)))
+                    (assoc-in [:locals :member] 'member) (assoc-in [:parameter-types :member] :gravity.type/symbol))]
+    (assoc original :core core :working working :types types :nodes nodes :forms forms :bindings bindings
+                    :derived derived :checked checked :rows rows :context context)))
+
+(deftest symbol-set-loop-invariant-development-kernel
+  (let [{:keys [core working types nodes forms bindings carrier empty-type derived quotes checked rows]} (symbol-set-loop-data)
+        invariant (get-in checked [:member-invariants :value])
+        check #(c7-invoke 'sh08-ft-loop-type-step [%1 %2 {} %3])
+        source {:nodes nodes :forms forms :bindings bindings}
+        solved (c7-invoke 'sh08-lsi-solve [core types source 65536])]
+    (is (= :accepted (:status derived) (:status checked) (:status solved)))
+    (is (= [] (:diagnostics quotes)))
+    (is (= carrier (get-in checked [:bindings :value])))
+    (is (= empty-type (:value-init types) (:initializer-type invariant)))
+    (is (= #{:schema :target-id :binding-id :initializer-node-id :initializer-type :invariant-type :grounding :entries}
+           (set (keys invariant))))
+    (is (= :gravity/sh08-loop-symbol-set-invariant-v2 (:schema invariant)))
+    (is (= carrier (:invariant-type invariant)))
+    (is (= [:call] (get-in invariant [:grounding :result-path])))
+    (is (= [:arg0] (get-in invariant [:grounding :receiver-path])))
+    (is (= [:arg1] (get-in invariant [:grounding :member-path])))
+    (is (= [{:transfer-node-id :transfer :argument-node-id :call :argument-type carrier
+             :normal-transfer? true :compatibility :exact-carrier}] (:entries invariant)))
+    (is (= [:sh08-loop-target-types-v1 :sh08-loop-target-types-v2 :sh08-loop-target-types-v2] (mapv :producer-rule rows)))
+    (is (= [:value] (get-in (last rows) [:solution :member-invariant-bindings])))
+    (is (= invariant (get-in (second rows) [:solution :member-invariant])))
+    (is (= checked (check working types (:work-count checked))))
+    (is (= :loop-type-work-limit (get-in (check working types (dec (:work-count checked))) [:issues 0 :reason])))
+    (is (= solved (c7-invoke 'sh08-lsi-solve [core types source (:work-count solved)])))
+    (is (= :loop-type-work-limit (:reason (c7-invoke 'sh08-lsi-solve [core types source (dec (:work-count solved))]))))
+    (doseq [changed [(assoc types :next-again :gravity.type/never) (assoc types :call :gravity.type/never)
+                     (assoc types :arg1 :gravity.type/unknown)
+                     (assoc-in types [:operator :version] :sh08-symbol-set-insertion-v1)]]
+      (is (empty? (:invariants (c7-invoke 'sh08-lsi-solve [core changed source 65536])))))
+    (is (= :rejected (:status (c7-invoke 'sh08-lsi-ground
+          [(first (:recur-transfers core)) 1 :other-binding
+           {:core core :types types :nodes nodes :forms forms :bindings bindings :aliases {}
+            :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+            :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))} 65536]))))
+    (is (= :incoherent-loop-transfer
+           (get-in (check (assoc-in working [:recur-transfers 0 :tail-position] false) types 65536) [:issues 0 :reason])))
+    (let [empty (assoc types :arg0 empty-type :result empty-type :branch empty-type :loop-node empty-type)
+          transfer (assoc (first (:recur-transfers core)) :argument-node-ids [:next-again :arg0])
+          self-core (-> core (assoc :calls [] :call-edges [] :recur-transfers [transfer])
+                        (update :nodes #(mapv (fn [node]
+                          (if (= :transfer (:node-id node))
+                            (-> node (assoc :children [:next-again :arg0])
+                                (assoc-in [:evaluation :order] [{:index 0 :core-node-id :next-again} {:index 1 :core-node-id :arg0}])) node))
+                          (remove (fn [node] (contains? #{:operator :arg1 :call} (:node-id node))) %))))
+          self-core (assoc self-core :loop-member-source {:forms forms :bindings bindings})
+          exact (check self-core empty 65536)]
+      (is (= :accepted (:status exact)))
+      (is (= empty-type (get-in exact [:bindings :value])))
+      (is (empty? (:member-invariants exact)))
+      (is (every? #(= :sh08-loop-target-types-v1 (:producer-rule %))
+                  (c7-invoke 'sh08-ft-loop-constraints [(:constraints exact) nodes (:module core)]))))
+    (let [extra (assoc (first (:recur-transfers core)) :recur-core-node-id :other-transfer :argument-node-ids [:next-again :bad])
+          bad-type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+          changed (assoc core :recur-transfers (conj (:recur-transfers core) extra))
+          rejected (c7-invoke 'sh08-lsi-solve [changed (assoc types :bad bad-type) source 65536])]
+      (is (= :rejected (:status rejected)))
+      (is (= :loop-recur-slot-type-mismatch (:reason rejected)))
+      (is (= [:bad carrier bad-type] ((juxt :core-node-id :expected :actual) rejected))))
+    (doseq [mutate [#(assoc-in % [:forms (get-in nodes [:arg1 :attributes :quoted-form-id]) :value] "assoc")
+                    #(assoc-in % [:forms (get-in nodes [:arg1 :attributes :quoted-form-id]) :parent-form-id] :other)
+                    #(assoc-in % [:nodes :arg0 :resolved-binding-ids] [:again])
+                    #(assoc-in % [:nodes :arg0 :binding-context] :other)]]
+      (is (empty? (:invariants (c7-invoke 'sh08-lsi-solve [core types (mutate source) 65536])))))
+    (let [alias-record {:binding-id :member :mutability :immutable :initializer-node-id :arg1
+                        :initializer-form-id :arg1 :initializer-syntax-id :arg1
+                        :definition-syntax-id :member-name :binding-scope-id :value-scope}
+          alias-node {:node-id :alias-use :core-form :reference :children [] :binding-context :value-scope
+                      :resolved-binding-ids [:member] :attributes {:binding-id :member}
+                      :source {:form-id :alias-form :syntax-id :alias-form}}
+          env {:nodes (assoc nodes :alias-use alias-node) :forms (assoc forms :alias-form
+                {:form-id :alias-form :syntax-id :alias-form :kind :symbol :value 'member :scope-id :value-scope})
+               :bindings (assoc bindings :member {:name 'member :scope-id :value-scope :definition-syntax-id :member-name})
+               :types (assoc types :alias-use :gravity.type/symbol) :aliases {:member alias-record}}
+          walk #(c7-invoke 'sh08-lsi-path [:alias-use :member :value % 65536]) accepted (walk env)]
+      (is (= :accepted (:status accepted)))
+      (is (= [:alias-use :arg1] (:path accepted)))
+      (is (= :rejected (:status (walk (assoc-in env [:aliases :member :mutability] :mutable)))))
+      (is (= :rejected (:status (walk (assoc-in env [:types :alias-use] :gravity.type/unknown)))))
+      (is (= :circular-loop-member-grounding
+             (:reason (walk (update-in env [:aliases :member] assoc :initializer-node-id :alias-use
+                             :initializer-form-id :alias-form :initializer-syntax-id :alias-form))))))
+    (let [transfer (assoc (first (:recur-transfers core)) :recur-core-node-id :empty-transfer
+                         :argument-node-ids [:next-again :empty-argument])
+          result (c7-invoke 'sh08-lsi-solve [(update core :recur-transfers conj transfer)
+                    (assoc types :empty-argument empty-type) source 65536])]
+      (is (= :accepted (:status result)))
+      (is (= [:exact-carrier :empty-set-to-symbol-carrier]
+             (mapv :compatibility (get-in result [:invariants :value :entries])))))
+    (let [transfers [{:target-id "loop-target" :argument-node-ids [:before :call :after]}]]
+      (doseq [changed [(assoc types :before :gravity.type/never :after :gravity.type/bool)
+                      (assoc types :before :gravity.type/bool :after :gravity.type/never)]]
+        (is (false? (get-in (c7-invoke 'sh08-lsi-entry-index [transfers changed 65536])
+                            [:index "loop-target" 0 :normal?])))))
+    (let [alias (symbol-set-loop-alias-data)]
+      (is (= :accepted (get-in alias [:derived :status]) (get-in alias [:checked :status])))
+      (is (= [:member-use :arg1] (get-in alias [:checked :member-invariants :value :grounding :member-path]))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "quote child hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "quote child equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "quote child printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}] coordinate [0 1]]
+        (let [changed (assoc-in forms [:arg1 :child-form-ids coordinate] bad)
+              env {:nodes nodes :forms changed :bindings bindings :types types :aliases {}}]
+          (is (false? (c7-invoke 'sh08-lsi-leaf? [(nodes :arg1) changed :member])))
+          (doseq [quota [0 65536]] (is (= :rejected (:status (c7-invoke 'sh08-lsi-path [:arg1 :member :value env quota]))))))
+        (is (zero? @callbacks))))
+
+    ;; Unknown normal re-entry cannot publish a carrier fact; exact slots still reject the known conflict.
+    (let [bad-type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+          bad-transfer (assoc (first (:recur-transfers core)) :recur-core-node-id :pending-bad-transfer
+                              :argument-node-ids [:next-again :pending-bad])
+          pending-types (assoc types :call :gravity.type/unknown :pending-bad bad-type)
+          pending (c7-invoke 'sh08-lsi-solve [(update core :recur-transfers conj bad-transfer) pending-types source 65536])
+          target (first (filter #(= "loop-target" (:target-id %)) (:recur-targets core)))
+          exact (c7-invoke 'sh08-ft-loop-kernel-transfer-types
+                  [bad-transfer target nodes pending-types [:gravity.type/bool empty-type] (:invariants pending) 65536])
+          diagnostic (first (:issues exact))]
+      (is (= :accepted (:status pending)))
+      (is (empty? (:invariants pending)))
+      (is (= :rejected (:status exact)))
+      (is (= :loop-recur-slot-type-mismatch (:reason diagnostic)))
+      (is (= empty-type (:expected diagnostic)))
+      (is (= bad-type (:actual diagnostic)))
+      (is (= :value (:parameter-binding-id diagnostic))))
+))
+
+(deftest symbol-set-loop-effect-invariant-development-kernel
+  (let [{:keys [core types nodes forms bindings carrier rows context]} (symbol-set-loop-data)
+        facts {:module (:module core) :type-table types :constraint-ledger rows :function-type-table []
+               :append-context {:forms forms :bindings bindings}}
+        checked (effects 'body-loop-joins core facts 65536)]
+    (is (= :accepted (:status checked)) (pr-str checked))
+    (is (= rows (:rows checked)))
+    (is (= checked (effects 'body-loop-joins core facts (:work-count checked))))
+    (is (= :body-deferred-work-limit (:reason (effects 'body-loop-joins core facts (dec (:work-count checked))))))
+    (doseq [mutate [#(assoc-in % [:type-table :operator :version] :sh08-symbol-set-insertion-v1)
+                    #(assoc-in % [:constraint-ledger 1 :producer-rule] :sh08-loop-target-types-v1)
+                    #(assoc-in % [:constraint-ledger 1 :constraint-id-request :domain] :gravity/sh08-loop-type-constraint-v1)
+                    #(assoc-in % [:constraint-ledger 1 :dependencies :loop-premise :member-invariant :initializer-type] carrier)
+                    #(assoc-in % [:constraint-ledger 1 :dependencies :loop-premise :member-invariant :grounding :member-path] [:other])
+                    #(update-in % [:constraint-ledger 1 :dependencies :loop-premise :member-invariant :entries] pop)
+                    #(update-in % [:constraint-ledger 1 :dependencies :loop-premise :member-invariant :entries] into
+                        (get-in % [:constraint-ledger 1 :dependencies :loop-premise :member-invariant :entries]))
+                    #(assoc-in % [:constraint-ledger 2 :dependencies :loop-premise :member-invariant-bindings] [])
+                    #(assoc-in % [:type-table :arg0] {:kind :gravity.type/set :shape :literal :element-types []})]]
+      (is (= :rejected (:status (effects 'body-loop-joins core (mutate facts) 65536)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "loop proof hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "loop proof equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "loop proof printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}]]
+        (is (= :rejected (:status (effects 'body-loop-joins core
+          (assoc-in facts [:constraint-ledger 1 :dependencies :loop-premise :member-invariant :grounding :member-path] bad) 65536))))
+        (is (zero? @callbacks))))
+    (let [ids (zipmap (concat (keys nodes) [:again :value "loop-target" "function-target"])
+                     (map #(str "sha256:" (format "%064x" %)) (range 3000 3100)))
+          rename (fn rename [field value]
+                   (cond
+                     (map? value) (into {} (map (fn [[key item]]
+                       [(if (contains? #{:nodes :types :forms :bindings :calls :edges :call-order :call-facts :loop-rows
+                                         :loop-binding-index :targets :target-owners :transfers :parameter-types :locals} field)
+                          (walk/postwalk-replace ids key) key)
+                        (rename key item)]) value))
+                     (vector? value) (mapv #(rename nil %) value)
+                     (seq? value) (apply list (map #(rename nil %) value))
+                     (set? value) (set (map #(rename nil %) value))
+                     (contains? #{:core-form :kind :position :literal-kind :value :quoted-value :name} field) value
+                     :else (get ids value value)))
+          [converted converted-context] (rename nil [core context])
+          converted (assoc converted :identity-preimage (select-keys converted [:loop-bindings :recur-targets :recur-transfers]))
+          source-facts {:module (:module converted) :type-table (:types converted-context)
+                        :constraint-ledger (:ledger converted-context) :function-type-table []
+                        :call-type-facts (vec (vals (:call-facts converted-context)))}
+          request {:canonical-core-artifact converted :b47-context {:authenticated-core-request {:forms (vec (vals (:forms converted-context)))}}}
+          prepared (effects 'body-va-context request source-facts (:bindings converted-context) 65536)
+          source-facts (assoc source-facts :append-context (:context prepared))
+          graph (effects 'body-derive-loop-nodes converted source-facts {} 65536)
+          transfer (ids :transfer)]
+      (is (= :accepted (:status prepared) (:status graph)) (pr-str graph))
+      (is (= [(ids :next-again) (ids :call) (ids :branch)] (get-in graph [:nodes transfer :dependencies])))
+      (is (= #{:memory/allocate} (get-in graph [:nodes transfer :transitive])))
+      (is (= [(ids :branch)] (get-in graph [:nodes transfer :loop-backedge :body-core-node-ids])))
+      (is (true? (effects 'body-graph-equations-valid? converted source-facts {} (:nodes graph)))))
+    (let [alias (symbol-set-loop-alias-data)
+          alias-facts {:module (get-in alias [:core :module]) :type-table (:types alias) :constraint-ledger (:rows alias)
+                       :function-type-table [] :append-context {:forms (:forms alias) :bindings (:bindings alias)}}
+          result (effects 'body-loop-joins (:core alias) alias-facts 65536)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= (:rows alias) (:rows result))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "quote child hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "quote child equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "quote child printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}] coordinate [0 1]]
+        (let [changed (assoc-in forms [:arg1 :child-form-ids coordinate] bad)
+              env {:nodes nodes :forms changed :bindings bindings :types types :aliases {}}]
+          (is (false? (effects 'body-lsi-leaf? (nodes :arg1) changed :member)))
+          (doseq [quota [0 65536]] (is (= :rejected (:status (effects 'body-lsi-path :arg1 :member :value env quota))))))
+        (is (zero? @callbacks))))
+))
