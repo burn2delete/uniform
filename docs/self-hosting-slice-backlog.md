@@ -9398,6 +9398,38 @@ and recomputation over supplied normalized DATA, not general CFG/SSA,
 proof-provider verification, fresh authenticated C11/source input, native
 execution or migration evidence. No schema, API, pass or input cap is added.
 
+The next C13 executable increment permits two operand occurrences to reference
+one independently established, globally unique i64 producer, including a
+folded intermediate. Both ordered lookups and the exact signed-i64 overflow
+rule remain; no multiplication rewrite, new producer authority or general
+SSA analysis is introduced. Missing, forward, ambiguous, wrong-type, impure,
+unsafe, dead and overflowing joins remain conservative. Original input
+references/flags, source/result identity, barriers, post-fold DCE, invalidation
+and fresh recomputation are preserved. Two old established-same-ID negatives
+are replaced by unestablished repeated-ID negatives; the selected new cases
+cover both producer families and representable positive/negative endpoints.
+
+The `16313202` RED run retained 236 passes and 38 failures in 274 assertions.
+The first GREEN run at `f3b7188d` completed 11 tests with 1,199 passes and one
+error in 1,200 assertions, leaving ten selectors unrun. The old overflow bound
+attempted hosted negation of MIN when the right operand was MIN. The owning
+predicate now uses the mathematically equivalent zero threshold for that case;
+other guards remain unchanged. Added immediate-ADD controls cover `[0, MIN]`
+and `[MAX, MIN]`, and refusal of negative-left plus MIN without a host error.
+Ordinary explicitly constant overflowing ingress still rejects with
+`C13-SAFETY`; nonconstant overflow remains unchanged without folding.
+
+Candidate `5932d3be` reran the affected arithmetic controls after the guard
+change and passed 21 tests/2,696 assertions (308 new plus 2,388 controls).
+Boundary checks separately passed 6/11: 27/2,707 across two passing invocations;
+LOC separately passed 2,021 files, zero exceptions, maximum 250. Failed epochs
+are retained separately without pass summing. The observations remain bound
+to `5932d3be`, with owned bytes unchanged after the disjoint SH22 main join.
+These original G/Q constructors and public optimization/recomputation use
+supplied normalized DATA, not fresh authenticated C11/source input, proof
+providers, native arithmetic, migration or performance evidence. No schema,
+API, pass or input bound is added.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:

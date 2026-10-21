@@ -471,8 +471,9 @@ For the closed one-hop propagation route, run
 namespace. The initial hop starts at the first non-const operation after a
 pure, proven-safe, nondead const prefix: a pure, proven-safe, nondead
 `:i64`/`:integer-exact` ADD with `:constant-operands false` and two ordered
-references to distinct earlier one-payload i64 constants. Result IDs must be
-unique across the whole input.
+references to established earlier one-payload i64 constants. The two uses may
+refer to the same producer; result definitions remain unique across the whole
+input.
 Fresh bounded indexing joins actual result IDs; the existing signed-i64
 overflow rule still governs folding. Unknown, forward, ambiguous, wrongly
 typed, unsafe, effectful or control-dependent joins do not authorize folding;
@@ -484,7 +485,7 @@ subset is not general CFG/SSA propagation, fresh C11 input or native execution.
 For named intermediate results, also run
 `sh16-propagates-bounded-pure-named-add-chains-until-a-barrier`. The same forward
 scan records each independently resolved, overflow-checked ADD value under its
-original globally unique result ID and continues with the same two-distinct-ID,
+original globally unique result ID and continues with the same two-operand,
 i64/integer-exact, pure/proven-safe/nondead rules. A nonqualifying operation
 stops new propagation, including otherwise resolvable suffix ADDs, but preserves
 successful prefix folds. Existing immediate-literal ADD folding elsewhere is
@@ -493,6 +494,20 @@ unchanged and does not automatically supply a new chain producer. The existing
 rows, not a fixed point or a CPU-time claim. Original request references/flags,
 source/origin/result identity, decision order, invalidation and fresh
 recomputation remain intact; the same normalized-DATA evidence limits apply.
+
+For repeated references, run
+`sh16-propagates-two-uses-of-one-established-i64-producer`. Both operand
+occurrences are independently looked up, including two uses of one established
+constant or folded intermediate; this is not algebraic multiplication or
+general SSA propagation. Unknown, forward, ambiguous, wrongly typed, unsafe,
+effectful, dead or overflowing producers still cannot authorize folding.
+Keep original references/source/result identity, barrier behavior, post-fold
+DCE, conservative invalidation and fresh result recomputation controls.
+The existing signed-i64 negative overflow bound handles a right operand of
+MIN with its equivalent zero threshold, avoiding hosted negation of MIN.
+Immediate `[0, MIN]` and `[MAX, MIN]` fold to MIN and -1; negative-left plus
+MIN is not foldable and ordinary explicit constant ingress still rejects it
+with `C13-SAFETY`. No type, width, coercion, API or input-limit policy changes.
 
 For post-fold local cleanup, also run
 `sh16-removes-only-unused-constants-created-by-fresh-folding`. The existing DCE
