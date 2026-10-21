@@ -2502,6 +2502,39 @@
      :bindings (assoc (:bindings inner) :slice-binding binding) :types types :binding-types types :seeds types :forms forms
      :products {:calls (:calls core) :call-edges (:call-edges core) :module module} :inner inner}))
 
+(defn- literal-vector-slice-input [values start end]
+  ;; Original flat Integer Vector as normalized DATA, without an SCV call.
+  (let [base (literal-string-vector-input "")
+        ids (mapv #(keyword (str "slice-item-" %)) (range (count values)))
+        source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :kind kind :value value :parent-form-id parent :child-form-ids children})
+        leaves (mapv (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                                    :source (source id) :attributes {:literal-kind :integer :value value}
+                                    :evaluation {:kind :value :order []}}) ids values)
+        receiver {:node-id :call :core-form :collection-literal :children ids :resolved-binding-ids [] :source (source :call)
+                  :attributes {:literal-kind :vector :element-count (count ids) :source-value values}
+                  :evaluation {:kind :left-to-right :order (mapv #(hash-map :index %1 :core-node-id %2) (range) ids)}}
+        nodes (conj leaves receiver)
+        inner (-> base (assoc :nodes (into {} (map (juxt :node-id identity) nodes)))
+                  (assoc :forms (into {:call (form :call :vector values nil ids)}
+                                     (map (fn [id value] [id (form id :integer value :call [])]) ids values)))
+                  (assoc :types (assoc (zipmap ids (repeat :gravity.type/integer))
+                                      :call {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat (count ids) :gravity.type/integer))}))
+                  (assoc-in [:core :nodes] nodes) (assoc-in [:core :calls] []) (assoc-in [:core :call-edges] []))
+        input (vector-slice-input inner start end) edge (assoc (:edge input) :ordinal 0)
+        input (-> input (assoc :edge edge) (assoc-in [:core :call-edges] [edge]))]
+    (assoc input :products {:module (:module input) :calls (get-in input [:core :calls]) :call-edges [edge]})))
+
+(deftest sh08-literal-vector-slice-development-kernel
+  (doseq [[values start end] [[[65 66 67] 1 2] [[] 0 0] [[65 66 67] 0 3] [[65 66 67] 3 3]]]
+    (let [{:keys [core node call edge nodes bindings types forms]} (literal-vector-slice-input values start end)
+          result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat (- end start) :gravity.type/integer))}
+             (:type result))))))
+
 (defn- vector-slice-established [input]
   (let [{:keys [core nodes bindings types forms]} input call (first (:calls core)) edge (first (:call-edges core))
         child (invoke-c7 'sh08-scv-derive [core (get nodes (:core-node-id call)) call edge nodes bindings types forms 65536])]
