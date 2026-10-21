@@ -2545,7 +2545,10 @@
       (is (= ["C7-GENERIC" :nonnegative-integer-quotient-work-limit]
              ((juxt :rule :reason) (first (:diagnostics rejected)))))
       (is (= (+ prefix (:work-count measured)) (:work-count rejected))))
-    (doseq [candidate [(assoc-in types [:operator :numeric-mode] :wrapping)
+    (doseq [candidate [(update-in types [:operator] dissoc :kind)
+                       (assoc-in types [:operator :kind] :gravity.type/applied-string-concat)
+                       (assoc types :operator :gravity.type/integer)
+                       (assoc-in types [:operator :numeric-mode] :wrapping)
                        (assoc-in types [:operator :range-proof :divisor :value] 0)
                        (assoc-in types [:operator :storage-policy :allocation] :none)
                        (assoc-in types [:operator :range-proof :source-forms 2 :parent-form-id] :sibling)]]
