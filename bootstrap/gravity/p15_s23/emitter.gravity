@@ -7988,15 +7988,17 @@
                 (if strings?
                   {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil :membership-family :string}
                   {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil}))
-              (if (if (if (map? items) (loop [fields (keys items)]
-                    (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) (= :homogeneous (get items :shape)) false)
+              (if (if (if (map? items) (if (= 3 (count items))
+                    (loop [fields (keys items)]
+                      (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) false) (= :homogeneous (get items :shape)) false)
                 (if (< limit 3)
                   {:status :rejected :reason work-reason :work-count 3}
                   (if (if (p15-s23-ss-type? items) (if strings? true (= :gravity.type/never needle)) false)
                     {:status :accepted :work-count 3 :argument-types arguments :set-member-count nil :membership-family :string}
                     {:status :rejected :reason type-reason :work-count 3}))
-              (if (if (if (map? items) (loop [fields (keys items)]
-                    (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) (if (= 3 (count items))
+              (if (if (if (map? items) (if (= 3 (count items))
+                    (loop [fields (keys items)]
+                      (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) false) (if (= 3 (count items))
                     (if (= :gravity.type/set (get items :kind))
                       (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false) false)
                 (let [members (get items :element-types) n (count members)]

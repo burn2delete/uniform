@@ -31876,6 +31876,18 @@
     (doseq [budget [0 1]]
       (is (= {:status :rejected :reason :keyword-set-contains-work-limit :work-count 2}
              (invoke 'p15-s23-ksm-domain [[carrier :gravity.type/symbol] budget]))))
+    (doseq [width [0 2 4 65536]]
+      (let [walks (atom 0) reads (atom 0)
+            receiver (proxy [clojure.lang.APersistentMap] []
+                       (count [] width)
+                       (seq [] (swap! walks inc) (throw (AssertionError. "non-three-field membership record traversed")))
+                       (valAt ([key] (swap! reads inc) (throw (AssertionError. "non-three-field record read")))
+                              ([key fallback] (swap! reads inc) (throw (AssertionError. "non-three-field record read")))))]
+        (doseq [budget [0 1 2 3 65536]
+                needle [:gravity.type/symbol :gravity.type/keyword :gravity.type/string :gravity.type/character :gravity.type/never]]
+          (is (= :rejected (:status (invoke 'p15-s23-ksm-domain [[receiver needle] budget]))))
+          (is (zero? @walks))
+          (is (zero? @reads)))))
     (doseq [budget [0 1 65536] wrong bad]
       (is (= :rejected (:status (invoke 'p15-s23-ksm-domain [[wrong :gravity.type/symbol] budget]))))
       (is (zero? @callbacks)))
