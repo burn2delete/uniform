@@ -617,6 +617,33 @@ counts to 384/1,152; it does not relabel earlier runs. Independent literal
 pairs model C11's `(if (<= 0 start) (<= start end) false)` placement, not shared
 variable dataflow, member lookup, arbitrary Integer width or actual helper execution.
 
+### MIR integer greater-than placement
+
+Edit `c11_mir_specification.gravity` and run
+`sh13-executes-the-bounded-integer-greater-than-family` in
+`gravity.self-hosting.sh13-branch-join-execution-test`, plus
+`sh13-normalized-greater-than-checks-i64-operands` in
+`gravity.self-hosting.sh13-control-flow-test`. The normalized `:gt` operation
+compares exactly two available signed-i64 operands and returns Bool. The
+original `:integer-gt` bridge preserves the explicit `:integer-greater-than`
+role and original source, facts, CFG/DFG, incoming values and operation IDs.
+It supports seven-row entry comparisons with scalar literal arms, seven-row
+literal-Bool entries with one GT arm, and nine-row GT-entry/GT-arm diamonds.
+Both arms validate before execution. Mixed GT/Eq/Lt/LTE, truthiness, DO/let and
+both-computed-arm GT layouts remain excluded. Existing depth/fuel bounds stay;
+fuel is 505 for an entry or selected arm, 507 for a skipped arm, and 503/505
+for selected/skipped nine-row computation. This adds an opcode/projection
+domain, not public keys or arities; future migration must account for it.
+
+At `342610b9`, four passing invocations cover new bridge 1/2,160, retained
+bridge 19/9,446, normalized namespace 22/2,813 and boundary 6/11: 48 tests /
+14,430 assertions. LOC separately passes 2,022 files, zero exceptions, maximum
+250 lines. Retain `/tmp/d-sh13-gt-*-v1-20261021`, including the separate RED
+900 passes / 1,260 failures in 1/2,160; normalized tests were not RED-selected.
+The C11 capability helper supplies a concrete positive-length guard client,
+but literal count witnesses do not prove count execution, capability authority,
+whole-helper execution, fresh source/native composition or SH-13 completion.
+
 ### Scalar SSA forwarding in normalized MIR
 
 For a pure scalar copy, edit `c11_mir_specification.gravity` and run
