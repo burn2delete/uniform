@@ -2061,6 +2061,77 @@
 (defn sh16-operation-id-selected? [operation selected]
   (contains? (set selected) (get operation :op-id)))
 
+(defn sh16-operation-uses-from [operands index used]
+  (if (= index (count operands))
+    used
+    (sh16-operation-uses-from
+     operands (+ index 1) (conj used (get operands index)))))
+
+(defn sh16-current-result-uses [operations index used]
+  (if (= index (count operations))
+    used
+    (sh16-current-result-uses
+     operations (+ index 1)
+     (sh16-operation-uses-from
+      (get (get operations index) :operands) 0 used))))
+
+(defn sh16-fresh-fold-producers [operations selected index producers]
+  (if (= index (count operations))
+    producers
+    (let [operation (get operations index)]
+      (sh16-fresh-fold-producers
+       operations selected (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (if (sh16-propagation-pure? operation)
+           (assoc producers (get operation :op-id)
+                  (sh16-transform-operation operation))
+           producers)
+         producers)))))
+
+(defn sh16-local-dead-fold? [operation producers used]
+  (if (= :const (get operation :opcode))
+    (if (sh16-propagation-pure? operation)
+      (if (sh16-prefix-i64-constant? operation)
+        (if (contains? producers (get operation :op-id))
+          (if (= operation (get producers (get operation :op-id)))
+            (if (contains? used (get operation :result)) false true)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh16-include-local-dead-folds-from
+  [operations selected producers used index result]
+  (if (= index (count operations))
+    result
+    (let [operation (get operations index)]
+      (sh16-include-local-dead-folds-from
+       operations selected producers used (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (conj result (get operation :op-id))
+         (if (sh16-local-dead-fold? operation producers used)
+           (conj result (get operation :op-id))
+           result))))))
+
+(defn sh16-include-local-dead-folds [request operations selected]
+  (let [original (get request :operations)
+        original-counts (sh16-result-definition-counts original 0 {})
+        current-counts (sh16-result-definition-counts operations 0 {})]
+    (if (= (count original-counts) (count original))
+      (if (= (count current-counts) (count operations))
+        (let [fold-input (sh16-propagate-prefix-add original)
+              fold-selected
+              (sh16-state-changed-operation-ids
+               :constant-fold fold-input [] 0 [])
+              producers
+              (sh16-fresh-fold-producers fold-input fold-selected 0 {})
+              used (sh16-current-result-uses operations 0 #{})]
+          (sh16-include-local-dead-folds-from
+           operations selected producers used 0 []))
+        selected)
+      selected)))
+
 (defn sh16-apply-pass-from
   [family operations selected invalidated index result]
   (if (= index (count operations))
@@ -2122,7 +2193,9 @@
       (sh16-dead-proof-ids-for-selected
        operations selected (+ index 1)
        (if (sh16-operation-id-selected? operation selected)
-         (conj result (get (get operation :dead-proof) :proof-id))
+         (if (= true (get operation :dead))
+           (conj result (get (get operation :dead-proof) :proof-id))
+           result)
          result)))))
 
 (defn sh16-decision-proof-ids [decisions index result]
@@ -2232,9 +2305,13 @@
         (sh16-append-unique
          (get state :invalidated-analysis)
          (get state :invalidated-facts))
-        changed
+        selected
         (sh16-state-changed-operation-ids
          family operations invalidated 0 [])
+        changed
+        (if (= family :dead-code-eliminate)
+          (sh16-include-local-dead-folds request operations selected)
+          selected)
         next-operations
         (sh16-apply-pass family operations changed invalidated)
         proof-ids
