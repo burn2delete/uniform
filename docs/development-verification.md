@@ -1017,6 +1017,22 @@ rewrite emitted triples, link or execute generated programs, claim hard
 aggregate wall/memory containment, or infer public packet/native admission,
 fresh C11 output verification, migration or benchmark evidence from this check.
 
+### Native execution failure records
+
+The existing SH18 harness accepts execution only when its original process
+record is `:completed` with exit zero. Timeout remains distinct; output-limit
+and other noncompleted records reject without calling `zero?` on a missing
+exit code. Preserve the complete process, executable hash, path and arguments.
+
+Run `sh18-native-execution-preserves-output-limit-rejection` and
+`sh18-native-execution-status-records-remain-distinct` in
+`gravity.self-hosting.sh18-native-toolchain-harness-test`. The first uses the
+original bounded compiler/executor; the second is explicitly synthetic status
+mapping, not native execution. Keep existing process/output/cleanup limits and
+coordinate the native work through the existing resource policy. An unrelated
+normal-class development JVM is not itself a reason to require global JVM
+quiescence. No new runner, lane or authoritative migration is required.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit

@@ -11262,6 +11262,35 @@ MIR DATA and constructed/unverified, pending-host-binding B3 output do not
 establish fresh C11/public packets, pin renewal or native admission. No linking,
 generated-program execution, migration or milestone evidence is claimed.
 
+### Native harness preserves noncompleted execution records
+
+At `eedbeda8`, `execute-native` accepts only completed processes with exit zero.
+Its timeout result stays distinct; output-limit and readiness-missing records
+reject while retaining the original process, executable path/hash and arguments.
+The original bounded output producer is unchanged. Test-only `ab071e83` exposed
+the consumer's null-pointer failure: RED was 42 passes and 14 failures in 56
+assertions, with zero runner errors. Four failures came from a real noisy binary
+and ten from explicitly synthetic status records; those are separate evidence
+boundaries, not native evidence for every status.
+
+The repaired two selectors passed 2/56, including 19 real-harness checks and
+37 synthetic checks. Apple Clang 21.0.0 compiled the fixed 120-byte C program for
+host arm64 Darwin; its original execution captured exactly 1 MiB before rejecting
+overflow and completing observed cleanup. Boundary separately passed 6/11:
+8/67 across two passing test invocations. LOC separately passed 2,022 files,
+zero exceptions, maximum 250. Original root sessions exited naturally; temporary
+directories were removed and the existing native lease was released. Two earlier
+GREEN resource preflights made no subject invocation; GREEN ran only once.
+Results retain their `eedbeda8` execution binding. A later metadata-only test
+assertion permits the existing discovery families instead of requiring Clang;
+the observed Clang record satisfies both assertions, with no subject change.
+
+The existing bounds were not increased. The tool identity does not pin the full
+Xcode engine, observed cleanup is not universal process containment, and the
+operational monitor is not a hard OS/RSS/filesystem limit. This is a tooling
+failure-preservation repair using handwritten C, not Gravity source-to-MIR or
+native compiler completion, authoritative migration, self-hosting or release.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established

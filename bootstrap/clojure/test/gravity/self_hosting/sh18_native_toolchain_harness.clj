@@ -577,7 +577,8 @@
      :status
      (cond
        (= :timed-out (:status process)) :timed-out
-       (zero? (:exit-code process)) :accepted
+       (and (= :completed (:status process))
+            (zero? (:exit-code process))) :accepted
        :else :rejected)
      :executable-path (str executable)
      :executable-hash (file-sha256 executable)
