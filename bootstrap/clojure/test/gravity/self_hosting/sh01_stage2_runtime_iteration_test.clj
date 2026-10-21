@@ -31580,7 +31580,7 @@
                                         :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))
     (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/sha-prefix-comparison-map-domain.gravity"
           negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])
-          diagnostic (first (filter #(= :atomic-equality-operand-type-required (:reason %)) diagnostics))]
+          diagnostic (first (filter #(= :vector-equality-operand-type-required (:reason %)) diagnostics))]
       (is (= :accepted (get-in negative [:c5 :status])))
       (is (= :passed (get-in negative [:report :status])))
       (is (= :rejected (get-in negative [:typed :status])))
@@ -31588,7 +31588,7 @@
       (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)) (pr-str diagnostics))
       (is (= character-vector (first (:actual-type diagnostic))))
       (is (= :gravity.type/map (:kind (second (:actual-type diagnostic)))))
-      (is (= :two-established-supported-atomic-values (:expected-type diagnostic)))
+      (is (= :two-established-finite-vector-values (:expected-type diagnostic)))
       (is (some? (:core-node-id diagnostic)))
       (is (some? (:syntax-id diagnostic)))
       (is (map? (:source-span diagnostic)))
