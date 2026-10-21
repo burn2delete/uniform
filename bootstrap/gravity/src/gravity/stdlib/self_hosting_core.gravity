@@ -865,14 +865,14 @@
                     third-byte (get bytes (+ index 2))]
                 (if (sh22-continuation-byte? third-byte)
                   (if (= first-byte 224)
-                    (if (if (<= 160 second-byte)
-                          (<= second-byte 191)
+                    (if (if (sh22-continuation-byte? second-byte)
+                          (if (<= 160 second-byte) (<= second-byte 191) false)
                           false)
                       3
                       0)
                     (if (= first-byte 237)
-                      (if (if (<= 128 second-byte)
-                            (<= second-byte 159)
+                      (if (if (sh22-continuation-byte? second-byte)
+                            (if (<= 128 second-byte) (<= second-byte 159) false)
                             false)
                         3
                         0)
@@ -887,14 +887,14 @@
                   (if (sh22-continuation-byte? third-byte)
                     (if (sh22-continuation-byte? fourth-byte)
                       (if (= first-byte 240)
-                        (if (if (<= 144 second-byte)
-                              (<= second-byte 191)
+                        (if (if (sh22-continuation-byte? second-byte)
+                              (if (<= 144 second-byte) (<= second-byte 191) false)
                               false)
                           4
                           0)
                         (if (= first-byte 244)
-                          (if (if (<= 128 second-byte)
-                                (<= second-byte 143)
+                          (if (if (sh22-continuation-byte? second-byte)
+                                (if (<= 128 second-byte) (<= second-byte 143) false)
                                 false)
                             4
                             0)
@@ -1176,8 +1176,9 @@
                                  :maximum-utf8-bytes))
                       (let [scalar-count
                             (sh22-utf8-scalar-count bytes 0 0)]
-                        (if (= scalar-count
-                               (get utf8-value :scalar-count))
+                        (if (if (integer? scalar-count)
+                              (= scalar-count (get utf8-value :scalar-count))
+                              false)
                           (if (= (count bytes)
                                  (get utf8-value :byte-count))
                             (sh22-accepted

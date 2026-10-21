@@ -290,6 +290,44 @@ must see no `quot` on rejected inputs. This is request-only behavior motivated
 by reader decimal normalization, not reader linkage, signed-negative rounding,
 remainder/general-Integer division, runtime/native or admission evidence.
 
+### Decimal digits through checked request Results
+
+Run `sh22-decimal-digits-compose-checked-request-results` in the same SH-22
+namespace, with the existing checked quotient, multiply, subtract and add
+controls. The test-only driver consumes actual quotient-to-multiply-to-subtract-
+to-add-48 Results for 9, 10, 11, 123 and MAX, using at most 19 iterations.
+Zero returns `[48]` in the driver without arithmetic requests. Each later
+operand comes from the prior Result; deterministic request order, input
+preservation, fresh per-request verification and substitutions are checked.
+Negative producer/domain results retain their existing rejection behavior.
+This adds composition coverage, not operations or numeric semantics. The reader
+helper was neither compiled nor invoked; reader linkage, signed rounding,
+arbitrary-precision division, Unicode admission and C6 proof are not claimed.
+
+### UTF-8 revalidation before stdout request construction
+
+STD4/STD8 govern the existing `:io-stdout` consumer. After the original authority,
+carrier and byte-bound checks, its recomputed scalar count must be an Integer
+before comparison with the supplied count. Invalid UTF-8 returning nil cannot
+match a supplied nil and produce a provider-request descriptor; the existing
+`STD4001/:validated-text-facts-mismatch` rejection remains. Run
+`sh22-stdout-revalidates-utf8-before-building-provider-request` with the adjacent
+UTF-8, IO, rejection and verifier controls in the SH-22 namespace. Real validation
+Results cover empty/ASCII and multibyte boundaries; the same observer sees valid
+descriptor construction and none for the selected rejected sequences. Fresh
+verification and substitutions remain required. No provider IO is executed,
+and this guard does not establish universal malformed-byte or host-failure freedom.
+
+The four special UTF-8 leads E0, ED, F0 and F4 now classify the second byte with
+the existing Integer continuation-byte predicate before their narrower range
+checks. Original valid ranges and third/fourth-byte check order remain. Run
+`sh22-special-utf8-leads-classify-second-bytes-before-range-checks` with the
+adjacent controls above. Actual validate-to-stdout Results cover valid endpoints;
+selected non-Integer second bytes and out-of-range Integers reject with the
+existing STD4001 diagnostics. Earlier authority and collection-bound failures
+retain precedence. This is a bounded classifier repair, not full text/IO support,
+provider execution or migration evidence.
+
 ### Keyword membership in bounded ordered Sets
 
 STD2/STD3 govern `:ordered-set-contains-keyword` in the same SH-22 leaf. It
@@ -978,6 +1016,22 @@ closure. Host arm64 Darwin and requested x86_64 Linux are distinct. Do not
 rewrite emitted triples, link or execute generated programs, claim hard
 aggregate wall/memory containment, or infer public packet/native admission,
 fresh C11 output verification, migration or benchmark evidence from this check.
+
+### Native execution failure records
+
+The existing SH18 harness accepts execution only when its original process
+record is `:completed` with exit zero. Timeout remains distinct; output-limit
+and other noncompleted records reject without calling `zero?` on a missing
+exit code. Preserve the complete process, executable hash, path and arguments.
+
+Run `sh18-native-execution-preserves-output-limit-rejection` and
+`sh18-native-execution-status-records-remain-distinct` in
+`gravity.self-hosting.sh18-native-toolchain-harness-test`. The first uses the
+original bounded compiler/executor; the second is explicitly synthetic status
+mapping, not native execution. Keep existing process/output/cleanup limits and
+coordinate the native work through the existing resource policy. An unrelated
+normal-class development JVM is not itself a reason to require global JVM
+quiescence. No new runner, lane or authoritative migration is required.
 
 ### Normalized target-lowering type consistency
 

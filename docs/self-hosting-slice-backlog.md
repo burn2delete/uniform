@@ -8753,6 +8753,62 @@ remainder, MIN/-1 and arbitrary-precision division are excluded. No reader or
 runtime API rewrite, provider/native execution, public admission, migration,
 milestone or SH-22 completion follows; historical source/digest pins are unchanged.
 
+### Checked request Results compose into bounded decimal digits
+
+Test-only `e592766e` executes real G/Q quotient-to-multiply-to-subtract-to-add-48
+request Results for 9, 10, 11, 123 and MAX, with at most 19 iterations and exact
+ordered digit codepoints. Zero is the driver's `[48]` branch with zero arithmetic
+requests. Original-delegating observations, preserved inputs, fresh verification
+of every request and meaningful result substitutions cover the producer-consumer
+chain. A negative checked-sub result feeds a rejected quotient; existing range
+and zero-divisor rejection remain. Production, fixtures and the API are unchanged.
+
+The focused invocation naturally passed 5/3972: 1856 new assertions and 2116
+affected arithmetic controls. Boundary separately passed 6/11: 11/3983 across
+two passing invocations. LOC separately passed 2,022 files, zero exceptions,
+maximum 250. There is no RED or production repair. After normal main reconciliation,
+the test bytes and raw compiler/seed/library dependencies remained unchanged;
+these are retained observations at `e592766e`, not a joined-candidate rerun.
+No reader helper compilation/invocation or linkage, arbitrary-precision division,
+signed rounding, Unicode admission, C6 proof, native or migration claim follows.
+
+### Invalid UTF-8 count cannot authorize a stdout descriptor
+
+At `150e21d9`, the existing stdout consumer requires an actual Integer recomputed
+scalar count before matching supplied facts. This closes nil-equals-nil admission
+for the selected invalid byte sequences while preserving prior authority,
+carrier, encoding and byte-bound gates and the existing STD4001 fact-mismatch
+diagnostic. Real validate-to-stdout Results retain their bytes and facts, including
+empty text and multibyte endpoints. An original-delegating observer sees both
+successful construction and rejection before a provider-request descriptor;
+fresh producer/consumer verification rejects substitutions. No provider IO runs.
+
+Original RED `06eb6226` naturally completed 264 assertions: 210 passes and 54
+failures, with no errors. The unchanged regression then passed with the minimal
+guard: 8/614 (264 new and 350 affected controls). Boundary separately passed
+6/11: 14/625 across two passing invocations. LOC separately passed 2,022 files,
+zero exceptions, maximum 250. No operation, API, fixture, manifest or authority
+change follows. Other malformed-byte carrier failures, complete text/IO support,
+provider/native execution and admission remain outside this repair.
+
+### Special UTF-8 leads classify the second byte before range arithmetic
+
+At `da5a9c55`, E0/ED/F0/F4 use the existing continuation-byte Integer classifier
+before their original narrower second-byte ranges. Valid low/high endpoints,
+third/fourth-byte order, diagnostics and earlier authority/bound priorities
+remain. Real G/Q validate-to-stdout Results and fresh recomputation/substitutions
+exercise both consumers without provider IO.
+
+Original RED `9e1471c2` naturally completed 592 assertions: 312 passes and 280
+failures, with zero uncaught test-runner errors. Test-local observation retained
+64 actual public-call host exceptions (256 failed assertions) and eight accepted
+Float-byte producer cases (24 failed assertions); these are distinct failures,
+not an oracle correction. The guard successor passed 9/1206 (592 new plus 614
+affected controls); boundary separately passed 6/11, or 15/1217 across two passing
+invocations. LOC separately passed 2,022 files, zero exceptions, maximum 250.
+No operation, schema, API, fixture, provider execution, complete text/IO,
+universal host-failure freedom or migration claim follows.
+
 ### Keyword membership in bounded ordered Sets
 
 The SH-22 leaf now executes `:ordered-set-contains-keyword` under STD2/STD3.
@@ -11205,6 +11261,35 @@ there is no hard aggregate wall/memory containment or benchmark claim. Supplied
 MIR DATA and constructed/unverified, pending-host-binding B3 output do not
 establish fresh C11/public packets, pin renewal or native admission. No linking,
 generated-program execution, migration or milestone evidence is claimed.
+
+### Native harness preserves noncompleted execution records
+
+At `eedbeda8`, `execute-native` accepts only completed processes with exit zero.
+Its timeout result stays distinct; output-limit and readiness-missing records
+reject while retaining the original process, executable path/hash and arguments.
+The original bounded output producer is unchanged. Test-only `ab071e83` exposed
+the consumer's null-pointer failure: RED was 42 passes and 14 failures in 56
+assertions, with zero runner errors. Four failures came from a real noisy binary
+and ten from explicitly synthetic status records; those are separate evidence
+boundaries, not native evidence for every status.
+
+The repaired two selectors passed 2/56, including 19 real-harness checks and
+37 synthetic checks. Apple Clang 21.0.0 compiled the fixed 120-byte C program for
+host arm64 Darwin; its original execution captured exactly 1 MiB before rejecting
+overflow and completing observed cleanup. Boundary separately passed 6/11:
+8/67 across two passing test invocations. LOC separately passed 2,022 files,
+zero exceptions, maximum 250. Original root sessions exited naturally; temporary
+directories were removed and the existing native lease was released. Two earlier
+GREEN resource preflights made no subject invocation; GREEN ran only once.
+Results retain their `eedbeda8` execution binding. A later metadata-only test
+assertion permits the existing discovery families instead of requiring Clang;
+the observed Clang record satisfies both assertions, with no subject change.
+
+The existing bounds were not increased. The tool identity does not pin the full
+Xcode engine, observed cleanup is not universal process containment, and the
+operational monitor is not a hard OS/RSS/filesystem limit. This is a tooling
+failure-preservation repair using handwritten C, not Gravity source-to-MIR or
+native compiler completion, authoritative migration, self-hosting or release.
 
 ### Typed List family predicate: development increment
 

@@ -539,6 +539,65 @@
       (is (= :io/stdout
              (get-in stdout-result [:value :capability]))))))
 
+(deftest sh22-stdout-revalidates-utf8-before-building-provider-request
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        observe (fn [input]
+                  (let [calls (atom {:scan 0 :descriptor 0})
+                        result (with-redefs-fn
+                                 {scoped (fn [& call]
+                                           (let [function (nth call 2) args (nth call 3)]
+                                             (when (= function 'sh22-utf8-scalar-count)
+                                               (swap! calls update :scan inc))
+                                             (when (and (= function 'sh22-accepted)
+                                                        (= :gravity/runtime-service-request
+                                                           (:artifact (get args 1))))
+                                               (swap! calls update :descriptor inc)))
+                                           (apply original call))}
+                                 #(handle input))]
+                    [result @calls]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [validation (request plan 'sh22-utf8-request)
+            stdout (request plan 'sh22-stdout-request)
+            reject (fn [input rule reason counts]
+                     (let [[result observed] (observe input)]
+                       (is (= :rejected (:status result)))
+                       (is (= [rule reason] ((juxt :rule :reason) (first (:diagnostics result)))))
+                       (is (= counts observed))
+                       (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))]
+        (doseq [bytes [[] [0 65 127] [194 128] [224 160 128]
+                       [237 159 191] [240 144 128 128] [244 143 191 191]
+                       (vec (repeat 256 65))]]
+          (let [producer (assoc validation :arguments [bytes])
+                produced (handle producer)
+                text (:value produced)
+                consumer (assoc stdout :arguments [text])
+                [result calls] (observe consumer)]
+            (is (= :accepted (:status produced) (:status result)))
+            (is (= bytes (:bytes text)))
+            (is (= text (get-in result [:value :payload])))
+            (is (= {:scan 1 :descriptor 1} calls))
+            (is (= :required (get-in result [:facts :provider-execution])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [producer produced]))))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [consumer result]))))
+            (doseq [candidate [(assoc-in result [:value :payload :scalar-count] nil)
+                               (assoc-in result [:identity-input :arguments 0 :byte-count] 999)]]
+              (is (= :rejected (:status (invoke-engine 'sh22-verify-result [consumer candidate])))))))
+        (doseq [bytes [[128] [192 128] [224 128 128] [237 160 128]
+                       [226 130] [244 144 128 128] [65 192 128] [-1] [256]]]
+          (reject (assoc stdout :arguments [{:artifact :gravity/validated-utf8
+                                             :bytes bytes :byte-count (count bytes)
+                                             :scalar-count nil :encoding :utf-8}])
+                  "STD4001" :validated-text-facts-mismatch {:scan 1 :descriptor 0}))
+        (doseq [count-value [nil false -1 3]]
+          (reject (assoc-in stdout [:arguments 0 :scalar-count] count-value)
+                  "STD4001" :validated-text-facts-mismatch {:scan 1 :descriptor 0}))
+        (reject (assoc stdout :arguments [(assoc (first (:arguments stdout))
+                                                :bytes (vec (repeat 257 65)) :scalar-count nil)])
+                "STD4001" :text-bound-exceeded {:scan 0 :descriptor 0})
+        (reject (assoc stdout :capabilities #{} :arguments [{:bytes [192 128]}])
+                "STD8001" :missing-io-authority {:scan 0 :descriptor 0})))))
+
 (deftest sh22-canonical-data-is-explicit-and-path-neutral
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [first-request (request plan 'sh22-canonical-request)
@@ -650,6 +709,53 @@
           (is (= :invalid-utf8
                  (get-in result [:diagnostics 0 :reason]))
               bytes))))))
+
+(deftest sh22-special-utf8-leads-classify-second-bytes-before-range-checks
+  ;; Preserve an actual host failure as an observation, not an alternate acceptance path.
+  (let [attempt (fn [call]
+                  (try (call)
+                       (catch Exception failure
+                         {:status :host-failure :class (.getName (class failure))
+                          :message (.getMessage failure)})))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [validation (request plan 'sh22-utf8-request)
+            stdout (request plan 'sh22-stdout-request)
+            verify (fn [input result]
+                     (attempt #(invoke-engine 'sh22-verify-result [input result])))
+            reject (fn [input rule reason]
+                     (let [result (attempt #(handle input))]
+                       (is (= :rejected (:status result)) result)
+                       (is (= rule (get-in result [:diagnostics 0 :rule])))
+                       (is (= reason (get-in result [:diagnostics 0 :reason])))
+                       (is (= :passed (:status (verify input result))))))]
+        (doseq [[lead low high tail] [[224 160 191 [128]] [237 128 159 [191]]
+                                     [240 144 191 [128 128]] [244 128 143 [191 191]]]]
+          (doseq [second-byte [low high]]
+            (let [bytes (into [lead second-byte] tail)
+                  producer (assoc validation :arguments [bytes])
+                  produced (handle producer)
+                  consumer (assoc stdout :arguments [(:value produced)])
+                  result (handle consumer)]
+              (is (= :accepted (:status produced) (:status result)))
+              (is (= bytes (get-in produced [:value :bytes])))
+              (is (= 1 (get-in produced [:value :scalar-count])))
+              (is (= (:value produced) (get-in result [:value :payload])))
+              (is (= :passed (:status (verify producer produced))))
+              (is (= :passed (:status (verify consumer result))))
+              (doseq [candidate [(assoc-in result [:value :payload :bytes 1] nil)
+                                 (assoc-in result [:identity-input :arguments 0 :scalar-count] nil)]]
+                (is (= :rejected (:status (verify consumer candidate)))))))
+          (doseq [second-byte [nil false "128" :byte (double low) (dec low) (inc high)]]
+            (let [bytes (into [lead second-byte] tail)]
+              (reject (assoc validation :arguments [bytes]) "STD4001" :invalid-utf8)
+              (reject (assoc stdout :arguments [{:artifact :gravity/validated-utf8
+                                                 :bytes bytes :byte-count (count bytes)
+                                                 :scalar-count nil :encoding :utf-8}])
+                      "STD4001" :validated-text-facts-mismatch))))
+        (reject (assoc validation :arguments [(into [224 nil] (repeat 255 128))])
+                "STD4001" :text-bound-exceeded)
+        (reject (assoc stdout :capabilities #{} :arguments [{:bytes [240 nil 128 128]}])
+                "STD8001" :missing-io-authority)))))
 
 (deftest sh22-checked-i64-boundaries-do-not-use-overflowing-host-add
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
@@ -904,6 +1010,90 @@
                            (assoc-in result [:facts :numeric-mode] :wrapping-i64)
                            (assoc-in result [:identity-input :arguments 1] 0)]]
             (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
+
+(deftest sh22-decimal-digits-compose-checked-request-results
+  ;; Mirrors reader's bounded nonnegative quotient/product/difference chain
+  ;; using real request results; this is not reader linkage or Unicode ingress.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        functions {:quot 'sh22-checked-nonnegative-quot :mul 'sh22-checked-mul
+                   :sub 'sh22-checked-sub :add 'sh22-checked-add}
+        order (mapv functions [:quot :mul :sub :add])]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [templates {:quot (request plan 'sh22-checked-nonnegative-quot-request)
+                       :mul (request plan 'sh22-checked-mul-request)
+                       :sub (request plan 'sh22-checked-sub-request)
+                       :add (request plan 'sh22-checked-add-request)}]
+        (doseq [[initial expected iterations]
+                [[0 [48] 0] [9 [57] 1] [10 [49 48] 2] [11 [49 49] 2]
+                 [123 [49 50 51] 3]
+                 [Long/MAX_VALUE [57 50 50 51 51 55 50 48 51 54 56 53 52 55 55 53 56 48 55] 19]]]
+          (let [trace (atom [])
+                step (fn [operation arguments iteration]
+                       (let [input (assoc (get templates operation) :arguments arguments)
+                             observed (atom [])
+                             result (with-redefs-fn
+                                      {scoped (fn [& call]
+                                                (when (some #{(nth call 2)} order)
+                                                  (swap! observed conj
+                                                         [(nth call 2) (:arguments (first (nth call 3)))]))
+                                                (apply original call))}
+                                      #(handle input))
+                             value (get-in result [:value :value])]
+                         (is (= :accepted (:status result)))
+                         (is (= {:artifact :gravity/result :variant :ok :value value} (:value result)))
+                         (is (= {:numeric-mode :checked-i64 :safety-outcome :proven-safe :allocation :none} (:facts result)))
+                         (is (= arguments (:arguments input) (get-in result [:identity-input :arguments])))
+                         (is (= [[(get functions operation) arguments]] @observed))
+                         (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))
+                         (is (and (integer? value) (<= 0 value Long/MAX_VALUE)))
+                         (when (zero? iteration)
+                           (is (= :rejected
+                                  (:status (invoke-engine 'sh22-verify-result
+                                                          [input (assoc-in result [:value :value] (inc value))])))))
+                         (swap! trace into @observed)
+                         value))
+                outcome
+                (loop [remaining initial digits [] iteration 0]
+                  (if (zero? remaining)
+                    {:digits (if (zero? initial) [48] digits) :remaining remaining :iterations iteration}
+                    (do
+                      (when (>= iteration 19)
+                        (throw (ex-info "Decimal request composition exceeded 19 iterations"
+                                        {:initial initial :remaining remaining :iterations iteration})))
+                      (let [next (step :quot [remaining 10] iteration)
+                            product (step :mul [next 10] iteration)
+                            digit (step :sub [remaining product] iteration)
+                            code (step :add [48 digit] iteration)]
+                        (is (< next remaining))
+                        (is (<= product remaining))
+                        (is (<= 0 digit 9))
+                        (is (<= 48 code 57))
+                        (recur next (into [code] digits) (inc iteration))))))]
+            (is (= expected (:digits outcome)))
+            (is (= iterations (:iterations outcome)))
+            (is (= 0 (:remaining outcome)))
+            (is (<= (:iterations outcome) 19))
+            (is (= (vec (mapcat identity (repeat iterations order))) (mapv first @trace)))))
+        ;; A real producer can return a value outside the selected consumer
+        ;; domain. It must reject, not turn signed division into a digit step.
+        (let [producer (assoc (:sub templates) :arguments [0 1]) produced (handle producer)
+              input (assoc (:quot templates) :arguments [(get-in produced [:value :value]) 10])
+              result (handle input)]
+          (is (= :accepted (:status produced)))
+          (is (= -1 (get-in produced [:value :value])))
+          (is (= :rejected (:status result)))
+          (is (= :nonnegative-dividend-required (get-in result [:diagnostics 0 :reason])))
+          (doseq [[request candidate] [[producer produced] [input result]]]
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [request candidate]))))))
+        (doseq [[arguments rule reason]
+                [[[9223372036854775808 10] "STD5001" :integer-out-of-range]
+                 [[123 0] "STD5002" :positive-divisor-required]]]
+          (let [input (assoc (:quot templates) :arguments arguments) result (handle input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))))))
 
 (deftest sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
