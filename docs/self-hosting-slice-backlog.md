@@ -10815,6 +10815,26 @@ resummed. Constructed/unverified and pending-host obligations remain unchanged;
 there is no fresh source/public packet, LLVM tool/native execution, admission,
 milestone or migration claim.
 
+### B1 LLVM optimization-status compatibility: development repair
+
+B1's LLVM input accepts the closed `:identity-pass-complete` and
+`:constant-fold-pass-complete` enum, with exact nested/outer status agreement.
+Optimization-report artifact/semantic/decision/verifier joins, error ordering,
+C/Wasm helpers and source/dependency admission remain unchanged. The current
+pure C14 expected-record projector supplies semantic request DATA; original
+C11 report DATA describes input, not a fresh proof of transformed output.
+
+RED `b6f1e273` retained 54 passes and two failures in 56 assertions. Current
+`a3d8520e` passed 1/74; existing incomplete-ingress rejection passed 1/4 and
+boundary passed 6/11: 8/89 across three passing invocations. LOC separately
+passed 2,022 files, zero exceptions, maximum 250. The original-delegating scoped
+observer confirms valid statuses reach the unchanged dependency predicate and
+retain its actual rejection; mismatched/unknown statuses and bad report/target
+inputs reject before it. Current file identities are retained with compiled
+lineage explicitly unestablished, never replaced with a hypothetical old-pin
+positive. No complete packet is accepted or sealed; there is no fresh public
+source/pin renewal, LLVM tool/native, admission, migration or milestone claim.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established
