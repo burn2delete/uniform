@@ -8448,6 +8448,29 @@ authoritative migration or SH-22 completion follows. Historical SH07 source and
 digest pins remain unchanged; their evidence does not authenticate this changed
 library revision and must be renewed only for an actual admission decision.
 
+### Checked i64 multiplication in the experimental bootstrap library
+
+The same SH-22 Gravity leaf now executes binary `:checked-mul-i64` under
+STD1/STD5/SAFE9/D8. Integer family/range checks precede zero handling and four
+sign-quadrant quotient thresholds; divisors are nonzero and MIN/-1 is never
+formed. Actual multiplication occurs only after the guard. The paired cases
+exercise seed quotient behavior in both operand orders, MIN*0/MIN*1/MIN*-1,
+MAX*1/MAX*2, signed endpoints and the exact square-overflow boundary. Existing
+`:checked-i64`, `STD5001` type/range/overflow and `STD1001` arity behavior remain;
+the owner-local operation set/manifest grows to 15 with experimental opt-in,
+`:meta`, no effects/capabilities and `:none` allocation. The request/result
+envelope and four exported entrypoints are unchanged.
+
+The initial RED ran one test/1000 assertions with 766 failures and no errors.
+The corrected first GREEN passed nine tests/1872 assertions at 512 MiB,
+including all 1000 multiplication assertions and existing addition/subtraction,
+paired fixture, policy, rejection and fresh result-verifier checks. The RED is
+not extra coverage. Language-boundary checks passed six tests/11 assertions;
+the Clojure LOC gate passed. No compiler client linkage, native/provider
+execution, complete SH-22 API closure, authoritative migration or milestone
+completion follows. Historical SH07 source/digest pins remain unchanged and
+their evidence does not authenticate this changed source revision.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
