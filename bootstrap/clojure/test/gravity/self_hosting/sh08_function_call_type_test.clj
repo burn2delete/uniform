@@ -14546,6 +14546,66 @@
     (is (= :integer-set-contains-work-limit (:reason (domain [(finite [i i]) i] 3))))
     (is (nil? (:membership-family (domain [(finite []) nv] 65536))))))
 
+(deftest sh08-integer-set-contains-throw-consumer-development-kernel
+  ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
+  (let [reads (atom 0) backing [:gravity.type/integer]
+        members (proxy [clojure.lang.APersistentVector] []
+                  (count [] (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i)))
+        nested {:kind :gravity.type/set :shape :literal :element-types members}
+        input (map-contains-input [nested :gravity.type/integer])
+        record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
+                :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
+        function {:node-id :predicate-fn :core-form :fn :children [:call] :attributes {}
+                  :source {:form-id :predicate-form :syntax-id :predicate-function}
+                  :evaluation {:kind :function-creation :order []}}
+        nodes (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function) (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc (:edge input) :caller-function-syntax-id :predicate-function :caller-function-core-node-id :predicate-fn)
+        core (assoc (:core input) :nodes (conj nodes function) :function-records [record]
+                    :call-edges [edge] :root-core-node-ids [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7 'sh08-ksm-derive [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input) 65536])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function {:function-id :predicate-function :body-core-node-id :call
+                                       :parameters [] :return :gravity.type/bool :latent-effects []
+                                       :capabilities [] :thrown-error-effects []}}
+        direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
+        check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
+        measured (invoke-c7 'sh08-ksm-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
+        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
+        prefix 123
+        _ (reset! reads 0)
+        accepted (check core types 65536)]
+    (is (= 1 @reads) "Integer needle selects its domain without a member-prefix probe")
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (let [limit (+ prefix (dec (:work-count measured)))
+          rejected (check core types limit)]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :integer-set-contains-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= (+ prefix (:work-count (invoke-c7 'sh08-ksm-inferred-call
+                       [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
+             (:work-count rejected))))
+    (doseq [[changed-core changed-types]
+            [[core (assoc-in types [:operator :membership-policy :comparison] :identity)]
+             [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/integer)))]
+             [core (assoc-in types [:arg0 :element-types] [:gravity.type/integer :gravity.type/string])]
+             [core (assoc types :arg0 :gravity.type/unknown)]
+             [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7 'sh08-ksm-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
+            rejected (check changed-core changed-types 65536)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+
 (deftest sh08-symbol-set-contains-development-kernel
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/symbol derive keyword-set-contains-derived]

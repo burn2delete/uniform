@@ -1,0 +1,7 @@
+(ns self-hosting.sh08.integer-set-membership-decimal-member
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  (contains? #{9 32.0} 9))
