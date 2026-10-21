@@ -10766,6 +10766,36 @@ public C11/C13/C14 packet or native execution. Current public source/pin/packet
 boundaries remain unrun and unchanged; no milestone, admission, migration or
 proof-provider credit is established.
 
+### B3 folded comparison text emission: development increment
+
+The existing B3 builder now accepts the C13-derived Bool constant that retains
+`:source-operation :integer-eq`. Both existing source gates use one predicate:
+the derived case requires canonical Bool type, exact actual Bool payload and
+zero operands, with old envelope, purity, value-parity and error precedence
+unchanged. Literal/implicit-Nil and nonconstant paths are retained. Complete
+supplied original MIR goes through current C13 folding and independent C14
+restoration/rederivation; the SAME output then emits LLVM text `add i64 0, 0|1`
+without comparison/zext instructions. Original comparison and literal-prefix
+records remain unchanged, including repeated operands and signed endpoints.
+
+The first test attempt at `2831ca54` exited during namespace loading with zero
+tests/no EDN. A two-line fixture-scope correction retained all assertions;
+semantic RED `2e87d3e8` recorded 61 passes and 44 failures in 105 assertions,
+without errors. Candidate `2e169267` passed 2/449: 117 emission checks including
+12 added pending-host/input-lineage controls, plus the current 332 C13/C14
+checks. Boundary separately passed 6/11: 8/460 across two passing test
+invocations. LOC separately passed 2,022 files, zero exceptions, maximum 250.
+The short boundary and LOC processes may briefly have overlapped before the
+boundary terminal was polled; no strict serial trace or benchmark is claimed.
+
+B3 still consumes upstream-verified MIR rather than independently authenticating
+or reproving C13. The emitted record remains `:constructed-unverified` and
+`:pending-host-content-binding`; legacy C11 closure fields are input lineage
+and pending upstream obligations, not a fresh C11 proof of transformed output.
+These are development supplied-DATA/current semantic kernels and LLVM text,
+not public authenticated packets, pin renewal, LLVM tool verification, native
+execution, migration, admission or milestone completion.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established

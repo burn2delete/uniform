@@ -51,6 +51,12 @@
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
 
+(def ^:private development-b3-plan
+  (delay
+    (let [source-path (path "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
+
 (defn- development-comparison-input [left right repeated?]
   ;; Supplied actual-MIR-shaped DATA. No public compiler build, seal or C11
   ;; verification is claimed by these deliberately local development kernels.
@@ -238,6 +244,111 @@
           (let [result (invoke 'c13-build-bounded-identity-optimized-mir [malformed evidence])]
             (is (= :rejected (:status result)))
             (is (= "C13-VERIFY" (:diagnostic result)))))))))
+
+(defn- development-b3-comparison-input [left right repeated?]
+  ;; Complete supplied MIR DATA, not a compiler product or authentication. All
+  ;; envelope fields are present BEFORE C13; no transformed output is retagged.
+  (let [{:keys [mir]} (development-comparison-input left right repeated?)
+        entry (get-in mir [:control-flow-graph :entry])
+        source (get-in mir [:source-map "comparison"])
+        terminator-id (str entry ":return")
+        operations (mapv #(update % :facts merge
+                                  {:capability-proof-ids [] :safety-proof-id :not-applicable
+                                   :profile-target-fact-id :not-applicable :runtime-check-id :not-applicable
+                                   :proof-certificate-ids [] :failure-behavior :not-applicable})
+                         (get-in mir [:functions 'main :blocks entry :instructions]))
+        block {:artifact :gravity/mir-block :block-id entry :arguments [] :instructions operations
+               :terminator {:artifact :gravity/mir-terminator :terminator-id terminator-id
+                            :kind :return :operands ["comparison"] :successors [] :effects #{}
+                            :ordering :none :source source :profile :hosted
+                            :facts {:returned-value "comparison"} :verifier-status :passed}
+               :predecessors [] :successors [] :dominators [entry]
+               :data-flow {:module-data-flow-graph-reference true} :source source}
+        original (-> mir
+                     (assoc :source-target :jvm :verification-status :passed :diagnostics []
+                            :target-request-metadata {:requested-target :llvm-x86_64-linux :source-target :jvm
+                                                      :identity-bearing? false :downstream-lowering-required? true}
+                            :capability-proof-table {} :profile-target-table {} :provenance {}
+                            :construction {} :pass-contract {} :scope {}
+                            :clojure-seed-boundary? true :self-hosted? false)
+                     (assoc :functions {'main {:artifact :gravity/mir-function :fn-id "main" :name 'main
+                                              :params [] :returns :gravity/bool :latent-effects #{} :capabilities #{}
+                                              :entry entry :blocks {entry block} :source source :facts {} :provenance {}}})
+                     (assoc-in [:data-flow-graph :terminator-uses 0 :consumer-id] terminator-id)
+                     (assoc-in [:data-flow-graph :values "comparison" :uses 0 :consumer-id] terminator-id))
+        artifact {:artifact-id (bootstrap/p15-s23-c11-mir-digest :supplied-b3-artifact)
+                  :mir-id (bootstrap/p15-s23-c11-mir-digest original) :mir-module original}]
+    {:mir original
+     :evidence (bootstrap/p15-s23-c13-evidence-for-target
+                artifact {:status :passed :semantic-replay-parity :passed} :llvm-x86_64-linux)}))
+
+(deftest sh17-development-emits-c13-folded-bools-through-existing-b3-builder
+  ;; B3's verified-MIR input remains an UPSTREAM premise. These direct kernels
+  ;; do not seal a public packet or independently authenticate/reprove C13.
+  (let [execute (fn [plan function arguments]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function
+                   {:engine :gravity-sh17-development-b3-comparison :compiler-artifact-plan? true}
+                   plan function arguments))
+        build #(execute @development-b3-plan 'b3-build-bounded-llvm-x86_64-linux [%])]
+    (doseq [[left right repeated? expected] [[2 2 false true] [2 3 false false]
+                                            [-9223372036854775808 9223372036854775807 false false]
+                                            [9223372036854775807 0 true true]]]
+      (let [{:keys [mir evidence]} (development-b3-comparison-input left right repeated?)
+            folded (execute @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+            output (:optimized-mir folded) entry (get-in mir [:control-flow-graph :entry])
+            operation-path [:functions 'main :blocks entry :instructions 2]
+            policy {:fact-bindings (get-in folded [:semantic-identity :fact-bindings])
+                    :supported-operation-ids (get-in folded [:semantic-identity :operation-order])}
+            original-lowering (build mir) lowering (build output)
+            records (:operation-records lowering)]
+        (is (= :accepted (:status folded)))
+        (is (= folded (bootstrap/p15-s23-c13-expected-record mir evidence)))
+        (is (true? (execute @c14-plan 'c14-equality-translation-valid? [folded policy])))
+        (is (= mir (execute @c14-plan 'c14-equality-original-mir [folded])))
+        (is (= :constructed-unverified (:status original-lowering)))
+        (is (re-find #"icmp eq i64" (or (:llvm-ir original-lowering) "")))
+        (is (= :constructed-unverified (:status lowering)))
+        (is (= :llvm-x86_64-linux (:target lowering)))
+        (is (= expected (:semantic-result lowering)))
+        (is (= (if expected 1 0) (:expected-exit-code lowering)))
+        (is (= ["left" "right" "comparison"] (mapv :mir-operation-id records)))
+        (is (= (take 2 (:operation-records original-lowering)) (take 2 records)))
+        (is (= :integer-eq (:source-operation (last records))))
+        (is (= :constant (:mir-opcode (last records))))
+        (is (= (str "  %v2 = add i64 0, " (if expected 1 0)) (:llvm-instruction (last records))))
+        (is (not (re-find #"icmp|zext" (or (:llvm-ir lowering) ""))))
+        (is (re-find #"target triple = \"x86_64-unknown-linux-gnu\"" (or (:llvm-ir lowering) "")))
+        (is (= [] (:ub-sensitive-flags lowering) (:emitted-metadata lowering)))
+        (is (= :pending-host-content-binding (get-in lowering [:verified-input-closure :status])))
+        ;; These legacy closure values name upstream obligations/input lineage;
+        ;; they do not claim C11 reverified the transformed C13 output.
+        (is (= :required-upstream-contextual-verifier
+               (get-in lowering [:verified-input-closure :c11-full-mir-authenticity])))
+        (is (= :upstream-c11-owned (get-in lowering [:verified-input-closure :full-dfg-edge-use-replay])))))
+    (let [{:keys [mir evidence]} (development-b3-comparison-input 2 2 false)
+          folded (execute @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+          output (:optimized-mir folded) entry (get-in mir [:control-flow-graph :entry])
+          op-path [:functions 'main :blocks entry :instructions 2]
+          change (fn [field value]
+                   (let [changed (assoc-in output (conj op-path field) value)]
+                     (if (contains? #{:type :constant-payload} field)
+                       (assoc-in changed [:data-flow-graph :values "comparison" field] value) changed)))]
+      (doseq [[field value] [[:source-operation :integer-lt] [:source-operation :call]
+                             [:type :gravity/integer] [:constant-payload {:present? true :value nil}]
+                             [:constant-payload {:present? true :value 1}] [:constant-payload {:present? true}]
+                             [:constant-payload {:present? true :value true :extra 1}]
+                             [:operands ["left"]]]]
+        (let [rejected (build (change field value))]
+          (is (= :rejected (:status rejected)))
+          (is (= "B1-UNSUPPORTED" (:diagnostic rejected)))
+          (is (nil? (:llvm-ir rejected)))))
+      (doseq [[field value reason] [[:effects #{:io/write} :operation-effects-must-be-empty-set]
+                                    [:verifier-status :rejected :passed-operation-verifier-status]
+                                    [:constant-payload {:present? true :value false} :mir-value-payload-parity]]]
+        (let [rejected (build (assoc-in output (conj op-path field) value))]
+          (is (= :rejected (:status rejected)))
+          (is (= "B1-INPUT" (:diagnostic rejected)))
+          (is (= reason (:missing-fact rejected))))))))
 
 (def ^:private c13-envelope-keys
   ;; This set is copied from C14's c14-c13-envelope-valid? contract.  Keep it
