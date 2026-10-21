@@ -30605,7 +30605,7 @@
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
 
 (deftest current-gravity-integer-set-contains-authenticated-composition
-  ;; One finite Integer membership composition and one Character-member typing negative; Q is parser-only.
+  ;; One finite Integer membership composition and one Decimal-member typing negative; Q is parser-only.
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
@@ -30762,7 +30762,7 @@
                       :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
                       :closed-plan-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
                       :runtime-function-count (count (:functions runtime-plan))
-                      :member-domain :independently-finite-integer-sets-and-symbol-value :result-evidence :boolean
+                      :member-domain :independently-finite-integer-sets-and-integer-value :result-evidence :boolean
                       :recursive-member-transport false :whole-compiler-consumer-execution false
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
