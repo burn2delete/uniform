@@ -331,6 +331,43 @@ allocation evidence. General Sets, mixed families, host-provider/callback safety
 compiler linkage, full SH-22 and self-hosting are not established. Historical
 SH07 pins remain unchanged and do not authenticate this revised source.
 
+### Bounded Keyword Set value equality
+
+STD2/STD3 govern `:ordered-set-equal-keyword` in the same experimental SH-22
+leaf, with checked signature
+`(OrderedSet Keyword) (OrderedSet Keyword) -> (Result Bool CollectionError)`.
+Both existing ordered carriers must contain at most 256 actual Keywords.
+Both bounds and complete Keyword-family checks precede member equality; both
+uniqueness validations precede a count mismatch or apparent matching prefix.
+Equal valid Sets have equal counts and no unmatched member, independently of
+stored order. The query preserves both inputs and does not invoke payloads.
+`STD3001` retains bounds failures, `STD10003` rejects malformed/duplicate/family
+inputs and `STD1001` rejects wrong arity. Explicit `:meta` opt-in, no effects or
+capabilities and `:none` collection-value allocation remain required.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-keyword-set-equality-consumes-real-insertion-results \
+  --exact sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity --fail-fast
+```
+
+The check consumes real existing Set insertion results and recomputes producer
+and equality results. At executed candidate `42ba1831`, the complete batch
+passed 11/1436, including all 322 new assertions. Prior-production RED remains
+separate: 1/322, 150 pass, 172 fail, no errors. The four exports and request/
+result envelope are unchanged; there is no general/mixed-family equality,
+native allocation, host-callback safety, compiler linkage or SH-22 completion
+claim. Historical SH07 pins do not authenticate this revised source.
+
+String membership remains unimplemented: L1 requires Unicode-scalar Strings,
+while STD4's `string?` grants no validation fact. The current SH-22 carrier only
+bounds host String units; ordinary stage2 equality does not reject a lone UTF16
+surrogate. Existing strict UTF-8 helpers prohibit SH-22/public runtime callers.
+Checked String ingress or an independently established validated carrier is a
+separate owning-interface dependency, not permission to weaken String semantics.
+
 ### C6 compiled-source aggregate binding maintenance
 
 ```bash
