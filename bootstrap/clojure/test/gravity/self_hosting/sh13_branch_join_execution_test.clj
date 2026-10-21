@@ -1040,3 +1040,110 @@
       (is (nil? (:execution result)))
       (is (nil? (:projection result)))
       (is (= :passed (:status (verify core mir result)))))))
+
+(deftest sh13-composes-scalar-truthiness-with-two-expression-do
+  ;; Supplied original constructors preserve both source families, not a fresh
+  ;; C6 type adapter. Only truthiness + sequence gets the new eight-row layout.
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]
+          [input-type input truth first-type first-value type value other]
+          [[:gravity.type/bool true true :gravity.type/bool false :gravity.type/i64 7 8]
+           [:gravity.type/bool false false :gravity.type/nil nil :gravity.type/bool true false]
+           [:gravity.type/nil nil false :gravity.type/bool false :gravity.type/keyword :last/value :other/value]
+           [:gravity.type/i64 0 true :gravity.type/nil nil :gravity.type/nil nil nil]
+           [:gravity.type/keyword :condition/value true :gravity.type/bool false :gravity.type/i64 Long/MIN_VALUE Long/MAX_VALUE]
+           [:gravity.type/keyword :condition true :gravity.type/nil nil :gravity.type/bool false true]
+           [:gravity.type/i64 -1 true :gravity.type/bool false :gravity.type/keyword :last/name :other/name]
+           [:gravity.type/bool false false :gravity.type/nil nil :gravity.type/nil nil nil]]]
+    (let [core (with-scalar-truthiness extension
+                 (with-two-expression-do extension
+                   (scalar-core (checked extension) true type
+                                (if (= placement :then) value other)
+                                (if (= placement :else) value other))
+                   placement first-type first-value type value)
+                 input-type input)
+          mir (build core) result (run core mir) nodes (:core-nodes core)
+          ids (mapv :node-id nodes) rows (get-in result [:projection :operations])
+          if-node (first (filter #(= :if (:source-operation %)) nodes))
+          scope-id ((:operands if-node) (if (= placement :then) 1 2))
+          index (.indexOf ids scope-id) body-ids (subvec ids (- index 2) (inc index))
+          selected? (= placement (if truth :then :else))
+          ops (into {} (for [block (vals (get-in mir [:functions (:entrypoint core) :blocks]))
+                            op (:instructions block)] [(:op-id op) op]))
+          incoming (first (filter #(= ((coordinates core mir) placement) (:predecessor %))
+                                  (get-in mir [:control-flow-graph :join :incoming])))]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :accepted (:status result)))
+      (is (= (if selected? value other) (get-in result [:execution :value])))
+      (is (= (if selected? 504 506) (get-in result [:execution :fuel])))
+      (is (= (into (subvec ids 0 2) (if selected? body-ids
+                                    [((:operands if-node) (if truth 1 2))]))
+             (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+      (is (= (if selected? [1 1 1] [0 0 0])
+             (mapv (fn [id] (count (filter #(= id (:operation %)) (get-in result [:execution :trace])))) body-ids)))
+      (is (= 8 (count rows)))
+      (is (= ids (mapv :operation-id rows)))
+      (is (= (mapv :source nodes) (mapv :source rows)))
+      (is (= (mapv #(get-in ops [% :facts]) ids) (mapv :facts rows)))
+      (is (= [:literal :truthiness] (mapv :role (subvec rows 0 2))))
+      (is (= [:literal :literal :sequence-result] (mapv :role (subvec rows (- index 2) (inc index)))))
+      (is (= scope-id (:value incoming)))
+      (is (= (:control-flow-graph mir) (get-in result [:projection :control-flow-graph])))
+      (is (= :passed (:status (verify core mir result))))))
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]]
+    (let [do-core (with-two-expression-do extension
+                    (scalar-core (checked extension) true :gravity.type/nil nil nil)
+                    placement :gravity.type/nil nil :gravity.type/nil nil)
+          core (with-scalar-truthiness extension do-core :gravity.type/bool (= placement :else))
+          nodes (:core-nodes core) ids (mapv :node-id nodes)
+          if-node (first (filter #(= :if (:source-operation %)) nodes))
+          scope-id ((:operands if-node) (if (= placement :then) 1 2))
+          index (.indexOf ids scope-id) first-index (- index 2) second-index (dec index)
+          scope [:core-nodes index] first-path [:core-nodes first-index]
+          second-path [:core-nodes second-index]
+          candidates [(assoc-in core (into scope [:attributes :body-count]) 1)
+                      (assoc-in core (conj scope :operands) [(ids second-index) (ids first-index)])
+                      (assoc-in core (conj first-path :path) (:path (nodes second-index)))
+                      (assoc-in core (conj second-path :path) [:wrong])
+                      (assoc-in core (into first-path [:attributes :value]) false)
+                      (assoc-in core (into second-path [:attributes :value]) 0)
+                      (assoc-in core (conj first-path :effects) #{:io/write})
+                      (update-in core (conj first-path :attributes) dissoc :value)
+                      (update-in core (conj second-path :attributes) dissoc :value)
+                      (assoc-in core [:core-nodes 1 :operands] [])
+                      (update-in core [:core-nodes 1 :path] conj :extra)
+                      (assoc-in core [:core-nodes 1 :attributes :false-values] [false])
+                      (assoc-in core [:core-nodes 1 :attributes :result-type] :gravity.type/i64)
+                      (with-scalar-truthiness extension do-core :gravity.type/string "unsupported")]]
+      (doseq [candidate candidates]
+        (let [mir (build candidate) result (run candidate mir)]
+          (is (= :rejected (:status result)))
+          (is (nil? (:execution result)))
+          (is (nil? (:projection result)))
+          (is (= :passed (:status (verify candidate mir result))))))
+      (let [mir (build core) accepted (run core mir)
+            op-path [:functions (:entrypoint core) :blocks ((coordinates core mir) placement) :instructions 2]
+            mutants [(assoc-in mir (conj op-path :operands) [(ids second-index) (ids first-index)])
+                     (assoc-in mir (into op-path [:facts :type-fact-id]) "forged")
+                     (assoc-in mir (into op-path [:source :span :start]) 999)
+                     (update-in mir [:functions (:entrypoint core) :blocks ((coordinates core mir) placement)
+                                     :instructions 0 :constant-payload] dissoc :value)]]
+        (doseq [mutant mutants]
+          (let [result (run core mutant)]
+            (is (= :rejected (:status result)))
+            (is (= :rejected (get-in result [:upstream-verification :status])))
+            (is (nil? (:execution result)))
+            (is (= :passed (:status (verify core mutant result))))))
+        (is (= :rejected (:status (verify core mir (assoc-in accepted [:execution :value] false)))))
+        (is (= :rejected (:status (verify core mir (assoc-in accepted [:projection :operations index :role] :literal))))))))
+  (doseq [extension [".gravity" ".qst"] placement [:then :else] operation [:integer-eq :integer-lt]]
+    (let [core (with-scalar-truthiness extension
+                 (with-integer-comparison extension
+                   (scalar-core (checked extension) true :gravity.type/bool false true)
+                   placement operation 0 1)
+                 :gravity.type/bool true)
+          mir (build core) result (run core mir)]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :rejected (:status result)))
+      (is (nil? (:execution result)))
+      (is (nil? (:projection result)))
+      (is (= :passed (:status (verify core mir result)))))))
