@@ -300,6 +300,37 @@ unbounded-profile, native allocation or host-callback-free guarantee follows.
 Compiler linkage, full SH-22 and self-hosting remain pending; historical SH07
 pins are unchanged and do not authenticate this changed source revision.
 
+### Symbol membership after bounded ordered-Set insertion
+
+STD2/STD3 govern `:ordered-set-contains-symbol` in the same SH-22 leaf. The
+existing ordered carrier admits at most 256 actual Symbols and a Symbol needle.
+The bound and complete member/needle family checks precede equality, and full
+uniqueness validation precedes a hit. Qualified Symbol value equality determines
+Bool membership independently of insertion order, without spelling coercion or
+execution authority. `STD3001` retains bounds failures, `STD10003` rejects
+malformed/duplicate/family inputs and `STD1001` rejects wrong arity.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-symbol-set-membership-consumes-real-insertion-results \
+  --exact sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity --fail-fast
+```
+
+The check consumes real existing `:ordered-set-conj` Symbol results and freshly
+recomputes insertion and query results. It covers qualified independently
+constructed values, input preservation, 256/257, duplicate-after-hit, family,
+authority, nil-operation and substitution failures without payload invocation.
+Test-only RED against prior production was 1/304 (116 pass, 188 fail). The
+complete GREEN batch at `f3990902` passed 10/1106, including all 304 new
+assertions. They are separate epochs. Experimental `:meta` opt-in, no
+effects/capabilities and `:none`
+collection-value allocation remain explicit; envelope metadata is not native
+allocation evidence. General Sets, mixed families, host-provider/callback safety,
+compiler linkage, full SH-22 and self-hosting are not established. Historical
+SH07 pins remain unchanged and do not authenticate this revised source.
+
 ### C6 compiled-source aggregate binding maintenance
 
 ```bash

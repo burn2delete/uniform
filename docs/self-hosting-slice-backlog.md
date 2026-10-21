@@ -8535,6 +8535,37 @@ compiler linkage, complete SH-22, migration or self-hosting claim follows.
 Historical SH07 source/digest pins remain unchanged and do not authenticate
 this revised library source; renewal belongs to a later admission decision.
 
+### Symbol membership after bounded ordered-Set insertion
+
+The SH-22 leaf executes `:ordered-set-contains-symbol` under STD2/STD3 using
+the existing ordered carrier with at most 256 actual Symbols and a Symbol
+needle. Bound checks precede the complete family census; member/needle checks
+precede equality and full uniqueness validation precedes a hit. Qualified
+Symbol value equality is insertion-order independent, preserves the input and
+does not invoke payloads or grant authority from spelling. Bound, malformed/
+duplicate/family and arity failures retain `STD3001`, `STD10003` and `STD1001`.
+The owner-local experimental opt-in `:meta` surface grows to 18 operations;
+effects/capabilities are empty and collection-value allocation is `:none`.
+The four exports and request/result envelope are unchanged. Exact new routing
+does not add a nil acceptance or repair the older general membership helper.
+
+At executed candidate `f399090274e013526566106b9e8fe63a2be17584`, the focused
+batch passed 10 tests/1106 assertions at 512 MiB, including all 304 Symbol
+assertions, existing Keyword membership/Vector append, paired fixtures, policy,
+rejections and fresh verification. Real existing Set insertion outputs feed
+the query for empty, absent and equal-present Symbol cases; both producer and
+consumer results are recomputed. Qualified independently constructed values,
+256/257 bounds, duplicate-after-hit, wrong families/needle, opaque payload,
+nil-operation, authority and forged results are covered. RED remains a separate
+1/304 epoch with 116 pass, 188 fail and no errors, not added coverage. Boundary
+checks passed 6/11 and LOC passed; the final two notes do not alter executed
+code/test/fixture or runtime/emitter dependencies from main `616c8039`.
+
+No general Set/mixed-family support, host-provider or host-callback safety,
+native allocation/execution, compiler client linkage, complete library closure,
+migration, SH-22 completion or self-hosting follows. Historical SH07 source/
+digest pins remain unchanged and do not authenticate the revised library source.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
