@@ -2302,3 +2302,108 @@
           (doseq [quota [15 16]] (is (= :rejected (:status (effects 'body-lsi-path :value-init :initializer :value env quota)))))
           (is (zero? @callbacks)))))
 ))
+
+(defn- vector-first-symbol-loop-data
+  ([] (vector-first-symbol-loop-data []))
+  ([tails]
+  ;; Source-linked normalized records exercise the current query before loop grounding.
+  (let [{:keys [core types nodes forms bindings context empty-type] :as data} (symbol-set-loop-data)
+        query-input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'list-query-input)
+                     'first [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/symbol]}])
+        binding (assoc (get-in query-input [:bindings :ordering-binding]) :binding-id :first-binding
+                                                                             :definition-syntax-id :first-definition)
+        tail-ids (mapv #(keyword (str "vector-tail-" %)) (range (count tails)))
+        raw-values (into [(get-in forms [:arg1 :value])] (map :value tails))
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin []})
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :kind kind :value value :parent-form-id parent :child-form-ids children
+                :scope-id :value-scope :source-span nil :origin-chain [] :generated-origin []})
+        vector-children (into [:arg1] tail-ids)
+        forms (-> forms (assoc-in [:value-init-form :kind] :set) (assoc-in [:value-init-form :value] #{})
+                        (assoc-in [:value-init-form :child-form-ids] [])
+                        (assoc-in [:arg1 :parent-form-id] :symbol-vector-form)
+                        (assoc-in [:call :child-form-ids] [:operator :arg0 :vector-first-form])
+                        (assoc :first-operator-form (form :first-operator-form :symbol 'first :vector-first-form [])
+                               :symbol-vector-form (form :symbol-vector-form :vector raw-values :vector-first-form vector-children)
+                               :vector-first-form (form :vector-first-form :list (list 'first raw-values) :call
+                                                        [:first-operator-form :symbol-vector-form])))
+        forms (into forms (map (fn [id spec] [id (form id (:kind spec) (:value spec) :symbol-vector-form [])]) tail-ids tails))
+        tail-nodes (mapv (fn [id spec]
+                          {:node-id id :core-form :literal :children [] :resolved-binding-ids [] :binding-context :value-scope
+                           :source (source id) :attributes {:literal-kind (:kind spec) :value (:value spec)}
+                           :evaluation {:kind :value :owner-function-syntax-id nil :order []}}) tail-ids tails)
+        first-children [:first-operator :symbol-vector]
+        first-node {:node-id :vector-first :core-form :call :children first-children :resolved-binding-ids [:first-binding]
+                    :binding-context :value-scope :source (source :vector-first-form)
+                    :attributes {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+                    :evaluation {:kind :operator-then-arguments :owner-function-syntax-id nil
+                                 :order [{:index 0 :core-node-id :first-operator} {:index 1 :core-node-id :symbol-vector}]}}
+        first-operator {:node-id :first-operator :core-form :reference :children [] :resolved-binding-ids [:first-binding]
+                        :binding-context :value-scope :source (source :first-operator-form)
+                        :attributes {:symbol 'first :position :operator :binding-id :first-binding :binding-class :core
+                                     :definition-syntax-id :first-definition}
+                        :evaluation {:kind :value :owner-function-syntax-id nil :order []}}
+        vector-node {:node-id :symbol-vector :core-form :collection-literal :children vector-children :resolved-binding-ids []
+                     :binding-context :value-scope :source (source :symbol-vector-form)
+                     :attributes {:literal-kind :vector :element-count (count vector-children) :source-value raw-values}
+                     :evaluation {:kind :left-to-right :owner-function-syntax-id nil
+                                  :order (mapv (fn [i id] {:index i :core-node-id id}) (range) vector-children)}}
+        initializer (assoc (nodes :value-init) :core-form :collection-literal
+                           :attributes {:literal-kind :set :element-count 0 :source-value #{}}
+                           :evaluation {:kind :left-to-right :owner-function-syntax-id nil :order []})
+        nodes (-> nodes (assoc :first-operator first-operator :symbol-vector vector-node :vector-first first-node :value-init initializer)
+                        (assoc-in [:call :children] [:operator :arg0 :vector-first])
+                        (assoc-in [:call :evaluation :order] [{:index 0 :core-node-id :operator}
+                          {:index 1 :core-node-id :arg0} {:index 2 :core-node-id :vector-first}]))
+        nodes (into nodes (map (juxt :node-id identity) tail-nodes))
+        first-call {:core-node-id :vector-first :operator-node-id :first-operator :operator-binding-id :first-binding
+                    :argument-node-ids [:symbol-vector] :ordered-evaluation-node-ids first-children
+                    :evaluation-order :operator-then-arguments :result-policy :call-result}
+        first-edge {:ordinal 0 :call-core-node-id :vector-first :caller-function-syntax-id nil :caller-function-core-node-id nil
+                    :callee-binding-id :first-binding :callee-definition-syntax-id :first-definition
+                    :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids [:symbol-vector]
+                    :ordered-evaluation-node-ids first-children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        insertion-call (assoc (first (:calls core)) :argument-node-ids [:arg0 :vector-first]
+                                                     :ordered-evaluation-node-ids [:operator :arg0 :vector-first])
+        insertion-edge (assoc (first (:call-edges core)) :ordinal 1 :argument-core-node-ids [:arg0 :vector-first]
+                                                       :ordered-evaluation-node-ids [:operator :arg0 :vector-first])
+        bindings (assoc bindings :first-binding binding)
+        ids (into (into [:again-init :value-init :condition :next-again :operator :arg0 :first-operator :arg1] tail-ids)
+                  [:symbol-vector :vector-first :call :transfer :result :branch :loop-node :fn-node])
+        core (assoc core :nodes (mapv nodes ids) :calls [first-call insertion-call] :call-edges [first-edge insertion-edge]
+                         :binding-table (vec (vals bindings)))
+        vector-type {:kind :gravity.type/vector :shape :literal :element-types (into [:gravity.type/symbol] (map :type tails))}
+        types (into (assoc types :symbol-vector vector-type :vector-first :gravity.type/symbol)
+                    (map (fn [id spec] [id (:type spec)]) tail-ids tails))
+        first-derived (c7-invoke 'sh08-lq-derive [core first-node first-call first-edge nodes bindings types forms 65536])
+        first-descriptor (:descriptor first-derived) types (assoc types :first-operator first-descriptor)
+        insertion (c7-invoke 'sh08-pl-derive [core (nodes :call) insertion-call insertion-edge nodes bindings types forms 65536])
+        descriptor (:descriptor insertion) types (assoc types :operator descriptor)
+        working (assoc core :loop-member-source {:nodes nodes :forms forms :bindings bindings})
+        checked (c7-invoke 'sh08-ft-loop-type-step [working types {} 65536])
+        rows (c7-invoke 'sh08-ft-loop-constraints [(:constraints checked) nodes (:module core)])
+        quotes (c7-invoke 'sh08-qd-products [(:nodes core) (vec (vals forms)) (:module core)])
+        ledger (into (into rows (:constraints quotes))
+                     [(c7-invoke 'sh08-lq-constraint [first-descriptor]) (c7-invoke 'sh08-pl-constraint [descriptor])])
+        context (assoc context :core core :nodes nodes :forms forms :bindings bindings :types types
+                               :calls {:vector-first first-call :call insertion-call} :edges {:vector-first first-edge :call insertion-edge}
+                               :call-order {:vector-first 0 :call 1}
+                               :call-facts {:vector-first (c7-invoke 'sh08-lq-call-fact [first-descriptor (:module core)])
+                                            :call (c7-invoke 'sh08-pl-call-fact [descriptor (:module core)])}
+                               :ledger ledger :loop-rows (into {} (map (fn [row] [[(get-in row [:dependencies :loop-premise :kind]) (:lhs row)] row]) rows)))]
+    (assoc data :core core :working working :nodes nodes :forms forms :bindings bindings :types types
+                :first-derived first-derived :derived insertion :checked checked :rows rows :quotes quotes :context context))))
+
+(deftest vector-first-symbol-loop-witness-development-kernel
+  (let [{:keys [working core nodes forms types checked rows first-derived derived empty-type carrier]} (vector-first-symbol-loop-data)]
+    (is (= :accepted (:status first-derived) (:status derived)))
+    (is (= :gravity.type/symbol (:type first-derived)))
+    (is (= :sh08-vector-first-v1 (get-in first-derived [:descriptor :version])))
+    (is (= :gravity.type/symbol (get-in first-derived [:descriptor :bounds-proof :selected-type])))
+    (is (= 0 (get-in first-derived [:descriptor :bounds-proof :selected-index])))
+    (is (= :accepted (:status checked)) (pr-str checked))
+    (is (= carrier (get-in checked [:bindings :value])))
+    (is (= empty-type (get-in checked [:member-invariants :value :initializer-type])))
+    (is (= [:vector-first :symbol-vector :arg1] (get-in checked [:member-invariants :value :grounding :member-path])))
+    (is (= [:sh08-loop-target-types-v1 :sh08-loop-target-types-v2 :sh08-loop-target-types-v2] (mapv :producer-rule rows)))))
