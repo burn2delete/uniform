@@ -246,7 +246,7 @@
             (is (= :passed (:status upstream)))
             (is (= [:parameter :local :let-binding :local :truthy :literal :literal :if :let :function]
                    (mapv :source-operation nodes)))
-            (is (= [[binder] [(get ids 1)] [local-binder] [if-id] [scope]]
+            (is (= [[binder] [(get ids 1)] [local-binder] [local-binder if-id] [scope]]
                    (mapv #(get-in nodes [% :operands]) [1 2 3 8 9])))
             (is (= :passed (:status verification)) (pr-str (:diagnostics verification)))
             (when (= :passed (:status verification))
