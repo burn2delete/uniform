@@ -4973,6 +4973,25 @@ their independent typing requirements; `keyword?` grants no general flow
 narrowing. These direct checks do not refresh C5/C6/source, public packet,
 migration or performance evidence.
 
+### Fixed match-family preimage checks
+
+C7's private `sh08-ft-match-preimage-valid?` compares the complete
+`:match-branch-records`, `:match-pattern-records` and
+`:match-decision-skeletons` values in that order. Three explicit checks now
+replace its fixed Vector-tail loop. Each reads preimage before core, rejects
+at the first mismatch and preserves full equality, nil/missing behavior and
+the unchanged three-argument API with its unused projection argument.
+The parent validator still owns closed-preimage shape and lineage checks.
+
+In the SH08 function-call namespace, select
+`sh08-match-preimage-fixed-fields-development-kernel` with the existing Boolean
+match, structural match-shape, semantic identity-normalization and malformed
+request controls. The observer delegates specialized/generic `get` and unary
+`rest` unchanged, checking exact read sequences and absence of Vector tails.
+Private equality success on sparse DATA does not authenticate an artifact.
+This leaf repair adds no normalization, partial comparison, schema, authority
+or general typed-source support and requires no automatic C5/C6/source replay.
+
 ### Body-effect development
 
 The body-analysis owner is `bootstrap/gravity/src/gravity/effects.gravity`.

@@ -6192,6 +6192,42 @@ surrounding helper typing remain independent gaps; the guard establishes no
 general flow fact and this repair does not claim whole-helper source admission,
 Vector-rest support, current-closure migration, self-hosting or release credit.
 
+### Fixed match-family preimage checks: compiler-source dependency repair
+
+At `89988457`, C7's private `sh08-ft-match-preimage-valid?` uses three explicit
+ordered checks instead of traversing a fixed Vector of family names. It still
+compares complete branch, pattern and decision-skeleton records, reading each
+preimage value before its core value and returning false at the first mismatch.
+The three-argument API, unused projection argument and matching missing/nil
+behavior are unchanged. There is no partial normalization, weakened equality,
+new schema or authority path; the parent closed-shape and lineage gates remain
+byte-identical. Only this function changes production code.
+
+Original Gravity baseline calls confirmed all eight mismatch combinations with
+three projection values, six sparse/nil cases and rejection by the parent for
+an incomplete preimage. The first test-only `8f589760` run remains
+43P/36F/0E out of 79: its generic observer missed optimized `get`, so 24 empty
+traces give no read-order credit. Twelve Vector-tail checks also failed. The
+corrected original-delegating `9157fcd1` observer covers specialized and generic
+`get` plus unary `rest`. Its 67P/12F/0E run passed all 24 exact read sequences,
+all Bool outcomes, sparse cases and the parent rejection; only the expected
+zero-tail checks failed, observing one initial Vector-tail call when advancing
+beyond the first family.
+
+The final `89988457` batch passed five tests/158 assertions in one invocation:
+the new 79-assertion matrix, Boolean match 47, structural shape 23, semantic
+identity normalization four and fail-closed boundary five. Exact read order,
+early rejection and full-value comparisons are preserved, with zero Vector
+tails. This is an operation observation, not a speedup or provider-cost claim.
+
+One join to test/notes-only main `9e9c8480` produced `47e79b97`, preserving both
+owned files byte-for-byte. Boundary passed 6/11; LOC reports 2,022 source files,
+zero exceptions and maximum 250 physical lines. The 158 assertions were not
+replayed for that unrelated join. No C5/C6/source proof was invoked. Private
+helper observations do not establish authenticated preimages, whole-helper
+typing, predicate flow facts, current-closure admission, migration, self-hosting
+or release support.
+
 ### Ordinary compiler-artifact module calls: development implementation
 
 The L3/C5/BOOT2 enabling increment gives the temporary compiler-artifact seed
