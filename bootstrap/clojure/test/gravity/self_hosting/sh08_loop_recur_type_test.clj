@@ -2175,3 +2175,55 @@
           (doseq [quota [0 65536]] (is (= :rejected (:status (effects 'body-lsi-path :arg1 :member :value env quota))))))
         (is (zero? @callbacks))))
 ))
+
+(defn- unquoted-symbol-set-loop-data []
+  ;; C6 sh07-lower-literal emits an evaluated Set with these three attributes.
+  (let [{:keys [core nodes forms types bindings context] :as data} (symbol-set-loop-alias-data)
+        forms (-> forms (assoc-in [:value-init-form :kind] :set)
+                        (assoc-in [:value-init-form :value] #{})
+                        (assoc-in [:value-init-form :child-form-ids] []))
+        initializer (-> (nodes :value-init) (assoc :core-form :collection-literal
+                        :attributes {:literal-kind :set :element-count 0 :source-value #{}}
+                        :evaluation {:kind :left-to-right :owner-function-syntax-id nil :order []}))
+        nodes (assoc nodes :value-init initializer)
+        core (assoc core :nodes (mapv #(nodes (:node-id %)) (:nodes core)))
+        working (assoc core :loop-member-source {:nodes nodes :forms forms :bindings bindings})
+        checked (c7-invoke 'sh08-ft-loop-type-step [working types {} 65536])
+        rows (c7-invoke 'sh08-ft-loop-constraints [(:constraints checked) nodes (:module core)])
+        quotes (c7-invoke 'sh08-qd-products [(:nodes core) (vec (vals forms)) (:module core)])
+        ledger (into (into rows (:constraints quotes))
+                     [(c7-invoke 'sh08-pl-constraint [(:descriptor (:derived data))])])
+        context (assoc context :core core :nodes nodes :forms forms :ledger ledger
+                               :loop-rows (into {} (map (fn [row] [[(get-in row [:dependencies :loop-premise :kind]) (:lhs row)] row]) rows)))]
+    (assoc data :core core :working working :nodes nodes :forms forms :checked checked :rows rows :quotes quotes :context context)))
+
+(deftest unquoted-empty-symbol-set-loop-development-kernel
+  (let [{:keys [core working nodes forms types bindings checked rows empty-type carrier]} (unquoted-symbol-set-loop-data)
+        node (nodes :value-init)
+        invoke #(c7-invoke 'sh08-ft-loop-type-step [% types {} %2])]
+    (is (= empty-type (c7-invoke 'sh08-ft-infer-node-nominal [node {} {} {} [] {}])))
+    (is (true? (c7-invoke 'sh08-lsi-leaf? [node forms :initializer])))
+    (is (true? (c7-invoke 'sh08-lsi-leaf? [node forms :receiver])))
+    (is (false? (c7-invoke 'sh08-lsi-leaf? [node forms :member])))
+    (is (= :accepted (:status checked)) (pr-str checked))
+    (is (= empty-type (get-in checked [:member-invariants :value :initializer-type])))
+    (is (= carrier (get-in checked [:bindings :value])))
+    (is (= [:member-use :arg1] (get-in checked [:member-invariants :value :grounding :member-path])))
+    (is (= [:sh08-loop-target-types-v1 :sh08-loop-target-types-v2 :sh08-loop-target-types-v2] (mapv :producer-rule rows)))
+    (when (= :accepted (:status checked))
+      (is (= checked (invoke working (:work-count checked))))
+      (is (= :loop-type-work-limit (get-in (invoke working (dec (:work-count checked))) [:issues 0 :reason]))))
+    (doseq [mutate [#(assoc-in % [:attributes :source-value] #{:bad})
+                    #(assoc-in % [:attributes :element-count] 1)
+                    #(update % :attributes dissoc :source-value)
+                    #(assoc-in % [:attributes :extra] true)
+                    #(assoc-in % [:evaluation :kind] :no-evaluation)
+                    #(assoc-in % [:evaluation :order] [{:index 0 :core-node-id :other}])
+                    #(assoc % :children [:other])
+                    #(assoc % :resolved-binding-ids [:value])]]
+      (is (false? (c7-invoke 'sh08-lsi-leaf? [(mutate node) forms :initializer]))))
+    (doseq [mutate [#(assoc-in % [:value-init-form :kind] :vector)
+                    #(assoc-in % [:value-init-form :value] #{:bad})
+                    #(assoc-in % [:value-init-form :child-form-ids] [:other])
+                    #(assoc-in % [:value-init-form :syntax-id] :other)]]
+      (is (false? (c7-invoke 'sh08-lsi-leaf? [node (mutate forms) :initializer]))))))
