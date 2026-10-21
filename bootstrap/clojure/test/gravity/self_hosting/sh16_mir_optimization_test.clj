@@ -271,7 +271,7 @@
                          (assoc left :safety-outcome :unsafe-island :unsafe-audit-id :audit/altered)
                          (assoc left :opcode :compute)]]
           (is (not (some #{:op/left} (select-local input (assoc current 0 changed))))))
-        (is (= [] (select-local input (conj current (assoc left :op-id :op/duplicate))))))
+        (is (= [] (select-local input (conj current (assoc left :op-id :op/duplicate)))))
         (doseq [subject [(assoc-in input [:operations 0 :type] :bool)
                          (assoc-in input [:operations 0 :operands] [nil])
                          (update-in input [:operations 0] assoc :effects #{:io/write} :ordering :sequence)
