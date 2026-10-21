@@ -9285,6 +9285,35 @@ are supplied normalized proof DATA, not CFG/unreachability proof, provider
 verification, fresh authenticated C11/source input, native execution or
 migration evidence.
 
+The next C13 executable increment propagates two distinct, independently typed
+i64 constants into one ADD. The candidate must be the first non-const operation
+after a pure, proven-safe, nondead const prefix; it must itself be pure,
+proven-safe, nondead, explicitly i64/integer-exact with `:constant-operands false`
+and reference two actual earlier one-payload producers. Result IDs are unique
+across the whole admitted input. Fresh invocation-local counts and a bounded
+prefix walk derive the
+literal operands for the existing overflow-checked fold; no supplied flag is
+accepted as producer authority. The original input references/flag and source,
+origin and result identity survive in the appropriate records, while the
+existing decision and invalidation ledger record the ADD transformation.
+Unknown, forward, duplicate-result, wrong-type, unsafe, effectful, nonconstant,
+overflowing or control-dependent joins do not authorize propagation. Existing
+ingress rejection and unrelated immediate folds remain unchanged. The input
+limit is still 128 operations; no schema, public API, pass or budget is added.
+
+The `567f91da` RED run retained 192 passes and 32 failures in 224 assertions,
+without errors. Earlier `4421b204` passed 18/2,010; it remains a distinct result,
+not added to final counts. The final `33c4a840` closes whole-input result-ID
+uniqueness and passes 18 tests/2,018 assertions (240 new plus 1,778 controls).
+Boundary checks separately pass six tests/11 assertions: 24/2,029 across two
+passing invocations. LOC separately passes 2,021 files, zero exceptions,
+maximum 250. The successor also adds same-producer/duplicate-result controls
+and corrects a dead-ADD control's return reference, without claiming another
+RED run. These are original G/Q constructors and public optimization/fresh
+recomputation over supplied normalized DATA, not proof-provider verification,
+fresh authenticated C11/source input, general CFG/SSA propagation, native
+execution or migration evidence.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
