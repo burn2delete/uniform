@@ -103,6 +103,7 @@
     sh22-utf8-request
     sh22-checked-add-request
     sh22-checked-sub-request
+    sh22-checked-mul-request
     sh22-error-request
     sh22-file-read-request
     sh22-stdout-request
@@ -123,6 +124,8 @@
    ['sh22-vector-assoc-request "STD5001" :integer-overflow]
    'sh22-sub-overflow-request
    ['sh22-checked-sub-request "STD5001" :integer-overflow]
+   'sh22-mul-overflow-request
+   ['sh22-checked-mul-request "STD5001" :integer-overflow]
    'sh22-missing-capability-request
    ['sh22-file-read-request "STD8001" :missing-io-authority]
    'sh22-missing-encoding-request
@@ -184,7 +187,7 @@
     (is (= 512 (:maximum-carrier-width policy)))
     (is (= 65536 (:maximum-carrier-nodes policy)))
     (is (true? (:experimental-opt-in-required policy)))
-    (is (= 14 (count (:operation-set policy))))
+    (is (= 15 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
     (is (contains? (:diagnostics policy) "STD8001"))
     (is (some #{:authenticated-sh19-runtime-services}
@@ -195,7 +198,7 @@
     (is (= 'gravity.stdlib.self-hosting-core (:module manifest)))
     (is (= :experimental (:stability manifest)))
     (is (empty? (:unsafe-islands manifest)))
-    (is (= 14 (count exports)))
+    (is (= 15 (count exports)))
     (is (every? #(= :experimental (:stability %)) exports))
     (is (every? #(= #{:meta} (:profiles %)) exports))
     (is (every? string? (map :type exports)))
@@ -490,6 +493,78 @@
           (is (= reason (get-in result [:diagnostics 0 :reason])))))
       (let [result (handle base)]
         (doseq [changed [(assoc-in result [:value :value] 42)
+                         (assoc-in result [:facts :numeric-mode] :wrapping-i64)
+                         (assoc-in result [:identity-input :operation] :checked-add-i64)]]
+          (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed])))))))))
+
+(deftest sh22-checked-i64-multiplication-guards-actual-seed-quotient-thresholds
+  ;; STD5/SAFE9: exercise every sign quadrant and both operand orders through
+  ;; the actual Gravity leaf; no product is a probe for whether it overflows.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh22-checked-mul-request)
+          accepted [[6 7 42] [0 -9223372036854775808 0]
+                    [1 -9223372036854775808 -9223372036854775808]
+                    [1 9223372036854775807 9223372036854775807]
+                    [-1 9223372036854775807 -9223372036854775807]
+                    [-1 -9223372036854775807 9223372036854775807]
+                    [-2 4611686018427387904 -9223372036854775808]
+                    [-2 -4611686018427387903 9223372036854775806]
+                    [2 4611686018427387903 9223372036854775806]
+                    [3037000499 3037000499 9223372030926249001]
+                    [-3037000499 -3037000499 9223372030926249001]
+                    [-3037000499 3037000499 -9223372030926249001]]
+          export (first (filter #(= :checked-mul-i64 (:name %))
+                                (:exports (invoke-engine 'sh22-module-manifest []))))]
+      (is (= #{:meta} (:profiles export)))
+      (is (= :experimental (:stability export)))
+      (is (= #{} (:effects export) (:capabilities export)))
+      (is (= :none (:allocation export)))
+      (is (= ["STD5001"] (:errors export)))
+      (is (= "I64 I64 -> (Result I64 NumericError)" (:type export)))
+      (doseq [[left right expected] (concat accepted
+                                         (for [left [-2 -1 0 1 2] right [-2 -1 0 1 2]]
+                                           [left right (* left right)]))
+              [a b] (distinct [[left right] [right left]])]
+        (let [input (assoc base :arguments [a b]) result (handle input)]
+          (is (= :accepted (:status result)) (pr-str input))
+          (is (= {:artifact :gravity/result :variant :ok :value expected} (:value result)))
+          (is (= {:numeric-mode :checked-i64 :safety-outcome :proven-safe :allocation :none}
+                 (:facts result)))
+          (is (= [a b] (get-in result [:identity-input :arguments])))
+          (is (= :checked-mul-i64 (get-in result [:identity-input :operation])))
+          (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+      (doseq [[left right] [[-9223372036854775808 -1] [9223372036854775807 2]
+                           [-9223372036854775808 2] [-2 -4611686018427387904]
+                           [3037000500 3037000500] [-3037000500 -3037000500]
+                           [-3037000500 3037000500]]
+              arguments (distinct [[left right] [right left]])]
+        (let [input (assoc base :arguments arguments) result (handle input)]
+          (is (= :rejected (:status result)) (pr-str input))
+          (is (= "STD5001" (get-in result [:diagnostics 0 :rule])))
+          (is (= :integer-overflow (get-in result [:diagnostics 0 :reason])))
+          (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+      (doseq [[arguments reason] [[[9223372036854775808 0] :integer-out-of-range]
+                                 [[0 -9223372036854775809] :integer-out-of-range]
+                                 [[nil 0] :expected-integer] [[0 false] :expected-integer]
+                                 [["1" 1] :expected-integer]]]
+        (let [input (assoc base :arguments arguments) result (handle input)]
+          (is (= :rejected (:status result)))
+          (is (= "STD5001" (get-in result [:diagnostics 0 :rule])))
+          (is (= reason (get-in result [:diagnostics 0 :reason])))
+          (is (= (:source-span input) (get-in result [:diagnostics 0 :source-span])))))
+      (doseq [[input rule reason]
+              (concat (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
+                           [[] [1] [1 2 3]])
+                      [[(assoc base :effects #{:memory/allocate}) "STD1002" :undeclared-library-effect]
+                       [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+                       [(assoc base :allocation-policy :bounded-by-result) "STD1001" :allocation-policy-mismatch]
+                       [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]])]
+        (let [result (handle input)]
+          (is (= :rejected (:status result)))
+          (is (= rule (get-in result [:diagnostics 0 :rule])))
+          (is (= reason (get-in result [:diagnostics 0 :reason])))))
+      (let [result (handle base)]
+        (doseq [changed [(assoc-in result [:value :value] 43)
                          (assoc-in result [:facts :numeric-mode] :wrapping-i64)
                          (assoc-in result [:identity-input :operation] :checked-add-i64)]]
           (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed])))))))))

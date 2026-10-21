@@ -39,6 +39,7 @@
      :utf8-validate
      :checked-add-i64
      :checked-sub-i64
+     :checked-mul-i64
      :error-context
      :io-file-read
      :io-stdout
@@ -113,6 +114,11 @@
      :none ["STD5001"] #{:meta})
     (sh22-export
      :checked-sub-i64 :numeric
+     "I64 I64 -> (Result I64 NumericError)"
+     #{} #{}
+     :none ["STD5001"] #{:meta})
+    (sh22-export
+     :checked-mul-i64 :numeric
      "I64 I64 -> (Result I64 NumericError)"
      #{} #{}
      :none ["STD5001"] #{:meta})
@@ -857,6 +863,47 @@
     :safety-outcome :proven-safe
     :allocation :none}))
 
+(defn sh22-checked-mul [request]
+  (let [arguments (get request :arguments)
+        left (get arguments 0)
+        right (get arguments 1)]
+    (if (= 2 (count arguments))
+      (if (integer? left)
+        (if (integer? right)
+          (let [policy (sh22-library-policy)
+                minimum (get policy :integer-minimum)
+                maximum (get policy :integer-maximum)]
+            (if (if (<= minimum left) (<= left maximum) false)
+              (if (if (<= minimum right) (<= right maximum) false)
+                ; STD5/SAFE9: truncate quotient toward zero. Every divisor is
+                ; nonzero; negative divisors use MAX, never the MIN/-1 case.
+                (if (if (= left 0) true
+                      (if (= right 0) true
+                        (if (> left 0)
+                          (if (> right 0)
+                            (<= left (quot maximum right))
+                            (>= right (quot minimum left)))
+                          (if (> right 0)
+                            (>= left (quot minimum right))
+                            (>= left (quot maximum right))))))
+                  (sh22-checked-mul-result request left right)
+                  (sh22-rejected request "STD5001" :integer-overflow))
+                (sh22-rejected request "STD5001" :integer-out-of-range))
+              (sh22-rejected request "STD5001" :integer-out-of-range)))
+          (sh22-rejected request "STD5001" :expected-integer))
+        (sh22-rejected request "STD5001" :expected-integer))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
+(defn sh22-checked-mul-result [request left right]
+  (sh22-accepted
+   request
+   {:artifact :gravity/result
+    :variant :ok
+    :value (* left right)}
+   {:numeric-mode :checked-i64
+    :safety-outcome :proven-safe
+    :allocation :none}))
+
 (defn sh22-error-context [request]
   (let [arguments (get request :arguments)
         code (get arguments 0)
@@ -1158,10 +1205,12 @@
               (sh22-ordered-set-conj request)
               (if (= operation :utf8-validate)
                 (sh22-utf8-validate request)
-                (if (sh22-member? #{:checked-add-i64 :checked-sub-i64} operation)
+                (if (sh22-member? #{:checked-add-i64 :checked-sub-i64 :checked-mul-i64} operation)
                   (if (= operation :checked-add-i64)
                     (sh22-checked-add request)
-                    (sh22-checked-sub request))
+                    (if (= operation :checked-sub-i64)
+                      (sh22-checked-sub request)
+                      (sh22-checked-mul request)))
                   (if (= operation :error-context)
                     (sh22-error-context request)
                     (if (= operation :io-file-read)
@@ -1206,7 +1255,7 @@
             :bounded-by-result
             (if (= operation :utf8-validate)
               :bounded-by-input
-              (if (sh22-member? #{:checked-add-i64 :checked-sub-i64} operation)
+              (if (sh22-member? #{:checked-add-i64 :checked-sub-i64 :checked-mul-i64} operation)
                 :none
                 (if (= operation :error-context)
                   :bounded-by-result
