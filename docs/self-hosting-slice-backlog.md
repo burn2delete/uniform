@@ -7435,6 +7435,17 @@ recursion support, callable recursion, termination, recursion-depth bounds,
 tail-call optimization, thrown-error completion, full legality, target execution,
 authoritative migration, self-hosting and seedless release remain outstanding.
 
+The existing `body-effect-recursive-fixed-point-development-kernel` now measures
+actual helper entries while always delegating to their original runtime
+implementation. The unchanged tiny fixture passed one test/28 assertions at
+512 MiB: two passes each rebuild two edge rows and one function row, make 11
+readiness attempts with zero false results, and repeat 13 invocation predicates
+plus 11 support checks and 11 order checks. General/import call validators are unvisited.
+Full observed/unobserved results agree; work remains 44, exact 44 accepts and
+43 rejects unchanged. No large-source attribution, speedup, source proof or
+milestone credit follows. A bounded production proposal must queue with the
+current `effects.gravity` source writer; no implementation is selected here.
+
 ### Capture-free callable body effects: development implementation
 
 The L3/L5/L6/C7/C8 increment extends the same `gravity.effects` interface to

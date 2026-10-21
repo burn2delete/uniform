@@ -4629,15 +4629,74 @@
 (deftest body-effect-recursive-fixed-point-development-kernel
   (let [[core facts] (recursive-kernel-data)
         derived (leaf 'body-derive-recursive-nodes core facts {} 65536)
-        graph (:nodes derived)]
+        graph (:nodes derived)
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        empty-pass {:index-calls {:call-core-node-id 0 :function-id 0}
+                    :index-rows {:call-core-node-id 0 :function-id 0}
+                    :ready-attempts 0 :ready-false 0
+                    :predicates {'body-call-invokes? 0 'body-node-supported? 0 'body-order-valid? 0
+                                 'body-call-valid? 0 'body-import-call-valid? 0}}
+        observe (fn [budget]
+                  (let [counts (atom {:passes [] :equation-checks 0})
+                        active-pass (atom nil)
+                        result
+                        (with-redefs-fn
+                          {scoped
+                           (fn [& args]
+                             (let [function (nth args 2) inputs (nth args 3)]
+                               (if (= 'body-derive-nodes-pass function)
+                                 (let [parent @active-pass index (count (:passes @counts))]
+                                   (swap! counts update :passes conj empty-pass)
+                                   (reset! active-pass index)
+                                   (try (apply original args)
+                                        (finally (reset! active-pass parent))))
+                                 (let [index @active-pass
+                                       result (apply original args)]
+                                   (when (= 'body-graph-equations-valid? function)
+                                     (swap! counts update :equation-checks inc))
+                                   (when (some? index)
+                                     (cond
+                                       (= 'body-index function)
+                                       (let [[rows field] inputs]
+                                         (when (contains? (:index-calls empty-pass) field)
+                                           (swap! counts update-in [:passes index :index-calls field] inc)
+                                           (swap! counts update-in [:passes index :index-rows field] + (count rows))))
+                                       (= 'body-ready? function)
+                                       (do (swap! counts update-in [:passes index :ready-attempts] inc)
+                                           (when (false? result)
+                                             (swap! counts update-in [:passes index :ready-false] inc)))
+                                       (contains? (:predicates empty-pass) function)
+                                       (swap! counts update-in [:passes index :predicates function] inc)))
+                                   result))))}
+                          #(leaf 'body-derive-recursive-nodes core facts {} budget))]
+                    (assoc @counts :result result)))
+        expected-pass {:index-calls {:call-core-node-id 1 :function-id 1}
+                       :index-rows {:call-core-node-id 2 :function-id 1}
+                       :ready-attempts 11 :ready-false 0
+                       :predicates {'body-call-invokes? 13 'body-node-supported? 11 'body-order-valid? 11
+                                    'body-call-valid? 0 'body-import-call-valid? 0}}]
     (is (= :accepted (:status derived)))
     (is (= (set (map :node-id (:nodes core))) (set (keys graph))))
     (is (= (sha 6) (get-in graph [(sha 4) :call-body-dependency])))
     (is (= (mapv sha [2 3 6]) (get-in graph [(sha 4) :dependencies])))
     (is (= #{} (get-in graph [(sha 6) :transitive])))
     (is (true? (leaf 'body-graph-equations-valid? core facts {} graph)))
-    (is (= :body-deferred-work-limit (:reason (leaf 'body-derive-recursive-nodes core facts {} (dec (:work-count derived))))))
-    (is (= :accepted (:status (leaf 'body-derive-recursive-nodes core facts {} (:work-count derived)))))
+    ;; Observe actual helper entries, always delegating to their captured original.
+    ;; Keep the proof's tiny node order: zero deferrals does not remove repeated
+    ;; index construction or validation in the fixed-point/final passes.
+    (doseq [budget [65536 (:work-count derived) (dec (:work-count derived))]]
+      (let [unobserved (if (= budget 65536) derived
+                          (leaf 'body-derive-recursive-nodes core facts {} budget))
+            observed (observe budget)
+            accepted? (>= budget (:work-count derived))]
+        (is (= unobserved (:result observed)))
+        (is (= [expected-pass expected-pass] (:passes observed)) (pr-str observed))
+        (is (= (if accepted? 1 0) (:equation-checks observed)))
+        (if accepted?
+          (do (is (= derived (:result observed)))
+              (is (= 44 (:work-count (:result observed)))))
+          (is (= :body-deferred-work-limit (:reason (:result observed)))))))
     (doseq [budget [0 (dec (count (:nodes core)))]]
       (is (= :body-deferred-work-limit
              (:reason (leaf 'body-derive-recursive-nodes (update core :nodes conj (node 99 :throw [])) facts {} budget)))))

@@ -6086,6 +6086,23 @@ reconstructs from bottom so an inflated, nonleast fixed point cannot pass.
 Classification, iteration, final reconstruction and equation visits share the
 invocation's existing work budget across caller and producers.
 
+For test-only reconstruction counters on the unchanged tiny recursive input:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-effect-recursive-fixed-point-development-kernel --fail-fast
+```
+
+Its original-delegating observer records two passes, each rebuilding two edge
+rows and one function row, with 11 readiness attempts and zero false results.
+Each pass repeats 13 invocation predicates, 11 support checks and 11 order checks;
+general/import call validators are unvisited. Full observed/unobserved results
+agree at generous, exact 44 and rejecting 43 budgets. These counters do not
+attribute large-source cost or establish speedup. Any bounded production
+proposal belongs to `effects.gravity` and must queue behind its current source
+writer; this measurement selects no implementation.
+
 The affected real-source composition is separate from these normalized kernels:
 
 ```bash
