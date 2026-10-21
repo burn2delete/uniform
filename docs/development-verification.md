@@ -190,6 +190,20 @@ or budget increase is justified by this optimization. The focused comparison
 checks complete outputs and rejection budgets; it is not a source migration
 proof or a wall-time benchmark.
 
+### Ordered-Map stored false/Nil: producer-consumer coverage
+
+Run `sh22-ordered-map-lookup-preserves-stored-false-and-nil` in
+`gravity.self-hosting.sh22-standard-library-test`. Real G/Q `:ordered-map-assoc`
+results feed `:ordered-map-get`: stored false/Nil yield `Some` with an explicit
+`:value`, while an absent key yields `None` without `:value`. Check insertion,
+replacement/order, original-value preservation, full-256 replacement versus
+new-entry rejection, complete malformed/duplicate validation before a hit and
+fresh producer/consumer verification with result substitutions. The same
+original-delegating lookup observer must record a valid lookup as well as zero
+calls for rejected carriers. Existing collection/boundary and result-verifier
+selectors are affected controls. This is test-only request-module coverage,
+not a production repair, new semantics, compiled C6 client or admission claim.
+
 ### Checked i64 subtraction in the bootstrap library
 
 STD1/STD5/D8 govern `:checked-sub-i64` in

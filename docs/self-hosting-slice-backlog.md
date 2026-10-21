@@ -8571,6 +8571,27 @@ revision in `55b7dca9`, not to a replay of the revised harness. There is no
 measured speedup, new semantic feature or migration claim. The direct commands
 and distinctions are in `docs/development-verification.md`.
 
+### Ordered-Map false/Nil presence: affected composition coverage
+
+Test-only `fc72bde2` validates real G/Q Map association outputs consumed by
+lookup. Stored false/Nil remain explicit `Some` values; missing/empty inputs
+produce `None` without `:value`. Insertion/replacement/order, persistence,
+256-entry replacement versus new-entry rejection, malformed/late duplicate
+validation and fresh producer/consumer/substitution checks pass. The original-
+delegating observer sees one valid lookup and zero on rejected carriers.
+C6 scalar/generated-Nil metadata motivates the DATA, not a client-linkage claim.
+
+Prior `00e6e435` passed 5/596, including 338 new assertions. A three-line
+positive-observer control successor freshly passed 1/342; four unchanged
+controls retain 258 passes from the prior invocation. Superseded 338 are not
+summed: selected coverage is 600 assertions, plus retained boundary 6/11,
+or 11/611 across three passing invocations. LOC separately passed 2,022 files,
+zero exceptions, maximum 250; the later test-only addition is outside its
+implementation-source roots and leaves boundary policy inputs unchanged.
+Production and fixtures remain unchanged from `26d05dbb`; the complete 4272
+suite was not replayed. No RED, production repair, new language law, compiled
+C6 client, public admission, native, migration or milestone claim follows.
+
 ### Checked i64 subtraction in the experimental bootstrap library
 
 The existing SH-22 Gravity library now executes binary `:checked-sub-i64` under
