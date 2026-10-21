@@ -2034,6 +2034,27 @@
               (conj result (get (get operations index) :op-id)))))
    0 []))
 
+(defn sh16-dead-proof-ids-for-selected
+  [operations selected index result]
+  (if (= index (count operations))
+    result
+    (let [operation (get operations index)]
+      (sh16-dead-proof-ids-for-selected
+       operations selected (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (conj result (get (get operation :dead-proof) :proof-id))
+         result)))))
+
+(defn sh16-decision-proof-ids [decisions index result]
+  (if (= index (count decisions))
+    result
+    (let [proofs (get (get decisions index) :proofs-used)]
+      (loop [proof-index 0 next-result result]
+        (if (= proof-index (count proofs))
+          (sh16-decision-proof-ids decisions (+ index 1) next-result)
+          (recur (+ proof-index 1)
+                 (conj next-result (get proofs proof-index))))))))
+
 (defn sh16-pass-analysis-invalidated [family changed]
   (if (= 0 (count changed))
     []
@@ -2137,6 +2158,12 @@
         (if (= family :check-retention-or-elision)
           (sh16-proof-ids-for-selected operations changed 0 [])
           (sh16-all-proof-ids operations))
+        proofs-used
+        (if (= family :check-retention-or-elision)
+          proof-ids
+          (if (= family :dead-code-eliminate)
+            (sh16-dead-proof-ids-for-selected operations changed 0 [])
+            []))
         verifier
         (sh16-pass-verifier-report family next-operations changed)
         analysis-invalidated
@@ -2154,8 +2181,7 @@
      (conj
       (get state :decision-log)
       (sh16-pass-decision
-       request family changed
-       (if (= family :check-retention-or-elision) proof-ids [])
+       request family changed proofs-used
        (get verifier :status)))
      :invalidation-ledger
      (conj
@@ -2376,8 +2402,7 @@
       :scope :normalized-operation-local
       :whole-function? false
       :proofs
-      (sh16-proof-ids-for-selected
-       operations elided-operation-ids 0 [])
+      (sh16-decision-proof-ids (get pipeline :decision-log) 0 [])
       :counterexamples []
       :result :accepted}
      :post-pass-verifier
