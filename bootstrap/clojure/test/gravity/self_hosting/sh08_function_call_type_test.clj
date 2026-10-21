@@ -2440,8 +2440,29 @@
         (assoc-in [:core :nodes] (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes])))
         (assoc :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module module}))))
 
-(deftest sh08-literal-string-vector-inference-development-kernel
-  (doseq [value ["" "sha256:" "e\u0301" "\u0000\uD7FF\uE000\uFFFF"]]
+(defn- literal-string-vector-transfer-input []
+  (let [base (literal-string-vector-input "unreached")
+        form (get-in base [:forms :arg0]) source (get-in base [:nodes :arg0 :source])
+        payload-source (assoc source :form-id :vec-payload :syntax-id :vec-payload)
+        payload {:node-id :vec-payload :core-form :literal :children [] :resolved-binding-ids []
+                 :attributes {:literal-kind :string :value "original vec transfer"}
+                 :source payload-source :evaluation {:kind :value :order []}}
+        transfer (assoc (get-in base [:nodes :arg0]) :core-form :throw :children [:vec-payload]
+                        :attributes {} :evaluation {:order [{:index 0 :core-node-id :vec-payload}]})
+        input (-> base (assoc-in [:nodes :arg0] transfer) (assoc-in [:nodes :vec-payload] payload)
+                  (assoc-in [:types :arg0] :gravity.type/never)
+                  (assoc-in [:types :vec-payload] :gravity.type/string)
+                  (assoc-in [:forms :arg0] (assoc form :kind :list :value '(throw "original vec transfer")
+                                                 :child-form-ids [:vec-throw-op :vec-payload]))
+                  (assoc-in [:forms :vec-throw-op] (assoc form :form-id :vec-throw-op :syntax-id :vec-throw-op
+                                                             :parent-form-id :arg0 :kind :symbol :value 'throw :child-form-ids []))
+                  (assoc-in [:forms :vec-payload] (assoc form :form-id :vec-payload :syntax-id :vec-payload
+                                                            :parent-form-id :arg0 :kind :string :value "original vec transfer" :child-form-ids [])))]
+    (assoc-in input [:core :nodes]
+              (conj (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes])) payload))))
+
+(deftest sh08-ascii-string-vector-inference-development-kernel
+  (doseq [value ["" "sha256:" "\"\\\n\t" (apply str (map char (range 128)))]]
     (let [{:keys [core nodes forms bindings products binding-types]} (literal-string-vector-input value)
           context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
                    :lookup-bindings (vec (vals bindings)) :shape-call-products products}
@@ -2458,7 +2479,145 @@
       (is (= 'gravity.text (:semantic-owner descriptor)))
       (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
       (is (= :one-character-per-unicode-scalar (get-in descriptor [:conversion-policy :scalars])))
-      (is (= :original-bmp-nonsurrogate-string-literal (get-in descriptor [:conversion-policy :supported-domain]))))))
+      (is (= :original-ascii-string-literal (get-in descriptor [:conversion-policy :supported-domain]))))))
+
+(defn- literal-string-vector-derived [input budget]
+  (invoke-c7 'sh08-scv-derive [(:core input) (:node input) (:call input) (:edge input)
+                              (:nodes input) (:bindings input) (:types input) (:forms input) budget]))
+
+(deftest sh08-ascii-string-vector-proof-development-kernel
+  (doseq [value ["" "sha256:" (apply str (map char (range 128))) (apply str (repeat 1024 \a))]]
+    (let [input (literal-string-vector-input value)
+          result (literal-string-vector-derived input 65536) descriptor (:descriptor result)
+          types (assoc (:types input) :operator descriptor :call (:type result))
+          check #(invoke-c7 'sh08-scv-inferred-call [(:core input) (:node input) (:call input) (:edge input)
+                                                    (:nodes input) (:bindings input) %1 %2])
+          measured (check types 65536)]
+      (is (= :accepted (:status result) (:status measured)))
+      (is (= (vec (repeat (count value) :gravity.type/character)) (:element-types (:type result))))
+      (is (= :ascii (get-in descriptor [:conversion-proof :validated-domain])))
+      (is (= (count value) (get-in descriptor [:conversion-proof :scalar-count])))
+      (is (= :may-allocate-character-vector (get-in descriptor [:storage-policy :allocation])))
+      (is (= :normal-invocation-even-empty (get-in descriptor [:conversion-policy :allocation])))
+      (is (= :not-established (get-in descriptor [:conversion-policy :provider-cpu-bound])))
+      (is (= result (literal-string-vector-derived input (:work-count result))))
+      (is (= :string-character-vector-work-limit
+             (:reason (literal-string-vector-derived input (dec (:work-count result))))))
+      (is (= measured (check types (:work-count measured))))
+      (is (= :string-character-vector-work-limit (:reason (check types (dec (:work-count measured))))))
+      (doseq [candidate [(update-in types [:operator] dissoc :kind)
+                         (assoc-in types [:operator :kind] nil)
+                         (assoc-in types [:operator :kind] :gravity.type/applied-string-concat)
+                         (assoc types :operator :gravity.type/string)
+                         (assoc-in types [:operator :conversion-policy :utf16-splitting] :allowed)
+                         (assoc-in types [:operator :conversion-proof :scalar-count] 99)
+                         (assoc-in types [:operator :storage-policy :allocation] :none)
+                         (assoc-in types [:operator :direct-effects] [])]]
+        (is (= :rejected (:status (check candidate 65536)))))))
+  (doseq [value ["e\u0301" "\u00E9" "\uD83D\uDE00" "\uD800" "\uDC00"]]
+    ;; Valid non-ASCII and malformed host units share unsupported-subset status.
+    (let [result (literal-string-vector-derived (literal-string-vector-input value) 65536)]
+      (is (= :rejected (:status result)))
+      (is (= ["C7-ANNOTATION" :string-character-vector-unsupported-text]
+             ((juxt :rule :reason) result)))))
+  (is (= :string-character-vector-width
+         (:reason (literal-string-vector-derived (literal-string-vector-input (apply str (repeat 1025 \a))) 65536))))
+  (let [base (literal-string-vector-input "sha256:")]
+    (doseq [mutate [#(assoc-in % [:forms :arg0 :value] "sha257:")
+                    #(assoc-in % [:forms :arg0 :kind] :keyword)
+                    #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                    #(assoc-in % [:forms :operator :value] 'set)
+                    #(assoc-in % [:forms :call :child-form-ids] [:arg0 :operator])
+                    #(assoc-in % [:bindings :ordering-binding :name] 'set)
+                    #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                    #(assoc-in % [:call :extra] true)
+                    #(assoc-in % [:edge :evaluation-order] :operand-first)
+                    #(assoc-in % [:core :module :target] :wasm)
+                    #(assoc-in % [:types :arg0] :gravity.type/unknown)
+                    #(assoc-in % [:nodes :arg0 :core-form] :reference)]]
+      (is (= :rejected (:status (literal-string-vector-derived (mutate base) 65536)))))
+    (let [callbacks (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII proof hash callback")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "ASCII proof equality callback")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "ASCII proof formatting callback"))))]
+      (doseq [input [(assoc-in base [:nodes :arg0 :source :form-id] opaque)
+                     (assoc-in base [:forms :call :child-form-ids] [:operator opaque])
+                     (assoc-in base [:forms :operator :value] opaque)
+                     (assoc-in base [:nodes :arg0 :attributes :value] opaque)
+                     (assoc-in base [:forms :arg0 :value] opaque)]]
+        (is (= :rejected (:status (literal-string-vector-derived input 65536)))))
+      (is (= :accepted (:status (literal-string-vector-derived base 65536))))
+      (is (zero? @callbacks)))
+    (let [visits (atom 0) hostile (reify clojure.lang.Counted (count [_] 4096)
+                                      clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved function scan"))))]
+      (is (= :string-character-vector-work-limit
+             (:reason (literal-string-vector-derived (assoc-in base [:core :function-records] hostile) 0))))
+      (is (zero? @visits)))))
+
+(deftest sh08-ascii-string-vector-transfer-development-kernel
+  (let [input (literal-string-vector-transfer-input)
+        result (literal-string-vector-derived input 65536) descriptor (:descriptor result)
+        types (assoc (:types input) :operator descriptor :call (:type result))
+        checked (invoke-c7 'sh08-scv-inferred-call [(:core input) (:node input) (:call input) (:edge input)
+                                                  (:nodes input) (:bindings input) types 65536])]
+    (is (= :accepted (:status result) (:status checked)))
+    (is (= :gravity.type/never (:type result) (:return descriptor) (:result-type descriptor)))
+    (is (= :not-invoked (:application descriptor)))
+    (is (= [] (:direct-effects descriptor)))
+    (is (= [:memory/allocate] (:latent-effects descriptor)))
+    (is (nil? (get-in descriptor [:conversion-proof :scalar-count])))
+    (is (= :non-invoked-operand (get-in descriptor [:conversion-proof :operand :kind])))
+    (is (= result (literal-string-vector-derived input (:work-count result))))
+    (is (= :string-character-vector-work-limit
+           (:reason (literal-string-vector-derived input (dec (:work-count result))))))))
+
+(deftest sh08-ascii-string-vector-scoped-consumer-development-kernel
+  (let [input (literal-string-vector-input "sha256:")
+        record {:function-syntax-id :vec-function :function-core-node-id :vec-fn
+                :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
+        function {:node-id :vec-fn :core-form :fn :children [:call] :attributes {}
+                  :source {:form-id :vec-form :syntax-id :vec-function} :evaluation {:kind :function-creation :order []}}
+        node-list (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :vec-function) (get-in input [:core :nodes]))
+        edge (assoc (:edge input) :caller-function-syntax-id :vec-function :caller-function-core-node-id :vec-fn)
+        core (assoc (:core input) :nodes (conj node-list function) :function-records [record] :call-edges [edge] :root-core-node-ids [:vec-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core))) node (nodes :call) call (:call input)
+        derived (invoke-c7 'sh08-scv-derive [core node call edge nodes (:bindings input) (:types input) (:forms input) 65536])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        functions {:vec-function {:function-id :vec-function :body-core-node-id :call :parameters [] :return (:type derived)
+                                  :latent-effects [:memory/allocate] :capabilities [] :thrown-error-effects []}}
+        direct {:status :accepted :throws {:vec-function []} :constraints [] :diagnostics [] :work-count 0}
+        check #(invoke-c7 'sh08-tc-products [core %1 functions (vec (vals (:bindings input))) direct %2])
+        own #(invoke-c7 'sh08-scv-inferred-call [core node call edge nodes (:bindings input) %1 %2])
+        measured (own types 65536) accepted (check types 65536)
+        scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) 65536 types])
+        initial (+ (:work-count scoped) (* 8 (count (:nodes core))) 70 1 3 3)
+        owners (invoke-c7 'sh08-th-owners [core (- 65536 initial)])
+        prefix (+ initial (:work-count owners))]
+    (is (= :accepted (:status derived) (:status measured) (:status accepted)))
+    (is (= accepted (check types (:work-count accepted))))
+    (let [rejected (check types (+ prefix (dec (:work-count measured))))]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :string-character-vector-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= (+ prefix (:work-count measured)) (:work-count rejected))))
+    (doseq [candidate [(update-in types [:operator] dissoc :kind)
+                       (assoc-in types [:operator :kind] nil)
+                       (assoc-in types [:operator :kind] (Object.))
+                       (assoc-in types [:operator :kind] :gravity.type/applied-string-concat)
+                       (assoc types :operator nil)
+                       (assoc-in types [:operator :conversion-proof :scalar-count] 1)
+                       (assoc-in types [:operator :storage-policy :allocation] :none)]]
+      (is (= :rejected (:status (own candidate 65536))))
+      (is (= :rejected (:status (check candidate 65536)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII scoped hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "ASCII scoped equality"))))
+          candidate (assoc-in types [:operator :kind] opaque)]
+      (is (= :rejected (:status (own candidate 65536))))
+      (is (= :rejected (:status (check candidate 65536))))
+      (is (= :accepted (:status (check types 65536))))
+      (is (zero? @callbacks)))))
 
 (defn- nonnegative-integer-quotient-input [values]
   (let [base (integral-ordering-input 'quot (vec (repeat (count values) :gravity.type/integer)))

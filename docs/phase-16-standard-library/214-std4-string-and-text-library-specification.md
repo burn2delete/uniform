@@ -88,6 +88,26 @@ This rule does not establish an implemented `gravity.text` export, a pure
 `gravity.core` export, another `str` overload, or a representation, provider, or
 profile permission.
 
+## String To Character Vector Conversion
+
+The unary String overload of `(vec text)` returns a persistent Vector with
+one Character for each Unicode scalar in the String, in its original order.
+An empty String produces an empty Vector. Conversion does not normalize,
+coerce other values to String, or split a supplementary scalar into UTF-16
+code units. An implementation must reject unsupported or ill-formed input
+rather than silently substitute a different conversion.
+
+The operand evaluates once under L2; its effects remain visible and a control
+transfer aborts invocation. The original String is unchanged. The selected
+representation must declare possible allocation, including empty conversion,
+and storage/lifetime policy under effects, ownership and profile requirements.
+
+`gravity.text` owns this conversion law; the resulting persistent Vector
+follows STD3. The core compatibility spelling grants no additional sequence
+conversion, implemented module export, representation or profile permission.
+An implementation must state its supported input subset separately from this
+scalar-sequence rule.
+
 ## Dependencies
 
 - `D1` and `D3` for string literals, source spans, diagnostics, and terminology.
@@ -150,6 +170,7 @@ If `n` is outside the valid range, the operation returns a checked text error or
 - String family classification distinguishes actual Strings, including empty Strings, from other values without conversion, normalization, payload execution or new authority, and preserves operand effects and transfers.
 - Character family classification accepts BMP and supplementary Characters, rejects Strings and ordinary carrier-shaped Maps, preserves once-only operand effects and transfers, and adds no refinement or Unicode validation fact.
 - Binary String concatenation preserves exact scalar sequences and operand order, retains operand transfers and effects, and rejects invocation without the required allocation allowance.
+- String-to-Character-Vector conversion preserves empty and ordered scalar sequences, includes supplementary scalars without UTF-16 splitting, rejects unsupported or ill-formed input, preserves operand transfers and the original String, and declares possible allocation/storage policy.
 - UTF-8 fixtures distinguish valid, invalid, incomplete, overlong, and boundary-sensitive inputs.
 - Normalization fixtures record Unicode version and produce stable results across targets.
 - Locale-sensitive APIs reject calls without explicit locale data.

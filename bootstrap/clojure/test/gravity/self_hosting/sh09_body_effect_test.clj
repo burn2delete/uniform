@@ -6350,6 +6350,96 @@
               (is (= analyzed (analyze work)))
               (is (= :rejected (:status (analyze (dec work))))))))))))
 
+(deftest body-ascii-string-vector-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        c7 (ns-resolve upstream 'invoke-c7) input (ns-resolve upstream 'literal-string-vector-input)
+        transfer (ns-resolve upstream 'literal-string-vector-transfer-input)]
+    (doseq [value ["" "sha256:" (apply str (map char (range 128))) nil]]
+      (let [base (if (nil? value) (transfer) (input value))
+            ids (zipmap (keys (:nodes base)) (map sha (range 2900 3000)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            nodes (into {} (map (juxt :node-id identity) node-list))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+            node (nodes (ids :call)) bindings (:bindings base) forms (:forms base)
+            result (c7 'sh08-scv-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            facts {:module (:module core) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-scv-call-fact [descriptor (:module core)])]
+                   :constraint-ledger [(c7 'sh08-scv-constraint [descriptor])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            context (leaf 'body-nq-context request facts bindings 65536)
+            facts (assoc facts :quotient-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536) record (get-in graph [:nodes (ids :call)])
+            normal? (some? value)]
+        (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str [context graph]))
+        (is (true? (leaf 'body-scv-call-valid? core facts bindings node call edge nodes)))
+        (is (true? (valid facts)))
+        (is (= (if normal? #{:memory/allocate} #{}) (:direct record)))
+        (is (if normal? (= #{:memory/allocate} (:transitive record)) (contains? (:transitive record) :error/throw)))
+        (is (= [:sh09-string-character-vector-allocation-v1 :vector :possible-character-vector-storage normal?]
+               ((juxt :rule-version :value-kind :behavior :normal-completion-possible?) (:allocation record))))
+        (is (= (when normal? {:unit :characters :count (count value)}) (get-in record [:allocation :extent])))
+        (is (= (:ordered-evaluation-node-ids call) (:dependencies record) (:evaluated-children record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= context (leaf 'body-nq-context request facts bindings (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-nq-context request facts bindings (dec (:work-count context))))))
+        (doseq [changed [(dissoc descriptor :kind) (assoc descriptor :kind nil)
+                         (assoc descriptor :kind (Object.))
+                         (assoc descriptor :kind :gravity.type/applied-string-concat)
+                         (assoc-in descriptor [:conversion-proof :scalar-count] 99)
+                         (assoc-in descriptor [:conversion-policy :utf16-splitting] :allowed)
+                         (assoc descriptor :direct-effects (if normal? [] [:memory/allocate]))
+                         (assoc-in descriptor [:storage-policy :allocation] :none)]]
+          (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-scv-call-fact [changed (:module core)])]
+                                     :constraint-ledger [(c7 'sh08-scv-constraint [changed])]))]
+            (is (false? (valid candidate)))))
+        (doseq [candidate [(assoc facts :constraint-ledger [])
+                           (update facts :constraint-ledger conj (first (:constraint-ledger facts)))
+                           (assoc facts :call-type-facts [])
+                           (update facts :call-type-facts conj (first (:call-type-facts facts)))
+                           (assoc facts :quotient-context nil)]]
+          (is (false? (valid candidate))))
+        (when (= value "sha256:")
+          (let [callbacks (atom 0) opaque (proxy [Object] []
+                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "C8 ASCII hash")))
+                                         (equals [_] (swap! callbacks inc) (throw (AssertionError. "C8 ASCII equality"))))
+                changed (assoc descriptor :kind opaque)
+                candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-scv-call-fact [changed (:module core)])]
+                                     :constraint-ledger [(c7 'sh08-scv-constraint [changed])]))
+                bad-request (update-in request [:b47-context :authenticated-core-request :forms]
+                              #(mapv (fn [form] (if (= :operator (:form-id form)) (assoc form :value opaque) form)) %))]
+            (is (false? (valid candidate)))
+            (is (= :rejected (:status (leaf 'body-nq-context bad-request facts bindings 65536))))
+            (is (true? (valid facts)))
+            (is (zero? @callbacks)))
+          (let [core (merge core {:root-core-node-ids [(ids :call)] :definitions [] :lexical-bindings []
+                                 :match-branch-records [] :match-pattern-records [] :match-decision-skeletons []
+                                 :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
+                preimage (assoc (select-keys core [:root-core-node-ids :definitions :function-records :call-edges :calls
+                                                   :evaluation-order :lexical-bindings :match-branch-records :match-decision-skeletons :match-pattern-records])
+                                :nodes (leaf 'body-throw-semantic-nodes core))
+                core (assoc core :identity-preimage preimage)
+                request (-> request (assoc :canonical-core-artifact core)
+                            (assoc-in [:b47-context :authenticated-core-request :binding-table] (vec (vals bindings))))
+                facts (merge facts (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings]) {:local-binding-facts []})
+                analyze #(leaf 'body-analyze-module request facts {} %)
+                analyzed (analyze 65536)]
+            (is (= :accepted (:status analyzed)) (pr-str analyzed))
+            (when (= :accepted (:status analyzed))
+              (is (= analyzed (analyze (:work-count analyzed))))
+              (is (= :rejected (:status (analyze (dec (:work-count analyzed))))))
+              (is (= #{:memory/allocate} (get-in analyzed [:graph :namespace :inferred]))))))))))
+
 (deftest body-count-quotient-scaling-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
