@@ -29854,6 +29854,165 @@
           (do (is (= '[main] (mapv second definitions)))
               (is (= 2 (count (rest (last (first definitions))))))))))))
 
+(deftest current-gravity-nonnegative-integer-quotient-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        literal (ns-resolve upstream 'nonnegative-integer-quotient-input)
+        counted (ns-resolve upstream 'nonnegative-integer-count-quotient-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))]
+    (doseq [[input expected] [[(literal [0 10]) 0] [(literal [127 10]) 12]
+                             [(literal [(bigint "123456789012345678901234567890") 10]) (bigint "12345678901234567890123456789")]
+                             [(counted :vector false 1) 1] [(counted :map true 4) 0]]]
+      (let [{:keys [core node call edge nodes forms bindings types module]} input
+            result (c7 'sh08-nq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            count-call (:count-call input) count-descriptor (get-in input [:counted :descriptor])
+            facts (cond-> {} count-call (assoc (:core-node-id count-call) (c7 'sh08-cq-call-fact [count-descriptor module]))
+                            true (assoc (:core-node-id call) (c7 'sh08-nq-call-fact [descriptor module])))
+            ledger (cond-> [] count-call (conj (c7 'sh08-cq-constraint [count-descriptor]))
+                              true (conj (c7 'sh08-nq-constraint [descriptor])))
+            context {:core core :nodes nodes :forms forms :bindings bindings
+                     :types (assoc types (:operator-node-id call) descriptor (:core-node-id call) (:type result))
+                     :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                     :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                     :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+                     :call-facts facts :ledger ledger :locals {} :parameter-types {}}
+            compile #(lower 'p15-s23-typed-compile-node %1 (:core-node-id call) %2)
+            compiled (compile context 65536)]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= 'quot (get-in compiled [:value :function])))
+        (when (= :complete (:status compiled))
+          (is (= compiled (compile context (:work-count compiled))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count compiled))) [:facts :reason])))
+          (is (= [expected "" :normal]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {} ""]))))
+        (doseq [changed [(assoc descriptor :numeric-mode :wrapping)
+                         (assoc descriptor :direct-effects [])
+                         (assoc-in descriptor [:storage-policy :allocation] :none)
+                         (assoc-in descriptor [:range-proof :divisor :value] 0)
+                         (assoc-in descriptor [:quotient-policy :conversion] :i64)]]
+          (let [candidate (-> context (assoc-in [:types (:operator-node-id call)] changed)
+                              (assoc-in [:call-facts (:core-node-id call)] (c7 'sh08-nq-call-fact [changed module]))
+                              (update :ledger #(conj (vec (butlast %)) (c7 'sh08-nq-constraint [changed]))))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :call-facts dissoc (:core-node-id call))
+                        #(assoc-in % [:forms :arg1 :parent-form-id] :sibling)
+                        #(assoc-in % [:nodes (:operator-node-id call) :attributes :symbol] 'identity)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))
+        (when count-call
+          (doseq [candidate [(update context :call-facts dissoc (:core-node-id count-call))
+                             (assoc context :ledger [(last ledger)])
+                             (assoc-in context [:types (:operator-node-id count-call) :query-semantics :normal-input] :forged)]]
+            (is (= :rejected (:status (compile candidate 65536))))))))))
+
+(deftest current-gravity-nonnegative-integer-quotient-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection)) literal #(hash-map :op :literal :value %)
+        query #(hash-map :op :builtin-call :function 'quot :args [%1 %2])
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])]
+    (doseq [[n d expected] [[0 10 0] [127 10 12] [10 3 3] [Long/MAX_VALUE 10 922337203685477580]
+                             [(bigint "123456789012345678901234567890") 10 (bigint "12345678901234567890123456789")]]]
+      (let [result (evaluate (query (literal n) (literal d))) q (first result)
+            remainder (- (bigint n) (* (bigint q) (bigint d)))]
+        (is (= [expected "" :normal] result))
+        (is (<= 0 remainder (dec (bigint d))))
+        (is (= (bigint n) (+ (* (bigint q) (bigint d)) remainder)))))
+    (doseq [[n d] [[-1 10] [1 0] [1 -1] [1.0 2] [1 2.0] [1/2 2] [1 nil] [true 2] [1 :two]]]
+      (let [result (evaluate (query (literal n) (literal d)))]
+        (is (= :rejected (last result)))
+        (is (= :nonnegative-integer-quotient-domain-required (get-in result [0 :reason])))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque equality")))
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hash")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque formatting"))))]
+      (is (= :rejected (last (evaluate (query (literal opaque) (literal 2))))))
+      (is (= :rejected (last (evaluate (query (literal 2) (literal opaque))))))
+      (is (zero? @callbacks)))
+    (doseq [args [[] [(literal 1)] [(literal 1) (literal 2) (literal 3)]]]
+      (is (= :rejected (last (evaluate {:op :builtin-call :function 'quot :args args})))))
+    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
+          payload (Object.) escape {:op :throw :value (literal payload)}
+          left (evaluate (query (say "left" escape) (say "unreached" (literal 10))))
+          right (evaluate (query (say "left" (literal 127)) (say "right" escape)))]
+      (is (= [12 "left\nright\n" :normal] (evaluate (query (say "left" (literal 127)) (say "right" (literal 10))))))
+      (is (identical? payload (first left))) (is (identical? payload (first right)))
+      (is (= ["left\n" :thrown] (subvec left 1)))
+      (is (= ["left\nright\n" :thrown] (subvec right 1))))))
+
+(deftest current-gravity-nonnegative-integer-quotient-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition stem] [["accepted" "local-runtime-nonnegative-integer-quotient"]
+                                ["rejected" "integer-quotient-zero-divisor"]]]
+      (let [base (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" stem)
+            g-path (.getPath (io/file root (str base ".gravity"))) q-path (.getPath (io/file root (str base ".qst")))
+            g (slurp g-path) q (slurp q-path)
+            forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
+        (is (= g q))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
+        (is (= '[main] (mapv second definitions)))
+        (is (= (if (= disposition "accepted") '[(quot 127 10) (gravity.core/quot (count [1 2 3 4]) 2)] '(quot 127 0))
+               (last (first definitions))))))))
+
+(deftest current-gravity-nonnegative-integer-quotient-transfer-fence-development-kernel
+  ;; Normalized typed control DATA does not admit a source recur in argument position.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        transfer-input (ns-resolve upstream 'nonnegative-integer-quotient-transfer-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        make-context (fn [input]
+          (let [{:keys [core node call edge nodes forms bindings types module]} input
+                result (c7 'sh08-nq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)]
+            (is (= :accepted (:status result)))
+            {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+             :calls {:call call} :edges {:call edge} :call-order {:call 0}
+             :call-facts {:call (c7 'sh08-nq-call-fact [descriptor module])} :ledger [(c7 'sh08-nq-constraint [descriptor])]
+             :locals {} :parameter-types {} :tail? true}))]
+    (doseq [position [0 1]]
+      (let [input (transfer-input [127 10] position) context (make-context input)
+            slot (keyword (str "arg" position))
+            compiled (lower 'p15-s23-typed-compile-node context :call 65536)
+            actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {} ""])]
+        (is (= :complete (:status compiled)))
+        (is (= :throw (get-in compiled [:value :args position :op])))
+        (is (= ["original quotient transfer" "" :thrown] actual))
+        (is (= compiled (lower 'p15-s23-typed-compile-node context :call (:work-count compiled))))
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call (dec (:work-count compiled))))))
+        (let [recur-op (keyword (str "recur-op-" position)) form (get-in input [:forms slot])
+              operand {:node-id slot :core-form :recur :children [] :source (get-in input [:nodes slot :source]) :resolved-binding-ids []
+                       :attributes {:target-id :loop :target-kind :loop :arity 0 :semantic-rule "L2-RECUR-TARGET" :type-compatibility :pending-sh08}
+                       :evaluation {:kind :arguments-left-to-right-then-transfer :order []}}
+              input (-> input (assoc-in [:nodes slot] operand)
+                        (assoc-in [:forms slot] (assoc form :kind :list :value '(recur) :child-form-ids [recur-op]))
+                        (assoc-in [:forms recur-op] (assoc form :form-id recur-op :syntax-id recur-op :parent-form-id slot :kind :symbol :value 'recur :child-form-ids []))
+                        (update-in [:core :nodes] #(mapv (fn [n] (if (= slot (:node-id n)) operand n)) %)))
+              context (make-context input)
+              target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
+              transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
+                        :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
+                        :transfer-policy :nearest-lexical-recur-target :type-compatibility :pending-sh08}
+              premise {:kind :loop-recur-type :source-transfer transfer :source-target target :argument-types [] :slot-types []
+                       :result-type :gravity.type/never :normal-transfer? true :status :solved}
+              context (assoc context :targets {:loop target} :nearest-target target :transfers {slot transfer} :loop-binding-index {})
+              row (lower 'p15-s23-typed-loop-row context premise operand)
+              context (assoc context :loop-rows {[:loop-recur-type slot] row})
+              direct (lower 'p15-s23-typed-compile-node context slot 65536)
+              non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot 65536)
+              rejected (lower 'p15-s23-typed-compile-node context :call 65536)]
+          (is (= :complete (:status direct)))
+          (is (= {:op :recur :target :loop :args []} (:value direct)))
+          (is (= :rejected (:status non-tail) (:status rejected)))
+          (is (= (:facts non-tail) (:facts rejected))))))))
+
 (deftest current-gravity-symbol-set-contains-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'map-contains-input)
@@ -30603,6 +30762,169 @@
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest current-gravity-nonnegative-integer-quotient-authenticated-composition
+  ;; One finite sourced quotient composition and one zero-divisor typing negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "Integer quotient fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "Integer quotient development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:nonnegative-integer-quotient-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "Integer quotient upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "Integer quotient C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "Integer quotient C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-nonnegative-integer-quotient.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        quotients (mapv :applied-nonnegative-integer-quotient
+                    (filter #(= :direct-nonnegative-integer-quotient (:dispatch %)) (:call-type-facts facts)))
+        counts (filterv #(= :direct-collection-count (:dispatch %)) (:call-type-facts facts))
+        rows (filterv #(= :sh08-nonnegative-integer-quotient-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
+        quotient-ir (filterv #(and (= :builtin-call (:op %)) (= 'quot (:function %))) instructions)
+        count-ir (filterv #(and (= :builtin-call (:op %)) (= 'count (:function %))) instructions)
+        graph (:effect-graph effects) runtime-plan (:plan (typed-catch-runtime-projection))
+        execution (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)])
+        t2 (System/nanoTime)]
+    (is (= 1 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 3 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 2 (count quotients) (count rows) (count quotient-ir)))
+    (is (= 1 (count counts) (count count-ir)))
+    (is (= 2 (count (filter #(= :vector-literal (:op %)) instructions))))
+    (is (empty? (get-in assembled [:module-initialization :initializers])))
+    (is (= 56 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= [12 2] (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= #{} (get-in graph [:namespace :inferred])))
+    (is (= #{:memory/allocate} (:inferred (first (vals (:functions graph))))))
+    (is (= {:original-integer-literal 1 :authenticated-cardinality 1}
+           (frequencies (map #(get-in % [:range-proof :dividend :kind]) quotients))))
+    (doseq [descriptor quotients]
+      (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+            row (first (filter #(= id (get-in % [:lhs :core-node-id])) rows))]
+        (is (= :gravity.type/applied-nonnegative-integer-quotient (:kind descriptor)))
+        (is (= :sh08-nonnegative-integer-quotient-v1 (:version descriptor)))
+        (is (= ['quot 'gravity.math 'gravity.math.core :gravity.math.core/nonnegative-integer-quotient]
+               [(:operation descriptor) (:semantic-owner descriptor) (:layer0-owner descriptor) (:intrinsic descriptor)]))
+        (is (= :gravity.type/integer (:result-type descriptor) (:return descriptor) (get-in facts [:type-table id])))
+        (is (= :normal (:application descriptor)))
+        (is (= :proof-required (:numeric-mode descriptor) (get-in descriptor [:range-proof :mode])))
+        (is (= :proven-safe (:safety descriptor)))
+        (is (= :nonnegative-euclidean-quotient (get-in descriptor [:quotient-policy :operation])))
+        (is (= [:none :impossible :statically-excluded :outside-domain]
+               ((juxt :conversion :overflow :divisor-zero :negative-signed-rounding) (:quotient-policy descriptor))))
+        (is (= :may-allocate-integer-result (get-in descriptor [:storage-policy :allocation])))
+        (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= #{:memory/allocate} (:direct record) (:transitive record)))
+        (is (= [:integer :possible-integer-result-storage true]
+               ((juxt :value-kind :behavior :normal-completion-possible?) (:allocation record))))
+        (is (= descriptor (:dependencies row)))
+        (is (= (:range-proof descriptor) (get-in row [:solution :range-proof])))
+        (is (= (:storage-policy descriptor) (get-in row [:solution :storage-policy])))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (println (pr-str {:nonnegative-integer-quotient-positive-observations
+                     {:runtime-status (:status execution) :runtime-result (:entrypoint-result execution)
+                      :functions (count (:functions assembled)) :quotient-calls (count quotients) :count-calls (count counts)
+                      :dividend-proof-kinds (mapv #(get-in % [:range-proof :dividend :kind]) quotients)}
+                     :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                        :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/integer-quotient-zero-divisor.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])
+          diagnostic (first (filter #(= :nonnegative-integer-quotient-zero-divisor (:reason %)) diagnostics))]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (= :passed (get-in negative [:verification :status])) (pr-str (:verification negative)))
+      (is (= "STD5002" (:rule diagnostic)) (pr-str diagnostics))
+      (is (= [:gravity.type/integer :gravity.type/integer] (:actual-type diagnostic)))
+      (is (= {:operation 'quot :numeric-mode :proof-required :dividend :source-proven-nonnegative-Integer
+              :divisor :source-proven-positive-Integer-literal} (:expected-type diagnostic)))
+      (is (some? (:core-node-id diagnostic))) (is (some? (:syntax-id diagnostic)))
+      (is (map? (:source-span diagnostic)))
+      (println (pr-str {:nonnegative-integer-quotient-typing-negative diagnostics
+                       :negative-c7-verification-status (get-in negative [:verification :status])
+                       :timing (:development-timing negative)})))
+    (println (pr-str {:nonnegative-integer-quotient-composition :completed :runtime-result (:entrypoint-result execution)
+                     :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                     :closed-plan-entry-invocations 1 :runtime-function-count (count (:functions runtime-plan))
+                     :reader-parameter-grounding :not-established :whole-compiler-consumer-execution false
+                     :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included}))))
 
 (deftest current-gravity-integer-set-contains-authenticated-composition
   ;; One finite Integer membership composition and one Decimal-member typing negative; Q is parser-only.
