@@ -2461,6 +2461,67 @@
     (assoc-in input [:core :nodes]
               (conj (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes])) payload))))
 
+(defn- vector-slice-input [text start end]
+  ;; The actual SHA client's nested conversion, as normalized development DATA.
+  (let [inner (literal-string-vector-input text) module (:module inner)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        binding (assoc (get-in inner [:bindings :ordering-binding]) :binding-id :slice-binding
+                       :name 'subvec :definition-syntax-id :slice-definition)
+        operator {:node-id :slice-operator :core-form :reference :children [] :resolved-binding-ids [:slice-binding]
+                  :attributes {:symbol 'subvec :position :operator :binding-id :slice-binding :binding-class :core
+                               :definition-syntax-id :slice-definition}
+                  :source (source :slice-operator) :evaluation {:order []}}
+        literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                               :attributes {:literal-kind :integer :value value}
+                               :source (source id) :evaluation {:kind :value :order []}})
+        children [:slice-operator :call :slice-start :slice-end]
+        node {:node-id :slice-call :core-form :call :children children :resolved-binding-ids [:slice-binding]
+              :attributes {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+              :source (source :slice-call) :evaluation {:owner-function-syntax-id nil :kind :operator-then-arguments
+                                                       :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}}
+        call {:core-node-id :slice-call :operator-node-id :slice-operator :operator-binding-id :slice-binding
+              :argument-node-ids [:call :slice-start :slice-end] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal 1 :call-core-node-id :slice-call :caller-function-syntax-id nil :caller-function-core-node-id nil
+              :callee-binding-id :slice-binding :callee-definition-syntax-id :slice-definition
+              :callee-function-syntax-id nil :callee-function-core-node-id nil
+              :argument-core-node-ids [:call :slice-start :slice-end] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        added [operator (literal :slice-start start) (literal :slice-end end) node]
+        node-list (into (get-in inner [:core :nodes]) added)
+        core (-> (:core inner) (assoc :nodes node-list) (update :calls conj call) (update :call-edges conj edge))
+        form (fn [id kind value] {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                                 :kind kind :value value :parent-form-id :slice-call :child-form-ids []})
+        forms (-> (:forms inner) (assoc-in [:call :parent-form-id] :slice-call)
+                  (assoc :slice-operator (form :slice-operator :symbol 'subvec)
+                         :slice-start (form :slice-start :integer start) :slice-end (form :slice-end :integer end)
+                         :slice-call (assoc (form :slice-call :list :slice-call) :parent-form-id nil :child-form-ids children)))
+        types (assoc (:types inner) :slice-start :gravity.type/integer :slice-end :gravity.type/integer)]
+    {:module module :core core :node node :call call :edge edge :nodes (into {} (map (juxt :node-id identity) node-list))
+     :bindings (assoc (:bindings inner) :slice-binding binding) :types types :binding-types types :seeds types :forms forms
+     :products {:calls (:calls core) :call-edges (:call-edges core) :module module} :inner inner}))
+
+(deftest sh08-vector-slice-inference-development-kernel
+  (let [text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec (repeat % :gravity.type/character)))]
+    (doseq [[start end] [[0 7] [7 71] [0 0] [71 71] [0 71] [2 4] [0N 7N]]]
+      (let [{:keys [core nodes forms bindings products binding-types]} (vector-slice-input text start end)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+            descriptor (get-in inferred [:type-table :slice-operator])]
+        (is (= :converged (:convergence-status inferred)))
+        (is (= (finite 71) (get-in inferred [:type-table :call])))
+        (is (= [] (:diagnostics inferred)))
+        (is (= (finite (- end start)) (get-in inferred [:type-table :slice-call])))
+        (is (= :gravity.type/applied-vector-slice (:kind descriptor)))
+        (is (= :normal (:application descriptor)))
+        (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= (- end start) (get-in descriptor [:bounds-proof :result-count])))
+        (is (= :start-inclusive-end-exclusive (get-in descriptor [:slice-policy :range])))))))
+
 (deftest sh08-ascii-string-vector-inference-development-kernel
   (doseq [value ["" "sha256:" "\"\\\n\t" (apply str (map char (range 128)))]]
     (let [{:keys [core nodes forms bindings products binding-types]} (literal-string-vector-input value)
