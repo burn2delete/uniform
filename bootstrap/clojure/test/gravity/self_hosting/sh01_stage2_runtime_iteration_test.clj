@@ -32452,6 +32452,360 @@
           (is (zero? @callbacks)))))
 ))
 
+(deftest current-gravity-vector-first-symbol-loop-witness-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [{:keys [context nodes forms checked] :as data}
+        ((ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'vector-first-symbol-loop-data))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        compile #(invoke 'p15-s23-typed-compile-node %1 :loop-node %2)
+        result (compile context 65536) runtime-plan (:plan (typed-catch-runtime-projection))
+        value (when (= :complete (:status result))
+                (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+                  'p15-s23-runtime-evaluate-closed-instruction [(:value result) {} ""]))]
+    (is (= :accepted (:status checked)))
+    (is (= :complete (:status result)) (pr-str result))
+    (is (= {:op :set-literal :items []} (get-in result [:value :bindings 1 :expr])))
+    (is (= [#{'assoc} "" :normal] value))
+    (when (= :complete (:status result))
+      (is (= result (compile context (:work-count result))))
+      (is (= :rejected (:status (compile context (dec (:work-count result)))))))
+    (doseq [changed [(assoc-in context [:types :first-operator :bounds-proof :selected-index] 1)
+                    (assoc-in context [:types :first-operator :application] :not-invoked)
+                    (assoc-in context [:forms :symbol-vector-form :value] ['wrong])
+                    (assoc-in context [:nodes :symbol-vector :evaluation :order] [])
+                    (assoc-in context [:loop-rows [:loop-slot-type :value] :solution :member-invariant :grounding :member-path] [:vector-first])]]
+      (is (= :rejected (:status (compile changed 65536)))))))
+
+(deftest current-gravity-vector-first-symbol-loop-witness-reached-metadata-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [owner 'gravity.self-hosting.sh08-loop-recur-type-test
+        env ((ns-resolve owner 'vector-first-symbol-loop-env) ((ns-resolve owner 'vector-first-symbol-loop-data)))
+        unused (ns-resolve owner 'vector-first-symbol-loop-unused-metadata-env)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        walk (fn [env budget] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan
+                                'p15-s23-lsi-path [:vector-first :member :value env budget]))
+        baseline (walk env 65536) callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "unused metadata hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "unused metadata equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "unused metadata printing"))))
+        large (vec (repeat 1024 {:unused (vec (range 20))}))]
+    (is (= :accepted (:status baseline)))
+    (doseq [value [large opaque] node? [true false]]
+      (let [changed (unused env value node?)]
+        (is (= baseline (walk changed 65536)))
+        (is (= baseline (walk changed (:work-count baseline))))
+        (is (= :loop-type-work-limit (:reason (walk changed (dec (:work-count baseline))))))
+        (is (zero? @callbacks))))
+    (doseq [changed [(assoc-in env [:nodes :vector-first :source :semantic-span] opaque)
+                    (assoc-in env [:forms :vector-first-form :source-span] opaque)
+                    (assoc-in env [:nodes :symbol-vector :attributes :source-value] opaque)
+                    (assoc-in env [:nodes :symbol-vector :evaluation :order] opaque)
+                    (assoc-in env [:types :first-operator :source-binding :metadata] opaque)
+                    (assoc-in env [:types :first-operator :extra] opaque)]]
+      (is (= :rejected (:status (walk changed 65536))))
+      (is (zero? @callbacks)))))
+
+(deftest current-gravity-vector-first-symbol-loop-witness-final-warm-descriptor-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [owner 'gravity.self-hosting.sh08-loop-recur-type-test
+        {:keys [env start binding operator derived]} ((ns-resolve owner 'vector-first-symbol-loop-source-shaped-env))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        walk (fn [env budget] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-lsi-path [start :member binding env budget]))
+        accepted (walk env 65536) callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "warm descriptor hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "warm descriptor equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "warm descriptor printing"))))
+        values ((ns-resolve owner 'vector-first-symbol-loop-hostile-warm-values) (get-in env [:types operator]) opaque callbacks)]
+    (is (= :accepted (:status derived) (:status accepted)) (pr-str accepted))
+    (is (= 5 (count (:path accepted))))
+    (is (= accepted (walk env (:work-count accepted))))
+    (is (= :rejected (:status (walk env (dec (:work-count accepted))))))
+    (doseq [[label value] values]
+      (is (= :rejected (:status (walk (assoc-in env [:types operator] value) 65536))) (str label))
+      (is (zero? @callbacks) (str label)))))
+
+(deftest current-gravity-vector-first-symbol-loop-witness-keyword-work-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [owner 'gravity.self-hosting.sh08-loop-recur-type-test
+        observe (ns-resolve owner 'vector-first-symbol-loop-observe-data-work)
+        cases ((ns-resolve owner 'vector-first-symbol-loop-keyword-cases))
+        {:keys [env start binding]} ((ns-resolve owner 'vector-first-symbol-loop-source-shaped-env))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [value budget] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-lsi-first-data-work [value budget]))]
+    (doseq [[label value] cases]
+      (let [observed (observe 'p15-s23-lsi-first-data-work #(invoke value 2))
+            below (observe 'p15-s23-lsi-first-data-work #(invoke value 1))]
+        (is (= :accepted (get-in observed [:result :status])) (str label))
+        (is (= 2 (get-in observed [:result :work-count])))
+        (is (= {:keyword 0 :symbol 0 :string 0} (:formats observed)))
+        (is (= :rejected (get-in below [:result :status])))
+        (is (= 2 (get-in below [:result :work-count])))
+        (is (zero? (get-in below [:formats :keyword])))))
+    (doseq [value ["field-value" 'alpha.beta/member]]
+      (let [work (+ 2 (count (str value))) observed (observe 'p15-s23-lsi-first-data-work #(invoke value work))
+            below (invoke value (dec work))]
+        (is (= :accepted (get-in observed [:result :status])))
+        (is (= work (get-in observed [:result :work-count]) (:work-count below)))
+        (is (= :rejected (:status below)))
+        (is (= {:keyword 0 :symbol (if (symbol? value) 1 0) :string 0} (:formats observed)))))
+    (let [observed (observe 'p15-s23-lsi-first-data-work
+                    #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-lsi-path [start :member binding env 65536]))]
+      (is (= :accepted (get-in observed [:result :status])))
+      (is (zero? (get-in observed [:formats :keyword])))
+      (is (pos? (get-in observed [:formats :symbol]))))))
+
+(deftest current-gravity-vector-first-symbol-loop-witness-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name expected-width]
+            [["accepted" "vector-first-symbol-set-loop" 1]
+             ["rejected" "empty-vector-symbol-set-loop" 0]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g) nodes (tree-seq coll? seq forms)]
+        (is (= g q))
+        (is (= forms (bootstrap/read-forms q-path q)))
+        (is (= 1 (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'loop (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'recur (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'quote (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'conj (first %))) nodes))))
+        (let [query (first (filter #(and (seq? %) (= 'first (first %))) nodes))]
+          (is (vector? (second query)))
+          (is (= expected-width (count (second query)))))))))
+
+(deftest current-gravity-vector-first-symbol-loop-witness-authenticated-composition
+  ;; Qualified coverage: 43 unique selectors / 1973 passing assertions across epochs.
+  ;; Production 3737b5b0: fresh 13/464, comprising new C8 8/237 and affected old loops 5/227.
+  ;; Reuse only unaffected 30/1509 from prior qualified 35/1736; no single 43-test green invocation.
+  ;; Prior 35 comprised 34/1723 from a FAILED receipt plus b7f72147 fresh cold 1/13.
+  ;; Cold C7 DATA converge in five rounds: exact 60847 units and minus-one rejection.
+  ;; Normalized C8 accepts at 49576 units, exact complete-result parity, and rejects one unit below.
+  ;; Genuine ab180a09 and 33b732fb stopped at C7 loop-type-work-limit: each 3P/1F/1E.
+  ;; Genuine f2472dba passed C7 and its verifier, then C8 work limit: 4P/1F/1E.
+  ;; Its C8 verifier, assembly, runtime, detailed witnesses and typing negative were unrun.
+  ;; All three failed source receipts remain preserved; normalized DATA are not source evidence.
+  ;; Reached projections, complete warm scan, final equality and LSI scalar two visits remain.
+  ;; Shared C8 evidence retains one scalar visit; actual discarded Keyword formatting is removed.
+  ;; Long-name logical acceptance can broaden across the shared C8 callers.
+  ;; String/Symbol work, doubled row validation/equality charge, schemas and 65536 ceiling remain.
+  ;; No host CPU, heap, hashing, equality-cost or hostile-provider bound is claimed.
+  ;; One unchanged G positive and one empty-Vector typing negative. Q remains parser-only.
+  ;; Runtime and protected predicates are unchanged; fresh DEV-C6 replay is not public fresh C6.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "Vector-first Symbol loop fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "Vector-first Symbol loop development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:vector-first-symbol-loop-witness-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "Vector-first Symbol loop upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "Vector-first Symbol loop C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "Vector-first Symbol loop C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/vector-first-symbol-set-loop.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+        empty-type {:kind :gravity.type/set :shape :literal :element-types []}
+        functions (:function-type-table facts) main (first (filter #(= 'main (:definition-name %)) functions))
+        slot (first (filter #(= 'seen (:name %)) (:loop-bindings core)))
+        target (first (filter #(= (:loop-core-node-id slot) (:owner-core-node-id %)) (:recur-targets core)))
+        transfer (first (:recur-transfers core))
+        rows (:constraint-ledger facts)
+        slot-row (first (filter #(and (= :sh08-loop-target-types-v2 (:producer-rule %)) (= (:binding-id slot) (:lhs %))) rows))
+        transfer-row (first (filter #(and (= :sh08-loop-target-types-v2 (:producer-rule %)) (= (:recur-core-node-id transfer) (:lhs %))) rows))
+        invariant (get-in slot-row [:solution :member-invariant])
+        insertion (first (keep :applied-symbol-set-insertion (:call-type-facts facts)))
+        query (first (keep :applied-symbol-set-contains (:call-type-facts facts)))
+        first-query (first (keep :applied-vector-first (:call-type-facts facts)))
+        vector-node (first (filter #(and (= :collection-literal (:core-form %)) (= :vector (get-in % [:attributes :literal-kind]))) (:nodes core)))
+        seen-reads (filterv #(and (= :reference (:core-form %)) (= (:binding-id slot) (get-in % [:attributes :binding-id]))) (:nodes core))
+        instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
+        loop-ir (first (filter #(= :loop (:op %)) instructions))
+        recur-ir (first (filter #(= :recur (:op %)) instructions))
+        insertion-ir (filterv #(and (= :builtin-call (:op %)) (= 'conj (:function %))) instructions)
+        query-ir (filterv #(and (= :builtin-call (:op %)) (= 'contains? (:function %))) instructions)
+        first-ir (filterv #(and (= :builtin-call (:op %)) (= 'first (:function %))) instructions)
+        graph (:effect-graph effects) backedge (get-in graph [:nodes (:recur-core-node-id transfer) :loop-backedge])
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        execution (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)])
+        t2 (System/nanoTime)]
+    (is (= 1 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= 3 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= :gravity.type/bool (:return main) (get-in facts [:type-table (:body-core-node-id main)])))
+    (is (= 0 (:fixed-arity main)))
+    (is (= 2 (count (filter #(= :sh08-loop-target-types-v2 (:producer-rule %)) rows))))
+    (is (= 1 (count (filter #(= :sh08-loop-target-types-v1 (:producer-rule %)) rows))))
+    (is (= :gravity/sh08-loop-symbol-set-invariant-v2 (:schema invariant)))
+    (is (= (:target-id target) (:target-id invariant) (:target loop-ir) (:target recur-ir)))
+    (is (= (:binding-id slot) (:binding-id invariant)))
+    (is (= empty-type (get-in facts [:type-table (:initializer-node-id slot)]) (:initializer-type invariant) (get-in slot-row [:solution :initializer-type]) (get-in slot-row [:dependencies :loop-premise :initializer-type])))
+    (is (= carrier (:invariant-type invariant) (:rhs slot-row)))
+    (is (= (:initializer-node-id slot) (:initializer-node-id invariant)))
+    (is (= :gravity/sh08-loop-symbol-set-grounding-v2 (get-in invariant [:grounding :schema])))
+    (is (= empty-type (get-in invariant [:grounding :receiver-type])))
+    (is (= :gravity.type/symbol (get-in invariant [:grounding :member-type])))
+    (is (= carrier (get-in invariant [:grounding :result-type])))
+    (is (= [1 5 1] (mapv #(count (get-in invariant [:grounding %])) [:receiver-path :member-path :result-path])))
+    (is (= [{:transfer-node-id (:recur-core-node-id transfer) :argument-node-id (second (:argument-node-ids transfer)) :argument-type carrier :normal-transfer? true :compatibility :exact-carrier}] (:entries invariant)))
+    (is (= [(:binding-id slot)] (get-in transfer-row [:solution :member-invariant-bindings])))
+    (is (= transfer (get-in transfer-row [:dependencies :loop-premise :source-transfer])))
+    (is (= 2 (count seen-reads)))
+    (is (= :sh08-symbol-set-insertion-v2 (:version insertion)))
+    (is (= :sh08-symbol-set-contains-v2 (:version query)))
+    (is (= [carrier :gravity.type/symbol] (:argument-types insertion) (:argument-types query)))
+    (is (= carrier (:result-type insertion)))
+    (is (= :gravity.type/bool (:result-type query)))
+    (is (= :sh08-vector-first-v1 (:version first-query)))
+    (is (= :normal (:application first-query)))
+    (is (= :gravity.type/symbol (:result-type first-query) (get-in first-query [:bounds-proof :selected-type])))
+    (is (= :stored-index-zero (get-in first-query [:query-policy :selection])))
+    (is (= :unselected (get-in first-query [:query-policy :empty-result-policy])))
+    (is (= 0 (get-in first-query [:bounds-proof :selected-index])))
+    (is (= 1 (get-in first-query [:bounds-proof :vector-length]) (get-in vector-node [:attributes :element-count])))
+    (is (= (:node-id vector-node) (get-in first-query [:bounds-proof :operand-node-id])))
+    (is (= #{:memory/allocate} (get-in graph [:nodes (:node-id vector-node) :direct])))
+    (is (= #{} (get-in graph [:nodes (:call-core-node-id first-query) :direct])))
+    (is (= [:reference :call :collection-literal :reference :quote]
+           (mapv #(get-in (into {} (map (juxt :node-id identity) (:nodes core))) [% :core-form])
+                 (get-in invariant [:grounding :member-path]))))
+    (is (= 1 (count insertion-ir) (count query-ir) (count first-ir)))
+    (is (= 1 (count (filter #(= :loop (:op %)) instructions)) (count (filter #(= :recur (:op %)) instructions))))
+    (is (= 1 (count (filter #(= :quote (:op %)) instructions))))
+    (is (empty? (filter #(= :function-call (:op %)) instructions)))
+    (is (= {:op :set-literal :items []} (get-in loop-ir [:bindings 1 :expr])))
+    (let [initializer (first (filter #(= (:initializer-node-id slot) (:node-id %)) (:nodes core)))]
+      (is (= :collection-literal (:core-form initializer)))
+      (is (= {:literal-kind :set :element-count 0 :source-value #{}} (:attributes initializer)))
+      (is (= #{:memory/allocate} (get-in graph [:nodes (:node-id initializer) :direct]))))
+    (is (= target (:source-target backedge)))
+    (is (= transfer (:source-transfer backedge)))
+    (is (= :checked (get-in graph [:loop-fixed-point :equations])))
+    (is (= #{:memory/allocate} (get-in graph [:nodes (:call-core-node-id insertion) :direct]) (get-in graph [:nodes (:recur-core-node-id transfer) :transitive]) (get-in graph [:functions (:function-id main) :inferred])))
+    (is (= #{} (get-in graph [:nodes (:call-core-node-id query) :direct]) (get-in graph [:namespace :inferred])))
+    (is (empty? (get-in assembled [:module-initialization :initializers])))
+    (is (= 56 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)))
+    (is (true? (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (doseq [node seen-reads] (is (= carrier (get-in facts [:type-table (:node-id node)]))))
+    (println (pr-str {:vector-first-symbol-loop-witness-positive-observations
+                     {:runtime-status (:status execution) :runtime-result (:entrypoint-result execution)
+                      :functions (count functions) :calls (count (:calls core)) :loop-invariant invariant}
+                     :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                        :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/empty-vector-symbol-set-loop.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])
+          diagnostic (first (filter #(= :vector-first-nonempty-complete-positional-type-required (:reason %)) diagnostics))]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status]) (get-in negative [:verification :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      ;; No empty Vector first result or loop-carrier fallback is selected.
+      (is (= "C7-ANNOTATION" (:rule diagnostic)) (pr-str diagnostics))
+      (is (= [{:kind :gravity.type/vector :shape :literal :element-types []}]
+             (:actual-type diagnostic)))
+      (is (some? (:core-node-id diagnostic)))
+      (is (some? (:syntax-id diagnostic)))
+      (is (some? (:binding-id diagnostic)))
+      (is (map? (:source-span diagnostic)))
+      (is (contains? diagnostic :constraint-id))
+      (is (nil? (:constraint-id diagnostic)))
+      (is (contains? (:diagnostic-id-request diagnostic) :constraint-id))
+      (is (= (:constraint-id diagnostic) (get-in diagnostic [:diagnostic-id-request :constraint-id])))
+      (println (pr-str {:vector-first-symbol-loop-witness-typing-negative diagnostics :timing (:development-timing negative)})))
+    (println (pr-str {:vector-first-symbol-loop-witness-composition :completed :runtime-result (:entrypoint-result execution)
+                      :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                      :closed-plan-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count (count (:functions runtime-plan))
+                      :loop-evidence :evaluated-vector-first-with-independent-symbol-head :initializer-type :preserved
+                      :generic-set-join false :function-return-grounding false :whole-compiler-consumer-execution false
+                      :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                         :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
 (deftest current-gravity-unquoted-empty-symbol-set-loop-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

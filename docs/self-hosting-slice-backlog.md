@@ -4442,6 +4442,80 @@ refinement and whole compiler-helper execution remain unsupported here. These
 development observations do not establish fresh public C6 verification, native
 execution, current-closure admission, migration, SH-07 completion or release.
 
+### Vector-first Symbol loop grounding: development increment
+
+The current JVM C7/effects/typed-emitter route now grounds the existing v2
+Symbol-Set loop invariant from `first` of an evaluated nonempty Vector whose
+stored head is independently a literal/quoted Symbol through immutable acyclic
+aliases. The original Vector receiver must be the evaluated constructor; its
+complete positional type, children, source/forms, bindings, call/edge records,
+evaluation order and original Vector-first descriptor are reconstructed.
+Member aliases share the same remaining budget and cycle set through the head
+path. Quoted/empty/aliased/function-returned Vector receivers, nested-call head
+grounding, expected types and loop slots cannot supply this independent origin.
+
+The empty Set initializer and original transfers remain unchanged, including
+whole-tuple Never and normal empty/carrier compatibility. C8 and lowering
+independently rebuild the existing F/W evidence; no schema, signature predicate,
+runtime function, general join, flow refinement or guard elision is added.
+Both Vector and Set construction retain allocation, and `first` remains a pure
+query with its original runtime checks. Runtime inventory is still 56 and all
+nine protected signature predicates are byte-identical.
+
+The final production correction is `3737b5b0`. Reached-source projections omit
+only unused C6 fields, and the actual full warm descriptor is paid once at its
+final equality boundary. Discarded Keyword formatting is removed from the new
+two-visit LSI data walker and the existing one-visit C8 Map/Vector evidence
+walker. The latter change affects its 22 existing callsites: long Keyword names
+can gain logical-budget acceptance. String/Symbol text charges, first-order
+family/depth/pending reservations, full row checks, native equality and its
+doubled charge remain; no ceiling is raised. Internal operational counters may
+change, while published descriptor, presence, row, invariant and graph checks
+remain exact. This does not establish a CPU, heap, hash/equality-cost or hostile
+provider bound.
+
+Qualified focused coverage is 44 distinct selectors/2,005 passing assertions
+across preserved epochs, not one all-green invocation: unaffected 29/1,496
+from `2092fd07`, the corrected cold solver 1/13 at `b7f72147`, new C8 and
+private-source checks 8/237 plus affected old loop checks 5/227 at `3737b5b0`,
+and the diagnostic oracle 1/32 at `f9026e4d`. Cold C7 converges in five rounds
+at exactly 60,847 units and rejects one below. The complete normalized C8
+analyzer accepts at 49,576 units with identical observed/unobserved and
+exact-limit results, and rejects at 49,575. Earlier failed development receipts
+remain failed; their passes are not added again.
+
+All four genuine source attempts are preserved. `ab180a09` and `33b732fb` each
+stopped at C7 work limit with 3P/1F/1E; their downstream and negative source
+checks were unrun. `f2472dba` passed C7 and its verifier, then stopped at C8 work
+limit with 4P/1F/1E; C8 verification, assembly/runtime and the negative were
+unrun. At `2677614a`, the complete composition ran 81 assertions: 80P/1F/0E.
+Its one-function, three-call G positive passed C7/C8 verification, one observed
+public C7 assembly gate and one closed runtime entry returning true with empty
+stdout. The retained five-ID member path reaches the original Symbol quote,
+with empty initializer type and constructor allocation preserved.
+
+The G empty-Vector negative was rejected with
+`C7-ANNOTATION`/`:vector-first-nonempty-complete-positional-type-required`, actual
+literal empty-Vector type, source/Core/syntax/binding provenance and passed
+fresh C7 verification. Negative C8/runtime were intentionally not invoked.
+The sole failed assertion incorrectly expected a constraint map. The original
+renderer supplies a present, nil constraint ID for annotations, with nil parity
+inside the diagnostic identity request; only type mismatches acquire that map.
+The final test-only correction is independently checked against the retained
+actual diagnostic and the original derive/renderer kernel, including a real
+arity mismatch. It does not manufacture an 81- or 84-pass source receipt.
+Raw source outputs use the unique
+`vector-first-symbol-loop-witness-source-c8-keyword-visit-20261021` prefix.
+
+The source invocation remains bound to its exact `2677614a` inputs. One main
+join to `bc7dbe7d` produced `87c9cd14`, preserving every SOURCE production,
+fixture and test byte. Fresh current-main checks passed five load-order checks,
+representative C7/C8/emitter 3/44, boundary 6/11 and LOC (2,022 source files,
+zero exceptions, maximum 250 physical lines). The 3/44 refresh overlaps the
+44-selector total. Q remains parser-only. Public fresh C6, native execution,
+whole compiler-helper support, current-closure admission, migration, SH-07
+completion, self-hosting and release are not established by these observations.
+
 ### Persistent String-Set insertion: development increment
 
 STD3 now explicitly defines binary Set `conj` to preserve existing equal member

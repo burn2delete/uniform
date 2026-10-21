@@ -7474,3 +7474,128 @@
       (is (= :rejected (:status (invoke 'body-ksm-domain [[carrier needle] 65536])))))
 )
 )
+
+
+(defn- vector-first-symbol-loop-c8-cold-input []
+  ;; Complete normalized DATA only. No C5/C6, artifact seal, or admission claim.
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [owner 'gravity.self-hosting.sh08-loop-recur-type-test
+        invoke (ns-resolve owner 'c7-invoke)
+        input ((ns-resolve owner 'vector-first-symbol-loop-cold-source-shape)
+               ((ns-resolve owner 'vector-first-symbol-loop-cold-data)))
+        core (:core input) nodes (:nodes input) forms (:forms input) bindings (:bindings input)
+        quotes (invoke 'sh08-qd-products [(:nodes core) (vec (vals forms)) (:module core)])
+        skeletons (invoke 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
+        context {:ordering-core core :loop-core core :lookup-nodes nodes :source-node-table nodes
+                 :lookup-forms (vec (vals forms)) :lookup-bindings (vec (vals bindings))
+                 :boolean-matches [] :quote-types (:type-table quotes)
+                 :shape-call-products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core)
+                   :definitions (:definitions core)
+                   :function-index (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
+                   :recursion-components []}}
+        bound (invoke 'sh08-ft-inference-round-bound [(:nodes core) (:function-records core) (:calls core) (:lexical-bindings core)])
+        inference (invoke 'sh08-ft-infer-acyclic-with-context
+                    [(:nodes core) nodes (:lexical-bindings core) (:definitions core) (:calls core) (:call-edges core)
+                     skeletons {} bound (assoc context :loop-work-left 65536)])
+        record (first (:function-records core))
+        record (assoc record :ordinal 0 :definition-kind :named-top-level
+                       :definition-core-node-id (:core-node-id (first (:definitions core)))
+                       :function-form-id (get-in nodes [(:function-core-node-id record) :source :form-id]))
+        locals (mapv (fn [record]
+                       (let [owner (some (fn [node] (when (and (= :let (:core-form node))
+                                                       (some #{(:initializer-node-id record)} (:children node)))
+                                                     (:node-id node))) (:nodes core))]
+                         (assoc record :name (:name (bindings (:binding-id record))) :let-core-node-id owner)))
+                     (:lexical-bindings core))
+        core (merge core {:function-records [record] :lexical-bindings locals
+                    :root-core-node-ids [(:definition-core-node-id record)]
+                    :nodes (mapv (fn [node] (if (= (:node-id node) (:definition-core-node-id record))
+                                             (assoc-in node [:attributes :name-syntax-id] (:definition-syntax-id record)) node)) (:nodes core))
+                    :match-branch-records [] :match-pattern-records [] :match-decision-skeletons []
+                    :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
+        core (assoc core :identity-preimage
+               (merge (:identity-preimage core)
+                 (select-keys core [:root-core-node-ids :definitions :function-records :call-edges :calls :evaluation-order
+                                    :lexical-bindings :match-branch-records :match-decision-skeletons :match-pattern-records])
+                 {:nodes (leaf 'body-throw-semantic-nodes core)}))
+        functions (invoke 'sh08-ft-final-functions [(invoke 'sh08-ft-function-facts [(:function-types inference) nodes (:module core)])])
+        facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
+                {:module (:module core) :type-table (:type-table inference) :function-type-table functions
+                 :local-binding-facts (invoke 'sh08-ft-local-facts [locals (:type-table inference) (:binding-types inference) nodes (:module core)])
+                 :call-type-facts (invoke 'sh08-ft-call-facts-with-context [(:calls core) (:call-edges core) nodes (:type-table inference)
+                                    (:function-types inference) (:module core) (:shape-call-context inference)])
+                 :constraint-ledger (into (:constraints inference) (:constraints quotes))})
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request
+                   {:forms (vec (vals forms)) :binding-table (vec (vals bindings))}}}]
+    {:request request :facts facts :inference inference :input input}))
+
+(deftest body-private-evidence-keyword-work-development-kernel
+  ;; One logical scalar visit; String/Symbol text work remains separately paid.
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [owner 'gravity.self-hosting.sh08-loop-recur-type-test
+        observe (ns-resolve owner 'vector-first-symbol-loop-observe-data-work)
+        cases ((ns-resolve owner 'vector-first-symbol-loop-keyword-cases))]
+    (doseq [[label value] cases]
+      (let [{:keys [result formats]} (observe 'body-pc-evidence-work #(leaf 'body-pc-evidence-work value 1))]
+        (is (= {:status :accepted :work-count 1} result) (str label))
+        (is (= :rejected (:status (leaf 'body-pc-evidence-work value 0))) (str label))
+        (is (zero? (:keyword formats)) (str label))))
+    (doseq [value ["source text" 'library/member]]
+      (let [units (inc (count (str value)))
+            {:keys [result formats]} (observe 'body-pc-evidence-work #(leaf 'body-pc-evidence-work value units))]
+        (is (= {:status :accepted :work-count units} result))
+        (is (= :map-get-work-limit (:reason (leaf 'body-pc-evidence-work value (dec units)))))
+        (is (zero? (:keyword formats)))
+        (when (symbol? value) (is (= 1 (:symbol formats))))))
+    (let [data {:kind :closed :source ["source" 'library/member 7] :nested {:status :normal}}
+          {:keys [result formats]} (observe 'body-pc-evidence-work #(leaf 'body-pc-evidence-work data 65536))
+          work (:work-count result)]
+      (is (= :accepted (:status result)))
+      (is (zero? (:keyword formats)))
+      (is (= result (leaf 'body-pc-evidence-work data work)))
+      (is (= :map-get-work-limit (:reason (leaf 'body-pc-evidence-work data (dec work))))))
+    (let [callbacks (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "evidence hash")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "evidence equality")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "evidence printing"))))
+          deferred (lazy-seq (swap! callbacks inc) (list opaque))]
+      (doseq [value [opaque [opaque] {:field opaque} (list opaque) #{:closed} deferred]]
+        (is (= :rejected (:status (leaf 'body-pc-evidence-work value 65536))))
+        (is (zero? @callbacks)))
+      (is (= :map-get-work-limit (:reason (leaf 'body-pc-evidence-work (vec (repeat 1024 opaque)) 1))))
+      (is (zero? @callbacks)))
+    (is (= :map-get-source-mismatch
+           (:reason (leaf 'body-pc-evidence-work (nth (iterate vector :closed) 129) 65536))))))
+
+(deftest body-vector-first-symbol-loop-cumulative-work-development-kernel
+  (let [{:keys [request facts inference]} (vector-first-symbol-loop-c8-cold-input)
+        core (:canonical-core-artifact request)
+        observe (ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'vector-first-symbol-loop-observe-data-work)
+        analyze #(leaf 'body-analyze-module request %1 {} %2)
+        {:keys [result formats]} (observe 'body-pc-evidence-work #(analyze facts 65536))]
+    (is (= :converged (:convergence-status inference)))
+    (is (= [] (:diagnostics inference)))
+    (is (true? (leaf 'body-shape-valid? core facts)))
+    (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+    (is (= result (analyze facts 65536)))
+    (is (zero? (:keyword formats)))
+    (is (pos? (:symbol formats)))
+    (when (= :accepted (:status result))
+      (let [work (:work-count result) graph (:graph result)
+            first-id (:core-node-id (first (:calls core)))
+            vector-id (first (:argument-node-ids (first (:calls core))))
+            function-id (:function-syntax-id (first (:function-records core)))
+            invariant-row (first (keep-indexed (fn [i row] (when (get-in row [:solution :member-invariant]) i)) (:constraint-ledger facts)))]
+        (is (<= 0 work 65536))
+        (is (= result (analyze facts work)))
+        (is (= :body-deferred-work-limit (:reason (analyze facts (dec work)))))
+        (is (= #{} (get-in graph [:nodes first-id :direct])))
+        (is (= #{:memory/allocate} (get-in graph [:nodes vector-id :direct])))
+        (is (= #{:memory/allocate} (get-in graph [:functions function-id :inferred])))
+        (is (= :checked (get-in graph [:loop-fixed-point :equations])))
+        (is (integer? invariant-row))
+        (is (= :rejected (:status (analyze (assoc-in facts [:constraint-ledger invariant-row :solution :member-invariant :grounding :member-path] []) 65536))))
+        (is (= :rejected (:status (analyze (assoc-in facts [:type-table (:operator-node-id (first (:calls core))) :bounds-proof :selected-index] 1) 65536))))))
+    (println (pr-str {:vector-first-symbol-loop-normalized-c8 (select-keys result [:status :reason :work-count])
+                     :formats formats :source-credit false :authentication-credit false}))))
