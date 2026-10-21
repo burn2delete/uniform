@@ -34,7 +34,7 @@
 (defn- constant? [mir op]
   (and (fact-valid? mir op) (= :constant (:opcode op)) (= :literal (:source-operation op))
        (= :gravity/integer (:type op)) (= [] (:operands op))
-       (= #{:present? :value} (set (keys (:constant-payload op))))
+       (map? (:constant-payload op)) (= #{:present? :value} (set (keys (:constant-payload op))))
        (true? (get-in op [:constant-payload :present?])) (i64? (get-in op [:constant-payload :value]))))
 
 (defn- bounded? [mir]

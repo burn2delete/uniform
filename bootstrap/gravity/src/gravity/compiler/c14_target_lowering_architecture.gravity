@@ -1167,7 +1167,7 @@
   {:use-kind :instruction :consumer-kind :operation :consumer-id (get operation :op-id)
    :consumer-block (get operation :block-id) :operand-index index :edge-kind :operand})
 
-+(defn c14-equality-i64? [value] (c14-c-signed-i64? value))
+(defn c14-equality-i64? [value] (c14-c-signed-i64? value))
 
 (defn c14-equality-facts-valid? [mir operation]
   (let [id (get operation :op-id) facts (get operation :facts) source (get operation :source)
@@ -1195,11 +1195,11 @@
 (defn c14-equality-constant? [mir operation]
   (if (c14-equality-facts-valid? mir operation)
     (let [payload (get operation :constant-payload)]
-      (c14-equality-all?
+      (if (map? payload) (c14-equality-all?
        [(= :constant (get operation :opcode)) (= :literal (get operation :source-operation))
         (= :gravity/integer (get operation :type)) (= [] (get operation :operands))
         (map? payload) (= #{:present? :value} (set (keys payload)))
-        (= true (get payload :present?)) (c14-equality-i64? (get payload :value))])) false))
+        (= true (get payload :present?)) (c14-equality-i64? (get payload :value))]) false)) false))
 
 (defn c14-equality-append [left right]
   (loop [index 0 result right]
@@ -1212,21 +1212,21 @@
             graph (get mir :data-flow-graph) values (get graph :values) edges (get graph :edges)]
         (if (map? blocks)
           (if (if (= 1 (count blocks)) true (= 4 (count blocks)))
-            (if (c14-equality-all? [(map? values) (<= (count values) 256)
-                                   (map? (get graph :definitions)) (<= (count (get graph :definitions)) 256)
-                                   (vector? edges) (<= (count edges) 65536)
-                                   (vector? (get graph :terminator-uses)) (<= (count (get graph :terminator-uses)) 256)])
-              (let [block-ids (vec (keys blocks)) value-ids (vec (keys values))]
-                (if (loop [index 0 total 0]
-                      (if (= index (count block-ids)) (if (> total 0) (<= total 256) false)
-                        (let [rows (get (get blocks (get block-ids index)) :instructions)]
-                          (if (vector? rows)
-                            (if (<= (+ total (count rows)) 256) (recur (+ index 1) (+ total (count rows))) false) false))))
-                  (loop [index 0 total 0]
-                    (if (= index (count value-ids)) true
-                      (let [uses (get (get values (get value-ids index)) :uses)]
-                        (if (vector? uses)
-                          (if (<= (+ total (count uses)) 65536) (recur (+ index 1) (+ total (count uses))) false) false)))) false)) false) false) false)) false) false))
+            (if (c14-equality-all? [(map? values) (map? (get graph :definitions))
+                                   (vector? edges) (vector? (get graph :terminator-uses))])
+              (if (c14-equality-all? [(<= (count values) 256) (<= (count (get graph :definitions)) 256)
+                                     (<= (count edges) 65536) (<= (count (get graph :terminator-uses)) 256)])
+                (let [block-ids (vec (keys blocks)) value-ids (vec (keys values))]
+                  (if (loop [index 0 total 0]
+                        (if (= index (count block-ids)) (if (> total 0) (<= total 256) false)
+                          (let [rows (get (get blocks (get block-ids index)) :instructions)]
+                            (if (vector? rows)
+                              (if (<= (+ total (count rows)) 256) (recur (+ index 1) (+ total (count rows))) false) false))))
+                    (loop [index 0 total 0]
+                      (if (= index (count value-ids)) true
+                        (let [uses (get (get values (get value-ids index)) :uses)]
+                          (if (vector? uses)
+                            (if (<= (+ total (count uses)) 65536) (recur (+ index 1) (+ total (count uses))) false) false)))) false)) false) false) false) false)) false) false))
 
 (defn c14-equality-operations [mir]
   (let [function (get (get mir :functions) (first (keys (get mir :functions))))
@@ -1363,12 +1363,13 @@
           (loop [index 0]
             (if (= index 2) true
               (let [edge (get edges index) use (get uses index)]
-                (if (c14-equality-all? [(c14-equality-id? (get operands index)) (map? edge) (map? use)
+                (if (c14-equality-all? [(map? edge) (map? use)])
+                (if (c14-equality-all? [(c14-equality-id? (get operands index))
                                        (= #{:index :edge} (set (keys edge)))
                                        (= #{:value-id :index :use} (set (keys use)))
                                        (c14-equality-index? (get edge :index)) (c14-equality-index? (get use :index))
                                        (= (get operands index) (get use :value-id))])
-                  (recur (+ index 1)) false)))) false)) false) false))
+                  (recur (+ index 1)) false) false)))) false)) false) false))
 
 (defn c14-equality-restore-rows [rows additions row-key]
   (if (vector? rows)
@@ -1406,7 +1407,7 @@
                     operation (assoc (assoc (assoc current :opcode :integer-eq) :operands (get delta :operand-ids))
                                      :constant-payload :not-applicable)
                     edges (get delta :edges) uses (get delta :uses)]
-                (if (c14-equality-all?
+                (if (if (map? payload) (c14-equality-all?
                      [(= :constant (get current :opcode)) (= :integer-eq (get current :source-operation))
                       (= :gravity/bool (get current :type)) (= [] (get current :operands))
                       (= #{:present? :value} (set (keys payload))) (= true (get payload :present?))
@@ -1415,7 +1416,7 @@
                          [(get (get edges 0) :edge) (get (get edges 1) :edge)])
                       (< (get (get edges 0) :index) (get (get edges 1) :index))
                       (= [(c14-equality-use operation 0) (c14-equality-use operation 1)]
-                         [(get (get uses 0) :use) (get (get uses 1) :use)])])
+                         [(get (get uses 0) :use) (get (get uses 1) :use)])]) false)
                   (let [graph (get output :data-flow-graph) values (get graph :values)
                         restored-edges (c14-equality-restore-rows (get graph :edges) edges :edge)
                         restored-values

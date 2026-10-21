@@ -1018,11 +1018,11 @@
 (defn c13-equality-constant? [mir operation]
   (if (c13-equality-facts-valid? mir operation)
     (let [payload (get operation :constant-payload)]
-      (c13-equality-all?
+      (if (map? payload) (c13-equality-all?
        [(= :constant (get operation :opcode)) (= :literal (get operation :source-operation))
         (= :gravity/integer (get operation :type)) (= [] (get operation :operands))
         (map? payload) (= #{:present? :value} (set (keys payload)))
-        (= true (get payload :present?)) (c13-equality-i64? (get payload :value))])) false))
+        (= true (get payload :present?)) (c13-equality-i64? (get payload :value))]) false)) false))
 
 (defn c13-equality-append [left right]
   (loop [index 0 result right]
@@ -1035,21 +1035,21 @@
             graph (get mir :data-flow-graph) values (get graph :values) edges (get graph :edges)]
         (if (map? blocks)
           (if (if (= 1 (count blocks)) true (= 4 (count blocks)))
-            (if (c13-equality-all? [(map? values) (<= (count values) 256)
-                                   (map? (get graph :definitions)) (<= (count (get graph :definitions)) 256)
-                                   (vector? edges) (<= (count edges) 65536)
-                                   (vector? (get graph :terminator-uses)) (<= (count (get graph :terminator-uses)) 256)])
-              (let [block-ids (vec (keys blocks)) value-ids (vec (keys values))]
-                (if (loop [index 0 total 0]
-                      (if (= index (count block-ids)) (if (> total 0) (<= total 256) false)
-                        (let [rows (get (get blocks (get block-ids index)) :instructions)]
-                          (if (vector? rows)
-                            (if (<= (+ total (count rows)) 256) (recur (+ index 1) (+ total (count rows))) false) false))))
-                  (loop [index 0 total 0]
-                    (if (= index (count value-ids)) true
-                      (let [uses (get (get values (get value-ids index)) :uses)]
-                        (if (vector? uses)
-                          (if (<= (+ total (count uses)) 65536) (recur (+ index 1) (+ total (count uses))) false) false)))) false)) false) false) false)) false) false))
+            (if (c13-equality-all? [(map? values) (map? (get graph :definitions))
+                                   (vector? edges) (vector? (get graph :terminator-uses))])
+              (if (c13-equality-all? [(<= (count values) 256) (<= (count (get graph :definitions)) 256)
+                                     (<= (count edges) 65536) (<= (count (get graph :terminator-uses)) 256)])
+                (let [block-ids (vec (keys blocks)) value-ids (vec (keys values))]
+                  (if (loop [index 0 total 0]
+                        (if (= index (count block-ids)) (if (> total 0) (<= total 256) false)
+                          (let [rows (get (get blocks (get block-ids index)) :instructions)]
+                            (if (vector? rows)
+                              (if (<= (+ total (count rows)) 256) (recur (+ index 1) (+ total (count rows))) false) false))))
+                    (loop [index 0 total 0]
+                      (if (= index (count value-ids)) true
+                        (let [uses (get (get values (get value-ids index)) :uses)]
+                          (if (vector? uses)
+                            (if (<= (+ total (count uses)) 65536) (recur (+ index 1) (+ total (count uses))) false) false)))) false)) false) false) false) false)) false) false))
 
 (defn c13-equality-operations [mir]
   (let [function (get (get mir :functions) (first (keys (get mir :functions))))

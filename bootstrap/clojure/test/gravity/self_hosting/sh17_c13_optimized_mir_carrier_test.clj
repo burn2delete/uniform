@@ -171,7 +171,16 @@
               (is (not= expected candidate))))
           (doseq [candidate [(assoc-in result [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload :value]
                                      (not (get-in comparison [:constant-payload :value])))
+                             (assoc-in result [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload] 7)
                              (assoc-in result [:optimized-mir :data-flow-graph :values "comparison" :constant-payload :value] :not-a-bool)
+                             (assoc-in result [:optimized-mir :type-table "comparison:type" :type] :gravity/integer)
+                             (assoc-in result [:optimized-mir :source-map "comparison" :origin-id] "changed")
+                             (assoc-in result [:optimized-mir :safety-table "left:safety" :outcome] :unsafe-island)
+                             (assoc-in result [:optimized-mir :functions 'main :blocks entry :instructions 2 :block-id] "other")
+                             (update-in result [:optimized-mir :data-flow-graph :edges]
+                                        conj (first (get-in mir [:data-flow-graph :edges])))
+                             (update-in result [:optimized-mir :data-flow-graph :values "left" :uses]
+                                        conj (assoc (first (get-in mir [:data-flow-graph :values "left" :uses])) :operand-index 9))
                              (assoc-in result [:decision-record :changed-operations] ["left"])
                              (assoc-in result [:invalidation-ledger :facts-invalidated] [])
                              (assoc-in result [:verifier-replay :artifact] :gravity/c13-post-pass-verifier-replay)]]
@@ -214,7 +223,21 @@
         (is (true? (invoke-c14-kernel 'c14-c11-independent-verifier-valid? [mir original-report])))
         (is (false? (invoke-c14-kernel 'c14-c11-independent-verifier-valid? [output original-report])))
         (is (true? (invoke-c14-kernel 'c14-c11-independent-verifier-valid?
-                                    [(invoke-c14-kernel 'c14-equality-original-mir [result]) original-report])))))))
+                                    [(invoke-c14-kernel 'c14-equality-original-mir [result]) original-report]))))
+      (doseq [malformed [(assoc-in mir [:functions 'main :blocks] 7)
+                         (assoc-in mir (conj path) 7)
+                         (assoc-in mir (conj path) (vec (repeat 257 (get-in mir (conj path 0)))))
+                         (assoc-in mir [:data-flow-graph :edges] 7)
+                         (assoc-in mir [:data-flow-graph :edges] (vec (repeat 65537 {})))
+                         (assoc-in mir [:data-flow-graph :values "left" :uses] 7)
+                         (assoc-in mir [:data-flow-graph :values "left" :uses] (vec (repeat 65537 {})))]]
+        (is (nil? (invoke 'c13-equality-selection [malformed])))
+        (is (nil? (gravity.bootstrap-c13-comparison/selection malformed))))
+      (let [{:keys [evidence]} (development-comparison-input 2 3 false)]
+        (doseq [malformed [(assoc-in mir [:functions 'main :blocks] 7) (assoc-in mir (conj path) 7)]]
+          (let [result (invoke 'c13-build-bounded-identity-optimized-mir [malformed evidence])]
+            (is (= :rejected (:status result)))
+            (is (= "C13-VERIFY" (:diagnostic result)))))))))
 
 (def ^:private c13-envelope-keys
   ;; This set is copied from C14's c14-c13-envelope-valid? contract.  Keep it
