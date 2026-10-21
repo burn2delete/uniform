@@ -10148,6 +10148,24 @@ three-target and substitution controls, the batch passes 6 tests and 533
 assertions. These remain normalized-input and recomputation checks, not fresh
 upstream authentication, native execution or milestone-completion evidence.
 
+### C14 scalar local forwarding: development repair
+
+The internal C14 C/LLVM/Wasm eligibility gates now require `:local` and
+`:local-binding` declarations to match the actual LAST operand's canonical
+scalar type. Previously an Integer value could be forwarded unchanged while
+declared Bool. Nonempty forwarding arity remains unchanged, including discarded
+earlier operands; no unary rule is imposed. Existing source/effect/reference
+gates keep priority, and unrelated forwarding families are unchanged.
+
+The `34b75945` RED regression recorded 222 passes and 108 failures in 330
+assertions, with no errors. Candidate `e3fd7b11` passed eight tests and 873
+assertions (330 new plus 543 adjacent); the separate boundary run passed
+six tests and 11 assertions: 14/884 across two passing invocations. LOC
+separately passed 2,021 files, zero exceptions, maximum 250. The new tests
+invoke the original three internal whole-surface gates and evaluator on
+supplied MIR DATA. Adjacent public normalized SH-17 controls do not turn this
+into a fresh authenticated C11/C13 packet, native execution or migration proof.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established

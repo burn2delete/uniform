@@ -495,6 +495,18 @@ two declared Integers and a Bool result. Check signatures after existing
 duplicate-definition and operand-defined gates. This does not select integer
 widths, overflow behavior, coercion or constant-value typing.
 
+For the distinct internal C14 scalar-MIR eligibility gates, run
+`sh17-local-forwarding-preserves-the-last-operand-scalar-type` in the same
+namespace. `:local` and `:local-binding` must declare the canonical scalar type
+of the actual LAST referenced operand. Existing nonempty arity is retained:
+discarded earlier operands do not impose a unary rule or determine the result
+type. Preserve earlier artifact, verifier, source, effect and reference gates;
+leave sequence, lexical-scope and function-boundary families unchanged.
+The three existing C/LLVM/Wasm whole-surface gates and original evaluator are
+checked with supplied MIR DATA, including Integer, Bool and Nil forwarding and
+incompatible declarations. Adjacent public normalized SH-17 tests are separate;
+this is not a fresh authenticated C11/C13 packet, native execution or migration.
+
 ### C11 node-local preflight diagnostics
 
 For source-valid checked-Core nodes rejected by the existing single-diamond
