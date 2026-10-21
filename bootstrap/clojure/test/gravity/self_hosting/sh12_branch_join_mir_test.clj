@@ -152,7 +152,42 @@
           (is (= ['flag] (get-in function [:attributes :params])))
           (is (= [:gravity/bool] (get-in function [:type :params])))
           (is (= :gravity/bool (get-in function [:type :return])))
+          (is (= [(get-in template [:type-facts (:node-id binder) :type-id])]
+                 (get-in template [:typed-core :functions (:node-id function) :params])))
+          (is (= :resolved-bool-parameter-declaration
+                 (get-in template [:type-facts (:node-id binder) :producer-rule])))
+          (is (= :proven-safe (get-in binder [:safety :outcome])))
+          (is (true? (get-in template [:dependency-order-graph :all-lexical-bindings-resolve?])))
+          (is (= evidence (:resolved-parameter template)))
           (is (= :rejected (:status (build-mir template))))
+          (is (= :rejected (:status (invoke c11-plan 'sh13-run-branch-join-mir [template {}]))))
+          ;; Private replay validates DATA premises, not C5 authentication.
+          ;; Reconstruction from source, not a caller-provided status, owns the
+          ;; coherent-input substitution boundary.
+          (let [substituted (assoc-in input [:resolved-parameter :sh06-artifact-id] "substituted")
+                forged (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [substituted])]
+            (is (= :rejected (:status (verify (:artifact-template forged))))))
+          (doseq [malformed [(dissoc input :resolved-parameter)
+                             (assoc-in input [:stage2-plan :kind] :gravity/stage2-hosted-core-compiled-plan)
+                             (update input :stage2-plan dissoc :compiler-artifact-plan?)
+                             (assoc-in input [:stage2-plan :compiler :compiled-by] :gravity-source)
+                             (assoc-in input [:stage2-plan :functions 'main :arity] 2)
+                             (assoc-in input [:stage2-plan :functions 'main :params] '[other])
+                             (assoc-in input [:resolved-parameter :extra] true)
+                             (assoc-in input [:resolved-parameter :source-content-hash] "other-source")
+                             (assoc-in input [:resolved-parameter :parameter-index] 1)
+                             (assoc-in input [:resolved-parameter :coordinates] [])
+                             (assoc-in input [:resolved-parameter :coordinates 1 :c2-form-id] "missing")
+                             (assoc-in input [:resolved-parameter :parameter-binding :binding-class] :core)
+                             (assoc-in input [:resolved-parameter :parameter-binding :definition-syntax-id] "other")
+                             (assoc-in input [:resolved-parameter :parameter-binding :namespace] 'other)
+                             (assoc-in input [:resolved-parameter :type-binding :kind] :var)
+                             (assoc-in input [:resolved-parameter :type-binding :namespace] 'other)
+                             (assoc-in input [:resolved-parameter :type-binding :name] 'I64)
+                             (assoc-in input [:resolved-parameter :type-binding :package :version] "forged")
+                             (assoc-in input [:resolved-parameter :type-resolution :position] :expression)
+                             (assoc-in input [:resolved-parameter :type-resolution :upstream-binding-id] "other")]]
+            (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [malformed])))))
           (doseq [candidate [(assoc-in template [:core-nodes 0 :type] :gravity/integer)
                              (assoc-in template [:core-nodes 0 :attributes :parameter-index] 1)
                              (assoc-in template [:core-nodes 1 :operands] [])
