@@ -7020,6 +7020,62 @@ general conversion-result inference and whole compiler-validator execution
 remain outside this increment. Focused and traceability results do not close
 authoritative migration, SH-07, self-hosting or release gates.
 
+### Finite Integer-Set membership: development increment
+
+The existing C7, C8, typed emitter and local runtime now support ordinary
+`contains?` over independently finite literal Sets of generic
+`:gravity.type/integer` with the same generic Integer needle. This covers the
+reader's codepoint catalogs and compiler arity catalogs as motivating
+subexpressions; it does not establish execution or typing of those whole
+helpers. L2/L5, STD3/STD5, D8/D9 and R4 govern the slice. Literal Set construction
+is supported in the existing emitter/runtime helpers and existing IR; runtime
+inventory remains 56 functions and all nine protected carrier predicates are
+unchanged.
+
+Membership compares original Integer values, without arithmetic, conversion,
+rounding or i64 narrowing. Static domains are literal positional Sets of at
+most 1,024 Integer members. Mixed, unknown, bare/homogeneous and fixed-width
+member domains remain rejected. Every normal operand is validated even when
+another transfers; empty Set plus Never retains the prior ambiguous non-invoked
+route. C7 descriptors, constraints and call facts are independently reconstructed
+by C8 and the emitter. Operand evaluation remains once, Set then needle;
+primitive effects remain empty while literal Set allocation effects survive.
+
+Runtime validation precedes comparison, complete pairwise uniqueness precedes
+hit/miss or host insertion, and the full worst-case logical reservation precedes
+results. Integer units count validated leaves, never decimal formatting. They
+establish no precision, provider CPU or heap bound; runtime work rejection can
+precede a result even for a statically accepted width. No Integer Set carrier,
+`conj`, equality, refinement, reader or foreign/String boundary is added.
+
+Retained finite failures are not erased: the initial domain RED was 1 / 117
+(43 failures); initial integration was 6 / 577 (eight failures: the missing
+Integer Set IR gate and one diagnostic expectation); an earlier narrow
+affected selection was 9 / 1,360 (one legacy Integer-rejection expectation).
+The corrected checks below supersede those expectations, not their receipts.
+
+The focused partition passed 20 tests / 2,742 assertions and the separate
+constructor/runtime/paired-fixture partition passed 3 / 211. One actual leased
+source integration then passed 1 / 144: the G positive reached fresh C7 and C8
+verification, emitted six Set literals and six membership calls, and executed
+one closed entry as `[false true true false true true]`. The G Decimal-member
+negative was rejected by C7. Its C7 verifier was invoked, but that negative report
+status was not asserted or printed. QST has byte/parser parity only. These are
+24 distinct selectors / 3,097 passing assertions across three invocations,
+not one combined run. Boundary checks passed 6 / 11; LOC passed for 2,022 files,
+zero exceptions, maximum 250 physical lines.
+
+Raw source evidence uses the
+`/tmp/integer-set-membership-source-lease-20261021` prefix: original PTY 8298,
+natural exit 0, all 13 inputs unchanged, canonical heavy lock and memory-heavy
+lease released, no Java survivors. Two observed polling intervals exceeded the
+planned 30 seconds (35.42s and 37.38s); the postflight retains that qualification.
+The single reconciliation with main `6705a23a` produced `ce979be4`; all 11
+owned code/test/fixture byte sequences were preserved. Unrelated SH22 request
+APIs do not establish this ordinary-source intrinsic or require its replay.
+Monitoring was not hard OS containment. Public fresh C6, authoritative migration,
+native, whole-helper, self-hosting and release evidence remain unrun.
+
 ### Finite Symbol-Set membership: development increment
 
 The existing C7, effects, typed emitter and runtime owners implement binary
