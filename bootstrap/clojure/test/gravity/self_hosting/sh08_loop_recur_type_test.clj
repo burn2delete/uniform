@@ -1960,7 +1960,7 @@
           [(first (:recur-transfers core)) 1 :other-binding
            {:core core :types types :nodes nodes :forms forms :bindings bindings :aliases {}
             :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
-            :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))} 65536])))))
+            :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))} 65536]))))
     (is (= :incoherent-loop-transfer
            (get-in (check (assoc-in working [:recur-transfers 0 :tail-position] false) types 65536) [:issues 0 :reason])))
     (let [empty (assoc types :arg0 empty-type :result empty-type :branch empty-type :loop-node empty-type)
@@ -2007,7 +2007,7 @@
       (is (= :rejected (:status (walk (assoc-in env [:types :alias-use] :gravity.type/unknown)))))
       (is (= :circular-loop-member-grounding
              (:reason (walk (update-in env [:aliases :member] assoc :initializer-node-id :alias-use
-                             :initializer-form-id :alias-form :initializer-syntax-id :alias-form)))))))
+                             :initializer-form-id :alias-form :initializer-syntax-id :alias-form))))))))
 
 (deftest symbol-set-loop-effect-invariant-development-kernel
   (let [{:keys [core types nodes forms bindings carrier rows context]} (symbol-set-loop-data)
