@@ -2534,6 +2534,88 @@
                       input (filter #{1 2} positions))]
     (vector-slice-established input)))
 
+(defn- sha-prefix-comparison-input [text expected positions]
+  ;; Composition of existing owners in normalized DATA, not source admission.
+  (let [inner (if (nil? positions) (vector-slice-input text 0 7) (vector-slice-transfer-input text 20 1 positions))
+        values (vec expected) ids (mapv #(keyword (str "prefix-character-" %)) (range (count values)))
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :kind kind :value value :parent-form-id parent :child-form-ids children})
+        binding (assoc (get-in inner [:bindings :slice-binding]) :binding-id :prefix-binding :name '=
+                       :definition-syntax-id :prefix-definition)
+        operator {:node-id :prefix-operator :core-form :reference :children [] :resolved-binding-ids [:prefix-binding]
+                  :attributes {:symbol '= :position :operator :binding-id :prefix-binding :binding-class :core
+                               :definition-syntax-id :prefix-definition} :source (source :prefix-operator) :evaluation {:order []}}
+        characters (mapv (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                                        :source (source id) :attributes {:literal-kind :character :value value}
+                                        :evaluation {:kind :value :order []}}) ids values)
+        expected-node {:node-id :prefix-expected :core-form :collection-literal :children ids :resolved-binding-ids []
+                       :source (source :prefix-expected)
+                       :attributes {:literal-kind :vector :element-count (count ids) :source-value values}
+                       :evaluation {:kind :left-to-right :order (mapv #(hash-map :index %1 :core-node-id %2) (range) ids)}}
+        children [:prefix-operator :slice-call :prefix-expected]
+        node {:node-id :prefix-call :core-form :call :children children :resolved-binding-ids [:prefix-binding]
+              :attributes {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+              :source (source :prefix-call) :evaluation {:owner-function-syntax-id nil :kind :operator-then-arguments
+                                                        :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}}
+        call {:core-node-id :prefix-call :operator-node-id :prefix-operator :operator-binding-id :prefix-binding
+              :argument-node-ids [:slice-call :prefix-expected] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal 2 :call-core-node-id :prefix-call :caller-function-syntax-id nil :caller-function-core-node-id nil
+              :callee-binding-id :prefix-binding :callee-definition-syntax-id :prefix-definition
+              :callee-function-syntax-id nil :callee-function-core-node-id nil
+              :argument-core-node-ids [:slice-call :prefix-expected] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        added (into [operator] (concat characters [expected-node node])) node-list (into (get-in inner [:core :nodes]) added)
+        core (-> (:core inner) (assoc :nodes node-list) (update :calls conj call) (update :call-edges conj edge))
+        forms (-> (:forms inner) (assoc-in [:slice-call :parent-form-id] :prefix-call)
+                  (assoc :prefix-operator (form :prefix-operator :symbol '= :prefix-call [])
+                         :prefix-expected (form :prefix-expected :vector values :prefix-call ids)
+                         :prefix-call (form :prefix-call :list :prefix-call nil children))
+                  (into (map (fn [id value] [id (form id :character value :prefix-expected [])]) ids values)))
+        types (merge (:types inner) (zipmap ids (repeat :gravity.type/character))
+                     {:prefix-expected {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat (count ids) :gravity.type/character))}})]
+    {:module (:module inner) :core core :node node :call call :edge edge :nodes (into {} (map (juxt :node-id identity) node-list))
+     :bindings (assoc (:bindings inner) :prefix-binding binding) :types types :forms forms :inner inner
+     :binding-types types :products {:calls (:calls core) :call-edges (:call-edges core) :module (:module inner)}}))
+
+(defn- sha-prefix-comparison-established [input]
+  (let [input (vector-slice-established input) {:keys [core nodes bindings forms node call edge]} input
+        slice-call (second (:calls core)) slice-edge (second (:call-edges core))
+        slice (invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) slice-call slice-edge nodes bindings (:types input) forms 65536])
+        types (assoc (:types input) :slice-operator (:descriptor slice) :slice-call (:type slice))
+        comparison (invoke-c7 'sh08-ve-derive [core node call edge nodes bindings types forms 65536])]
+    (assoc input :slice slice :comparison comparison
+                 :types (assoc types :prefix-operator (:descriptor comparison) :prefix-call (:type comparison)))))
+
+(deftest sh08-sha-prefix-comparison-development-kernel
+  (let [text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"]
+    (doseq [[value positions] [[text nil] [(str "sha257:" (subs text 7)) nil] [text 0] [text 1] [text 2]]]
+      (let [raw (sha-prefix-comparison-input value "sha256:" positions)
+            {:keys [core node call edge nodes bindings types forms child slice comparison]} (sha-prefix-comparison-established raw)
+            descriptor (:descriptor comparison)
+            check #(invoke-c7 'sh08-ve-inferred-call [core node call edge nodes bindings %1 %2])
+            measured (check types 65536)]
+        (is (= :accepted (:status child) (:status slice) (:status comparison) (:status measured)))
+        (is (= (if (nil? positions) :gravity.type/bool :gravity.type/never) (:type comparison)))
+        (is (= :gravity.type/applied-vector-equality (:kind descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= measured (check types (:work-count measured))))
+        (is (= :vector-equality-work-limit (:reason (check types (dec (:work-count measured))))))
+        (is (= :rejected (:status (check (assoc-in types [:prefix-operator :equality-policy :leaves] :compare-types) 65536))))
+        (when (nil? positions)
+          (let [context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                         :lookup-bindings (vec (vals bindings)) :shape-call-products (:products raw)}
+                inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                           [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} (:binding-types raw) 10 context])]
+            (is (= :converged (:convergence-status inferred)))
+            (is (= [] (:diagnostics inferred)))
+            (is (= :gravity.type/bool (get-in inferred [:type-table :prefix-call])))
+            (is (= #{:sh08-string-character-vector-v1 :sh08-vector-slice-v1 :sh08-vector-equality-v1}
+                   (set (map :producer-rule (:constraints inferred)))))))))))
+
 (deftest sh08-vector-slice-inference-development-kernel
   (let [text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
         finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec (repeat % :gravity.type/character)))]
