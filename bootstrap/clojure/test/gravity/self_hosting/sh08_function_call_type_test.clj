@@ -10061,6 +10061,57 @@
     (is (= :authenticated-b47-request-required
            (get-in result [:diagnostics 0 :actual-type])))))
 
+(defn- observe-match-preimage-operations [core preimage projection]
+  ;; Observe only original operations in this helper's plan; never alter values.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
+        unary (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin)
+        original-scoped @scoped original-builtin @builtin original-unary @unary
+        plans (atom []) reads (atom []) tails (atom 0)
+        result (with-redefs-fn
+          {scoped (fn [runtime plan callee args scope]
+                    (if (= 'sh08-ft-match-preimage-valid? callee)
+                      (do (swap! plans conj plan)
+                          (try (original-scoped runtime plan callee args scope) (finally (swap! plans pop))))
+                      (original-scoped runtime plan callee args scope)))
+           unary (fn [runtime plan callee value]
+                   (when (and (seq @plans) (identical? (peek @plans) plan) (= 'rest callee) (vector? value))
+                     (swap! tails inc))
+                   (original-unary runtime plan callee value))
+           builtin (fn [& args]
+                     (let [callee (nth args (- (count args) 2)) values (last args)]
+                       (when (and (seq @plans) (identical? (peek @plans) (nth args (- (count args) 3))))
+                         (when (and (= 'rest callee) (vector? (first values))) (swap! tails inc))
+                         (when (= 'get callee)
+                           (let [value (first values) side (cond (identical? value preimage) :preimage
+                                                                (identical? value core) :core)]
+                             (when side (swap! reads conj [side (second values)])))))
+                       (apply original-builtin args)))}
+          #(invoke-c7 'sh08-ft-match-preimage-valid? [core preimage projection]))]
+    {:result result :reads @reads :vector-tail-calls @tails}))
+
+(deftest sh08-match-preimage-fixed-fields-development-kernel
+  ;; Private equality DATA only. This does not construct an authenticated artifact.
+  (let [families [:match-branch-records :match-pattern-records :match-decision-skeletons]
+        core (assoc (into {} (map (fn [family] [family [{:kind family :source {:version :original}
+                                                        :payload [true :member]}]]) families)) :unselected :core)]
+    (doseq [projection [nil :projection {:ignored true}] mask (range 8)]
+      (let [preimage (reduce (fn [value [i family]] (if (bit-test mask i)
+                                                    (assoc-in value [family 0 :source :version] :changed) value))
+                            (assoc core :unselected :preimage) (map-indexed vector families))
+            compared (or (first (keep-indexed (fn [i _] (when (bit-test mask i) (inc i))) families)) 3)
+            expected-reads (vec (mapcat (fn [family] [[:preimage family] [:core family]]) (take compared families)))
+            observed (observe-match-preimage-operations core preimage projection)]
+        (is (= (zero? mask) (:result observed)))
+        (is (= expected-reads (:reads observed)))
+        (is (zero? (:vector-tail-calls observed)))))
+    (doseq [[left right expected]
+            [[{} {} true] [{} {:match-branch-records nil} true] [{:match-branch-records nil} {} true]
+             [{} {:match-branch-records []} false] [{:match-pattern-records []} {} false]
+             [{:match-decision-skeletons []} {} false]]]
+      (is (= expected (invoke-c7 'sh08-ft-match-preimage-valid? [left right nil]))))
+    (is (false? (invoke-c7 'sh08-ft-b47-identity-preimage-valid? [(assoc core :identity-preimage core) []])))))
+
 (deftest sh08-b47-semantic-identity-normalization-is-exact
   (let [projection-id (sha-id "a")
         binding-id (sha-id "b")
