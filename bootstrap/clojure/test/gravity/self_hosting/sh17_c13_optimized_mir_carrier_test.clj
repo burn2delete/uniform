@@ -603,6 +603,77 @@
             (is (false? (:result observed)))
             (is (= [] (:calls observed)))))))))
 
+(deftest sh17-development-host-llvm-consumes-c13-folded-bools
+  ;; Original pure host consumer parity on supplied DATA; no preflight,
+  ;; sealed public artifact, tool invocation or native observation is claimed.
+  (let [execute (fn [plan function arguments]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function
+                   {:engine :gravity-sh17-development-host-llvm :compiler-artifact-plan? true} plan function arguments))]
+    (doseq [diamond? [false true]
+            [left right repeated?] [[2 2 false] [2 3 false]
+                                    [-9223372036854775808 9223372036854775807 false]
+                                    [9223372036854775807 0 true]]]
+      (let [{:keys [mir evidence]} (if diamond?
+                                    (development-diamond-input left right repeated? 42 7)
+                                    (development-b3-comparison-input left right repeated?))
+            folded (execute @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+            output (:optimized-mir folded) function (get-in output [:functions 'main])
+            order (bootstrap/p15-s23-b3-llvm-block-order output function)
+            operations (bootstrap/p15-s23-b3-llvm-operation-sequence function order)
+            labels (bootstrap/p15-s23-b3-llvm-block-labels order)
+            positions (into {} (map-indexed (fn [index op] [(:op-id op) index]) operations))
+            original-ops (bootstrap/p15-s23-b3-llvm-operation-sequence (get-in mir [:functions 'main]) order)
+            comparison (first (filter #(= "comparison" (:op-id %)) operations))
+            policy {:fact-bindings (get-in folded [:semantic-identity :fact-bindings])
+                    :supported-operation-ids (get-in folded [:semantic-identity :operation-order])}
+            lowering (execute @development-b3-plan 'b3-build-bounded-llvm-x86_64-linux [output])
+            original-lowering (execute @development-b3-plan 'b3-build-bounded-llvm-x86_64-linux [mir])
+            result-id (if diamond? "join-value" "comparison")]
+        (is (= :accepted (:status folded)))
+        (is (= folded (bootstrap/p15-s23-c13-expected-record mir evidence)))
+        (is (true? (execute @c14-plan 'c14-equality-translation-valid? [folded policy])))
+        (is (= mir (execute @c14-plan 'c14-equality-original-mir [folded])))
+        (is (= :constructed-unverified (:status lowering)))
+        (is (= :pending-host-content-binding (get-in lowering [:verified-input-closure :status])))
+        (is (= (vec (repeat (count operations) nil))
+               (mapv #(bootstrap/p15-s23-b3-llvm-operation-rejection operations % labels) operations)))
+        (is (= (mapv :llvm-instruction (:operation-records lowering))
+               (mapv #(bootstrap/p15-s23-b3-llvm-operation-line output % operations positions labels) operations)))
+        (is (= (mapv :llvm-instruction (:operation-records original-lowering))
+               (mapv #(bootstrap/p15-s23-b3-llvm-operation-line mir % original-ops positions labels) original-ops)))
+        (is (= (:semantic-result lowering)
+               (get (bootstrap/p15-s23-b3-llvm-evaluate-operations operations) result-id)
+               (get (bootstrap/p15-s23-b3-llvm-evaluate-operations original-ops) result-id)))
+        (is (= (:expected-exit-code lowering)
+               (bootstrap/p15-s23-b3-llvm-scalar-exit-code
+                (get (bootstrap/p15-s23-b3-llvm-evaluate-operations operations) result-id))))
+        (doseq [candidate [(assoc comparison :source-operation :integer-lt)
+                           (assoc comparison :type :gravity/integer)
+                           (assoc comparison :operands ["left"])
+                           (assoc comparison :operands nil)
+                           (assoc comparison :operands '())
+                           (assoc comparison :operands {})
+                           (assoc comparison :operands 7)
+                           (assoc comparison :constant-payload {:present? true :value nil})
+                           (assoc comparison :constant-payload {:present? true :value 1})
+                           (assoc comparison :constant-payload {:present? true})
+                           (assoc comparison :constant-payload {:present? false :value true})
+                           (assoc comparison :constant-payload {:present? true :value true :extra 0})]]
+          (is (= :unsupported-constant-source-operation
+                 (bootstrap/p15-s23-b3-llvm-operation-rejection operations candidate labels))))
+        (doseq [[candidate reason] [[(assoc comparison :effects #{:io/write}) :program-effects-unsupported]
+                                    [(assoc comparison :capabilities #{:io/stdout}) :program-capabilities-unsupported]
+                                    [(assoc comparison :opcode :not-supported) :unsupported-mir-opcode]]]
+          (is (= reason (bootstrap/p15-s23-b3-llvm-operation-rejection operations candidate labels))))
+        ;; Legacy source branches are supplied controls, not a rewrite of the
+        ;; actual C13 output's retained comparison ancestry.
+        (doseq [source-operation [:literal :implicit-nil]]
+          (is (nil? (bootstrap/p15-s23-b3-llvm-operation-rejection
+                     operations (assoc comparison :source-operation source-operation :operands nil) labels)))
+          (is (= :bounded-scalar-constant-payload
+                 (bootstrap/p15-s23-b3-llvm-operation-rejection
+                  operations (assoc comparison :source-operation source-operation :constant-payload {:present? true :value 1}) labels))))))))
+
 (def ^:private c13-envelope-keys
   ;; This set is copied from C14's c14-c13-envelope-valid? contract.  Keep it
   ;; explicit: C14 source is authoritative for the C13 carrier envelope.
