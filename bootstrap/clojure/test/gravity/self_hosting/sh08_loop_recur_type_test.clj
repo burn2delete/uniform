@@ -2955,3 +2955,36 @@
           (is (= :accepted (get-in observed [:result :status])))
           (is (zero? (get-in observed [:formats :keyword])))
           (is (pos? (get-in observed [:formats :symbol]))))))))
+
+(deftest vector-first-empty-diagnostic-oracle-development-kernel
+  ;; Original derivation and diagnostic rendering on normalized DATA, not source replay.
+  (let [owner 'gravity.self-hosting.sh08-function-call-type-test
+        input (ns-resolve owner 'list-query-input) derive (ns-resolve owner 'list-query-derived)
+        empty-vector {:kind :gravity.type/vector :shape :literal :element-types []}
+        span {:line-start 1 :column-start 1 :line-end 1 :column-end 11}]
+    (doseq [[arity rule reason constraint?]
+            [[1 "C7-ANNOTATION" :vector-first-nonempty-complete-positional-type-required false]
+             [2 "C7-TYPE-MISMATCH" :vector-first-arity-mismatch true]]]
+      (let [data (input 'first (vec (repeat arity empty-vector))) rejected (derive data)
+            node (-> (:node data) (assoc-in [:source :semantic-span] span)
+                     (assoc-in [:source :origin-chain] [:normalized-origin])
+                     (assoc-in [:source :generated-origin] []))
+            issue (assoc (select-keys rejected [:rule :reason :expected :actual]) :node node)
+            diagnostics (c7-invoke 'sh08-ft-render-inference-diagnostics [[issue] {(:node-id node) node} (:module data)])
+            diagnostic (first diagnostics)]
+        (is (= :rejected (:status rejected)))
+        (is (= 1 (count diagnostics)))
+        (is (= [rule reason] ((juxt :rule :reason) diagnostic)))
+        (is (= (vec (repeat arity empty-vector)) (:actual-type diagnostic)))
+        (is (= (:node-id node) (:core-node-id diagnostic)))
+        (is (= (get-in node [:source :syntax-id]) (:syntax-id diagnostic)))
+        (is (= (first (:resolved-binding-ids node)) (:binding-id diagnostic)))
+        (is (= span (:source-span diagnostic)))
+        (is (= (select-keys (:module data) [:profile :target]) (select-keys diagnostic [:profile :target])))
+        (is (= [:normalized-origin] (:origin-chain diagnostic)))
+        (is (= [] (:generated-origin diagnostic)))
+        (is (contains? diagnostic :constraint-id))
+        (is (if constraint? (map? (:constraint-id diagnostic)) (nil? (:constraint-id diagnostic))))
+        (is (contains? (:diagnostic-id-request diagnostic) :constraint-id))
+        (is (= (:constraint-id diagnostic) (get-in diagnostic [:diagnostic-id-request :constraint-id])))
+        (is (string? (:diagnostic-id diagnostic)))))))

@@ -32791,7 +32791,10 @@
       (is (some? (:syntax-id diagnostic)))
       (is (some? (:binding-id diagnostic)))
       (is (map? (:source-span diagnostic)))
-      (is (map? (:constraint-id diagnostic)))
+      (is (contains? diagnostic :constraint-id))
+      (is (nil? (:constraint-id diagnostic)))
+      (is (contains? (:diagnostic-id-request diagnostic) :constraint-id))
+      (is (= (:constraint-id diagnostic) (get-in diagnostic [:diagnostic-id-request :constraint-id])))
       (println (pr-str {:vector-first-symbol-loop-witness-typing-negative diagnostics :timing (:development-timing negative)})))
     (println (pr-str {:vector-first-symbol-loop-witness-composition :completed :runtime-result (:entrypoint-result execution)
                       :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
