@@ -2557,7 +2557,8 @@ empty, absent and present insertion consumed by `count`, plus a Character-Set
 with Symbol value rejection. Fresh C6 development sessions/replay are not
 fresh public C6 verification; QST is parser-only. That original composition
 does not establish the newer carrier's repeated-insertion/storage boundary.
-Symbol-Set equality and dynamic loop joins remain separate work.
+Symbol-Set equality and general loop joins remain separate work; the grounded
+Symbol-Set loop subset below has its own checks.
 The compiler's seen-Symbol scan is only a motivating subexpression, not an
 executed whole helper. Reuse valid unchanged evidence without a stamp refresh.
 
@@ -2569,8 +2570,8 @@ V2 insertion from an independently finite Symbol Set establishes it; subsequent
 Symbol insertion preserves it. It supports existing `count`, ordinary predicates,
 local bindings, inferred zero-argument returns and bounded List storage. It
 does not establish extent, presence, annotation, private/recursive signature,
-equality or finite-empty-to-carrier loop-join evidence. The membership consumer
-below is a separate checked increment. Runtime
+equality or finite-empty-to-carrier loop-join evidence by itself. The membership
+consumer below is a separate checked increment. Runtime
 insertion remains unchanged; edit the existing C7, effects and typed emitter
 owners, not String-only private/signature predicates.
 
@@ -2626,6 +2627,41 @@ Keyword-needle typing rejection. Q is parser-only; development C6 replay is not
 fresh public C6 verification. This does not execute the motivating compiler
 helper or add private/recursive signatures, dynamic loop joins, Set equality,
 native execution, authoritative migration or milestone completion.
+
+### Grounded Symbol-Set loops: focused feedback
+
+L5 permits an independently empty persistent Set loop slot to acquire a Symbol
+member invariant from independently grounded normal re-entry. Preserve the
+actual initializer type and all original transfers; do not equate the empty
+initializer with its invariant. Whole-tuple Never transfers cannot ground it.
+The implemented cold derivation covers v2 `conj` with an empty seed and a
+literal/quoted Symbol through acyclic immutable aliases. Other Set families,
+general joins, expected-type grounding and function/private signatures remain
+outside this increment. Runtime and protected signature predicates are unchanged.
+
+Edit the existing C7, effects and typed emitter owners. In
+`gravity.self-hosting.sh08-loop-recur-type-test`, select
+`symbol-set-loop-invariant-development-kernel` and
+`symbol-set-loop-effect-invariant-development-kernel`. In the SH01 iteration
+namespace, select `current-gravity-symbol-set-loop-invariant-development-kernel`
+and `current-gravity-symbol-set-loop-invariant-fixtures-development-kernel`.
+Keep affected carrier, insertion, membership and existing loop/function controls.
+Validate cold grounding independently in C8/lowering, original target coverage,
+normal empty/carrier compatibility, alias paths, exact/one-below work and guarded
+quote identities. Pending inference publishes no invariant; existing exact-slot
+checks can still reject an independently known incompatible re-entry.
+
+The separate SH01 selector
+`current-gravity-symbol-set-loop-invariant-authenticated-composition` exercises
+one G alias-loop returning true and one G typing rejection; Q is parser-only.
+Its original run passed the positive composition and rejected the negative, but
+finished 67P/1F because the negative oracle expected an unestablished carrier
+instead of the actual empty initializer type. Preserve that failed run. The
+oracle correction is not a repeated passing source run. Reuse those unchanged
+observations and validate pending fallback with the direct kernel, rather than
+reconstructing the same expensive products to refresh a stamp. This development
+session/replay is not fresh public C6 verification, native execution, whole-helper
+support, authoritative migration or milestone completion.
 
 ### Inferred String-Set carriers: private value feedback
 
