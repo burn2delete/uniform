@@ -2423,6 +2423,43 @@
                                       :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
                                       :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
 
+(defn- literal-string-vector-input [value]
+  ;; Original literal occurrence in normalized DATA, not a source admission.
+  (let [base (integral-ordering-input 'vec [:gravity.type/string])
+        operand (-> (get-in base [:nodes :arg0])
+                    (assoc :core-form :literal :resolved-binding-ids []
+                           :attributes {:literal-kind :string :value value}
+                           :evaluation {:kind :value :order []}))
+        module (assoc (:module base) :effects [:memory/allocate])
+        input (-> base (assoc :module module :binding-types (:types base))
+                  (assoc-in [:core :module] module)
+                  (assoc-in [:nodes :arg0] operand)
+                  (assoc-in [:forms :arg0 :kind] :string)
+                  (assoc-in [:forms :arg0 :value] value))]
+    (-> input
+        (assoc-in [:core :nodes] (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes])))
+        (assoc :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module module}))))
+
+(deftest sh08-literal-string-vector-inference-development-kernel
+  (doseq [value ["" "sha256:" "e\u0301" "\u0000\uD7FF\uE000\uFFFF"]]
+    (let [{:keys [core nodes forms bindings products binding-types]} (literal-string-vector-input value)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                   :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                     [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+          descriptor (get-in inferred [:type-table :operator])
+          expected {:kind :gravity.type/vector :shape :literal
+                    :element-types (vec (repeat (count value) :gravity.type/character))}]
+      (is (= :converged (:convergence-status inferred)))
+      (is (= [] (:diagnostics inferred)))
+      (is (= expected (get-in inferred [:type-table :call])))
+      (is (= :gravity.type/applied-string-character-vector (:kind descriptor)))
+      (is (= :sh08-string-character-vector-v1 (:version descriptor)))
+      (is (= 'gravity.text (:semantic-owner descriptor)))
+      (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+      (is (= :one-character-per-unicode-scalar (get-in descriptor [:conversion-policy :scalars])))
+      (is (= :original-bmp-nonsurrogate-string-literal (get-in descriptor [:conversion-policy :supported-domain]))))))
+
 (defn- nonnegative-integer-quotient-input [values]
   (let [base (integral-ordering-input 'quot (vec (repeat (count values) :gravity.type/integer)))
         input (reduce (fn [input [index value]]
