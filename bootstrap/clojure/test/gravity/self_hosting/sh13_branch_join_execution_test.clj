@@ -227,6 +227,132 @@
               (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))))
           (finally (.delete temporary)))))))
 
+(deftest sh13-forwards-real-parameter-through-one-lexical-let
+  ;; C6 owns all ten original nodes. Neither the lexical binder nor scope is
+  ;; fabricated, erased, or replaced by an output-only interpreter shortcut.
+  (let [root @(existing 'root)
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"]
+    (doseq [[extension then-value else-value executable?]
+            [["gravity" 1 0 true]
+             ["qst" Long/MIN_VALUE Long/MAX_VALUE true]
+             ["gravity" 9223372036854775808N 0 false]]]
+      (let [source (str (.resolve root (str relative "." extension)))
+            temporary (java.io.File/createTempFile "gravity-sh13-parameter-let-" (str "." extension))]
+        (try
+          (spit temporary (str/replace (slurp source) "(if flag true false)"
+                            (str "(let [selected flag] (if selected " then-value " " else-value "))")))
+          (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
+                nodes (:core-nodes core) ids (mapv :node-id nodes)
+                binder (get ids 0) local-binder (get ids 2) if-id (get ids 7) scope (get ids 8)
+                verification (invoke 'sh12-verify-branch-join-mir core mir)]
+            (is (= :accepted (:status raw)))
+            (is (= :passed (:status upstream)))
+            (is (= [:parameter :local :let-binding :local :truthy :literal :literal :if :let :function]
+                   (mapv :source-operation nodes)))
+            (is (= [[binder] [(get ids 1)] [local-binder] [local-binder if-id] [scope]]
+                   (mapv #(get-in nodes [% :operands]) [1 2 3 8 9])))
+            (is (= :passed (:status verification)) (pr-str (:diagnostics verification)))
+            (when (= :passed (:status verification))
+              (let [context (invoke 'sh13-branch-join-context core mir)
+                    join-block (get-in context [:join :block-id])
+                    outcomes (mapv #(argument-run-observation core mir [%]) [true false])]
+                (is (= [4 1 1 3]
+                       (mapv #(count (get-in context [% :instructions])) [:entry :then :else :join])))
+                (is (= {:value-id binder :parameter-index 0 :block-id (get-in context [:entry :block-id])}
+                       (get-in mir [:data-flow-graph :definitions binder])))
+                (is (= {:value-id local-binder :operation-id local-binder
+                        :block-id (get-in context [:entry :block-id])}
+                       (get-in mir [:data-flow-graph :definitions local-binder])))
+                (doseq [[argument result] (map vector [true false] outcomes)]
+                  (if executable?
+                    (do
+                      (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+                      (when (= :accepted (:status result))
+                        (is (= (if argument then-value else-value) (get-in result [:execution :value])))
+                        (is (= 503 (get-in result [:execution :fuel])))
+                        (is (= [(get ids 1) local-binder (get ids 3) (get ids 4)
+                                (get ids (if argument 5 6)) scope]
+                               (vec (keep :operation (get-in result [:execution :trace])))))
+                        (is (= scope (get-in result [:projection :return-value-id])))
+                        (is (= if-id (get-in result [:projection :control-flow-graph :join :value-id])))
+                        (is (= scope (:alias-of (last (get-in result [:projection :operations])))))
+                        (is (= (get-in nodes [9 :type])
+                               (:source-type (last (get-in result [:projection :operations])))))
+                        (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                                       core mir [argument] result))))
+                        (doseq [candidate [(assoc result :arguments [(not argument)])
+                                           (assoc-in result [:projection :return-value-id] if-id)
+                                           (assoc-in result [:projection :operations 8 :alias-of] if-id)
+                                           (assoc-in result [:execution :fuel] 506)
+                                           (update-in result [:execution :trace]
+                                                      #(vec (remove (fn [row] (= scope (:operation row))) %)))]]
+                          (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                                          core mir [argument] candidate)))))))
+                    (do
+                      (is (= :rejected (:status result)))
+                      (is (= :passed (get-in result [:upstream-verification :status])))
+                      (is (= ["C11-VERIFY" :bounded-execution-subset]
+                             ((juxt :diagnostic-id :missing-fact) (first (:diagnostics result)))))
+                      (is (nil? (:execution result))))))
+                (doseq [[bad-core bad-mir]
+                        [[(assoc-in core [:core-nodes 1 :operands] [local-binder]) mir]
+                         [(assoc-in core [:core-nodes 3 :attributes :resolved-binding] binder) mir]
+                         [(assoc-in core [:core-nodes 2 :attributes :name] 'flag) mir]
+                         [(assoc-in core [:lexical-binding-records 1 :shadowed-binding] binder) mir]
+                         [(assoc-in core [:core-nodes 8 :attributes :binding-count] 2) mir]
+                         [(assoc-in core [:core-nodes 8 :operands] [if-id]) mir]
+                         [(assoc-in core [:core-nodes 9 :operands] [if-id]) mir]
+                         [(assoc-in core [:core-nodes 3 :path] [:functions 'main :body 1]) mir]
+                         [(assoc-in core [:core-nodes 2 :attributes :source-form-id]
+                                    (get-in nodes [0 :attributes :source-form-id])) mir]
+                         [(assoc-in core [:core-nodes 2 :node-id] binder) mir]
+                         [(assoc-in core [:type-facts local-binder :dependencies] []) mir]
+                         [(assoc-in core [:core-nodes 6 :type] :gravity/bool) mir]
+                         [(assoc-in core [:core-nodes 6 :attributes :value] false) mir]
+                         [(assoc-in core [:effect-facts local-binder :direct] #{:io/write}) mir]
+                         [(assoc-in core [:proof-records scope :proof-id] nil) mir]
+                         [(assoc-in core [:source-origin-table (get-in nodes [3 :source :origin-id])] nil) mir]
+                         [core (assoc-in mir [:data-flow-graph :definitions local-binder :block-id] join-block)]
+                         [core (assoc-in mir [:data-flow-graph :definitions binder :operation-id] nil)]
+                         [core (assoc-in mir [:control-flow-graph :join :incoming] [])]
+                         [core (assoc-in mir [:functions 'main :blocks join-block :terminator :operands] [if-id])]]]
+                  (let [original (invoke 'sh12-verify-branch-join-mir bad-core bad-mir)
+                        rejected (argument-run-observation bad-core bad-mir [nil])]
+                    (is (= :rejected (:status original) (:status rejected)))
+                    (is (= (:diagnostics original) (:diagnostics rejected)))
+                    (is (nil? (:execution rejected)))))
+                (is (= :rejected (:status (run core mir))))
+                (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
+          (finally (.delete temporary)))))))
+
+(deftest sh13-preserves-simple-bool-parameter-after-let-forwarding
+  ;; One genuinely affected old family, not replay of the former three-source
+  ;; 254-second selector: the common role validator and private frame changed.
+  (let [path (str (.resolve @(existing 'root)
+                   "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        {:keys [raw upstream core mir]} (current-parameter-pair path)
+        nodes (:core-nodes core) binder (first nodes) id (:node-id binder)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream)))
+    (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
+    (is (= 7 (count nodes)))
+    (is (= :gravity/bool (get-in mir [:functions 'main :returns])))
+    (doseq [argument [true false]]
+      (let [result (argument-run-observation core mir [argument])]
+        (is (= :accepted (:status result)))
+        (is (= argument (get-in result [:execution :value])))
+        (is (= [argument] (:arguments result)))
+        (is (= 506 (get-in result [:execution :fuel])))
+        (is (= [(get-in nodes [1 :node-id]) (get-in nodes [2 :node-id])
+                (get-in nodes [(if argument 3 4) :node-id])]
+               (vec (keep :operation (get-in result [:execution :trace])))))
+        (is (= (get-in core [:type-facts id :fact-id])
+               (get-in result [:projection :parameters 0 :facts :type-fact-id])))
+        (is (= (get-in nodes [6 :type])
+               (:source-type (last (get-in result [:projection :operations])))))
+        (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                       core mir [argument] result))))))))
+
 (defn- scalar-core [core condition type then-value else-value]
   (let [values [condition then-value else-value nil nil]
         types [:gravity.type/bool type type type type]]

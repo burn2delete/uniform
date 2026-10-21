@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh12-branch-join-mir-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
+            [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]))
 
 (defn- repository-root
@@ -100,6 +101,26 @@
 
 (def ^:private parameter-c6-plan (delay (compile-plan parameter-c6-source)))
 
+(deftest sh12-current-c6-selects-last-result-sources
+  ;; Direct original Gravity helpers on bounded DATA, not fabricated Core or
+  ;; source admission. Every production caller supplies a bounded Vector.
+  (doseq [[values expected] [[[] nil] [[:only] :only] [[:first :last] :last]
+                            [[:first :middle :last] :last] [[:first nil] nil] [[:first false] false]]]
+    (is (= expected (invoke parameter-c6-plan 'c6c10-last-value [values]))))
+  (let [payload {:inert [false nil]}]
+    (is (identical? payload (invoke parameter-c6-plan 'c6c10-last-value [[:first payload]]))))
+  (doseq [operation [:do :let :function]
+          operands [[:only] [:first :last] [:first :middle :last]]]
+    (is (= [(last operands)]
+           (invoke parameter-c6-plan 'c6c10-source-value-ids
+                   [{:source-operation operation :operands operands}]))))
+  (doseq [[operation operands expected]
+          [[:local [:binding] [:binding]] [:let-binding [:initializer] [:initializer]]
+           [:truthy [:condition] [:condition]] [:if [:test :then :else] [:then :else]]
+           [:literal [] []]]]
+    (is (= expected (invoke parameter-c6-plan 'c6c10-source-value-ids
+                           [{:source-operation operation :operands operands}])))))
+
 (defn- parameter-source-products [source-path source-text]
   ;; Original source-derived C2/C5 and raw seed plan; these are development
   ;; DATA, not an authenticated frozen C6 source-binding or SH-07 Core.
@@ -120,6 +141,55 @@
 
 (defn- parameter-input [source-path source-text]
   (:envelope (parameter-source-products source-path source-text)))
+
+(deftest sh12-current-c6-types-the-last-body-result-and-preserves-diagnostic-selection
+  (let [source (str (.resolve @root
+                     "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        temporary (java.io.File/createTempFile "gravity-c6-last-body-result-" ".gravity")]
+    (try
+      ;; A real two-expression function: its first body value is Bool and its
+      ;; last is Integer. No patched Core or source-admission assertion.
+      (spit temporary (str/replace (slurp source) "(if flag true false)" "flag 7"))
+      (let [path (.getAbsolutePath temporary) text (slurp temporary)
+            input (parameter-input path text)
+            raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
+            fresh (parameter-input path text)
+            replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [fresh])
+            core (:artifact-template raw) nodes (:core-nodes core)
+            first-body (get-in nodes [1 :node-id]) last-body (get-in nodes [2 :node-id])
+            function (get-in nodes [3 :node-id])
+            first-type (get-in core [:type-facts first-body :type-id])
+            last-type (get-in core [:type-facts last-body :type-id])
+            verify (fn [candidate]
+                     (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                             [fresh candidate (:digest-requests replay)]))
+            front (:front-end-products input) syntaxes (:c3-syntax-object-stream front)
+            forms (:form-tree front) leaf (first (filter #(= :integer (:kind %)) forms))
+            first-syntax (first syntaxes) last-syntax (last syntaxes)
+            exact-form (first (filter #(= (get-in first-syntax [:source :form-id]) (:form-id %)) forms))
+            reject (fn [envelope form]
+                     (invoke parameter-c6-plan 'c6c10-input-form-rejection
+                             [:C6-CORE-SHAPE :lower-to-core :diagnostic/c6-core-shape envelope form
+                              {:missing-fact :selected-last-syntax-test} :repair-source-form]))]
+        (is (= :accepted (:status raw)))
+        (is (= [:parameter :local :literal :function] (mapv :source-operation nodes)))
+        (is (= [first-body last-body] (get-in nodes [3 :operands])))
+        (is (= :gravity/integer (get-in nodes [3 :type :return])))
+        (is (not= first-type last-type))
+        (is (= last-type (get-in core [:typed-core :functions function :return])))
+        (is (= [last-body] (get-in core [:ownership-facts function :source-value-ids])))
+        (is (= :passed (:status (verify core))))
+        (is (= :rejected (:status (verify (assoc-in core [:typed-core :functions function :return] first-type)))))
+        (is (nil? (invoke parameter-c6-plan 'c6c10-top-level-syntax-by-form-id [syntaxes (:form-id leaf)])))
+        (is (not= (:syntax/id first-syntax) (:syntax/id last-syntax)))
+        (let [fallback (reject input leaf) exact (reject input exact-form)
+              absent (reject (assoc-in input [:front-end-products :c3-syntax-object-stream] []) leaf)]
+          (is (= :rejected (:status fallback) (:status exact) (:status absent)))
+          (is (= "C6-CORE-SHAPE" (get-in fallback [:diagnostics 0 :rule])))
+          (is (= (:syntax/id last-syntax) (get-in fallback [:diagnostics 0 :primary :syntax-id])))
+          (is (= (:syntax/id first-syntax) (get-in exact [:diagnostics 0 :primary :syntax-id])))
+          (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
+      (finally (.delete temporary)))))
 
 (deftest sh12-current-c6-produces-a-resolved-bool-parameter-without-a-mir-instruction
   (doseq [extension [".gravity" ".qst"]]
