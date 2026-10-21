@@ -1811,14 +1811,26 @@
         (if (= false (get operation :constant-operands))
           (if (= 2 (count (get operation :operands)))
             (let [left-id (get (get operation :operands) 0)
-                  right-id (get (get operation :operands) 1)]
-              (if (contains? producers left-id)
-                (if (contains? producers right-id)
-                  (let [candidate
-                        (assoc
-                         (assoc operation :constant-operands true)
-                         :operands [(get producers left-id) (get producers right-id)])]
-                    (if (sh16-foldable-add? candidate) candidate nil))
+                  right-id (get (get operation :operands) 1)
+                  left-reference
+                  (if (sh16-canonical-identifier? left-id)
+                    (contains? producers left-id)
+                    false)
+                  right-reference
+                  (if (sh16-canonical-identifier? right-id)
+                    (contains? producers right-id)
+                    false)]
+              (if (if left-reference true right-reference)
+                (if (if left-reference true (sh16-i64? left-id))
+                  (if (if right-reference true (sh16-i64? right-id))
+                    (let [candidate
+                          (assoc
+                           (assoc operation :constant-operands true)
+                           :operands
+                           [(if left-reference (get producers left-id) left-id)
+                            (if right-reference (get producers right-id) right-id)])]
+                      (if (sh16-foldable-add? candidate) candidate nil))
+                    nil)
                   nil)
                 nil))
             nil)

@@ -495,9 +495,10 @@ For the closed one-hop propagation route, run
 namespace. The initial hop starts at the first non-const operation after a
 pure, proven-safe, nondead const prefix: a pure, proven-safe, nondead
 `:i64`/`:integer-exact` ADD with `:constant-operands false` and two ordered
-references to established earlier one-payload i64 constants. The two uses may
-refer to the same producer; result definitions remain unique across the whole
-input.
+operands. At least one references an established earlier one-payload i64
+producer; the other is another such reference or a bounded i64 immediate.
+Repeated references remain supported, and result definitions remain unique
+across the whole input.
 Fresh bounded indexing joins actual result IDs; the existing signed-i64
 overflow rule still governs folding. Unknown, forward, ambiguous, wrongly
 typed, unsafe, effectful or control-dependent joins do not authorize folding;
@@ -532,6 +533,19 @@ MIN with its equivalent zero threshold, avoiding hosted negation of MIN.
 Immediate `[0, MIN]` and `[MAX, MIN]` fold to MIN and -1; negative-left plus
 MIN is not foldable and ordinary explicit constant ingress still rejects it
 with `C13-SAFETY`. No type, width, coercion, API or input-limit policy changes.
+
+For mixed operands, run
+`sh16-propagates-one-established-reference-and-one-i64-immediate`. The new
+route requires exactly one actual producer join and one bounded i64 atom,
+in either order, including a folded intermediate as producer. Canonical
+identifier checks precede producer lookup; an integer cannot gain identifier
+meaning from a supplied map. Two immediates with `:constant-operands false`
+remain unchanged, while the existing all-reference route is preserved.
+Keep both operand positions and original input flags/identity, signed-range
+and MIN-right overflow rules, barriers, post-fold DCE and fresh recomputation.
+Missing, ambiguous, forward, non-i64, impure, unsafe, dead and overflowing
+joins do not authorize propagation. These remain normalized-DATA checks,
+not fresh C6/C11 ingress, provider/native execution or performance evidence.
 
 For post-fold local cleanup, also run
 `sh16-removes-only-unused-constants-created-by-fresh-folding`. The existing DCE
