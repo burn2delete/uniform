@@ -860,6 +860,19 @@ folded emission and reject mutants at their actual C14/host/B3 owning checks.
 This is test-only supplied-DATA coverage, not a new semantic repair, fresh
 source/public packet, LLVM tool result or native execution.
 
+For B1 LLVM status compatibility, run
+`sh17-development-b1-llvm-accepts-matching-current-c14-optimization-statuses`
+in the same namespace. The current pure `p15-s23-c14-expected-record` projection
+produces supplied request DATA; B1 accepts only identity/fold-complete nested
+statuses with exact outer agreement and unchanged optimization-report joins.
+A test-only scoped observer delegates every call to the original interpreter:
+valid statuses reach the original dependency check and retain its rejection of
+unestablished current compiled lineage; invalid statuses/reports/targets reject
+before that call. It never substitutes a successful result or an old-pin
+positive. C/Wasm, source pins and public packet admission remain unchanged.
+This is status compatibility, not fresh C11/output verification or public
+source/backend readiness.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
