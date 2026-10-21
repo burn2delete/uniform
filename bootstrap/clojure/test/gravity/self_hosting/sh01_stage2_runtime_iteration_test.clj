@@ -32533,6 +32533,38 @@
       (is (= :rejected (:status (walk (assoc-in env [:types operator] value) 65536))) (str label))
       (is (zero? @callbacks) (str label)))))
 
+(deftest current-gravity-vector-first-symbol-loop-witness-keyword-work-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [owner 'gravity.self-hosting.sh08-loop-recur-type-test
+        observe (ns-resolve owner 'vector-first-symbol-loop-observe-data-work)
+        cases ((ns-resolve owner 'vector-first-symbol-loop-keyword-cases))
+        {:keys [env start binding]} ((ns-resolve owner 'vector-first-symbol-loop-source-shaped-env))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [value budget] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-lsi-first-data-work [value budget]))]
+    (doseq [[label value] cases]
+      (let [observed (observe 'p15-s23-lsi-first-data-work #(invoke value 2))
+            below (observe 'p15-s23-lsi-first-data-work #(invoke value 1))]
+        (is (= :accepted (get-in observed [:result :status])) (str label))
+        (is (= 2 (get-in observed [:result :work-count])))
+        (is (= {:keyword 0 :symbol 0 :string 0} (:formats observed)))
+        (is (= :rejected (get-in below [:result :status])))
+        (is (= 2 (get-in below [:result :work-count])))
+        (is (zero? (get-in below [:formats :keyword])))))
+    (doseq [value ["field-value" 'alpha.beta/member]]
+      (let [work (+ 2 (count (str value))) observed (observe 'p15-s23-lsi-first-data-work #(invoke value work))
+            below (invoke value (dec work))]
+        (is (= :accepted (get-in observed [:result :status])))
+        (is (= work (get-in observed [:result :work-count]) (:work-count below)))
+        (is (= :rejected (:status below)))
+        (is (= {:keyword 0 :symbol (if (symbol? value) 1 0) :string 0} (:formats observed)))))
+    (let [observed (observe 'p15-s23-lsi-first-data-work
+                    #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-lsi-path [start :member binding env 65536]))]
+      (is (= :accepted (get-in observed [:result :status])))
+      (is (zero? (get-in observed [:formats :keyword])))
+      (is (pos? (get-in observed [:formats :symbol]))))))
+
 (deftest current-gravity-vector-first-symbol-loop-witness-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

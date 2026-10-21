@@ -2858,6 +2858,8 @@
    [:nested-source (assoc-in normal [:source-call :argument-node-ids] [opaque])]
    [:deep (assoc normal :extra (reduce (fn [out _] [out]) :bottom (range 129)))]
    [:wide (assoc normal :extra (vec (repeat 1025 :item))) ]
+   [:wrong-kind (assoc normal :kind :spoof)] [:wrong-source (assoc normal :source :spoof)]
+   [:wrong-version (assoc normal :version :spoof)] [:wrong-bounds-kind (assoc-in normal [:bounds-proof :kind] :spoof)]
    [:wide-map (into {} (map (fn [i] [(keyword (str "field-" i)) i]) (range 1025)))]])
 
 (deftest vector-first-symbol-loop-witness-final-warm-descriptor-development-kernel
@@ -2881,3 +2883,67 @@
         (doseq [[label value] values]
           (is (= :rejected (:status (walk (assoc-in env [:types operator] value) 65536))) (str label))
           (is (zero? @callbacks) (str label)))))))
+
+(defn- vector-first-symbol-loop-observe-data-work [function thunk]
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
+        artifact (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-artifact-invoke)
+        formatter @(ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-artifact-function)
+        original-scoped @scoped original-builtin @builtin original-artifact @artifact depth (atom 0) plans (atom [])
+        formats (atom {:keyword 0 :symbol 0 :string 0})
+        record-format (fn [value] (cond (keyword? value) (swap! formats update :keyword inc)
+                                       (symbol? value) (swap! formats update :symbol inc)
+                                       (string? value) (swap! formats update :string inc)))
+        result (with-redefs-fn
+          {scoped (fn [runtime plan callee args scope]
+                    (if (= function callee)
+                      (do (swap! depth inc) (swap! plans conj plan)
+                          (try (original-scoped runtime plan callee args scope)
+                               (finally (swap! plans pop) (swap! depth dec))))
+                      (original-scoped runtime plan callee args scope)))
+           builtin (fn [& args]
+                     (let [callee (nth args (- (count args) 2)) values (last args) value (first values)]
+                       (when (and (pos? @depth) (= 'str callee)
+                                  (identical? (peek @plans) (nth args (- (count args) 3))))
+                         (record-format value))
+                       (apply original-builtin args)))
+           artifact (fn [runtime callee args]
+                      (when (and (pos? @depth) (= formatter callee) (:runtime-artifact-plan runtime))
+                        (record-format (first args)))
+                      (original-artifact runtime callee args))} thunk)]
+    {:result result :formats @formats}))
+
+(defn- vector-first-symbol-loop-keyword-cases []
+  [[:ordinary :ordinary] [:qualified :alpha.beta/gamma-delta?]
+   [:unusual (keyword "odd namespace" "punctuation?!")]
+   [:long (keyword "qualified.ns" (apply str (repeat 66000 "x")))]])
+
+(deftest vector-first-symbol-loop-witness-keyword-work-development-kernel
+  ;; Logical visit accounting; no host CPU, heap, hashing or equality-cost bound.
+  (let [owners [['sh08-lsi-first-data-work (fn [value budget] (c7-invoke 'sh08-lsi-first-data-work [value budget]))]
+                ['body-lsi-first-data-work (fn [value budget] (effects 'body-lsi-first-data-work value budget))]]]
+    (doseq [[function invoke] owners]
+      (doseq [[label value] (vector-first-symbol-loop-keyword-cases)]
+        (let [observed (vector-first-symbol-loop-observe-data-work function #(invoke value 2))
+              below (vector-first-symbol-loop-observe-data-work function #(invoke value 1))]
+          (is (= :accepted (get-in observed [:result :status])) (str label))
+          (is (= 2 (get-in observed [:result :work-count])))
+          (is (= {:keyword 0 :symbol 0 :string 0} (:formats observed)))
+          (is (= :rejected (get-in below [:result :status])))
+          (is (= 2 (get-in below [:result :work-count])))
+          (is (zero? (get-in below [:formats :keyword])))))
+      (doseq [value ["field-value" 'alpha.beta/member]]
+        (let [work (+ 2 (count (str value)))
+              observed (vector-first-symbol-loop-observe-data-work function #(invoke value work))
+              below (invoke value (dec work))]
+          (is (= :accepted (get-in observed [:result :status])))
+          (is (= work (get-in observed [:result :work-count]) (:work-count below)))
+          (is (= :rejected (:status below)))
+          (is (= {:keyword 0 :symbol (if (symbol? value) 1 0) :string 0} (:formats observed))))))
+    (let [{:keys [env start binding]} (vector-first-symbol-loop-source-shaped-env)]
+      (doseq [[function walk] [['sh08-lsi-first-data-work #(c7-invoke 'sh08-lsi-path [start :member binding env 65536])]
+                             ['body-lsi-first-data-work #(effects 'body-lsi-path start :member binding env 65536)]]]
+        (let [observed (vector-first-symbol-loop-observe-data-work function walk)]
+          (is (= :accepted (get-in observed [:result :status])))
+          (is (zero? (get-in observed [:formats :keyword])))
+          (is (pos? (get-in observed [:formats :symbol]))))))))
