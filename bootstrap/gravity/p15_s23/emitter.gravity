@@ -3685,6 +3685,20 @@
   (loop [remaining suffix out prefix]
     (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining))))))
 
+(defn p15-s23-lsi-first-node-data [node]
+  ; Readset projection only; original Core nodes remain the semantic inputs.
+  {:node-id (get node :node-id) :core-form (get node :core-form) :children (get node :children)
+   :attributes (get node :attributes) :source (get node :source) :binding-context (get node :binding-context)
+   :resolved-binding-ids (get node :resolved-binding-ids)
+   :evaluation {:kind (get (get node :evaluation) :kind)
+                :owner-function-syntax-id (get (get node :evaluation) :owner-function-syntax-id)
+                :order (get (get node :evaluation) :order)}})
+
+(defn p15-s23-lsi-first-form-data [form]
+  {:form-id (get form :form-id) :syntax-id (get form :syntax-id) :kind (get form :kind) :value (get form :value)
+   :parent-form-id (get form :parent-form-id) :scope-id (get form :scope-id) :child-form-ids (get form :child-form-ids)
+   :source-span (get form :source-span) :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)})
+
 (defn p15-s23-lsi-first-data-work [value budget]
   ; Only first-order data carriers are traversed; lazy sequences are unsupported.
   ; Reserve native container visits/comparison candidates before materialization.
@@ -3788,7 +3802,9 @@
                             (p15-s23-lsi-first-node? (get (get env :nodes) (get record :initializer-node-id))) false) false) false) false) false) true) false) false) false)) false)) false))
 
 (defn p15-s23-lsi-first-call-input [node env budget]
-  ; Guard reached identities before indexed lookup or legacy source comparisons.
+  ; Prepay three fixed node/form projections: 3 * (32 + 24) + 8 units.
+  (if (> 176 budget) {:status :rejected :reason :loop-type-work-limit :work-count 176}
+    (let [result
   (if (if (p15-s23-lsi-first-node? node)
         (if (keyword? (get (get (get env :core) :module) :profile))
           (keyword? (get (get (get env :core) :module) :target)) false) false)
@@ -3815,10 +3831,12 @@
                         (if (p15-s23-lsi-id? (get (get owner :child-form-ids) 0))
                           (p15-s23-lsi-id? (get (get owner :child-form-ids) 1)) false) false) false)
                   (let [ids (get owner :child-form-ids) op-form (get forms (get ids 0)) arg-form (get forms (get ids 1))
-                        raw (p15-s23-lsi-first-data-work [node operator arg call edge binding owner op-form arg-form
+                        raw (p15-s23-lsi-first-data-work [(p15-s23-lsi-first-node-data node) (p15-s23-lsi-first-node-data operator) (p15-s23-lsi-first-node-data arg)
+                              call edge binding (p15-s23-lsi-first-form-data owner) (p15-s23-lsi-first-form-data op-form)
+                              (p15-s23-lsi-first-form-data arg-form)
                               (get (get env :types) op-id)
                               {:profile (get (get (get env :core) :module) :profile)
-                               :target (get (get (get env :core) :module) :target)}] budget)]
+                               :target (get (get (get env :core) :module) :target)}] (- budget 176))]
                     (if (= :accepted (get raw :status))
                       (if (if (p15-s23-lsi-first-form? op-form) (p15-s23-lsi-first-form? arg-form) false)
                         (if (if (symbol? (get binding :name)) (= 'first (get binding :name)) false)
@@ -3831,7 +3849,8 @@
                 {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
             {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
         {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
-    {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
+    {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0})]
+      (assoc result :work-count (+ 176 (get result :work-count))))))
 
 (defn p15-s23-lsi-first-caller [records owner budget]
   (if (if (vector? records) (<= (count records) 65536) false)
@@ -3864,11 +3883,11 @@
           (let [ids (get owner :child-form-ids)
                 scanned (loop [i 0 out [] used base]
                   (if (= i (count children)) {:status :accepted :work-count used :types out}
-                    (if (> (+ used 8) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 8)}
+                    (if (> (+ used 64) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 64)}
                       (let [child-id (get children i) source-id (if (< i (count ids)) (get ids i) nil)
                             child (if (p15-s23-lsi-id? child-id) (get nodes child-id) nil)
                             source (if (p15-s23-lsi-id? source-id) (get forms source-id) nil)
-                            raw (p15-s23-lsi-first-data-work [child source] (- budget used 8)) total (+ used 8 (get raw :work-count))]
+                            raw (p15-s23-lsi-first-data-work [(p15-s23-lsi-first-node-data child) (p15-s23-lsi-first-form-data source)] (- budget used 64)) total (+ used 64 (get raw :work-count))]
                         (if (= :accepted (get raw :status))
                           (if (if (p15-s23-lsi-first-node? child) (p15-s23-lsi-first-form? source) false)
                             (if (= (get owner :form-id) (get source :parent-form-id))
