@@ -216,6 +216,61 @@
             (invoke-engine
              'sh16-verify [gravity-request gravity-result]))))))
 
+(deftest sh16-unused-result-proofs-do-not-authorize-unconditional-branch-removal
+  ;; Original C13 produces this branch from a valid Bool condition. Its result
+  ;; being unused does not prove the transfer unreachable in a CFG.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]
+          [condition destination] [[true :block/then] [false :block/else]]]
+    (let [base (request plan 'sh16-no-change-request)
+          branch-if (assoc (get-in (request plan 'sh16-mixed-optimization-request) [:operations 1])
+                           :condition condition)
+          branch (invoke-engine 'sh16-transform-operation [branch-if])
+          live (update base :operations #(into [branch] %))
+          dead-branch (assoc branch :dead true
+                             :dead-proof {:proof-id :proof/branch-unused :operation-id (:op-id branch)
+                                          :no-uses true :effect-free true :verified true})
+          input (assoc-in live [:operations 0] dead-branch)
+          result (optimize input)
+          baseline (optimize live)
+          rejected (fn [subject rule]
+                     (let [rejection (optimize subject)]
+                       (is (= :rejected (:status rejection)))
+                       (is (= rule (get-in rejection [:diagnostics 0 :rule])))
+                       (is (nil? (:optimized-operations rejection)))
+                       (is (= :passed (:status (invoke-engine 'sh16-verify [subject rejection]))))))]
+      (is (= :branch (:opcode branch)))
+      (is (= [destination] (:operands branch)))
+      (is (= (:source-span branch-if) (:source-span branch)))
+      (is (= (:origin-chain branch-if) (:origin-chain branch)))
+      (is (false? (invoke-engine 'sh16-result-id-used-from? [(:result branch) (:operations input) 0])))
+      (is (false? (invoke-engine 'sh16-dead-proof-valid? [dead-branch (:operations input)])))
+      (rejected input "C13-PROOF")
+      (is (= :proof (get-in result [:diagnostics 0 :reason])))
+      (is (= (:source-span branch) (get-in result [:diagnostics 0 :source-span])))
+      (is (= (:origin-chain branch) (get-in result [:diagnostics 0 :origin-chain])))
+      (is (= :accepted (:status baseline)))
+      (is (= (:operations live) (:optimized-operations baseline)))
+      (is (= [[] [] [] []] (mapv :changed-operations (:decision-log baseline))))
+      (is (= :passed (:status (invoke-engine 'sh16-verify [live baseline]))))
+      (is (= :rejected (:status (invoke-engine 'sh16-verify
+                                             [live (update baseline :optimized-operations #(vec (rest %)))]))))
+      (is (= :rejected (:status (invoke-engine 'sh16-verify [input baseline]))))
+      (doseq [[subject rule]
+              [[(update-in input [:operations 0] dissoc :dead-proof) "C13-PROOF"]
+               [(assoc-in input [:operations 0 :dead-proof :operation-id] :op/other) "C13-PROOF"]
+               [(assoc-in input [:operations 0 :dead-proof :verified] false) "C13-PROOF"]
+               [(assoc-in input [:operations 0 :effects] #{:io/write}) "C13-EFFECT"]
+               [(assoc-in input [:operations 0 :safety-outcome] :rejected) "C13-SAFETY"]
+               [(assoc-in input [:operations 0 :operands] []) "C13-CONTRACT"]
+               [(assoc-in input [:operations 0 :operands] [nil]) "C13-CONTRACT"]
+               [(assoc input :source-span nil) "C13-PRESERVE"]
+               [(update input :operations conj branch) "C13-VERIFY"]]]
+        (rejected subject rule))
+      (let [simplified (optimize (update base :operations #(into [branch-if] %)))]
+        (is (= :accepted (:status simplified)))
+        (is (= branch (first (:optimized-operations simplified))))
+        (is (= [:op/branch] (get-in simplified [:decision-log 1 :changed-operations])))))))
+
 (deftest sh16-unused-result-proofs-do-not-authorize-return-removal
   ;; C11 RETURN is a control transfer. This normalized no-use proof has no
   ;; CFG/unreachability premise, regardless of its supplied verified marker.
