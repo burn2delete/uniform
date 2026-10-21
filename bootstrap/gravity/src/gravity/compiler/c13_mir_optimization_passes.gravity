@@ -1649,17 +1649,20 @@
               (sh16-effect-safety-error request operation operations))))))
     :contract))
 
-(defn sh16-operations-error [request operations index]
+(defn sh16-operations-problem [request operations index]
   (if (= index (count operations))
     nil
     (let [error
           (sh16-operation-error
            request (get operations index) operations)]
       (if (= nil error)
-        (sh16-operations-error request operations (+ index 1))
-        error))))
+        (sh16-operations-problem request operations (+ index 1))
+        {:reason error :operation (get operations index)}))))
 
-(defn sh16-request-error [request]
+(defn sh16-operations-error [request operations index]
+  (get (sh16-operations-problem request operations index) :reason))
+
+(defn sh16-request-header-error [request]
   (if (map? request)
     (if
      (sh16-exact-keys?
@@ -1686,8 +1689,7 @@
                               (if
                                (sh16-unique-runtime-check-ids?
                                 (get request :operations) 0 #{})
-                                (sh16-operations-error
-                                 request (get request :operations) 0)
+                                nil
                                 :verify)
                               :verify)
                             :contract)
@@ -1705,6 +1707,12 @@
       :contract)
       :contract)
     :contract))
+
+(defn sh16-request-error [request]
+  (let [error (sh16-request-header-error request)]
+    (if (= nil error)
+      (sh16-operations-error request (get request :operations) 0)
+      error)))
 
 (defn sh16-rule [error]
   (if (= error :preserve)
@@ -1736,6 +1744,16 @@
    :source-span (get request :source-span)
    :origin-chain (get request :origin-chain)
    :remediation :supply-verified-deterministic-proof-preserving-mir})
+
+(defn sh16-operation-diagnostic [request error operation]
+  (let [diagnostic (sh16-diagnostic request error)]
+    (if (sh16-source-span-valid? (get operation :source-span))
+      (if (sh16-origin-chain-valid? (get operation :origin-chain))
+        (assoc
+         (assoc diagnostic :source-span (get operation :source-span))
+         :origin-chain (get operation :origin-chain))
+        diagnostic)
+      diagnostic)))
 
 (defn sh16-foldable-add? [operation]
   (if (= :add (get operation :opcode))
@@ -2417,14 +2435,21 @@
 (defn sh16-optimize [request]
   (let [preflight (sh16-structural-preflight request)]
     (if (= :accepted (get preflight :status))
-      (let [error (sh16-request-error request)]
+      (let [header-error (sh16-request-header-error request)
+            problem
+            (if (= nil header-error)
+              (sh16-operations-problem request (get request :operations) 0)
+              nil)
+            error
+            (if (= nil header-error) (get problem :reason) header-error)]
         (if (= nil error)
           (sh16-accepted-artifact request)
           {:artifact :gravity/sh16-optimized-mir
            :schema-version 1
            :status :rejected
            :request-id (get request :request-id)
-           :diagnostics [(sh16-diagnostic request error)]
+           :diagnostics [(sh16-operation-diagnostic
+                          request error (get problem :operation))]
            :pending (get (sh16-optimization-policy) :pending)}))
       (sh16-structural-rejection
        request preflight :request-structural-bound))))
