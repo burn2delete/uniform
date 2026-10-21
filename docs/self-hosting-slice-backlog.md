@@ -9102,6 +9102,24 @@ are development evidence for supplied normalized records. Their audit IDs are
 not audit-provider evidence, authenticated C11 or source construction, native
 execution or proof renewal. Historical failures remain retained separately.
 
+A subsequent C13 diagnostic repair retains the first failing operation's span
+and generated-origin chain when BOTH are valid. Previously the ordered validator
+discarded this context and reported the enclosing request location. Malformed
+operation metadata retains the whole legacy request diagnostic, without skipping
+the first error; aggregate errors retain their original priority and location.
+Accepted output, rejection reasons, schemas and bounds remain unchanged, and
+fresh result recomputation rejects substituted diagnostic metadata.
+
+The original `980cd64c` RED run recorded 298 passes and 48 failures in 346
+assertions: 36 attribution failures plus 12 incorrect expectations for a List
+carrier rejected by the earlier structural gate. Correcting that test control
+produced the 334-assertion regression, without another RED run. Candidate
+`1172289d` passed 12 tests and 1,207 assertions (334 new plus 873 adjacent).
+The separate boundary run passed six tests and 11 assertions: 18/1,218 across
+two passing invocations. LOC separately passed 2,021 files, zero exceptions,
+maximum 250. These supplied normalized diagnostic records do not establish
+fresh source construction, native execution, migration or completion evidence.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:

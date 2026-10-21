@@ -465,6 +465,17 @@ its original public gate still requires `:runtime-checked`. These supplied
 normalized IDs are not audit-provider evidence, authenticated C11/source
 construction, native execution or renewed proof.
 
+For C13 rejected-operation attribution, run
+`sh16-rejections-retain-the-first-failing-operation-source` in the same namespace.
+The original ordered checks retain the first failing operation and reason.
+Use that operation's source span and generated-origin chain only when BOTH
+validate; otherwise retain the complete legacy request diagnostic without
+skipping to a later operation. Aggregate checks keep priority and request-level
+locations. Accepted output, rule/reason selection, schemas and bounds stay
+unchanged. Recomputing verification reconstructs the rejection and rejects
+substituted diagnostic locations. These are supplied normalized diagnostic
+records, not fresh source construction, native execution or migration evidence.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
