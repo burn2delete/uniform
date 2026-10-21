@@ -4301,6 +4301,56 @@ positive and one G typing negative do not establish Q typed composition, fresh
 public C6 verification, seed/native execution, whole-helper support, SH-07
 completion, current-closure admission or self-hosting evidence.
 
+### Inferred Symbol-Set membership: development increment
+
+Binary `contains?` now consumes the exact inferred homogeneous Symbol Set and
+a Symbol needle, including through a zero-argument return, locals and repeated
+insertion. It returns Bool using original namespace/name equality. The existing
+C7, effects and typed emitter owners independently reconstruct v2 membership
+policy, source, constraint, fact and ledger joins. Carrier work is 3 with exact
+one-short rejection; member count remains nil. Finite member validation and
+`2 + count` work, Never transfers and legacy-family dispatch remain intact.
+Runtime bytes and all nine protected signature predicates are unchanged;
+runtime remains at 56 functions. No presence, extent, cardinality, private or
+recursive signature, loop-join or Set-equality evidence is introduced.
+
+The first focused run at `9e03b94e` recorded 21 attempted tests, 3,492 passes,
+one stale-oracle failure, no errors and eight C8 selectors unrun. The old
+insertion test still expected the newly supported query to reject. A test-only
+correction at `fdc858c5` passed nine selected tests/1,318 assertions. Independent
+review separately found that new shared receiver-key guards walked malformed
+wide maps before enforcing their three-key shape. Those pre-correction passes
+remain history, not validation of the corrected guards.
+
+At `a7970437`, all three owners check width before key traversal or keyed access.
+Three kernels cover non-three-key maps at widths 0/2/4/65,536, exhausted and
+admitted quotas, and Symbol/legacy/Never needles, asserting rejection with zero
+key traversal and zero keyed reads. The full current focused batch passed
+29 tests/5,380 assertions in one invocation: four new selectors/1,563 and
+25 affected controls/3,817. These include 900 new wide-map assertions; this is
+not a universal hostile-provider CPU/heap bound. Earlier passes are not summed.
+
+The distinct source composition at `f71ca364` passed 1/167 assertions: 161
+composition and six loader checks. Two functions, ten calls, four insertions,
+five queries, eleven quotes and one local call produce
+`[true false true false true]` with empty stdout. Seed and `seen`/`widened`
+locals retain the exact carrier; selected v2 queries retain work 3, nil member
+count and pure direct effects while operand allocation survives. Original C7/C8
+checks, one observed public C7 assembly gate and one closed entry passed.
+The wrong-Keyword needle rejects at C7 with actual carrier/Keyword types,
+legacy Keyword-family mismatch reason, Core/syntax/binding/span and secondary
+unresolved annotation. Negative C8/runtime are not invoked. The existing
+rejected fixture and old source oracle were explicitly updated; neither old
+source harness was replayed or given new credit.
+
+Selected execution took 155.129 seconds after 12.589 seconds of loading at
+2 GiB. These inclusive product construction/replay observations are not isolated
+runtime benchmarks; monitoring is not hard containment. Q is parser-only and
+development C6 replay is not public fresh C6 verification. The compiler's
+seen-Symbol scan remains a motivating subexpression, not whole-helper execution.
+SH-07 completion, current-closure admission, native/self-hosting and release
+evidence remain outstanding.
+
 ### Persistent String-Set insertion: development increment
 
 STD3 now explicitly defines binary Set `conj` to preserve existing equal member
