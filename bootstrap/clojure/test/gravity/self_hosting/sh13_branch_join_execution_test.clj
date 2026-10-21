@@ -442,7 +442,7 @@
                 (is (= [:parameter :local :let-binding :local :let-binding :local
                         :truthy :literal :literal :if :let :function] (mapv :source-operation nodes)))
                 (is (= [6 1 1 3] (mapv #(count (get-in context [% :instructions])) [:entry :then :else :join])))
-                (is (= 12 (count (:values mir))))
+                (is (= 12 (count (get-in mir [:data-flow-graph :values]))))
                 (is (= [first-binder second-binder if-id] (get-in nodes [10 :operands])))
                 (is (= [(get ids 1) (get ids 3)]
                        (mapv #(get-in nodes [% :operands 0]) [2 4])))
