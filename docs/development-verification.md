@@ -3098,6 +3098,49 @@ rejection. This new source run does not relabel or repeat the earlier failed
 quoted-source oracle run. Fresh development C6 sessions/replay remain separate
 from public fresh C6 verification, native execution and migration evidence.
 
+### Vector-first Symbol grounding for loop slots
+
+The grounded Symbol-Set loop route also accepts a member obtained by `first`
+from the original evaluated nonempty Vector constructor. Its stored head must
+be independently a literal/quoted Symbol, including acyclic immutable aliases;
+member aliases may lead to that call. Validate the complete positional Vector
+type and every stored child, source identity and evaluation edge. Empty,
+quoted, aliased or function-returned Vector receivers and nested-call head
+grounding do not establish this witness. Preserve the actual empty Set
+initializer, every normal transfer, whole-tuple Never behavior, constructor
+allocation and the original Vector-first runtime guards.
+
+Use the existing SH08 loop namespace's
+`vector-first-symbol-loop-witness-development-kernel`, controls, effects,
+reached-metadata, final-warm-descriptor, keyword-work and cold-solver selectors.
+The corresponding SH01 iteration kernels cover typed lowering and paired
+fixture parsing. In SH09, select
+`body-private-evidence-keyword-work-development-kernel` and
+`body-vector-first-symbol-loop-cumulative-work-development-kernel`, retaining
+the affected private-entry/first/map checks and original loop/backedge controls.
+`vector-first-empty-diagnostic-oracle-development-kernel` separately checks
+the original annotation renderer and actual arity-mismatch control.
+
+Reached source projections retain all consumed fields; unused C6 metadata is
+not a premise. The complete warm descriptor is paid and compared at the final
+boundary. New LSI first-order traversal uses two scalar visits. The shared C8
+Map/Vector evidence walker retains its existing one scalar visit, depth and
+pending-child reservation, String/Symbol text work and doubled row/equality
+charge, while eliminating actual discarded Keyword formatting. Long Keyword
+names can therefore gain logical-budget acceptance across its existing callers.
+The ceiling remains 65,536; these are not host CPU, heap or provider bounds.
+
+The separate genuine SH01 selector is
+`current-gravity-vector-first-symbol-loop-witness-authenticated-composition`.
+Its retained `2677614a` invocation completed all positive execution and negative
+typing observations with 80 passes and one wrong diagnostic-oracle assertion.
+The empty-Vector annotation has a present, nil constraint ID, unlike a type
+mismatch. The test-only correction and isolated 32-assertion kernel do not
+relabel that failed receipt or replay its expensive source products. See the
+backlog's qualified evidence record. G source execution and Q parser parity
+remain distinct; development C6 session/replay is not public fresh C6 or
+authoritative migration evidence.
+
 ### Inferred String-Set carriers: private value feedback
 
 The closed inference carrier
