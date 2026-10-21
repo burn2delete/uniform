@@ -286,7 +286,8 @@
           (let [result (optimize input)]
             (is (= :accepted (:status result)))
             (is (not (some #{:op/suffix} (get-in result [:decision-log 0 :changed-operations]))))
-            (is (= add (by-id result :op/suffix)))
+            (is (= (first (filter #(= :op/suffix (:op-id %)) (:operations input)))
+                   (by-id result :op/suffix)))
             (is (= :passed (:status (invoke-engine 'sh16-verify [input result])))))))
       (let [input (update-in subject [:operations 0] assoc :effects #{:io/write} :ordering nil)
             result (optimize input)]
