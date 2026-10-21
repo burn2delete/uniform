@@ -9168,6 +9168,26 @@ two passing invocations. LOC separately passed 2,021 files, zero exceptions,
 maximum 250. These supplied normalized diagnostic records do not establish
 fresh source construction, native execution, migration or completion evidence.
 
+The next C13 pass-composition repair defers an admitted pure, proven-unused ADD
+unchanged through constant folding and branch simplification until scheduled
+DCE removes it. Previously folding dropped its dead marker/proof and the ADD's
+folded value survived DCE. The original operation and proof are not copied
+across a rewrite. Live ADDs still fold; input type/overflow/effect/proof checks,
+pass order, schema and bounds remain unchanged. Final/post-DCE validators still
+reject dead operations. This does not select dead-branch deletion or establish
+control-flow unreachability from an unused-result flag.
+
+The `17730a9e` RED run retained 190 passes and 60 failures in 250 assertions,
+with no errors. Candidate `abfbb409` passed 13 tests and 1,246 assertions
+(250 new plus 996 adjacent, including dead-result and stale-proof controls).
+The separate boundary run passed six tests/11 assertions: 19/1,257 across two
+passing invocations. LOC separately passed 2,021 files, zero exceptions,
+maximum 250. Original G/Q constructors supply normalized proof DATA; checks
+cover unchanged pre-DCE operations/proofs, DCE-only decisions and invalidation,
+source/origin identity, rejected proofs/effects/safety, and fresh recomputation
+against substituted results. These are not proof-provider verification, fresh
+authenticated C11/source input, native execution or migration evidence.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:

@@ -216,6 +216,83 @@
             (invoke-engine
              'sh16-verify [gravity-request gravity-result]))))))
 
+(deftest sh16-defers-proven-unused-adds-until-dead-code-elimination
+  ;; Original compiler execution over supplied normalized proof DATA, not
+  ;; proof-provider evidence or fresh authenticated C11 input.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-no-change-request)
+          add (-> (first (:operations (request plan 'sh16-mixed-optimization-request)))
+                  (assoc :op-id :op/dead-add :result :value/dead-add :dead true
+                         :dead-proof {:proof-id :proof/dead-add :operation-id :op/dead-add
+                                      :no-uses true :effect-free true :verified true}))
+          subject (assoc base :operations (into [add] (:operations base)))
+          rejected (fn [input rule]
+                     (let [result (optimize input)]
+                       (is (= :rejected (:status result)))
+                       (is (= rule (get-in result [:diagnostics 0 :rule])))
+                       (is (nil? (:optimized-operations result)))
+                       (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))))]
+      (doseq [operands [[2 3] [9223372036854775806 1] [-9223372036854775808 0]]]
+        (let [input (assoc-in subject [:operations 0 :operands] operands)
+              operation (first (:operations input))
+              initial {:status :accepted :operations (:operations input) :decision-log []
+                       :invalidation-ledger [] :pass-verifier-reports [] :mutating-passes []
+                       :invalidated-analysis [] :invalidated-facts [] :invalidated-proofs []}
+              folded (invoke-engine 'sh16-run-pass [input initial :constant-fold])
+              simplified (invoke-engine 'sh16-run-pass [input folded :branch-simplify])
+              result (optimize input)]
+          (is (nil? (invoke-engine 'sh16-request-error [input])))
+          (is (true? (invoke-engine 'sh16-foldable-add? [operation])))
+          (is (= (:operations input) (:operations folded)))
+          (is (= (:operations input) (:operations simplified)))
+          (is (= :accepted (:status folded)))
+          (is (= :accepted (:status simplified)))
+          (is (= :accepted (:status result)))
+          (is (= (:operations base) (:optimized-operations result)))
+          (is (= [false false true false] (mapv :changed? (:decision-log result))))
+          (is (= [[] [] [:op/dead-add] []] (mapv :changed-operations (:decision-log result))))
+          (is (= [:dead-code-eliminate] (get-in result [:post-pass-verifier :mutating-passes])))
+          (is (every? #(= :passed (:status %)) (get-in result [:post-pass-verifier :pass-reports])))
+          (is (= [:data-flow-cache :control-flow-graph]
+                 (get-in result [:invalidation-ledger 2 :analysis-invalidated])))
+          (is (= [:use-def-facts :control-flow-facts :safety-facts]
+                 (get-in result [:invalidation-ledger 2 :facts-invalidated])))
+          (is (every? empty? (map :analysis-invalidated (take 2 (:invalidation-ledger result)))))
+          (is (= (:dead-proof operation) (get-in result [:identity-input :operations 0 :dead-proof])))
+          (is (= (select-keys (:source-span operation) [:source-id :start :end])
+                 (get-in result [:identity-input :operations 0 :source-span])))
+          (is (= (:origin-chain operation)
+                 (mapv #(select-keys % [:kind :source-id])
+                       (get-in result [:identity-input :operations 0 :origin-chain]))))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
+          (doseq [mutant [(update result :optimized-operations #(into [operation] %))
+                          (assoc-in result [:decision-log 0 :changed?] true)
+                          (assoc-in result [:identity-input :operations 0 :dead-proof :proof-id] :proof/substituted)]]
+            (is (= :rejected (:status (invoke-engine 'sh16-verify [input mutant])))))
+          (is (false? (invoke-engine 'sh16-post-pass-operation-valid? [operation])))
+          (is (false? (invoke-engine 'sh16-pass-output-operation-valid? [:dead-code-eliminate operation])))))
+      (doseq [[input rule]
+              [[(update-in subject [:operations 0] dissoc :dead-proof) "C13-PROOF"]
+               [(assoc-in subject [:operations 0 :dead-proof :operation-id] :op/other) "C13-PROOF"]
+               [(assoc-in subject [:operations 2 :operands] [:value/dead-add]) "C13-PROOF"]
+               [(assoc-in subject [:operations 0 :effects] #{:io/write}) "C13-EFFECT"]
+               [(assoc-in subject [:operations 0 :safety-outcome] :rejected) "C13-SAFETY"]
+               [(assoc-in subject [:operations 0 :operands] [9223372036854775807 1]) "C13-SAFETY"]
+               [(assoc-in subject [:operations 0 :type] :bool) "C13-SAFETY"]
+               [(assoc-in subject [:operations 0 :numeric-mode] nil) "C13-SAFETY"]
+               [(assoc-in subject [:operations 0 :dead-proof :verified] false) "C13-PROOF"]
+               [(assoc subject :mir-verified false) "C13-CONTRACT"]
+               [(assoc subject :source-span nil) "C13-PRESERVE"]
+               [(update subject :operations conj add) "C13-VERIFY"]]]
+        (rejected input rule))
+      (let [live (assoc base :operations [(dissoc add :dead :dead-proof)])
+            result (optimize live)]
+        (is (= :accepted (:status result)))
+        (is (= :const (get-in result [:optimized-operations 0 :opcode])))
+        (is (= [5] (get-in result [:optimized-operations 0 :operands])))
+        (is (= [:op/dead-add] (get-in result [:decision-log 0 :changed-operations])))
+        (is (= :passed (:status (invoke-engine 'sh16-verify [live result]))))))))
+
 (deftest sh16-simplifies-only-established-boolean-conditions
   ;; Supplied normalized MIR is not fresh authenticated C11 input. Nil is not
   ;; a Bool condition and must not become an unconditional else transfer.
