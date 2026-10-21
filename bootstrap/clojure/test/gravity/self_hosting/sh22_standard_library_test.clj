@@ -905,6 +905,90 @@
                            (assoc-in result [:identity-input :arguments 1] 0)]]
             (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
 
+(deftest sh22-decimal-digits-compose-checked-request-results
+  ;; Mirrors reader's bounded nonnegative quotient/product/difference chain
+  ;; using real request results; this is not reader linkage or Unicode ingress.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        functions {:quot 'sh22-checked-nonnegative-quot :mul 'sh22-checked-mul
+                   :sub 'sh22-checked-sub :add 'sh22-checked-add}
+        order (mapv functions [:quot :mul :sub :add])]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [templates {:quot (request plan 'sh22-checked-nonnegative-quot-request)
+                       :mul (request plan 'sh22-checked-mul-request)
+                       :sub (request plan 'sh22-checked-sub-request)
+                       :add (request plan 'sh22-checked-add-request)}]
+        (doseq [[initial expected iterations]
+                [[0 [48] 0] [9 [57] 1] [10 [49 48] 2] [11 [49 49] 2]
+                 [123 [49 50 51] 3]
+                 [Long/MAX_VALUE [57 50 50 51 51 55 50 48 51 54 56 53 52 55 55 53 56 48 55] 19]]]
+          (let [trace (atom [])
+                step (fn [operation arguments iteration]
+                       (let [input (assoc (get templates operation) :arguments arguments)
+                             observed (atom [])
+                             result (with-redefs-fn
+                                      {scoped (fn [& call]
+                                                (when (some #{(nth call 2)} order)
+                                                  (swap! observed conj
+                                                         [(nth call 2) (:arguments (first (nth call 3)))]))
+                                                (apply original call))}
+                                      #(handle input))
+                             value (get-in result [:value :value])]
+                         (is (= :accepted (:status result)))
+                         (is (= {:artifact :gravity/result :variant :ok :value value} (:value result)))
+                         (is (= {:numeric-mode :checked-i64 :safety-outcome :proven-safe :allocation :none} (:facts result)))
+                         (is (= arguments (:arguments input) (get-in result [:identity-input :arguments])))
+                         (is (= [[(get functions operation) arguments]] @observed))
+                         (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))
+                         (is (and (integer? value) (<= 0 value Long/MAX_VALUE)))
+                         (when (zero? iteration)
+                           (is (= :rejected
+                                  (:status (invoke-engine 'sh22-verify-result
+                                                          [input (assoc-in result [:value :value] (inc value))])))))
+                         (swap! trace into @observed)
+                         value))
+                outcome
+                (loop [remaining initial digits [] iteration 0]
+                  (if (zero? remaining)
+                    {:digits (if (zero? initial) [48] digits) :remaining remaining :iterations iteration}
+                    (do
+                      (when (>= iteration 19)
+                        (throw (ex-info "Decimal request composition exceeded 19 iterations"
+                                        {:initial initial :remaining remaining :iterations iteration})))
+                      (let [next (step :quot [remaining 10] iteration)
+                            product (step :mul [next 10] iteration)
+                            digit (step :sub [remaining product] iteration)
+                            code (step :add [48 digit] iteration)]
+                        (is (< next remaining))
+                        (is (<= product remaining))
+                        (is (<= 0 digit 9))
+                        (is (<= 48 code 57))
+                        (recur next (into [code] digits) (inc iteration))))))]
+            (is (= expected (:digits outcome)))
+            (is (= iterations (:iterations outcome)))
+            (is (= 0 (:remaining outcome)))
+            (is (<= (:iterations outcome) 19))
+            (is (= (vec (mapcat identity (repeat iterations order))) (mapv first @trace)))))
+        ;; A real producer can return a value outside the selected consumer
+        ;; domain. It must reject, not turn signed division into a digit step.
+        (let [producer (assoc (:sub templates) :arguments [0 1]) produced (handle producer)
+              input (assoc (:quot templates) :arguments [(get-in produced [:value :value]) 10])
+              result (handle input)]
+          (is (= :accepted (:status produced)))
+          (is (= -1 (get-in produced [:value :value])))
+          (is (= :rejected (:status result)))
+          (is (= :nonnegative-dividend-required (get-in result [:diagnostics 0 :reason])))
+          (doseq [[request candidate] [[producer produced] [input result]]]
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [request candidate]))))))
+        (doseq [[arguments rule reason]
+                [[[9223372036854775808 10] "STD5001" :integer-out-of-range]
+                 [[123 0] "STD5002" :positive-divisor-required]]]
+          (let [input (assoc (:quot templates) :arguments arguments) result (handle input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))))))
+
 (deftest sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original @scoped

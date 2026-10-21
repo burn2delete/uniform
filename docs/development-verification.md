@@ -290,6 +290,20 @@ must see no `quot` on rejected inputs. This is request-only behavior motivated
 by reader decimal normalization, not reader linkage, signed-negative rounding,
 remainder/general-Integer division, runtime/native or admission evidence.
 
+### Decimal digits through checked request Results
+
+Run `sh22-decimal-digits-compose-checked-request-results` in the same SH-22
+namespace, with the existing checked quotient, multiply, subtract and add
+controls. The test-only driver consumes actual quotient-to-multiply-to-subtract-
+to-add-48 Results for 9, 10, 11, 123 and MAX, using at most 19 iterations.
+Zero returns `[48]` in the driver without arithmetic requests. Each later
+operand comes from the prior Result; deterministic request order, input
+preservation, fresh per-request verification and substitutions are checked.
+Negative producer/domain results retain their existing rejection behavior.
+This adds composition coverage, not operations or numeric semantics. The reader
+helper was neither compiled nor invoked; reader linkage, signed rounding,
+arbitrary-precision division, Unicode admission and C6 proof are not claimed.
+
 ### Keyword membership in bounded ordered Sets
 
 STD2/STD3 govern `:ordered-set-contains-keyword` in the same SH-22 leaf. It
