@@ -277,11 +277,11 @@
 (defn sh22-integer-vector? [values maximum]
   (if (vector? values)
     (if (<= (count values) maximum)
-      (loop [remaining values]
-        (if (= 0 (count remaining))
+      (loop [index 0]
+        (if (= index (count values))
           true
-          (if (integer? (first remaining))
-            (recur (rest remaining))
+          (if (integer? (get values index))
+            (recur (+ index 1))
             false)))
       false)
     false))
