@@ -163,7 +163,14 @@
      :join (get-in mir [:control-flow-graph :join :block-id])}))
 
 (deftest sh13-original-branch-join-interface-is-explicit
-  (let [core (checked ".gravity") mir (build core) result (run core mir)]
+  (let [core (checked ".gravity") mir (build core) result (run core mir)
+        ;; The raw seed plan intentionally projects only six module fields,
+        ;; not exports. Check the ORIGINAL source declaration, independently
+        ;; of the actual compiled function arities below; no admission claim.
+        source-header (binding [*read-eval* false]
+                        (read-string (slurp (str (.resolve @(existing 'root) (existing 'c11-source))))))
+        declared-exports (some #(when (and (seq? %) (= :exports (first %))) (second %))
+                               (drop 2 source-header))]
     (is (= [2 3 3 4]
            (mapv #(get-in @(existing 'c11-plan) [:functions % :arity])
                  '[sh13-run-branch-join-mir sh13-verify-branch-join-execution
@@ -171,7 +178,7 @@
                    sh13-verify-branch-join-execution-with-arguments])))
     (doseq [name '[sh13-run-branch-join-mir-with-arguments
                   sh13-verify-branch-join-execution-with-arguments]]
-      (is (contains? (set (get-in @(existing 'c11-plan) [:module :exports])) name)))
+      (is (contains? (set declared-exports) name)))
     (is (= :gravity/mir-module (:artifact mir)))
     (is (= :meta (:profile mir)))
     (is (= :jvm (:source-target mir)))
