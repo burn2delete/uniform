@@ -460,7 +460,7 @@
             branch (invoke-engine 'sh16-transform-operation [(get-in mixed [:operations 1])])]
         (doseq [subject [(assoc-in input [:operations 3 :operands] [:missing :value/left])
                          (assoc-in input [:operations 3 :operands] [:value/sum-2 :value/left])
-                         (assoc-in input [:operations 3 :operands] [:value/sum-0 :value/sum-0])
+                         (assoc-in input [:operations 3 :operands] [:missing :missing])
                          (assoc-in input [:operations 3 :type] :bool)
                          (update-in input [:operations 3] assoc :effects #{:io/write} :ordering :sequence)
                          (update-in input [:operations 3] assoc :safety-outcome :unsafe-island :unsafe-audit-id :audit/barrier)
@@ -557,7 +557,7 @@
       (doseq [changed-add [(assoc add :type :bool)
                            (assoc add :safety-outcome :unsafe-island :unsafe-audit-id :audit/add)
                            (assoc add :effects #{:io/write} :ordering :sequence)
-                           (assoc add :operands [:value/left :value/left])
+                           (assoc add :operands [:missing :missing])
                            (assoc add :operands [:missing :value/right])]]
         (let [subject (assoc-in input [:operations 2] changed-add) result (optimize subject)]
           (is (= :accepted (:status result)))
