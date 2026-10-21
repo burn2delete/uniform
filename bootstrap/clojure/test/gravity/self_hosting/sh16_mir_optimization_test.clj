@@ -245,6 +245,26 @@
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
           (is (= :rejected (:status (invoke-engine 'sh16-verify
                                                  [subject (assoc-in result [:optimized-operations 1 :operands] [99])]))))))
+      ;; The same old overflow predicate owns immediate ADDs too. MIN-right
+      ;; must not require the hosted seed to negate MIN while deriving a bound.
+      (doseq [[left expected] [[0 Long/MIN_VALUE] [Long/MAX_VALUE -1]]]
+        (let [immediate (assoc add :constant-operands true :operands [left Long/MIN_VALUE])
+              subject (assoc-in input [:operations 1] immediate) result (optimize subject)
+              output (by-id result :op/add)]
+          (is (= :accepted (:status result)))
+          (is (= :const (:opcode output)))
+          (is (= [expected] (:operands output)))
+          (is (= (select-keys immediate [:op-id :result :source-span :origin-chain])
+                 (select-keys output [:op-id :result :source-span :origin-chain])))
+          (is (= [:op/add] (get-in result [:decision-log 0 :changed-operations])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
+      (let [immediate (assoc add :constant-operands true :operands [-1 Long/MIN_VALUE])
+            subject (assoc-in input [:operations 1] immediate) result (optimize subject)]
+        (is (false? (invoke-engine 'sh16-foldable-add? [immediate])))
+        (is (= immediate (invoke-engine 'sh16-transform-operation [immediate])))
+        (is (= :rejected (:status result)))
+        (is (= "C13-SAFETY" (get-in result [:diagnostics 0 :rule])))
+        (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))
       (doseq [subject [(assoc-in input [:operations 0 :operands] [4611686018427387904])
                        (assoc-in input [:operations 0 :operands] [-4611686018427387905])
                        (assoc-in input [:operations 0 :operands] [Long/MAX_VALUE])
