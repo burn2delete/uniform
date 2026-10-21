@@ -9339,6 +9339,39 @@ CFG/SSA propagation, provider verification, fresh authenticated C11/source
 input, native execution or migration evidence. No pass, schema, public API or
 budget is added.
 
+The next C13 executable increment removes unused intermediate results created
+by fresh ADD folding in the existing DCE pass. It reconstructs the fold
+selection from the original request, requires exact current-operation equality
+to the pure/proven-safe bounded-i64 producer output, unique result IDs across
+both original and current operations, and no uses in the complete current
+operand scan. Original prefix constants and used final results remain. This
+does not delete arbitrary constants, compute or control operations, introduce
+a fixed point, or accept a supplied decision as evidence. Explicit validated
+dead-proof selections retain their proof IDs; local deletions add no synthetic
+or nil proof ID. Existing ordered decision/replay records, runtime invalidation,
+original input/source identity and fresh verification remain unchanged for
+this normalized interface. Preparation has up to eight bounded operation
+traversals and 2,048 operand positions under unchanged 128/16 input limits,
+not a two-walk or linear-CPU/performance claim.
+
+The `efbf5013` RED run retained 120 passes and 18 failures in 138 assertions.
+The first GREEN attempt at `944005a6` failed namespace loading with no tests
+or timing receipt; its delimiter-only successor `31de853e` ran 13 tests with
+1,793 passes and two failures in 1,795 assertions, leaving seven selectors
+unrun. Both failures were mixed-proof fixture placement: a prepended dead
+compute correctly stopped propagation. Moving it after the ADD prefix and
+correcting deletion order produced `ee7bf63b`, which passed the changed
+selector plus seven unrun selectors: eight tests/767 assertions. Twelve
+unchanged selectors/1,621 assertions passed within the failed preceding run;
+these are retained individual results, not a second passing invocation.
+Together they cover 20 distinct selectors/2,388 assertions, including the
+174-assertion local-rule regression. Boundary checks separately pass 6/11;
+LOC separately passes 2,021 files, zero exceptions, maximum 250. Failed epochs
+remain separate. These are original G/Q constructors and public optimization
+and recomputation over supplied normalized DATA, not general CFG/SSA,
+proof-provider verification, fresh authenticated C11/source input, native
+execution or migration evidence. No schema, API, pass or input cap is added.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
