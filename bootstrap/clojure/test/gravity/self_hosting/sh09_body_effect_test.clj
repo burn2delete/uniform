@@ -6350,6 +6350,78 @@
               (is (= analyzed (analyze work)))
               (is (= :rejected (:status (analyze (dec work))))))))))))
 
+(deftest body-sha-suffix-character-membership-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'sha-suffix-character-membership-input)
+        establish (ns-resolve upstream 'sha-suffix-character-membership-established)
+        text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        wrong (str (subs text 0 7) "g" (subs text 8))]
+    (doseq [[value positions] [[text nil] [wrong nil] [text 0] [text 1] [text 2]]]
+      (let [base (input value 7 71 positions) ids (zipmap (keys (:nodes base)) (map sha (range 4000 4100)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            convert-call #(-> % (update :core-node-id ids) (update :operator-node-id ids)
+                                (update :argument-node-ids (fn [xs] (mapv ids xs)))
+                                (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+            convert-edge #(-> % (update :call-core-node-id ids)
+                                (update :argument-core-node-ids (fn [xs] (mapv ids xs)))
+                                (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+            node-list (mapv convert-node (get-in base [:core :nodes])) nodes (into {} (map (juxt :node-id identity) node-list))
+            calls (mapv convert-call (get-in base [:core :calls])) edges (mapv convert-edge (get-in base [:core :call-edges]))
+            core (assoc (:core base) :nodes node-list :calls calls :call-edges edges)
+            base (assoc base :core core :nodes nodes :node (nodes (ids :suffix-member)) :call (last calls) :edge (last edges)
+                             :types (into {} (map (fn [[id type]] [(ids id) type]) (:types base))))
+            {:keys [types child slice first-result membership]} (establish base)
+            descriptors [(:descriptor child) (:descriptor slice) (:descriptor first-result) (:descriptor membership)]
+            bindings (:bindings base) forms (:forms base) id (ids :suffix-member) first-id (ids :suffix-first)
+            call (last calls)
+            facts {:module (:module core) :type-table types :function-type-table []
+                   :call-type-facts (mapv (fn [name descriptor] (c7 name [descriptor (:module core)]))
+                                         ['sh08-scv-call-fact 'sh08-vsl-call-fact 'sh08-lq-call-fact 'sh08-ksm-call-fact] descriptors)
+                   :constraint-ledger (mapv (fn [name descriptor] (c7 name [descriptor]))
+                                           ['sh08-scv-constraint 'sh08-vsl-constraint 'sh08-lq-constraint 'sh08-ksm-constraint] descriptors)}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            quotient (leaf 'body-nq-context request facts bindings 65536)
+            queries (leaf 'body-lq-context request facts bindings 65536)
+            members (leaf 'body-mc-context request facts bindings 65536)
+            facts (assoc facts :quotient-context (:context quotient) :list-query-context (:context queries)
+                              :map-contains-context (:context members))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes id]) first-record (get-in graph [:nodes first-id])]
+        (is (= :accepted (:status child) (:status slice) (:status first-result) (:status membership)
+                        (:status quotient) (:status queries) (:status members) (:status graph)) (pr-str graph))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record) (:direct first-record)))
+        (is (nil? (:allocation record)))
+        (is (nil? (:allocation first-record)))
+        (is (= #{:memory/allocate} (get-in graph [:nodes (ids :suffix-hex-set) :direct])))
+        (is (= (if (nil? positions) #{:memory/allocate} #{:memory/allocate :error/throw}) (:transitive record)))
+        (is (= (cond (= positions 0) #{:error/throw} (nil? positions) #{:memory/allocate}
+                    :else #{:memory/allocate :error/throw}) (:transitive first-record)))
+        (is (= (not= positions 0) (get-in graph [:nodes (ids :call) :allocation :normal-completion-possible?])))
+        (is (= (nil? positions) (get-in graph [:nodes (ids :slice-call) :allocation :normal-completion-possible?])))
+        (is (= (:ordered-evaluation-node-ids call) (:dependencies record) (:evaluated-children record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (doseq [[name result] [['body-nq-context quotient] ['body-lq-context queries] ['body-mc-context members]]]
+          (is (= result (leaf name request facts bindings (:work-count result))))
+          (is (= :rejected (:status (leaf name request facts bindings (dec (:work-count result)))))))
+        (doseq [field [:call-type-facts :constraint-ledger] index (range 4)]
+          (is (false? (valid (update facts field #(vec (concat (subvec % 0 index) (subvec % (inc index))))))))
+          (is (false? (valid (update facts field conj (get (get facts field) index))))))
+        (doseq [[index fact-name constraint-name path] [[0 'sh08-scv-call-fact 'sh08-scv-constraint [:conversion-proof :scalar-count]]
+                                                       [1 'sh08-vsl-call-fact 'sh08-vsl-constraint [:bounds-proof :result-count]]
+                                                       [2 'sh08-lq-call-fact 'sh08-lq-constraint [:bounds-proof :vector-length]]
+                                                       [3 'sh08-ksm-call-fact 'sh08-ksm-constraint [:membership-policy :comparison]]]]
+          (let [changed (assoc-in (get descriptors index) path :forged)
+                candidate (-> facts (assoc-in [:type-table (:operator-node-id changed)] changed)
+                              (assoc-in [:call-type-facts index] (c7 fact-name [changed (:module core)]))
+                              (assoc-in [:constraint-ledger index] (c7 constraint-name [changed])))]
+            (is (false? (valid candidate)))))
+        (is (false? (leaf 'body-graph-equations-valid? core facts {}
+                          (assoc-in (:nodes graph) [id :direct] #{:memory/allocate}))))))))
+
 (deftest body-sha-prefix-comparison-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
