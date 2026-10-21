@@ -9928,7 +9928,8 @@ literal pass and placement RED are not added again. LOC separately passed
 2,021 files, zero exceptions, maximum 250.
 
 Invalid unselected bodies, metadata, types, source paths, Nil field presence
-and altered MIR/results reject before execution. Empty, nested or effectful
+and altered MIR reject before execution. Substituted results reject through
+fresh recomputation and comparison. Empty, nested or effectful
 bodies, calls, captures and implicit Nil remain unsupported by this bridge.
 Supplied G/Q constructor witnesses do not establish actual C6 type-family or
 source adaptation, native execution, whole-compiler behavior, SH-13 completion
