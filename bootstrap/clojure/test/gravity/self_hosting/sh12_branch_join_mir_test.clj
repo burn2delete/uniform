@@ -260,7 +260,7 @@
   ;; packet or a replacement acceptance function. Public hosted admission is
   ;; still outside this development fragment check.
   (let [function (get-in @parameter-c6-plan [:functions 'c6-c10-build-checked-core-template])
-        body (first (:instructions function))
+        body (:then (first (:instructions function)))
         shape (first (filter #(= 'plan-shape-valid? (:name %)) (:bindings body)))
         predicate (get-in shape [:expr :then :then :test])]
     (is (= :let (:op body)))
