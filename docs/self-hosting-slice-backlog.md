@@ -8791,6 +8791,24 @@ zero exceptions, maximum 250. No operation, API, fixture, manifest or authority
 change follows. Other malformed-byte carrier failures, complete text/IO support,
 provider/native execution and admission remain outside this repair.
 
+### Special UTF-8 leads classify the second byte before range arithmetic
+
+At `da5a9c55`, E0/ED/F0/F4 use the existing continuation-byte Integer classifier
+before their original narrower second-byte ranges. Valid low/high endpoints,
+third/fourth-byte order, diagnostics and earlier authority/bound priorities
+remain. Real G/Q validate-to-stdout Results and fresh recomputation/substitutions
+exercise both consumers without provider IO.
+
+Original RED `9e1471c2` naturally completed 592 assertions: 312 passes and 280
+failures, with zero uncaught test-runner errors. Test-local observation retained
+64 actual public-call host exceptions (256 failed assertions) and eight accepted
+Float-byte producer cases (24 failed assertions); these are distinct failures,
+not an oracle correction. The guard successor passed 9/1206 (592 new plus 614
+affected controls); boundary separately passed 6/11, or 15/1217 across two passing
+invocations. LOC separately passed 2,022 files, zero exceptions, maximum 250.
+No operation, schema, API, fixture, provider execution, complete text/IO,
+universal host-failure freedom or migration claim follows.
+
 ### Keyword membership in bounded ordered Sets
 
 The SH-22 leaf now executes `:ordered-set-contains-keyword` under STD2/STD3.

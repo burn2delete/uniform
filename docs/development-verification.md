@@ -318,6 +318,16 @@ descriptor construction and none for the selected rejected sequences. Fresh
 verification and substitutions remain required. No provider IO is executed,
 and this guard does not establish universal malformed-byte or host-failure freedom.
 
+The four special UTF-8 leads E0, ED, F0 and F4 now classify the second byte with
+the existing Integer continuation-byte predicate before their narrower range
+checks. Original valid ranges and third/fourth-byte check order remain. Run
+`sh22-special-utf8-leads-classify-second-bytes-before-range-checks` with the
+adjacent controls above. Actual validate-to-stdout Results cover valid endpoints;
+selected non-Integer second bytes and out-of-range Integers reject with the
+existing STD4001 diagnostics. Earlier authority and collection-bound failures
+retain precedence. This is a bounded classifier repair, not full text/IO support,
+provider execution or migration evidence.
+
 ### Keyword membership in bounded ordered Sets
 
 STD2/STD3 govern `:ordered-set-contains-keyword` in the same SH-22 leaf. It
