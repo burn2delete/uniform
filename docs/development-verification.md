@@ -331,6 +331,28 @@ allocation evidence. General Sets, mixed families, host-provider/callback safety
 compiler linkage, full SH-22 and self-hosting are not established. Historical
 SH07 pins remain unchanged and do not authenticate this revised source.
 
+### Integer membership after bounded ordered-Set insertion
+
+STD2/STD3/STD5 govern `:ordered-set-contains-integer` in the existing SH-22
+request API. Admit at most 256 actual Integer members and an Integer needle;
+this is family classification, not signed-i64 narrowing or arithmetic. Bounds
+precede the complete indexed Vector census, member/needle checks precede any
+equality, and complete uniqueness validation precedes the membership query.
+Late invalid members or duplicates cannot hide behind an early hit. Preserve
+the Set and existing `STD3001`/`STD10003`/`STD1001` diagnostic boundaries.
+
+Run `sh22-integer-set-membership-consumes-real-insertion-results` in
+`gravity.self-hosting.sh22-standard-library-test`; the affected whole namespace
+is a proportionate 512 MiB check for policy, manifest, paired fixtures, routing
+and recomputation. Include real `:ordered-set-conj` results, reader codepoint
+and compiler/runtime arity values as DATA, 256/257, values beyond signed64,
+wrong families, duplicate-after-hit, authority and result-substitution controls.
+The experimental opt-in `:meta` surface has 20 operations; four public exports
+and the envelope stay unchanged. Query effects/capabilities are empty and
+collection-value allocation is `:none`. This request API does not establish
+ordinary source Integer-Set lowering, whole-client linkage, Unicode ingress,
+general mixed-family Sets, native allocation, migration or SH-22 completion.
+
 ### Bounded Keyword Set value equality
 
 STD2/STD3 govern `:ordered-set-equal-keyword` in the same experimental SH-22
