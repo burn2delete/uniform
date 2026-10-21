@@ -2667,7 +2667,45 @@
               {:status :rejected :reason :incoherent-loop-member-source :work-count (+ work cost)})))))
     {:status :rejected :reason :incoherent-loop-member-source :work-count 0}))
 
+(defn sh08-lsi-empty-constructor? [node forms]
+  (let [source (get node :source) id (get source :form-id)]
+    (if (sh08-lsi-id? id)
+      (let [owner (get forms id) attrs (get node :attributes) evaluation (get node :evaluation)]
+        (if (map? owner)
+          (if (map? attrs)
+          (if (= 3 (count attrs))
+          (if (contains? attrs :literal-kind)
+          (if (contains? attrs :element-count)
+          (if (contains? attrs :source-value)
+          (if (sh08-lsi-id? (get node :node-id))
+          (if (sh08-lsi-id? (get source :syntax-id))
+          (if (sh08-lsi-id? (get owner :form-id))
+          (if (sh08-lsi-id? (get owner :syntax-id))
+          (if (= id (get owner :form-id))
+          (if (= (get source :syntax-id) (get owner :syntax-id))
+          (if (= :collection-literal (get node :core-form))
+          (if (= :set (get owner :kind) (get attrs :literal-kind))
+          (if (integer? (get attrs :element-count))
+          (if (= 0 (get attrs :element-count))
+          (if (set? (get attrs :source-value))
+          (if (= 0 (count (get attrs :source-value)))
+          (if (set? (get owner :value))
+          (if (= 0 (count (get owner :value)))
+          (if (vector? (get node :children))
+          (if (= 0 (count (get node :children)))
+          (if (vector? (get node :resolved-binding-ids))
+          (if (= 0 (count (get node :resolved-binding-ids)))
+          (if (vector? (get owner :child-form-ids))
+          (if (= 0 (count (get owner :child-form-ids)))
+          (if (map? evaluation)
+          (if (= :left-to-right (get evaluation :kind))
+          (if (vector? (get evaluation :order))
+          (if (= 0 (count (get evaluation :order)))
+          true false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false) false)) false)))
+
 (defn sh08-lsi-leaf? [node forms mode]
+  (if (= :collection-literal (get node :core-form))
+    (if (= :member mode) false (sh08-lsi-empty-constructor? node forms))
   (if (if (sh08-lsi-id? (get (get node :source) :form-id))
         (if (= :quote (get node :core-form)) (sh08-lsi-id? (get (get node :attributes) :quoted-form-id)) true) false)
     (let [attrs (get node :attributes) quote? (= :quote (get node :core-form))
@@ -2693,7 +2731,7 @@
                               (if (= kind (get payload :kind)) (= value (get payload :value)) false) false) false) false) false) false)) false) false) false)
                 (if (= kind (get owner :kind)) (= value (get owner :value)) false))
             (if (= mode :member) (if (= :symbol kind) (symbol? value) false)
-              (if (= :set kind) (if (set? value) (= 0 (count value)) false) false)) false) false) false) false) false)) false))
+              (if (= :set kind) (if (set? value) (= 0 (count value)) false) false)) false) false) false) false) false)) false)))
 
 (defn sh08-lsi-path [start mode binding env budget]
   (loop [id start path [] seen #{} work 0]

@@ -32406,3 +32406,69 @@
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest current-gravity-unquoted-empty-symbol-set-loop-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [{:keys [context nodes forms empty-type checked] :as data}
+        ((ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'unquoted-symbol-set-loop-data))
+        node (nodes :value-init)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        compile #(invoke 'p15-s23-typed-compile-node %1 :loop-node %2)
+        result (compile context 65536) runtime-plan (:plan (typed-catch-runtime-projection))
+        value (when (= :complete (:status result))
+                (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+                  'p15-s23-runtime-evaluate-closed-instruction [(:value result) {'member 'assoc} ""]))]
+    (is (= :accepted (:status checked)))
+    (is (= :complete (:status result)) (pr-str result))
+    (is (= {:op :set-literal :items []} (get-in result [:value :bindings 1 :expr])))
+    (is (= [#{'assoc} "" :normal] value))
+    (is (= empty-type (get-in context [:types :value-init])))
+    (when (= :complete (:status result))
+      (is (= result (compile context (:work-count result))))
+      (is (= :rejected (:status (compile context (dec (:work-count result)))))))
+    (doseq [changed [(assoc-in context [:nodes :value-init :attributes :source-value] #{:bad})
+                    (assoc-in context [:nodes :value-init :evaluation :kind] :no-evaluation)
+                    (assoc-in context [:forms :value-init-form :kind] :vector)
+                    (assoc-in context [:loop-rows [:loop-slot-type :value] :solution :initializer-type]
+                              {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})]]
+      (is (= :rejected (:status (compile changed 65536)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "empty Set source hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "empty Set source equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "empty Set source printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}]
+              [changed source] [[(assoc-in node [:source :form-id] bad) forms]
+                                [(assoc-in node [:source :syntax-id] bad) forms]
+                                [(assoc-in node [:attributes :element-count] bad) forms]
+                                [(assoc-in node [:attributes :source-value] bad) forms]
+                                [node (assoc-in forms [:value-init-form :value] bad)]
+                                [node (assoc-in forms [:value-init-form :syntax-id] bad)]]]
+        (let [env {:nodes {:value-init changed} :forms source :types {:value-init empty-type} :aliases {}}]
+          (is (false? (invoke 'p15-s23-lsi-empty-constructor? changed source)))
+          (doseq [quota [15 16]] (is (= :rejected (:status (invoke 'p15-s23-lsi-path :value-init :initializer :value env quota)))))
+          (is (zero? @callbacks)))))
+))
+
+(deftest current-gravity-unquoted-empty-symbol-set-loop-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name expected-seed]
+            [["accepted" "unquoted-empty-symbol-set-loop" #{}]
+             ["rejected" "nonempty-keyword-symbol-set-loop" #{:bad}]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g) nodes (tree-seq coll? seq forms)]
+        (is (= g q))
+        (is (= forms (bootstrap/read-forms q-path q)))
+        (is (= 1 (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'loop (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'recur (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'quote (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'conj (first %))) nodes))))
+        (let [main (first (filter #(and (seq? %) (= 'defn (first %))) forms))
+              seed (get (second (nth main 3)) 3)]
+          (is (set? seed))
+          (is (= expected-seed seed)))))))

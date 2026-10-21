@@ -2226,4 +2226,79 @@
                     #(assoc-in % [:value-init-form :value] #{:bad})
                     #(assoc-in % [:value-init-form :child-form-ids] [:other])
                     #(assoc-in % [:value-init-form :syntax-id] :other)]]
-      (is (false? (c7-invoke 'sh08-lsi-leaf? [node (mutate forms) :initializer]))))))
+      (is (false? (c7-invoke 'sh08-lsi-leaf? [node (mutate forms) :initializer]))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "empty Set source hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "empty Set source equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "empty Set source printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}]
+              [changed source] [[(assoc-in node [:source :form-id] bad) forms]
+                                [(assoc-in node [:source :syntax-id] bad) forms]
+                                [(assoc-in node [:attributes :element-count] bad) forms]
+                                [(assoc-in node [:attributes :source-value] bad) forms]
+                                [node (assoc-in forms [:value-init-form :value] bad)]
+                                [node (assoc-in forms [:value-init-form :syntax-id] bad)]]]
+        (let [env {:nodes {:value-init changed} :forms source :types {:value-init empty-type} :aliases {}}]
+          (is (false? (c7-invoke 'sh08-lsi-empty-constructor? [changed source])))
+          (doseq [quota [15 16]] (is (= :rejected (:status (c7-invoke 'sh08-lsi-path [:value-init :initializer :value env quota])))))
+          (is (zero? @callbacks)))))
+))
+
+(deftest unquoted-empty-symbol-set-loop-effects-development-kernel
+  (let [{:keys [core nodes forms types bindings context checked rows empty-type]} (unquoted-symbol-set-loop-data)
+        node (nodes :value-init)
+        facts {:module (:module core) :type-table types :constraint-ledger rows :function-type-table []
+               :append-context {:forms forms :bindings bindings}}
+        joined (effects 'body-loop-joins core facts 65536)]
+    (is (= :accepted (:status checked) (:status joined)) (pr-str joined))
+    (is (= rows (:rows joined)))
+    (when (= :accepted (:status joined))
+      (is (= joined (effects 'body-loop-joins core facts (:work-count joined))))
+      (is (= :body-deferred-work-limit (:reason (effects 'body-loop-joins core facts (dec (:work-count joined)))))))
+    (is (true? (effects 'body-lsi-empty-constructor? node forms)))
+    (doseq [changed [(assoc-in facts [:append-context :forms :value-init-form :value] #{:bad})
+                    (assoc-in facts [:constraint-ledger 1 :producer-rule] :sh08-loop-target-types-v1)]]
+      (is (= :rejected (:status (effects 'body-loop-joins core changed 65536)))))
+    (let [ids (zipmap (concat (keys nodes) [:again :value "loop-target" "function-target"])
+                     (map #(str "sha256:" (format "%064x" %)) (range 4000 4100)))
+          rename (fn rename [field value]
+                   (cond
+                     (map? value) (into {} (map (fn [[key item]]
+                       [(if (contains? #{:nodes :types :forms :bindings :calls :edges :call-order :call-facts :loop-rows
+                                         :loop-binding-index :targets :target-owners :transfers :parameter-types :locals} field)
+                          (walk/postwalk-replace ids key) key)
+                        (rename key item)]) value))
+                     (vector? value) (mapv #(rename nil %) value)
+                     (seq? value) (apply list (map #(rename nil %) value))
+                     (set? value) (set (map #(rename nil %) value))
+                     (contains? #{:core-form :kind :position :literal-kind :value :quoted-value :name} field) value
+                     :else (get ids value value)))
+          [converted converted-context] (rename nil [core context])
+          converted (assoc converted :identity-preimage (select-keys converted [:loop-bindings :recur-targets :recur-transfers]))
+          source-facts {:module (:module converted) :type-table (:types converted-context)
+                        :constraint-ledger (:ledger converted-context) :function-type-table []
+                        :call-type-facts (vec (vals (:call-facts converted-context)))}
+          request {:canonical-core-artifact converted :b47-context {:authenticated-core-request {:forms (vec (vals (:forms converted-context)))}}}
+          prepared (effects 'body-va-context request source-facts (:bindings converted-context) 65536)
+          source-facts (assoc source-facts :append-context (:context prepared))
+          graph (effects 'body-derive-loop-nodes converted source-facts {} 65536)]
+      (is (= :accepted (:status prepared) (:status graph)) (pr-str graph))
+      (is (= #{:memory/allocate} (get-in graph [:nodes (ids :value-init) :direct])))
+      (is (= #{:memory/allocate} (get-in graph [:nodes (ids :transfer) :transitive])))
+      (is (true? (effects 'body-graph-equations-valid? converted source-facts {} (:nodes graph)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "empty Set source hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "empty Set source equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "empty Set source printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}]
+              [changed source] [[(assoc-in node [:source :form-id] bad) forms]
+                                [(assoc-in node [:source :syntax-id] bad) forms]
+                                [(assoc-in node [:attributes :element-count] bad) forms]
+                                [(assoc-in node [:attributes :source-value] bad) forms]
+                                [node (assoc-in forms [:value-init-form :value] bad)]
+                                [node (assoc-in forms [:value-init-form :syntax-id] bad)]]]
+        (let [env {:nodes {:value-init changed} :forms source :types {:value-init empty-type} :aliases {}}]
+          (is (false? (effects 'body-lsi-empty-constructor? changed source)))
+          (doseq [quota [15 16]] (is (= :rejected (:status (effects 'body-lsi-path :value-init :initializer :value env quota)))))
+          (is (zero? @callbacks)))))
+))
