@@ -216,6 +216,89 @@
             (invoke-engine
              'sh16-verify [gravity-request gravity-result]))))))
 
+(deftest sh16-records-only-used-dce-and-runtime-proof-occurrences
+  ;; Normalized proof IDs describe supplied records, not provider authority.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-no-change-request)
+          mixed (request plan 'sh16-mixed-optimization-request)
+          elision (request plan 'sh16-proof-elision-request)
+          dead (fn [id proof-id]
+                 (-> (get-in mixed [:operations 2])
+                     (assoc :op-id id :result id)
+                     (assoc-in [:dead-proof :operation-id] id)
+                     (assoc-in [:dead-proof :proof-id] proof-id)))
+          check (fn [id check-id proof-id]
+                  (-> (get-in elision [:operations 0])
+                      (assoc :op-id id :result id :runtime-check-id check-id)
+                      (assoc-in [:proof :operation-id] id)
+                      (assoc-in [:proof :check-id] check-id)
+                      (assoc-in [:proof :proof-id] proof-id)))
+          rejected (fn [input rule]
+                     (let [result (optimize input)]
+                       (is (= :rejected (:status result)))
+                       (is (= rule (get-in result [:diagnostics 0 :rule])))
+                       (is (nil? (:optimized-operations result)))
+                       (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))))]
+      (doseq [proof-ids [[:proof/dead-b :proof/dead-a] [:proof/dead-same :proof/dead-same]]]
+        (let [operations [(dead :op/dead-b (first proof-ids)) (dead :op/dead-a (second proof-ids))]
+              input (assoc base :operations (into operations (:operations base)))
+              result (optimize input)]
+          (is (nil? (invoke-engine 'sh16-request-error [input])))
+          (is (= :accepted (:status result)))
+          (is (= proof-ids (get-in result [:decision-log 2 :proofs-used])))
+          (is (= proof-ids (get-in result [:translation-validation :proofs])))
+          (is (= [:op/dead-b :op/dead-a] (get-in result [:decision-log 2 :changed-operations])))
+          (is (= [[] [] []] (mapv :proofs-used ((juxt first second last) (:decision-log result)))))
+          (is (= [[] [] [] []] (mapv :proofs-invalidated (:invalidation-ledger result))))
+          (is (= [] (get-in result [:post-pass-verifier :invalidated-proofs])))
+          (is (= proof-ids (mapv #(get-in % [:dead-proof :proof-id])
+                                (take 2 (get-in result [:identity-input :operations])))))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
+          (doseq [mutant [(assoc-in result [:decision-log 2 :proofs-used] [])
+                          (assoc-in result [:translation-validation :proofs] [])
+                          (update-in result [:translation-validation :proofs] conj :proof/substituted)]]
+            (is (= :rejected (:status (invoke-engine 'sh16-verify [input mutant])))))))
+      (doseq [proof-ids [[:proof/runtime-b :proof/runtime-a] [:proof/runtime-same :proof/runtime-same]]]
+        (let [checks [(check :op/check-b :check/b (first proof-ids))
+                      (check :op/check-a :check/a (second proof-ids))]
+              input (assoc elision :operations (conj checks (last (:operations elision))))
+              result (optimize input)
+              dead-operation (dead :op/dead :proof/dead)
+              combined (update input :operations #(into [dead-operation] %))
+              combined-result (optimize combined)]
+          (is (nil? (invoke-engine 'sh16-request-error [input])))
+          (is (= :accepted (:status result)))
+          (is (= proof-ids (get-in result [:decision-log 3 :proofs-used])))
+          (is (= proof-ids (get-in result [:translation-validation :proofs])))
+          (is (= [] (get-in result [:decision-log 2 :proofs-used])))
+          (is (= [proof-ids proof-ids proof-ids []]
+                 (mapv :proofs-invalidated (:invalidation-ledger result))))
+          (is (= (vec (distinct proof-ids)) (get-in result [:post-pass-verifier :invalidated-proofs])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
+          ;; DCE invalidates analysis needed for later runtime-check elision;
+          ;; retained runtime proofs must not be reported as used or as dead IDs.
+          (is (= :accepted (:status combined-result)))
+          (is (= [:proof/dead] (get-in combined-result [:decision-log 2 :proofs-used])))
+          (is (= [] (get-in combined-result [:decision-log 3 :proofs-used])))
+          (is (= [:proof/dead] (get-in combined-result [:translation-validation :proofs])))
+          (is (= [proof-ids proof-ids proof-ids []]
+                 (mapv :proofs-invalidated (:invalidation-ledger combined-result))))
+          (is (= (vec (distinct proof-ids)) (get-in combined-result [:post-pass-verifier :invalidated-proofs])))
+          (is (= [:check/b :check/a]
+                 (get-in combined-result [:residual-check-report :retained-runtime-checks])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [combined combined-result]))))))
+      (let [result (optimize base) operation (dead :op/dead :proof/dead)
+            input (update base :operations #(into [operation] %))]
+        (is (= [[] [] [] []] (mapv :proofs-used (:decision-log result))))
+        (is (= [] (get-in result [:translation-validation :proofs])))
+        (doseq [[mutant rule]
+                [[(update-in input [:operations 0] dissoc :dead-proof) "C13-PROOF"]
+                 [(assoc-in input [:operations 0 :dead-proof :operation-id] :op/other) "C13-PROOF"]
+                 [(assoc-in input [:operations 0 :dead-proof :verified] false) "C13-PROOF"]
+                 [(assoc-in input [:operations 0 :effects] #{:io/write}) "C13-EFFECT"]
+                 [(assoc-in input [:operations 2 :operands] [:op/dead]) "C13-PROOF"]]]
+          (rejected mutant rule))))))
+
 (deftest sh16-defers-proven-unused-adds-until-dead-code-elimination
   ;; Original compiler execution over supplied normalized proof DATA, not
   ;; proof-provider evidence or fresh authenticated C11 input.
