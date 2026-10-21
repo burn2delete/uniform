@@ -1,7 +1,11 @@
 (ns gravity.self-hosting.sh17-c13-optimized-mir-carrier-test
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh18-native-toolchain-harness :as tool-harness])
+  (:import [java.nio.charset StandardCharsets]
+           [java.nio.file Files]))
 
 ;; This file is deliberately a carrier test, rather than another source
 ;; coverage test.  The packet builders below are the authenticated public
@@ -483,6 +487,100 @@
         ;; context, not attributed to the local inverse/forward fold predicate.
         (is (not= (bootstrap/p15-s23-c13-expected-record mir evidence)
                   (assoc-in folded [:optimized-mir :control-flow-graph :join :incoming 0 :value] "else-value")))))))
+
+(deftest sh17-development-folded-bool-llvm-ir-passes-cross-target-clang
+  ;; External cross-target IR validation only: supplied MIR DATA, no public
+  ;; packet, linking, target execution, fresh C11 or native-admission claim.
+  (let [requested-target "x86_64-unknown-linux-gnu"
+        requested-tool (System/getenv "GRAVITY_SH18_CC")
+        _ (when-not (and requested-tool (.isAbsolute (io/file requested-tool)))
+            (throw (ex-info "Set GRAVITY_SH18_CC to an absolute Clang executable"
+                            {:requested requested-tool})))
+        toolchain (tool-harness/discover-toolchain)
+        _ (when-not (and (= :available (:status toolchain))
+                         (= :clang (:compiler-family toolchain))
+                         (= requested-tool (:selected toolchain)))
+            (throw (ex-info "Explicit Clang is unavailable; tool validation cannot skip"
+                            {:toolchain toolchain})))
+        compiler (:compiler-path toolchain)
+        tool-observation {:toolchain toolchain :compiler-sha256 (tool-harness/file-sha256 compiler)
+                          :requested-target requested-target
+                          :identity-probe-commands [[compiler "--version"] [compiler "-dumpmachine"]]
+                          :identity-probe-timeout-ms 5000
+                          :identity-probe-stream-bound tool-harness/maximum-output-bytes
+                          :authoritative? false}
+        execute (fn [plan function arguments]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function
+                   {:engine :gravity-sh17-development-cross-target-clang :compiler-artifact-plan? true}
+                   plan function arguments))
+        cases (mapv
+               (fn [[label diamond? right expected]]
+                 (let [{:keys [mir evidence]} (if diamond?
+                                              (development-diamond-input 2 right false 42 7)
+                                              (development-b3-comparison-input 2 right false))
+                       folded (execute @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+                       policy {:fact-bindings (get-in folded [:semantic-identity :fact-bindings])
+                               :supported-operation-ids (get-in folded [:semantic-identity :operation-order])}
+                       lowering (execute @development-b3-plan 'b3-build-bounded-llvm-x86_64-linux [(:optimized-mir folded)])]
+                   (is (= :accepted (:status folded)))
+                   (is (= folded (bootstrap/p15-s23-c13-expected-record mir evidence)))
+                   (is (= mir (execute @c14-plan 'c14-equality-original-mir [folded])))
+                   (is (true? (execute @c14-plan 'c14-equality-translation-valid? [folded policy])))
+                   (is (true? (execute @c14-plan 'c14-llvm-bounded-mir-surface-valid? [folded policy])))
+                   (is (= :constructed-unverified (:status lowering)))
+                   (is (= :pending-host-content-binding (get-in lowering [:verified-input-closure :status])))
+                   (is (= expected (:semantic-result lowering)))
+                   (is (str/includes? (:llvm-ir lowering) (str "target triple = \"" requested-target "\"")))
+                   {:label label :ir (:llvm-ir lowering) :reject? false}))
+               [["linear-true" false 2 true] ["linear-false" false 3 false]
+                ["diamond-true" true 2 42] ["diamond-false" true 3 7]])
+        negative-ir (str/replace-first (:ir (last cases)) "ret i32 %exit" "ret i32 %sh17_undefined")
+        subjects (conj cases {:label "undefined-ssa" :ir negative-ir :reject? true})]
+    (is (not= (:ir (last cases)) negative-ir))
+    (is (= 5 (count subjects)))
+    (is (.isAbsolute (io/file compiler)))
+    (is (not (str/blank? (:version-line toolchain))))
+    (is (not (str/blank? (:target toolchain))))
+    (is (false? (:shell-used? toolchain)))
+    (println (pr-str {:sh17-external-tool-observation tool-observation}))
+    (tool-harness/with-temporary-directory
+      "gravity-sh17-folded-bool-ir-"
+      (fn [directory]
+        ;; Each call returns through the existing bounded runner before the
+        ;; next starts. File-size checks are postconditions, not OS quotas.
+        (doseq [{:keys [label ir reject?]} subjects]
+          (let [bytes (.getBytes ir StandardCharsets/UTF_8)
+                source (.resolve directory (str label ".ll"))
+                output (.resolve directory (str label ".s"))
+                _ (when-not (<= 1 (alength bytes) 65536)
+                    (throw (ex-info "LLVM IR size exceeds test bound" {:case label :bytes (alength bytes)})))
+                _ (Files/write source bytes (make-array java.nio.file.OpenOption 0))
+                source-hash (tool-harness/file-sha256 source)
+                command [compiler "-target" requested-target "-x" "ir" "-Werror=override-module"
+                         "-S" (str source) "-o" (str output)]
+                process (tool-harness/run-bounded-process
+                         {:command command :working-directory (str directory)
+                          :timeout-ms 10000 :max-output-bytes 8192})
+                output-bytes (when (Files/isRegularFile output (make-array java.nio.file.LinkOption 0))
+                               (Files/size output))
+                _ (when (and output-bytes (> output-bytes 65536))
+                    (throw (ex-info "Assembly size exceeds test bound" {:case label :bytes output-bytes})))
+                observation {:case label :command command :process process
+                             :llvm-ir ir :ir-bytes (alength bytes) :ir-sha256 source-hash
+                             :assembly-bytes output-bytes
+                             :assembly-sha256 (when output-bytes (tool-harness/file-sha256 output))
+                             :authoritative? false}]
+            (println (pr-str {:sh17-cross-target-compile-observation observation}))
+            (is (= :completed (:status process)) observation)
+            (is (<= (:stdout-bytes process) 8192))
+            (is (<= (:stderr-bytes process) 8192))
+            (if reject?
+              (do (is (integer? (:exit-code process)))
+                  (is (not= 0 (:exit-code process)))
+                  (is (str/includes? (:stderr process) "sh17_undefined")))
+              (do (is (= 0 (:exit-code process)) observation)
+                  (is (and (integer? output-bytes) (pos? output-bytes)))
+                  (is (= ir (slurp (.toFile source) :encoding "UTF-8")))))))))))
 
 (defn- development-b1-request [fold?]
   ;; Declared semantic DATA, never a sealed artifact or a current source proof.
