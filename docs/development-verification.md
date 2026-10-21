@@ -585,8 +585,8 @@ execution, authoritative migration or SH-16 completion.
 
 For the closed one-hop propagation route, run
 `sh16-propagates-only-unique-pure-prefix-i64-constants-into-one-add` in the same
-namespace. The initial hop starts at the first non-const operation after a
-pure, proven-safe, nondead const prefix: a pure, proven-safe, nondead
+namespace. Each admitted segment starts with a pure, proven-safe, nondead const
+prefix, followed by a pure, proven-safe, nondead
 `:i64`/`:integer-exact` ADD with `:constant-operands false` and two ordered
 operands. At least one references an established earlier one-payload i64
 producer; the other is another such reference or a bounded i64 immediate.
@@ -605,13 +605,28 @@ For named intermediate results, also run
 scan records each independently resolved, overflow-checked ADD value under its
 original globally unique result ID and continues with the same two-operand,
 i64/integer-exact, pure/proven-safe/nondead rules. A nonqualifying operation
-stops new propagation, including otherwise resolvable suffix ADDs, but preserves
-successful prefix folds. Existing immediate-literal ADD folding elsewhere is
+stops new propagation, including otherwise resolvable suffix ADDs, except for
+the closed pure-compute reset below; successful prefix folds remain. Existing
+immediate-literal ADD folding elsewhere is
 unchanged and does not automatically supply a new chain producer. The existing
 128-operation limit permits at most 128 result-count rows plus 128 forward
 rows, not a fixed point or a CPU-time claim. Original request references/flags,
 source/origin/result identity, decision order, invalidation and fresh
 recomputation remain intact; the same normalized-DATA evidence limits apply.
+
+For an independent segment after opaque computation, run
+`sh16-propagates-only-independent-constant-segments-after-pure-compute`.
+An actual pure, proven-safe, nondead `:compute` remains byte-for-byte unchanged
+in operation order and clears the producer environment before the same forward
+scan continues. Only subsequent independently admitted constants and ADDs can
+supply facts: neither pre-compute facts nor the compute result authorize a
+fold. Effectful, unsafe or dead compute and all other existing barriers still
+stop propagation. Preserve global result uniqueness, overflow checks, original
+input/source/result identity, ordered decisions, post-fold DCE and fresh
+verification. The scan still has at most 128 count rows plus 128 forward rows;
+local DCE preparation and independent replay remain additional bounded work.
+This does not evaluate or remove compute, add a pass/fixed point, or establish
+general CFG/SSA propagation, global CSE, native execution or a speed claim.
 
 For repeated references, run
 `sh16-propagates-two-uses-of-one-established-i64-producer`. Both operand

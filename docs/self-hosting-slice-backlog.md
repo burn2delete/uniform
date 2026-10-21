@@ -9604,6 +9604,34 @@ public optimization/recomputation over supplied normalized DATA, not fresh
 authenticated C11/source inputs, provider, native, migration or performance
 evidence. No schema, opcode, pass, API or cap is added.
 
+The next C13 executable increment admits an independent constant/ADD segment
+after an actual pure, proven-safe, nondead `:compute`. The operation remains
+exactly unchanged, and the existing forward scan resumes with an EMPTY
+producer environment. No pre-compute fact or computed result supplies a new
+fold; subsequent constants and checked ADDs use the existing admission,
+overflow and global result-uniqueness rules. Effectful, unsafe or dead compute
+and all other barriers still stop propagation. Earlier successful folds,
+operation order, source/origin/result identity, original request references,
+ordered decisions, conservative invalidation, post-fold DCE and fresh replay
+are preserved. The old stop-at-all-compute frontier above records the earlier
+slice, not a foundational safety requirement. The existing 128 count rows plus
+128 forward rows remain bounded; DCE preparation and replay are additional,
+not a speed or linear-CPU claim. No API, schema, opcode, pass or cap is added.
+
+The first test attempt at `bbf33209` exited during namespace compilation with
+zero tests and no timing receipt; a test-only delimiter correction retained
+the fixture bindings. The actual RED at `3d5089a1` retained 262 passes and
+48 failures in 310 assertions, without errors. Executed `61dc1f40` passed
+24 tests/3,896 assertions (310 new plus 3,586 affected controls). Boundary
+checks separately passed 6/11: 30/3,907 across two passing invocations; LOC
+separately passed 2,021 files, zero exceptions, maximum 250. These observations
+retain the actual execution binding after the disjoint SH22 main join, with
+owned code/test and executed raw compiler/bootstrap/runtime dependencies
+unchanged, not a joined replay. Original G/Q constructors and public optimizer
+recomputation consume supplied normalized DATA, not fresh authenticated C11 or
+source input, proof-provider evidence, general CFG/SSA propagation, global CSE,
+native execution, migration or performance proof.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:

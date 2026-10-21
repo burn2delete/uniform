@@ -1854,13 +1854,17 @@
                producers)
              producers))
           operations)
-        (let [candidate (sh16-propagated-add-candidate operation producers)]
-          (if (= nil candidate)
-            operations
-            (sh16-propagate-prefix-add-from
-             (assoc operations index candidate) counts (+ index 1)
-             (assoc producers result-id
-                    (get (get (sh16-transform-operation candidate) :operands) 0)))))))))
+        (if (= :compute (get operation :opcode))
+          (if (sh16-propagation-pure? operation)
+            (sh16-propagate-prefix-add-from operations counts (+ index 1) {})
+            operations)
+          (let [candidate (sh16-propagated-add-candidate operation producers)]
+            (if (= nil candidate)
+              operations
+              (sh16-propagate-prefix-add-from
+               (assoc operations index candidate) counts (+ index 1)
+               (assoc producers result-id
+                      (get (get (sh16-transform-operation candidate) :operands) 0))))))))))
 
 (defn sh16-propagate-prefix-add [operations]
   (let [counts (sh16-result-definition-counts operations 0 {})]
