@@ -2517,7 +2517,8 @@ V2 insertion from an independently finite Symbol Set establishes it; subsequent
 Symbol insertion preserves it. It supports existing `count`, ordinary predicates,
 local bindings, inferred zero-argument returns and bounded List storage. It
 does not establish extent, presence, annotation, private/recursive signature,
-membership, equality or finite-empty-to-carrier loop-join evidence. Runtime
+equality or finite-empty-to-carrier loop-join evidence. The membership consumer
+below is a separate checked increment. Runtime
 insertion remains unchanged; edit the existing C7, effects and typed emitter
 owners, not String-only private/signature predicates.
 
@@ -2535,10 +2536,44 @@ must not stand in for v2 carrier facts.
 When this composition changes, separately select the existing SH01 namespace's
 `current-gravity-symbol-set-carrier-authenticated-composition`. It exercises
 repeated insertion, `count`, return/local transport, List storage and `set?`/
-`list?`, plus an actual unselected carrier-membership typing rejection. Fresh
+`list?`, plus a wrong-needle carrier-membership typing rejection. Its original
+Symbol-needle rejection was superseded by the consumer below; changing that
+oracle does not rerun the historical source check. Fresh
 C5 and development C6 replay, C7/C8 checks and one public C7 assembly/closed entry
 are not fresh public C6 verification or migration. Q remains parser-only. Do
 not repeat unchanged product construction merely to refresh evidence stamps.
+
+### Inferred Symbol-Set membership: focused feedback
+
+Binary `contains?` consumes the exact carrier above and a Symbol, yielding Bool
+without an extent, presence/refinement fact, cardinality or loop-join proof.
+Original namespace/name equality applies. Change the existing C7, effects and
+typed emitter membership owners; runtime and private/signature predicates stay
+unchanged. Carrier domain work is 3, with a one-short boundary at 2; finite
+literal inputs retain full member validation and work `2 + member-count`.
+Preserve validated Never transfers, paid prefix ordering and legacy-family
+dispatch. Reject non-three-key receiver maps before walking keys or accessing
+fields; keep malformed three-key/opaque and zero-callback controls too.
+
+Use the existing development runner and three namespaces above with exact vars
+`sh08-symbol-set-carrier-contains-development-kernel`,
+`body-symbol-set-carrier-contains-development-kernel`,
+`current-gravity-symbol-set-carrier-contains-development-kernel` and
+`current-gravity-symbol-set-carrier-contains-fixtures-development-kernel`.
+Retain finite Symbol and Keyword/Character/String membership, insertion, carrier
+storage, quota, source-ID and transfer checks. Independently reconstruct v2
+descriptor/constraint/fact/ledger joins; v1 records cannot claim carrier input.
+Ordinary unselected producerless rows remain legal; malformed selected rows do
+not. Reuse valid unchanged evidence, not stale policy identities.
+
+For this changed source boundary, separately select
+`current-gravity-symbol-set-carrier-contains-authenticated-composition` in SH01.
+It checks seed/local/repeated-insertion transport, present/absent and qualified
+Symbol queries, pure query effects with operand allocation, and an actual wrong
+Keyword-needle typing rejection. Q is parser-only; development C6 replay is not
+fresh public C6 verification. This does not execute the motivating compiler
+helper or add private/recursive signatures, dynamic loop joins, Set equality,
+native execution, authoritative migration or milestone completion.
 
 ### Inferred String-Set carriers: private value feedback
 
@@ -5502,8 +5537,10 @@ For changed composition, separately select
 Gravity subject includes one local Symbol-producing call and six membership
 queries, plus a Character-Set/Symbol typing rejection. QST is parser-only.
 Development C6 sessions/replay do not invoke fresh public C6 verification.
-This does not add Symbol-Set equality/insertion, homogeneous Symbol carriers,
-recursive transport, native execution or authoritative migration evidence.
+That finite-membership increment alone does not establish insertion or inferred
+carrier composition; use the owning development sections above for those later
+increments. Set equality, recursive transport, native execution and authoritative
+migration remain separate evidence boundaries.
 
 ### Evaluated literal-Keyword Sets
 

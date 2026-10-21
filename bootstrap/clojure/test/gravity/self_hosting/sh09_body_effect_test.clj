@@ -7241,7 +7241,7 @@
         (is (nil? (:input-extent checked)))
         (is (= checked (invoke 'body-syin-type-work [[carrier value] (:work-count checked)])))
         (is (= :symbol-set-insertion-work-limit (:reason (invoke 'body-syin-type-work [[carrier value] (dec (:work-count checked))]))))))
-    (is (= :rejected (:status (invoke 'body-ksm-domain [[carrier s] 65536]))))
+    (is (= :accepted (:status (invoke 'body-ksm-domain [[carrier s] 65536]))))
     (is (= :rejected (:status (invoke 'body-kse-domain [[carrier carrier] 65536]))))
     (is (= :rejected (:status (invoke 'body-kse-domain [[carrier (finite [s])] 65536]))))
     (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -7286,3 +7286,132 @@
       (is (= :rejected (:status bulk-result)))
       (is (contains? #{:type-size :work-limit} (:reason bulk-result)))
       (is (<= (:work-count bulk-result) 65536))))))
+
+(deftest body-symbol-set-carrier-contains-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input 65536))
+        c7 (ns-resolve upstream 'invoke-c7)
+        carrier (:result-type (c7 'sh08-syin-type-work [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/symbol] 65536]))]
+    (doseq [arguments [[carrier :gravity.type/symbol]
+                       [carrier :gravity.type/never]]]
+      (let [base (input-fn arguments) ids (zipmap (keys (:nodes base)) (map sha (range 1250 1260)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                         :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
+            result (derive input) descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc (:types input) (ids :operator) descriptor (ids :call) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-ksm-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-ksm-constraint [descriptor])]}
+            context (leaf 'body-mc-context request facts (:bindings base) 65536)
+            facts (assoc facts :map-contains-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :call)])]
+        (is (= :sh08-symbol-set-contains-v2 (:version descriptor)))
+        (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:membership-policy :carrier-schema])))
+        (is (some #{:inferred-member-carrier} (:invalidation descriptor)))
+        (is (nil? (:set-member-count descriptor)))
+        (is (= 3 (:type-domain-work-count descriptor)))
+        (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str graph))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record) (:transitive record)))
+        (is (nil? (:allocation record)))
+        (is (= (mapv ids [:operator :arg0 :arg1]) (:dependencies record) (:evaluated-children record)))
+        (is (nil? (:call-body-dependency record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= context (leaf 'body-mc-context request facts (:bindings base) (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-mc-context request facts (:bindings base) (dec (:work-count context))))))
+        (doseq [changed [(assoc descriptor :version :sh08-symbol-set-contains-v1)
+                         (update descriptor :membership-policy dissoc :carrier-schema)
+                         (assoc-in descriptor [:membership-policy :comparison] :identity)
+                         (assoc-in descriptor [:membership-policy :member-uniqueness] :not-validated)
+                         (assoc-in descriptor [:membership-policy :budget] :traversal-dependent)
+                         (assoc descriptor :type-domain-work-count 0 :set-member-count 99)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-ksm-call-fact [changed (:module base)])]
+                                     :constraint-ledger [(c7 'sh08-ksm-constraint [changed])]))]
+            (is (false? (valid candidate)))))
+        (doseq [candidate [(assoc-in facts [:constraint-ledger 0 :producer-rule] :sh08-symbol-set-contains-v1)
+                           (assoc-in facts [:call-type-facts 0 :fact-id-request :domain] :gravity/sh08-symbol-set-contains-call-type-fact-v1)
+                           (assoc-in facts [:constraint-ledger 0 :constraint-id-request :domain] :gravity/sh08-symbol-set-contains-constraint-v1)
+                           (assoc facts :constraint-ledger [])
+                           (update facts :constraint-ledger into (:constraint-ledger facts))
+                           (update facts :constraint-ledger conj (assoc-in (first (:constraint-ledger facts)) [:lhs :core-node-id] :orphan))
+                           (update-in facts [:map-contains-context :keyword-set-domains] dissoc (ids :call))
+                           (assoc-in facts [:type-table (ids :arg1)] :gravity.type/string)]]
+          (is (false? (valid candidate))))
+        (when (= arguments [carrier :gravity.type/symbol])
+          (let [core (merge core {:root-core-node-ids [(ids :call)] :definitions [] :lexical-bindings []
+                                 :match-branch-records [] :match-pattern-records [] :match-decision-skeletons []
+                                 :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
+                preimage (assoc (select-keys core [:root-core-node-ids :definitions :function-records :call-edges :calls
+                                                   :evaluation-order :lexical-bindings :match-branch-records :match-decision-skeletons :match-pattern-records])
+                                :nodes (leaf 'body-throw-semantic-nodes core))
+                core (assoc core :identity-preimage preimage)
+                request (-> request (assoc :canonical-core-artifact core)
+                            (assoc-in [:b47-context :authenticated-core-request :binding-table] (vec (vals (:bindings base)))))
+                facts (merge facts (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings]) {:local-binding-facts []})
+                analyze #(leaf 'body-analyze-module request facts {} %)
+                analyzed (analyze 65536) work (:work-count analyzed)]
+            (is (= :accepted (:status analyzed)) (pr-str analyzed))
+            (when (= :accepted (:status analyzed))
+              (is (>= work (+ (:work-count context) (:work-count graph))))
+              (is (= analyzed (analyze work)))
+              (is (= :rejected (:status (analyze (dec work)))))))))))
+  (let [invoke (fn [name args] (apply leaf name args))
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+        callbacks (atom 0) opaque (proxy [Object] []
+          (hashCode [] (swap! callbacks inc) (throw (AssertionError. "membership carrier hash")))
+          (equals [_] (swap! callbacks inc) (throw (AssertionError. "membership carrier equality")))
+          (toString [] (swap! callbacks inc) (throw (AssertionError. "membership carrier printing"))))
+        bad [(assoc carrier :extra true) (dissoc carrier :element-type)
+             (assoc carrier :kind :gravity.type/vector) (assoc carrier :shape :literal)
+             (assoc carrier :element-type :gravity.type/unknown) (assoc carrier :element-type opaque)
+             (assoc carrier :element-type [opaque]) (assoc carrier :kind opaque) (assoc carrier :shape opaque)
+             (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque :gravity.type/symbol]))
+             (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous [opaque] :gravity.type/symbol]))
+             (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} :gravity.type/symbol]))]]
+    (doseq [needle [:gravity.type/symbol :gravity.type/never]]
+      (let [checked (invoke 'body-ksm-domain [[carrier needle] 65536])]
+        (is (= :accepted (:status checked)))
+        (is (= 3 (:work-count checked)))
+        (is (nil? (:set-member-count checked)))
+        (is (= checked (invoke 'body-ksm-domain [[carrier needle] 3])))
+        (is (= :symbol-set-contains-work-limit (:reason (invoke 'body-ksm-domain [[carrier needle] 2]))))))
+    (doseq [budget [0 1]]
+      (is (= {:status :rejected :reason :keyword-set-contains-work-limit :work-count 2}
+             (invoke 'body-ksm-domain [[carrier :gravity.type/symbol] budget]))))
+    (doseq [width [0 2 4 65536]]
+      (let [walks (atom 0) reads (atom 0)
+            receiver (proxy [clojure.lang.APersistentMap] []
+                       (count [] width)
+                       (seq [] (swap! walks inc) (throw (AssertionError. "non-three-field membership record traversed")))
+                       (valAt ([key] (swap! reads inc) (throw (AssertionError. "non-three-field record read")))
+                              ([key fallback] (swap! reads inc) (throw (AssertionError. "non-three-field record read")))))]
+        (doseq [budget [0 1 2 3 65536]
+                needle [:gravity.type/symbol :gravity.type/keyword :gravity.type/string :gravity.type/character :gravity.type/never]]
+          (is (= :rejected (:status (invoke 'body-ksm-domain [[receiver needle] budget]))))
+          (is (zero? @walks))
+          (is (zero? @reads)))))
+    (doseq [budget [0 1 65536] wrong bad]
+      (is (= :rejected (:status (invoke 'body-ksm-domain [[wrong :gravity.type/symbol] budget]))))
+      (is (zero? @callbacks)))
+    (doseq [budget [0 1 65536] wrong [opaque [opaque] {:opaque opaque}]]
+      (is (= :rejected (:status (invoke 'body-ksm-domain [[carrier wrong] budget]))))
+      (is (zero? @callbacks)))
+    (doseq [needle [:gravity.type/keyword :gravity.type/string :gravity.type/character :gravity.type/unknown]]
+      (is (= :rejected (:status (invoke 'body-ksm-domain [[carrier needle] 65536])))))
+)
+)

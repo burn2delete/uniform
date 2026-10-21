@@ -1,0 +1,18 @@
+(ns self-hosting.sh08.symbol-set-membership
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn seed [] (conj '#{} 'assoc))
+
+(defn main []
+  (let [seen (seed)
+        widened (conj seen 'gravity.core/assoc)]
+    [(contains? seen 'assoc)
+     (contains? seen 'missing)
+     (gravity.core/contains? widened 'gravity.core/assoc)
+     (contains? seen 'gravity.core/assoc)
+     (contains? (conj (conj '#{} 'a) 'b) 'b)]))

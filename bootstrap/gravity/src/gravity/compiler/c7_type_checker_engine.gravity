@@ -11227,6 +11227,7 @@
     (let [items (get arguments 0) needle (get arguments 1)]
       (if (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle))
         (if (= :gravity.type/never items) (= :gravity.type/symbol needle)
+        (if (sh08-syc-type? items) true
         (if (if (map? items) (if (= 3 (count items))
               (if (loop [fields (keys items)] (if (= 0 (count fields)) true
                     (if (keyword? (first fields)) (recur (rest fields)) false)))
@@ -11235,7 +11236,7 @@
           (let [members (get items :element-types)]
             (if (= 0 (count members)) (= :gravity.type/symbol needle)
               (if (= :gravity.type/symbol (get members 0))
-                (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle)) false))) false))
+                (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle)) false))) false)))
         false)) false))
 
 (defn sh08-sysm-domain [arguments budget]
@@ -11247,6 +11248,10 @@
           (if (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle))
             (if (= :gravity.type/never items)
               {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil :membership-family :symbol}
+              (if (sh08-syc-type? items)
+                (if (< limit 3)
+                  {:status :rejected :reason :symbol-set-contains-work-limit :work-count 3}
+                  {:status :accepted :work-count 3 :argument-types arguments :set-member-count nil :membership-family :symbol})
               (if (if (map? items) (if (= 3 (count items))
                     (if (loop [fields (keys items)] (if (= 0 (count fields)) true
                           (if (keyword? (first fields)) (recur (rest fields)) false)))
@@ -11259,7 +11264,7 @@
                             (if (= :gravity.type/symbol (get members i)) (recur (+ i 1)) false)))
                         {:status :accepted :work-count (+ 2 n) :argument-types arguments :set-member-count n :membership-family :symbol}
                         {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count (+ 2 n)}))))
-                {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count 2}))
+                {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count 2})))
             {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count 2}))
         {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}))))
 
@@ -11284,13 +11289,17 @@
                 (if strings?
                   {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil :membership-family :string}
                   {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil}))
-              (if (if (map? items) (= :homogeneous (get items :shape)) false)
+              (if (if (if (map? items) (if (= 3 (count items))
+                    (loop [fields (keys items)]
+                      (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) false) (= :homogeneous (get items :shape)) false)
                 (if (< limit 3)
                   {:status :rejected :reason work-reason :work-count 3}
                   (if (if (sh08-ss-type? items) (if strings? true (= :gravity.type/never needle)) false)
                     {:status :accepted :work-count 3 :argument-types arguments :set-member-count nil :membership-family :string}
                     {:status :rejected :reason type-reason :work-count 3}))
-              (if (if (map? items) (if (= 3 (count items))
+              (if (if (if (map? items) (if (= 3 (count items))
+                    (loop [fields (keys items)]
+                      (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) false) (if (= 3 (count items))
                     (if (= :gravity.type/set (get items :kind))
                       (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false) false)
                 (let [members (get items :element-types) n (count members)]
@@ -11383,13 +11392,13 @@
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
           ])
       (if (= :symbol (get validation :membership-family))
-        {:kind :gravity.type/applied-symbol-set-contains :version :sh08-symbol-set-contains-v1
+        {:kind :gravity.type/applied-symbol-set-contains :version :sh08-symbol-set-contains-v2
        :operation 'contains? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/symbol-set-membership
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
-       :membership-policy {:input :finite-persistent-symbol-set :members :symbol-only :needle :symbol-only
+       :membership-policy {:carrier-schema :gravity/homogeneous-symbol-set-type-v1 :input :finite-persistent-symbol-set :members :symbol-only :needle :symbol-only
                            :comparison :guarded-atomic-symbol-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
                            :budget :full-worst-case-reservation
@@ -11403,7 +11412,7 @@
        :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :membership-domain :member-value-policy :profile :target :evaluation-order]}
+                      :callee-body :membership-domain :inferred-member-carrier :member-value-policy :profile :target :evaluation-order]}
         (if (= :character (get validation :membership-family))
         (assoc {:kind :gravity.type/applied-keyword-set-contains :version :sh08-keyword-set-contains-v1
        :operation 'contains? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/keyword-set-membership
@@ -11484,8 +11493,8 @@
 
 (defn sh08-ksm-constraint [descriptor]
   (if (= :gravity.type/applied-symbol-set-contains (get descriptor :kind))
-    {:constraint-id-request {:domain :gravity/sh08-symbol-set-contains-constraint-v1 :application descriptor}
-   :kind :equality :producer-rule :sh08-symbol-set-contains-v1
+    {:constraint-id-request {:domain :gravity/sh08-symbol-set-contains-constraint-v2 :application descriptor}
+   :kind :equality :producer-rule :sh08-symbol-set-contains-v2
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :symbol-set-contains}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
@@ -11509,7 +11518,7 @@
   (if (= :gravity.type/applied-symbol-set-contains (get descriptor :kind))
     (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     {:artifact :gravity/c7-call-type-fact
-     :fact-id-request {:domain :gravity/sh08-symbol-set-contains-call-type-fact-v1 :application descriptor}
+     :fact-id-request {:domain :gravity/sh08-symbol-set-contains-call-type-fact-v2 :application descriptor}
      :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
      :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
