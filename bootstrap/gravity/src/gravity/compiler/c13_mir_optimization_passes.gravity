@@ -1780,6 +1780,75 @@
       false)
     false))
 
+(defn sh16-result-definition-counts [operations index counts]
+  (if (= index (count operations))
+    counts
+    (let [result-id (get (get operations index) :result)
+          previous (if (contains? counts result-id) (get counts result-id) 0)]
+      (sh16-result-definition-counts
+       operations (+ index 1) (assoc counts result-id (+ previous 1))))))
+
+(defn sh16-propagation-pure? [operation]
+  (if (= #{} (get operation :effects))
+    (if (= :proven-safe (get operation :safety-outcome))
+      (if (= true (get operation :dead)) false true)
+      false)
+    false))
+
+(defn sh16-prefix-i64-constant? [operation]
+  (if (= :i64 (get operation :type))
+    (if (= 1 (count (get operation :operands)))
+      (sh16-i64? (get (get operation :operands) 0))
+      false)
+    false))
+
+(defn sh16-propagated-add-candidate [operation producers]
+  (if (sh16-propagation-pure? operation)
+    (if (= :add (get operation :opcode))
+      (if (= :integer-exact (get operation :numeric-mode))
+        (if (= false (get operation :constant-operands))
+          (if (= 2 (count (get operation :operands)))
+            (let [left-id (get (get operation :operands) 0)
+                  right-id (get (get operation :operands) 1)]
+              (if (= left-id right-id)
+                nil
+                (if (contains? producers left-id)
+                  (if (contains? producers right-id)
+                    (let [candidate
+                          (assoc
+                           (assoc operation :constant-operands true)
+                           :operands [(get producers left-id) (get producers right-id)])]
+                      (if (sh16-foldable-add? candidate) candidate nil))
+                    nil)
+                  nil)))
+            nil)
+          nil)
+        nil)
+      nil)
+    nil))
+
+(defn sh16-propagate-prefix-add-from [operations counts index producers]
+  (if (= index (count operations))
+    operations
+    (let [operation (get operations index)
+          result-id (get operation :result)]
+      (if (= :const (get operation :opcode))
+        (if (sh16-propagation-pure? operation)
+          (sh16-propagate-prefix-add-from
+           operations counts (+ index 1)
+           (if (= 1 (get counts result-id))
+             (if (sh16-prefix-i64-constant? operation)
+               (assoc producers result-id (get (get operation :operands) 0))
+               producers)
+             producers))
+          operations)
+        (let [candidate (sh16-propagated-add-candidate operation producers)]
+          (if (= nil candidate) operations (assoc operations index candidate)))))))
+
+(defn sh16-propagate-prefix-add [operations]
+  (sh16-propagate-prefix-add-from
+   operations (sh16-result-definition-counts operations 0 {}) 0 {}))
+
 (defn sh16-simplifiable-branch? [operation]
   (if (= :branch-if (get operation :opcode))
     (if (= true (get operation :condition))
@@ -2148,7 +2217,10 @@
      :rejected)})
 
 (defn sh16-run-pass [request state family]
-  (let [operations (get state :operations)
+  (let [operations
+        (if (= family :constant-fold)
+          (sh16-propagate-prefix-add (get state :operations))
+          (get state :operations))
         invalidated
         (sh16-append-unique
          (get state :invalidated-analysis)

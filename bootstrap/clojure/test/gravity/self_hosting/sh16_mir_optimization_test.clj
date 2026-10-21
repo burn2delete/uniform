@@ -272,6 +272,7 @@
       (doseq [changed-add [(assoc add :type :bool)
                            (assoc add :safety-outcome :unsafe-island :unsafe-audit-id :audit/add)
                            (assoc add :effects #{:io/write} :ordering :sequence)
+                           (assoc add :operands [:value/left :value/left])
                            (assoc add :operands [:missing :value/right])]]
         (let [subject (assoc-in input [:operations 2] changed-add) result (optimize subject)]
           (is (= :accepted (:status result)))
@@ -280,7 +281,8 @@
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
       (let [dead-add (assoc add :dead true :dead-proof {:proof-id :proof/dead-reference-add
                                                        :operation-id :op/add :no-uses true :effect-free true :verified true})
-            subject (assoc input :operations [left right dead-add (last (:operations base))])
+            subject (assoc input :operations [left right dead-add
+                                              (assoc (last (:operations base)) :operands [:value/left])])
             result (optimize subject)]
         (is (= :accepted (:status result)))
         (is (= [] (get-in result [:decision-log 0 :changed-operations])))
