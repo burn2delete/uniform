@@ -8571,6 +8571,55 @@ revision in `55b7dca9`, not to a replay of the revised harness. There is no
 measured speedup, new semantic feature or migration claim. The direct commands
 and distinctions are in `docs/development-verification.md`.
 
+### Ordered-Map false/Nil presence: affected composition coverage
+
+Test-only `fc72bde2` validates real G/Q Map association outputs consumed by
+lookup. Stored false/Nil remain explicit `Some` values; missing/empty inputs
+produce `None` without `:value`. Insertion/replacement/order, persistence,
+256-entry replacement versus new-entry rejection, malformed/late duplicate
+validation and fresh producer/consumer/substitution checks pass. The original-
+delegating observer sees one valid lookup and zero on rejected carriers.
+C6 scalar/generated-Nil metadata motivates the DATA, not a client-linkage claim.
+
+Prior `00e6e435` passed 5/596, including 338 new assertions. A three-line
+positive-observer control successor freshly passed 1/342; four unchanged
+controls retain 258 passes from the prior invocation. Superseded 338 are not
+summed: selected coverage is 600 assertions, plus retained boundary 6/11,
+or 11/611 across three passing invocations. LOC separately passed 2,022 files,
+zero exceptions, maximum 250; the later test-only addition is outside its
+implementation-source roots and leaves boundary policy inputs unchanged.
+Production and fixtures remain unchanged from `26d05dbb`; the complete 4272
+suite was not replayed. No RED, production repair, new language law, compiled
+C6 client, public admission, native, migration or milestone claim follows.
+
+### Bounded Keyword-key Map removal: request-module increment
+
+The SH-22 request API executes `:ordered-map-dissoc-keyword` with at most 256
+entries and actual Keyword keys/needle. Complete pair/key census and needle
+classification precede user-key equality; full uniqueness precedes stable
+omission. All remaining values/order and the original Map survive, including
+false/Nil. Empty/missing cases remain value-equivalent. Possible allocation is
+declared through `:memory/allocate` and `:bounded-by-result`, with no capabilities,
+even if a missing-key result reports collection-value allocation `:none`.
+No physical-sharing or global allocation-free promise follows. Four exports,
+envelope, existing diagnostic families and opt-in `:meta` boundary remain;
+the owner-local operation/manifest count is 22.
+
+At `c04233a1`, the whole namespace passed 25/5224, including 602 new assertions
+and eight added generic fixture checks. Boundary separately passed 6/11:
+31/5235 across two passing invocations. LOC separately passed 2,022 files,
+zero exceptions, maximum 250; all runners exited naturally. Prospective
+802/5424 was an addition mistake, not a failed or corrected semantic run.
+Real assoc-to-removal-to-get and original-Map lookup, full malformed/late
+duplicate rejection, same-observer positive/negative controls, source identity
+and fresh result recomputation/substitution are implemented.
+
+W5's static removal calls motivate the operation only; semantic Keyword DATA
+is not a physical-metadata redaction adapter or W5 linkage/admission evidence.
+General/foreign key equality, stored-value selection/evaluation, global
+callback freedom, native execution, migration and milestone claims remain
+excluded. Verification still compares the complete recomputed result.
+
 ### Checked i64 subtraction in the experimental bootstrap library
 
 The existing SH-22 Gravity library now executes binary `:checked-sub-i64` under
@@ -8619,6 +8668,34 @@ the Clojure LOC gate passed. No compiler client linkage, native/provider
 execution, complete SH-22 API closure, authoritative migration or milestone
 completion follows. Historical SH07 source/digest pins remain unchanged and
 their evidence does not authenticate this changed source revision.
+
+### Checked nonnegative i64 quotient: request-module increment
+
+The existing four-export SH-22 request API executes
+`:checked-nonnegative-quot-i64` for dividend `0..MAX` and divisor `1..MAX`.
+Both actual Integer types and signed-i64 ranges, then nonnegative/positive
+domain checks dominate division; the checked Result is integral and within
+`0..dividend`. Existing arity/type/range diagnostics remain; local `STD5002`
+reports domain rejection. The experimental opt-in `:meta` policy has 21
+operations, no query effects/capabilities and `:none` value allocation; the
+request/result envelope and four exports are unchanged.
+
+At `26d05dbb`, the whole SH-22 namespace passed 23/4272: 480 new assertions and
+3792 affected controls, including eight added generic fixture checks. Boundary
+separately passed 6/11: 29/4283 across two passing invocations. LOC separately
+passed 2,022 files, zero exceptions, maximum 250. All runners exited naturally.
+RED `0d0c9dec` retained 240 passes/240 failures in 480 assertions without errors:
+four failures were new nil-route test-oracle mistakes, corrected to the
+unchanged `STD8001/:missing-io-authority` rejection. No general nil-route fix
+or 240 prior semantic defects are claimed. Actual original `quot` delegation,
+zero calls on rejected inputs, source/origin diagnostics, real checked-sub/mul
+producer results and fresh producer/consumer/substitution checks are retained.
+
+Reader decimal normalization supplies the motivating `(quot remaining 10)`
+client, not a compiled-client linkage claim. Signed-negative rounding,
+remainder, MIN/-1 and arbitrary-precision division are excluded. No reader or
+runtime API rewrite, provider/native execution, public admission, migration,
+milestone or SH-22 completion follows; historical source/digest pins are unchanged.
 
 ### Keyword membership in bounded ordered Sets
 
@@ -8714,6 +8791,41 @@ No general Set/mixed-family support, host-provider or host-callback safety,
 native allocation/execution, compiler client linkage, complete library closure,
 migration, SH-22 completion or self-hosting follows. Historical SH07 source/
 digest pins remain unchanged and do not authenticate the revised library source.
+
+### Integer membership after bounded ordered-Set insertion
+
+The existing SH-22 request API executes `:ordered-set-contains-integer` with
+at most 256 actual Integer members and an Integer needle. Integer includes
+supported values beyond signed64; no arithmetic, coercion or implicit width
+proof is added. Bound checks precede the complete indexed Vector family
+census; both member and needle checks precede equality, and full uniqueness
+validation precedes a membership result. Reordered/empty Sets, reader codepoint
+and compiler/runtime arity DATA, endpoint/beyond64 values and real existing
+Set insertion outputs are covered, with fresh producer/query recomputation.
+Late invalid members/duplicates, wrong needles, 257 values, malformed carriers,
+authority, nil-operation and substituted results reject at their owning gates.
+The opt-in experimental `:meta` policy has 20 operations, pure query effects,
+no capabilities and `:none` collection-value allocation. Four exports and the
+request/result envelope remain unchanged.
+
+Unsupported-domain RED `a57d0a39` retained 184 passes and 368 failures in 552
+assertions, without errors; it is not evidence of 368 prior semantic defects.
+Candidate `684eb38d` passed the whole namespace, 22/3784. A helper-only 4+/4-
+quality successor `969e0b41` replaces the new Vector-rest census with indexed
+access and freshly passes 22/3784, including all 552 new assertions. These
+passing epochs are retained separately, not summed. Boundary 6/11 and LOC
+2,022 files/zero exceptions/maximum 250 retain their original `684eb38d`
+execution binding: the helper-only change leaves their policy/file/line inputs
+unchanged, so they were not rerun or relabeled. Selected coverage is 28/3795
+across the V2 namespace and retained boundary invocations, with LOC separate.
+The accepted C7/SH08-only main join preserves all six owned files and this
+direct raw library/fixture execution path; no joined replay is claimed.
+
+These are bounded request-module results, not ordinary source Integer-Set
+membership, compiled reader/effects/emitter/runtime client execution, Unicode
+ingress, general mixed-family Sets, host-callback safety, native allocation or
+execution, public admission, migration, milestone or SH-22 completion evidence.
+Historical source/digest pins are unchanged and do not authenticate this source.
 
 ### Bounded Keyword Set value equality
 

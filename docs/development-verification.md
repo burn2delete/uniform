@@ -190,6 +190,40 @@ or budget increase is justified by this optimization. The focused comparison
 checks complete outputs and rejection budgets; it is not a source migration
 proof or a wall-time benchmark.
 
+### Ordered-Map stored false/Nil: producer-consumer coverage
+
+Run `sh22-ordered-map-lookup-preserves-stored-false-and-nil` in
+`gravity.self-hosting.sh22-standard-library-test`. Real G/Q `:ordered-map-assoc`
+results feed `:ordered-map-get`: stored false/Nil yield `Some` with an explicit
+`:value`, while an absent key yields `None` without `:value`. Check insertion,
+replacement/order, original-value preservation, full-256 replacement versus
+new-entry rejection, complete malformed/duplicate validation before a hit and
+fresh producer/consumer verification with result substitutions. The same
+original-delegating lookup observer must record a valid lookup as well as zero
+calls for rejected carriers. Existing collection/boundary and result-verifier
+selectors are affected controls. This is test-only request-module coverage,
+not a production repair, new semantics, compiled C6 client or admission claim.
+
+### Bounded Keyword-key Map removal
+
+STD2/STD3 govern `:ordered-map-dissoc-keyword` in the existing SH-22 request
+API. At most 256 entries, complete indexed pair/Keyword-key census and an actual
+Keyword needle precede user-key equality; full uniqueness precedes removal.
+Preserve remaining order, all stored values and the original Map. Empty or
+missing keys produce a value-equivalent Map; false/Nil do not mean absence.
+
+Run `sh22-keyword-map-removal-consumes-real-association-results` in
+`gravity.self-hosting.sh22-standard-library-test`, plus the affected whole
+namespace. Real assoc results feed removal and get; original-Map lookup and
+fresh producer/consumer verification remain independent. Keep positive and
+rejected controls for the same original-delegating observer. The opt-in `:meta`
+request declares `:memory/allocate`, no capabilities and `:bounded-by-result`,
+even when an absent-key result reports collection-value allocation `:none`.
+This promises neither physical sharing nor global allocation freedom. Values
+do not select removal; result verification still compares full results.
+General keys, W5 metadata redaction/linkage, public admission and native
+execution are not established.
+
 ### Checked i64 subtraction in the bootstrap library
 
 STD1/STD5/D8 govern `:checked-sub-i64` in
@@ -237,6 +271,24 @@ in both operand orders, including MIN/zero, signed endpoints and the square
 overflow boundary. They are not compiler linkage, native/provider, complete
 library or migration evidence. Historical SH07 source/digest pins remain
 unchanged and do not authenticate the revised library source.
+
+### Checked nonnegative i64 quotient in the bootstrap library
+
+STD5/SAFE9 govern `:checked-nonnegative-quot-i64` in the existing opt-in `:meta`
+request API: dividend `0..MAX` and divisor `1..MAX`. Arity, both actual Integer
+types and signed-i64 ranges, then the explicit domain checks precede `quot`.
+The checked Result contains an exact integral quotient between zero and the
+dividend; query effects/capabilities are empty and value allocation is `:none`.
+`STD1001` retains arity, `STD5001` type/range and `STD5002` domain failures.
+
+Run `sh22-checked-nonnegative-i64-quotient-checks-before-division` in
+`gravity.self-hosting.sh22-standard-library-test`; the whole namespace is the
+affected check for policy, manifest, paired fixtures and fresh recomputation.
+Include zero/boundary inputs, rejected zero/negative divisors, precedence and
+real checked-sub/mul results feeding quotient. The original-delegating observer
+must see no `quot` on rejected inputs. This is request-only behavior motivated
+by reader decimal normalization, not reader linkage, signed-negative rounding,
+remainder/general-Integer division, runtime/native or admission evidence.
 
 ### Keyword membership in bounded ordered Sets
 
@@ -330,6 +382,28 @@ collection-value allocation remain explicit; envelope metadata is not native
 allocation evidence. General Sets, mixed families, host-provider/callback safety,
 compiler linkage, full SH-22 and self-hosting are not established. Historical
 SH07 pins remain unchanged and do not authenticate this revised source.
+
+### Integer membership after bounded ordered-Set insertion
+
+STD2/STD3/STD5 govern `:ordered-set-contains-integer` in the existing SH-22
+request API. Admit at most 256 actual Integer members and an Integer needle;
+this is family classification, not signed-i64 narrowing or arithmetic. Bounds
+precede the complete indexed Vector census, member/needle checks precede any
+equality, and complete uniqueness validation precedes the membership query.
+Late invalid members or duplicates cannot hide behind an early hit. Preserve
+the Set and existing `STD3001`/`STD10003`/`STD1001` diagnostic boundaries.
+
+Run `sh22-integer-set-membership-consumes-real-insertion-results` in
+`gravity.self-hosting.sh22-standard-library-test`; the affected whole namespace
+is a proportionate 512 MiB check for policy, manifest, paired fixtures, routing
+and recomputation. Include real `:ordered-set-conj` results, reader codepoint
+and compiler/runtime arity values as DATA, 256/257, values beyond signed64,
+wrong families, duplicate-after-hit, authority and result-substitution controls.
+The experimental opt-in `:meta` surface has 20 operations; four public exports
+and the envelope stay unchanged. Query effects/capabilities are empty and
+collection-value allocation is `:none`. This request API does not establish
+ordinary source Integer-Set lowering, whole-client linkage, Unicode ingress,
+general mixed-family Sets, native allocation, migration or SH-22 completion.
 
 ### Bounded Keyword Set value equality
 

@@ -100,14 +100,17 @@
     sh22-vector-nth-request
     sh22-map-assoc-request
     sh22-map-get-request
+    sh22-map-dissoc-keyword-request
     sh22-set-conj-request
     sh22-set-contains-keyword-request
     sh22-set-contains-symbol-request
+    sh22-set-contains-integer-request
     sh22-set-equal-keyword-request
     sh22-utf8-request
     sh22-checked-add-request
     sh22-checked-sub-request
     sh22-checked-mul-request
+    sh22-checked-nonnegative-quot-request
     sh22-error-request
     sh22-file-read-request
     sh22-stdout-request
@@ -132,6 +135,8 @@
    ['sh22-checked-sub-request "STD5001" :integer-overflow]
    'sh22-mul-overflow-request
    ['sh22-checked-mul-request "STD5001" :integer-overflow]
+   'sh22-zero-divisor-request
+   ['sh22-checked-nonnegative-quot-request "STD5002" :positive-divisor-required]
    'sh22-missing-capability-request
    ['sh22-file-read-request "STD8001" :missing-io-authority]
    'sh22-missing-encoding-request
@@ -155,12 +160,16 @@
    ['sh22-vector-assoc-request "STD1001" :allocation-policy-mismatch]
    'sh22-duplicate-map-key-request
    ['sh22-map-assoc-request "STD10003" :expected-ordered-map]
+   'sh22-duplicate-map-removal-key-request
+   ['sh22-map-dissoc-keyword-request "STD10003" :expected-ordered-map]
    'sh22-duplicate-set-value-request
    ['sh22-set-conj-request "STD10003" :expected-ordered-set]
    'sh22-duplicate-keyword-after-hit-request
    ['sh22-set-contains-keyword-request "STD10003" :expected-ordered-set]
    'sh22-duplicate-symbol-after-hit-request
    ['sh22-set-contains-symbol-request "STD10003" :expected-ordered-set]
+   'sh22-duplicate-integer-after-hit-request
+   ['sh22-set-contains-integer-request "STD10003" :expected-ordered-set]
    'sh22-duplicate-keyword-equality-request
    ['sh22-set-equal-keyword-request "STD10003" :expected-ordered-set]
    'sh22-spoofed-utf8-request
@@ -199,7 +208,7 @@
     (is (= 512 (:maximum-carrier-width policy)))
     (is (= 65536 (:maximum-carrier-nodes policy)))
     (is (true? (:experimental-opt-in-required policy)))
-    (is (= 19 (count (:operation-set policy))))
+    (is (= 22 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
     (is (contains? (:diagnostics policy) "STD8001"))
     (is (some #{:authenticated-sh19-runtime-services}
@@ -210,7 +219,7 @@
     (is (= 'gravity.stdlib.self-hosting-core (:module manifest)))
     (is (= :experimental (:stability manifest)))
     (is (empty? (:unsafe-islands manifest)))
-    (is (= 19 (count exports)))
+    (is (= 22 (count exports)))
     (is (every? #(= :experimental (:stability %)) exports))
     (is (every? #(= #{:meta} (:profiles %)) exports))
     (is (every? string? (map :type exports)))
@@ -242,6 +251,227 @@
       (is (every? #(= :accepted (:status %))
                   [assoc-result nth-result map-result
                    get-result set-result])))))
+
+(deftest sh22-ordered-map-lookup-preserves-stored-false-and-nil
+  ;; C6 scalar/generated-Nil :value attributes motivate these DATA values;
+  ;; this executes the request module, not a compiled C6 client.
+  (let [ordered (fn [entries] {:artifact :gravity/ordered-map :entries entries})
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        observe (fn [input]
+                  (let [lookups (atom 0)
+                        result (with-redefs-fn
+                                 {scoped (fn [& arguments]
+                                           (when (= 'sh22-entry-index (nth arguments 2))
+                                             (swap! lookups inc))
+                                           (apply original arguments))}
+                                 #(handle input))]
+                    [result @lookups]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [assoc-base (request plan 'sh22-map-assoc-request)
+            get-base (request plan 'sh22-map-get-request)]
+        (doseq [[entries key value expected]
+                [[[] :value false [[:value false]]]
+                 [[] :value nil [[:value nil]]]
+                 [[[:value :old] [:generated-role :literal]] :value false
+                  [[:value false] [:generated-role :literal]]]
+                 [[[:value :old] [:generated-role :literal]] :value nil
+                  [[:value nil] [:generated-role :literal]]]
+                 [[[:generated-role :compiler-generated-value]] :value nil
+                  [[:generated-role :compiler-generated-value] [:value nil]]]
+                 [[[:value false]] :generated-role nil [[:value false] [:generated-role nil]]]]]
+          (let [producer (assoc assoc-base :arguments [(ordered entries) key value])
+                produced (handle producer) query (assoc get-base :arguments [(:value produced) key])
+                result (handle query)]
+            (is (= :accepted (:status produced) (:status result)))
+            (is (= (ordered expected) (:value produced)))
+            (is (= (ordered entries) (first (:arguments producer))))
+            (is (= (:arguments producer) (get-in produced [:identity-input :arguments])))
+            (is (= {:artifact :gravity/option :variant :some :value value} (:value result)))
+            (is (contains? (:value result) :value))
+            (is (= {:collection-kind :ordered-map :allocation :none} (:facts result)))
+            (is (= (:arguments query) (get-in result [:identity-input :arguments])))
+            (doseq [[input output] [[producer produced] [query result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
+        (doseq [[entries key] [[[] :value] [[[:generated-role nil]] :value]
+                                [[[:value false]] :missing]]]
+          (let [query (assoc get-base :arguments [(ordered entries) key]) result (handle query)]
+            (is (= :accepted (:status result)))
+            (is (= {:artifact :gravity/option :variant :none} (:value result)))
+            (is (not (contains? (:value result) :value)))
+            (is (= (:arguments query) (get-in result [:identity-input :arguments])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [query result]))))))
+        (let [entries (mapv #(vector (keyword "slot" (str "k" %)) %) (range 256))]
+          (doseq [[index value] [[0 false] [255 nil]]]
+            (let [key (first (get entries index))
+                  producer (assoc assoc-base :arguments [(ordered entries) key value])
+                  produced (handle producer) query (assoc get-base :arguments [(:value produced) key])
+                  result (handle query)]
+              (is (= :accepted (:status produced) (:status result)))
+              (is (= (ordered (assoc entries index [key value])) (:value produced)))
+              (is (= (ordered entries) (first (:arguments producer))))
+              (is (= {:artifact :gravity/option :variant :some :value value} (:value result)))
+              (doseq [[input output] [[producer produced] [query result]]]
+                (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
+          (let [producer (assoc assoc-base :arguments [(ordered entries) :slot/new nil]) result (handle producer)]
+            (is (= :rejected (:status result)))
+            (is (= "STD3001" (get-in result [:diagnostics 0 :rule])))
+            (is (= :collection-bound-exceeded (get-in result [:diagnostics 0 :reason])))
+            (is (= (ordered entries) (first (:arguments producer))))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [producer result]))))))
+        ;; Complete validation must reject malformed/duplicate suffixes before
+        ;; a matching first key can authorize either lookup or replacement.
+        (doseq [[value rule reason]
+                [[(ordered [[:value false] [:bad]]) "STD10003" :expected-ordered-map]
+                 [(ordered [[:value false] [:other 0] [:value nil]]) "STD10003" :expected-ordered-map]
+                 [(ordered [[:value false] nil]) "STD10003" :expected-ordered-map]
+                 [{:artifact :gravity/ordered-map :entries '([:value false])} "STD10003" :expected-ordered-map]
+                 [(assoc (ordered [[:value false]]) :extra true) "STD10003" :expected-ordered-map]
+                 [{:artifact :gravity/ordered-map} "STD10003" :expected-ordered-map]
+                 [(ordered (vec (repeat 257 [:value false]))) "STD3001" :collection-bound-exceeded]]
+                input [(assoc get-base :arguments [value :value])
+                       (assoc assoc-base :arguments [value :value nil])]]
+          (let [[result lookups] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (zero? lookups))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (let [producer (assoc assoc-base :arguments [(ordered []) :value false])
+              produced (handle producer) query (assoc get-base :arguments [(:value produced) :value])
+              result (handle query) missing (assoc get-base :arguments [(:value produced) :missing])
+              absent (handle missing)]
+          (let [[observed lookups] (observe query)]
+            (is (= result observed))
+            (is (= 1 lookups)))
+          (doseq [[input candidate]
+                  [[producer (assoc-in produced [:value :entries 0 1] nil)]
+                   [producer (assoc-in produced [:identity-input :arguments 1] :missing)]
+                   [query (assoc-in result [:value :value] nil)]
+                   [query (update result :value dissoc :value)]
+                   [query (assoc-in result [:value :variant] :none)]
+                   [query (assoc-in result [:identity-input :arguments 1] :missing)]
+                   [missing (assoc absent :value {:artifact :gravity/option :variant :some :value nil})]]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [input candidate]))))))))))
+
+(deftest sh22-keyword-map-removal-consumes-real-association-results
+  ;; W5 removal calls motivate this operation; semantic Keyword DATA here is
+  ;; neither metadata redaction nor linkage to its native Map representation.
+  (let [ordered (fn [entries] {:artifact :gravity/ordered-map :entries entries})
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        callbacks (atom 0) opaque (fn [] (swap! callbacks inc))
+        observe (fn [input]
+                  (let [counts (atom {:census 0 :unique 0 :equality 0 :lookup 0 :remove 0})
+                        result (with-redefs-fn
+                                 {scoped (fn [& arguments]
+                                           (when-let [kind (get {'sh22-keyword-map-entries? :census
+                                                                 'sh22-entries-well-formed? :unique
+                                                                 'sh22-vector-contains? :equality
+                                                                 'sh22-entry-index :lookup
+                                                                 'sh22-remove-map-entry :remove} (nth arguments 2))]
+                                             (swap! counts update kind inc))
+                                           (apply original arguments))}
+                                 #(handle input))]
+                    [result @counts]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (request plan 'sh22-map-dissoc-keyword-request)
+            get-base (request plan 'sh22-map-get-request)
+            entries [[:value false] [:phase :checked] [:retained nil]]
+            full (mapv #(vector (keyword "slot" (str "k" %))
+                                (if (= % 0) false (if (= % 255) nil %))) (range 256))
+            export (first (filter #(= :ordered-map-dissoc-keyword (:name %))
+                                  (:exports (invoke-engine 'sh22-module-manifest []))))]
+        (is (= #{:meta} (:profiles export)))
+        (is (= :experimental (:stability export)))
+        (is (= #{:memory/allocate} (:effects export)))
+        (is (= #{} (:capabilities export)))
+        (is (= :bounded-by-result (:allocation export)))
+        (is (= "(OrderedMap Keyword a) Keyword -> (Result (OrderedMap Keyword a) CollectionError)" (:type export)))
+        (doseq [[before key expected]
+                (concat [[[] :value []] [[[:value false]] :value []] [[[:value nil]] :value []]
+                         [entries :value (subvec entries 1)]
+                         [entries :phase [[:value false] [:retained nil]]]
+                         [entries :retained (subvec entries 0 2)]
+                         [entries :missing entries]
+                         [[[:left/name false] [:right/name nil]] (keyword "left" "name") [[:right/name nil]]]]
+                        (map (fn [index]
+                               [full (first (get full index))
+                                (into (subvec full 0 index) (subvec full (inc index)))]) [0 128 255])
+                        [[full :missing full]])]
+          (let [input (assoc base :arguments [(ordered before) key]) result (handle input)
+                query (assoc get-base :arguments [(:value result) key]) queried (handle query)
+                old-query (assoc get-base :arguments [(ordered before) key]) old-result (handle old-query)
+                found (first (filter #(= key (first %)) before))]
+            (is (= :accepted (:status result)))
+            (is (= (ordered expected) (:value result)))
+            (is (= (ordered before) (first (:arguments input))))
+            (is (= {:collection-kind :ordered-map :key-family :keyword
+                    :ordering :insertion-order :persistent-value-semantics true
+                    :allocation (if found :bounded-by-result :none)} (:facts result)))
+            (is (= (:arguments input) (get-in result [:identity-input :arguments])))
+            (is (= {:artifact :gravity/option :variant :none} (:value queried)))
+            (is (= (if found {:artifact :gravity/option :variant :some :value (second found)}
+                       {:artifact :gravity/option :variant :none}) (:value old-result)))
+            (doseq [[request candidate] [[input result] [query queried] [old-query old-result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [request candidate])))))))
+        (doseq [value [false nil]]
+          (let [before [[:phase :checked] [:retained (if (false? value) nil false)]]
+                producer (assoc (request plan 'sh22-map-assoc-request) :arguments [(ordered before) :value value])
+                produced (handle producer) input (assoc base :arguments [(:value produced) :value])
+                result (handle input) query (assoc get-base :arguments [(:value result) :value]) queried (handle query)
+                old-query (assoc get-base :arguments [(:value produced) :value]) old-result (handle old-query)]
+            (is (= :accepted (:status produced) (:status result) (:status queried) (:status old-result)))
+            (is (= (ordered before) (:value result)))
+            (is (= {:artifact :gravity/option :variant :none} (:value queried)))
+            (is (= {:artifact :gravity/option :variant :some :value value} (:value old-result)))
+            (is (= (ordered before) (first (:arguments producer))))
+            (doseq [[request candidate] [[producer produced] [input result] [query queried] [old-query old-result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [request candidate])))))))
+        (let [[result counts] (observe base)]
+          (is (= (handle base) result))
+          (is (= 1 (:census counts) (:unique counts) (:lookup counts) (:remove counts)))
+          (is (pos? (:equality counts))))
+        (doseq [[arguments rule reason before-equality?]
+                (concat
+                 [[[(ordered (conj full [:slot/new 0])) :slot/k0] "STD3001" :collection-bound-exceeded true]
+                  [[{:value false} :value] "STD10003" :expected-ordered-map true]
+                  [[(assoc (ordered entries) :extra true) :value] "STD10003" :expected-ordered-map true]
+                  [[{:artifact :gravity/ordered-map :entries '([:value false])} :value] "STD10003" :expected-ordered-map true]
+                  [[(ordered [[:value false] [:bad]]) :value] "STD10003" :expected-keyword-ordered-map true]
+                  [[(ordered [[:value false] [:phase :checked] [:value nil]]) :value] "STD10003" :expected-ordered-map false]]
+                 (mapcat (fn [other]
+                           [[[(ordered [[:value false] [other nil]]) :value] "STD10003" :expected-keyword-ordered-map true]
+                            [[(ordered []) other] "STD10003" :expected-keyword true]])
+                         ["value" 'value 0 nil false [] opaque]))]
+          (let [input (assoc base :arguments arguments) [result counts] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= 0 (:lookup counts) (:remove counts)))
+            (is (= before-equality? (zero? (:equality counts))))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (is (zero? @callbacks))
+        (doseq [[input rule reason]
+                (concat (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
+                             [[] [(ordered [])] [(ordered []) :value :extra]])
+                        [[(assoc base :effects #{}) "STD1002" :undeclared-library-effect]
+                         [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+                         [(assoc base :allocation-policy :none) "STD1001" :allocation-policy-mismatch]
+                         [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]])]
+          (let [[result counts] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= 0 (:lookup counts) (:remove counts)))))
+        (let [[result counts] (observe (assoc base :operation nil))]
+          (is (= :rejected (:status result)))
+          (is (zero? (:remove counts))))
+        (let [result (handle base)]
+          (doseq [candidate [(assoc-in result [:value :entries 0 1] nil)
+                             (assoc-in result [:facts :allocation] :none)
+                             (assoc-in result [:identity-input :arguments 1] :phase)]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base candidate]))))))))))
 
 (deftest sh22-validates-utf8-and-performs-checked-i64-arithmetic
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
@@ -581,6 +811,100 @@
                          (assoc-in result [:identity-input :operation] :checked-add-i64)]]
           (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed])))))))))
 
+(deftest sh22-checked-nonnegative-i64-quotient-checks-before-division
+  ;; STD5/SAFE9 and reader's nonnegative decimal-digit client: no negative
+  ;; rounding law, coercion or general-Integer division is selected here.
+  (let [builtin #'bootstrap/p15-s23-stage2-runtime-invoke-builtin
+        original @builtin
+        observe (fn [input]
+                  (let [calls (atom [])
+                        result (with-redefs-fn
+                                 {builtin (fn [& arguments]
+                                            (when (= 'quot (nth arguments (- (count arguments) 2)))
+                                              (swap! calls conj (last arguments)))
+                                            (apply original arguments))}
+                                 #(handle input))]
+                    [result @calls]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (request plan 'sh22-checked-nonnegative-quot-request)
+            export (first (filter #(= :checked-nonnegative-quot-i64 (:name %))
+                                  (:exports (invoke-engine 'sh22-module-manifest []))))]
+        (is (= #{:meta} (:profiles export)))
+        (is (= :experimental (:stability export)))
+        (is (= #{} (:effects export) (:capabilities export)))
+        (is (= :none (:allocation export)))
+        (is (= ["STD5001" "STD5002"] (:errors export)))
+        (is (= "I64 I64 -> (Result I64 NumericError)" (:type export)))
+        (doseq [[left right expected]
+                [[0 1 0] [1 1 1] [9 10 0] [10 10 1] [11 10 1]
+                 [0 Long/MAX_VALUE 0] [1 Long/MAX_VALUE 0]
+                 [Long/MAX_VALUE 1 Long/MAX_VALUE]
+                 [Long/MAX_VALUE 10 922337203685477580]
+                 [Long/MAX_VALUE Long/MAX_VALUE 1]
+                 [(bigint 11) (biginteger 10) 1]]]
+          (let [input (assoc base :arguments [left right]) [result calls] (observe input)
+                value (get-in result [:value :value])]
+            (is (= :accepted (:status result)))
+            (is (= {:artifact :gravity/result :variant :ok :value expected} (:value result)))
+            (is (= {:numeric-mode :checked-i64 :safety-outcome :proven-safe :allocation :none} (:facts result)))
+            (is (= [[left right]] calls))
+            (is (and (integer? value) (<= 0 value left)))
+            (is (= [left right] (get-in result [:identity-input :arguments])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (doseq [[function arguments divisor expected]
+                [['sh22-checked-sub-request [100 1] 10 9]
+                 ['sh22-checked-mul-request [11 10] 10 11]]]
+          (let [producer (assoc (request plan function) :arguments arguments)
+                produced (handle producer)
+                input (assoc base :arguments [(get-in produced [:value :value]) divisor])
+                [result calls] (observe input)]
+            (is (= :accepted (:status produced) (:status result)))
+            (is (= expected (get-in result [:value :value])))
+            (is (= [(:arguments input)] calls))
+            (doseq [[request result] [[producer produced] [input result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [request result])))))))
+        (doseq [[arguments rule reason]
+                [[[1 0] "STD5002" :positive-divisor-required]
+                 [[0 0] "STD5002" :positive-divisor-required]
+                 [[1 -1] "STD5002" :positive-divisor-required]
+                 [[1 Long/MIN_VALUE] "STD5002" :positive-divisor-required]
+                 [[-1 1] "STD5002" :nonnegative-dividend-required]
+                 [[Long/MIN_VALUE -1] "STD5002" :nonnegative-dividend-required]
+                 [[-1 0] "STD5002" :nonnegative-dividend-required]
+                 [[9223372036854775808 1] "STD5001" :integer-out-of-range]
+                 [[1 9223372036854775808] "STD5001" :integer-out-of-range]
+                 [[-9223372036854775809 1] "STD5001" :integer-out-of-range]
+                 [[-1 9223372036854775808] "STD5001" :integer-out-of-range]
+                 [[nil 1] "STD5001" :expected-integer] [[1 false] "STD5001" :expected-integer]
+                 [[1.0 1] "STD5001" :expected-integer] [[1 "10"] "STD5001" :expected-integer]
+                 [[-1 :zero] "STD5001" :expected-integer]]]
+          (let [input (assoc base :arguments arguments) [result calls] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= [] calls))
+            (is (= (:source-span input) (get-in result [:diagnostics 0 :source-span])))
+            (is (= (:origin-chain input) (get-in result [:diagnostics 0 :origin-chain])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (doseq [[input rule reason]
+                (concat (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
+                             [[] [1] [1 2 3]])
+                        [[(assoc base :effects #{:memory/allocate}) "STD1002" :undeclared-library-effect]
+                         [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+                         [(assoc base :allocation-policy :bounded-by-result) "STD1001" :allocation-policy-mismatch]
+                         [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]
+                         [(assoc base :operation nil) "STD8001" :missing-io-authority]])]
+          (let [[result calls] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= [] calls))))
+        (let [result (handle base)]
+          (doseq [changed [(assoc-in result [:value :value] 13)
+                           (assoc-in result [:facts :numeric-mode] :wrapping-i64)
+                           (assoc-in result [:identity-input :arguments 1] 0)]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
+
 (deftest sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original @scoped
@@ -781,6 +1105,115 @@
           (doseq [changed [(assoc result :value false)
                            (assoc-in result [:facts :member-family] :keyword)
                            (assoc-in result [:identity-input :arguments 1] 'absent)]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
+
+(deftest sh22-integer-set-membership-consumes-real-insertion-results
+  ;; Reader codepoints and compiler/runtime arity Sets are DATA witnesses,
+  ;; not execution of those complete clients or an implicit i64 restriction.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        ordered (fn [values] {:artifact :gravity/ordered-set :values values})
+        above (inc (bigint Long/MAX_VALUE)) below (dec (bigint Long/MIN_VALUE))
+        observe (fn [input]
+                  (let [counts (atom {:census 0 :unique 0 :search 0})
+                        result (with-redefs-fn
+                                 {scoped (fn [& args]
+                                           (when-let [kind (get {'sh22-integer-vector? :census
+                                                                 'sh22-vector-unique? :unique
+                                                                 'sh22-vector-contains? :search} (nth args 2))]
+                                             (swap! counts update kind inc))
+                                           (apply original args))}
+                                 #(handle input))]
+                    [result @counts]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (request plan 'sh22-set-contains-integer-request)
+            values (vec (range 256))
+            export (first (filter #(= :ordered-set-contains-integer (:name %))
+                                  (:exports (invoke-engine 'sh22-module-manifest []))))]
+        (is (= #{:meta} (:profiles export)))
+        (is (= :experimental (:stability export)))
+        (is (= #{} (:effects export) (:capabilities export)))
+        (is (= :none (:allocation export)))
+        (is (= "(OrderedSet Integer) Integer -> (Result Bool CollectionError)" (:type export)))
+        (doseq [[members needle expected]
+                [[[] 32 false] [[32] 32 true] [[32] 44 false]
+                 [[9 32 44] 32 true] [[44 32 9] 32 true]
+                 [[-1 0 1] -1 true] [[-1 0 1] 0 true] [[-1 0 1] 2 false]
+                 [[Long/MIN_VALUE Long/MAX_VALUE] Long/MIN_VALUE true]
+                 [[Long/MIN_VALUE Long/MAX_VALUE] Long/MAX_VALUE true]
+                 [[below above] above true] [[below above] below true]
+                 [[32] (biginteger 32) true] [[above] (biginteger above) true]
+                 ;; Actual existing reader/arity member values, without changing
+                 ;; Unicode ingestion or claiming typed C7/runtime dispatch.
+                 [[9 10 13 32 44] 10 true] [[9 10 13 32 44] 65 false]
+                 [[2 3] (count [:left :right]) true] [[2 3] (count [:only]) false]
+                 [[1 2] (count []) false]
+                 [values 0 true] [values 255 true] [values 256 false]]]
+          (let [input (assoc base :arguments [(ordered members) needle])
+                before (:arguments input) result (handle input)]
+            (is (= :accepted (:status result)))
+            (is (= expected (:value result)))
+            (is (= {:collection-kind :ordered-set :member-family :integer
+                    :equality :integer-value :safety-outcome :proven-safe
+                    :allocation :none :persistent-value-semantics true} (:facts result)))
+            (is (= before (:arguments input) (get-in result [:identity-input :arguments])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (doseq [[members value] [[[] 32] [[9 10] 32] [[9 32] 32] [[below] above]]]
+          (let [insertion (assoc (request plan 'sh22-set-conj-request) :arguments [(ordered members) value])
+                inserted (handle insertion) query (assoc base :arguments [(:value inserted) value])
+                result (handle query)]
+            (is (= :accepted (:status inserted) (:status result)))
+            (is (true? (:value result)))
+            (is (= (ordered members) (first (:arguments insertion))))
+            (is (= (ordered (if (some #{value} members) members (conj members value))) (:value inserted)))
+            (doseq [[input output] [[insertion inserted] [query result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
+        (doseq [[arguments rule reason census]
+                (concat
+                 [[[(ordered (conj values 256)) 0] "STD3001" :collection-bound-exceeded 0]
+                  [[#{32} 32] "STD10003" :expected-ordered-set 0]
+                  [[{:artifact :gravity/ordered-set} 32] "STD10003" :expected-ordered-set 0]
+                  [[(assoc (ordered [32]) :extra true) 32] "STD10003" :expected-ordered-set 0]
+                  [[{:artifact :gravity/ordered-set :values '(32)} 32] "STD10003" :expected-ordered-set 0]]
+                 (mapcat (fn [other]
+                           [[[(ordered [32 other]) 32] "STD10003" :expected-integer-ordered-set 1]
+                            [[(ordered []) other] "STD10003" :expected-integer 1]])
+                         [32.0 "32" 'codepoint :codepoint \space true false nil [] {}]))]
+          (let [[result counts] (observe (assoc base :arguments arguments))]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= {:census census :unique 0 :search 0} counts))))
+        (let [input (assoc base :arguments [(ordered [32 44 (bigint 32)]) 32]) result (handle input)]
+          (is (= :rejected (:status result)))
+          (is (= :expected-ordered-set (get-in result [:diagnostics 0 :reason])))
+          (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result])))))
+        (doseq [[input rule reason]
+                (concat (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
+                             [[] [(ordered [])] [(ordered []) 32 :extra]])
+                        [[(assoc base :effects #{:memory/allocate}) "STD1002" :undeclared-library-effect]
+                         [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+                         [(assoc base :allocation-policy :bounded-by-result) "STD1001" :allocation-policy-mismatch]
+                         [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]])]
+          (let [result (handle input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))))
+        (let [[result counts] (observe (assoc base :operation nil))]
+          (is (= :rejected (:status result)))
+          (is (= {:census 0 :unique 0 :search 0} counts)))
+        (let [callbacks (atom 0) opaque (fn [] (swap! callbacks inc))]
+          (doseq [[arguments reason] [[[(ordered [32 opaque]) 32] :expected-integer-ordered-set]
+                                      [[(ordered []) opaque] :expected-integer]]]
+            (let [[result counts] (observe (assoc base :arguments arguments))]
+              (is (= :rejected (:status result)))
+              (is (= reason (get-in result [:diagnostics 0 :reason])))
+              (is (= {:census 1 :unique 0 :search 0} counts))
+              (is (zero? @callbacks)))))
+        (let [result (handle base)]
+          (doseq [changed [(assoc result :value false)
+                           (assoc-in result [:facts :member-family] :keyword)
+                           (assoc-in result [:identity-input :arguments 1] 65)]]
             (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
 
 (deftest sh22-keyword-set-equality-consumes-real-insertion-results

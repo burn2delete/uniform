@@ -9,6 +9,7 @@
              sh22-overflow-request
              sh22-sub-overflow-request
              sh22-mul-overflow-request
+             sh22-zero-divisor-request
              sh22-missing-capability-request
              sh22-missing-encoding-request
              sh22-invalid-artifact-request
@@ -20,9 +21,11 @@
              sh22-missing-experimental-opt-in-request
              sh22-allocation-policy-mismatch-request
              sh22-duplicate-map-key-request
+             sh22-duplicate-map-removal-key-request
              sh22-duplicate-set-value-request
              sh22-duplicate-keyword-after-hit-request
              sh22-duplicate-symbol-after-hit-request
+             sh22-duplicate-integer-after-hit-request
              sh22-duplicate-keyword-equality-request
              sh22-spoofed-utf8-request
              sh22-nested-physical-path-request])
@@ -62,6 +65,9 @@
      :effects #{})
     :allocation-policy :none)
    :arguments [9223372036854775807 1]))
+
+(defn sh22-zero-divisor-request [request]
+  (assoc request :arguments [123 0]))
 
 (defn sh22-missing-capability-request [request]
   (assoc request :capabilities #{}))
@@ -146,10 +152,19 @@
          [{:artifact :gravity/ordered-set :values [:reader :syntax]}
           {:artifact :gravity/ordered-set :values [:reader :syntax :reader]}]))
 
+(defn sh22-duplicate-map-removal-key-request [request]
+  (assoc request :arguments
+         [{:artifact :gravity/ordered-map :entries [[:value false] [:phase :checked] [:value nil]]}
+          :value]))
+
 (defn sh22-duplicate-symbol-after-hit-request [request]
   (assoc request :arguments
          [{:artifact :gravity/ordered-set
            :values ['reader 'compiler/compile 'reader]} 'reader]))
+
+(defn sh22-duplicate-integer-after-hit-request [request]
+  (assoc request :arguments
+         [{:artifact :gravity/ordered-set :values [32 44 32]} 32]))
 
 (defn sh22-duplicate-keyword-after-hit-request [request]
   (assoc request :arguments

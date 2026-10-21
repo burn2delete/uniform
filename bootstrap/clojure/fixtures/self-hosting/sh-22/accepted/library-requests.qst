@@ -6,14 +6,17 @@
              sh22-vector-nth-request
              sh22-map-assoc-request
              sh22-map-get-request
+             sh22-map-dissoc-keyword-request
              sh22-set-conj-request
              sh22-set-contains-keyword-request
              sh22-set-contains-symbol-request
+             sh22-set-contains-integer-request
              sh22-set-equal-keyword-request
              sh22-utf8-request
              sh22-checked-add-request
              sh22-checked-sub-request
              sh22-checked-mul-request
+             sh22-checked-nonnegative-quot-request
              sh22-error-request
              sh22-file-read-request
              sh22-stdout-request
@@ -94,6 +97,12 @@
    :map-get :ordered-map-get [(sh22-ordered-map) :syntax]
    #{} #{} :none "/checkout-a/compiler.gravity"))
 
+(defn sh22-map-dissoc-keyword-request []
+  (sh22-request
+   :map-dissoc-keyword :ordered-map-dissoc-keyword
+   [{:artifact :gravity/ordered-map :entries [[:value nil] [:phase :checked]]} :value]
+   #{:memory/allocate} #{} :bounded-by-result "/checkout-a/compiler.gravity"))
+
 (defn sh22-set-conj-request []
   (sh22-request
    :set-conj :ordered-set-conj [(sh22-ordered-set) :mir]
@@ -120,6 +129,12 @@
     {:artifact :gravity/ordered-set :values [:syntax :reader]}]
    #{} #{} :none "/checkout-a/compiler.gravity"))
 
+(defn sh22-set-contains-integer-request []
+  (sh22-request
+   :set-contains-integer :ordered-set-contains-integer
+   [{:artifact :gravity/ordered-set :values [9 10 13 32 44]} 32]
+   #{} #{} :none "/checkout-a/compiler.gravity"))
+
 (defn sh22-utf8-request []
   (sh22-request
    :utf8 :utf8-validate [[65 226 130 172]]
@@ -139,6 +154,11 @@
 (defn sh22-checked-mul-request []
   (sh22-request
    :checked-mul :checked-mul-i64 [6 7]
+   #{} #{} :none "/checkout-a/compiler.gravity"))
+
+(defn sh22-checked-nonnegative-quot-request []
+  (sh22-request
+   :checked-nonnegative-quot :checked-nonnegative-quot-i64 [123 10]
    #{} #{} :none "/checkout-a/compiler.gravity"))
 
 (defn sh22-error-request []
