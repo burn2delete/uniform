@@ -783,6 +783,115 @@
                            (assoc-in result [:identity-input :arguments 1] 'absent)]]
             (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
 
+(deftest sh22-integer-set-membership-consumes-real-insertion-results
+  ;; Reader codepoints and compiler/runtime arity Sets are DATA witnesses,
+  ;; not execution of those complete clients or an implicit i64 restriction.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        ordered (fn [values] {:artifact :gravity/ordered-set :values values})
+        above (inc (bigint Long/MAX_VALUE)) below (dec (bigint Long/MIN_VALUE))
+        observe (fn [input]
+                  (let [counts (atom {:census 0 :unique 0 :search 0})
+                        result (with-redefs-fn
+                                 {scoped (fn [& args]
+                                           (when-let [kind (get {'sh22-integer-vector? :census
+                                                                 'sh22-vector-unique? :unique
+                                                                 'sh22-vector-contains? :search} (nth args 2))]
+                                             (swap! counts update kind inc))
+                                           (apply original args))}
+                                 #(handle input))]
+                    [result @counts]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (request plan 'sh22-set-contains-integer-request)
+            values (vec (range 256))
+            export (first (filter #(= :ordered-set-contains-integer (:name %))
+                                  (:exports (invoke-engine 'sh22-module-manifest []))))]
+        (is (= #{:meta} (:profiles export)))
+        (is (= :experimental (:stability export)))
+        (is (= #{} (:effects export) (:capabilities export)))
+        (is (= :none (:allocation export)))
+        (is (= "(OrderedSet Integer) Integer -> (Result Bool CollectionError)" (:type export)))
+        (doseq [[members needle expected]
+                [[[] 32 false] [[32] 32 true] [[32] 44 false]
+                 [[9 32 44] 32 true] [[44 32 9] 32 true]
+                 [[-1 0 1] -1 true] [[-1 0 1] 0 true] [[-1 0 1] 2 false]
+                 [[Long/MIN_VALUE Long/MAX_VALUE] Long/MIN_VALUE true]
+                 [[Long/MIN_VALUE Long/MAX_VALUE] Long/MAX_VALUE true]
+                 [[below above] above true] [[below above] below true]
+                 [[32] (biginteger 32) true] [[above] (biginteger above) true]
+                 ;; Actual existing reader/arity member values, without changing
+                 ;; Unicode ingestion or claiming typed C7/runtime dispatch.
+                 [[9 10 13 32 44] 10 true] [[9 10 13 32 44] 65 false]
+                 [[2 3] (count [:left :right]) true] [[2 3] (count [:only]) false]
+                 [[1 2] (count []) false]
+                 [values 0 true] [values 255 true] [values 256 false]]]
+          (let [input (assoc base :arguments [(ordered members) needle])
+                before (:arguments input) result (handle input)]
+            (is (= :accepted (:status result)))
+            (is (= expected (:value result)))
+            (is (= {:collection-kind :ordered-set :member-family :integer
+                    :equality :integer-value :safety-outcome :proven-safe
+                    :allocation :none :persistent-value-semantics true} (:facts result)))
+            (is (= before (:arguments input) (get-in result [:identity-input :arguments])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (doseq [[members value] [[[] 32] [[9 10] 32] [[9 32] 32] [[below] above]]]
+          (let [insertion (assoc (request plan 'sh22-set-conj-request) :arguments [(ordered members) value])
+                inserted (handle insertion) query (assoc base :arguments [(:value inserted) value])
+                result (handle query)]
+            (is (= :accepted (:status inserted) (:status result)))
+            (is (true? (:value result)))
+            (is (= (ordered members) (first (:arguments insertion))))
+            (is (= (ordered (if (some #{value} members) members (conj members value))) (:value inserted)))
+            (doseq [[input output] [[insertion inserted] [query result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
+        (doseq [[arguments rule reason census]
+                (concat
+                 [[[(ordered (conj values 256)) 0] "STD3001" :collection-bound-exceeded 0]
+                  [[#{32} 32] "STD10003" :expected-ordered-set 0]
+                  [[{:artifact :gravity/ordered-set} 32] "STD10003" :expected-ordered-set 0]
+                  [[(assoc (ordered [32]) :extra true) 32] "STD10003" :expected-ordered-set 0]
+                  [[{:artifact :gravity/ordered-set :values '(32)} 32] "STD10003" :expected-ordered-set 0]]
+                 (mapcat (fn [other]
+                           [[[(ordered [32 other]) 32] "STD10003" :expected-integer-ordered-set 1]
+                            [[(ordered []) other] "STD10003" :expected-integer 1]])
+                         [32.0 "32" 'codepoint :codepoint \space true false nil [] {}]))]
+          (let [[result counts] (observe (assoc base :arguments arguments))]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= {:census census :unique 0 :search 0} counts))))
+        (let [input (assoc base :arguments [(ordered [32 44 (bigint 32)]) 32]) result (handle input)]
+          (is (= :rejected (:status result)))
+          (is (= :expected-ordered-set (get-in result [:diagnostics 0 :reason])))
+          (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result])))))
+        (doseq [[input rule reason]
+                (concat (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
+                             [[] [(ordered [])] [(ordered []) 32 :extra]])
+                        [[(assoc base :effects #{:memory/allocate}) "STD1002" :undeclared-library-effect]
+                         [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+                         [(assoc base :allocation-policy :bounded-by-result) "STD1001" :allocation-policy-mismatch]
+                         [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]])]
+          (let [result (handle input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))))
+        (let [[result counts] (observe (assoc base :operation nil))]
+          (is (= :rejected (:status result)))
+          (is (= {:census 0 :unique 0 :search 0} counts)))
+        (let [callbacks (atom 0) opaque (fn [] (swap! callbacks inc))]
+          (doseq [[arguments reason] [[[(ordered [32 opaque]) 32] :expected-integer-ordered-set]
+                                      [[(ordered []) opaque] :expected-integer]]]
+            (let [[result counts] (observe (assoc base :arguments arguments))]
+              (is (= :rejected (:status result)))
+              (is (= reason (get-in result [:diagnostics 0 :reason])))
+              (is (= {:census 1 :unique 0 :search 0} counts))
+              (is (zero? @callbacks)))))
+        (let [result (handle base)]
+          (doseq [changed [(assoc result :value false)
+                           (assoc-in result [:facts :member-family] :keyword)
+                           (assoc-in result [:identity-input :arguments 1] 65)]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
+
 (deftest sh22-keyword-set-equality-consumes-real-insertion-results
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original @scoped

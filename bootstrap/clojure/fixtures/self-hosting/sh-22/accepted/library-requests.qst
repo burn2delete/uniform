@@ -9,6 +9,7 @@
              sh22-set-conj-request
              sh22-set-contains-keyword-request
              sh22-set-contains-symbol-request
+             sh22-set-contains-integer-request
              sh22-set-equal-keyword-request
              sh22-utf8-request
              sh22-checked-add-request
@@ -118,6 +119,12 @@
    :set-equal-keyword :ordered-set-equal-keyword
    [(sh22-ordered-set)
     {:artifact :gravity/ordered-set :values [:syntax :reader]}]
+   #{} #{} :none "/checkout-a/compiler.gravity"))
+
+(defn sh22-set-contains-integer-request []
+  (sh22-request
+   :set-contains-integer :ordered-set-contains-integer
+   [{:artifact :gravity/ordered-set :values [9 10 13 32 44]} 32]
    #{} #{} :none "/checkout-a/compiler.gravity"))
 
 (defn sh22-utf8-request []
