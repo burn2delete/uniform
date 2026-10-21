@@ -4,6 +4,7 @@
   (:exports [sh22-malformed-request
              sh22-out-of-bounds-request
              sh22-oversized-collection-request
+             sh22-full-vector-append-request
              sh22-invalid-utf8-request
              sh22-overflow-request
              sh22-sub-overflow-request
@@ -40,6 +41,9 @@
 
 (defn sh22-oversized-collection-request [request]
   (assoc request :arguments [(sh22-repeat-value 0 257 []) 0 1]))
+
+(defn sh22-full-vector-append-request [request]
+  (assoc request :arguments [(sh22-repeat-value 0 256 []) 1]))
 
 (defn sh22-invalid-utf8-request [request]
   (assoc

@@ -96,6 +96,7 @@
 
 (def ^:private accepted-functions
   '[sh22-vector-assoc-request
+    sh22-vector-append-request
     sh22-vector-nth-request
     sh22-map-assoc-request
     sh22-map-get-request
@@ -119,6 +120,8 @@
    ['sh22-vector-assoc-request "STD3002" :index-out-of-bounds]
    'sh22-oversized-collection-request
    ['sh22-vector-assoc-request "STD3001" :collection-bound-exceeded]
+   'sh22-full-vector-append-request
+   ['sh22-vector-append-request "STD3001" :collection-bound-exceeded]
    'sh22-invalid-utf8-request
    ['sh22-vector-assoc-request "STD4001" :invalid-utf8]
    'sh22-overflow-request
@@ -190,7 +193,7 @@
     (is (= 512 (:maximum-carrier-width policy)))
     (is (= 65536 (:maximum-carrier-nodes policy)))
     (is (true? (:experimental-opt-in-required policy)))
-    (is (= 16 (count (:operation-set policy))))
+    (is (= 17 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
     (is (contains? (:diagnostics policy) "STD8001"))
     (is (some #{:authenticated-sh19-runtime-services}
@@ -201,7 +204,7 @@
     (is (= 'gravity.stdlib.self-hosting-core (:module manifest)))
     (is (= :experimental (:stability manifest)))
     (is (empty? (:unsafe-islands manifest)))
-    (is (= 16 (count exports)))
+    (is (= 17 (count exports)))
     (is (every? #(= :experimental (:stability %)) exports))
     (is (every? #(= #{:meta} (:profiles %)) exports))
     (is (every? string? (map :type exports)))
@@ -665,6 +668,83 @@
           (doseq [changed [(assoc result :value false)
                            (assoc-in result [:facts :member-family] :string)
                            (assoc-in result [:identity-input :arguments 1] :absent)]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
+
+(deftest sh22-vector-append-executes-with-real-nth-and-assoc-consumers
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        observe (fn [input]
+                  (let [calls (atom 0)
+                        result (with-redefs-fn
+                                 {scoped (fn [& args]
+                                           (when (= 'sh22-vector-append-result (nth args 2))
+                                             (swap! calls inc))
+                                           (apply original args))}
+                                 #(handle input))]
+                    [result @calls]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (request plan 'sh22-vector-append-request)
+            export (first (filter #(= :vector-append (:name %))
+                                  (:exports (invoke-engine 'sh22-module-manifest []))))]
+        (is (= #{:meta} (:profiles export)))
+        (is (= :experimental (:stability export)))
+        (is (= #{:memory/allocate} (:effects export)))
+        (is (= #{} (:capabilities export)))
+        (is (= :bounded-by-result (:allocation export)))
+        (is (= "(Vector a) a -> (Result (Vector a) CollectionError)" (:type export)))
+        (doseq [[prefix value] [[[] nil] [[] false] [[:reader :syntax] :mir]
+                                [[false nil '(throw "inert")] {:nested [nil false]}]
+                                [(vec (range 255)) :last]]]
+          (let [input (assoc base :arguments [prefix value])
+                [appended calls] (observe input) output (:value appended)
+                coordinate (count prefix)
+                nth-input (assoc (request plan 'sh22-vector-nth-request) :arguments [output coordinate])
+                nth-result (handle nth-input)
+                assoc-input (assoc (request plan 'sh22-vector-assoc-request)
+                                   :arguments [output coordinate :replaced])
+                assoc-result (handle assoc-input)]
+            (is (= :accepted (:status appended)))
+            (is (vector? output))
+            (is (= 1 calls))
+            (is (= (conj prefix value) output))
+            (is (= prefix (vec (take coordinate output))))
+            (is (= [prefix value] (:arguments input) (get-in appended [:identity-input :arguments])))
+            (is (= {:collection-kind :vector :safety-outcome :proven-safe
+                    :allocation :bounded-by-result :persistent-value-semantics true} (:facts appended)))
+            (is (= :accepted (:status nth-result) (:status assoc-result)))
+            (is (= value (:value nth-result)))
+            (is (= (conj prefix :replaced) (:value assoc-result)))
+            (is (= (conj prefix value) output (:value appended)))
+            (doseq [[subject result] [[input appended] [nth-input nth-result] [assoc-input assoc-result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [subject result])))))))
+        (doseq [[input rule reason]
+                (concat
+                 (map #(vector (assoc base :arguments [(vec (repeat % nil)) :new])
+                               "STD3001" :collection-bound-exceeded) [256 257])
+                 (map #(vector (assoc base :arguments [% :new]) "STD3002" :expected-vector)
+                      [nil '(:reader) {:a :b} #{:reader}])
+                 (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
+                      [[] [[]] [[] :new :extra]])
+                 [[(assoc base :effects #{} :arguments [[] nil]) "STD1002" :undeclared-library-effect]
+                  [(assoc base :operation nil) "STD1001" :allocation-policy-mismatch]
+                  [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+                  [(assoc base :allocation-policy :none) "STD1001" :allocation-policy-mismatch]
+                  [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]])]
+          (let [[result calls] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (zero? calls))))
+        (let [callbacks (atom 0) inert (fn [] (swap! callbacks inc))
+              input (assoc base :arguments [[inert] inert]) result (handle input)]
+          (is (= :accepted (:status result)))
+          (is (= [inert inert] (:value result)))
+          (is (zero? @callbacks)))
+        (let [result (handle base)]
+          (doseq [changed [(assoc result :value [:syntax :reader :mir])
+                           (assoc result :value [:reader :syntax :wrong])
+                           (assoc-in result [:facts :allocation] :none)
+                           (assoc-in result [:identity-input :arguments 1] :wrong)]]
             (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
 
 (deftest sh22-collection-boundaries-run-before-recursive-search

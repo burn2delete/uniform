@@ -267,6 +267,39 @@ of host printing callbacks. No compiler linkage, general Set equality, native
 execution, complete library or migration claim follows. Historical SH07 pins
 remain unchanged and do not authenticate the revised library source.
 
+### Bounded persistent Vector append and consumers
+
+STD3's binary Vector append law governs `:vector-append` in the same SH-22
+leaf. An input shorter than 256 elements produces its unchanged ordered prefix
+and one inert appended value: 255 becomes 256; inputs of 256 or 257 reject
+before construction (`STD3001`). Non-Vectors reject with `STD3002`; wrong arity
+and allocation policy retain `STD1001`. Experimental `:meta` opt-in requires
+`:memory/allocate`, no capabilities and `:bounded-by-result`, even for empty
+input. The four exports and request/result envelope are unchanged.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-vector-append-executes-with-real-nth-and-assoc-consumers \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity \
+  --exact sh22-policy-and-manifest-state-bounded-experimental-surface --fail-fast
+```
+
+The direct check executes append then real nth/assoc consumers and freshly
+recomputes all results. It covers heterogeneous false/nil/nested payloads,
+persistence, authority/substitution failures and original-delegating constructor
+counts. Exact new dispatch/allocation discriminators reject nil before append;
+the older general `sh22-member?` nil weakness is not repaired. Initial RED was
+1/270 with 160 failures; historical GREEN 8/538 omitted this regression. Its
+test-only RED had 63 total assertions (62 pass, one host stack error), with
+later assertions in the sole selected var unrun. An unsupported-`or` successor
+had one error assertion and seven selected vars unrun. Supported nested `if`
+correction passed 8/546, including all 278 append assertions; failed/partial
+epochs are not added coverage. No variadic/coercing behavior, physical sharing,
+unbounded-profile, native allocation or host-callback-free guarantee follows.
+Compiler linkage, full SH-22 and self-hosting remain pending; historical SH07
+pins are unchanged and do not authenticate this changed source revision.
+
 ### C6 compiled-source aggregate binding maintenance
 
 ```bash
