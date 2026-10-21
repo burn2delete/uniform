@@ -73,11 +73,16 @@
               (is (= (if equal-arms? true argument) (get-in result [:execution :value])))
               (is (= 506 (get-in result [:execution :fuel])))
               (is (= :passed (get-in result [:upstream-verification :status])))
+              (is (false? (:self-hosted? result)))
+              (is (some #{:authenticated-public-c6-c11-source-ingress} (:pending result)))
+              (is (some #{:authenticated-public-c6-c11-source-ingress} (:nonclaims result)))
               (is (= [id] (mapv :value-id (get-in result [:projection :parameters]))))
               (is (= definition (get-in result [:projection :parameters 0 :definition])))
               (is (= (:source binder) (get-in result [:projection :parameters 0 :source])))
               (is (= :gravity/bool (get-in result [:projection :parameters 0 :source-type])))
               (is (= :bool (get-in result [:projection :parameters 0 :runtime-type])))
+              (is (= (get-in core [:core-nodes 6 :type])
+                     (get-in result [:projection :operations 5 :source-type])))
               (is (= (get-in core [:type-facts id :fact-id])
                      (get-in result [:projection :parameters 0 :facts :type-fact-id])))
               (is (= [(get-in nodes [1 :node-id]) (get-in nodes [2 :node-id])
@@ -112,6 +117,10 @@
                 (let [rejected (argument-run-observation core mir arguments)]
                   (is (= :rejected (:status rejected)))
                   (is (= "C11-TYPE" (get-in rejected [:diagnostics 0 :diagnostic-id])))
+                  (is (= id (get-in rejected [:diagnostics 0 :value-id])))
+                  (is (= [(get-in binder [:source :span]) (get-in binder [:source :generated-origin])]
+                         [(get-in rejected [:diagnostics 0 :source-span])
+                          (get-in rejected [:diagnostics 0 :origin-chain])]))
                   (is (nil? (:execution rejected)))))
               (is (zero? @equalities)))
             (doseq [[bad-core bad-mir]
@@ -155,6 +164,14 @@
 
 (deftest sh13-original-branch-join-interface-is-explicit
   (let [core (checked ".gravity") mir (build core) result (run core mir)]
+    (is (= [2 3 3 4]
+           (mapv #(get-in @(existing 'c11-plan) [:functions % :arity])
+                 '[sh13-run-branch-join-mir sh13-verify-branch-join-execution
+                   sh13-run-branch-join-mir-with-arguments
+                   sh13-verify-branch-join-execution-with-arguments])))
+    (doseq [name '[sh13-run-branch-join-mir-with-arguments
+                  sh13-verify-branch-join-execution-with-arguments]]
+      (is (contains? (set (get-in @(existing 'c11-plan) [:module :exports])) name)))
     (is (= :gravity/mir-module (:artifact mir)))
     (is (= :meta (:profile mir)))
     (is (= :jvm (:source-target mir)))
@@ -171,7 +188,11 @@
     (is (true? (:clojure-seed-boundary? result)))
     (is (false? (:self-hosted? result)))
     (is (some #{:fresh-c10-ingress} (:nonclaims result)))
-    (is (= :passed (:status (verify core mir result))))))
+    (is (= :passed (:status (verify core mir result))))
+    (let [parameter-only (argument-run-observation core mir [])]
+      (is (= :rejected (:status parameter-only)))
+      (is (= :bounded-execution-subset (get-in parameter-only [:diagnostics 0 :missing-fact])))
+      (is (nil? (:execution parameter-only))))))
 
 (deftest sh13-executes-original-verified-diamonds
   (doseq [extension [".gravity" ".qst"]
