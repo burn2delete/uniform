@@ -32586,14 +32586,20 @@
           (is (= expected-width (count (second query)))))))))
 
 (deftest current-gravity-vector-first-symbol-loop-witness-authenticated-composition
-  ;; Current production 2092fd07: qualified split 35 unique selectors / 1736 passing assertions.
-  ;; Reuse only 34 selectors / 1723 passes from the original FAILED 35-selector receipt.
-  ;; Test-only b7f72147 fresh cold selector: 13 passes; exact 60847 units and minus-one rejection.
-  ;; Whole cold DATA converge in five rounds under 65536; both budget counters are compared explicitly.
-  ;; Original genuine attempts ab180a09 and 33b732fb each stopped at C7 loop-type-work-limit: 3P/1F/1E.
-  ;; Their C8, assembly, runtime and typing negative were unrun; both failed receipts remain preserved.
-  ;; Reached projections, one complete warm scan, final equality and scalar two visits remain enforced.
-  ;; Discarded Keyword rendering is eliminated; long-name resource acceptance can broaden logically.
+  ;; Qualified coverage: 43 unique selectors / 1973 passing assertions across epochs.
+  ;; Production 3737b5b0: fresh 13/464, comprising new C8 8/237 and affected old loops 5/227.
+  ;; Reuse only unaffected 30/1509 from prior qualified 35/1736; no single 43-test green invocation.
+  ;; Prior 35 comprised 34/1723 from a FAILED receipt plus b7f72147 fresh cold 1/13.
+  ;; Cold C7 DATA converge in five rounds: exact 60847 units and minus-one rejection.
+  ;; Normalized C8 accepts at 49576 units, exact complete-result parity, and rejects one unit below.
+  ;; Genuine ab180a09 and 33b732fb stopped at C7 loop-type-work-limit: each 3P/1F/1E.
+  ;; Genuine f2472dba passed C7 and its verifier, then C8 work limit: 4P/1F/1E.
+  ;; Its C8 verifier, assembly, runtime, detailed witnesses and typing negative were unrun.
+  ;; All three failed source receipts remain preserved; normalized DATA are not source evidence.
+  ;; Reached projections, complete warm scan, final equality and LSI scalar two visits remain.
+  ;; Shared C8 evidence retains one scalar visit; actual discarded Keyword formatting is removed.
+  ;; Long-name logical acceptance can broaden across the shared C8 callers.
+  ;; String/Symbol work, doubled row validation/equality charge, schemas and 65536 ceiling remain.
   ;; No host CPU, heap, hashing, equality-cost or hostile-provider bound is claimed.
   ;; One unchanged G positive and one empty-Vector typing negative. Q remains parser-only.
   ;; Runtime and protected predicates are unchanged; fresh DEV-C6 replay is not public fresh C6.
