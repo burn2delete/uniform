@@ -1771,7 +1771,9 @@
                 (if (> right 0)
                   (<= left (- 9223372036854775807 right))
                   (if (< right 0)
-                    (>= left (- -9223372036854775808 right))
+                    (if (= right -9223372036854775808)
+                      (>= left 0)
+                      (>= left (- -9223372036854775808 right)))
                     true))
                 false)
               false))
@@ -1810,17 +1812,15 @@
           (if (= 2 (count (get operation :operands)))
             (let [left-id (get (get operation :operands) 0)
                   right-id (get (get operation :operands) 1)]
-              (if (= left-id right-id)
-                nil
-                (if (contains? producers left-id)
-                  (if (contains? producers right-id)
-                    (let [candidate
-                          (assoc
-                           (assoc operation :constant-operands true)
-                           :operands [(get producers left-id) (get producers right-id)])]
-                      (if (sh16-foldable-add? candidate) candidate nil))
-                    nil)
-                  nil)))
+              (if (contains? producers left-id)
+                (if (contains? producers right-id)
+                  (let [candidate
+                        (assoc
+                         (assoc operation :constant-operands true)
+                         :operands [(get producers left-id) (get producers right-id)])]
+                    (if (sh16-foldable-add? candidate) candidate nil))
+                  nil)
+                nil))
             nil)
           nil)
         nil)
