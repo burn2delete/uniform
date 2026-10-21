@@ -1802,9 +1802,10 @@
                :lexical-scope :function-boundary}
              opcode))
 
-(defn c14-c-local-forward-type-valid?
+(defn c14-c-scalar-forward-type-valid?
   [operation operations-by-id]
-  (if (contains? #{:local :local-binding} (get operation :opcode))
+  (if (contains? #{:local :local-binding :sequence :lexical-scope}
+                 (get operation :opcode))
     (if (c14-c-scalar-type? (get operation :type))
       (= (get operation :type)
          (get (get operations-by-id
@@ -1887,7 +1888,7 @@
                           (if (= opcode :function-boundary)
                             true
                             (if (c14-c-scalar-type? type)
-                              (c14-c-local-forward-type-valid?
+                              (c14-c-scalar-forward-type-valid?
                                operation operations-by-id)
                               false))
                           false)
@@ -2626,7 +2627,7 @@
                       (if (c14-wasm-references-allowed?
                            operation operands operations-by-id operation-index
                            block-labels)
-                        (c14-c-local-forward-type-valid?
+                        (c14-c-scalar-forward-type-valid?
                          operation operations-by-id)
                         false)
                       false)
