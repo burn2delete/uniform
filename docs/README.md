@@ -47,6 +47,9 @@ evidence tracked below.
   maps a first module endpoint, required seed/build dependencies, retained
   evidence and invalidation, and the open broader compiler closure. It is not
   admission, execution authority or a prerequisite for ordinary edits.
+- [SH-07 completion tasks](self-hosting-sh07-completion-plan.md) expands its six
+  requirements into 18 ordered tasks with acceptance gates, evidence status,
+  scope decisions and explicit downstream ownership.
 - [Full language implementation gap map](full-language-implementation-gap-map.md)
   tracks the open work from the current public release surface to complete
   designed-language implementation and self-hosting.
