@@ -304,6 +304,20 @@ This adds composition coverage, not operations or numeric semantics. The reader
 helper was neither compiled nor invoked; reader linkage, signed rounding,
 arbitrary-precision division, Unicode admission and C6 proof are not claimed.
 
+### UTF-8 revalidation before stdout request construction
+
+STD4/STD8 govern the existing `:io-stdout` consumer. After the original authority,
+carrier and byte-bound checks, its recomputed scalar count must be an Integer
+before comparison with the supplied count. Invalid UTF-8 returning nil cannot
+match a supplied nil and produce a provider-request descriptor; the existing
+`STD4001/:validated-text-facts-mismatch` rejection remains. Run
+`sh22-stdout-revalidates-utf8-before-building-provider-request` with the adjacent
+UTF-8, IO, rejection and verifier controls in the SH-22 namespace. Real validation
+Results cover empty/ASCII and multibyte boundaries; the same observer sees valid
+descriptor construction and none for the selected rejected sequences. Fresh
+verification and substitutions remain required. No provider IO is executed,
+and this guard does not establish universal malformed-byte or host-failure freedom.
+
 ### Keyword membership in bounded ordered Sets
 
 STD2/STD3 govern `:ordered-set-contains-keyword` in the same SH-22 leaf. It
