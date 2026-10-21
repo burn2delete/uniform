@@ -2534,6 +2534,108 @@
                       input (filter #{1 2} positions))]
     (vector-slice-established input)))
 
+(defn- sha-suffix-character-membership-input [text start end positions]
+  ;; Existing owners composed as normalized DATA; source admission is separate.
+  (let [base (if (nil? positions) (vector-slice-input text start end) (vector-slice-transfer-input text start end positions))
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :kind kind :value value :parent-form-id parent :child-form-ids children})
+        values (vec "0123456789abcdef") ids (mapv #(keyword (str "suffix-hex-" %)) (range 16))
+        characters (mapv (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                                        :source (source id) :attributes {:literal-kind :character :value value}
+                                        :evaluation {:kind :value :order []}}) ids values)
+        set-node {:node-id :suffix-hex-set :core-form :collection-literal :children ids :resolved-binding-ids []
+                  :source (source :suffix-hex-set) :attributes {:literal-kind :set :element-count 16 :source-value (set values)}
+                  :evaluation {:kind :left-to-right :order (mapv #(hash-map :index %1 :core-node-id %2) (range) ids)}}
+        added (conj characters set-node)
+        base (-> base (update-in [:core :nodes] into added)
+                 (update :nodes into (map (juxt :node-id identity) added))
+                 (update :forms into (map (fn [id value] [id (form id :character value :suffix-hex-set [])]) ids values))
+                 (assoc-in [:forms :suffix-hex-set] (form :suffix-hex-set :set (set values) nil ids))
+                 (update :types merge (zipmap ids (repeat :gravity.type/character))
+                         {:suffix-hex-set {:kind :gravity.type/set :shape :literal :element-types (vec (repeat 16 :gravity.type/character))}}))
+        append-call
+        (fn [input id operation args]
+          (let [op (keyword (str (name id) "-operator")) bid (keyword (str (name id) "-binding"))
+                definition (keyword (str (name id) "-definition")) children (into [op] args)
+                binding (assoc (get-in input [:bindings :ordering-binding]) :binding-id bid :name operation :definition-syntax-id definition)
+                operator {:node-id op :core-form :reference :children [] :resolved-binding-ids [bid]
+                          :source (source op) :attributes {:symbol operation :position :operator :binding-id bid :binding-class :core
+                                                         :definition-syntax-id definition} :evaluation {:order []}}
+                node {:node-id id :core-form :call :children children :resolved-binding-ids [bid] :source (source id)
+                      :attributes {:operator-child-index 0 :argument-count (count args) :argument-child-indexes (vec (range 1 (count children)))
+                                   :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+                      :evaluation {:owner-function-syntax-id nil :kind :operator-then-arguments
+                                   :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}}
+                call {:core-node-id id :operator-node-id op :operator-binding-id bid :argument-node-ids args
+                      :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :result-policy :call-result}
+                edge {:ordinal (count (get-in input [:core :calls])) :call-core-node-id id
+                      :caller-function-syntax-id nil :caller-function-core-node-id nil :callee-binding-id bid
+                      :callee-definition-syntax-id definition :callee-function-syntax-id nil :callee-function-core-node-id nil
+                      :argument-core-node-ids args :ordered-evaluation-node-ids children
+                      :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+            (-> input (assoc :node node :call call :edge edge)
+                (update :nodes assoc op operator id node) (assoc-in [:bindings bid] binding)
+                (update-in [:core :nodes] into [operator node]) (update-in [:core :calls] conj call) (update-in [:core :call-edges] conj edge)
+                (assoc-in [:forms op] (form op :symbol operation id [])) (assoc-in [:forms id] (form id :list id nil children))
+                (update :forms #(reduce (fn [forms child] (assoc-in forms [child :parent-form-id] id)) % args)))))
+        input (-> base (append-call :suffix-first 'first [:slice-call])
+                  (append-call :suffix-member 'contains? [:suffix-hex-set :suffix-first]))]
+    (assoc input :binding-types (:types input)
+                 :products {:module (:module input) :calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges])})))
+
+(defn- sha-suffix-character-membership-established [input]
+  (let [input (vector-slice-established input) {:keys [core nodes bindings forms]} input
+        calls (:calls core) edges (:call-edges core)
+        derive (fn [name index types]
+                 (let [call (get calls index)]
+                   (invoke-c7 name [core (nodes (:core-node-id call)) call (get edges index) nodes bindings types forms 65536])))
+        retain (fn [types index result] (let [call (get calls index)]
+                                         (assoc types (:operator-node-id call) (:descriptor result)
+                                                      (:core-node-id call) (:type result :gravity.type/unknown))))
+        slice (derive 'sh08-vsl-derive 1 (:types input)) types (retain (:types input) 1 slice)
+        first-result (derive 'sh08-lq-derive 2 types) types (retain types 2 first-result)
+        membership (when (= :accepted (:status first-result)) (derive 'sh08-ksm-derive 3 types))]
+    (assoc input :slice slice :first-result first-result :membership membership
+                 :types (if membership (retain types 3 membership) types))))
+
+(deftest sh08-sha-suffix-character-membership-development-kernel
+  (let [text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        wrong (str (subs text 0 7) "g" (subs text 8))]
+    (doseq [[value positions] [[text nil] [wrong nil] [text 0] [text 1] [text 2]]]
+      (let [raw (sha-suffix-character-membership-input value 7 71 positions)
+            {:keys [core nodes forms bindings child slice first-result membership]} (sha-suffix-character-membership-established raw)
+            descriptor (:descriptor membership)]
+        (is (= :accepted (:status child) (:status slice) (:status first-result) (:status membership)))
+        (is (= (if (nil? positions) :gravity.type/bool :gravity.type/never) (:type membership)))
+        (is (= :gravity.type/applied-character-set-contains (:kind descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= (if (nil? positions) :gravity.type/applied-vector-first :gravity.type/applied-list-query)
+               (get-in first-result [:descriptor :kind])))
+        (when (nil? positions)
+          (is (= [64 0 :gravity.type/character]
+                 ((juxt :vector-length :selected-index :selected-type) (get-in first-result [:descriptor :bounds-proof]))))
+          (let [context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                         :lookup-bindings (vec (vals bindings)) :shape-call-products (:products raw)}
+                inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                           [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} (:binding-types raw) 10 context])]
+            (is (= :converged (:convergence-status inferred)))
+            (is (= [] (:diagnostics inferred)))
+            (is (= :gravity.type/bool (get-in inferred [:type-table :suffix-member])))
+            (is (= #{:sh08-string-character-vector-v1 :sh08-vector-slice-v1 :sh08-vector-first-v1 :sh08-character-set-contains-v1}
+                   (set (map :producer-rule (:constraints inferred)))))))))
+    (let [raw (sha-suffix-character-membership-input text 71 71 nil)
+          {:keys [child slice first-result membership]} (sha-suffix-character-membership-established raw)]
+      (is (= :accepted (:status child) (:status slice)))
+      (is (= 0 (get-in slice [:descriptor :bounds-proof :result-count])))
+      (is (= :rejected (:status first-result)))
+      (is (= ["C7-ANNOTATION" :vector-first-nonempty-complete-positional-type-required]
+             ((juxt :rule :reason) first-result)))
+      (is (= :established-list-and-available-element-types (:expected first-result)))
+      (is (= [{:kind :gravity.type/vector :shape :literal :element-types []}] (:actual first-result)))
+      (is (nil? membership)))))
+
 (defn- sha-prefix-comparison-input [text expected positions]
   ;; Composition of existing owners in normalized DATA, not source admission.
   (let [inner (if (nil? positions) (vector-slice-input text 0 7) (vector-slice-transfer-input text 20 1 positions))

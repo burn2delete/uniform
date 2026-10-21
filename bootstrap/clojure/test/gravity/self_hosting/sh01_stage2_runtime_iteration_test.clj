@@ -29854,6 +29854,87 @@
           (do (is (= '[main] (mapv second definitions)))
               (is (= 2 (count (rest (last (first definitions))))))))))))
 
+(defn- sha-suffix-character-membership-kernel-context [input]
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        {:keys [core nodes forms bindings types module child slice first-result membership] :as input}
+        ((ns-resolve upstream 'sha-suffix-character-membership-established) input)
+        descriptors [(:descriptor child) (:descriptor slice) (:descriptor first-result) (:descriptor membership)]
+        facts (mapv (fn [name descriptor] (c7 name [descriptor module]))
+                    ['sh08-scv-call-fact 'sh08-vsl-call-fact 'sh08-lq-call-fact 'sh08-ksm-call-fact] descriptors)
+        ledger (mapv (fn [name descriptor] (c7 name [descriptor]))
+                     ['sh08-scv-constraint 'sh08-vsl-constraint 'sh08-lq-constraint 'sh08-ksm-constraint] descriptors)]
+    {:input input :descriptors descriptors
+     :context {:core core :nodes nodes :forms forms :bindings bindings :types types
+               :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+               :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+               :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+               :call-facts (into {} (map (juxt :call-core-node-id identity) facts)) :ledger ledger
+               :locals {} :parameter-types {} :tail? true}}))
+
+(deftest current-gravity-sha-suffix-character-membership-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'sha-suffix-character-membership-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        wrong (str (subs text 0 7) "g" (subs text 8))]
+    (doseq [[value positions expected] [[text nil true] [wrong nil false] [text 0 nil] [text 1 nil] [text 2 nil]]]
+      (let [{:keys [context descriptors]} (sha-suffix-character-membership-kernel-context (input value 7 71 positions))
+            compile #(lower 'p15-s23-typed-compile-node %1 :suffix-member %2)
+            compiled (compile context 65536) ir (:value compiled)]
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= 'contains? (:function ir)))
+        (is (= :set-literal (get-in ir [:args 0 :op])))
+        (is (= 'first (get-in ir [:args 1 :function])))
+        (is (= 'subvec (get-in ir [:args 1 :args 0 :function])))
+        (is (= 'vec (get-in ir [:args 1 :args 0 :args 0 :function])))
+        (when (= :complete (:status compiled))
+          (is (= compiled (compile context (:work-count compiled))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count compiled))) [:facts :reason])))
+          (if (nil? positions)
+            (is (= [expected "" :normal] (evaluate ir)))
+            (is (= [(if (= positions 0) "original vec transfer" "original slice transfer") "" :thrown] (evaluate ir))))
+          (let [literal #(hash-map :op :literal :value %)
+                say (fn [label value] {:op :do :body [{:op :println :args [(literal label)]
+                                                      :effect :io/write :capability :io/stdout} value]})
+                observed (evaluate (-> ir (update-in [:args 0] #(say "set" %)) (update-in [:args 1] #(say "candidate" %))))
+                payload (Object.)
+                left-transfer (evaluate (assoc-in ir [:args 0] (say "set" {:op :throw :value (literal payload)})))]
+            (is (= "set\ncandidate\n" (second observed)))
+            (is (= (if (nil? positions) :normal :thrown) (last observed)))
+            (is (identical? payload (first left-transfer)))
+            (is (= ["set\n" :thrown] (subvec left-transfer 1))))
+          (when (nil? positions)
+            (let [empty-first (evaluate (assoc-in ir [:args 1 :args 0 :args 1] {:op :literal :value 71}))]
+              (is (= :rejected (last empty-first)))
+              (is (= :vector-first-nonempty-premise-required (get-in empty-first [0 :reason])))))
+          (let [original-into clojure.core/into conversions (atom 0)
+                observed-into (fn
+                                ([to from] (when (string? from) (swap! conversions inc)) (original-into to from))
+                                ([to xf from] (when (string? from) (swap! conversions inc)) (original-into to xf from)))]
+            (with-redefs [clojure.core/into observed-into] (evaluate ir))
+            (is (= (if (= positions 0) 0 1) @conversions))))
+        (doseq [id [:call :slice-call :suffix-first :suffix-member]]
+          (is (= :rejected (:status (compile (update context :call-facts dissoc id) 65536)))))
+        (doseq [index (range 4)]
+          (is (= :rejected (:status (compile (update context :ledger #(vec (concat (subvec % 0 index) (subvec % (inc index))))) 65536))))
+          (is (= :rejected (:status (compile (update context :ledger conj (get (:ledger context) index)) 65536)))))
+        (doseq [[index fact-name constraint-name path] [[0 'sh08-scv-call-fact 'sh08-scv-constraint [:conversion-proof :scalar-count]]
+                                                       [1 'sh08-vsl-call-fact 'sh08-vsl-constraint [:bounds-proof :result-count]]
+                                                       [2 'sh08-lq-call-fact 'sh08-lq-constraint [:bounds-proof :vector-length]]
+                                                       [3 'sh08-ksm-call-fact 'sh08-ksm-constraint [:membership-policy :comparison]]]]
+          (let [changed (assoc-in (get descriptors index) path :forged)
+                candidate (-> context (assoc-in [:types (:operator-node-id changed)] changed)
+                              (assoc-in [:call-facts (:call-core-node-id changed)] (c7 fact-name [changed (get-in context [:core :module])]))
+                              (assoc-in [:ledger index] (c7 constraint-name [changed])))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (is (= :rejected (:status (compile (assoc-in context [:types :suffix-hex-0] :gravity.type/string) 65536))))))))
+
 (defn- sha-prefix-comparison-kernel-context [input]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core nodes forms bindings types module child slice comparison] :as input}
@@ -29930,6 +30011,25 @@
                               (assoc-in [:ledger index] (c7 constraint-name [changed])))]
             (is (= :rejected (:status (compile candidate 65536))))))
         (is (= :rejected (:status (compile (assoc-in context [:types :prefix-character-0] :gravity.type/string) 65536))))))))
+
+(deftest current-gravity-sha-suffix-character-membership-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        hex (set "0123456789abcdef")
+        query (fn [value start] (list 'contains? hex (list 'first (list 'subvec (list 'vec value) start 71))))]
+    (doseq [[disposition name expected]
+            [["accepted" "local-runtime-sha-suffix-character-membership" [(query text 7) (query (str "sha256:g" (subs text 8)) 7)]]
+             ["rejected" "sha-suffix-character-membership-empty" (query text 71)]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)
+            forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
+        (is (= g q))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
+        (is (= '[main] (mapv second definitions)))
+        (is (= expected (last (first definitions))))))))
 
 (deftest current-gravity-sha-prefix-comparison-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
