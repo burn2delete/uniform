@@ -32532,9 +32532,11 @@
           (is (= expected-width (count (second query)))))))))
 
 (deftest current-gravity-vector-first-symbol-loop-witness-authenticated-composition
-  ;; Qualified focused evidence: 28 distinct selectors / 1433 passes across preserved partitions.
-  ;; 26 selectors / 1411 passes at 6cdb3087; affected C8 plus unrun adjacent selector: 2 / 22 at 6852eccc.
-  ;; Five new selectors / 220 assertions; 23 retained controls / 1213. Earlier failed receipts stay failed.
+  ;; Focused 9c4abf2e: one fresh 30-selector run / 1520 passes / zero failures or errors.
+  ;; Seven new selectors / 307 assertions; 23 retained controls / 1213. Earlier failures remain failed.
+  ;; Original source attempt ab180a09 stopped at C7 loop-type-work-limit: 3 passes, one failure, one error.
+  ;; Its C8, assembly, entry execution and typing negative were unrun; that receipt is preserved.
+  ;; This candidate prepays only reached node/form data, retaining full warm/final descriptor validation.
   ;; One new G positive and one empty-Vector typing negative. Q remains parser-only.
   ;; Existing first v1 and loop v2 records are independently rebuilt; runtime and private type predicates are unchanged.
   ;; Fresh development C6 session plus same-catalog replay is distinct from public fresh C6 verification.
