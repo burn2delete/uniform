@@ -3295,7 +3295,7 @@
        (sh12-c10-mir-sha256-id? (get core :provenance-binding-id))
        (sh12-c10-mir-sha256-id? (get source :plan-id))
        (= source {:module module :plan-id (get source :plan-id) :entrypoint 'main
-                  :operation-set [:parameter :local :truthy :literal :if :function]
+                  :operation-set #{:parameter :local :truthy :literal :if :function}
                   :declared-effects #{} :declared-capabilities #{}})
        (= request {:requested-target :jvm :source-target :jvm
                    :identity-bearing? false :downstream-lowering-required? true})

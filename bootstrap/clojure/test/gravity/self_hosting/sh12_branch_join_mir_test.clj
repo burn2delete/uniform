@@ -331,7 +331,18 @@
       (is (= (get-in sealed [:graph-proof :graph-proof-id]) (:digest-graph-proof-id physical)))
       (is (= (bootstrap/p15-s23-c6c10-canonical-digest path request-preimage)
              (:request-binding-id physical)))
-      (is (= :gravity/mir-module (:artifact mir)) (pr-str (:diagnostics mir)))
+      (is (= :gravity/mir-module (:artifact mir))
+          (pr-str {:diagnostics (:diagnostics mir)
+                   :shape-checks
+                   (when-not (= :gravity/mir-module (:artifact mir))
+                     (let [view (invoke c11-plan 'sh12-c6p-role-view [core])]
+                       {:lineage (invoke c11-plan 'sh12-c6p-lineage-valid? [core])
+                        :metadata (invoke c11-plan 'sh12-c6p-producer-metadata-valid? [core])
+                        :roles (invoke c11-plan 'sh12-c6p-shape-valid? [core view])
+                        :nodes (invoke c11-plan 'sh12-c6p-role-nodes-valid? [core 0])
+                        :declaration (invoke c11-plan 'sh12-c6p-declaration-valid? [core])
+                        :tables (invoke c11-plan 'sh12-c6p-tables-valid?
+                                        [core (:core-nodes core) (:ids view) (:origins view) 0])}))}))
       (when (= :gravity/mir-module (:artifact mir))
         (let [nodes (:core-nodes core) binder (first nodes)
               binder-id (:node-id binder) local-id (:node-id (second nodes))
@@ -397,7 +408,8 @@
           ;; rather than reach count/dissoc on an unchecked nested carrier.
           (let [origin (get-in binder [:source :origin-id])]
             (doseq [row [nil "not-a-row" 17]]
-              (let [report (build-mir (assoc-in core [:source-origin-table origin] row))]
+              (let [then-origin (get-in nodes [3 :source :origin-id])
+                    report (build-mir (assoc-in core [:source-origin-table then-origin] row))]
                 (is (= :rejected (:status report)))
                 (is (= "C11-ORIGIN" (:diagnostic-id (diagnostic report))))))
             (doseq [[field invalids] [[:c2-metadata [nil [] 0 ""]]
