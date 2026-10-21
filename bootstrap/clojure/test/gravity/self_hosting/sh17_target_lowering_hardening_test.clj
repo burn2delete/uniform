@@ -192,7 +192,7 @@
      :clojure-seed-boundary? true
      :self-hosted? false}))
 
-(deftest sh17-local-forwarding-preserves-the-last-operand-scalar-type
+(defn- check-scalar-forwarding [opcode-sources]
   ;; Original C14 whole-surface gates and evaluator on supplied MIR DATA, not
   ;; a freshly authenticated C11/C13 packet or a native backend execution.
   (let [core "core/local-forward" entry (str core ":mir:entry")
@@ -202,11 +202,11 @@
                      :opcode opcode :source-operation source-operation :type type
                      :operands operands :constant-payload payload :verifier-status :passed
                      :effects #{} :capabilities #{} :domain-anchor nil})
-        fixture (fn [backend opcode type value many?]
+        fixture (fn [backend opcode source-operation type value many?]
                   (let [discarded (operation "discard" :constant :literal :gravity/integer []
                                              {:present? true :value 7})
                         input (operation "input" :constant :literal type [] {:present? true :value value})
-                        local (operation "local" opcode (if (= opcode :local) :local :let-binding)
+                        local (operation "local" opcode source-operation
                                          type (if many? ["discard" "input"] ["input"]) :not-applicable)
                         result (operation "result" :constant :literal :gravity/integer []
                                           {:present? true :value 17})
@@ -226,9 +226,9 @@
                                          :wasm 'c14-wasm-bounded-mir-surface-valid?)
                            [(dissoc subject :policy) (:policy subject)]))
         operation-path [:optimized-mir :functions 'main :blocks entry :instructions]]
-    (doseq [backend [:c :llvm :wasm] opcode [:local :local-binding]
+    (doseq [backend [:c :llvm :wasm] [opcode source-operation] opcode-sources
             many? [false true] [type value] scalar-values]
-      (let [subject (fixture backend opcode type value many?)
+      (let [subject (fixture backend opcode source-operation type value many?)
             operations (get-in subject operation-path)
             by-id (into {} (map (juxt :op-id identity) operations))
             evaluated (invoke 'c14-c-evaluate-operations [operations by-id {}])]
@@ -239,12 +239,20 @@
                                   [:unsupported/scalar "gravity/integer" nil])]
           (is (false? (eligible backend (assoc-in subject (conj operation-path 2 :type) wrong-type)))))
         (is (false? (eligible backend (assoc-in subject (conj operation-path 1 :type) :unsupported/scalar))))))
-    (doseq [backend [:c :llvm :wasm] opcode [:local :local-binding]]
-      (let [subject (fixture backend opcode :gravity/integer 42 false)]
+    (doseq [backend [:c :llvm :wasm] [opcode source-operation] opcode-sources]
+      (let [subject (fixture backend opcode source-operation :gravity/integer 42 false)]
         (doseq [[field value] [[:verifier-status :rejected] [:effects #{:io/write}]
                                [:capabilities #{:io/stdout}] [:domain-anchor :unsupported]
                                [:source-operation :quote] [:operands ["missing"]] [:operands []]]]
           (is (false? (eligible backend (assoc-in subject (conj operation-path 2 field) value)))))))))
+
+(deftest sh17-local-forwarding-preserves-the-last-operand-scalar-type
+  (check-scalar-forwarding [[:local :local] [:local-binding :let-binding]]))
+
+(deftest sh17-sequence-and-scope-preserve-the-last-operand-scalar-type
+  ;; L2 do/let and the original C6/C11 producers retain the last body type;
+  ;; multioperand forwarding must not use the discarded first operand's type.
+  (check-scalar-forwarding [[:sequence :do] [:lexical-scope :let]]))
 
 (deftest sh17-source-compiles-and-c11-revision-is-complete
   (let [plan @engine-plan

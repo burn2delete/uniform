@@ -500,8 +500,12 @@ For the distinct internal C14 scalar-MIR eligibility gates, run
 namespace. `:local` and `:local-binding` must declare the canonical scalar type
 of the actual LAST referenced operand. Existing nonempty arity is retained:
 discarded earlier operands do not impose a unary rule or determine the result
-type. Preserve earlier artifact, verifier, source, effect and reference gates;
-leave sequence, lexical-scope and function-boundary families unchanged.
+type. Also run
+`sh17-sequence-and-scope-preserve-the-last-operand-scalar-type` for the same
+LAST-type join on `:sequence` and `:lexical-scope`, following the ordered
+`do`/`let` body result. Preserve nonempty multioperand arity and earlier
+artifact, verifier, source, effect and reference gates; leave function-boundary
+handling unchanged.
 The three existing C/LLVM/Wasm whole-surface gates and original evaluator are
 checked with supplied MIR DATA, including Integer, Bool and Nil forwarding and
 incompatible declarations. Adjacent public normalized SH-17 tests are separate;
