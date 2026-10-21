@@ -3696,7 +3696,8 @@
           (if (> depth 128) {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}
             (if (if (map? value) true (if (vector? value) true (if (set? value) true (list? value))))
               (let [size (count value) width (if (map? value) (* 2 size) size)
-                    comparison (if (if (map? value) true (set? value)) (* width width) width)
+                    comparison (if (map? value) (+ (* size size) width)
+                                 (if (set? value) (+ (* size size) width) width))
                     work (+ used 1 comparison)]
                 (if (> size 1024) {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}
                   (if (> (+ work (count tail) width) budget)
