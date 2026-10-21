@@ -2691,6 +2691,40 @@ reconstructing the same expensive products to refresh a stamp. This development
 session/replay is not fresh public C6 verification, native execution, whole-helper
 support, authoritative migration or milestone completion.
 
+### Evaluated empty Set loop initializers
+
+The current JVM development route also grounds the same invariant from an
+unquoted `#{}` initializer. C6 already emits an evaluated Set constructor and
+C7 already gives it the literal empty-Set type. The C7, C8 and lowering cold
+checks now independently join that node to its empty source value, exact
+three-field attributes, zero child/resolved-binding vectors and left-to-right
+empty execution order. Retain constructor allocation and Set IR; do not substitute
+an inert quote or rewrite the initializer type. This adds no nonempty seed,
+member refinement, dynamic guard rule, signature or runtime support.
+
+In the SH08 loop namespace, run
+`unquoted-empty-symbol-set-loop-development-kernel` and
+`unquoted-empty-symbol-set-loop-effects-development-kernel`. In the SH01
+iteration namespace, run
+`current-gravity-unquoted-empty-symbol-set-loop-development-kernel` and
+`current-gravity-unquoted-empty-symbol-set-loop-fixtures-development-kernel`.
+Keep the affected quoted-loop, slot, backedge, function and Set-lowering controls.
+The paired fixtures are `accepted/unquoted-empty-symbol-set-loop` and
+`rejected/nonempty-keyword-symbol-set-loop` under SH08; Q is parser-only.
+
+The separate changed-source composition is:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --fail-fast \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-unquoted-empty-symbol-set-loop-authenticated-composition
+```
+
+It checks one G loop returning true and one nonempty Keyword-Set typing
+rejection. This new source run does not relabel or repeat the earlier failed
+quoted-source oracle run. Fresh development C6 sessions/replay remain separate
+from public fresh C6 verification, native execution and migration evidence.
+
 ### Inferred String-Set carriers: private value feedback
 
 The closed inference carrier

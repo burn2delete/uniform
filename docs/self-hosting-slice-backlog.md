@@ -4408,6 +4408,40 @@ parser-only; these observations do not establish fresh public C6 verification,
 native execution, current-closure
 admission, SH-07 completion, self-hosting or seedless release.
 
+### Evaluated empty Set loop initializers: development increment
+
+The same current JVM route now cold-grounds an evaluated unquoted `#{}` loop
+initializer. C6 already produced `:collection-literal`, and C7 already knew its
+literal empty-Set type; the previous cold check recognized only literal/quote
+nodes. All three C7/effects/lowering owners now check the closed constructor
+record and its actual empty source value, source identities, zero children and
+bindings, and empty left-to-right evaluation. The initializer remains empty;
+only the separately grounded Symbol invariant types re-entry. Existing Set IR
+and constructor allocation are retained, rather than treating it as inert DATA.
+
+The `b0a88558` RED kernel retained 14 passes and seven failures in 21 assertions.
+At `089b6a2e`, the focused batch passed 17 tests/791 assertions: four new
+selectors/285 (C7 95, C8 83, lowering 89, parser 18) and 13 controls/506.
+These cover source/type/evaluation tampering, opaque fields without callbacks,
+exact/one-below work, alias evidence, allocation/backedges and quoted controls.
+
+The changed G source composition at `e0cd7d87` passed one test/70 assertions.
+The positive unquoted loop passed fresh development C6 session/replay, C7 and
+C8 verification, one observed public C7 assembly gate and one closed runtime
+entry returning true with empty stdout. Its initializer is a real evaluated
+empty Set constructor, with allocation and the existing Set IR. The nonempty
+Keyword-Set seed plus Symbol is rejected through the existing insertion-domain
+diagnostic, with Core/syntax/binding/span/constraint provenance and a passed
+C7 recomputing verifier. Negative C8/runtime construction was not invoked.
+
+The earlier quoted-source 67P/1F receipt remains failed and was not replayed or
+relabeled by this distinct changed-source run. Runtime remains 56 functions;
+the nine protected signature predicates, L5 law, schema and work bounds remain
+unchanged. Q is parser-only. Nonempty/dynamic grounding, generic joins, flow
+refinement and whole compiler-helper execution remain unsupported here. These
+development observations do not establish fresh public C6 verification, native
+execution, current-closure admission, migration, SH-07 completion or release.
+
 ### Persistent String-Set insertion: development increment
 
 STD3 now explicitly defines binary Set `conj` to preserve existing equal member
