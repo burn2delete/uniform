@@ -141,7 +141,79 @@
         (is (= (:source-map mir) (:source-map output)))
         (is (= (:pass-execution-record mir) (:pass-execution-record output)))
         (is (= (:b1-preflight mir) (:b1-preflight output)))
-        (is (= result (bootstrap/p15-s23-c13-expected-record mir evidence)))))))
+        (is (= result (bootstrap/p15-s23-c13-expected-record mir evidence)))
+        (let [delta (get-in result [:verifier-replay :delta])
+              invoke-c14-kernel (fn [function arguments]
+                                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                                  {:engine :gravity-sh17-development-comparison :compiler-artifact-plan? true}
+                                  @c14-plan function arguments))
+              expected (bootstrap/p15-s23-c13-expected-record mir evidence)
+              policy {:fact-bindings (get-in result [:semantic-identity :fact-bindings])
+                      :supported-operation-ids (get-in result [:semantic-identity :operation-order])}]
+          (is (= mir (gravity.bootstrap-c13-comparison/restore output delta)))
+          (is (= mir (invoke-c14-kernel 'c14-equality-original-mir [result])))
+          (is (true? (invoke-c14-kernel 'c14-equality-translation-valid? [result policy])))
+          (is (true? (invoke-c14-kernel 'c14-llvm-bounded-mir-surface-valid? [result policy])))
+          (is (false? (invoke-c14-kernel 'c14-c-source-operation-valid? [:constant :integer-eq])))
+          (is (<= (count (tree-seq coll? seq delta)) 128))
+          (when (= [left right repeated?] [2 2 false])
+            (println "comparison delta carrier nodes (including map entries):" (count (tree-seq coll? seq delta))))
+          (doseq [changed-delta [(assoc delta :unexpected true) (assoc delta :edges [])
+                                (assoc delta :edges (conj (:edges delta) (first (:edges delta))))
+                                (assoc-in delta [:edges 0 :index] -1) (assoc-in delta [:edges 1 :index] 65535)
+                                (assoc-in delta [:edges 1 :index] (get-in delta [:edges 0 :index]))
+                                (update delta :edges #(vec (reverse %))) (update delta :uses #(vec (reverse %)))
+                                (assoc-in delta [:uses 0 :use :unexpected] true)
+                                (assoc-in delta [:uses 0 :index] "0")
+                                (assoc-in delta [:uses 0 :use :consumer-id] "other")]]
+            (let [candidate (assoc-in result [:verifier-replay :delta] changed-delta)]
+              (is (false? (invoke-c14-kernel 'c14-equality-translation-valid? [candidate policy])))
+              (is (not= expected candidate))))
+          (doseq [candidate [(assoc-in result [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload :value] (not expected))
+                             (assoc-in result [:optimized-mir :data-flow-graph :values "comparison" :constant-payload :value] :not-a-bool)
+                             (assoc-in result [:decision-record :changed-operations] ["left"])
+                             (assoc-in result [:invalidation-ledger :facts-invalidated] [])
+                             (assoc-in result [:verifier-replay :artifact] :gravity/c13-post-pass-verifier-replay)]]
+            (is (false? (invoke-c14-kernel 'c14-equality-translation-valid? [candidate policy])))
+            (is (not= expected candidate)))
+          (is (not= expected (assoc-in result [:semantic-identity :c11-output-mir-id]
+                                      (bootstrap/p15-s23-c11-mir-digest :fabricated-output)))))))
+    (let [{:keys [mir]} (development-comparison-input 2 3 false)
+          entry (get-in mir [:control-flow-graph :entry]) path [:functions 'main :blocks entry :instructions]
+          original-report {:status :passed :module-shape-valid? true :block-count 1 :operation-count 3
+                           :conditional-count 0 :dominance-valid? true :type-facts-valid? true
+                           :direct-effects-valid? true :safety-facts-valid? true :origin-closure-valid? true
+                           :runtime-checks-valid? true :runtime-checks {:runtime-check-count 0 :runtime-check-ids []}
+                           :target-independent? true :data-flow {:edge-count 2 :terminator-use-count 1 :definition-count 3 :value-count 3}}
+          invoke-c14-kernel (fn [function arguments]
+                             (bootstrap/p15-s23-stage2-runtime-execute-function
+                              {:engine :gravity-sh17-development-comparison :compiler-artifact-plan? true}
+                              @c14-plan function arguments))]
+      (doseq [input [(assoc mir :target-request :c) (assoc mir :target-request :wasm)
+                     (assoc-in mir (conj path 0 :type) :gravity/bool)
+                     (assoc-in mir (conj path 0 :constant-payload :value) nil)
+                     (assoc-in mir (conj path 0 :constant-payload :value) 9223372036854775808N)
+                     (assoc-in mir (conj path 2 :operands) ["missing" "right"])
+                     (assoc-in mir (conj path 2 :operands) ["comparison" "right"])
+                     (assoc-in mir (conj path 2 :effects) #{:io/write})
+                     (assoc-in mir [:safety-table "comparison:safety" :outcome] :unsafe-island)
+                     (assoc-in mir [:type-table "comparison:type" :type] :gravity/integer)
+                     (assoc-in mir [:source-map "comparison" :origin-id] "changed")
+                     (assoc-in mir [:data-flow-graph :edges 0 :operand-index] 1)
+                     (update-in mir path conj (assoc (get-in mir (conj path 0)) :op-id "duplicate"))]]
+        (let [artifact {:artifact-id (bootstrap/p15-s23-c11-mir-digest :input) :mir-id (bootstrap/p15-s23-c11-mir-digest input) :mir-module input}
+              evidence (bootstrap/p15-s23-c13-evidence-for-target artifact {:status :passed :semantic-replay-parity :passed} (:target-request input))
+              result (invoke 'c13-build-bounded-identity-optimized-mir [input evidence])]
+          (is (= :gravity/c13-bounded-identity-optimized-mir (:artifact result)))
+          (is (= input (:optimized-mir result)))
+          (is (= result (bootstrap/p15-s23-c13-expected-record input evidence)))))
+      (let [{:keys [evidence]} (development-comparison-input 2 3 false)
+            result (invoke 'c13-build-bounded-identity-optimized-mir [mir evidence])
+            output (:optimized-mir result)]
+        (is (true? (invoke-c14-kernel 'c14-c11-independent-verifier-valid? [mir original-report])))
+        (is (false? (invoke-c14-kernel 'c14-c11-independent-verifier-valid? [output original-report])))
+        (is (true? (invoke-c14-kernel 'c14-c11-independent-verifier-valid?
+                                    [(invoke-c14-kernel 'c14-equality-original-mir [result]) original-report])))))))
 
 (def ^:private c13-envelope-keys
   ;; This set is copied from C14's c14-c13-envelope-valid? contract.  Keep it

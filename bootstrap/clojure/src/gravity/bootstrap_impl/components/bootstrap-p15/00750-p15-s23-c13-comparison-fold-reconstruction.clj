@@ -28,17 +28,32 @@
          (= :proven-safe (get-in mir [:safety-table (:safety-outcome-id facts) :outcome]))
          (= (:type op) (get-in mir [:data-flow-graph :values (:result op) :type]))
          (= (:constant-payload op) (get-in mir [:data-flow-graph :values (:result op) :constant-payload]))
-         (= id (get-in mir [:data-flow-graph :definitions (:result op) :operation-id])))))
+         (= {:value-id (:result op) :operation-id id :block-id (:block-id op)}
+            (get-in mir [:data-flow-graph :definitions (:result op)]) (:defined-by (get-in mir [:data-flow-graph :values (:result op)])))
+         (= (:result op) (get-in mir [:data-flow-graph :values (:result op) :value-id])))))
 (defn- constant? [mir op]
   (and (fact-valid? mir op) (= :constant (:opcode op)) (= :literal (:source-operation op))
        (= :gravity/integer (:type op)) (= [] (:operands op))
        (= #{:present? :value} (set (keys (:constant-payload op))))
        (true? (get-in op [:constant-payload :present?])) (i64? (get-in op [:constant-payload :value]))))
 
+(defn- bounded? [mir]
+  (let [functions (:functions mir) function (when (and (map? functions) (= 1 (count functions))) (val (first functions)))
+        blocks (:blocks function) graph (:data-flow-graph mir) values (:values graph)]
+    (and (map? blocks) (#{1 4} (count blocks))
+         (every? #(and (vector? (:instructions %)) (<= (count (:instructions %)) 256)) (vals blocks))
+         (< 0 (reduce + (map #(count (:instructions %)) (vals blocks))) 257)
+         (vector? (:edges graph)) (<= (count (:edges graph)) 65536)
+         (vector? (:terminator-uses graph)) (<= (count (:terminator-uses graph)) 256)
+         (map? (:definitions graph)) (<= (count (:definitions graph)) 256)
+         (map? values) (<= (count values) 256)
+         (every? #(vector? (:uses %)) (vals values))
+         (<= (reduce + (map #(count (:uses %)) (vals values))) 65536))))
+
 (defn selection [mir]
   (when (and (map? mir) (= :hosted (:profile mir)) (= :llvm-x86_64-linux (:target-request mir))
              (= true (:target-independent? mir)) (= {} (:globals mir) (:domain-anchors mir) (:runtime-check-table mir))
-             (map? (:functions mir)) (= 1 (count (:functions mir))))
+             (map? (:functions mir)) (= 1 (count (:functions mir))) (bounded? mir))
     (let [[function-id function] (first (:functions mir)) entry (get-in mir [:control-flow-graph :entry])
           blocks (:blocks function) source (:source-core mir)
           order (if (contains? blocks (str source ":mir:join"))
@@ -53,7 +68,7 @@
                  (= (count operations) (count (set (map :op-id operations))) (count (set (map :result operations))))
                  (every? #(and (identifier? (:op-id %)) (identifier? (:result %))) operations)
                  (= 1 (count candidates)) (integer? index) (fact-valid? mir op)
-                 (= :integer-eq (:source-operation op)) (= :gravity/bool (:type op))
+                 (= entry (:block-id op)) (= :integer-eq (:source-operation op)) (= :gravity/bool (:type op))
                  (= :not-applicable (:constant-payload op)) (vector? (:operands op)) (= 2 (count (:operands op)))
         (let [earlier (into {} (map (juxt :result identity) (take index entry-ops)))
               operands (:operands op) producers (mapv earlier operands)
@@ -65,7 +80,11 @@
                              (when (= 1 (count matches))
                                {:value-id id :index (:index (first matches)) :use (:row (first matches))}))) [0 1])]
           (when (and (every? identifier? operands) (every? #(constant? mir %) producers)
+                     (every? #(= entry (:block-id %)) producers)
                      (= [(edge op 0) (edge op 1)] (mapv :row removed)) (every? some? uses)
+                     (every? (fn [id]
+                               (= (mapv #(use-row op %) (filter #(= id (nth operands %)) [0 1]))
+                                  (filterv #(= (:op-id op) (:consumer-id %)) (get-in graph [:values id :uses])))) operands)
                      (every? #(vector? (get-in graph [:values % :uses])) operands))
             {:path [:functions function-id :blocks entry :instructions index] :operation op
              :value (= (get-in (first producers) [:constant-payload :value])
@@ -100,7 +119,7 @@
               (recur (inc index) (inc consumed) (conj result (nth rows consumed)))))))))
 
 (defn restore [output delta]
-  (when (and (map? delta) (= #{:kind :version :operation-id :operand-ids :edges :uses} (set (keys delta)))
+  (when (and (bounded? output) (map? delta) (= #{:kind :version :operation-id :operand-ids :edges :uses} (set (keys delta)))
              (= :gravity/c13-integer-equality-delta (:kind delta)) (= 1 (:version delta))
              (identifier? (:operation-id delta)) (vector? (:operand-ids delta)) (= 2 (count (:operand-ids delta)))
              (every? identifier? (:operand-ids delta)) (vector? (:edges delta)) (= 2 (count (:edges delta)))

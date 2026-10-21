@@ -1010,7 +1010,10 @@
       (= #{} (get (get (get mir :capability-table) (get facts :capability-fact-id)) :granted))
       (= :proven-safe (get (get (get mir :safety-table) (get facts :safety-outcome-id)) :outcome))
       (= (get operation :type) (get value :type)) (= (get operation :constant-payload) (get value :constant-payload))
-      (= id (get (get (get (get mir :data-flow-graph) :definitions) (get operation :result)) :operation-id))])))
+      (= {:value-id (get operation :result) :operation-id id :block-id (get operation :block-id)}
+         (get (get (get mir :data-flow-graph) :definitions) (get operation :result)))
+      (= (get value :defined-by) (get (get (get mir :data-flow-graph) :definitions) (get operation :result)))
+      (= (get operation :result) (get value :value-id))])))
 
 (defn c13-equality-constant? [mir operation]
   (if (c13-equality-facts-valid? mir operation)
@@ -1024,6 +1027,29 @@
 (defn c13-equality-append [left right]
   (loop [index 0 result right]
     (if (= index (count left)) result (recur (+ index 1) (conj result (get left index))))))
+
+(defn c13-equality-bounded? [mir]
+  (if (map? (get mir :functions))
+    (if (= 1 (count (get mir :functions)))
+      (let [function (get (get mir :functions) (first (keys (get mir :functions)))) blocks (get function :blocks)
+            graph (get mir :data-flow-graph) values (get graph :values) edges (get graph :edges)]
+        (if (map? blocks)
+          (if (if (= 1 (count blocks)) true (= 4 (count blocks)))
+            (if (c13-equality-all? [(map? values) (<= (count values) 256)
+                                   (map? (get graph :definitions)) (<= (count (get graph :definitions)) 256)
+                                   (vector? edges) (<= (count edges) 65536)
+                                   (vector? (get graph :terminator-uses)) (<= (count (get graph :terminator-uses)) 256)])
+              (let [block-ids (vec (keys blocks)) value-ids (vec (keys values))]
+                (if (loop [index 0 total 0]
+                      (if (= index (count block-ids)) (if (> total 0) (<= total 256) false)
+                        (let [rows (get (get blocks (get block-ids index)) :instructions)]
+                          (if (vector? rows)
+                            (if (<= (+ total (count rows)) 256) (recur (+ index 1) (+ total (count rows))) false) false))))
+                  (loop [index 0 total 0]
+                    (if (= index (count value-ids)) true
+                      (let [uses (get (get values (get value-ids index)) :uses)]
+                        (if (vector? uses)
+                          (if (<= (+ total (count uses)) 65536) (recur (+ index 1) (+ total (count uses))) false) false)))) false)) false) false) false)) false) false))
 
 (defn c13-equality-operations [mir]
   (let [function (get (get mir :functions) (first (keys (get mir :functions))))
@@ -1064,6 +1090,7 @@
 (defn c13-equality-selected-at [mir function-id entry rows index operation]
   (let [operands (get operation :operands)]
     (if (c13-equality-all? [(c13-equality-facts-valid? mir operation)
+                           (= entry (get operation :block-id))
                            (= :integer-eq (get operation :source-operation)) (= :gravity/bool (get operation :type))
                            (= :not-applicable (get operation :constant-payload)) (vector? operands) (= 2 (count operands))])
       (let [earlier (loop [offset 0 result {}]
@@ -1077,9 +1104,16 @@
             use1 (c13-equality-occurrence (get (get (get graph :values) (get operands 1)) :uses) (c13-equality-use operation 1))]
         (if (c13-equality-all? [(c13-equality-id? (get operands 0)) (c13-equality-id? (get operands 1))
                                (c13-equality-constant? mir left) (c13-equality-constant? mir right)
+                               (= entry (get left :block-id)) (= entry (get right :block-id))
                                (map? edge0) (map? edge1) (map? use0) (map? use1)
                                (= [(c13-equality-edge operation 0) (c13-equality-edge operation 1)]
-                                  (c13-equality-consumer-rows edges (get operation :op-id)))])
+                                  (c13-equality-consumer-rows edges (get operation :op-id)))
+                               (= (if (= (get operands 0) (get operands 1))
+                                    [(c13-equality-use operation 0) (c13-equality-use operation 1)] [(c13-equality-use operation 0)])
+                                  (c13-equality-consumer-rows (get (get (get graph :values) (get operands 0)) :uses) (get operation :op-id)))
+                               (= (if (= (get operands 0) (get operands 1))
+                                    [(c13-equality-use operation 0) (c13-equality-use operation 1)] [(c13-equality-use operation 1)])
+                                  (c13-equality-consumer-rows (get (get (get graph :values) (get operands 1)) :uses) (get operation :op-id)))])
           {:function-id function-id :block-id entry :index index :operation operation
            :value (= (get (get left :constant-payload) :value) (get (get right :constant-payload) :value))
            :delta {:kind :gravity/c13-integer-equality-delta :version 1 :operation-id (get operation :op-id)
@@ -1088,7 +1122,7 @@
                    :uses [{:value-id (get operands 0) :index (get use0 :index) :use (get use0 :row)}
                           {:value-id (get operands 1) :index (get use1 :index) :use (get use1 :row)}]}} nil)) nil)))
 
-(defn c13-equality-selection [mir]
+(defn c13-equality-selection-bounded [mir]
   (if (map? (get mir :functions))
     (if (= 1 (count (get mir :functions)))
       (let [function-id (first (keys (get mir :functions))) function (get (get mir :functions) function-id)
@@ -1108,6 +1142,9 @@
                         (if (= (get rows index) (first candidates))
                           (c13-equality-selected-at mir function-id entry rows index (first candidates))
                           (recur (+ index 1))))) nil)) nil) nil)) nil)) nil) nil))
+
+(defn c13-equality-selection [mir]
+  (if (c13-equality-bounded? mir) (c13-equality-selection-bounded mir) nil))
 
 (defn c13-equality-remove-indices [rows indices]
   (loop [index 0 result []]
