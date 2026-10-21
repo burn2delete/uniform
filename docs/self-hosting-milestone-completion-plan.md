@@ -349,6 +349,11 @@ Stop: resolved names, not type inference, runtime var permissions or execution.
 
 ## SH-07 - Core-form semantics and lowering
 
+Use the [18-task SH-07 completion checklist](self-hosting-sh07-completion-plan.md)
+for the ordered implementation, evidence and migration work behind the six
+requirements below, including the explicit candidate-scope decision. The
+checklist does not change these requirements or confer completion credit.
+
 Contracts: L2, L7, L9, C6; preserve C3/C5 inputs. Primary semantic owner:
 `bootstrap/gravity/src/gravity/checked_core.gravity`. The C6 compatibility
 facade and request projection do not own independent language semantics.
