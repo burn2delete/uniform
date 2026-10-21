@@ -9349,7 +9349,7 @@ does not delete arbitrary constants, compute or control operations, introduce
 a fixed point, or accept a supplied decision as evidence. Explicit validated
 dead-proof selections retain their proof IDs; local deletions add no synthetic
 or nil proof ID. Existing ordered decision/replay records, runtime invalidation,
-original input/source identity and fresh verification remain authoritative for
+original input/source identity and fresh verification remain unchanged for
 this normalized interface. Preparation has up to eight bounded operation
 traversals and 2,048 operand positions under unchanged 128/16 input limits,
 not a two-walk or linear-CPU/performance claim.
