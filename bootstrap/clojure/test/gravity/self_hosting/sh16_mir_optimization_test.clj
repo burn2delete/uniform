@@ -216,6 +216,102 @@
             (invoke-engine
              'sh16-verify [gravity-request gravity-result]))))))
 
+(deftest sh16-retires-only-original-constants-consumed-by-fresh-reference-folds
+  ;; Producer liveness is replayed from normalized DATA, not a provider proof.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-no-change-request)
+          mixed (request plan 'sh16-mixed-optimization-request)
+          left (assoc (first (:operations base)) :op-id :op/left :result :value/left :operands [2])
+          right (assoc left :op-id :op/right :result :value/right :operands [3])
+          unrelated (assoc left :op-id :op/unrelated :result :value/unrelated :operands [77])
+          make-input (fn [mode]
+                       (let [first-add (assoc (first (:operations mixed)) :op-id :op/first :result :value/first
+                                              :constant-operands false
+                                              :operands (case mode :repeat [:value/left :value/left]
+                                                          :mixed [:value/left 1] [:value/left :value/right]))
+                             adds (if (= :chain mode)
+                                    [first-add (assoc first-add :op-id :op/final :result :value/final
+                                                      :operands [:value/first :value/left])] [first-add])]
+                         (assoc base :operations
+                                (conj (into [left right unrelated] adds)
+                                      (assoc (last (:operations base)) :operands [(:result (last adds))])))))
+          by-id (fn [result id] (first (filter #(= id (:op-id %)) (:optimized-operations result))))]
+      (doseq [[mode removed value] [[:ref-ref [:op/left :op/right] 5] [:repeat [:op/left] 4]
+                                   [:mixed [:op/left] 3] [:chain [:op/left :op/right :op/first] 7]]]
+        (let [input (make-input mode) result (optimize input) final-id (if (= :chain mode) :op/final :op/first)
+              pipeline (invoke-engine 'sh16-sequential-pipeline [input])]
+          (is (nil? (invoke-engine 'sh16-request-error [input])))
+          (is (= :accepted (:status result)))
+          (is (= removed (get-in result [:decision-log 2 :changed-operations])))
+          (is (= (mapv :op-id (remove #(contains? (set removed) (:op-id %)) (:operations input)))
+                 (mapv :op-id (:optimized-operations result))))
+          (is (= unrelated (by-id result :op/unrelated)))
+          (is (= [value] (:operands (by-id result final-id))))
+          (is (= [] (get-in result [:translation-validation :proofs])))
+          (is (= [] (get-in result [:decision-log 2 :proofs-used])))
+          (is (= (mapv :operands (:operations input)) (mapv :operands (get-in result [:identity-input :operations]))))
+          (is (= (:source-span left) (get-in result [:identity-input :operations 0 :source-span])))
+          (is (= (:origin-chain left) (get-in result [:identity-input :operations 0 :origin-chain])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
+          (doseq [mutant [(update result :optimized-operations #(vec (remove (fn [op] (= :op/unrelated (:op-id op))) %)))
+                          (assoc-in result [:decision-log 0 :changed-operations] [:op/unrelated])
+                          (assoc-in result [:translation-validation :proofs] [:proof/fabricated])]]
+            (is (= :rejected (:status (invoke-engine 'sh16-verify [input mutant])))))
+          (is (= :rejected (:status (invoke-engine 'sh16-finalize-pipeline
+                                                  [input (assoc-in pipeline [:decision-log 0 :changed-operations] [:op/unrelated])]))))))
+      (let [input (make-input :ref-ref) operations (:operations input)
+            prepared (invoke-engine 'sh16-propagate-prefix-add [operations])
+            current (mapv #(invoke-engine 'sh16-transform-operation [%]) prepared)
+            select-local (fn [subject rows] (invoke-engine 'sh16-include-local-dead-folds [subject rows []]))]
+        (is (= [:op/left :op/right] (select-local input current)))
+        (doseq [changed [(assoc left :operands [3]) (assoc left :operands [nil])
+                         (assoc left :type :bool) (assoc-in left [:source-span :start] 999)
+                         (assoc left :origin-chain [{:kind :source :source-id :source/altered}])
+                         (assoc left :effects #{:io/write} :ordering :sequence)
+                         (assoc left :safety-outcome :unsafe-island :unsafe-audit-id :audit/altered)
+                         (assoc left :opcode :compute)]]
+          (is (not (some #{:op/left} (select-local input (assoc current 0 changed))))))
+        (is (= [] (select-local input (conj current (assoc left :op-id :op/duplicate))))))
+        (doseq [subject [(assoc-in input [:operations 0 :type] :bool)
+                         (assoc-in input [:operations 0 :operands] [nil])
+                         (update-in input [:operations 0] assoc :effects #{:io/write} :ordering :sequence)
+                         (update-in input [:operations 0] assoc :safety-outcome :unsafe-island :unsafe-audit-id :audit/input)
+                         (update input :operations conj (assoc left :op-id :op/duplicate))
+                         (assoc-in input [:operations 3 :operands] [:missing :value/right])]]
+          (let [result (optimize subject)]
+            (is (= :accepted (:status result)))
+            (is (not (some #{:op/left :op/right} (get-in result [:decision-log 2 :changed-operations]))))
+            (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
+        ;; Immediate payloads equal to producer VALUES are not references.
+        (doseq [constant? [true false]]
+          (let [subject (update-in input [:operations 3] assoc :constant-operands constant? :operands [2 3])
+                result (optimize subject)]
+            (is (= :accepted (:status result)))
+            (is (= left (by-id result :op/left)))
+            (is (= right (by-id result :op/right)))
+            (is (= [] (get-in result [:decision-log 2 :changed-operations])))
+            (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
+        (doseq [dead? [false true]]
+          (let [observer (-> (get-in mixed [:operations 2]) (dissoc :dead :dead-proof)
+                             (assoc :op-id :op/observer :result :value/observer :operands [:value/left]))
+                observer (if dead? (assoc observer :dead true :dead-proof
+                                         {:proof-id :proof/observer :operation-id :op/observer
+                                          :no-uses true :effect-free true :verified true}) observer)
+                subject (update input :operations #(vec (concat (butlast %) [observer (last %)])))
+                result (optimize subject)]
+            (is (= :accepted (:status result)))
+            (is (= left (by-id result :op/left)))
+            (is (= (if dead? [:op/right :op/observer] [:op/right]) (get-in result [:decision-log 2 :changed-operations])))
+            (is (= (if dead? [:proof/observer] []) (get-in result [:translation-validation :proofs])))
+            (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
+        (let [subject (assoc-in input [:operations 0] (assoc left :dead true :dead-proof
+                                                            {:proof-id :proof/left :operation-id :op/left
+                                                             :no-uses true :effect-free true :verified true}))
+              result (optimize subject)]
+          (is (= :rejected (:status result)))
+          (is (= "C13-PROOF" (get-in result [:diagnostics 0 :rule])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))))))
+
 (deftest sh16-propagates-one-established-reference-and-one-i64-immediate
   ;; Existing normalized operand kinds, not actual C6/source or general SSA.
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
