@@ -7620,6 +7620,68 @@
            :call call :edge edge :counted counted :count-id count-id :count-call count-call
            :products {:calls [count-call call] :call-edges [count-edge edge] :module (:module outer)})))
 
+(defn- count-quotient-scaling-input [factor divisor kind empty?]
+  (let [inner (nonnegative-integer-count-quotient-input kind empty? divisor)
+        outer (nonnegative-integer-quotient-input [factor 0])
+        source #(assoc (:source %1) :form-id %2 :syntax-id %2)
+        binding (-> (get-in outer [:bindings :ordering-binding])
+                    (assoc :binding-id :scale-binding :name '* :definition-syntax-id :scale-definition))
+        operator (-> (get-in outer [:nodes :operator])
+                     (assoc :node-id :scale-operator :resolved-binding-ids [:scale-binding]
+                            :source (source (get-in outer [:nodes :operator]) :scale-operator)
+                            :attributes {:symbol '* :position :operator :binding-id :scale-binding
+                                         :binding-class :core :definition-syntax-id :scale-definition}))
+        operand (-> (get-in outer [:nodes :arg0])
+                    (assoc :node-id :scale-factor :source (source (get-in outer [:nodes :arg0]) :scale-factor)))
+        children [:scale-operator :scale-factor :call]
+        node (-> (:node outer) (assoc :node-id :scale-call :children children :resolved-binding-ids [:scale-binding]
+                                     :source (source (:node outer) :scale-call))
+                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        call (assoc (:call outer) :core-node-id :scale-call :operator-node-id :scale-operator
+                    :operator-binding-id :scale-binding :argument-node-ids [:scale-factor :call]
+                    :ordered-evaluation-node-ids children)
+        edge (assoc (:edge outer) :ordinal 2 :call-core-node-id :scale-call :callee-binding-id :scale-binding
+                    :callee-definition-syntax-id :scale-definition :argument-core-node-ids [:scale-factor :call]
+                    :ordered-evaluation-node-ids children)
+        node-list (conj (get-in inner [:core :nodes]) operator operand node)
+        nodes (into {} (map (juxt :node-id identity) node-list))
+        forms (-> (:forms inner) (assoc-in [:call :parent-form-id] :scale-call)
+                  (assoc :scale-operator (assoc (get-in outer [:forms :operator]) :form-id :scale-operator
+                                               :syntax-id :scale-operator :parent-form-id :scale-call :value '*)
+                         :scale-factor (assoc (get-in outer [:forms :arg0]) :form-id :scale-factor
+                                             :syntax-id :scale-factor :parent-form-id :scale-call)
+                         :scale-call (assoc (get-in outer [:forms :call]) :form-id :scale-call :syntax-id :scale-call
+                                           :child-form-ids children)))
+        bindings (assoc (:bindings inner) :scale-binding binding)
+        core (-> (:core inner) (assoc :nodes node-list) (update :calls conj call) (update :call-edges conj edge))
+        types (assoc (:types inner) :scale-factor :gravity.type/integer)
+        quotient (invoke-c7 'sh08-nq-derive [core (:node inner) (:call inner) (:edge inner) nodes bindings types forms 65536])
+        types (assoc types :operator (:descriptor quotient) :call (:type quotient))]
+    {:module (:module inner) :core core :node node :call call :edge edge :nodes nodes :forms forms
+     :bindings bindings :types types :binding-types types :quotient quotient :inner inner
+     :products {:calls (:calls core) :call-edges (:call-edges core) :module (:module inner)}}))
+
+(deftest sh08-count-quotient-scaling-inference-development-kernel
+  (doseq [[factor divisor kind empty?] [[2 4 :vector false] [0 4 :vector false] [4 4 :vector false]
+                                        [3 7 :map false] [2 4 :vector true]
+                                        [(bigint "123456789012345678901234567890")
+                                         (bigint "123456789012345678901234567890") :vector false]]]
+    (let [{:keys [core nodes forms bindings products binding-types quotient]} (count-quotient-scaling-input factor divisor kind empty?)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                   :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                     [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+          descriptor (get-in inferred [:type-table :scale-operator])]
+      (is (= :accepted (:status quotient)))
+      (is (= :converged (:convergence-status inferred)))
+      (is (= [] (:diagnostics inferred)))
+      (is (= :gravity.type/integer (get-in inferred [:type-table :scale-call])))
+      (is (= :gravity.type/applied-count-quotient-scaling (:kind descriptor)))
+      (is (= :proof-required (:numeric-mode descriptor)))
+      (is (= :scaled-quotient-bounded-by-original-count (get-in descriptor [:scaling-policy :law])))
+      (is (= [:memory/allocate] (:direct-effects descriptor)))
+      (is (= :may-allocate-integer-result (get-in descriptor [:storage-policy :allocation]))))))
+
 (deftest sh08-nonnegative-integer-quotient-proof-development-kernel
   (let [derive (fn [input budget]
                  (invoke-c7 'sh08-nq-derive [(:core input) (:node input) (:call input) (:edge input)
