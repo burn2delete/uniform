@@ -539,6 +539,65 @@
       (is (= :io/stdout
              (get-in stdout-result [:value :capability]))))))
 
+(deftest sh22-stdout-revalidates-utf8-before-building-provider-request
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        observe (fn [input]
+                  (let [calls (atom {:scan 0 :descriptor 0})
+                        result (with-redefs-fn
+                                 {scoped (fn [& call]
+                                           (let [function (nth call 2) args (nth call 3)]
+                                             (when (= function 'sh22-utf8-scalar-count)
+                                               (swap! calls update :scan inc))
+                                             (when (and (= function 'sh22-accepted)
+                                                        (= :gravity/runtime-service-request
+                                                           (:artifact (get args 1))))
+                                               (swap! calls update :descriptor inc)))
+                                           (apply original call))}
+                                 #(handle input))]
+                    [result @calls]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [validation (request plan 'sh22-utf8-request)
+            stdout (request plan 'sh22-stdout-request)
+            reject (fn [input rule reason counts]
+                     (let [[result observed] (observe input)]
+                       (is (= :rejected (:status result)))
+                       (is (= [rule reason] ((juxt :rule :reason) (first (:diagnostics result)))))
+                       (is (= counts observed))
+                       (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))]
+        (doseq [bytes [[] [0 65 127] [194 128] [224 160 128]
+                       [237 159 191] [240 144 128 128] [244 143 191 191]
+                       (vec (repeat 256 65))]]
+          (let [producer (assoc validation :arguments [bytes])
+                produced (handle producer)
+                text (:value produced)
+                consumer (assoc stdout :arguments [text])
+                [result calls] (observe consumer)]
+            (is (= :accepted (:status produced) (:status result)))
+            (is (= bytes (:bytes text)))
+            (is (= text (get-in result [:value :payload])))
+            (is (= {:scan 1 :descriptor 1} calls))
+            (is (= :required (get-in result [:facts :provider-execution])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [producer produced]))))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [consumer result]))))
+            (doseq [candidate [(assoc-in result [:value :payload :scalar-count] nil)
+                               (assoc-in result [:identity-input :arguments 0 :byte-count] 999)]]
+              (is (= :rejected (:status (invoke-engine 'sh22-verify-result [consumer candidate])))))))
+        (doseq [bytes [[128] [192 128] [224 128 128] [237 160 128]
+                       [226 130] [244 144 128 128] [65 192 128] [-1] [256]]]
+          (reject (assoc stdout :arguments [{:artifact :gravity/validated-utf8
+                                             :bytes bytes :byte-count (count bytes)
+                                             :scalar-count nil :encoding :utf-8}])
+                  "STD4001" :validated-text-facts-mismatch {:scan 1 :descriptor 0}))
+        (doseq [count-value [nil false -1 3]]
+          (reject (assoc-in stdout [:arguments 0 :scalar-count] count-value)
+                  "STD4001" :validated-text-facts-mismatch {:scan 1 :descriptor 0}))
+        (reject (assoc stdout :arguments [(assoc (first (:arguments stdout))
+                                                :bytes (vec (repeat 257 65)) :scalar-count nil)])
+                "STD4001" :text-bound-exceeded {:scan 0 :descriptor 0})
+        (reject (assoc stdout :capabilities #{} :arguments [{:bytes [192 128]}])
+                "STD8001" :missing-io-authority {:scan 0 :descriptor 0})))))
+
 (deftest sh22-canonical-data-is-explicit-and-path-neutral
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [first-request (request plan 'sh22-canonical-request)
