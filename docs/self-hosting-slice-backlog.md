@@ -9264,6 +9264,27 @@ replay. These G/Q supplied normalized proof records and fresh recomputation
 checks do not establish CFG proof, provider verification, fresh authenticated
 C11/source input, native execution or migration evidence.
 
+The next C13 semantic repair applies the same control-preservation rule to an
+already unconditional `:branch`, including the original Bool simplifier's
+output. Its unused artificial result does not make the transfer unreachable;
+the no-use/effect-free proof now rejects with `C13-PROOF` instead of allowing
+DCE to remove the branch. Live branches at both destinations, Bool branch
+simplification, RETURN preservation, pure const/ADD/compute DCE and the
+runtime-check safety fence remain unchanged. No branch-if policy, CFG proof,
+schema, bound or public API is added.
+
+The `d8d61d40` RED run retained 204 passes and 28 failures in 232 assertions,
+without errors. Candidate `12b5cc50` passed 17 tests/1,778 assertions
+(232 new plus 1,546 adjacent). Boundary checks separately passed six tests/11
+assertions: 23/1,789 across two passing invocations. LOC separately passed
+2,021 files, zero exceptions, maximum 250. Original G/Q constructors and the
+original Bool simplifier supply normalized branches; public optimization and
+fresh recomputation check control preservation, both destinations, proof and
+diagnostic priorities, source/origin retention and substituted results. These
+are supplied normalized proof DATA, not CFG/unreachability proof, provider
+verification, fresh authenticated C11/source input, native execution or
+migration evidence.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
