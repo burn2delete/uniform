@@ -7147,6 +7147,82 @@ ownership review found no dependency on the changed SH22 UTF8/stdout owners;
 no replay was needed. Public fresh C6, native, authoritative migration, whole
 helpers, reader parameters, self-hosting and release remain unestablished.
 
+### Count-bounded quotient scaling: development increment
+
+The emitter's actual `(* 2 (quot (count bindings) 4))` subexpression motivates
+a relational numeric slice under SAFE9/STD5/L5. The existing C7, C8, typed emitter
+and runtime owners admit `(* k (quot (count collection) d))` for original generic
+Integer literals `0 <= k <= d`, with `d > 0` and an independently authenticated
+normal count/quotient. From the Euclidean `d*q <= n` premise, derive
+`0 <= k*q <= d*q <= n`. This general sufficient relation avoids a special
+2/4 gate; `q <= n` alone never justifies multiplication. Unsupported proofs
+reject with `STD5001`, including mathematically defined products outside the
+subset. The inner quotient retains its actual zero-divisor `STD5002` rule.
+
+The new numeric ledger, call facts and source proof retain mode
+`:proof-required`, outcome `:proven-safe`, coefficient/divisor and count-law
+premises and invalidation dependencies. Each consumer independently reconstructs
+source, types, ordered call/edge/binding joins and unique quotient/count
+facts and ledger rows with nested work paid before those walks. Normal
+results may allocate Integer storage; direct/latent allocation effects and C8
+records survive with representation/provider/ownership obligations. Never
+preserves each normal operand proof, with no cross-operand bound or direct
+result allocation claimed after abort. There is no inferred width, narrowing,
+alias, private-parameter range, commuted route or whole-emitter/reader grounding.
+
+The existing runtime builtin-call shape retains only evaluated `[k q]`.
+It checks the original fixed nested count/quotient instruction, literal `k`
+and positive `d`, coefficient relation and actual Integer/nonnegative values.
+The nested operations must already have succeeded; there is no retained `n`,
+fresh count comparison, re-evaluation or hidden cache. Source proof remains
+mandatory. Two physical Symbol checks in the existing evaluator also close the
+observed malformed-function metadata callback path before argument work.
+No new runtime function, IR key/op, namespace, wrapper, context key or cap is
+added. Runtime inventory is 56; all nine protected carrier predicates match
+base `5344a5ec`. Logical Integer units establish no precision/CPU/heap bound;
+selected callback tests do not authenticate arbitrary host/FFI providers.
+
+Failed history is retained. The literal inference RED was 1 / 54 with 42
+failures. The first proof batch was 2 / 217 with one wrong inert-source-ID
+expectation. The first C8 batch was 1 / 105 with five missing ledger-dispatch
+failures; its corrected batch passed 1 / 116. First lowering/runtime was
+2 / 237 with one malformed-function callback error and its counter failure;
+the Symbol guards produced 2 / 237 green. The C8 Never extension recorded
+1 / 207 with three unchanged-effect test forgeries; the oracle now changes
+normal and aborted effects distinctly. One pre-test namespace compilation
+exited 2 before tests. The following 5 / 339 recorded one missing-leaf-work
+oracle error, one actual retained-child-ID comparison callback and six
+follow-on counter failures. Fixed selected IDs now precede proof retention;
+missing leaf work uses the existing zero default. The corrected partition
+passed 5 / 340. All raw prefixes remain `/tmp/count-quotient-scaling-*`.
+
+The final coalesced batch at `9b19fae5` passed 39 / 4,074: nine new selectors,
+nine prior quotient selectors, 17 other controls and four shared C7 scoped
+consumers. Boundary passed 6 / 11; LOC passed for 2,022 files, zero exceptions,
+maximum 250 lines. The single main join with `f9eab59d` produced `f88b989d`
+and preserved all 11 reviewed implementation/test/fixture byte sequences.
+The joined C6 projection is pinned as a fourteenth source dependency; its
+separate output-parity evidence is not blanket old-proof validity. The new
+180-line source method was namespace-listed without execution before its GO.
+
+One source invocation at `e5117b9d` passed 1 / 68, separate from the 39-test
+batch. One G function with scaling/quotient/count calls reached fresh C7/C8
+verification, assembly-required public C7 verification and one closed entry,
+returning `4` with empty stdout. The k=3,d=2,count=8 G negative rejected with
+`STD5001`, Integer operand types, proof-required expectation and provenance.
+Fresh negative C7 verification was asserted and printed passed; secondary
+C7-ANNOTATION is retained. Negative C8/runtime were not invoked; QST is parser-only.
+
+Preserve `/tmp/count-quotient-scaling-source-lease-20261021`: original PTY
+94074, natural exit zero, 14 unchanged inputs and matching argv/env/CWD pins,
+actual 2 GiB heap, 139.176 seconds selected time plus 13.151 seconds namespace
+loading. Eleven monitored observations had maximum gap 16.409 seconds; no
+operational limit crossed or signal was sent. Broker wait was 19 ms and finally
+release was observed. Six free-lock and no-Java/Clojure/Clang postcheck
+observations are snapshots, without hard OS/RSS/descendant containment claims.
+Public fresh C6, complete helpers, parameter/alias grounding, native,
+authoritative migration, self-hosting and release remain unestablished.
+
 ### Finite Symbol-Set membership: development increment
 
 The existing C7, effects, typed emitter and runtime owners implement binary

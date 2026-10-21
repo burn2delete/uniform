@@ -6453,6 +6453,61 @@ Runtime remains 56 functions and all nine protected carrier predicates are
 unchanged. Whole helpers, native, migration, self-hosting and release remain
 outside this evidence.
 
+### Count-bounded quotient scaling
+
+SAFE9/STD5 permit the existing owners to prove binary
+`(* k (quot (count collection) d))` when `k` is an original nonnegative
+Integer literal, `d` is an original positive Integer literal and `k <= d`.
+Reconstruct the ordinary count and quotient source, bindings, types, ordered
+calls/edges, unique facts and numeric/cardinality ledger rows. The Euclidean
+premise is `d*q <= n`, giving `0 <= k*q <= d*q <= n` for the original count
+`n`. A quotient-only bound `q <= n` is insufficient. Missing proof, including
+`k > d`, rejects with `STD5001`; the quotient owns its zero-divisor rejection.
+
+Retain `:sh08-count-quotient-scaling-v1`, `:proof-required`, `:proven-safe`
+and possible Integer-result storage. Normal direct/latent effects include
+`:memory/allocate`. Aborted invocations retain every normal operand proof,
+record no normal result bound or direct result allocation, and preserve the
+original transfer. No alias/parameter range, commuted route, general product,
+fixed-width conversion, negative rounding or whole-helper support follows.
+Integer work units are logical leaves, without precision/provider CPU/heap
+bounds. C8 shares the existing numeric source context and independently joins
+both quotient and count facts/ledgers; it adds no acceptance flag or context key.
+
+Use the four `sh08-count-quotient-scaling-*-development-kernel` selectors,
+`body-count-quotient-scaling-development-kernel`, and SH01's four
+lowering/runtime/fixtures/transfer-fence selectors. The coalesced affected
+selection passed 39 tests / 4,074 assertions at `9b19fae5`; boundary passed
+6 / 11 and LOC passed for 2,022 files, zero exceptions, maximum 250 lines.
+Earlier RED, routing, metadata-callback, test-oracle and pre-test compilation
+failures remain under their original `/tmp/count-quotient-scaling-*` receipts.
+Do not replace those outcomes with the later green batch.
+
+The runtime uses existing builtin-call IR. The original nested count/quotient
+success and exact closed literal/coefficient/divisor instruction shape dominate
+the product. Already evaluated values are checked; `n` is not retained,
+reconstructed, compared afresh or reevaluated. This defense does not admit
+unproved source. Physical Symbol checks reject malformed function metadata
+before hashing, equality or argument work. Fixed selected source IDs are checked
+before retaining proof data. Callback controls cover these selected fields,
+without a universal hostile-DATA/provider containment claim. Runtime inventory
+remains 56 functions and nine protected carrier predicates are unchanged.
+
+After one main join preserved all 11 reviewed byte sequences, the new
+`current-gravity-count-quotient-scaling-authenticated-composition` passed
+1 / 68 at `e5117b9d`. One G function/three calls produced `4` from the
+nine-element receiver with empty stdout. Fresh C7/C8 verification and
+assembly-required public C7 verification passed. The unsupported-factor G
+negative rejected with `STD5001`; fresh negative C7 verification was asserted
+and printed passed, with a secondary C7-ANNOTATION retained. Negative C8/runtime
+were not invoked. QST is parser-only; development C6 replay is not public fresh
+C6. Preserve `/tmp/count-quotient-scaling-source-lease-20261021`: original
+PTY 94074, natural exit zero, 14 unchanged inputs including the joined C6
+projection, released lease, free lock snapshots and no Java observed at postcheck.
+Its maximum monitored gap was 16.409 seconds; limits were operational, without
+hard OS/RSS/descendant guarantees. Whole compiler/reader helpers, native,
+authoritative migration, self-hosting and release remain outside this evidence.
+
 ### Finite Symbol-Set membership
 
 STD3's binary `contains?` also accepts independently established finite literal
