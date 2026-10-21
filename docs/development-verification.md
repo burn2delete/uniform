@@ -190,6 +190,30 @@ or budget increase is justified by this optimization. The focused comparison
 checks complete outputs and rejection budgets; it is not a source migration
 proof or a wall-time benchmark.
 
+### Checked i64 subtraction in the bootstrap library
+
+STD1/STD5/D8 govern `:checked-sub-i64` in
+`bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity`. The existing
+experimental `:meta` request interface requires opt-in, no effects/capabilities
+and `:none` allocation. It checks binary arity, integer family and i64 range
+before overflow guards and arithmetic. Negative right operands use a guarded
+result-minus-one decomposition, avoiding the seed builtin's negation of MIN.
+`STD5001` retains integer type/range/overflow diagnostics; wrong arity retains
+`STD1001`. The request/result schema and four exported entrypoints are unchanged.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-checked-i64-subtraction-executes-before-its-result-is-verified \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity \
+  --exact sh22-policy-and-manifest-state-bounded-experimental-surface --fail-fast
+```
+
+These checks execute paired library fixtures and the original Gravity arithmetic
+and verifier. They do not establish compiler linkage, native execution or the
+complete SH-22 API closure. Historical SH07 source/digest pins are not updated;
+their evidence does not authenticate the changed library source revision.
+
 ### C6 compiled-source aggregate binding maintenance
 
 ```bash
