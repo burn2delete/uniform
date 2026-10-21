@@ -239,10 +239,45 @@
             (is (false? (get-in process [:cleanup :root-alive?])))
             (is (= 0 (get-in process [:cleanup :descendants-alive])))
             (is (= :rejected (:status execution)) execution)
-            (is (= process (:process execution)))
+            (is (true? (= process (:process execution))))
             (is (= (:executable-hash compilation) (:executable-hash execution)))
             (is (= [] (:arguments execution))))))
       (is (not (Files/exists @directory-seen (make-array java.nio.file.LinkOption 0)))))))
+
+(deftest sh18-native-execution-status-records-remain-distinct
+  ;; Synthetic records exercise the consumer only, not native execution.
+  (let [directory-seen (atom nil)]
+    (harness/with-temporary-directory
+      "gravity-sh18-status-records-"
+      (fn [directory]
+        (reset! directory-seen directory)
+        (let [path (write-source! directory "not-executed" "status fixture")
+              digest (harness/file-sha256 path)]
+          (is (< (Files/size path) 1024))
+          (doseq [[process expected]
+                  [[{:status :completed :exit-code 0 :stdout "ok" :stderr ""} :accepted]
+                   [{:status :completed :exit-code 23 :stdout "" :stderr "bad"} :rejected]
+                   [{:status :timed-out :exit-code nil :cleanup {:complete? true}} :timed-out]
+                   [{:status :output-limit-exceeded :exit-code nil :cleanup {:complete? true}} :rejected]
+                   [{:status :readiness-missing :exit-code nil :stdout ""} :rejected]]]
+            (let [observed (atom [])
+                  result (try
+                           (with-redefs [harness/run-bounded-process
+                                         (fn [options] (swap! observed conj options) process)]
+                             (harness/execute-native
+                              {:executable-path (str path) :arguments ["value"]
+                               :working-directory (str directory) :timeout-ms 5000}))
+                           (catch Exception failure
+                             {:status :host-failure :class (.getName (class failure))}))]
+              (is (= expected (:status result)) result)
+              (is (= process (:process result)))
+              (is (= digest (:executable-hash result)))
+              (is (= ["value"] (:arguments result)))
+              (is (= (str (.toRealPath path (make-array java.nio.file.LinkOption 0)))
+                     (:executable-path result)))
+              (is (= 1 (count @observed)))
+              (is (= 5000 (:timeout-ms (first @observed)))))))))
+    (is (not (Files/exists @directory-seen (make-array java.nio.file.LinkOption 0))))))
 
 (deftest sh18-native-harness-reaps-observed-descendants-before-return
   (when-let [toolchain (available-toolchain)]
