@@ -8620,6 +8620,34 @@ execution, complete SH-22 API closure, authoritative migration or milestone
 completion follows. Historical SH07 source/digest pins remain unchanged and
 their evidence does not authenticate this changed source revision.
 
+### Checked nonnegative i64 quotient: request-module increment
+
+The existing four-export SH-22 request API executes
+`:checked-nonnegative-quot-i64` for dividend `0..MAX` and divisor `1..MAX`.
+Both actual Integer types and signed-i64 ranges, then nonnegative/positive
+domain checks dominate division; the checked Result is integral and within
+`0..dividend`. Existing arity/type/range diagnostics remain; local `STD5002`
+reports domain rejection. The experimental opt-in `:meta` policy has 21
+operations, no query effects/capabilities and `:none` value allocation; the
+request/result envelope and four exports are unchanged.
+
+At `26d05dbb`, the whole SH-22 namespace passed 23/4272: 480 new assertions and
+3792 affected controls, including eight added generic fixture checks. Boundary
+separately passed 6/11: 29/4283 across two passing invocations. LOC separately
+passed 2,022 files, zero exceptions, maximum 250. All runners exited naturally.
+RED `0d0c9dec` retained 240 passes/240 failures in 480 assertions without errors:
+four failures were new nil-route test-oracle mistakes, corrected to the
+unchanged `STD8001/:missing-io-authority` rejection. No general nil-route fix
+or 240 prior semantic defects are claimed. Actual original `quot` delegation,
+zero calls on rejected inputs, source/origin diagnostics, real checked-sub/mul
+producer results and fresh producer/consumer/substitution checks are retained.
+
+Reader decimal normalization supplies the motivating `(quot remaining 10)`
+client, not a compiled-client linkage claim. Signed-negative rounding,
+remainder, MIN/-1 and arbitrary-precision division are excluded. No reader or
+runtime API rewrite, provider/native execution, public admission, migration,
+milestone or SH-22 completion follows; historical source/digest pins are unchanged.
+
 ### Keyword membership in bounded ordered Sets
 
 The SH-22 leaf now executes `:ordered-set-contains-keyword` under STD2/STD3.

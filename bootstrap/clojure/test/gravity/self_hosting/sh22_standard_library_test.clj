@@ -109,6 +109,7 @@
     sh22-checked-add-request
     sh22-checked-sub-request
     sh22-checked-mul-request
+    sh22-checked-nonnegative-quot-request
     sh22-error-request
     sh22-file-read-request
     sh22-stdout-request
@@ -133,6 +134,8 @@
    ['sh22-checked-sub-request "STD5001" :integer-overflow]
    'sh22-mul-overflow-request
    ['sh22-checked-mul-request "STD5001" :integer-overflow]
+   'sh22-zero-divisor-request
+   ['sh22-checked-nonnegative-quot-request "STD5002" :positive-divisor-required]
    'sh22-missing-capability-request
    ['sh22-file-read-request "STD8001" :missing-io-authority]
    'sh22-missing-encoding-request
@@ -202,7 +205,7 @@
     (is (= 512 (:maximum-carrier-width policy)))
     (is (= 65536 (:maximum-carrier-nodes policy)))
     (is (true? (:experimental-opt-in-required policy)))
-    (is (= 20 (count (:operation-set policy))))
+    (is (= 21 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
     (is (contains? (:diagnostics policy) "STD8001"))
     (is (some #{:authenticated-sh19-runtime-services}
@@ -213,7 +216,7 @@
     (is (= 'gravity.stdlib.self-hosting-core (:module manifest)))
     (is (= :experimental (:stability manifest)))
     (is (empty? (:unsafe-islands manifest)))
-    (is (= 20 (count exports)))
+    (is (= 21 (count exports)))
     (is (every? #(= :experimental (:stability %)) exports))
     (is (every? #(= #{:meta} (:profiles %)) exports))
     (is (every? string? (map :type exports)))
@@ -583,6 +586,100 @@
                          (assoc-in result [:facts :numeric-mode] :wrapping-i64)
                          (assoc-in result [:identity-input :operation] :checked-add-i64)]]
           (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed])))))))))
+
+(deftest sh22-checked-nonnegative-i64-quotient-checks-before-division
+  ;; STD5/SAFE9 and reader's nonnegative decimal-digit client: no negative
+  ;; rounding law, coercion or general-Integer division is selected here.
+  (let [builtin #'bootstrap/p15-s23-stage2-runtime-invoke-builtin
+        original @builtin
+        observe (fn [input]
+                  (let [calls (atom [])
+                        result (with-redefs-fn
+                                 {builtin (fn [& arguments]
+                                            (when (= 'quot (nth arguments (- (count arguments) 2)))
+                                              (swap! calls conj (last arguments)))
+                                            (apply original arguments))}
+                                 #(handle input))]
+                    [result @calls]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (request plan 'sh22-checked-nonnegative-quot-request)
+            export (first (filter #(= :checked-nonnegative-quot-i64 (:name %))
+                                  (:exports (invoke-engine 'sh22-module-manifest []))))]
+        (is (= #{:meta} (:profiles export)))
+        (is (= :experimental (:stability export)))
+        (is (= #{} (:effects export) (:capabilities export)))
+        (is (= :none (:allocation export)))
+        (is (= ["STD5001" "STD5002"] (:errors export)))
+        (is (= "I64 I64 -> (Result I64 NumericError)" (:type export)))
+        (doseq [[left right expected]
+                [[0 1 0] [1 1 1] [9 10 0] [10 10 1] [11 10 1]
+                 [0 Long/MAX_VALUE 0] [1 Long/MAX_VALUE 0]
+                 [Long/MAX_VALUE 1 Long/MAX_VALUE]
+                 [Long/MAX_VALUE 10 922337203685477580]
+                 [Long/MAX_VALUE Long/MAX_VALUE 1]
+                 [(bigint 11) (biginteger 10) 1]]]
+          (let [input (assoc base :arguments [left right]) [result calls] (observe input)
+                value (get-in result [:value :value])]
+            (is (= :accepted (:status result)))
+            (is (= {:artifact :gravity/result :variant :ok :value expected} (:value result)))
+            (is (= {:numeric-mode :checked-i64 :safety-outcome :proven-safe :allocation :none} (:facts result)))
+            (is (= [[left right]] calls))
+            (is (and (integer? value) (<= 0 value left)))
+            (is (= [left right] (get-in result [:identity-input :arguments])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (doseq [[function arguments divisor expected]
+                [['sh22-checked-sub-request [100 1] 10 9]
+                 ['sh22-checked-mul-request [11 10] 10 11]]]
+          (let [producer (assoc (request plan function) :arguments arguments)
+                produced (handle producer)
+                input (assoc base :arguments [(get-in produced [:value :value]) divisor])
+                [result calls] (observe input)]
+            (is (= :accepted (:status produced) (:status result)))
+            (is (= expected (get-in result [:value :value])))
+            (is (= [(:arguments input)] calls))
+            (doseq [[request result] [[producer produced] [input result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [request result])))))))
+        (doseq [[arguments rule reason]
+                [[[1 0] "STD5002" :positive-divisor-required]
+                 [[0 0] "STD5002" :positive-divisor-required]
+                 [[1 -1] "STD5002" :positive-divisor-required]
+                 [[1 Long/MIN_VALUE] "STD5002" :positive-divisor-required]
+                 [[-1 1] "STD5002" :nonnegative-dividend-required]
+                 [[Long/MIN_VALUE -1] "STD5002" :nonnegative-dividend-required]
+                 [[-1 0] "STD5002" :nonnegative-dividend-required]
+                 [[9223372036854775808 1] "STD5001" :integer-out-of-range]
+                 [[1 9223372036854775808] "STD5001" :integer-out-of-range]
+                 [[-9223372036854775809 1] "STD5001" :integer-out-of-range]
+                 [[-1 9223372036854775808] "STD5001" :integer-out-of-range]
+                 [[nil 1] "STD5001" :expected-integer] [[1 false] "STD5001" :expected-integer]
+                 [[1.0 1] "STD5001" :expected-integer] [[1 "10"] "STD5001" :expected-integer]
+                 [[-1 :zero] "STD5001" :expected-integer]]]
+          (let [input (assoc base :arguments arguments) [result calls] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= [] calls))
+            (is (= (:source-span input) (get-in result [:diagnostics 0 :source-span])))
+            (is (= (:origin-chain input) (get-in result [:diagnostics 0 :origin-chain])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (doseq [[input rule reason]
+                (concat (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
+                             [[] [1] [1 2 3]])
+                        [[(assoc base :effects #{:memory/allocate}) "STD1002" :undeclared-library-effect]
+                         [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+                         [(assoc base :allocation-policy :bounded-by-result) "STD1001" :allocation-policy-mismatch]
+                         [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]
+                         [(assoc base :operation nil) "STD8001" :missing-io-authority]])]
+          (let [[result calls] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= [] calls))))
+        (let [result (handle base)]
+          (doseq [changed [(assoc-in result [:value :value] 13)
+                           (assoc-in result [:facts :numeric-mode] :wrapping-i64)
+                           (assoc-in result [:identity-input :arguments 1] 0)]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
 
 (deftest sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
