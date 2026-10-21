@@ -32452,6 +32452,53 @@
           (is (zero? @callbacks)))))
 ))
 
+(deftest current-gravity-vector-first-symbol-loop-witness-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [{:keys [context nodes forms checked] :as data}
+        ((ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'vector-first-symbol-loop-data))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        compile #(invoke 'p15-s23-typed-compile-node %1 :loop-node %2)
+        result (compile context 65536) runtime-plan (:plan (typed-catch-runtime-projection))
+        value (when (= :complete (:status result))
+                (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+                  'p15-s23-runtime-evaluate-closed-instruction [(:value result) {} ""]))]
+    (is (= :accepted (:status checked)))
+    (is (= :complete (:status result)) (pr-str result))
+    (is (= {:op :set-literal :items []} (get-in result [:value :bindings 1 :expr])))
+    (is (= [#{'assoc} "" :normal] value))
+    (when (= :complete (:status result))
+      (is (= result (compile context (:work-count result))))
+      (is (= :rejected (:status (compile context (dec (:work-count result)))))))
+    (doseq [changed [(assoc-in context [:types :first-operator :bounds-proof :selected-index] 1)
+                    (assoc-in context [:types :first-operator :application] :not-invoked)
+                    (assoc-in context [:forms :symbol-vector-form :value] ['wrong])
+                    (assoc-in context [:nodes :symbol-vector :evaluation :order] [])
+                    (assoc-in context [:loop-rows [:loop-slot-type :value] :solution :member-invariant :grounding :member-path] [:vector-first])]]
+      (is (= :rejected (:status (compile changed 65536)))))))
+
+(deftest current-gravity-vector-first-symbol-loop-witness-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name expected-width]
+            [["accepted" "vector-first-symbol-set-loop" 1]
+             ["rejected" "empty-vector-symbol-set-loop" 0]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g) nodes (tree-seq coll? seq forms)]
+        (is (= g q))
+        (is (= forms (bootstrap/read-forms q-path q)))
+        (is (= 1 (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'loop (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'recur (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'quote (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'conj (first %))) nodes))))
+        (let [query (first (filter #(and (seq? %) (= 'first (first %))) nodes))]
+          (is (vector? (second query)))
+          (is (= expected-width (count (second query)))))))))
+
 (deftest current-gravity-unquoted-empty-symbol-set-loop-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
