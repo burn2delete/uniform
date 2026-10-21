@@ -10066,7 +10066,8 @@
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
         unary (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin)
-        original-scoped @scoped original-builtin @builtin original-unary @unary
+        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
+        original-scoped @scoped original-builtin @builtin original-unary @unary original-get @getter
         plans (atom []) reads (atom []) tails (atom 0)
         result (with-redefs-fn
           {scoped (fn [runtime plan callee args scope]
@@ -10074,6 +10075,12 @@
                       (do (swap! plans conj plan)
                           (try (original-scoped runtime plan callee args scope) (finally (swap! plans pop))))
                       (original-scoped runtime plan callee args scope)))
+           getter (fn [& args]
+                    (let [plan (first args) value (second args) key (nth args 2)
+                          side (cond (identical? value preimage) :preimage (identical? value core) :core)]
+                      (when (and side (seq @plans) (identical? (peek @plans) plan))
+                        (swap! reads conj [side key]))
+                      (apply original-get args)))
            unary (fn [runtime plan callee value]
                    (when (and (seq @plans) (identical? (peek @plans) plan) (= 'rest callee) (vector? value))
                      (swap! tails inc))
