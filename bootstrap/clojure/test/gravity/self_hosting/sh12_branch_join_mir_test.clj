@@ -180,9 +180,8 @@
                    ((juxt :diagnostic-id :missing-fact) (diagnostic rejected))))
             (is (nil? (:execution rejected)))
             (is (nil? (:projection rejected))))
-          ;; Private replay validates DATA premises, not C5 authentication.
-          ;; Reconstruction from source, not a caller-provided status, owns the
-          ;; coherent-input substitution boundary.
+          ;; Invalid physical IDs are rejected as malformed DATA. The separate
+          ;; valid-hash substitution test below checks source reconstruction.
           (let [substituted (assoc-in input [:resolved-parameter :sh06-artifact-id] "substituted")
                 forged (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [substituted])]
             (is (= :rejected (:status (verify (:artifact-template forged))))))
@@ -236,6 +235,25 @@
                              (assoc-in template [:core-nodes 1 :operands] [])
                              (assoc template :lexical-binding-records [])]]
             (is (= :rejected (:status (verify candidate))))))))))
+
+(deftest sh12-current-c6-replay-distinguishes-projection-substitution-from-source
+  ;; One actual source/C2/C5 reconstruction, not a second public C6 admission
+  ;; route. Same-input replay cannot authenticate a coherently replaced hash.
+  (let [path (str (.resolve @root
+                   "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        input (parameter-input path (slurp path))
+        replacement (get-in input [:resolved-parameter :projection-binding])
+        substituted (assoc-in input [:resolved-parameter :sh06-artifact-id] replacement)
+        original (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
+        forged (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [substituted])
+        verify (fn [source result candidate]
+                 (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                         [source candidate (:digest-requests result)]))]
+    (is (not= replacement (get-in input [:resolved-parameter :sh06-artifact-id])))
+    (is (= :accepted (:status original)))
+    (is (= :accepted (:status forged)))
+    (is (= :passed (:status (verify substituted forged (:artifact-template forged)))))
+    (is (= :rejected (:status (verify input original (:artifact-template forged)))))))
 
 (def ^:private stable-diagnostic-fields
   #{:diagnostic-id :severity :stage :mir-module :function :block
