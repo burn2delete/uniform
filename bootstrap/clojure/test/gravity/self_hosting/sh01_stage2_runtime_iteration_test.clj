@@ -29652,7 +29652,8 @@
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
         rt (:plan (typed-catch-runtime-projection))
         payload (String. "original Symbol membership transfer")
-        families [{:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]}]
+        families [{:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]}
+                  {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}]
         make-context (fn [family position recur?]
           (let [slot (if (zero? position) :arg0 :arg1) other (if (zero? position) :arg1 :arg0)
                 types (assoc [family :gravity.type/symbol] position :gravity.type/never)
@@ -30379,7 +30380,7 @@
         t1 (System/nanoTime)
         core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
         memberships (mapv :applied-symbol-set-contains (filter #(= :direct-symbol-set-contains (:dispatch %)) (:call-type-facts facts)))
-        rows (filterv #(= :sh08-symbol-set-contains-v1 (:producer-rule %)) (:constraint-ledger facts))
+        rows (filterv #(= :sh08-symbol-set-contains-v2 (:producer-rule %)) (:constraint-ledger facts))
         instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
         membership-ir (filterv #(and (= :builtin-call (:op %)) (= 'contains? (:function %))) instructions)
         graph (:effect-graph effects) runtime-plan (:plan (typed-catch-runtime-projection))
@@ -30403,7 +30404,7 @@
       (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
             row (first (filter #(= id (get-in % [:lhs :core-node-id])) rows))]
         (is (= :gravity.type/applied-symbol-set-contains (:kind descriptor)))
-        (is (= :sh08-symbol-set-contains-v1 (:version descriptor)))
+        (is (= :sh08-symbol-set-contains-v2 (:version descriptor)))
         (is (= ['contains? 'gravity.collections :gravity.collections/symbol-set-membership]
                [(:operation descriptor) (:semantic-owner descriptor) (:intrinsic descriptor)]))
         (is (= :gravity.type/bool (:result-type descriptor) (:return descriptor) (get-in facts [:type-table id])))
@@ -31471,7 +31472,7 @@
         (is (nil? (:input-extent checked)))
         (is (= checked (invoke 'p15-s23-syin-type-work [[carrier value] (:work-count checked)])))
         (is (= :symbol-set-insertion-work-limit (:reason (invoke 'p15-s23-syin-type-work [[carrier value] (dec (:work-count checked))]))))))
-    (is (= :rejected (:status (invoke 'p15-s23-ksm-domain [[carrier s] 65536]))))
+    (is (= :accepted (:status (invoke 'p15-s23-ksm-domain [[carrier s] 65536]))))
     (is (= :rejected (:status (invoke 'p15-s23-kse-domain [[carrier carrier] 65536]))))
     (is (= :rejected (:status (invoke 'p15-s23-kse-domain [[carrier (finite [s])] 65536]))))
     (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -31544,7 +31545,7 @@
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
     (doseq [[disposition name expected-functions expected-calls expected-insertions expected-counts expected-quotes]
             [["accepted" "local-runtime-symbol-set-carrier" 2 12 4 4 6]
-             ["rejected" "symbol-set-carrier-membership-unselected" 1 2 1 0 3]]]
+             ["rejected" "symbol-set-carrier-membership-unselected" 1 2 1 0 2]]]
       (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
             g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
             g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g)
@@ -31740,7 +31741,7 @@
       (is (= :passed (get-in negative [:report :status])))
       (is (= :rejected (get-in negative [:typed :status])))
       (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)) (pr-str diagnostics))
-      (is (= [carrier :gravity.type/symbol] (:actual-type diagnostic)) (pr-str diagnostic))
+      (is (= [carrier :gravity.type/keyword] (:actual-type diagnostic)) (pr-str diagnostic))
       (is (some? (:core-node-id diagnostic)))
       (is (some? (:syntax-id diagnostic)))
       (is (some? (:binding-id diagnostic)))
@@ -31755,3 +31756,163 @@
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest current-gravity-symbol-set-carrier-contains-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'map-contains-input)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
+        k :gravity.type/symbol s :gravity.type/string
+        carrier (:result-type (c7 'sh08-syin-type-work [[(finite []) k] 65536]))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [arguments [[carrier k]
+                       [carrier :gravity.type/never]]]
+      (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
+            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
+            descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-ksm-call-fact [descriptor module])} :ledger [(c7 'sh08-ksm-constraint [descriptor])]
+                     :locals {:arg0 'left :arg1 'right} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node %1 :call %2) lowered (compile context 65536)
+            coherent (fn [changed]
+                       (-> context (assoc-in [:types :operator] changed)
+                           (assoc :call-facts {:call (c7 'sh08-ksm-call-fact [changed module])}
+                                  :ledger [(c7 'sh08-ksm-constraint [changed])])))]
+        (is (= :sh08-symbol-set-contains-v2 (:version descriptor)))
+        (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:membership-policy :carrier-schema])))
+        (is (some #{:inferred-member-carrier} (:invalidation descriptor)))
+        (is (nil? (:set-member-count descriptor)))
+        (is (= 3 (:type-domain-work-count descriptor)))
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (let [limited (compile context (dec (:work-count lowered)))
+                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
+                own #(invoke 'p15-s23-typed-compile-keyword-set-contains %1 node %2)
+                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
+                domain-check (invoke 'p15-s23-ksm-domain [(finite [:gravity.type/integer]) (second arguments)] 65536)
+                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) 65536)
+                domain-failure (own bad-domain 65536)]
+            (is (= :typed-lowering-work-limit (get-in limited [:facts :reason])))
+            (is (= (:work-count lowered) (:work-count limited)))
+            (is (= base (:work-count (own context (dec base)))))
+            (is (= (+ base 2) (:work-count (own context base))))
+            (is (= charge (:work-count source-failure)))
+            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
+            (is (= (inc charge) (:work-count (own context charge))))
+            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+              (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
+                                  (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
+                                  (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
+                    child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id 65536)
+                    failure (compile candidate 65536)]
+                (is (= :rejected (:status child) (:status failure)))
+                (is (= (:facts child) (:facts failure)))
+                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+        (doseq [changed [(assoc descriptor :version :sh08-symbol-set-contains-v1)
+                         (update descriptor :membership-policy dissoc :carrier-schema)
+                         (assoc descriptor :version :sh08-atomic-equality-v1)
+                         (assoc descriptor :kind :gravity.type/applied-atomic-equality)
+                         (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc-in descriptor [:membership-policy :comparison] :identity)
+                         (assoc-in descriptor [:membership-policy :member-uniqueness] :not-validated)
+                         (assoc-in descriptor [:membership-policy :budget] :traversal-dependent)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)]]
+          (is (= :rejected (:status (compile (coherent changed) 65536)))))
+        (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "producer ID hashed")))
+                                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "producer ID compared"))))]
+          (doseq [row [(assoc-in (first (:ledger context)) [:lhs :core-node-id] opaque)
+                       (assoc (first (:ledger context)) :lhs opaque)
+                       (assoc-in (first (:ledger context)) [:lhs :core-node-id] [opaque])]]
+            (is (= :rejected (:status (compile (update context :ledger conj row) 65536)))))
+          (let [other-call (assoc call :core-node-id :other :operator-node-id opaque)
+                other-node (assoc node :node-id :other)
+                other-row (assoc-in (first (:ledger context)) [:lhs :core-node-id] :other)
+                candidate (-> context (assoc-in [:calls :other] other-call)
+                              (assoc-in [:nodes :other] other-node) (update :ledger conj other-row))]
+            (is (= :rejected (:status (compile candidate 65536)))))
+          (is (= 0 @callbacks)))
+        (doseq [mutate [#(assoc-in % [:ledger 0 :producer-rule] :sh08-symbol-set-contains-v1)
+                        #(assoc-in % [:ledger 0 :constraint-id-request :domain] :gravity/sh08-symbol-set-contains-constraint-v1)
+                        #(assoc-in % [:call-facts :call :fact-id-request :domain] :gravity/sh08-symbol-set-contains-call-type-fact-v1)
+                        #(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] {:opaque true}))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:types :arg0] (finite [:gravity.type/integer]))
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))
+  (let [invoke (fn [name args] (apply invoke name args))
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+        callbacks (atom 0) opaque (proxy [Object] []
+          (hashCode [] (swap! callbacks inc) (throw (AssertionError. "membership carrier hash")))
+          (equals [_] (swap! callbacks inc) (throw (AssertionError. "membership carrier equality")))
+          (toString [] (swap! callbacks inc) (throw (AssertionError. "membership carrier printing"))))
+        bad [(assoc carrier :extra true) (dissoc carrier :element-type)
+             (assoc carrier :kind :gravity.type/vector) (assoc carrier :shape :literal)
+             (assoc carrier :element-type :gravity.type/unknown) (assoc carrier :element-type opaque)
+             (assoc carrier :element-type [opaque]) (assoc carrier :kind opaque) (assoc carrier :shape opaque)
+             (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque :gravity.type/symbol]))
+             (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous [opaque] :gravity.type/symbol]))
+             (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} :gravity.type/symbol]))]]
+    (doseq [needle [:gravity.type/symbol :gravity.type/never]]
+      (let [checked (invoke 'p15-s23-ksm-domain [[carrier needle] 65536])]
+        (is (= :accepted (:status checked)))
+        (is (= 3 (:work-count checked)))
+        (is (nil? (:set-member-count checked)))
+        (is (= checked (invoke 'p15-s23-ksm-domain [[carrier needle] 3])))
+        (is (= :symbol-set-contains-work-limit (:reason (invoke 'p15-s23-ksm-domain [[carrier needle] 2]))))))
+    (doseq [budget [0 1]]
+      (is (= {:status :rejected :reason :keyword-set-contains-work-limit :work-count 2}
+             (invoke 'p15-s23-ksm-domain [[carrier :gravity.type/symbol] budget]))))
+    (doseq [budget [0 1 65536] wrong bad]
+      (is (= :rejected (:status (invoke 'p15-s23-ksm-domain [[wrong :gravity.type/symbol] budget]))))
+      (is (zero? @callbacks)))
+    (doseq [budget [0 1 65536] wrong [opaque [opaque] {:opaque opaque}]]
+      (is (= :rejected (:status (invoke 'p15-s23-ksm-domain [[carrier wrong] budget]))))
+      (is (zero? @callbacks)))
+    (doseq [needle [:gravity.type/keyword :gravity.type/string :gravity.type/character :gravity.type/unknown]]
+      (is (= :rejected (:status (invoke 'p15-s23-ksm-domain [[carrier needle] 65536])))))
+)
+    (let [context (-> (typed-keyword-set-kernel-context ["a"])
+                      (assoc-in [:forms :set-item-form-0 :kind] :character)
+                      (assoc-in [:forms :set-item-form-0 :value] (char 97))
+                      (assoc-in [:nodes :set-item-0 :attributes] {:literal-kind :character :value (char 97)})
+                      (assoc-in [:types :set-item-0] :gravity.type/symbol)
+                      (assoc-in [:types :set :element-types] [:gravity.type/symbol]))]
+      ;; Character-backed DATA tagged Symbol cannot establish a supported constructor.
+      (let [rejected (invoke 'p15-s23-typed-compile-node context :set 65536)]
+        (is (= :rejected (:status rejected)))
+        (is (= :unsupported-typed-set-member (get-in rejected [:facts :reason])))
+        (is (nil? (:value rejected)))))
+))
+
+(deftest current-gravity-symbol-set-carrier-contains-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name expected-functions expected-calls expected-insertions expected-counts expected-quotes]
+            [["accepted" "local-runtime-symbol-set-membership" 2 10 4 0 11]
+             ["rejected" "symbol-set-carrier-membership-unselected" 1 2 1 0 2]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g)
+            nodes (tree-seq coll? seq forms)
+            calls (filter #(and (seq? %) (contains? '#{conj gravity.core/conj count list seed set? list? contains? gravity.core/contains?} (first %))) nodes)]
+        (is (= g q))
+        (is (= forms (bootstrap/read-forms q-path q)))
+        (is (= expected-functions (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+        (is (= expected-calls (count calls)))
+        (is (= expected-insertions (count (filter #(contains? '#{conj gravity.core/conj} (first %)) calls))))
+        (is (= expected-counts (count (filter #(= 'count (first %)) calls))))
+        (is (= expected-quotes (count (filter #(and (seq? %) (= 'quote (first %))) nodes))))))))

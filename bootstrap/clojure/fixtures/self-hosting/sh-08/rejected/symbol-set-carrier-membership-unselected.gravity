@@ -3,4 +3,4 @@
   (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
   (:exports [main]))
 (defn main []
-  (contains? (conj '#{} 'assoc) 'assoc))
+  (contains? (conj '#{} 'assoc) :assoc))

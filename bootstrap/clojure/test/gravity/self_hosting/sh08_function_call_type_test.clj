@@ -14384,7 +14384,7 @@
             checked (check established 65536)]
         (is (= :accepted (:status result) (:status checked)))
         (is (= :gravity.type/applied-symbol-set-contains (:kind descriptor)))
-        (is (= :sh08-symbol-set-contains-v1 (:version descriptor)))
+        (is (= :sh08-symbol-set-contains-v2 (:version descriptor)))
         (is (= arguments (:argument-types descriptor) (:parameter-types descriptor)))
         (is (= (if (some #{:gravity.type/never} arguments) :gravity.type/never :gravity.type/bool) (:type result)))
         (is (= 'gravity.collections (:semantic-owner descriptor)))
@@ -14424,7 +14424,7 @@
         (is (= (if (= :gravity.type/symbol needle) :gravity.type/applied-symbol-set-contains :gravity.type/applied-map-contains)
                (get-in routed [:descriptor :kind])))))
     (doseq [bad [:gravity.type/set :gravity.type/unknown :gravity.type/map :gravity.type/nil
-                 (assoc (finite []) :extra true) {:kind :gravity.type/set :shape :homogeneous :element-type k}
+                 (assoc (finite []) :extra true) {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/unknown}
                  (finite [:gravity.type/string]) (finite [:gravity.type/unknown]) (finite [:gravity.type/never])]]
       (is (= :rejected (:status (derive (map-contains-input [bad k]) 65536)))))
     (doseq [needle [nil :gravity.type/unknown :gravity.type/nil :gravity.type/bool
@@ -14869,7 +14869,7 @@
         (is (nil? (:input-extent checked)))
         (is (= checked (invoke 'sh08-syin-type-work [[carrier value] (:work-count checked)])))
         (is (= :symbol-set-insertion-work-limit (:reason (invoke 'sh08-syin-type-work [[carrier value] (dec (:work-count checked))]))))))
-    (is (= :rejected (:status (invoke 'sh08-ksm-domain [[carrier s] 65536]))))
+    (is (= :accepted (:status (invoke 'sh08-ksm-domain [[carrier s] 65536]))))
     (is (= :rejected (:status (invoke 'sh08-kse-domain [[carrier carrier] 65536]))))
     (is (= :rejected (:status (invoke 'sh08-kse-domain [[carrier (finite [s])] 65536]))))
     (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -14930,3 +14930,151 @@
     (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc established :operator old :call :gravity.type/set) 65536]))))
     (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc-in established [:operator :version] :sh08-symbol-set-insertion-v1) 65536]))))
     (is (= :gravity.type/unknown (invoke-c7 'sh08-ft-loop-kernel-normal-join [[finite carrier]])))))
+
+(deftest sh08-symbol-set-carrier-contains-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        k :gravity.type/symbol carrier (:result-type (invoke-c7 'sh08-syin-type-work [[(finite []) k] 65536]))
+        derive keyword-set-contains-derived]
+    (doseq [[arguments expected-limit-reason]
+            [[[carrier k] :symbol-set-contains-work-limit]
+             [[carrier :gravity.type/never] :symbol-set-contains-work-limit]]]
+      (let [{:keys [core nodes forms bindings products binding-types] :as input} (map-contains-input arguments)
+            result (derive input 65536) descriptor (:descriptor result)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+            established (assoc (:types input) :operator descriptor)
+            check #(invoke-c7 'sh08-ksm-inferred-call [core (:node input) (:call input) (:edge input) nodes bindings %1 %2])
+            checked (check established 65536)]
+        (is (= :sh08-symbol-set-contains-v2 (:version descriptor)))
+        (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:membership-policy :carrier-schema])))
+        (is (some #{:inferred-member-carrier} (:invalidation descriptor)))
+        (is (nil? (:set-member-count descriptor)))
+        (is (= 3 (:type-domain-work-count descriptor)))
+        (is (= :accepted (:status result) (:status checked)))
+        (is (= :gravity.type/applied-symbol-set-contains (:kind descriptor)))
+        (is (= :sh08-symbol-set-contains-v2 (:version descriptor)))
+        (is (= arguments (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= (if (some #{:gravity.type/never} arguments) :gravity.type/never :gravity.type/bool) (:type result)))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= 'contains? (:operation descriptor)))
+        (is (= :gravity.collections/symbol-set-membership (:intrinsic descriptor)))
+        (is (= :original-namespace-and-name (get-in descriptor [:membership-policy :symbol-equality])))
+        (is (= :none (get-in descriptor [:membership-policy :resolution-authority]) (get-in descriptor [:membership-policy :coercion])))
+        (is (= (:membership-policy descriptor) (get-in (invoke-c7 'sh08-ksm-constraint [descriptor]) [:solution :membership-policy])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= :guarded-atomic-symbol-leaf (get-in descriptor [:membership-policy :comparison])))
+        (is (= :none (get-in descriptor [:membership-policy :construction]) (get-in descriptor [:membership-policy :refinement])))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= [(invoke-c7 'sh08-ksm-constraint [descriptor])] (:constraints inferred)))
+        (is (= :direct-symbol-set-contains (:dispatch (invoke-c7 'sh08-ksm-call-fact [descriptor (:module input)]))))
+        (is (= result (derive input (:work-count result))))
+        (is (= expected-limit-reason
+               (:reason (derive input (dec (:work-count result))))))
+        (is (= checked (check established (:work-count checked))))
+        (is (= expected-limit-reason
+               (:reason (check established (dec (:work-count checked))))))
+        (doseq [changed [(assoc-in established [:operator :version] :sh08-symbol-set-contains-v1)
+                         (update-in established [:operator :membership-policy] dissoc :carrier-schema)
+                         (update-in established [:operator :invalidation] #(vec (remove #{:inferred-member-carrier} %)))
+                         (assoc-in established [:operator :membership-policy :comparison] :identity)
+                         (assoc-in established [:operator :membership-policy :refinement] :key-presence)
+                         (assoc-in established [:operator :set-member-count] 99)
+                         (assoc-in established [:operator :type-domain-work-count] 0)
+                         (assoc-in established [:operator :direct-effects] [:memory/allocate])]]
+          (is (= :rejected (:status (check changed 65536)))))))
+    (doseq [needle [k :gravity.type/never]]
+      (let [input (map-contains-input [:gravity.type/never needle])
+            direct (derive input 65536)
+            context {:ordering-core (:core input) :ordering-operators {:operator (:call input)} :ordering-edges {:call (:edge input)}
+                     :lookup-nodes (:nodes input) :ordering-bindings (:bindings input) :association-forms (:forms input)}
+            routed (invoke-c7 'sh08-mc-step [(:node input) (:types input) {} {} context 65536])]
+        (is (= :gravity.type/never (:type direct) (:type routed)))
+        (is (= :not-invoked (get-in direct [:descriptor :application])))
+        (is (= (if (= :gravity.type/symbol needle) :gravity.type/applied-symbol-set-contains :gravity.type/applied-map-contains)
+               (get-in routed [:descriptor :kind])))))
+    (doseq [bad [:gravity.type/set :gravity.type/unknown :gravity.type/map :gravity.type/nil
+                 (assoc (finite []) :extra true) {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/unknown}
+                 (finite [:gravity.type/string]) (finite [:gravity.type/unknown]) (finite [:gravity.type/never])]]
+      (is (= :rejected (:status (derive (map-contains-input [bad k]) 65536)))))
+    (doseq [needle [nil :gravity.type/unknown :gravity.type/nil :gravity.type/bool
+                    {:kind :gravity.type/nil-or :value-type k}]
+            items [(finite []) (finite [k]) :gravity.type/never]]
+      (is (= :keyword-set-contains-operand-type-required (:reason (derive (map-contains-input [items needle]) 65536)))))
+    (doseq [arguments [[] [(finite [])] [(finite []) k k]]]
+      (is (= :keyword-set-contains-arity-mismatch (:reason (derive (map-contains-input arguments) 65536)))))
+    (let [input (map-contains-input [carrier k])]
+      (doseq [mutate [#(assoc-in % [:core :module :target] :native)
+                      #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :evaluation-order] :needle-first)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'get)]]
+        (is (= :symbol-set-contains-source-mismatch (:reason (derive (mutate input) 65536))))))
+    (let [domain #(invoke-c7 'sh08-ksm-domain [%1 %2])]
+      (is (= :accepted (:status (domain [(finite (repeat 1024 k)) k] 65536))))
+      (is (= :symbol-set-contains-type-width (:reason (domain [(finite (repeat 1025 k)) k] 65536))))
+      (is (= :symbol-set-contains-work-limit (:reason (domain [(finite (repeat 1024 k)) k] 100)))))
+    (doseq [bad [:gravity.type/keyword :gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64
+                 :gravity.type/decimal :gravity.type/ratio
+                 {:kind :gravity.type/nil-or :value-type :gravity.type/symbol}]]
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad]) 65536))))
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]) 65536)))))
+    (doseq [legacy [:gravity.type/keyword :gravity.type/character :gravity.type/string]]
+      (let [reads (atom 0) members (proxy [clojure.lang.APersistentVector] []
+                                     (count [] 1)
+                                     (nth [_] (swap! reads inc) legacy))
+            receiver {:kind :gravity.type/set :shape :literal :element-types members}
+            domain (invoke-c7 'sh08-ksm-domain [[receiver legacy] 65536])]
+        (is (= :accepted (:status domain)))
+        (is (= 3 (:work-count domain)))
+        (is (= 1 @reads) "a known legacy needle does not probe the new Symbol receiver route")))
+    (let [rejected (derive (map-contains-input [(finite [k :gravity.type/string]) k]) 65536)]
+      (is (= :symbol-set-contains-operand-type-required (:reason rejected)))
+      (is (= :established-finite-symbol-set-and-symbol (:expected rejected))))
+    (doseq [arguments [[(finite []) :gravity.type/never] [:gravity.type/never :gravity.type/never]]]
+      (let [domain (invoke-c7 'sh08-ksm-domain [arguments 65536])]
+        (is (= :accepted (:status domain)))
+        (is (= 2 (:work-count domain)))
+        (is (not (contains? domain :membership-family)))))
+    (is (= :rejected (:status (invoke-c7 'sh08-kse-domain [[(finite [k]) (finite [k])] 65536]))))
+)
+  (let [invoke invoke-c7
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+        callbacks (atom 0) opaque (proxy [Object] []
+          (hashCode [] (swap! callbacks inc) (throw (AssertionError. "membership carrier hash")))
+          (equals [_] (swap! callbacks inc) (throw (AssertionError. "membership carrier equality")))
+          (toString [] (swap! callbacks inc) (throw (AssertionError. "membership carrier printing"))))
+        bad [(assoc carrier :extra true) (dissoc carrier :element-type)
+             (assoc carrier :kind :gravity.type/vector) (assoc carrier :shape :literal)
+             (assoc carrier :element-type :gravity.type/unknown) (assoc carrier :element-type opaque)
+             (assoc carrier :element-type [opaque]) (assoc carrier :kind opaque) (assoc carrier :shape opaque)
+             (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque :gravity.type/symbol]))
+             (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous [opaque] :gravity.type/symbol]))
+             (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} :gravity.type/symbol]))]]
+    (doseq [needle [:gravity.type/symbol :gravity.type/never]]
+      (let [checked (invoke 'sh08-ksm-domain [[carrier needle] 65536])]
+        (is (= :accepted (:status checked)))
+        (is (= 3 (:work-count checked)))
+        (is (nil? (:set-member-count checked)))
+        (is (= checked (invoke 'sh08-ksm-domain [[carrier needle] 3])))
+        (is (= :symbol-set-contains-work-limit (:reason (invoke 'sh08-ksm-domain [[carrier needle] 2]))))))
+    (doseq [budget [0 1]]
+      (is (= {:status :rejected :reason :keyword-set-contains-work-limit :work-count 2}
+             (invoke 'sh08-ksm-domain [[carrier :gravity.type/symbol] budget]))))
+    (doseq [budget [0 1 65536] wrong bad]
+      (is (= :rejected (:status (invoke 'sh08-ksm-domain [[wrong :gravity.type/symbol] budget]))))
+      (is (zero? @callbacks)))
+    (doseq [budget [0 1 65536] wrong [opaque [opaque] {:opaque opaque}]]
+      (is (= :rejected (:status (invoke 'sh08-ksm-domain [[carrier wrong] budget]))))
+      (is (zero? @callbacks)))
+    (doseq [needle [:gravity.type/keyword :gravity.type/string :gravity.type/character :gravity.type/unknown]]
+      (is (= :rejected (:status (invoke 'sh08-ksm-domain [[carrier needle] 65536])))))
+)
+)
