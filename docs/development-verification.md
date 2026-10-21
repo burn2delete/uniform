@@ -467,7 +467,7 @@ construction, native execution or renewed proof.
 
 For the C13 constant-fold/DCE composition, run
 `sh16-defers-proven-unused-adds-until-dead-code-elimination` in the same
-namespace. An admitted pure, proven-unused ADD remains byte-for-byte unchanged,
+namespace. An admitted pure, proven-unused ADD record remains unchanged,
 including its original dead proof and identity, through constant folding and
 branch simplification; only scheduled DCE removes it. Do not copy a dead proof
 across a rewrite. Live ADD folding and original type, overflow, effect, proof
