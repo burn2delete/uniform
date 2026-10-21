@@ -9898,6 +9898,42 @@ maximum 250. There is no failed execution to relabel. These supplied constructor
 results do not establish fresh source ingress, native execution, milestone
 completion or authoritative migration.
 
+### Pure two-expression branch-local do: executable increment
+
+The original SH-12 builder/verifier and existing SH-13 interpreter compose one
+pure two-expression `do` arm under a literal Bool condition. Both body roots
+are independently closed i64, Bool, Keyword or explicit Nil literals; the arm
+returns the second value and the opposite arm has the same result type. Both
+arms validate before execution. Original ordered IDs, `:body 0`/`:body 1`
+paths, `:body-count 2`, type/source/fact records, incoming sequence ID and full
+CFG remain visible. A selected first false or Nil is an ordinary value, not a
+control transfer; both literals execute once in order.
+
+The private frame maps the original sequence result to the already supported
+SSA-forwarding operation on its second operand. It retains both constant
+operations and the original sequence ID in the trace. This adds the explicit
+`:sequence-result` projection role and a source-arm domain, not a normalized
+opcode, interpreter, public key or arity. Only seven-row `[1,3,1]` and mirrored
+layouts are selected; fuel is 505 selected or 507 skipped under 512.
+
+The first literal-entry test passed 1/1,012 assertions. Review then found that
+the draft also admitted an unselected nine-row computed-entry/`do` combination.
+Its placement regression recorded 16 passes and 24 failures in 40 assertions,
+with no errors. The narrow fence at `ce529e30` requires a literal-width entry
+for a `do` arm, preserving existing nine-row comparison families. Both new
+selectors then passed 2/1,052 on the changed candidate; 16 affected existing
+selectors passed 5,687 and six boundary tests passed 11. Thus 24 tests/6,750
+assertions passed across three current-candidate invocations. The earlier
+literal pass and placement RED are not added again. LOC separately passed
+2,021 files, zero exceptions, maximum 250.
+
+Invalid unselected bodies, metadata, types, source paths, Nil field presence
+and altered MIR/results reject before execution. Empty, nested or effectful
+bodies, calls, captures and implicit Nil remain unsupported by this bridge.
+Supplied G/Q constructor witnesses do not establish actual C6 type-family or
+source adaptation, native execution, whole-compiler behavior, SH-13 completion
+or authoritative migration.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
