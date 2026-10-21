@@ -325,7 +325,7 @@
           (is (= [] (get-in result [:decision-log 2 :proofs-used])))
           (is (= [] (get-in result [:translation-validation :proofs])))
           (is (= [:check/bounds-proven] (get-in result [:residual-check-report :retained-runtime-checks])))
-          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))))))
 
 (deftest sh16-propagates-bounded-pure-named-add-chains-until-a-barrier
   ;; Normalized straight-line DATA, not general CFG/SSA or fresh C11 evidence.
