@@ -2826,8 +2826,16 @@
     (is (= 1 (count (:loop-member-products result))))
     (is (<= 0 (:type-join-work-left result) 65536))
     (when (= :converged (:convergence-status result))
-      (is (= (assoc result :type-join-work-left 0) (run used)))
-      (is (= :resource-limit (:convergence-status (run (dec used))))))
+      (let [exact (run used) below (run (dec used))
+            semantic (fn [value] (-> value (dissoc :type-join-work-left)
+                                    (update :shape-call-context dissoc :budget-left)))]
+        (is (true? (= (semantic result) (semantic exact)))
+            "Complete inferred DATA match except the two remaining-budget counters")
+        (is (= :converged (:convergence-status exact)))
+        (is (zero? (:type-join-work-left exact)))
+        (is (= (- (get-in result [:shape-call-context :budget-left]) (:type-join-work-left result))
+               (get-in exact [:shape-call-context :budget-left])))
+        (is (= :resource-limit (:convergence-status below)))))
     (println (pr-str {:vector-first-symbol-loop-normalized-cold-solver (select-keys result [:convergence-status :round-count :round-bound :type-join-work-left])
                      :source-evidence false :final-type-seeds false :round-observations @observations}))))
 
