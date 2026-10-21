@@ -249,8 +249,8 @@
               result (optimize subject)]
           (check-rejected subject "C13-CONTRACT")
           (is (= :contract (get-in result [:diagnostics 0 :reason])))
-          (is (= (:source-span subject) (get-in result [:diagnostics 0 :source-span])))
-          (is (= (:origin-chain subject) (get-in result [:diagnostics 0 :origin-chain])))
+          (is (= (:source-span branch) (get-in result [:diagnostics 0 :source-span])))
+          (is (= (:origin-chain branch) (get-in result [:diagnostics 0 :origin-chain])))
           (is (false? (invoke-engine 'sh16-simplifiable-branch?
                                     [(assoc branch :condition condition)])))
           (is (= (assoc branch :condition condition)
@@ -650,8 +650,8 @@
           (is (= "C13-SAFETY" (get-in result [:diagnostics 0 :rule])))
           (is (= :safety (get-in result [:diagnostics 0 :reason])))
           (is (nil? (:optimized-operations result)))
-          (is (= (:source-span subject) (get-in result [:diagnostics 0 :source-span])))
-          (is (= (:origin-chain subject) (get-in result [:diagnostics 0 :origin-chain])))
+          (is (= (:source-span op) (get-in result [:diagnostics 0 :source-span])))
+          (is (= (:origin-chain op) (get-in result [:diagnostics 0 :origin-chain])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
           (is (false? (invoke-engine 'sh16-foldable-add? [op])))
           (is (= op (invoke-engine 'sh16-transform-operation [op])))))
@@ -676,6 +676,150 @@
           (is (= op (first (:optimized-operations result))))
           (is (false? (get-in result [:decision-log 0 :changed?])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))))))
+
+(deftest sh16-preserves-unsafe-audit-identities-through-transformations
+  ;; Supplied normalized audit IDs are not audit-provider or C11 evidence.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-mixed-optimization-request)
+          baseline (optimize base)
+          audit-ids [:audit/constant-fold :audit/branch-simplify]
+          audited (fn [subject positions]
+                    (reduce (fn [value index]
+                              (update-in value [:operations index]
+                                         assoc :safety-outcome :unsafe-island
+                                         :unsafe-audit-id (audit-ids index)))
+                            subject positions))
+          rejected (fn [subject rule]
+                     (let [result (optimize subject)]
+                       (is (= :rejected (:status result)))
+                       (is (= rule (get-in result [:diagnostics 0 :rule])))
+                       (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))]
+      (doseq [[positions condition] [[#{0} true] [#{1} true] [#{0 1} false]]]
+        (let [subject (audited (assoc-in base [:operations 1 :condition] condition) positions)
+              expected-baseline (optimize (assoc-in base [:operations 1 :condition] condition))
+              result (optimize subject)
+              operations (:optimized-operations result)]
+          (is (nil? (invoke-engine 'sh16-request-error [subject])))
+          (is (= :accepted (:status result)))
+          (is (= [:const :branch] (mapv :opcode (take 2 operations))))
+          (is (= [5] (:operands (first operations))))
+          (is (= [(if condition :block/then :block/else)] (:operands (second operations))))
+          (doseq [index [0 1]]
+            (let [input (get-in subject [:operations index]) output (get operations index)]
+              (is (= (select-keys input [:op-id :result :type :effects :ordering
+                                        :source-span :origin-chain :safety-outcome])
+                     (select-keys output [:op-id :result :type :effects :ordering
+                                         :source-span :origin-chain :safety-outcome])))
+              (if (contains? positions index)
+                (is (= (audit-ids index) (:unsafe-audit-id output)))
+                (is (= (get-in expected-baseline [:optimized-operations index]) output)))))
+          (is (= (:decision-log expected-baseline) (:decision-log result)))
+          (is (= (:invalidation-ledger expected-baseline) (:invalidation-ledger result)))
+          (is (= :passed (get-in result [:post-pass-verifier :status])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
+          (doseq [index positions]
+            (let [mutant (assoc-in result [:optimized-operations index :unsafe-audit-id] :audit/substituted)
+                  verification (invoke-engine 'sh16-verify [subject mutant])]
+              (is (= :rejected (:status verification)))
+              (is (= :optimization-result-substitution (get-in verification [:diagnostics 0 :reason])))))))
+      (let [subject (audited base #{0 1})]
+        (doseq [mutant [(update-in subject [:operations 0] dissoc :unsafe-audit-id)
+                        (assoc-in subject [:operations 0 :unsafe-audit-id] nil)
+                        (assoc-in subject [:operations 1 :unsafe-audit-id] "not-a-canonical-id")]]
+          (rejected mutant "C13-CONTRACT"))
+        (rejected (update subject :operations conj (first (:operations subject))) "C13-VERIFY")
+        (rejected (assoc subject :source-span nil) "C13-PRESERVE")
+        (rejected (-> subject (assoc-in [:operations 0 :dead] true)
+                      (assoc-in [:operations 0 :effects] #{:io/write})) "C13-EFFECT"))
+      (let [operation (-> (get-in base [:operations 0])
+                          (assoc :type :bool :safety-outcome :unsafe-island
+                                 :unsafe-audit-id :audit/unsupported-fold-domain))
+            subject (assoc-in base [:operations 0] operation) result (optimize subject)]
+        (is (= :accepted (:status result)))
+        (is (= operation (first (:optimized-operations result))))
+        (is (false? (get-in result [:decision-log 0 :changed?])))
+        (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))
+      ;; Third shared helper callsite: a runtime check cannot lawfully carry
+      ;; :unsafe-island through the existing public ingress gate.
+      (let [operation (get-in base [:operations 3])
+            unsafe-check (assoc operation :safety-outcome :unsafe-island
+                                :unsafe-audit-id :audit/check)
+            subject (assoc base :operations [unsafe-check])
+            retained (invoke-engine 'sh16-retained-runtime-check [operation])]
+        (is (= :safety (invoke-engine 'sh16-request-error [subject])))
+        (rejected subject "C13-SAFETY")
+        (is (= operation retained))
+        (is (not (contains? retained :unsafe-audit-id))))
+      (is (= baseline (optimize base))))))
+
+(deftest sh16-rejections-retain-the-first-failing-operation-source
+  ;; Supplied normalized locations are diagnostic DATA, not source admission.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (update (request plan 'sh16-mixed-optimization-request) :operations
+                       (fn [operations]
+                         (mapv (fn [index operation]
+                                 (assoc operation :origin-chain
+                                        [{:kind :generated :source-id :source/operation
+                                          :generator-id (keyword "generator" (str index))}]))
+                               (range) operations)))
+          bad-add (assoc-in base [:operations 0 :type] :bool)
+          bad-branch (assoc-in base [:operations 1 :condition] nil)
+          bad-check (-> base (assoc-in [:operations 3 :elide-requested] true)
+                        (assoc-in [:operations 3 :proof] {}))
+          both (assoc-in bad-add [:operations 3] (get-in bad-check [:operations 3]))
+          rejected
+          (fn [subject reason operation]
+            (let [result (optimize subject) diagnostic (first (:diagnostics result))
+                  legacy (invoke-engine 'sh16-diagnostic [subject reason])
+                  expected (if operation
+                             (assoc legacy :source-span (:source-span operation)
+                                    :origin-chain (:origin-chain operation)) legacy)
+                  mutant (assoc-in result [:diagnostics 0 :source-span :start] 999)
+                  altered (invoke-engine 'sh16-verify [subject mutant])]
+              (is (= :rejected (:status result)))
+              (is (= reason (:reason diagnostic)))
+              (is (= reason (invoke-engine 'sh16-request-error [subject])))
+              (is (= expected diagnostic))
+              (is (= (:source-span expected) (:source-span diagnostic)))
+              (is (= (:origin-chain expected) (:origin-chain diagnostic)))
+              (is (nil? (:optimized-operations result)))
+              (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
+              (is (= :rejected (:status altered)))
+              (is (= :optimization-result-substitution (get-in altered [:diagnostics 0 :reason])))))]
+      (doseq [[subject reason index]
+              [[bad-add :safety 0] [bad-branch :contract 1] [bad-check :proof 3]
+               [(assoc-in base [:operations 1 :effects] #{:io/write}) :effect 1]
+               [both :safety 0]
+               [(assoc-in bad-branch [:operations 3] (get-in bad-check [:operations 3])) :contract 1]]]
+        (rejected subject reason (get-in subject [:operations index])))
+      ;; Invalid first-operation metadata keeps the COMPLETE legacy location;
+      ;; never skip the first fault in search of a later usable source.
+      (doseq [subject [(assoc-in both [:operations 0 :source-span] nil)
+                       (update-in both [:operations 0] dissoc :source-span)
+                       (assoc-in both [:operations 0 :source-span :end] -1)
+                       (assoc-in both [:operations 0 :origin-chain] [])
+                       (assoc-in both [:operations 0 :origin-chain] nil)]]
+        (rejected subject :contract nil))
+      (doseq [[subject reason]
+              [[(assoc both :mir-verified false) :contract]
+               [(assoc both :source-span nil) :preserve]
+               [(assoc both :origin-chain []) :preserve]
+               [(assoc both :nondeterministic-choice true) :nondeterminism]
+               [(update both :operations conj (first (:operations both))) :verify]]]
+        (rejected subject reason nil))
+      (let [subject (assoc both :operations (apply list (:operations both)))
+            preflight (invoke-engine 'sh16-structural-preflight [subject])
+            result (optimize subject)]
+        (is (= :rejected (:status result)))
+        (is (= :request-structural-bound (get-in result [:diagnostics 0 :reason])))
+        (is (= result (invoke-engine 'sh16-structural-rejection
+                                    [subject preflight :request-structural-bound])))
+        (is (= :request-structural-bound
+               (get-in (invoke-engine 'sh16-verify [subject result]) [:diagnostics 0 :reason]))))
+      (let [accepted (optimize base)]
+        (is (= :accepted (:status accepted)))
+        (is (= accepted (invoke-engine 'sh16-accepted-artifact [base])))
+        (is (= :passed (:status (invoke-engine 'sh16-verify [base accepted]))))))))
 
 (deftest sh16-rejects-irrelevant-fields-and-noncanonical-identifiers
   (let [base

@@ -7435,6 +7435,17 @@ recursion support, callable recursion, termination, recursion-depth bounds,
 tail-call optimization, thrown-error completion, full legality, target execution,
 authoritative migration, self-hosting and seedless release remain outstanding.
 
+The existing `body-effect-recursive-fixed-point-development-kernel` now measures
+actual helper entries while always delegating to their original runtime
+implementation. The unchanged tiny fixture passed one test/28 assertions at
+512 MiB: two passes each rebuild two edge rows and one function row, make 11
+readiness attempts with zero false results, and repeat 13 invocation predicates
+plus 11 support checks and 11 order checks. General/import call validators are unvisited.
+Full observed/unobserved results agree; work remains 44, exact 44 accepts and
+43 rejects unchanged. No large-source attribution, speedup, source proof or
+milestone credit follows. A bounded production proposal must queue with the
+current `effects.gravity` source writer; no implementation is selected here.
+
 ### Capture-free callable body effects: development implementation
 
 The L3/L5/L6/C7/C8 increment extends the same `gravity.effects` interface to
@@ -9083,6 +9094,43 @@ Independent review accepted both code and actual results. This establishes
 normalized optimizer behavior, not source truthiness, fresh C11 integration,
 authoritative migration or SH-16 completion.
 
+The next C13 repair preserves existing unsafe audit IDs through constant folding
+and Bool branch simplification. Previously, valid audited input passed ingress,
+but the transformed operation kept `:unsafe-island` while dropping its required
+audit ID and therefore failed post-pass verification. Conditional preservation
+fixes that output; safe output maps stay unchanged and input/post-pass validation
+is not loosened. The third shared retained-runtime-check callsite still rejects
+unsafe checks through its existing `:runtime-checked` requirement.
+
+At `c4d9980f`, the coherent RED regression recorded 86 passes and 66 failures in
+152 assertions, with no errors. Changed candidate `a891a8e3` passed ten tests and
+663 assertions (152 new plus 511 adjacent); the separate boundary run passed
+six tests and 11 assertions: 16 tests/674 assertions across two passing
+invocations. LOC separately passed 2,021 files, zero exceptions, maximum 250.
+The G/Q request constructors, audit/source/safety preservation, decision and
+invalidation records, rejected ingress and recomputation/substitution controls
+are development evidence for supplied normalized records. Their audit IDs are
+not audit-provider evidence, authenticated C11 or source construction, native
+execution or proof renewal. Historical failures remain retained separately.
+
+A subsequent C13 diagnostic repair retains the first failing operation's span
+and generated-origin chain when BOTH are valid. Previously the ordered validator
+discarded this context and reported the enclosing request location. Malformed
+operation metadata retains the whole legacy request diagnostic, without skipping
+the first error; aggregate errors retain their original priority and location.
+Accepted output, rejection reasons, schemas and bounds remain unchanged, and
+fresh result recomputation rejects substituted diagnostic metadata.
+
+The original `980cd64c` RED run recorded 298 passes and 48 failures in 346
+assertions: 36 attribution failures plus 12 incorrect expectations for a List
+carrier rejected by the earlier structural gate. Correcting that test control
+produced the 334-assertion regression, without another RED run. Candidate
+`1172289d` passed 12 tests and 1,207 assertions (334 new plus 873 adjacent).
+The separate boundary run passed six tests and 11 assertions: 18/1,218 across
+two passing invocations. LOC separately passed 2,021 files, zero exceptions,
+maximum 250. These supplied normalized diagnostic records do not establish
+fresh source construction, native execution, migration or completion evidence.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
@@ -10099,6 +10147,24 @@ assertions for LLVM/C/Wasm requests. With the existing return-type, schema,
 three-target and substitution controls, the batch passes 6 tests and 533
 assertions. These remain normalized-input and recomputation checks, not fresh
 upstream authentication, native execution or milestone-completion evidence.
+
+### C14 scalar local forwarding: development repair
+
+The internal C14 C/LLVM/Wasm eligibility gates now require `:local` and
+`:local-binding` declarations to match the actual LAST operand's canonical
+scalar type. Previously an Integer value could be forwarded unchanged while
+declared Bool. Nonempty forwarding arity remains unchanged, including discarded
+earlier operands; no unary rule is imposed. Existing source/effect/reference
+gates keep priority, and unrelated forwarding families are unchanged.
+
+The `34b75945` RED regression recorded 222 passes and 108 failures in 330
+assertions, with no errors. Candidate `e3fd7b11` passed eight tests and 873
+assertions (330 new plus 543 adjacent); the separate boundary run passed
+six tests and 11 assertions: 14/884 across two passing invocations. LOC
+separately passed 2,021 files, zero exceptions, maximum 250. The new tests
+invoke the original three internal whole-surface gates and evaluator on
+supplied MIR DATA. Adjacent public normalized SH-17 controls do not turn this
+into a fresh authenticated C11/C13 packet, native execution or migration proof.
 
 ### Typed List family predicate: development increment
 

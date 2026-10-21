@@ -453,6 +453,29 @@ Keep source/origin, invalidation-ledger and recomputing-verifier controls.
 This is the fixed normalized Bool interface, not a change to source-level
 truthiness or a general rewrite of membership helpers.
 
+For C13 transformation audit preservation, run
+`sh16-preserves-unsafe-audit-identities-through-transformations` in the same
+namespace. Constant folding and Bool branch simplification conditionally retain
+the existing `:unsafe-audit-id` only for `:unsafe-island` operations. Safe output
+maps remain unchanged, without a nil audit field. Input and post-pass schemas
+are not loosened. Preserve exact audit IDs, source/origin, safety outcomes,
+decision and invalidation records, plus fresh result recomputation controls.
+The shared retained-runtime-check callsite does not admit audited unsafe checks:
+its original public gate still requires `:runtime-checked`. These supplied
+normalized IDs are not audit-provider evidence, authenticated C11/source
+construction, native execution or renewed proof.
+
+For C13 rejected-operation attribution, run
+`sh16-rejections-retain-the-first-failing-operation-source` in the same namespace.
+The original ordered checks retain the first failing operation and reason.
+Use that operation's source span and generated-origin chain only when BOTH
+validate; otherwise retain the complete legacy request diagnostic without
+skipping to a later operation. Aggregate checks keep priority and request-level
+locations. Accepted output, rule/reason selection, schemas and bounds stay
+unchanged. Recomputing verification reconstructs the rejection and rejects
+substituted diagnostic locations. These are supplied normalized diagnostic
+records, not fresh source construction, native execution or migration evidence.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
@@ -471,6 +494,18 @@ requires two declared Integers and an Integer result; `:integer-eq` requires
 two declared Integers and a Bool result. Check signatures after existing
 duplicate-definition and operand-defined gates. This does not select integer
 widths, overflow behavior, coercion or constant-value typing.
+
+For the distinct internal C14 scalar-MIR eligibility gates, run
+`sh17-local-forwarding-preserves-the-last-operand-scalar-type` in the same
+namespace. `:local` and `:local-binding` must declare the canonical scalar type
+of the actual LAST referenced operand. Existing nonempty arity is retained:
+discarded earlier operands do not impose a unary rule or determine the result
+type. Preserve earlier artifact, verifier, source, effect and reference gates;
+leave sequence, lexical-scope and function-boundary families unchanged.
+The three existing C/LLVM/Wasm whole-surface gates and original evaluator are
+checked with supplied MIR DATA, including Integer, Bool and Nil forwarding and
+incompatible declarations. Adjacent public normalized SH-17 tests are separate;
+this is not a fresh authenticated C11/C13 packet, native execution or migration.
 
 ### C11 node-local preflight diagnostics
 
@@ -6062,6 +6097,23 @@ graph. Equation equality alone is insufficient: fresh candidate verification
 reconstructs from bottom so an inflated, nonleast fixed point cannot pass.
 Classification, iteration, final reconstruction and equation visits share the
 invocation's existing work budget across caller and producers.
+
+For test-only reconstruction counters on the unchanged tiny recursive input:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-effect-recursive-fixed-point-development-kernel --fail-fast
+```
+
+Its original-delegating observer records two passes, each rebuilding two edge
+rows and one function row, with 11 readiness attempts and zero false results.
+Each pass repeats 13 invocation predicates, 11 support checks and 11 order checks;
+general/import call validators are unvisited. Full observed/unobserved results
+agree at generous, exact 44 and rejecting 43 budgets. These counters do not
+attribute large-source cost or establish speedup. Any bounded production
+proposal belongs to `effects.gravity` and must queue behind its current source
+writer; this measurement selects no implementation.
 
 The affected real-source composition is separate from these normalized kernels:
 
