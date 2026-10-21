@@ -32511,6 +32511,28 @@
       (is (= :rejected (:status (walk changed 65536))))
       (is (zero? @callbacks)))))
 
+(deftest current-gravity-vector-first-symbol-loop-witness-final-warm-descriptor-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [owner 'gravity.self-hosting.sh08-loop-recur-type-test
+        {:keys [env start binding operator derived]} ((ns-resolve owner 'vector-first-symbol-loop-source-shaped-env))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        walk (fn [env budget] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-lsi-path [start :member binding env budget]))
+        accepted (walk env 65536) callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "warm descriptor hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "warm descriptor equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "warm descriptor printing"))))
+        values ((ns-resolve owner 'vector-first-symbol-loop-hostile-warm-values) (get-in env [:types operator]) opaque callbacks)]
+    (is (= :accepted (:status derived) (:status accepted)) (pr-str accepted))
+    (is (= 5 (count (:path accepted))))
+    (is (= accepted (walk env (:work-count accepted))))
+    (is (= :rejected (:status (walk env (dec (:work-count accepted))))))
+    (doseq [[label value] values]
+      (is (= :rejected (:status (walk (assoc-in env [:types operator] value) 65536))) (str label))
+      (is (zero? @callbacks) (str label)))))
+
 (deftest current-gravity-vector-first-symbol-loop-witness-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

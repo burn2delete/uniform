@@ -2886,7 +2886,6 @@
                         raw (sh08-lsi-first-data-work [(sh08-lsi-first-node-data node) (sh08-lsi-first-node-data operator) (sh08-lsi-first-node-data arg)
                               call edge binding (sh08-lsi-first-form-data owner) (sh08-lsi-first-form-data op-form)
                               (sh08-lsi-first-form-data arg-form)
-                              (get (get env :types) op-id)
                               {:profile (get (get (get env :core) :module) :profile)
                                :target (get (get (get env :core) :module) :target)}] (- budget 176))]
                     (if (= :accepted (get raw :status))
@@ -2984,7 +2983,7 @@
                                                    nodes (get env :bindings) types (get (get env :core) :module) actual) nil)
                                         used reserved
                                         descriptor (if (map? header) (sh08-lq-finish header) nil)
-                                        compared (sh08-lsi-first-data-work descriptor (- budget used)) used (+ used (get compared :work-count))]
+                                        compared (sh08-lsi-first-data-work (get types (get (get input :call) :operator-node-id)) (- budget used)) used (+ used (get compared :work-count))]
                                     (if (= :accepted (get compared :status))
                                       (if (if (= :sh08-vector-first-v1 (get descriptor :version))
                                             (if (= :normal (get descriptor :application))

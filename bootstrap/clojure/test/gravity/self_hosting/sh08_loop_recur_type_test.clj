@@ -2830,3 +2830,54 @@
       (is (= :resource-limit (:convergence-status (run (dec used))))))
     (println (pr-str {:vector-first-symbol-loop-normalized-cold-solver (select-keys result [:convergence-status :round-count :round-bound :type-join-work-left])
                      :source-evidence false :final-type-seeds false :round-observations @observations}))))
+
+(defn- vector-first-symbol-loop-source-shaped-env []
+  ;; Independent quote/first products only; this is normalized DATA, not source admission.
+  (let [{:keys [core nodes forms bindings]} (vector-first-symbol-loop-cold-source-shape (vector-first-symbol-loop-cold-data))
+        call (first (:calls core)) edge (first (:call-edges core)) ctor-id (first (:argument-node-ids call))
+        head-id (first (:children (nodes ctor-id)))
+        alias-for (fn [name] (first (filter #(= name (:name (bindings (:binding-id %)))) (:lexical-bindings core))))
+        head (alias-for 'head) member (alias-for 'member) quote-id (:initializer-node-id head)
+        member-use (first (filter #(and (= :reference (:core-form %)) (= (:binding-id member) (get-in % [:attributes :binding-id]))) (:nodes core)))
+        quoted (c7-invoke 'sh08-qd-products [(:nodes core) (vec (vals forms)) (:module core)])
+        head-type (get-in quoted [:type-table quote-id])
+        types {quote-id head-type head-id head-type ctor-id {:kind :gravity.type/vector :shape :literal :element-types [head-type]}}
+        derived (c7-invoke 'sh08-lq-derive [core (nodes (:core-node-id call)) call edge nodes bindings types forms 65536])
+        types (assoc types (:operator-node-id call) (:descriptor derived) (:core-node-id call) (:type derived) (:node-id member-use) (:type derived))
+        slot (first (filter #(= 'seen (:name %)) (:loop-bindings core)))]
+    {:env {:core core :nodes nodes :forms forms :bindings bindings :types types
+           :aliases (into {} (map (juxt :binding-id identity) (:lexical-bindings core)))
+           :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+           :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))}
+     :start (:node-id member-use) :binding (:binding-id slot) :operator (:operator-node-id call) :derived derived :quotes quoted}))
+
+(defn- vector-first-symbol-loop-hostile-warm-values [normal opaque callbacks]
+  [[:opaque opaque] [:vector [opaque]] [:map {:opaque opaque}]
+   [:lazy (lazy-seq (swap! callbacks inc) (list opaque))]
+   [:opaque-extra (assoc normal :extra opaque)] [:ordinary-extra (assoc normal :extra true)]
+   [:nested-source (assoc-in normal [:source-call :argument-node-ids] [opaque])]
+   [:deep (assoc normal :extra (reduce (fn [out _] [out]) :bottom (range 129)))]
+   [:wide (assoc normal :extra (vec (repeat 1025 :item))) ]
+   [:wide-map (into {} (map (fn [i] [(keyword (str "field-" i)) i]) (range 1025)))]])
+
+(deftest vector-first-symbol-loop-witness-final-warm-descriptor-development-kernel
+  (let [{:keys [env start binding operator derived quotes]} (vector-first-symbol-loop-source-shaped-env)
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "warm descriptor hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "warm descriptor equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "warm descriptor printing"))))
+        values (vector-first-symbol-loop-hostile-warm-values (get-in env [:types operator]) opaque callbacks)
+        walks [(fn [env budget] (c7-invoke 'sh08-lsi-path [start :member binding env budget]))
+               (fn [env budget] (effects 'body-lsi-path start :member binding env budget))]]
+    (is (= :accepted (:status derived)))
+    (is (= [] (:diagnostics quotes)))
+    (doseq [walk walks]
+      (let [accepted (walk env 65536)]
+        (is (= :accepted (:status accepted)) (pr-str accepted))
+        (is (= 5 (count (:path accepted))))
+        (is (= accepted (walk env (:work-count accepted))))
+        (is (= :loop-type-work-limit (:reason (walk env (dec (:work-count accepted))))))
+        (doseq [[label value] values]
+          (is (= :rejected (:status (walk (assoc-in env [:types operator] value) 65536))) (str label))
+          (is (zero? @callbacks) (str label)))))))

@@ -3834,7 +3834,6 @@
                         raw (p15-s23-lsi-first-data-work [(p15-s23-lsi-first-node-data node) (p15-s23-lsi-first-node-data operator) (p15-s23-lsi-first-node-data arg)
                               call edge binding (p15-s23-lsi-first-form-data owner) (p15-s23-lsi-first-form-data op-form)
                               (p15-s23-lsi-first-form-data arg-form)
-                              (get (get env :types) op-id)
                               {:profile (get (get (get env :core) :module) :profile)
                                :target (get (get (get env :core) :module) :target)}] (- budget 176))]
                     (if (= :accepted (get raw :status))
@@ -3932,7 +3931,7 @@
                                                    nodes (get env :bindings) types (get (get env :core) :module) actual) nil)
                                         used reserved
                                         descriptor (if (map? header) (p15-s23-lq-finish header) nil)
-                                        compared (p15-s23-lsi-first-data-work descriptor (- budget used)) used (+ used (get compared :work-count))]
+                                        compared (p15-s23-lsi-first-data-work (get types (get (get input :call) :operator-node-id)) (- budget used)) used (+ used (get compared :work-count))]
                                     (if (= :accepted (get compared :status))
                                       (if (if (= :sh08-vector-first-v1 (get descriptor :version))
                                             (if (= :normal (get descriptor :application))
