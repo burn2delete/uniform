@@ -453,6 +453,18 @@ Keep source/origin, invalidation-ledger and recomputing-verifier controls.
 This is the fixed normalized Bool interface, not a change to source-level
 truthiness or a general rewrite of membership helpers.
 
+For C13 transformation audit preservation, run
+`sh16-preserves-unsafe-audit-identities-through-transformations` in the same
+namespace. Constant folding and Bool branch simplification conditionally retain
+the existing `:unsafe-audit-id` only for `:unsafe-island` operations. Safe output
+maps remain unchanged, without a nil audit field. Input and post-pass schemas
+are not loosened. Preserve exact audit IDs, source/origin, safety outcomes,
+decision and invalidation records, plus fresh result recomputation controls.
+The shared retained-runtime-check callsite does not admit audited unsafe checks:
+its original public gate still requires `:runtime-checked`. These supplied
+normalized IDs are not audit-provider evidence, authenticated C11/source
+construction, native execution or renewed proof.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
