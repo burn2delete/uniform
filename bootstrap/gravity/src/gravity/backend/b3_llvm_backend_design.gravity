@@ -1317,12 +1317,27 @@
       (first operations)
       (b3-find-operation (rest operations) operation-id))))
 
+(defn b3-constant-source-operation-valid?
+  [operation]
+  (let [source (get operation :source-operation)]
+    (if (= source :literal)
+      true
+      (if (= source :implicit-nil)
+        true
+        (if (= source :integer-eq)
+          (if (= (get operation :type) :gravity/bool)
+            (if (= (get operation :operands) [])
+              (b3-constant-payload-supported? operation)
+              false)
+            false)
+          false)))))
+
 (defn b3-operation-source-matches-opcode?
   [operation]
   (let [opcode (get operation :opcode)
         source (get operation :source-operation)]
     (if (= opcode :constant)
-      (if (= source :literal) true (= source :implicit-nil))
+      (b3-constant-source-operation-valid? operation)
       (if (= opcode :local)
         (= source :local)
         (if (= opcode :local-binding)
@@ -1599,9 +1614,7 @@
       (if (= (get operation :capabilities) #{})
         (if (= opcode :constant)
           (if (= operands [])
-          (if (if (= source-operation :literal)
-                true
-                (= source-operation :implicit-nil))
+          (if (b3-constant-source-operation-valid? operation)
             (if (b3-constant-payload-supported? operation)
               nil
               :bounded-scalar-constant-payload)

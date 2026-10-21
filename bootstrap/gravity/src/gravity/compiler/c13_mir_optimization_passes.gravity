@@ -847,7 +847,7 @@
       false)
     false))
 
-(defn c13-build-bounded-identity-optimized-mir
+(defn c13-build-bounded-identity-record
   [mir evidence]
   (if (c13-bounded-identity-input-valid? mir evidence)
     {:artifact :gravity/c13-bounded-identity-optimized-mir
@@ -964,6 +964,251 @@
      :diagnostic "C13-VERIFY"
      :missing-fact :fresh-c11-verifier-and-fact-closure
      :diagnostics ["C13-VERIFY"]}))
+
+(defn c13-equality-all? [checks]
+  (loop [index 0]
+    (if (= index (count checks)) true
+      (if (= true (get checks index)) (recur (+ index 1)) false))))
+
+(defn c13-equality-id? [value]
+  (if (string? value) (if (> (count value) 0) (<= (count value) 256) false) false))
+
+(defn c13-equality-i64? [value]
+  (if (integer? value) (if (<= -9223372036854775808 value) (<= value 9223372036854775807) false) false))
+
+(defn c13-equality-edge [operation index]
+  {:from (get (get operation :operands) index) :consumer-kind :operation
+   :consumer-id (get operation :op-id) :consumer-block (get operation :block-id)
+   :operand-index index :edge-kind :operand})
+
+(defn c13-equality-use [operation index]
+  {:use-kind :instruction :consumer-kind :operation :consumer-id (get operation :op-id)
+   :consumer-block (get operation :block-id) :operand-index index :edge-kind :operand})
+
+(defn c13-equality-without-output-id [evidence]
+  (let [names (vec (keys evidence))]
+    (loop [index 0 result {}]
+      (if (= index (count names)) result
+        (let [name (get names index)]
+          (recur (+ index 1) (if (= name :output-mir-id) result (assoc result name (get evidence name)))))))))
+
+(defn c13-equality-facts-valid? [mir operation]
+  (let [id (get operation :op-id) facts (get operation :facts) source (get operation :source)
+        type (get (get mir :type-table) (get facts :type-fact-id))
+        value (get (get (get mir :data-flow-graph) :values) (get operation :result))]
+    (c13-equality-all?
+     [(= :gravity/mir-operation (get operation :artifact)) (= :passed (get operation :verifier-status))
+      (= :hosted (get operation :profile)) (= #{} (get operation :effects)) (= #{} (get operation :capabilities))
+      (= :none (get operation :ordering)) (= nil (get operation :domain-anchor)) (map? source)
+      (= source (get (get mir :source-map) id)) (= (get source :origin-id) (get facts :source-origin-id))
+      (= (get source :origin-id) (get type :source-origin-id)) (= id (get type :core-node-id))
+      (= (get facts :type-fact-id) (get type :fact-id)) (= (get operation :type) (get type :type))
+      (= (get operation :operands) (get type :dependencies))
+      (= #{} (get (get (get mir :effect-table) (get facts :effect-fact-id)) :direct))
+      (= :persistent-immutable-value (get (get (get mir :ownership-table) (get facts :ownership-fact-id)) :model))
+      (= #{} (get (get (get mir :capability-table) (get facts :capability-fact-id)) :required))
+      (= #{} (get (get (get mir :capability-table) (get facts :capability-fact-id)) :granted))
+      (= :proven-safe (get (get (get mir :safety-table) (get facts :safety-outcome-id)) :outcome))
+      (= (get operation :type) (get value :type)) (= (get operation :constant-payload) (get value :constant-payload))
+      (= {:value-id (get operation :result) :operation-id id :block-id (get operation :block-id)}
+         (get (get (get mir :data-flow-graph) :definitions) (get operation :result)))
+      (= (get value :defined-by) (get (get (get mir :data-flow-graph) :definitions) (get operation :result)))
+      (= (get operation :result) (get value :value-id))])))
+
+(defn c13-equality-constant? [mir operation]
+  (if (c13-equality-facts-valid? mir operation)
+    (let [payload (get operation :constant-payload)]
+      (if (map? payload) (c13-equality-all?
+       [(= :constant (get operation :opcode)) (= :literal (get operation :source-operation))
+        (= :gravity/integer (get operation :type)) (= [] (get operation :operands))
+        (map? payload) (= #{:present? :value} (set (keys payload)))
+        (= true (get payload :present?)) (c13-equality-i64? (get payload :value))]) false)) false))
+
+(defn c13-equality-append [left right]
+  (loop [index 0 result right]
+    (if (= index (count left)) result (recur (+ index 1) (conj result (get left index))))))
+
+(defn c13-equality-bounded? [mir]
+  (if (map? (get mir :functions))
+    (if (= 1 (count (get mir :functions)))
+      (let [function (get (get mir :functions) (first (keys (get mir :functions)))) blocks (get function :blocks)
+            graph (get mir :data-flow-graph) values (get graph :values) edges (get graph :edges)]
+        (if (map? blocks)
+          (if (if (= 1 (count blocks)) true (= 4 (count blocks)))
+            (if (c13-equality-all? [(map? values) (map? (get graph :definitions))
+                                   (vector? edges) (vector? (get graph :terminator-uses))])
+              (if (c13-equality-all? [(<= (count values) 256) (<= (count (get graph :definitions)) 256)
+                                     (<= (count edges) 65536) (<= (count (get graph :terminator-uses)) 256)])
+                (let [block-ids (vec (keys blocks)) value-ids (vec (keys values))]
+                  (if (loop [index 0 total 0]
+                        (if (= index (count block-ids)) (if (> total 0) (<= total 256) false)
+                          (let [rows (get (get blocks (get block-ids index)) :instructions)]
+                            (if (vector? rows)
+                              (if (<= (+ total (count rows)) 256) (recur (+ index 1) (+ total (count rows))) false) false))))
+                    (loop [index 0 total 0]
+                      (if (= index (count value-ids)) true
+                        (let [uses (get (get values (get value-ids index)) :uses)]
+                          (if (vector? uses)
+                            (if (<= (+ total (count uses)) 65536) (recur (+ index 1) (+ total (count uses))) false) false)))) false)) false) false) false) false)) false) false))
+
+(defn c13-equality-operations [mir]
+  (let [function (get (get mir :functions) (first (keys (get mir :functions))))
+        blocks (get function :blocks) entry (get (get mir :control-flow-graph) :entry)
+        core (get mir :source-core)
+        order (if (contains? blocks (str core ":mir:join"))
+                [entry (str core ":mir:then") (str core ":mir:else") (str core ":mir:join")] [entry])]
+    (if (= (set order) (set (keys blocks)))
+      (loop [block-index 0 result []]
+        (if (= block-index (count order)) result
+          (let [rows (get (get blocks (get order block-index)) :instructions)]
+            (if (vector? rows)
+              (recur (+ block-index 1) (c13-equality-append rows result)) nil)))) nil)))
+
+(defn c13-equality-census [operations]
+  (loop [index 0 ids #{} results #{} candidates []]
+    (if (= index (count operations)) candidates
+      (let [operation (get operations index) id (get operation :op-id) result (get operation :result)]
+        (if (c13-equality-all? [(c13-equality-id? id) (c13-equality-id? result)
+                              (if (contains? ids id) false true) (if (contains? results result) false true)])
+          (recur (+ index 1) (conj ids id) (conj results result)
+                 (if (= :integer-eq (get operation :opcode)) (conj candidates operation) candidates)) nil)))))
+
+(defn c13-equality-occurrence [rows expected]
+  (if (vector? rows)
+    (loop [index 0 found []]
+      (if (= index (count rows)) (if (= 1 (count found)) (first found) nil)
+        (recur (+ index 1) (if (= expected (get rows index))
+                            (conj found {:index index :row expected}) found)))) nil))
+
+(defn c13-equality-consumer-rows [rows operation-id]
+  (if (vector? rows)
+    (loop [index 0 result []]
+      (if (= index (count rows)) result
+        (let [row (get rows index)]
+          (recur (+ index 1) (if (= operation-id (get row :consumer-id)) (conj result row) result))))) nil))
+
+(defn c13-equality-selected-at [mir function-id entry rows index operation]
+  (let [operands (get operation :operands)]
+    (if (c13-equality-all? [(c13-equality-facts-valid? mir operation)
+                           (= entry (get operation :block-id))
+                           (= :integer-eq (get operation :source-operation)) (= :gravity/bool (get operation :type))
+                           (= :not-applicable (get operation :constant-payload)) (vector? operands) (= 2 (count operands))])
+      (let [earlier (loop [offset 0 result {}]
+                      (if (= offset index) result
+                        (let [row (get rows offset)] (recur (+ offset 1) (assoc result (get row :result) row)))))
+            left (get earlier (get operands 0)) right (get earlier (get operands 1))
+            graph (get mir :data-flow-graph) edges (get graph :edges)
+            edge0 (c13-equality-occurrence edges (c13-equality-edge operation 0))
+            edge1 (c13-equality-occurrence edges (c13-equality-edge operation 1))
+            use0 (c13-equality-occurrence (get (get (get graph :values) (get operands 0)) :uses) (c13-equality-use operation 0))
+            use1 (c13-equality-occurrence (get (get (get graph :values) (get operands 1)) :uses) (c13-equality-use operation 1))]
+        (if (c13-equality-all? [(c13-equality-id? (get operands 0)) (c13-equality-id? (get operands 1))
+                               (c13-equality-constant? mir left) (c13-equality-constant? mir right)
+                               (= entry (get left :block-id)) (= entry (get right :block-id))
+                               (map? edge0) (map? edge1) (map? use0) (map? use1)
+                               (= [(c13-equality-edge operation 0) (c13-equality-edge operation 1)]
+                                  (c13-equality-consumer-rows edges (get operation :op-id)))
+                               (= (if (= (get operands 0) (get operands 1))
+                                    [(c13-equality-use operation 0) (c13-equality-use operation 1)] [(c13-equality-use operation 0)])
+                                  (c13-equality-consumer-rows (get (get (get graph :values) (get operands 0)) :uses) (get operation :op-id)))
+                               (= (if (= (get operands 0) (get operands 1))
+                                    [(c13-equality-use operation 0) (c13-equality-use operation 1)] [(c13-equality-use operation 1)])
+                                  (c13-equality-consumer-rows (get (get (get graph :values) (get operands 1)) :uses) (get operation :op-id)))])
+          {:function-id function-id :block-id entry :index index :operation operation
+           :value (= (get (get left :constant-payload) :value) (get (get right :constant-payload) :value))
+           :delta {:kind :gravity/c13-integer-equality-delta :version 1 :operation-id (get operation :op-id)
+                   :operand-ids operands :edges [{:index (get edge0 :index) :edge (get edge0 :row)}
+                                                {:index (get edge1 :index) :edge (get edge1 :row)}]
+                   :uses [{:value-id (get operands 0) :index (get use0 :index) :use (get use0 :row)}
+                          {:value-id (get operands 1) :index (get use1 :index) :use (get use1 :row)}]}} nil)) nil)))
+
+(defn c13-equality-selection-bounded [mir]
+  (if (map? (get mir :functions))
+    (if (= 1 (count (get mir :functions)))
+      (let [function-id (first (keys (get mir :functions))) function (get (get mir :functions) function-id)
+            entry (get (get mir :control-flow-graph) :entry) rows (get (get (get function :blocks) entry) :instructions)]
+        (if (c13-equality-all? [(= :hosted (get mir :profile)) (= :llvm-x86_64-linux (get mir :target-request))
+                               (= true (get mir :target-independent?)) (= {} (get mir :globals))
+                               (= {} (get mir :domain-anchors)) (= {} (get mir :runtime-check-table))
+                               (= [] (get function :params)) (= #{} (get function :latent-effects))
+                               (= #{} (get function :capabilities)) (vector? rows)])
+          (let [operations (c13-equality-operations mir)]
+            (if (vector? operations)
+              (if (c13-equality-all? [(> (count operations) 0) (<= (count operations) 256)])
+                (let [candidates (c13-equality-census operations)]
+                  (if (= 1 (count candidates))
+                    (loop [index 0]
+                      (if (= index (count rows)) nil
+                        (if (= (get rows index) (first candidates))
+                          (c13-equality-selected-at mir function-id entry rows index (first candidates))
+                          (recur (+ index 1))))) nil)) nil) nil)) nil)) nil) nil))
+
+(defn c13-equality-selection [mir]
+  (if (c13-equality-bounded? mir) (c13-equality-selection-bounded mir) nil))
+
+(defn c13-equality-remove-indices [rows indices]
+  (loop [index 0 result []]
+    (if (= index (count rows)) result
+      (recur (+ index 1) (if (contains? indices index) result (conj result (get rows index)))))))
+
+(defn c13-equality-rewrite [mir selected]
+  (let [operation (get selected :operation) payload {:present? true :value (get selected :value)}
+        function-id (get selected :function-id) block-id (get selected :block-id)
+        function (get (get mir :functions) function-id) blocks (get function :blocks) block (get blocks block-id)
+        rewritten (assoc (assoc (assoc operation :opcode :constant) :operands []) :constant-payload payload)
+        functions (assoc (get mir :functions) function-id
+                         (assoc function :blocks (assoc blocks block-id
+                                                       (assoc block :instructions (assoc (get block :instructions) (get selected :index) rewritten)))))
+        graph (get mir :data-flow-graph) values (get graph :values) result-id (get operation :result)
+        delta (get selected :delta) edges (get delta :edges) uses (get delta :uses)
+        with-payload (assoc values result-id (assoc (get values result-id) :constant-payload payload))
+        with-uses (loop [index 0 result with-payload]
+                    (if (= index 2) result
+                      (let [id (get (get uses index) :value-id)
+                            indices (if (= (get (get uses 0) :value-id) (get (get uses 1) :value-id))
+                                      #{(get (get uses 0) :index) (get (get uses 1) :index)}
+                                      #{(get (get uses index) :index)})]
+                        (recur (if (= (get (get uses 0) :value-id) (get (get uses 1) :value-id)) 2 (+ index 1))
+                               (assoc result id (assoc (get values id) :uses
+                                                       (c13-equality-remove-indices (get (get values id) :uses) indices)))))))]
+    (assoc (assoc mir :functions functions) :data-flow-graph
+           (assoc (assoc graph :values with-uses) :edges
+                  (c13-equality-remove-indices (get graph :edges) #{(get (get edges 0) :index) (get (get edges 1) :index)})))))
+
+(defn c13-equality-translated-record [mir evidence base selected]
+  (let [pass :c13-bounded-integer-equality-fold output-id (get evidence :output-mir-id)
+        decision (get base :decision-record) contract (get base :pass-contract) ledger (get base :invalidation-ledger)
+        semantic (get base :semantic-identity)]
+    (assoc (assoc (assoc (assoc (assoc (assoc (assoc base
+       :artifact :gravity/c13-bounded-equality-fold-optimized-mir)
+       :optimized-mir (c13-equality-rewrite mir selected))
+       :pass-contract (assoc (assoc (assoc (assoc (assoc contract :pass-id pass) :family :constant-fold)
+                                    :invalidates [:data-flow-cache :use-def-facts]) :regenerates [:use-def-facts])
+                             :proof-obligations [:bounded-i64-equality-reconstruction]))
+       :decision-record (assoc (assoc (assoc (assoc (assoc (assoc (assoc decision :pass-id pass) :output-mir output-id)
+                                                          :decision :fold-integer-equality) :changed? true)
+                                            :changed-operations [(get (get selected :operation) :op-id)])
+                                     :reason :bounded-i64-literal-equality) :invalidated [:data-flow-cache :use-def-facts]))
+       :invalidation-ledger (assoc (assoc (assoc (assoc (assoc (assoc ledger :pass-id pass) :output-mir output-id)
+                                                          :analysis-invalidated [:data-flow-cache]) :facts-invalidated [:use-def-facts])
+                                            :facts-regenerated [:use-def-facts]) :caches-cleared [:analysis-cache]))
+       :verifier-replay {:artifact :gravity/c13-equality-fold-translation-replay :required? true
+                         :method :bounded-i64-equality-reconstruction :delta (get selected :delta)
+                         :c11-artifact-id (get evidence :c11-artifact-id) :verifier-report-id (get evidence :verifier-report-id)
+                         :c11-mir-id (get evidence :c11-mir-id) :output-mir-id output-id :result :passed})
+       :semantic-identity (assoc (assoc semantic :c11-output-mir-id output-id) :unchanged? false))))
+
+(defn c13-build-bounded-identity-optimized-mir [mir evidence]
+  (let [original-evidence (if (map? evidence) (c13-equality-without-output-id evidence) evidence)
+        base (c13-build-bounded-identity-record mir original-evidence)]
+    (if (= :accepted (get base :status))
+      (let [selected (c13-equality-selection mir)]
+        (if (= selected nil)
+          (if (contains? evidence :output-mir-id) (c13-build-bounded-identity-record mir evidence) base)
+          (if (c13-sha256-id? (get evidence :output-mir-id))
+            (c13-equality-translated-record mir evidence base selected)
+            {:artifact :gravity/c13-bounded-identity-optimized-mir :schema-version 1 :status :rejected
+             :diagnostic "C13-VERIFY" :missing-fact :fresh-c11-verifier-and-fact-closure :diagnostics ["C13-VERIFY"]}))) base)))
 
 ; SH-16 bounded executable optimization leaf. Authenticated SH-15 input and
 ; complete C11 MIR adaptation remain pending. This engine accepts normalized,
@@ -1771,7 +2016,9 @@
                 (if (> right 0)
                   (<= left (- 9223372036854775807 right))
                   (if (< right 0)
-                    (>= left (- -9223372036854775808 right))
+                    (if (= right -9223372036854775808)
+                      (>= left 0)
+                      (>= left (- -9223372036854775808 right)))
                     true))
                 false)
               false))
@@ -1779,6 +2026,96 @@
         false)
       false)
     false))
+
+(defn sh16-result-definition-counts [operations index counts]
+  (if (= index (count operations))
+    counts
+    (let [result-id (get (get operations index) :result)
+          previous (if (contains? counts result-id) (get counts result-id) 0)]
+      (sh16-result-definition-counts
+       operations (+ index 1) (assoc counts result-id (+ previous 1))))))
+
+(defn sh16-propagation-pure? [operation]
+  (if (= #{} (get operation :effects))
+    (if (= :proven-safe (get operation :safety-outcome))
+      (if (= true (get operation :dead)) false true)
+      false)
+    false))
+
+(defn sh16-prefix-i64-constant? [operation]
+  (if (= :i64 (get operation :type))
+    (if (= 1 (count (get operation :operands)))
+      (sh16-i64? (get (get operation :operands) 0))
+      false)
+    false))
+
+(defn sh16-propagated-add-candidate [operation producers]
+  (if (sh16-propagation-pure? operation)
+    (if (= :add (get operation :opcode))
+      (if (= :integer-exact (get operation :numeric-mode))
+        (if (= false (get operation :constant-operands))
+          (if (= 2 (count (get operation :operands)))
+            (let [left-id (get (get operation :operands) 0)
+                  right-id (get (get operation :operands) 1)
+                  left-reference
+                  (if (sh16-canonical-identifier? left-id)
+                    (contains? producers left-id)
+                    false)
+                  right-reference
+                  (if (sh16-canonical-identifier? right-id)
+                    (contains? producers right-id)
+                    false)]
+              (if (if left-reference true right-reference)
+                (if (if left-reference true (sh16-i64? left-id))
+                  (if (if right-reference true (sh16-i64? right-id))
+                    (let [candidate
+                          (assoc
+                           (assoc operation :constant-operands true)
+                           :operands
+                           [(if left-reference (get producers left-id) left-id)
+                            (if right-reference (get producers right-id) right-id)])]
+                      (if (sh16-foldable-add? candidate) candidate nil))
+                    nil)
+                  nil)
+                nil))
+            nil)
+          nil)
+        nil)
+      nil)
+    nil))
+
+(defn sh16-propagate-prefix-add-from [operations counts index producers]
+  (if (= index (count operations))
+    operations
+    (let [operation (get operations index)
+          result-id (get operation :result)]
+      (if (= :const (get operation :opcode))
+        (if (sh16-propagation-pure? operation)
+          (sh16-propagate-prefix-add-from
+           operations counts (+ index 1)
+           (if (= 1 (get counts result-id))
+             (if (sh16-prefix-i64-constant? operation)
+               (assoc producers result-id (get (get operation :operands) 0))
+               producers)
+             producers))
+          operations)
+        (if (= :compute (get operation :opcode))
+          (if (sh16-propagation-pure? operation)
+            (sh16-propagate-prefix-add-from operations counts (+ index 1) {})
+            operations)
+          (let [candidate (sh16-propagated-add-candidate operation producers)]
+            (if (= nil candidate)
+              operations
+              (sh16-propagate-prefix-add-from
+               (assoc operations index candidate) counts (+ index 1)
+               (assoc producers result-id
+                      (get (get (sh16-transform-operation candidate) :operands) 0))))))))))
+
+(defn sh16-propagate-prefix-add [operations]
+  (let [counts (sh16-result-definition-counts operations 0 {})]
+    (if (= (count counts) (count operations))
+      (sh16-propagate-prefix-add-from operations counts 0 {})
+      operations)))
 
 (defn sh16-simplifiable-branch? [operation]
   (if (= :branch-if (get operation :opcode))
@@ -1985,6 +2322,128 @@
 (defn sh16-operation-id-selected? [operation selected]
   (contains? (set selected) (get operation :op-id)))
 
+(defn sh16-operation-uses-from [operands index used]
+  (if (= index (count operands))
+    used
+    (sh16-operation-uses-from
+     operands (+ index 1) (conj used (get operands index)))))
+
+(defn sh16-current-result-uses [operations index used]
+  (if (= index (count operations))
+    used
+    (sh16-current-result-uses
+     operations (+ index 1)
+     (sh16-operation-uses-from
+      (get (get operations index) :operands) 0 used))))
+
+(defn sh16-fresh-fold-producers [operations selected index producers]
+  (if (= index (count operations))
+    producers
+    (let [operation (get operations index)]
+      (sh16-fresh-fold-producers
+       operations selected (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (if (sh16-propagation-pure? operation)
+           (assoc producers (get operation :op-id)
+                  (sh16-transform-operation operation))
+           producers)
+         producers)))))
+
+(defn sh16-original-fold-reference-ids [operations selected index references]
+  (if (= index (count operations))
+    references
+    (let [operation (get operations index)
+          operands (get operation :operands)]
+      (sh16-original-fold-reference-ids
+       operations selected (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (if (= :add (get operation :opcode))
+           (if (= false (get operation :constant-operands))
+             (if (sh16-propagation-pure? operation)
+               (if (= 2 (count operands))
+                 (let [left (get operands 0) right (get operands 1)
+                       with-left
+                       (if (sh16-canonical-identifier? left)
+                         (conj references left)
+                         references)]
+                   (if (sh16-canonical-identifier? right)
+                     (conj with-left right)
+                     with-left))
+                 references)
+               references)
+             references)
+           references)
+         references)))))
+
+(defn sh16-fold-consumed-original-constants
+  [operations references index producers]
+  (if (= index (count operations))
+    producers
+    (let [operation (get operations index)
+          result-id (get operation :result)]
+      (sh16-fold-consumed-original-constants
+       operations references (+ index 1)
+       (if (= :const (get operation :opcode))
+         (if (sh16-propagation-pure? operation)
+           (if (sh16-prefix-i64-constant? operation)
+             (if (sh16-canonical-identifier? result-id)
+               (if (contains? references result-id)
+                 (assoc producers (get operation :op-id) operation)
+                 producers)
+               producers)
+             producers)
+           producers)
+         producers)))))
+
+(defn sh16-local-dead-fold? [operation producers used]
+  (if (= :const (get operation :opcode))
+    (if (sh16-propagation-pure? operation)
+      (if (sh16-prefix-i64-constant? operation)
+        (if (contains? producers (get operation :op-id))
+          (if (= operation (get producers (get operation :op-id)))
+            (if (contains? used (get operation :result)) false true)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh16-include-local-dead-folds-from
+  [operations selected producers used index result]
+  (if (= index (count operations))
+    result
+    (let [operation (get operations index)]
+      (sh16-include-local-dead-folds-from
+       operations selected producers used (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (conj result (get operation :op-id))
+         (if (sh16-local-dead-fold? operation producers used)
+           (conj result (get operation :op-id))
+           result))))))
+
+(defn sh16-include-local-dead-folds [request operations selected]
+  (let [original (get request :operations)
+        original-counts (sh16-result-definition-counts original 0 {})
+        current-counts (sh16-result-definition-counts operations 0 {})]
+    (if (= (count original-counts) (count original))
+      (if (= (count current-counts) (count operations))
+        (let [fold-input (sh16-propagate-prefix-add original)
+              fold-selected
+              (sh16-state-changed-operation-ids
+               :constant-fold fold-input [] 0 [])
+              folded-producers
+              (sh16-fresh-fold-producers fold-input fold-selected 0 {})
+              references
+              (sh16-original-fold-reference-ids original fold-selected 0 #{})
+              producers
+              (sh16-fold-consumed-original-constants
+               original references 0 folded-producers)
+              used (sh16-current-result-uses operations 0 #{})]
+          (sh16-include-local-dead-folds-from
+           operations selected producers used 0 []))
+        selected)
+      selected)))
+
 (defn sh16-apply-pass-from
   [family operations selected invalidated index result]
   (if (= index (count operations))
@@ -2046,7 +2505,9 @@
       (sh16-dead-proof-ids-for-selected
        operations selected (+ index 1)
        (if (sh16-operation-id-selected? operation selected)
-         (conj result (get (get operation :dead-proof) :proof-id))
+         (if (= true (get operation :dead))
+           (conj result (get (get operation :dead-proof) :proof-id))
+           result)
          result)))))
 
 (defn sh16-decision-proof-ids [decisions index result]
@@ -2148,14 +2609,21 @@
      :rejected)})
 
 (defn sh16-run-pass [request state family]
-  (let [operations (get state :operations)
+  (let [operations
+        (if (= family :constant-fold)
+          (sh16-propagate-prefix-add (get state :operations))
+          (get state :operations))
         invalidated
         (sh16-append-unique
          (get state :invalidated-analysis)
          (get state :invalidated-facts))
-        changed
+        selected
         (sh16-state-changed-operation-ids
          family operations invalidated 0 [])
+        changed
+        (if (= family :dead-code-eliminate)
+          (sh16-include-local-dead-folds request operations selected)
+          selected)
         next-operations
         (sh16-apply-pass family operations changed invalidated)
         proof-ids

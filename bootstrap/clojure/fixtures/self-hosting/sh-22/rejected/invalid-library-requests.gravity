@@ -4,8 +4,11 @@
   (:exports [sh22-malformed-request
              sh22-out-of-bounds-request
              sh22-oversized-collection-request
+             sh22-full-vector-append-request
              sh22-invalid-utf8-request
              sh22-overflow-request
+             sh22-sub-overflow-request
+             sh22-mul-overflow-request
              sh22-missing-capability-request
              sh22-missing-encoding-request
              sh22-invalid-artifact-request
@@ -18,6 +21,9 @@
              sh22-allocation-policy-mismatch-request
              sh22-duplicate-map-key-request
              sh22-duplicate-set-value-request
+             sh22-duplicate-keyword-after-hit-request
+             sh22-duplicate-symbol-after-hit-request
+             sh22-duplicate-keyword-equality-request
              sh22-spoofed-utf8-request
              sh22-nested-physical-path-request])
   (:effects #{})
@@ -38,6 +44,9 @@
 (defn sh22-oversized-collection-request [request]
   (assoc request :arguments [(sh22-repeat-value 0 257 []) 0 1]))
 
+(defn sh22-full-vector-append-request [request]
+  (assoc request :arguments [(sh22-repeat-value 0 256 []) 1]))
+
 (defn sh22-invalid-utf8-request [request]
   (assoc
    (assoc
@@ -56,6 +65,16 @@
 
 (defn sh22-missing-capability-request [request]
   (assoc request :capabilities #{}))
+
+(defn sh22-sub-overflow-request [request]
+  (assoc
+   (assoc request :operation :checked-sub-i64)
+   :arguments [-9223372036854775808 1]))
+
+(defn sh22-mul-overflow-request [request]
+  (assoc
+   (assoc request :operation :checked-mul-i64)
+   :arguments [-9223372036854775808 -1]))
 
 (defn sh22-missing-encoding-request [request]
   (assoc request :arguments [:compiler/source-unit nil 1024]))
@@ -121,6 +140,21 @@
      :byte-count 2
      :scalar-count 1
      :encoding :utf-8}]))
+
+(defn sh22-duplicate-keyword-equality-request [request]
+  (assoc request :arguments
+         [{:artifact :gravity/ordered-set :values [:reader :syntax]}
+          {:artifact :gravity/ordered-set :values [:reader :syntax :reader]}]))
+
+(defn sh22-duplicate-symbol-after-hit-request [request]
+  (assoc request :arguments
+         [{:artifact :gravity/ordered-set
+           :values ['reader 'compiler/compile 'reader]} 'reader]))
+
+(defn sh22-duplicate-keyword-after-hit-request [request]
+  (assoc request :arguments
+         [{:artifact :gravity/ordered-set :values [:reader :syntax :reader]}
+          :reader]))
 
 (defn sh22-nested-physical-path-request [request]
   (assoc

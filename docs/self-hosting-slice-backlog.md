@@ -8422,6 +8422,187 @@ revision in `55b7dca9`, not to a replay of the revised harness. There is no
 measured speedup, new semantic feature or migration claim. The direct commands
 and distinctions are in `docs/development-verification.md`.
 
+### Checked i64 subtraction in the experimental bootstrap library
+
+The existing SH-22 Gravity library now executes binary `:checked-sub-i64` under
+STD1/STD5/D8. Both operands must be integers in i64 range; pre-operation guards
+reject overflow. For negative right operands, the accepted result is computed
+through result-minus-one followed by one, avoiding the seed builtin's internal
+negation of MIN. This covers MIN-MIN=0, -1-MIN=MAX and MIN-(-1)=MIN+1 without
+changing the runtime interface. `STD5001` retains type/range/overflow failures
+and `STD1001` retains wrong arity. The owner-local closed operation set and
+manifest grow to 14 operations; experimental opt-in, `:meta`, pure/no-capability
+and `:none` allocation policy remain explicit. Request/result schema and the
+four exported entrypoints are unchanged.
+
+The initial arithmetic RED ran one test/592 assertions with 428 failures. The
+first GREEN ran two tests/75 assertions with one seed subtraction-overflow error;
+later selected vars were unrun. The corrected focused batch passed eight
+tests/864 assertions, including all 604 subtraction assertions and existing
+addition, paired fixture, policy, rejection and verifier checks at 512 MiB.
+Earlier partial/failing counts are not extra coverage. The language boundary
+passed six tests/11 assertions and the Clojure LOC gate passed.
+
+No compiler client linkage, native/provider execution, complete library closure,
+authoritative migration or SH-22 completion follows. Historical SH07 source and
+digest pins remain unchanged; their evidence does not authenticate this changed
+library revision and must be renewed only for an actual admission decision.
+
+### Checked i64 multiplication in the experimental bootstrap library
+
+The same SH-22 Gravity leaf now executes binary `:checked-mul-i64` under
+STD1/STD5/SAFE9/D8. Integer family/range checks precede zero handling and four
+sign-quadrant quotient thresholds; divisors are nonzero and MIN/-1 is never
+formed. Actual multiplication occurs only after the guard. The paired cases
+exercise seed quotient behavior in both operand orders, MIN*0/MIN*1/MIN*-1,
+MAX*1/MAX*2, signed endpoints and the exact square-overflow boundary. Existing
+`:checked-i64`, `STD5001` type/range/overflow and `STD1001` arity behavior remain;
+the owner-local operation set/manifest grows to 15 with experimental opt-in,
+`:meta`, no effects/capabilities and `:none` allocation. The request/result
+envelope and four exported entrypoints are unchanged.
+
+The initial RED ran one test/1000 assertions with 766 failures and no errors.
+The corrected first GREEN passed nine tests/1872 assertions at 512 MiB,
+including all 1000 multiplication assertions and existing addition/subtraction,
+paired fixture, policy, rejection and fresh result-verifier checks. The RED is
+not extra coverage. Language-boundary checks passed six tests/11 assertions;
+the Clojure LOC gate passed. No compiler client linkage, native/provider
+execution, complete SH-22 API closure, authoritative migration or milestone
+completion follows. Historical SH07 source/digest pins remain unchanged and
+their evidence does not authenticate this changed source revision.
+
+### Keyword membership in bounded ordered Sets
+
+The SH-22 leaf now executes `:ordered-set-contains-keyword` under STD2/STD3.
+The query accepts the existing ordered-set carrier with at most 256 actual
+Keyword members and a Keyword needle. Bounds and the complete family check dominate member
+equality; complete uniqueness validation dominates a query hit, including a
+duplicate after a matching prefix. Membership uses qualified Keyword value
+equality, is insertion-order independent and preserves the original value.
+`STD3001`, `STD10003` and `STD1001` retain bound, malformed/duplicate/family
+and arity failures. The experimental opt-in `:meta` operation surface grows to
+16; effects/capabilities remain empty and collection-value allocation is `:none`.
+The four exports and request/result envelope are unchanged. Metadata overhead
+does not establish native allocation-free execution.
+
+An initial reader error executed no tests. Semantic RED then ran one test/248
+assertions with 150 failures. First GREEN ran four tests/293 assertions with
+eight failures from incorrect common-carrier expectations; four later selected
+vars were unrun. Only those test expectations changed: opaque arguments reach
+the family check and reject before uniqueness/search without payload invocation;
+origin validation rejects separately. This is not universal opaque rejection or
+host-printing-callback safety. Corrected GREEN passed eight tests/508 assertions
+at 512 MiB, including all 248 membership assertions and existing collection,
+fixture, policy, rejection and fresh verifier checks. Partial/failing counts
+are not extra coverage. Boundary checks passed six tests/11 assertions and LOC
+passed. General Sets, mixed/non-Keyword families, host-provider interop,
+compiler linkage, native execution, complete SH-22 and migration remain open.
+Historical SH07 pins are unchanged and do not authenticate this source revision.
+
+### Bounded persistent Vector append and real consumers
+
+The SH-22 leaf now executes binary `:vector-append` under STD3's clarified
+persistent Vector law. It preserves the original ordered prefix and appends one
+inert heterogeneous value. Input length 255 produces 256; full 256 and oversized
+257 inputs reject before the constructor (`STD3001`). Non-Vector family and
+arity retain `STD3002` and `STD1001`; allocation/authority policies remain
+explicit. The experimental opt-in `:meta` surface grows to 17 operations, with
+`:memory/allocate`, no capabilities and `:bounded-by-result`, including empty
+input. The four exports and request/result envelope are unchanged.
+
+The focused check runs real append-to-nth and append-to-assoc calls, recomputes
+all results, preserves inputs and rejects value/fact/identity substitutions.
+Original-delegating observations check one constructor entry after admission
+and zero for rejected requests. The new dispatch and allocation discriminators
+use exact keyword comparisons; nil retains the existing allocation-policy
+rejection before append. The older general `sh22-member?` nil weakness remains
+outside this correction.
+
+Initial semantic RED completed 1/270 with 110 pass, 160 fail and no errors.
+The first 8/538 GREEN is historical passing-but-incomplete coverage. Test-only
+nil RED then stopped at 63 total assertions: 62 pass, zero fail and one host
+stack error; later assertions in its sole selected var were unrun. A successor
+using unsupported hosted-core `or` stopped at one total error assertion with
+zero pass/fail and seven selected vars unrun. The supported nested-`if`
+successor passed the complete 8/546 batch, including all 278 append assertions,
+at 512 MiB. Boundary checks passed 6/11; LOC and both docs validators passed.
+These epochs are not summed. The normal main join changed only disjoint
+C13/SH16 code/tests and notes; executed SH-22 inputs remained byte-identical.
+
+No variadic/coercing operation, physical sharing, unbounded-profile or new
+static type/cardinality authority, host-callback safety, native allocation,
+compiler linkage, complete SH-22, migration or self-hosting claim follows.
+Historical SH07 source/digest pins remain unchanged and do not authenticate
+this revised library source; renewal belongs to a later admission decision.
+
+### Symbol membership after bounded ordered-Set insertion
+
+The SH-22 leaf executes `:ordered-set-contains-symbol` under STD2/STD3 using
+the existing ordered carrier with at most 256 actual Symbols and a Symbol
+needle. Bound checks precede the complete family census; member/needle checks
+precede equality and full uniqueness validation precedes a hit. Qualified
+Symbol value equality is insertion-order independent, preserves the input and
+does not invoke payloads or grant authority from spelling. Bound, malformed/
+duplicate/family and arity failures retain `STD3001`, `STD10003` and `STD1001`.
+The owner-local experimental opt-in `:meta` surface grows to 18 operations;
+effects/capabilities are empty and collection-value allocation is `:none`.
+The four exports and request/result envelope are unchanged. Exact new routing
+does not add a nil acceptance or repair the older general membership helper.
+
+At executed candidate `f399090274e013526566106b9e8fe63a2be17584`, the focused
+batch passed 10 tests/1106 assertions at 512 MiB, including all 304 Symbol
+assertions, existing Keyword membership/Vector append, paired fixtures, policy,
+rejections and fresh verification. Real existing Set insertion outputs feed
+the query for empty, absent and equal-present Symbol cases; both producer and
+consumer results are recomputed. Qualified independently constructed values,
+256/257 bounds, duplicate-after-hit, wrong families/needle, opaque payload,
+nil-operation, authority and forged results are covered. RED remains a separate
+1/304 epoch with 116 pass, 188 fail and no errors, not added coverage. Boundary
+checks passed 6/11 and LOC passed; the final two notes do not alter executed
+code/test/fixture or runtime/emitter dependencies from main `616c8039`.
+
+No general Set/mixed-family support, host-provider or host-callback safety,
+native allocation/execution, compiler client linkage, complete library closure,
+migration, SH-22 completion or self-hosting follows. Historical SH07 source/
+digest pins remain unchanged and do not authenticate the revised library source.
+
+### Bounded Keyword Set value equality
+
+The SH-22 leaf executes `:ordered-set-equal-keyword` under the existing STD2/
+STD3 value-equality law. Both existing ordered carriers are bounded to 256
+actual Keywords. Both bounds precede the complete member-family censuses;
+both domains precede member equality and both uniqueness checks precede any
+count/membership result, including count mismatch or an apparent first match.
+Under those established premises, equal counts and left-member inclusion
+establish unordered Set equality. Empty Sets compare equal; both inputs and
+inert payloads are preserved. `STD3001`, `STD10003` and `STD1001` retain bound,
+malformed/duplicate/family and arity failures. The owner-local experimental
+opt-in `:meta` surface grows to 19 operations with no effects/capabilities and
+`:none` collection-value allocation; the four exports and envelope are unchanged.
+
+Executed candidate `42ba1831412b06e97c045859268a84be80de2de9` passed the complete
+11-test/1436-assertion focused batch at 512 MiB, including all 322 new equality
+assertions, both membership queries, Vector append, fixtures, rejection and
+fresh verifier controls. Real existing Set insertion outputs feed equality;
+producer and consumer are recomputed. Empty/reordered/equal/different Sets,
+qualified values, 256/257 on both sides, duplicate-after-match/count mismatch,
+wrong families, nil/opaque inputs, arity/authority and forgery are covered.
+Prior-production RED remains separate: 1/322, 150 pass, 172 fail, no errors.
+Boundary passed 6/11 and LOC passed. The normal main `1b50ced9` join changed
+only disjoint C13/SH16 code/tests and notes; executed SH-22 and runtime/emitter
+dependency bytes remained unchanged. No general equality, native allocation/
+execution, host-callback safety, linkage, migration or completion follows.
+Historical SH07 pins remain unchanged and do not authenticate this source.
+
+String membership is a distinct blocked dependency, not a completed operation.
+L1 requires Unicode-scalar Strings; STD4 family classification supplies no
+validation fact. SH-22 carrier counting and ordinary host equality can admit a
+lone UTF16 surrogate. Existing strict UTF-8 primitives have fixed direct callers
+and prohibit public runtime use, outside this six-path ownership. A checked
+String ingress primitive or independently established validated carrier needs
+its owning interface decision; neither host-String semantics nor new authority
+was introduced here.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
@@ -9284,6 +9465,209 @@ diagnostic priorities, source/origin retention and substituted results. These
 are supplied normalized proof DATA, not CFG/unreachability proof, provider
 verification, fresh authenticated C11/source input, native execution or
 migration evidence.
+
+The next C13 executable increment propagates two distinct, independently typed
+i64 constants into one ADD. The candidate must be the first non-const operation
+after a pure, proven-safe, nondead const prefix; it must itself be pure,
+proven-safe, nondead, explicitly i64/integer-exact with `:constant-operands false`
+and reference two actual earlier one-payload producers. Result IDs are unique
+across the whole admitted input. Fresh invocation-local counts and a bounded
+prefix walk derive the
+literal operands for the existing overflow-checked fold; no supplied flag is
+accepted as producer authority. The original input references/flag and source,
+origin and result identity survive in the appropriate records, while the
+existing decision and invalidation ledger record the ADD transformation.
+Unknown, forward, duplicate-result, wrong-type, unsafe, effectful, nonconstant,
+overflowing or control-dependent joins do not authorize propagation. Existing
+ingress rejection and unrelated immediate folds remain unchanged. The input
+limit is still 128 operations; no schema, public API, pass or budget is added.
+
+The `567f91da` RED run retained 192 passes and 32 failures in 224 assertions,
+without errors. Earlier `4421b204` passed 18/2,010; it remains a distinct result,
+not added to final counts. The final `33c4a840` closes whole-input result-ID
+uniqueness and passes 18 tests/2,018 assertions (240 new plus 1,778 controls).
+Boundary checks separately pass six tests/11 assertions: 24/2,029 across two
+passing invocations. LOC separately passes 2,021 files, zero exceptions,
+maximum 250. The successor also adds same-producer/duplicate-result controls
+and corrects a dead-ADD control's return reference, without claiming another
+RED run. These are original G/Q constructors and public optimization/fresh
+recomputation over supplied normalized DATA, not proof-provider verification,
+fresh authenticated C11/source input, general CFG/SSA propagation, native
+execution or migration evidence.
+
+The next C13 executable increment continues the same bounded forward scan
+through named ADD intermediates. Each qualifying reference-bearing ADD passes
+the existing i64 overflow rule before its checked value is retained under its
+original globally unique result ID for later ADDs. Producer admission remains
+pure/proven-safe/nondead, i64/integer-exact and two distinct earlier IDs. New
+propagation stops at a missing, forward, ambiguous, wrong-type, overflowing,
+effectful, unsafe, dead, nonconstant or control barrier, preserving successful
+prefix folds without folding an otherwise resolvable suffix. Existing
+immediate-literal ADD folds remain unchanged and are not automatically new
+chain producers. Original input references/flags, source/origin/result identity,
+deterministic decisions, invalidation and fresh recomputation are preserved.
+The unchanged 128-operation input limit bounds preparation to 128 count rows
+and 128 forward rows; this is not a fixed point or a CPU-time guarantee.
+
+The `4389fabd` RED run retained 174 passes and 12 failures in 186 assertions,
+without errors. Candidate `cb6a70f5` passed 19 tests/2,204 assertions
+(186 new plus 2,018 controls), including two- and six-ADD chains and later
+barrier/suffix controls. Boundary checks separately passed six tests/11
+assertions: 25/2,215 across two passing invocations. LOC separately passed
+2,021 files, zero exceptions, maximum 250. Original G/Q constructors and public
+optimization/recomputation exercise supplied normalized DATA, not general
+CFG/SSA propagation, provider verification, fresh authenticated C11/source
+input, native execution or migration evidence. No pass, schema, public API or
+budget is added.
+
+The next C13 executable increment removes unused intermediate results created
+by fresh ADD folding in the existing DCE pass. It reconstructs the fold
+selection from the original request, requires exact current-operation equality
+to the pure/proven-safe bounded-i64 producer output, unique result IDs across
+both original and current operations, and no uses in the complete current
+operand scan. Original prefix constants and used final results remain. This
+does not delete arbitrary constants, compute or control operations, introduce
+a fixed point, or accept a supplied decision as evidence. Explicit validated
+dead-proof selections retain their proof IDs; local deletions add no synthetic
+or nil proof ID. Existing ordered decision/replay records, runtime invalidation,
+original input/source identity and fresh verification remain unchanged for
+this normalized interface. Preparation has up to eight bounded operation
+traversals and 2,048 operand positions under unchanged 128/16 input limits,
+not a two-walk or linear-CPU/performance claim.
+
+The `efbf5013` RED run retained 120 passes and 18 failures in 138 assertions.
+The first GREEN attempt at `944005a6` failed namespace loading with no tests
+or timing receipt; its delimiter-only successor `31de853e` ran 13 tests with
+1,793 passes and two failures in 1,795 assertions, leaving seven selectors
+unrun. Both failures were mixed-proof fixture placement: a prepended dead
+compute correctly stopped propagation. Moving it after the ADD prefix and
+correcting deletion order produced `ee7bf63b`, which passed the changed
+selector plus seven unrun selectors: eight tests/767 assertions. Twelve
+unchanged selectors/1,621 assertions passed within the failed preceding run;
+these are retained individual results, not a second passing invocation.
+Together they cover 20 distinct selectors/2,388 assertions, including the
+174-assertion local-rule regression. Boundary checks separately pass 6/11;
+LOC separately passes 2,021 files, zero exceptions, maximum 250. Failed epochs
+remain separate. These are original G/Q constructors and public optimization
+and recomputation over supplied normalized DATA, not general CFG/SSA,
+proof-provider verification, fresh authenticated C11/source input, native
+execution or migration evidence. No schema, API, pass or input cap is added.
+
+The next C13 executable increment permits two operand occurrences to reference
+one independently established, globally unique i64 producer, including a
+folded intermediate. Both ordered lookups and the exact signed-i64 overflow
+rule remain; no multiplication rewrite, new producer authority or general
+SSA analysis is introduced. Missing, forward, ambiguous, wrong-type, impure,
+unsafe, dead and overflowing joins remain conservative. Original input
+references/flags, source/result identity, barriers, post-fold DCE, invalidation
+and fresh recomputation are preserved. Two old established-same-ID negatives
+are replaced by unestablished repeated-ID negatives; the selected new cases
+cover both producer families and representable positive/negative endpoints.
+
+The `16313202` RED run retained 236 passes and 38 failures in 274 assertions.
+The first GREEN run at `f3b7188d` completed 11 tests with 1,199 passes and one
+error in 1,200 assertions, leaving ten selectors unrun. The old overflow bound
+attempted hosted negation of MIN when the right operand was MIN. The owning
+predicate now uses the mathematically equivalent zero threshold for that case;
+other guards remain unchanged. Added immediate-ADD controls cover `[0, MIN]`
+and `[MAX, MIN]`, and refusal of negative-left plus MIN without a host error.
+Ordinary explicitly constant overflowing ingress still rejects with
+`C13-SAFETY`; nonconstant overflow remains unchanged without folding.
+
+Candidate `5932d3be` reran the affected arithmetic controls after the guard
+change and passed 21 tests/2,696 assertions (308 new plus 2,388 controls).
+Boundary checks separately passed 6/11: 27/2,707 across two passing invocations;
+LOC separately passed 2,021 files, zero exceptions, maximum 250. Failed epochs
+are retained separately without pass summing. The observations remain bound
+to `5932d3be`, with owned bytes unchanged after the disjoint SH22 main join.
+These original G/Q constructors and public optimization/recomputation use
+supplied normalized DATA, not fresh authenticated C11/source input, proof
+providers, native arithmetic, migration or performance evidence. No schema,
+API, pass or input bound is added.
+
+The next C13 executable increment propagates a mixed pair: exactly one actual
+established-reference join and one bounded i64 immediate, in either operand
+position. Prefix constants and folded intermediates can supply the reference;
+canonical ID kind checks precede lookup, and numeric atoms never borrow
+identifier meaning from a map key. Two immediates with a false constant flag
+stay unchanged. The existing two-reference/repeated-reference routes,
+whole-input unique definitions, pure/proven-safe/nondead frontier, barriers,
+signed overflow and MIN-right guard, source/result identity, post-fold DCE,
+invalidation and fresh verification remain intact. This is not general
+CFG/SSA propagation or a new opcode, type, API, schema, pass or input cap.
+
+The `58b732e0` RED run retained 564 passes and 96 failures in 660 assertions,
+without errors. Candidate `692ec6ca` passed 22 tests/3,356 assertions (660 new
+plus 2,696 controls), including both orders, prefix/folded producers, zero and
+signed endpoints, unsupported joins, explicit dead-proof behavior, original
+identity, recomputation and substitution rejection. Boundary checks separately
+passed 6/11: 28/3,367 across two passing invocations. LOC separately passed
+2,021 files, zero exceptions, maximum 250. RED results are not added to passing
+coverage. The observations retain their original `692ec6ca` execution binding;
+owned code/test bytes remain unchanged after the disjoint SH22 main join.
+Original G/Q constructors and public optimization/recomputation consume
+supplied normalized DATA, not fresh authenticated C6/C11/source inputs,
+proof-provider evidence, native arithmetic, migration or performance proof.
+
+The next C13 executable increment extends post-fold cleanup to original
+constants whose actual reference consumers freshly folded. Only canonical
+operand IDs from ORIGINAL selected pure, reference-bearing ADD rows establish
+that relationship; immediate payloads, numeric map keys, fabricated decisions
+and unrelated unused constants do not. Eligible original producers are nondead,
+pure/proven-safe, exact one-payload bounded-i64 consts, matched exactly against
+the current operations with globally unique original/current result IDs. The
+complete current-use scan retains every still-used producer, even when its
+user is deleted in this same DCE pass. One-pass operation order, explicit
+dead-proof usage, empty local external-proof IDs, conservative runtime
+invalidation, source/original request identity and fresh replay are preserved.
+This adds two bounded original-row scans and up to two operand-kind checks per
+selected ADD: preparation now has up to ten bounded operation traversals plus
+the current scan's at most 2,048 operand positions under unchanged 128/16 input
+limits. Existing independent replay is additional, not a speed or linear-CPU
+claim. No generic constant/control/compute deletion or fixed point is added.
+
+The `670ad03c` RED run retained 208 passes and 22 failures in 230 assertions,
+without errors. Earlier delimiter and canonical identity-oracle draft fixes
+were static and UNRUN, not failed test epochs. Candidate `b8fe7ee3` passed
+23 tests/3,586 assertions (230 new plus 3,356 affected controls), covering
+ref/ref, repeated, mixed and chain consumers, unrelated/live producers,
+malformed or ambiguous state, no actual fold, one-pass dead-user behavior,
+proof usage and fresh result rejection. Boundary checks separately passed
+6/11: 29/3,597 across two passing invocations; LOC separately passed 2,021
+files, zero exceptions, maximum 250. RED is retained separately. The actuals
+keep their original `b8fe7ee3` execution binding, with owned bytes unchanged
+after the disjoint SH22 main join. These are original G/Q constructors and
+public optimization/recomputation over supplied normalized DATA, not fresh
+authenticated C11/source inputs, provider, native, migration or performance
+evidence. No schema, opcode, pass, API or cap is added.
+
+The next C13 executable increment admits an independent constant/ADD segment
+after an actual pure, proven-safe, nondead `:compute`. The operation remains
+exactly unchanged, and the existing forward scan resumes with an EMPTY
+producer environment. No pre-compute fact or computed result supplies a new
+fold; subsequent constants and checked ADDs use the existing admission,
+overflow and global result-uniqueness rules. Effectful, unsafe or dead compute
+and all other barriers still stop propagation. Earlier successful folds,
+operation order, source/origin/result identity, original request references,
+ordered decisions, conservative invalidation, post-fold DCE and fresh replay
+are preserved. The old stop-at-all-compute frontier above records the earlier
+slice, not a foundational safety requirement. The existing 128 count rows plus
+128 forward rows remain bounded; DCE preparation and replay are additional,
+not a speed or linear-CPU claim. No API, schema, opcode, pass or cap is added.
+
+The first test attempt at `bbf33209` exited during namespace compilation with
+zero tests and no timing receipt; a test-only delimiter correction retained
+the fixture bindings. The actual RED at `3d5089a1` retained 262 passes and
+48 failures in 310 assertions, without errors. Executed `61dc1f40` passed
+24 tests/3,896 assertions (310 new plus 3,586 affected controls). Boundary
+checks separately passed 6/11: 30/3,907 across two passing invocations; LOC
+separately passed 2,021 files, zero exceptions, maximum 250. These observations
+retain the actual execution binding after the disjoint SH22 main join, with
+owned code/test and executed raw compiler/bootstrap/runtime dependencies
+unchanged, not a joined replay. Original G/Q constructors and public optimizer
+recomputation consume supplied normalized DATA, not fresh authenticated C11 or
+source input, proof-provider evidence, general CFG/SSA propagation, global CSE,
+native execution, migration or performance proof.
 
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
@@ -10340,6 +10724,116 @@ compiler-rule/host path, so these results retain their original candidate
 binding rather than claim a joined replay. These are original internal
 C/LLVM/Wasm eligibility gates and evaluator checks on supplied MIR DATA, not
 fresh C11/C13 authentication, native execution, migration or release evidence.
+
+### Closed C13-to-C14 integer equality: development increment
+
+The current Gravity C13 builder can translate one closed actual-MIR-shaped
+entry `:integer-eq` to a Bool constant when both ordered references independently
+join earlier pure/proven-safe bounded-i64 literal producers. Repeated operands
+retain two occurrences. Source operation, result identity, source/fact tables,
+CFG, original C11 report/pass/preflight ancestry and unrelated operations remain
+intact; unsupported cases retain the identity route. The derived constant is
+admitted only by the selected LLVM surface, not shared C/Wasm literal guards.
+The value payload and exactly two operand edges/producer uses are regenerated
+with explicit data-flow/use-def invalidation and a new translation replay.
+
+An independently derived four-row delta retains exact original edge/use
+positions without embedding another MIR, operation or source/fact table. The
+measured delta contains 127 carrier nodes including map entries. Its pure
+stage-owned host reconstruction component is 183 physical lines and has one
+explicit load-order entry. Full original inverse roundtrip and output
+rederivation are required; C14 independently restores and rederives the same
+closed translation. Original reports validate only restored input, never output
+through patched counts. The path-neutral output hash excludes its own record,
+evidence and seal. Existing 256-operation and carrier bounds remain; repeated
+bounded scans/copies/hashing have no speed or free-sharing claim.
+
+The test-only RED at `f6d39aa1` retained 33 passes and 27 failures in 60
+assertions. Kernel V1 exited during loading with zero tests/no EDN; V2 retained
+one error in one assertion from an unsupported raw core form. V3 at `482b22a2`
+retained 185 passes and 73 failures in 258 assertions: the host selector's
+misgrouped `when` returned nil. These separate failed attempts are not passing
+coverage. Corrected `d5c9e4ec` passed V4 1/332, SH16 32/4,210, direct SH17
+11/1,227, boundary 6/11 and existing load-order 1/4: 51 tests/5,784 assertions
+across five passing invocations. LOC separately passed 2,022 files, zero
+exceptions, maximum 250. The 332 checks include identity fallback, original
+versus output/restored-report controls, malformed ingress and translation
+source/fact/DFG/delta/result tampering.
+
+These are supplied DATA through current Gravity semantic kernels and fresh
+independent reconstruction, not a fresh compiler/source build, authenticated
+public C11/C13/C14 packet or native execution. Current public source/pin/packet
+boundaries remain unrun and unchanged; no milestone, admission, migration or
+proof-provider credit is established.
+
+### B3 folded comparison text emission: development increment
+
+The existing B3 builder now accepts the C13-derived Bool constant that retains
+`:source-operation :integer-eq`. Both existing source gates use one predicate:
+the derived case requires canonical Bool type, exact actual Bool payload and
+zero operands, with old envelope, purity, value-parity and error precedence
+unchanged. Literal/implicit-Nil and nonconstant paths are retained. Complete
+supplied original MIR goes through current C13 folding and independent C14
+restoration/rederivation; the SAME output then emits LLVM text `add i64 0, 0|1`
+without comparison/zext instructions. Original comparison and literal-prefix
+records remain unchanged, including repeated operands and signed endpoints.
+
+The first test attempt at `2831ca54` exited during namespace loading with zero
+tests/no EDN. A two-line fixture-scope correction retained all assertions;
+semantic RED `2e87d3e8` recorded 61 passes and 44 failures in 105 assertions,
+without errors. Candidate `2e169267` passed 2/449: 117 emission checks including
+12 added pending-host/input-lineage controls, plus the current 332 C13/C14
+checks. Boundary separately passed 6/11: 8/460 across two passing test
+invocations. LOC separately passed 2,022 files, zero exceptions, maximum 250.
+The short boundary and LOC processes may briefly have overlapped before the
+boundary terminal was polled; no strict serial trace or benchmark is claimed.
+
+B3 still consumes upstream-verified MIR rather than independently authenticating
+or reproving C13. The emitted record remains `:constructed-unverified` and
+`:pending-host-content-binding`; legacy C11 closure fields are input lineage
+and pending upstream obligations, not a fresh C11 proof of transformed output.
+These are development supplied-DATA/current semantic kernels and LLVM text,
+not public authenticated packets, pin renewal, LLVM tool verification, native
+execution, migration, admission or milestone completion.
+
+### Folded predicate to Integer diamond: affected composition coverage
+
+Test-only `6a56ef04` covers complete supplied four-block MIR through current
+C13 folding, independent C14 restoration/rederivation and the SAME output into
+the existing B3 builder. True/false, repeated and signed-endpoint comparisons
+select Integer arms 0, 7, 42 or 255. Exact branch/phi text, original/folded
+semantic parity, only two removed comparison operand edges, retained CFG,
+incoming values, source/type tables and terminator uses are checked. Mutants
+reject at the actual fold, target-surface, original-context or B3 owning layer.
+No production change or semantic repair was needed.
+
+The first attempt `f63c4e16` exited during reading with zero tests/no EDN, not a
+semantic RED. The corrected current invocation passed 1/120; boundary passed
+6/11 separately: 7/131 across two passing invocations. LOC separately passed
+2,022 files, zero exceptions, maximum 250. Prior 449 checks were not rerun or
+resummed. Constructed/unverified and pending-host obligations remain unchanged;
+there is no fresh source/public packet, LLVM tool/native execution, admission,
+milestone or migration claim.
+
+### B1 LLVM optimization-status compatibility: development repair
+
+B1's LLVM input accepts the closed `:identity-pass-complete` and
+`:constant-fold-pass-complete` enum, with exact nested/outer status agreement.
+Optimization-report artifact/semantic/decision/verifier joins, error ordering,
+C/Wasm helpers and source/dependency admission remain unchanged. The current
+pure C14 expected-record projector supplies semantic request DATA; original
+C11 report DATA describes input, not a fresh proof of transformed output.
+
+RED `b6f1e273` retained 54 passes and two failures in 56 assertions. Current
+`a3d8520e` passed 1/74; existing incomplete-ingress rejection passed 1/4 and
+boundary passed 6/11: 8/89 across three passing invocations. LOC separately
+passed 2,022 files, zero exceptions, maximum 250. The original-delegating scoped
+observer confirms valid statuses reach the unchanged dependency predicate and
+retain its actual rejection; mismatched/unknown statuses and bad report/target
+inputs reject before it. Current file identities are retained with compiled
+lineage explicitly unestablished, never replaced with a hypothetical old-pin
+positive. No complete packet is accepted or sealed; there is no fresh public
+source/pin renewal, LLVM tool/native, admission, migration or milestone claim.
 
 ### Typed List family predicate: development increment
 

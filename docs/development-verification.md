@@ -190,6 +190,184 @@ or budget increase is justified by this optimization. The focused comparison
 checks complete outputs and rejection budgets; it is not a source migration
 proof or a wall-time benchmark.
 
+### Checked i64 subtraction in the bootstrap library
+
+STD1/STD5/D8 govern `:checked-sub-i64` in
+`bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity`. The existing
+experimental `:meta` request interface requires opt-in, no effects/capabilities
+and `:none` allocation. It checks binary arity, integer family and i64 range
+before overflow guards and arithmetic. Negative right operands use a guarded
+result-minus-one decomposition, avoiding the seed builtin's negation of MIN.
+`STD5001` retains integer type/range/overflow diagnostics; wrong arity retains
+`STD1001`. The request/result schema and four exported entrypoints are unchanged.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-checked-i64-subtraction-executes-before-its-result-is-verified \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity \
+  --exact sh22-policy-and-manifest-state-bounded-experimental-surface --fail-fast
+```
+
+These checks execute paired library fixtures and the original Gravity arithmetic
+and verifier. They do not establish compiler linkage, native execution or the
+complete SH-22 API closure. Historical SH07 source/digest pins are not updated;
+their evidence does not authenticate the changed library source revision.
+
+### Checked i64 multiplication in the bootstrap library
+
+The same STD1/STD5/SAFE9/D8-owned library executes `:checked-mul-i64` through
+the unchanged experimental `:meta` request interface. Binary arity, integer
+family and i64 range checks precede zero handling and sign-specific quotient
+thresholds. Divisors are nonzero and no threshold forms MIN/-1; multiplication
+runs only after the in-range guard. Results retain `:checked-i64`, no effects or
+capabilities and `:none` allocation. `STD5001` retains type/range/overflow failures
+and `STD1001` retains wrong arity; the owner-local operation surface grows to 15.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-checked-i64-multiplication-guards-actual-seed-quotient-thresholds \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity \
+  --exact sh22-policy-and-manifest-state-bounded-experimental-surface --fail-fast
+```
+
+The paired cases execute the actual seed quotient thresholds and Gravity product
+in both operand orders, including MIN/zero, signed endpoints and the square
+overflow boundary. They are not compiler linkage, native/provider, complete
+library or migration evidence. Historical SH07 source/digest pins remain
+unchanged and do not authenticate the revised library source.
+
+### Keyword membership in bounded ordered Sets
+
+STD2/STD3 govern `:ordered-set-contains-keyword` in the same SH-22 leaf. It
+accepts the existing ordered-set carrier with at most 256 actual Keyword members
+and an actual Keyword needle. The bound and full family census precede member
+equality; full uniqueness validation precedes a query hit. Qualified Keyword
+value equality determines Bool membership independently of insertion order.
+The query preserves its input and neither invokes payloads nor grants authority
+from Keyword spelling. General Sets, mixed/non-Keyword families and host-provider
+interop are not supported. `STD3001` retains the bound failure, `STD10003`
+rejects malformed/duplicate/family inputs and `STD1001` rejects wrong arity.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity \
+  --exact sh22-policy-and-manifest-state-bounded-experimental-surface --fail-fast
+```
+
+The operation remains experimental `:meta` with explicit opt-in, no effects or
+capabilities and no collection-value allocation. Result/envelope metadata is not
+a native allocation-free claim. Opaque arguments admitted by the common carrier
+reject at the Keyword family check before uniqueness/search; origin validation
+is separate. This does not claim universal opaque-carrier rejection or absence
+of host printing callbacks. No compiler linkage, general Set equality, native
+execution, complete library or migration claim follows. Historical SH07 pins
+remain unchanged and do not authenticate the revised library source.
+
+### Bounded persistent Vector append and consumers
+
+STD3's binary Vector append law governs `:vector-append` in the same SH-22
+leaf. An input shorter than 256 elements produces its unchanged ordered prefix
+and one inert appended value: 255 becomes 256; inputs of 256 or 257 reject
+before construction (`STD3001`). Non-Vectors reject with `STD3002`; wrong arity
+and allocation policy retain `STD1001`. Experimental `:meta` opt-in requires
+`:memory/allocate`, no capabilities and `:bounded-by-result`, even for empty
+input. The four exports and request/result envelope are unchanged.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-vector-append-executes-with-real-nth-and-assoc-consumers \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity \
+  --exact sh22-policy-and-manifest-state-bounded-experimental-surface --fail-fast
+```
+
+The direct check executes append then real nth/assoc consumers and freshly
+recomputes all results. It covers heterogeneous false/nil/nested payloads,
+persistence, authority/substitution failures and original-delegating constructor
+counts. Exact new dispatch/allocation discriminators reject nil before append;
+the older general `sh22-member?` nil weakness is not repaired. Initial RED was
+1/270 with 160 failures; historical GREEN 8/538 omitted this regression. Its
+test-only RED had 63 total assertions (62 pass, one host stack error), with
+later assertions in the sole selected var unrun. An unsupported-`or` successor
+had one error assertion and seven selected vars unrun. Supported nested `if`
+correction passed 8/546, including all 278 append assertions; failed/partial
+epochs are not added coverage. No variadic/coercing behavior, physical sharing,
+unbounded-profile, native allocation or host-callback-free guarantee follows.
+Compiler linkage, full SH-22 and self-hosting remain pending; historical SH07
+pins are unchanged and do not authenticate this changed source revision.
+
+### Symbol membership after bounded ordered-Set insertion
+
+STD2/STD3 govern `:ordered-set-contains-symbol` in the same SH-22 leaf. The
+existing ordered carrier admits at most 256 actual Symbols and a Symbol needle.
+The bound and complete member/needle family checks precede equality, and full
+uniqueness validation precedes a hit. Qualified Symbol value equality determines
+Bool membership independently of insertion order, without spelling coercion or
+execution authority. `STD3001` retains bounds failures, `STD10003` rejects
+malformed/duplicate/family inputs and `STD1001` rejects wrong arity.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-symbol-set-membership-consumes-real-insertion-results \
+  --exact sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity --fail-fast
+```
+
+The check consumes real existing `:ordered-set-conj` Symbol results and freshly
+recomputes insertion and query results. It covers qualified independently
+constructed values, input preservation, 256/257, duplicate-after-hit, family,
+authority, nil-operation and substitution failures without payload invocation.
+Test-only RED against prior production was 1/304 (116 pass, 188 fail). The
+complete GREEN batch at `f3990902` passed 10/1106, including all 304 new
+assertions. They are separate epochs. Experimental `:meta` opt-in, no
+effects/capabilities and `:none`
+collection-value allocation remain explicit; envelope metadata is not native
+allocation evidence. General Sets, mixed families, host-provider/callback safety,
+compiler linkage, full SH-22 and self-hosting are not established. Historical
+SH07 pins remain unchanged and do not authenticate this revised source.
+
+### Bounded Keyword Set value equality
+
+STD2/STD3 govern `:ordered-set-equal-keyword` in the same experimental SH-22
+leaf, with checked signature
+`(OrderedSet Keyword) (OrderedSet Keyword) -> (Result Bool CollectionError)`.
+Both existing ordered carriers must contain at most 256 actual Keywords.
+Both bounds and complete Keyword-family checks precede member equality; both
+uniqueness validations precede a count mismatch or apparent matching prefix.
+Equal valid Sets have equal counts and no unmatched member, independently of
+stored order. The query preserves both inputs and does not invoke payloads.
+`STD3001` retains bounds failures, `STD10003` rejects malformed/duplicate/family
+inputs and `STD1001` rejects wrong arity. Explicit `:meta` opt-in, no effects or
+capabilities and `:none` collection-value allocation remain required.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-keyword-set-equality-consumes-real-insertion-results \
+  --exact sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity --fail-fast
+```
+
+The check consumes real existing Set insertion results and recomputes producer
+and equality results. At executed candidate `42ba1831`, the complete batch
+passed 11/1436, including all 322 new assertions. Prior-production RED remains
+separate: 1/322, 150 pass, 172 fail, no errors. The four exports and request/
+result envelope are unchanged; there is no general/mixed-family equality,
+native allocation, host-callback safety, compiler linkage or SH-22 completion
+claim. Historical SH07 pins do not authenticate this revised source.
+
+String membership remains unimplemented: L1 requires Unicode-scalar Strings,
+while STD4's `string?` grants no validation fact. The current SH-22 carrier only
+bounds host String units; ordinary stage2 equality does not reject a lone UTF16
+surrogate. Existing strict UTF-8 helpers prohibit SH-22/public runtime callers.
+Checked String ingress or an independently established validated carrier is a
+separate owning-interface dependency, not permission to weaken String semantics.
+
 ### C6 compiled-source aggregate binding maintenance
 
 ```bash
@@ -442,6 +620,104 @@ audited unsafe-island operations may remain accepted unchanged without folding.
 This is not a general type checker, fresh authenticated C11 ingress, native
 execution, authoritative migration or SH-16 completion.
 
+For the closed one-hop propagation route, run
+`sh16-propagates-only-unique-pure-prefix-i64-constants-into-one-add` in the same
+namespace. Each admitted segment starts with a pure, proven-safe, nondead const
+prefix, followed by a pure, proven-safe, nondead
+`:i64`/`:integer-exact` ADD with `:constant-operands false` and two ordered
+operands. At least one references an established earlier one-payload i64
+producer; the other is another such reference or a bounded i64 immediate.
+Repeated references remain supported, and result definitions remain unique
+across the whole input.
+Fresh bounded indexing joins actual result IDs; the existing signed-i64
+overflow rule still governs folding. Unknown, forward, ambiguous, wrongly
+typed, unsafe, effectful or control-dependent joins do not authorize folding;
+unsupported cases stay unchanged unless existing ingress rejects them.
+Preserve original source/origin/result identity, input references, deterministic
+decision/invalidation records and fresh recomputation. This normalized linear
+subset is not general CFG/SSA propagation, fresh C11 input or native execution.
+
+For named intermediate results, also run
+`sh16-propagates-bounded-pure-named-add-chains-until-a-barrier`. The same forward
+scan records each independently resolved, overflow-checked ADD value under its
+original globally unique result ID and continues with the same two-operand,
+i64/integer-exact, pure/proven-safe/nondead rules. A nonqualifying operation
+stops new propagation, including otherwise resolvable suffix ADDs, except for
+the closed pure-compute reset below; successful prefix folds remain. Existing
+immediate-literal ADD folding elsewhere is
+unchanged and does not automatically supply a new chain producer. The existing
+128-operation limit permits at most 128 result-count rows plus 128 forward
+rows, not a fixed point or a CPU-time claim. Original request references/flags,
+source/origin/result identity, decision order, invalidation and fresh
+recomputation remain intact; the same normalized-DATA evidence limits apply.
+
+For an independent segment after opaque computation, run
+`sh16-propagates-only-independent-constant-segments-after-pure-compute`.
+An actual pure, proven-safe, nondead `:compute` remains byte-for-byte unchanged
+in operation order and clears the producer environment before the same forward
+scan continues. Only subsequent independently admitted constants and ADDs can
+supply facts: neither pre-compute facts nor the compute result authorize a
+fold. Effectful, unsafe or dead compute and all other existing barriers still
+stop propagation. Preserve global result uniqueness, overflow checks, original
+input/source/result identity, ordered decisions, post-fold DCE and fresh
+verification. The scan still has at most 128 count rows plus 128 forward rows;
+local DCE preparation and independent replay remain additional bounded work.
+This does not evaluate or remove compute, add a pass/fixed point, or establish
+general CFG/SSA propagation, global CSE, native execution or a speed claim.
+
+For repeated references, run
+`sh16-propagates-two-uses-of-one-established-i64-producer`. Both operand
+occurrences are independently looked up, including two uses of one established
+constant or folded intermediate; this is not algebraic multiplication or
+general SSA propagation. Unknown, forward, ambiguous, wrongly typed, unsafe,
+effectful, dead or overflowing producers still cannot authorize folding.
+Keep original references/source/result identity, barrier behavior, post-fold
+DCE, conservative invalidation and fresh result recomputation controls.
+The existing signed-i64 negative overflow bound handles a right operand of
+MIN with its equivalent zero threshold, avoiding hosted negation of MIN.
+Immediate `[0, MIN]` and `[MAX, MIN]` fold to MIN and -1; negative-left plus
+MIN is not foldable and ordinary explicit constant ingress still rejects it
+with `C13-SAFETY`. No type, width, coercion, API or input-limit policy changes.
+
+For mixed operands, run
+`sh16-propagates-one-established-reference-and-one-i64-immediate`. The new
+route requires exactly one actual producer join and one bounded i64 atom,
+in either order, including a folded intermediate as producer. Canonical
+identifier checks precede producer lookup; an integer cannot gain identifier
+meaning from a supplied map. Two immediates with `:constant-operands false`
+remain unchanged, while the existing all-reference route is preserved.
+Keep both operand positions and original input flags/identity, signed-range
+and MIN-right overflow rules, barriers, post-fold DCE and fresh recomputation.
+Missing, ambiguous, forward, non-i64, impure, unsafe, dead and overflowing
+joins do not authorize propagation. These remain normalized-DATA checks,
+not fresh C6/C11 ingress, provider/native execution or performance evidence.
+
+For post-fold local cleanup, run
+`sh16-removes-only-unused-constants-created-by-fresh-folding` and
+`sh16-retires-only-original-constants-consumed-by-fresh-reference-folds`.
+The existing DCE pass freshly reconstructs the fold selection from the original
+request and matches each fold-created constant's exact transformed operation
+against its current input. Original constants are eligible only when their
+canonical result IDs occur as actual references in ORIGINAL freshly selected
+pure ADD folds, not as immediate payloads or supplied decision entries; their
+current operations must exactly equal the original producer records.
+Both routes require nondead, pure/proven-safe, one-payload bounded i64 consts,
+globally unique original/current result definitions and no current operand
+uses. Unrelated constants and used final results remain. A current user still
+retains its producer even if that user is deleted in the same pass: there is
+no fixed point or generic constant, compute or control deletion.
+
+Existing explicit dead-proof selections keep their validated proof IDs; local
+cleanup contributes no fabricated or nil proof ID. Ordered changed operations
+and the existing `:direct-no-use-dead-rule` bounded replay record the local
+evidence. Preserve runtime-proof invalidation, source/original-input identity,
+fresh pipeline reconstruction and result-substitution rejection. Preparation
+uses up to ten bounded operation traversals, at most 2,048 current operand
+positions and two original-operand kind checks per selected ADD under the
+existing 128-operation/16-operand limits. Independent pipeline/verifier replay
+is additional; these are not two walks, a linear-CPU bound or a performance
+claim.
+
 For normalized C13 branch simplification, run
 `sh16-simplifies-only-established-boolean-conditions` in the same namespace.
 Only actual `true` and `false` conditions select their respective destination.
@@ -518,6 +794,84 @@ locations. Accepted output, rule/reason selection, schemas and bounds stay
 unchanged. Recomputing verification reconstructs the rejection and rejects
 substituted diagnostic locations. These are supplied normalized diagnostic
 records, not fresh source construction, native execution or migration evidence.
+
+### Closed actual-MIR-shaped comparison folding
+
+For the development C13-to-C14 translation, run:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh17-c13-optimized-mir-carrier-test \
+  --exact sh17-development-folds-one-actual-mir-shaped-integer-equality --fail-fast
+```
+
+This consumes supplied actual-MIR-shaped DATA, not a fresh authenticated C11
+artifact. Select exactly one entry `:integer-eq` whose ordered operands join
+earlier, independently typed, pure/proven-safe bounded-i64 literal producers.
+Preserve repeated reference occurrences, original result/source/fact identities,
+CFG and all unrelated operations. Unsupported cases retain the identity route.
+The selected Bool constant retains its original `:integer-eq` source operation;
+only the selected LLVM surface admits this derived constant, not shared C/Wasm
+literal guards. Regenerate its value payload and remove exactly its two operand
+DFG edges and producer-use occurrences, recording existing use-def invalidation.
+
+A fixed four-row reversible delta retains original occurrence positions, not a
+second MIR or source/fact table. Its measured carrier is 127 nodes including map
+entries; the independent pure stage-owned reconstruction component is 183
+physical lines with one load-order entry. Host reconstruction must round-trip
+the complete original input and independently rederive the output. C14 also
+restores and rederives the selected translation. Original C11 reports/pass and
+preflight records describe ONLY the original input; never rewrite their counts
+to validate output. The separate output hash excludes its own C13 record,
+evidence and seal. Bounds remain 256 operations and existing carrier limits;
+bounded scans, copying, reconstruction and hashing are real work, not a speed
+or free-sharing claim.
+
+Retain direct identity/fallback, original-report, malformed-carrier, source/fact,
+DFG/delta and result-substitution controls, plus the normalized SH16 suite,
+direct SH17 hardening suite, boundary, load-order and LOC checks. Current public
+C11 source pins and C13/C14 packet bindings are not renewed here. Fresh public
+source/packet composition, native execution, milestone completion and migration
+remain outside this development result.
+
+For the existing B3 LLVM text-emission consumer, also run
+`sh17-development-emits-c13-folded-bools-through-existing-b3-builder` in the
+same namespace. Feed a complete supplied original MIR through current C13
+folding and C14 restoration/rederivation, then pass that SAME output to the
+original B3 builder. Its two constant-source gates now admit only the derived
+`:constant`/`:integer-eq` case with exact Bool payload and zero operands, under
+the existing envelope, purity and value-parity checks. Original comparison IR
+and literal prefixes remain unchanged. Folded true/false emit `add i64 0, 1|0`
+without comparison/zext instructions; no LLVM tool or native execution is run.
+B3 retains its upstream verified-MIR premise: it does not authenticate or
+reprove C13. Output stays `:constructed-unverified` with host content binding
+pending; legacy C11 closure fields name input lineage/upstream obligations,
+not fresh C11 verification of transformed output. Public packet/pin boundaries
+remain unchanged and unrun. Run cheap checks serially through actual process
+completion; these development checks establish no isolated timing benchmark.
+
+For affected four-block composition coverage, run
+`sh17-development-folded-predicate-preserves-integer-diamond-emission` in the
+same namespace. The folded Bool drives the existing branch/Integer-phi path;
+check true/false, repeated and signed-endpoint conditions, Integer arms within
+the existing process-exit subset, exact two-edge removal and preserved CFG,
+incoming values, source/type tables and terminator uses. Compare original and
+folded emission and reject mutants at their actual C14/host/B3 owning checks.
+This is test-only supplied-DATA coverage, not a new semantic repair, fresh
+source/public packet, LLVM tool result or native execution.
+
+For B1 LLVM status compatibility, run
+`sh17-development-b1-llvm-accepts-matching-current-c14-optimization-statuses`
+in the same namespace. The current pure `p15-s23-c14-expected-record` projection
+produces supplied request DATA; B1 accepts only identity/fold-complete nested
+statuses with exact outer agreement and unchanged optimization-report joins.
+A test-only scoped observer delegates every call to the original interpreter:
+valid statuses reach the original dependency check and retain its rejection of
+unestablished current compiled lineage; invalid statuses/reports/targets reject
+before that call. It never substitutes a successful result or an old-pin
+positive. C/Wasm, source pins and public packet admission remain unchanged.
+This is status compatibility, not fresh C11/output verification or public
+source/backend readiness.
 
 ### Normalized target-lowering type consistency
 

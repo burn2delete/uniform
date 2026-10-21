@@ -125,10 +125,12 @@
          :effect-order-graph (:effect-order-graph mir)
          :profile :hosted
          :target target}]
+    (let [base (gravity.bootstrap-c13-comparison/extend-evidence mir base)]
     (assoc base :decision-id
            (p15-s23-c11-mir-digest
-            {:kind :gravity/c13-bounded-identity-decision
-             :evidence base}))))
+            {:kind (if (:output-mir-id base) :gravity/c13-bounded-equality-decision
+                        :gravity/c13-bounded-identity-decision)
+             :evidence base})))))
 
 (defn p15-s23-c13-evidence
   [c11-artifact c11-report]

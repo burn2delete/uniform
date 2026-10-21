@@ -602,7 +602,10 @@
              :optimization-report :domain-status})
       (if (= [(get input :kind) (get input :verified?)
               (get input :optimization-status) (get input :domain-status)]
-             [:gravity/mir true :identity-pass-complete :not-applicable])
+             [:gravity/mir true
+              (if (= (get input :optimization-status) :constant-fold-pass-complete)
+                :constant-fold-pass-complete :identity-pass-complete)
+              :not-applicable])
         (if (b1-sha256-id? (get input :id))
           (if (b1-sha256-id? (get input :artifact-id))
             (if (b1-sha256-id? (get input :verifier-report-id))
@@ -963,7 +966,8 @@
               (get request :diagnostics)]
              [:gravity/c14-internal-target-lowering-request 1 :accepted
               :hosted {:name :hosted :validated? true} #{} #{}
-              :identity-pass-complete :not-applicable :not-run []])
+              (get (get request :input) :optimization-status)
+              :not-applicable :not-run []])
         (if (b1-sha256-id? (get request :request-id))
           (if (b1-c14-input-valid? (get request :input))
             (if (b1-c14-target-valid? (get request :target))

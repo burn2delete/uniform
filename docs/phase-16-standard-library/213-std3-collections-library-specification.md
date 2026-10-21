@@ -158,6 +158,22 @@ This rule does not select numeric conversions, cross-collection equality,
 iteration order, a hashing algorithm, storage representation or profile support.
 Their governing contracts still apply.
 
+## Binary Persistent Vector Append
+
+For a persistent Vector, binary `(conj items value)` returns a Vector containing
+the original stored values in their original order followed by the one appended
+value. Heterogeneous stored values are permitted by this semantic rule. The
+original Vector is unchanged, and stored payloads are not evaluated.
+
+Both operands follow ordinary L2 evaluation left to right, once each; a control
+transfer aborts invocation. The selected representation must declare possible
+allocation and storage/lifetime policy, including an empty input Vector, under
+effects, ownership and profile rules. This rule does not grant variadic or
+coercing behavior, object identity, physical sharing, unbounded profile support,
+or new static type/cardinality facts without their required evidence.
+Collection semantics remain owned by `gravity.collections`; a core compatibility
+binding does not grant representation or profile support.
+
 ## Persistent Vector Value Equality
 
 For two persistent Vectors whose stored values support Gravity equality,
@@ -354,6 +370,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Persistent Set equality covers empty, reordered and differing membership under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and does not evaluate stored payloads or depend on enumeration order or object identity.
 - Persistent Set membership covers empty, present and absent values under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and neither evaluates stored payloads nor depends on enumeration order or object identity.
 - Binary persistent Set insertion covers empty input, absent values and equal existing members under applicable Gravity equality, preserves ordinary operand evaluation, transfers and original values, and declares allocation/storage policy without inventing cardinality, member-type, order or identity facts.
+- Binary persistent Vector append covers empty and nonempty heterogeneous values, preserves the ordered prefix and original input, retains ordinary operand evaluation and transfers without executing stored payloads, and declares possible allocation/storage policy without granting variadic, coercing, unbounded-profile or static-fact authority.
 - Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
 - Binary persistent List equality covers empty, equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules, without substituting type or object identity.
 - Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.

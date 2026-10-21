@@ -45,6 +45,564 @@
       (bootstrap/p15-s23-stage2-compiler-artifact-plan
        emitter source-path source-text))))
 
+(def ^:private development-c13-plan
+  (delay
+    (let [source-path (path "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
+
+(def ^:private development-b3-plan
+  (delay
+    (let [source-path (path "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
+
+(def ^:private development-b1-plan
+  (delay
+    (let [source-path (path "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
+
+(defn- development-comparison-input [left right repeated?]
+  ;; Supplied actual-MIR-shaped DATA. No public compiler build, seal or C11
+  ;; verification is claimed by these deliberately local development kernels.
+  (let [digest bootstrap/p15-s23-c11-mir-digest
+        core (digest :development-core) entry (str core ":mir:entry")
+        source (fn [id] {:core-node id :origin-id (str id ":origin")
+                         :span {:source-id (digest :source) :start-byte 0 :end-byte 1
+                                :actual-source-path "/development/comparison.gravity"}
+                         :origin-chain []})
+        operation (fn [id opcode type operands payload]
+                    {:artifact :gravity/mir-operation :op-id id :result id :result-kind :value
+                     :opcode opcode :source-operation (if (= opcode :constant) :literal opcode)
+                     :type type :operands operands :constant-payload payload
+                     :effects #{} :capabilities #{} :ordering :none :profile :hosted
+                     :block-id entry :verifier-status :passed :domain-anchor nil :source (source id)
+                     :facts {:type-fact-id (str id ":type") :effect-fact-id (str id ":effect")
+                             :ownership-fact-id (str id ":ownership") :capability-fact-id (str id ":capability")
+                             :safety-outcome-id (str id ":safety") :source-origin-id (str id ":origin")}})
+        ops [(operation "left" :constant :gravity/integer [] {:present? true :value left})
+             (operation "right" :constant :gravity/integer [] {:present? true :value right})
+             (operation "comparison" :integer-eq :gravity/bool
+                        ["left" (if repeated? "left" "right")] :not-applicable)]
+        edges (mapv (fn [index id] {:from id :consumer-kind :operation :consumer-id "comparison"
+                                   :consumer-block entry :operand-index index :edge-kind :operand})
+                    [0 1] (:operands (last ops)))
+        use-row (fn [edge] (assoc (dissoc edge :from) :use-kind :instruction))
+        terminator-use {:value-id "comparison" :consumer-kind :terminator :consumer-id "return"
+                        :consumer-block entry :operand-index 0 :edge-kind :return-value}
+        values (into {} (map (fn [op]
+                              [(:result op) {:artifact :gravity/mir-value :value-id (:result op)
+                                            :kind :instruction-result :type (:type op)
+                                            :constant-payload (:constant-payload op)
+                                            :defined-by {:value-id (:result op) :operation-id (:op-id op) :block-id entry}
+                                            :uses (if (= "comparison" (:result op))
+                                                    [(assoc (dissoc terminator-use :value-id) :use-kind :terminator)]
+                                                    (mapv use-row (filter #(= (:result op) (:from %)) edges)))
+                                            :source (:source op) :ownership {:model :persistent-immutable-value}
+                                            :effects #{} :safety {:outcome :proven-safe}}]) ops))
+        table (fn [suffix f] (into {} (map (fn [op] [(str (:op-id op) suffix) (f op)]) ops)))
+        mir {:artifact :gravity/mir-module :schema-version 1 :module-id (digest :module) :source-core core
+             :profile :hosted :target-request :llvm-x86_64-linux :target-independent? true
+             :functions {'main {:params [] :returns :gravity/bool :latent-effects #{} :capabilities #{}
+                                :entry entry :blocks {entry {:instructions ops
+                                                           :terminator {:kind :return :operands ["comparison"]}}}}}
+             :control-flow-graph {:entry entry :edges [] :dominance {entry [entry]} :join nil}
+             :data-flow-graph {:edges edges :terminator-uses [terminator-use]
+                               :definitions (into {} (map (fn [[id value]] [id (:defined-by value)]) values))
+                               :values values}
+             :type-table (table ":type" #(hash-map :fact-id (str (:op-id %) ":type") :core-node-id (:op-id %)
+                                                   :type (:type %) :dependencies (:operands %)
+                                                   :source-origin-id (get-in % [:source :origin-id])))
+             :effect-table (table ":effect" #(hash-map :direct #{} :core-node-id (:op-id %)))
+             :ownership-table (table ":ownership" #(hash-map :model :persistent-immutable-value :core-node-id (:op-id %)))
+             :capability-table (table ":capability" #(hash-map :required #{} :granted #{} :core-node-id (:op-id %)))
+             :safety-table (table ":safety" #(hash-map :outcome :proven-safe :core-node-id (:op-id %)))
+             :runtime-check-table {} :proof-certificate-table {} :effect-order-graph {:edges []}
+             :source-map (into {} (map (juxt :op-id :source) ops)) :globals {} :domain-anchors {}
+             :pass-execution-record {:record-id (digest :original-pass)} :b1-preflight {:input-only true}}
+        artifact {:artifact-id (digest :supplied-artifact) :mir-id (digest mir) :mir-module mir}
+        report {:status :passed :mir-id (:mir-id artifact) :semantic-replay-parity :passed
+                :execution-tcb :clojure-stage0-rule-runner :independent-verifier {:input-only true}
+                :b1-preflight (:b1-preflight mir)}]
+    {:mir mir :evidence (bootstrap/p15-s23-c13-evidence-for-target artifact report :llvm-x86_64-linux)}))
+
+(deftest sh17-development-folds-one-actual-mir-shaped-integer-equality
+  (let [invoke (fn [function arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh17-development-comparison :compiler-artifact-plan? true}
+                  @development-c13-plan function arguments))]
+    (doseq [[left right repeated? expected] [[2 2 false true] [2 3 false false]
+                                            [-9223372036854775808 9223372036854775807 false false]
+                                            [9223372036854775807 0 true true]]]
+      (let [{:keys [mir evidence]} (development-comparison-input left right repeated?)
+            result (invoke 'c13-build-bounded-identity-optimized-mir [mir evidence])
+            output (:optimized-mir result) entry (get-in mir [:control-flow-graph :entry])
+            comparison (get-in output [:functions 'main :blocks entry :instructions 2])]
+        (is (= :accepted (:status result)))
+        (is (= :gravity/c13-bounded-equality-fold-optimized-mir (:artifact result)))
+        (is (= :constant (:opcode comparison)))
+        (is (= :integer-eq (:source-operation comparison)))
+        (is (= [] (:operands comparison)))
+        (is (= {:present? true :value expected} (:constant-payload comparison)))
+        (is (= (:constant-payload comparison) (get-in output [:data-flow-graph :values "comparison" :constant-payload])))
+        (is (= [] (get-in output [:data-flow-graph :edges])))
+        (is (= [] (get-in output [:data-flow-graph :values "left" :uses])))
+        (is (= [] (get-in output [:data-flow-graph :values "right" :uses])))
+        (is (= (:control-flow-graph mir) (:control-flow-graph output)))
+        (is (= (:source-map mir) (:source-map output)))
+        (is (= (:pass-execution-record mir) (:pass-execution-record output)))
+        (is (= (:b1-preflight mir) (:b1-preflight output)))
+        (is (= result (bootstrap/p15-s23-c13-expected-record mir evidence)))
+        (let [delta (get-in result [:verifier-replay :delta])
+              invoke-c14-kernel (fn [function arguments]
+                                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                                  {:engine :gravity-sh17-development-comparison :compiler-artifact-plan? true}
+                                  @c14-plan function arguments))
+              expected (bootstrap/p15-s23-c13-expected-record mir evidence)
+              policy {:fact-bindings (get-in result [:semantic-identity :fact-bindings])
+                      :supported-operation-ids (get-in result [:semantic-identity :operation-order])}]
+          (is (= mir (gravity.bootstrap-c13-comparison/restore output delta)))
+          (is (= mir (invoke-c14-kernel 'c14-equality-original-mir [result])))
+          (is (true? (invoke-c14-kernel 'c14-equality-translation-valid? [result policy])))
+          (is (true? (invoke-c14-kernel 'c14-llvm-bounded-mir-surface-valid? [result policy])))
+          (is (false? (invoke-c14-kernel 'c14-c-source-operation-valid? [:constant :integer-eq])))
+          (is (<= (count (tree-seq coll? seq delta)) 128))
+          (when (= [left right repeated?] [2 2 false])
+            (println "comparison delta carrier nodes (including map entries):" (count (tree-seq coll? seq delta))))
+          (doseq [changed-delta [(assoc delta :unexpected true) (assoc delta :edges [])
+                                (assoc delta :edges (conj (:edges delta) (first (:edges delta))))
+                                (assoc-in delta [:edges 0 :index] -1) (assoc-in delta [:edges 1 :index] 65535)
+                                (assoc-in delta [:edges 1 :index] (get-in delta [:edges 0 :index]))
+                                (update delta :edges #(vec (reverse %))) (update delta :uses #(vec (reverse %)))
+                                (assoc-in delta [:uses 0 :use :unexpected] true)
+                                (assoc-in delta [:uses 0 :index] "0")
+                                (assoc-in delta [:uses 0 :use :consumer-id] "other")]]
+            (let [candidate (assoc-in result [:verifier-replay :delta] changed-delta)]
+              (is (false? (invoke-c14-kernel 'c14-equality-translation-valid? [candidate policy])))
+              (is (not= expected candidate))))
+          (doseq [candidate [(assoc-in result [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload :value]
+                                     (not (get-in comparison [:constant-payload :value])))
+                             (assoc-in result [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload] 7)
+                             (assoc-in result [:optimized-mir :data-flow-graph :values "comparison" :constant-payload :value] :not-a-bool)
+                             (assoc-in result [:optimized-mir :type-table "comparison:type" :type] :gravity/integer)
+                             (assoc-in result [:optimized-mir :source-map "comparison" :origin-id] "changed")
+                             (assoc-in result [:optimized-mir :safety-table "left:safety" :outcome] :unsafe-island)
+                             (assoc-in result [:optimized-mir :functions 'main :blocks entry :instructions 2 :block-id] "other")
+                             (update-in result [:optimized-mir :data-flow-graph :edges]
+                                        conj (first (get-in mir [:data-flow-graph :edges])))
+                             (update-in result [:optimized-mir :data-flow-graph :values "left" :uses]
+                                        conj (assoc (first (get-in mir [:data-flow-graph :values "left" :uses])) :operand-index 9))
+                             (assoc-in result [:decision-record :changed-operations] ["left"])
+                             (assoc-in result [:invalidation-ledger :facts-invalidated] [])
+                             (assoc-in result [:verifier-replay :artifact] :gravity/c13-post-pass-verifier-replay)]]
+            (is (false? (invoke-c14-kernel 'c14-equality-translation-valid? [candidate policy])))
+            (is (not= expected candidate)))
+          (is (not= expected (assoc-in result [:semantic-identity :c11-output-mir-id]
+                                      (bootstrap/p15-s23-c11-mir-digest :fabricated-output)))))))
+    (let [{:keys [mir]} (development-comparison-input 2 3 false)
+          entry (get-in mir [:control-flow-graph :entry]) path [:functions 'main :blocks entry :instructions]
+          original-report {:status :passed :module-shape-valid? true :block-count 1 :operation-count 3
+                           :conditional-count 0 :dominance-valid? true :type-facts-valid? true
+                           :direct-effects-valid? true :safety-facts-valid? true :origin-closure-valid? true
+                           :runtime-checks-valid? true :runtime-checks {:runtime-check-count 0 :runtime-check-ids []}
+                           :target-independent? true :data-flow {:edge-count 2 :terminator-use-count 1 :definition-count 3 :value-count 3}}
+          invoke-c14-kernel (fn [function arguments]
+                             (bootstrap/p15-s23-stage2-runtime-execute-function
+                              {:engine :gravity-sh17-development-comparison :compiler-artifact-plan? true}
+                              @c14-plan function arguments))]
+      (doseq [input [(assoc mir :target-request :c) (assoc mir :target-request :wasm)
+                     (assoc-in mir (conj path 0 :type) :gravity/bool)
+                     (assoc-in mir (conj path 0 :constant-payload :value) nil)
+                     (assoc-in mir (conj path 0 :constant-payload :value) 9223372036854775808N)
+                     (assoc-in mir (conj path 2 :operands) ["missing" "right"])
+                     (assoc-in mir (conj path 2 :operands) ["comparison" "right"])
+                     (assoc-in mir (conj path 2 :effects) #{:io/write})
+                     (assoc-in mir [:safety-table "comparison:safety" :outcome] :unsafe-island)
+                     (assoc-in mir [:type-table "comparison:type" :type] :gravity/integer)
+                     (assoc-in mir [:source-map "comparison" :origin-id] "changed")
+                     (assoc-in mir [:data-flow-graph :edges 0 :operand-index] 1)
+                     (update-in mir path conj (assoc (get-in mir (conj path 0)) :op-id "duplicate"))]]
+        (let [artifact {:artifact-id (bootstrap/p15-s23-c11-mir-digest :input) :mir-id (bootstrap/p15-s23-c11-mir-digest input) :mir-module input}
+              evidence (bootstrap/p15-s23-c13-evidence-for-target artifact {:status :passed :semantic-replay-parity :passed} (:target-request input))
+              result (invoke 'c13-build-bounded-identity-optimized-mir [input evidence])]
+          (is (= :gravity/c13-bounded-identity-optimized-mir (:artifact result)))
+          (is (= input (:optimized-mir result)))
+          (is (= result (bootstrap/p15-s23-c13-expected-record input evidence)))))
+      (let [{:keys [evidence]} (development-comparison-input 2 3 false)
+            result (invoke 'c13-build-bounded-identity-optimized-mir [mir evidence])
+            output (:optimized-mir result)]
+        (is (true? (invoke-c14-kernel 'c14-c11-independent-verifier-valid? [mir original-report])))
+        (is (false? (invoke-c14-kernel 'c14-c11-independent-verifier-valid? [output original-report])))
+        (is (true? (invoke-c14-kernel 'c14-c11-independent-verifier-valid?
+                                    [(invoke-c14-kernel 'c14-equality-original-mir [result]) original-report]))))
+      (doseq [malformed [(assoc-in mir [:functions 'main :blocks] 7)
+                         (assoc-in mir (conj path) 7)
+                         (assoc-in mir (conj path) (vec (repeat 257 (get-in mir (conj path 0)))))
+                         (assoc-in mir [:data-flow-graph :edges] 7)
+                         (assoc-in mir [:data-flow-graph :edges] (vec (repeat 65537 {})))
+                         (assoc-in mir [:data-flow-graph :values "left" :uses] 7)
+                         (assoc-in mir [:data-flow-graph :values "left" :uses] (vec (repeat 65537 {})))]]
+        (is (nil? (invoke 'c13-equality-selection [malformed])))
+        (is (nil? (gravity.bootstrap-c13-comparison/selection malformed))))
+      (let [{:keys [evidence]} (development-comparison-input 2 3 false)]
+        (doseq [malformed [(assoc-in mir [:functions 'main :blocks] 7) (assoc-in mir (conj path) 7)]]
+          (let [result (invoke 'c13-build-bounded-identity-optimized-mir [malformed evidence])]
+            (is (= :rejected (:status result)))
+            (is (= "C13-VERIFY" (:diagnostic result)))))))))
+
+(defn- development-b3-comparison-input [left right repeated?]
+  ;; Complete supplied MIR DATA, not a compiler product or authentication. All
+  ;; envelope fields are present BEFORE C13; no transformed output is retagged.
+  (let [{:keys [mir]} (development-comparison-input left right repeated?)
+        entry (get-in mir [:control-flow-graph :entry])
+        source (get-in mir [:source-map "comparison"])
+        terminator-id (str entry ":return")
+        operations (mapv #(update % :facts merge
+                                  {:capability-proof-ids [] :safety-proof-id :not-applicable
+                                   :profile-target-fact-id :not-applicable :runtime-check-id :not-applicable
+                                   :proof-certificate-ids [] :failure-behavior :not-applicable})
+                         (get-in mir [:functions 'main :blocks entry :instructions]))
+        block {:artifact :gravity/mir-block :block-id entry :arguments [] :instructions operations
+               :terminator {:artifact :gravity/mir-terminator :terminator-id terminator-id
+                            :kind :return :operands ["comparison"] :successors [] :effects #{}
+                            :ordering :none :source source :profile :hosted
+                            :facts {:returned-value "comparison"} :verifier-status :passed}
+               :predecessors [] :successors [] :dominators [entry]
+               :data-flow {:module-data-flow-graph-reference true} :source source}
+        original (-> mir
+                     (assoc :source-target :jvm :verification-status :passed :diagnostics []
+                            :target-request-metadata {:requested-target :llvm-x86_64-linux :source-target :jvm
+                                                      :identity-bearing? false :downstream-lowering-required? true}
+                            :capability-proof-table {} :profile-target-table {} :provenance {}
+                            :construction {} :pass-contract {} :scope {}
+                            :clojure-seed-boundary? true :self-hosted? false)
+                     (assoc :functions {'main {:artifact :gravity/mir-function :fn-id "main" :name 'main
+                                              :params [] :returns :gravity/bool :latent-effects #{} :capabilities #{}
+                                              :entry entry :blocks {entry block} :source source :facts {} :provenance {}}})
+                     (assoc-in [:data-flow-graph :terminator-uses 0 :consumer-id] terminator-id)
+                     (assoc-in [:data-flow-graph :values "comparison" :uses 0 :consumer-id] terminator-id))
+        artifact {:artifact-id (bootstrap/p15-s23-c11-mir-digest :supplied-b3-artifact)
+                  :mir-id (bootstrap/p15-s23-c11-mir-digest original) :mir-module original}]
+    {:mir original
+     :evidence (bootstrap/p15-s23-c13-evidence-for-target
+                artifact {:status :passed :semantic-replay-parity :passed} :llvm-x86_64-linux)}))
+
+(deftest sh17-development-emits-c13-folded-bools-through-existing-b3-builder
+  ;; B3's verified-MIR input remains an UPSTREAM premise. These direct kernels
+  ;; do not seal a public packet or independently authenticate/reprove C13.
+  (let [execute (fn [plan function arguments]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function
+                   {:engine :gravity-sh17-development-b3-comparison :compiler-artifact-plan? true}
+                   plan function arguments))
+        build #(execute @development-b3-plan 'b3-build-bounded-llvm-x86_64-linux [%])]
+    (doseq [[left right repeated? expected] [[2 2 false true] [2 3 false false]
+                                            [-9223372036854775808 9223372036854775807 false false]
+                                            [9223372036854775807 0 true true]]]
+      (let [{:keys [mir evidence]} (development-b3-comparison-input left right repeated?)
+            folded (execute @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+            output (:optimized-mir folded) entry (get-in mir [:control-flow-graph :entry])
+            operation-path [:functions 'main :blocks entry :instructions 2]
+            policy {:fact-bindings (get-in folded [:semantic-identity :fact-bindings])
+                    :supported-operation-ids (get-in folded [:semantic-identity :operation-order])}
+            original-lowering (build mir) lowering (build output)
+            records (:operation-records lowering)]
+        (is (= :accepted (:status folded)))
+        (is (= folded (bootstrap/p15-s23-c13-expected-record mir evidence)))
+        (is (true? (execute @c14-plan 'c14-equality-translation-valid? [folded policy])))
+        (is (= mir (execute @c14-plan 'c14-equality-original-mir [folded])))
+        (is (= :constructed-unverified (:status original-lowering)))
+        (is (re-find #"icmp eq i64" (or (:llvm-ir original-lowering) "")))
+        (is (= :constructed-unverified (:status lowering)))
+        (is (= :llvm-x86_64-linux (:target lowering)))
+        (is (= expected (:semantic-result lowering)))
+        (is (= (if expected 1 0) (:expected-exit-code lowering)))
+        (is (= ["left" "right" "comparison"] (mapv :mir-operation-id records)))
+        (is (= (take 2 (:operation-records original-lowering)) (take 2 records)))
+        (is (= :integer-eq (:source-operation (last records))))
+        (is (= :constant (:mir-opcode (last records))))
+        (is (= (str "  %v2 = add i64 0, " (if expected 1 0)) (:llvm-instruction (last records))))
+        (is (not (re-find #"icmp|zext" (or (:llvm-ir lowering) ""))))
+        (is (re-find #"target triple = \"x86_64-unknown-linux-gnu\"" (or (:llvm-ir lowering) "")))
+        (is (= [] (:ub-sensitive-flags lowering) (:emitted-metadata lowering)))
+        (is (= :pending-host-content-binding (get-in lowering [:verified-input-closure :status])))
+        ;; These legacy closure values name upstream obligations/input lineage;
+        ;; they do not claim C11 reverified the transformed C13 output.
+        (is (= :required-upstream-contextual-verifier
+               (get-in lowering [:verified-input-closure :c11-full-mir-authenticity])))
+        (is (= :upstream-c11-owned (get-in lowering [:verified-input-closure :full-dfg-edge-use-replay])))))
+    (let [{:keys [mir evidence]} (development-b3-comparison-input 2 2 false)
+          folded (execute @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+          output (:optimized-mir folded) entry (get-in mir [:control-flow-graph :entry])
+          op-path [:functions 'main :blocks entry :instructions 2]
+          change (fn [field value]
+                   (let [changed (assoc-in output (conj op-path field) value)]
+                     (if (contains? #{:type :constant-payload} field)
+                       (assoc-in changed [:data-flow-graph :values "comparison" field] value) changed)))]
+      (doseq [[field value] [[:source-operation :integer-lt] [:source-operation :call]
+                             [:type :gravity/integer] [:constant-payload {:present? true :value nil}]
+                             [:constant-payload {:present? true :value 1}] [:constant-payload {:present? true}]
+                             [:constant-payload {:present? true :value true :extra 1}]
+                             [:operands ["left"]]]]
+        (let [rejected (build (change field value))]
+          (is (= :rejected (:status rejected)))
+          (is (= "B1-UNSUPPORTED" (:diagnostic rejected)))
+          (is (nil? (:llvm-ir rejected)))))
+      (doseq [[field value reason] [[:effects #{:io/write} :operation-effects-must-be-empty-set]
+                                    [:verifier-status :rejected :passed-operation-verifier-status]
+                                    [:constant-payload {:present? true :value false} :mir-value-payload-parity]]]
+        (let [rejected (build (assoc-in output (conj op-path field) value))]
+          (is (= :rejected (:status rejected)))
+          (is (= "B1-INPUT" (:diagnostic rejected)))
+          (is (= reason (:missing-fact rejected))))))))
+
+(defn- development-diamond-input [left right repeated? then-value else-value]
+  ;; Complete supplied diamond before optimization. No source build or seal.
+  (let [{base :mir} (development-b3-comparison-input left right repeated?)
+        core (:source-core base) entry (str core ":mir:entry")
+        then-id (str core ":mir:then") else-id (str core ":mir:else") join-id (str core ":mir:join")
+        entry-ops (get-in base [:functions 'main :blocks entry :instructions])
+        prototype (first entry-ops)
+        operation (fn [id block opcode source-operation operands payload]
+                    (-> prototype
+                        (assoc :op-id id :result id :block-id block :opcode opcode :source-operation source-operation
+                               :type :gravity/integer :operands operands :constant-payload payload
+                               :source (assoc (:source prototype) :core-node id :origin-id (str id ":origin")))
+                        (update :facts merge {:type-fact-id (str id ":type") :effect-fact-id (str id ":effect")
+                                              :ownership-fact-id (str id ":ownership") :capability-fact-id (str id ":capability")
+                                              :safety-outcome-id (str id ":safety") :source-origin-id (str id ":origin")})))
+        then-op (operation "then-value" then-id :constant :literal [] {:present? true :value then-value})
+        else-op (operation "else-value" else-id :constant :literal [] {:present? true :value else-value})
+        join-op (operation "join-value" join-id :conditional-join :if ["comparison" "then-value" "else-value"] :not-applicable)
+        operations (conj entry-ops then-op else-op join-op)
+        source (:source join-op)
+        terminator (fn [block kind value successors facts]
+                     {:artifact :gravity/mir-terminator :terminator-id (str block (case kind :return ":return" :branch ":branch" ":conditional"))
+                      :kind kind :operands [value] :successors successors :effects #{} :ordering :none
+                      :source source :profile :hosted :facts facts :verifier-status :passed})
+        block (fn [id rows predecessors successors dominators term]
+                {:artifact :gravity/mir-block :block-id id :arguments [] :instructions rows :terminator term
+                 :predecessors predecessors :successors successors :dominators dominators
+                 :data-flow {:module-data-flow-graph-reference true} :source source})
+        blocks {entry (block entry entry-ops [] [then-id else-id] [entry]
+                             (terminator entry :conditional-branch "comparison" [then-id else-id] {:condition "comparison" :join join-id}))
+                then-id (block then-id [then-op] [entry] [join-id] [entry then-id]
+                               (terminator then-id :branch "then-value" [join-id] {:incoming-value "then-value"}))
+                else-id (block else-id [else-op] [entry] [join-id] [entry else-id]
+                               (terminator else-id :branch "else-value" [join-id] {:incoming-value "else-value"}))
+                join-id (block join-id [join-op] [then-id else-id] [] [entry join-id]
+                               (terminator join-id :return "join-value" [] {:returned-value "join-value"}))}
+        cfg {:entry entry :edges [{:from entry :to then-id :kind :true} {:from entry :to else-id :kind :false}
+                                 {:from then-id :to join-id :kind :join} {:from else-id :to join-id :kind :join}]
+             :dominance {entry [entry] then-id [entry then-id] else-id [entry else-id] join-id [entry join-id]}
+             :join {:block-id join-id :value-id "join-value"
+                    :incoming [{:predecessor then-id :value "then-value"} {:predecessor else-id :value "else-value"}]}}
+        edges (vec (mapcat (fn [op] (map-indexed (fn [index id] {:from id :consumer-kind :operation :consumer-id (:op-id op)
+                                                               :consumer-block (:block-id op) :operand-index index :edge-kind :operand})
+                                               (:operands op))) operations))
+        terminator-uses (mapv (fn [id kind] (let [term (:terminator (blocks id))]
+                                             {:value-id (first (:operands term)) :consumer-kind :terminator :consumer-id (:terminator-id term)
+                                              :consumer-block id :operand-index 0 :edge-kind kind}))
+                             [entry then-id else-id join-id] [:condition :branch-value :branch-value :return-value])
+        values (into {} (map (fn [op]
+                              [(:op-id op) {:artifact :gravity/mir-value :value-id (:op-id op) :kind :instruction-result
+                                            :type (:type op) :constant-payload (:constant-payload op)
+                                            :defined-by {:value-id (:op-id op) :operation-id (:op-id op) :block-id (:block-id op)}
+                                            :uses (into (mapv #(assoc (dissoc % :from) :use-kind :instruction) (filter #(= (:op-id op) (:from %)) edges))
+                                                        (map #(assoc (dissoc % :value-id) :use-kind :terminator)
+                                                             (filter #(= (:op-id op) (:value-id %)) terminator-uses)))
+                                            :source (:source op) :ownership {:model :persistent-immutable-value}
+                                            :effects #{} :safety {:outcome :proven-safe}}]) operations))
+        table (fn [suffix f] (into {} (map (fn [op] [(str (:op-id op) suffix) (f op)]) operations)))
+        mir (-> base
+                (assoc-in [:functions 'main :returns] :gravity/integer)
+                (assoc-in [:functions 'main :blocks] blocks)
+                (assoc :control-flow-graph cfg
+                       :data-flow-graph {:edges edges :terminator-uses terminator-uses :values values
+                                         :definitions (into {} (map (fn [[id value]] [id (:defined-by value)]) values))}
+                       :source-map (into {} (map (juxt :op-id :source) operations))
+                       :type-table (table ":type" #(hash-map :fact-id (str (:op-id %) ":type") :core-node-id (:op-id %)
+                                                              :type (:type %) :dependencies (:operands %)
+                                                              :source-origin-id (get-in % [:source :origin-id])))
+                       :effect-table (table ":effect" #(hash-map :direct #{} :core-node-id (:op-id %)))
+                       :ownership-table (table ":ownership" #(hash-map :model :persistent-immutable-value :core-node-id (:op-id %)))
+                       :capability-table (table ":capability" #(hash-map :required #{} :granted #{} :core-node-id (:op-id %)))
+                       :safety-table (table ":safety" #(hash-map :outcome :proven-safe :core-node-id (:op-id %)))))
+        artifact {:artifact-id (bootstrap/p15-s23-c11-mir-digest :supplied-diamond)
+                  :mir-id (bootstrap/p15-s23-c11-mir-digest mir) :mir-module mir}]
+    {:mir mir :evidence (bootstrap/p15-s23-c13-evidence-for-target
+                        artifact {:status :passed :semantic-replay-parity :passed} :llvm-x86_64-linux)}))
+
+(deftest sh17-development-folded-predicate-preserves-integer-diamond-emission
+  (let [execute (fn [plan function arguments]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function
+                   {:engine :gravity-sh17-development-folded-diamond :compiler-artifact-plan? true} plan function arguments))
+        build #(execute @development-b3-plan 'b3-build-bounded-llvm-x86_64-linux [%])]
+    (doseq [[left right repeated? then-value else-value expected]
+            [[2 2 false 42 7 42] [2 3 false 42 7 7]
+             [-9223372036854775808 9223372036854775807 false 0 255 255]
+             [9223372036854775807 0 true 0 255 0]]]
+      (let [{:keys [mir evidence]} (development-diamond-input left right repeated? then-value else-value)
+            folded (execute @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+            output (:optimized-mir folded) cfg (:control-flow-graph mir) entry (:entry cfg)
+            join-id (get-in cfg [:join :block-id])
+            policy {:fact-bindings (get-in folded [:semantic-identity :fact-bindings])
+                    :supported-operation-ids (get-in folded [:semantic-identity :operation-order])}
+            original-lowering (build mir) lowering (build output) ir (or (:llvm-ir lowering) "")]
+        (is (= :accepted (:status folded)))
+        (is (= folded (bootstrap/p15-s23-c13-expected-record mir evidence)))
+        (is (= mir (execute @c14-plan 'c14-equality-original-mir [folded])))
+        (is (true? (execute @c14-plan 'c14-equality-translation-valid? [folded policy])))
+        (is (true? (execute @c14-plan 'c14-llvm-bounded-mir-surface-valid? [folded policy])))
+        (is (= cfg (:control-flow-graph output)))
+        (is (= (:source-map mir) (:source-map output)))
+        (is (= (:type-table mir) (:type-table output)))
+        (is (= (vec (drop 2 (get-in mir [:data-flow-graph :edges]))) (get-in output [:data-flow-graph :edges])))
+        (is (= (get-in mir [:data-flow-graph :terminator-uses]) (get-in output [:data-flow-graph :terminator-uses])))
+        (is (= :constructed-unverified (:status original-lowering) (:status lowering)))
+        (is (= expected (:semantic-result original-lowering) (:semantic-result lowering) (:expected-exit-code lowering)))
+        (is (= :pending-host-content-binding (get-in lowering [:verified-input-closure :status])))
+        (is (= [entry (str (:source-core mir) ":mir:then") (str (:source-core mir) ":mir:else") join-id] (:block-order lowering)))
+        (is (re-find #"%branchcond = icmp ne i64 %v2, 0" ir))
+        (is (re-find #"br i1 %branchcond, label %then, label %else" ir))
+        (is (re-find #"%v5 = phi i64 \[ %v3, %then \], \[ %v4, %else \]" ir))
+        (is (not (re-find #"icmp eq|zext" ir)))
+        (is (= (drop 3 (:operation-records original-lowering)) (drop 3 (:operation-records lowering))))
+        (doseq [candidate [(assoc-in output [:control-flow-graph :join :incoming 0 :value] "else-value")
+                           (assoc-in output [:functions 'main :blocks entry :terminator :operands] ["missing"])
+                           (assoc-in output [:functions 'main :blocks join-id :instructions 0 :source-operation] :call)
+                           (assoc-in output [:data-flow-graph :values "comparison" :constant-payload :value] :not-bool)]]
+          (let [rejected (build candidate)]
+            (is (= :rejected (:status rejected)))
+            (is (nil? (:llvm-ir rejected)))))
+        (is (false? (execute @c14-plan 'c14-equality-translation-valid?
+                            [(assoc-in folded [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload :value] :not-bool) policy])))
+        (is (false? (execute @c14-plan 'c14-llvm-bounded-mir-surface-valid?
+                            [(assoc-in folded [:optimized-mir :functions 'main :blocks join-id :instructions 0 :type] :gravity/bool) policy])))
+        ;; Incoming control-flow preservation is checked against the ORIGINAL
+        ;; context, not attributed to the local inverse/forward fold predicate.
+        (is (not= (bootstrap/p15-s23-c13-expected-record mir evidence)
+                  (assoc-in folded [:optimized-mir :control-flow-graph :join :incoming 0 :value] "else-value")))))))
+
+(defn- development-b1-request [fold?]
+  ;; Declared semantic DATA, never a sealed artifact or a current source proof.
+  (let [digest bootstrap/p15-s23-c11-mir-digest
+        {base :mir} (development-b3-comparison-input 2 3 false)
+        entry (get-in base [:control-flow-graph :entry])
+        mir (if fold? base (-> base
+                              (assoc-in [:functions 'main :blocks entry :instructions 2 :opcode] :integer-lt)
+                              (assoc-in [:functions 'main :blocks entry :instructions 2 :source-operation] :integer-lt)))
+        artifact {:artifact-id (digest :supplied-b1-input) :mir-id (digest mir) :mir-module mir}
+        evidence (bootstrap/p15-s23-c13-evidence-for-target artifact {:status :passed :semantic-replay-parity :passed} :llvm-x86_64-linux)
+        record (bootstrap/p15-s23-stage2-runtime-execute-function
+                {:engine :gravity-sh17-development-b1 :compiler-artifact-plan? true}
+                @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+        ;; IDs label supplied DATA here, not a public seal or authentication.
+        optimized (assoc record :artifact-id (digest [:declared-artifact record]) :semantic-id (digest record))
+        independent {:status :passed :module-shape-valid? true :block-count 1 :operation-count 3 :conditional-count 0
+                     :dominance-valid? true :type-facts-valid? true :direct-effects-valid? true :safety-facts-valid? true
+                     :origin-closure-valid? true :runtime-checks-valid? true :runtime-checks {:runtime-check-count 0 :runtime-check-ids []}
+                     :target-independent? true :data-flow {:edge-count 2 :terminator-use-count 1 :definition-count 3 :value-count 3}}
+        verifier {:status :passed :mir-id (:mir-id artifact) :semantic-replay-parity :passed :execution-tcb :clojure-stage0-rule-runner
+                  :independent-verifier independent
+                  :b1-preflight {:artifact :gravity/verified-mir-candidate-for-b1 :status :verified-mir-candidate-for-b1
+                                 :input-kind :gravity/mir :requires-verifier-status :passed :mir-verifier-status :passed
+                                 :binding {:mir-content-id (:mir-id artifact) :checked-core-artifact-id (:source-core mir)
+                                           :independent-verifier-report-id (digest [:report independent])
+                                           :independent-verifier-report-hash (digest independent)
+                                           :pass-execution-record-id (get-in mir [:pass-execution-record :record-id])
+                                           :scope-hash (digest (:scope mir))}
+                                 :target-lowering-credit? false :backend-credit? false :llvm-credit? false}}
+        lineage (fn [relative]
+                  (let [text (slurp (path relative))]
+                    {:source-content-hash (str "sha256:" (bootstrap/sha256-hex text))
+                     :source-byte-count (alength (.getBytes text "UTF-8"))
+                     :compiled-source-rule :not-established}))
+        c11-lineage (lineage "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
+        c13-lineage (lineage "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+        b3-lineage (lineage "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
+        dependencies {:source-core (get-in verifier [:b1-preflight :binding :checked-core-artifact-id])
+                      :c11-source-rule c11-lineage :c11-pass (get-in verifier [:b1-preflight :binding :pass-execution-record-id])
+                      :c13-artifact (:artifact-id optimized) :c13-source-rule c13-lineage :b3-source (:source-content-hash b3-lineage)}
+        binding-of (fn [value] {:content-id (digest value) :entry-count (count value)})
+        profile {:name :hosted :validated? true} target (bootstrap/p15-s23-c14-target-contract)
+        abi (assoc (bootstrap/p15-s23-b3-llvm-expected-abi-contract) :return-type :i32)
+        runtime (bootstrap/p15-s23-b3-llvm-expected-runtime-contract) providers (bootstrap/p15-s23-b3-llvm-expected-provider-contract)
+        proofs {:capability {:content-id (digest {}) :entry-count 0 :proof-ids []}
+                :certificates {:content-id (digest {}) :entry-count 0 :safety-proof-count 0 :safety-proof-ids []}}
+        verifier-id (digest verifier) source-id (digest (:source-map mir))
+        bindings (assoc (into {} (map (fn [[key value]] [key (binding-of value)])
+                                     {:profile profile :target target :abi abi :runtime runtime :providers providers
+                                      :effects {:direct #{} :order {}} :capabilities {:required #{} :granted #{} :proofs {}}
+                                      :type (:type-table mir) :ownership (:ownership-table mir) :safety (:safety-table mir)
+                                      :proofs proofs :source-map (:source-map mir) :dependencies dependencies
+                                      :c13-optimization {:artifact (:artifact-id optimized) :semantic (:semantic-id optimized)
+                                                         :decision (get-in record [:decision-record :decision-id]) :result :passed}}))
+                        :c11-verifier {:content-id verifier-id :entry-count 1})
+        policy {:request-id (digest [:request optimized]) :profile :hosted :profile-contract profile
+                :target target :source-target-selection (bootstrap/p15-s23-b3-llvm-expected-source-target-selection)
+                :abi abi :runtime runtime :providers providers :effects #{} :capabilities #{}
+                :safety {:outcomes 3 :runtime-checks 0 :unsafe-islands 0 :binding (:safety bindings)}
+                :proofs proofs :contract-bindings bindings :required-evidence (:required-evidence bootstrap/p15-s23-b3-llvm-policy)
+                :source-map {:id source-id :preserved? true} :dependencies dependencies
+                :target-policy (bootstrap/p15-s23-c14-target-policy) :proof-target-metadata {:entries [] :proofless-metadata-rejected? true}
+                :unsupported-surface bootstrap/p15-s23-c14-llvm-unsupported-surface :c11-verifier verifier :c11-verifier-id verifier-id}]
+    {:request (:request (bootstrap/p15-s23-c14-expected-record optimized policy)) :record record :mir mir}))
+
+(deftest sh17-development-b1-llvm-accepts-matching-current-c14-optimization-statuses
+  (let [invoke (fn [function arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh17-development-b1 :compiler-artifact-plan? true} @development-b1-plan function arguments))
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped) original @scoped
+        observe (fn [request]
+                  (let [calls (atom [])
+                        result (with-redefs-fn
+                                 {scoped (fn [& args]
+                                           (let [result (apply original args)]
+                                             (when (and (identical? @development-b1-plan (nth args 1))
+                                                        (= 'b1-c14-dependencies-valid? (nth args 2)))
+                                               (swap! calls conj {:request (first (nth args 3)) :result result}))
+                                             result))}
+                                 #(invoke 'b1-bounded-c14-request-valid? [request]))]
+                    {:result result :calls @calls}))]
+    (doseq [fold? [false true]]
+      (let [{:keys [request record mir]} (development-b1-request fold?) input (:input request)
+            status (if fold? :constant-fold-pass-complete :identity-pass-complete)
+            observed (observe request)]
+        (is (= :accepted (:status record)))
+        (is (= status (:optimization-status input) (:c13-optimization-status request)))
+        (is (= (bootstrap/p15-s23-c11-mir-digest mir) (get-in input [:verifier-report :mir-id])))
+        (is (= (get-in input [:verifier-report :mir-id])
+               (get-in input [:verifier-report :b1-preflight :binding :mir-content-id])))
+        (is (true? (invoke 'b1-c14-input-valid? [input])))
+        ;; Actual file identities do not establish a compiled pinned cohort.
+        ;; Observe ORIGINAL dependency rejection; never override its result.
+        (is (false? (:result observed)))
+        (is (= [{:request request :result false}] (:calls observed)))
+        (is (= :not-established (get-in request [:dependency-provenance :c13-source-rule :compiled-source-rule])))
+        (doseq [changed [(assoc input :optimization-status :unknown) (assoc input :optimization-status nil)
+                         (assoc-in input [:optimization-report :artifact-id] (bootstrap/p15-s23-c11-mir-digest :other))
+                         (assoc-in input [:optimization-report :semantic-id] (bootstrap/p15-s23-c11-mir-digest :other))
+                         (assoc-in input [:optimization-report :decision-id] nil)
+                         (assoc-in input [:optimization-report :verifier-result] :failed)
+                         (assoc-in input [:verifier-report :status] :failed)]]
+          (is (false? (invoke 'b1-c14-input-valid? [changed]))))
+        (doseq [changed [(assoc request :c13-optimization-status (if fold? :identity-pass-complete :constant-fold-pass-complete))
+                         (assoc-in request [:input :optimization-status] (if fold? :identity-pass-complete :constant-fold-pass-complete))
+                         (assoc request :c13-optimization-status :unknown)
+                         (assoc-in request [:input :optimization-status] :unknown)
+                         (assoc-in request [:input :optimization-report :verifier-result] :failed)
+                         (assoc-in request [:target :canonical-target] :wasm)
+                         (assoc request :request-id nil)
+                         (-> request (assoc :c13-optimization-status :unknown) (assoc-in [:input :optimization-status] :unknown))
+                         (-> request (assoc :c13-optimization-status nil) (assoc-in [:input :optimization-status] nil))
+                         (-> request (assoc :c13-optimization-status false) (assoc-in [:input :optimization-status] false))
+                         (-> request (assoc :c13-optimization-status "identity-pass-complete")
+                             (assoc-in [:input :optimization-status] "identity-pass-complete"))]]
+          (let [observed (observe changed)]
+            (is (false? (:result observed)))
+            (is (= [] (:calls observed)))))))))
+
 (def ^:private c13-envelope-keys
   ;; This set is copied from C14's c14-c13-envelope-valid? contract.  Keep it
   ;; explicit: C14 source is authoritative for the C13 carrier envelope.

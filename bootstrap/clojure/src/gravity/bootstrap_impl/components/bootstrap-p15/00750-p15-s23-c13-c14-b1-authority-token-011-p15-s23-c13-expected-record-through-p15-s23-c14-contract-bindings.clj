@@ -1,5 +1,5 @@
 (let [p15-s23-c13-c14-b1-authority-token (nth __gravity_bootstrap_lexical_values_126914 0)]
-(defn p15-s23-c13-expected-record
+(defn- p15-s23-c13-identity-record
   [mir evidence]
   {:artifact :gravity/c13-bounded-identity-optimized-mir
    :schema-version 1
@@ -101,6 +101,10 @@
    :clojure-seed-boundary? true
    :self-hosted? false})
 
+(defn p15-s23-c13-expected-record [mir evidence]
+  (gravity.bootstrap-c13-comparison/translated-record
+   mir evidence (p15-s23-c13-identity-record mir evidence)))
+
 (defn p15-s23-c13-c14-b1-seal-stage
   [kind raw source-rule actual-path-provenance]
   (let [base (assoc raw
@@ -133,10 +137,11 @@
     (p15-s23-c11-mir-require-strict-structure!
      source-path expected raw :independent-c13-identity-reconstruction)
     (when-not (and (= expected raw)
-                   (= mir (:optimized-mir raw))
+                   (= (:optimized-mir expected) (:optimized-mir raw))
                    (= (:mir-id c11-artifact)
                       (get-in raw [:input :c11-mir-id])
-                      (get-in raw [:semantic-identity :c11-input-mir-id])
+                      (get-in raw [:semantic-identity :c11-input-mir-id]))
+                   (= (get-in expected [:semantic-identity :c11-output-mir-id])
                       (get-in raw [:semantic-identity :c11-output-mir-id]))
                    (= (:module-id mir)
                       (get-in raw [:input :module-id])
