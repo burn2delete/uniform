@@ -1,0 +1,13 @@
+(ns self-hosting.sh08.sha-suffix-character-membership
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  [(contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f}
+              (first (subvec (vec "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef") 7 71)))
+   (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f}
+              (first (subvec (vec "sha256:g123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef") 7 71)))])
