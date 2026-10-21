@@ -10972,6 +10972,36 @@ This is supplied-DATA pure host-consumer parity, not proof of an observed
 public-path failure, fresh source/public packet, preflight or pin renewal,
 LLVM tool/native execution, admission, migration or milestone completion.
 
+### Folded-Bool cross-target Clang validation: affected composition coverage
+
+Test-only `1a6bec62` passes four unchanged current C13-fold/C14-inverse-and-
+forward-check/B3 IR outputs to Clang: linear Bool true/false and four-block
+Integer-diamond true/false. All four completed with exit zero and emitted
+Linux x86_64 assembly. A separate undefined-SSA IR mutation completed with exit
+one, the expected diagnostic and no assembly. This fills external tool
+coverage, not a presumed production defect or manufactured RED.
+
+The exact selector passed 1/72; boundary separately passed 6/11: 7/83 across
+two passing invocations. LOC separately passed 2,022 files, zero exceptions,
+maximum 250. All original runner processes exited naturally; the temporary
+directory was removed. The later SOURCE main join changes only C7, its typed
+call test and notes, outside this direct C13/C14/B3/raw compiler/harness route;
+the one owned test stays byte-identical and results retain their actual
+`1a6bec62` execution binding, not a joined replay. Prior 501 checks were not
+rerun or resummed.
+
+Apple Clang 21.0.0 reports host `arm64-apple-darwin25.5.0`; the explicit requested
+target is `x86_64-unknown-linux-gnu`. Invoked `/usr/bin/clang` is a 118,928-byte
+Apple launcher with SHA-256
+`179301dcb41ea78accc3fa0048a7e6f6710d891945a751a34addd622020c1818`,
+not a hash/pin of the effective Xcode compiler engine or full toolchain closure.
+Exact commands, IR/assembly hashes and bounded process results remain
+nonauthoritative observations. File-size checks are not hard filesystem quotas;
+there is no hard aggregate wall/memory containment or benchmark claim. Supplied
+MIR DATA and constructed/unverified, pending-host-binding B3 output do not
+establish fresh C11/public packets, pin renewal or native admission. No linking,
+generated-program execution, migration or milestone evidence is claimed.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established
