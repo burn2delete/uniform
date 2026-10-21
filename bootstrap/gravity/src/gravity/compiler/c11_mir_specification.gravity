@@ -3286,7 +3286,7 @@
           purity {:intrinsic-effects #{} :intrinsic-capabilities #{}
                   :aggregate-effects #{} :aggregate-capabilities #{}}]
       (sh12-c6p-all?
-        [(= :gravity/integer (sh12-c6p-result-type core))
+        [(contains? #{:gravity/bool :gravity/integer} (sh12-c6p-result-type core))
          (symbol? name) (if (= name (get (get parameter :attributes) :name)) false true)
          (= [:local :let-binding :let]
             [(get initializer :source-operation) (get binder :source-operation) (get scope :source-operation)])
