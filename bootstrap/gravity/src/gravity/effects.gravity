@@ -5305,6 +5305,7 @@
 (defn body-pc-evidence-work [proof budget]
   ; Budget and first-order checks. Owning reconstruction checks closed field domains.
   ; Parent facts have independent validation in their current typed tables.
+  ; Keywords use their one scalar visit; only String/Symbol text is traversed.
   (loop [pending [[proof 0]] used 0]
     (if (= 0 (count pending)) {:status :accepted :work-count used}
       (if (>= used budget) {:status :rejected :reason :map-get-work-limit :work-count used}
@@ -5328,7 +5329,7 @@
               (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
                     (if (symbol? value) true (if (string? value) true (if (integer? value) true (char? value)))))))
                 (let [scalar-work (+ work (if (string? value) (count value)
-                                           (if (if (symbol? value) true (keyword? value)) (count (str value)) 0)))]
+                                           (if (symbol? value) (count (str value)) 0)))]
                   (if (> scalar-work budget) {:status :rejected :reason :map-get-work-limit :work-count scalar-work}
                     (recur tail scalar-work)))
                 {:status :rejected :reason :map-get-source-mismatch :work-count work}))))))))
