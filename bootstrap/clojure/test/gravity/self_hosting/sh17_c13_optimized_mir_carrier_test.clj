@@ -169,7 +169,8 @@
             (let [candidate (assoc-in result [:verifier-replay :delta] changed-delta)]
               (is (false? (invoke-c14-kernel 'c14-equality-translation-valid? [candidate policy])))
               (is (not= expected candidate))))
-          (doseq [candidate [(assoc-in result [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload :value] (not expected))
+          (doseq [candidate [(assoc-in result [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload :value]
+                                     (not (get-in comparison [:constant-payload :value])))
                              (assoc-in result [:optimized-mir :data-flow-graph :values "comparison" :constant-payload :value] :not-a-bool)
                              (assoc-in result [:decision-record :changed-operations] ["left"])
                              (assoc-in result [:invalidation-ledger :facts-invalidated] [])
