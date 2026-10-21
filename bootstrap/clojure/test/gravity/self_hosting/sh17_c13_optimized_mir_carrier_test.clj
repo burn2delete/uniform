@@ -318,7 +318,13 @@
         (is (= (str "  %v2 = add i64 0, " (if expected 1 0)) (:llvm-instruction (last records))))
         (is (not (re-find #"icmp|zext" (or (:llvm-ir lowering) ""))))
         (is (re-find #"target triple = \"x86_64-unknown-linux-gnu\"" (or (:llvm-ir lowering) "")))
-        (is (= [] (:ub-sensitive-flags lowering) (:emitted-metadata lowering)))))
+        (is (= [] (:ub-sensitive-flags lowering) (:emitted-metadata lowering)))
+        (is (= :pending-host-content-binding (get-in lowering [:verified-input-closure :status])))
+        ;; These legacy closure values name upstream obligations/input lineage;
+        ;; they do not claim C11 reverified the transformed C13 output.
+        (is (= :required-upstream-contextual-verifier
+               (get-in lowering [:verified-input-closure :c11-full-mir-authenticity])))
+        (is (= :upstream-c11-owned (get-in lowering [:verified-input-closure :full-dfg-edge-use-replay])))))
     (let [{:keys [mir evidence]} (development-b3-comparison-input 2 2 false)
           folded (execute @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
           output (:optimized-mir folded) entry (get-in mir [:control-flow-graph :entry])
