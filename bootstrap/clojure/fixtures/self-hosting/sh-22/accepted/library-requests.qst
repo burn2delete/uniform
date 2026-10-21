@@ -9,6 +9,7 @@
              sh22-utf8-request
              sh22-checked-add-request
              sh22-checked-sub-request
+             sh22-checked-mul-request
              sh22-error-request
              sh22-file-read-request
              sh22-stdout-request
@@ -103,6 +104,11 @@
 (defn sh22-checked-sub-request []
   (sh22-request
    :checked-sub :checked-sub-i64 [40 2]
+   #{} #{} :none "/checkout-a/compiler.gravity"))
+
+(defn sh22-checked-mul-request []
+  (sh22-request
+   :checked-mul :checked-mul-i64 [6 7]
    #{} #{} :none "/checkout-a/compiler.gravity"))
 
 (defn sh22-error-request []

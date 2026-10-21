@@ -7,6 +7,7 @@
              sh22-invalid-utf8-request
              sh22-overflow-request
              sh22-sub-overflow-request
+             sh22-mul-overflow-request
              sh22-missing-capability-request
              sh22-missing-encoding-request
              sh22-invalid-artifact-request
@@ -62,6 +63,11 @@
   (assoc
    (assoc request :operation :checked-sub-i64)
    :arguments [-9223372036854775808 1]))
+
+(defn sh22-mul-overflow-request [request]
+  (assoc
+   (assoc request :operation :checked-mul-i64)
+   :arguments [-9223372036854775808 -1]))
 
 (defn sh22-missing-encoding-request [request]
   (assoc request :arguments [:compiler/source-unit nil 1024]))
