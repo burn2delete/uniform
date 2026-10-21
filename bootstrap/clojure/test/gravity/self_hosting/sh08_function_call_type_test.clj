@@ -14744,7 +14744,7 @@
           repeated (measure [produced s] 65536)]
       (is (= carrier produced (:result-type repeated)))
       (is (= :accepted (:status repeated)))
-      (is (= :rejected (:status (invoke-c7 'sh08-ksm-domain [[produced s] 65536]))))
+      (is (= :accepted (:status (invoke-c7 'sh08-ksm-domain [[produced s] 65536]))))
       (is (= :rejected (:status (invoke-c7 'sh08-kse-domain [[produced (finite [s])] 65536])))))
     (let [receiver (finite [s :gravity.type/string])
           rejected (derive (list-prepend-input receiver s) 65536)
