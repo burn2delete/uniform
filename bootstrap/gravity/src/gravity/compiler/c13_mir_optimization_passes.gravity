@@ -1771,16 +1771,20 @@
     false))
 
 (defn sh16-output-base-operation [operation opcode operands]
-  {:op-id (get operation :op-id)
-   :opcode opcode
-   :operands operands
-   :result (get operation :result)
-   :type (get operation :type)
-   :effects (get operation :effects)
-   :ordering (get operation :ordering)
-   :source-span (get operation :source-span)
-   :origin-chain (get operation :origin-chain)
-   :safety-outcome (get operation :safety-outcome)})
+  (let [output
+        {:op-id (get operation :op-id)
+         :opcode opcode
+         :operands operands
+         :result (get operation :result)
+         :type (get operation :type)
+         :effects (get operation :effects)
+         :ordering (get operation :ordering)
+         :source-span (get operation :source-span)
+         :origin-chain (get operation :origin-chain)
+         :safety-outcome (get operation :safety-outcome)}]
+    (if (= :unsafe-island (get operation :safety-outcome))
+      (assoc output :unsafe-audit-id (get operation :unsafe-audit-id))
+      output)))
 
 (defn sh16-transform-operation [operation]
   (if (sh16-foldable-add? operation)
