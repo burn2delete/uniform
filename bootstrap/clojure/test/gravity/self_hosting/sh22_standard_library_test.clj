@@ -103,6 +103,7 @@
     sh22-set-conj-request
     sh22-set-contains-keyword-request
     sh22-set-contains-symbol-request
+    sh22-set-equal-keyword-request
     sh22-utf8-request
     sh22-checked-add-request
     sh22-checked-sub-request
@@ -160,6 +161,8 @@
    ['sh22-set-contains-keyword-request "STD10003" :expected-ordered-set]
    'sh22-duplicate-symbol-after-hit-request
    ['sh22-set-contains-symbol-request "STD10003" :expected-ordered-set]
+   'sh22-duplicate-keyword-equality-request
+   ['sh22-set-equal-keyword-request "STD10003" :expected-ordered-set]
    'sh22-spoofed-utf8-request
    ['sh22-stdout-request "STD4001" :validated-text-facts-mismatch]
    'sh22-nested-physical-path-request
@@ -196,7 +199,7 @@
     (is (= 512 (:maximum-carrier-width policy)))
     (is (= 65536 (:maximum-carrier-nodes policy)))
     (is (true? (:experimental-opt-in-required policy)))
-    (is (= 18 (count (:operation-set policy))))
+    (is (= 19 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
     (is (contains? (:diagnostics policy) "STD8001"))
     (is (some #{:authenticated-sh19-runtime-services}
@@ -207,7 +210,7 @@
     (is (= 'gravity.stdlib.self-hosting-core (:module manifest)))
     (is (= :experimental (:stability manifest)))
     (is (empty? (:unsafe-islands manifest)))
-    (is (= 18 (count exports)))
+    (is (= 19 (count exports)))
     (is (every? #(= :experimental (:stability %)) exports))
     (is (every? #(= #{:meta} (:profiles %)) exports))
     (is (every? string? (map :type exports)))
@@ -778,6 +781,111 @@
           (doseq [changed [(assoc result :value false)
                            (assoc-in result [:facts :member-family] :keyword)
                            (assoc-in result [:identity-input :arguments 1] 'absent)]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
+
+(deftest sh22-keyword-set-equality-consumes-real-insertion-results
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        ordered (fn [values] {:artifact :gravity/ordered-set :values values})
+        observe (fn [input]
+                  (let [counts (atom {:census 0 :unique 0 :compare 0})
+                        result (with-redefs-fn
+                                 {scoped (fn [& args]
+                                           (when-let [kind (get {'sh22-keyword-vector? :census
+                                                                 'sh22-vector-unique? :unique
+                                                                 'sh22-keyword-set-equal-values? :compare} (nth args 2))]
+                                             (swap! counts update kind inc))
+                                           (apply original args))}
+                                 #(handle input))]
+                    [result @counts]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (request plan 'sh22-set-equal-keyword-request)
+            values (mapv #(keyword "member" (str "k" %)) (range 256))
+            export (first (filter #(= :ordered-set-equal-keyword (:name %))
+                                  (:exports (invoke-engine 'sh22-module-manifest []))))]
+        (is (= #{:meta} (:profiles export)))
+        (is (= :experimental (:stability export)))
+        (is (= #{} (:effects export) (:capabilities export)))
+        (is (= :none (:allocation export)))
+        (is (= "(OrderedSet Keyword) (OrderedSet Keyword) -> (Result Bool CollectionError)" (:type export)))
+        (doseq [[left right expected]
+                [[[] [] true] [[] [:reader] false] [[:reader] [] false]
+                 [[:reader :syntax] [:syntax :reader] true]
+                 [[:left/name] [(keyword "left" "name")] true]
+                 [[:left/name] [:right/name] false] [[:reader :syntax] [:reader :mir] false]
+                 [values (vec (reverse values)) true]
+                 [values (assoc values 255 :member/other) false]]]
+          (let [input (assoc base :arguments [(ordered left) (ordered right)])
+                before (:arguments input) result (handle input)]
+            (is (= :accepted (:status result)))
+            (is (= expected (:value result)))
+            (is (= {:collection-kind :ordered-set :member-family :keyword
+                    :equality :keyword-set-value :safety-outcome :proven-safe
+                    :allocation :none :persistent-value-semantics true} (:facts result)))
+            (is (= before (:arguments input) (get-in result [:identity-input :arguments])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (doseq [[members value right] [[[] :reader [:reader]]
+                                      [[:reader] :syntax [:syntax :reader]]
+                                      [[:reader :syntax] :reader [:syntax :reader]]]]
+          (let [insertion (assoc (request plan 'sh22-set-conj-request) :arguments [(ordered members) value])
+                inserted (handle insertion)
+                query (assoc base :arguments [(:value inserted) (ordered right)]) result (handle query)]
+            (is (= :accepted (:status inserted) (:status result)))
+            (is (true? (:value result)))
+            (is (= (ordered members) (first (:arguments insertion))))
+            (doseq [[input output] [[insertion inserted] [query result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
+        ;; Even a count mismatch or apparent first hit cannot bypass validation.
+        (doseq [[left right reason census unique?]
+                [[(conj values :member/k256) [:reader] :collection-bound-exceeded 0 false]
+                 [[:reader] (conj values :member/k256) :collection-bound-exceeded 0 false]
+                 [[:reader "reader"] [:reader] :expected-keyword-ordered-set 1 false]
+                 [[:reader] [:reader 'reader] :expected-keyword-ordered-set 2 false]
+                 [[:reader] [:reader nil] :expected-keyword-ordered-set 2 false]
+                 [[:reader :reader] [:reader] :expected-ordered-set 2 true]
+                 [[:reader] [:reader :syntax :reader] :expected-ordered-set 2 true]
+                 [[] [:reader :reader] :expected-ordered-set 2 true]]]
+          (let [input (assoc base :arguments [(ordered left) (ordered right)])
+                [result counts] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= (if (= reason :collection-bound-exceeded) "STD3001" "STD10003")
+                   (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= census (:census counts)))
+            (is (= unique? (pos? (:unique counts))))
+            (is (zero? (:compare counts)))))
+        (doseq [arguments [[nil (ordered [])] [(ordered []) nil]
+                           [#{:reader} (ordered [])] [(ordered []) [:reader]]]]
+          (let [[result counts] (observe (assoc base :arguments arguments))]
+            (is (= :rejected (:status result)))
+            (is (= :expected-ordered-set (get-in result [:diagnostics 0 :reason])))
+            (is (= {:census 0 :unique 0 :compare 0} counts))))
+        (doseq [[input rule reason]
+                (concat (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
+                             [[] [(ordered [])] [(ordered []) (ordered []) :extra]])
+                        [[(assoc base :effects #{:memory/allocate}) "STD1002" :undeclared-library-effect]
+                         [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+                         [(assoc base :allocation-policy :bounded-by-result) "STD1001" :allocation-policy-mismatch]
+                         [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]])]
+          (let [result (handle input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))))
+        (let [[result counts] (observe (assoc base :operation nil))]
+          (is (= :rejected (:status result)))
+          (is (= {:census 0 :unique 0 :compare 0} counts)))
+        (let [callbacks (atom 0) opaque (fn [] (swap! callbacks inc))]
+          (doseq [[left right] [[[opaque] [:reader]] [[:reader] [:reader opaque]]]]
+            (let [[result counts] (observe (assoc base :arguments [(ordered left) (ordered right)]))]
+              (is (= :rejected (:status result)))
+              (is (= :expected-keyword-ordered-set (get-in result [:diagnostics 0 :reason])))
+              (is (zero? (:unique counts)))
+              (is (zero? (:compare counts)))
+              (is (zero? @callbacks)))))
+        (let [result (handle base)]
+          (doseq [changed [(assoc result :value false)
+                           (assoc-in result [:facts :member-family] :symbol)
+                           (assoc-in result [:identity-input :arguments 1 :values] [:other])]]
             (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
 
 (deftest sh22-vector-append-executes-with-real-nth-and-assoc-consumers

@@ -8566,6 +8566,43 @@ native allocation/execution, compiler client linkage, complete library closure,
 migration, SH-22 completion or self-hosting follows. Historical SH07 source/
 digest pins remain unchanged and do not authenticate the revised library source.
 
+### Bounded Keyword Set value equality
+
+The SH-22 leaf executes `:ordered-set-equal-keyword` under the existing STD2/
+STD3 value-equality law. Both existing ordered carriers are bounded to 256
+actual Keywords. Both bounds precede the complete member-family censuses;
+both domains precede member equality and both uniqueness checks precede any
+count/membership result, including count mismatch or an apparent first match.
+Under those established premises, equal counts and left-member inclusion
+establish unordered Set equality. Empty Sets compare equal; both inputs and
+inert payloads are preserved. `STD3001`, `STD10003` and `STD1001` retain bound,
+malformed/duplicate/family and arity failures. The owner-local experimental
+opt-in `:meta` surface grows to 19 operations with no effects/capabilities and
+`:none` collection-value allocation; the four exports and envelope are unchanged.
+
+Executed candidate `42ba1831412b06e97c045859268a84be80de2de9` passed the complete
+11-test/1436-assertion focused batch at 512 MiB, including all 322 new equality
+assertions, both membership queries, Vector append, fixtures, rejection and
+fresh verifier controls. Real existing Set insertion outputs feed equality;
+producer and consumer are recomputed. Empty/reordered/equal/different Sets,
+qualified values, 256/257 on both sides, duplicate-after-match/count mismatch,
+wrong families, nil/opaque inputs, arity/authority and forgery are covered.
+Prior-production RED remains separate: 1/322, 150 pass, 172 fail, no errors.
+Boundary passed 6/11 and LOC passed. The normal main `1b50ced9` join changed
+only disjoint C13/SH16 code/tests and notes; executed SH-22 and runtime/emitter
+dependency bytes remained unchanged. No general equality, native allocation/
+execution, host-callback safety, linkage, migration or completion follows.
+Historical SH07 pins remain unchanged and do not authenticate this source.
+
+String membership is a distinct blocked dependency, not a completed operation.
+L1 requires Unicode-scalar Strings; STD4 family classification supplies no
+validation fact. SH-22 carrier counting and ordinary host equality can admit a
+lone UTF16 surrogate. Existing strict UTF-8 primitives have fixed direct callers
+and prohibit public runtime use, outside this six-path ownership. A checked
+String ingress primitive or independently established validated carrier needs
+its owning interface decision; neither host-String semantics nor new authority
+was introduced here.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
