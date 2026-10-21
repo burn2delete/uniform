@@ -216,6 +216,84 @@
             (invoke-engine
              'sh16-verify [gravity-request gravity-result]))))))
 
+(deftest sh16-propagates-two-uses-of-one-established-i64-producer
+  ;; Two operand occurrences, not a rewrite to multiplication or general SSA.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-no-change-request)
+          mixed (request plan 'sh16-mixed-optimization-request)
+          constant (assoc (first (:operations base)) :op-id :op/input :result :value/input :operands [3])
+          add (assoc (first (:operations mixed)) :constant-operands false :operands [:value/input :value/input])
+          return (assoc (last (:operations base)) :operands [(:result add)])
+          input (assoc base :operations [constant add return])
+          by-id (fn [result id] (first (filter #(= id (:op-id %)) (:optimized-operations result))))]
+      (doseq [[value expected] [[0 0] [3 6] [-3 -6]
+                                [4611686018427387903 9223372036854775806]
+                                [-4611686018427387904 -9223372036854775808]]]
+        (let [subject (assoc-in input [:operations 0 :operands] [value]) result (optimize subject)
+              output (by-id result :op/add)]
+          (is (nil? (invoke-engine 'sh16-request-error [subject])))
+          (is (= :accepted (:status result)))
+          (is (= :const (:opcode output)))
+          (is (= [expected] (:operands output)))
+          (is (= (get-in subject [:operations 0]) (by-id result :op/input)))
+          (is (= (select-keys add [:op-id :result :type :effects :ordering :source-span :origin-chain :safety-outcome])
+                 (select-keys output [:op-id :result :type :effects :ordering :source-span :origin-chain :safety-outcome])))
+          (is (= [:op/add] (get-in result [:decision-log 0 :changed-operations])))
+          (is (= [] (get-in result [:decision-log 2 :changed-operations])))
+          (is (= [:value/input :value/input] (get-in result [:identity-input :operations 1 :operands])))
+          (is (= false (get-in result [:identity-input :operations 1 :constant-operands])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
+          (is (= :rejected (:status (invoke-engine 'sh16-verify
+                                                 [subject (assoc-in result [:optimized-operations 1 :operands] [99])]))))))
+      (doseq [subject [(assoc-in input [:operations 0 :operands] [4611686018427387904])
+                       (assoc-in input [:operations 0 :operands] [-4611686018427387905])
+                       (assoc-in input [:operations 0 :operands] [Long/MAX_VALUE])
+                       (assoc-in input [:operations 0 :operands] [Long/MIN_VALUE])
+                       (assoc-in input [:operations 0 :type] :bool)
+                       (assoc-in input [:operations 0 :operands] [nil])
+                       (update-in input [:operations 0] assoc :effects #{:io/write} :ordering :sequence)
+                       (update-in input [:operations 0] assoc :safety-outcome :unsafe-island :unsafe-audit-id :audit/input)
+                       (assoc input :operations [add constant return])
+                       (update input :operations conj (assoc constant :op-id :op/ambiguous))
+                       (assoc-in input [:operations 1 :operands] [:missing :missing])
+                       (assoc-in input [:operations 1 :type] :bool)
+                       (update-in input [:operations 1] assoc :effects #{:io/write} :ordering :sequence)
+                       (update-in input [:operations 1] assoc :safety-outcome :unsafe-island :unsafe-audit-id :audit/add)
+                       (assoc input :operations [constant (second (:operations mixed)) add return])]]
+        (let [result (optimize subject)]
+          (is (= :accepted (:status result)))
+          (is (= (first (filter #(= :op/add (:op-id %)) (:operations subject))) (by-id result :op/add)))
+          (is (= [] (get-in result [:decision-log 0 :changed-operations])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
+      (let [second-add (assoc add :op-id :op/twice-again :result :value/twice-again
+                             :operands [(:result add) (:result add)])
+            subject (assoc input :operations [constant add second-add (assoc return :operands [(:result second-add)])])
+            result (optimize subject)]
+        (is (= :accepted (:status result)))
+        (is (= [12] (:operands (by-id result :op/twice-again))))
+        (is (= [:op/add :op/twice-again] (get-in result [:decision-log 0 :changed-operations])))
+        (is (= [:op/add] (get-in result [:decision-log 2 :changed-operations])))
+        (is (= constant (by-id result :op/input)))
+        (is (nil? (by-id result :op/add)))
+        (is (= [] (get-in result [:translation-validation :proofs])))
+        (is (= [(:result add) (:result add)] (get-in result [:identity-input :operations 2 :operands])))
+        (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))
+      (let [proof {:proof-id :proof/dead-add :operation-id :op/add :no-uses true :effect-free true :verified true}
+            dead (assoc add :dead true :dead-proof proof)
+            subject (assoc input :operations [constant dead (assoc return :operands [:value/input])])
+            result (optimize subject)]
+        (is (= :accepted (:status result)))
+        (is (= [] (get-in result [:decision-log 0 :changed-operations])))
+        (is (= [:op/add] (get-in result [:decision-log 2 :changed-operations])))
+        (is (= [:proof/dead-add] (get-in result [:translation-validation :proofs])))
+        (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
+        (let [bad (assoc-in input [:operations 0] (assoc constant :dead true
+                                                       :dead-proof (assoc proof :operation-id :op/input)))
+              rejection (optimize bad)]
+          (is (= :rejected (:status rejection)))
+          (is (= "C13-PROOF" (get-in rejection [:diagnostics 0 :rule])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [bad rejection])))))))))
+
 (deftest sh16-removes-only-unused-constants-created-by-fresh-folding
   ;; Local no-use replay over normalized DATA, not a supplied/provider proof.
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
