@@ -8471,6 +8471,34 @@ execution, complete SH-22 API closure, authoritative migration or milestone
 completion follows. Historical SH07 source/digest pins remain unchanged and
 their evidence does not authenticate this changed source revision.
 
+### Keyword membership in bounded ordered Sets
+
+The SH-22 leaf now executes `:ordered-set-contains-keyword` under STD2/STD3.
+The query accepts the existing ordered-set carrier with at most 256 actual
+Keyword members and a Keyword needle. Bounds and the complete family check dominate member
+equality; complete uniqueness validation dominates a query hit, including a
+duplicate after a matching prefix. Membership uses qualified Keyword value
+equality, is insertion-order independent and preserves the original value.
+`STD3001`, `STD10003` and `STD1001` retain bound, malformed/duplicate/family
+and arity failures. The experimental opt-in `:meta` operation surface grows to
+16; effects/capabilities remain empty and collection-value allocation is `:none`.
+The four exports and request/result envelope are unchanged. Metadata overhead
+does not establish native allocation-free execution.
+
+An initial reader error executed no tests. Semantic RED then ran one test/248
+assertions with 150 failures. First GREEN ran four tests/293 assertions with
+eight failures from incorrect common-carrier expectations; four later selected
+vars were unrun. Only those test expectations changed: opaque arguments reach
+the family check and reject before uniqueness/search without payload invocation;
+origin validation rejects separately. This is not universal opaque rejection or
+host-printing-callback safety. Corrected GREEN passed eight tests/508 assertions
+at 512 MiB, including all 248 membership assertions and existing collection,
+fixture, policy, rejection and fresh verifier checks. Partial/failing counts
+are not extra coverage. Boundary checks passed six tests/11 assertions and LOC
+passed. General Sets, mixed/non-Keyword families, host-provider interop,
+compiler linkage, native execution, complete SH-22 and migration remain open.
+Historical SH07 pins are unchanged and do not authenticate this source revision.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
