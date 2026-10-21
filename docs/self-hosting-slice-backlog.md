@@ -8715,6 +8715,41 @@ native allocation/execution, compiler client linkage, complete library closure,
 migration, SH-22 completion or self-hosting follows. Historical SH07 source/
 digest pins remain unchanged and do not authenticate the revised library source.
 
+### Integer membership after bounded ordered-Set insertion
+
+The existing SH-22 request API executes `:ordered-set-contains-integer` with
+at most 256 actual Integer members and an Integer needle. Integer includes
+supported values beyond signed64; no arithmetic, coercion or implicit width
+proof is added. Bound checks precede the complete indexed Vector family
+census; both member and needle checks precede equality, and full uniqueness
+validation precedes a membership result. Reordered/empty Sets, reader codepoint
+and compiler/runtime arity DATA, endpoint/beyond64 values and real existing
+Set insertion outputs are covered, with fresh producer/query recomputation.
+Late invalid members/duplicates, wrong needles, 257 values, malformed carriers,
+authority, nil-operation and substituted results reject at their owning gates.
+The opt-in experimental `:meta` policy has 20 operations, pure query effects,
+no capabilities and `:none` collection-value allocation. Four exports and the
+request/result envelope remain unchanged.
+
+Unsupported-domain RED `a57d0a39` retained 184 passes and 368 failures in 552
+assertions, without errors; it is not evidence of 368 prior semantic defects.
+Candidate `684eb38d` passed the whole namespace, 22/3784. A helper-only 4+/4-
+quality successor `969e0b41` replaces the new Vector-rest census with indexed
+access and freshly passes 22/3784, including all 552 new assertions. These
+passing epochs are retained separately, not summed. Boundary 6/11 and LOC
+2,022 files/zero exceptions/maximum 250 retain their original `684eb38d`
+execution binding: the helper-only change leaves their policy/file/line inputs
+unchanged, so they were not rerun or relabeled. Selected coverage is 28/3795
+across the V2 namespace and retained boundary invocations, with LOC separate.
+The accepted C7/SH08-only main join preserves all six owned files and this
+direct raw library/fixture execution path; no joined replay is claimed.
+
+These are bounded request-module results, not ordinary source Integer-Set
+membership, compiled reader/effects/emitter/runtime client execution, Unicode
+ingress, general mixed-family Sets, host-callback safety, native allocation or
+execution, public admission, migration, milestone or SH-22 completion evidence.
+Historical source/digest pins are unchanged and do not authenticate this source.
+
 ### Bounded Keyword Set value equality
 
 The SH-22 leaf executes `:ordered-set-equal-keyword` under the existing STD2/

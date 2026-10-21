@@ -39,6 +39,7 @@
      :ordered-set-conj
      :ordered-set-contains-keyword
      :ordered-set-contains-symbol
+     :ordered-set-contains-integer
      :ordered-set-equal-keyword
      :utf8-validate
      :checked-add-i64
@@ -118,6 +119,10 @@
     (sh22-export
      :ordered-set-contains-symbol :collections
      "(OrderedSet Symbol) Symbol -> (Result Bool CollectionError)"
+     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
+    (sh22-export
+     :ordered-set-contains-integer :collections
+     "(OrderedSet Integer) Integer -> (Result Bool CollectionError)"
      #{} #{} :none ["STD3001" "STD10003"] #{:meta})
     (sh22-export
      :ordered-set-equal-keyword :collections
@@ -265,6 +270,18 @@
           true
           (if (symbol? (first remaining))
             (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh22-integer-vector? [values maximum]
+  (if (vector? values)
+    (if (<= (count values) maximum)
+      (loop [index 0]
+        (if (= index (count values))
+          true
+          (if (integer? (get values index))
+            (recur (+ index 1))
             false)))
       false)
     false))
@@ -1299,6 +1316,32 @@
         (sh22-rejected request "STD10003" :expected-ordered-set))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
+(defn sh22-ordered-set-contains-integer [request]
+  (let [arguments (get request :arguments)
+        ordered-set (get arguments 0)
+        value (get arguments 1)]
+    (if (= 2 (count arguments))
+      (if (sh22-ordered-set-shape? ordered-set)
+        (let [values (get ordered-set :values)
+              maximum (get (sh22-library-policy) :maximum-collection-elements)]
+          (if (<= (count values) maximum)
+            ; STD2/STD3/STD5: the entire Integer family precedes equality;
+            ; classification establishes no signed-width or arithmetic proof.
+            (if (sh22-integer-vector? values maximum)
+              (if (integer? value)
+                (if (sh22-vector-unique? values [])
+                  (sh22-accepted
+                   request (sh22-vector-contains? values value 0)
+                   {:collection-kind :ordered-set :member-family :integer
+                    :equality :integer-value :safety-outcome :proven-safe
+                    :allocation :none :persistent-value-semantics true})
+                  (sh22-rejected request "STD10003" :expected-ordered-set))
+                (sh22-rejected request "STD10003" :expected-integer))
+              (sh22-rejected request "STD10003" :expected-integer-ordered-set))
+            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+        (sh22-rejected request "STD10003" :expected-ordered-set))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
 (defn sh22-keyword-set-equal-values? [left right]
   ; Both vectors are bounded, homogeneous and unique before this comparison.
   (if (= (count left) (count right))
@@ -1341,7 +1384,9 @@
 
 (defn sh22-handle-valid-request [request]
   (let [operation (get request :operation)]
-    (if (= operation :ordered-set-equal-keyword)
+    (if (= operation :ordered-set-contains-integer)
+      (sh22-ordered-set-contains-integer request)
+      (if (= operation :ordered-set-equal-keyword)
       (sh22-ordered-set-equal-keyword request)
       (if (= operation :ordered-set-contains-symbol)
       (sh22-ordered-set-contains-symbol request)
@@ -1377,7 +1422,7 @@
                           (sh22-artifact-data request)
                           (if (= operation :meta-view)
                             (sh22-meta-view request)
-                            (sh22-canonical-data request)))))))))))))))))
+                            (sh22-canonical-data request))))))))))))))))))
 
 (defn sh22-operation-effects [operation]
   (if
@@ -1400,7 +1445,9 @@
       #{}))))
 
 (defn sh22-operation-allocation [operation]
-  (if (= operation :ordered-set-equal-keyword)
+  (if (= operation :ordered-set-contains-integer)
+    :none
+    (if (= operation :ordered-set-equal-keyword)
     :none
     (if (= operation :ordered-set-contains-symbol)
     :none
@@ -1424,7 +1471,7 @@
                        #{:io-file-read :io-stdout}
                        operation)
                     :provider-owned
-                    :bounded-by-result))))))))))))
+                    :bounded-by-result)))))))))))))
 
 (defn sh22-operation-capabilities [operation]
   (if (= operation :io-file-read)

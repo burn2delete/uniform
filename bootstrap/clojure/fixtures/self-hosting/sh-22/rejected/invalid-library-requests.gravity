@@ -23,6 +23,7 @@
              sh22-duplicate-set-value-request
              sh22-duplicate-keyword-after-hit-request
              sh22-duplicate-symbol-after-hit-request
+             sh22-duplicate-integer-after-hit-request
              sh22-duplicate-keyword-equality-request
              sh22-spoofed-utf8-request
              sh22-nested-physical-path-request])
@@ -150,6 +151,10 @@
   (assoc request :arguments
          [{:artifact :gravity/ordered-set
            :values ['reader 'compiler/compile 'reader]} 'reader]))
+
+(defn sh22-duplicate-integer-after-hit-request [request]
+  (assoc request :arguments
+         [{:artifact :gravity/ordered-set :values [32 44 32]} 32]))
 
 (defn sh22-duplicate-keyword-after-hit-request [request]
   (assoc request :arguments
