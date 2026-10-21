@@ -1253,7 +1253,7 @@
 
 (defn sh22-handle-valid-request [request]
   (let [operation (get request :operation)]
-    (if (or (= operation :vector-assoc) (= operation :vector-append))
+    (if (if (= operation :vector-assoc) true (= operation :vector-append))
       (if (= operation :vector-assoc)
         (sh22-vector-assoc request)
         (sh22-vector-append request))
@@ -1308,7 +1308,7 @@
       #{}))))
 
 (defn sh22-operation-allocation [operation]
-  (if (or (= operation :vector-assoc) (= operation :vector-append))
+  (if (if (= operation :vector-assoc) true (= operation :vector-append))
     :bounded-by-result
     (if (= operation :vector-nth)
       :none
