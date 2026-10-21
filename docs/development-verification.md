@@ -238,6 +238,24 @@ overflow boundary. They are not compiler linkage, native/provider, complete
 library or migration evidence. Historical SH07 source/digest pins remain
 unchanged and do not authenticate the revised library source.
 
+### Checked nonnegative i64 quotient in the bootstrap library
+
+STD5/SAFE9 govern `:checked-nonnegative-quot-i64` in the existing opt-in `:meta`
+request API: dividend `0..MAX` and divisor `1..MAX`. Arity, both actual Integer
+types and signed-i64 ranges, then the explicit domain checks precede `quot`.
+The checked Result contains an exact integral quotient between zero and the
+dividend; query effects/capabilities are empty and value allocation is `:none`.
+`STD1001` retains arity, `STD5001` type/range and `STD5002` domain failures.
+
+Run `sh22-checked-nonnegative-i64-quotient-checks-before-division` in
+`gravity.self-hosting.sh22-standard-library-test`; the whole namespace is the
+affected check for policy, manifest, paired fixtures and fresh recomputation.
+Include zero/boundary inputs, rejected zero/negative divisors, precedence and
+real checked-sub/mul results feeding quotient. The original-delegating observer
+must see no `quot` on rejected inputs. This is request-only behavior motivated
+by reader decimal normalization, not reader linkage, signed-negative rounding,
+remainder/general-Integer division, runtime/native or admission evidence.
+
 ### Keyword membership in bounded ordered Sets
 
 STD2/STD3 govern `:ordered-set-contains-keyword` in the same SH-22 leaf. It
