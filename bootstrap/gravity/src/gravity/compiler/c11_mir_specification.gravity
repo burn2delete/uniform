@@ -8338,6 +8338,9 @@
   (let [widths [(count entry) (count then-ops) (count else-ops)]]
     (if (= :integer-lte (get (get entry (- (count entry) 1)) :opcode))
       (= widths [3 1 1])
+    (if (if (= :integer-lte (get (get then-ops (- (count then-ops) 1)) :opcode)) true
+          (= :integer-lte (get (get else-ops (- (count else-ops) 1)) :opcode)))
+      (if (= widths [1 3 1]) true (= widths [1 1 3]))
     (if (= widths [2 3 1])
       (= :sequence (get (get then-ops 2) :opcode))
     (if (= widths [2 1 3])
@@ -8349,7 +8352,7 @@
           (if (= widths [1 1 3]) true
             (if (= widths [3 3 1]) true
               (if (= widths [3 1 3]) true
-                (if (= widths [1 4 1]) true (= widths [1 1 4]))))))))))))))
+                (if (= widths [1 4 1]) true (= widths [1 1 4])))))))))))))))
 
 (defn sh13-branch-join-arm-valid? [operations type]
   (if (= 1 (count operations))
@@ -8357,7 +8360,8 @@
     (if (= 3 (count operations))
       (if (= type :gravity.type/bool)
         (let [opcode (get (get operations 2) :opcode)]
-          (if (if (= opcode :integer-eq) true (= opcode :integer-lt))
+          (if (if (= opcode :integer-eq) true
+                (if (= opcode :integer-lt) true (= opcode :integer-lte)))
             (sh13-branch-join-entry-valid? operations)
             false))
         false)
