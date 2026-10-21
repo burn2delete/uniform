@@ -341,6 +341,8 @@
               definition {:value-id binder-id :parameter-index 0 :block-id entry}
               verify #(verify-mir core %)]
           (is (= :passed (:status (verify mir))))
+          (is (= :pending (:verification-status mir)))
+          (is (= :constructed-unverified (get-in mir [:pass-execution-record :status])))
           (is (= (:artifact-id core) (:source-core mir)))
           (is (= [:hosted :jvm :jvm request]
                  ((juxt :profile :source-target :target-request :target-request-metadata) mir)))
@@ -366,11 +368,63 @@
             (is (= ["C11-VERIFY" :bounded-execution-subset]
                    ((juxt :diagnostic-id :missing-fact) (diagnostic execution))))
             (is (nil? (:execution execution))))
+          (doseq [malformed [(dissoc core :target-request-metadata)
+                             (dissoc core :physical-provenance)
+                             (:artifact-template raw)
+                             (assoc-in core [:target-request-metadata :requested-target] nil)
+                             (assoc-in core [:physical-provenance :source-content-hash] (:mapping-id core))
+                             (assoc-in core [:physical-provenance :c2-source-unit-id] nil)
+                             (assoc-in core [:physical-provenance :digest-graph-proof-id] nil)
+                             (assoc-in core [:physical-provenance :binding-pins :builder-source-hash] (:mapping-id core))
+                             (assoc-in core [:core-nodes 0 :attributes :parameter-index] 1)
+                             (assoc-in core [:core-nodes 0 :type] :gravity.type/bool)
+                             (assoc-in core [:core-nodes 1 :operands] [(:node-id (last nodes))])
+                             (assoc-in core [:core-nodes 1 :node-id] binder-id)
+                             (assoc-in core [:core-nodes 6 :attributes :params] ['other])
+                             (assoc-in core [:core-nodes 6 :type :params] [:gravity/integer])
+                             (assoc-in core [:resolved-parameter :parameter-binding :scope-id]
+                                       (get-in core [:resolved-parameter :root-syntax-id]))
+                             (assoc-in core [:resolved-parameter :type-binding :name] 'I64)
+                             (assoc-in core [:resolved-parameter :type-resolution :source-span :byte-start] 0)
+                             (assoc-in core [:typed-core :locals binder-id :mutability] :mutable)
+                             (assoc-in core [:dependency-order-graph :edges] [])
+                             (assoc-in core [:source-origin-table (get-in binder [:source :origin-id]) :domain] :other)
+                             (assoc-in core [:origin-closure (get-in binder [:source :origin-id]) :generated-role] :other)
+                             (assoc-in core [:core-nodes 0 :source :span :start :column] nil)
+                             (assoc-in core [:core-nodes 5 :source-operation] :other)]]
+            (is (= :rejected (:status (build-mir malformed)))))
+          (doseq [[malformed expected]
+                  [[(assoc-in core [:type-facts binder-id :declaration :parameter-index] 1) "C11-TYPE"]
+                   [(assoc-in core [:effect-facts binder-id :direct] #{:io/write}) "C11-EFFECT"]
+                   [(assoc-in core [:core-nodes 0 :safety :check] {}) "C11-SAFETY"]
+                   [(assoc-in core [:capability-facts binder-id :fact-id] binder-id) "C11-VERIFY"]
+                   [(assoc-in core [:core-nodes 0 :source :span :start :column] nil) "C11-ORIGIN"]]]
+            (let [report (build-mir malformed)]
+              (is (= :rejected (:status report)))
+              (is (= expected (:diagnostic-id (diagnostic report))))))
+          ;; Input authenticity remains the independent original C6 replay,
+          ;; separately from this C11 supplied-DATA semantic-family verifier.
+          (doseq [candidate [(assoc-in (:artifact-template raw) [:core-nodes 0 :attributes :parameter-index] 1)
+                             (assoc-in (:artifact-template raw) [:core-nodes 1 :operands] [])
+                             (assoc-in (:artifact-template raw) [:resolved-parameter :type-binding :name] 'I64)
+                             (assoc (:artifact-template raw) :proof-records {})]]
+            (is (= :rejected
+                   (:status (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                                    [(:envelope fresh) candidate (:digest-requests replay)])))))
           (doseq [candidate [(assoc-in mir [:functions 'main :params] [])
+                             (assoc-in mir [:functions 'main :params] [binder-id binder-id])
                              (assoc-in mir [:data-flow-graph :definitions binder-id :operation-id] nil)
+                             (update-in mir [:data-flow-graph :definitions binder-id] dissoc :parameter-index)
                              (assoc-in mir [:data-flow-graph :definitions binder-id :parameter-index] 1)
+                             (assoc-in mir [:data-flow-graph :definitions binder-id :block-id]
+                                       (str (:artifact-id core) ":mir:then"))
                              (assoc-in mir [:data-flow-graph :values binder-id :kind] :instruction-result)
+                             (update-in mir [:functions 'main :blocks entry :instructions]
+                                        conj (assoc (first operations) :op-id binder-id))
                              (update mir :source-map dissoc binder-id)
+                             (assoc-in mir [:type-table (get-in core [:type-facts binder-id :fact-id]) :type] :gravity/integer)
+                             (assoc-in mir [:safety-table (str binder-id ":safety-outcome") :proof] binder-id)
+                             (assoc-in mir [:data-flow-graph :edges 0 :from] (:node-id (last nodes)))
                              (assoc-in mir [:control-flow-graph :join :incoming] [])
                              (assoc mir :source-core (:mapping-id core))]]
             (is (= :rejected (:status (verify candidate))))))))))
