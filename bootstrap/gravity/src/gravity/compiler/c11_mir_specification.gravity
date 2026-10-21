@@ -3032,10 +3032,16 @@
     (if (keyword? kind)
       (= :gravity/p15-s23-stage2-gravity-checked-core-artifact kind) false)))
 
-(defn sh12-c6p-function-type []
-  {:params [:gravity/bool] :return :gravity/bool :latent-effects #{} :capabilities #{}
+(defn sh12-c6p-result-type [core]
+  (get (get (get core :core-nodes) 3) :type))
+
+(defn sh12-c6p-function-type-for-return [result-type]
+  {:params [:gravity/bool] :return result-type :latent-effects #{} :capabilities #{}
    :throws #{} :ownership-constraints #{:persistent-immutable-shareable}
    :profile-constraints #{:hosted}})
+
+(defn sh12-c6p-function-type []
+  (sh12-c6p-function-type-for-return :gravity/bool))
 
 (defn sh12-c6p-position? [position]
   (if (sh12-c6p-keys? position #{:byte :char :column :column-unit :line})
@@ -3090,7 +3096,11 @@
        ; Original C2 reader form IDs are opaque Keyword identities, unlike
        ; the separately checked SHA256 projection/binding/origin IDs.
        (keyword? (get row :c2-form-id))
-       (= (get row :c2-form-kind) (get [:symbol :symbol :list :boolean :boolean :list :list] index))
+       (= (get row :c2-form-kind)
+          (get [:symbol :symbol :list
+                (if (= :gravity/integer (sh12-c6p-result-type core)) :integer :boolean)
+                (if (= :gravity/integer (sh12-c6p-result-type core)) :integer :boolean)
+                :list :list] index))
        (= (get row :generated-role) (if (= index 2) :truthiness-normalization nil))
        (= (get row :input-origin-id) (if (= index 2) (get input :origin-id) nil))
        (= (get row :c2-abbrev) nil) (= (get row :c2-tag) nil)
@@ -3139,7 +3149,7 @@
         type-expected (if (= index 0) (assoc type-base :declaration attrs)
                         (if (= index 6)
                           (assoc (assoc (assoc (assoc (assoc (assoc (assoc type-base
-                            :params [:gravity/bool]) :return :gravity/bool) :latent-effects #{})
+                            :params [:gravity/bool]) :return (sh12-c6p-result-type core)) :latent-effects #{})
                             :capabilities #{}) :throws #{})
                             :ownership-constraints #{:persistent-immutable-shareable})
                             :profile-constraints #{:hosted}) type-base))
@@ -3245,7 +3255,8 @@
         path [:functions 'main :body 0] purity {:intrinsic-effects #{} :intrinsic-capabilities #{}
                                               :aggregate-effects #{} :aggregate-capabilities #{}}]
     (sh12-c6p-all?
-      [(= 7 (count (set ids))) (= 7 (count (set origins)))
+      [(contains? #{:gravity/bool :gravity/integer} (sh12-c6p-result-type core))
+       (= 7 (count (set ids))) (= 7 (count (set origins)))
        (= (get core :root-node-ids) [(get ids 6)])
        (= [(get (get nodes 0) :source-operation) (get local :source-operation) (get truthy :source-operation)
            (get (get nodes 3) :source-operation) (get (get nodes 4) :source-operation)
@@ -3269,7 +3280,7 @@
        (= (get (get nodes 5) :attributes) (assoc purity :truthiness :nil-and-false-only))
        (= (get root :attributes) (assoc (assoc (assoc (assoc (assoc (assoc purity
           :name 'main) :params [name]) :arity 1) :body-count 1) :visibility :public) :entrypoint? true))
-       (= (get root :type) (sh12-c6p-function-type))
+       (= (get root :type) (sh12-c6p-function-type-for-return (sh12-c6p-result-type core)))
        (= (get core :lexical-binding-records)
           [{:name name :parameter-index 0 :source-form-id (get attrs :source-form-id)
             :resolved-binding-id (get binding :binding-id) :type-binding-id (get type-binding :binding-id)
@@ -3380,12 +3391,17 @@
                                   :operands :attributes :type :effects :capabilities :ownership
                                   :safety :profile :source})
              (= (get node :kind) (get [:binding :local :truthiness :literal :literal :conditional :function] index))
-             (= (get node :type) (if (= index 6) (sh12-c6p-function-type) :gravity/bool))
+             (= (get node :type)
+                (if (< index 3) :gravity/bool
+                  (if (= index 6)
+                    (sh12-c6p-function-type-for-return (sh12-c6p-result-type core))
+                    (sh12-c6p-result-type core))))
              (= (get node :profile) :hosted)
              (= (get node :plan-node?) (get [false true false true true true false] index))
              (= (get node :plan-depth) (get [0 2 2 2 2 1 0] index))
              (if (if (= index 3) true (= index 4))
-               (if (boolean? (get attrs :value))
+               (if (if (= :gravity/integer (sh12-c6p-result-type core))
+                     (integer? (get attrs :value)) (boolean? (get attrs :value)))
                  (= attrs {:value (get attrs :value) :intrinsic-effects #{} :intrinsic-capabilities #{}
                            :aggregate-effects #{} :aggregate-capabilities #{}}) false) true)])
         (sh12-c6p-role-nodes-valid? core (+ index 1)) false))))
@@ -9321,6 +9337,11 @@
 ; This separate argument-bearing interface consumes the original C6 family,
 ; never a caller-certified normalized module. Fresh SH12 reconstruction below
 ; precedes family selection, argument inspection and every executable frame.
+(defn sh13-c6p-literal-runtime-valid? [operation result-type]
+  (let [value (get (get operation :constant-payload) :value)]
+    (if (= :gravity/integer result-type) (sh13-i64? value)
+      (if (= :gravity/bool result-type) (boolean? value) false))))
+
 (defn sh13-c6p-shape-valid? [core mir context]
   (if (sh12-c6p-family? core)
     (let [nodes (get core :core-nodes) function (get context :function)
@@ -9328,14 +9349,17 @@
           entry (get (get context :entry) :instructions)
           then-ops (get (get context :then) :instructions)
           else-ops (get (get context :else) :instructions)
-          join (get (get context :join) :instructions)]
-      (= [7 6 [2 1 1 2] [binder] :gravity/bool :hosted :jvm :jvm #{} #{} 0
+          join (get (get context :join) :instructions)
+          result-type (sh12-c6p-result-type core)]
+      (if (if (sh13-c6p-literal-runtime-valid? (get then-ops 0) result-type)
+            (sh13-c6p-literal-runtime-valid? (get else-ops 0) result-type) false)
+      (= [7 6 [2 1 1 2] [binder] result-type :hosted :jvm :jvm #{} #{} 0
           [(get (get nodes 1) :node-id) (get (get nodes 2) :node-id)]
           [(get (get nodes 3) :node-id)] [(get (get nodes 4) :node-id)]
           [(get (get nodes 5) :node-id) (get (get nodes 6) :node-id)]
           [:local :truthiness] [:constant] [:constant]
           [:conditional-join :function-boundary]
-          :gravity/bool (sh12-c6p-function-type)]
+          result-type (sh12-c6p-function-type-for-return result-type)]
          [(count nodes) (count (get context :operations))
           [(count entry) (count then-ops) (count else-ops) (count join)] (get function :params)
           (get function :returns) (get mir :profile) (get mir :source-target)
@@ -9347,7 +9371,7 @@
           [(get (get entry 0) :opcode) (get (get entry 1) :opcode)]
           [(get (get then-ops 0) :opcode)] [(get (get else-ops 0) :opcode)]
           [(get (get join 0) :opcode) (get (get join 1) :opcode)]
-          (get (get join 0) :type) (get (get join 1) :type)])) false))
+          (get (get join 0) :type) (get (get join 1) :type)]) false)) false))
 
 (defn sh13-c6p-arguments-valid? [arguments]
   (if (vector? arguments)
@@ -9359,7 +9383,8 @@
       (sh13-c6p-frame-operations operations (+ index 1)
         (conj result
           (if (= :constant opcode)
-            {:op-id (get operation :op-id) :opcode :const :operands [] :type :bool
+            {:op-id (get operation :op-id) :opcode :const :operands []
+             :type (if (= :gravity/integer (get operation :type)) :i64 :bool)
              :literal (get (get operation :constant-payload) :value)}
             {:op-id (get operation :op-id)
              :opcode (if (= :local opcode) :local
@@ -9395,6 +9420,7 @@
 
 (defn sh13-c6p-projection [core mir context]
   (let [binder (first (get core :core-nodes)) id (get binder :node-id)
+        result-type (if (= :gravity/integer (sh12-c6p-result-type core)) :i64 :bool)
         rows (sh13-branch-join-projection-rows (get context :operations) 0 [])]
     {:function-id (get (get context :function) :fn-id)
      :entry-block (get (get context :entry) :block-id)
@@ -9408,9 +9434,10 @@
      (loop [index 0 result []]
        (if (= index (count rows)) result
          ; The root retains its ORIGINAL Fn source-type. Its existing
-         ; function-result-alias role forwards the checked Bool return;
+         ; function-result-alias role forwards the checked scalar return;
          ; no Fn value, source type or original fact is retagged.
-         (recur (+ index 1) (conj result (assoc (get rows index) :runtime-type :bool)))))}))
+         (recur (+ index 1) (conj result (assoc (get rows index) :runtime-type
+                                         (if (< index 2) :bool result-type))))))}))
 
 (defn sh13-c6p-result [core mir verification arguments projection execution diagnostics]
   (assoc

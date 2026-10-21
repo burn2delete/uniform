@@ -147,7 +147,10 @@
   ;; The existing argument API still accepts exactly one physical Bool.
   (let [root @(existing 'root)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"]
-    (doseq [[extension then-value else-value executable?] [["gravity" 1 0 true]]]
+    (doseq [[extension then-value else-value executable?]
+            [["gravity" 1 0 true]
+             ["qst" Long/MIN_VALUE Long/MAX_VALUE true]
+             ["gravity" 9223372036854775808N 0 false]]]
       (let [source (str (.resolve root (str relative "." extension)))
             temporary (java.io.File/createTempFile "gravity-sh13-integer-arms-" (str "." extension))]
         (try
