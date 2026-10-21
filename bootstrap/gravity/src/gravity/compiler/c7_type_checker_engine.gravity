@@ -6638,7 +6638,7 @@
                                                         (if (= :gravity.type/never receiver) (= :gravity.type/keyword key-type) false)))
                                                 (sh08-mg-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) false)) false) false)
                                   checked (if (if (contains? scope (get edge :caller-function-syntax-id))
-                                            (= :gravity.type/applied-nonnegative-integer-quotient (get (get types (first (get node :children))) :kind)) false)
+                                            (sh08-nq-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) false)
                                             (sh08-nq-inferred-call core node call edge nodes binding-index types
                                               (- budget initial (get owners :work-count) work))
                                           (if get2?
