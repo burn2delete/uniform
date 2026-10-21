@@ -7517,6 +7517,23 @@ representation correction must inventory consumers and preserve required
 identity, provenance, diagnostics and fresh verification, or explicitly version
 and invalidate changed evidence. No representation redesign is selected here.
 
+The existing tiny public-C6 consumer selector now also observes original phase
+calls without printing products. At `0fdd0af1`, desugaring reuses one root-local
+flattened Vector for its two trace projections; assembly, recursive flattening,
+artifact representation, hashing and both fresh verification gates are unchanged.
+An old two-traversal trace oracle checks full trace/artifact/ID parity, origins,
+root order and original operation delegation. On the three-root, 27-node tiny
+fixture, trace calls/returned row positions fall from 54/254 to 27/127;
+assembly stays 27/127. These are occurrences, not unique allocations or bytes.
+Construction is about 19ms inclusive of hashing and trace, while its two fresh
+gates each take about five seconds; timings include observer overhead and are
+not additive or a measured speedup. They do not explain the interrupted large
+subject. Unit 5/115, tiny integration 1/59 and boundary 6/11 pass in three
+invocations; LOC passes 2,022 files, zero exceptions, maximum 250 lines.
+Retain `/tmp/sh06-single-flatten-trace-*-0fdd0af1-20261021`, including the
+separate test-only RED 24 passes / seven failures in 1/31. No unchanged large
+proof was repeated and no acceptance cache or migration claim is introduced.
+
 The typed-catch composition exposed a separate retention limitation. Rendering
 its first original request, typed result and verification report as one EDN
 string produced 43,392,705 characters. The retention attempt used the existing
