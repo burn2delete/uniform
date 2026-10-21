@@ -37,7 +37,9 @@
              sh13-run-module
              sh13-verify-execution
              sh13-run-branch-join-mir
-             sh13-verify-branch-join-execution])
+             sh13-verify-branch-join-execution
+             sh13-run-branch-join-mir-with-arguments
+             sh13-verify-branch-join-execution-with-arguments])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -9315,3 +9317,145 @@
      (if matches []
        [(sh12-branch-join-diagnostic
          "C11-VERIFY" :execution-result-substitution checked-core mir)])}))
+
+; This separate argument-bearing interface consumes the original C6 family,
+; never a caller-certified normalized module. Fresh SH12 reconstruction below
+; precedes family selection, argument inspection and every executable frame.
+(defn sh13-c6p-shape-valid? [core mir context]
+  (if (sh12-c6p-family? core)
+    (let [nodes (get core :core-nodes) function (get context :function)
+          binder (get (get nodes 0) :node-id)
+          entry (get (get context :entry) :instructions)
+          then-ops (get (get context :then) :instructions)
+          else-ops (get (get context :else) :instructions)
+          join (get (get context :join) :instructions)]
+      (= [7 6 [2 1 1 2] [binder] :gravity/bool :hosted :jvm :jvm #{} #{} 0
+          [(get (get nodes 1) :node-id) (get (get nodes 2) :node-id)]
+          [(get (get nodes 3) :node-id)] [(get (get nodes 4) :node-id)]
+          [(get (get nodes 5) :node-id) (get (get nodes 6) :node-id)]
+          [:local :truthiness] [:constant] [:constant]
+          [:conditional-join :function-boundary]
+          :gravity/bool (sh12-c6p-function-type)]
+         [(count nodes) (count (get context :operations))
+          [(count entry) (count then-ops) (count else-ops) (count join)] (get function :params)
+          (get function :returns) (get mir :profile) (get mir :source-target)
+          (get mir :target-request) (get function :latent-effects)
+          (get function :capabilities) (count (get mir :runtime-check-table))
+          [(get (get entry 0) :op-id) (get (get entry 1) :op-id)]
+          [(get (get then-ops 0) :op-id)] [(get (get else-ops 0) :op-id)]
+          [(get (get join 0) :op-id) (get (get join 1) :op-id)]
+          [(get (get entry 0) :opcode) (get (get entry 1) :opcode)]
+          [(get (get then-ops 0) :opcode)] [(get (get else-ops 0) :opcode)]
+          [(get (get join 0) :opcode) (get (get join 1) :opcode)]
+          (get (get join 0) :type) (get (get join 1) :type)])) false))
+
+(defn sh13-c6p-arguments-valid? [arguments]
+  (if (vector? arguments)
+    (if (= 1 (count arguments)) (boolean? (get arguments 0)) false) false))
+
+(defn sh13-c6p-frame-operations [operations index result]
+  (if (= index (count operations)) result
+    (let [operation (get operations index) opcode (get operation :opcode)]
+      (sh13-c6p-frame-operations operations (+ index 1)
+        (conj result
+          (if (= :constant opcode)
+            {:op-id (get operation :op-id) :opcode :const :operands [] :type :bool
+             :literal (get (get operation :constant-payload) :value)}
+            {:op-id (get operation :op-id)
+             :opcode (if (= :local opcode) :local
+                       (if (= :truthiness opcode) :truthy nil))
+             :operands (get operation :operands) :type :bool}))))))
+
+(defn sh13-c6p-frame-arm [context arm]
+  (let [block (get context arm)
+        incoming (sh13-find-by-key (get (get (get context :graph) :join) :incoming)
+                   :predecessor (get block :block-id) 0)]
+    {:block-id (get block :block-id) :params []
+     :operations (sh13-c6p-frame-operations (get block :instructions) 0 [])
+     :terminator {:opcode :branch :target (get (get context :join) :block-id)
+                  :arguments [(get incoming :value)]}}))
+
+(defn sh13-c6p-frame [context]
+  (let [function (get context :function) entry (get context :entry)
+        condition (get (get entry :instructions) 1)
+        join-op (get (get (get context :join) :instructions) 0)]
+    {:functions
+     [{:fn-id (get function :fn-id) :params (get function :params)
+       :maximum-call-depth (get (sh13-control-flow-policy) :maximum-call-depth)
+       :entry-block (get entry :block-id)
+       :blocks
+       [{:block-id (get entry :block-id) :params (get function :params)
+         :operations (sh13-c6p-frame-operations (get entry :instructions) 0 [])
+         :terminator {:opcode :conditional-branch :condition (get condition :result)
+                      :then-target (get (get context :then) :block-id) :then-arguments []
+                      :else-target (get (get context :else) :block-id) :else-arguments []}}
+        (sh13-c6p-frame-arm context :then) (sh13-c6p-frame-arm context :else)
+        {:block-id (get (get context :join) :block-id) :params [(get join-op :result)]
+         :operations [] :terminator {:opcode :return :value (get join-op :result)}}]}]}))
+
+(defn sh13-c6p-projection [core mir context]
+  (let [binder (first (get core :core-nodes)) id (get binder :node-id)
+        rows (sh13-branch-join-projection-rows (get context :operations) 0 [])]
+    {:function-id (get (get context :function) :fn-id)
+     :entry-block (get (get context :entry) :block-id)
+     :control-flow-graph (get context :graph)
+     :return-value-id (get (get (get context :graph) :join) :value-id)
+     :parameters [{:value-id id :parameter-index 0 :source-type (get binder :type)
+                   :runtime-type :bool
+                   :definition (get (get (get mir :data-flow-graph) :definitions) id)
+                   :source (get binder :source) :facts (c11-operation-facts core binder)}]
+     :operations
+     (loop [index 0 result []]
+       (if (= index (count rows)) result
+         ; The root retains its ORIGINAL Fn source-type. Its existing
+         ; function-result-alias role forwards the checked Bool return;
+         ; no Fn value, source type or original fact is retagged.
+         (recur (+ index 1) (conj result (assoc (get rows index) :runtime-type :bool)))))}))
+
+(defn sh13-c6p-result [core mir verification arguments projection execution diagnostics]
+  (assoc
+    (assoc
+      (assoc (sh13-branch-join-execution-result core mir verification projection execution diagnostics)
+             :arguments arguments)
+      :pending [:authenticated-public-c6-c11-source-ingress :generic-parameter-execution
+                :backend-native-execution])
+    :nonclaims [:authenticated-public-c6-c11-source-ingress :generic-mir-execution
+                :calls-loops-errors :backend-native-execution :release]))
+
+(defn sh13-run-branch-join-mir-with-arguments [checked-core mir arguments]
+  (let [verification (sh12-verify-branch-join-mir checked-core mir)]
+    (if (= :passed (get verification :status))
+      (let [context (sh13-branch-join-context checked-core mir)]
+        (if (sh13-c6p-shape-valid? checked-core mir context)
+          (if (sh13-c6p-arguments-valid? arguments)
+            (let [execution (sh13-execute-function (sh13-c6p-frame context)
+                              (get (get context :function) :fn-id) arguments 0
+                              (get (sh13-control-flow-policy) :maximum-execution-steps) [])]
+              (sh13-c6p-result checked-core mir verification arguments
+                (sh13-c6p-projection checked-core mir context) execution
+                (if (= :returned (get execution :status)) []
+                  [(sh12-branch-join-diagnostic
+                     "C11-VERIFY" :bounded-execution-result checked-core mir)])))
+            (let [binder (first (get checked-core :core-nodes)) source (get binder :source)
+                  diagnostic (sh12-branch-join-diagnostic
+                               "C11-TYPE" :single-bool-entry-argument checked-core mir)]
+              (sh13-c6p-result checked-core mir verification :not-applicable nil nil
+                [(assoc diagnostic :operation-id :not-applicable :value-id (get binder :node-id)
+                   :block (get (get context :entry) :block-id)
+                   :source-span (get source :span) :origin-chain (get source :generated-origin))])))
+          (sh13-c6p-result checked-core mir verification :not-applicable nil nil
+            [(sh12-branch-join-diagnostic
+               "C11-VERIFY" :bounded-execution-subset checked-core mir)])))
+      (sh13-c6p-result checked-core mir verification :not-applicable nil nil
+        (get verification :diagnostics)))))
+
+(defn sh13-verify-branch-join-execution-with-arguments [checked-core mir arguments candidate]
+  (let [expected (sh13-run-branch-join-mir-with-arguments checked-core mir arguments)
+        matches (= expected candidate)]
+    {:artifact :gravity/sh13-branch-join-execution-verification :schema-version 1
+     :status (if matches :passed :rejected)
+     :input-bindings (sh13-branch-join-input-bindings checked-core mir)
+     :arguments (get expected :arguments)
+     :diagnostics (if matches []
+                    [(sh12-branch-join-diagnostic
+                       "C11-VERIFY" :execution-result-substitution checked-core mir)])}))
