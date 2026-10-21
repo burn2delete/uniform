@@ -2555,6 +2555,18 @@
              (:reason (literal-string-vector-derived (assoc-in base [:core :function-records] hostile) 0))))
       (is (zero? @visits)))))
 
+(deftest sh08-ascii-string-vector-edge-ordinal-development-kernel
+  (let [input (literal-string-vector-input "sha256:")
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII ordinal hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "ASCII ordinal equality"))))]
+    (doseq [ordinal [nil -1 opaque]]
+      (let [result (literal-string-vector-derived (assoc-in input [:edge :ordinal] ordinal) 65536)]
+        (is (= :rejected (:status result)))
+        (is (= :string-character-vector-source-mismatch (:reason result)))))
+    (is (= :accepted (:status (literal-string-vector-derived (assoc-in input [:edge :ordinal] 0) 65536))))
+    (is (zero? @callbacks))))
+
 (deftest sh08-ascii-string-vector-transfer-development-kernel
   (let [input (literal-string-vector-transfer-input)
         result (literal-string-vector-derived input 65536) descriptor (:descriptor result)

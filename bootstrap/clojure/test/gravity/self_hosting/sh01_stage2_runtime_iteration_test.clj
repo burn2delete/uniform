@@ -29906,6 +29906,20 @@
                               (assoc-in [:call-facts :call] (c7 'sh08-scv-call-fact [changed (:module base)]))
                               (assoc :ledger [(c7 'sh08-scv-constraint [changed])]))]
             (is (= :rejected (:status (compile candidate 65536))))))
+        (when (= value "sha256:")
+          (let [callbacks (atom 0) opaque (proxy [Object] []
+                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII lowering ordinal hash")))
+                                         (equals [_] (swap! callbacks inc) (throw (AssertionError. "ASCII lowering ordinal equality"))))]
+            (doseq [ordinal [nil -1 opaque]]
+              (let [changed (assoc-in descriptor [:source-edge :ordinal] ordinal)
+                    candidate (-> context (assoc-in [:types :operator] changed)
+                                  (assoc-in [:edges :call :ordinal] ordinal) (assoc-in [:call-order :call] ordinal)
+                                  (assoc-in [:core :call-edges 0 :ordinal] ordinal)
+                                  (assoc-in [:call-facts :call] (c7 'sh08-scv-call-fact [changed (:module base)]))
+                                  (assoc :ledger [(c7 'sh08-scv-constraint [changed])]))]
+                (is (= :rejected (:status (compile candidate 65536))))))
+            (is (= :complete (:status (compile context 65536))))
+            (is (zero? @callbacks))))
         (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
                         #(assoc % :call-facts {}) #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
                         #(assoc-in % [:nodes :operator :attributes :symbol] 'identity)]]

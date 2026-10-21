@@ -6418,6 +6418,14 @@
                                      :constraint-ledger [(c7 'sh08-scv-constraint [changed])]))
                 bad-request (update-in request [:b47-context :authenticated-core-request :forms]
                               #(mapv (fn [form] (if (= :operator (:form-id form)) (assoc form :value opaque) form)) %))]
+            (doseq [ordinal [nil -1 opaque]]
+              (let [edge (assoc edge :ordinal ordinal)
+                    changed (assoc-in descriptor [:source-edge :ordinal] ordinal)
+                    candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                                  (assoc :call-type-facts [(c7 'sh08-scv-call-fact [changed (:module core)])]
+                                         :constraint-ledger [(c7 'sh08-scv-constraint [changed])]))]
+                (is (false? (leaf 'body-scv-call-valid? core candidate bindings node call edge nodes)))))
+            (is (true? (leaf 'body-scv-call-valid? core facts bindings node call (assoc edge :ordinal 0) nodes)))
             (is (false? (valid candidate)))
             (is (= :rejected (:status (leaf 'body-nq-context bad-request facts bindings 65536))))
             (is (true? (valid facts)))
