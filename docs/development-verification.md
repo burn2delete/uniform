@@ -499,6 +499,15 @@ effect, safety and source diagnostics, and the existing runtime-check
 Use original optimization/recomputation controls over supplied normalized DATA;
 this adds no CFG proof, provider evidence, fresh C11 input or native execution.
 
+For the corresponding unconditional-branch boundary, run
+`sh16-unused-result-proofs-do-not-authorize-unconditional-branch-removal`.
+A `:branch` produced by the original Bool simplifier still transfers control;
+an unused-result proof cannot authorize its deletion and rejects with
+`C13-PROOF`. Preserve live branches at both destinations, ordinary Bool branch
+simplification, pure-value DCE and earlier diagnostics. This extends the
+control-preservation fence, not branch-if policy or CFG/unreachability inference;
+the same supplied normalized DATA and recomputation limits apply.
+
 For C13 rejected-operation attribution, run
 `sh16-rejections-retain-the-first-failing-operation-source` in the same namespace.
 The original ordered checks retain the first failing operation and reason.
