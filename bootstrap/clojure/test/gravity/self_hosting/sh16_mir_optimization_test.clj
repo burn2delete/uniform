@@ -310,10 +310,11 @@
           (is (= :accepted (:status result)))
           (is (= (:operations subject) (:optimized-operations result)))
           (is (= [] (get-in result [:decision-log 2 :changed-operations]))))
-        (let [dead (get-in mixed [:operations 2]) subject (update input :operations #(into [dead] %))
+        (let [dead (get-in mixed [:operations 2])
+              subject (update input :operations #(vec (concat (butlast %) [dead (last %)])))
               result (optimize subject)]
           (is (= :accepted (:status result)))
-          (is (= [:op/dead :op/add-0] (get-in result [:decision-log 2 :changed-operations])))
+          (is (= [:op/add-0 :op/dead] (get-in result [:decision-log 2 :changed-operations])))
           (is (= [(get-in dead [:dead-proof :proof-id])] (get-in result [:decision-log 2 :proofs-used])))
           (is (= (get-in result [:decision-log 2 :proofs-used]) (get-in result [:translation-validation :proofs])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))
