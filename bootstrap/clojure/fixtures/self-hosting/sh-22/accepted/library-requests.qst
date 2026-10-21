@@ -6,6 +6,7 @@
              sh22-map-assoc-request
              sh22-map-get-request
              sh22-set-conj-request
+             sh22-set-contains-keyword-request
              sh22-utf8-request
              sh22-checked-add-request
              sh22-checked-sub-request
@@ -89,6 +90,12 @@
    :set-conj :ordered-set-conj [(sh22-ordered-set) :mir]
    #{:memory/allocate} #{} :bounded-by-result
    "/checkout-a/compiler.gravity"))
+
+(defn sh22-set-contains-keyword-request []
+  (sh22-request
+   :set-contains-keyword :ordered-set-contains-keyword
+   [(sh22-ordered-set) :syntax]
+   #{} #{} :none "/checkout-a/compiler.gravity"))
 
 (defn sh22-utf8-request []
   (sh22-request
