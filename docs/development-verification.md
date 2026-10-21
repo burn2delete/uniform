@@ -560,20 +560,23 @@ diagnostics. Include branch execution, runtime-bound and recomputation controls
 when changing either predicate. This is typed MIR validation, not a change to
 source-language truthiness or fresh upstream admission.
 
-### Entry-only MIR integer less-than-or-equal
+### MIR integer less-than-or-equal placement
 
 Edit `c11_mir_specification.gravity` for the bounded SH-13 interpreter and
 original SH-12 producer bridge. The normalized operation domain now includes
 `:lte`: two already-defined signed-i64 operands produce Bool. The bridge maps
 original `:integer-lte` to it with the explicit
-`:integer-less-than-or-equal` projection role, only in a seven-row `[3,1,1]`
-entry-comparison diamond with scalar literal arms. Computed-arm `<=` and
-entry-`<=` combined with computed arms remain rejected; Eq/Lt arm support is
-unchanged. Original source/fact, CFG/DFG, origin, type, effect and recomputation
-checks remain. Execution consumes the existing fuel to 505 under depth 32 and
-fuel 512; no public keys or arities change.
+`:integer-less-than-or-equal` projection role in a seven-row `[3,1,1]`
+entry-comparison diamond with scalar literal arms. A literal Bool entry also
+supports one three-operation `<=` arm, with widths `[1,3,1]` or `[1,1,3]`.
+Both arms validate before execution. Entry comparisons or truthiness combined
+with a `<=` arm, and two computed `<=` arms, remain rejected; Eq/Lt arm support
+is unchanged. Original source/fact, CFG/DFG, origin, type, effect and recomputation
+checks remain. Entry comparison leaves fuel 505; a selected/skipped comparison
+arm leaves 505/507 under depth 32 and fuel 512. No public keys or arities change.
 
-Run `sh13-executes-integer-less-than-or-equal-only-at-entry` in
+Run `sh13-executes-integer-less-than-or-equal-entry-conditions` and
+`sh13-executes-integer-less-than-or-equal-only-in-the-selected-arm` in
 `gravity.self-hosting.sh13-branch-join-execution-test` and
 `sh13-normalized-less-than-or-equal-checks-i64-operands` in
 `gravity.self-hosting.sh13-control-flow-test`. Include the existing bridge,
@@ -589,6 +592,17 @@ and original producer/verifier compositions are development evidence, not
 fresh C6/C10 source adaptation, native execution, SH-13 completion or migration.
 Future stable consumers must account for the additive opcode/projection domain;
 this development merge does not renew historical admission evidence.
+
+The selected-arm increment at `2b4406e8` reuses the existing opcode and role,
+without changing public keys, arities or bounds. Selected/skipped arms leave
+fuel 505/507. Four passing invocations cover the new arm, retained bridge,
+normalized signature/Nil/bounds/overflow and boundary checks: 28 tests / 9,356
+assertions. LOC separately passes 2,022 files, zero exceptions, maximum 250.
+Retain `/tmp/d-sh13-lte-arm-*-v1-20261021`. The separate test-only RED contains
+452 passes, 648 failures and 72 errors in 1 / 1,172; those errors inspect absent
+projection roles after subset rejection, not failed comparison execution.
+Literal witnesses exercise placement used by C11's guarded predicates, not
+whole-helper execution, fresh source adaptation, native execution or admission.
 
 ### Scalar SSA forwarding in normalized MIR
 
