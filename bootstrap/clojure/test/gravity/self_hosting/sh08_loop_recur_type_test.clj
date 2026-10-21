@@ -1869,7 +1869,15 @@
   (require 'gravity.self-hosting.sh01-stage2-runtime-iteration-test)
   (let [module {:namespace 'example.symbol-loop :profile :meta :target :jvm :effects [:memory/allocate] :capabilities []}
         base ((ns-resolve 'gravity.self-hosting.sh01-stage2-runtime-iteration-test 'typed-loop-kernel-data) module)
-        original (:context base) empty-type {:kind :gravity.type/set :shape :literal :element-types []}
+        original (update (:context base) :nodes
+                         (fn [nodes] (into {} (map (fn [[id node]]
+                           [id (if (map? (:evaluation node)) node
+                                 (assoc node :evaluation
+                                   {:kind (case (:core-form node) :if :condition-then-exclusive-branch :fn :function-creation :value)
+                                    :owner-function-syntax-id nil
+                                    :order (mapv (fn [index child] {:index index :core-node-id child}) (range)
+                                             (case (:core-form node) :fn [] :if [(first (:children node))] (:children node)))}))]) nodes))))
+        empty-type {:kind :gravity.type/set :shape :literal :element-types []}
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
         insertion ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'list-prepend-input) carrier :gravity.type/symbol)
         forms (merge (:forms original) (:forms insertion))
@@ -2026,7 +2034,7 @@
       (is (= :loop-recur-slot-type-mismatch (:reason rejected)))
       (is (= [:bad carrier bad-type] ((juxt :core-node-id :expected :actual) rejected))))
     (doseq [mutate [#(assoc-in % [:forms (get-in nodes [:arg1 :attributes :quoted-form-id]) :value] "assoc")
-                    #(assoc-in % [:forms :member-data :parent-form-id] :other)
+                    #(assoc-in % [:forms (get-in nodes [:arg1 :attributes :quoted-form-id]) :parent-form-id] :other)
                     #(assoc-in % [:nodes :arg0 :resolved-binding-ids] [:again])
                     #(assoc-in % [:nodes :arg0 :binding-context] :other)]]
       (is (empty? (:invariants (c7-invoke 'sh08-lsi-solve [core types (mutate source) 65536])))))
