@@ -61,25 +61,23 @@
   {:artifact :gravity/c6-desugaring-trace
    :records
    (mapv (fn [root]
-           {:surface-syntax (get-in root [:source :syntax-id])
-            :surface-kind (:form root)
-            :core-root (:node-id root)
-            :introduced-forms
-            (vec (keep #(when (:generated? %) (:form %))
-                       (context/invoke-op :c6-flatten-core
-                                          lowering/c6-flatten-core root)))
-            :preserved #{:source-spans :metadata :profile
-                         :capabilities :effects :generated-origin}
-            :introduced-origin
-            (mapv (fn [node]
-                    {:core-node (:node-id node)
-                     :reason :surface-or-macro-desugar
-                     :from (get-in node [:source :syntax-id])})
-                  (filter :generated?
-                          (context/invoke-op :c6-flatten-core
-                                             lowering/c6-flatten-core root)))
-            :evaluation-order (:evaluation-order root)
-            :diagnostics []})
+           (let [flat (context/invoke-op :c6-flatten-core
+                                         lowering/c6-flatten-core root)]
+             {:surface-syntax (get-in root [:source :syntax-id])
+              :surface-kind (:form root)
+              :core-root (:node-id root)
+              :introduced-forms
+              (vec (keep #(when (:generated? %) (:form %)) flat))
+              :preserved #{:source-spans :metadata :profile
+                           :capabilities :effects :generated-origin}
+              :introduced-origin
+              (mapv (fn [node]
+                      {:core-node (:node-id node)
+                       :reason :surface-or-macro-desugar
+                       :from (get-in node [:source :syntax-id])})
+                    (filter :generated? flat))
+              :evaluation-order (:evaluation-order root)
+              :diagnostics []}))
          roots)
    :status :complete})
 
