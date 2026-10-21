@@ -281,7 +281,7 @@
                       (assoc-in [:core-nodes 0 :attributes :value] true)
                       (assoc-in [:type-facts id :type] :gravity.type/bool)
                       (assoc-in [:type-facts id :type-id] :gravity.type/bool))
-                  (integer-condition-core extension :integer-lte 0 1 :gravity.type/i64)
+                  (assoc-in core [:core-nodes 2 :operands] [id right-id id])
                   (integer-condition-core extension :integer-gt 0 1 :gravity.type/i64)
                   (integer-condition-core extension :integer-gte 0 1 :gravity.type/i64)]]
         (let [mir (build bad) result (run bad mir)]
@@ -324,6 +324,60 @@
     [9223372036854775807 -9223372036854775808 :gravity.type/i64 false 22]
     [-9223372036854775808 -9223372036854775808 :gravity.type/i64 false 22]
     [0 1 :gravity.type/bool true false] [1 0 :gravity.type/bool false true]]))
+
+(deftest sh13-executes-integer-less-than-or-equal-only-at-entry
+  (check-integer-condition
+   :integer-lte :integer-less-than-or-equal
+   [[0 1 :gravity.type/i64 true 11] [1 0 :gravity.type/i64 false 22]
+    [0 0 :gravity.type/i64 true 11] [-1 0 :gravity.type/i64 true 11]
+    [0 -1 :gravity.type/i64 false 22]
+    [-9223372036854775808 9223372036854775807 :gravity.type/i64 true 11]
+    [9223372036854775807 -9223372036854775808 :gravity.type/i64 false 22]
+    [-9223372036854775808 -9223372036854775808 :gravity.type/i64 true 11]
+    [9223372036854775807 9223372036854775807 :gravity.type/bool true false]
+    [1 0 :gravity.type/bool false true]])
+  (doseq [extension [".gravity" ".qst"]]
+    (doseq [[type a b] [[:gravity.type/keyword :phase/then :phase/else]
+                       [:gravity.type/nil nil nil]]
+            [left right expected] [[0 0 a] [1 0 b]]]
+      (let [core (with-integer-comparison extension
+                   (scalar-core (checked extension) true type a b)
+                   :condition :integer-lte left right)
+            mir (build core) result (run core mir)]
+        (is (= :passed (get-in result [:upstream-verification :status])))
+        (is (= :accepted (:status result)))
+        (is (= expected (get-in result [:execution :value])))
+        (is (= 505 (get-in result [:execution :fuel])))
+        (is (= :passed (:status (verify core mir result))))))
+    ;; Shared comparison validation must not enlarge the selected placement.
+    (doseq [placement [:then :else] operation [:integer-eq :integer-lt :integer-lte]]
+      (let [base (scalar-core (checked extension) true :gravity.type/bool false true)
+            arm (with-integer-comparison extension base placement operation 0 0)
+            core (if (= operation :integer-lte) arm
+                   (with-integer-comparison extension arm :condition :integer-lte 0 0))
+            mir (build core) result (run core mir)]
+        (is (= :passed (get-in result [:upstream-verification :status])))
+        (is (= :rejected (:status result)))
+        (is (= :bounded-execution-subset (get-in result [:diagnostics 0 :missing-fact])))
+        (is (nil? (:execution result)))))
+    (let [core (integer-condition-core extension :integer-lte 1 0 :gravity.type/i64)
+          mir (build core) result (run core mir)
+          {:keys [function then join]} (coordinates core mir)
+          incoming [:functions function :blocks join :instructions 0 :operands]]
+      ;; Both arms are checked, including the unselected then literal.
+      (let [bad (assoc-in core [:core-nodes 3 :attributes :value] :not-an-integer)
+            rejected (run bad (build bad))]
+        (is (= :passed (get-in rejected [:upstream-verification :status])))
+        (is (= :rejected (:status rejected)))
+        (is (nil? (:execution rejected))))
+      (doseq [bad [(assoc-in mir (conj incoming 1) :missing)
+                  (assoc-in mir [:functions function :blocks then :instructions 0 :source :span] nil)]]
+        (let [upstream (invoke 'sh12-verify-branch-join-mir core bad)
+              rejected (run core bad)]
+          (is (= :rejected (:status rejected)))
+          (is (= (:diagnostics upstream) (:diagnostics rejected)))
+          (is (nil? (:execution rejected)))))
+      (is (= :rejected (:status (verify core mir (assoc-in result [:execution :fuel] 506))))))))
 
 (defn- check-selected-comparison-arm [operation role cases]
   (doseq [extension [".gravity" ".qst"] placement [:then :else]]
