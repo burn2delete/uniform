@@ -1956,11 +1956,15 @@
           (contains? (set invalidated) :use-def-facts))))))
 
 (defn sh16-operation-changed-in-state? [family operation invalidated]
-  (if (= family :check-retention-or-elision)
-    (if (sh16-elidable-runtime-check? operation)
-      (if (sh16-proof-invalidated-by-state? invalidated) false true)
+  (if (= family :constant-fold)
+    (if (sh16-foldable-add? operation)
+      (if (= true (get operation :dead)) false true)
       false)
-    (sh16-family-changed? family operation)))
+    (if (= family :check-retention-or-elision)
+      (if (sh16-elidable-runtime-check? operation)
+        (if (sh16-proof-invalidated-by-state? invalidated) false true)
+        false)
+      (sh16-family-changed? family operation))))
 
 (defn sh16-state-changed-operation-ids
   [family operations invalidated index result]
@@ -2205,7 +2209,9 @@
 (defn sh16-pass-output-operation-valid? [family operation]
   (if (sh16-common-operation-valid? operation)
     (if (= family :constant-fold)
-      (if (sh16-foldable-add? operation) false true)
+      (if (sh16-foldable-add? operation)
+        (= true (get operation :dead))
+        true)
       (if (= family :branch-simplify)
         (if (= :branch-if (get operation :opcode)) false true)
         (if (= family :dead-code-eliminate)
