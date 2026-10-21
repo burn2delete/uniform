@@ -9288,8 +9288,8 @@ migration evidence.
 The next C13 executable increment propagates two distinct, independently typed
 i64 constants into one ADD. The candidate must be the first non-const operation
 after a pure, proven-safe, nondead const prefix; it must itself be pure,
-proven-safe, nondead, explicitly i64/integer-exact and reference two actual
-earlier one-payload producers. Result IDs are unique across the whole admitted
+proven-safe, nondead, explicitly i64/integer-exact with `:constant-operands false`
+and reference two actual earlier one-payload producers. Result IDs are unique across the whole admitted
 input. Fresh invocation-local counts and a bounded prefix walk derive the
 literal operands for the existing overflow-checked fold; no supplied flag is
 accepted as producer authority. The original input references/flag and source,

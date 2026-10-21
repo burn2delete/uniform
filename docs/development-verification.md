@@ -446,8 +446,9 @@ For the closed one-hop propagation route, run
 `sh16-propagates-only-unique-pure-prefix-i64-constants-into-one-add` in the same
 namespace. Only the first non-const operation after a pure, proven-safe,
 nondead const prefix can qualify: a pure, proven-safe, nondead
-`:i64`/`:integer-exact` ADD with two ordered references to distinct earlier
-one-payload i64 constants. Result IDs must be unique across the whole input.
+`:i64`/`:integer-exact` ADD with `:constant-operands false` and two ordered
+references to distinct earlier one-payload i64 constants. Result IDs must be
+unique across the whole input.
 Fresh bounded indexing joins actual result IDs; the existing signed-i64
 overflow rule still governs folding. Unknown, forward, ambiguous, wrongly
 typed, unsafe, effectful or control-dependent joins do not authorize folding;
