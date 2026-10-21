@@ -68,7 +68,8 @@
           :verified? true
           :verifier-report (:c11-verifier policy)
           :verifier-report-id (:c11-verifier-id policy)
-          :optimization-status :identity-pass-complete
+          :optimization-status (if (= :gravity/c13-bounded-equality-fold-optimized-mir (:artifact optimized))
+                                 :constant-fold-pass-complete :identity-pass-complete)
           :optimization-report
           {:artifact-id (:artifact-id optimized)
            :semantic-id (:semantic-id optimized)
@@ -88,7 +89,8 @@
          :required-evidence (:required-evidence policy)
          :source-map (:source-map policy)
          :dependency-provenance (:dependencies policy)
-         :c13-optimization-status :identity-pass-complete
+         :c13-optimization-status (if (= :gravity/c13-bounded-equality-fold-optimized-mir (:artifact optimized))
+                                    :constant-fold-pass-complete :identity-pass-complete)
          :domain-ir-status :not-applicable :fusion-status :not-run
          :target-policy (:target-policy policy)
          :proof-to-target-metadata (:proof-target-metadata policy)

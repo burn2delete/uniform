@@ -10725,6 +10725,47 @@ binding rather than claim a joined replay. These are original internal
 C/LLVM/Wasm eligibility gates and evaluator checks on supplied MIR DATA, not
 fresh C11/C13 authentication, native execution, migration or release evidence.
 
+### Closed C13-to-C14 integer equality: development increment
+
+The current Gravity C13 builder can translate one closed actual-MIR-shaped
+entry `:integer-eq` to a Bool constant when both ordered references independently
+join earlier pure/proven-safe bounded-i64 literal producers. Repeated operands
+retain two occurrences. Source operation, result identity, source/fact tables,
+CFG, original C11 report/pass/preflight ancestry and unrelated operations remain
+intact; unsupported cases retain the identity route. The derived constant is
+admitted only by the selected LLVM surface, not shared C/Wasm literal guards.
+The value payload and exactly two operand edges/producer uses are regenerated
+with explicit data-flow/use-def invalidation and a new translation replay.
+
+An independently derived four-row delta retains exact original edge/use
+positions without embedding another MIR, operation or source/fact table. The
+measured delta contains 127 carrier nodes including map entries. Its pure
+stage-owned host reconstruction component is 183 physical lines and has one
+explicit load-order entry. Full original inverse roundtrip and output
+rederivation are required; C14 independently restores and rederives the same
+closed translation. Original reports validate only restored input, never output
+through patched counts. The path-neutral output hash excludes its own record,
+evidence and seal. Existing 256-operation and carrier bounds remain; repeated
+bounded scans/copies/hashing have no speed or free-sharing claim.
+
+The test-only RED at `f6d39aa1` retained 33 passes and 27 failures in 60
+assertions. Kernel V1 exited during loading with zero tests/no EDN; V2 retained
+one error in one assertion from an unsupported raw core form. V3 at `482b22a2`
+retained 185 passes and 73 failures in 258 assertions: the host selector's
+misgrouped `when` returned nil. These separate failed attempts are not passing
+coverage. Corrected `d5c9e4ec` passed V4 1/332, SH16 32/4,210, direct SH17
+11/1,227, boundary 6/11 and existing load-order 1/4: 51 tests/5,784 assertions
+across five passing invocations. LOC separately passed 2,022 files, zero
+exceptions, maximum 250. The 332 checks include identity fallback, original
+versus output/restored-report controls, malformed ingress and translation
+source/fact/DFG/delta/result tampering.
+
+These are supplied DATA through current Gravity semantic kernels and fresh
+independent reconstruction, not a fresh compiler/source build, authenticated
+public C11/C13/C14 packet or native execution. Current public source/pin/packet
+boundaries remain unrun and unchanged; no milestone, admission, migration or
+proof-provider credit is established.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established

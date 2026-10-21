@@ -795,6 +795,45 @@ unchanged. Recomputing verification reconstructs the rejection and rejects
 substituted diagnostic locations. These are supplied normalized diagnostic
 records, not fresh source construction, native execution or migration evidence.
 
+### Closed actual-MIR-shaped comparison folding
+
+For the development C13-to-C14 translation, run:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh17-c13-optimized-mir-carrier-test \
+  --exact sh17-development-folds-one-actual-mir-shaped-integer-equality --fail-fast
+```
+
+This consumes supplied actual-MIR-shaped DATA, not a fresh authenticated C11
+artifact. Select exactly one entry `:integer-eq` whose ordered operands join
+earlier, independently typed, pure/proven-safe bounded-i64 literal producers.
+Preserve repeated reference occurrences, original result/source/fact identities,
+CFG and all unrelated operations. Unsupported cases retain the identity route.
+The selected Bool constant retains its original `:integer-eq` source operation;
+only the selected LLVM surface admits this derived constant, not shared C/Wasm
+literal guards. Regenerate its value payload and remove exactly its two operand
+DFG edges and producer-use occurrences, recording existing use-def invalidation.
+
+A fixed four-row reversible delta retains original occurrence positions, not a
+second MIR or source/fact table. Its measured carrier is 127 nodes including map
+entries; the independent pure stage-owned reconstruction component is 183
+physical lines with one load-order entry. Host reconstruction must round-trip
+the complete original input and independently rederive the output. C14 also
+restores and rederives the selected translation. Original C11 reports/pass and
+preflight records describe ONLY the original input; never rewrite their counts
+to validate output. The separate output hash excludes its own C13 record,
+evidence and seal. Bounds remain 256 operations and existing carrier limits;
+bounded scans, copying, reconstruction and hashing are real work, not a speed
+or free-sharing claim.
+
+Retain direct identity/fallback, original-report, malformed-carrier, source/fact,
+DFG/delta and result-substitution controls, plus the normalized SH16 suite,
+direct SH17 hardening suite, boundary, load-order and LOC checks. Current public
+C11 source pins and C13/C14 packet bindings are not renewed here. Fresh public
+source/packet composition, native execution, milestone completion and migration
+remain outside this development result.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
