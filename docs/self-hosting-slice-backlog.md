@@ -10796,6 +10796,25 @@ These are development supplied-DATA/current semantic kernels and LLVM text,
 not public authenticated packets, pin renewal, LLVM tool verification, native
 execution, migration, admission or milestone completion.
 
+### Folded predicate to Integer diamond: affected composition coverage
+
+Test-only `6a56ef04` covers complete supplied four-block MIR through current
+C13 folding, independent C14 restoration/rederivation and the SAME output into
+the existing B3 builder. True/false, repeated and signed-endpoint comparisons
+select Integer arms 0, 7, 42 or 255. Exact branch/phi text, original/folded
+semantic parity, only two removed comparison operand edges, retained CFG,
+incoming values, source/type tables and terminator uses are checked. Mutants
+reject at the actual fold, target-surface, original-context or B3 owning layer.
+No production change or semantic repair was needed.
+
+The first attempt `f63c4e16` exited during reading with zero tests/no EDN, not a
+semantic RED. The corrected current invocation passed 1/120; boundary passed
+6/11 separately: 7/131 across two passing invocations. LOC separately passed
+2,022 files, zero exceptions, maximum 250. Prior 449 checks were not rerun or
+resummed. Constructed/unverified and pending-host obligations remain unchanged;
+there is no fresh source/public packet, LLVM tool/native execution, admission,
+milestone or migration claim.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established
