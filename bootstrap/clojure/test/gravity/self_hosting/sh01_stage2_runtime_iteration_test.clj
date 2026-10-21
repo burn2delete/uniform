@@ -32223,6 +32223,9 @@
   ;; Preserve cbce146e first load exit 2 / zero tests; scope-only 0d87372b: 41 pass / 7 stale-fixture failures / 27 unrun.
   ;; Reviewed 3e4aa0a7: 1169 pass / 3 quote-fixture failures / 20 unrun; d81b989a: 2490 pass / 5 graph-fixture failures / 5 unrun.
   ;; Current session 32059 completed all 28 at 608d64a3; prior failed receipts and both baseline diagnostics remain separate.
+  ;; Source attempt 44654c7d / session 9793 finished FAILED: 67 pass / 1 incorrect negative expected-type oracle / 0 errors.
+  ;; The positive completed and returned true; the pending negative retained its exact empty slot and rejected the Keyword Set.
+  ;; Its corrected oracle below does not claim promotion or an accepted invariant; the full source var was not replayed.
   ;; One genuine G alias-loop composition and one conflicting normal re-entry negative; Q remains parser-only.
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -32385,7 +32388,8 @@
       (is (= :passed (get-in negative [:report :status]) (get-in negative [:verification :status])))
       (is (= :rejected (get-in negative [:typed :status])))
       (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
-      (is (= carrier (:expected-type diagnostic)))
+      ;; The normal carrier-producing edge is still unknown here, so grounding is pending and no invariant is selected.
+      (is (= empty-type (:expected-type diagnostic)))
       (is (= {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]} (:actual-type diagnostic)))
       (is (some? (:core-node-id diagnostic)))
       (is (some? (:syntax-id diagnostic)))

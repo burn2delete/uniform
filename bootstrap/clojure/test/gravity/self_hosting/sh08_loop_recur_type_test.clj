@@ -2081,6 +2081,24 @@
           (is (false? (c7-invoke 'sh08-lsi-leaf? [(nodes :arg1) changed :member])))
           (doseq [quota [0 65536]] (is (= :rejected (:status (c7-invoke 'sh08-lsi-path [:arg1 :member :value env quota]))))))
         (is (zero? @callbacks))))
+
+    ;; Unknown normal re-entry cannot publish a carrier fact; exact slots still reject the known conflict.
+    (let [bad-type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+          bad-transfer (assoc (first (:recur-transfers core)) :recur-core-node-id :pending-bad-transfer
+                              :argument-node-ids [:next-again :pending-bad])
+          pending-types (assoc types :call :gravity.type/unknown :pending-bad bad-type)
+          pending (c7-invoke 'sh08-lsi-solve [(update core :recur-transfers conj bad-transfer) pending-types source 65536])
+          target (first (filter #(= "loop-target" (:target-id %)) (:recur-targets core)))
+          exact (c7-invoke 'sh08-ft-loop-kernel-transfer-types
+                  [bad-transfer target nodes pending-types [:gravity.type/bool empty-type] (:invariants pending) 65536])
+          diagnostic (first (:issues exact))]
+      (is (= :accepted (:status pending)))
+      (is (empty? (:invariants pending)))
+      (is (= :rejected (:status exact)))
+      (is (= :loop-recur-slot-type-mismatch (:reason diagnostic)))
+      (is (= empty-type (:expected diagnostic)))
+      (is (= bad-type (:actual diagnostic)))
+      (is (= :value (:parameter-binding-id diagnostic))))
 ))
 
 (deftest symbol-set-loop-effect-invariant-development-kernel
