@@ -1998,19 +1998,40 @@
     (if (= (first checks) true)
       (c6c10-parameter-checks? (rest checks)) false)))
 
+(defn c6c10-parameter-hex? [characters]
+  (if (= (count characters) 0) true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f}
+          (first characters))
+      (c6c10-parameter-hex? (rest characters)) false)))
+
+(defn c6c10-parameter-id? [value]
+  ;; SH-06/projection IDs are original reader-canonical-hash products. C2 IDs
+  ;; instead join their original form rows below; no new C2 ID convention.
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (c6c10-parameter-hex? (subvec characters 7 71)) false)) false) false))
+
 (defn c6c10-parameter-binding-shape? [binding]
-  (c6c10-exact-map-keys? binding
+  (if (c6c10-exact-map-keys? binding
     #{:binding-id :upstream-binding-id :name :kind :namespace :package
       :binding-class :visibility :profile-set :target-set :type-ref
       :effects :capabilities :safety :semantic-span :scope-id
-      :definition-syntax-id :definition-artifact-id}))
+      :definition-syntax-id :definition-artifact-id})
+    (c6c10-parameter-checks?
+      [(c6c10-parameter-id? (get binding :binding-id))
+       (c6c10-parameter-id? (get binding :upstream-binding-id))
+       (c6c10-parameter-id? (get binding :definition-syntax-id))
+       (c6c10-parameter-id? (get binding :definition-artifact-id))]) false))
 
 (defn c6c10-parameter-coordinate? [row role form]
   (if (c6c10-exact-map-keys? row
         #{:role :c2-form-id :projected-form-id :projected-syntax-id})
     (c6c10-parameter-checks?
       [(= role (get row :role)) (= (get form :form-id) (get row :c2-form-id))
-       (string? (get row :projected-form-id)) (string? (get row :projected-syntax-id))]) false))
+       (c6c10-parameter-id? (get row :projected-form-id))
+       (c6c10-parameter-id? (get row :projected-syntax-id))]) false))
 
 (defn c6c10-parameter-declaration-valid? [envelope plan function-form]
   (let [declaration (get envelope :resolved-parameter)
@@ -2019,7 +2040,7 @@
         ids (get parameters :children) rows (get declaration :coordinates)]
     (if (c6c10-exact-map-keys? declaration
           #{:kind :source-content-hash :sh06-artifact-id :sh06-semantic-projection-id
-            :projection-binding :root-syntax-id :function-syntax-id :parameter-index
+            :projection-binding :root-syntax-id :function-syntax-id :function-scope-id :parameter-index
             :coordinates :parameter-binding :type-binding :type-resolution})
       (if (vector? rows)
         (if (= (count rows) 4)
@@ -2039,11 +2060,12 @@
                       (c6c10-parameter-checks?
                         [(= (get declaration :kind) :gravity/c6-c10-resolved-bool-parameter-v1)
                          (= (get declaration :source-content-hash) (get envelope :source-content-hash))
-                         (string? (get declaration :sh06-artifact-id))
-                         (string? (get declaration :sh06-semantic-projection-id))
-                         (string? (get declaration :projection-binding))
-                         (string? (get declaration :root-syntax-id))
-                         (string? (get declaration :function-syntax-id))
+                         (c6c10-parameter-id? (get declaration :sh06-artifact-id))
+                         (c6c10-parameter-id? (get declaration :sh06-semantic-projection-id))
+                         (c6c10-parameter-id? (get declaration :projection-binding))
+                         (c6c10-parameter-id? (get declaration :root-syntax-id))
+                         (c6c10-parameter-id? (get declaration :function-syntax-id))
+                         (c6c10-parameter-id? (get declaration :function-scope-id))
                          (= (get declaration :parameter-index) 0)
                          (= (get plan :name) 'main)
                          (= (get plan :definition-form) :def-fn)
@@ -2053,7 +2075,7 @@
                          (= (count (get plan :body)) (get plan :body-form-count))
                          (= (get plan :binding)
                             {:name 'main :kind :function :namespace (get envelope :module)
-                             :profile :hosted :target :jvm :visibility :public :effects #{} :capabilities #{}})
+                             :profile :hosted :target :jvm :visibility :stage2-local :effects #{} :capabilities #{}})
                          (c6c10-function-form? function-form 'main)
                          (c6c10-plain-form? parameters :vector)
                          (c6c10-plain-form? name-form :symbol)
@@ -2073,7 +2095,8 @@
                          (= (get binding :type-ref) :gravity.type/local)
                          (= (get binding :effects) []) (= (get binding :capabilities) [])
                          (= (get binding :safety) :safe)
-                         (string? (get binding :scope-id))
+                         (= (get binding :scope-id) (get declaration :function-scope-id))
+                         (= (get binding :semantic-span) {:scope-ordinal 1 :binding-ordinal 0})
                          (= [(get type-binding :binding-class) (get type-binding :kind)
                              (get type-binding :namespace) (get type-binding :name)]
                             [:core :type 'gravity.core 'Bool])
@@ -2083,9 +2106,12 @@
                          (= (get type-binding :target-set) [:all])
                          (= (get type-binding :visibility) :public)
                          (= (get type-binding :safety) :safe)
-                         (= (get (get type-binding :semantic-span) :catalog) :gravity/core)
+                         (= (get type-binding :semantic-span) {:catalog :gravity/core :ordinal 12})
+                         (= (get type-binding :profile-set)
+                            [:ai :core :distributed :firmware :formal :gpu :hardware :hosted :kernel :meta :native])
                          (= (get type-binding :effects) []) (= (get type-binding :capabilities) [])
                          (= (get reference :position) :type)
+                         (= (get reference :resolution-order) :profile-allowed-core-binding)
                          (= (get reference :symbol) (get type-form :value))
                          (= (get reference :reference-syntax-id) (get (get rows 3) :projected-syntax-id))
                          (= (get reference :binding-id) (get type-binding :binding-id))
@@ -2921,7 +2947,7 @@
          (= (get plan :compiler-artifact-plan?) true) (= (get plan :entrypoint) 'main)
          (c6c10-exact-map-keys? (get plan :source) #{:sha256})
          (c6c10-exact-map-keys? (get plan :module)
-           #{:capabilities :module :exports :effects :safety :target :profile})
+           #{:capabilities :module :effects :safety :target :profile})
          (c6c10-exact-map-keys? compiler
            #{:owner :stage :compiled-by :generic-bridge-residual? :artifact-hash
              :source-content-hash :semantic-hash})
@@ -3005,8 +3031,9 @@
           (if (= (get authoritative :effects) (get plan-module :effects))
             (if (= (get authoritative :capabilities)
                    (get plan-module :capabilities))
-              (if (= (get authoritative :exports)
-                     (get plan-module :exports))
+              (if (if (contains? plan-module :exports)
+                    (= (get authoritative :exports) (get plan-module :exports))
+                    (= (get authoritative :exports) ['main]))
                 (if (= (get authoritative :safety)
                        (get plan-module :safety))
                   (= (get authoritative :forms)
@@ -3594,7 +3621,7 @@
             (if (= (get plan :kind)
                    (if (contains? input :resolved-parameter)
                      :gravity/stage2-compiler-artifact-plan :gravity/stage2-hosted-core-compiled-plan))
-              (if (= (get module :exports) ['main])
+              (if (= (get authoritative-module :exports) ['main])
                 (if (map? functions)
                   (if (= (count functions) 1)
                     (map? (get functions 'main))

@@ -129,7 +129,7 @@
              ((juxt :binding-class :kind :name) (:parameter-binding evidence))))
       (is (= [:parameter-vector :parameter-name :annotation-marker :annotation-type]
              (mapv :role (:coordinates evidence))))
-      (is (= :accepted (:status result)))
+      (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
       (when (= :accepted (:status result))
         (let [template (:artifact-template result) nodes (:core-nodes template)
               binder (first (filter #(= :parameter (:source-operation %)) nodes))
@@ -159,8 +159,27 @@
           (is (= :proven-safe (get-in binder [:safety :outcome])))
           (is (true? (get-in template [:dependency-order-graph :all-lexical-bindings-resolve?])))
           (is (= evidence (:resolved-parameter template)))
-          (is (= :rejected (:status (build-mir template))))
-          (is (= :rejected (:status (invoke c11-plan 'sh13-run-branch-join-mir [template {}]))))
+          ;; This original C6 family is not the existing supplied SH-12 family;
+          ;; its rejection is not evidence of parameter-specific MIR support.
+          (doseq [report [(build-mir template)
+                          (invoke c11-plan 'sh13-run-branch-join-mir [template {}])]]
+            (is (= :rejected (:status report)))
+            (is (= ["C11-MODULE" :checked-core-shape]
+                   ((juxt :diagnostic-id :missing-fact) (diagnostic report)))))
+          ;; A genuine existing SH-12 MIR establishes the separate empty-params
+          ;; consumer fence, without fabricating a parameter instruction.
+          (let [checked (checked-core extension) mir (build-mir checked)
+                function-name (first (keys (:functions mir)))
+                mutated (assoc-in mir [:functions function-name :params] ['flag])
+                context (invoke c11-plan 'sh13-branch-join-context [checked mutated])
+                rejected (invoke c11-plan 'sh13-run-branch-join-mir [checked mutated])]
+            (is (= :passed (:status (verify-mir checked mir))))
+            (is (false? (invoke c11-plan 'sh13-branch-join-shape-valid? [checked mutated context])))
+            (is (= :rejected (:status rejected)))
+            (is (= ["C11-BLOCK" :block-terminator-or-control-flow-edge]
+                   ((juxt :diagnostic-id :missing-fact) (diagnostic rejected))))
+            (is (nil? (:execution rejected)))
+            (is (nil? (:projection rejected))))
           ;; Private replay validates DATA premises, not C5 authentication.
           ;; Reconstruction from source, not a caller-provided status, owns the
           ;; coherent-input substitution boundary.
@@ -187,6 +206,30 @@
                              (assoc-in input [:resolved-parameter :type-binding :package :version] "forged")
                              (assoc-in input [:resolved-parameter :type-resolution :position] :expression)
                              (assoc-in input [:resolved-parameter :type-resolution :upstream-binding-id] "other")]]
+            (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [malformed])))))
+          (doseq [path [[:sh06-artifact-id] [:sh06-semantic-projection-id]
+                        [:projection-binding] [:root-syntax-id] [:function-syntax-id] [:function-scope-id]
+                        [:parameter-binding :binding-id] [:parameter-binding :upstream-binding-id]
+                        [:parameter-binding :definition-artifact-id] [:parameter-binding :definition-syntax-id]
+                        [:type-binding :binding-id] [:type-binding :upstream-binding-id]
+                        [:type-binding :definition-artifact-id] [:type-binding :definition-syntax-id]
+                        [:coordinates 0 :projected-form-id] [:coordinates 3 :projected-syntax-id]]
+                  value [nil "" 17 "sha256:not-a-digest"]]
+            (is (= :rejected
+                   (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                                    [(assoc-in input (into [:resolved-parameter] path) value)])))))
+          (doseq [malformed [(-> input
+                                (assoc-in [:resolved-parameter :type-binding :binding-id] nil)
+                                (assoc-in [:resolved-parameter :type-resolution :binding-id] nil))
+                             (assoc-in input [:resolved-parameter :parameter-binding :scope-id]
+                                       (:root-syntax-id evidence))
+                             (assoc-in input [:resolved-parameter :parameter-binding :profile-set] [:meta])
+                             (assoc-in input [:resolved-parameter :type-binding :profile-set] [:meta])
+                             (assoc-in input [:resolved-parameter :type-binding :target-set] [:jvm])
+                             (assoc-in input [:resolved-parameter :type-binding :semantic-span :ordinal] 13)
+                             (assoc-in input [:stage2-plan :module :exports] ['main])
+                             (assoc-in input [:stage2-plan :functions 'main :binding :visibility] :public)
+                             (assoc-in input [:authoritative-module :exports] [])]]
             (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [malformed])))))
           (doseq [candidate [(assoc-in template [:core-nodes 0 :type] :gravity/integer)
                              (assoc-in template [:core-nodes 0 :attributes :parameter-index] 1)

@@ -169,6 +169,7 @@
      :projection-binding (:projection-binding request)
      :root-syntax-id (:syntax-id root)
      :function-syntax-id (:syntax-id function)
+     :function-scope-id (:scope-id function)
      :parameter-index 0
      :coordinates (mapv (fn [role c2 form]
                           {:role role :c2-form-id (:form-id c2)
