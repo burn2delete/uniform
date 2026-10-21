@@ -11527,6 +11527,222 @@
       (body-cq-call-valid? core facts (get context :bindings) node (get (get context :calls) id)
                           (get (get context :edges) id) (get context :nodes)) false)))
 
+(defn body-scv-binding? [binding module]
+  (if (symbol? (get binding :name))
+    (if (keyword? (get module :profile))
+      (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+        (if (loop [remaining (get binding :profile-set)]
+              (if (= 0 (count remaining)) true (if (keyword? (first remaining)) (recur (rest remaining)) false)))
+          (if (loop [remaining (get binding :target-set)]
+                (if (= 0 (count remaining)) true (if (keyword? (first remaining)) (recur (rest remaining)) false)))
+            (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (body-all?
+    [(= ['vec :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false) false) false) false) false) false))
+
+(defn body-scv-proof [core node call nodes bindings types forms budget]
+  ; STD4 scalar law; ASCII is a closed supported subset, not all valid text.
+  ; Reserve all selected text walks and positional type work before scanning.
+  (let [base (+ 128 (count (get core :function-records)))]
+    (if (> base budget) {:status :rejected :reason :string-character-vector-work-limit :work-count base}
+      (if (if (vector? (get call :argument-node-ids)) (= 1 (count (get call :argument-node-ids))) false)
+        (if (if (body-nq-ids? node call nodes bindings (get core :module))
+              (let [argument (get nodes (first (get call :argument-node-ids)))]
+                (body-sse-ids? [(get argument :node-id) (get (get argument :source) :form-id)
+                                (get (get argument :source) :syntax-id)] 3)) false)
+          (let [argument (get nodes (first (get call :argument-node-ids)))
+                type (get types (get argument :node-id)) attrs (get argument :attributes)
+                value (get attrs :value) normal? (= :gravity.type/string type)
+                owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+                operator (get nodes (get call :operator-node-id))
+                op-form (get forms (get (get operator :source) :form-id))
+                arg-form (get forms (get (get argument :source) :form-id))
+                n (if (if normal? (string? value) false) (count value) 0)
+                work (+ base (* 32 n))]
+            (if (> n 1024) {:status :rejected :reason :string-character-vector-width :work-count base}
+              (if (> work budget) {:status :rejected :reason :string-character-vector-work-limit :work-count work}
+                (if (if (body-sse-ids? ids 2)
+                      (if (body-sse-ids? [(get argument :node-id) (get (get argument :source) :form-id)
+                                          (get (get argument :source) :syntax-id)] 3)
+                        (if (symbol? (get op-form :value))
+                          (body-all?
+                            [(= :list (get owner :kind)) (= [] (get op-form :child-form-ids))
+                             (= :symbol (get op-form :kind))
+                             (= [(get op-form :form-id) (get arg-form :form-id)] ids)
+                             (= (get owner :form-id) (get op-form :parent-form-id) (get arg-form :parent-form-id))
+                             (= (get node :source) (get (body-ma-form-node {} owner) :source))
+                             (= (get operator :source) (get (body-ma-form-node {} op-form) :source))
+                             (= (get argument :source) (get (body-ma-form-node {} arg-form) :source))
+                             (= (get (get operator :attributes) :symbol) (get op-form :value))]) false) false) false)
+                  (if (if normal?
+                        (if (if (string? value) (string? (get arg-form :value)) false)
+                          (if (= 2 (count attrs))
+                            (body-all?
+                              [(= :literal (get argument :core-form))
+                               (= :string (get attrs :literal-kind) (get arg-form :kind))
+                               (= [] (get argument :children) (get argument :resolved-binding-ids) (get arg-form :child-form-ids))
+                               (= n (count (get arg-form :value))) (= value (get arg-form :value))]) false) false)
+                        (= :gravity.type/never type))
+                    (if (if normal?
+                          (let [ascii '#{\u0000 \u0001 \u0002 \u0003 \u0004 \u0005 \u0006 \u0007 \u0008 \u0009 \u000A \u000B \u000C \u000D \u000E \u000F
+             \u0010 \u0011 \u0012 \u0013 \u0014 \u0015 \u0016 \u0017 \u0018 \u0019 \u001A \u001B \u001C \u001D \u001E \u001F
+             \u0020 \u0021 \u0022 \u0023 \u0024 \u0025 \u0026 \u0027 \u0028 \u0029 \u002A \u002B \u002C \u002D \u002E \u002F
+             \u0030 \u0031 \u0032 \u0033 \u0034 \u0035 \u0036 \u0037 \u0038 \u0039 \u003A \u003B \u003C \u003D \u003E \u003F
+             \u0040 \u0041 \u0042 \u0043 \u0044 \u0045 \u0046 \u0047 \u0048 \u0049 \u004A \u004B \u004C \u004D \u004E \u004F
+             \u0050 \u0051 \u0052 \u0053 \u0054 \u0055 \u0056 \u0057 \u0058 \u0059 \u005A \u005B \u005C \u005D \u005E \u005F
+             \u0060 \u0061 \u0062 \u0063 \u0064 \u0065 \u0066 \u0067 \u0068 \u0069 \u006A \u006B \u006C \u006D \u006E \u006F
+             \u0070 \u0071 \u0072 \u0073 \u0074 \u0075 \u0076 \u0077 \u0078 \u0079 \u007A \u007B \u007C \u007D \u007E \u007F}]
+                            (loop [remaining value i 0]
+                              (if (= i n) true
+                                (let [unit (first remaining)]
+                                  (if (if (char? unit) (contains? ascii unit) false)
+                                    (recur (rest remaining) (+ i 1)) false))))) true)
+                      {:status :accepted :work-count work
+                       :proof {:schema :gravity/string-character-vector-proof-v1
+                               :call-core-node-id (get node :node-id) :source-forms [owner op-form arg-form]
+                               :operand (if normal? {:kind :original-string-literal :node argument :source-form arg-form :value value}
+                                            {:kind :non-invoked-operand})
+                               :scalar-count (if normal? n nil) :validated-domain :ascii
+                               :law :one-character-per-unicode-scalar :normalization :none :coercion :none}}
+                      {:status :rejected :reason :string-character-vector-unsupported-text :work-count work})
+                    {:status :rejected :reason :string-character-vector-literal-required :work-count work})
+                  {:status :rejected :reason :string-character-vector-source-mismatch :work-count work}))))
+          {:status :rejected :reason :string-character-vector-source-mismatch :work-count base})
+        {:status :rejected :reason :string-character-vector-arity-mismatch :work-count base}))))
+
+
+(defn body-scv-source [core node call edge nodes bindings types module proof]
+  (if (if (map? edge) (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false)
+    (if (if (vector? (get call :argument-node-ids))
+        (if (= 1 (count (get call :argument-node-ids)))
+          (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments [(get types (get args 0) :gravity.type/unknown)]
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (body-all?
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 1 (count args)) (= expected-call call) (= expected-edge edge) (body-scv-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{vec gravity.core/vec} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (= :jvm (get module :target))
+           (if (map? proof) (= :gravity/string-character-vector-proof-v1 (get proof :schema)) false)
+           (if (keyword? (first arguments)) (contains? #{:gravity.type/string :gravity.type/never} (first arguments)) false)
+           (if (= nil (first arguments)) false (= false (= :gravity.type/unknown (first arguments))))] )
+      {:kind :gravity.type/applied-string-character-vector :version :sh08-string-character-vector-v1
+       :operation 'vec :semantic-owner 'gravity.text :intrinsic :gravity.text/string-character-vector
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :conversion-policy {:input :string :scalars :one-character-per-unicode-scalar
+                           :supported-domain :original-ascii-string-literal :order :original
+                           :normalization :none :coercion :none :utf16-splitting :forbidden
+                           :operand-evaluation :once :input-preserved? true
+                           :allocation :normal-invocation-even-empty :value-work :logical-character-units
+                           :provider-cpu-bound :not-established :provider-heap-bound :not-established}
+       :conversion-proof proof
+       :storage-policy {:allocation :may-allocate-character-vector :condition :normal-invocation
+                        :representation :pending-profile-representation :provider :pending-runtime-provider
+                        :ownership :pending-ownership-analysis}
+
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :original-string-literal :conversion-policy :source-scalar-proof :result-storage-policy :allocation-condition :profile :target :evaluation-order]} nil)) nil) nil))
+
+(defn body-scv-finish [header]
+  (let [normal? (= :normal (get header :application))
+        n (get (get header :conversion-proof) :scalar-count)
+        type (if normal?
+               {:kind :gravity.type/vector :shape :literal
+                :element-types (loop [i 0 out []]
+                                 (if (= i n) out (recur (+ i 1) (conj out :gravity.type/character))))}
+               :gravity.type/never)]
+    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+
+
+(defn body-scv-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-string-character-vector-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-string-character-vector-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :string-character-vector}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn body-scv-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-string-character-vector-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-string-character-vector :applied-string-character-vector descriptor :effect-facts-source :audited-text-intrinsic}))
+
+(defn body-scv-call-valid? [core facts bindings node call edge nodes]
+  (let [types (get facts :type-table)
+        validation (get (get (get facts :quotient-context) :domains) (get node :node-id))
+        header (if (= :accepted (get validation :status))
+                 (body-scv-source core node call edge nodes bindings types (get core :module) (get validation :proof)) nil)]
+    (if (map? header)
+      (let [expected (body-scv-finish header)
+            descriptor (get types (get call :operator-node-id))]
+        (if (= expected descriptor)
+          (body-all?
+            [(= (get expected :result-type) (get types (get node :node-id)))
+             (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+             (= (body-scv-call-fact expected (get core :module))
+                (body-nq-one (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
+             (= [(body-scv-constraint expected)]
+                (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-string-character-vector-v1)
+                             :lhs {:core-node-id (get node :node-id) :projection :string-character-vector}))]) false)) false)))
+
+
+(defn body-scv-node? [node facts core]
+  (let [context (get facts :quotient-context) id (get node :node-id)]
+    (if (map? context)
+      (body-scv-call-valid? core facts (get context :bindings) node (get (get context :calls) id)
+                          (get (get context :edges) id) (get context :nodes)) false)))
+
+(defn body-scv-allocation [node graph]
+  (let [descriptor (get (get graph (first (get node :children))) :type)]
+    (if (if (= :call (get node :core-form)) (= :gravity.type/applied-string-character-vector (get descriptor :kind)) false)
+      {:rule-version :sh09-string-character-vector-allocation-v1 :value-kind :vector
+       :behavior :possible-character-vector-storage :condition :normal-operand-completion
+       :normal-completion-possible? (= :normal (get descriptor :application))
+       :extent (if (= :normal (get descriptor :application))
+                 {:unit :characters :count (get (get descriptor :conversion-proof) :scalar-count)} nil)
+       :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis} nil)))
+
+
 (defn body-cqs-binding? [binding module]
   (if (symbol? (get binding :name))
     (if (keyword? (get module :profile))
@@ -12007,7 +12223,7 @@
                      (let [call (first remaining) id (get call :operator-binding-id)]
                        (if (body-sse-ids? [id] 1)
                          (recur (rest remaining)
-                           (if (if (body-nq-binding? (get bindings id) (get core :module)) true (body-cqs-binding? (get bindings id) (get core :module))) (conj out call) out))
+                           (if (if (body-nq-binding? (get bindings id) (get core :module)) true (if (body-scv-binding? (get bindings id) (get core :module)) (body-scv-binding? (get bindings id) (get core :module)) (body-cqs-binding? (get bindings id) (get core :module)))) (conj out call) out))
                          (conj out {:invalid-call true})))))]
     (if (= 0 (count selected)) {:status :accepted :context nil :work-count 0}
       (let [forms (body-path request [:b47-context :authenticated-core-request :forms])
@@ -12024,9 +12240,10 @@
                 (let [call (first remaining) id (get call :core-node-id) charge (+ rows 64 (count (get core :function-records)))]
                   (if (> charge (- budget work)) (body-failure :body-deferred-work-limit)
                     (if (body-sse-ids? [id] 1)
-                      (let [proof (if (body-cqs-binding? (get bindings (get call :operator-binding-id)) (get core :module))
-                              (body-cqs-proof core (get nodes id) call nodes bindings (get facts :type-table)
-                                                form-index (- budget work charge))
+                      (let [proof (if (if (body-scv-binding? (get bindings (get call :operator-binding-id)) (get core :module)) (body-scv-binding? (get bindings (get call :operator-binding-id)) (get core :module)) (body-cqs-binding? (get bindings (get call :operator-binding-id)) (get core :module)))
+                              (if (body-scv-binding? (get bindings (get call :operator-binding-id)) (get core :module)) (body-scv-proof core (get nodes id) call nodes bindings (get facts :type-table)
+                                                form-index (- budget work charge)) (body-cqs-proof core (get nodes id) call nodes bindings (get facts :type-table)
+                                                form-index (- budget work charge)))
                               (body-nq-proof core (get nodes id) call nodes bindings (get facts :type-table)
                                                 form-index (- budget work charge)))
                             total (+ work charge (get proof :work-count))]
@@ -12968,7 +13185,7 @@
                                     (if (= 0 (count remaining)) out
                                       (let [row (first remaining)]
                                         (recur (rest remaining)
-                                          (if (contains? #{:sh08-string-concat-v1 :sh08-nonnegative-integer-quotient-v1 :sh08-count-quotient-scaling-v1} (get row :producer-rule))
+                                          (if (contains? #{:sh08-string-concat-v1 :sh08-nonnegative-integer-quotient-v1 :sh08-string-character-vector-v1 :sh08-count-quotient-scaling-v1} (get row :producer-rule))
                                             (conj out row) out))))))
                     (= list-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-list-construction-v1))
                     (= query-rows (loop [remaining (get facts :constraint-ledger) out []]
@@ -13003,13 +13220,13 @@
                           (body-ma-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))
                         (if (body-va-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                           (body-va-node? (get nodes id) facts core)
-                          (if (if (if (body-lq-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) true (body-lc-binding? (get bindings (get edge :callee-binding-id)) (get core :module))) true (if (if (body-cqs-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) true (body-nq-binding? (get bindings (get edge :callee-binding-id)) (get core :module))) true (body-sc-binding? (get bindings (get edge :callee-binding-id)) (get core :module))))
+                          (if (if (if (body-lq-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) true (body-lc-binding? (get bindings (get edge :callee-binding-id)) (get core :module))) true (if (if (if (body-scv-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) (body-scv-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) (body-cqs-binding? (get bindings (get edge :callee-binding-id)) (get core :module))) true (body-nq-binding? (get bindings (get edge :callee-binding-id)) (get core :module))) true (body-sc-binding? (get bindings (get edge :callee-binding-id)) (get core :module))))
                             (if (if (body-lq-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) true (body-lc-binding? (get bindings (get edge :callee-binding-id)) (get core :module)))
                               (if (body-lq-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                                 (body-lq-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
                                 (body-lc-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))
-                              (if (if (body-cqs-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) true (body-nq-binding? (get bindings (get edge :callee-binding-id)) (get core :module)))
-                                (if (body-cqs-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) (body-cqs-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes) (body-nq-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))
+                              (if (if (if (body-scv-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) (body-scv-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) (body-cqs-binding? (get bindings (get edge :callee-binding-id)) (get core :module))) true (body-nq-binding? (get bindings (get edge :callee-binding-id)) (get core :module)))
+                                (if (if (body-scv-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) (body-scv-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) (body-cqs-binding? (get bindings (get edge :callee-binding-id)) (get core :module))) (if (body-scv-binding? (get bindings (get edge :callee-binding-id)) (get core :module)) (body-scv-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes) (body-cqs-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)) (body-nq-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))
                                 (body-sc-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)))
                           (if (body-mg-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                             (if (= :sh08-vector-get-loop-v1 (get (get (get facts :type-table) (get (get calls id) :operator-node-id)) :version))
@@ -13067,10 +13284,10 @@
                     (body-mc-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))) contains-rows)
               (if (= :direct-map-get (get (get call-facts id) :dispatch))
                 (conj get-rows (body-mg-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) get-rows)
-              (if (contains? #{:direct-string-concat :direct-nonnegative-integer-quotient :direct-count-quotient-scaling} (get (get call-facts id) :dispatch))
+              (if (contains? #{:direct-string-concat :direct-nonnegative-integer-quotient :direct-string-character-vector :direct-count-quotient-scaling} (get (get call-facts id) :dispatch))
                 (conj concat-rows
-                  (if (contains? #{:direct-nonnegative-integer-quotient :direct-count-quotient-scaling} (get (get call-facts id) :dispatch))
-                    (if (= :direct-count-quotient-scaling (get (get call-facts id) :dispatch)) (body-cqs-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))) (body-nq-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))
+                  (if (contains? #{:direct-nonnegative-integer-quotient :direct-string-character-vector :direct-count-quotient-scaling} (get (get call-facts id) :dispatch))
+                    (if (if (= :direct-string-character-vector (get (get call-facts id) :dispatch)) true (= :direct-count-quotient-scaling (get (get call-facts id) :dispatch))) (if (= :direct-string-character-vector (get (get call-facts id) :dispatch)) (body-scv-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))) (body-cqs-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) (body-nq-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))
                     (body-sc-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))) concat-rows)
               (if (= :direct-list-construction (get (get call-facts id) :dispatch))
                 (conj list-rows (body-lc-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) list-rows)
@@ -14422,7 +14639,7 @@
                (if (= 0 (count remaining)) out (recur (rest remaining) (+ out (count (body-error-types graph (first remaining)))))))]
     (+ (if (if (= :collection-literal (get node :core-form)) true
               (if (= :call (get node :core-form))
-                (contains? #{:gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-set-conversion}
+                (contains? #{:gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-set-conversion}
                   (get (get (get graph (first (get node :children))) :type) :kind)) false))
          (* 2 (+ 1 (count ids))) 0)
        (if (= 0 size) 0 (* (+ 2 (count ids)) (+ 1 size))))))
@@ -14519,7 +14736,7 @@
         deps (if construction? [] (if (= target nil) children (conj children target)))
         allocation (if (= kind :collection-literal) (body-constructor-allocation node graph)
                        (let [set-allocation (body-set-conversion-allocation node graph)
-                             quotient (if (= set-allocation nil) (let [numeric (body-nq-allocation node graph)] (if (= numeric nil) (body-cqs-allocation node graph) numeric)) set-allocation)
+                             quotient (if (= set-allocation nil) (let [numeric (body-nq-allocation node graph)] (if (= numeric nil) (let [scaling (body-cqs-allocation node graph)] (if (= scaling nil) (body-scv-allocation node graph) scaling)) numeric)) set-allocation)
                              list-allocation (if (= quotient nil) (body-list-construction-allocation node graph) quotient)
                              concatenation (if (= list-allocation nil) (body-string-concat-allocation node graph) list-allocation)]
                          (if (= concatenation nil)
@@ -14692,7 +14909,7 @@
                                              (if (if (body-ma-node? node typed core) true (body-mr-node? node typed core)) true
                                                (if (body-cq-node? node typed core) true (if (body-vn-node? node typed core) true
                                                  (if (body-va-node? node typed core) true
-                                                   (if (if (if (if (if (if (if (body-lq-node? node typed core) true (body-lc-node? node typed core)) true (if (if (body-cqs-node? node typed core) true (body-nq-node? node typed core)) true (body-sc-node? node typed core))) true (body-mg-node? node typed core)) true (body-mc-node? node typed core)) true (if (if (if (body-st-node? node typed core) true (if (body-ane-node? node typed core) true (if (if (body-chp-node? node typed core) true (body-nilp-node? node typed core)) true (if (body-boolp-node? node typed core) true (if (body-symp-node? node typed core) true (if (if (body-listp-node? node typed core) true (body-setp-node? node typed core)) true (if (body-mapp-node? node typed core) true (if (body-kp-node? node typed core) true (if (body-strp-node? node typed core) true (body-ip-node? node typed core)))))))))) true (body-vp-node? node typed core)) true (body-nt-node? node typed core))) true (body-ae-node? node typed core)) true (body-si-node? node typed core)))))))))
+                                                   (if (if (if (if (if (if (if (body-lq-node? node typed core) true (body-lc-node? node typed core)) true (if (if (if (body-scv-node? node typed core) (body-scv-node? node typed core) (body-cqs-node? node typed core)) true (body-nq-node? node typed core)) true (body-sc-node? node typed core))) true (body-mg-node? node typed core)) true (body-mc-node? node typed core)) true (if (if (if (body-st-node? node typed core) true (if (body-ane-node? node typed core) true (if (if (body-chp-node? node typed core) true (body-nilp-node? node typed core)) true (if (body-boolp-node? node typed core) true (if (body-symp-node? node typed core) true (if (if (body-listp-node? node typed core) true (body-setp-node? node typed core)) true (if (body-mapp-node? node typed core) true (if (body-kp-node? node typed core) true (if (body-strp-node? node typed core) true (body-ip-node? node typed core)))))))))) true (body-vp-node? node typed core)) true (body-nt-node? node typed core))) true (body-ae-node? node typed core)) true (body-si-node? node typed core)))))))))
                     (if (= kind :match) (body-match-valid? node core (get typed :type-table)) true))
               (if (body-ready? deps graph)
                 (recur (rest pending) deferred
@@ -14728,7 +14945,7 @@
                                               (if (if (body-ma-node? node facts core) true (body-mr-node? node facts core)) true
                                                 (if (body-cq-node? node facts core) true (if (body-vn-node? node facts core) true
                                                   (if (body-va-node? node facts core) true
-                                                    (if (if (if (if (if (if (if (body-lq-node? node facts core) true (body-lc-node? node facts core)) true (if (if (body-cqs-node? node facts core) true (body-nq-node? node facts core)) true (body-sc-node? node facts core))) true (body-mg-node? node facts core)) true (body-mc-node? node facts core)) true (if (if (if (body-st-node? node facts core) true (if (body-ane-node? node facts core) true (if (if (body-chp-node? node facts core) true (body-nilp-node? node facts core)) true (if (body-boolp-node? node facts core) true (if (body-symp-node? node facts core) true (if (if (body-listp-node? node facts core) true (body-setp-node? node facts core)) true (if (body-mapp-node? node facts core) true (if (body-kp-node? node facts core) true (if (body-strp-node? node facts core) true (body-ip-node? node facts core)))))))))) true (body-vp-node? node facts core)) true (body-nt-node? node facts core))) true (body-ae-node? node facts core)) true (body-si-node? node facts core)))))))) true) true)
+                                                    (if (if (if (if (if (if (if (body-lq-node? node facts core) true (body-lc-node? node facts core)) true (if (if (if (body-scv-node? node facts core) (body-scv-node? node facts core) (body-cqs-node? node facts core)) true (body-nq-node? node facts core)) true (body-sc-node? node facts core))) true (body-mg-node? node facts core)) true (body-mc-node? node facts core)) true (if (if (if (body-st-node? node facts core) true (if (body-ane-node? node facts core) true (if (if (body-chp-node? node facts core) true (body-nilp-node? node facts core)) true (if (body-boolp-node? node facts core) true (if (body-symp-node? node facts core) true (if (if (body-listp-node? node facts core) true (body-setp-node? node facts core)) true (if (body-mapp-node? node facts core) true (if (body-kp-node? node facts core) true (if (body-strp-node? node facts core) true (body-ip-node? node facts core)))))))))) true (body-vp-node? node facts core)) true (body-nt-node? node facts core))) true (body-ae-node? node facts core)) true (body-si-node? node facts core)))))))) true) true)
                 (if (body-ready? deps graph)
                 (= (get graph id)
                    (if (= imported nil) (body-control-node-record node target graph (get (get facts :type-table) id) facts edge core
@@ -15058,7 +15275,7 @@
                                (if (body-cq-node? (get nodes (get edge :call-core-node-id)) facts core) true
                                  (if (body-vn-node? (get nodes (get edge :call-core-node-id)) facts core) true
                                    (if (body-va-node? (get nodes (get edge :call-core-node-id)) facts core) true
-                                     (if (if (if (if (if (if (if (body-lq-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-lc-node? (get nodes (get edge :call-core-node-id)) facts core)) true (if (if (body-cqs-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-nq-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-sc-node? (get nodes (get edge :call-core-node-id)) facts core))) true (body-mg-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-mc-node? (get nodes (get edge :call-core-node-id)) facts core)) true (if (if (if (body-st-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (body-ane-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (if (body-chp-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-nilp-node? (get nodes (get edge :call-core-node-id)) facts core)) true (if (body-boolp-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (body-symp-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (if (body-listp-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-setp-node? (get nodes (get edge :call-core-node-id)) facts core)) true (if (body-mapp-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (body-kp-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (body-strp-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-ip-node? (get nodes (get edge :call-core-node-id)) facts core)))))))))) true (body-vp-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-nt-node? (get nodes (get edge :call-core-node-id)) facts core))) true (body-ae-node? (get nodes (get edge :call-core-node-id)) facts core)) true
+                                     (if (if (if (if (if (if (if (body-lq-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-lc-node? (get nodes (get edge :call-core-node-id)) facts core)) true (if (if (if (body-scv-node? (get nodes (get edge :call-core-node-id)) facts core) (body-scv-node? (get nodes (get edge :call-core-node-id)) facts core) (body-cqs-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-nq-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-sc-node? (get nodes (get edge :call-core-node-id)) facts core))) true (body-mg-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-mc-node? (get nodes (get edge :call-core-node-id)) facts core)) true (if (if (if (body-st-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (body-ane-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (if (body-chp-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-nilp-node? (get nodes (get edge :call-core-node-id)) facts core)) true (if (body-boolp-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (body-symp-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (if (body-listp-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-setp-node? (get nodes (get edge :call-core-node-id)) facts core)) true (if (body-mapp-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (body-kp-node? (get nodes (get edge :call-core-node-id)) facts core) true (if (body-strp-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-ip-node? (get nodes (get edge :call-core-node-id)) facts core)))))))))) true (body-vp-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-nt-node? (get nodes (get edge :call-core-node-id)) facts core))) true (body-ae-node? (get nodes (get edge :call-core-node-id)) facts core)) true
                                        (body-si-node? (get nodes (get edge :call-core-node-id)) facts core)))))))
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (if local? false (= false intrinsic?)) false) (body-failure :unsupported-throwing-call-component)
@@ -15151,7 +15368,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (body-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))

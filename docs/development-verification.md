@@ -6453,6 +6453,63 @@ Runtime remains 56 functions and all nine protected carrier predicates are
 unchanged. Whole helpers, native, migration, self-hosting and release remain
 outside this evidence.
 
+### ASCII literal String vector conversion
+
+STD4 defines String `vec` as conversion to a Vector with one Character per
+Unicode scalar in original order. The initial C7/C8/typed-emitter/runtime slice
+supports only unary original finite ASCII String literals, including empty and all NUL-through-DEL
+values, up to the existing 1,024-member bound. It does not split UTF-16 units,
+normalize or coerce text. Valid non-ASCII, supplementary and malformed host
+surrogate input all remain unsupported by this implementation; rejection does
+not classify every unsupported String as invalid Unicode.
+
+Authenticate the original String occurrence, resolved `vec` binding, ordered
+call/edge, nonnegative Integer edge ordinal, source IDs, types, unique ledger
+and call facts. Reserve width-dependent work before comparisons and walks;
+validate every physical Character against the fixed 128-value domain before
+constructing positional Character types or the result. The proof uses the
+existing bootstrap first/rest interface, not an unproved `vec` call or new host
+scalar primitive. Logical Character work is not a provider CPU or heap guarantee.
+
+Normal invocation, including empty conversion, retains possible Vector
+allocation and storage/provider/ownership obligations. Never preserves the
+operand transfer and latent allocation contract, with no direct result
+allocation or normal extent. Operands remain once-only and non-tail. C8 shares
+the existing source context; runtime keeps existing builtin-call IR and checks
+the actual String plus original closed literal instruction before conversion.
+Runtime remains at 56 functions; nine protected carrier predicates are unchanged.
+
+Use the five `sh08-ascii-string-vector-*-development-kernel` selectors,
+`body-ascii-string-vector-development-kernel` and SH01's lowering, runtime,
+transfer-fence and fixtures selectors. The earlier affected batch passed
+39 tests / 2,420 assertions at `88e67a9d`. Review then found an unguarded edge
+ordinal: its RED was 3 / 231 with 12 failures. The grouped three-consumer guard
+correction passed 14 / 579 at `e642fb32`; do not relabel the earlier batch as
+post-correction evidence. Boundary passed 6 / 11 and LOC passed for 2,022 files,
+zero exceptions, maximum 250 lines at the earlier implementation revision.
+
+The separate source selector
+`current-gravity-ascii-string-vector-authenticated-composition` passed
+1 / 61 at `e22f9f88`: one G function/call returned the seven Characters in
+`sha256:` with empty stdout after fresh C7/C8 and assembly-required public C7
+verification. The valid non-ASCII G negative reported the unsupported-subset
+C7-ANNOTATION with provenance; fresh negative C7 verification was asserted and
+printed passed. Secondary C7-ANNOTATION remains. Negative C8/runtime were not
+invoked; QST is parser-only and development C6 replay is not public fresh C6.
+
+Preserve `/tmp/ascii-string-vector-source-lease-20261021`: original PTY
+57427, natural exit zero, 15 unchanged inputs, matching command/env/CWD pins,
+released lease, six free-lock snapshots and no Java observed at postcheck. Ten
+monitored observations had maximum gap 16.370 seconds; bounds were operational,
+without hard OS/RSS/descendant guarantees. The one history-preserving main join
+`990ce8c8` retained all 12 producer/method byte sequences. The actual SH07 route,
+checked_core, compiler/emitter and projection were unchanged; the joined private
+C6 Bool-parameter producer is a separate path. No post-join source run or broad
+proof-validity claim follows. Original BMP/ASCII REDs, pre-test syntax failures
+and corrected oracles remain in their raw receipts.
+String parameters, aliases, general sequence conversion, non-ASCII support,
+subvec, complete SHA/compiler helpers, native, migration and release are unproven.
+
 ### Count-bounded quotient scaling
 
 SAFE9/STD5 permit the existing owners to prove binary
