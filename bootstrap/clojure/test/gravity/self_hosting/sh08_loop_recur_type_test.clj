@@ -2498,6 +2498,10 @@
                     #(assoc-in % [:types :first-operator :source-call :argument-node-ids] [:other])
                     #(assoc-in % [:types :first-operator :source-binding :namespace] 'foreign.core)
                     #(assoc-in % [:calls :vector-first :argument-node-ids] [:other])
+                    #(assoc-in % [:calls :vector-first :argument-node-ids] (vec (repeat 1024 :symbol-vector)))
+                    #(assoc-in % [:calls :vector-first :ordered-evaluation-node-ids] (vec (repeat 1024 :first-operator)))
+                    #(assoc-in % [:core :module :profile] [:meta])
+                    #(assoc-in % [:core :module :target] [:jvm])
                     #(assoc-in % [:edges :vector-first :callee-binding-id] :other)
                     #(assoc-in % [:nodes :arg1 :core-form] :call)
                     #(assoc-in % [:types :arg1] :gravity.type/unknown)
@@ -2606,9 +2610,10 @@
                         :call-type-facts (vec (vals (:call-facts converted-context)))}
           request {:canonical-core-artifact converted :b47-context {:authenticated-core-request {:forms (vec (vals (:forms converted-context)))}}}
           prepared (effects 'body-va-context request source-facts (:bindings converted-context) 65536)
-          source-facts (assoc source-facts :append-context (:context prepared))
+          queries (effects 'body-lq-context request source-facts (:bindings converted-context) 65536)
+          source-facts (assoc source-facts :append-context (:context prepared) :list-query-context (:context queries))
           graph (effects 'body-derive-loop-nodes converted source-facts {} 65536)]
-      (is (= :accepted (:status prepared) (:status graph)) (pr-str graph))
+      (is (= :accepted (:status prepared) (:status queries) (:status graph)) (pr-str graph))
       (is (= #{:memory/allocate} (get-in graph [:nodes (ids :value-init) :direct])))
       (is (= #{:memory/allocate} (get-in graph [:nodes (ids :transfer) :transitive])))
       (is (= #{:memory/allocate} (get-in graph [:nodes (ids :symbol-vector) :direct])))

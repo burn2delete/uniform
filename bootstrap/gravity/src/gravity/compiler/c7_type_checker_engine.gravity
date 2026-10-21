@@ -2841,7 +2841,9 @@
 
 (defn sh08-lsi-first-call-input [node env budget]
   ; Guard reached identities before indexed lookup or legacy source comparisons.
-  (if (sh08-lsi-first-node? node)
+  (if (if (sh08-lsi-first-node? node)
+        (if (keyword? (get (get (get env :core) :module) :profile))
+          (keyword? (get (get (get env :core) :module) :target)) false) false)
     (let [id (get node :node-id) call (get (get env :calls) id) edge (get (get env :edges) id)
           children (get node :children) forms (get env :forms) nodes (get env :nodes)]
       (if (if (= 2 (count children)) (if (map? call) (if (= 7 (count call))
@@ -2850,7 +2852,13 @@
           (if (if (if (sh08-lsi-id? op-id) (sh08-lsi-id? arg-id) false)
               (if (sh08-lsi-id? bid) (if (sh08-lsi-id? (get call :operator-node-id))
                 (if (sh08-lsi-id? (get call :core-node-id))
-                  (if (sh08-lsi-first-ids? (get call :argument-node-ids)) (sh08-lsi-first-ids? (get call :ordered-evaluation-node-ids)) false) false) false) false) false)
+                  (if (sh08-lsi-first-ids? (get call :argument-node-ids))
+                    (if (= 1 (count (get call :argument-node-ids)))
+                      (if (sh08-lsi-id? (get (get call :argument-node-ids) 0))
+                        (if (sh08-lsi-first-ids? (get call :ordered-evaluation-node-ids))
+                          (if (= 2 (count (get call :ordered-evaluation-node-ids)))
+                            (if (sh08-lsi-id? (get (get call :ordered-evaluation-node-ids) 0))
+                              (sh08-lsi-id? (get (get call :ordered-evaluation-node-ids) 1)) false) false) false) false) false) false) false) false) false) false)
             (let [operator (get nodes op-id) arg (get nodes arg-id) binding (get (get env :bindings) bid)
                   owner (get forms (get (get node :source) :form-id))]
               (if (if (sh08-lsi-first-node? operator) (sh08-lsi-first-node? arg) false)
@@ -2860,7 +2868,9 @@
                           (sh08-lsi-id? (get (get owner :child-form-ids) 1)) false) false) false)
                   (let [ids (get owner :child-form-ids) op-form (get forms (get ids 0)) arg-form (get forms (get ids 1))
                         raw (sh08-lsi-first-data-work [node operator arg call edge binding owner op-form arg-form
-                              (get (get env :types) op-id) (get (get env :core) :module)] budget)]
+                              (get (get env :types) op-id)
+                              {:profile (get (get (get env :core) :module) :profile)
+                               :target (get (get (get env :core) :module) :target)}] budget)]
                     (if (= :accepted (get raw :status))
                       (if (if (sh08-lsi-first-form? op-form) (sh08-lsi-first-form? arg-form) false)
                         (if (if (symbol? (get binding :name)) (= 'first (get binding :name)) false)
