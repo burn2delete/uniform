@@ -2470,7 +2470,9 @@ STD3's same preserve-equal/add-absent `conj` law applies to independently finite
 literal Symbol Sets (zero through 1,024 members) and a Symbol value. Change the
 existing C7, effects, typed emitter and runtime insertion owners. Original
 Symbol namespace/name equality applies; display units account work only.
-The result is a bare Set, not member, shape or cardinality evidence.
+The original v1 result was a bare Set. The inferred Symbol carrier increment
+below supersedes that result policy with v2 member-domain evidence, not
+cardinality or presence evidence.
 
 ```bash
 clojure -J-Xmx2g -M:dev-test \
@@ -2501,10 +2503,42 @@ For a changed composition, separately run the exact SH01 selector
 `current-gravity-symbol-set-insertion-authenticated-composition`. It covers
 empty, absent and present insertion consumed by `count`, plus a Character-Set
 with Symbol value rejection. Fresh C6 development sessions/replay are not
-fresh public C6 verification; QST is parser-only. There is no Symbol homogeneous
-carrier, nested insertion inference, Symbol-Set equality or dynamic loop join.
+fresh public C6 verification; QST is parser-only. That original composition
+does not establish the newer carrier's repeated-insertion/storage boundary.
+Symbol-Set equality and dynamic loop joins remain separate work.
 The compiler's seen-Symbol scan is only a motivating subexpression, not an
 executed whole helper. Reuse valid unchanged evidence without a stamp refresh.
+
+### Inferred Symbol-Set carriers: focused feedback
+
+The exact inferred carrier is
+`{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}`.
+V2 insertion from an independently finite Symbol Set establishes it; subsequent
+Symbol insertion preserves it. It supports existing `count`, ordinary predicates,
+local bindings, inferred zero-argument returns and bounded List storage. It
+does not establish extent, presence, annotation, private/recursive signature,
+membership, equality or finite-empty-to-carrier loop-join evidence. Runtime
+insertion remains unchanged; edit the existing C7, effects and typed emitter
+owners, not String-only private/signature predicates.
+
+Use the existing development runner and namespaces above with these exact vars:
+`sh08-symbol-set-carrier-development-kernel`,
+`body-symbol-set-carrier-development-kernel`,
+`current-gravity-symbol-set-carrier-development-kernel` and
+`current-gravity-symbol-set-carrier-fixtures-development-kernel`. Retain affected
+insertion, count, List, predicate, String/private and declared-self regressions.
+The existing LC walker charges both carrier and Symbol child: direct work 2,
+nested literal List work 3. Preserve exact/one-below work, depth 128, width 1024,
+size 65536, Never and malformed/opaque-value rejection. V1 bare-Set records
+must not stand in for v2 carrier facts.
+
+When this composition changes, separately select the existing SH01 namespace's
+`current-gravity-symbol-set-carrier-authenticated-composition`. It exercises
+repeated insertion, `count`, return/local transport, List storage and `set?`/
+`list?`, plus an actual unselected carrier-membership typing rejection. Fresh
+C5 and development C6 replay, C7/C8 checks and one public C7 assembly/closed entry
+are not fresh public C6 verification or migration. Q remains parser-only. Do
+not repeat unchanged product construction merely to refresh evidence stamps.
 
 ### Inferred String-Set carriers: private value feedback
 
