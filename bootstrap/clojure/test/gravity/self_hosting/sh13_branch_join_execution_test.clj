@@ -1,5 +1,7 @@
 (ns gravity.self-hosting.sh13-branch-join-execution-test
   (:require [clojure.test :refer [deftest is testing]]
+            [clojure.string :as str]
+            [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh12-branch-join-mir-test]))
 
 ;; Original Gravity producers/consumers execute through their existing seed
@@ -21,6 +23,115 @@
 
 (defn- verify [core mir result]
   (invoke 'sh13-verify-branch-join-execution core mir result))
+
+(defn- current-parameter-pair [path]
+  ;; Original current-source products and original assembler, not a supplied
+  ;; normalized module, patched MIR or public pinned-source admission.
+  (let [text (slurp path) products ((existing 'parameter-source-products) path text)
+        c6-plan (existing 'parameter-c6-plan) call (existing 'invoke)
+        raw (call c6-plan 'c6-c10-build-checked-core-template [(:envelope products)])
+        fresh ((existing 'parameter-source-products) path text)
+        replay (call c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
+        upstream (call c6-plan 'c6-c10-verify-checked-core-template
+                       [(:envelope fresh) (:artifact-template raw) (:digest-requests replay)])
+        sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
+        context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
+        core (bootstrap/p15-s23-c6c10-public-artifact
+              context (:compiled-binding-data products) (:ingress products) sealed)]
+    {:raw raw :upstream upstream :core core :mir (build core)}))
+
+(defn- argument-run-observation [core mir arguments]
+  ;; Preserve the real missing-entrypoint RED as an observation, not a fake
+  ;; rejected/accepted execution or an alternate interpreter.
+  (try (invoke 'sh13-run-branch-join-mir-with-arguments core mir arguments)
+       (catch clojure.lang.ExceptionInfo error
+         {:consumer-exception (select-keys (ex-data error) [:id :function])})))
+
+(deftest sh13-executes-original-c6-bool-parameter-through-explicit-arguments
+  (let [root @(existing 'root)
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"
+        original-path (str (.resolve root (str relative ".gravity")))
+        same-arms (java.io.File/createTempFile "gravity-sh13-equal-bool-arms-" ".gravity")]
+    (try
+      ;; A real temporary source, not an altered Core/MIR, establishes the
+      ;; equal-return case in which the arguments must still bind the result.
+      (spit same-arms (str/replace (slurp original-path) "(if flag true false)" "(if flag true true)"))
+      (doseq [[path equal-arms?] [[original-path false]
+                                [(str (.resolve root (str relative ".qst"))) false]
+                                [(.getAbsolutePath same-arms) true]]]
+        (let [{:keys [raw upstream core mir]} (current-parameter-pair path)
+              nodes (:core-nodes core) binder (first nodes) id (:node-id binder)
+              definition (get-in mir [:data-flow-graph :definitions id])
+              outcomes (mapv #(argument-run-observation core mir [%]) [true false])]
+          (is (= :accepted (:status raw)))
+          (is (= :passed (:status upstream)))
+          (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
+          (doseq [[argument result] (map vector [true false] outcomes)]
+            (is (= :accepted (:status result)) (pr-str result))
+            (when (= :accepted (:status result))
+              (is (= [argument] (:arguments result)))
+              (is (= (if equal-arms? true argument) (get-in result [:execution :value])))
+              (is (= 506 (get-in result [:execution :fuel])))
+              (is (= :passed (get-in result [:upstream-verification :status])))
+              (is (= [id] (mapv :value-id (get-in result [:projection :parameters]))))
+              (is (= definition (get-in result [:projection :parameters 0 :definition])))
+              (is (= (:source binder) (get-in result [:projection :parameters 0 :source])))
+              (is (= :gravity/bool (get-in result [:projection :parameters 0 :source-type])))
+              (is (= :bool (get-in result [:projection :parameters 0 :runtime-type])))
+              (is (= (get-in core [:type-facts id :fact-id])
+                     (get-in result [:projection :parameters 0 :facts :type-fact-id])))
+              (is (= [(get-in nodes [1 :node-id]) (get-in nodes [2 :node-id])
+                      (get-in nodes [(if argument 3 4) :node-id])]
+                     (vec (keep :operation (get-in result [:execution :trace])))))
+              (is (not-any? #(= id (:operation %)) (get-in result [:execution :trace])))
+              (is (= :passed
+                     (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                      core mir [argument] result))))
+              (doseq [candidate [(assoc result :arguments [(not argument)])
+                                 (assoc-in result [:execution :value] (not (get-in result [:execution :value])))
+                                 (assoc-in result [:projection :parameters 0 :definition :operation-id] nil)
+                                 (assoc-in result [:projection :parameters 0 :value-id] (:node-id (last nodes)))
+                                 (assoc-in result [:projection :parameters 0 :source] {})]]
+                (is (= :rejected
+                       (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                        core mir [argument] candidate)))))))
+          (when (every? #(= :accepted (:status %)) outcomes)
+            (when equal-arms?
+              (is (= true (get-in (first outcomes) [:execution :value])
+                          (get-in (second outcomes) [:execution :value]))))
+            (is (= :rejected
+                   (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                    core mir [false] (first outcomes)))))
+            (let [equalities (atom 0) hostile (proxy [Object] []
+                                               (equals [_] (swap! equalities inc) true))]
+              (is (true? (.equals hostile true)))
+              (is (= 1 @equalities))
+              (reset! equalities 0)
+              (doseq [arguments [nil true 0 {} '(true) [] [true false]
+                                 [nil] [0] [1] [:true] ["true"] [hostile] hostile [hostile true]]]
+                (let [rejected (argument-run-observation core mir arguments)]
+                  (is (= :rejected (:status rejected)))
+                  (is (= "C11-TYPE" (get-in rejected [:diagnostics 0 :diagnostic-id])))
+                  (is (nil? (:execution rejected)))))
+              (is (zero? @equalities)))
+            (doseq [[bad-core bad-mir]
+                    [[(assoc-in core [:core-nodes 4 :attributes :value] nil) mir]
+                     [(assoc-in core [:effect-facts id :direct] #{:io/write}) mir]
+                     [(assoc-in core [:proof-records id :proof-id] nil) mir]
+                     [core (assoc-in mir [:functions 'main :params] [])]
+                     [core (assoc-in mir [:data-flow-graph :definitions id :operation-id] nil)]
+                     [core (assoc-in mir [:data-flow-graph :edges 0 :from] (:node-id (last nodes)))]
+                     [core (assoc-in mir [:control-flow-graph :join :incoming] [])]]]
+              (let [original (invoke 'sh12-verify-branch-join-mir bad-core bad-mir)
+                    rejected (argument-run-observation bad-core bad-mir [nil])]
+                (is (= :rejected (:status original) (:status rejected)))
+                (is (= (:diagnostics original) (:diagnostics rejected)))
+                (is (nil? (:execution rejected)))))
+            (let [old (run core mir)]
+              (is (= :rejected (:status old)))
+              (is (nil? (:execution old))))
+            (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
+      (finally (.delete same-arms)))))
 
 (defn- scalar-core [core condition type then-value else-value]
   (let [values [condition then-value else-value nil nil]
