@@ -10203,6 +10203,27 @@ invoke the original three internal whole-surface gates and evaluator on
 supplied MIR DATA. Adjacent public normalized SH-17 controls do not turn this
 into a fresh authenticated C11/C13 packet, native execution or migration proof.
 
+### C14 sequence and lexical-scope forwarding: development repair
+
+The same internal C14 scalar-forwarding check now covers `:sequence` and
+`:lexical-scope`. Their declared canonical scalar type must match the actual
+LAST referenced operand, consistent with the original C6/C11 ordered `do`/`let`
+body result. Nonempty multioperand arity and earlier source/effect/reference
+gates remain intact; function-boundary handling is unchanged. No opcode, schema,
+public API, bound or pin is added or changed.
+
+The `e12e99af` RED run retained 222 passes and 108 failures in 330 assertions,
+without errors. Candidate `856308cd` passed nine tests and 1,203 assertions:
+330 sequence/scope checks, the factored unchanged 330 local checks and 543
+adjacent controls. Boundary checks separately passed six tests/11 assertions:
+15/1,214 across two passing invocations. LOC separately passed 2,021 files,
+zero exceptions, maximum 250. The normal join of SOURCE PR149 preserved both
+owned files; its C7/effects/typed-emitter changes are outside the executed raw
+compiler-rule/host path, so these results retain their original candidate
+binding rather than claim a joined replay. These are original internal
+C/LLVM/Wasm eligibility gates and evaluator checks on supplied MIR DATA, not
+fresh C11/C13 authentication, native execution, migration or release evidence.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established
