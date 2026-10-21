@@ -249,6 +249,105 @@
                   [assoc-result nth-result map-result
                    get-result set-result])))))
 
+(deftest sh22-ordered-map-lookup-preserves-stored-false-and-nil
+  ;; C6 scalar/generated-Nil :value attributes motivate these DATA values;
+  ;; this executes the request module, not a compiled C6 client.
+  (let [ordered (fn [entries] {:artifact :gravity/ordered-map :entries entries})
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        observe (fn [input]
+                  (let [lookups (atom 0)
+                        result (with-redefs-fn
+                                 {scoped (fn [& arguments]
+                                           (when (= 'sh22-entry-index (nth arguments 2))
+                                             (swap! lookups inc))
+                                           (apply original arguments))}
+                                 #(handle input))]
+                    [result @lookups]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [assoc-base (request plan 'sh22-map-assoc-request)
+            get-base (request plan 'sh22-map-get-request)]
+        (doseq [[entries key value expected]
+                [[[] :value false [[:value false]]]
+                 [[] :value nil [[:value nil]]]
+                 [[[:value :old] [:generated-role :literal]] :value false
+                  [[:value false] [:generated-role :literal]]]
+                 [[[:value :old] [:generated-role :literal]] :value nil
+                  [[:value nil] [:generated-role :literal]]]
+                 [[[:generated-role :compiler-generated-value]] :value nil
+                  [[:generated-role :compiler-generated-value] [:value nil]]]
+                 [[[:value false]] :generated-role nil [[:value false] [:generated-role nil]]]]]
+          (let [producer (assoc assoc-base :arguments [(ordered entries) key value])
+                produced (handle producer) query (assoc get-base :arguments [(:value produced) key])
+                result (handle query)]
+            (is (= :accepted (:status produced) (:status result)))
+            (is (= (ordered expected) (:value produced)))
+            (is (= (ordered entries) (first (:arguments producer))))
+            (is (= (:arguments producer) (get-in produced [:identity-input :arguments])))
+            (is (= {:artifact :gravity/option :variant :some :value value} (:value result)))
+            (is (contains? (:value result) :value))
+            (is (= {:collection-kind :ordered-map :allocation :none} (:facts result)))
+            (is (= (:arguments query) (get-in result [:identity-input :arguments])))
+            (doseq [[input output] [[producer produced] [query result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
+        (doseq [[entries key] [[[] :value] [[[:generated-role nil]] :value]
+                                [[[:value false]] :missing]]]
+          (let [query (assoc get-base :arguments [(ordered entries) key]) result (handle query)]
+            (is (= :accepted (:status result)))
+            (is (= {:artifact :gravity/option :variant :none} (:value result)))
+            (is (not (contains? (:value result) :value)))
+            (is (= (:arguments query) (get-in result [:identity-input :arguments])))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [query result]))))))
+        (let [entries (mapv #(vector (keyword "slot" (str "k" %)) %) (range 256))]
+          (doseq [[index value] [[0 false] [255 nil]]]
+            (let [key (first (get entries index))
+                  producer (assoc assoc-base :arguments [(ordered entries) key value])
+                  produced (handle producer) query (assoc get-base :arguments [(:value produced) key])
+                  result (handle query)]
+              (is (= :accepted (:status produced) (:status result)))
+              (is (= (ordered (assoc entries index [key value])) (:value produced)))
+              (is (= (ordered entries) (first (:arguments producer))))
+              (is (= {:artifact :gravity/option :variant :some :value value} (:value result)))
+              (doseq [[input output] [[producer produced] [query result]]]
+                (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
+          (let [producer (assoc assoc-base :arguments [(ordered entries) :slot/new nil]) result (handle producer)]
+            (is (= :rejected (:status result)))
+            (is (= "STD3001" (get-in result [:diagnostics 0 :rule])))
+            (is (= :collection-bound-exceeded (get-in result [:diagnostics 0 :reason])))
+            (is (= (ordered entries) (first (:arguments producer))))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [producer result]))))))
+        ;; Complete validation must reject malformed/duplicate suffixes before
+        ;; a matching first key can authorize either lookup or replacement.
+        (doseq [[value rule reason]
+                [[(ordered [[:value false] [:bad]]) "STD10003" :expected-ordered-map]
+                 [(ordered [[:value false] [:other 0] [:value nil]]) "STD10003" :expected-ordered-map]
+                 [(ordered [[:value false] nil]) "STD10003" :expected-ordered-map]
+                 [{:artifact :gravity/ordered-map :entries '([:value false])} "STD10003" :expected-ordered-map]
+                 [(assoc (ordered [[:value false]]) :extra true) "STD10003" :expected-ordered-map]
+                 [{:artifact :gravity/ordered-map} "STD10003" :expected-ordered-map]
+                 [(ordered (vec (repeat 257 [:value false]))) "STD3001" :collection-bound-exceeded]]
+                input [(assoc get-base :arguments [value :value])
+                       (assoc assoc-base :arguments [value :value nil])]]
+          (let [[result lookups] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (zero? lookups))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (let [producer (assoc assoc-base :arguments [(ordered []) :value false])
+              produced (handle producer) query (assoc get-base :arguments [(:value produced) :value])
+              result (handle query) missing (assoc get-base :arguments [(:value produced) :missing])
+              absent (handle missing)]
+          (doseq [[input candidate]
+                  [[producer (assoc-in produced [:value :entries 0 1] nil)]
+                   [producer (assoc-in produced [:identity-input :arguments 1] :missing)]
+                   [query (assoc-in result [:value :value] nil)]
+                   [query (update result :value dissoc :value)]
+                   [query (assoc-in result [:value :variant] :none)]
+                   [query (assoc-in result [:identity-input :arguments 1] :missing)]
+                   [missing (assoc absent :value {:artifact :gravity/option :variant :some :value nil})]]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [input candidate]))))))))))
+
 (deftest sh22-validates-utf8-and-performs-checked-i64-arithmetic
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [utf8-result (handle (request plan 'sh22-utf8-request))
