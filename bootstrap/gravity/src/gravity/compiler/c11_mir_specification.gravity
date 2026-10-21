@@ -3032,8 +3032,18 @@
     (if (keyword? kind)
       (= :gravity/p15-s23-stage2-gravity-checked-core-artifact kind) false)))
 
+(defn sh12-c6p-let-layout? [core]
+  (let [nodes (get core :core-nodes)]
+    (if (vector? nodes) (= 10 (count nodes)) false)))
+
+(defn sh12-c6p-index [core role]
+  (if (sh12-c6p-let-layout? core) (get [0 3 4 5 6 7 9] role) role))
+
+(defn sh12-c6p-role [core index]
+  (if (sh12-c6p-let-layout? core) (get [0 1 7 1 2 3 4 5 8 6] index) index))
+
 (defn sh12-c6p-result-type [core]
-  (get (get (get core :core-nodes) 3) :type))
+  (get (get (get core :core-nodes) (sh12-c6p-index core 3)) :type))
 
 (defn sh12-c6p-function-type-for-return [result-type]
   {:params [:gravity/bool] :return result-type :latent-effects #{} :capabilities #{}
@@ -3067,8 +3077,9 @@
   (let [source (get node :source) origin (get source :origin-id)
         row (get (get core :source-origin-table) origin)
         raw (get (get core :origin-closure) origin) span (get source :span)
-        input (get (get (get core :core-nodes) 5) :source)
-        generated (if (= index 2)
+        role (sh12-c6p-role core index)
+        input (get (get (get core :core-nodes) (sh12-c6p-index core 5)) :source)
+        generated (if (= role 2)
                     [{:kind :compiler-generated :producer :gravity/c6-c10-checked-core-pipeline
                       :role :truthiness-normalization :input-origin-id (get input :origin-id)}] [])]
     (if (sh12-c6p-keys? row #{:domain :source-content-hash :plan-path :c2-form-id :c2-form-kind
@@ -3084,7 +3095,7 @@
                :c3-syntax-id (get row :c3-syntax-id) :generated-role (get row :generated-role)
                :input-origin-id (get row :input-origin-id)})
        (= source {:origin-id origin :span span :enclosing-syntax-origin-id (get row :c3-syntax-id)
-                  :generated? (= index 2) :generated-origin generated})
+                  :generated? (= role 2) :generated-origin generated})
        (sh12-c10-mir-sha256-id? origin)
        (sh12-c10-mir-sha256-id? (get row :c3-syntax-id))
        (= (get row :c3-syntax-id)
@@ -3100,9 +3111,9 @@
           (get [:symbol :symbol :list
                 (if (= :gravity/integer (sh12-c6p-result-type core)) :integer :boolean)
                 (if (= :gravity/integer (sh12-c6p-result-type core)) :integer :boolean)
-                :list :list] index))
-       (= (get row :generated-role) (if (= index 2) :truthiness-normalization nil))
-       (= (get row :input-origin-id) (if (= index 2) (get input :origin-id) nil))
+                :list :list :symbol :list] role))
+       (= (get row :generated-role) (if (= role 2) :truthiness-normalization nil))
+       (= (get row :input-origin-id) (if (= role 2) (get input :origin-id) nil))
        (= (get row :c2-abbrev) nil) (= (get row :c2-tag) nil)
        (= {} (get row :c2-metadata))
        ; Original C2 seed rows omit this field; C6 retains nil in the raw
@@ -3114,12 +3125,17 @@
   (let [operands (get node :operands)
         base {:model :persistent-immutable-value
               :role (get [:function-parameter :local-reference :truthiness-value :literal-value
-                          :literal-value :conditional-result :function-result] index)
+                          :literal-value :conditional-result :function-result
+                          :lexical-binding :lexical-scope-result] index)
               :shareability :shared :alias-policy :immutable-sharing :mutation :forbidden
               :managed-reachability :value-and-program-reachability :cleanup-policy :no-explicit-cleanup
               :provider-requirement :not-required :allocator-requirement :not-required
               :escape-policy :safe-persistent-value :derived? true}]
     (if (= index 0) (assoc base :storage :persistent-parameter-value)
+      (if (= index 7) (assoc (assoc base :storage :forwarded-persistent-value)
+                            :value-node-id (first operands))
+      (if (= index 8) (assoc (assoc base :storage :forwarded-persistent-value)
+                            :result-node-id (c11-last-value operands))
       (if (= index 1) (assoc (assoc base :storage :shared-persistent-reference)
                             :binding-node-id (first operands))
         (if (< index 5) (assoc base :storage :static-value)
@@ -3127,27 +3143,29 @@
                                 :incoming-node-ids (vec (rest operands)))
             (assoc (assoc (assoc base :storage :forwarded-persistent-value)
                           :result-node-id (first operands))
-                   :result-disposition :shared-persistent-value-return)))))))
+                   :result-disposition :shared-persistent-value-return)))))))))
 
 (defn sh12-c6p-node-problem [core node index]
-  (let [id (get node :node-id) type (get node :type) operands (get node :operands)
+  (let [role (sh12-c6p-role core index)
+        id (get node :node-id) type (get node :type) operands (get node :operands)
         operation (get node :source-operation) origin (get (get node :source) :origin-id)
         attrs (get node :attributes) tf (get (get core :type-facts) id)
         ef (get (get core :effect-facts) id) of (get (get core :ownership-facts) id)
         cap (get (get core :capability-facts) id) sf (get (get core :safety-facts) id)
         proof (get (get node :safety) :proof) proof-id (get proof :proof-id)
-        own (sh12-c6p-own node index)
+        own (sh12-c6p-own node role)
         owner (get (get (get core :ownership-facts) (first (get core :root-node-ids))) :owner-id)
         rule (get [:resolved-bool-parameter-declaration :resolved-binding-type :truthiness-bool
-                   :literal-type :literal-type :branch-type-join :closed-function-type] index)
+                   :literal-type :literal-type :branch-type-join :closed-function-type
+                   :initializer-type :lexical-scope-result-type] role)
         basis (get [:resolved-bool-parameter-binding :resolved-lexical-local :gravity-truthiness
                     :closed-scalar-literal :closed-scalar-literal :closed-conditional
-                    :authenticated-closed-function] index)
+                    :authenticated-closed-function :sequential-let-binding :sequential-lexical-scope] role)
         type-base {:core-node-id id :type-id (get tf :type-id) :type type :producer-rule rule
                    :dependencies operands :source-origin-id origin :profile :hosted :source-target :jvm
                    :constraints [] :derived? true :fact-id (get tf :fact-id)}
-        type-expected (if (= index 0) (assoc type-base :declaration attrs)
-                        (if (= index 6)
+        type-expected (if (= role 0) (assoc type-base :declaration attrs)
+                        (if (= role 6)
                           (assoc (assoc (assoc (assoc (assoc (assoc (assoc type-base
                             :params [:gravity/bool]) :return (sh12-c6p-result-type core)) :latent-effects #{})
                             :capabilities #{}) :throws #{})
@@ -3156,20 +3174,22 @@
         effect-base {:core-node-id id :type-fact-id (get tf :fact-id) :direct #{} :latent #{}
                      :transitive #{} :residual #{} :ordering :none :source-origin-id origin
                      :profile :hosted :source-target :jvm :derived? true :fact-id (get ef :fact-id)}
-        effect-expected (if (= index 6) (assoc effect-base :function-summary
+        effect-expected (if (= role 6) (assoc effect-base :function-summary
                            {:declared #{} :inferred #{} :latent #{} :throws #{}}) effect-base)
-        values (if (= index 0) [] (if (< index 3) operands
-                 (if (< index 5) [] (if (= index 5) (vec (rest operands)) operands))))
+        values (if (= role 8) [(c11-last-value operands)]
+                 (if (= role 7) operands
+                   (if (= role 0) [] (if (< role 3) operands
+                     (if (< role 5) [] (if (= role 5) (vec (rest operands)) operands))))))
         own-fact {:core-node-id id :value-id id :owner-id owner :source-value-ids values
                   :forwarding (get [:not-applicable :from-lexical-binding :derived-from-test
                                     :not-applicable :not-applicable :from-conditional-incoming-values
-                                    :from-entrypoint-result] index)
+                                    :from-entrypoint-result :from-initializer :from-lexical-scope-result] role)
                   :model :persistent-immutable-value :role (get own :role) :storage (get own :storage)
                   :shareability :shared :alias-policy :immutable-sharing :mutation :forbidden
                   :managed-reachability :value-and-program-reachability :cleanup-policy :no-explicit-cleanup
                   :provider-requirement :not-required :allocator-requirement :not-required
                   :escape-policy :safe-persistent-value
-                  :result-disposition (if (= index 6) :shared-persistent-value-return :not-applicable)
+                  :result-disposition (if (= role 6) :shared-persistent-value-return :not-applicable)
                   :source-origin-id origin :profile :hosted :source-target :jvm
                   :borrow :not-applicable :move :not-applicable :consume :not-applicable
                   :region :not-applicable :arena :not-applicable :linear-resource :not-applicable
@@ -3225,7 +3245,7 @@
       (sh12-branch-join-problem "C11-ORIGIN" :c6-parameter-source-origin))))
 
 (defn sh12-c6p-nodes-problem [core nodes index]
-  (if (= index 7) nil
+  (if (= index (count nodes)) nil
     (let [problem (sh12-c6p-node-problem core (get nodes index) index)]
       (if (= problem nil) (sh12-c6p-nodes-problem core nodes (+ index 1))
         (if (sh12-c6p-source-valid? core (get nodes index) index)
@@ -3236,9 +3256,9 @@
   ; original, independently checked producer rows, not a serialized artifact.
   (let [nodes (get core :core-nodes)]
     (if (vector? nodes)
-      (if (= (count nodes) 7)
+      (if (contains? #{7 10} (count nodes))
         (loop [index 0 ids [] origins []]
-          (if (= index 7) {:ids ids :origins origins}
+          (if (= index (count nodes)) {:ids ids :origins origins}
             (let [node (get nodes index) id (get node :node-id) source (get node :source)]
               (if (sh12-c6p-all? [(map? node) (map? (get node :attributes)) (map? source)
                                  (vector? (get node :path)) (vector? (get node :operands))
@@ -3246,17 +3266,62 @@
                                  (sh12-c10-mir-sha256-id? (get source :origin-id))])
                 (recur (+ index 1) (conj ids id) (conj origins (get source :origin-id))) nil)))) nil) nil)))
 
+(defn sh12-c6p-indexed-roles [core rows]
+  ; An index into ORIGINAL rows, not a replacement seven-node Core artifact.
+  (if (sh12-c6p-let-layout? core)
+    [(get rows 0) (get rows 3) (get rows 4) (get rows 5) (get rows 6) (get rows 7) (get rows 9)] rows))
+
+(defn sh12-c6p-let-binding-record [core]
+  (let [node (get (get core :core-nodes) 2) attrs (get node :attributes)]
+    {:binding-node-id (get node :node-id) :name (get attrs :name) :path (get node :path)
+     :value-node-id (first (get node :operands)) :shadowed-binding nil
+     :source-form-id (get attrs :source-form-id)}))
+
+(defn sh12-c6p-let-structure-valid? [core]
+  (if (sh12-c6p-let-layout? core)
+    (let [nodes (get core :core-nodes) parameter (get nodes 0) initializer (get nodes 1)
+          binder (get nodes 2) scope (get nodes 8) attrs (get binder :attributes)
+          name (get attrs :name) path [:functions 'main :body 0]
+          binding-path (conj (conj path :bindings) 0)
+          purity {:intrinsic-effects #{} :intrinsic-capabilities #{}
+                  :aggregate-effects #{} :aggregate-capabilities #{}}]
+      (sh12-c6p-all?
+        [(contains? #{:gravity/bool :gravity/integer} (sh12-c6p-result-type core))
+         (symbol? name) (if (= name (get (get parameter :attributes) :name)) false true)
+         (= [:local :let-binding :let]
+            [(get initializer :source-operation) (get binder :source-operation) (get scope :source-operation)])
+         (= (get initializer :path) (conj binding-path :expr))
+         (= (get binder :path) (conj binding-path :binder)) (= (get scope :path) path)
+         (= (get initializer :operands) [(get parameter :node-id)])
+         (= (get binder :operands) [(get initializer :node-id)])
+         (= (get scope :operands) [(get binder :node-id) (get (get nodes 7) :node-id)])
+         (= (get initializer :attributes)
+            (assoc (assoc purity :name (get (get parameter :attributes) :name))
+                   :resolved-binding (get parameter :node-id)))
+         (keyword? (get attrs :source-form-id))
+         (= (get attrs :source-form-id)
+            (get (get (get core :source-origin-table) (get (get binder :source) :origin-id)) :c2-form-id))
+         (= attrs (assoc (assoc (assoc purity :name name) :shadowed-binding nil)
+                         :source-form-id (get attrs :source-form-id)))
+         (= (get scope :attributes) (assoc purity :binding-count 1))])) true))
+
 (defn sh12-c6p-shape-valid? [core view]
-  (let [nodes (get core :core-nodes) ids (get view :ids) origins (get view :origins)
+  (let [original (get core :core-nodes) let? (sh12-c6p-let-layout? core)
+        nodes (sh12-c6p-indexed-roles core original)
+        ids (sh12-c6p-indexed-roles core (get view :ids)) origins (get view :origins)
         binder (get nodes 0) local (get nodes 1) truthy (get nodes 2) root (get nodes 6)
         attrs (get binder :attributes) name (get attrs :name) declaration (get core :resolved-parameter)
         binding (get declaration :parameter-binding) type-binding (get declaration :type-binding)
         reference (get declaration :type-resolution) rows (get declaration :coordinates)
-        path [:functions 'main :body 0] purity {:intrinsic-effects #{} :intrinsic-capabilities #{}
+        local-name (if let? (get (get (get original 2) :attributes) :name) name)
+        local-binding (if let? (get (get original 2) :node-id) (get ids 0))
+        path (if let? [:functions 'main :body 0 :body 0] [:functions 'main :body 0])
+        purity {:intrinsic-effects #{} :intrinsic-capabilities #{}
                                               :aggregate-effects #{} :aggregate-capabilities #{}}]
     (sh12-c6p-all?
       [(contains? #{:gravity/bool :gravity/integer} (sh12-c6p-result-type core))
-       (= 7 (count (set ids))) (= 7 (count (set origins)))
+       (sh12-c6p-let-structure-valid? core)
+       (= (count original) (count (set (get view :ids)))) (= (count original) (count (set origins)))
        (= (get core :root-node-ids) [(get ids 6)])
        (= [(get (get nodes 0) :source-operation) (get local :source-operation) (get truthy :source-operation)
            (get (get nodes 3) :source-operation) (get (get nodes 4) :source-operation)
@@ -3269,22 +3334,24 @@
        (= [(get binder :operands) (get local :operands) (get truthy :operands)
            (get (get nodes 3) :operands) (get (get nodes 4) :operands)
            (get (get nodes 5) :operands) (get root :operands)]
-          [[] [(get ids 0)] [(get ids 1)] [] [] [(get ids 2) (get ids 3) (get ids 4)] [(get ids 5)]])
+          [[] [local-binding] [(get ids 1)] [] [] [(get ids 2) (get ids 3) (get ids 4)]
+           [(if let? (get (get original 8) :node-id) (get ids 5))]])
        (symbol? name) (= (get attrs :parameter-index) 0)
        (= attrs
           (assoc (assoc (assoc (assoc (assoc purity :name name) :parameter-index 0)
             :source-form-id (get (get rows 1) :c2-form-id))
             :resolved-binding-id (get binding :binding-id)) :type-binding-id (get type-binding :binding-id)))
-       (= (get local :attributes) (assoc (assoc purity :name name) :resolved-binding (get ids 0)))
+       (= (get local :attributes) (assoc (assoc purity :name local-name) :resolved-binding local-binding))
        (= (get truthy :attributes) (assoc (assoc purity :false-values [nil false]) :result-type :gravity/bool))
        (= (get (get nodes 5) :attributes) (assoc purity :truthiness :nil-and-false-only))
        (= (get root :attributes) (assoc (assoc (assoc (assoc (assoc (assoc purity
           :name 'main) :params [name]) :arity 1) :body-count 1) :visibility :public) :entrypoint? true))
        (= (get root :type) (sh12-c6p-function-type-for-return (sh12-c6p-result-type core)))
        (= (get core :lexical-binding-records)
-          [{:name name :parameter-index 0 :source-form-id (get attrs :source-form-id)
+          (let [records [{:name name :parameter-index 0 :source-form-id (get attrs :source-form-id)
             :resolved-binding-id (get binding :binding-id) :type-binding-id (get type-binding :binding-id)
-            :binding-node-id (get ids 0) :path (get binder :path)}])
+            :binding-node-id (get ids 0) :path (get binder :path)}]]
+            (if let? (conj records (sh12-c6p-let-binding-record core)) records)))
        (= (get declaration :kind) :gravity/c6-c10-resolved-bool-parameter-v1)
        (= (get declaration :source-content-hash) (get core :source-content-hash))
        (= (get declaration :parameter-index) 0) (= (get binding :name) name)
@@ -3316,7 +3383,9 @@
        (sh12-c10-mir-sha256-id? (get core :provenance-binding-id))
        (sh12-c10-mir-sha256-id? (get source :plan-id))
        (= source {:module module :plan-id (get source :plan-id) :entrypoint 'main
-                  :operation-set #{:parameter :local :truthy :literal :if :function}
+                  :operation-set (if (sh12-c6p-let-layout? core)
+                                   #{:parameter :local :let-binding :truthy :literal :if :let :function}
+                                   #{:parameter :local :truthy :literal :if :function})
                   :declared-effects #{} :declared-capabilities #{}})
        (= request {:requested-target :jvm :source-target :jvm
                    :identity-bearing? false :downstream-lowering-required? true})
@@ -3349,7 +3418,7 @@
            (= (set (keys (get core :source-origin-table))) (set origins))
            (= (set (keys (get core :origin-closure))) (set origins))])
       (sh12-c6p-tables-valid? core nodes ids origins 1) false)
-    (if (> index 7) true
+    (if (> index (count nodes)) true
       (let [node (get nodes (- index 1))]
         (if (sh12-c6p-all? [(map? (get (get core :type-facts) (get node :node-id)))
                            (map? (get (get core :effect-facts) (get node :node-id)))
@@ -3384,22 +3453,26 @@
         (if (map? (get core (first fields))) (recur (rest fields)) false))) false))
 
 (defn sh12-c6p-role-nodes-valid? [core index]
-  (if (= index 7) true
-    (let [node (get (get core :core-nodes) index) attrs (get node :attributes)]
+  (if (= index (count (get core :core-nodes))) true
+    (let [node (get (get core :core-nodes) index) attrs (get node :attributes)
+          role (sh12-c6p-role core index)]
       (if (sh12-c6p-all?
             [(sh12-c6p-keys? node #{:node-id :path :kind :source-operation :plan-node? :plan-depth
                                   :operands :attributes :type :effects :capabilities :ownership
                                   :safety :profile :source})
-             (= (get node :kind) (get [:binding :local :truthiness :literal :literal :conditional :function] index))
+             (= (get node :kind)
+                (get [:binding :local :truthiness :literal :literal :conditional :function :binding :let] role))
              (= (get node :type)
-                (if (< index 3) :gravity/bool
-                  (if (= index 6)
+                (if (if (< role 3) true (= role 7)) :gravity/bool
+                  (if (= role 6)
                     (sh12-c6p-function-type-for-return (sh12-c6p-result-type core))
                     (sh12-c6p-result-type core))))
              (= (get node :profile) :hosted)
-             (= (get node :plan-node?) (get [false true false true true true false] index))
-             (= (get node :plan-depth) (get [0 2 2 2 2 1 0] index))
-             (if (if (= index 3) true (= index 4))
+             (= (get node :plan-node?) (get (if (sh12-c6p-let-layout? core)
+                [false true false true false true true true true false] [false true false true true true false]) index))
+             (= (get node :plan-depth) (get (if (sh12-c6p-let-layout? core)
+                [0 2 2 3 3 3 3 2 1 0] [0 2 2 2 2 1 0]) index))
+             (if (if (= role 3) true (= role 4))
                (if (if (= :gravity/integer (sh12-c6p-result-type core))
                      (integer? (get attrs :value)) (boolean? (get attrs :value)))
                  (= attrs {:value (get attrs :value) :intrinsic-effects #{} :intrinsic-capabilities #{}
@@ -3410,7 +3483,7 @@
   (let [declaration (get core :resolved-parameter) rows (get declaration :coordinates)
         binding (get declaration :parameter-binding) type-binding (get declaration :type-binding)
         reference (get declaration :type-resolution)
-        root-span (get (get (get (get core :core-nodes) 6) :source) :span)]
+        root-span (get (get (get (get core :core-nodes) (sh12-c6p-index core 6)) :source) :span)]
     (if (vector? rows)
     (if (sh12-c6p-all?
           [(sh12-c6p-keys? declaration #{:kind :source-content-hash :sh06-artifact-id
@@ -3467,10 +3540,11 @@
 
 (defn sh12-c6p-graphs-valid? [core view]
   (let [nodes (get core :core-nodes) ids (get view :ids) origins (get view :origins)
-        root (get ids 6) result (get ids 5) binder (get ids 0)
+        root (get ids (sh12-c6p-index core 6))
+        result (if (sh12-c6p-let-layout? core) (get ids 8) (get ids 5)) binder (get ids 0)
         module (get (get core :source-core-input) :module) typed (get core :typed-core)
         maps (loop [index 0 effects {} owners {} types {} source-map {} proofs []]
-               (if (= index 7) {:effects effects :owners owners :types types :source-map source-map :proofs proofs}
+               (if (= index (count nodes)) {:effects effects :owners owners :types types :source-map source-map :proofs proofs}
                  (let [node (get nodes index) id (get ids index)]
                    (recur (+ index 1)
                      (assoc effects id {:direct #{} :latent #{} :transitive #{} :ordering :none
@@ -3479,8 +3553,16 @@
                      (assoc types id (get (get (get core :type-facts) id) :type-id))
                      (assoc source-map id (get origins index))
                      (conj proofs (get (get (get node :safety) :proof) :proof-id))))))
-        edges (loop [rows [[0 1 0 :binding-use] [1 2 0 :control] [2 5 0 :control]
-                          [3 5 1 :conditional-incoming] [4 5 2 :conditional-incoming] [5 6 0 :result]] result []]
+        locals {binder {:type (get (get maps :types) binder) :mutability :immutable :ownership :persistent-shared}}
+        locals (if (sh12-c6p-let-layout? core)
+                 (assoc locals (get ids 2) {:type (get (get maps :types) (get ids 2))
+                                            :mutability :immutable :ownership :persistent-shared}) locals)
+        edges (loop [rows (if (sh12-c6p-let-layout? core)
+                           [[0 1 0 :binding-use] [1 2 0 :initializer] [2 3 0 :binding-use]
+                            [3 4 0 :control] [4 7 0 :control] [5 7 1 :conditional-incoming]
+                            [6 7 2 :conditional-incoming] [2 8 0 :initializer] [7 8 1 :result] [8 9 0 :result]]
+                           [[0 1 0 :binding-use] [1 2 0 :control] [2 5 0 :control]
+                            [3 5 1 :conditional-incoming] [4 5 2 :conditional-incoming] [5 6 0 :result]]) result []]
                 (if (= (count rows) 0) result
                   (let [row (first rows) from (get row 0) to (get row 1)]
                     (recur (rest rows) (conj result
@@ -3488,7 +3570,7 @@
                        :consumer-index to :operand-index (get row 2) :edge-kind (get row 3)
                        :dependency-precedes-consumer? true})))))]
     (sh12-c6p-all?
-      [(= (count (set (get maps :proofs))) 7)
+      [(= (count (set (get maps :proofs))) (count nodes))
        (= (get core :instruction-origin-sidecar)
           {:mapping-id (get core :mapping-id) :provenance-binding-id (get core :provenance-binding-id)
            :node-origin-map (get maps :source-map)})
@@ -3507,8 +3589,7 @@
            :required #{} :granted #{} :provider-bindings {} :status :not-required})
        (sh12-c10-mir-sha256-id? (get typed :core-input))
        (= typed {:artifact :gravity/typed-core :module module :core-input (get typed :core-input)
-                 :types (get maps :types) :locals {binder {:type (get (get maps :types) binder)
-                                                          :mutability :immutable :ownership :persistent-shared}}
+                 :types (get maps :types) :locals locals
                  :functions {root {:params [(get (get maps :types) binder)]
                                    :return (get (get maps :types) result)
                                    :latent-effects #{} :capabilities #{} :throws #{}}}
@@ -9345,7 +9426,7 @@
 (defn sh13-c6p-shape-valid? [core mir context]
   (if (sh12-c6p-family? core)
     (let [nodes (get core :core-nodes) function (get context :function)
-          binder (get (get nodes 0) :node-id)
+          let? (sh12-c6p-let-layout? core) binder (get (get nodes 0) :node-id)
           entry (get (get context :entry) :instructions)
           then-ops (get (get context :then) :instructions)
           else-ops (get (get context :else) :instructions)
@@ -9353,25 +9434,36 @@
           result-type (sh12-c6p-result-type core)]
       (if (if (sh13-c6p-literal-runtime-valid? (get then-ops 0) result-type)
             (sh13-c6p-literal-runtime-valid? (get else-ops 0) result-type) false)
-      (= [7 6 [2 1 1 2] [binder] result-type :hosted :jvm :jvm #{} #{} 0
-          [(get (get nodes 1) :node-id) (get (get nodes 2) :node-id)]
-          [(get (get nodes 3) :node-id)] [(get (get nodes 4) :node-id)]
-          [(get (get nodes 5) :node-id) (get (get nodes 6) :node-id)]
-          [:local :truthiness] [:constant] [:constant]
-          [:conditional-join :function-boundary]
+      (= [(if let? 10 7) (if let? 9 6) (if let? [4 1 1 3] [2 1 1 2])
+          [binder] result-type :hosted :jvm :jvm #{} #{} 0
+          (if let? [(get (get nodes 1) :node-id) (get (get nodes 2) :node-id)
+                    (get (get nodes 3) :node-id) (get (get nodes 4) :node-id)]
+                   [(get (get nodes 1) :node-id) (get (get nodes 2) :node-id)])
+          [(get (get nodes (sh12-c6p-index core 3)) :node-id)]
+          [(get (get nodes (sh12-c6p-index core 4)) :node-id)]
+          (if let? [(get (get nodes 7) :node-id) (get (get nodes 8) :node-id) (get (get nodes 9) :node-id)]
+                   [(get (get nodes 5) :node-id) (get (get nodes 6) :node-id)])
+          (if let? [:local :local-binding :local :truthiness] [:local :truthiness]) [:constant] [:constant]
+          (if let? [:conditional-join :lexical-scope :function-boundary] [:conditional-join :function-boundary])
           result-type (sh12-c6p-function-type-for-return result-type)]
          [(count nodes) (count (get context :operations))
           [(count entry) (count then-ops) (count else-ops) (count join)] (get function :params)
           (get function :returns) (get mir :profile) (get mir :source-target)
           (get mir :target-request) (get function :latent-effects)
           (get function :capabilities) (count (get mir :runtime-check-table))
-          [(get (get entry 0) :op-id) (get (get entry 1) :op-id)]
+          (if let? [(get (get entry 0) :op-id) (get (get entry 1) :op-id)
+                    (get (get entry 2) :op-id) (get (get entry 3) :op-id)]
+                   [(get (get entry 0) :op-id) (get (get entry 1) :op-id)])
           [(get (get then-ops 0) :op-id)] [(get (get else-ops 0) :op-id)]
-          [(get (get join 0) :op-id) (get (get join 1) :op-id)]
-          [(get (get entry 0) :opcode) (get (get entry 1) :opcode)]
+          (if let? [(get (get join 0) :op-id) (get (get join 1) :op-id) (get (get join 2) :op-id)]
+                   [(get (get join 0) :op-id) (get (get join 1) :op-id)])
+          (if let? [(get (get entry 0) :opcode) (get (get entry 1) :opcode)
+                    (get (get entry 2) :opcode) (get (get entry 3) :opcode)]
+                   [(get (get entry 0) :opcode) (get (get entry 1) :opcode)])
           [(get (get then-ops 0) :opcode)] [(get (get else-ops 0) :opcode)]
-          [(get (get join 0) :opcode) (get (get join 1) :opcode)]
-          (get (get join 0) :type) (get (get join 1) :type)]) false)) false))
+          (if let? [(get (get join 0) :opcode) (get (get join 1) :opcode) (get (get join 2) :opcode)]
+                   [(get (get join 0) :opcode) (get (get join 1) :opcode)])
+          (get (get join 0) :type) (get (c11-last-value join) :type)]) false)) false))
 
 (defn sh13-c6p-arguments-valid? [arguments]
   (if (vector? arguments)
@@ -9388,8 +9480,11 @@
              :literal (get (get operation :constant-payload) :value)}
             {:op-id (get operation :op-id)
              :opcode (if (= :local opcode) :local
-                       (if (= :truthiness opcode) :truthy nil))
-             :operands (get operation :operands) :type :bool}))))))
+                       (if (= :truthiness opcode) :truthy
+                         (if (contains? #{:local-binding :lexical-scope} opcode) :local nil)))
+             :operands (if (= :lexical-scope opcode)
+                         [(c11-last-value (get operation :operands))] (get operation :operands))
+             :type (if (= :gravity/integer (get operation :type)) :i64 :bool)}))))))
 
 (defn sh13-c6p-frame-arm [context arm]
   (let [block (get context arm)
@@ -9402,8 +9497,9 @@
 
 (defn sh13-c6p-frame [context]
   (let [function (get context :function) entry (get context :entry)
-        condition (get (get entry :instructions) 1)
-        join-op (get (get (get context :join) :instructions) 0)]
+        condition (c11-last-value (get entry :instructions))
+        join-ops (get (get context :join) :instructions) join-op (get join-ops 0)
+        returned (first (get (c11-last-value join-ops) :operands))]
     {:functions
      [{:fn-id (get function :fn-id) :params (get function :params)
        :maximum-call-depth (get (sh13-control-flow-policy) :maximum-call-depth)
@@ -9416,16 +9512,17 @@
                       :else-target (get (get context :else) :block-id) :else-arguments []}}
         (sh13-c6p-frame-arm context :then) (sh13-c6p-frame-arm context :else)
         {:block-id (get (get context :join) :block-id) :params [(get join-op :result)]
-         :operations [] :terminator {:opcode :return :value (get join-op :result)}}]}]}))
+         :operations (if (= 3 (count join-ops))
+                       (sh13-c6p-frame-operations [(get join-ops 1)] 0 []) [])
+         :terminator {:opcode :return :value returned}}]}]}))
 
 (defn sh13-c6p-projection [core mir context]
   (let [binder (first (get core :core-nodes)) id (get binder :node-id)
-        result-type (if (= :gravity/integer (sh12-c6p-result-type core)) :i64 :bool)
         rows (sh13-branch-join-projection-rows (get context :operations) 0 [])]
     {:function-id (get (get context :function) :fn-id)
      :entry-block (get (get context :entry) :block-id)
      :control-flow-graph (get context :graph)
-     :return-value-id (get (get (get context :graph) :join) :value-id)
+     :return-value-id (first (get (c11-last-value (get (get context :join) :instructions)) :operands))
      :parameters [{:value-id id :parameter-index 0 :source-type (get binder :type)
                    :runtime-type :bool
                    :definition (get (get (get mir :data-flow-graph) :definitions) id)
@@ -9436,8 +9533,10 @@
          ; The root retains its ORIGINAL Fn source-type. Its existing
          ; function-result-alias role forwards the checked scalar return;
          ; no Fn value, source type or original fact is retagged.
-         (recur (+ index 1) (conj result (assoc (get rows index) :runtime-type
-                                         (if (< index 2) :bool result-type))))))}))
+         (let [type (get (get rows index) :source-type)
+               forwarded (if (map? type) (get type :return) type)]
+           (recur (+ index 1) (conj result (assoc (get rows index) :runtime-type
+                                           (if (= :gravity/integer forwarded) :i64 :bool)))))))}))
 
 (defn sh13-c6p-result [core mir verification arguments projection execution diagnostics]
   (assoc

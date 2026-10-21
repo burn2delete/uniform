@@ -162,13 +162,10 @@
 (defn c6c10-append [left right]
   (c6c10-copy-vector right left))
 
-(defn c6c10-reverse-into [values result]
-  (if (= (count values) 0)
-    result
-    (c6c10-reverse-into (rest values) (conj result (first values)))))
-
-(defn c6c10-reverse [values]
-  (c6c10-reverse-into values []))
+(defn c6c10-last-value [values]
+  (loop [remaining values left (count values) result nil]
+    (if (= left 0) result
+      (recur (rest remaining) (- left 1) (first remaining)))))
 
 (defn c6c10-exact-digest-ref? [value]
   (if (map? value)
@@ -2289,11 +2286,11 @@
             (if (= operation :if)
             (c6c10-copy-vector (rest operands) [])
             (if (= operation :do)
-              [(first (c6c10-reverse operands))]
+              [(c6c10-last-value operands)]
               (if (= operation :let)
-                [(first (c6c10-reverse operands))]
+                [(c6c10-last-value operands)]
                 (if (= operation :function)
-                  [(first (c6c10-reverse operands))]
+                  [(c6c10-last-value operands)]
                   []))))))))))
 
 (defn c6c10-forwarding-kind [source-operation]
@@ -2546,7 +2543,7 @@
   [state envelope nodes bindings root-node-id type-ids owner-domain-id]
   (let [function-node (c6c10-node-by-id nodes root-node-id)
         return-node-id
-        (first (c6c10-reverse (get function-node :operands)))
+        (c6c10-last-value (get function-node :operands))
         module (get envelope :module)
         core-input-request
         (c6c10-add-digest-request
@@ -2861,7 +2858,7 @@
         (if (= exact-syntax nil)
           (if (= (count syntaxes) 0)
             nil
-            (first (c6c10-reverse syntaxes)))
+            (c6c10-last-value syntaxes))
           exact-syntax)
         envelope
         {:source-content-hash (get input :source-content-hash)
