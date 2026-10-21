@@ -1507,7 +1507,7 @@
         fields (if (map? instruction) (set (keys instruction)) #{})
         arguments (get instruction :args)
         function (get instruction :function)
-        comparison? (contains? '#{= < <= > >=} function)
+        comparison? (if (symbol? function) (contains? '#{= < <= > >=} function) false)
         shape?
         (if (= operation :namespace-read) (p15-s23-runtime-namespace-read-valid? instruction pool)
         (if (map? instruction)
@@ -1572,7 +1572,7 @@
           (if (= operation :throw)
             (if (= fields #{:op :value}) (map? (get instruction :value)) false)
           (if (= operation :builtin-call)
-            (if (contains? fields :args)
+            (if (symbol? function) (if (contains? fields :args)
               (if (vector? arguments)
                 (if comparison? (= 2 (count arguments))
                   (if (= function '+)
@@ -1629,7 +1629,7 @@
                                                 (if (string? id)
                                                   (if (if (> (count id) 0) (<= (count id) 256) false)
                                                     (recur (rest remaining)) false) false)))) false) false) false) false) false) false) false) false)) false) false)
-                  (if (contains? '#{nth conj contains? dissoc quot} function)
+                  (if (contains? '#{nth conj contains? dissoc quot *} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
                   (if (contains? '#{set string? keyword? map? integer? vector? count first rest empty? set? symbol? boolean? list?} function)
@@ -1651,7 +1651,7 @@
                           (loop [remaining arguments]
                             (if (= 0 (count remaining)) true
                               (if (map? (first remaining)) (recur (rest remaining)) false))) false) false)
-                      (if (= function 'str) (contains? #{1 2} (count arguments)) false))))))))) false) false)
+                      (if (= function 'str) (contains? #{1 2} (count arguments)) false))))))))) false) false) false)
           (if (= operation :println)
             (if (contains? fields :args)
               (if (vector? arguments)
@@ -1810,6 +1810,33 @@
                          (second arguments-result) :rejected]))
                     [{:diagnostic "P15S23X002" :reason :bounded-unit-addition-counter-unit-and-range-required :operation operation}
                      (second arguments-result) :rejected]))
+              (if (= function '*)
+                ; The original nested count/quot evaluation succeeded before this
+                ; branch. Its n is not retained, compared afresh or reevaluated.
+                (let [factor-ir (get arguments 0) quotient-ir (get arguments 1)
+                      qargs (get quotient-ir :args)
+                      count-ir (if (vector? qargs) (get qargs 0) nil)
+                      divisor-ir (if (vector? qargs) (get qargs 1) nil)
+                      count-args (get count-ir :args)
+                      factor (get factor-ir :value) divisor (get divisor-ir :value)
+                      rejected [{:diagnostic "P15S23X002" :reason :count-quotient-scaling-domain-required :operation operation}
+                                (second arguments-result) :rejected]]
+                  (if (if (integer? left)
+                        (if (integer? right)
+                          (if (integer? factor)
+                            (if (integer? divisor)
+                              (if (if (>= left 0) (>= right 0) false)
+                                (if (> divisor 0) (if (= left factor) (<= left divisor) false) false) false) false) false) false) false)
+                    (if (if (vector? qargs) (if (= 2 (count qargs))
+                          (if (vector? count-args) (= 1 (count count-args)) false) false) false)
+                      (if (if (symbol? (get quotient-ir :function)) (symbol? (get count-ir :function)) false)
+                        (if (= [:literal :builtin-call 'quot :builtin-call 'count :literal]
+                               [(get factor-ir :op) (get quotient-ir :op) (get quotient-ir :function)
+                                (get count-ir :op) (get count-ir :function) (get divisor-ir :op)])
+                          (if (= [#{:op :value} #{:op :function :args} #{:op :function :args} #{:op :value}]
+                                 [(set (keys factor-ir)) (set (keys quotient-ir)) (set (keys count-ir)) (set (keys divisor-ir))])
+                            [(* left right) (second arguments-result) :normal] rejected)
+                          rejected) rejected) rejected) rejected))
               (if (= function 'quot)
                 (if (if (integer? left) (integer? right) false)
                   (if (if (>= left 0) (> right 0) false)
@@ -1904,7 +1931,7 @@
                          (>= left right)))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected])))))))))))))
+                (second arguments-result) :rejected]))))))))))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result

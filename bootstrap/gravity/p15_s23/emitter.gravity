@@ -13066,6 +13066,294 @@
               (assoc compiled :work-count (+ charge (get compiled :work-count 0)))))
           (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-collection-count node) :work-count charge)))))))))
 
+(defn p15-s23-cqs-binding? [binding module]
+  (if (symbol? (get binding :name))
+    (if (keyword? (get module :profile))
+      (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+        (if (loop [remaining (get binding :profile-set)]
+              (if (= 0 (count remaining)) true (if (keyword? (first remaining)) (recur (rest remaining)) false)))
+          (if (loop [remaining (get binding :target-set)]
+                (if (= 0 (count remaining)) true (if (keyword? (first remaining)) (recur (rest remaining)) false)))
+            (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (p15-s23-typed-all
+    [(= ['* :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false) false) false) false) false) false))
+
+(defn p15-s23-cqs-quotient [core node nodes bindings types forms budget]
+  ; Reconstruct the existing quotient and its exact source, paying its work.
+  (let [work (+ 64 2 (count (get core :function-records))
+                  (* 2 (count (get core :calls))) (* 2 (count (get core :call-edges))))]
+    (if (> work budget) {:status :rejected :reason :count-quotient-scaling-work-limit :work-count work}
+      (if (p15-s23-sse-ids? [(get node :node-id)] 1)
+        (let [call (p15-s23-nq-one (get core :calls) :core-node-id (get node :node-id))
+              edge (p15-s23-nq-one (get core :call-edges) :call-core-node-id (get node :node-id))]
+          (if (if (p15-s23-nq-ids? node call nodes bindings (get core :module))
+                (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false)
+            (let [count-node (get nodes (get (get call :argument-node-ids) 0))
+                  count-call (p15-s23-nq-one (get core :calls) :core-node-id (get (get call :argument-node-ids) 0))]
+              (if (p15-s23-nq-ids? count-node count-call nodes bindings (get core :module))
+                (let [operator (get nodes (get call :operator-node-id))
+                      count-operator (get nodes (get count-call :operator-node-id))
+                      operator-form (get forms (get (get operator :source) :form-id))
+                      count-operator-form (get forms (get (get count-operator :source) :form-id))]
+                  (if (if (symbol? (get operator-form :value)) (symbol? (get count-operator-form :value)) false)
+                    (let [checked (p15-s23-nq-proof core node call nodes bindings types forms (- budget work))
+                  work (+ work (get checked :work-count))
+                  proof (get checked :proof)
+                  header (if (= :accepted (get checked :status))
+                           (p15-s23-nq-source core node call edge nodes bindings types (get core :module) proof) nil)
+                  owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
+              (if (if (map? header)
+                    (if (= :normal (get header :application))
+                      (= :authenticated-cardinality (get (get proof :dividend) :kind)) false) false)
+                (if (p15-s23-typed-all
+                      [(= :gravity.type/integer (get types (get node :node-id)))
+                       (= :list (get owner :kind)) (= (get node :source) (p15-s23-typed-source owner))
+                       (if (vector? ids) (if (= 3 (count ids)) (p15-s23-sse-ids? ids 3) false) false)
+                       (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                       (if (if (vector? ids) (if (= 3 (count ids)) (p15-s23-sse-ids? ids 3) false) false) (loop [i 0] (if (= i 3) true
+                         (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+                           (if (if (= (get owner :form-id) (get form :parent-form-id))
+                                 (if (= (get child :source) (p15-s23-typed-source form))
+                                   (if (= i 0) (if (symbol? (get form :value)) (= (get form :value) (get (get child :attributes) :symbol)) false) true) false) false)
+                             (recur (+ i 1)) false)))) false)])
+                  (let [descriptor (p15-s23-nq-finish header)]
+                    (if (= descriptor (get types (get call :operator-node-id)))
+                      {:status :accepted :work-count work
+                       :quotient {:kind :authenticated-count-quotient :descriptor descriptor
+                                  :constraint (p15-s23-nq-constraint descriptor)
+                                  :call-fact (p15-s23-nq-call-fact descriptor (get core :module))}}
+                      {:status :rejected :reason :count-quotient-scaling-source-mismatch :work-count work}))
+                  {:status :rejected :reason :count-quotient-scaling-source-mismatch :work-count work})
+                {:status :rejected :reason (if (= :nonnegative-integer-quotient-work-limit (get checked :reason))
+                                             :count-quotient-scaling-work-limit :count-quotient-scaling-proof-required)
+                 :work-count work}))
+                    {:status :rejected :reason :count-quotient-scaling-source-mismatch :work-count work}))
+                {:status :rejected :reason :count-quotient-scaling-proof-required :work-count work}))
+            {:status :rejected :reason :count-quotient-scaling-source-mismatch :work-count work}))
+        {:status :rejected :reason :count-quotient-scaling-source-mismatch :work-count work}))))
+
+(defn p15-s23-cqs-proof [core node call nodes bindings types forms budget]
+  ; d*q <= count is the premise; q <= count alone does not bound k*q.
+  (let [base (+ 128 (* 2 (count (get core :calls))) (* 2 (count (get core :call-edges)))
+                   (* 4 (count (get core :function-records))))]
+    (if (> base budget) {:status :rejected :reason :count-quotient-scaling-work-limit :work-count base}
+      (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
+        (if (p15-s23-nq-ids? node call nodes bindings (get core :module))
+          (let [operator (get nodes (get call :operator-node-id))
+                operator-form (get forms (get (get operator :source) :form-id))
+                owner-form (get forms (get (get node :source) :form-id))
+                owner-ids (get owner-form :child-form-ids)]
+            (if (if (symbol? (get operator-form :value))
+                  (if (= [] (get operator-form :child-form-ids))
+                    (if (vector? owner-ids) (if (= 3 (count owner-ids)) (p15-s23-sse-ids? owner-ids 3) false) false) false) false)
+              (let [ids (get call :argument-node-ids) left-type (get types (get ids 0)) right-type (get types (get ids 1))
+                factor (if (= :gravity.type/never left-type) {:kind :non-invoked-operand}
+                         (p15-s23-nq-literal (get nodes (get ids 0)) left-type forms false))
+                checked (if (= :gravity.type/never right-type)
+                          {:status :accepted :work-count 0 :quotient {:kind :non-invoked-operand}}
+                          (if (= :gravity.type/integer right-type)
+                            (p15-s23-cqs-quotient core (get nodes (get ids 1)) nodes bindings types forms (- budget base))
+                            {:status :rejected :reason :count-quotient-scaling-proof-required :work-count 0}))
+                work (+ base (get checked :work-count))
+                quotient (get checked :quotient) descriptor (get quotient :descriptor)
+                qproof (get descriptor :range-proof) divisor (get (get qproof :divisor) :value)
+                normal? (if (= :gravity.type/never left-type) false (= :gravity.type/integer right-type))
+                bounded? (if normal? (if (map? factor) (if (integer? divisor) (<= (get factor :value) divisor) false) false) true)]
+            (if (if (map? factor) (if (= :accepted (get checked :status)) bounded? false) false)
+              (let [outer (loop [remaining (get node :children) out [(get forms (get (get node :source) :form-id))]]
+                            (if (= 0 (count remaining)) out
+                              (recur (rest remaining) (conj out (get forms (get (get (get nodes (first remaining)) :source) :form-id))))))
+                    qforms (if (= :authenticated-count-quotient (get quotient :kind))
+                             (get qproof :source-forms) [])
+                    count-forms (if (= :authenticated-count-quotient (get quotient :kind))
+                                  (get (get qproof :dividend) :child-source-forms) [])
+                    joined-q (loop [remaining qforms out outer]
+                             (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining)))))
+                    joined (loop [remaining count-forms out joined-q]
+                             (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining)))))]
+                {:status :accepted :work-count work
+                 :proof {:schema :gravity/count-quotient-scaling-proof-v1 :call-core-node-id (get node :node-id)
+                         :source-forms joined :factor factor :quotient quotient :mode :proof-required
+                         :application (if normal? :normal :not-invoked)
+                         :law :scaled-quotient-bounded-by-original-count
+                         :euclidean-premise :divisor-times-quotient-at-most-count
+                         :coefficient-bound (if normal? :zero-through-original-positive-divisor :not-required-for-aborted-invocation)
+                         :result-value-bound (if normal? :zero-through-original-count :not-invoked)
+                         :overflow :impossible :conversion :none}})
+              {:status :rejected :reason (if (= :count-quotient-scaling-work-limit (get checked :reason))
+                                          :count-quotient-scaling-work-limit
+                                          (if (= :count-quotient-scaling-source-mismatch (get checked :reason))
+                                            :count-quotient-scaling-source-mismatch :count-quotient-scaling-proof-required))
+               :work-count work}))
+              {:status :rejected :reason :count-quotient-scaling-source-mismatch :work-count base}))
+          {:status :rejected :reason :count-quotient-scaling-source-mismatch :work-count base})
+        {:status :rejected :reason :count-quotient-scaling-arity-mismatch :work-count base}))))
+
+(defn p15-s23-cqs-source [core node call edge nodes bindings types module proof]
+  (if (if (map? edge) (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false)
+    (if (p15-s23-nq-ids? node call nodes bindings module)
+  (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (p15-s23-io-child-types args types)
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (p15-s23-typed-all
+          [(= :jvm (get module :target)) (map? proof) (= :gravity/count-quotient-scaling-proof-v1 (get proof :schema))
+           (= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (p15-s23-cqs-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{* gravity.core/*} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{:gravity.type/integer :gravity.type/never} (first remaining))
+                 (recur (rest remaining)) false)))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+      {:kind :gravity.type/applied-count-quotient-scaling :version :sh08-count-quotient-scaling-v1
+       :operation '* :semantic-owner 'gravity.math :intrinsic :gravity.math.core/count-quotient-scaling
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :scaling-policy {:operation :count-quotient-scaling :operands :generic-integer-only
+                        :law :scaled-quotient-bounded-by-original-count
+                        :premise :divisor-times-quotient-at-most-count
+                        :coefficient :original-nonnegative-integer-literal-bounded-by-divisor
+                        :conversion :none :arithmetic-mode :proof-required :overflow :impossible
+                        :operand-evaluation :left-then-right-once :normal-result :generic-integer
+                        :precision-bound :not-established :provider-cpu-bound :not-established :provider-heap-bound :not-established}
+       :numeric-mode :proof-required :layer0-owner 'gravity.math.core :safety :proven-safe
+       :range-proof proof
+       :storage-policy {:allocation :may-allocate-integer-result :condition :normal-invocation
+                        :representation :original-integer-family :placement :pending-profile-representation
+                        :provider :pending-runtime-provider :ownership :pending-ownership-analysis}
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :integer-operand-types :scaling-policy :source-numeric-proof :quotient-source-proof :coefficient-divisor-relation :count-cardinality-law :result-storage-policy :allocation-condition :profile :target :evaluation-order]} nil)) nil) nil) nil))
+
+(defn p15-s23-cqs-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-count-quotient-scaling-constraint-v1 :application descriptor}
+   :kind :numeric-mode :producer-rule :sh08-count-quotient-scaling-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :count-quotient-scaling}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects) :range-proof (get descriptor :range-proof)
+              :storage-policy (get descriptor :storage-policy)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn p15-s23-cqs-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-count-quotient-scaling-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-count-quotient-scaling :applied-count-quotient-scaling descriptor :effect-facts-source :audited-numeric-intrinsic}))
+
+(defn p15-s23-typed-compile-count-quotient-scaling [context node budget]
+
+  (if (p15-s23-sse-ids? [(get node :node-id) (get (get node :source) :form-id)] 2)
+    (let [id (get node :node-id) core (get context :core)
+        charge (+ 66 (count (get core :function-records))
+                  (* 8 (+ (count (get context :ledger)) (count (get context :call-facts)))))]
+    (if (< budget charge) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
+      (let [call (get (get context :calls) id) edge (get (get context :edges) id)
+            forms (get context :forms) nodes (get context :nodes)
+            owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+            checked (p15-s23-cqs-proof core node call nodes (get context :bindings) (get context :types) forms (- budget charge))
+            charge (+ charge (get checked :work-count))
+            header (if (= :accepted (get checked :status))
+                     (p15-s23-cqs-source core node call edge nodes (get context :bindings) (get context :types)
+                       (get core :module) (get checked :proof)) nil)
+            descriptor (if (map? header) (p15-s23-nq-finish header) nil)
+            rows (loop [remaining (get context :ledger) out []]
+                   (if (= 0 (count remaining)) out
+                     (let [row (first remaining)]
+                       (recur (rest remaining)
+                         (if (if (= :sh08-count-quotient-scaling-v1 (get row :producer-rule))
+                               (= {:core-node-id id :projection :count-quotient-scaling} (get row :lhs)) false) (conj out row) out)))))]
+        (if (> charge budget)
+          (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
+          (if (if (map? descriptor)
+              (p15-s23-typed-all
+                [(let [quotient (get (get checked :proof) :quotient)]
+                   (if (= :authenticated-count-quotient (get quotient :kind))
+                     (let [qd (get quotient :descriptor) qid (get qd :call-core-node-id)
+                           counted (get (get (get qd :range-proof) :dividend) :descriptor)
+                           count-id (get counted :call-core-node-id)
+                           qrows (loop [remaining (get context :ledger) out []]
+                                   (if (= 0 (count remaining)) out
+                                     (let [row (first remaining)]
+                                       (recur (rest remaining)
+                                         (if (if (= :sh08-nonnegative-integer-quotient-v1 (get row :producer-rule))
+                                               (= {:core-node-id qid :projection :nonnegative-integer-quotient} (get row :lhs)) false)
+                                           (conj out row) out)))))
+                           count-rows (loop [remaining (get context :ledger) out []]
+                                        (if (= 0 (count remaining)) out
+                                          (let [row (first remaining)]
+                                            (recur (rest remaining)
+                                              (if (if (= :sh08-collection-count-v1 (get row :producer-rule))
+                                                    (= {:core-node-id count-id :projection :collection-cardinality} (get row :lhs)) false)
+                                                (conj out row) out)))))]
+                       (p15-s23-typed-all
+                         [(= [(p15-s23-nq-constraint qd)] qrows)
+                          (= [(p15-s23-cq-constraint counted)] count-rows)
+                          (= (get quotient :call-fact) (get (get context :call-facts) qid))
+                          (= (p15-s23-cq-call-fact counted (get core :module)) (get (get context :call-facts) count-id))])) true))
+                 (= descriptor (get (get context :types) (get call :operator-node-id)))
+                 (= (get descriptor :result-type) (get (get context :types) id))
+                 (= (get edge :ordinal) (get (get context :call-order) id))
+                 (= (get (get context :current-function) :function-syntax-id) (get edge :caller-function-syntax-id))
+                 (= [(p15-s23-cqs-constraint descriptor)] rows)
+                 (= (p15-s23-cqs-call-fact descriptor (get core :module)) (get (get context :call-facts) id))
+                 (= :list (get owner :kind)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0) (count (get node :children)))
+                 (= (get node :source) (p15-s23-typed-source owner))
+                 (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                     :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                 (if (if (vector? ids) (if (= 3 (count ids)) (p15-s23-sse-ids? ids 3) false) false) (loop [i 0]
+                   (if (= i 3) true
+                     (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+                       (if (p15-s23-typed-all [(= (get owner :form-id) (get form :parent-form-id))
+                             (= (get child :source) (p15-s23-typed-source form))
+                             (if (= i 0) (if (symbol? (get form :value)) (= (get form :value) (get (get child :attributes) :symbol)) false) true)])
+                         (recur (+ i 1)) false)))) false)]) false)
+          (let [compiled (p15-s23-typed-compile-children context (get call :argument-node-ids) (- budget charge) [])]
+            (if (p15-s23-compiler-complete? compiled)
+              (assoc (p15-s23-compiler-result {:op :builtin-call :function '* :args (get compiled :value)})
+                :work-count (+ charge (get compiled :work-count))) (assoc compiled :work-count (+ charge (get compiled :work-count 0)))))
+          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-count-quotient-scaling node) :work-count charge))))))
+    (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-count-quotient-scaling {}) :work-count 1)))
+
 (defn p15-s23-nq-binding? [binding module]
   (if (symbol? (get binding :name))
     (if (keyword? (get module :profile))
@@ -14174,7 +14462,13 @@
 
 (defn p15-s23-typed-compile-call [context node budget]
 
-  (if (if (p15-s23-sse-ids? [(first (get node :children))] 1)
+  (if (if (p15-s23-sse-ids? [(get node :node-id)] 1)
+        (let [call (get (get context :calls) (get node :node-id))]
+          (if (p15-s23-sse-ids? [(get call :operator-binding-id)] 1)
+            (p15-s23-cqs-binding? (get (get context :bindings) (get call :operator-binding-id))
+                                 (get (get context :core) :module)) false)) false)
+    (p15-s23-typed-compile-count-quotient-scaling context node budget)
+    (if (if (p15-s23-sse-ids? [(first (get node :children))] 1)
         (= :gravity.type/applied-nonnegative-integer-quotient
            (get (get (get context :types) (first (get node :children))) :kind)) false)
     (p15-s23-typed-compile-nonnegative-integer-quotient context node budget)
@@ -14340,7 +14634,7 @@
               (assoc compiled :work-count (+ charge (get compiled :work-count 0)))))
           (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-direct-call node) :work-count charge)))))
       (p15-s23-typed-node-error :malformed-typed-call-family node)))))))))))))))
-    (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-string-set-equality node) :work-count 1))))
+    (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-string-set-equality node) :work-count 1)))))
 
 (defn p15-s23-typed-compile-keyword-set [context node budget]
   ; This literal-only constructor uses the existing Set IR and evaluates its children.
