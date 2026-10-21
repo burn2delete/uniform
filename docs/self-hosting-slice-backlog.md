@@ -8592,6 +8592,34 @@ Production and fixtures remain unchanged from `26d05dbb`; the complete 4272
 suite was not replayed. No RED, production repair, new language law, compiled
 C6 client, public admission, native, migration or milestone claim follows.
 
+### Bounded Keyword-key Map removal: request-module increment
+
+The SH-22 request API executes `:ordered-map-dissoc-keyword` with at most 256
+entries and actual Keyword keys/needle. Complete pair/key census and needle
+classification precede user-key equality; full uniqueness precedes stable
+omission. All remaining values/order and the original Map survive, including
+false/Nil. Empty/missing cases remain value-equivalent. Possible allocation is
+declared through `:memory/allocate` and `:bounded-by-result`, with no capabilities,
+even if a missing-key result reports collection-value allocation `:none`.
+No physical-sharing or global allocation-free promise follows. Four exports,
+envelope, existing diagnostic families and opt-in `:meta` boundary remain;
+the owner-local operation/manifest count is 22.
+
+At `c04233a1`, the whole namespace passed 25/5224, including 602 new assertions
+and eight added generic fixture checks. Boundary separately passed 6/11:
+31/5235 across two passing invocations. LOC separately passed 2,022 files,
+zero exceptions, maximum 250; all runners exited naturally. Prospective
+802/5424 was an addition mistake, not a failed or corrected semantic run.
+Real assoc-to-removal-to-get and original-Map lookup, full malformed/late
+duplicate rejection, same-observer positive/negative controls, source identity
+and fresh result recomputation/substitution are implemented.
+
+W5's static removal calls motivate the operation only; semantic Keyword DATA
+is not a physical-metadata redaction adapter or W5 linkage/admission evidence.
+General/foreign key equality, stored-value selection/evaluation, global
+callback freedom, native execution, migration and milestone claims remain
+excluded. Verification still compares the complete recomputed result.
+
 ### Checked i64 subtraction in the experimental bootstrap library
 
 The existing SH-22 Gravity library now executes binary `:checked-sub-i64` under

@@ -204,6 +204,26 @@ calls for rejected carriers. Existing collection/boundary and result-verifier
 selectors are affected controls. This is test-only request-module coverage,
 not a production repair, new semantics, compiled C6 client or admission claim.
 
+### Bounded Keyword-key Map removal
+
+STD2/STD3 govern `:ordered-map-dissoc-keyword` in the existing SH-22 request
+API. At most 256 entries, complete indexed pair/Keyword-key census and an actual
+Keyword needle precede user-key equality; full uniqueness precedes removal.
+Preserve remaining order, all stored values and the original Map. Empty or
+missing keys produce a value-equivalent Map; false/Nil do not mean absence.
+
+Run `sh22-keyword-map-removal-consumes-real-association-results` in
+`gravity.self-hosting.sh22-standard-library-test`, plus the affected whole
+namespace. Real assoc results feed removal and get; original-Map lookup and
+fresh producer/consumer verification remain independent. Keep positive and
+rejected controls for the same original-delegating observer. The opt-in `:meta`
+request declares `:memory/allocate`, no capabilities and `:bounded-by-result`,
+even when an absent-key result reports collection-value allocation `:none`.
+This promises neither physical sharing nor global allocation freedom. Values
+do not select removal; result verification still compares full results.
+General keys, W5 metadata redaction/linkage, public admission and native
+execution are not established.
+
 ### Checked i64 subtraction in the bootstrap library
 
 STD1/STD5/D8 govern `:checked-sub-i64` in
