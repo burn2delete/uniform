@@ -10909,6 +10909,30 @@ lineage explicitly unestablished, never replaced with a hypothetical old-pin
 positive. No complete packet is accepted or sealed; there is no fresh public
 source/pin renewal, LLVM tool/native, admission, migration or milestone claim.
 
+### Pure host LLVM folded-Bool parity: development repair
+
+The host operation rejection gate now agrees with current Gravity B3 for the
+closed derived `:constant`/`:integer-eq` Bool case: actual empty Vector operands,
+exact payload keys, true presence and a Boolean value. Legacy literal and
+implicit-Nil behavior, earlier effects/capability/unsupported diagnostics and
+all preflight/authority/artifact interfaces remain unchanged. Current C13
+folds through C14 checks and the SAME B3 output are compared with the original
+host rejection, rendering and evaluation helpers for linear and Integer-diamond
+cases, including repeated references and signed endpoints.
+
+RED `a7bb4d8b` retained 232 passes and eight failures in 240 assertions, all
+at the host source gate. Candidate `977c2135` passed 3/501: 264 host-parity
+checks plus 117 B3 and 120 diamond checks. Boundary separately passed 6/11:
+9/512 across two passing invocations. LOC separately passed 2,022 files, zero
+exceptions, maximum 250. The accepted SOURCE main join preserves both owned
+files and the executed raw compiler-rule/generic runtime/LLVM host dependencies;
+changed typed C7/effects/emitter bodies are outside this direct call graph.
+Results retain their actual `977c2135` execution binding, not a joined replay.
+
+This is supplied-DATA pure host-consumer parity, not proof of an observed
+public-path failure, fresh source/public packet, preflight or pin renewal,
+LLVM tool/native execution, admission, migration or milestone completion.
+
 ### Typed List family predicate: development increment
 
 The current JVM route supports unary `list?` for independently established

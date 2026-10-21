@@ -87,7 +87,14 @@
 
       (= :constant opcode)
       (cond
-        (not (contains? #{:literal :implicit-nil} source-operation))
+        (not (or (contains? #{:literal :implicit-nil} source-operation)
+                 (and (= :integer-eq source-operation)
+                      (= :gravity/bool type)
+                      (vector? operands) (empty? operands)
+                      (map? constant)
+                      (= #{:present? :value} (set (keys constant)))
+                      (true? (:present? constant))
+                      (boolean? (:value constant)))))
         :unsupported-constant-source-operation
         (not= true (:present? constant))
         :bounded-scalar-constant-payload
