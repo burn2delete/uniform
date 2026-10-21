@@ -265,7 +265,7 @@
           (is (= :rejected (:status (invoke-engine 'sh16-verify
                                                   [input (update result :optimized-operations
                                                                  #(mapv (fn [op] (if (= :op/suffix (:op-id op))
-                                                                                  (assoc op :operands [999]) op)) %))])))))))
+                                                                                  (assoc op :operands [999]) op)) %))]))))))
       (let [dead-compute (assoc compute :dead true :dead-proof
                                 {:proof-id :proof/compute :operation-id :op/compute
                                  :no-uses true :effect-free true :verified true})]
