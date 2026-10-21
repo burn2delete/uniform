@@ -560,6 +560,36 @@ diagnostics. Include branch execution, runtime-bound and recomputation controls
 when changing either predicate. This is typed MIR validation, not a change to
 source-language truthiness or fresh upstream admission.
 
+### Entry-only MIR integer less-than-or-equal
+
+Edit `c11_mir_specification.gravity` for the bounded SH-13 interpreter and
+original SH-12 producer bridge. The normalized operation domain now includes
+`:lte`: two already-defined signed-i64 operands produce Bool. The bridge maps
+original `:integer-lte` to it with the explicit
+`:integer-less-than-or-equal` projection role, only in a seven-row `[3,1,1]`
+entry-comparison diamond with scalar literal arms. Computed-arm `<=` and
+entry-`<=` combined with computed arms remain rejected; Eq/Lt arm support is
+unchanged. Original source/fact, CFG/DFG, origin, type, effect and recomputation
+checks remain. Execution consumes the existing fuel to 505 under depth 32 and
+fuel 512; no public keys or arities change.
+
+Run `sh13-executes-integer-less-than-or-equal-only-at-entry` in
+`gravity.self-hosting.sh13-branch-join-execution-test` and
+`sh13-normalized-less-than-or-equal-checks-i64-operands` in
+`gravity.self-hosting.sh13-control-flow-test`. Include the existing bridge,
+normalized control-flow and original SH-12 producer controls when changing the
+shared comparison validators. Nil and other non-i64 operands reject.
+
+At `a20b282d`, five passing invocations cover 46 tests / 10,889 assertions,
+including boundary checks. LOC separately passed 2,022 files, zero exceptions,
+maximum 250 physical lines. The earlier bridge RED remains 220 passes and
+180 failures in 1 / 400; the normalized selector was not part of that RED.
+Preserve `/tmp/d-sh13-lte-*-v1-20261021` results. These supplied G/Q constructor
+and original producer/verifier compositions are development evidence, not
+fresh C6/C10 source adaptation, native execution, SH-13 completion or migration.
+Future stable consumers must account for the additive opcode/projection domain;
+this development merge does not renew historical admission evidence.
+
 ### Scalar SSA forwarding in normalized MIR
 
 For a pure scalar copy, edit `c11_mir_specification.gravity` and run
