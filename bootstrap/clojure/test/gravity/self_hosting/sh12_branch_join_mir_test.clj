@@ -255,6 +255,30 @@
     (is (= :passed (:status (verify substituted forged (:artifact-template forged)))))
     (is (= :rejected (:status (verify input original (:artifact-template forged)))))))
 
+(deftest sh12-current-c6-preserves-hosted-export-gate-before-module-checks
+  ;; Execute the ORIGINAL compiled export predicate, not a fabricated hosted
+  ;; packet or a replacement acceptance function. Public hosted admission is
+  ;; still outside this development fragment check.
+  (let [function (get-in @parameter-c6-plan [:functions 'c6-c10-build-checked-core-template])
+        body (first (:instructions function))
+        shape (first (filter #(= 'plan-shape-valid? (:name %)) (:bindings body)))
+        predicate (get-in shape [:expr :then :then :test])]
+    (is (= :let (:op body)))
+    (is (= '= (:function predicate)))
+    (doseq [[input module authoritative expected]
+            [[{} {:exports ['main]} {:exports []} true]
+             [{} {:exports []} {:exports ['main]} false]
+             [{} {} {:exports ['main]} false]
+             [{:resolved-parameter {}} {} {:exports ['main]} true]
+             [{:resolved-parameter {}} {} {:exports []} false]
+             [{:resolved-parameter {}} {} {} false]]]
+      (is (= expected
+             (bootstrap/p15-s23-stage2-runtime-execute-instruction
+              {:engine :gravity-sh12-branch-join-mir-test :compiler-artifact-plan? true}
+              @parameter-c6-plan
+              {'input input 'module module 'authoritative-module authoritative}
+              predicate))))))
+
 (def ^:private stable-diagnostic-fields
   #{:diagnostic-id :severity :stage :mir-module :function :block
     :operation-id :value-id :source-span :origin-chain :profile
