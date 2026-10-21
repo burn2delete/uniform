@@ -465,6 +465,30 @@ its original public gate still requires `:runtime-checked`. These supplied
 normalized IDs are not audit-provider evidence, authenticated C11/source
 construction, native execution or renewed proof.
 
+For the C13 constant-fold/DCE composition, run
+`sh16-defers-proven-unused-adds-until-dead-code-elimination` in the same
+namespace. An admitted pure, proven-unused ADD record remains unchanged,
+including its original dead proof and identity, through constant folding and
+branch simplification; only scheduled DCE removes it. Do not copy a dead proof
+across a rewrite. Live ADD folding and original type, overflow, effect, proof
+and admission checks remain unchanged, as do final/post-DCE dead-operation
+rejections. This does not select dead-branch deletion or a new CFG proof rule.
+Include the existing sequential/stale-proof, dead-result, no-op, audit, source,
+schema and recomputing-verifier controls. These supplied normalized proof
+records are not proof-provider evidence, fresh C11 input or native execution.
+
+For C13 proof-usage records, run
+`sh16-records-only-used-dce-and-runtime-proof-occurrences` in the same namespace.
+DCE decisions name the validated dead proofs of actually selected operations;
+runtime-check elision retains its existing selected proof IDs. Aggregate
+translation-validation usage concatenates the freshly recomputed decisions in
+pass/operation order, preserving repeated occurrences. No-change decisions
+remain empty. Keep proof usage separate from invalidation: existing runtime
+proof invalidation is unchanged, and DCE usage does not add dead IDs to it.
+Test missing/corrupt proof rejection and decision/aggregate substitution through
+the original recomputing verifier. This reports supplied normalized proof DATA,
+not provider verification, fresh C11 input, native execution or admission.
+
 For C13 rejected-operation attribution, run
 `sh16-rejections-retain-the-first-failing-operation-source` in the same namespace.
 The original ordered checks retain the first failing operation and reason.

@@ -9168,6 +9168,47 @@ two passing invocations. LOC separately passed 2,021 files, zero exceptions,
 maximum 250. These supplied normalized diagnostic records do not establish
 fresh source construction, native execution, migration or completion evidence.
 
+The next C13 pass-composition repair defers an admitted pure, proven-unused ADD
+unchanged through constant folding and branch simplification until scheduled
+DCE removes it. Previously folding dropped its dead marker/proof and the ADD's
+folded value survived DCE. The original operation and proof are not copied
+across a rewrite. Live ADDs still fold; input type/overflow/effect/proof checks,
+pass order, schema and bounds remain unchanged. Final/post-DCE validators still
+reject dead operations. This does not select dead-branch deletion or establish
+control-flow unreachability from an unused-result flag.
+
+The `17730a9e` RED run retained 190 passes and 60 failures in 250 assertions,
+with no errors. Candidate `abfbb409` passed 13 tests and 1,246 assertions
+(250 new plus 996 adjacent, including dead-result and stale-proof controls).
+The separate boundary run passed six tests/11 assertions: 19/1,257 across two
+passing invocations. LOC separately passed 2,021 files, zero exceptions,
+maximum 250. Original G/Q constructors supply normalized proof DATA; checks
+cover unchanged pre-DCE operations/proofs, DCE-only decisions and invalidation,
+source/origin identity, rejected proofs/effects/safety, and fresh recomputation
+against substituted results. These are not proof-provider verification, fresh
+authenticated C11/source input, native execution or migration evidence.
+
+The next C13 artifact repair records the dead-proof IDs actually used by DCE.
+Only selected operations whose original proof records passed ingress validation
+contribute. Runtime-check elision keeps its existing proof occurrences, including
+duplicates. Aggregate translation-validation usage concatenates fresh pipeline
+decisions in pass/operation order without deduplication; no-change usage is
+empty. Existing runtime-proof invalidation and its aggregate are unchanged:
+using a dead proof for deletion does not add its ID to invalidation records.
+Fresh pipeline reconstruction/comparison still precedes finalization, and
+verification recomputes rather than trusts supplied usage metadata.
+
+The `051055cf` RED run retained 136 passes and 24 failures in 160 assertions,
+without errors. Candidate `294d6aab` passed 15 tests and 1,428 assertions
+(160 new, the prior 1,246 and the existing 22-assertion elision control).
+Boundary checks separately passed six tests/11 assertions: 21/1,439 across two
+passing invocations. LOC separately passed 2,021 files, zero exceptions,
+maximum 250. G/Q supplied-record controls cover distinct/repeated dead and
+runtime IDs, mixed DCE/retained checks, deterministic order, unchanged
+invalidation, no-change records, rejected proofs and substituted usage. This is
+normalized proof DATA, not provider verification, fresh authenticated C11/source
+construction, native execution, admission or migration evidence.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
