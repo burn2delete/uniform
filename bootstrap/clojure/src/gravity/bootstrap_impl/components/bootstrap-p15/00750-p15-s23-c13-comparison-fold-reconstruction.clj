@@ -69,7 +69,7 @@
                  (every? #(and (identifier? (:op-id %)) (identifier? (:result %))) operations)
                  (= 1 (count candidates)) (integer? index) (fact-valid? mir op)
                  (= entry (:block-id op)) (= :integer-eq (:source-operation op)) (= :gravity/bool (:type op))
-                 (= :not-applicable (:constant-payload op)) (vector? (:operands op)) (= 2 (count (:operands op)))
+                 (= :not-applicable (:constant-payload op)) (vector? (:operands op)) (= 2 (count (:operands op))))
         (let [earlier (into {} (map (juxt :result identity) (take index entry-ops)))
               operands (:operands op) producers (mapv earlier operands)
               graph (:data-flow-graph mir) edges (:edges graph)
@@ -91,7 +91,7 @@
                        (get-in (second producers) [:constant-payload :value]))
              :delta {:kind :gravity/c13-integer-equality-delta :version 1 :operation-id (:op-id op)
                      :operand-ids operands :edges (mapv #(hash-map :index (:index %) :edge (:row %)) removed)
-                     :uses uses}})))))))
+                     :uses uses}}))))))
 
 (defn rewrite [mir selected]
   (let [op (:operation selected) payload {:present? true :value (:value selected)}

@@ -1199,15 +1199,16 @@
        :semantic-identity (assoc (assoc semantic :c11-output-mir-id output-id) :unchanged? false))))
 
 (defn c13-build-bounded-identity-optimized-mir [mir evidence]
-  (let [selected (c13-equality-selection mir)
-        original-evidence (if (= selected nil) evidence (c13-equality-without-output-id evidence))
+  (let [original-evidence (if (map? evidence) (c13-equality-without-output-id evidence) evidence)
         base (c13-build-bounded-identity-record mir original-evidence)]
     (if (= :accepted (get base :status))
-      (if (= selected nil) base
-        (if (c13-sha256-id? (get evidence :output-mir-id))
-          (c13-equality-translated-record mir evidence base selected)
-          {:artifact :gravity/c13-bounded-identity-optimized-mir :schema-version 1 :status :rejected
-           :diagnostic "C13-VERIFY" :missing-fact :fresh-c11-verifier-and-fact-closure :diagnostics ["C13-VERIFY"]})) base)))
+      (let [selected (c13-equality-selection mir)]
+        (if (= selected nil)
+          (if (contains? evidence :output-mir-id) (c13-build-bounded-identity-record mir evidence) base)
+          (if (c13-sha256-id? (get evidence :output-mir-id))
+            (c13-equality-translated-record mir evidence base selected)
+            {:artifact :gravity/c13-bounded-identity-optimized-mir :schema-version 1 :status :rejected
+             :diagnostic "C13-VERIFY" :missing-fact :fresh-c11-verifier-and-fact-closure :diagnostics ["C13-VERIFY"]}))) base)))
 
 ; SH-16 bounded executable optimization leaf. Authenticated SH-15 input and
 ; complete C11 MIR adaptation remain pending. This engine accepts normalized,
