@@ -850,6 +850,16 @@ not fresh C11 verification of transformed output. Public packet/pin boundaries
 remain unchanged and unrun. Run cheap checks serially through actual process
 completion; these development checks establish no isolated timing benchmark.
 
+For affected four-block composition coverage, run
+`sh17-development-folded-predicate-preserves-integer-diamond-emission` in the
+same namespace. The folded Bool drives the existing branch/Integer-phi path;
+check true/false, repeated and signed-endpoint conditions, Integer arms within
+the existing process-exit subset, exact two-edge removal and preserved CFG,
+incoming values, source/type tables and terminator uses. Compare original and
+folded emission and reject mutants at their actual C14/host/B3 owning checks.
+This is test-only supplied-DATA coverage, not a new semantic repair, fresh
+source/public packet, LLVM tool result or native execution.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
