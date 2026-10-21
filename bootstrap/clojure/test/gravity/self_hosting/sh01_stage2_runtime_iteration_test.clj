@@ -32479,6 +32479,38 @@
                     (assoc-in context [:loop-rows [:loop-slot-type :value] :solution :member-invariant :grounding :member-path] [:vector-first])]]
       (is (= :rejected (:status (compile changed 65536)))))))
 
+(deftest current-gravity-vector-first-symbol-loop-witness-reached-metadata-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [owner 'gravity.self-hosting.sh08-loop-recur-type-test
+        env ((ns-resolve owner 'vector-first-symbol-loop-env) ((ns-resolve owner 'vector-first-symbol-loop-data)))
+        unused (ns-resolve owner 'vector-first-symbol-loop-unused-metadata-env)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        walk (fn [env budget] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan
+                                'p15-s23-lsi-path [:vector-first :member :value env budget]))
+        baseline (walk env 65536) callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "unused metadata hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "unused metadata equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "unused metadata printing"))))
+        large (vec (repeat 1024 {:unused (vec (range 20))}))]
+    (is (= :accepted (:status baseline)))
+    (doseq [value [large opaque] node? [true false]]
+      (let [changed (unused env value node?)]
+        (is (= baseline (walk changed 65536)))
+        (is (= baseline (walk changed (:work-count baseline))))
+        (is (= :loop-type-work-limit (:reason (walk changed (dec (:work-count baseline))))))
+        (is (zero? @callbacks))))
+    (doseq [changed [(assoc-in env [:nodes :vector-first :source :semantic-span] opaque)
+                    (assoc-in env [:forms :vector-first-form :source-span] opaque)
+                    (assoc-in env [:nodes :symbol-vector :attributes :source-value] opaque)
+                    (assoc-in env [:nodes :symbol-vector :evaluation :order] opaque)
+                    (assoc-in env [:types :first-operator :source-binding :metadata] opaque)
+                    (assoc-in env [:types :first-operator :extra] opaque)]]
+      (is (= :rejected (:status (walk changed 65536))))
+      (is (zero? @callbacks)))))
+
 (deftest current-gravity-vector-first-symbol-loop-witness-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

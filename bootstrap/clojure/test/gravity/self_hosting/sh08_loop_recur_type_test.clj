@@ -2620,3 +2620,41 @@
       (is (= #{} (get-in graph [:nodes (ids :vector-first) :direct])))
       (is (true? (effects 'body-graph-equations-valid? converted source-facts {} (:nodes graph)))))
 ))
+
+(defn- vector-first-symbol-loop-unused-metadata-env [env value node?]
+  ;; Exercise this private proof's readset, not whole-Core authentication.
+  (if node?
+    (update env :nodes #(into {} (map (fn [[id node]]
+      [id (assoc node :artifact :gravity/sh07-core-node :generated? false
+                      :module {:namespace 'self-hosting.sh08.vector-first-symbol-loop :profile :meta :target :jvm}
+                      :metadata value :preserved-declarations {:effects [:memory/allocate] :capabilities [] :safety :safe}
+                      :pending-fact-families [:types :effects :ownership :safety] :lowering-rule-version :sh07-b11-v12)]) %)))
+    (update env :forms #(into {} (map (fn [[id form]] [id (assoc form :metadata value)]) %)))))
+
+(deftest vector-first-symbol-loop-witness-reached-metadata-development-kernel
+  (let [env (vector-first-symbol-loop-env (vector-first-symbol-loop-data))
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "unused metadata hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "unused metadata equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "unused metadata printing"))))
+        large (vec (repeat 1024 {:unused (vec (range 20))}))
+        walks [(fn [env budget] (c7-invoke 'sh08-lsi-path [:vector-first :member :value env budget]))
+               (fn [env budget] (effects 'body-lsi-path :vector-first :member :value env budget))]]
+    (doseq [walk walks]
+      (let [baseline (walk env 65536)]
+        (is (= :accepted (:status baseline)))
+        (doseq [value [large opaque] node? [true false]]
+          (let [changed (vector-first-symbol-loop-unused-metadata-env env value node?)]
+            (is (= baseline (walk changed 65536)))
+            (is (= baseline (walk changed (:work-count baseline))))
+            (is (= :loop-type-work-limit (:reason (walk changed (dec (:work-count baseline))))))
+            (is (zero? @callbacks))))
+        (doseq [changed [(assoc-in env [:nodes :vector-first :source :semantic-span] opaque)
+                        (assoc-in env [:forms :vector-first-form :source-span] opaque)
+                        (assoc-in env [:nodes :symbol-vector :attributes :source-value] opaque)
+                        (assoc-in env [:nodes :symbol-vector :evaluation :order] opaque)
+                        (assoc-in env [:types :first-operator :source-binding :metadata] opaque)
+                        (assoc-in env [:types :first-operator :extra] opaque)]]
+          (is (= :rejected (:status (walk changed 65536))))
+          (is (zero? @callbacks)))))))
