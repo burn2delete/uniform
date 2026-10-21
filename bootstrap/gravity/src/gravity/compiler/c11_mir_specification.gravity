@@ -3092,7 +3092,11 @@
        (= (get row :generated-role) (if (= index 2) :truthiness-normalization nil))
        (= (get row :input-origin-id) (if (= index 2) (get input :origin-id) nil))
        (= (get row :c2-abbrev) nil) (= (get row :c2-tag) nil)
-       (= {} (get row :c2-metadata)) (= [] (get row :c2-generated-origin))]) false)))
+       (= {} (get row :c2-metadata))
+       ; Original C2 seed rows omit this field; C6 retains nil in the raw
+       ; origin row and normalizes it to [] in node.source above.
+       (if (= nil (get row :c2-generated-origin)) true
+         (= [] (get row :c2-generated-origin)))]) false)))
 
 (defn sh12-c6p-own [node index]
   (let [operands (get node :operands)

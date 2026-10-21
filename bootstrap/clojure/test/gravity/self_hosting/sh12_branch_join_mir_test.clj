@@ -413,7 +413,7 @@
                 (is (= :rejected (:status report)))
                 (is (= "C11-ORIGIN" (:diagnostic-id (diagnostic report))))))
             (doseq [[field invalids] [[:c2-metadata [nil [] 0 ""]]
-                                      [:c2-generated-origin [nil {} 0 ""]]]
+                                      [:c2-generated-origin [false {} 0 ""]]]
                     value invalids]
               (let [malformed (-> core
                                   (assoc-in [:source-origin-table origin field] value)
