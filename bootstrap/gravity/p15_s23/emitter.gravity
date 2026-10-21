@@ -1508,6 +1508,20 @@
     (if (= :gravity.type/set (get type :kind))
       (if (= :homogeneous (get type :shape)) (= :gravity.type/string (get type :element-type)) false) false) false) false))
 
+(defn p15-s23-syc-type? [type]
+  ; Closed inferred Symbol member carrier; no extent or presence facts.
+  (if (map? type)
+    (if (= 3 (count type))
+      (if (loop [fields (keys type)]
+            (if (= 0 (count fields)) true
+              (if (keyword? (first fields)) (recur (rest fields)) false)))
+        (if (= :gravity.type/set (get type :kind))
+          (if (= :homogeneous (get type :shape)) (= :gravity.type/symbol (get type :element-type)) false)
+          false)
+        false)
+      false)
+    false))
+
 (defn p15-s23-is-value-type? [type]
   ; Inferred values only: validate fixed fields without hashing composite data.
   (if (map? type)
@@ -4555,7 +4569,8 @@
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (let [receiver (get arguments 0) value (get arguments 1)]
       (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
-        (if (if (map? receiver) (if (= 3 (count receiver))
+        (if (p15-s23-syc-type? receiver) true
+          (if (if (map? receiver) (if (= 3 (count receiver))
             (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
                   (if (keyword? (first fields)) (recur (rest fields)) false)))
               (if (= :gravity.type/set (get receiver :kind))
@@ -4563,7 +4578,7 @@
         (let [members (get receiver :element-types)]
           (if (= 0 (count members)) (= :gravity.type/symbol value)
             (if (= :gravity.type/symbol (get members 0))
-              (if (= :gravity.type/symbol value) true (= :gravity.type/never value)) false))) false)
+              (if (= :gravity.type/symbol value) true (= :gravity.type/never value)) false))) false))
         false)) false))
 
 (defn p15-s23-syin-type-work [arguments budget]
@@ -4573,7 +4588,17 @@
       (if (if (vector? arguments) (= 2 (count arguments)) false)
         (let [receiver (get arguments 0) value (get arguments 1)
               construction (if (= :gravity.type/never value) 0 3)]
-          (if (if (map? receiver) (if (= 3 (count receiver))
+          (if (p15-s23-syc-type? receiver)
+            (let [work (+ 3 construction)]
+              (if (> work limit)
+                {:status :rejected :reason :symbol-set-insertion-work-limit :work-count work}
+                (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
+                  {:status :accepted :collection-family :symbol-set-insertion :argument-types arguments
+                   :input-extent nil :result-type (if (= :gravity.type/never value) :gravity.type/never
+                                                  {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})
+                   :operand-work 3 :result-work 0 :construction-work construction :work-count work}
+                  {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count 3})))
+            (if (if (map? receiver) (if (= 3 (count receiver))
                 (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
                       (if (keyword? (first fields)) (recur (rest fields)) false)))
                   (if (= :gravity.type/set (get receiver :kind))
@@ -4585,11 +4610,11 @@
                         (if (= :gravity.type/symbol (get members i)) (recur (+ i 1)) false)))
                     (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
                       {:status :accepted :collection-family :symbol-set-insertion :argument-types arguments
-                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never :gravity.type/set)
+                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})
                        :operand-work (+ 2 width) :result-work 0 :construction-work construction :work-count work}
                       {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count work})
                     {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count work}))))
-            {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count 2}))
+            {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count 2})))
         {:status :rejected :reason :symbol-set-insertion-arity-mismatch :work-count 2}))))
 
 (defn p15-s23-ksin-selected? [arguments]
@@ -4753,7 +4778,7 @@
            (= :accepted (get validation :status))] )
       (if (= :symbol-set-insertion (get validation :collection-family))
         (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
-          {:kind :gravity.type/applied-symbol-set-insertion :version :sh08-symbol-set-insertion-v1
+          {:kind :gravity.type/applied-symbol-set-insertion :version :sh08-symbol-set-insertion-v2
        :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-symbol-set-insertion
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
@@ -4765,7 +4790,7 @@
                            :resolution-authority :none :representation-unit-policy :jvm-utf16-symbol-display-for-work-only
                            :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
                            :operand-evaluation :left-to-right-once :operand-position :non-tail
-                           :result-evidence :bare-set-only :cardinality-analysis :none
+                           :result-evidence :homogeneous-symbol-set-only :carrier-schema :gravity/homogeneous-symbol-set-type-v1 :cardinality-analysis :none
                            :domain-validation :complete-and-unique-before-hit-miss-or-construction
                            :budget :full-remaining-membership-and-construction-reservation
                            :value-work-model :gravity/symbol-set-insertion-logical-content-work-v1
@@ -4783,7 +4808,7 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :set-member-domain :inserted-value :insertion-semantics :member-equality :representation-work :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+                      :callee-body :set-member-domain :inferred-member-carrier :inserted-value :insertion-semantics :member-equality :representation-work :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
         (if (= :keyword-set-insertion (get validation :collection-family))
         (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
           {:kind :gravity.type/applied-keyword-set-insertion :version :sh08-keyword-set-insertion-v1
@@ -4871,9 +4896,9 @@
     nil))
 
 (defn p15-s23-pl-constraint [descriptor]
-  (if (= :sh08-symbol-set-insertion-v1 (get descriptor :version))
-    {:constraint-id-request {:domain :gravity/sh08-symbol-set-insertion-constraint-v1 :application descriptor}
-     :kind :equality :producer-rule :sh08-symbol-set-insertion-v1
+  (if (= :sh08-symbol-set-insertion-v2 (get descriptor :version))
+    {:constraint-id-request {:domain :gravity/sh08-symbol-set-insertion-constraint-v2 :application descriptor}
+     :kind :equality :producer-rule :sh08-symbol-set-insertion-v2
      :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :symbol-set-insertion}
      :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
      :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
@@ -4906,10 +4931,10 @@
    :status :solved :diagnostics []})))
 
 (defn p15-s23-pl-call-fact [descriptor module]
-  (if (= :sh08-symbol-set-insertion-v1 (get descriptor :version))
+  (if (= :sh08-symbol-set-insertion-v2 (get descriptor :version))
     (let [source (get descriptor :source) edge (get descriptor :source-edge)]
       {:artifact :gravity/c7-call-type-fact
-     :fact-id-request {:domain :gravity/sh08-symbol-set-insertion-call-type-fact-v1 :application descriptor}
+     :fact-id-request {:domain :gravity/sh08-symbol-set-insertion-call-type-fact-v2 :application descriptor}
      :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
      :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
@@ -4953,7 +4978,7 @@
   (loop [remaining (get context :ledger)]
     (if (= 0 (count remaining)) true
       (let [row (first remaining) producer (get row :producer-rule)]
-        (if (if (keyword? producer) (contains? #{:sh08-vector-append-v1 :sh08-list-prepend-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v1} producer) false)
+        (if (if (keyword? producer) (contains? #{:sh08-vector-append-v1 :sh08-list-prepend-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v2} producer) false)
           (let [lhs (get row :lhs) id (get lhs :core-node-id)]
             (if (if (map? lhs) (if (= 2 (count lhs)) (p15-s23-sse-ids? [id] 1) false) false)
               (let [call (get (get context :calls) id) node (get (get context :nodes) id)]
@@ -4995,7 +5020,7 @@
                    (if (= 0 (count remaining)) out
                      (let [row (first remaining)]
                        (recur (rest remaining)
-                         (if (if (if (keyword? (get row :producer-rule)) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v1} (get row :producer-rule)) false)
+                         (if (if (if (keyword? (get row :producer-rule)) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v2} (get row :producer-rule)) false)
                                (= id (get (get row :lhs) :core-node-id)) false) (conj out row) out)))))]
         (if (if (if (map? descriptor)
               (if (= :symbol-set-insertion (get validation :collection-family))
@@ -5019,11 +5044,11 @@
                              (= (get child :source) (p15-s23-typed-source form))
                              (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
                          (recur (+ i 1)) false))))]) false)
-          (if (contains? #{:sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v1} (get descriptor :version))
+          (if (contains? #{:sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v2} (get descriptor :version))
             (if (loop [remaining (get context :ledger)]
               (if (= 0 (count remaining)) true
                 (let [row (first remaining) producer (get row :producer-rule)]
-                  (if (if (keyword? producer) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v1} producer) false)
+                  (if (if (keyword? producer) (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1 :sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v2} producer) false)
                     (let [row-id (get (get row :lhs) :core-node-id)
                           source-call (if (if (keyword? row-id) true (if (string? row-id) (= 71 (count row-id)) false))
                                         (get (get context :calls) row-id) nil)
@@ -5031,7 +5056,7 @@
                           op-id (get source-call :operator-node-id)
                           source-type (if (if (map? source-call) (if (keyword? op-id) true (if (string? op-id) (= 71 (count op-id)) false)) false)
                                         (get (get context :types) op-id) nil)
-                          expected-kind (if (= :sh08-symbol-set-insertion-v1 producer)
+                          expected-kind (if (= :sh08-symbol-set-insertion-v2 producer)
             :gravity.type/applied-symbol-set-insertion
             (if (= :sh08-keyword-set-insertion-v1 producer) :gravity.type/applied-keyword-set-insertion
                                           (if (= :sh08-string-set-insertion-v2 producer) :gravity.type/applied-string-set-insertion
@@ -5143,7 +5168,7 @@
                         (loop [fields (keys type)]
                           (if (= 0 (count fields)) true
                             (if (keyword? (first fields)) (recur (rest fields)) false))) false) false)
-                  (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (if (p15-s23-ss-type? type) true (if (keyword? (get type :element-type)) (p15-s23-hl-type? type) false))
+                  (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (if (p15-s23-ss-type? type) true (if (p15-s23-syc-type? type) true (if (keyword? (get type :element-type)) (p15-s23-hl-type? type) false)))
                         nil-bearing? (if (keyword? (get type :value-type)) (p15-s23-ni-type? type) false)
                         children (if nil-bearing? [(get type :value-type)]
                                    (if homogeneous? [(get type :element-type)] (get type (if members? :member-types :element-types))))
@@ -12085,7 +12110,7 @@
             (vector? (get type :element-types)) false) false)) false)))
 
 (defn p15-s23-cq-set? [type]
-  (if (p15-s23-ss-type? type) true
+  (if (if (p15-s23-ss-type? type) true (p15-s23-syc-type? type)) true
   (if (= :gravity.type/set type) true
     (if (if (map? type) (= 3 (count type)) false)
       (if (= :gravity.type/set (get type :kind))

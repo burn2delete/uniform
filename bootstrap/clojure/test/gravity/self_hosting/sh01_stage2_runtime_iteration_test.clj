@@ -30971,10 +30971,10 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
         s :gravity.type/symbol homogeneous {:kind :gravity.type/set :shape :literal :element-types [s]}
-        carrier :gravity.type/set
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
         positional #(hash-map :kind :gravity.type/set :shape :literal :element-types %)]
     (doseq [[receiver value] [[(positional []) s] [homogeneous s] [homogeneous :gravity.type/never]
-                              [(positional (vec (repeat 1024 s))) s]]]
+                              [(positional (vec (repeat 1024 s))) s] [carrier s] [carrier :gravity.type/never]]]
       (let [{:keys [core node nodes forms bindings types module call edge] :as input} (input-fn receiver value)
             result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
@@ -30990,7 +30990,8 @@
           (is (= lowered (compile context (:work-count lowered))))
           (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
         (is (= :typed-lowering-work-limit (get-in (direct context node 0) [:facts :reason])))
-        (doseq [changed [(assoc-in descriptor [:insertion-semantics :symbol-equality] :display-string)
+        (doseq [changed [(assoc descriptor :version :sh08-symbol-set-insertion-v1)
+                         (assoc-in descriptor [:insertion-semantics :symbol-equality] :display-string)
                          (assoc-in descriptor [:insertion-semantics :resolution-authority] :resolve)
                          (assoc-in descriptor [:insertion-semantics :normalization] :nfc)
                          (assoc descriptor :direct-effects [])
@@ -31004,7 +31005,8 @@
                                 (assoc :call-facts {:call (c7 'sh08-pl-call-fact [changed module])}
                                        :ledger [(c7 'sh08-pl-constraint [changed])]))]
               (is (= :rejected (:status (compile candidate 65536)))))))
-        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+        (doseq [mutate [#(assoc-in % [:ledger 0 :producer-rule] :sh08-symbol-set-insertion-v1)
+                        #(assoc % :ledger []) #(update % :ledger into (:ledger %))
                         #(update % :ledger conj (assoc (first (:ledger %)) :producer-rule :sh08-vector-append-v1))
                         #(assoc-in % [:nodes :call :evaluation :order] [])
                         #(assoc-in % [:forms :arg1 :parent-form-id] :sibling)
@@ -31352,7 +31354,7 @@
         main (first (:function-type-table facts))
         insertions (mapv :applied-symbol-set-insertion (filter #(= :direct-symbol-set-insertion (:dispatch %)) (:call-type-facts facts)))
         counts (mapv :applied-collection-count (filter #(= :direct-collection-count (:dispatch %)) (:call-type-facts facts)))
-        rows (filterv #(= :sh08-symbol-set-insertion-v1 (:producer-rule %)) (:constraint-ledger facts))
+        rows (filterv #(= :sh08-symbol-set-insertion-v2 (:producer-rule %)) (:constraint-ledger facts))
         instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
         insertion-ir (filterv #(and (= :builtin-call (:op %)) (= 'conj (:function %))) instructions)
         count-ir (filterv #(and (= :builtin-call (:op %)) (= 'count (:function %))) instructions)
@@ -31379,14 +31381,14 @@
       (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
             row (first (filter #(= id (get-in % [:lhs :core-node-id])) rows))]
         (is (= :gravity.type/applied-symbol-set-insertion (:kind descriptor)))
-        (is (= :sh08-symbol-set-insertion-v1 (:version descriptor)))
+        (is (= :sh08-symbol-set-insertion-v2 (:version descriptor)))
         (is (= ['conj 'gravity.collections :gravity.collections/persistent-symbol-set-insertion]
                [(:operation descriptor) (:semantic-owner descriptor) (:intrinsic descriptor)]))
-        (is (= :gravity.type/set (:result-type descriptor) (:return descriptor) (get-in facts [:type-table id])))
+        (is (= {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol} (:result-type descriptor) (:return descriptor) (get-in facts [:type-table id])))
         (is (nil? (:result-extent descriptor)))
-        (is (= [:persistent-set-insertion :value-equivalent-unchanged :add-supplied-value :bare-set-only :none]
+        (is (= [:persistent-set-insertion :value-equivalent-unchanged :add-supplied-value :homogeneous-symbol-set-only :none]
                ((juxt :operation :present-class :absent-class :result-evidence :cardinality-analysis) (:insertion-semantics descriptor))))
-        (is (nil? (get-in descriptor [:insertion-semantics :carrier-schema])))
+        (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:insertion-semantics :carrier-schema])))
         (is (= [:independently-established-symbol-only :guarded-atomic-symbol-value]
                ((juxt :member-domain :member-equality) (:insertion-semantics descriptor))))
         (is (= [:original-namespace-and-name :none :none :none :jvm-utf16-symbol-display-for-work-only]
@@ -31394,7 +31396,7 @@
                 (:insertion-semantics descriptor))))
         (is (= [:memory/allocate] (:direct-effects descriptor)))
         (is (= #{:memory/allocate} (:direct record) (:transitive record)))
-        (is (= :sh09-symbol-set-insertion-allocation-v1 (get-in record [:allocation :rule-version])))
+        (is (= :sh09-symbol-set-insertion-allocation-v2 (get-in record [:allocation :rule-version])))
         (is (= :runtime-value-dependent (get-in record [:allocation :extent :result-cardinality])))
         (is (= (:storage-policy descriptor) (get-in record [:allocation :storage-policy])))
         (is (= descriptor (:dependencies row)))
@@ -31402,7 +31404,7 @@
         (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
     (doseq [descriptor counts]
       (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
-        (is (= [:gravity.type/set] (:argument-types descriptor)))
+        (is (= [{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}] (:argument-types descriptor)))
         (is (= :gravity.type/integer (:result-type descriptor)))
         (is (= #{} (:direct record)))
         (is (nil? (:allocation record)))
@@ -31429,8 +31431,327 @@
                       :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
                       :closed-plan-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
                       :runtime-function-count (count (:functions runtime-plan))
-                      :member-domain :independently-finite-symbol-sets-and-symbol-value :result-evidence :bare-set-only
+                      :member-domain :independently-finite-symbol-sets-and-symbol-value :result-evidence :homogeneous-symbol-set-only
                       :recursive-member-transport false :whole-compiler-consumer-execution false
+                      :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                         :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest current-gravity-symbol-set-carrier-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function args))]
+(let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+        string-carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
+        s :gravity.type/symbol finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}
+        work #(invoke 'p15-s23-lc-type-work [%1 %2])
+        produced (:result-type (invoke 'p15-s23-syin-type-work [[(finite []) s] 65536]))]
+    (is (= carrier produced))
+    (is (true? (invoke 'p15-s23-syc-type? [produced])))
+    (is (false? (invoke 'p15-s23-ss-type? [produced])))
+    (is (false? (invoke 'p15-s23-is-value-type? [produced])))
+    (is (false? (invoke 'p15-s23-ds-type? [produced])))
+    (is (= {:status :accepted :work-count 2} (work [produced] 2)))
+    (is (= {:status :rejected :reason :work-limit :work-count 1} (work [produced] 1)))
+    (is (= {:status :rejected :reason :work-limit :work-count 0} (work [produced] 0)))
+    (is (= {:status :accepted :work-count 3} (work [nested] 3)))
+    (is (= {:status :rejected :reason :work-limit :work-count 2} (work [nested] 2)))
+    (is (= {:status :accepted :work-count 2} (work [string-carrier] 2)))
+    (is (= {:status :accepted :work-count 1} (work [:gravity.type/set] 1)))
+    (is (= {:status :accepted :work-count 1} (work [:gravity.type/never] 1)))
+    (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}] 65536))))
+    (is (= :rejected (:status (invoke 'p15-s23-syin-type-work [[:gravity.type/set s] 65536]))))
+    (is (= :rejected (:status (invoke 'p15-s23-syin-type-work [[:gravity.type/unknown s] 65536]))))
+    (doseq [value [s :gravity.type/never]]
+      (let [checked (invoke 'p15-s23-syin-type-work [[carrier value] 65536]) expected (if (= value :gravity.type/never) :gravity.type/never carrier)]
+        (is (= :accepted (:status checked)))
+        (is (= expected (:result-type checked)))
+        (is (nil? (:input-extent checked)))
+        (is (= checked (invoke 'p15-s23-syin-type-work [[carrier value] (:work-count checked)])))
+        (is (= :symbol-set-insertion-work-limit (:reason (invoke 'p15-s23-syin-type-work [[carrier value] (dec (:work-count checked))]))))))
+    (is (= :rejected (:status (invoke 'p15-s23-ksm-domain [[carrier s] 65536]))))
+    (is (= :rejected (:status (invoke 'p15-s23-kse-domain [[carrier carrier] 65536]))))
+    (is (= :rejected (:status (invoke 'p15-s23-kse-domain [[carrier (finite [s])] 65536]))))
+    (require 'gravity.self-hosting.sh08-function-call-type-test)
+    (doseq [[input-name family expected] [['list-construction-input "lc" nested]
+                                         ['set-predicate-input "setp" :gravity.type/bool]
+                                         ['list-predicate-input "listp" :gravity.type/bool]
+                                         ['keyword-predicate-input "kp" :gravity.type/bool]]]
+      (let [input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test input-name) [produced])
+            {:keys [core node call edge nodes bindings types module]} input
+            checked (work [produced] 2)
+            header (invoke (symbol (str "p15-s23-" family "-source")) [core node call edge nodes bindings types module checked])
+            descriptor (invoke (symbol (str "p15-s23-" family "-finish")) [header])]
+        (is (map? header))
+        (is (= [produced] (:argument-types descriptor)))
+        (is (= expected (:result-type descriptor) (:return descriptor)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Symbol carrier hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "Symbol carrier equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "Symbol carrier printing"))))
+          bad [(assoc carrier :extra true) (dissoc carrier :element-type)
+               (assoc carrier :kind :gravity.type/vector) (assoc carrier :shape :literal)
+               (assoc carrier :element-type :gravity.type/keyword) (assoc carrier :element-type :gravity.type/unknown)
+               (assoc carrier :element-type carrier) (assoc carrier :element-type opaque)
+               (assoc carrier :element-type [opaque]) (assoc carrier :element-type {:opaque opaque})
+               (assoc carrier :kind opaque) (assoc carrier :shape opaque)
+               (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque s]))
+               (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous [opaque] s]))
+               (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} s]))]]
+      (doseq [wrong bad]
+        (is (false? (invoke 'p15-s23-syc-type? [wrong])))
+        (doseq [budget [0 1 65536]]
+          (is (= :rejected (:status (work [wrong] budget))))
+          (is (zero? @callbacks)))))
+    (let [nest (fn [n value] (loop [i 0 out value] (if (= i n) out (recur (inc i) {:kind :gravity.type/list :shape :literal :element-types [out]}))))
+          wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
+          row {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 64 carrier))}
+          bulk {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1024 row))}
+          bulk-result (work [bulk] 65536)]
+      (is (= :accepted (:status (work [(nest 127 carrier)] 65536))))
+      (is (= :type-depth (:reason (work [(nest 128 carrier)] 65536))))
+      (is (= :rejected (:status (work [wide] 65536))))
+      (is (= :rejected (:status bulk-result)))
+      (is (contains? #{:type-size :work-limit} (:reason bulk-result)))
+      (is (<= (:work-count bulk-result) 65536))))
+(let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        _ (require upstream) c7 (ns-resolve upstream 'invoke-c7)
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol} nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}]
+    (doseq [[input-name derive-name family expected]
+            [['list-construction-input 'list-construction-derived "lc" nested]
+             ['set-predicate-input 'set-predicate-derived "setp" :gravity.type/bool]
+             ['list-predicate-input 'list-predicate-derived "listp" :gravity.type/bool]]]
+      (let [input ((ns-resolve upstream input-name) [carrier]) derive (ns-resolve upstream derive-name)
+            result (if (= family "lc") (derive input) (derive input 65536)) descriptor (:descriptor result)
+            {:keys [core node nodes forms bindings types module call edge]} input
+            context {:core core :nodes nodes :forms forms :bindings bindings
+                     :types (assoc types :operator descriptor :call expected)
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 (symbol (str "sh08-" family "-call-fact")) [descriptor module])}
+                     :ledger [(c7 (symbol (str "sh08-" family "-constraint")) [descriptor])]
+                     :locals {:arg0 'value} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node [% :call %2])
+            lowered (compile context 65536)]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= lowered (compile context (:work-count lowered))))
+        (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))))))
+
+(deftest current-gravity-symbol-set-carrier-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name expected-functions expected-calls expected-insertions expected-counts expected-quotes]
+            [["accepted" "local-runtime-symbol-set-carrier" 2 12 4 4 6]
+             ["rejected" "symbol-set-carrier-membership-unselected" 1 2 1 0 3]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g)
+            nodes (tree-seq coll? seq forms)
+            calls (filter #(and (seq? %) (contains? '#{conj gravity.core/conj count list seed set? list? contains?} (first %))) nodes)]
+        (is (= g q))
+        (is (= forms (bootstrap/read-forms q-path q)))
+        (is (= expected-functions (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+        (is (= expected-calls (count calls)))
+        (is (= expected-insertions (count (filter #(contains? '#{conj gravity.core/conj} (first %)) calls))))
+        (is (= expected-counts (count (filter #(= 'count (first %)) calls))))
+        (is (= expected-quotes (count (filter #(and (seq? %) (= 'quote (first %))) nodes))))))))
+
+(deftest current-gravity-symbol-set-carrier-authenticated-composition
+  ;; One inferred Symbol carrier composition and an unselected membership negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "Symbol Set carrier fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "Symbol Set carrier development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:symbol-set-carrier-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "Symbol Set carrier upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "Symbol Set carrier C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "Symbol Set carrier C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-symbol-set-carrier.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+        nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}
+        functions (:function-type-table facts)
+        main (first (filter #(= 'main (:definition-name %)) functions))
+        seed (first (filter #(= 'seed (:definition-name %)) functions))
+        insertions (mapv :applied-symbol-set-insertion (filter #(= :direct-symbol-set-insertion (:dispatch %)) (:call-type-facts facts)))
+        counts (mapv :applied-collection-count (filter #(= :direct-collection-count (:dispatch %)) (:call-type-facts facts)))
+        lists (mapv :applied-list-construction (filter #(= :direct-list-construction (:dispatch %)) (:call-type-facts facts)))
+        predicates (filterv #(contains? #{:direct-set-predicate :direct-list-predicate} (:dispatch %)) (:call-type-facts facts))
+        rows (filterv #(= :sh08-symbol-set-insertion-v2 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
+        insertion-ir (filterv #(and (= :builtin-call (:op %)) (= 'conj (:function %))) instructions)
+        count-ir (filterv #(and (= :builtin-call (:op %)) (= 'count (:function %))) instructions)
+        list-ir (filterv #(and (= :builtin-call (:op %)) (= 'list (:function %))) instructions)
+        graph (:effect-graph effects) runtime-plan (:plan (typed-catch-runtime-projection))
+        execution (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)])
+        t2 (System/nanoTime)]
+    (is (= 2 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= 12 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 4 (count insertions) (count rows) (count insertion-ir) (count counts) (count count-ir)))
+    (is (= 1 (count lists) (count list-ir)))
+    (is (= 2 (count predicates)))
+    (is (= 6 (count (filter #(= :quote (:op %)) instructions))))
+    (is (= 1 (count (filter #(= :function-call (:op %)) instructions))))
+    (is (= {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
+           (:return seed) (get-in facts [:type-table (:body-core-node-id seed)])))
+    (is (= 0 (:fixed-arity seed) (:fixed-arity main)))
+    (is (= {'seen carrier 'widened carrier 'stored nested}
+           (into {} (map (juxt :name :type) (:local-binding-facts facts)))))
+    (is (not (contains? facts :recursive-proof)))
+    (is (= :gravity/sh08-function-typed-core-v3 (:domain facts)))
+    (is (empty? (get-in assembled [:module-initialization :initializers])))
+    (is (= 56 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= [1 2 2 1 true true] (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= #{} (get-in graph [:namespace :inferred])))
+    (doseq [function [main seed]]
+      (is (= #{:memory/allocate} (get-in graph [:functions (:function-id function) :inferred])
+             (get-in graph [:functions (:function-id function) :latent]))))
+    (is (= {0 2 nil 2} (frequencies (map :input-extent insertions))))
+    (is (= 3 (count (filter #(= [carrier] (:argument-types %)) counts))))
+    (is (= 1 (count (filter #(= [nested] (:argument-types %)) counts))))
+    (doseq [descriptor insertions]
+      (let [id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+            row (first (filter #(= id (get-in % [:lhs :core-node-id])) rows))]
+        (is (= :gravity.type/applied-symbol-set-insertion (:kind descriptor)))
+        (is (= :sh08-symbol-set-insertion-v2 (:version descriptor)))
+        (is (= ['conj 'gravity.collections :gravity.collections/persistent-symbol-set-insertion]
+               [(:operation descriptor) (:semantic-owner descriptor) (:intrinsic descriptor)]))
+        (is (= carrier (:result-type descriptor) (:return descriptor) (get-in facts [:type-table id])))
+        (is (nil? (:result-extent descriptor)))
+        (is (= [:homogeneous-symbol-set-only :gravity/homogeneous-symbol-set-type-v1 :none]
+               ((juxt :result-evidence :carrier-schema :cardinality-analysis) (:insertion-semantics descriptor))))
+        (is (= [:original-namespace-and-name :none :none :none :jvm-utf16-symbol-display-for-work-only]
+               ((juxt :symbol-equality :normalization :coercion :resolution-authority :representation-unit-policy)
+                (:insertion-semantics descriptor))))
+        (is (= [:memory/allocate] (:direct-effects descriptor)))
+        (is (= #{:memory/allocate} (:direct record) (:transitive record)))
+        (is (= :sh09-symbol-set-insertion-allocation-v2 (get-in record [:allocation :rule-version])))
+        (is (= :runtime-value-dependent (get-in record [:allocation :extent :result-cardinality])))
+        (is (= (:storage-policy descriptor) (get-in record [:allocation :storage-policy])))
+        (is (= descriptor (:dependencies row)))
+        (is (= (:insertion-semantics descriptor) (get-in row [:solution :insertion-semantics])))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (doseq [descriptor counts]
+      (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+        (is (= :gravity.type/integer (:result-type descriptor)))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (every? #{:memory/allocate} (:transitive record)))))
+    (is (some #(= #{:memory/allocate} (get-in graph [:nodes (:call-core-node-id %) :transitive])) counts))
+    (doseq [descriptor lists]
+      (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+        (is (= [carrier] (:argument-types descriptor)))
+        (is (= nested (:result-type descriptor)))
+        (is (= #{:memory/allocate} (:direct record) (:transitive record)))
+        (is (map? (:allocation record)))))
+    (doseq [fact predicates]
+      (let [record (get-in graph [:nodes (:call-core-node-id fact)])]
+        (is (= :gravity.type/bool (:result-type fact)))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))))
+    (println (pr-str {:symbol-set-carrier-positive-observations {:runtime-status (:status execution) :runtime-result (:entrypoint-result execution)
+                                                               :functions (count functions) :insertion-calls (count insertions)
+                                                               :local-types (into {} (map (juxt :name :type) (:local-binding-facts facts)))}
+                      :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                         :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/symbol-set-carrier-membership-unselected.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])
+          diagnostic (first (filter #(= :keyword-set-contains-operand-type-required (:reason %)) diagnostics))]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)) (pr-str diagnostics))
+      (is (= [carrier :gravity.type/symbol] (:actual-type diagnostic)) (pr-str diagnostic))
+      (is (some? (:core-node-id diagnostic)))
+      (is (some? (:syntax-id diagnostic)))
+      (is (some? (:binding-id diagnostic)))
+      (is (map? (:source-span diagnostic)))
+      (println (pr-str {:symbol-set-carrier-typing-negative diagnostics :timing (:development-timing negative)})))
+    (println (pr-str {:symbol-set-carrier-composition :completed :runtime-result (:entrypoint-result execution)
+                      :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                      :closed-plan-entry-invocations 1 :same-emitted-ir-seed-control-entries 0
+                      :runtime-function-count (count (:functions runtime-plan))
+                      :result-evidence :homogeneous-symbol-set-only :membership-and-equality :not-selected
+                      :recursive-signature-transport false :implicit-loop-join false :whole-compiler-consumer-execution false
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))

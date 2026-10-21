@@ -4265,6 +4265,42 @@ Final joined boundary checks passed 6/11 and LOC passed 2,021 files, zero
 exceptions, maximum 250. The source result retains its actual revision binding,
 not a claim that the joined revision repeated the source run.
 
+### Inferred Symbol-Set carriers: development increment
+
+At `35826d27`, v2 Symbol insertion retains the exact homogeneous Symbol member
+carrier instead of the preceding bare-Set result. Repeat insertion and `count`
+compose through ordinary local bindings, an inferred zero-argument return and
+bounded literal List storage. Existing predicates remain usable. C7, effects
+and typed lowering share the same closed carrier rule and v2 policy, constraint,
+fact and allocation joins. Old v1 records cannot manufacture the new evidence.
+The nine String/private/declared signature predicates and runtime bytes remain
+unchanged; runtime still has 56 functions. No extent, presence, membership,
+equality, annotation, private/recursive signature or dynamic loop join is added.
+
+All 40 focused tests passed 6,343 assertions in one revision-bound invocation:
+four new selectors/489 and 36 affected controls/5,854. Direct carrier work 2
+and nested List work 3, exact/one-below quotas, existing depth/width/size bounds,
+Never behavior, malformed opaque records and v1 forgery rejection passed.
+There was no failed focused epoch. Updating the old source selector's v2 oracle
+did not rerun it or confer new source-composition credit.
+
+The distinct source composition at `cb9f0594` passed 1/133 assertions: 127
+composition and six loader checks. Two functions, 12 calls, four insertions,
+four count consumers, one List construction, two predicates and six quotes
+produce `[1 2 2 1 true true]` with empty stdout. The seed return and `seen`/
+`widened` locals retain the carrier; `stored` is a literal List of that carrier.
+Original C7/C8 checks, one observed public C7 assembly gate and one closed entry
+passed. The actual carrier/Symbol membership negative retains the existing
+Keyword-family C7 mismatch reason with Core/syntax/binding/span and secondary
+unresolved annotation; no negative C8 or runtime executes.
+
+Selected execution took 158.880 seconds after 12.586 seconds of namespace
+loading at 2 GiB. These inclusive product-construction/replay observations are
+not an isolated runtime benchmark. Monitoring is not hard containment. One G
+positive and one G typing negative do not establish Q typed composition, fresh
+public C6 verification, seed/native execution, whole-helper support, SH-07
+completion, current-closure admission or self-hosting evidence.
+
 ### Persistent String-Set insertion: development increment
 
 STD3 now explicitly defines binary Set `conj` to preserve existing equal member
