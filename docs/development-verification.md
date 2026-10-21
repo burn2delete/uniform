@@ -834,6 +834,22 @@ C11 source pins and C13/C14 packet bindings are not renewed here. Fresh public
 source/packet composition, native execution, milestone completion and migration
 remain outside this development result.
 
+For the existing B3 LLVM text-emission consumer, also run
+`sh17-development-emits-c13-folded-bools-through-existing-b3-builder` in the
+same namespace. Feed a complete supplied original MIR through current C13
+folding and C14 restoration/rederivation, then pass that SAME output to the
+original B3 builder. Its two constant-source gates now admit only the derived
+`:constant`/`:integer-eq` case with exact Bool payload and zero operands, under
+the existing envelope, purity and value-parity checks. Original comparison IR
+and literal prefixes remain unchanged. Folded true/false emit `add i64 0, 1|0`
+without comparison/zext instructions; no LLVM tool or native execution is run.
+B3 retains its upstream verified-MIR premise: it does not authenticate or
+reprove C13. Output stays `:constructed-unverified` with host content binding
+pending; legacy C11 closure fields name input lineage/upstream obligations,
+not fresh C11 verification of transformed output. Public packet/pin boundaries
+remain unchanged and unrun. Run cheap checks serially through actual process
+completion; these development checks establish no isolated timing benchmark.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
