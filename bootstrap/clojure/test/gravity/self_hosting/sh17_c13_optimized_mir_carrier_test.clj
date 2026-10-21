@@ -57,6 +57,12 @@
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
 
+(def ^:private development-b1-plan
+  (delay
+    (let [source-path (path "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
+
 (defn- development-comparison-input [left right repeated?]
   ;; Supplied actual-MIR-shaped DATA. No public compiler build, seal or C11
   ;; verification is claimed by these deliberately local development kernels.
@@ -477,6 +483,116 @@
         ;; context, not attributed to the local inverse/forward fold predicate.
         (is (not= (bootstrap/p15-s23-c13-expected-record mir evidence)
                   (assoc-in folded [:optimized-mir :control-flow-graph :join :incoming 0 :value] "else-value")))))))
+
+(defn- development-b1-request [fold?]
+  ;; Declared semantic DATA, never a sealed artifact or a current source proof.
+  (let [digest bootstrap/p15-s23-c11-mir-digest
+        {base :mir} (development-b3-comparison-input 2 3 false)
+        entry (get-in base [:control-flow-graph :entry])
+        mir (if fold? base (-> base
+                              (assoc-in [:functions 'main :blocks entry :instructions 2 :opcode] :integer-lt)
+                              (assoc-in [:functions 'main :blocks entry :instructions 2 :source-operation] :integer-lt)))
+        artifact {:artifact-id (digest :supplied-b1-input) :mir-id (digest mir) :mir-module mir}
+        evidence (bootstrap/p15-s23-c13-evidence-for-target artifact {:status :passed :semantic-replay-parity :passed} :llvm-x86_64-linux)
+        record (bootstrap/p15-s23-stage2-runtime-execute-function
+                {:engine :gravity-sh17-development-b1 :compiler-artifact-plan? true}
+                @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+        ;; IDs label supplied DATA here, not a public seal or authentication.
+        optimized (assoc record :artifact-id (digest [:declared-artifact record]) :semantic-id (digest record))
+        independent {:status :passed :module-shape-valid? true :block-count 1 :operation-count 3 :conditional-count 0
+                     :dominance-valid? true :type-facts-valid? true :direct-effects-valid? true :safety-facts-valid? true
+                     :origin-closure-valid? true :runtime-checks-valid? true :runtime-checks {:runtime-check-count 0 :runtime-check-ids []}
+                     :target-independent? true :data-flow {:edge-count 2 :terminator-use-count 1 :definition-count 3 :value-count 3}}
+        verifier {:status :passed :mir-id (:mir-id artifact) :semantic-replay-parity :passed :execution-tcb :clojure-stage0-rule-runner
+                  :independent-verifier independent
+                  :b1-preflight {:artifact :gravity/verified-mir-candidate-for-b1 :status :verified-mir-candidate-for-b1
+                                 :input-kind :gravity/mir :requires-verifier-status :passed :mir-verifier-status :passed
+                                 :binding (zipmap [:mir-content-id :checked-core-artifact-id :independent-verifier-report-id
+                                                   :independent-verifier-report-hash :pass-execution-record-id :scope-hash]
+                                                  (map digest [:original :core :report independent :pass :scope]))
+                                 :target-lowering-credit? false :backend-credit? false :llvm-credit? false}}
+        lineage (fn [relative]
+                  (let [text (slurp (path relative))]
+                    {:source-content-hash (str "sha256:" (bootstrap/sha256-hex text))
+                     :source-byte-count (alength (.getBytes text "UTF-8"))
+                     :compiled-source-rule :not-established}))
+        c11-lineage (lineage "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
+        c13-lineage (lineage "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+        b3-lineage (lineage "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
+        dependencies {:source-core (get-in verifier [:b1-preflight :binding :checked-core-artifact-id])
+                      :c11-source-rule c11-lineage :c11-pass (get-in verifier [:b1-preflight :binding :pass-execution-record-id])
+                      :c13-artifact (:artifact-id optimized) :c13-source-rule c13-lineage :b3-source (:source-content-hash b3-lineage)}
+        binding-of (fn [value] {:content-id (digest value) :entry-count (count value)})
+        profile {:name :hosted :validated? true} target (bootstrap/p15-s23-c14-target-contract)
+        abi (assoc (bootstrap/p15-s23-b3-llvm-expected-abi-contract) :return-type :i32)
+        runtime (bootstrap/p15-s23-b3-llvm-expected-runtime-contract) providers (bootstrap/p15-s23-b3-llvm-expected-provider-contract)
+        proofs {:capability {:content-id (digest {}) :entry-count 0 :proof-ids []}
+                :certificates {:content-id (digest {}) :entry-count 0 :safety-proof-count 0 :safety-proof-ids []}}
+        verifier-id (digest verifier) source-id (digest (:source-map mir))
+        bindings (assoc (into {} (map (fn [[key value]] [key (binding-of value)])
+                                     {:profile profile :target target :abi abi :runtime runtime :providers providers
+                                      :effects {:direct #{} :order {}} :capabilities {:required #{} :granted #{} :proofs {}}
+                                      :type (:type-table mir) :ownership (:ownership-table mir) :safety (:safety-table mir)
+                                      :proofs proofs :source-map (:source-map mir) :dependencies dependencies
+                                      :c13-optimization {:artifact (:artifact-id optimized) :semantic (:semantic-id optimized)
+                                                         :decision (get-in record [:decision-record :decision-id]) :result :passed}}))
+                        :c11-verifier {:content-id verifier-id :entry-count 1})
+        policy {:request-id (digest [:request optimized]) :profile :hosted :profile-contract profile
+                :target target :source-target-selection (bootstrap/p15-s23-b3-llvm-expected-source-target-selection)
+                :abi abi :runtime runtime :providers providers :effects #{} :capabilities #{}
+                :safety {:outcomes 3 :runtime-checks 0 :unsafe-islands 0 :binding (:safety bindings)}
+                :proofs proofs :contract-bindings bindings :required-evidence (:required-evidence bootstrap/p15-s23-b3-llvm-policy)
+                :source-map {:id source-id :preserved? true} :dependencies dependencies
+                :target-policy (bootstrap/p15-s23-c14-target-policy) :proof-target-metadata {:entries [] :proofless-metadata-rejected? true}
+                :unsupported-surface bootstrap/p15-s23-c14-llvm-unsupported-surface :c11-verifier verifier :c11-verifier-id verifier-id}]
+    {:request (:request (bootstrap/p15-s23-c14-expected-record optimized policy)) :record record :mir mir}))
+
+(deftest sh17-development-b1-llvm-accepts-matching-current-c14-optimization-statuses
+  (let [invoke (fn [function arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh17-development-b1 :compiler-artifact-plan? true} @development-b1-plan function arguments))
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped) original @scoped
+        observe (fn [request]
+                  (let [calls (atom [])
+                        result (with-redefs-fn
+                                 {scoped (fn [& args]
+                                           (let [result (apply original args)]
+                                             (when (and (identical? @development-b1-plan (nth args 1))
+                                                        (= 'b1-c14-dependencies-valid? (nth args 2)))
+                                               (swap! calls conj {:request (first (nth args 3)) :result result}))
+                                             result))}
+                                 #(invoke 'b1-bounded-c14-request-valid? [request]))]
+                    {:result result :calls @calls}))]
+    (doseq [fold? [false true]]
+      (let [{:keys [request record mir]} (development-b1-request fold?) input (:input request)
+            status (if fold? :constant-fold-pass-complete :identity-pass-complete)
+            observed (observe request)]
+        (is (= :accepted (:status record)))
+        (is (= status (:optimization-status input) (:c13-optimization-status request)))
+        (is (= (bootstrap/p15-s23-c11-mir-digest mir) (get-in input [:verifier-report :mir-id])))
+        (is (true? (invoke 'b1-c14-input-valid? [input])))
+        ;; Actual file identities do not establish a compiled pinned cohort.
+        ;; Observe ORIGINAL dependency rejection; never override its result.
+        (is (false? (:result observed)))
+        (is (= [{:request request :result false}] (:calls observed)))
+        (is (= :not-established (get-in request [:dependency-provenance :c13-source-rule :compiled-source-rule])))
+        (doseq [changed [(assoc input :optimization-status :unknown) (assoc input :optimization-status nil)
+                         (assoc-in input [:optimization-report :artifact-id] (bootstrap/p15-s23-c11-mir-digest :other))
+                         (assoc-in input [:optimization-report :semantic-id] (bootstrap/p15-s23-c11-mir-digest :other))
+                         (assoc-in input [:optimization-report :decision-id] nil)
+                         (assoc-in input [:optimization-report :verifier-result] :failed)
+                         (assoc-in input [:verifier-report :status] :failed)]]
+          (is (false? (invoke 'b1-c14-input-valid? [changed]))))
+        (doseq [changed [(assoc request :c13-optimization-status (if fold? :identity-pass-complete :constant-fold-pass-complete))
+                         (assoc-in request [:input :optimization-status] (if fold? :identity-pass-complete :constant-fold-pass-complete))
+                         (assoc request :c13-optimization-status :unknown)
+                         (assoc-in request [:input :optimization-status] :unknown)
+                         (assoc-in request [:input :optimization-report :verifier-result] :failed)
+                         (assoc-in request [:target :canonical-target] :wasm)
+                         (assoc request :request-id nil)]]
+          (let [observed (observe changed)]
+            (is (false? (:result observed)))
+            (is (= [] (:calls observed)))))))))
 
 (def ^:private c13-envelope-keys
   ;; This set is copied from C14's c14-c13-envelope-valid? contract.  Keep it
