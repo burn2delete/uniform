@@ -444,8 +444,8 @@ execution, authoritative migration or SH-16 completion.
 
 For the closed one-hop propagation route, run
 `sh16-propagates-only-unique-pure-prefix-i64-constants-into-one-add` in the same
-namespace. Only the first non-const operation after a pure, proven-safe,
-nondead const prefix can qualify: a pure, proven-safe, nondead
+namespace. The initial hop starts at the first non-const operation after a
+pure, proven-safe, nondead const prefix: a pure, proven-safe, nondead
 `:i64`/`:integer-exact` ADD with `:constant-operands false` and two ordered
 references to distinct earlier one-payload i64 constants. Result IDs must be
 unique across the whole input.
@@ -456,6 +456,19 @@ unsupported cases stay unchanged unless existing ingress rejects them.
 Preserve original source/origin/result identity, input references, deterministic
 decision/invalidation records and fresh recomputation. This normalized linear
 subset is not general CFG/SSA propagation, fresh C11 input or native execution.
+
+For named intermediate results, also run
+`sh16-propagates-bounded-pure-named-add-chains-until-a-barrier`. The same forward
+scan records each independently resolved, overflow-checked ADD value under its
+original globally unique result ID and continues with the same two-distinct-ID,
+i64/integer-exact, pure/proven-safe/nondead rules. A nonqualifying operation
+stops new propagation, including otherwise resolvable suffix ADDs, but preserves
+successful prefix folds. Existing immediate-literal ADD folding elsewhere is
+unchanged and does not automatically supply a new chain producer. The existing
+128-operation limit permits at most 128 result-count rows plus 128 forward
+rows, not a fixed point or a CPU-time claim. Original request references/flags,
+source/origin/result identity, decision order, invalidation and fresh
+recomputation remain intact; the same normalized-DATA evidence limits apply.
 
 For normalized C13 branch simplification, run
 `sh16-simplifies-only-established-boolean-conditions` in the same namespace.

@@ -9314,6 +9314,31 @@ recomputation over supplied normalized DATA, not proof-provider verification,
 fresh authenticated C11/source input, general CFG/SSA propagation, native
 execution or migration evidence.
 
+The next C13 executable increment continues the same bounded forward scan
+through named ADD intermediates. Each qualifying reference-bearing ADD passes
+the existing i64 overflow rule before its checked value is retained under its
+original globally unique result ID for later ADDs. Producer admission remains
+pure/proven-safe/nondead, i64/integer-exact and two distinct earlier IDs. New
+propagation stops at a missing, forward, ambiguous, wrong-type, overflowing,
+effectful, unsafe, dead, nonconstant or control barrier, preserving successful
+prefix folds without folding an otherwise resolvable suffix. Existing
+immediate-literal ADD folds remain unchanged and are not automatically new
+chain producers. Original input references/flags, source/origin/result identity,
+deterministic decisions, invalidation and fresh recomputation are preserved.
+The unchanged 128-operation input limit bounds preparation to 128 count rows
+and 128 forward rows; this is not a fixed point or a CPU-time guarantee.
+
+The `4389fabd` RED run retained 174 passes and 12 failures in 186 assertions,
+without errors. Candidate `cb6a70f5` passed 19 tests/2,204 assertions
+(186 new plus 2,018 controls), including two- and six-ADD chains and later
+barrier/suffix controls. Boundary checks separately passed six tests/11
+assertions: 25/2,215 across two passing invocations. LOC separately passed
+2,021 files, zero exceptions, maximum 250. Original G/Q constructors and public
+optimization/recomputation exercise supplied normalized DATA, not general
+CFG/SSA propagation, provider verification, fresh authenticated C11/source
+input, native execution or migration evidence. No pass, schema, public API or
+budget is added.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
