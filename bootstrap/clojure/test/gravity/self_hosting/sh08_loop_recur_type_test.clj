@@ -1926,6 +1926,46 @@
     {:core core :working working :types types :nodes nodes :forms forms :bindings bindings
      :carrier carrier :empty-type empty-type :derived derived :quotes quotes :checked checked :rows rows :context context}))
 
+(defn- symbol-set-loop-alias-data []
+  (let [{:keys [core types nodes forms bindings context] :as original} (symbol-set-loop-data)
+        record {:binding-id :member :mutability :immutable :initializer-node-id :arg1
+                :initializer-form-id :arg1 :initializer-syntax-id :arg1
+                :definition-syntax-id :member-name :binding-scope-id :value-scope}
+        alias-node {:node-id :member-use :core-form :reference :children [] :binding-context :value-scope
+                    :resolved-binding-ids [:member] :attributes {:binding-id :member}
+                    :source {:form-id :member-use :syntax-id :member-use :semantic-span nil :origin-chain [] :generated-origin []}
+                    :evaluation {:kind :value :owner-function-syntax-id nil :order []}}
+        forms (-> forms (assoc :member-use {:form-id :member-use :syntax-id :member-use :kind :symbol :value 'member
+                                            :scope-id :value-scope :parent-form-id :call :child-form-ids []
+                                            :origin-chain [] :generated-origin []})
+                        (assoc-in [:call :child-form-ids] [:operator :arg0 :member-use]))
+        bindings (assoc bindings :member {:binding-id :member :name 'member :kind :local :binding-class :lexical
+                                         :scope-id :value-scope :definition-syntax-id :member-name})
+        nodes (-> nodes (assoc :member-use alias-node)
+                        (assoc-in [:call :children] [:operator :arg0 :member-use])
+                        (assoc-in [:call :evaluation :order] [{:index 0 :core-node-id :operator}
+                           {:index 1 :core-node-id :arg0} {:index 2 :core-node-id :member-use}]))
+        call (assoc (first (:calls core)) :argument-node-ids [:arg0 :member-use]
+                                         :ordered-evaluation-node-ids [:operator :arg0 :member-use])
+        edge (assoc (first (:call-edges core)) :argument-core-node-ids [:arg0 :member-use]
+                                              :ordered-evaluation-node-ids [:operator :arg0 :member-use])
+        core (assoc core :nodes (into [alias-node] (mapv #(nodes (:node-id %)) (:nodes core)))
+                         :lexical-bindings [record] :binding-table (vec (vals bindings)) :calls [call] :call-edges [edge])
+        types (assoc types :member-use :gravity.type/symbol)
+        derived (c7-invoke 'sh08-pl-derive [core (nodes :call) call edge nodes bindings types forms 65536])
+        descriptor (:descriptor derived) types (assoc types :operator descriptor)
+        working (assoc core :loop-member-source {:forms forms :bindings bindings :nodes nodes})
+        checked (c7-invoke 'sh08-ft-loop-type-step [working types {} 65536])
+        rows (c7-invoke 'sh08-ft-loop-constraints [(:constraints checked) nodes (:module core)])
+        ledger (into (into rows (:constraints (:quotes original))) [(c7-invoke 'sh08-pl-constraint [descriptor])])
+        context (-> context (assoc :core core :nodes nodes :forms forms :bindings bindings :types types
+                                   :calls {:call call} :edges {:call edge} :ledger ledger
+                                   :call-facts {:call (c7-invoke 'sh08-pl-call-fact [descriptor (:module core)])}
+                                   :loop-rows (into {} (map (fn [row] [[(get-in row [:dependencies :loop-premise :kind]) (:lhs row)] row]) rows)))
+                    (assoc-in [:locals :member] 'member) (assoc-in [:parameter-types :member] :gravity.type/symbol))]
+    (assoc original :core core :working working :types types :nodes nodes :forms forms :bindings bindings
+                    :derived derived :checked checked :rows rows :context context)))
+
 (deftest symbol-set-loop-invariant-development-kernel
   (let [{:keys [core working types nodes forms bindings carrier empty-type derived quotes checked rows]} (symbol-set-loop-data)
         invariant (get-in checked [:member-invariants :value])
@@ -2007,7 +2047,33 @@
       (is (= :rejected (:status (walk (assoc-in env [:types :alias-use] :gravity.type/unknown)))))
       (is (= :circular-loop-member-grounding
              (:reason (walk (update-in env [:aliases :member] assoc :initializer-node-id :alias-use
-                             :initializer-form-id :alias-form :initializer-syntax-id :alias-form))))))))
+                             :initializer-form-id :alias-form :initializer-syntax-id :alias-form))))))
+    (let [transfer (assoc (first (:recur-transfers core)) :recur-core-node-id :empty-transfer
+                         :argument-node-ids [:next-again :empty-argument])
+          result (c7-invoke 'sh08-lsi-solve [(update core :recur-transfers conj transfer)
+                    (assoc types :empty-argument empty-type) source 65536])]
+      (is (= :accepted (:status result)))
+      (is (= [:exact-carrier :empty-set-to-symbol-carrier]
+             (mapv :compatibility (get-in result [:invariants :value :entries])))))
+    (let [transfers [{:target-id "loop-target" :argument-node-ids [:before :call :after]}]]
+      (doseq [changed [(assoc types :before :gravity.type/never :after :gravity.type/bool)
+                      (assoc types :before :gravity.type/bool :after :gravity.type/never)]]
+        (is (false? (get-in (c7-invoke 'sh08-lsi-entry-index [transfers changed 65536])
+                            [:index "loop-target" 0 :normal?])))))
+    (let [alias (symbol-set-loop-alias-data)]
+      (is (= :accepted (get-in alias [:derived :status]) (get-in alias [:checked :status])))
+      (is (= [:member-use :arg1] (get-in alias [:checked :member-invariants :value :grounding :member-path]))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "quote child hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "quote child equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "quote child printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}] coordinate [0 1]]
+        (let [changed (assoc-in forms [:arg1 :child-form-ids coordinate] bad)
+              env {:nodes nodes :forms changed :bindings bindings :types types :aliases {}}]
+          (is (false? (c7-invoke 'sh08-lsi-leaf? [(nodes :arg1) changed :member])))
+          (doseq [quota [0 65536]] (is (= :rejected (:status (c7-invoke 'sh08-lsi-path [:arg1 :member :value env quota]))))))
+        (is (zero? @callbacks))))
+))
 
 (deftest symbol-set-loop-effect-invariant-development-kernel
   (let [{:keys [core types nodes forms bindings carrier rows context]} (symbol-set-loop-data)
@@ -2039,7 +2105,19 @@
         (is (zero? @callbacks))))
     (let [ids (zipmap (concat (keys nodes) [:again :value "loop-target" "function-target"])
                      (map #(str "sha256:" (format "%064x" %)) (range 3000 3100)))
-          [converted converted-context] (walk/postwalk-replace ids [core context])
+          rename (fn rename [field value]
+                   (cond
+                     (map? value) (into {} (map (fn [[key item]]
+                       [(if (contains? #{:nodes :types :forms :bindings :calls :edges :call-order :call-facts :loop-rows
+                                         :loop-binding-index :targets :target-owners :transfers :parameter-types :locals} field)
+                          (walk/postwalk-replace ids key) key)
+                        (rename key item)]) value))
+                     (vector? value) (mapv #(rename nil %) value)
+                     (seq? value) (apply list (map #(rename nil %) value))
+                     (set? value) (set (map #(rename nil %) value))
+                     (contains? #{:core-form :kind :position :literal-kind :value :quoted-value :name} field) value
+                     :else (get ids value value)))
+          [converted converted-context] (rename nil [core context])
           converted (assoc converted :identity-preimage (select-keys converted [:loop-bindings :recur-targets :recur-transfers]))
           source-facts {:module (:module converted) :type-table (:types converted-context)
                         :constraint-ledger (:ledger converted-context) :function-type-table []
@@ -2053,4 +2131,21 @@
       (is (= [(ids :next-again) (ids :call) (ids :branch)] (get-in graph [:nodes transfer :dependencies])))
       (is (= #{:memory/allocate} (get-in graph [:nodes transfer :transitive])))
       (is (= [(ids :branch)] (get-in graph [:nodes transfer :loop-backedge :body-core-node-ids])))
-      (is (true? (effects 'body-graph-equations-valid? converted source-facts {} (:nodes graph)))))))
+      (is (true? (effects 'body-graph-equations-valid? converted source-facts {} (:nodes graph)))))
+    (let [alias (symbol-set-loop-alias-data)
+          alias-facts {:module (get-in alias [:core :module]) :type-table (:types alias) :constraint-ledger (:rows alias)
+                       :function-type-table [] :append-context {:forms (:forms alias) :bindings (:bindings alias)}}
+          result (effects 'body-loop-joins (:core alias) alias-facts 65536)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= (:rows alias) (:rows result))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "quote child hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "quote child equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "quote child printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}] coordinate [0 1]]
+        (let [changed (assoc-in forms [:arg1 :child-form-ids coordinate] bad)
+              env {:nodes nodes :forms changed :bindings bindings :types types :aliases {}}]
+          (is (false? (effects 'body-lsi-leaf? (nodes :arg1) changed :member)))
+          (doseq [quota [0 65536]] (is (= :rejected (:status (effects 'body-lsi-path :arg1 :member :value env quota))))))
+        (is (zero? @callbacks))))
+))

@@ -3631,13 +3631,14 @@
         (if (= (get (get node :source) :syntax-id) (get owner :syntax-id))
           (if (if quote?
                 (if (vector? ids) (if (= 2 (count ids))
+                  (if (if (p15-s23-lsi-id? (get ids 0)) (p15-s23-lsi-id? (get ids 1)) false)
                   (let [operator (get forms (get ids 0))]
                     (if (= :list (get owner :kind))
                       (if (= 'quote (get operator :value))
                         (if (= (get owner :form-id) (get operator :parent-form-id) (get payload :parent-form-id))
                           (if (= (get ids 1) (get payload :form-id) (get attrs :quoted-form-id))
                             (if (= (get attrs :quoted-syntax-id) (get payload :syntax-id))
-                              (if (= kind (get payload :kind)) (= value (get payload :value)) false) false) false) false) false) false)) false) false)
+                              (if (= kind (get payload :kind)) (= value (get payload :value)) false) false) false) false) false) false)) false) false) false)
                 (if (= kind (get owner :kind)) (= value (get owner :value)) false))
             (if (= mode :member) (if (= :symbol kind) (symbol? value) false)
               (if (= :set kind) (if (set? value) (= 0 (count value)) false) false)) false) false) false) false) false)) false))
@@ -4245,7 +4246,8 @@
                          initializer (get (get context :nodes) (get record :initializer-node-id))]
                      (if (p15-s23-typed-all [(= (get owner :form-id) (get form :parent-form-id))
                            (= (get argument :source) (p15-s23-typed-source form)) (= (get argument :binding-context) (get form :scope-id))
-                           (if function? true (p15-s23-typed-loop-slot? context record initializer (get slots i)))
+                           (if function? true (p15-s23-typed-loop-slot? context record initializer
+                             (get (get context :types) (get record :initializer-node-id))))
                            (if (map? (get invariants (get (get target :binding-ids) i)))
                              (p15-s23-lsi-compatible? (get types i) (get slots i))
                              (if (= :gravity.type/never (get types i)) true (= (get types i) (get slots i))))])

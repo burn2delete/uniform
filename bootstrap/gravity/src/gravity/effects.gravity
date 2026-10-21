@@ -12606,13 +12606,14 @@
         (if (= (get (get node :source) :syntax-id) (get owner :syntax-id))
           (if (if quote?
                 (if (vector? ids) (if (= 2 (count ids))
+                  (if (if (body-lsi-id? (get ids 0)) (body-lsi-id? (get ids 1)) false)
                   (let [operator (get forms (get ids 0))]
                     (if (= :list (get owner :kind))
                       (if (= 'quote (get operator :value))
                         (if (= (get owner :form-id) (get operator :parent-form-id) (get payload :parent-form-id))
                           (if (= (get ids 1) (get payload :form-id) (get attrs :quoted-form-id))
                             (if (= (get attrs :quoted-syntax-id) (get payload :syntax-id))
-                              (if (= kind (get payload :kind)) (= value (get payload :value)) false) false) false) false) false) false)) false) false)
+                              (if (= kind (get payload :kind)) (= value (get payload :value)) false) false) false) false) false) false)) false) false) false)
                 (if (= kind (get owner :kind)) (= value (get owner :value)) false))
             (if (= mode :member) (if (= :symbol kind) (symbol? value) false)
               (if (= :set kind) (if (set? value) (= 0 (count value)) false) false)) false) false) false) false) false)) false))

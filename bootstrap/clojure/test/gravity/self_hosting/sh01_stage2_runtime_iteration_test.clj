@@ -3223,6 +3223,8 @@
                (form :next-flag-form :boolean false :transfer-form [] :function-scope)
                (form :next-value-form (if throw? :list :symbol) next-value :transfer-form (if throw? [:throw-op :payload-form] []) :function-scope)
                (form :result-form :symbol 'value :branch-form [] :function-scope)]
+        forms (into forms [(form :def-op :symbol 'def :definition-form [] :namespace)
+                           (form :name-form :symbol 'identity :definition-form [] :namespace)])
         forms (cond-> forms throw? (into [(form :throw-op :symbol 'throw :next-value-form [] :function-scope)
                                          (form :payload-form :symbol 'value :next-value-form [] :function-scope)]))
         index (into {} (map (juxt :form-id identity) forms))
@@ -3244,12 +3246,23 @@
                            (node :branch :if [:condition :transfer :result] :branch-form {} [] :conditional-branch)
                            (node :function :fn [:branch] :function-form {:parameters '[flag value] :signature signature :recur-target-id "function-target"} [:flag :value] :function-creation)
                            (node :definition :def [:function] :definition-form {} [] :value)])
-        bindings [{:binding-id :flag :name 'flag :kind :local :binding-class :lexical :definition-syntax-id :flag-name :scope-id :function-scope}
+        nodes (mapv (fn [node]
+                      (case (:node-id node)
+                        :definition (assoc node :attributes {:name 'identity :name-form-id :name-form :name-syntax-id :name-form :visibility :private}
+                                           :resolved-binding-ids [:identity]
+                                           :evaluation {:kind :initialize-once :region :module-initialization :owner-function-syntax-id nil
+                                                        :order [{:index 0 :core-node-id :function}]})
+                        :function (assoc node :evaluation {:kind :function-creation :region :module-initialization
+                                                          :owner-function-syntax-id nil :order []})
+                        (assoc-in node [:evaluation :region] :function-body))) nodes)
+        bindings [{:binding-id :identity :name 'identity :kind :function :binding-class :namespace
+                   :namespace 'example.typed :visibility :private :definition-syntax-id :name-form}
+                  {:binding-id :flag :name 'flag :kind :local :binding-class :lexical :definition-syntax-id :flag-name :scope-id :function-scope}
                   {:binding-id :value :name 'value :kind :local :binding-class :lexical :definition-syntax-id :value-name :scope-id :function-scope}
                   {:binding-id :bool :name 'Bool :kind :type :binding-class :core :namespace 'gravity.core}
                   {:binding-id :string :name 'String :kind :type :binding-class :core :namespace 'gravity.core}]
         record (assoc (first (get-in input [:request :canonical-core-artifact :function-records]))
-                 :function-syntax-id :function-form :body-core-node-id :branch :parameter-binding-ids [:flag :value] :fixed-arity 2 :signature signature)
+                 :definition-binding-id :identity :function-syntax-id :function-form :body-core-node-id :branch :parameter-binding-ids [:flag :value] :fixed-arity 2 :signature signature)
         function (assoc (first (get-in input [:typed :function-type-table])) :function-id :function-form
                    :body-core-node-id :branch :parameter-binding-ids [:flag :value] :fixed-arity 2 :signature signature
                    :thrown-error-effects (if throw? [:gravity.type/string] [])
@@ -3260,7 +3273,13 @@
                   :target-id "function-target" :target-kind :function :argument-node-ids [:next-flag :next-value] :arity 2
                   :tail-position true :evaluation-order :arguments-left-to-right :transfer-policy :nearest-lexical-recur-target :type-compatibility :pending-sh08}
         core (assoc (get-in input [:request :canonical-core-artifact]) :nodes nodes :function-records [record]
-                    :binding-table bindings :loop-bindings [] :recur-targets [target] :recur-transfers [transfer])
+                    :binding-table bindings :loop-bindings [] :recur-targets [target] :recur-transfers [transfer]
+                    :definitions [{:name 'identity :binding-id :identity :core-node-id :definition :value-node-id :function :syntax-id :definition-form}]
+                    :var-references [] :mutations []
+                    :evaluation-order (mapv (fn [node] (let [evaluation (:evaluation node)]
+                      {:core-node-id (:node-id node) :kind (:kind evaluation) :region (:region evaluation)
+                       :owner-function-syntax-id (:owner-function-syntax-id evaluation)
+                       :children (mapv :core-node-id (:order evaluation))})) nodes))
         types (cond-> {:condition :gravity.type/bool :next-flag :gravity.type/bool :next-value (if throw? :gravity.type/never :gravity.type/string)
                        :transfer :gravity.type/never :result :gravity.type/string :branch :gravity.type/string :function function :definition function}
                 throw? (assoc :payload :gravity.type/string))
@@ -32164,7 +32183,21 @@
       (doseq [bad [opaque [opaque] {:opaque opaque}]]
         (is (= :rejected (:status (compile (assoc-in context
           [:loop-rows [:loop-slot-type :value] :dependencies :loop-premise :member-invariant :grounding :member-path] bad) 65536))))
-        (is (zero? @callbacks))))))
+        (is (zero? @callbacks))))
+    (let [alias ((ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'symbol-set-loop-alias-data))
+          result (compile (:context alias) 65536)]
+      (is (= :complete (:status result)) (pr-str result)))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "quote child hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "quote child equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "quote child printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}] coordinate [0 1]]
+        (let [changed (assoc-in (:forms data) [:arg1 :child-form-ids coordinate] bad)
+              env {:nodes (:nodes data) :forms changed :bindings (:bindings data) :types (:types data) :aliases {}}]
+          (is (false? (invoke 'p15-s23-lsi-leaf? (get-in data [:nodes :arg1]) changed :member)))
+          (doseq [quota [0 65536]] (is (= :rejected (:status (invoke 'p15-s23-lsi-path :arg1 :member :value env quota))))))
+        (is (zero? @callbacks))))
+))
 
 (deftest current-gravity-symbol-set-loop-invariant-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
