@@ -710,6 +710,53 @@
                  (get-in result [:diagnostics 0 :reason]))
               bytes))))))
 
+(deftest sh22-special-utf8-leads-classify-second-bytes-before-range-checks
+  ;; Preserve an actual host failure as an observation, not an alternate acceptance path.
+  (let [attempt (fn [call]
+                  (try (call)
+                       (catch Exception failure
+                         {:status :host-failure :class (.getName (class failure))
+                          :message (.getMessage failure)})))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [validation (request plan 'sh22-utf8-request)
+            stdout (request plan 'sh22-stdout-request)
+            verify (fn [input result]
+                     (attempt #(invoke-engine 'sh22-verify-result [input result])))
+            reject (fn [input rule reason]
+                     (let [result (attempt #(handle input))]
+                       (is (= :rejected (:status result)) result)
+                       (is (= rule (get-in result [:diagnostics 0 :rule])))
+                       (is (= reason (get-in result [:diagnostics 0 :reason])))
+                       (is (= :passed (:status (verify input result))))))]
+        (doseq [[lead low high tail] [[224 160 191 [128]] [237 128 159 [191]]
+                                     [240 144 191 [128 128]] [244 128 143 [191 191]]]]
+          (doseq [second-byte [low high]]
+            (let [bytes (into [lead second-byte] tail)
+                  producer (assoc validation :arguments [bytes])
+                  produced (handle producer)
+                  consumer (assoc stdout :arguments [(:value produced)])
+                  result (handle consumer)]
+              (is (= :accepted (:status produced) (:status result)))
+              (is (= bytes (get-in produced [:value :bytes])))
+              (is (= 1 (get-in produced [:value :scalar-count])))
+              (is (= (:value produced) (get-in result [:value :payload])))
+              (is (= :passed (:status (verify producer produced))))
+              (is (= :passed (:status (verify consumer result))))
+              (doseq [candidate [(assoc-in result [:value :payload :bytes 1] nil)
+                                 (assoc-in result [:identity-input :arguments 0 :scalar-count] nil)]]
+                (is (= :rejected (:status (verify consumer candidate)))))))
+          (doseq [second-byte [nil false "128" :byte (double low) (dec low) (inc high)]]
+            (let [bytes (into [lead second-byte] tail)]
+              (reject (assoc validation :arguments [bytes]) "STD4001" :invalid-utf8)
+              (reject (assoc stdout :arguments [{:artifact :gravity/validated-utf8
+                                                 :bytes bytes :byte-count (count bytes)
+                                                 :scalar-count nil :encoding :utf-8}])
+                      "STD4001" :validated-text-facts-mismatch))))
+        (reject (assoc validation :arguments [(into [224 nil] (repeat 255 128))])
+                "STD4001" :text-bound-exceeded)
+        (reject (assoc stdout :capabilities #{} :arguments [{:bytes [240 nil 128 128]}])
+                "STD8001" :missing-io-authority)))))
+
 (deftest sh22-checked-i64-boundaries-do-not-use-overflowing-host-add
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [base (request plan 'sh22-checked-add-request)
