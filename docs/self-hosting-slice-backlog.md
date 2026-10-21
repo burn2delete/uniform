@@ -8499,6 +8499,42 @@ passed. General Sets, mixed/non-Keyword families, host-provider interop,
 compiler linkage, native execution, complete SH-22 and migration remain open.
 Historical SH07 pins are unchanged and do not authenticate this source revision.
 
+### Bounded persistent Vector append and real consumers
+
+The SH-22 leaf now executes binary `:vector-append` under STD3's clarified
+persistent Vector law. It preserves the original ordered prefix and appends one
+inert heterogeneous value. Input length 255 produces 256; full 256 and oversized
+257 inputs reject before the constructor (`STD3001`). Non-Vector family and
+arity retain `STD3002` and `STD1001`; allocation/authority policies remain
+explicit. The experimental opt-in `:meta` surface grows to 17 operations, with
+`:memory/allocate`, no capabilities and `:bounded-by-result`, including empty
+input. The four exports and request/result envelope are unchanged.
+
+The focused check runs real append-to-nth and append-to-assoc calls, recomputes
+all results, preserves inputs and rejects value/fact/identity substitutions.
+Original-delegating observations check one constructor entry after admission
+and zero for rejected requests. The new dispatch and allocation discriminators
+use exact keyword comparisons; nil retains the existing allocation-policy
+rejection before append. The older general `sh22-member?` nil weakness remains
+outside this correction.
+
+Initial semantic RED completed 1/270 with 110 pass, 160 fail and no errors.
+The first 8/538 GREEN is historical passing-but-incomplete coverage. Test-only
+nil RED then stopped at 63 total assertions: 62 pass, zero fail and one host
+stack error; later assertions in its sole selected var were unrun. A successor
+using unsupported hosted-core `or` stopped at one total error assertion with
+zero pass/fail and seven selected vars unrun. The supported nested-`if`
+successor passed the complete 8/546 batch, including all 278 append assertions,
+at 512 MiB. Boundary checks passed 6/11; LOC and both docs validators passed.
+These epochs are not summed. The normal main join changed only disjoint
+C13/SH16 code/tests and notes; executed SH-22 inputs remained byte-identical.
+
+No variadic/coercing operation, physical sharing, unbounded-profile or new
+static type/cardinality authority, host-callback safety, native allocation,
+compiler linkage, complete SH-22, migration or self-hosting claim follows.
+Historical SH07 source/digest pins remain unchanged and do not authenticate
+this revised library source; renewal belongs to a later admission decision.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
