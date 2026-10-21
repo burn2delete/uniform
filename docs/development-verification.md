@@ -238,6 +238,35 @@ overflow boundary. They are not compiler linkage, native/provider, complete
 library or migration evidence. Historical SH07 source/digest pins remain
 unchanged and do not authenticate the revised library source.
 
+### Keyword membership in bounded ordered Sets
+
+STD2/STD3 govern `:ordered-set-contains-keyword` in the same SH-22 leaf. It
+accepts the existing ordered-set carrier with at most 256 actual Keyword members
+and an actual Keyword needle. The bound and full family census precede member
+equality; full uniqueness validation precedes a query hit. Qualified Keyword
+value equality determines Bool membership independently of insertion order.
+The query preserves its input and neither invokes payloads nor grants authority
+from Keyword spelling. General Sets, mixed/non-Keyword families and host-provider
+interop are not supported. `STD3001` retains the bound failure, `STD10003`
+rejects malformed/duplicate/family inputs and `STD1001` rejects wrong arity.
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh22-standard-library-test \
+  --exact sh22-keyword-set-membership-executes-with-full-family-and-uniqueness-checks \
+  --exact sh22-engine-and-co-canonical-fixtures-compile-as-gravity \
+  --exact sh22-policy-and-manifest-state-bounded-experimental-surface --fail-fast
+```
+
+The operation remains experimental `:meta` with explicit opt-in, no effects or
+capabilities and no collection-value allocation. Result/envelope metadata is not
+a native allocation-free claim. Opaque arguments admitted by the common carrier
+reject at the Keyword family check before uniqueness/search; origin validation
+is separate. This does not claim universal opaque-carrier rejection or absence
+of host printing callbacks. No compiler linkage, general Set equality, native
+execution, complete library or migration claim follows. Historical SH07 pins
+remain unchanged and do not authenticate the revised library source.
+
 ### C6 compiled-source aggregate binding maintenance
 
 ```bash

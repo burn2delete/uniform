@@ -36,6 +36,7 @@
      :ordered-map-assoc
      :ordered-map-get
      :ordered-set-conj
+     :ordered-set-contains-keyword
      :utf8-validate
      :checked-add-i64
      :checked-sub-i64
@@ -102,6 +103,10 @@
      "(OrderedSet a) a -> (Result (OrderedSet a) Error)"
      #{:memory/allocate} #{}
      :bounded-by-result ["STD3001"] #{:meta})
+    (sh22-export
+     :ordered-set-contains-keyword :collections
+     "(OrderedSet Keyword) Keyword -> (Result Bool CollectionError)"
+     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
     (sh22-export
      :utf8-validate :text
      "(Vector Byte) -> (Result ValidatedUtf8 TextError)"
@@ -684,6 +689,32 @@
         (sh22-rejected request "STD10003" :expected-ordered-set))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
+(defn sh22-ordered-set-contains-keyword [request]
+  (let [arguments (get request :arguments)
+        ordered-set (get arguments 0)
+        value (get arguments 1)]
+    (if (= 2 (count arguments))
+      (if (sh22-ordered-set-shape? ordered-set)
+        (let [values (get ordered-set :values)
+              maximum (get (sh22-library-policy) :maximum-collection-elements)]
+          (if (<= (count values) maximum)
+            ; STD2/STD3: admit the complete Keyword domain before any member
+            ; equality, then validate uniqueness before accepting a query hit.
+            (if (sh22-keyword-vector? values maximum)
+              (if (keyword? value)
+                (if (sh22-vector-unique? values [])
+                  (sh22-accepted
+                   request (sh22-vector-contains? values value 0)
+                   {:collection-kind :ordered-set :member-family :keyword
+                    :equality :keyword-value :safety-outcome :proven-safe
+                    :allocation :none :persistent-value-semantics true})
+                  (sh22-rejected request "STD10003" :expected-ordered-set))
+                (sh22-rejected request "STD10003" :expected-keyword))
+              (sh22-rejected request "STD10003" :expected-keyword-ordered-set))
+            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+        (sh22-rejected request "STD10003" :expected-ordered-set))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
 (defn sh22-continuation-byte? [value]
   (if (integer? value)
     (if (<= 128 value) (<= value 191) false)
@@ -1201,8 +1232,10 @@
           (sh22-ordered-map-assoc request)
           (if (= operation :ordered-map-get)
             (sh22-ordered-map-get request)
-            (if (= operation :ordered-set-conj)
-              (sh22-ordered-set-conj request)
+            (if (sh22-member? #{:ordered-set-conj :ordered-set-contains-keyword} operation)
+              (if (= operation :ordered-set-conj)
+                (sh22-ordered-set-conj request)
+                (sh22-ordered-set-contains-keyword request))
               (if (= operation :utf8-validate)
                 (sh22-utf8-validate request)
                 (if (sh22-member? #{:checked-add-i64 :checked-sub-i64 :checked-mul-i64} operation)
@@ -1249,7 +1282,7 @@
       :none
       (if (= operation :ordered-map-assoc)
         :bounded-by-result
-        (if (= operation :ordered-map-get)
+        (if (sh22-member? #{:ordered-map-get :ordered-set-contains-keyword} operation)
           :none
           (if (= operation :ordered-set-conj)
             :bounded-by-result
