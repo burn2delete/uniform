@@ -3685,38 +3685,30 @@
   (loop [remaining suffix out prefix]
     (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining))))))
 
-(defn p15-s23-lsi-first-sequence [value]
-  (loop [remaining value out []]
-    (if (seq remaining)
-      (if (>= (count out) 1024) nil (recur (rest remaining) (conj out (first remaining)))) out)))
-
 (defn p15-s23-lsi-first-data-work [value budget]
-  ; This derivation alone admits bounded source data, including quoted lists.
-  ; Reserve container comparison candidates before source/descriptor equality.
+  ; Only first-order data carriers are traversed; lazy sequences are unsupported.
+  ; Reserve native container visits/comparison candidates before materialization.
   (loop [pending [[value 0]] used 0]
     (if (= 0 (count pending)) {:status :accepted :work-count used}
       (if (>= used budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 1)}
         (let [frame (get pending (- (count pending) 1)) value (get frame 0) depth (get frame 1)
               tail (subvec pending 0 (- (count pending) 1))]
           (if (> depth 128) {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}
-            (if (if (map? value) true (if (vector? value) true (if (set? value) true (seq? value))))
-              (let [items (if (seq? value) (p15-s23-lsi-first-sequence value)
-                            (if (<= (count value) 1024)
-                              (if (map? value)
-                                (loop [entries (vec value) out []]
-                                  (if (= 0 (count entries)) out
-                                    (let [entry (first entries)]
-                                      (recur (rest entries) (conj (conj out (get entry 0)) (get entry 1)))))) (vec value)) nil))
-                    width (if (vector? items) (count items) 0)
+            (if (if (map? value) true (if (vector? value) true (if (set? value) true (list? value))))
+              (let [size (count value) width (if (map? value) (* 2 size) size)
                     comparison (if (if (map? value) true (set? value)) (* width width) width)
                     work (+ used 1 comparison)]
-                (if (vector? items)
+                (if (> size 1024) {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}
                   (if (> (+ work (count tail) width) budget)
                     {:status :rejected :reason :loop-type-work-limit :work-count (+ work (count tail) width)}
-                    (recur (loop [remaining items out tail]
-                             (if (= 0 (count remaining)) out
-                               (recur (rest remaining) (conj out [(first remaining) (+ depth 1)])))) work))
-                  {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}))
+                    (let [items (if (map? value)
+                                  (loop [entries (vec value) out []]
+                                    (if (= 0 (count entries)) out
+                                      (let [entry (first entries)]
+                                        (recur (rest entries) (conj (conj out (get entry 0)) (get entry 1)))))) (vec value))]
+                      (recur (loop [remaining items out tail]
+                               (if (= 0 (count remaining)) out
+                                 (recur (rest remaining) (conj out [(first remaining) (+ depth 1)])))) work)))))
               (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
                     (if (symbol? value) true (if (string? value) true (if (number? value) true (char? value)))))))
                 (let [work (+ used 2 (if (string? value) (count value)
@@ -3726,9 +3718,8 @@
                 {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}))))))))
 
 (defn p15-s23-lsi-first-ids? [ids]
-  (if (vector? ids) (if (<= (count ids) 1024)
-    (loop [remaining ids] (if (= 0 (count remaining)) true
-      (if (p15-s23-lsi-id? (first remaining)) (recur (rest remaining)) false))) false) false))
+  ; Shape only. Reached IDs are checked individually after their visit is paid.
+  (if (vector? ids) (<= (count ids) 1024) false))
 
 (defn p15-s23-lsi-first-form? [form]
   (if (map? form)
@@ -3761,13 +3752,14 @@
             (if (p15-s23-lsi-id? (get attrs :quoted-form-id))
               (if (p15-s23-lsi-id? (get attrs :quoted-syntax-id))
                 (let [ids (get owner :child-form-ids) payload (get forms (get attrs :quoted-form-id))]
-                  (if (= 2 (count ids))
+                  (if (if (= 2 (count ids))
+                        (if (p15-s23-lsi-id? (get ids 0)) (p15-s23-lsi-id? (get ids 1)) false) false)
                     (let [operator (get forms (get ids 0)) value (get owner :value)]
                       (if (if (p15-s23-lsi-first-form? operator) (p15-s23-lsi-first-form? payload) false)
                         (if (if (symbol? (get operator :value)) (= 'quote (get operator :value)) false)
                           (if (if (symbol? (get attrs :quoted-value)) (symbol? (get payload :value)) false)
-                            (if (seq? value)
-                              (let [items (p15-s23-lsi-first-sequence value)]
+                            (if (list? value)
+                              (let [items (if (= 2 (count value)) (vec value) nil)]
                                 (if (if (vector? items) (= 2 (count items)) false)
                                   (if (if (symbol? (get items 0)) (= 'quote (get items 0)) false)
                                     (if (symbol? (get items 1))
@@ -3783,7 +3775,7 @@
       (if (p15-s23-lsi-id? bid)
         (let [owner (get (get env :forms) (get (get node :source) :form-id))
               record (get (get env :aliases) bid) source-binding (get (get env :bindings) bid)]
-          (if (p15-s23-lsi-first-form? owner)
+          (if (if (p15-s23-lsi-id? (get owner :form-id)) (p15-s23-lsi-id? (get owner :syntax-id)) false)
             (if (if (p15-s23-lsi-id? (get node :binding-context)) (p15-s23-lsi-id? (get owner :scope-id)) false)
               (if (= (get (get node :source) :syntax-id) (get owner :syntax-id))
                 (if (map? record)
@@ -3802,13 +3794,17 @@
       (if (if (= 2 (count children)) (if (map? call) (if (= 7 (count call))
             (if (map? edge) (= 12 (count edge)) false) false) false) false)
         (let [op-id (get children 0) arg-id (get children 1) bid (get call :operator-binding-id)]
-          (if (if (p15-s23-lsi-id? bid) (if (p15-s23-lsi-id? (get call :operator-node-id))
+          (if (if (if (p15-s23-lsi-id? op-id) (p15-s23-lsi-id? arg-id) false)
+              (if (p15-s23-lsi-id? bid) (if (p15-s23-lsi-id? (get call :operator-node-id))
                 (if (p15-s23-lsi-id? (get call :core-node-id))
-                  (if (p15-s23-lsi-first-ids? (get call :argument-node-ids)) (p15-s23-lsi-first-ids? (get call :ordered-evaluation-node-ids)) false) false) false) false)
+                  (if (p15-s23-lsi-first-ids? (get call :argument-node-ids)) (p15-s23-lsi-first-ids? (get call :ordered-evaluation-node-ids)) false) false) false) false) false)
             (let [operator (get nodes op-id) arg (get nodes arg-id) binding (get (get env :bindings) bid)
                   owner (get forms (get (get node :source) :form-id))]
               (if (if (p15-s23-lsi-first-node? operator) (p15-s23-lsi-first-node? arg) false)
-                (if (if (p15-s23-lsi-first-form? owner) (= 2 (count (get owner :child-form-ids))) false)
+                (if (if (p15-s23-lsi-first-form? owner)
+                      (if (= 2 (count (get owner :child-form-ids)))
+                        (if (p15-s23-lsi-id? (get (get owner :child-form-ids) 0))
+                          (p15-s23-lsi-id? (get (get owner :child-form-ids) 1)) false) false) false)
                   (let [ids (get owner :child-form-ids) op-form (get forms (get ids 0)) arg-form (get forms (get ids 1))
                         raw (p15-s23-lsi-first-data-work [node operator arg call edge binding owner op-form arg-form
                               (get (get env :types) op-id) (get (get env :core) :module)] budget)]
@@ -3858,7 +3854,9 @@
                 scanned (loop [i 0 out [] used base]
                   (if (= i (count children)) {:status :accepted :work-count used :types out}
                     (if (> (+ used 8) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 8)}
-                      (let [child (get nodes (get children i)) source (if (< i (count ids)) (get forms (get ids i)) nil)
+                      (let [child-id (get children i) source-id (if (< i (count ids)) (get ids i) nil)
+                            child (if (p15-s23-lsi-id? child-id) (get nodes child-id) nil)
+                            source (if (p15-s23-lsi-id? source-id) (get forms source-id) nil)
                             raw (p15-s23-lsi-first-data-work [child source] (- budget used 8)) total (+ used 8 (get raw :work-count))]
                         (if (= :accepted (get raw :status))
                           (if (if (p15-s23-lsi-first-node? child) (p15-s23-lsi-first-form? source) false)
@@ -3893,14 +3891,16 @@
                         (if (contains? seen arg-id)
                           {:status :rejected :reason :circular-loop-member-grounding :work-count used}
                           (let [head (p15-s23-lsi-path-from-seen (get children 0) :literal-head binding env (conj seen arg-id) (- budget used))
-                                used (+ used (get head :work-count))]
+                                used (+ used (get head :work-count) (count (get head :path [])))]
                             (if (= :accepted (get head :status))
                               (let [caller (p15-s23-lsi-first-caller (get (get env :core) :function-records)
                                              (get (get node :evaluation) :owner-function-syntax-id) (- budget used))
                                     used (+ used (get caller :work-count))]
                                 (if (= :accepted (get caller :status))
-                                  (let [header (p15-s23-lq-source (get env :core) node (get input :call) (get input :edge)
-                                                   nodes (get env :bindings) types (get (get env :core) :module) actual)
+                                  (let [reserved (+ used 64)
+                                        header (if (<= reserved budget) (p15-s23-lq-source (get env :core) node (get input :call) (get input :edge)
+                                                   nodes (get env :bindings) types (get (get env :core) :module) actual) nil)
+                                        used reserved
                                         descriptor (if (map? header) (p15-s23-lq-finish header) nil)
                                         compared (p15-s23-lsi-first-data-work descriptor (- budget used)) used (+ used (get compared :work-count))]
                                     (if (= :accepted (get compared :status))
@@ -3936,10 +3936,11 @@
                 {:status :accepted :path next-path :leaf id :work-count used}
                 (if (if (= mode :member) (= :call kind) false)
                   (let [first (p15-s23-lsi-vector-first node binding env (conj seen id) (- budget used))
-                        total (+ used (get first :work-count))]
+                        total (+ used (get first :work-count) (count (get first :path [])))]
+                    (if (> total budget) {:status :rejected :reason :loop-type-work-limit :work-count total}
                     (if (= :accepted (get first :status))
                       (assoc first :path (p15-s23-lsi-first-append next-path (get first :path)) :work-count total)
-                      (assoc first :work-count total)))
+                      (assoc first :work-count total))))
                 (if (= kind :reference)
                   (if (if (if (if (= mode :member) true (= mode :literal-head))
                                   (p15-s23-lsi-first-reference? node env) true)
