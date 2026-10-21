@@ -1188,11 +1188,12 @@
     (assoc lineage :authenticated-sh06-artifact-id projection-id)))
 
 (defn sh08-ft-match-preimage-valid? [core preimage projection-id]
-  (loop [families [:match-branch-records :match-pattern-records :match-decision-skeletons]]
-    (if (= (count families) 0) true
-      (let [family (first families)]
-        (if (= (get preimage family) (get core family))
-          (recur (rest families)) false)))))
+  ; Preserve the fixed family order and complete values without a Vector tail.
+  (if (= (get preimage :match-branch-records) (get core :match-branch-records))
+    (if (= (get preimage :match-pattern-records) (get core :match-pattern-records))
+      (= (get preimage :match-decision-skeletons) (get core :match-decision-skeletons))
+      false)
+    false))
 
 (defn sh08-ft-b47-identity-preimage-valid? [core bindings]
   (let [preimage (get core :identity-preimage)
