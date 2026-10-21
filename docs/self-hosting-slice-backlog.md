@@ -9505,6 +9505,38 @@ Original G/Q constructors and public optimization/recomputation consume
 supplied normalized DATA, not fresh authenticated C6/C11/source inputs,
 proof-provider evidence, native arithmetic, migration or performance proof.
 
+The next C13 executable increment extends post-fold cleanup to original
+constants whose actual reference consumers freshly folded. Only canonical
+operand IDs from ORIGINAL selected pure, reference-bearing ADD rows establish
+that relationship; immediate payloads, numeric map keys, fabricated decisions
+and unrelated unused constants do not. Eligible original producers are nondead,
+pure/proven-safe, exact one-payload bounded-i64 consts, matched exactly against
+the current operations with globally unique original/current result IDs. The
+complete current-use scan retains every still-used producer, even when its
+user is deleted in this same DCE pass. One-pass operation order, explicit
+dead-proof usage, empty local external-proof IDs, conservative runtime
+invalidation, source/original request identity and fresh replay are preserved.
+This adds two bounded original-row scans and up to two operand-kind checks per
+selected ADD: preparation now has up to ten bounded operation traversals plus
+the current scan's at most 2,048 operand positions under unchanged 128/16 input
+limits. Existing independent replay is additional, not a speed or linear-CPU
+claim. No generic constant/control/compute deletion or fixed point is added.
+
+The `670ad03c` RED run retained 208 passes and 22 failures in 230 assertions,
+without errors. Earlier delimiter and canonical identity-oracle draft fixes
+were static and UNRUN, not failed test epochs. Candidate `b8fe7ee3` passed
+23 tests/3,586 assertions (230 new plus 3,356 affected controls), covering
+ref/ref, repeated, mixed and chain consumers, unrelated/live producers,
+malformed or ambiguous state, no actual fold, one-pass dead-user behavior,
+proof usage and fresh result rejection. Boundary checks separately passed
+6/11: 29/3,597 across two passing invocations; LOC separately passed 2,021
+files, zero exceptions, maximum 250. RED is retained separately. The actuals
+keep their original `b8fe7ee3` execution binding, with owned bytes unchanged
+after the disjoint SH22 main join. These are original G/Q constructors and
+public optimization/recomputation over supplied normalized DATA, not fresh
+authenticated C11/source inputs, provider, native, migration or performance
+evidence. No schema, opcode, pass, API or cap is added.
+
 The C14 target-lowering source adds 168,303 authenticated bytes in 143
 fragments containing 15,213 forms, 936 bindings, and 5,693 resolutions. Its
 calibrated lowering contains 12,683 canonical core nodes with 143 definitions:
