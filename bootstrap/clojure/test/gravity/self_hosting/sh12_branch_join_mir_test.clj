@@ -100,6 +100,25 @@
 
 (def ^:private parameter-c6-plan (delay (compile-plan parameter-c6-source)))
 
+(deftest sh12-current-c6-reverses-bounded-vectors-and-selects-last-result-sources
+  ;; Direct original Gravity helpers on bounded DATA, not fabricated Core or
+  ;; source admission. Every production reverse caller supplies a Vector.
+  (doseq [values [[] [:only] [:first :last] [:first :middle :last]]]
+    (is (= (vec (reverse values)) (invoke parameter-c6-plan 'c6c10-reverse [values])))
+    (is (= (into [:retained] (reverse values))
+           (invoke parameter-c6-plan 'c6c10-reverse-into [values [:retained]]))))
+  (doseq [operation [:do :let :function]
+          operands [[:only] [:first :last] [:first :middle :last]]]
+    (is (= [(last operands)]
+           (invoke parameter-c6-plan 'c6c10-source-value-ids
+                   [{:source-operation operation :operands operands}]))))
+  (doseq [[operation operands expected]
+          [[:local [:binding] [:binding]] [:let-binding [:initializer] [:initializer]]
+           [:truthy [:condition] [:condition]] [:if [:test :then :else] [:then :else]]
+           [:literal [] []]]]
+    (is (= expected (invoke parameter-c6-plan 'c6c10-source-value-ids
+                           [{:source-operation operation :operands operands}])))))
+
 (defn- parameter-source-products [source-path source-text]
   ;; Original source-derived C2/C5 and raw seed plan; these are development
   ;; DATA, not an authenticated frozen C6 source-binding or SH-07 Core.
