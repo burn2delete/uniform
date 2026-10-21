@@ -6316,6 +6316,59 @@ before result under the fixed work cap. The slice adds no carrier, Integer Set
 `conj`/equality, reader boundary or String/foreign admission. Whole helpers,
 public fresh C6, native, migration, self-hosting and release remain separate.
 
+### Proven nonnegative Integer quotient
+
+SAFE9 and STD5 govern binary `quot` over generic Integer operands. The
+existing C7 owner admits an original nonnegative Integer literal or an
+independently reconstructed normal collection count as dividend, and an
+original positive Integer literal as divisor. It records
+`:sh08-nonnegative-integer-quotient-v1`, `:proof-required` and
+`:proven-safe`. Reconstruct source, ordered calls/edges, count law, numeric
+constraint and call fact in C8 and the existing typed emitter. Missing or
+changed operator descriptor kinds cannot bypass the scoped C7 consumer:
+selection uses the actual authenticated `quot` binding.
+
+The nonnegative Euclidean law proves `0 <= q <= n` and excludes division by
+zero and value overflow. It establishes no representation allocation freedom:
+normal invocation has `[:memory/allocate]` and a possible Integer-result
+allocation record. Preserve operand effects, left-to-right evaluation and
+Never transfers, including the proof for every normal operand. No i64
+conversion, negative signed rounding, unknown-parameter range, alias proof,
+reader grounding or surrounding multiplication is admitted. Runtime checks
+back the source proof; they do not replace it.
+
+Use the four `sh08-nonnegative-integer-quotient-*-development-kernel`
+selectors, `body-nonnegative-integer-quotient-development-kernel`, and the
+four SH01 lowering/runtime/fixtures/transfer-fence selectors. At `0cfcea6d`,
+the affected batch passed 26 tests / 3,163 assertions. Its prior 26 / 3,160
+run retained one stale bare-Set count rejection expectation; all 13 count-owner
+functions were unchanged, and a Decimal negative plus positive Set controls
+corrected that oracle. Independent review then reproduced one scoped-kind
+bypass in 1 / 21. At corrected `1fcfa05c`, the expanded selector passed
+1 / 27 and four existing shared-dispatch controls passed 4 / 85. These are
+separate revisions and invocations, not one final combined green batch.
+Earlier literal, C8-routing and analyzer-oracle failures remain under their
+original `/tmp/nonnegative-integer-quotient-*` receipts.
+
+The single affected source selection
+`current-gravity-nonnegative-integer-quotient-authenticated-composition`
+passed 1 / 73 at `1fcfa05c` in one 2 GiB JVM. One G function with two
+quotients and one count reached fresh C7/C8 verification, assembly-required
+public C7 verification and one closed entry, producing `[12 2]` with empty
+stdout. A zero-divisor G negative rejected with `STD5002`; its fresh C7
+verification was asserted and printed passed. The secondary C7-ANNOTATION
+diagnostic is retained. QST is parser-only; development C6 session replay is
+not public fresh C6. Preserve the complete
+`/tmp/nonnegative-integer-quotient-source-lease-scope-corrected-20261021`
+prefix: original PTY 18640, natural exit zero, 13 unchanged inputs, released
+lease, free lock snapshots and no Java observed at postcheck. Continuous
+monitoring had a maximum observed gap of 16.442 seconds and was not hard OS
+containment.
+Boundary checks passed 6 / 11; LOC passed with 2,022 files and zero exceptions.
+Runtime remains 56 functions and all nine protected carrier predicates are
+unchanged. Whole helpers, native, migration, self-hosting and release remain
+outside this evidence.
+
 ### Finite Symbol-Set membership
 
 STD3's binary `contains?` also accepts independently established finite literal

@@ -7076,6 +7076,77 @@ APIs do not establish this ordinary-source intrinsic or require its replay.
 Monitoring was not hard OS containment. Public fresh C6, authoritative migration,
 native, whole-helper, self-hosting and release evidence remain unrun.
 
+### Proven nonnegative Integer quotient: development increment
+
+SAFE9/STD5 and L5 govern this ordinary-source numeric slice. The existing C7,
+C8, typed emitter and runtime owners admit generic Integer `quot` when the
+dividend is an original nonnegative Integer literal or independently
+reconstructed normal collection count, and the divisor is an original positive
+Integer literal. This covers the emitter's count/divisor subexpressions. The
+reader helper's unproven parameter and loop range, aliases and the surrounding
+factor-two multiplication remain outside this increment.
+
+The retained proof carries the nonnegative Euclidean law, excludes zero and
+value overflow, and bounds the result between zero and the dividend. It does
+not prove allocation freedom: normal direct/latent effects include
+`:memory/allocate`, and C8 records possible Integer-result storage with
+representation/provider/ownership placement still pending. Every normal
+operand remains proved under Never; operand effects and left-to-right-once
+execution survive. C8 and the emitter independently reconstruct source,
+call/edge/binding/type joins, cardinality law, numeric ledger and call facts.
+Existing builtin-call IR is used, without narrowing or negative signed-rounding
+policy. Runtime validation backs, rather than substitutes for, static proof.
+Logical Integer work units establish no precision, provider CPU or heap bound.
+Runtime remains 56 functions; all nine protected carrier predicates are
+byte-identical to the accepted base.
+
+Failed finite history remains failed. The test-only literal RED and initial
+integration each recorded 28 failures in 1 / 32; the bounded identity grouping
+was corrected without raising its limit. Initial C8 integration recorded three
+failures in 1 / 57 because the owning join dispatch was absent. An analyzer
+check recorded one failure in 1 / 61 from a wrong graph-field expectation.
+The first broad 26 / 3,160 retained one stale bare-Set count negative; all 13
+transitive count-owner functions were unchanged. A Decimal negative and
+explicit accepted Set/Integer/persistent-Set controls corrected that oracle.
+Original `/tmp/nonnegative-integer-quotient-*` log/EDN receipts are preserved.
+
+At `0cfcea6d` the corrected affected batch passed 26 / 3,163. Independent
+review then identified the scoped descriptor-kind bypass: the test-only
+`4f34b3a1` epoch recorded 20 passes / one failure in 1 / 21. The correction
+selects bounded quotient reconstruction from the actual authenticated binding.
+At `1fcfa05c`, missing/nil/foreign/other-family kinds and non-map/nil operator
+descriptors reject through both the owner and original scoped consumer;
+expanded exact/minus-one checks passed 1 / 27, and four retained shared-dispatch
+controls passed 4 / 85. These are separate epochs, not one combined green run.
+Boundary passed 6 / 11; LOC passed with 2,022 files, zero exceptions, maximum
+250 physical lines. No unchanged whole-proof subject was replayed for the
+later narrow changes.
+
+One source composition at `1fcfa05c` passed 1 / 73. Its positive G function
+contains three calls: two quotients, one literal dividend and one count-derived
+dividend. Fresh C7/C8 verification, assembly-required public C7 verification
+and one closed entry pass, yielding `[12 2]` with empty stdout. The G
+zero-divisor negative rejects with `STD5002`, Integer operands, proof-required
+expectations and source/binding/span provenance; its fresh C7 verification is
+asserted and printed passed. A secondary C7-ANNOTATION is retained. Negative
+C8/runtime are not invoked. QST has byte/parser parity only; development C6
+session construction/replay is not public fresh C6 verification.
+
+The complete source prefix is
+`/tmp/nonnegative-integer-quotient-source-lease-scope-corrected-20261021`:
+original PTY 18640, natural exit zero, 13 unchanged inputs, selected time
+139.044 seconds plus 13.182 seconds namespace loading, actual 2 GiB max heap.
+The canonical FileLock and memory-heavy lease were acquired, with 22 ms broker
+wait and finally release. Automated monitoring retained ten observations,
+maximum gap 16.442 seconds; no operational bound was crossed or signal sent.
+Postchecks observed all six lock files free and no Java/Clojure/Clang process;
+these are snapshots, not hard OS containment. The earlier source command
+remained unrun. The single main reconciliation with `9ee0b085` produced
+`e0e01a25` and preserved all 11 owned byte sequences. Static selected-call
+ownership review found no dependency on the changed SH22 UTF8/stdout owners;
+no replay was needed. Public fresh C6, native, authoritative migration, whole
+helpers, reader parameters, self-hosting and release remain unestablished.
+
 ### Finite Symbol-Set membership: development increment
 
 The existing C7, effects, typed emitter and runtime owners implement binary
