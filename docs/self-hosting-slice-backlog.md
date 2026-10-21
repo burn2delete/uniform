@@ -8753,6 +8753,25 @@ remainder, MIN/-1 and arbitrary-precision division are excluded. No reader or
 runtime API rewrite, provider/native execution, public admission, migration,
 milestone or SH-22 completion follows; historical source/digest pins are unchanged.
 
+### Checked request Results compose into bounded decimal digits
+
+Test-only `e592766e` executes real G/Q quotient-to-multiply-to-subtract-to-add-48
+request Results for 9, 10, 11, 123 and MAX, with at most 19 iterations and exact
+ordered digit codepoints. Zero is the driver's `[48]` branch with zero arithmetic
+requests. Original-delegating observations, preserved inputs, fresh verification
+of every request and meaningful result substitutions cover the producer-consumer
+chain. A negative checked-sub result feeds a rejected quotient; existing range
+and zero-divisor rejection remain. Production, fixtures and the API are unchanged.
+
+The focused invocation naturally passed 5/3972: 1856 new assertions and 2116
+affected arithmetic controls. Boundary separately passed 6/11: 11/3983 across
+two passing invocations. LOC separately passed 2,022 files, zero exceptions,
+maximum 250. There is no RED or production repair. After normal main reconciliation,
+the test bytes and raw compiler/seed/library dependencies remained unchanged;
+these are retained observations at `e592766e`, not a joined-candidate rerun.
+No reader helper compilation/invocation or linkage, arbitrary-precision division,
+signed rounding, Unicode admission, C6 proof, native or migration claim follows.
+
 ### Keyword membership in bounded ordered Sets
 
 The SH-22 leaf now executes `:ordered-set-contains-keyword` under STD2/STD3.
