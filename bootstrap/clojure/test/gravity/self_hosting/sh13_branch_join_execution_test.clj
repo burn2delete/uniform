@@ -909,3 +909,134 @@
           (is (nil? (:execution result)))
           (is (= :passed (:status (verify base mutant result)))))
         (is (= :rejected (:status (verify base mir (assoc-in accepted [:execution :value] false)))))))))
+
+(defn- with-two-expression-do [extension base placement first-type first-value second-type second-value]
+  ;; The original C6 do family has two ordered body roots and forwards the last.
+  ;; Supplied SH12 types remain separate from actual C6/source authentication.
+  (let [nodes (:core-nodes base)
+        if-node (first (filter #(= :if (:source-operation %)) nodes))
+        id ((:operands if-node) (if (= placement :then) 1 2))
+        index (.indexOf (mapv :node-id nodes) id)
+        path (conj (:path if-node) placement)
+        start (get-in nodes [index :source :span :start])
+        make (fn [name args]
+               ((existing 'invoke) (get (existing 'accepted-plans) extension) name args))
+        prefix (str "sh13:" (name placement) ":do:")
+        first-id (str prefix "first") second-id (str prefix "second")
+        children (mapv (fn [child-id type value child]
+                         (make 'sh12-branch-join-node
+                               [child-id (into path [:body child]) :literal [] type value
+                                (+ start child) (+ start child 1)]))
+                       [first-id second-id] [first-type second-type] [first-value second-value] [0 1])
+        scope (-> (make 'sh12-branch-join-node
+                        [id path :do [first-id second-id] second-type nil start (+ start 3)])
+                  (assoc-in [:attributes :body-count] 2))
+        replacements (conj children scope)]
+    (reduce (fn [core node]
+              (let [node-id (:node-id node) type (:type node)]
+                (-> core
+                    (assoc-in [:type-facts node-id] (make 'sh12-branch-join-type-fact [node-id type]))
+                    (assoc-in [:effect-facts node-id] (make 'sh12-branch-join-effect-fact [node-id]))
+                    (assoc-in [:ownership-facts node-id] (make 'sh12-branch-join-ownership-fact [node-id]))
+                    (assoc-in [:capability-facts node-id] (make 'sh12-branch-join-capability-fact [node-id]))
+                    (assoc-in [:safety-facts node-id] (:safety node))
+                    (assoc-in [:profile-facts node-id] {:profile :meta :target :jvm}))))
+            (assoc base :core-nodes
+                   (into (into (subvec nodes 0 index) replacements) (subvec nodes (inc index))))
+            replacements)))
+
+(deftest sh13-executes-two-expression-do-only-in-the-selected-arm
+  (doseq [extension [".gravity" ".qst"] placement [:then :else] condition [true false]
+          [first-type first-value type value other]
+          [[:gravity.type/bool false :gravity.type/i64 7 8]
+           [:gravity.type/nil nil :gravity.type/bool true false]
+           [:gravity.type/i64 Long/MIN_VALUE :gravity.type/keyword :last/value :other/value]
+           [:gravity.type/keyword :discarded/value :gravity.type/nil nil nil]
+           [:gravity.type/i64 Long/MAX_VALUE :gravity.type/i64 Long/MIN_VALUE Long/MAX_VALUE]
+           [:gravity.type/bool true :gravity.type/bool false true]]]
+    (let [core (with-two-expression-do extension
+                 (scalar-core (checked extension) condition type
+                              (if (= placement :then) value other)
+                              (if (= placement :else) value other))
+                 placement first-type first-value type value)
+          mir (build core) result (run core mir) nodes (:core-nodes core)
+          ids (mapv :node-id nodes)
+          if-node (first (filter #(= :if (:source-operation %)) nodes))
+          scope-id ((:operands if-node) (if (= placement :then) 1 2))
+          index (.indexOf ids scope-id) body-ids (subvec ids (- index 2) (inc index))
+          selected? (= placement (if condition :then :else))
+          rows (get-in result [:projection :operations])
+          flat (into {} (for [block (vals (get-in mir [:functions (:entrypoint core) :blocks]))
+                             op (:instructions block)] [(:op-id op) op]))
+          incoming (first (filter #(= ((coordinates core mir) placement) (:predecessor %))
+                                  (get-in mir [:control-flow-graph :join :incoming])))]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :accepted (:status result)))
+      (is (= (if selected? value other) (get-in result [:execution :value])))
+      (is (= (if selected? 505 507) (get-in result [:execution :fuel])))
+      (is (= (into [(ids 0)] (if selected? body-ids
+                              [((:operands if-node) (if condition 1 2))]))
+             (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+      (is (= (if selected? [1 1 1] [0 0 0])
+             (mapv (fn [id] (count (filter #(= id (:operation %)) (get-in result [:execution :trace])))) body-ids)))
+      (is (= 7 (count rows)))
+      (is (= ids (mapv :operation-id rows)))
+      (is (= (mapv :source nodes) (mapv :source rows)))
+      (is (= (mapv #(get-in flat [% :facts]) ids) (mapv :facts rows)))
+      (is (= [:literal :literal :sequence-result] (mapv :role (subvec rows (- index 2) (inc index)))))
+      (is (= (subvec body-ids 0 2) (:operands (rows index))))
+      (is (= scope-id (:value incoming)))
+      (is (= (:control-flow-graph mir) (get-in result [:projection :control-flow-graph])))
+      (is (= :passed (:status (verify core mir result))))))
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]]
+    (let [base (scalar-core (checked extension) (= placement :else) :gravity.type/i64 11 22)
+          core (with-two-expression-do extension base placement :gravity.type/bool false :gravity.type/i64 7)
+          nodes (:core-nodes core) ids (mapv :node-id nodes)
+          if-node (first (filter #(= :if (:source-operation %)) nodes))
+          scope-id ((:operands if-node) (if (= placement :then) 1 2))
+          index (.indexOf ids scope-id) first-index (- index 2) second-index (dec index)
+          scope-path [:core-nodes index] first-path [:core-nodes first-index] second-path [:core-nodes second-index]
+          nil-first (with-two-expression-do extension base placement :gravity.type/nil nil :gravity.type/i64 7)
+          candidates (concat
+                       (for [count [0 1 3]] (assoc-in core (into scope-path [:attributes :body-count]) count))
+                       (for [operands [[] [(ids first-index)] [(ids second-index) (ids first-index)]
+                                       [(ids first-index) (ids second-index) (ids first-index)]]]
+                         (assoc-in core (conj scope-path :operands) operands))
+                       [(update-in core (conj scope-path :attributes) dissoc :body-count)
+                        (assoc-in core (conj scope-path :source-operation) :let)
+                        (assoc-in core (conj first-path :path) (:path (nodes second-index)))
+                        (assoc-in core (conj second-path :path) (:path (nodes first-index)))
+                        (assoc-in core (into first-path [:attributes :value]) 0)
+                        (assoc-in core (into second-path [:attributes :value]) nil)
+                        (assoc-in core (conj first-path :effects) #{:io/write})
+                        (with-two-expression-do extension base placement :gravity.type/string "discarded" :gravity.type/i64 7)
+                        (update-in nil-first (conj first-path :attributes) dissoc :value)
+                        (assoc-in nil-first (conj first-path :source-operation) :implicit-nil)])]
+      (doseq [candidate candidates]
+        (let [mir (build candidate) result (run candidate mir)]
+          (is (= :rejected (:status result)))
+          (is (nil? (:execution result)))
+          (is (nil? (:projection result)))
+          (is (= :passed (:status (verify candidate mir result))))))
+      (let [mir (build core) accepted (run core mir)
+            path [:functions (:entrypoint core) :blocks ((coordinates core mir) placement) :instructions 2]
+            mutant (assoc-in mir (conj path :operands) [(ids second-index) (ids first-index)])
+            result (run core mutant)]
+        (is (= :rejected (:status result)))
+        (is (= :rejected (get-in result [:upstream-verification :status])))
+        (is (nil? (:execution result)))
+        (is (= :passed (:status (verify core mutant result))))
+        (is (= :rejected (:status (verify core mir (assoc-in accepted [:projection :operations index :role] :literal)))))))))
+
+(deftest sh13-do-arms-keep-the-literal-condition-placement-boundary
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]
+          operation [:integer-eq :integer-lt]]
+    (let [base (with-two-expression-do extension (checked extension) placement
+                 :gravity.type/bool false :gravity.type/i64 7)
+          core (with-integer-comparison extension base :condition operation 0 1)
+          mir (build core) result (run core mir)]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :rejected (:status result)))
+      (is (nil? (:execution result)))
+      (is (nil? (:projection result)))
+      (is (= :passed (:status (verify core mir result)))))))
