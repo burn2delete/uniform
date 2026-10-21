@@ -6218,6 +6218,50 @@ only. Fresh development C6 sessions and same-catalog replay are not fresh public
 C6 authority verification. This is the compiler predicate subexpression, not
 execution of an unchanged full provenance validator or admission of a revision.
 
+### Finite Integer-Set membership
+
+The existing C7/effects/emitter/runtime owners support a literal finite Set of
+`:gravity.type/integer` and the same generic Integer needle. Reconstruct the
+`:sh08-integer-set-contains-v1` descriptor, source, call fact and ledger in each
+consumer. Literal Set construction uses the existing lowerer, runtime
+constructor and IR validator. Preserve once-left-to-right operands, Never
+fences, complete normal domains, original-value uniqueness and literal Set
+allocation effects. Do not infer Integer width/range from `integer?`, narrow
+to i64, or add arithmetic/rounding to exact membership.
+
+Focused selectors are `sh08-integer-set-contains-development-kernel`,
+`sh08-integer-set-contains-throw-consumer-development-kernel`,
+`body-integer-set-contains-development-kernel`, and SH01
+`current-gravity-integer-set-contains-{lowering,runtime,transfer-fence,fixtures}-development-kernel`
+plus `current-gravity-integer-set-construction-development-kernel`.
+Retain the affected prior Keyword/String/Character/Symbol and constructor
+controls. Existing finite checks cover work equality/minus-one, large Integer
+values, duplicates, opaque members, malformed constructors and coherent forged
+source/type/policy/call/ledger joins. The current partitions pass 20 / 2,742
+and 3 / 211 separately; boundary 6 / 11 and LOC also pass. Retain the earlier
+domain RED (43 failures), first integration (eight failures), and narrow
+affected selection (one legacy expectation failure) under their original
+`/tmp/integer-set-membership-*` log/EDN prefixes. Do not recast them as green.
+
+The affected `current-gravity-integer-set-contains-authenticated-composition`
+passed one test / 144 assertions in one 2 GiB JVM while holding the canonical
+heavy FileLock and existing SH01 memory-heavy lease. It uses the public
+`gravity.development-test-runner/run-cli!` inside `broker/with-lease` and
+releases locks before exiting with its real result. G positive typing/effects,
+assembly-required public C7 verification and closed runtime pass; G Decimal
+negative typing rejects. Negative C7 verification was invoked without observing
+its report status. QST is parser-only, and development C6 replay is not public
+fresh C6. Retain the full source prefix
+`/tmp/integer-set-membership-source-lease-20261021`; do not refresh unchanged
+source evidence solely for a stamp. Its postflight records two polling gaps
+above the planned 30s (35.42s/37.38s), not plan-perfect operational monitoring.
+
+Integer runtime units count validated leaves and reserved comparisons without
+formatting; no precision/CPU/heap bound follows. Complete reservation can reject
+before result under the fixed work cap. The slice adds no carrier, Integer Set
+`conj`/equality, reader boundary or String/foreign admission. Whole helpers,
+public fresh C6, native, migration, self-hosting and release remain separate.
+
 ### Finite Symbol-Set membership
 
 STD3's binary `contains?` also accepts independently established finite literal
