@@ -433,6 +433,9 @@
             (reset! equalities 0)
             (is (false? (invoke c11-plan 'sh12-c6p-scalars-valid? [hostile])))
             (is (= :rejected (:status (build-mir (assoc core :diagnostics [hostile])))))
+            (is (true? (invoke c11-plan 'sh12-c6p-family? [core])))
+            (is (false? (invoke c11-plan 'sh12-c6p-family? [(assoc core :kind hostile)])))
+            (is (= :rejected (:status (build-mir (assoc core :kind hostile)))))
             (is (zero? @equalities)))
           (doseq [[malformed expected]
                   [[(assoc-in core [:type-facts binder-id :declaration :parameter-index] 1) "C11-TYPE"]

@@ -1291,7 +1291,7 @@
 (defn c11-c6-parameter-node? [checked-core node]
   ; The SH-12 original-family preflight owns the complete binder premise.
   ; This is a value definition, never a new MIR instruction or authority flag.
-  (if (= (get checked-core :kind) :gravity/p15-s23-stage2-gravity-checked-core-artifact)
+  (if (sh12-c6p-family? checked-core)
     (if (= (get node :source-operation) :parameter)
       (if (= (get node :node-id) (get (first (get checked-core :core-nodes)) :node-id))
         (= (get (get node :attributes) :parameter-index) 0) false) false) false))
@@ -2127,7 +2127,7 @@
               nil
               (get (first (get mir :diagnostics)) :actual-source-path))]
         (if (= mir-path nil)
-          (if (= (get checked-core :kind) :gravity/p15-s23-stage2-gravity-checked-core-artifact)
+          (if (sh12-c6p-family? checked-core)
             (get (get (get checked-core :physical-provenance) :actual-paths) :source)
             (get (get checked-core :provenance) :actual-source-path))
           mir-path))}
@@ -3026,7 +3026,9 @@
   (if (map? value) (= (set (keys value)) fields) false))
 
 (defn sh12-c6p-family? [core]
-  (= (get core :kind) :gravity/p15-s23-stage2-gravity-checked-core-artifact))
+  (let [kind (get core :kind)]
+    (if (keyword? kind)
+      (= :gravity/p15-s23-stage2-gravity-checked-core-artifact kind) false)))
 
 (defn sh12-c6p-function-type []
   {:params [:gravity/bool] :return :gravity/bool :latent-effects #{} :capabilities #{}
@@ -3083,7 +3085,9 @@
        (= (get row :source-content-hash) (get core :source-content-hash))
        (= (get row :plan-path) (get node :path)) (= (get row :origin-id) origin)
        (= (get row :c2-span) span)
-       (sh12-branch-join-nonempty-string? (get row :c2-form-id))
+       ; Original C2 reader form IDs are opaque Keyword identities, unlike
+       ; the separately checked SHA256 projection/binding/origin IDs.
+       (keyword? (get row :c2-form-id))
        (= (get row :c2-form-kind) (get [:symbol :symbol :list :boolean :boolean :list :list] index))
        (= (get row :generated-role) (if (= index 2) :truthiness-normalization nil))
        (= (get row :input-origin-id) (if (= index 2) (get input :origin-id) nil))
@@ -3434,7 +3438,7 @@
                 (if (sh12-c6p-all?
                       [(sh12-c6p-keys? row #{:role :c2-form-id :projected-form-id :projected-syntax-id})
                        (= (get row :role) (get [:parameter-vector :parameter-name :annotation-marker :annotation-type] index))
-                       (sh12-branch-join-nonempty-string? (get row :c2-form-id))
+                       (keyword? (get row :c2-form-id))
                        (sh12-c10-mir-sha256-id? (get row :projected-form-id))
                        (sh12-c10-mir-sha256-id? (get row :projected-syntax-id))])
                   (recur (+ index 1)) false)))) false) false) false) false)))
