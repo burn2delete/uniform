@@ -10860,6 +10860,102 @@ and condition values, invalid unselected operands, source/incoming/MIR tampering
 and recomputation. No C10/source ingress, whole-helper lowering, generic MIR,
 native execution, SH-13 completion or authoritative migration is claimed.
 
+### Original MIR entry integer less-than-or-equal: executable increment
+
+C11/C12/C18 and L2/L5 govern a new bounded SH-12-to-SH-13 operation. The
+original producer already constructs and verifies `:integer-lte`. The existing
+normalized interpreter now accepts `:lte` over exactly two available signed-i64
+values and returns Bool using `<=`. The original producer bridge maps the
+opcode and retains the new `:integer-less-than-or-equal` projection role,
+original operation IDs, source/fact records, CFG, DFG and incoming values.
+
+At this initial increment, bridge support is entry-only: seven total rows with entry/then/else widths
+`[3,1,1]` and matching scalar literal arms. Both arms validate before execution. Explicit
+placement and arm fences continue rejecting computed-arm `<=` and an entry
+`<=` combined with computed Eq/Lt arms. Existing Eq/Lt arm behavior remains.
+Signed endpoints, equality and both branch outcomes execute once with the
+selected trace and fuel 505. Public keys/arities, depth 32 and fuel 512 are
+unchanged; the normalized opcode and projection domains grow explicitly.
+
+The test-only `23d32fc2` RED recorded 220 passes / 180 failures / zero errors
+in the new bridge test's 400 assertions. At `a20b282d`, the bridge passed
+1 / 400, the full normalized namespace 21 / 2,626, existing bridge controls
+16 / 7,274, original SH-12 producer controls 2 / 578 and boundary checks
+6 / 11. This is 46 tests / 10,889 assertions across five passing invocations,
+not a single batch or a sum including RED. LOC separately passed 2,022 files,
+zero exceptions, maximum 250 physical lines. Retain the original
+`/tmp/d-sh13-lte-*-v1-20261021` logs and timing records.
+
+Missing/extra operands, unavailable definitions, non-i64 or out-of-range
+values, unselected invalid arms, origin/effect violations, altered MIR or
+incoming IDs and substituted results reject. Verification recomputes through
+the existing interpreter; no new interpreter or wrapper is introduced. These
+are supplied constructor and fresh original MIR builder/verifier compositions,
+not fresh C6/C10 source ingress, native execution, whole-helper lowering,
+SH-13 completion or authoritative migration. Future stable migration must
+account for the changed normalized operation/projection domains; no historical
+proof is repinned by this development increment.
+
+### Original MIR selected-arm integer less-than-or-equal: executable increment
+
+The follow-on `2b4406e8` extends the same C11 bridge to a literal Bool entry
+and one three-operation signed-i64 `<=` Bool arm. Seven total rows have
+entry/then/else widths `[1,3,1]` or `[1,1,3]`; the other arm is one Bool literal.
+Both arms validate before execution. Original comparison IDs and transfers
+survive, with fuel 505 when selected and 507 when skipped. Entry-only `<=`
+remains `[3,1,1]`; old Eq/Lt compositions remain supported. Computed-entry,
+truthiness-entry and both-computed-arm `<=` compositions still reject. No new
+opcode, role, public key, arity, interpreter or bound is introduced.
+
+C11's origin-chain and i64 predicates provide actual guarded `<=` clients;
+supplied literal witnesses cover placement, not those whole helpers or count
+lowering. Four passing invocations cover 28 tests / 9,356 assertions: new arm
+1 / 1,172, existing bridge 17 / 7,674, normalized controls 4 / 499 and boundary
+6 / 11. LOC separately passes 2,022 files, zero exceptions, maximum 250 lines.
+Preserve `/tmp/d-sh13-lte-arm-*-v1-20261021`, including the separate RED epoch
+of 452 passes / 648 failures / 72 errors in 1 / 1,172. The errors are absent
+projection-role inspections after rejection, not comparison execution errors.
+This is development producer/consumer evidence, not fresh C6/C10 source
+composition, native execution, SH-13 completion or authoritative migration.
+
+### Two-sided MIR integer span guards: executable increment
+
+At `d3653edc`, the existing C11 layout gate accepts entry `<=` plus one `<=`
+arm in nine-row `[3,3,1]` or mirrored `[3,1,3]` diamonds. The opposite arm is
+a Bool literal, both arms validate, and selected/skipped computed arms leave
+fuel 503/505. C11's span predicates provide the two-sided guard client. Literal
+pairs model its relation without claiming member/parameter dataflow or whole
+helper execution. Existing seven-row and Eq/Lt behavior remains; mixed
+comparisons, truthiness and both-computed-arm `<=` layouts still reject.
+No opcode, role, public key, arity, interpreter or resource bound changes.
+
+Four passing invocations cover 29 tests / 9,956 assertions, with separate
+LOC 2,022 files / zero exceptions / maximum 250 lines. Preserve
+`/tmp/d-sh13-double-lte-*-v1-20261021` and its separate RED 276 passes / 360
+failures in 1/636. The prior entry/arm test counts become 384/1,152 solely
+because 36 now-supported composition assertions no longer expect rejection.
+No historical run is relabeled. Fresh source/native composition, SH-13
+completion and authoritative migration remain separate outstanding boundaries.
+
+### MIR integer greater-than: executable increment
+
+At `342610b9`, C11's normalized `:gt` compares two available signed-i64 values
+and produces Bool. The existing original producer bridge accepts `:integer-gt`
+with explicit `:integer-greater-than` role in seven-row entry or single-arm
+diamonds and nine-row GT-entry/GT-arm composition. Scalar literal returns,
+both-arm validation, original identity/provenance/facts and recomputing result
+verification remain. Mixed comparisons, truthiness, DO/let and both-computed
+GT arms still reject; depth 32 and fuel 512 are unchanged. This adds an explicit
+opcode/projection domain, not keys, arities, a new interpreter or authority.
+
+Four passing invocations cover 48 tests / 14,430 assertions, with separate LOC
+2,022 files / zero exceptions / maximum 250 lines. Preserve
+`/tmp/d-sh13-gt-*-v1-20261021`; the separate RED is 900 passes / 1,260 failures
+in 1/2,160, with no normalized RED invocation. C11's capability helper motivates
+the guard shape, but these literal count premises do not establish count or
+helper execution, capability/proof authority, fresh source/native composition,
+SH-13 completion or current authoritative admission.
+
 ### MIR conditional-condition dominance: development repair
 
 Normalized conditional branches now report `C11-DOMINANCE` when the condition

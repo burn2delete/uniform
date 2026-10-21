@@ -281,8 +281,8 @@
                       (assoc-in [:core-nodes 0 :attributes :value] true)
                       (assoc-in [:type-facts id :type] :gravity.type/bool)
                       (assoc-in [:type-facts id :type-id] :gravity.type/bool))
-                  (integer-condition-core extension :integer-lte 0 1 :gravity.type/i64)
-                  (integer-condition-core extension :integer-gt 0 1 :gravity.type/i64)
+                  (assoc-in core [:core-nodes 2 :operands] [id right-id id])
+                  (assoc-in core [:core-nodes 0 :attributes :value] -9223372036854775809N)
                   (integer-condition-core extension :integer-gte 0 1 :gravity.type/i64)]]
         (let [mir (build bad) result (run bad mir)]
           (is (= :passed (get-in result [:upstream-verification :status])))
@@ -325,6 +325,59 @@
     [-9223372036854775808 -9223372036854775808 :gravity.type/i64 false 22]
     [0 1 :gravity.type/bool true false] [1 0 :gravity.type/bool false true]]))
 
+(deftest sh13-executes-integer-less-than-or-equal-entry-conditions
+  (check-integer-condition
+   :integer-lte :integer-less-than-or-equal
+   [[0 1 :gravity.type/i64 true 11] [1 0 :gravity.type/i64 false 22]
+    [0 0 :gravity.type/i64 true 11] [-1 0 :gravity.type/i64 true 11]
+    [0 -1 :gravity.type/i64 false 22]
+    [-9223372036854775808 9223372036854775807 :gravity.type/i64 true 11]
+    [9223372036854775807 -9223372036854775808 :gravity.type/i64 false 22]
+    [-9223372036854775808 -9223372036854775808 :gravity.type/i64 true 11]
+    [9223372036854775807 9223372036854775807 :gravity.type/bool true false]
+    [1 0 :gravity.type/bool false true]])
+  (doseq [extension [".gravity" ".qst"]]
+    (doseq [[type a b] [[:gravity.type/keyword :phase/then :phase/else]
+                       [:gravity.type/nil nil nil]]
+            [left right expected] [[0 0 a] [1 0 b]]]
+      (let [core (with-integer-comparison extension
+                   (scalar-core (checked extension) true type a b)
+                   :condition :integer-lte left right)
+            mir (build core) result (run core mir)]
+        (is (= :passed (get-in result [:upstream-verification :status])))
+        (is (= :accepted (:status result)))
+        (is (= expected (get-in result [:execution :value])))
+        (is (= 505 (get-in result [:execution :fuel])))
+        (is (= :passed (:status (verify core mir result))))))
+    ;; Entry <= still does not compose with Eq/Lt arms.
+    (doseq [placement [:then :else] operation [:integer-eq :integer-lt]]
+      (let [base (scalar-core (checked extension) true :gravity.type/bool false true)
+            arm (with-integer-comparison extension base placement operation 0 0)
+            core (with-integer-comparison extension arm :condition :integer-lte 0 0)
+            mir (build core) result (run core mir)]
+        (is (= :passed (get-in result [:upstream-verification :status])))
+        (is (= :rejected (:status result)))
+        (is (= :bounded-execution-subset (get-in result [:diagnostics 0 :missing-fact])))
+        (is (nil? (:execution result)))))
+    (let [core (integer-condition-core extension :integer-lte 1 0 :gravity.type/i64)
+          mir (build core) result (run core mir)
+          {:keys [function then join]} (coordinates core mir)
+          incoming [:functions function :blocks join :instructions 0 :operands]]
+      ;; Both arms are checked, including the unselected then literal.
+      (let [bad (assoc-in core [:core-nodes 3 :attributes :value] :not-an-integer)
+            rejected (run bad (build bad))]
+        (is (= :passed (get-in rejected [:upstream-verification :status])))
+        (is (= :rejected (:status rejected)))
+        (is (nil? (:execution rejected))))
+      (doseq [bad [(assoc-in mir (conj incoming 1) :missing)
+                  (assoc-in mir [:functions function :blocks then :instructions 0 :source :span] nil)]]
+        (let [upstream (invoke 'sh12-verify-branch-join-mir core bad)
+              rejected (run core bad)]
+          (is (= :rejected (:status rejected)))
+          (is (= (:diagnostics upstream) (:diagnostics rejected)))
+          (is (nil? (:execution rejected)))))
+      (is (= :rejected (:status (verify core mir (assoc-in result [:execution :fuel] 506))))))))
+
 (defn- check-selected-comparison-arm [operation role cases]
   (doseq [extension [".gravity" ".qst"] placement [:then :else]]
     (letfn [(base [condition]
@@ -362,7 +415,7 @@
           (is (= (mapv :source nodes) (mapv :source rows)))
           (is (= (mapv #(get-in core [:type-facts % :fact-id]) ids)
                  (mapv #(get-in % [:facts :type-fact-id]) rows)))
-          (is (= role (:role (rows (.indexOf ids computed-id)))))
+          (is (= role (:role (get rows (.indexOf ids computed-id)))))
           (is (= computed-id (:value incoming)))
           (is (= (:control-flow-graph mir)
                  (get-in result [:projection :control-flow-graph])))
@@ -390,7 +443,7 @@
                       :condition :integer-lt 0 1)
                     (with-integer-comparison extension core
                       (if (= placement :then) :else :then) :integer-lt 0 1)
-                    (arm condition 0 1 :integer-lte)]]
+                    (arm condition 0 1 :integer-gte)]]
           (let [mir (build bad) rejection (run bad mir)]
             (is (= :passed (get-in rejection [:upstream-verification :status])))
             (is (= :rejected (:status rejection)))
@@ -1147,3 +1200,236 @@
       (is (nil? (:execution result)))
       (is (nil? (:projection result)))
       (is (= :passed (:status (verify core mir result)))))))
+
+(deftest sh13-executes-integer-less-than-or-equal-only-in-the-selected-arm
+  ;; C11's guarded origin-chain and i64 predicates contain <= in selected
+  ;; branches. These supplied literal witnesses do not execute whole helpers.
+  (check-selected-comparison-arm
+   :integer-lte :integer-less-than-or-equal
+   [[0 0 true] [0 1 true] [1 0 false] [-1 0 true] [0 -1 false]
+    [-9223372036854775808 -9223372036854775808 true]
+    [9223372036854775807 9223372036854775807 true]
+    [-9223372036854775808 9223372036854775807 true]
+    [9223372036854775807 -9223372036854775808 false]])
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]]
+    (let [arm (with-integer-comparison extension
+                (scalar-core (checked extension) true :gravity.type/bool false true)
+                placement :integer-lte 0 0)]
+      ;; Mixed entry-comparison and truthiness composition remain excluded.
+      (doseq [core (conj (mapv #(with-integer-comparison extension arm :condition % 0 0)
+                               [:integer-eq :integer-lt])
+                         (with-scalar-truthiness extension arm :gravity.type/bool true))]
+        (let [mir (build core) result (run core mir)]
+          (is (= :passed (get-in result [:upstream-verification :status])))
+          (is (= :rejected (:status result)))
+          (is (= :bounded-execution-subset (get-in result [:diagnostics 0 :missing-fact])))
+          (is (nil? (:execution result)))
+          (is (= :passed (:status (verify core mir result)))))))))
+
+(deftest sh13-composes-two-integer-lte-span-guards
+  ;; C11 span predicates contain (if (<= 0 start) (<= start end) false).
+  ;; Repeated literal DATA models that value relation, not member lookup,
+  ;; parameter binding, arbitrary Integer width or execution of the helper.
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]]
+    (letfn [(subject [start end]
+              (with-integer-comparison extension
+                (with-integer-comparison extension
+                  (scalar-core (checked extension) true :gravity.type/bool false false)
+                  placement :integer-lte start end)
+                :condition :integer-lte 0 start))]
+      (doseq [[start end] [[0 0] [5 5] [-1 10] [5 4] [0 9223372036854775807]
+                           [-9223372036854775808 -9223372036854775808]
+                           [9223372036854775807 9223372036854775807]
+                           [9223372036854775807 -9223372036854775808]
+                           [-1 -9223372036854775808]]]
+        (let [core (subject start end) mir (build core) result (run core mir)
+              nodes (:core-nodes core) ids (mapv :node-id nodes)
+              rows (get-in result [:projection :operations])
+              condition (<= 0 start) selected? (= placement (if condition :then :else))
+              if-node (first (filter #(= :if (:source-operation %)) nodes))
+              comparison-id ((:operands if-node) (if (= placement :then) 1 2))
+              comparison (first (filter #(= comparison-id (:node-id %)) nodes))
+              selected-ids (if selected? (conj (:operands comparison) comparison-id)
+                             [((:operands if-node) (if condition 1 2))])
+              incoming (first (filter #(= ((coordinates core mir) placement) (:predecessor %))
+                                      (get-in mir [:control-flow-graph :join :incoming])))
+              operations (into {} (for [block (vals (get-in mir [:functions (:entrypoint core) :blocks]))
+                                       op (:instructions block)] [(:op-id op) op]))]
+          (is (= :passed (get-in result [:upstream-verification :status])))
+          (is (= :accepted (:status result)))
+          (is (= (if selected? (<= start end) false) (get-in result [:execution :value])))
+          (is (= (if selected? 503 505) (get-in result [:execution :fuel])))
+          (is (= (into (subvec ids 0 3) selected-ids)
+                 (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+          (is (= 9 (count rows)))
+          (is (= ids (mapv :operation-id rows)))
+          (is (= (mapv :source nodes) (mapv :source rows)))
+          (is (= (mapv #(get-in operations [% :facts]) ids) (mapv :facts rows)))
+          (is (= 2 (count (filter #(= :integer-less-than-or-equal (:role %)) rows))))
+          (is (= comparison-id (:value incoming)))
+          (is (= (:control-flow-graph mir) (get-in result [:projection :control-flow-graph])))
+          (is (= :passed (:status (verify core mir result))))))
+      (let [core (subject (if (= placement :then) -1 1) 0)
+            nodes (:core-nodes core) ids (mapv :node-id nodes)
+            if-node (first (filter #(= :if (:source-operation %)) nodes))
+            comparison-id ((:operands if-node) (if (= placement :then) 1 2))
+            comparison (first (filter #(= comparison-id (:node-id %)) nodes))
+            comparison-index (.indexOf ids comparison-id)
+            left-id (first (:operands comparison)) left-index (.indexOf ids left-id)]
+        ;; These invalid computations are deliberately in the unselected arm.
+        (doseq [bad [(assoc-in core [:core-nodes left-index :attributes :value] nil)
+                    (assoc-in core [:core-nodes left-index :attributes :value] 9223372036854775808N)
+                    (assoc-in core [:core-nodes comparison-index :operands] [])
+                    (assoc-in core [:core-nodes comparison-index :operands] [left-id left-id])
+                    (-> core (assoc-in [:core-nodes left-index :type] :gravity.type/keyword)
+                        (assoc-in [:core-nodes left-index :attributes :value] :bad/value)
+                        (assoc-in [:type-facts left-id :type] :gravity.type/keyword)
+                        (assoc-in [:type-facts left-id :type-id] :gravity.type/keyword))
+                    (with-integer-comparison extension core
+                      (if (= placement :then) :else :then) :integer-lte 0 0)]]
+          (let [mir (build bad) rejected (run bad mir)]
+            (is (= :passed (get-in rejected [:upstream-verification :status])))
+            (is (= :rejected (:status rejected)))
+            (is (= :bounded-execution-subset (get-in rejected [:diagnostics 0 :missing-fact])))
+            (is (nil? (:execution rejected)))))
+        (let [mir (build core) result (run core mir)
+              path [:functions (:entrypoint core) :blocks ((coordinates core mir) placement) :instructions 2]]
+          (doseq [bad [(assoc-in mir (conj path :source-operation) :integer-lt)
+                      (assoc-in mir (into path [:source :span :start]) 999)
+                      (assoc-in mir (into path [:facts :safety-outcome-id]) :forged)
+                      (assoc-in mir [:data-flow-graph :definitions "forged"] {})
+                      (assoc-in mir [:control-flow-graph :join :incoming
+                                     (if (= placement :then) 0 1) :value] left-id)]]
+            (let [upstream (invoke 'sh12-verify-branch-join-mir core bad) rejected (run core bad)]
+              (is (= :rejected (:status rejected)))
+              (is (= (:diagnostics upstream) (:diagnostics rejected)))
+              (is (nil? (:execution rejected)))))
+          (doseq [candidate [(assoc-in result [:execution :value] :forged)
+                             (assoc-in result [:projection :operations 2 :role] :integer-less-than)
+                             (assoc-in result [:execution :fuel] 504)]]
+            (is (= :rejected (:status (verify core mir candidate))))))))))
+
+(deftest sh13-executes-the-bounded-integer-greater-than-family
+  ;; The C11 capability helper's closed subtree is
+  ;; (if (> (count granted) 0) (> (count proof-ids) 0) true).
+  ;; Supplied count DATA is not evidence of capability/proof authority.
+  (check-integer-condition
+   :integer-gt :integer-greater-than
+   [[0 0 :gravity.type/i64 false 22] [1 0 :gravity.type/i64 true 11]
+    [0 1 :gravity.type/i64 false 22] [16 0 :gravity.type/i64 true 11]
+    [17 16 :gravity.type/i64 true 11] [-1 0 :gravity.type/i64 false 22]
+    [-9223372036854775808 9223372036854775807 :gravity.type/i64 false 22]
+    [9223372036854775807 -9223372036854775808 :gravity.type/i64 true 11]
+    [9223372036854775807 9223372036854775807 :gravity.type/bool false true]
+    [1 0 :gravity.type/bool true false]])
+  (check-selected-comparison-arm
+   :integer-gt :integer-greater-than
+   [[0 0 false] [1 0 true] [0 1 false] [16 0 true] [17 16 true]
+    [-1 0 false] [-9223372036854775808 9223372036854775807 false]
+    [9223372036854775807 -9223372036854775808 true]
+    [9223372036854775807 9223372036854775807 false]])
+  (doseq [extension [".gravity" ".qst"]]
+    (doseq [[type a b] [[:gravity.type/keyword :phase/then :phase/else]
+                       [:gravity.type/nil nil nil]]
+            [left right expected] [[1 0 a] [0 0 b]]]
+      (let [core (with-integer-comparison extension
+                   (scalar-core (checked extension) true type a b)
+                   :condition :integer-gt left right)
+            mir (build core) result (run core mir)]
+        (is (= :passed (get-in result [:upstream-verification :status])))
+        (is (= :accepted (:status result)))
+        (is (= expected (get-in result [:execution :value])))
+        (is (= 505 (get-in result [:execution :fuel])))
+        (is (= :passed (:status (verify core mir result)))))))
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]]
+    (letfn [(subject [granted proof-count]
+              (with-integer-comparison extension
+                (with-integer-comparison extension
+                  (scalar-core (checked extension) true :gravity.type/bool true true)
+                  placement :integer-gt proof-count 0)
+                :condition :integer-gt granted 0))]
+      (doseq [[granted proof-count] [[0 0] [1 0] [1 1] [16 17] [17 16]
+                                     [9223372036854775807 0]
+                                     [-9223372036854775808 9223372036854775807]
+                                     [9223372036854775807 -9223372036854775808]
+                                     [9223372036854775807 9223372036854775807]]]
+        (let [core (subject granted proof-count) mir (build core) result (run core mir)
+              nodes (:core-nodes core) ids (mapv :node-id nodes)
+              rows (get-in result [:projection :operations])
+              condition (> granted 0) selected? (= placement (if condition :then :else))
+              if-node (first (filter #(= :if (:source-operation %)) nodes))
+              comparison-id ((:operands if-node) (if (= placement :then) 1 2))
+              comparison (first (filter #(= comparison-id (:node-id %)) nodes))
+              selected-ids (if selected? (conj (:operands comparison) comparison-id)
+                             [((:operands if-node) (if condition 1 2))])
+              incoming (first (filter #(= ((coordinates core mir) placement) (:predecessor %))
+                                      (get-in mir [:control-flow-graph :join :incoming])))
+              operations (into {} (for [block (vals (get-in mir [:functions (:entrypoint core) :blocks]))
+                                       op (:instructions block)] [(:op-id op) op]))]
+          (is (= :passed (get-in result [:upstream-verification :status])))
+          (is (= :accepted (:status result)))
+          (is (= (if selected? (> proof-count 0) true) (get-in result [:execution :value])))
+          (is (= (if selected? 503 505) (get-in result [:execution :fuel])))
+          (is (= (into (subvec ids 0 3) selected-ids)
+                 (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+          (is (= 9 (count rows)))
+          (is (= ids (mapv :operation-id rows)))
+          (is (= (mapv :source nodes) (mapv :source rows)))
+          (is (= (mapv #(get-in operations [% :facts]) ids) (mapv :facts rows)))
+          (is (= 2 (count (filter #(= :integer-greater-than (:role %)) rows))))
+          (is (= comparison-id (:value incoming)))
+          (is (= (:control-flow-graph mir) (get-in result [:projection :control-flow-graph])))
+          (is (= :passed (:status (verify core mir result))))))
+      (let [core (subject (if (= placement :then) 0 1) 1)
+            nodes (:core-nodes core) ids (mapv :node-id nodes)
+            if-node (first (filter #(= :if (:source-operation %)) nodes))
+            comparison-id ((:operands if-node) (if (= placement :then) 1 2))
+            comparison (first (filter #(= comparison-id (:node-id %)) nodes))
+            comparison-index (.indexOf ids comparison-id)
+            left-id (first (:operands comparison)) left-index (.indexOf ids left-id)]
+        (doseq [bad [(assoc-in core [:core-nodes left-index :attributes :value] nil)
+                    (assoc-in core [:core-nodes left-index :attributes :value] -9223372036854775809N)
+                    (assoc-in core [:core-nodes comparison-index :operands] [left-id])
+                    (with-integer-comparison extension core
+                      (if (= placement :then) :else :then) :integer-gt 1 0)]]
+          (let [mir (build bad) rejected (run bad mir)]
+            (is (= :passed (get-in rejected [:upstream-verification :status])))
+            (is (= :rejected (:status rejected)))
+            (is (= :bounded-execution-subset (get-in rejected [:diagnostics 0 :missing-fact])))
+            (is (nil? (:execution rejected)))))
+        (let [mir (build core) result (run core mir)
+              path [:functions (:entrypoint core) :blocks ((coordinates core mir) placement) :instructions 2]]
+          (doseq [bad [(assoc-in mir (conj path :source-operation) :integer-lt)
+                      (assoc-in mir (conj path :effects) #{:io/write})
+                      (assoc-in mir (into path [:facts :safety-outcome-id]) :forged)
+                      (assoc-in mir [:control-flow-graph :join :incoming
+                                     (if (= placement :then) 0 1) :value] left-id)]]
+            (let [upstream (invoke 'sh12-verify-branch-join-mir core bad) rejected (run core bad)]
+              (is (= :rejected (:status rejected)))
+              (is (= (:diagnostics upstream) (:diagnostics rejected)))
+              (is (nil? (:execution rejected)))))
+          (doseq [candidate [(assoc-in result [:execution :value] :forged)
+                             (assoc-in result [:projection :operations 2 :role] :integer-less-than)
+                             (assoc-in result [:execution :fuel] 504)]]
+            (is (= :rejected (:status (verify core mir candidate)))))))
+      (let [base (scalar-core (checked extension) true :gravity.type/bool false true)
+            arm (with-integer-comparison extension base placement :integer-gt 1 0)]
+        (doseq [bad (concat
+                    (mapcat (fn [operation]
+                              [(with-integer-comparison extension arm :condition operation 0 0)
+                               (with-integer-comparison extension
+                                 (with-integer-comparison extension base placement operation 0 0)
+                                 :condition :integer-gt 1 0)])
+                            [:integer-eq :integer-lt :integer-lte])
+                    [(with-scalar-truthiness extension arm :gravity.type/bool true)
+                     (with-integer-comparison extension
+                       (with-two-expression-do extension base placement
+                         :gravity.type/bool false :gravity.type/bool true)
+                       :condition :integer-gt 1 0)
+                     (with-integer-comparison extension
+                       (with-scalar-let extension base placement) :condition :integer-gt 1 0)])]
+          (let [mir (build bad) result (run bad mir)]
+            (is (= :passed (get-in result [:upstream-verification :status])))
+            (is (= :rejected (:status result)))
+            (is (= :bounded-execution-subset (get-in result [:diagnostics 0 :missing-fact])))
+            (is (nil? (:execution result)))))))))

@@ -746,8 +746,8 @@
             truthy (make 'sh13-operation [:nil/truthy :truthy [:nil/value] :bool 1 2])]
         (check (single [constant eq] :bool :nil/equal) [] :returned true)
         (check (single [constant truthy] :bool :nil/truthy) [] :returned false)
-        (doseq [opcode [:add :sub :mul :lt]]
-          (let [op (assoc eq :opcode opcode :type (if (= opcode :lt) :bool :i64))]
+        (doseq [opcode [:add :sub :mul :lt :lte :gt]]
+          (let [op (assoc eq :opcode opcode :type (if (#{:lt :lte :gt} opcode) :bool :i64))]
             (reject (single [constant op] (:type op) :nil/equal) [] "C11-TYPE")))
         (let [number (make 'sh13-constant [:nil/number 0 :i64 1 2])]
           (reject (single [constant number (assoc eq :operands [:nil/value :nil/number])]
@@ -892,3 +892,58 @@
         (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
                                                 [with-local [true]
                                                  (assoc-in result [:execution :value] :forged)]))))))))
+
+(defn- check-normalized-order-comparison [opcode compare-values]
+  ;; Existing normalized constructors, not fresh authenticated source artifacts.
+  (is (contains? (:operation-set (invoke-engine 'sh13-control-flow-policy [])) opcode))
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (module plan 'sh13-branch-module)
+          make (fn [name args] (invoke plan name args))
+          left (make 'sh13-constant [:lte/left 0 :i64 0 1])
+          right (make 'sh13-constant [:lte/right 0 :i64 1 2])
+          op (make 'sh13-operation [:lte/result opcode [:lte/left :lte/right] :bool 2 3])
+          operations [:functions 0 :blocks 0 :operations]
+          subject (-> base (assoc-in operations [left right op])
+                      (assoc-in [:functions 0 :blocks 0 :terminator :condition] :lte/result))
+          reject (fn [candidate rule]
+                   (let [result (run candidate [false])]
+                     (is (= :rejected (:status result)))
+                     (is (= rule (get-in result [:diagnostics 0 :rule])))
+                     (is (nil? (:execution result)))
+                     (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                           [candidate [false] result]))))))]
+      (doseq [[a b] [[0 0] [0 1] [1 0] [-1 0] [0 -1]
+                    [-9223372036854775808 9223372036854775807]
+                    [9223372036854775807 -9223372036854775808]
+                    [-9223372036854775808 -9223372036854775808]
+                    [9223372036854775807 9223372036854775807]]]
+        (let [candidate (-> subject
+                            (assoc-in (conj operations 0 :literal) a)
+                            (assoc-in (conj operations 1 :literal) b))
+              result (run candidate [false]) expected (compare-values a b)]
+          (is (= :accepted (:status result)))
+          (is (= (if expected 42 7) (get-in result [:execution :value])))
+          (is (= [:lte/left :lte/right :lte/result
+                  (if expected :choose/forty-two :choose/seven)]
+                 (mapv :operation (filter :operation (get-in result [:execution :trace])))))
+          (is (= :passed (:status (invoke-engine 'sh13-verify-execution
+                                                [candidate [false] result]))))
+          (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                                  [candidate [false]
+                                                   (assoc-in result [:execution :value] :forged)]))))))
+      (doseq [operands [[] [:lte/left] [:lte/left :lte/right :lte/left]]]
+        (reject (assoc-in subject (conj operations 2 :operands) operands) "C11-TYPE"))
+      (reject (assoc-in subject (conj operations 2 :operands) [:lte/left :missing]) "C11-DOMINANCE")
+      (reject (assoc-in subject (conj operations 2 :type) :i64) "C11-TYPE")
+      (doseq [[type value] [[:bool true] [:keyword :phase/value] [:nil nil]]]
+        (reject (assoc-in subject operations [(assoc left :type type :literal value) right op])
+                "C11-TYPE"))
+      (reject (assoc-in subject (conj operations 0 :literal) 9223372036854775808N) "C11-TYPE")
+      (reject (assoc-in subject (conj operations 2 :source-span) nil) "C11-ORIGIN")
+      (reject (assoc-in subject (conj operations 2 :effects) #{:io/stdout}) "C11-EFFECT"))))
+
+(deftest sh13-normalized-less-than-or-equal-checks-i64-operands
+  (check-normalized-order-comparison :lte <=))
+
+(deftest sh13-normalized-greater-than-checks-i64-operands
+  (check-normalized-order-comparison :gt >))

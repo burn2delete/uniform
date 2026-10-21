@@ -29,6 +29,81 @@
    :generated-origin []
    :metadata {}})
 
+(defn- original-two-flatten-trace [roots]
+  ;; Frozen output oracle for the original projection, not a verifier/cache.
+  {:artifact :gravity/c6-desugaring-trace
+   :records
+   (mapv (fn [root]
+           {:surface-syntax (get-in root [:source :syntax-id])
+            :surface-kind (:form root)
+            :core-root (:node-id root)
+            :introduced-forms
+            (vec (keep #(when (:generated? %) (:form %))
+                       (c6/c6-flatten-core root)))
+            :preserved #{:source-spans :metadata :profile
+                         :capabilities :effects :generated-origin}
+            :introduced-origin
+            (mapv (fn [node]
+                    {:core-node (:node-id node)
+                     :reason :surface-or-macro-desugar
+                     :from (get-in node [:source :syntax-id])})
+                  (filter :generated? (c6/c6-flatten-core root)))
+            :evaluation-order (:evaluation-order root)
+            :diagnostics []})
+         roots)
+   :status :complete})
+
+(deftest desugaring-trace-reuses-one-original-flatten-per-root
+  ;; C6 requires complete trace/origin/order preservation. Only the duplicate
+  ;; root traversal is removed; recursive flattening and its returned nodes stay.
+  (let [node (fn [id form generated? children]
+               {:artifact :gravity/core-node :node-id id :form form
+                :generated? generated? :children children
+                :source {:syntax-id (str "syntax-" id)}
+                :evaluation-order [:left :right]})
+        plain (node "plain" :literal false {})
+        generated (node "generated" 'quote true {})
+        nested (node "nested" 'do true {:body [plain generated]})
+        root (node "root" 'if false {:body [nested]})
+        original-flatten c6/c6-flatten-core]
+    (doseq [roots [[] [plain] [root] [plain root generated]]]
+      (let [expected (original-two-flatten-trace roots)
+            calls (atom []) depth (atom 0)
+            actual
+            (c6/with-operations
+              {:c6-flatten-core
+               (fn [candidate]
+                 (when (zero? @depth) (swap! calls conj candidate))
+                 (swap! depth inc)
+                 (try (original-flatten candidate)
+                      (finally (swap! depth dec))))}
+              #(c6/c6-desugaring-trace roots))]
+        (is (= expected actual))
+        (is (= (mapv :node-id roots) (mapv :node-id @calls)))
+        (is (every? true? (map identical? roots @calls)))
+        (is (= (count roots) (count @calls)))
+        (is (= (mapv #(get-in % [:source :syntax-id]) roots)
+               (mapv :surface-syntax (:records actual))))
+        (is (= (mapv :evaluation-order roots)
+               (mapv :evaluation-order (:records actual))))))
+    (let [record (first (:records (c6/c6-desugaring-trace [root])))]
+      (is (= '[do quote] (:introduced-forms record)))
+      (is (= ["nested" "generated"] (mapv :core-node (:introduced-origin record))))
+      (is (= ["syntax-nested" "syntax-generated"]
+             (mapv :from (:introduced-origin record))))
+      (is (= #{:source-spans :metadata :profile :capabilities :effects :generated-origin}
+             (:preserved record))))
+    (let [stream [(syntax "ns" '(ns gravity.c6-test))
+                  (assoc (syntax "generated" '(do (if true 1 2) 3))
+                         :generated-origin [{:macro 'example :syntax-id "macro-0"}])
+                  (syntax "plain" '(def answer 42))]
+          build #(c6/c6-lowering-artifact "c6-test.gravity" module c5-artifact stream)
+          expected (c6/with-operations {:c6-desugaring-trace original-two-flatten-trace} build)
+          actual (build)]
+      (is (= expected actual))
+      (is (= (:artifact-id expected) (:artifact-id actual)))
+      (is (= :passed (get-in actual [:core-verifier-report :status]))))))
+
 (deftest contract-is-hosted-compatible-and-nonauthoritative
   (let [contract (c6/c6-engine-contract)
         publics (set (keys (ns-publics 'gravity.c6-core-lowering)))]

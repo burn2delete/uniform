@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.c6-core-lowering :as hosted-c6]))
 
 (defn- repository-root
   []
@@ -1904,6 +1905,79 @@
             ((required-var 'sh06-c6-lowering-from-resolution-artifact)
              resolution-artifact)))
         lowered (lower-with artifact)
+        ;; Fixed compiler-subset only: observe original hosted C6 work, not SH07
+        ;; execution or the interrupted checked_core source subject. No product
+        ;; printing/serialization is added. Timings include observer overhead;
+        ;; construction contains trace/hash, and trace contains flatten work.
+        measurements (atom {}) gates (atom []) root-visits (atom [])
+        flatten-phase (atom :assembly) flatten-depth (atom 0)
+        require-bound! (fn [condition phase]
+                         (when-not condition
+                           (throw (ex-info "bounded hosted C6 observation stopped"
+                                           {:phase phase :maximum-flat-nodes 256
+                                            :maximum-flatten-calls 768}))))
+        timed (fn [label original]
+                (fn [& args]
+                  (let [start (System/nanoTime)]
+                    (try (apply original args)
+                         (finally
+                           (swap! measurements update label
+                                  (fn [prior]
+                                    {:calls (inc (get prior :calls 0))
+                                     :inclusive-ns (+ (get prior :inclusive-ns 0)
+                                                      (- (System/nanoTime) start))})))))))
+        original-verify bootstrap/sh06-resolution-artifact-verification
+        original-construct hosted-c6/c6-lowering-artifact
+        original-flatten bootstrap/c6-flatten-core
+        original-trace bootstrap/c6-desugaring-trace
+        original-id bootstrap/c4-artifact-id
+        observed
+        (with-redefs
+          [bootstrap/sh06-resolution-artifact-verification
+           (fn [candidate]
+             (require-bound! (< (count @gates) 2) :fresh-c5-gate-count)
+             (let [start (System/nanoTime) report (original-verify candidate)]
+               (swap! gates conj {:same-input? (identical? artifact candidate)
+                                  :status (:status report)
+                                  :inclusive-ns (- (System/nanoTime) start)})
+               report))
+           hosted-c6/c6-lowering-artifact (timed :construction original-construct)
+           bootstrap/c6-desugaring-trace
+           (fn [roots]
+             (require-bound! (<= (count roots) 3) :trace-root-count)
+             (reset! flatten-phase :desugaring)
+             (try ((timed :desugaring original-trace) roots)
+                  (finally (reset! flatten-phase :assembly))))
+           bootstrap/c6-flatten-core
+           (fn [node]
+             (let [phase @flatten-phase depth @flatten-depth
+                   calls (reduce + 0 (map #(get % :calls 0) (vals (:flatten @measurements))))]
+               (require-bound! (and (< calls 768) (< depth 256)) :before-flatten)
+               (swap! measurements update-in [:flatten phase :calls] (fnil inc 0))
+               (swap! flatten-depth inc)
+               (let [start (System/nanoTime)]
+                 (try
+                   (let [flat (original-flatten node)]
+                     (require-bound! (and (vector? flat) (<= (count flat) 256)) :returned-flat)
+                     ;; Sum every actual recursive return's vector length. This
+                     ;; counts row occurrences, not unique allocations/bytes.
+                     (swap! measurements update-in [:flatten phase :returned-rows]
+                            (fnil + 0) (count flat))
+                     (when (zero? depth)
+                       (require-bound! (and (< (count @root-visits) 9)
+                                            (string? (:node-id node))
+                                            (<= (count (:node-id node)) 64)) :root-observation)
+                       (swap! root-visits conj {:phase phase :node-id (:node-id node)
+                                               :rows (count flat)
+                                               :inclusive-ns (- (System/nanoTime) start)}))
+                     flat)
+                   (finally (swap! flatten-depth dec))))))
+           bootstrap/c4-artifact-id
+           (fn [value]
+             (if (= :gravity/stage0-c6-core-lowering-artifact (:kind value))
+               ((timed :final-artifact-id original-id) value)
+               (original-id value)))]
+          (lower-with artifact))
         altered (assoc artifact :artifact-id
                        "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
         rejection
@@ -1914,6 +1988,46 @@
             (ex-data error))
           (catch Throwable error
             {:raw-host-error (.getName (class error))}))]
+    (is (true? (= lowered observed)) "observed/unobserved complete hosted C6 artifact parity")
+    (is (= (:artifact-id lowered) (:artifact-id observed)))
+    (is (= 2 (count @gates)))
+    (is (every? #(and (:same-input? %) (= :passed (:status %))) @gates))
+    (is (= 1 (get-in @measurements [:construction :calls])
+           (get-in @measurements [:desugaring :calls])
+           (get-in @measurements [:final-artifact-id :calls])))
+    (let [roots (get-in observed [:core-ast-module :roots])
+          nodes (get-in observed [:core-ast-module :node-count])
+          visits #(filter (fn [visit] (= % (:phase visit))) @root-visits)
+          assembly (get-in @measurements [:flatten :assembly])
+          desugaring (get-in @measurements [:flatten :desugaring])]
+      (is (= 3 (count roots)))
+      (is (<= 1 nodes 256))
+      (is (= roots (mapv :node-id (visits :assembly))))
+      (is (= roots (mapv :node-id (visits :desugaring))))
+      (is (= nodes (:calls assembly) (reduce + (map :rows (visits :assembly)))))
+      (is (= nodes (:calls desugaring) (reduce + (map :rows (visits :desugaring)))))
+      (is (= (:returned-rows assembly) (:returned-rows desugaring)))
+      (is (> (:returned-rows assembly) nodes))
+      (require-bound!
+       (and (= lowered observed) (= 2 (count @gates))
+            (every? #(and (:same-input? %) (= :passed (:status %))) @gates)
+            (zero? @source-read-attempts) (= 3 (count roots)) (<= 1 nodes 256)
+            (= 1 (get-in @measurements [:construction :calls])
+               (get-in @measurements [:desugaring :calls])
+               (get-in @measurements [:final-artifact-id :calls]))
+            (= roots (mapv :node-id (visits :assembly)))
+            (= roots (mapv :node-id (visits :desugaring)))
+            (= nodes (:calls assembly) (reduce + (map :rows (visits :assembly))))
+            (= nodes (:calls desugaring) (reduce + (map :rows (visits :desugaring))))
+            (= (:returned-rows assembly) (:returned-rows desugaring))
+            (> (:returned-rows assembly) nodes)) :observation-parity)
+      (println (pr-str {:hosted-c6-phase-observation :compiler-subset-only
+                       :authority :non-authoritative :fresh-c5-gates @gates
+                       :measurements @measurements :root-visits @root-visits
+                       :flat-nodes nodes :timing :inclusive-not-additive-observer-included
+                       :row-unit :sum-of-each-original-recursive-return-vector-length
+                       :not-measured [:exclusive-cost :heap :bytes :speedup :large-subject-cause
+                                      :gravity-sh07-execution :migration]})))
     (is (= :gravity/stage0-c6-core-lowering-artifact (:kind lowered)))
     (is (= :gravity/sh06-resolution-artifact
            (get-in lowered [:c5-name-resolution-artifact :kind])))

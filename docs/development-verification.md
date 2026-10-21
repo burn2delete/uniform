@@ -560,6 +560,90 @@ diagnostics. Include branch execution, runtime-bound and recomputation controls
 when changing either predicate. This is typed MIR validation, not a change to
 source-language truthiness or fresh upstream admission.
 
+### MIR integer less-than-or-equal placement
+
+Edit `c11_mir_specification.gravity` for the bounded SH-13 interpreter and
+original SH-12 producer bridge. The normalized operation domain now includes
+`:lte`: two already-defined signed-i64 operands produce Bool. The bridge maps
+original `:integer-lte` to it with the explicit
+`:integer-less-than-or-equal` projection role in a seven-row `[3,1,1]`
+entry-comparison diamond with scalar literal arms. A literal Bool entry also
+supports one three-operation `<=` arm, with widths `[1,3,1]` or `[1,1,3]`.
+Both arms validate before execution. Two `<=` comparisons also compose in
+nine-row `[3,3,1]` or `[3,1,3]` diamonds. Mixed Eq/Lt comparisons or truthiness
+combined with a `<=` arm, and two computed `<=` arms, remain rejected; Eq/Lt arm support
+is unchanged. Original source/fact, CFG/DFG, origin, type, effect and recomputation
+checks remain. Entry comparison leaves fuel 505; a selected/skipped comparison
+arm leaves 505/507 under depth 32 and fuel 512. No public keys or arities change.
+Double-`<=` composition leaves fuel 503/505 when its computed arm is selected/skipped.
+
+Run `sh13-executes-integer-less-than-or-equal-entry-conditions` and
+`sh13-executes-integer-less-than-or-equal-only-in-the-selected-arm` in
+`gravity.self-hosting.sh13-branch-join-execution-test` and
+`sh13-normalized-less-than-or-equal-checks-i64-operands` in
+`gravity.self-hosting.sh13-control-flow-test`. Include the existing bridge,
+normalized control-flow and original SH-12 producer controls when changing the
+shared comparison validators. Nil and other non-i64 operands reject.
+
+At `a20b282d`, five passing invocations cover 46 tests / 10,889 assertions,
+including boundary checks. LOC separately passed 2,022 files, zero exceptions,
+maximum 250 physical lines. The earlier bridge RED remains 220 passes and
+180 failures in 1 / 400; the normalized selector was not part of that RED.
+Preserve `/tmp/d-sh13-lte-*-v1-20261021` results. These supplied G/Q constructor
+and original producer/verifier compositions are development evidence, not
+fresh C6/C10 source adaptation, native execution, SH-13 completion or migration.
+Future stable consumers must account for the additive opcode/projection domain;
+this development merge does not renew historical admission evidence.
+
+The selected-arm increment at `2b4406e8` reuses the existing opcode and role,
+without changing public keys, arities or bounds. Selected/skipped arms leave
+fuel 505/507. Four passing invocations cover the new arm, retained bridge,
+normalized signature/Nil/bounds/overflow and boundary checks: 28 tests / 9,356
+assertions. LOC separately passes 2,022 files, zero exceptions, maximum 250.
+Retain `/tmp/d-sh13-lte-arm-*-v1-20261021`. The separate test-only RED contains
+452 passes, 648 failures and 72 errors in 1 / 1,172; those errors inspect absent
+projection roles after subset rejection, not failed comparison execution.
+Literal witnesses exercise placement used by C11's guarded predicates, not
+whole-helper execution, fresh source adaptation, native execution or admission.
+
+For two-sided span guards, run `sh13-composes-two-integer-lte-span-guards` in
+the same bridge namespace. At `d3653edc`, four passing invocations cover the
+new composition 1/636, affected bridge 18/8,810, normalized controls 4/499 and
+boundary 6/11: 29 tests / 9,956 assertions. LOC separately passes 2,022 files,
+zero exceptions, maximum 250 lines. Preserve `/tmp/d-sh13-double-lte-*-v1-20261021`
+and its separate test-only RED 276 passes / 360 failures in 1/636. Removing
+36 now-obsolete composition-rejection assertions changes the old entry/arm
+counts to 384/1,152; it does not relabel earlier runs. Independent literal
+pairs model C11's `(if (<= 0 start) (<= start end) false)` placement, not shared
+variable dataflow, member lookup, arbitrary Integer width or actual helper execution.
+
+### MIR integer greater-than placement
+
+Edit `c11_mir_specification.gravity` and run
+`sh13-executes-the-bounded-integer-greater-than-family` in
+`gravity.self-hosting.sh13-branch-join-execution-test`, plus
+`sh13-normalized-greater-than-checks-i64-operands` in
+`gravity.self-hosting.sh13-control-flow-test`. The normalized `:gt` operation
+compares exactly two available signed-i64 operands and returns Bool. The
+original `:integer-gt` bridge preserves the explicit `:integer-greater-than`
+role and original source, facts, CFG/DFG, incoming values and operation IDs.
+It supports seven-row entry comparisons with scalar literal arms, seven-row
+literal-Bool entries with one GT arm, and nine-row GT-entry/GT-arm diamonds.
+Both arms validate before execution. Mixed GT/Eq/Lt/LTE, truthiness, DO/let and
+both-computed-arm GT layouts remain excluded. Existing depth/fuel bounds stay;
+fuel is 505 for an entry or selected arm, 507 for a skipped arm, and 503/505
+for selected/skipped nine-row computation. This adds an opcode/projection
+domain, not public keys or arities; future migration must account for it.
+
+At `342610b9`, four passing invocations cover new bridge 1/2,160, retained
+bridge 19/9,446, normalized namespace 22/2,813 and boundary 6/11: 48 tests /
+14,430 assertions. LOC separately passes 2,022 files, zero exceptions, maximum
+250 lines. Retain `/tmp/d-sh13-gt-*-v1-20261021`, including the separate RED
+900 passes / 1,260 failures in 1/2,160; normalized tests were not RED-selected.
+The C11 capability helper supplies a concrete positive-length guard client,
+but literal count witnesses do not prove count execution, capability authority,
+whole-helper execution, fresh source/native composition or SH-13 completion.
+
 ### Scalar SSA forwarding in normalized MIR
 
 For a pure scalar copy, edit `c11_mir_specification.gravity` and run
@@ -7472,6 +7556,24 @@ do not attribute all upstream bytes to its whole-artifact hash. Any future
 representation correction must inventory consumers and preserve required
 identity, provenance, diagnostics and fresh verification, or explicitly version
 and invalidate changed evidence. No representation redesign is selected here.
+
+The existing tiny public-C6 consumer selector now also observes original phase
+calls without printing products. At `0fdd0af1`, desugaring reuses one root-local
+flattened Vector for its two trace projections; assembly, recursive flattening,
+artifact representation, hashing and both fresh verification gates are unchanged.
+An old two-traversal trace oracle checks full trace/artifact/ID parity, origins,
+root order and original operation delegation. On the three-root, 27-node tiny
+fixture, trace calls/returned row positions fall from 54/254 to 27/127;
+assembly stays 27/127. These are occurrences, not unique allocations or bytes.
+Construction is about 19ms inclusive of hashing and trace, while its two fresh
+gates each take about five seconds; timings include observer overhead and are
+not additive or a measured speedup. They do not explain the interrupted large
+subject. Unit 5/115, tiny integration 1/59 and boundary 6/11 pass in three
+invocations; LOC passes 2,022 files, zero exceptions, maximum 250 lines.
+Retain `/tmp/sh06-single-flatten-trace-*-0fdd0af1-20261021` and the separate
+`/tmp/sh06-single-flatten-trace-red-f0fadd5d-20261021` test-only RED of 24 passes
+/ seven failures in 1/31. No unchanged large
+proof was repeated and no acceptance cache or migration claim is introduced.
 
 The typed-catch composition exposed a separate retention limitation. Rendering
 its first original request, typed result and verification report as one EDN
