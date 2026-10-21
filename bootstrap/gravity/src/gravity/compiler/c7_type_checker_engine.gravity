@@ -16595,7 +16595,8 @@
 
 
 (defn sh08-scv-source [core node call edge nodes bindings types module proof]
-  (if (if (vector? (get call :argument-node-ids))
+  (if (if (map? edge) (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false)
+    (if (if (vector? (get call :argument-node-ids))
         (if (= 1 (count (get call :argument-node-ids)))
           (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false)
   (let [children (get node :children) operator (get nodes (get call :operator-node-id))
@@ -16650,7 +16651,7 @@
        :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :original-string-literal :conversion-policy :source-scalar-proof :result-storage-policy :allocation-condition :profile :target :evaluation-order]} nil)) nil))
+                      :callee-body :original-string-literal :conversion-policy :source-scalar-proof :result-storage-policy :allocation-condition :profile :target :evaluation-order]} nil)) nil) nil))
 
 (defn sh08-scv-finish [header]
   (let [normal? (= :normal (get header :application))
