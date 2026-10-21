@@ -10937,6 +10937,25 @@ because 36 now-supported composition assertions no longer expect rejection.
 No historical run is relabeled. Fresh source/native composition, SH-13
 completion and authoritative migration remain separate outstanding boundaries.
 
+### MIR integer greater-than: executable increment
+
+At `342610b9`, C11's normalized `:gt` compares two available signed-i64 values
+and produces Bool. The existing original producer bridge accepts `:integer-gt`
+with explicit `:integer-greater-than` role in seven-row entry or single-arm
+diamonds and nine-row GT-entry/GT-arm composition. Scalar literal returns,
+both-arm validation, original identity/provenance/facts and recomputing result
+verification remain. Mixed comparisons, truthiness, DO/let and both-computed
+GT arms still reject; depth 32 and fuel 512 are unchanged. This adds an explicit
+opcode/projection domain, not keys, arities, a new interpreter or authority.
+
+Four passing invocations cover 48 tests / 14,430 assertions, with separate LOC
+2,022 files / zero exceptions / maximum 250 lines. Preserve
+`/tmp/d-sh13-gt-*-v1-20261021`; the separate RED is 900 passes / 1,260 failures
+in 1/2,160, with no normalized RED invocation. C11's capability helper motivates
+the guard shape, but these literal count premises do not establish count or
+helper execution, capability/proof authority, fresh source/native composition,
+SH-13 completion or current authoritative admission.
+
 ### MIR conditional-condition dominance: development repair
 
 Normalized conditional branches now report `C11-DOMINANCE` when the condition
