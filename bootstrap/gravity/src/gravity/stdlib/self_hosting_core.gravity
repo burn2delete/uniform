@@ -32,6 +32,7 @@
    :integer-maximum 9223372036854775807
    :operation-set
    #{:vector-assoc
+     :vector-append
      :vector-nth
      :ordered-map-assoc
      :ordered-map-get
@@ -83,6 +84,11 @@
    [(sh22-export
      :vector-assoc :collections
      "(Vector a) Int a -> (Result (Vector a) Error)"
+     #{:memory/allocate} #{}
+     :bounded-by-result ["STD3001" "STD3002"] #{:meta})
+    (sh22-export
+     :vector-append :collections
+     "(Vector a) a -> (Result (Vector a) CollectionError)"
      #{:memory/allocate} #{}
      :bounded-by-result ["STD3001" "STD3002"] #{:meta})
     (sh22-export
@@ -480,6 +486,29 @@
               :persistent-value-semantics true})
             (sh22-rejected
              request "STD3002" :index-out-of-bounds))
+          (sh22-rejected
+           request "STD3001" :collection-bound-exceeded))
+        (sh22-rejected request "STD3002" :expected-vector))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
+(defn sh22-vector-append-result [request values value]
+  (sh22-accepted
+   request (conj values value)
+   {:collection-kind :vector
+    :safety-outcome :proven-safe
+    :allocation :bounded-by-result
+    :persistent-value-semantics true}))
+
+(defn sh22-vector-append [request]
+  (let [arguments (get request :arguments)
+        values (get arguments 0)
+        value (get arguments 1)]
+    (if (= 2 (count arguments))
+      (if (vector? values)
+        (if (< (count values)
+               (get (sh22-library-policy)
+                    :maximum-collection-elements))
+          (sh22-vector-append-result request values value)
           (sh22-rejected
            request "STD3001" :collection-bound-exceeded))
         (sh22-rejected request "STD3002" :expected-vector))
@@ -1224,8 +1253,10 @@
 
 (defn sh22-handle-valid-request [request]
   (let [operation (get request :operation)]
-    (if (= operation :vector-assoc)
-      (sh22-vector-assoc request)
+    (if (sh22-member? #{:vector-assoc :vector-append} operation)
+      (if (= operation :vector-assoc)
+        (sh22-vector-assoc request)
+        (sh22-vector-append request))
       (if (= operation :vector-nth)
         (sh22-vector-nth request)
         (if (= operation :ordered-map-assoc)
@@ -1260,6 +1291,7 @@
   (if
    (sh22-member?
     #{:vector-assoc
+      :vector-append
       :ordered-map-assoc
       :ordered-set-conj
       :utf8-validate
@@ -1276,7 +1308,7 @@
       #{}))))
 
 (defn sh22-operation-allocation [operation]
-  (if (= operation :vector-assoc)
+  (if (sh22-member? #{:vector-assoc :vector-append} operation)
     :bounded-by-result
     (if (= operation :vector-nth)
       :none

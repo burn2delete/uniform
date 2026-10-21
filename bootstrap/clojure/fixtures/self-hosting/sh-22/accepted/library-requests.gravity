@@ -2,6 +2,7 @@
   (:profile :meta)
   (:target :jvm)
   (:exports [sh22-vector-assoc-request
+             sh22-vector-append-request
              sh22-vector-nth-request
              sh22-map-assoc-request
              sh22-map-get-request
@@ -72,6 +73,12 @@
   (sh22-request
    :vector-nth :vector-nth [[10 20 30] 2]
    #{} #{} :none "/checkout-a/compiler.gravity"))
+
+(defn sh22-vector-append-request []
+  (sh22-request
+   :vector-append :vector-append [[:reader :syntax] :mir]
+   #{:memory/allocate} #{} :bounded-by-result
+   "/checkout-a/compiler.gravity"))
 
 (defn sh22-map-assoc-request []
   (sh22-request
