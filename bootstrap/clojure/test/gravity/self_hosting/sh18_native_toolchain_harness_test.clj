@@ -189,6 +189,61 @@
           (is (= 4096 (:stdout-bytes finite-process)))
           (is (true? (get-in finite-process [:cleanup :complete?]))))))))
 
+(deftest sh18-native-execution-preserves-output-limit-rejection
+  (let [toolchain (harness/discover-toolchain)
+        directory-seen (atom nil)]
+    (is (= :available (:status toolchain)) toolchain)
+    (when (= :available (:status toolchain))
+      (is (= :clang (:compiler-family toolchain)))
+      (is (.isAbsolute (java.io.File. (:compiler-path toolchain))))
+      (harness/with-temporary-directory
+        "gravity-sh18-execution-output-limit-"
+        (fn [directory]
+          (reset! directory-seen directory)
+          (let [source (str "#include <stdio.h>\nint main(void) {\n  for (;;) {\n"
+                            "    if (fputs(\"0123456789abcdef\", stdout) == EOF) { return 71; }\n"
+                            "  }\n}\n")
+                _ (is (< (alength (.getBytes source StandardCharsets/UTF_8)) 1024))
+                {:keys [compilation output-path]}
+                (compile-generated-source! toolchain directory "noisy.c" source)
+                original harness/run-bounded-process
+                observed (atom [])
+                execution
+                (try
+                  (with-redefs [harness/run-bounded-process
+                                (fn [options]
+                                  (let [result (original options)]
+                                    (swap! observed conj result)
+                                    result))]
+                    (harness/execute-native
+                     {:executable-path (str output-path) :arguments []
+                      :working-directory (str directory) :timeout-ms 5000}))
+                  (catch Exception failure
+                    {:status :host-failure :class (.getName (class failure))
+                     :message (.getMessage failure)}))
+                process (first @observed)]
+            (println (pr-str {:sh18-output-limit-observation
+                             {:toolchain toolchain
+                              :compilation (dissoc compilation :process)
+                              :compile-process (dissoc (:process compilation) :stdout :stderr)
+                              :execution (dissoc execution :process)
+                              :process (-> process (dissoc :stdout :stderr)
+                                           (update :overflow dissoc :text))}}))
+            (is (= :completed (get-in compilation [:process :status])))
+            (is (= 1 (count @observed)))
+            (is (= :output-limit-exceeded (:status process)))
+            (is (= harness/maximum-output-bytes (:stdout-bytes process)))
+            (is (<= (:stderr-bytes process) harness/maximum-output-bytes))
+            (is (nil? (:exit-code process)))
+            (is (true? (get-in process [:cleanup :complete?])))
+            (is (false? (get-in process [:cleanup :root-alive?])))
+            (is (= 0 (get-in process [:cleanup :descendants-alive])))
+            (is (= :rejected (:status execution)) execution)
+            (is (= process (:process execution)))
+            (is (= (:executable-hash compilation) (:executable-hash execution)))
+            (is (= [] (:arguments execution))))))
+      (is (not (Files/exists @directory-seen (make-array java.nio.file.LinkOption 0)))))))
+
 (deftest sh18-native-harness-reaps-observed-descendants-before-return
   (when-let [toolchain (available-toolchain)]
     (when (re-find #"(?i)darwin|linux|bsd" (:target toolchain))
