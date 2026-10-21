@@ -352,7 +352,8 @@
   ;; Delegate unchanged arguments/results; count only this helper's loaded plan.
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
-        original-scoped @scoped original-builtin @builtin plans (atom [])
+        unary (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin)
+        original-scoped @scoped original-builtin @builtin original-unary @unary plans (atom [])
         counts (atom {:vector-tail-calls 0 :membership-calls 0})
         result (with-redefs-fn
           {scoped (fn [runtime plan callee args scope]
@@ -360,6 +361,11 @@
                       (do (swap! plans conj plan)
                           (try (original-scoped runtime plan callee args scope) (finally (swap! plans pop))))
                       (original-scoped runtime plan callee args scope)))
+           unary (fn [runtime plan callee value]
+                   (when (and (seq @plans) (identical? (peek @plans) plan)
+                              (= 'rest callee) (vector? value))
+                     (swap! counts update :vector-tail-calls inc))
+                   (original-unary runtime plan callee value))
            builtin (fn [& args]
                      (let [callee (nth args (- (count args) 2)) values (last args)]
                        (when (and (seq @plans) (identical? (peek @plans) (nth args (- (count args) 3))))
