@@ -470,6 +470,25 @@ rows, not a fixed point or a CPU-time claim. Original request references/flags,
 source/origin/result identity, decision order, invalidation and fresh
 recomputation remain intact; the same normalized-DATA evidence limits apply.
 
+For post-fold local cleanup, also run
+`sh16-removes-only-unused-constants-created-by-fresh-folding`. The existing DCE
+pass freshly reconstructs the fold selection from the original request and
+matches each selected producer's exact transformed operation against its
+current input. Only a nondead, pure/proven-safe, one-payload bounded i64 const
+with globally unique original/current result IDs and no current operand uses
+may be removed. Original prefix constants and used final results remain;
+this is not generic constant, compute or control deletion. Full current-use
+scanning is conservative, with no fixed point.
+
+Existing explicit dead-proof selections keep their validated proof IDs; local
+cleanup contributes no fabricated or nil proof ID. Ordered changed operations
+and the existing `:direct-no-use-dead-rule` bounded replay record the local
+evidence. Preserve runtime-proof invalidation, source/original-input identity,
+fresh pipeline reconstruction and result-substitution rejection. Preparation
+uses multiple bounded scans, up to eight operation traversals plus at most
+2,048 operand positions under the existing 128-operation/16-operand limits;
+this is not two walks, a linear-CPU bound or a performance claim.
+
 For normalized C13 branch simplification, run
 `sh16-simplifies-only-established-boolean-conditions` in the same namespace.
 Only actual `true` and `false` conditions select their respective destination.
