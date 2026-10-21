@@ -8772,6 +8772,25 @@ these are retained observations at `e592766e`, not a joined-candidate rerun.
 No reader helper compilation/invocation or linkage, arbitrary-precision division,
 signed rounding, Unicode admission, C6 proof, native or migration claim follows.
 
+### Invalid UTF-8 count cannot authorize a stdout descriptor
+
+At `150e21d9`, the existing stdout consumer requires an actual Integer recomputed
+scalar count before matching supplied facts. This closes nil-equals-nil admission
+for the selected invalid byte sequences while preserving prior authority,
+carrier, encoding and byte-bound gates and the existing STD4001 fact-mismatch
+diagnostic. Real validate-to-stdout Results retain their bytes and facts, including
+empty text and multibyte endpoints. An original-delegating observer sees both
+successful construction and rejection before a provider-request descriptor;
+fresh producer/consumer verification rejects substitutions. No provider IO runs.
+
+Original RED `06eb6226` naturally completed 264 assertions: 210 passes and 54
+failures, with no errors. The unchanged regression then passed with the minimal
+guard: 8/614 (264 new and 350 affected controls). Boundary separately passed
+6/11: 14/625 across two passing invocations. LOC separately passed 2,022 files,
+zero exceptions, maximum 250. No operation, API, fixture, manifest or authority
+change follows. Other malformed-byte carrier failures, complete text/IO support,
+provider/native execution and admission remain outside this repair.
+
 ### Keyword membership in bounded ordered Sets
 
 The SH-22 leaf now executes `:ordered-set-contains-keyword` under STD2/STD3.

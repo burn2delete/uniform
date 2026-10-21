@@ -1176,8 +1176,9 @@
                                  :maximum-utf8-bytes))
                       (let [scalar-count
                             (sh22-utf8-scalar-count bytes 0 0)]
-                        (if (= scalar-count
-                               (get utf8-value :scalar-count))
+                        (if (if (integer? scalar-count)
+                              (= scalar-count (get utf8-value :scalar-count))
+                              false)
                           (if (= (count bytes)
                                  (get utf8-value :byte-count))
                             (sh22-accepted
