@@ -344,18 +344,19 @@
           (is (= :accepted (:status result)))
           (is (= :const (:opcode output)))
           (is (= [expected] (:operands output)))
-          (is (= (first (:operations input)) (by-id result :op/input)))
+          (is (nil? (by-id result :op/input)))
           (is (= (:operands add) (get-in result [:identity-input :operations (if intermediate? 2 1) :operands])))
           (is (= false (get-in result [:identity-input :operations (if intermediate? 2 1) :constant-operands])))
           (is (= (select-keys add [:op-id :result :source-span :origin-chain])
                  (select-keys output [:op-id :result :source-span :origin-chain])))
           (is (= (if intermediate? [:op/seed :op/mixed] [:op/mixed])
                  (get-in result [:decision-log 0 :changed-operations])))
-          (is (= (if intermediate? [:op/seed] []) (get-in result [:decision-log 2 :changed-operations])))
+          (is (= (if intermediate? [:op/input :op/seed] [:op/input])
+                 (get-in result [:decision-log 2 :changed-operations])))
           (is (= [] (get-in result [:translation-validation :proofs])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
           (is (= :rejected (:status (invoke-engine 'sh16-verify
-                                                 [input (assoc-in result [:optimized-operations 1 :operands] [99])]))))))
+                                                 [input (assoc-in result [:optimized-operations 0 :operands] [99])]))))))
       (doseq [left? [true false]]
         (let [input (make-input false left? 3 1) add (get-in input [:operations 1])
               unchanged (fn [subject]
@@ -416,16 +417,16 @@
           (is (= :accepted (:status result)))
           (is (= :const (:opcode output)))
           (is (= [expected] (:operands output)))
-          (is (= (get-in subject [:operations 0]) (by-id result :op/input)))
+          (is (nil? (by-id result :op/input)))
           (is (= (select-keys add [:op-id :result :type :effects :ordering :source-span :origin-chain :safety-outcome])
                  (select-keys output [:op-id :result :type :effects :ordering :source-span :origin-chain :safety-outcome])))
           (is (= [:op/add] (get-in result [:decision-log 0 :changed-operations])))
-          (is (= [] (get-in result [:decision-log 2 :changed-operations])))
+          (is (= [:op/input] (get-in result [:decision-log 2 :changed-operations])))
           (is (= [:value/input :value/input] (get-in result [:identity-input :operations 1 :operands])))
           (is (= false (get-in result [:identity-input :operations 1 :constant-operands])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
           (is (= :rejected (:status (invoke-engine 'sh16-verify
-                                                 [subject (assoc-in result [:optimized-operations 1 :operands] [99])]))))))
+                                                 [subject (assoc-in result [:optimized-operations 0 :operands] [99])]))))))
       ;; The same old overflow predicate owns immediate ADDs too. MIN-right
       ;; must not require the hosted seed to negate MIN while deriving a bound.
       (doseq [[left expected] [[0 Long/MIN_VALUE] [Long/MAX_VALUE -1]]]
@@ -473,8 +474,8 @@
         (is (= :accepted (:status result)))
         (is (= [12] (:operands (by-id result :op/twice-again))))
         (is (= [:op/add :op/twice-again] (get-in result [:decision-log 0 :changed-operations])))
-        (is (= [:op/add] (get-in result [:decision-log 2 :changed-operations])))
-        (is (= constant (by-id result :op/input)))
+        (is (= [:op/input :op/add] (get-in result [:decision-log 2 :changed-operations])))
+        (is (nil? (by-id result :op/input)))
         (is (nil? (by-id result :op/add)))
         (is (= [] (get-in result [:translation-validation :proofs])))
         (is (= [(:result add) (:result add)] (get-in result [:identity-input :operations 2 :operands])))
@@ -520,12 +521,13 @@
               pipeline (invoke-engine 'sh16-sequential-pipeline [input])
               adds (subvec (:operations input) 2 (+ 2 length))
               final-id (:op-id (last adds))
-              removed (mapv :op-id (butlast adds))
+              removed (into [:op/left :op/right] (mapv :op-id (butlast adds)))
               output (:optimized-operations result)]
           (is (nil? (invoke-engine 'sh16-request-error [input])))
           (is (= :accepted (:status result)))
-          (is (= [left right] (subvec output 0 2)))
-          (is (= [:op/left :op/right final-id :op/return] (mapv :op-id output)))
+          (is (= [(:operands left) (:operands right)]
+                 (mapv :operands (take 2 (get-in result [:identity-input :operations])))))
+          (is (= [final-id :op/return] (mapv :op-id output)))
           (is (= [(+ 3 (* 2 length))] (:operands (get (by-id output) final-id))))
           (is (= (mapv :op-id adds) (get-in result [:decision-log 0 :changed-operations])))
           (is (= removed (get-in result [:decision-log 2 :changed-operations])))
@@ -542,7 +544,7 @@
           (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
           (doseq [mutant [(assoc-in result [:decision-log 2 :changed-operations] [])
                           (assoc-in result [:decision-log 2 :proofs-used] [:proof/fabricated])
-                          (update result :optimized-operations #(vec (remove (fn [op] (= :op/left (:op-id op))) %)))]]
+                          (update result :optimized-operations #(vec (remove (fn [op] (= final-id (:op-id op))) %)))]]
             (is (= :rejected (:status (invoke-engine 'sh16-verify [input mutant])))))
           (doseq [mutant [(assoc-in pipeline [:decision-log 0 :changed-operations] [:op/left])
                           (assoc-in pipeline [:decision-log 0 :changed-operations] [])]]
@@ -558,7 +560,7 @@
               select-local (fn [subject current]
                              (invoke-engine 'sh16-include-local-dead-folds [subject current []]))
               constant (get operations 2)]
-          (is (= [:op/add-0] (select-local input operations)))
+          (is (= [:op/left :op/right :op/add-0] (select-local input operations)))
           ;; These are supplied internal DATA controls, not accepted pipelines.
           ;; Every retained join must be checked even if a fake fold decision
           ;; could otherwise make a bad current operation appear eligible.
@@ -570,11 +572,13 @@
                            (assoc constant :opcode :compute)
                            (assoc constant :op-id :op/not-folded)
                            (assoc constant :operands [6])]]
-            (is (= [] (select-local input (assoc operations 2 changed)))))
+            (is (not (some #{:op/add-0} (select-local input (assoc operations 2 changed))))))
           (is (= [] (select-local input (conj operations (assoc left :op-id :op/current-duplicate
                                                                :result (:result constant))))))
-          (is (= [] (select-local input (assoc-in operations [4 :operands] [:value/sum-0 :value/sum-1]))))
-          (is (= [] (select-local (assoc-in input [:operations 2] constant) operations))))
+          (is (= [:op/left :op/right]
+                 (select-local input (assoc-in operations [4 :operands] [:value/sum-0 :value/sum-1]))))
+          (is (= [] (select-local (-> input (assoc-in [:operations 2] constant)
+                                         (assoc-in [:operations 3] (get operations 3))) operations))))
         (doseq [operation [(assoc first-add :type :bool)
                            (assoc first-add :operands [:missing :value/right])
                            (assoc first-add :effects #{:io/write} :ordering :sequence)
@@ -593,7 +597,7 @@
               subject (update input :operations #(vec (concat (butlast %) [dead (last %)])))
               result (optimize subject)]
           (is (= :accepted (:status result)))
-          (is (= [:op/add-0 :op/dead] (get-in result [:decision-log 2 :changed-operations])))
+          (is (= [:op/left :op/right :op/add-0 :op/dead] (get-in result [:decision-log 2 :changed-operations])))
           (is (= [(get-in dead [:dead-proof :proof-id])] (get-in result [:decision-log 2 :proofs-used])))
           (is (= (get-in result [:decision-log 2 :proofs-used]) (get-in result [:translation-validation :proofs])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))
@@ -601,7 +605,7 @@
               subject (update input :operations #(vec (concat (butlast %) [(first (:operations elision)) (last %)])))
               result (optimize subject)]
           (is (= :accepted (:status result)))
-          (is (= [:op/add-0] (get-in result [:decision-log 2 :changed-operations])))
+          (is (= [:op/left :op/right :op/add-0] (get-in result [:decision-log 2 :changed-operations])))
           (is (= [] (get-in result [:decision-log 2 :proofs-used])))
           (is (= [] (get-in result [:translation-validation :proofs])))
           (is (= [:check/bounds-proven] (get-in result [:residual-check-report :retained-runtime-checks])))
@@ -642,9 +646,11 @@
           (is (= :accepted (:status result)))
           (is (= (vec (repeat length :const)) (mapv :opcode folded)))
           (is (= (mapv #(vector (+ 5 (* 2 %))) (range length)) (mapv :operands folded)))
-          (is (= [left right] (subvec (:optimized-operations result) 0 2)))
+          (is (= [(:operands left) (:operands right)]
+                 (mapv :operands (take 2 (get-in result [:identity-input :operations])))))
           (is (= (mapv #(select-keys % fields) adds) (mapv #(select-keys % fields) folded)))
-          (is (= (butlast (mapv :op-id adds)) (get-in result [:decision-log 2 :changed-operations])))
+          (is (= (into [:op/left :op/right] (butlast (mapv :op-id adds)))
+                 (get-in result [:decision-log 2 :changed-operations])))
           (is (= (last folded) (get (by-id result) (:op-id (last adds)))))
           (is (= (mapv :op-id adds) (get-in result [:decision-log 0 :changed-operations])))
           (is (= (vec (repeat length false))
@@ -655,7 +661,7 @@
                  (get-in result [:invalidation-ledger 0 :facts-invalidated])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
           (is (= :rejected (:status (invoke-engine 'sh16-verify
-                                                 [input (assoc-in result [:optimized-operations 3 :operands] [99])]))))))
+                                                 [input (assoc-in result [:optimized-operations 0 :operands] [99])]))))))
       (let [input (assoc-in (chain 3) [:operations 4 :operands] [:value/sum-0 :value/right])
             middle (get-in input [:operations 3]) suffix (get-in input [:operations 4])
             branch (invoke-engine 'sh16-transform-operation [(get-in mixed [:operations 1])])]
@@ -673,7 +679,7 @@
           (let [result (optimize subject) barrier (get-in subject [:operations 3])]
             (is (= :accepted (:status result)))
             (is (= [:op/add-0] (get-in result [:decision-log 0 :changed-operations])))
-            (is (= :const (get-in result [:optimized-operations 2 :opcode])))
+            (is (= :const (:opcode (get (by-id result) :op/add-0))))
             (is (= barrier (get (by-id result) (:op-id barrier))))
             (is (= suffix (get (by-id result) (:op-id suffix))))
             (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))
@@ -696,7 +702,7 @@
           (is (= :accepted (:status result)))
           (is (= [:op/add-0 (:op-id middle)] (get-in result [:decision-log 0 :changed-operations])))
           (is (= [10] (:operands (invoke-engine 'sh16-transform-operation [immediate]))))
-          (is (= [(:op-id middle)] (get-in result [:decision-log 2 :changed-operations])))
+          (is (= [:op/left (:op-id middle)] (get-in result [:decision-log 2 :changed-operations])))
           (is (= suffix (get (by-id result) (:op-id suffix))))
           (is (= true (get-in result [:identity-input :operations 3 :constant-operands])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))))))
@@ -724,14 +730,15 @@
                          [-9223372036854775808 0 -9223372036854775808]]]
         (let [subject (-> input (assoc-in [:operations 0 :operands] [a])
                           (assoc-in [:operations 1 :operands] [b]))
-              result (optimize subject) folded (get-in result [:optimized-operations 2])]
+              result (optimize subject) folded (first (:optimized-operations result))]
           (is (nil? (invoke-engine 'sh16-request-error [subject])))
           (is (= :accepted (:status result)))
           (is (= :const (:opcode folded)))
           (is (= [sum] (:operands folded)))
           (is (= (select-keys add [:op-id :result :type :effects :ordering :source-span :origin-chain :safety-outcome])
                  (select-keys folded [:op-id :result :type :effects :ordering :source-span :origin-chain :safety-outcome])))
-          (is (= (take 2 (:operations subject)) (take 2 (:optimized-operations result))))
+          (is (= (mapv :operands (take 2 (:operations subject)))
+                 (mapv :operands (take 2 (get-in result [:identity-input :operations])))))
           (is (= [:op/add] (get-in result [:decision-log 0 :changed-operations])))
           (is (= [:data-flow-facts :range-facts :safety-facts]
                  (get-in result [:invalidation-ledger 0 :facts-invalidated])))
@@ -739,7 +746,7 @@
           (is (= [:value/left :value/right] (get-in result [:identity-input :operations 2 :operands])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
           (is (= :rejected (:status (invoke-engine 'sh16-verify
-                                                 [subject (assoc-in result [:optimized-operations 2 :operands] [99])]))))))
+                                                 [subject (assoc-in result [:optimized-operations 0 :operands] [99])]))))))
       (doseq [subject [(assoc-in input [:operations 0 :type] :bool)
                        (assoc-in input [:operations 0 :operands] [nil])
                        (assoc-in input [:operations 0 :operands] [1 2])

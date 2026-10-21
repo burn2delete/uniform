@@ -2100,6 +2100,52 @@
            producers)
          producers)))))
 
+(defn sh16-original-fold-reference-ids [operations selected index references]
+  (if (= index (count operations))
+    references
+    (let [operation (get operations index)
+          operands (get operation :operands)]
+      (sh16-original-fold-reference-ids
+       operations selected (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (if (= :add (get operation :opcode))
+           (if (= false (get operation :constant-operands))
+             (if (sh16-propagation-pure? operation)
+               (if (= 2 (count operands))
+                 (let [left (get operands 0) right (get operands 1)
+                       with-left
+                       (if (sh16-canonical-identifier? left)
+                         (conj references left)
+                         references)]
+                   (if (sh16-canonical-identifier? right)
+                     (conj with-left right)
+                     with-left))
+                 references)
+               references)
+             references)
+           references)
+         references)))))
+
+(defn sh16-fold-consumed-original-constants
+  [operations references index producers]
+  (if (= index (count operations))
+    producers
+    (let [operation (get operations index)
+          result-id (get operation :result)]
+      (sh16-fold-consumed-original-constants
+       operations references (+ index 1)
+       (if (= :const (get operation :opcode))
+         (if (sh16-propagation-pure? operation)
+           (if (sh16-prefix-i64-constant? operation)
+             (if (sh16-canonical-identifier? result-id)
+               (if (contains? references result-id)
+                 (assoc producers (get operation :op-id) operation)
+                 producers)
+               producers)
+             producers)
+           producers)
+         producers)))))
+
 (defn sh16-local-dead-fold? [operation producers used]
   (if (= :const (get operation :opcode))
     (if (sh16-propagation-pure? operation)
@@ -2136,8 +2182,13 @@
               fold-selected
               (sh16-state-changed-operation-ids
                :constant-fold fold-input [] 0 [])
-              producers
+              folded-producers
               (sh16-fresh-fold-producers fold-input fold-selected 0 {})
+              references
+              (sh16-original-fold-reference-ids original fold-selected 0 #{})
+              producers
+              (sh16-fold-consumed-original-constants
+               original references 0 folded-producers)
               used (sh16-current-result-uses operations 0 #{})]
           (sh16-include-local-dead-folds-from
            operations selected producers used 0 []))
