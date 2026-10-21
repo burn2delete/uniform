@@ -32586,14 +32586,17 @@
           (is (= expected-width (count (second query)))))))))
 
 (deftest current-gravity-vector-first-symbol-loop-witness-authenticated-composition
-  ;; Focused 9c4abf2e: one fresh 30-selector run / 1520 passes / zero failures or errors.
-  ;; Seven new selectors / 307 assertions; 23 retained controls / 1213. Earlier failures remain failed.
-  ;; Original source attempt ab180a09 stopped at C7 loop-type-work-limit: 3 passes, one failure, one error.
-  ;; Its C8, assembly, entry execution and typing negative were unrun; that receipt is preserved.
-  ;; This candidate prepays only reached node/form data, retaining full warm/final descriptor validation.
-  ;; One new G positive and one empty-Vector typing negative. Q remains parser-only.
-  ;; Existing first v1 and loop v2 records are independently rebuilt; runtime and private type predicates are unchanged.
-  ;; Fresh development C6 session plus same-catalog replay is distinct from public fresh C6 verification.
+  ;; Current production 2092fd07: qualified split 35 unique selectors / 1736 passing assertions.
+  ;; Reuse only 34 selectors / 1723 passes from the original FAILED 35-selector receipt.
+  ;; Test-only b7f72147 fresh cold selector: 13 passes; exact 60847 units and minus-one rejection.
+  ;; Whole cold DATA converge in five rounds under 65536; both budget counters are compared explicitly.
+  ;; Original genuine attempts ab180a09 and 33b732fb each stopped at C7 loop-type-work-limit: 3P/1F/1E.
+  ;; Their C8, assembly, runtime and typing negative were unrun; both failed receipts remain preserved.
+  ;; Reached projections, one complete warm scan, final equality and scalar two visits remain enforced.
+  ;; Discarded Keyword rendering is eliminated; long-name resource acceptance can broaden logically.
+  ;; No host CPU, heap, hashing, equality-cost or hostile-provider bound is claimed.
+  ;; One unchanged G positive and one empty-Vector typing negative. Q remains parser-only.
+  ;; Runtime and protected predicates are unchanged; fresh DEV-C6 replay is not public fresh C6.
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
