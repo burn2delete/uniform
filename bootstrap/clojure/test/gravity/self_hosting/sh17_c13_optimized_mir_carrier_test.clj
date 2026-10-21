@@ -350,6 +350,130 @@
           (is (= "B1-INPUT" (:diagnostic rejected)))
           (is (= reason (:missing-fact rejected))))))))
 
+(defn- development-diamond-input [left right repeated? then-value else-value]
+  ;; Complete supplied diamond before optimization. No source build or seal.
+  (let [{base :mir} (development-b3-comparison-input left right repeated?)
+        core (:source-core base) entry (str core ":mir:entry")
+        then-id (str core ":mir:then") else-id (str core ":mir:else") join-id (str core ":mir:join")
+        entry-ops (get-in base [:functions 'main :blocks entry :instructions])
+        prototype (first entry-ops)
+        operation (fn [id block opcode source-operation operands payload]
+                    (-> prototype
+                        (assoc :op-id id :result id :block-id block :opcode opcode :source-operation source-operation
+                               :type :gravity/integer :operands operands :constant-payload payload
+                               :source (assoc (:source prototype) :core-node id :origin-id (str id ":origin")))
+                        (update :facts merge {:type-fact-id (str id ":type") :effect-fact-id (str id ":effect")
+                                              :ownership-fact-id (str id ":ownership") :capability-fact-id (str id ":capability")
+                                              :safety-outcome-id (str id ":safety") :source-origin-id (str id ":origin")})))
+        then-op (operation "then-value" then-id :constant :literal [] {:present? true :value then-value})
+        else-op (operation "else-value" else-id :constant :literal [] {:present? true :value else-value})
+        join-op (operation "join-value" join-id :conditional-join :if ["comparison" "then-value" "else-value"] :not-applicable)
+        operations (conj entry-ops then-op else-op join-op)
+        source (:source join-op)
+        terminator (fn [block kind value successors facts]
+                     {:artifact :gravity/mir-terminator :terminator-id (str block (case kind :return ":return" :branch ":branch" ":conditional"))
+                      :kind kind :operands [value] :successors successors :effects #{} :ordering :none
+                      :source source :profile :hosted :facts facts :verifier-status :passed})
+        block (fn [id rows predecessors successors dominators term]
+                {:artifact :gravity/mir-block :block-id id :arguments [] :instructions rows :terminator term
+                 :predecessors predecessors :successors successors :dominators dominators
+                 :data-flow {:module-data-flow-graph-reference true} :source source})
+        blocks {entry (block entry entry-ops [] [then-id else-id] [entry]
+                             (terminator entry :conditional-branch "comparison" [then-id else-id] {:condition "comparison" :join join-id}))
+                then-id (block then-id [then-op] [entry] [join-id] [entry then-id]
+                               (terminator then-id :branch "then-value" [join-id] {:incoming-value "then-value"}))
+                else-id (block else-id [else-op] [entry] [join-id] [entry else-id]
+                               (terminator else-id :branch "else-value" [join-id] {:incoming-value "else-value"}))
+                join-id (block join-id [join-op] [then-id else-id] [] [entry join-id]
+                               (terminator join-id :return "join-value" [] {:returned-value "join-value"}))}
+        cfg {:entry entry :edges [{:from entry :to then-id :kind :true} {:from entry :to else-id :kind :false}
+                                 {:from then-id :to join-id :kind :join} {:from else-id :to join-id :kind :join}]
+             :dominance {entry [entry] then-id [entry then-id] else-id [entry else-id] join-id [entry join-id]}
+             :join {:block-id join-id :value-id "join-value"
+                    :incoming [{:predecessor then-id :value "then-value"} {:predecessor else-id :value "else-value"}]}}
+        edges (vec (mapcat (fn [op] (map-indexed (fn [index id] {:from id :consumer-kind :operation :consumer-id (:op-id op)
+                                                               :consumer-block (:block-id op) :operand-index index :edge-kind :operand})
+                                               (:operands op))) operations))
+        terminator-uses (mapv (fn [id kind] (let [term (:terminator (blocks id))]
+                                             {:value-id (first (:operands term)) :consumer-kind :terminator :consumer-id (:terminator-id term)
+                                              :consumer-block id :operand-index 0 :edge-kind kind}))
+                             [entry then-id else-id join-id] [:condition :branch-value :branch-value :return-value])
+        values (into {} (map (fn [op]
+                              [(:op-id op) {:artifact :gravity/mir-value :value-id (:op-id op) :kind :instruction-result
+                                            :type (:type op) :constant-payload (:constant-payload op)
+                                            :defined-by {:value-id (:op-id op) :operation-id (:op-id op) :block-id (:block-id op)}
+                                            :uses (into (mapv #(assoc (dissoc % :from) :use-kind :instruction) (filter #(= (:op-id op) (:from %)) edges))
+                                                        (map #(assoc (dissoc % :value-id) :use-kind :terminator)
+                                                             (filter #(= (:op-id op) (:value-id %)) terminator-uses)))
+                                            :source (:source op) :ownership {:model :persistent-immutable-value}
+                                            :effects #{} :safety {:outcome :proven-safe}}]) operations))
+        table (fn [suffix f] (into {} (map (fn [op] [(str (:op-id op) suffix) (f op)]) operations)))
+        mir (-> base
+                (assoc-in [:functions 'main :returns] :gravity/integer)
+                (assoc-in [:functions 'main :blocks] blocks)
+                (assoc :control-flow-graph cfg
+                       :data-flow-graph {:edges edges :terminator-uses terminator-uses :values values
+                                         :definitions (into {} (map (fn [[id value]] [id (:defined-by value)]) values))}
+                       :source-map (into {} (map (juxt :op-id :source) operations))
+                       :type-table (table ":type" #(hash-map :fact-id (str (:op-id %) ":type") :core-node-id (:op-id %)
+                                                              :type (:type %) :dependencies (:operands %)
+                                                              :source-origin-id (get-in % [:source :origin-id])))
+                       :effect-table (table ":effect" #(hash-map :direct #{} :core-node-id (:op-id %)))
+                       :ownership-table (table ":ownership" #(hash-map :model :persistent-immutable-value :core-node-id (:op-id %)))
+                       :capability-table (table ":capability" #(hash-map :required #{} :granted #{} :core-node-id (:op-id %)))
+                       :safety-table (table ":safety" #(hash-map :outcome :proven-safe :core-node-id (:op-id %)))))
+        artifact {:artifact-id (bootstrap/p15-s23-c11-mir-digest :supplied-diamond)
+                  :mir-id (bootstrap/p15-s23-c11-mir-digest mir) :mir-module mir}]
+    {:mir mir :evidence (bootstrap/p15-s23-c13-evidence-for-target
+                        artifact {:status :passed :semantic-replay-parity :passed} :llvm-x86_64-linux)}))
+
+(deftest sh17-development-folded-predicate-preserves-integer-diamond-emission
+  (let [execute (fn [plan function arguments]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function
+                   {:engine :gravity-sh17-development-folded-diamond :compiler-artifact-plan? true} plan function arguments))
+        build #(execute @development-b3-plan 'b3-build-bounded-llvm-x86_64-linux [%])]
+    (doseq [[left right repeated? then-value else-value expected]
+            [[2 2 false 42 7 42] [2 3 false 42 7 7]
+             [-9223372036854775808 9223372036854775807 false 0 255 255]
+             [9223372036854775807 0 true 0 255 0]]]
+      (let [{:keys [mir evidence]} (development-diamond-input left right repeated? then-value else-value)
+            folded (execute @development-c13-plan 'c13-build-bounded-identity-optimized-mir [mir evidence])
+            output (:optimized-mir folded) cfg (:control-flow-graph mir) entry (:entry cfg)
+            join-id (get-in cfg [:join :block-id])
+            policy {:fact-bindings (get-in folded [:semantic-identity :fact-bindings])
+                    :supported-operation-ids (get-in folded [:semantic-identity :operation-order])}
+            original-lowering (build mir) lowering (build output) ir (or (:llvm-ir lowering) "")]
+        (is (= :accepted (:status folded)))
+        (is (= folded (bootstrap/p15-s23-c13-expected-record mir evidence)))
+        (is (= mir (execute @c14-plan 'c14-equality-original-mir [folded])))
+        (is (true? (execute @c14-plan 'c14-equality-translation-valid? [folded policy])))
+        (is (true? (execute @c14-plan 'c14-llvm-bounded-mir-surface-valid? [folded policy])))
+        (is (= cfg (:control-flow-graph output)))
+        (is (= (:source-map mir) (:source-map output)))
+        (is (= (:type-table mir) (:type-table output)))
+        (is (= (vec (drop 2 (get-in mir [:data-flow-graph :edges]))) (get-in output [:data-flow-graph :edges])))
+        (is (= (get-in mir [:data-flow-graph :terminator-uses]) (get-in output [:data-flow-graph :terminator-uses])))
+        (is (= :constructed-unverified (:status original-lowering) (:status lowering)))
+        (is (= expected (:semantic-result original-lowering) (:semantic-result lowering) (:expected-exit-code lowering)))
+        (is (= :pending-host-content-binding (get-in lowering [:verified-input-closure :status])))
+        (is (= [entry (str (:source-core mir) ":mir:then") (str (:source-core mir) ":mir:else") join-id] (:block-order lowering)))
+        (is (re-find #"%branchcond = icmp ne i64 %v2, 0" ir))
+        (is (re-find #"br i1 %branchcond, label %then, label %else" ir))
+        (is (re-find #"%v5 = phi i64 \[ %v3, %then \], \[ %v4, %else \]" ir))
+        (is (not (re-find #"icmp eq|zext" ir)))
+        (is (= (drop 3 (:operation-records original-lowering)) (drop 3 (:operation-records lowering))))
+        (doseq [candidate [(assoc-in output [:control-flow-graph :join :incoming 0 :value] "else-value")
+                           (assoc-in output [:functions 'main :blocks entry :terminator :operands] ["missing"])
+                           (assoc-in output [:functions 'main :blocks join-id :instructions 0 :source-operation] :call)
+                           (assoc-in output [:data-flow-graph :values "comparison" :constant-payload :value] :not-bool)]]
+          (let [rejected (build candidate)]
+            (is (= :rejected (:status rejected)))
+            (is (nil? (:llvm-ir rejected)))))
+        (doseq [candidate [(assoc-in folded [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload :value] :not-bool)
+                           (assoc-in folded [:optimized-mir :control-flow-graph :join :incoming 0 :value] "else-value")
+                           (assoc-in folded [:optimized-mir :functions 'main :blocks join-id :instructions 0 :type] :gravity/bool)]]
+          (is (false? (execute @c14-plan 'c14-equality-translation-valid? [candidate policy])))))))
+
 (def ^:private c13-envelope-keys
   ;; This set is copied from C14's c14-c13-envelope-valid? contract.  Keep it
   ;; explicit: C14 source is authoritative for the C13 carrier envelope.
