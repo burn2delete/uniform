@@ -325,7 +325,7 @@
     [-9223372036854775808 -9223372036854775808 :gravity.type/i64 false 22]
     [0 1 :gravity.type/bool true false] [1 0 :gravity.type/bool false true]]))
 
-(deftest sh13-executes-integer-less-than-or-equal-only-at-entry
+(deftest sh13-executes-integer-less-than-or-equal-entry-conditions
   (check-integer-condition
    :integer-lte :integer-less-than-or-equal
    [[0 1 :gravity.type/i64 true 11] [1 0 :gravity.type/i64 false 22]
@@ -349,12 +349,11 @@
         (is (= expected (get-in result [:execution :value])))
         (is (= 505 (get-in result [:execution :fuel])))
         (is (= :passed (:status (verify core mir result))))))
-    ;; Shared comparison validation must not enlarge the selected placement.
+    ;; Entry <= remains literal-arm-only even when arm <= is supported below.
     (doseq [placement [:then :else] operation [:integer-eq :integer-lt :integer-lte]]
       (let [base (scalar-core (checked extension) true :gravity.type/bool false true)
             arm (with-integer-comparison extension base placement operation 0 0)
-            core (if (= operation :integer-lte) arm
-                   (with-integer-comparison extension arm :condition :integer-lte 0 0))
+            core (with-integer-comparison extension arm :condition :integer-lte 0 0)
             mir (build core) result (run core mir)]
         (is (= :passed (get-in result [:upstream-verification :status])))
         (is (= :rejected (:status result)))
@@ -444,7 +443,7 @@
                       :condition :integer-lt 0 1)
                     (with-integer-comparison extension core
                       (if (= placement :then) :else :then) :integer-lt 0 1)
-                    (arm condition 0 1 :integer-lte)]]
+                    (arm condition 0 1 :integer-gte)]]
           (let [mir (build bad) rejection (run bad mir)]
             (is (= :passed (get-in rejection [:upstream-verification :status])))
             (is (= :rejected (:status rejection)))
@@ -1201,3 +1200,28 @@
       (is (nil? (:execution result)))
       (is (nil? (:projection result)))
       (is (= :passed (:status (verify core mir result)))))))
+
+(deftest sh13-executes-integer-less-than-or-equal-only-in-the-selected-arm
+  ;; C11's guarded origin-chain and i64 predicates contain <= in selected
+  ;; branches. These supplied literal witnesses do not execute whole helpers.
+  (check-selected-comparison-arm
+   :integer-lte :integer-less-than-or-equal
+   [[0 0 true] [0 1 true] [1 0 false] [-1 0 true] [0 -1 false]
+    [-9223372036854775808 -9223372036854775808 true]
+    [9223372036854775807 9223372036854775807 true]
+    [-9223372036854775808 9223372036854775807 true]
+    [9223372036854775807 -9223372036854775808 false]])
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]]
+    (let [arm (with-integer-comparison extension
+                (scalar-core (checked extension) true :gravity.type/bool false true)
+                placement :integer-lte 0 0)]
+      ;; No entry-comparison or truthiness composition is selected here.
+      (doseq [core (conj (mapv #(with-integer-comparison extension arm :condition % 0 0)
+                               [:integer-eq :integer-lt :integer-lte])
+                         (with-scalar-truthiness extension arm :gravity.type/bool true))]
+        (let [mir (build core) result (run core mir)]
+          (is (= :passed (get-in result [:upstream-verification :status])))
+          (is (= :rejected (:status result)))
+          (is (= :bounded-execution-subset (get-in result [:diagnostics 0 :missing-fact])))
+          (is (nil? (:execution result)))
+          (is (= :passed (:status (verify core mir result)))))))))
