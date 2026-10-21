@@ -30969,6 +30969,187 @@
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
 
+(deftest current-gravity-count-quotient-scaling-authenticated-composition
+  ;; One sourced count-bounded product and one unsupported coefficient; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "Count quotient scaling fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "Count quotient scaling development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:count-quotient-scaling-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "Count quotient scaling upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "Count quotient scaling C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "Count quotient scaling C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-count-quotient-scaling.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        scalings (filterv #(= :direct-count-quotient-scaling (:dispatch %)) (:call-type-facts facts))
+        quotients (filterv #(= :direct-nonnegative-integer-quotient (:dispatch %)) (:call-type-facts facts))
+        counts (filterv #(= :direct-collection-count (:dispatch %)) (:call-type-facts facts))
+        descriptor (:applied-count-quotient-scaling (first scalings)) proof (:range-proof descriptor)
+        qd (:applied-nonnegative-integer-quotient (first quotients))
+        rows (filterv #(= :sh08-count-quotient-scaling-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
+        products (filterv #(and (= :builtin-call (:op %)) (= '* (:function %))) instructions)
+        quotient-ir (filterv #(and (= :builtin-call (:op %)) (= 'quot (:function %))) instructions)
+        count-ir (filterv #(and (= :builtin-call (:op %)) (= 'count (:function %))) instructions)
+        graph (:effect-graph effects) id (:call-core-node-id descriptor) record (get-in graph [:nodes id])
+        row (first rows) runtime-plan (:plan (typed-catch-runtime-projection))
+        execution (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)])
+        t2 (System/nanoTime)]
+    (is (= 1 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 3 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 1 (count scalings) (count quotients) (count counts) (count rows)
+                 (count products) (count quotient-ir) (count count-ir)))
+    (is (= 1 (count (filter #(= :vector-literal (:op %)) instructions))))
+    (is (= 9 (count (get-in (first count-ir) [:args 0 :items]))))
+    (is (= #{:op :function :args} (set (keys (first products)))))
+    (is (= {:op :literal :value 2} (get-in (first products) [:args 0])))
+    (is (= (first quotient-ir) (get-in (first products) [:args 1])))
+    (is (= (first count-ir) (get-in (first quotient-ir) [:args 0])))
+    (is (= {:op :literal :value 4} (get-in (first quotient-ir) [:args 1])))
+    (is (empty? (get-in assembled [:module-initialization :initializers])))
+    (is (= 56 (count (:functions runtime-plan))))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= 4 (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= #{} (get-in graph [:namespace :inferred])))
+    (is (= #{:memory/allocate} (:inferred (first (vals (:functions graph))))))
+    (is (= :gravity.type/applied-count-quotient-scaling (:kind descriptor)))
+    (is (= :sh08-count-quotient-scaling-v1 (:version descriptor)))
+    (is (= ['* 'gravity.math 'gravity.math.core :gravity.math.core/count-quotient-scaling]
+           [(:operation descriptor) (:semantic-owner descriptor) (:layer0-owner descriptor) (:intrinsic descriptor)]))
+    (is (= :gravity.type/integer (:result-type descriptor) (:return descriptor) (get-in facts [:type-table id])))
+    (is (= :normal (:application descriptor) (:application proof)))
+    (is (= :proof-required (:numeric-mode descriptor) (:mode proof)))
+    (is (= :proven-safe (:safety descriptor)))
+    (is (= :gravity/count-quotient-scaling-proof-v1 (:schema proof)))
+    (is (= :scaled-quotient-bounded-by-original-count (:law proof) (get-in descriptor [:scaling-policy :law])))
+    (is (= :divisor-times-quotient-at-most-count (:euclidean-premise proof) (get-in descriptor [:scaling-policy :premise])))
+    (is (= :zero-through-original-positive-divisor (:coefficient-bound proof)))
+    (is (= :zero-through-original-count (:result-value-bound proof)))
+    (is (= 2 (get-in proof [:factor :value])))
+    (is (= 4 (get-in proof [:quotient :descriptor :range-proof :divisor :value])))
+    (is (= qd (get-in proof [:quotient :descriptor])))
+    (is (= :authenticated-cardinality (get-in qd [:range-proof :dividend :kind])))
+    (is (= :finite-collection-cardinality-nonnegative (get-in qd [:range-proof :dividend :law])))
+    (is (= [:none :impossible] ((juxt :conversion :overflow) proof)))
+    (is (= :may-allocate-integer-result (get-in descriptor [:storage-policy :allocation])))
+    (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+    (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
+    (is (= #{:memory/allocate} (:direct record) (:transitive record)))
+    (is (= [:sh09-count-quotient-scaling-allocation-v1 :integer :possible-integer-result-storage true]
+           ((juxt :rule-version :value-kind :behavior :normal-completion-possible?) (:allocation record))))
+    (is (= descriptor (:dependencies row)))
+    (is (= proof (get-in row [:solution :range-proof])))
+    (is (= (:storage-policy descriptor) (get-in row [:solution :storage-policy])))
+    (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))
+    (println (pr-str {:count-quotient-scaling-positive-observations
+                     {:runtime-status (:status execution) :runtime-result (:entrypoint-result execution)
+                      :functions (count (:functions assembled)) :scaling-calls (count scalings)
+                      :quotient-calls (count quotients) :count-calls (count counts)
+                      :factor (get-in proof [:factor :value]) :divisor (get-in proof [:quotient :descriptor :range-proof :divisor :value])
+                      :retained-runtime-count-value false :fresh-runtime-count-comparison false}
+                     :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                        :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/count-quotient-scaling-unproved-factor.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])
+          diagnostic (first (filter #(= :count-quotient-scaling-proof-required (:reason %)) diagnostics))]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (= :passed (get-in negative [:verification :status])) (pr-str (:verification negative)))
+      (is (= "STD5001" (:rule diagnostic)) (pr-str diagnostics))
+      (is (= [:gravity.type/integer :gravity.type/integer] (:actual-type diagnostic)))
+      (is (= {:operation '* :numeric-mode :proof-required :factor :source-proven-nonnegative-Integer-literal
+              :quotient :authenticated-count-divided-by-positive-literal :coefficient-bound :factor-at-most-divisor}
+             (:expected-type diagnostic)))
+      (is (some? (:core-node-id diagnostic)))
+      (is (some? (:syntax-id diagnostic)))
+      (is (map? (:source-span diagnostic)))
+      (println (pr-str {:count-quotient-scaling-typing-negative diagnostics
+                       :negative-c7-verification-status (get-in negative [:verification :status])
+                       :negative-c8-runtime :not-invoked :mathematical-product :defined-outside-supported-proof-subset
+                       :timing (:development-timing negative)})))
+    (println (pr-str {:count-quotient-scaling-composition :completed :runtime-result (:entrypoint-result execution)
+                     :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                     :closed-plan-entry-invocations 1 :runtime-function-count (count (:functions runtime-plan))
+                     :reader-parameter-grounding :not-established :whole-compiler-consumer-execution false
+                     :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included}))))
+
 (deftest current-gravity-nonnegative-integer-quotient-authenticated-composition
   ;; One finite sourced quotient composition and one zero-divisor typing negative; Q is parser-only.
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
