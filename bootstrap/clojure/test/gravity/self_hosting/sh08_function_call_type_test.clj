@@ -2461,6 +2461,197 @@
     (assoc-in input [:core :nodes]
               (conj (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes])) payload))))
 
+(defn- vector-slice-input [text start end]
+  ;; The actual SHA client's nested conversion, as normalized development DATA.
+  (let [inner (if (map? text) text (literal-string-vector-input text)) module (:module inner)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        binding (assoc (get-in inner [:bindings :ordering-binding]) :binding-id :slice-binding
+                       :name 'subvec :definition-syntax-id :slice-definition)
+        operator {:node-id :slice-operator :core-form :reference :children [] :resolved-binding-ids [:slice-binding]
+                  :attributes {:symbol 'subvec :position :operator :binding-id :slice-binding :binding-class :core
+                               :definition-syntax-id :slice-definition}
+                  :source (source :slice-operator) :evaluation {:order []}}
+        literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                               :attributes {:literal-kind :integer :value value}
+                               :source (source id) :evaluation {:kind :value :order []}})
+        children [:slice-operator :call :slice-start :slice-end]
+        node {:node-id :slice-call :core-form :call :children children :resolved-binding-ids [:slice-binding]
+              :attributes {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+              :source (source :slice-call) :evaluation {:owner-function-syntax-id nil :kind :operator-then-arguments
+                                                       :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}}
+        call {:core-node-id :slice-call :operator-node-id :slice-operator :operator-binding-id :slice-binding
+              :argument-node-ids [:call :slice-start :slice-end] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal 1 :call-core-node-id :slice-call :caller-function-syntax-id nil :caller-function-core-node-id nil
+              :callee-binding-id :slice-binding :callee-definition-syntax-id :slice-definition
+              :callee-function-syntax-id nil :callee-function-core-node-id nil
+              :argument-core-node-ids [:call :slice-start :slice-end] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        added [operator (literal :slice-start start) (literal :slice-end end) node]
+        node-list (into (get-in inner [:core :nodes]) added)
+        core (-> (:core inner) (assoc :nodes node-list) (update :calls conj call) (update :call-edges conj edge))
+        form (fn [id kind value] {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                                 :kind kind :value value :parent-form-id :slice-call :child-form-ids []})
+        forms (-> (:forms inner) (assoc-in [:call :parent-form-id] :slice-call)
+                  (assoc :slice-operator (form :slice-operator :symbol 'subvec)
+                         :slice-start (form :slice-start :integer start) :slice-end (form :slice-end :integer end)
+                         :slice-call (assoc (form :slice-call :list :slice-call) :parent-form-id nil :child-form-ids children)))
+        types (assoc (:types inner) :slice-start :gravity.type/integer :slice-end :gravity.type/integer)]
+    {:module module :core core :node node :call call :edge edge :nodes (into {} (map (juxt :node-id identity) node-list))
+     :bindings (assoc (:bindings inner) :slice-binding binding) :types types :binding-types types :seeds types :forms forms
+     :products {:calls (:calls core) :call-edges (:call-edges core) :module module} :inner inner}))
+
+(defn- vector-slice-established [input]
+  (let [{:keys [core nodes bindings types forms]} input call (first (:calls core)) edge (first (:call-edges core))
+        child (invoke-c7 'sh08-scv-derive [core (get nodes (:core-node-id call)) call edge nodes bindings types forms 65536])]
+    (assoc input :child child :types (assoc types (:operator-node-id call) (:descriptor child)
+                                                  (:core-node-id call) (:type child :gravity.type/unknown)))))
+
+(defn- vector-slice-derived [input budget]
+  (invoke-c7 'sh08-vsl-derive [(:core input) (:node input) (:call input) (:edge input)
+                              (:nodes input) (:bindings input) (:types input) (:forms input) budget]))
+
+(defn- vector-slice-transfer-input [text start end positions]
+  (let [positions (if (sequential? positions) (set positions) #{positions})
+        input (vector-slice-input (if (positions 0) (literal-string-vector-transfer-input) text) start end)
+        input (reduce (fn [input position]
+                        (let [id (if (= position 1) :slice-start :slice-end)
+                              op (keyword (str "slice-throw-op-" position)) payload (keyword (str "slice-payload-" position))
+                              form (get-in input [:forms id]) source (get-in input [:nodes id :source])
+                              transfer (assoc (get-in input [:nodes id]) :core-form :throw :children [payload]
+                                              :attributes {} :evaluation {:order [{:index 0 :core-node-id payload}]})
+                              value "original slice transfer"
+                              payload-node {:node-id payload :core-form :literal :children [] :resolved-binding-ids []
+                                            :attributes {:literal-kind :string :value value}
+                                            :source (assoc source :form-id payload :syntax-id payload) :evaluation {:kind :value :order []}}]
+                          (-> input (assoc-in [:nodes id] transfer) (assoc-in [:nodes payload] payload-node)
+                              (assoc-in [:types id] :gravity.type/never) (assoc-in [:types payload] :gravity.type/string)
+                              (assoc-in [:forms id] (assoc form :kind :list :value (list 'throw value) :child-form-ids [op payload]))
+                              (assoc-in [:forms op] (assoc form :form-id op :syntax-id op :parent-form-id id :kind :symbol :value 'throw :child-form-ids []))
+                              (assoc-in [:forms payload] (assoc form :form-id payload :syntax-id payload :parent-form-id id :kind :string :value value :child-form-ids []))
+                              (update-in [:core :nodes] #(conj (mapv (fn [n] (if (= id (:node-id n)) transfer n)) %) payload-node)))))
+                      input (filter #{1 2} positions))]
+    (vector-slice-established input)))
+
+(deftest sh08-vector-slice-inference-development-kernel
+  (let [text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec (repeat % :gravity.type/character)))]
+    (doseq [[start end] [[0 7] [7 71] [0 0] [71 71] [0 71] [2 4] [0N 7N]]]
+      (let [{:keys [core nodes forms bindings products binding-types]} (vector-slice-input text start end)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+            descriptor (get-in inferred [:type-table :slice-operator])]
+        (is (= :converged (:convergence-status inferred)))
+        (is (= (finite 71) (get-in inferred [:type-table :call])))
+        (is (= [] (:diagnostics inferred)))
+        (is (= (finite (- end start)) (get-in inferred [:type-table :slice-call])))
+        (is (= :gravity.type/applied-vector-slice (:kind descriptor)))
+        (is (= :normal (:application descriptor)))
+        (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= (- end start) (get-in descriptor [:bounds-proof :result-count])))
+        (is (= :start-inclusive-end-exclusive (get-in descriptor [:slice-policy :range])))))))
+
+(deftest sh08-vector-slice-proof-development-kernel
+  (doseq [[text start end] [["" 0 0] ["sha256:abcd" 0 7] ["sha256:abcd" 7 11]
+                           ["sha256:abcd" 11 11] ["sha256:abcd" 0 11] ["sha256:abcd" 2N 4N]]]
+    (let [input (vector-slice-established (vector-slice-input text start end))
+          result (vector-slice-derived input 65536) descriptor (:descriptor result) proof (:bounds-proof descriptor)
+          types (assoc (:types input) :slice-operator descriptor :slice-call (:type result))
+          check #(invoke-c7 'sh08-vsl-inferred-call [(:core input) (:node input) (:call input) (:edge input)
+                                                    (:nodes input) (:bindings input) %1 %2])
+          measured (check types 65536)]
+      (is (= :accepted (:status (:child input)) (:status result) (:status measured)))
+      (is (= (vec (repeat (- end start) :gravity.type/character)) (get-in result [:type :element-types])))
+      (is (= [start end (count text) (- end start)]
+             [(get-in proof [:start :value]) (get-in proof [:end :value]) (:input-count proof) (:result-count proof)]))
+      (is (= 7 (count (:source-forms proof))))
+      (is (= (:descriptor (:child input)) (get-in proof [:receiver :descriptor])))
+      (is (= :authenticated-string-character-vector (get-in proof [:receiver :kind])))
+      (is (= [:not-authorized :retained :exact-in-bounded-range]
+             ((juxt :check-elision :runtime-guards :index-conversion) proof)))
+      (is (= result (vector-slice-derived input (:work-count result))))
+      (is (= :vector-slice-work-limit (:reason (vector-slice-derived input (dec (:work-count result))))))
+      (is (= measured (check types (:work-count measured))))
+      (is (= :vector-slice-work-limit (:reason (check types (dec (:work-count measured))))))
+      (doseq [candidate [(update-in types [:slice-operator] dissoc :kind)
+                         (assoc-in types [:slice-operator :kind] nil)
+                         (assoc-in types [:slice-operator :kind] :gravity.type/applied-string-character-vector)
+                         (assoc-in types [:slice-operator :bounds-proof :result-count] 99)
+                         (assoc-in types [:slice-operator :bounds-proof :selected-types] [:gravity.type/string])
+                         (assoc-in types [:slice-operator :storage-policy :allocation] :none)
+                         (assoc-in types [:operator :conversion-proof :scalar-count] 99)
+                         (assoc-in types [:operator :conversion-policy :utf16-splitting] :allowed)]]
+        (is (= :rejected (:status (check candidate 65536)))))))
+  (doseq [[start end] [[-1 7] [0 -1] [8 7] [0 12] [12 12]
+                       [0 (bigint "123456789012345678901234567890")]]]
+    (let [result (vector-slice-derived (vector-slice-established (vector-slice-input "sha256:abcd" start end)) 65536)]
+      (is (= :rejected (:status result)))
+      (is (= ["STD3002" :vector-slice-bounds-required] ((juxt :rule :reason) result)))))
+  (let [base (vector-slice-established (vector-slice-input "sha256:abcd" 0 7))]
+    (doseq [mutate [#(assoc-in % [:forms :slice-start :value] 1)
+                    #(assoc-in % [:forms :slice-end :parent-form-id] :sibling)
+                    #(assoc-in % [:forms :slice-operator :value] 'get)
+                    #(assoc-in % [:forms :slice-call :child-form-ids] [:slice-operator :call :slice-end :slice-start])
+                    #(assoc-in % [:edge :ordinal] nil) #(assoc-in % [:edge :ordinal] -1)
+                    #(assoc-in % [:core :call-edges 0 :ordinal] -1)
+                    #(update-in % [:core :calls] conj (first (get-in % [:core :calls])))
+                    #(update-in % [:core :call-edges] conj (first (get-in % [:core :call-edges])))
+                    #(update-in % [:core :calls] conj (last (get-in % [:core :calls])))
+                    #(update-in % [:core :call-edges] conj (last (get-in % [:core :call-edges])))
+                    #(assoc-in % [:types :call :element-types] [])
+                    #(assoc-in % [:nodes :slice-end :core-form] :reference)]]
+      (is (= :rejected (:status (vector-slice-derived (mutate base) 65536)))))
+    (let [short (vector-slice-derived base 327)]
+      (is (= ["C7-GENERIC" :string-character-vector-work-limit] ((juxt :rule :reason) short)))
+      (is (= 332 (:work-count short))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "slice proof hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "slice proof equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "slice proof formatting"))))]
+      (doseq [path [[:nodes :slice-start :source :form-id] [:forms :slice-call :child-form-ids 2]
+                    [:forms :slice-operator :value] [:forms :slice-end :value] [:edge :ordinal]
+                    [:core :call-edges 0 :ordinal] [:types :operator :kind]
+                    [:core :calls 0 :core-node-id]]]
+        (is (= :rejected (:status (vector-slice-derived (assoc-in base path opaque) 65536))))
+        (is (zero? @callbacks)))
+      (is (= :accepted (:status (vector-slice-derived base 65536)))))))
+
+(deftest sh08-vector-slice-transfer-development-kernel
+  (doseq [positions [0 1 2 [0 1] [1 2] [0 1 2]]]
+    (let [input (vector-slice-transfer-input "sha256:abcd" 20 1 positions)
+          result (vector-slice-derived input 65536) descriptor (:descriptor result) proof (:bounds-proof descriptor)]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/never (:type result) (:return descriptor)))
+      (is (= :not-invoked (:application descriptor) (:application proof)))
+      (is (= [] (:direct-effects descriptor)))
+      (is (= [:memory/allocate] (:latent-effects descriptor)))
+      (is (nil? (:input-count proof))) (is (nil? (:result-count proof))) (is (nil? (:selected-types proof)))
+      (is (= result (vector-slice-derived input (:work-count result))))
+      (let [types (assoc (:types input) :slice-operator descriptor :slice-call (:type result))
+            check #(invoke-c7 'sh08-vsl-inferred-call [(:core input) (:node input) (:call input) (:edge input)
+                                                      (:nodes input) (:bindings input) types %])
+            measured (check 65536)]
+        (is (= :accepted (:status measured)))
+        (is (= measured (check (:work-count measured))))
+        (is (= :vector-slice-work-limit (:reason (check (dec (:work-count measured)))))))))
+  (doseq [[start end positions] [[-1 7 2] [0 -1 1] [-1 -1 0]]]
+    (is (= :rejected (:status (vector-slice-derived (vector-slice-transfer-input "sha256:abcd" start end positions) 65536))))))
+
+(deftest sh08-vector-slice-child-priority-development-kernel
+  (doseq [[text expected] [["\u00e9" :string-character-vector-unsupported-text]
+                           [(apply str (repeat 1025 \a)) :string-character-vector-width]]]
+    (let [{:keys [core nodes forms bindings products binding-types]} (vector-slice-input text 0 1)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                   :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                     [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+          diagnostics (:diagnostics inferred)]
+      (is (= ["C7-ANNOTATION" expected] ((juxt :rule :reason) (first diagnostics))))
+      (is (every? #(= "C7-ANNOTATION" (:rule %)) (filter #(= expected (:reason %)) diagnostics))))))
+
 (deftest sh08-ascii-string-vector-inference-development-kernel
   (doseq [value ["" "sha256:" "\"\\\n\t" (apply str (map char (range 128)))]]
     (let [{:keys [core nodes forms bindings products binding-types]} (literal-string-vector-input value)
@@ -2583,6 +2774,57 @@
     (is (= result (literal-string-vector-derived input (:work-count result))))
     (is (= :string-character-vector-work-limit
            (:reason (literal-string-vector-derived input (dec (:work-count result))))))))
+
+(deftest sh08-vector-slice-scoped-consumer-development-kernel
+  (let [input (vector-slice-input "sha256:abcd" 0 7)
+        record {:function-syntax-id :slice-function :function-core-node-id :slice-fn
+                :body-core-node-id :slice-call :fixed-arity 0 :parameter-binding-ids []}
+        function {:node-id :slice-fn :core-form :fn :children [:slice-call] :attributes {}
+                  :source {:form-id :slice-form :syntax-id :slice-function} :evaluation {:kind :function-creation :order []}}
+        node-list (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :slice-function) (get-in input [:core :nodes]))
+        edges (mapv #(assoc % :caller-function-syntax-id :slice-function :caller-function-core-node-id :slice-fn) (get-in input [:core :call-edges]))
+        core (assoc (:core input) :nodes (conj node-list function) :function-records [record] :call-edges edges :root-core-node-ids [:slice-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core))) node (nodes :slice-call) call (:call input) edge (second edges)
+        input (vector-slice-established (assoc input :core core :nodes nodes))
+        child-call (first (:calls core)) child-edge (first edges)
+        derived (invoke-c7 'sh08-vsl-derive [core node call edge nodes (:bindings input) (:types input) (:forms input) 65536])
+        types (assoc (:types input) :slice-operator (:descriptor derived) :slice-call (:type derived))
+        functions {:slice-function {:function-id :slice-function :body-core-node-id :slice-call :parameters [] :return (:type derived)
+                                    :latent-effects [:memory/allocate] :capabilities [] :thrown-error-effects []}}
+        direct {:status :accepted :throws {:slice-function []} :constraints [] :diagnostics [] :work-count 0}
+        check #(invoke-c7 'sh08-tc-products [core %1 functions (vec (vals (:bindings input))) direct %2])
+        own #(invoke-c7 'sh08-vsl-inferred-call [core node call edge nodes (:bindings input) %1 %2])
+        measured (own types 65536) accepted (check types 65536)
+        scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) 65536 types])
+        initial (+ (:work-count scoped) (* 8 (count (:nodes core))) (* 70 (count edges))
+                   (count (:bindings input)) (count (:definitions core)) (* 3 (count (:function-records core)))
+                   (* (count (:calls core)) (+ (count (:bindings input)) (count (:definitions core)) (* 2 (count (:function-records core))))))
+        owners (invoke-c7 'sh08-th-owners [core (- 65536 initial)])
+        prior (invoke-c7 'sh08-scv-inferred-call [core (nodes :call) child-call child-edge nodes (:bindings input) types 65536])
+        prefix (+ initial (:work-count owners) (:work-count prior))]
+    (is (= :accepted (:status derived) (:status measured) (:status accepted) (:status prior)))
+    (is (= accepted (check types (:work-count accepted))))
+    (let [rejected (check types (+ prefix (dec (:work-count measured))))]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :vector-slice-work-limit] ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= (+ prefix (:work-count measured)) (:work-count rejected))))
+    (doseq [candidate [(update-in types [:slice-operator] dissoc :kind)
+                       (assoc-in types [:slice-operator :kind] nil)
+                       (assoc-in types [:slice-operator :kind] (Object.))
+                       (assoc-in types [:slice-operator :kind] :gravity.type/applied-string-concat)
+                       (assoc types :slice-operator nil)
+                       (assoc-in types [:slice-operator :bounds-proof :result-count] 1)
+                       (assoc-in types [:operator :conversion-proof :scalar-count] 1)]]
+      (is (= :rejected (:status (own candidate 65536))))
+      (is (= :rejected (:status (check candidate 65536)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "slice scoped hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "slice scoped equality"))))
+          candidate (assoc-in types [:slice-operator :kind] opaque)]
+      (is (= :rejected (:status (own candidate 65536))))
+      (is (= :rejected (:status (check candidate 65536))))
+      (is (= :accepted (:status (check types 65536))))
+      (is (zero? @callbacks)))))
 
 (deftest sh08-ascii-string-vector-scoped-consumer-development-kernel
   (let [input (literal-string-vector-input "sha256:")

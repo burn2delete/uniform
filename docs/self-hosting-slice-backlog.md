@@ -7147,6 +7147,141 @@ ownership review found no dependency on the changed SH22 UTF8/stdout owners;
 no replay was needed. Public fresh C6, native, authoritative migration, whole
 helpers, reader parameters, self-hosting and release remain unestablished.
 
+### Proven Vector slice: development increment
+
+The next dependency of the real SHA-prefix expression is ternary `subvec`
+after its original finite ASCII String `vec`. STD3 now states the general
+persistent Vector slice law, inclusive start/exclusive end, stored order,
+inert payloads, unchanged input, empty/full cases, eager once-only operands,
+transfers and possible allocation/storage obligations. The implementation
+subset is narrower: an independently authenticated existing SCV receiver plus
+two original nonnegative generic Integer literals on JVM/meta, within the
+existing 1,024-width/65,536 logical-work bounds. It establishes
+`0 <= start <= end <= receiver-count` before subtraction, positional result
+types or host slicing. STD3002 denotes absent/out-of-range bounds evidence;
+it is not a claim that every rejected program is mathematically invalid.
+
+Twelve C7, eleven C8 and nine emitter private helpers extend the existing
+owners. They reconstruct child SCV proof from actual binding/node/source,
+unique call/edge and the canonical expected descriptor, then pay its actual
+work again inside the parent. Both child and parent CF/producer rows survive
+and are checked independently. Own source rows are unique and both levels'
+ordinals must be physical nonnegative Integers. All four ordered children and
+their original source occurrences join. Empty/full/prefix/middle/suffix,
+generic BigInt indices, malformed metadata/source joins, child/parent missing
+or duplicate evidence and selected opaque controls are covered. These are
+bounded logical-work and selected callback tests, not universal host containment
+or integer-precision/provider CPU/heap guarantees.
+
+Any Never suppresses cross-operand ordering/upper bounds, subtraction,
+result count/member construction and direct parent allocation. Every remaining
+normal operand still owns its proof. A normal receiver conversion already
+evaluated before a later transfer retains transitive allocation. Parent latent
+allocation stays; every normal invocation, including empty/full, has possible
+allocation and must fit declared allowance. Eager left-to-right lowering is
+non-tail; throw and recur controls cover receiver and both indices, with
+positive direct-tail recur controls. Unsupported child text/width and child
+work failures retain their own diagnostic priority rather than becoming
+STD3002. No IR key/op, context key, cache, cap, public host builtin, runtime
+function, wrapper or lane was introduced; runtime remains 56 functions.
+
+The runtime's old two-value extraction was insufficient for a ternary call.
+It now extracts the actual evaluated end value, validates exact three-map
+builtin shape and physical Symbol/keys, then actual bounded Vector and two
+Integers plus closed nested vec/String/index-literal shapes before host
+subvec. No conversion or child is reevaluated. Index conversion is exact in
+the bounded range, without an implicit machine-width or check-elision claim.
+
+Preserve the full failed development history in `/tmp/vector-slice-*`.
+Test-only RED `c49456f9`, original PTY 19684, ran 1 / 63 with 49 failures.
+Initial inference 22644 passed 1 / 63. C7 namespace compilation 78729 exited
+2 before tests; syntax-corrected 4935 passed 2 / 213. Tightening own-row
+uniqueness/physical census from two to three scans, transfer exact-work and
+child-priority controls led to 62618 passing 3 / 237. Its failed child-work
+prefix is 332, not the earlier revision's 328. Initial C8 3600 passed
+1 / 237. Initial lowering 74343 ran 1 / 251 with two test-oracle failures
+because selected-types [] was unchanged on legitimate empty results;
+corrected 54344 passed 2 / 295 without production weakening. Scoped 87969
+passed 1 / 23, measuring scope, owners and already-paid child work before the
+parent's boundary. First aggregate 71013 stopped at 20 / 1,239 with zero
+failures and one host test-construction error: array-map called the opaque
+key's equality before Gravity. Corrected PersistentArrayMap construction
+led to original 85765 passing all 50 selectors / 3,369 assertions at frozen
+`52d6db10`, tree `5e9ce587`. Boundary passed 6 / 11; LOC passed 2,022
+files, zero exceptions, maximum 250 physical lines.
+
+The boundary and LOC starts 99736/99737 were SOURCE's brief default-heap JVMs,
+overlapping SOURCE's first 2 GiB aggregate and D's 512 MiB RED. That exceeded
+the standing two-Java limit. All ended naturally; later cheap JVM work was
+serialized. Keep the actual overlap qualification; these ordinary receipts
+do not confer protocol compliance or source-execution credit.
+
+Both independent code/result reviews accepted `52d6db10` before further
+work. The one actual main join `1f2cc242`, tree `a030c1f8`, preserves
+parents `52d6db10` and `3af20721` and all 12 owned files. PRs 197/198
+bring C11 and SH12/SH13 Bool-parameter/explicit-argument work; no slice source
+owner changes. Entire host source, actual checked_core.gravity/resolution.gravity
+and P15 compiler.gravity route bytes are unchanged. Trace is
+00899 session -> 00898 authenticated/resolution -> 00894 structural request ->
+00885 execution of named SH07 checked-core build/verify functions. The
+C11-named host digest remains canonical-value hashing; compiler inventory data
+does not invoke the changed C11 source on this method. This is concrete
+dependency reconciliation, not blanket evidence reuse; no repeated 50-test
+stamp or post-join source relocation was used.
+
+The only successor before source execution adds the exact 185-line method:
+`f2490680`, tree `0527a021`. Its form SHA256 is
+543d655e057850858e0e1d75f4944b452052a1c68c440816d09282e739140b40.
+Original namespace-only PTY 69944/natural zero used 512 MiB and executed no
+test. Both finite method/resource reviews accepted before the distinct
+one-shot GO. Original PTY 98034 then exited naturally zero with 1 / 68 passing
+assertions, no retry/fallback/inner run/repair or cap growth. One positive G
+function has one original ASCII-71 conversion and one slice 0..7, with exact
+child/parent descriptors, call facts and rows, ordered effects/allocation,
+fresh C7/C8 verification, assembly-required public C7 verification once, and
+one closed entry returning [\s \h \a \2 \5 \6 \:] with empty stdout.
+The end-72 G negative rejects STD3002/:vector-slice-bounds-required with the
+71-Character Vector and two Integer actual types, expected bounds and
+Core/syntax/binding/span provenance. Fresh negative C7 verification was asserted
+and printed passed, retaining the secondary C7-ANNOTATION. Negative C8/runtime
+were not invoked; QST is parser-only with zero typed products.
+
+Both final actual/resource reviews and the coordinator accepted this exact
+scoped receipt. The one-shot boundary is closed; no proof was replayed.
+
+Preserve the full `/tmp/vector-slice-source-lease-20261021` bundle, plus
+source dependencies, monitor plan, launch eligibility and namespace receipts.
+Fifteen regular non-symlink input pins plus eleven route pins, exact command,
+argv/CWD and actual launch environment remained unchanged. The observer
+shell's different PATH was not the launcher: the recipient launch context
+actually matched pinned PATH 77f656... and eight unset variables before and
+after. Immutable input bytes retain their earlier unlisted status; the later
+CREATE_NEW namespace receipt qualifies that without rewriting history.
+An incorrect inline manifest hash was immediately withdrawn; the actual
+immutable input-manifest SHA is
+e5d30c63e03a79554a0f4c7a16d2dcd3355051fb003e977cb123e76dfdcb16d8.
+Earlier manifest bytes remain in original tool output; no predecessor file or
+timestamp was fabricated.
+Executable-string SHA fd4296... excludes the final newline; the 1,463-byte
+command-file SHA 45841a... includes it. Broker wait was 27 ms and release was
+observed, using the canonical lock and existing memory-heavy lease. Actual
+heap was 2 GiB; operational limits were 600 seconds, 8 MiB log and 4 KiB
+observed tails with a 15-second target/30-second maximum planned gap. Ten
+observations had maximum gap 17.474 seconds; monitor elapsed 152.103 seconds.
+Selected execution was 137.352176875 seconds, runner 137.354308459 seconds
+and namespace loading 13.547703292 seconds; these are inclusive development
+intervals, not provider CPU or speedup benchmarks. Final log was 12,538 bytes
+(SHA a0b25471426566429ec84bc798626e0cfee398012b76e4ab86a24e89ddc0005c),
+EDN 1,543 bytes (SHA cecfc74f478eedb7d45a378060b902a1330be11b8a81e12c81dfb309f20cc96c).
+All six native fcntl availability postchecks were free and selected
+Java/Clojure/Clang processes absent at snapshot, with no hard OS/RSS/descendant
+guarantee. The earlier ordinary JVM overlap does not qualify this separate,
+exclusive one-shot resource record.
+
+No public fresh C6, original String-parameter/alias grounding, arbitrary Vector
+receiver support, complete SHA helper, whole compiler consumer, native,
+authoritative admission/migration, self-hosting or release follows.
+
 ### ASCII literal String vector conversion: development increment
 
 The real SHA-prefix client in checked_core.gravity and resolution.gravity uses
