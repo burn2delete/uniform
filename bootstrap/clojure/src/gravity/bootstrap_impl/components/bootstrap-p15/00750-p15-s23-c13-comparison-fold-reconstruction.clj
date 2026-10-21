@@ -72,7 +72,7 @@
                        (get-in (second producers) [:constant-payload :value]))
              :delta {:kind :gravity/c13-integer-equality-delta :version 1 :operation-id (:op-id op)
                      :operand-ids operands :edges (mapv #(hash-map :index (:index %) :edge (:row %)) removed)
-                     :uses uses}}))))))
+                     :uses uses}})))))))
 
 (defn rewrite [mir selected]
   (let [op (:operation selected) payload {:present? true :value (:value selected)}
