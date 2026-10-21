@@ -1,0 +1,17 @@
+(ns self-hosting.sh08.symbol-set-carrier
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn seed [] (conj '#{} 'assoc))
+
+(defn main []
+  (let [seen (seed)
+        widened (gravity.core/conj seen 'gravity.core/assoc)
+        stored (list seen)]
+    [(count seen)
+     (count widened)
+     (count (conj (conj '#{} 'a) 'b))
+     (count stored)
+     (set? seen)
+     (list? stored)]))

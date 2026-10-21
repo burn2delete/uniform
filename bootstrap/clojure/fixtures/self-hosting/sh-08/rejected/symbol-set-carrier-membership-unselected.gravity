@@ -1,0 +1,6 @@
+(ns self-hosting.sh08.symbol-set-carrier-membership-unselected
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+(defn main []
+  (contains? (conj '#{} 'assoc) 'assoc))
