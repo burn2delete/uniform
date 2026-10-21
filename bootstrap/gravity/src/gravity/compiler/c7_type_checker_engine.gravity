@@ -2733,6 +2733,10 @@
             (if (= mode :member) (if (= :symbol kind) (symbol? value) false)
               (if (= :set kind) (if (set? value) (= 0 (count value)) false) false)) false) false) false) false) false)) false)))
 
+(defn sh08-lsi-first-append [prefix suffix]
+  (loop [remaining suffix out prefix]
+    (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining)))))
+
 (defn sh08-lsi-first-sequence [value]
   (loop [remaining value out []]
     (if (seq remaining)
@@ -2957,7 +2961,7 @@
                                               (if (= :gravity.type/symbol (get descriptor :result-type))
                                                 (if (sh08-si-call-forms? node nodes forms)
                                                   (= descriptor (get types (get (get input :call) :operator-node-id))) false) false) false) false)
-                                        {:status :accepted :path (into [arg-id] (get head :path)) :leaf (get head :leaf) :work-count used}
+                                        {:status :accepted :path (sh08-lsi-first-append [arg-id] (get head :path)) :leaf (get head :leaf) :work-count used}
                                         {:status :rejected :reason :unsupported-loop-member-grounding :work-count used})
                                       (assoc compared :work-count used))) (assoc caller :work-count used))) (assoc head :work-count used))))
                         {:status :rejected :reason :unsupported-loop-member-grounding :work-count used}) (assoc raw :work-count used)))
@@ -2986,7 +2990,7 @@
                   (let [first (sh08-lsi-vector-first node binding env (conj seen id) (- budget used))
                         total (+ used (get first :work-count))]
                     (if (= :accepted (get first :status))
-                      (assoc first :path (into next-path (get first :path)) :work-count total)
+                      (assoc first :path (sh08-lsi-first-append next-path (get first :path)) :work-count total)
                       (assoc first :work-count total)))
                 (if (= kind :reference)
                   (if (if (if (if (= mode :member) true (= mode :literal-head))
