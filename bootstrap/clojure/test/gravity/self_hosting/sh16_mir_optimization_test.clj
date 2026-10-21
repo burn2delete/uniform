@@ -216,6 +216,85 @@
             (invoke-engine
              'sh16-verify [gravity-request gravity-result]))))))
 
+(deftest sh16-propagates-only-independent-constant-segments-after-pure-compute
+  ;; C13 propagation on normalized DATA; compute is retained, never evaluated
+  ;; or treated as a producer. Every suffix starts with a fresh environment.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-no-change-request)
+          mixed (request plan 'sh16-mixed-optimization-request)
+          constant (first (:operations base))
+          make-const (fn [id value] (assoc constant :op-id id :result id :operands [value]))
+          add (assoc (first (:operations mixed)) :op-id :op/suffix :result :value/suffix
+                     :constant-operands false :operands [:value/left :value/right])
+          compute (-> (get-in mixed [:operations 2]) (dissoc :dead :dead-proof)
+                      (assoc :op-id :op/compute :result :value/compute :operands []))
+          left (make-const :value/left 2) right (make-const :value/right 3)
+          ret (assoc (last (:operations base)) :operands [:value/suffix])
+          subject (assoc base :operations [compute left right add ret])
+          by-id (fn [result id] (first (filter #(= id (:op-id %)) (:optimized-operations result))))]
+      (doseq [[mode operands value] [[:pair [:value/left :value/right] 5]
+                                     [:repeat [:value/left :value/left] 4]
+                                     [:mixed [1 :value/left] 3]
+                                     [:chain [:value/left :value/right] 7]]
+              earlier? [false true]]
+        (let [first-add (assoc add :operands operands)
+              adds (if (= mode :chain)
+                     [(assoc first-add :op-id :op/intermediate :result :value/intermediate)
+                      (assoc add :operands [:value/intermediate :value/left])]
+                     [first-add])
+              prefix (if earlier?
+                       [(make-const :value/before 9)
+                        (assoc add :op-id :op/before :result :value/before-add
+                                   :operands [:value/before 1])] [])
+              input (assoc base :operations (vec (concat prefix [compute left right] adds [ret])))
+              result (optimize input)
+              folded (get-in result [:decision-log 0 :changed-operations])]
+          (is (nil? (invoke-engine 'sh16-request-error [input])))
+          (is (= :accepted (:status result)))
+          (is (= (vec (concat (if earlier? [:op/before] []) (map :op-id adds))) folded))
+          (is (= compute (by-id result :op/compute)))
+          (is (= :const (:opcode (by-id result :op/suffix))))
+          (is (= [value] (:operands (by-id result :op/suffix))))
+          (is (= (select-keys add [:source-span :origin-chain :result :type :effects :ordering])
+                 (select-keys (by-id result :op/suffix) [:source-span :origin-chain :result :type :effects :ordering])))
+          (is (= [] (get-in result [:decision-log 2 :proofs-used])))
+          (is (= (mapv :operands (:operations input)) (mapv :operands (get-in result [:identity-input :operations]))))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
+          (is (= :rejected (:status (invoke-engine 'sh16-verify
+                                                  [input (assoc-in result [:decision-log 0 :changed-operations] [:op/compute])]))))
+          (is (= :rejected (:status (invoke-engine 'sh16-verify
+                                                  [input (update result :optimized-operations
+                                                                 #(mapv (fn [op] (if (= :op/suffix (:op-id op))
+                                                                                  (assoc op :operands [999]) op)) %))]))))))
+      (let [dead-compute (assoc compute :dead true :dead-proof
+                                {:proof-id :proof/compute :operation-id :op/compute
+                                 :no-uses true :effect-free true :verified true})]
+        (doseq [input [(assoc subject :operations [left right compute add ret])
+                       (assoc-in subject [:operations 3 :operands] [:value/compute 1])
+                       (assoc-in subject [:operations 3 :operands] [:missing :value/right])
+                       (assoc-in subject [:operations 3 :operands] [:value/suffix :value/right])
+                       (assoc-in subject [:operations 1 :type] :bool)
+                       (assoc-in subject [:operations 1 :operands] [nil])
+                       (assoc-in subject [:operations 1 :operands] [9223372036854775807])
+                       (update-in subject [:operations 0] assoc :effects #{:io/write} :ordering :sequence)
+                       (update-in subject [:operations 0] assoc :safety-outcome :unsafe-island :unsafe-audit-id :audit/compute)
+                       (assoc-in subject [:operations 0] dead-compute)
+                       (assoc-in subject [:operations 0] (get-in mixed [:operations 1]))
+                       (assoc-in subject [:operations 0] (get-in mixed [:operations 3]))
+                       (assoc-in subject [:operations 0] (assoc ret :op-id :op/early-return :result :value/early-return))
+                       (update subject :operations conj (assoc left :op-id :op/duplicate))]]
+          (let [result (optimize input)]
+            (is (= :accepted (:status result)))
+            (is (not (some #{:op/suffix} (get-in result [:decision-log 0 :changed-operations]))))
+            (is (= (first (filter #(= :op/suffix (:op-id %)) (:operations input)))
+                   (by-id result :op/suffix)))
+            (is (= :passed (:status (invoke-engine 'sh16-verify [input result])))))))
+      (let [input (update-in subject [:operations 0] assoc :effects #{:io/write} :ordering nil)
+            result (optimize input)]
+        (is (= :rejected (:status result)))
+        (is (= "C13-EFFECT" (get-in result [:diagnostics 0 :rule])))
+        (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))))))
+
 (deftest sh16-retires-only-original-constants-consumed-by-fresh-reference-folds
   ;; Producer liveness is replayed from normalized DATA, not a provider proof.
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
