@@ -353,6 +353,68 @@
         (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
                                        core mir [argument] result))))))))
 
+(deftest sh13-forwards-bool-results-through-real-parameter-let
+  ;; The same original ten-node lexical topology, not a new opcode, argument
+  ;; API, patched Core or claim that the motivating compiler helpers ran.
+  (let [root @(existing 'root)
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"]
+    (doseq [[extension then-value else-value]
+            [["gravity" true false] ["qst" false true]]]
+      (let [source (str (.resolve root (str relative "." extension)))
+            temporary (java.io.File/createTempFile "gravity-sh13-bool-let-" (str "." extension))]
+        (try
+          (spit temporary (str/replace (slurp source) "(if flag true false)"
+                            (str "(let [selected flag] (if selected " then-value " " else-value "))")))
+          (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
+                nodes (:core-nodes core) ids (mapv :node-id nodes)
+                parameter (get ids 0) binder (get ids 2) if-id (get ids 7) scope (get ids 8)
+                verification (invoke 'sh12-verify-branch-join-mir core mir)]
+            (is (= :accepted (:status raw)))
+            (is (= :passed (:status upstream)))
+            (is (= :passed (:status verification)) (pr-str (:diagnostics verification)))
+            (when (= :passed (:status verification))
+              (is (= 10 (count nodes)))
+              (is (= [:gravity/bool :gravity/bool :gravity/bool :gravity/bool]
+                     (mapv #(get-in nodes [% :type]) [2 5 6 8])))
+              (is (= :gravity/bool (get-in mir [:functions 'main :returns])))
+              (is (= (get-in nodes [9 :type :return]) :gravity/bool))
+              (is (= [binder if-id] (get-in nodes [8 :operands])))
+              (doseq [argument [true false]]
+                (let [result (argument-run-observation core mir [argument])]
+                  (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+                  (when (= :accepted (:status result))
+                    (is (= (if argument then-value else-value) (get-in result [:execution :value])))
+                    (is (= [argument] (:arguments result)))
+                    (is (= 503 (get-in result [:execution :fuel])))
+                    (is (= [(get ids 1) binder (get ids 3) (get ids 4)
+                            (get ids (if argument 5 6)) scope]
+                           (vec (keep :operation (get-in result [:execution :trace])))))
+                    (is (not-any? #(= parameter (:operation %)) (get-in result [:execution :trace])))
+                    (is (= scope (get-in result [:projection :return-value-id])))
+                    (is (= (get-in nodes [9 :type])
+                           (:source-type (last (get-in result [:projection :operations])))))
+                    (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                                   core mir [argument] result))))
+                    (doseq [candidate [(assoc result :arguments [(not argument)])
+                                       (assoc-in result [:execution :value] 1)
+                                       (assoc-in result [:projection :return-value-id] if-id)
+                                       (assoc-in result [:projection :operations 8 :source-type :return] :gravity/integer)]]
+                      (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                                      core mir [argument] candidate))))))))
+              (doseq [bad-core [(assoc-in core [:core-nodes 6 :attributes :value] 0)
+                                (assoc-in core [:core-nodes 6 :attributes :value] nil)
+                                (assoc-in core [:core-nodes 9 :type :return] :gravity/integer)
+                                (assoc-in core [:type-facts scope :dependencies] [])
+                                (assoc-in core [:lexical-binding-records 1 :shadowed-binding] parameter)]]
+                (let [original (invoke 'sh12-verify-branch-join-mir bad-core mir)
+                      result (argument-run-observation bad-core mir [true])]
+                  (is (= :rejected (:status original) (:status result)))
+                  (is (= (:diagnostics original) (:diagnostics result)))
+                  (is (nil? (:execution result)))))
+              (is (= :rejected (:status (run core mir))))
+              (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))))
+          (finally (.delete temporary)))))))
+
 (defn- scalar-core [core condition type then-value else-value]
   (let [values [condition then-value else-value nil nil]
         types [:gravity.type/bool type type type type]]
