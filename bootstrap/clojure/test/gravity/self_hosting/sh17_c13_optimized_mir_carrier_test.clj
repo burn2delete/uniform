@@ -469,10 +469,14 @@
           (let [rejected (build candidate)]
             (is (= :rejected (:status rejected)))
             (is (nil? (:llvm-ir rejected)))))
-        (doseq [candidate [(assoc-in folded [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload :value] :not-bool)
-                           (assoc-in folded [:optimized-mir :control-flow-graph :join :incoming 0 :value] "else-value")
-                           (assoc-in folded [:optimized-mir :functions 'main :blocks join-id :instructions 0 :type] :gravity/bool)]]
-          (is (false? (execute @c14-plan 'c14-equality-translation-valid? [candidate policy])))))))
+        (is (false? (execute @c14-plan 'c14-equality-translation-valid?
+                            [(assoc-in folded [:optimized-mir :functions 'main :blocks entry :instructions 2 :constant-payload :value] :not-bool) policy])))
+        (is (false? (execute @c14-plan 'c14-llvm-bounded-mir-surface-valid?
+                            [(assoc-in folded [:optimized-mir :functions 'main :blocks join-id :instructions 0 :type] :gravity/bool) policy])))
+        ;; Incoming control-flow preservation is checked against the ORIGINAL
+        ;; context, not attributed to the local inverse/forward fold predicate.
+        (is (not= (bootstrap/p15-s23-c13-expected-record mir evidence)
+                  (assoc-in folded [:optimized-mir :control-flow-graph :join :incoming 0 :value] "else-value")))))))
 
 (def ^:private c13-envelope-keys
   ;; This set is copied from C14's c14-c13-envelope-valid? contract.  Keep it
