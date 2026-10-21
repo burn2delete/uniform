@@ -6153,6 +6153,45 @@ loading; the unchanged annotated-source composition was not replayed. This is
 development implementation evidence, not authoritative migration, checked
 runtime linking, complete effects/errors, self-hosting or release completion.
 
+### Scalar import catalog: compiler-source dependency repair
+
+At `5262d9cd`, the production change is confined to C7's
+`sh08-im-scalar-type?`: a Keyword-family guard and an inert quoted Set replace its
+two Vector-tail catalog loops. The recognized domain remains exactly 19 type
+IDs from 24 original occurrences: nine literal kinds and fifteen atomic names,
+with Bool/String/Symbol/Keyword/Ratio duplicated. The actual nil type is
+recognized, while host nil, unknown/never, lookalike Keywords, other scalar
+values, composite maps and callable types still return Bool false. Existing
+producer identity, complete signature and annotation consistency checks remain.
+No effects owner, emitter, runtime, primitive, schema or imported API is changed.
+
+Before editing, original Gravity catalog/classifier/complete-signature calls at
+`0699c86e` confirmed the 24-to-19 mapping, all 19 complete signatures and 20
+ordinary false cases. The final focused batch at `5262d9cd` passed four tests
+and 234 assertions in one invocation: catalog/signature matrix 147, dependency
+observer 9, existing imported-function 51 and inferred-signature 27. It covers
+all catalog IDs, 26 negative values in both return and parameter positions,
+and existing identity/declaration controls. The observer delegates original
+arguments/results and limits its observations to the selected loaded plan.
+
+The first test-only RED at `129592a9` remains 154P/2F/0E out of 156. Its generic
+observer did not cover optimized unary dispatch, so its zero recorded Vector
+tails earn no dependency credit. The corrected `a54bcede` observer ran the
+affected nine assertions with 4P/5F/0E, observing two initial Vector-tail calls
+for each late recognized, unknown and composite input; later normalized List
+tails were excluded. The final classifier observes zero Vector tails, one
+membership query for a Keyword, and no query for a non-Keyword. This is an
+operation-boundary observation, not a speedup or provider-cost claim.
+
+One main join to `8a0ddf8d` produced `7524d538`, preserving both owned files
+byte-for-byte; the intervening LLVM policy/test/notes delta is disjoint. Fresh
+boundary checks passed 6/11 and LOC reports 2,022 source files, zero exceptions
+and maximum 250 physical lines. The 234 assertions were not replayed merely
+for that join. No C5/C6/source proof was run. The unannotated parameter and
+surrounding helper typing remain independent gaps; the guard establishes no
+general flow fact and this repair does not claim whole-helper source admission,
+Vector-rest support, current-closure migration, self-hosting or release credit.
+
 ### Ordinary compiler-artifact module calls: development implementation
 
 The L3/C5/BOOT2 enabling increment gives the temporary compiler-artifact seed
