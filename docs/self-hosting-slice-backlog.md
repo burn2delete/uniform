@@ -8422,6 +8422,32 @@ revision in `55b7dca9`, not to a replay of the revised harness. There is no
 measured speedup, new semantic feature or migration claim. The direct commands
 and distinctions are in `docs/development-verification.md`.
 
+### Checked i64 subtraction in the experimental bootstrap library
+
+The existing SH-22 Gravity library now executes binary `:checked-sub-i64` under
+STD1/STD5/D8. Both operands must be integers in i64 range; pre-operation guards
+reject overflow. For negative right operands, the accepted result is computed
+through result-minus-one followed by one, avoiding the seed builtin's internal
+negation of MIN. This covers MIN-MIN=0, -1-MIN=MAX and MIN-(-1)=MIN+1 without
+changing the runtime interface. `STD5001` retains type/range/overflow failures
+and `STD1001` retains wrong arity. The owner-local closed operation set and
+manifest grow to 14 operations; experimental opt-in, `:meta`, pure/no-capability
+and `:none` allocation policy remain explicit. Request/result schema and the
+four exported entrypoints are unchanged.
+
+The initial arithmetic RED ran one test/592 assertions with 428 failures. The
+first GREEN ran two tests/75 assertions with one seed subtraction-overflow error;
+later selected vars were unrun. The corrected focused batch passed eight
+tests/864 assertions, including all 604 subtraction assertions and existing
+addition, paired fixture, policy, rejection and verifier checks at 512 MiB.
+Earlier partial/failing counts are not extra coverage. The language boundary
+passed six tests/11 assertions and the Clojure LOC gate passed.
+
+No compiler client linkage, native/provider execution, complete library closure,
+authoritative migration or SH-22 completion follows. Historical SH07 source and
+digest pins remain unchanged; their evidence does not authenticate this changed
+library revision and must be renewed only for an actual admission decision.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

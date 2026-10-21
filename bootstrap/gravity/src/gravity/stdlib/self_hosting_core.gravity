@@ -38,6 +38,7 @@
      :ordered-set-conj
      :utf8-validate
      :checked-add-i64
+     :checked-sub-i64
      :error-context
      :io-file-read
      :io-stdout
@@ -107,6 +108,11 @@
      :bounded-by-input ["STD4001"] #{:meta})
     (sh22-export
      :checked-add-i64 :numeric
+     "I64 I64 -> (Result I64 NumericError)"
+     #{} #{}
+     :none ["STD5001"] #{:meta})
+    (sh22-export
+     :checked-sub-i64 :numeric
      "I64 I64 -> (Result I64 NumericError)"
      #{} #{}
      :none ["STD5001"] #{:meta})
@@ -808,6 +814,49 @@
     :safety-outcome :proven-safe
     :allocation :none}))
 
+(defn sh22-checked-sub [request]
+  (let [arguments (get request :arguments)
+        left (get arguments 0)
+        right (get arguments 1)]
+    (if (= 2 (count arguments))
+      (if (integer? left)
+        (if (integer? right)
+          (let [policy (sh22-library-policy)
+                minimum (get policy :integer-minimum)
+                maximum (get policy :integer-maximum)]
+            (if (if (<= minimum left) (<= left maximum) false)
+              (if (if (<= minimum right) (<= right maximum) false)
+                ; STD5/D8: these guard sums stay in i64. Never negate right,
+                ; because the minimum i64 has no representable positive peer.
+                (if (> right 0)
+                  (if (< left (+ minimum right))
+                    (sh22-rejected request "STD5001" :integer-overflow)
+                    (sh22-checked-sub-result request left right))
+                  (if (< right 0)
+                    (if (> left (+ maximum right))
+                      (sh22-rejected request "STD5001" :integer-overflow)
+                      (sh22-checked-sub-result request left right))
+                    (sh22-checked-sub-result request left right)))
+                (sh22-rejected request "STD5001" :integer-out-of-range))
+              (sh22-rejected request "STD5001" :integer-out-of-range)))
+          (sh22-rejected request "STD5001" :expected-integer))
+        (sh22-rejected request "STD5001" :expected-integer))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
+(defn sh22-checked-sub-result [request left right]
+  ; After the guards, negative right makes result >= MIN+1. Compute result-1
+  ; first, without asking the hosted builtin to negate an unrepresentable MIN.
+  (sh22-accepted
+   request
+   {:artifact :gravity/result
+    :variant :ok
+    :value (if (< right 0)
+             (+ (- left (+ right 1)) 1)
+             (- left right))}
+   {:numeric-mode :checked-i64
+    :safety-outcome :proven-safe
+    :allocation :none}))
+
 (defn sh22-error-context [request]
   (let [arguments (get request :arguments)
         code (get arguments 0)
@@ -1109,8 +1158,10 @@
               (sh22-ordered-set-conj request)
               (if (= operation :utf8-validate)
                 (sh22-utf8-validate request)
-                (if (= operation :checked-add-i64)
-                  (sh22-checked-add request)
+                (if (sh22-member? #{:checked-add-i64 :checked-sub-i64} operation)
+                  (if (= operation :checked-add-i64)
+                    (sh22-checked-add request)
+                    (sh22-checked-sub request))
                   (if (= operation :error-context)
                     (sh22-error-context request)
                     (if (= operation :io-file-read)
@@ -1155,7 +1206,7 @@
             :bounded-by-result
             (if (= operation :utf8-validate)
               :bounded-by-input
-              (if (= operation :checked-add-i64)
+              (if (sh22-member? #{:checked-add-i64 :checked-sub-i64} operation)
                 :none
                 (if (= operation :error-context)
                   :bounded-by-result
