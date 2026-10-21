@@ -569,11 +569,13 @@ original `:integer-lte` to it with the explicit
 `:integer-less-than-or-equal` projection role in a seven-row `[3,1,1]`
 entry-comparison diamond with scalar literal arms. A literal Bool entry also
 supports one three-operation `<=` arm, with widths `[1,3,1]` or `[1,1,3]`.
-Both arms validate before execution. Entry comparisons or truthiness combined
-with a `<=` arm, and two computed `<=` arms, remain rejected; Eq/Lt arm support
+Both arms validate before execution. Two `<=` comparisons also compose in
+nine-row `[3,3,1]` or `[3,1,3]` diamonds. Mixed Eq/Lt comparisons or truthiness
+combined with a `<=` arm, and two computed `<=` arms, remain rejected; Eq/Lt arm support
 is unchanged. Original source/fact, CFG/DFG, origin, type, effect and recomputation
 checks remain. Entry comparison leaves fuel 505; a selected/skipped comparison
 arm leaves 505/507 under depth 32 and fuel 512. No public keys or arities change.
+Double-`<=` composition leaves fuel 503/505 when its computed arm is selected/skipped.
 
 Run `sh13-executes-integer-less-than-or-equal-entry-conditions` and
 `sh13-executes-integer-less-than-or-equal-only-in-the-selected-arm` in
@@ -603,6 +605,17 @@ Retain `/tmp/d-sh13-lte-arm-*-v1-20261021`. The separate test-only RED contains
 projection roles after subset rejection, not failed comparison execution.
 Literal witnesses exercise placement used by C11's guarded predicates, not
 whole-helper execution, fresh source adaptation, native execution or admission.
+
+For two-sided span guards, run `sh13-composes-two-integer-lte-span-guards` in
+the same bridge namespace. At `d3653edc`, four passing invocations cover the
+new composition 1/636, affected bridge 18/8,810, normalized controls 4/499 and
+boundary 6/11: 29 tests / 9,956 assertions. LOC separately passes 2,022 files,
+zero exceptions, maximum 250 lines. Preserve `/tmp/d-sh13-double-lte-*-v1-20261021`
+and its separate test-only RED 276 passes / 360 failures in 1/636. Removing
+36 now-obsolete composition-rejection assertions changes the old entry/arm
+counts to 384/1,152; it does not relabel earlier runs. Independent literal
+pairs model C11's `(if (<= 0 start) (<= start end) false)` placement, not shared
+variable dataflow, member lookup, arbitrary Integer width or actual helper execution.
 
 ### Scalar SSA forwarding in normalized MIR
 
