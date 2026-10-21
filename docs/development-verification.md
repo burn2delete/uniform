@@ -7530,8 +7530,9 @@ gates each take about five seconds; timings include observer overhead and are
 not additive or a measured speedup. They do not explain the interrupted large
 subject. Unit 5/115, tiny integration 1/59 and boundary 6/11 pass in three
 invocations; LOC passes 2,022 files, zero exceptions, maximum 250 lines.
-Retain `/tmp/sh06-single-flatten-trace-*-0fdd0af1-20261021`, including the
-separate test-only RED 24 passes / seven failures in 1/31. No unchanged large
+Retain `/tmp/sh06-single-flatten-trace-*-0fdd0af1-20261021` and the separate
+`/tmp/sh06-single-flatten-trace-red-f0fadd5d-20261021` test-only RED of 24 passes
+/ seven failures in 1/31. No unchanged large
 proof was repeated and no acceptance cache or migration claim is introduced.
 
 The typed-catch composition exposed a separate retention limitation. Rendering
