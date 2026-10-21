@@ -32125,3 +32125,60 @@
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest current-gravity-symbol-set-loop-invariant-development-kernel
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [data ((ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'symbol-set-loop-data))
+        {:keys [context checked carrier empty-type]} data
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        compile #(invoke 'p15-s23-typed-compile-node %1 :loop-node %2)
+        result (compile context 65536) runtime-plan (:plan (typed-catch-runtime-projection))
+        value (when (= :complete (:status result))
+                (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+                  'p15-s23-runtime-evaluate-closed-instruction [(:value result) {} ""]))]
+    (is (= :accepted (:status checked)))
+    (is (= :complete (:status result)) (pr-str result))
+    (is (= [#{'assoc} "" :normal] value))
+    (is (= empty-type (get-in context [:types :value-init])))
+    (is (= carrier (get-in checked [:bindings :value])))
+    (when (= :complete (:status result))
+      (is (= result (compile context (:work-count result))))
+      (is (= :rejected (:status (compile context (dec (:work-count result)))))))
+    (doseq [mutate [#(assoc-in % [:types :operator :version] :sh08-symbol-set-insertion-v1)
+                    #(assoc-in % [:loop-rows [:loop-slot-type :value] :producer-rule] :sh08-loop-target-types-v1)
+                    #(assoc-in % [:loop-rows [:loop-recur-type :transfer] :producer-rule] :sh08-loop-target-types-v1)
+                    #(assoc-in % [:loop-rows [:loop-slot-type :value] :dependencies :loop-premise :member-invariant :initializer-type] carrier)
+                    #(assoc-in % [:loop-rows [:loop-slot-type :value] :dependencies :loop-premise :member-invariant :grounding :member-path] [:other])
+                    #(update-in % [:loop-rows [:loop-slot-type :value] :dependencies :loop-premise :member-invariant :entries] pop)
+                    #(assoc-in % [:loop-rows [:loop-recur-type :transfer] :solution :member-invariant-bindings] [])
+                    #(assoc-in % [:types :arg0] empty-type)
+                    #(assoc-in % [:forms :member-data :value] "assoc")]]
+      (is (= :rejected (:status (compile (mutate context) 65536)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "lowered loop proof hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "lowered loop proof equality")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "lowered loop proof printing"))))]
+      (doseq [bad [opaque [opaque] {:opaque opaque}]]
+        (is (= :rejected (:status (compile (assoc-in context
+          [:loop-rows [:loop-slot-type :value] :dependencies :loop-premise :member-invariant :grounding :member-path] bad) 65536))))
+        (is (zero? @callbacks))))))
+
+(deftest current-gravity-symbol-set-loop-invariant-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name recur-count quote-count]
+            [["accepted" "loop-symbol-set-invariant" 1 2]
+             ["rejected" "loop-symbol-set-conflicting-reentry" 2 3]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g) nodes (tree-seq coll? seq forms)]
+        (is (= g q))
+        (is (= forms (bootstrap/read-forms q-path q)))
+        (is (= 1 (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'loop (first %))) nodes))))
+        (is (= recur-count (count (filter #(and (seq? %) (= 'recur (first %))) nodes))))
+        (is (= quote-count (count (filter #(and (seq? %) (= 'quote (first %))) nodes))))
+        (is (= 1 (count (filter #(and (seq? %) (= 'conj (first %))) nodes))))))))
