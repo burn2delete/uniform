@@ -1802,6 +1802,16 @@
                :lexical-scope :function-boundary}
              opcode))
 
+(defn c14-c-local-forward-type-valid?
+  [operation operations-by-id]
+  (if (contains? #{:local :local-binding} (get operation :opcode))
+    (if (c14-c-scalar-type? (get operation :type))
+      (= (get operation :type)
+         (get (get operations-by-id
+                   (c14-c-last (get operation :operands))) :type))
+      false)
+    true))
+
 (defn c14-c-source-operation-valid?
   [opcode source-operation]
   (if (= opcode :constant)
@@ -1876,7 +1886,10 @@
                         (if (> (count operands) 0)
                           (if (= opcode :function-boundary)
                             true
-                            (c14-c-scalar-type? type))
+                            (if (c14-c-scalar-type? type)
+                              (c14-c-local-forward-type-valid?
+                               operation operations-by-id)
+                              false))
                           false)
                         (if (= opcode :truthiness)
                           (if (= (count operands) 1)
@@ -2610,9 +2623,12 @@
                   (if (= (get operation :constant-payload) :not-applicable)
                    (if (c14-c-forwarded-opcode? opcode)
                     (if (> (count operands) 0)
-                      (c14-wasm-references-allowed?
-                       operation operands operations-by-id operation-index
-                       block-labels)
+                      (if (c14-wasm-references-allowed?
+                           operation operands operations-by-id operation-index
+                           block-labels)
+                        (c14-c-local-forward-type-valid?
+                         operation operations-by-id)
+                        false)
                       false)
                     (if (= opcode :truthiness)
                       (if (= (count operands) 1)

@@ -192,6 +192,60 @@
      :clojure-seed-boundary? true
      :self-hosted? false}))
 
+(deftest sh17-local-forwarding-preserves-the-last-operand-scalar-type
+  ;; Original C14 whole-surface gates and evaluator on supplied MIR DATA, not
+  ;; a freshly authenticated C11/C13 packet or a native backend execution.
+  (let [core "core/local-forward" entry (str core ":mir:entry")
+        scalar-values [[:gravity/integer 42] [:gravity/bool false] [:gravity/nil nil]]
+        operation (fn [id opcode source-operation type operands payload]
+                    {:artifact :gravity/mir-operation :op-id id :block-id entry
+                     :opcode opcode :source-operation source-operation :type type
+                     :operands operands :constant-payload payload :verifier-status :passed
+                     :effects #{} :capabilities #{} :domain-anchor nil})
+        fixture (fn [backend opcode type value many?]
+                  (let [discarded (operation "discard" :constant :literal :gravity/integer []
+                                             {:present? true :value 7})
+                        input (operation "input" :constant :literal type [] {:present? true :value value})
+                        local (operation "local" opcode (if (= opcode :local) :local :let-binding)
+                                         type (if many? ["discard" "input"] ["input"]) :not-applicable)
+                        result (operation "result" :constant :literal :gravity/integer []
+                                          {:present? true :value 17})
+                        operations [discarded input local result]]
+                    {:optimized-mir
+                     {:source-core core :profile :hosted
+                      :target-request (if (= backend :llvm) :llvm-x86_64-linux backend)
+                      :target-independent? true :runtime-check-table {} :domain-anchors {} :globals {}
+                      :control-flow-graph {:entry entry :edges [] :dominance {entry [entry]} :join nil}
+                      :functions {'main {:params [] :latent-effects #{} :capabilities #{}
+                                         :blocks {entry {:instructions operations
+                                                         :terminator {:opcode :return :operands ["result"]}}}}}}
+                     :policy {:supported-operation-ids (mapv :op-id operations)}}))
+        eligible (fn [backend subject]
+                   (invoke (case backend :c 'c14-c-bounded-mir-surface-valid?
+                                         :llvm 'c14-llvm-bounded-mir-surface-valid?
+                                         :wasm 'c14-wasm-bounded-mir-surface-valid?)
+                           [(dissoc subject :policy) (:policy subject)]))
+        operation-path [:optimized-mir :functions 'main :blocks entry :instructions]]
+    (doseq [backend [:c :llvm :wasm] opcode [:local :local-binding]
+            many? [false true] [type value] scalar-values]
+      (let [subject (fixture backend opcode type value many?)
+            operations (get-in subject operation-path)
+            by-id (into {} (map (juxt :op-id identity) operations))
+            evaluated (invoke 'c14-c-evaluate-operations [operations by-id {}])]
+        (is (true? (eligible backend subject)))
+        (is (= value (get evaluated "local")))
+        ;; Do not coerce a forwarded value to match a false declared type.
+        (doseq [wrong-type (concat (remove #{type} (map first scalar-values))
+                                  [:unsupported/scalar "gravity/integer" nil])]
+          (is (false? (eligible backend (assoc-in subject (conj operation-path 2 :type) wrong-type)))))
+        (is (false? (eligible backend (assoc-in subject (conj operation-path 1 :type) :unsupported/scalar))))))
+    (doseq [backend [:c :llvm :wasm] opcode [:local :local-binding]]
+      (let [subject (fixture backend opcode :gravity/integer 42 false)]
+        (doseq [[field value] [[:verifier-status :rejected] [:effects #{:io/write}]
+                               [:capabilities #{:io/stdout}] [:domain-anchor :unsupported]
+                               [:source-operation :quote] [:operands ["missing"]] [:operands []]]]
+          (is (false? (eligible backend (assoc-in subject (conj operation-path 2 field) value)))))))))
+
 (deftest sh17-source-compiles-and-c11-revision-is-complete
   (let [plan @engine-plan
         if-calls (calls-named 'if (source-forms))
