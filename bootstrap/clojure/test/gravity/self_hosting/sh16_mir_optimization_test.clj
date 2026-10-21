@@ -254,6 +254,11 @@
                [(assoc-in input [:operations 1 :dead-proof :verified] false) "C13-PROOF"]
                [(assoc-in input [:operations 1 :effects] #{:io/write}) "C13-EFFECT"]
                [(assoc-in input [:operations 1 :safety-outcome] :rejected) "C13-SAFETY"]
+               [(assoc input :operations
+                       [(assoc (get-in (request plan 'sh16-mixed-optimization-request) [:operations 3])
+                               :dead true
+                               :dead-proof {:proof-id :proof/check-unused :operation-id :op/bounds-check
+                                            :no-uses true :effect-free true :verified true})]) "C13-SAFETY"]
                [(assoc input :source-span nil) "C13-PRESERVE"]
                [(update input :operations conj return) "C13-VERIFY"]]]
         (rejected subject rule))

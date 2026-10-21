@@ -1547,8 +1547,10 @@
 (defn sh16-dead-proof-valid? [operation operations]
   (let [proof (get operation :dead-proof)]
     (if
-     (sh16-exact-keys?
-      proof #{:proof-id :operation-id :no-uses :effect-free :verified})
+     (if (= :return (get operation :opcode))
+       false
+       (sh16-exact-keys?
+        proof #{:proof-id :operation-id :no-uses :effect-free :verified}))
       (if (sh16-canonical-identifier? (get proof :proof-id))
         (if (= (get operation :op-id) (get proof :operation-id))
           (if (= true (get proof :no-uses))
