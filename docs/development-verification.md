@@ -377,7 +377,10 @@ value/projection domain, not public keys, arities, opcodes, roles or limits.
 For a pure two-expression `do` in one branch arm, edit C11 and select
 `sh13-executes-two-expression-do-only-in-the-selected-arm` plus
 `sh13-do-arms-keep-the-literal-condition-placement-boundary` in the branch-join
-namespace. The condition must be a literal Bool. One arm contains two closed
+namespace. For the existing scalar truthiness condition, also select
+`sh13-composes-scalar-truthiness-with-two-expression-do`. The condition is a
+literal Bool or a validated literal followed by the existing truthiness
+operation. One arm contains two closed
 scalar literals and their original `:sequence`/`:do` result; the other is a
 matching literal. Validate ordered child IDs, `:body 0`/`:body 1` paths,
 `:body-count 2`, last-value type and all source/fact records in both arms before
@@ -386,10 +389,13 @@ execution. Nil still requires explicit original value fields.
 Both selected literals execute exactly once left-to-right, then the existing
 SSA-forwarding interpreter returns the second value under the original sequence
 ID. The new projection role is `:sequence-result`, not a new interpreter or
-normalized opcode. This is the seven-row `[1,3,1]` or mirrored layout only;
-computed-entry plus `do` combinations remain unsupported. Existing nine-row
-comparison layouts remain supported. Fuel is 505 selected or 507 skipped,
-within 512. Retain scalar/Nil/lexical, old layout, original verifier and result
+normalized opcode. Literal conditions use seven-row `[1,3,1]` or mirrored
+layouts, with fuel 505 selected or 507 skipped. Truthiness conditions use
+eight-row `[2,3,1]` or mirrored layouts, with fuel 504 selected or 506 skipped.
+The latter require the three-operation arm to end in `:sequence`, not a
+comparison. Computed Eq/Lt entry plus `do` remains unsupported; existing
+nine-row comparison layouts remain supported. Limits remain depth 32 and
+fuel 512. Retain scalar/Nil/lexical, old layout, original verifier and result
 substitution regressions. Empty/nested/effectful bodies, calls and fresh C6
 adaptation are outside this slice.
 

@@ -9935,6 +9935,33 @@ Supplied G/Q constructor witnesses do not establish actual C6 type-family or
 source adaptation, native execution, whole-compiler behavior, SH-13 completion
 or authoritative migration.
 
+### Scalar truthiness with branch-local do: executable increment
+
+At `0dbb01ca`, the existing scalar truthiness entry composes with the preceding
+two-expression `do` arm. The additive placement domain is eight-row `[2,3,1]`
+or its mirror, and the three-operation arm must end in `:sequence`. Truthiness
+entry plus Eq/Lt arm remains rejected, as does computed Eq/Lt entry plus `do`.
+Existing seven-row `do` and nine-row comparison behavior remains supported.
+There is no new opcode, projection role, public key, arity, interpreter or cap.
+
+The literal input and truthiness operation execute once, followed only by the
+selected arm. Nil and false select the false branch; zero and Keywords select
+the true branch. Both selected body literals execute once left-to-right, and
+the original sequence ID transfers the last value. Fuel is 504 selected or
+506 skipped under the unchanged depth-32/fuel-512 bounds. Both arms retain
+full source, type, fact, body-path and explicit Nil-presence validation before
+execution. Altered MIR rejects before execution; substituted results reject
+through fresh recomputation and comparison.
+
+The new selector passed 1/816 assertions; 18 affected existing selectors passed
+6,739 and six boundary tests passed 11. Thus 25 tests/7,566 assertions passed
+across three invocations, without a failed execution epoch. LOC separately
+passed 2,021 files, zero exceptions, maximum 250. G/Q supplied constructor
+controls preserve all eight operation IDs, facts, source records, incoming
+sequence ID and selected-only trace. These are development composition checks,
+not actual C6 type-family/source adaptation, native execution, whole-compiler
+behavior, SH-13 completion or authoritative migration.
+
 ### Normalized C14 return-type consistency: development repair
 
 C14 now rejects a normalized function when its terminator-selected value's
