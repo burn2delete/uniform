@@ -216,6 +216,88 @@
             (invoke-engine
              'sh16-verify [gravity-request gravity-result]))))))
 
+(deftest sh16-propagates-one-established-reference-and-one-i64-immediate
+  ;; Existing normalized operand kinds, not actual C6/source or general SSA.
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh16-no-change-request)
+          mixed (request plan 'sh16-mixed-optimization-request)
+          constant (assoc (first (:operations base)) :op-id :op/input :result :value/input)
+          seed (assoc (first (:operations mixed)) :op-id :op/seed :result :value/seed
+                      :constant-operands false :operands [:value/input :value/input])
+          make-input (fn [intermediate? left? value literal]
+                       (let [reference (if intermediate? :value/seed :value/input)
+                             add (assoc seed :op-id :op/mixed :result :value/mixed
+                                        :operands (if left? [reference literal] [literal reference]))]
+                         (assoc base :operations
+                                (vec (concat [(assoc constant :operands [value])]
+                                             (when intermediate? [seed])
+                                             [add (assoc (last (:operations base)) :operands [:value/mixed])])))))
+          by-id (fn [result id] (first (filter #(= id (:op-id %)) (:optimized-operations result))))]
+      (doseq [left? [true false]
+              [intermediate? value literal expected]
+              [[false 3 1 4] [true 3 1 7] [true -3 -1 -7] [false 0 0 0]
+               [false 9223372036854775806 1 Long/MAX_VALUE]
+               [false -9223372036854775807 -1 Long/MIN_VALUE]
+               [false 0 Long/MIN_VALUE Long/MIN_VALUE]]]
+        (let [input (make-input intermediate? left? value literal) result (optimize input)
+              add (get-in input [:operations (if intermediate? 2 1)]) output (by-id result :op/mixed)]
+          (is (nil? (invoke-engine 'sh16-request-error [input])))
+          (is (= :accepted (:status result)))
+          (is (= :const (:opcode output)))
+          (is (= [expected] (:operands output)))
+          (is (= (first (:operations input)) (by-id result :op/input)))
+          (is (= (:operands add) (get-in result [:identity-input :operations (if intermediate? 2 1) :operands])))
+          (is (= false (get-in result [:identity-input :operations (if intermediate? 2 1) :constant-operands])))
+          (is (= (select-keys add [:op-id :result :source-span :origin-chain])
+                 (select-keys output [:op-id :result :source-span :origin-chain])))
+          (is (= (if intermediate? [:op/seed :op/mixed] [:op/mixed])
+                 (get-in result [:decision-log 0 :changed-operations])))
+          (is (= (if intermediate? [:op/seed] []) (get-in result [:decision-log 2 :changed-operations])))
+          (is (= [] (get-in result [:translation-validation :proofs])))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
+          (is (= :rejected (:status (invoke-engine 'sh16-verify
+                                                 [input (assoc-in result [:optimized-operations 1 :operands] [99])]))))))
+      (doseq [left? [true false]]
+        (let [input (make-input false left? 3 1) add (get-in input [:operations 1])
+              unchanged (fn [subject]
+                          (let [result (optimize subject)]
+                            (is (= :accepted (:status result)))
+                            (is (= (first (filter #(= :op/mixed (:op-id %)) (:operations subject)))
+                                   (by-id result :op/mixed)))
+                            (is (= [] (get-in result [:decision-log 0 :changed-operations])))
+                            (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))))]
+          (doseq [literal [nil true :missing "1"]]
+            (unchanged (make-input false left? 3 literal)))
+          (doseq [subject [(make-input false left? Long/MAX_VALUE 1)
+                           (make-input false left? Long/MIN_VALUE -1)
+                           (assoc-in input [:operations 1 :operands] (if left? [:missing 1] [1 :missing]))
+                           (assoc-in input [:operations 1 :operands] [2 3])
+                           (assoc input :operations [add (first (:operations input)) (last (:operations input))])
+                           (update input :operations conj (assoc (first (:operations input)) :op-id :op/ambiguous))
+                           (assoc-in input [:operations 0 :type] :bool)
+                           (update-in input [:operations 0] assoc :effects #{:io/write} :ordering :sequence)
+                           (update-in input [:operations 0] assoc :safety-outcome :unsafe-island :unsafe-audit-id :audit/input)
+                           (assoc-in input [:operations 1 :type] :bool)
+                           (update-in input [:operations 1] assoc :effects #{:io/write} :ordering :sequence)
+                           (update-in input [:operations 1] assoc :safety-outcome :unsafe-island :unsafe-audit-id :audit/add)
+                           (update input :operations #(vec (concat [(first %) (second (:operations mixed))] (rest %))))]]
+            (unchanged subject))
+          (let [dead (assoc add :dead true :dead-proof {:proof-id :proof/dead :operation-id :op/mixed
+                                                       :no-uses true :effect-free true :verified true})
+                subject (assoc input :operations [(first (:operations input)) dead
+                                                  (assoc (last (:operations input)) :operands [:value/input])])
+                result (optimize subject)]
+            (is (= :accepted (:status result)))
+            (is (= [] (get-in result [:decision-log 0 :changed-operations])))
+            (is (= [:op/mixed] (get-in result [:decision-log 2 :changed-operations])))
+            (is (= [:proof/dead] (get-in result [:translation-validation :proofs])))
+            (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))))
+      ;; Numeric atoms cannot acquire identifier meaning from a supplied map.
+      (let [operation (assoc seed :operands [1 :value/input])
+            candidate (invoke-engine 'sh16-propagated-add-candidate [operation {1 99 :value/input 3}])]
+        (is (= [1 3] (:operands candidate)))
+        (is (nil? (invoke-engine 'sh16-propagated-add-candidate [(assoc seed :operands [1 2]) {1 99 2 88}])))))))
+
 (deftest sh16-propagates-two-uses-of-one-established-i64-producer
   ;; Two operand occurrences, not a rewrite to multiplication or general SSA.
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
