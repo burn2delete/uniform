@@ -6453,6 +6453,28 @@ Runtime remains 56 functions and all nine protected carrier predicates are
 unchanged. Whole helpers, native, migration, self-hosting and release remain
 outside this evidence.
 
+### SHA-prefix comparison composition
+
+Existing production composes original ASCII String `vec`, proven `subvec`
+and finite Character-Vector equality. Test-only coverage at `0ef4de19`
+passes 13 / 1,701, including 331 assertions across four new selectors.
+Correct/wrong prefixes return true/false; nested Never, eager order,
+allocation and source/fact/ledger joins are covered. LOC passes 2,022 files,
+zero exceptions, maximum 250. No compiler defect or production change follows.
+
+After the disjoint C11/SH13 join, the source run at `cad84ea9` observed
+`[true false]`, fresh C7/C8 and assembly-required public C7 verification,
+and a correctly rejected Vector/Map negative with fresh C7 verification.
+Its aggregate remains FAILED: 1 / 84, 77 passing and seven failing assertions.
+The test selected the atomic diagnostic instead of the actual Vector diagnostic.
+Only those two oracle tokens changed at `5e139891`. A separate 1 / 30
+retained-diagnostic DATA check passes, binding the original log hash and checking
+missing/forged counterexamples; it invokes no fresh compiler or source producer.
+It does not turn the original source selector green. Raw history and resource
+receipts remain under `/tmp/sha-prefix-comparison-*`; no producer replay occurred.
+Parameter/alias grounding, String count semantics, complete SHA helpers and
+authoritative/native/self-hosting/release support remain unestablished.
+
 ### Bounded Vector slice after authenticated String conversion
 
 The selected `subvec` development subset is ternary and JVM/meta. Its normal
