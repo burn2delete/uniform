@@ -2458,6 +2458,100 @@
       (is (= :may-allocate-integer-result (get-in descriptor [:storage-policy :allocation])))
       (is (= :nonnegative-euclidean-quotient (get-in descriptor [:quotient-policy :operation]))))))
 
+(defn- nonnegative-integer-quotient-transfer-input [values position]
+  (let [input (nonnegative-integer-quotient-input values) id (keyword (str "arg" position))
+        op (keyword (str "throw-op-" position)) payload (keyword (str "payload-" position))
+        source (get-in input [:nodes id :source]) form (get-in input [:forms id])
+        transfer (-> (get-in input [:nodes id])
+                     (assoc :core-form :throw :children [payload] :attributes {} :resolved-binding-ids [])
+                     (assoc :evaluation {:order [{:index 0 :core-node-id payload}]}))
+        payload-form (assoc form :form-id payload :syntax-id payload :parent-form-id id :kind :string :value "original quotient transfer" :child-form-ids [])
+        payload-node {:node-id payload :core-form :literal :children [] :resolved-binding-ids []
+                      :attributes {:literal-kind :string :value "original quotient transfer"}
+                      :source (assoc source :form-id payload :syntax-id payload) :evaluation {:kind :value :order []}}
+        input (-> input (assoc-in [:nodes id] transfer) (assoc-in [:nodes payload] payload-node)
+                  (assoc-in [:forms id] (assoc form :kind :list :value '(throw "original quotient transfer") :child-form-ids [op payload]))
+                  (assoc-in [:forms op] (assoc form :form-id op :syntax-id op :parent-form-id id :kind :symbol :value 'throw :child-form-ids []))
+                  (assoc-in [:forms payload] payload-form)
+                  (assoc-in [:types id] :gravity.type/never) (assoc-in [:types payload] :gravity.type/string))]
+    (assoc-in input [:core :nodes] (conj (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes])) payload-node))))
+
+(deftest sh08-nonnegative-integer-quotient-transfer-and-id-development-kernel
+  (let [derive (fn [input budget] (invoke-c7 'sh08-nq-derive [(:core input) (:node input) (:call input) (:edge input)
+                                                          (:nodes input) (:bindings input) (:types input) (:forms input) budget]))
+        base (nonnegative-integer-quotient-input [127 10])]
+    (doseq [position [0 1]]
+      (let [input (nonnegative-integer-quotient-transfer-input [127 10] position)
+            result (derive input 65536) descriptor (:descriptor result)]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/never (:type result)))
+        (is (= :not-invoked (:application descriptor)))
+        (is (= [] (:direct-effects descriptor)))
+        (is (= result (derive input (:work-count result))))
+        (is (= :accepted (:status (invoke-c7 'sh08-nq-inferred-call
+                                    [(:core input) (:node input) (:call input) (:edge input) (:nodes input) (:bindings input)
+                                     (assoc (:types input) :operator descriptor) 65536]))))))
+    (is (= :rejected (:status (derive (nonnegative-integer-quotient-transfer-input [127 0] 0) 65536))))
+    (is (= :rejected (:status (derive (nonnegative-integer-quotient-transfer-input [-1 10] 1) 65536))))
+    (doseq [values [[] [1] [1 2 3]]]
+      (is (= :nonnegative-integer-quotient-arity-mismatch (:reason (derive (nonnegative-integer-quotient-input values) 65536)))))
+    (let [zero (derive (nonnegative-integer-quotient-input [127 0]) 65536)]
+      (is (= "STD5002" (:rule zero)))
+      (is (= :nonnegative-integer-quotient-zero-divisor (:reason zero)))
+      (is (= {:operation 'quot :numeric-mode :proof-required :dividend :source-proven-nonnegative-Integer
+              :divisor :source-proven-positive-Integer-literal} (:expected zero))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "quotient metadata hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "quotient metadata equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "quotient metadata printing"))))]
+      (doseq [path [[:call :core-node-id] [:call :operator-node-id] [:call :operator-binding-id]
+                    [:call :argument-node-ids 0] [:node :node-id] [:node :children 0]
+                    [:node :source :form-id] [:nodes :operator :source :syntax-id]
+                    [:nodes :operator :attributes :symbol] [:nodes :arg0 :attributes :value]
+                    [:forms :arg1 :value] [:edge :ordinal]]
+              budget [0 65536]]
+        (is (= :rejected (:status (derive (assoc-in base path opaque) budget))))
+        (is (zero? @callbacks))))))
+
+(deftest sh08-nonnegative-integer-quotient-scoped-consumer-development-kernel
+  (let [input (nonnegative-integer-quotient-input [127 10])
+        record {:function-syntax-id :numeric-function :function-core-node-id :numeric-fn
+                :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
+        function {:node-id :numeric-fn :core-form :fn :children [:call] :attributes {}
+                  :source {:form-id :numeric-form :syntax-id :numeric-function}
+                  :evaluation {:kind :function-creation :order []}}
+        node-list (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :numeric-function) (get-in input [:core :nodes]))
+        node (last node-list)
+        edge (assoc (:edge input) :caller-function-syntax-id :numeric-function :caller-function-core-node-id :numeric-fn)
+        core (assoc (:core input) :nodes (conj node-list function) :function-records [record]
+                    :call-edges [edge] :root-core-node-ids [:numeric-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        derive (invoke-c7 'sh08-nq-derive [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input) 65536])
+        types (assoc (:types input) :operator (:descriptor derive) :call (:type derive))
+        bindings (vec (vals (:bindings input)))
+        functions {:numeric-function {:function-id :numeric-function :body-core-node-id :call
+                                     :parameters [] :return :gravity.type/integer :latent-effects [:memory/allocate]
+                                     :capabilities [] :thrown-error-effects []}}
+        direct {:status :accepted :throws {:numeric-function []} :constraints [] :diagnostics [] :work-count 0}
+        check #(invoke-c7 'sh08-tc-products [core %1 functions bindings direct %2])
+        own #(invoke-c7 'sh08-nq-inferred-call [core node (:call input) edge nodes (:bindings input) %1 %2])
+        measured (own types 65536) accepted (check types 65536) prefix 123]
+    (is (= :accepted (:status derive) (:status measured) (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :numeric-function])))
+    (is (= measured (own types (:work-count measured))))
+    (is (= :nonnegative-integer-quotient-work-limit (:reason (own types (dec (:work-count measured))))))
+    (let [rejected (check types (+ prefix (dec (:work-count measured))))]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :nonnegative-integer-quotient-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= (+ prefix (:work-count measured)) (:work-count rejected))))
+    (doseq [candidate [(assoc-in types [:operator :numeric-mode] :wrapping)
+                       (assoc-in types [:operator :range-proof :divisor :value] 0)
+                       (assoc-in types [:operator :storage-policy :allocation] :none)
+                       (assoc-in types [:operator :range-proof :source-forms 2 :parent-form-id] :sibling)]]
+      (is (= :rejected (:status (own candidate 65536))))
+      (is (= :rejected (:status (check candidate 65536)))))))
+
 (defn- list-query-input [operation argument-types]
   (let [input (integral-ordering-input operation argument-types)]
     (assoc input :binding-types (:types input)
@@ -7484,6 +7578,72 @@
 (defn- collection-count-derived [{:keys [core node nodes types binding-types bindings forms products]}]
   (invoke-c7 'sh08-cq-derive [core node (first (:calls products)) (first (:call-edges products)) nodes bindings types forms 65536]))
 
+(defn- nonnegative-integer-count-quotient-input [kind empty? divisor]
+  (let [base (collection-count-input kind empty?)
+        ids (into {} (map (fn [id] [id (keyword (str "count-" (name id)))]) (keys (:nodes base))))
+        rename-source #(-> % (update :form-id ids) (update :syntax-id ids))
+        convert-node (fn [node]
+                       (-> node (update :node-id ids) (update :children #(mapv ids %))
+                           (update :source rename-source)
+                           (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+        count-nodes (mapv convert-node (get-in base [:core :nodes]))
+        count-call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                       (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+        count-edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                       (update :ordered-evaluation-node-ids #(mapv ids %)))
+        count-id (:core-node-id count-call)
+        count-forms (into {} (map (fn [[id form]] [(ids id) (-> form (update :form-id ids) (update :syntax-id ids)
+                                                                 (update :parent-form-id #(when % (ids %)))
+                                                                 (update :child-form-ids #(mapv ids %)))]) (:forms base)))
+        outer (nonnegative-integer-quotient-input [0 divisor])
+        call (-> (:call outer) (assoc :argument-node-ids [count-id :arg1] :ordered-evaluation-node-ids [:operator count-id :arg1]))
+        edge (-> (:edge outer) (assoc :ordinal 1 :argument-core-node-ids [count-id :arg1] :ordered-evaluation-node-ids [:operator count-id :arg1]))
+        node (-> (:node outer) (assoc :children [:operator count-id :arg1])
+                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) [:operator count-id :arg1])))
+        nodes (assoc (merge (dissoc (:nodes outer) :arg0) (into {} (map (juxt :node-id identity) count-nodes))) :call node)
+        forms (-> (merge (dissoc (:forms outer) :arg0) count-forms)
+                  (assoc-in [:call :child-form-ids] [:operator count-id :arg1])
+                  (assoc-in [count-id :parent-form-id] :call))
+        bindings (merge (:bindings outer) (:bindings base))
+        types (merge (dissoc (:types outer) :arg0) (into {} (map (fn [[id type]] [(ids id) type]) (:types base))))
+        node-list (vec (concat count-nodes [(get nodes :operator) (get nodes :arg1) node]))
+        core (assoc (:core outer) :nodes node-list :calls [count-call call] :call-edges [count-edge edge])
+        counted (invoke-c7 'sh08-cq-derive [core (get nodes count-id) count-call count-edge nodes bindings types forms 65536])
+        types (assoc types (:operator-node-id count-call) (:descriptor counted) count-id (:type counted))]
+    (assoc outer :core core :node node :nodes nodes :forms forms :bindings bindings :types types :binding-types types
+           :call call :edge edge :counted counted :count-id count-id :count-call count-call
+           :products {:calls [count-call call] :call-edges [count-edge edge] :module (:module outer)})))
+
+(deftest sh08-nonnegative-integer-quotient-proof-development-kernel
+  (let [derive (fn [input budget]
+                 (invoke-c7 'sh08-nq-derive [(:core input) (:node input) (:call input) (:edge input)
+                                           (:nodes input) (:bindings input) (:types input) (:forms input) budget]))]
+    (doseq [kind [:map :vector] empty? [true false]]
+      (let [input (nonnegative-integer-count-quotient-input kind empty? 2)
+            result (derive input 65536) proof (get-in result [:descriptor :range-proof])]
+        (is (= :accepted (get-in input [:counted :status]) (:status result)) (pr-str result))
+        (is (= :authenticated-cardinality (get-in proof [:dividend :kind])))
+        (is (= :finite-collection-cardinality-nonnegative (get-in proof [:dividend :law])))
+        (is (= (get-in input [:counted :descriptor]) (get-in proof [:dividend :descriptor])))
+        (is (= result (derive input (:work-count result))))
+        (is (= :rejected (:status (derive input (dec (:work-count result))))))
+        (doseq [mutate [#(assoc-in % [:types (get-in input [:count-call :operator-node-id]) :query-semantics :normal-input] :forged)
+                        #(assoc-in % [:forms (:count-id input) :child-form-ids] [])
+                        #(assoc-in % [:forms :count-operator :value] 'identity)
+                        #(update-in % [:core :calls] conj (:count-call input))
+                        #(update-in % [:core :call-edges] conj (first (get-in input [:core :call-edges])))]]
+          (is (= :rejected (:status (derive (mutate input) 65536)))))))
+    (doseq [values [[-1 10] [1 0] [1 -1] [1.0 2] [1 2.0] [1/2 2] [1 nil]]]
+      (is (= :rejected (:status (derive (nonnegative-integer-quotient-input values) 65536)))))
+    (let [input (nonnegative-integer-quotient-input [127 10])]
+      (doseq [mutate [#(assoc-in % [:forms :arg0 :value] 126)
+                      #(assoc-in % [:forms :arg1 :parent-form-id] :sibling)
+                      #(assoc-in % [:nodes :arg0 :core-form] :reference)
+                      #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                      #(assoc-in % [:types :arg0] :gravity.type/i64)
+                      #(assoc-in % [:types :arg1] :gravity.type/unknown)]]
+        (is (= :rejected (:status (derive (mutate input) 65536))))))))
+
 (defn- list-count-input [type]
   (let [input (integral-ordering-input 'count [type])]
     (assoc input :binding-types (:types input)
@@ -7527,9 +7687,13 @@
     (doseq [bad [(positional 42) (positional nil) (positional '(:type)) (assoc homogeneous :schema :forged)
                  (assoc homogeneous :element-type opaque) (assoc homogeneous :element-type :gravity.type/unknown)
                  {:kind :gravity.type/list} {:kind :gravity.type/list :shape :other :element-types []}
-                 :gravity.type/string :gravity.type/nil :gravity.type/unknown :gravity.type/set]]
+                 :gravity.type/string :gravity.type/nil :gravity.type/unknown :gravity.type/decimal]]
       (is (= :rejected (:status (list-count-derived (list-count-input bad))))))
     (is (= 0 @callbacks))
+    (let [result (list-count-derived (list-count-input :gravity.type/set))]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/integer (:type result)))
+      (is (= :established-persistent-set (get-in result [:descriptor :query-semantics :normal-input]))))
     (let [{:keys [core node call edge nodes bindings types forms] :as input} (list-count-input :gravity.type/list)
           run (fn [call node budget] (invoke-c7 'sh08-cq-derive [core node call edge nodes bindings types forms budget]))]
       (doseq [args [nil 42 :arguments '(:arg0)]]

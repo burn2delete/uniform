@@ -1629,7 +1629,7 @@
                                                 (if (string? id)
                                                   (if (if (> (count id) 0) (<= (count id) 256) false)
                                                     (recur (rest remaining)) false) false)))) false) false) false) false) false) false) false) false)) false) false)
-                  (if (contains? '#{nth conj contains? dissoc} function)
+                  (if (contains? '#{nth conj contains? dissoc quot} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
                   (if (contains? '#{set string? keyword? map? integer? vector? count first rest empty? set? symbol? boolean? list?} function)
@@ -1810,6 +1810,14 @@
                          (second arguments-result) :rejected]))
                     [{:diagnostic "P15S23X002" :reason :bounded-unit-addition-counter-unit-and-range-required :operation operation}
                      (second arguments-result) :rejected]))
+              (if (= function 'quot)
+                (if (if (integer? left) (integer? right) false)
+                  (if (if (>= left 0) (> right 0) false)
+                    [(quot left right) (second arguments-result) :normal]
+                    [{:diagnostic "P15S23X002" :reason :nonnegative-integer-quotient-domain-required :operation operation}
+                     (second arguments-result) :rejected])
+                  [{:diagnostic "P15S23X002" :reason :nonnegative-integer-quotient-domain-required :operation operation}
+                   (second arguments-result) :rejected])
               (if (= function 'inc)
                 (let [proof (get instruction :proof) extent (get proof :vector-extent)]
                   (if (if (integer? left)
@@ -1896,7 +1904,7 @@
                          (>= left right)))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected]))))))))))))
+                (second arguments-result) :rejected])))))))))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result
