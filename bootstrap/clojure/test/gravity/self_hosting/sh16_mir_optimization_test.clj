@@ -264,6 +264,7 @@
                        (assoc-in input [:operations 0 :opcode] :compute)
                        (assoc input :operations [right add left return])
                        (assoc input :operations [left right add (assoc left :op-id :op/duplicate-result) return])
+                       (assoc input :operations [left right add (assoc return :result (:result add))])
                        (assoc input :operations [left (invoke-engine 'sh16-transform-operation [(second (:operations mixed))])
                                                 right add return])
                        (-> input (assoc-in [:operations 0 :operands] [9223372036854775807])

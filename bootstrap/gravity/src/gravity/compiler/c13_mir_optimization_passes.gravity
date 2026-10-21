@@ -1846,8 +1846,10 @@
           (if (= nil candidate) operations (assoc operations index candidate)))))))
 
 (defn sh16-propagate-prefix-add [operations]
-  (sh16-propagate-prefix-add-from
-   operations (sh16-result-definition-counts operations 0 {}) 0 {}))
+  (let [counts (sh16-result-definition-counts operations 0 {})]
+    (if (= (count counts) (count operations))
+      (sh16-propagate-prefix-add-from operations counts 0 {})
+      operations)))
 
 (defn sh16-simplifiable-branch? [operation]
   (if (= :branch-if (get operation :opcode))
