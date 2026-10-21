@@ -982,7 +982,15 @@
    :operand-index index :edge-kind :operand})
 
 (defn c13-equality-use [operation index]
-  (assoc (dissoc (c13-equality-edge operation index) :from) :use-kind :instruction))
+  {:use-kind :instruction :consumer-kind :operation :consumer-id (get operation :op-id)
+   :consumer-block (get operation :block-id) :operand-index index :edge-kind :operand})
+
+(defn c13-equality-without-output-id [evidence]
+  (let [names (vec (keys evidence))]
+    (loop [index 0 result {}]
+      (if (= index (count names)) result
+        (let [name (get names index)]
+          (recur (+ index 1) (if (= name :output-mir-id) result (assoc result name (get evidence name)))))))))
 
 (defn c13-equality-facts-valid? [mir operation]
   (let [id (get operation :op-id) facts (get operation :facts) source (get operation :source)
@@ -1035,7 +1043,7 @@
     (if (= index (count operations)) candidates
       (let [operation (get operations index) id (get operation :op-id) result (get operation :result)]
         (if (c13-equality-all? [(c13-equality-id? id) (c13-equality-id? result)
-                              (not (contains? ids id)) (not (contains? results result))])
+                              (if (contains? ids id) false true) (if (contains? results result) false true)])
           (recur (+ index 1) (conj ids id) (conj results result)
                  (if (= :integer-eq (get operation :opcode)) (conj candidates operation) candidates)) nil)))))
 
@@ -1155,7 +1163,7 @@
 
 (defn c13-build-bounded-identity-optimized-mir [mir evidence]
   (let [selected (c13-equality-selection mir)
-        original-evidence (if (= selected nil) evidence (dissoc evidence :output-mir-id))
+        original-evidence (if (= selected nil) evidence (c13-equality-without-output-id evidence))
         base (c13-build-bounded-identity-record mir original-evidence)]
     (if (= :accepted (get base :status))
       (if (= selected nil) base
