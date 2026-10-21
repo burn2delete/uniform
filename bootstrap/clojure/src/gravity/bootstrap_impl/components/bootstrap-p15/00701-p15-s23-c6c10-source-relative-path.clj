@@ -21,8 +21,11 @@
 ;; Filled from the dedicated canonical encoder below.  These pins are not the
 ;; legacy emitter's pr-str identities and are checked before either exported
 ;; Gravity function may execute.
+;; The aggregate retains the three declared compiler-identity fields added in
+;; d3bb1b75. This raw stage0-seed plan does not authenticate today's expression
+;; emitter; its existing declared lineage is not a renewed emitter binding.
 (def p15-s23-c6c10-expected-plan-semantic-hash
-  "sha256:c0abe759e32feb1810cbb477bba2e1db6bf41735b5e06beed8f0308babd24339")
+  "sha256:4465715d7fb62e90667455a825915a93b530b3c395c812ce641744ece0aa0ed8")
 
 (def p15-s23-c6c10-expected-functions-semantic-hash
   "sha256:79984c3b2cfd56f64ee161cb6d9611be55c2a8d614120c9ebd2477d5835a4aff")
