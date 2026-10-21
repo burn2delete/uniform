@@ -507,9 +507,11 @@
                   :independent-verifier independent
                   :b1-preflight {:artifact :gravity/verified-mir-candidate-for-b1 :status :verified-mir-candidate-for-b1
                                  :input-kind :gravity/mir :requires-verifier-status :passed :mir-verifier-status :passed
-                                 :binding (zipmap [:mir-content-id :checked-core-artifact-id :independent-verifier-report-id
-                                                   :independent-verifier-report-hash :pass-execution-record-id :scope-hash]
-                                                  (map digest [:original :core :report independent :pass :scope]))
+                                 :binding {:mir-content-id (:mir-id artifact) :checked-core-artifact-id (:source-core mir)
+                                           :independent-verifier-report-id (digest [:report independent])
+                                           :independent-verifier-report-hash (digest independent)
+                                           :pass-execution-record-id (get-in mir [:pass-execution-record :record-id])
+                                           :scope-hash (digest (:scope mir))}
                                  :target-lowering-credit? false :backend-credit? false :llvm-credit? false}}
         lineage (fn [relative]
                   (let [text (slurp (path relative))]
@@ -570,6 +572,8 @@
         (is (= :accepted (:status record)))
         (is (= status (:optimization-status input) (:c13-optimization-status request)))
         (is (= (bootstrap/p15-s23-c11-mir-digest mir) (get-in input [:verifier-report :mir-id])))
+        (is (= (get-in input [:verifier-report :mir-id])
+               (get-in input [:verifier-report :b1-preflight :binding :mir-content-id])))
         (is (true? (invoke 'b1-c14-input-valid? [input])))
         ;; Actual file identities do not establish a compiled pinned cohort.
         ;; Observe ORIGINAL dependency rejection; never override its result.
@@ -589,7 +593,12 @@
                          (assoc-in request [:input :optimization-status] :unknown)
                          (assoc-in request [:input :optimization-report :verifier-result] :failed)
                          (assoc-in request [:target :canonical-target] :wasm)
-                         (assoc request :request-id nil)]]
+                         (assoc request :request-id nil)
+                         (-> request (assoc :c13-optimization-status :unknown) (assoc-in [:input :optimization-status] :unknown))
+                         (-> request (assoc :c13-optimization-status nil) (assoc-in [:input :optimization-status] nil))
+                         (-> request (assoc :c13-optimization-status false) (assoc-in [:input :optimization-status] false))
+                         (-> request (assoc :c13-optimization-status "identity-pass-complete")
+                             (assoc-in [:input :optimization-status] "identity-pass-complete"))]]
           (let [observed (observe changed)]
             (is (false? (:result observed)))
             (is (= [] (:calls observed)))))))))
