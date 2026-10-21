@@ -249,8 +249,8 @@
               result (optimize subject)]
           (check-rejected subject "C13-CONTRACT")
           (is (= :contract (get-in result [:diagnostics 0 :reason])))
-          (is (= (:source-span subject) (get-in result [:diagnostics 0 :source-span])))
-          (is (= (:origin-chain subject) (get-in result [:diagnostics 0 :origin-chain])))
+          (is (= (:source-span branch) (get-in result [:diagnostics 0 :source-span])))
+          (is (= (:origin-chain branch) (get-in result [:diagnostics 0 :origin-chain])))
           (is (false? (invoke-engine 'sh16-simplifiable-branch?
                                     [(assoc branch :condition condition)])))
           (is (= (assoc branch :condition condition)
@@ -650,8 +650,8 @@
           (is (= "C13-SAFETY" (get-in result [:diagnostics 0 :rule])))
           (is (= :safety (get-in result [:diagnostics 0 :reason])))
           (is (nil? (:optimized-operations result)))
-          (is (= (:source-span subject) (get-in result [:diagnostics 0 :source-span])))
-          (is (= (:origin-chain subject) (get-in result [:diagnostics 0 :origin-chain])))
+          (is (= (:source-span op) (get-in result [:diagnostics 0 :source-span])))
+          (is (= (:origin-chain op) (get-in result [:diagnostics 0 :origin-chain])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [subject result]))))
           (is (false? (invoke-engine 'sh16-foldable-add? [op])))
           (is (= op (invoke-engine 'sh16-transform-operation [op])))))
