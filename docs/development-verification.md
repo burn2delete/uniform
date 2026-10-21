@@ -873,6 +873,18 @@ positive. C/Wasm, source pins and public packet admission remain unchanged.
 This is status compatibility, not fresh C11/output verification or public
 source/backend readiness.
 
+For pure host LLVM consumer parity, run
+`sh17-development-host-llvm-consumes-c13-folded-bools` in the same namespace.
+The original host rejection/render/evaluation helpers consume the current C13
+fold through C14 checks and the SAME B3 output, in linear and Integer-diamond
+cases. The host source gate admits only derived `:integer-eq` constants with
+Bool type, an actual empty Vector, exact `:present?`/`:value` payload keys,
+true presence and a Boolean value. Legacy literal/implicit-Nil branches and
+earlier effects/capabilities/opcode diagnostics remain unchanged. Include the
+existing B3 and diamond selectors for affected composition. This is pure
+helper parity, not evidence that a public builder failed or that current
+public source, preflight, pin or native admission has been renewed.
+
 ### Normalized target-lowering type consistency
 
 For C14's declared return-type consistency boundary, edit
