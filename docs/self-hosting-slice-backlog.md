@@ -10869,7 +10869,7 @@ values and returns Bool using `<=`. The original producer bridge maps the
 opcode and retains the new `:integer-less-than-or-equal` projection role,
 original operation IDs, source/fact records, CFG, DFG and incoming values.
 
-Bridge support is entry-only: seven total rows with entry/then/else widths
+At this initial increment, bridge support is entry-only: seven total rows with entry/then/else widths
 `[3,1,1]` and matching scalar literal arms. Both arms validate before execution. Explicit
 placement and arm fences continue rejecting computed-arm `<=` and an entry
 `<=` combined with computed Eq/Lt arms. Existing Eq/Lt arm behavior remains.
@@ -10895,6 +10895,28 @@ not fresh C6/C10 source ingress, native execution, whole-helper lowering,
 SH-13 completion or authoritative migration. Future stable migration must
 account for the changed normalized operation/projection domains; no historical
 proof is repinned by this development increment.
+
+### Original MIR selected-arm integer less-than-or-equal: executable increment
+
+The follow-on `2b4406e8` extends the same C11 bridge to a literal Bool entry
+and one three-operation signed-i64 `<=` Bool arm. Seven total rows have
+entry/then/else widths `[1,3,1]` or `[1,1,3]`; the other arm is one Bool literal.
+Both arms validate before execution. Original comparison IDs and transfers
+survive, with fuel 505 when selected and 507 when skipped. Entry-only `<=`
+remains `[3,1,1]`; old Eq/Lt compositions remain supported. Computed-entry,
+truthiness-entry and both-computed-arm `<=` compositions still reject. No new
+opcode, role, public key, arity, interpreter or bound is introduced.
+
+C11's origin-chain and i64 predicates provide actual guarded `<=` clients;
+supplied literal witnesses cover placement, not those whole helpers or count
+lowering. Four passing invocations cover 28 tests / 9,356 assertions: new arm
+1 / 1,172, existing bridge 17 / 7,674, normalized controls 4 / 499 and boundary
+6 / 11. LOC separately passes 2,022 files, zero exceptions, maximum 250 lines.
+Preserve `/tmp/d-sh13-lte-arm-*-v1-20261021`, including the separate RED epoch
+of 452 passes / 648 failures / 72 errors in 1 / 1,172. The errors are absent
+projection-role inspections after rejection, not comparison execution errors.
+This is development producer/consumer evidence, not fresh C6/C10 source
+composition, native execution, SH-13 completion or authoritative migration.
 
 ### MIR conditional-condition dominance: development repair
 
