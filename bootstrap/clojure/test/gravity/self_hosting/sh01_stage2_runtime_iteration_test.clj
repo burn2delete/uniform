@@ -29854,6 +29854,102 @@
           (do (is (= '[main] (mapv second definitions)))
               (is (= 2 (count (rest (last (first definitions))))))))))))
 
+(defn- sha-prefix-comparison-kernel-context [input]
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        {:keys [core nodes forms bindings types module child slice comparison] :as input}
+        ((ns-resolve upstream 'sha-prefix-comparison-established) input)
+        descriptors [(:descriptor child) (:descriptor slice) (:descriptor comparison)]
+        facts (mapv (fn [name descriptor] (c7 name [descriptor module]))
+                    ['sh08-scv-call-fact 'sh08-vsl-call-fact 'sh08-ve-call-fact] descriptors)
+        ledger (mapv (fn [name descriptor] (c7 name [descriptor]))
+                     ['sh08-scv-constraint 'sh08-vsl-constraint 'sh08-ve-constraint] descriptors)]
+    {:input input :descriptors descriptors
+     :context {:core core :nodes nodes :forms forms :bindings bindings :types types
+               :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+               :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+               :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+               :call-facts (into {} (map (juxt :call-core-node-id identity) facts)) :ledger ledger
+               :locals {} :parameter-types {} :tail? true}}))
+
+(deftest current-gravity-sha-prefix-comparison-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'sha-prefix-comparison-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"]
+    (doseq [[value positions expected] [[text nil true] [(str "sha257:" (subs text 7)) nil false]
+                                       [text 0 nil] [text 1 nil] [text 2 nil]]]
+      (let [{:keys [context descriptors]} (sha-prefix-comparison-kernel-context (input value "sha256:" positions))
+            compile #(lower 'p15-s23-typed-compile-node %1 :prefix-call %2)
+            compiled (compile context 65536) ir (:value compiled)]
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= '= (:function ir)))
+        (is (= 'subvec (get-in ir [:args 0 :function])))
+        (is (= 'vec (get-in ir [:args 0 :args 0 :function])))
+        (is (= :vector-literal (get-in ir [:args 1 :op])))
+        (when (= :complete (:status compiled))
+          (is (= compiled (compile context (:work-count compiled))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count compiled))) [:facts :reason])))
+          (if (nil? positions)
+            (is (= [expected "" :normal] (evaluate ir)))
+            (is (= [(if (= positions 0) "original vec transfer" "original slice transfer") "" :thrown] (evaluate ir))))
+          (let [literal #(hash-map :op :literal :value %)
+                say (fn [label value] {:op :do :body [{:op :println :args [(literal label)]
+                                                      :effect :io/write :capability :io/stdout} value]})
+                observed (evaluate (-> ir (update-in [:args 0] #(say "left" %)) (update-in [:args 1] #(say "right" %))))]
+            (is (= (if (nil? positions) "left\nright\n" "left\n") (second observed)))
+            (is (= (if (nil? positions) :normal :thrown) (last observed))))
+          (when (nil? positions)
+            (let [payload (Object.)
+                  thrown (evaluate (assoc-in ir [:args 1] {:op :throw :value {:op :literal :value payload}}))]
+              (is (identical? payload (first thrown)))
+              (is (= ["" :thrown] (subvec thrown 1)))))
+          (let [original-into clojure.core/into conversions (atom 0)
+                observed-into (fn
+                                ([to from] (when (string? from) (swap! conversions inc)) (original-into to from))
+                                ([to xf from] (when (string? from) (swap! conversions inc)) (original-into to xf from)))]
+            (with-redefs [clojure.core/into observed-into] (evaluate ir))
+            (is (= (if (= positions 0) 0 1) @conversions))))
+        (doseq [id [:call :slice-call :prefix-call]]
+          (is (= :rejected (:status (compile (update context :call-facts dissoc id) 65536)))))
+        (doseq [index (range 3)]
+          (is (= :rejected (:status (compile (update context :ledger #(vec (concat (subvec % 0 index) (subvec % (inc index))))) 65536))))
+          (is (= :rejected (:status (compile (update context :ledger conj (get (:ledger context) index)) 65536)))))
+        (doseq [[index operator fact-name constraint-name path] [[0 :operator 'sh08-scv-call-fact 'sh08-scv-constraint [:conversion-proof :scalar-count]]
+                                                                 [1 :slice-operator 'sh08-vsl-call-fact 'sh08-vsl-constraint [:bounds-proof :result-count]]
+                                                                 [2 :prefix-operator 'sh08-ve-call-fact 'sh08-ve-constraint [:equality-policy :leaves]]]]
+          (let [changed (assoc-in (get descriptors index) path :forged)
+                id (get changed :call-core-node-id)
+                candidate (-> context (assoc-in [:types operator] changed)
+                              (assoc-in [:call-facts id] (c7 fact-name [changed (get-in context [:core :module])]))
+                              (assoc-in [:ledger index] (c7 constraint-name [changed])))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (is (= :rejected (:status (compile (assoc-in context [:types :prefix-character-0] :gravity.type/string) 65536))))))))
+
+(deftest current-gravity-sha-prefix-comparison-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        prefix [\s \h \a \2 \5 \6 \:]
+        query (fn [value expected] (list '= (list 'subvec (list 'vec value) 0 7) expected))]
+    (doseq [[disposition name expected]
+            [["accepted" "local-runtime-sha-prefix-comparison" [(query text prefix) (query (str "sha257:" (subs text 7)) prefix)]]
+             ["rejected" "sha-prefix-comparison-map-domain" (query text {:prefix true})]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)
+            forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
+        (is (= g q))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
+        (is (= '[main] (mapv second definitions)))
+        (is (= expected (last (first definitions))))))))
+
 (defn- vector-slice-kernel-context [input]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         establish (ns-resolve upstream 'vector-slice-established)
@@ -31320,6 +31416,192 @@
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest current-gravity-sha-prefix-comparison-authenticated-composition
+  ;; Two original ASCII prefix comparisons plus a mixed-family typing negative; Q is parser-only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (fn [relative]
+                ;; One fresh session per candidate; the existing public C6
+                ;; verifier remains separate from this development replay.
+                (let [t0 (System/nanoTime)
+                      c5 (bootstrap/compiler-c5-resolution-file-artifact (.getPath (io/file root relative)))
+                      t1 (System/nanoTime)
+                      session (bootstrap/sh07-core-verification-session c5)
+                      t2 (System/nanoTime)
+                      _ (when-not (and (= :ready (:status session)) (map? (:expected session)))
+                          (throw (ex-info "SHA prefix comparison fresh development session rejected"
+                                          {:status (:status session) :reason (:failure-reason session)})))
+                      artifact (:expected session)
+                      report (bootstrap/sh07-core-artifact-verification-against-expected artifact session)
+                      t3 (System/nanoTime)
+                      _ (when-not (= :passed (:status report))
+                          (throw (ex-info "SHA prefix comparison development replay rejected"
+                                          {:failed-checks (:failed-checks report)})))
+                      upstream 'gravity.self-hosting.sh08-function-call-type-test
+                      coordinator ((ns-resolve upstream 'coordinator-verification) artifact report)
+                      t4 (System/nanoTime)
+                      context ((ns-resolve upstream 'b47-context) artifact report coordinator)
+                      t5 (System/nanoTime)
+                      request {:canonical-core-artifact (:canonical-core-artifact context)
+                               :b47-context context :coordinator-verification coordinator}
+                      invoke (ns-resolve upstream 'invoke-c7)
+                      typed (invoke 'sh08-function-type-core-artifact [request])
+                      t6 (System/nanoTime)
+                      verification (invoke 'sh08-verify-function-type-result [request typed])
+                      t7 (System/nanoTime)]
+                  {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
+                   :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
+                                        :boundary :fresh-development-session-and-same-catalog-replay :nested-work :included
+                                        :public-c6-fresh-verification :not-invoked
+                                        :c5-construction (- t1 t0) :c6-fresh-session-construction (- t2 t1)
+                                        :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
+                                        :b47-context (- t5 t4) :c7-construction (- t6 t5)
+                                        :c7-verification (- t7 t6)}}))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        _ (println (pr-str {:sha-prefix-comparison-product-elapsed relative :timing (:development-timing products)}))
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (and (= :accepted (get-in input [:typed :status])) (= :passed (get-in input [:verification :status])))
+                            (throw (ex-info "SHA prefix comparison upstream prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        t0 (System/nanoTime)
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        t1 (System/nanoTime)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "SHA prefix comparison C8 prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        t2 (System/nanoTime)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "SHA prefix comparison C8 verification rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        path (.getPath (io/file root relative))
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions :effects effects
+                     :timing {:c8-construction (- t1 t0) :c8-verification (- t2 t1)}}))
+        positive (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-sha-prefix-comparison.gravity")
+        {:keys [input effects]} positive
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function args]
+                                 (let [result (original runtime plan function args)]
+                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter (:module positive)
+                      (vec (sort-by key (:definitions positive))) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        comparisons (filterv #(= :direct-vector-equality (:dispatch %)) (:call-type-facts facts))
+        slices (filterv #(= :direct-vector-slice (:dispatch %)) (:call-type-facts facts))
+        conversions (filterv #(= :direct-string-character-vector (:dispatch %)) (:call-type-facts facts))
+        rows (:constraint-ledger facts)
+        instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))
+        calls (filterv #(= :builtin-call (:op %)) instructions)
+        expected-texts #{"sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+                         "sha257:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}
+        character-vector {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 7 :gravity.type/character))}
+        result-vector {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/bool :gravity.type/bool]}
+        expected-equality-ir (fn [text] {:op :builtin-call :function '=
+                                         :args [{:op :builtin-call :function 'subvec
+                                                 :args [{:op :builtin-call :function 'vec :args [{:op :literal :value text}]}
+                                                        {:op :literal :value 0} {:op :literal :value 7}]}
+                                                {:op :vector-literal :items (mapv #(hash-map :op :literal :value %) [\s \h \a \2 \5 \6 \:])}]})
+        graph (:effect-graph effects) runtime-plan (:plan (typed-catch-runtime-projection))
+        execution (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)])
+        t2 (System/nanoTime)]
+    (is (= 1 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+    (is (= 6 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts)) (count rows) (count calls)))
+    (is (= 2 (count comparisons) (count slices) (count conversions)))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= result-vector (:return (first (:function-type-table facts)))))
+    (is (= [2 2 2] (mapv #(count (filter (fn [call] (= % (:function call))) calls)) ['= 'subvec 'vec])))
+    (is (= (mapv expected-equality-ir (sort expected-texts)) (filterv #(= '= (:function %)) calls)))
+    (is (= 3 (count (filter #(= :vector-literal (:op %)) instructions))))
+    (is (= expected-texts (set (map #(get-in % [:applied-string-character-vector :conversion-proof :operand :value]) conversions))))
+    (is (= 56 (count (:functions runtime-plan))))
+    (is (empty? (get-in assembled [:module-initialization :initializers])))
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= [true false] (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= #{} (get-in graph [:namespace :inferred])))
+    (is (= #{:memory/allocate} (:inferred (first (vals (:functions graph))))))
+    (doseq [fact comparisons]
+      (let [descriptor (:applied-vector-equality fact) id (:call-core-node-id descriptor)
+            slice-id (first (get-in descriptor [:source-call :argument-node-ids]))
+            slice-fact (first (filter #(= slice-id (:call-core-node-id %)) slices))
+            slice (:applied-vector-slice slice-fact) proof (:bounds-proof slice)
+            child (get-in proof [:receiver :descriptor]) child-id (:call-core-node-id child)
+            child-fact (first (filter #(= child-id (:call-core-node-id %)) conversions))
+            row (first (filter #(= {:core-node-id id :projection :vector-equality} (:lhs %)) rows))
+            slice-row (first (filter #(= {:core-node-id slice-id :projection :vector-slice} (:lhs %)) rows))
+            child-row (first (filter #(= {:core-node-id child-id :projection :string-character-vector} (:lhs %)) rows))
+            record (get-in graph [:nodes id]) slice-record (get-in graph [:nodes slice-id]) child-record (get-in graph [:nodes child-id])]
+        (is (= :gravity.type/bool (:result-type descriptor) (:return descriptor) (get-in facts [:type-table id])))
+        (is (= [character-vector character-vector] (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= :original-values (get-in descriptor [:equality-policy :leaves])))
+        (is (= :normal (:application descriptor) (:application slice) (:application proof)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (= #{:memory/allocate} (:transitive record) (:direct slice-record) (:transitive slice-record) (:direct child-record) (:transitive child-record)))
+        (is (= [0 7 71 7] [(get-in proof [:start :value]) (get-in proof [:end :value]) (:input-count proof) (:result-count proof)]))
+        (is (= (:element-types character-vector) (:selected-types proof)))
+        (is (= character-vector (:result-type slice) (get-in facts [:type-table slice-id])))
+        (is (= child (:applied-string-character-vector child-fact)))
+        (is (= child-fact (get-in proof [:receiver :call-fact])))
+        (is (= child-row (get-in proof [:receiver :constraint])))
+        (is (= 71 (get-in child [:conversion-proof :scalar-count])))
+        (is (= descriptor (:dependencies row)))
+        (is (= slice (:dependencies slice-row)))
+        (is (= :gravity.type/bool (:rhs row) (get-in row [:solution :result-type])))
+        (is (= proof (get-in slice-row [:solution :bounds-proof])))
+        (is (= {:unit :elements :count 7} (get-in slice-record [:allocation :extent])))
+        (is (= {:unit :characters :count 71} (get-in child-record [:allocation :extent])))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+    (println (pr-str {:sha-prefix-comparison-positive-observations
+                     {:runtime-status (:status execution) :runtime-result (:entrypoint-result execution)
+                      :functions (count (:functions assembled)) :equality-calls (count comparisons)
+                      :slice-calls (count slices) :conversion-calls (count conversions)
+                      :source-inputs :two-original-ascii-71-literals :reader-parameter-grounding :not-established
+                      :sha-helper-execution :not-established}
+                     :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
+                                        :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/sha-prefix-comparison-map-domain.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])
+          diagnostic (first (filter #(= :vector-equality-operand-type-required (:reason %)) diagnostics))]
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (= :passed (get-in negative [:verification :status])) (pr-str (:verification negative)))
+      (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)) (pr-str diagnostics))
+      (is (= character-vector (first (:actual-type diagnostic))))
+      (is (= :gravity.type/map (:kind (second (:actual-type diagnostic)))))
+      (is (= :two-established-finite-vector-values (:expected-type diagnostic)))
+      (is (some? (:core-node-id diagnostic)))
+      (is (some? (:syntax-id diagnostic)))
+      (is (map? (:source-span diagnostic)))
+      (println (pr-str {:sha-prefix-comparison-typing-negative diagnostics
+                       :negative-c7-verification-status (get-in negative [:verification :status])
+                       :negative-c8-runtime :not-invoked :input-domain :vector-versus-map-outside-supported-equality
+                       :timing (:development-timing negative)})))
+    (println (pr-str {:sha-prefix-comparison-composition :completed :runtime-result (:entrypoint-result execution)
+                     :source-products {:g-positive 1 :g-typing-negative 1 :q-typed-products 0}
+                     :closed-plan-entry-invocations 1 :runtime-function-count (count (:functions runtime-plan))
+                     :reader-parameter-grounding :not-established :general-vector-receivers :not-established
+                     :sha-helper-execution :not-established :whole-compiler-consumer-execution false
+                     :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included}))))
 
 (deftest current-gravity-vector-slice-authenticated-composition
   ;; One original nested ASCII conversion and slice, plus absent bounds proof; Q is parser-only.

@@ -6350,6 +6350,75 @@
               (is (= analyzed (analyze work)))
               (is (= :rejected (:status (analyze (dec work))))))))))))
 
+(deftest body-sha-prefix-comparison-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'sha-prefix-comparison-input)
+        text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"]
+    (doseq [[value positions] [[text nil] [(str "sha257:" (subs text 7)) nil] [text 0] [text 1] [text 2]]]
+      (let [base (input value "sha256:" positions) ids (zipmap (keys (:nodes base)) (map sha (range 3700 3800)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            convert-call #(-> % (update :core-node-id ids) (update :operator-node-id ids)
+                                (update :argument-node-ids (fn [xs] (mapv ids xs)))
+                                (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+            convert-edge #(-> % (update :call-core-node-id ids)
+                                (update :argument-core-node-ids (fn [xs] (mapv ids xs)))
+                                (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+            node-list (mapv convert-node (get-in base [:core :nodes])) nodes (into {} (map (juxt :node-id identity) node-list))
+            calls (mapv convert-call (get-in base [:core :calls])) edges (mapv convert-edge (get-in base [:core :call-edges]))
+            core (assoc (:core base) :nodes node-list :calls calls :call-edges edges)
+            bindings (:bindings base) forms (:forms base)
+            types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+            child-call (first calls) child-edge (first edges) child-id (:core-node-id child-call)
+            child (c7 'sh08-scv-derive [core (nodes child-id) child-call child-edge nodes bindings types forms 65536])
+            types (assoc types (:operator-node-id child-call) (:descriptor child) child-id (:type child))
+            slice-call (second calls) slice-edge (second edges) slice-id (:core-node-id slice-call)
+            slice (c7 'sh08-vsl-derive [core (nodes slice-id) slice-call slice-edge nodes bindings types forms 65536])
+            types (assoc types (:operator-node-id slice-call) (:descriptor slice) slice-id (:type slice))
+            call (last calls) edge (last edges) id (:core-node-id call) node (nodes id)
+            comparison (c7 'sh08-ve-derive [core node call edge nodes bindings types forms 65536])
+            descriptors [(:descriptor child) (:descriptor slice) (:descriptor comparison)]
+            facts {:module (:module core) :type-table (assoc types (:operator-node-id call) (:descriptor comparison) id (:type comparison))
+                   :function-type-table []
+                   :call-type-facts (mapv (fn [name descriptor] (c7 name [descriptor (:module core)]))
+                                         ['sh08-scv-call-fact 'sh08-vsl-call-fact 'sh08-ve-call-fact] descriptors)
+                   :constraint-ledger (mapv (fn [name descriptor] (c7 name [descriptor]))
+                                           ['sh08-scv-constraint 'sh08-vsl-constraint 'sh08-ve-constraint] descriptors)}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            quotient (leaf 'body-nq-context request facts bindings 65536)
+            equality (leaf 'body-ae-context request facts bindings 65536)
+            facts (assoc facts :quotient-context (:context quotient) :equality-context (:context equality))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536) record (get-in graph [:nodes id])]
+        (is (= :accepted (:status child) (:status slice) (:status comparison) (:status quotient) (:status equality) (:status graph)) (pr-str graph))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (is (= (if (nil? positions) #{:memory/allocate} #{:memory/allocate :error/throw}) (:transitive record)))
+        (is (= (get-in call [:ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))
+        (is (= #{:memory/allocate} (get-in graph [:nodes (ids :prefix-expected) :direct])))
+        (is (= (not= positions 0) (get-in graph [:nodes child-id :allocation :normal-completion-possible?])))
+        (is (= (nil? positions) (get-in graph [:nodes slice-id :allocation :normal-completion-possible?])))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= quotient (leaf 'body-nq-context request facts bindings (:work-count quotient))))
+        (is (= equality (leaf 'body-ae-context request facts bindings (:work-count equality))))
+        (is (= :rejected (:status (leaf 'body-nq-context request facts bindings (dec (:work-count quotient))))))
+        (is (= :rejected (:status (leaf 'body-ae-context request facts bindings (dec (:work-count equality))))))
+        (doseq [field [:call-type-facts :constraint-ledger] index (range 3)]
+          (is (false? (valid (update facts field #(vec (concat (subvec % 0 index) (subvec % (inc index))))))))
+          (is (false? (valid (update facts field conj (get (get facts field) index))))))
+        (doseq [[index operator fact-name constraint-name path] [[0 :operator 'sh08-scv-call-fact 'sh08-scv-constraint [:conversion-proof :scalar-count]]
+                                                                 [1 :slice-operator 'sh08-vsl-call-fact 'sh08-vsl-constraint [:bounds-proof :result-count]]
+                                                                 [2 :prefix-operator 'sh08-ve-call-fact 'sh08-ve-constraint [:equality-policy :leaves]]]]
+          (let [changed (assoc-in (get descriptors index) path :forged)
+                candidate (-> facts (assoc-in [:type-table (ids operator)] changed)
+                              (assoc-in [:call-type-facts index] (c7 fact-name [changed (:module core)]))
+                              (assoc-in [:constraint-ledger index] (c7 constraint-name [changed])))]
+            (is (false? (valid candidate)))))
+        (is (false? (leaf 'body-graph-equations-valid? core facts {}
+                          (assoc-in (:nodes graph) [id :direct] #{:memory/allocate}))))))))
+
 (deftest body-vector-slice-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
