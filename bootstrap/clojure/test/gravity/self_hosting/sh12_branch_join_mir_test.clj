@@ -393,6 +393,35 @@
                              (assoc-in core [:core-nodes 0 :source :span :start :column] nil)
                              (assoc-in core [:core-nodes 5 :source-operation] :other)]]
             (is (= :rejected (:status (build-mir malformed)))))
+          ;; These scalars survive the carrier walk, but must reject as DATA
+          ;; rather than reach count/dissoc on an unchecked nested carrier.
+          (let [origin (get-in binder [:source :origin-id])]
+            (doseq [row [nil "not-a-row" 17]]
+              (let [report (build-mir (assoc-in core [:source-origin-table origin] row))]
+                (is (= :rejected (:status report)))
+                (is (= "C11-ORIGIN" (:diagnostic-id (diagnostic report))))))
+            (doseq [[field invalids] [[:c2-metadata [nil [] 0 ""]]
+                                      [:c2-generated-origin [nil {} 0 ""]]]
+                    value invalids]
+              (let [malformed (-> core
+                                  (assoc-in [:source-origin-table origin field] value)
+                                  (assoc-in [:origin-closure origin field] value))
+                    report (build-mir malformed)]
+                (is (= :rejected (:status report)))
+                (is (= "C11-ORIGIN" (:diagnostic-id (diagnostic report))))))
+            (doseq [rows [nil 17 {} ""]]
+              (is (= :rejected
+                     (:status (build-mir (assoc-in core [:resolved-parameter :coordinates] rows)))))))
+          (let [equalities (atom 0)
+                hostile (proxy [Object] []
+                          (equals [_] (swap! equalities inc) false))]
+            ;; Positive observation proves the counter itself is live.
+            (is (false? (.equals hostile nil)))
+            (is (= 1 @equalities))
+            (reset! equalities 0)
+            (is (false? (invoke c11-plan 'sh12-c6p-scalars-valid? [hostile])))
+            (is (= :rejected (:status (build-mir (assoc core :diagnostics [hostile])))))
+            (is (zero? @equalities)))
           (doseq [[malformed expected]
                   [[(assoc-in core [:type-facts binder-id :declaration :parameter-index] 1) "C11-TYPE"]
                    [(assoc-in core [:effect-facts binder-id :direct] #{:io/write}) "C11-EFFECT"]
@@ -401,7 +430,10 @@
                    [(assoc-in core [:core-nodes 0 :source :span :start :column] nil) "C11-ORIGIN"]]]
             (let [report (build-mir malformed)]
               (is (= :rejected (:status report)))
-              (is (= expected (:diagnostic-id (diagnostic report))))))
+              (is (= expected (:diagnostic-id (diagnostic report))))
+              (when (not= expected "C11-ORIGIN")
+                (is (= binder-id (:value-id (diagnostic report))))
+                (is (= :not-applicable (:operation-id (diagnostic report)))))))
           ;; Input authenticity remains the independent original C6 replay,
           ;; separately from this C11 supplied-DATA semantic-family verifier.
           (doseq [candidate [(assoc-in (:artifact-template raw) [:core-nodes 0 :attributes :parameter-index] 1)

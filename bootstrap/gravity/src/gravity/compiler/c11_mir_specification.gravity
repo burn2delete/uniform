@@ -3061,12 +3061,18 @@
         generated (if (= index 2)
                     [{:kind :compiler-generated :producer :gravity/c6-c10-checked-core-pipeline
                       :role :truthiness-normalization :input-origin-id (get input :origin-id)}] [])]
-    (sh12-c6p-all?
-      [(sh12-c6p-span? span)
-       (sh12-c6p-keys? row #{:domain :source-content-hash :plan-path :c2-form-id :c2-form-kind
+    (if (sh12-c6p-keys? row #{:domain :source-content-hash :plan-path :c2-form-id :c2-form-kind
                             :c2-span :c2-surface-span :c2-abbrev :c2-tag :c2-metadata
                             :c2-generated-origin :c3-syntax-id :generated-role :input-origin-id :origin-id})
-       (= raw (dissoc (dissoc (dissoc row :domain) :source-content-hash) :plan-path))
+    (sh12-c6p-all?
+      [(sh12-c6p-span? span)
+       (= raw {:origin-id origin :c2-form-id (get row :c2-form-id)
+               :c2-form-kind (get row :c2-form-kind) :c2-span (get row :c2-span)
+               :c2-surface-span (get row :c2-surface-span) :c2-abbrev (get row :c2-abbrev)
+               :c2-tag (get row :c2-tag) :c2-metadata (get row :c2-metadata)
+               :c2-generated-origin (get row :c2-generated-origin)
+               :c3-syntax-id (get row :c3-syntax-id) :generated-role (get row :generated-role)
+               :input-origin-id (get row :input-origin-id)})
        (= source {:origin-id origin :span span :enclosing-syntax-origin-id (get row :c3-syntax-id)
                   :generated? (= index 2) :generated-origin generated})
        (sh12-c10-mir-sha256-id? origin)
@@ -3082,7 +3088,7 @@
        (= (get row :generated-role) (if (= index 2) :truthiness-normalization nil))
        (= (get row :input-origin-id) (if (= index 2) (get input :origin-id) nil))
        (= (get row :c2-abbrev) nil) (= (get row :c2-tag) nil)
-       (= 0 (count (get row :c2-metadata))) (= 0 (count (get row :c2-generated-origin)))])))
+       (= {} (get row :c2-metadata)) (= [] (get row :c2-generated-origin))]) false)))
 
 (defn sh12-c6p-own [node index]
   (let [operands (get node :operands)
@@ -3244,10 +3250,10 @@
            (get (get nodes 5) :operands) (get root :operands)]
           [[] [(get ids 0)] [(get ids 1)] [] [] [(get ids 2) (get ids 3) (get ids 4)] [(get ids 5)]])
        (symbol? name) (= (get attrs :parameter-index) 0)
-       (= (dissoc (dissoc (dissoc (dissoc attrs :intrinsic-effects) :intrinsic-capabilities)
-                          :aggregate-effects) :aggregate-capabilities)
-          {:name name :parameter-index 0 :source-form-id (get (get rows 1) :c2-form-id)
-           :resolved-binding-id (get binding :binding-id) :type-binding-id (get type-binding :binding-id)})
+       (= attrs
+          (assoc (assoc (assoc (assoc (assoc purity :name name) :parameter-index 0)
+            :source-form-id (get (get rows 1) :c2-form-id))
+            :resolved-binding-id (get binding :binding-id)) :type-binding-id (get type-binding :binding-id)))
        (= (get local :attributes) (assoc (assoc purity :name name) :resolved-binding (get ids 0)))
        (= (get truthy :attributes) (assoc (assoc purity :false-values [nil false]) :result-type :gravity/bool))
        (= (get (get nodes 5) :attributes) (assoc purity :truthiness :nil-and-false-only))
@@ -3379,11 +3385,12 @@
         binding (get declaration :parameter-binding) type-binding (get declaration :type-binding)
         reference (get declaration :type-resolution)
         root-span (get (get (get (get core :core-nodes) 6) :source) :span)]
+    (if (vector? rows)
     (if (sh12-c6p-all?
           [(sh12-c6p-keys? declaration #{:kind :source-content-hash :sh06-artifact-id
              :sh06-semantic-projection-id :projection-binding :root-syntax-id :function-syntax-id
              :function-scope-id :parameter-index :coordinates :parameter-binding :type-binding :type-resolution})
-           (vector? rows) (= (count rows) 4)
+           (= (count rows) 4)
            (sh12-c6p-keys? reference #{:reference-syntax-id :symbol :position :binding-id
                                       :resolution-order :source-span :upstream-binding-id})
            (= (get reference :resolution-order) :profile-allowed-core-binding)
@@ -3430,7 +3437,7 @@
                        (sh12-branch-join-nonempty-string? (get row :c2-form-id))
                        (sh12-c10-mir-sha256-id? (get row :projected-form-id))
                        (sh12-c10-mir-sha256-id? (get row :projected-syntax-id))])
-                  (recur (+ index 1)) false)))) false) false) false)))
+                  (recur (+ index 1)) false)))) false) false) false) false)))
 
 (defn sh12-c6p-graphs-valid? [core view]
   (let [nodes (get core :core-nodes) ids (get view :ids) origins (get view :origins)
@@ -3492,7 +3499,7 @@
       (let [value (get frontier cursor)]
         (if (sh12-c10-mir-persistent-aggregate? value)
           (recur (c11-append-uses frontier (sh12-c10-mir-aggregate-components value)) (+ cursor 1))
-          (if (if (= value nil) true
+          (if (if (= nil value) true
                 (if (boolean? value) true
                   (if (integer? value) true
                     (if (char? value) true
@@ -3578,10 +3585,9 @@
                [(assoc diagnostic
                        :operation-id (if (c11-c6-parameter-node? checked-core node)
                                        :not-applicable (get node :node-id))
-                       :value-id (if (c11-c6-parameter-node? checked-core node)
-                                   (get node :node-id) (get diagnostic :value-id))
                        :value-id
-                       (if (= diagnostic-id "C11-DOMINANCE")
+                       (if (if (c11-c6-parameter-node? checked-core node) true
+                             (= diagnostic-id "C11-DOMINANCE"))
                          (get node :node-id)
                          :not-applicable)
                        ; Preflight rejected before a CFG was established.
