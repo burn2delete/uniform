@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.count-quotient-scaling
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+(defn main []
+  (* 2 (quot (count [1 2 3 4 5 6 7 8 9]) 4)))

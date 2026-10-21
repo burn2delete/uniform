@@ -7682,6 +7682,208 @@
       (is (= [:memory/allocate] (:direct-effects descriptor)))
       (is (= :may-allocate-integer-result (get-in descriptor [:storage-policy :allocation]))))))
 
+(deftest sh08-count-quotient-scaling-proof-development-kernel
+  (let [derive (fn [input budget]
+                 (invoke-c7 'sh08-cqs-derive [(:core input) (:node input) (:call input) (:edge input)
+                                            (:nodes input) (:bindings input) (:types input) (:forms input) budget]))]
+    (doseq [[factor divisor kind empty?] [[2 4 :vector false] [0 4 :vector false] [4 4 :vector false]
+                                          [3 7 :map false] [2 4 :vector true]]]
+      (let [input (count-quotient-scaling-input factor divisor kind empty?)
+            result (derive input 65536) descriptor (:descriptor result) proof (:range-proof descriptor)
+            types (assoc (:types input) :scale-operator descriptor :scale-call (:type result))
+            own #(invoke-c7 'sh08-cqs-inferred-call [(:core input) (:node input) (:call input) (:edge input)
+                                                  (:nodes input) (:bindings input) types %])
+            measured (own 65536)]
+        (is (= :accepted (:status result) (:status measured)) (pr-str result))
+        (is (= :gravity.type/integer (:type result)))
+        (is (= :normal (:application proof) (:application descriptor)))
+        (is (= factor (get-in proof [:factor :value])))
+        (is (= divisor (get-in proof [:quotient :descriptor :range-proof :divisor :value])))
+        (is (= :divisor-times-quotient-at-most-count (:euclidean-premise proof)))
+        (is (= :zero-through-original-positive-divisor (:coefficient-bound proof)))
+        (is (= :zero-through-original-count (:result-value-bound proof)))
+        (is (= :authenticated-cardinality (get-in proof [:quotient :descriptor :range-proof :dividend :kind])))
+        (is (= :numeric-mode (get-in result [:constraint :kind])))
+        (is (= proof (get-in result [:constraint :solution :range-proof])))
+        (is (= result (derive input (:work-count result))))
+        (is (= :count-quotient-scaling-work-limit (:reason (derive input (dec (:work-count result))))))
+        (is (= measured (own (:work-count measured))))
+        (is (= :count-quotient-scaling-work-limit (:reason (own (dec (:work-count measured))))))))
+    (doseq [[factor divisor] [[3 2] [-1 4] [1.0 4] [1/2 4]]]
+      (let [result (derive (count-quotient-scaling-input factor divisor :vector false) 65536)]
+        (is (= :rejected (:status result)))
+        (is (= ["STD5001" :count-quotient-scaling-proof-required] ((juxt :rule :reason) result)))))
+    (let [input (count-quotient-scaling-input 2 4 :vector false)]
+      (doseq [mutate [#(assoc-in % [:types :scale-factor] :gravity.type/i64)
+                      #(assoc-in % [:types :call] :gravity.type/unknown)
+                      #(assoc-in % [:nodes :scale-factor :core-form] :reference)
+                      #(assoc-in % [:forms :scale-factor :value] 3)
+                      #(assoc-in % [:forms :scale-call :child-form-ids] [])
+                      #(assoc-in % [:types :operator :range-proof :law] :forged)
+                      #(assoc-in % [:types :operator :numeric-mode] :wrapping)
+                      #(assoc-in % [:types :operator :storage-policy :allocation] :none)
+                      #(assoc-in % [:types :count-operator :query-semantics :normal-input] :forged)
+                      #(update-in % [:core :calls] conj (get-in input [:inner :call]))
+                      #(update-in % [:core :call-edges] conj (get-in input [:inner :edge]))
+                      #(update-in % [:core :calls] conj (get-in input [:inner :count-call]))]]
+        (is (= :rejected (:status (derive (mutate input) 65536)))))
+      (let [callbacks (atom 0)
+            opaque (proxy [Object] []
+                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "scaling metadata hash")))
+                     (equals [_] (swap! callbacks inc) (throw (AssertionError. "scaling metadata equality")))
+                     (toString [] (swap! callbacks inc) (throw (AssertionError. "scaling metadata formatting"))))]
+        (doseq [path [[:call :core-node-id] [:call :operator-node-id] [:call :operator-binding-id]
+                      [:call :argument-node-ids 0] [:node :node-id] [:node :children 0]
+                      [:node :source :form-id] [:nodes :scale-operator :source :syntax-id]
+                      [:nodes :scale-operator :attributes :symbol] [:nodes :scale-factor :attributes :value]
+                      [:forms :scale-factor :value] [:forms :scale-call :child-form-ids 0]
+                      [:forms :operator :value] [:forms :call :child-form-ids 0]
+                      [:forms :count-operator :value] [:forms :count-association :child-form-ids 0]
+                      [:core :call-edges 1 :ordinal]]
+                budget [0 65536]]
+          (is (= :rejected (:status (derive (assoc-in input path opaque) budget))) (pr-str [path budget]))
+          (is (zero? @callbacks)))
+        (is (= :accepted (:status (derive (assoc-in input [:forms :unselected :value] opaque) 65536))))
+        (is (zero? @callbacks))))))
+
+(defn- count-quotient-scaling-transfer-input [factor divisor positions]
+  (let [input (count-quotient-scaling-input factor divisor :vector false)
+        positions (if (vector? positions) positions [positions])
+        input
+        (reduce
+         (fn [input position]
+           (let [id (if (= position 0) :scale-factor :count-input)
+                 op (keyword (str "scaling-throw-op-" position)) payload (keyword (str "scaling-payload-" position))
+                 source (get-in input [:nodes id :source]) form (get-in input [:forms id])
+                 removed (get-in input [:nodes id :children])
+                 transfer (-> (get-in input [:nodes id])
+                              (assoc :core-form :throw :children [payload] :attributes {} :resolved-binding-ids [])
+                              (assoc :evaluation {:order [{:index 0 :core-node-id payload}]}))
+                 payload-node {:node-id payload :core-form :literal :children [] :resolved-binding-ids []
+                               :attributes {:literal-kind :string :value "original scaling transfer"}
+                               :source (assoc source :form-id payload :syntax-id payload) :evaluation {:kind :value :order []}}
+                 nodes (assoc (apply dissoc (:nodes input) removed) id transfer payload payload-node)
+                 forms (-> (apply dissoc (:forms input) removed)
+                           (assoc id (assoc form :kind :list :value '(throw "original scaling transfer") :child-form-ids [op payload])
+                                  op (assoc form :form-id op :syntax-id op :parent-form-id id :kind :symbol :value 'throw :child-form-ids [])
+                                  payload (assoc form :form-id payload :syntax-id payload :parent-form-id id
+                                                 :kind :string :value "original scaling transfer" :child-form-ids [])))
+                 node-list (vec (mapcat (fn [node]
+                                         (let [nid (:node-id node)]
+                                           (cond (= nid id) [payload-node transfer]
+                                                 (some #{nid} removed) []
+                                                 :else [(get nodes nid)]))) (get-in input [:core :nodes])))]
+             (-> input (assoc :nodes nodes :forms forms)
+                 (assoc :types (assoc (apply dissoc (:types input) removed) id :gravity.type/never payload :gravity.type/string))
+                 (assoc-in [:core :nodes] node-list))))
+         input positions)
+        module (assoc (:module input) :effects [:memory/allocate :error/throw])
+        core (assoc (:core input) :module module) nodes (:nodes input) forms (:forms input) bindings (:bindings input)
+        count-call (first (:calls core)) count-id (:core-node-id count-call)
+        counted (invoke-c7 'sh08-cq-derive [core (get nodes count-id) count-call (first (:call-edges core)) nodes bindings (:types input) forms 65536])
+        types (assoc (:types input) (:operator-node-id count-call) (:descriptor counted) count-id (:type counted))
+        qcall (second (:calls core)) qid (:core-node-id qcall)
+        quotient (invoke-c7 'sh08-nq-derive [core (get nodes qid) qcall (second (:call-edges core)) nodes bindings types forms 65536])
+        types (assoc types (:operator-node-id qcall) (:descriptor quotient) qid (:type quotient))]
+    (assoc input :core core :module module :types types :binding-types types :quotient quotient :transfer-positions positions
+                 :inner (assoc (:inner input) :counted counted :core core :nodes nodes :forms forms :types types :module module)
+                 :products {:calls (:calls core) :call-edges (:call-edges core) :module module})))
+
+(deftest sh08-count-quotient-scaling-transfer-development-kernel
+  (let [derive (fn [input budget]
+                 (invoke-c7 'sh08-cqs-derive [(:core input) (:node input) (:call input) (:edge input)
+                                            (:nodes input) (:bindings input) (:types input) (:forms input) budget]))]
+    (doseq [position [0 1 [0 1]]]
+      (let [input (count-quotient-scaling-transfer-input 2 4 position)
+            result (derive input 65536) descriptor (:descriptor result)
+            types (assoc (:types input) :scale-operator descriptor :scale-call (:type result))
+            own #(invoke-c7 'sh08-cqs-inferred-call [(:core input) (:node input) (:call input) (:edge input)
+                                                  (:nodes input) (:bindings input) types %])
+            measured (own 65536)]
+        (is (= :accepted (:status result) (:status measured)) (pr-str result))
+        (is (= :gravity.type/never (:type result)))
+        (is (= :not-invoked (:application descriptor) (get-in descriptor [:range-proof :application])))
+        (is (= :not-required-for-aborted-invocation (get-in descriptor [:range-proof :coefficient-bound])))
+        (is (= :not-invoked (get-in descriptor [:range-proof :result-value-bound])))
+        (is (= [] (:direct-effects descriptor)))
+        (is (= [:memory/allocate] (:latent-effects descriptor)))
+        (is (= result (derive input (:work-count result))))
+        (is (= :count-quotient-scaling-work-limit (:reason (derive input (dec (:work-count result))))))
+        (is (= measured (own (:work-count measured))))
+        (is (= :rejected (:status (own (dec (:work-count measured))))))))
+    (is (= :accepted (:status (derive (count-quotient-scaling-transfer-input 5 4 1) 65536))))
+    (is (= :rejected (:status (derive (count-quotient-scaling-transfer-input -1 4 1) 65536))))
+    (let [input (count-quotient-scaling-transfer-input 2 4 0)]
+      (is (= :rejected (:status (derive (assoc-in input [:types :operator :numeric-mode] :wrapping) 65536)))))
+    (let [input (count-quotient-scaling-transfer-input 2 4 1)]
+      (is (= :rejected (:status (derive (assoc-in input [:nodes :scale-factor :core-form] :reference) 65536)))))
+    (let [input (count-quotient-scaling-transfer-input 2 0 1)]
+      (is (= ["STD5002" :nonnegative-integer-quotient-zero-divisor] ((juxt :rule :reason) (:quotient input))))
+      (is (= :rejected (:status (derive input 65536)))))))
+
+(deftest sh08-count-quotient-scaling-scoped-consumer-development-kernel
+  (let [input (count-quotient-scaling-input 2 4 :vector false)
+        record {:function-syntax-id :scaling-function :function-core-node-id :scaling-fn
+                :body-core-node-id :scale-call :fixed-arity 0 :parameter-binding-ids []}
+        function {:node-id :scaling-fn :core-form :fn :children [:scale-call] :attributes {}
+                  :source {:form-id :scaling-form :syntax-id :scaling-function}
+                  :evaluation {:kind :function-creation :order []}}
+        node-list (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :scaling-function) (get-in input [:core :nodes]))
+        edges (mapv #(assoc % :caller-function-syntax-id :scaling-function :caller-function-core-node-id :scaling-fn) (get-in input [:core :call-edges]))
+        core (assoc (:core input) :nodes (conj node-list function) :function-records [record] :call-edges edges :root-core-node-ids [:scaling-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core))) calls (:calls core)
+        bindings (:bindings input) forms (:forms input)
+        counted (invoke-c7 'sh08-cq-derive [core (get nodes (:core-node-id (first calls))) (first calls) (first edges) nodes bindings (:types input) forms 65536])
+        types (assoc (:types input) (:operator-node-id (first calls)) (:descriptor counted) (:core-node-id (first calls)) (:type counted))
+        qcall (second calls) qedge (second edges) qnode (get nodes (:core-node-id qcall))
+        quotient (invoke-c7 'sh08-nq-derive [core qnode qcall qedge nodes bindings types forms 65536])
+        types (assoc types (:operator-node-id qcall) (:descriptor quotient) (:core-node-id qcall) (:type quotient))
+        node (get nodes :scale-call) call (last calls) edge (last edges)
+        derived (invoke-c7 'sh08-cqs-derive [core node call edge nodes bindings types forms 65536])
+        types (assoc types :scale-operator (:descriptor derived) :scale-call (:type derived))
+        functions {:scaling-function {:function-id :scaling-function :body-core-node-id :scale-call
+                                     :parameters [] :return :gravity.type/integer :latent-effects [:memory/allocate]
+                                     :capabilities [] :thrown-error-effects []}}
+        direct {:status :accepted :throws {:scaling-function []} :constraints [] :diagnostics [] :work-count 0}
+        binding-list (vec (vals bindings))
+        check #(invoke-c7 'sh08-tc-products [core %1 functions binding-list direct %2])
+        own #(invoke-c7 'sh08-cqs-inferred-call [core node call edge nodes bindings %1 %2])
+        measured (own types 65536) accepted (check types 65536)
+        prior (invoke-c7 'sh08-nq-inferred-call [core qnode qcall qedge nodes bindings types 65536])
+        scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) 65536 types])
+        initial (+ (:work-count scoped) (* 8 (count (:nodes core))) (* 70 (count edges))
+                   (count bindings) (* 3 (count (:function-records core)))
+                   (* (count calls) (+ (count bindings) (* 2 (count (:function-records core))))))
+        owners (invoke-c7 'sh08-th-owners [core (- 65536 initial)])
+        prefix (+ initial (:work-count owners) (:work-count prior))]
+    (is (= :accepted (:status derived) (:status measured) (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :scaling-function])))
+    (is (= measured (own types (:work-count measured))))
+    (let [rejected (check types (+ prefix (dec (:work-count measured))))]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :count-quotient-scaling-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= (+ prefix (:work-count measured)) (:work-count rejected))))
+    (doseq [candidate [(update-in types [:scale-operator] dissoc :kind)
+                       (assoc-in types [:scale-operator :kind] nil)
+                       (assoc-in types [:scale-operator :kind] (Object.))
+                       (assoc-in types [:scale-operator :kind] :gravity.type/applied-string-concat)
+                       (assoc types :scale-operator :gravity.type/integer) (assoc types :scale-operator nil)
+                       (assoc-in types [:scale-operator :numeric-mode] :wrapping)
+                       (assoc-in types [:scale-operator :range-proof :factor :value] 3)
+                       (assoc-in types [:scale-operator :storage-policy :allocation] :none)]]
+      (is (= :rejected (:status (own candidate 65536))))
+      (is (= :rejected (:status (check candidate 65536)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "scoped scaling hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "scoped scaling equality")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "scoped scaling formatting"))))
+          candidate (assoc-in types [:scale-operator :kind] opaque)]
+      (is (= :rejected (:status (own candidate 65536))))
+      (is (= :rejected (:status (check candidate 65536))))
+      (is (= :accepted (:status (check types 65536))))
+      (is (zero? @callbacks)))))
+
 (deftest sh08-nonnegative-integer-quotient-proof-development-kernel
   (let [derive (fn [input budget]
                  (invoke-c7 'sh08-nq-derive [(:core input) (:node input) (:call input) (:edge input)

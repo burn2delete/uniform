@@ -29854,6 +29854,118 @@
           (do (is (= '[main] (mapv second definitions)))
               (is (= 2 (count (rest (last (first definitions))))))))))))
 
+(deftest current-gravity-count-quotient-scaling-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'count-quotient-scaling-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))]
+    (doseq [[factor divisor kind empty? expected] [[2 4 :vector false 0] [0 4 :vector true 0]
+                                                   [1 1 :vector false 1] [4 4 :map false 0] [3 7 :vector false 0]
+                                                   [(bigint "123456789012345678901234567890")
+                                                    (bigint "123456789012345678901234567890") :vector false 0]]]
+      (let [{:keys [core node call edge nodes forms bindings types module quotient inner]} (input factor divisor kind empty?)
+            result (c7 'sh08-cqs-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            qcall (:call inner) count-call (:count-call inner) counted (get-in inner [:counted :descriptor])
+            qd (:descriptor quotient)
+            facts {(:core-node-id count-call) (c7 'sh08-cq-call-fact [counted module])
+                   (:core-node-id qcall) (c7 'sh08-nq-call-fact [qd module])
+                   (:core-node-id call) (c7 'sh08-cqs-call-fact [descriptor module])}
+            ledger [(c7 'sh08-cq-constraint [counted]) (c7 'sh08-nq-constraint [qd]) (c7 'sh08-cqs-constraint [descriptor])]
+            context {:core core :nodes nodes :forms forms :bindings bindings
+                     :types (assoc types (:operator-node-id call) descriptor (:core-node-id call) (:type result))
+                     :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                     :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                     :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+                     :call-facts facts :ledger ledger :locals {} :parameter-types {}}
+            compile #(lower 'p15-s23-typed-compile-node %1 (:core-node-id call) %2)
+            compiled (compile context 65536)]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= '* (get-in compiled [:value :function])))
+        (is (= 'quot (get-in compiled [:value :args 1 :function])))
+        (is (= 'count (get-in compiled [:value :args 1 :args 0 :function])))
+        (is (= #{:op :function :args} (set (keys (:value compiled)))))
+        (when (= :complete (:status compiled))
+          (is (= compiled (compile context (:work-count compiled))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count compiled))) [:facts :reason])))
+          (is (= [expected "" :normal]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {} ""]))))
+        (doseq [changed [(dissoc descriptor :kind) (assoc descriptor :kind nil)
+                         (assoc descriptor :kind (Object.)) (assoc descriptor :kind :gravity.type/applied-string-concat)
+                         (assoc descriptor :numeric-mode :wrapping) (assoc descriptor :direct-effects [])
+                         (assoc-in descriptor [:storage-policy :allocation] :none)
+                         (assoc-in descriptor [:range-proof :factor :value] (inc factor))
+                         (assoc-in descriptor [:range-proof :quotient :descriptor :range-proof :law] :forged)
+                         (assoc-in descriptor [:scaling-policy :premise] :quotient-at-most-count)]]
+          (let [candidate (-> context (assoc-in [:types (:operator-node-id call)] changed)
+                              (assoc-in [:call-facts (:core-node-id call)] (c7 'sh08-cqs-call-fact [changed module]))
+                              (update :ledger #(conj (vec (butlast %)) (c7 'sh08-cqs-constraint [changed]))))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (first ledger)) #(update % :ledger conj (second ledger))
+                        #(update % :call-facts dissoc (:core-node-id call))
+                        #(update % :call-facts dissoc (:core-node-id qcall))
+                        #(update % :call-facts dissoc (:core-node-id count-call))
+                        #(assoc-in % [:types (:operator-node-id qcall) :numeric-mode] :wrapping)
+                        #(assoc-in % [:types (:operator-node-id count-call) :query-semantics :normal-input] :forged)
+                        #(assoc-in % [:forms :scale-factor :parent-form-id] :sibling)
+                        #(assoc-in % [:nodes (:operator-node-id call) :attributes :symbol] 'identity)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-count-quotient-scaling-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection)) literal #(hash-map :op :literal :value %)
+        counted #(hash-map :op :builtin-call :function 'count :args [%])
+        quotient #(hash-map :op :builtin-call :function 'quot :args [%1 %2])
+        product #(hash-map :op :builtin-call :function '* :args [%1 %2])
+        query (fn [k d receiver] (product (literal k) (quotient (counted receiver) (literal d))))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])]
+    (doseq [[k d n] [[2 4 8] [2 4 9] [0 4 9] [4 4 9] [3 7 15] [2 4 0]
+                      [1 100 9] [Long/MAX_VALUE Long/MAX_VALUE 9]
+                      [(bigint "123456789012345678901234567890") (bigint "123456789012345678901234567890") 9]]]
+      (let [receiver (literal (vec (range n))) result (evaluate (query k d receiver))
+            expected (* (bigint k) (quot (bigint n) (bigint d)))]
+        (is (= [expected "" :normal] result))
+        (is (<= 0 (first result) n))))
+    (doseq [instruction [(query -1 4 (literal [1 2 3 4]))
+                          (query 5 4 (literal [1 2 3 4]))
+                          (query 2 0 (literal [1 2 3 4]))
+                          (query 2 -1 (literal [1 2 3 4]))
+                          (query 2.0 4 (literal [1 2 3 4]))
+                          (query 2 4.0 (literal [1 2 3 4]))
+                          (query 2 4 (literal "not a collection count"))
+                          (product (literal 2) (literal Long/MAX_VALUE))
+                          (product (literal Long/MAX_VALUE) (literal 2))
+                          (product (literal 2) (quotient (literal 8) (literal 4)))
+                          (product (literal 2) (quotient {:op :builtin-call :function 'count :args []} (literal 4)))
+                          (assoc (query 2 4 (literal [1 2 3 4])) :proof {:range :fabricated})]]
+      (is (= :rejected (last (evaluate instruction)))))
+    (doseq [args [[] [(literal 1)] [(literal 1) (literal 2) (literal 3)]]]
+      (is (= :rejected (last (evaluate {:op :builtin-call :function '* :args args})))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque scaling equality")))
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque scaling hash")))
+                                   (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque scaling formatting"))))]
+      (doseq [instruction [(query opaque 4 (literal [1 2 3 4]))
+                            (query 2 opaque (literal [1 2 3 4]))
+                            (query 2 4 (literal opaque))
+                            (product (literal 2) (literal opaque))
+                            (assoc-in (query 2 4 (literal [1 2 3 4])) [:args 1 :function] opaque)]]
+        (is (= :rejected (last (evaluate instruction)))))
+      (is (zero? @callbacks)))
+    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
+          payload (Object.) escape {:op :throw :value (literal payload)}
+          left (evaluate (product (say "left" escape) (quotient (counted (say "unreached" (literal [1 2 3 4]))) (literal 4))))
+          right (evaluate (query 2 4 (say "right" escape)))]
+      (is (= [0 "counted\n" :normal] (evaluate (query 0 4 (say "counted" (literal [1 2 3 4]))))))
+      (is (= [2 "counted\n" :normal] (evaluate (query 2 4 (say "counted" (literal [1 2 3 4]))))))
+      (is (identical? payload (first left))) (is (identical? payload (first right)))
+      (is (= ["left\n" :thrown] (subvec left 1)))
+      (is (= ["right\n" :thrown] (subvec right 1))))))
+
 (deftest current-gravity-nonnegative-integer-quotient-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
@@ -29943,6 +30055,22 @@
       (is (= ["left\n" :thrown] (subvec left 1)))
       (is (= ["left\nright\n" :thrown] (subvec right 1))))))
 
+(deftest current-gravity-count-quotient-scaling-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition stem] [["accepted" "local-runtime-count-quotient-scaling"]
+                                ["rejected" "count-quotient-scaling-unproved-factor"]]]
+      (let [base (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" stem)
+            g-path (.getPath (io/file root (str base ".gravity"))) q-path (.getPath (io/file root (str base ".qst")))
+            g (slurp g-path) q (slurp q-path)
+            forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
+        (is (= g q))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
+        (is (= '[main] (mapv second definitions)))
+        (is (= (if (= disposition "accepted") '(* 2 (quot (count [1 2 3 4 5 6 7 8 9]) 4)) '(* 3 (quot (count [1 2 3 4 5 6 7 8]) 2)))
+               (last (first definitions))))))))
+
 (deftest current-gravity-nonnegative-integer-quotient-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -29958,6 +30086,84 @@
         (is (= '[main] (mapv second definitions)))
         (is (= (if (= disposition "accepted") '[(quot 127 10) (gravity.core/quot (count [1 2 3 4]) 2)] '(quot 127 0))
                (last (first definitions))))))))
+
+(deftest current-gravity-count-quotient-scaling-transfer-fence-development-kernel
+  ;; Typed control DATA retains the original L2 non-tail recur boundary.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        transfer (ns-resolve upstream 'count-quotient-scaling-transfer-input)
+        normal (ns-resolve upstream 'count-quotient-scaling-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        make-context
+        (fn [input]
+          (let [{:keys [core node call edge nodes forms bindings types module quotient inner]} input
+                result (c7 'sh08-cqs-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+                qcall (:call inner) count-call (:count-call inner) counted (get-in inner [:counted :descriptor])
+                qd (:descriptor quotient)]
+            (is (= :accepted (:status result)))
+            {:core core :nodes nodes :forms forms :bindings bindings
+             :types (assoc types (:operator-node-id call) descriptor (:core-node-id call) (:type result))
+             :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+             :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+             :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+             :call-facts {(:core-node-id count-call) (c7 'sh08-cq-call-fact [counted module])
+                          (:core-node-id qcall) (c7 'sh08-nq-call-fact [qd module])
+                          (:core-node-id call) (c7 'sh08-cqs-call-fact [descriptor module])}
+             :ledger [(c7 'sh08-cq-constraint [counted]) (c7 'sh08-nq-constraint [qd]) (c7 'sh08-cqs-constraint [descriptor])]
+             :locals {} :parameter-types {} :tail? true}))]
+    (doseq [positions [0 1 [0 1]]]
+      (let [input (transfer 2 4 positions) context (make-context input)
+            compiled (lower 'p15-s23-typed-compile-node context :scale-call 65536)
+            actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {} ""])]
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= :gravity.type/never (get-in context [:types :scale-call])))
+        (is (= ["original scaling transfer" "" :thrown] actual))
+        (is (= compiled (lower 'p15-s23-typed-compile-node context :scale-call (:work-count compiled))))
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :scale-call (dec (:work-count compiled))))))))
+    (let [input (transfer 2 4 0) slot :scale-factor form (get-in input [:forms slot]) recur-op :scaling-recur-op
+          operand {:node-id slot :core-form :recur :children [] :source (get-in input [:nodes slot :source]) :resolved-binding-ids []
+                   :attributes {:target-id :loop :target-kind :loop :arity 0 :semantic-rule "L2-RECUR-TARGET" :type-compatibility :pending-sh08}
+                   :evaluation {:kind :arguments-left-to-right-then-transfer :order []}}
+          input (-> input (assoc-in [:nodes slot] operand)
+                    (assoc-in [:forms slot] (assoc form :kind :list :value '(recur) :child-form-ids [recur-op]))
+                    (assoc-in [:forms recur-op] (assoc form :form-id recur-op :syntax-id recur-op :parent-form-id slot :kind :symbol :value 'recur :child-form-ids []))
+                    (update-in [:core :nodes] #(mapv (fn [n] (if (= slot (:node-id n)) operand n)) %)))
+          context (make-context input)
+          target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
+          transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
+                    :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
+                    :transfer-policy :nearest-lexical-recur-target :type-compatibility :pending-sh08}
+          premise {:kind :loop-recur-type :source-transfer transfer :source-target target :argument-types [] :slot-types []
+                   :result-type :gravity.type/never :normal-transfer? true :status :solved}
+          context (assoc context :targets {:loop target} :nearest-target target :transfers {slot transfer} :loop-binding-index {})
+          row (lower 'p15-s23-typed-loop-row context premise operand)
+          context (assoc context :loop-rows {[:loop-recur-type slot] row})
+          direct (lower 'p15-s23-typed-compile-node context slot 65536)
+          non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot 65536)
+          rejected (lower 'p15-s23-typed-compile-node context :scale-call 65536)]
+      (is (= :complete (:status direct)))
+      (is (= {:op :recur :target :loop :args []} (:value direct)))
+      (is (= :rejected (:status non-tail) (:status rejected)))
+      (is (= (:facts non-tail) (:facts rejected)))
+      (is (integer? (:work-count rejected)))
+      (is (> (:work-count rejected) (get non-tail :work-count 0))))
+    (let [context (make-context (normal 2 4 :vector false))
+          callbacks (atom 0) opaque (proxy [Object] []
+                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "lowering scaling hash")))
+                                     (equals [_] (swap! callbacks inc) (throw (AssertionError. "lowering scaling equality")))
+                                     (toString [] (swap! callbacks inc) (throw (AssertionError. "lowering scaling formatting"))))]
+      (doseq [path [[:types :scale-operator :kind] [:types :scale-operator :range-proof :factor :value]
+                    [:forms :scale-operator :value] [:forms :scale-call :child-form-ids 0]
+                    [:nodes :scale-operator :source :form-id] [:core :call-edges 1 :ordinal]]
+              budget [0 65536]]
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc-in context path opaque) :scale-call budget))))
+        (is (zero? @callbacks)))
+      (is (= :complete (:status (lower 'p15-s23-typed-compile-node context :scale-call 65536))))
+      (is (zero? @callbacks)))))
 
 (deftest current-gravity-nonnegative-integer-quotient-transfer-fence-development-kernel
   ;; Normalized typed control DATA does not admit a source recur in argument position.
