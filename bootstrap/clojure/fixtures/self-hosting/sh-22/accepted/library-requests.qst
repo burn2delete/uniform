@@ -6,6 +6,7 @@
              sh22-vector-nth-request
              sh22-map-assoc-request
              sh22-map-get-request
+             sh22-map-dissoc-keyword-request
              sh22-set-conj-request
              sh22-set-contains-keyword-request
              sh22-set-contains-symbol-request
@@ -95,6 +96,12 @@
   (sh22-request
    :map-get :ordered-map-get [(sh22-ordered-map) :syntax]
    #{} #{} :none "/checkout-a/compiler.gravity"))
+
+(defn sh22-map-dissoc-keyword-request []
+  (sh22-request
+   :map-dissoc-keyword :ordered-map-dissoc-keyword
+   [{:artifact :gravity/ordered-map :entries [[:value nil] [:phase :checked]]} :value]
+   #{:memory/allocate} #{} :bounded-by-result "/checkout-a/compiler.gravity"))
 
 (defn sh22-set-conj-request []
   (sh22-request

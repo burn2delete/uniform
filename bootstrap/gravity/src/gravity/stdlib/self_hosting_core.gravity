@@ -36,6 +36,7 @@
      :vector-nth
      :ordered-map-assoc
      :ordered-map-get
+     :ordered-map-dissoc-keyword
      :ordered-set-conj
      :ordered-set-contains-keyword
      :ordered-set-contains-symbol
@@ -108,6 +109,10 @@
      :ordered-map-get :collections
      "(OrderedMap k v) k -> (Option v)" #{} #{}
      :none [] #{:meta})
+    (sh22-export
+     :ordered-map-dissoc-keyword :collections
+     "(OrderedMap Keyword a) Keyword -> (Result (OrderedMap Keyword a) CollectionError)"
+     #{:memory/allocate} #{} :bounded-by-result ["STD3001" "STD10003"] #{:meta})
     (sh22-export
      :ordered-set-conj :collections
      "(OrderedSet a) a -> (Result (OrderedSet a) Error)"
@@ -690,6 +695,55 @@
               (sh22-rejected request "STD10003" :expected-ordered-map))
             (sh22-rejected
              request "STD3001" :collection-bound-exceeded)))
+        (sh22-rejected request "STD10003" :expected-ordered-map))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
+(defn sh22-keyword-map-entries? [entries]
+  ; The owning caller has established a Vector of at most 256 entries.
+  (loop [index 0]
+    (if (= index (count entries))
+      true
+      (let [entry (get entries index)]
+        (if (sh22-pair? entry)
+          (if (keyword? (get entry 0))
+            (recur (+ index 1))
+            false)
+          false)))))
+
+(defn sh22-remove-map-entry [entries removed-index]
+  (loop [index 0 result []]
+    (if (= index (count entries))
+      result
+      (recur (+ index 1)
+             (if (= index removed-index)
+               result
+               (conj result (get entries index)))))))
+
+(defn sh22-ordered-map-dissoc-keyword [request]
+  (let [arguments (get request :arguments)
+        ordered-map (get arguments 0)
+        key (get arguments 1)]
+    (if (= 2 (count arguments))
+      (if (sh22-ordered-map-shape? ordered-map)
+        (let [entries (get ordered-map :entries)
+              maximum (get (sh22-library-policy) :maximum-collection-elements)]
+          (if (<= (count entries) maximum)
+            (if (sh22-keyword-map-entries? entries)
+              (if (keyword? key)
+                (if (sh22-entries-well-formed? entries)
+                  (let [index (sh22-entry-index entries key 0)]
+                    (sh22-accepted
+                     request
+                     (if (= nil index)
+                       ordered-map
+                       (assoc ordered-map :entries (sh22-remove-map-entry entries index)))
+                     {:collection-kind :ordered-map :key-family :keyword
+                      :ordering :insertion-order :persistent-value-semantics true
+                      :allocation (if (= nil index) :none :bounded-by-result)}))
+                  (sh22-rejected request "STD10003" :expected-ordered-map))
+                (sh22-rejected request "STD10003" :expected-keyword))
+              (sh22-rejected request "STD10003" :expected-keyword-ordered-map))
+            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
         (sh22-rejected request "STD10003" :expected-ordered-map))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -1419,7 +1473,9 @@
 
 (defn sh22-handle-valid-request [request]
   (let [operation (get request :operation)]
-    (if (= operation :checked-nonnegative-quot-i64)
+    (if (= operation :ordered-map-dissoc-keyword)
+      (sh22-ordered-map-dissoc-keyword request)
+      (if (= operation :checked-nonnegative-quot-i64)
       (sh22-checked-nonnegative-quot request)
       (if (= operation :ordered-set-contains-integer)
       (sh22-ordered-set-contains-integer request)
@@ -1459,7 +1515,7 @@
                           (sh22-artifact-data request)
                           (if (= operation :meta-view)
                             (sh22-meta-view request)
-                            (sh22-canonical-data request)))))))))))))))))))
+                            (sh22-canonical-data request))))))))))))))))))))
 
 (defn sh22-operation-effects [operation]
   (if
@@ -1467,6 +1523,7 @@
     #{:vector-assoc
       :vector-append
       :ordered-map-assoc
+      :ordered-map-dissoc-keyword
       :ordered-set-conj
       :utf8-validate
       :error-context
@@ -1482,7 +1539,9 @@
       #{}))))
 
 (defn sh22-operation-allocation [operation]
-  (if (= operation :checked-nonnegative-quot-i64)
+  (if (= operation :ordered-map-dissoc-keyword)
+    :bounded-by-result
+    (if (= operation :checked-nonnegative-quot-i64)
     :none
     (if (= operation :ordered-set-contains-integer)
     :none
@@ -1510,7 +1569,7 @@
                        #{:io-file-read :io-stdout}
                        operation)
                     :provider-owned
-                    :bounded-by-result))))))))))))))
+                    :bounded-by-result)))))))))))))))
 
 (defn sh22-operation-capabilities [operation]
   (if (= operation :io-file-read)

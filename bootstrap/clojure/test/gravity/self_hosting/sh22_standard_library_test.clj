@@ -100,6 +100,7 @@
     sh22-vector-nth-request
     sh22-map-assoc-request
     sh22-map-get-request
+    sh22-map-dissoc-keyword-request
     sh22-set-conj-request
     sh22-set-contains-keyword-request
     sh22-set-contains-symbol-request
@@ -159,6 +160,8 @@
    ['sh22-vector-assoc-request "STD1001" :allocation-policy-mismatch]
    'sh22-duplicate-map-key-request
    ['sh22-map-assoc-request "STD10003" :expected-ordered-map]
+   'sh22-duplicate-map-removal-key-request
+   ['sh22-map-dissoc-keyword-request "STD10003" :expected-ordered-map]
    'sh22-duplicate-set-value-request
    ['sh22-set-conj-request "STD10003" :expected-ordered-set]
    'sh22-duplicate-keyword-after-hit-request
@@ -205,7 +208,7 @@
     (is (= 512 (:maximum-carrier-width policy)))
     (is (= 65536 (:maximum-carrier-nodes policy)))
     (is (true? (:experimental-opt-in-required policy)))
-    (is (= 21 (count (:operation-set policy))))
+    (is (= 22 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
     (is (contains? (:diagnostics policy) "STD8001"))
     (is (some #{:authenticated-sh19-runtime-services}
@@ -216,7 +219,7 @@
     (is (= 'gravity.stdlib.self-hosting-core (:module manifest)))
     (is (= :experimental (:stability manifest)))
     (is (empty? (:unsafe-islands manifest)))
-    (is (= 21 (count exports)))
+    (is (= 22 (count exports)))
     (is (every? #(= :experimental (:stability %)) exports))
     (is (every? #(= #{:meta} (:profiles %)) exports))
     (is (every? string? (map :type exports)))
@@ -350,6 +353,125 @@
                    [query (assoc-in result [:identity-input :arguments 1] :missing)]
                    [missing (assoc absent :value {:artifact :gravity/option :variant :some :value nil})]]]
             (is (= :rejected (:status (invoke-engine 'sh22-verify-result [input candidate]))))))))))
+
+(deftest sh22-keyword-map-removal-consumes-real-association-results
+  ;; W5 removal calls motivate this operation; semantic Keyword DATA here is
+  ;; neither metadata redaction nor linkage to its native Map representation.
+  (let [ordered (fn [entries] {:artifact :gravity/ordered-map :entries entries})
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        callbacks (atom 0) opaque (fn [] (swap! callbacks inc))
+        observe (fn [input]
+                  (let [counts (atom {:census 0 :unique 0 :equality 0 :lookup 0 :remove 0})
+                        result (with-redefs-fn
+                                 {scoped (fn [& arguments]
+                                           (when-let [kind (get {'sh22-keyword-map-entries? :census
+                                                                 'sh22-entries-well-formed? :unique
+                                                                 'sh22-vector-contains? :equality
+                                                                 'sh22-entry-index :lookup
+                                                                 'sh22-remove-map-entry :remove} (nth arguments 2))]
+                                             (swap! counts update kind inc))
+                                           (apply original arguments))}
+                                 #(handle input))]
+                    [result @counts]))]
+    (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+      (let [base (request plan 'sh22-map-dissoc-keyword-request)
+            get-base (request plan 'sh22-map-get-request)
+            entries [[:value false] [:phase :checked] [:retained nil]]
+            full (mapv #(vector (keyword "slot" (str "k" %))
+                                (if (= % 0) false (if (= % 255) nil %))) (range 256))
+            export (first (filter #(= :ordered-map-dissoc-keyword (:name %))
+                                  (:exports (invoke-engine 'sh22-module-manifest []))))]
+        (is (= #{:meta} (:profiles export)))
+        (is (= :experimental (:stability export)))
+        (is (= #{:memory/allocate} (:effects export)))
+        (is (= #{} (:capabilities export)))
+        (is (= :bounded-by-result (:allocation export)))
+        (is (= "(OrderedMap Keyword a) Keyword -> (Result (OrderedMap Keyword a) CollectionError)" (:type export)))
+        (doseq [[before key expected]
+                (concat [[[] :value []] [[[:value false]] :value []] [[[:value nil]] :value []]
+                         [entries :value (subvec entries 1)]
+                         [entries :phase [[:value false] [:retained nil]]]
+                         [entries :retained (subvec entries 0 2)]
+                         [entries :missing entries]
+                         [[[:left/name false] [:right/name nil]] (keyword "left" "name") [[:right/name nil]]]]
+                        (map (fn [index]
+                               [full (first (get full index))
+                                (into (subvec full 0 index) (subvec full (inc index)))]) [0 128 255])
+                        [[full :missing full]])]
+          (let [input (assoc base :arguments [(ordered before) key]) result (handle input)
+                query (assoc get-base :arguments [(:value result) key]) queried (handle query)
+                old-query (assoc get-base :arguments [(ordered before) key]) old-result (handle old-query)
+                found (first (filter #(= key (first %)) before))]
+            (is (= :accepted (:status result)))
+            (is (= (ordered expected) (:value result)))
+            (is (= (ordered before) (first (:arguments input))))
+            (is (= {:collection-kind :ordered-map :key-family :keyword
+                    :ordering :insertion-order :persistent-value-semantics true
+                    :allocation (if found :bounded-by-result :none)} (:facts result)))
+            (is (= (:arguments input) (get-in result [:identity-input :arguments])))
+            (is (= {:artifact :gravity/option :variant :none} (:value queried)))
+            (is (= (if found {:artifact :gravity/option :variant :some :value (second found)}
+                       {:artifact :gravity/option :variant :none}) (:value old-result)))
+            (doseq [[request candidate] [[input result] [query queried] [old-query old-result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [request candidate])))))))
+        (doseq [value [false nil]]
+          (let [before [[:phase :checked] [:retained (if (false? value) nil false)]]
+                producer (assoc (request plan 'sh22-map-assoc-request) :arguments [(ordered before) :value value])
+                produced (handle producer) input (assoc base :arguments [(:value produced) :value])
+                result (handle input) query (assoc get-base :arguments [(:value result) :value]) queried (handle query)
+                old-query (assoc get-base :arguments [(:value produced) :value]) old-result (handle old-query)]
+            (is (= :accepted (:status produced) (:status result) (:status queried) (:status old-result)))
+            (is (= (ordered before) (:value result)))
+            (is (= {:artifact :gravity/option :variant :none} (:value queried)))
+            (is (= {:artifact :gravity/option :variant :some :value value} (:value old-result)))
+            (is (= (ordered before) (first (:arguments producer))))
+            (doseq [[request candidate] [[producer produced] [input result] [query queried] [old-query old-result]]]
+              (is (= :passed (:status (invoke-engine 'sh22-verify-result [request candidate])))))))
+        (let [[result counts] (observe base)]
+          (is (= (handle base) result))
+          (is (= 1 (:census counts) (:unique counts) (:lookup counts) (:remove counts)))
+          (is (pos? (:equality counts))))
+        (doseq [[arguments rule reason before-equality?]
+                (concat
+                 [[[(ordered (conj full [:slot/new 0])) :slot/k0] "STD3001" :collection-bound-exceeded true]
+                  [[{:value false} :value] "STD10003" :expected-ordered-map true]
+                  [[(assoc (ordered entries) :extra true) :value] "STD10003" :expected-ordered-map true]
+                  [[{:artifact :gravity/ordered-map :entries '([:value false])} :value] "STD10003" :expected-ordered-map true]
+                  [[(ordered [[:value false] [:bad]]) :value] "STD10003" :expected-keyword-ordered-map true]
+                  [[(ordered [[:value false] [:phase :checked] [:value nil]]) :value] "STD10003" :expected-ordered-map false]]
+                 (mapcat (fn [other]
+                           [[[(ordered [[:value false] [other nil]]) :value] "STD10003" :expected-keyword-ordered-map true]
+                            [[(ordered []) other] "STD10003" :expected-keyword true]])
+                         ["value" 'value 0 nil false [] opaque]))]
+          (let [input (assoc base :arguments arguments) [result counts] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= 0 (:lookup counts) (:remove counts)))
+            (is (= before-equality? (zero? (:equality counts))))
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+        (is (zero? @callbacks))
+        (doseq [[input rule reason]
+                (concat (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
+                             [[] [(ordered [])] [(ordered []) :value :extra]])
+                        [[(assoc base :effects #{}) "STD1002" :undeclared-library-effect]
+                         [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+                         [(assoc base :allocation-policy :none) "STD1001" :allocation-policy-mismatch]
+                         [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]])]
+          (let [[result counts] (observe input)]
+            (is (= :rejected (:status result)))
+            (is (= rule (get-in result [:diagnostics 0 :rule])))
+            (is (= reason (get-in result [:diagnostics 0 :reason])))
+            (is (= 0 (:lookup counts) (:remove counts)))))
+        (let [[result counts] (observe (assoc base :operation nil))]
+          (is (= :rejected (:status result)))
+          (is (zero? (:remove counts))))
+        (let [result (handle base)]
+          (doseq [candidate [(assoc-in result [:value :entries 0 1] nil)
+                             (assoc-in result [:facts :allocation] :none)
+                             (assoc-in result [:identity-input :arguments 1] :phase)]]
+            (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base candidate]))))))))))
 
 (deftest sh22-validates-utf8-and-performs-checked-i64-arithmetic
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]

@@ -21,6 +21,7 @@
              sh22-missing-experimental-opt-in-request
              sh22-allocation-policy-mismatch-request
              sh22-duplicate-map-key-request
+             sh22-duplicate-map-removal-key-request
              sh22-duplicate-set-value-request
              sh22-duplicate-keyword-after-hit-request
              sh22-duplicate-symbol-after-hit-request
@@ -150,6 +151,11 @@
   (assoc request :arguments
          [{:artifact :gravity/ordered-set :values [:reader :syntax]}
           {:artifact :gravity/ordered-set :values [:reader :syntax :reader]}]))
+
+(defn sh22-duplicate-map-removal-key-request [request]
+  (assoc request :arguments
+         [{:artifact :gravity/ordered-map :entries [[:value false] [:phase :checked] [:value nil]]}
+          :value]))
 
 (defn sh22-duplicate-symbol-after-hit-request [request]
   (assoc request :arguments
