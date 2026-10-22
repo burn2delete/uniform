@@ -316,6 +316,57 @@
         (is (= [rule reason] ((juxt :rule :reason) (first (:diagnostics result)))))
         (is (= :passed (:status (verify r result))))))))
 
+(deftest sh10-executes-the-declared-event-bound-without-host-recursion
+  ;; Exercise the original normalized kernel, not public C8/source admission.
+  (let [base (request accepted-gravity-plan 'sh10-exclusive-mutable-request)
+        read (last (:events base))
+        reads (mapv #(assoc read :event-id %) (range 1024))
+        verify (fn [r result] (invoke-c9 'sh10-verify-ownership-result [r result]))
+        observe (fn [r]
+                  (try (check r)
+                       (catch StackOverflowError error
+                         {:host-error (.getName (class error))})))
+        maximum (observe (assoc base :events reads))]
+    (is (= :accepted (:status maximum)) (pr-str (select-keys maximum [:status :host-error])))
+    ;; Keep latent checks explicit when the original builder cannot finish.
+    (when (= :accepted (:status maximum))
+      (doseq [kind [:owned-mutable :persistent-immutable]]
+        (let [r (assoc base :ownership-kind kind :events reads)
+              result (if (= kind :owned-mutable) maximum (check r))
+              facts (:ownership-facts result)]
+          (is (= :accepted (:status result)))
+          (is (= 1024 (count facts)))
+          (is (= (mapv :event-id reads) (mapv :event-id facts)))
+          (is (every? #(= :read (:operation %)) facts))
+          (is (= (:state-before (first facts)) (:state result) (:state-after (last facts))))
+          (is (= r (get-in result [:identity-input :request])))
+          (is (= :passed (:status (verify r result))))
+          (is (= :rejected (:status (verify r (update result :ownership-facts pop)))))))
+      (doseq [r [(assoc base :events (conj reads (assoc read :event-id 1024)))
+                 (assoc base :events (assoc-in reads [1023 :event-id] 0))
+                 (assoc base :ownership-kind :persistent-immutable
+                             :events (assoc-in reads [1023 :op] :write))]]
+        (let [result (check r)]
+          (is (= :rejected (:status result)))
+          (is (= ["C9-UNSAFE" :malformed-normalized-ownership-request]
+                 ((juxt :rule :reason) (first (:diagnostics result)))))
+          (is (empty? (:ownership-facts result)))
+          (is (= :passed (:status (verify r result))))))
+      (let [failure (assoc read :event-id 1023 :op :end-borrow :borrow-id nil
+                               :source-span {:source "last-event.gravity" :start-byte 8 :end-byte 9}
+                               :origin-chain [{:from :last-event}])
+            r (assoc base :events (assoc reads 1023 failure))
+            result (check r) diagnostic (first (:diagnostics result))]
+        (is (= :rejected (:status result)))
+        (is (= 1023 (count (:ownership-facts result))))
+        (is (= ["C9-UNSAFE" :end-of-inactive-borrow 1023]
+               ((juxt :rule :reason :event-id) diagnostic)))
+        (is (= [(:source-span failure) (:origin-chain failure)]
+               [(:source-span diagnostic) (:generated-origin-chain diagnostic)]))
+        (is (= (:state maximum) (:state result)))
+        (is (= :passed (:status (verify r result))))
+        (is (= :rejected (:status (verify r (assoc-in result [:diagnostics 0 :event-id] 0)))))))))
+
 (deftest sh10-rejects-invalid-state-transitions-structurally
   (doseq [[function [rule reason operation]] rejected-cases]
     (testing (str function)

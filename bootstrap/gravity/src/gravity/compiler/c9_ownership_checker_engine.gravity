@@ -439,13 +439,13 @@
     true))
 
 (defn sh10-events-allowed-for-ownership-kind? [ownership-kind remaining]
-  (if (= (count remaining) 0)
-    true
-    (if (sh10-event-allowed-for-ownership-kind?
-         ownership-kind (first remaining))
-      (sh10-events-allowed-for-ownership-kind?
-       ownership-kind (rest remaining))
-      false)))
+  (loop [remaining remaining]
+    (if (= (count remaining) 0)
+      true
+      (if (sh10-event-allowed-for-ownership-kind?
+           ownership-kind (first remaining))
+        (recur (rest remaining))
+        false))))
 
 (defn sh10-lowercase-hex? [characters]
   (if (= (count characters) 0)
@@ -467,16 +467,15 @@
     false))
 
 (defn sh10-unique-event-ids? [remaining seen]
-  (if (= (count remaining) 0)
-    true
-    (let [event-id (get (first remaining) :event-id)]
-      (if (= nil event-id)
-        false
-        (if (= true (get seen event-id))
+  (loop [remaining remaining seen seen]
+    (if (= (count remaining) 0)
+      true
+      (let [event-id (get (first remaining) :event-id)]
+        (if (= nil event-id)
           false
-          (sh10-unique-event-ids?
-           (rest remaining)
-           (assoc seen event-id true)))))))
+          (if (= true (get seen event-id))
+            false
+            (recur (rest remaining) (assoc seen event-id true))))))))
 
 (defn sh10-active-borrow? [state]
   (if (> (get state :immutable-borrow-count) 0)
@@ -883,23 +882,22 @@
           (recur (rest remaining)))))))
 
 (defn sh10-run-events [request remaining state facts]
-  (if (= (count remaining) 0)
-    {:status :accepted
-     :state state
-     :ownership-facts facts
-     :diagnostics []}
-    (let [event (first remaining)
-          transition (sh10-transition request event state)]
-      (if (= :accepted (get transition :status))
-        (sh10-run-events
-         request
-         (rest remaining)
-         (get transition :state)
-         (conj facts (get transition :fact)))
-        {:status :rejected
-         :state (get transition :state)
-         :ownership-facts facts
-         :diagnostics [(get transition :diagnostic)]}))))
+  (loop [remaining remaining state state facts facts]
+    (if (= (count remaining) 0)
+      {:status :accepted
+       :state state
+       :ownership-facts facts
+       :diagnostics []}
+      (let [event (first remaining)
+            transition (sh10-transition request event state)]
+        (if (= :accepted (get transition :status))
+          (recur (rest remaining)
+                 (get transition :state)
+                 (conj facts (get transition :fact)))
+          {:status :rejected
+           :state (get transition :state)
+           :ownership-facts facts
+           :diagnostics [(get transition :diagnostic)]})))))
 
 (defn sh10-check-ownership-request [request]
   (if (sh10-valid-request-shape? request)
