@@ -54,6 +54,17 @@
        (catch clojure.lang.ExceptionInfo error
          {:consumer-exception (select-keys (ex-data error) [:id :function])})))
 
+(deftest sh13-consumes-two-independently-resolved-bool-parameters
+  ;; Actual independently resolved C6 parameters, not aliased caller values.
+  ;; Development source composition only, not public frozen-source admission.
+  (let [path (str (.resolve @(existing 'root)
+                    "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity"))
+        {:keys [raw upstream core mir]} (current-parameter-pair path)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream)))
+    (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))
+        (pr-str (:diagnostics mir)))))
+
 (deftest sh13-executes-original-c6-bool-parameter-through-explicit-arguments
   (let [root @(existing 'root)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"
