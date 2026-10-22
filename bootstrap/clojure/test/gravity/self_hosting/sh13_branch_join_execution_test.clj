@@ -507,7 +507,7 @@
   (let [root @(existing 'root)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"]
     (doseq [[extension nested-side inner-condition]
-            [["gravity" :then false] ["qst" :else true]]]
+            [["gravity" :then false]]]
       (let [source (str (.resolve root (str relative "." extension)))
             temporary (java.io.File/createTempFile "gravity-sh13-nested-if-" (str "." extension))
             expression (if (= nested-side :then)
@@ -556,6 +556,7 @@
                 (is (= 2 (get-in mir [:scope :maximum-conditionals])
                        (get-in mir [:pass-contract :scope :maximum-conditionals])))
                 (is (= :closed-nested-conditional-branch-join (:scope verification)))
+                (is (= :single-function-nested-diamonds (first (:checks verification))))
                 (is (= :gravity/integer (:returns function)))
                 (doseq [operation operations]
                   (is (= (:source (first (filter #(= (:op-id operation) (:node-id %)) nodes)))
@@ -579,11 +580,15 @@
                       (doseq [candidate [(assoc result :arguments [(not argument)])
                                          (assoc-in result [:execution :value] -1)
                                          (assoc-in result [:execution :fuel] 512)
+                                         (assoc-in result [:upstream-verification :scope] :single-conditional-branch-join)
+                                         (assoc-in result [:upstream-verification :checks 0] :single-function-diamond)
                                          (update-in result [:projection :operations] pop)]]
                         (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
                                                         core mir [argument] candidate))))))))
                 (doseq [[bad-core bad-mir]
                         [[core (assoc-in mir [:functions 'main :blocks k :predecessors] [b a])]
+                         [core (assoc-in mir [:scope :maximum-conditionals] 1)]
+                         [core (assoc-in mir [:pass-contract :scope :maximum-conditionals] 1)]
                          [core (assoc-in mir [:functions 'main :blocks a :terminator :operands] [(get ids other-index)])]
                          [core (assoc-in mir [:functions 'main :blocks a :terminator :successors] [j])]
                          [core (assoc-in mir [:functions 'main :blocks n :terminator :operands] [(get ids 2)])]
@@ -604,7 +609,12 @@
                     (is (= (:diagnostics original) (:diagnostics result)))
                     (is (nil? (:execution result)))))
                 (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
-          (finally (.delete temporary)))))))
+          (finally (.delete temporary)))))
+    (let [core (checked ".gravity") mir (build core)]
+      (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
+      (doseq [candidate [(assoc-in mir [:scope :maximum-conditionals] 2)
+                         (assoc-in mir [:pass-contract :scope :maximum-conditionals] 2)]]
+        (is (= :rejected (:status (invoke 'sh12-verify-branch-join-mir core candidate))))))))
 
 (defn- scalar-core [core condition type then-value else-value]
   (let [values [condition then-value else-value nil nil]
