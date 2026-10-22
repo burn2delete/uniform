@@ -19,6 +19,12 @@
       source-path source-text project-context nil
       sh03-reader-internal-product-authority)))
   ([source-path source-text project-context precomputed-products candidate]
+   (compiler-c2-reader-source-artifact source-path source-text project-context
+                                       precomputed-products candidate nil))
+  ([source-path source-text project-context precomputed-products candidate reader-source-path]
+   (when (and (some? reader-source-path) (or (some? precomputed-products) (some? candidate)))
+     (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                      {:missing-fields [:direct-current-sh03-reader-construction]}))
    (try
     (let [reader-options standard-reader-options
           products
@@ -27,7 +33,7 @@
              candidate source-path source-text project-context
              precomputed-products)
             (c2-reader-products source-path source-text
-                                reader-options project-context))
+                                reader-options project-context reader-source-path))
           source-unit (:source-unit products)
           token-stream (:token-stream products)
           form-tree (:form-tree products)

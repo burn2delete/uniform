@@ -143,7 +143,8 @@
      emitter source-path source-text authoritative-module function-table)))
 
 (defn- p15-s23-c6c10-private-ingress-products
-  [source-path source-text]
+  ([source-path source-text] (p15-s23-c6c10-private-ingress-products source-path source-text nil))
+  ([source-path source-text reader-source-path]
   (when-not (and (string? source-path)
                  (qst-or-gravity-source? source-path)
                  (string? source-text))
@@ -166,7 +167,7 @@
           (p15-s23-stage2-c2-c3-front-end-products
            source-path source-text
            (reader-project-context-for-source source-path)
-           true)
+           true reader-source-path)
           source-content-hash
           (get-in raw-front-end [:source-unit-record :bytes-hash])
           literal-authentication
@@ -177,7 +178,8 @@
           raw-module (parse-module source-path (:forms raw-front-end))
           parameter? (contains? #{1 2 3} (get-in (stage0-function-table raw-module) ['main :arity]))
           resolved-parameter (when parameter?
-                               (p15-s23-c6c10-resolved-parameter source-path source-text front-end))
+                               (p15-s23-c6c10-resolved-parameter source-path source-text front-end
+                                 (when (some? reader-source-path) (:authenticated-c3-source-artifact raw-front-end))))
           emitter-rule
           (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
           raw-plan
@@ -207,7 +209,7 @@
        :plan-emitter-rule
        {:source-rule-hash (:source-rule-hash emitter-rule)
         :rule-record (:rule-record emitter-rule)}}
-        parameter? (assoc :resolved-parameter resolved-parameter)))))
+        parameter? (assoc :resolved-parameter resolved-parameter))))))
 
 (defn p15-s23-c6c10-resolve-source-path
   []
