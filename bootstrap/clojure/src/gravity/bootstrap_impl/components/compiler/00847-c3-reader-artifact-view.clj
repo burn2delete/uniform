@@ -1,6 +1,9 @@
 (defn- c3-current-reader-revision-authentic? [c2-artifact boundary]
   (if (nil? boundary) true
-    (let [retained (get-in c2-artifact [:sh03-reader-authentication :reader-source-revision])
+    (let [retained (or (get-in c2-artifact [:sh03-reader-authentication :reader-source-revision])
+                      (when (= :gravity/sh03-current-source-reader-plan-binding
+                               (get-in c2-artifact [:gravity-reader-boundary :plan-binding :artifact]))
+                        (get-in c2-artifact [:gravity-reader-boundary :authenticated-envelope-descriptor :source-revision])))
           provenance (:reader-authentication-provenance boundary)
           descriptor (:actual-sh03-envelope-descriptor provenance)
           actual (:source-revision descriptor)]

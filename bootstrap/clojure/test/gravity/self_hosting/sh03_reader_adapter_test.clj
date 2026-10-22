@@ -412,6 +412,26 @@
           (is (false? (authentic? candidate candidate-boundary)))))
       (finally (.delete temporary)))))
 
+(deftest sh03-current-reader-plan-checks-keep-historical-priority
+  ;; Supplied-plan validation units, not historical reader admission. The
+  ;; current plan is derived by the original source-selected constructor.
+  (let [source-path (fixture-path "accepted" "newline-lf" ".gravity")
+        reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        binding (bootstrap/sh03-reader-current-binding! source-path reader-path)
+        plan (:plan binding)
+        structure (ns-resolve 'gravity.bootstrap 'sh03-reader-plan-structure!)
+        removable (first (remove #{bootstrap/sh03-reader-entrypoint bootstrap/sh03-reader-verifier}
+                                  (keys (:functions plan))))
+        wrong-count (-> plan (update :functions dissoc removable)
+                            (assoc-in [:functions bootstrap/sh03-reader-entrypoint :instructions]
+                                      [{:op :unreviewed-current-test}]))]
+    (is (= :gravity/sh03-current-source-reader-plan-binding (:artifact binding)))
+    (is (= (count (:functions plan)) (:function-count (structure source-path plan nil))))
+    (is (= [:exact-sh03-reader-plan-envelope]
+           (:missing-fields (thrown-data #(bootstrap/sh03-reader-plan-validate! source-path wrong-count)))))
+    (is (= [:pinned-recomputable-sh03-reader-plan-identities]
+           (:missing-fields (thrown-data #(bootstrap/sh03-reader-plan-validate! source-path plan)))))))
+
 (deftest sh03-current-reader-selection-is-source-input-not-product-authority
   (let [source-path (fixture-path "accepted" "newline-lf" ".gravity")
         text (slurp source-path) context (bootstrap/reader-project-context-for-source source-path)
@@ -424,7 +444,7 @@
     (.equals opaque (Object.))
     (is (= {:hash 1 :equal 1} @callbacks))
     (reset! callbacks {:hash 0 :equal 0})
-    (doseq [selected [opaque nil false 17 [] {} source-path]]
+    (doseq [selected [opaque nil false 17 [] {} source-path (str reader-path \u0000)]]
       (is (= "C2-HASH" (:id (thrown-data #(bootstrap/sh03-reader-current-binding!
                                           source-path selected))))))
     (is (= {:hash 0 :equal 0} @callbacks))
