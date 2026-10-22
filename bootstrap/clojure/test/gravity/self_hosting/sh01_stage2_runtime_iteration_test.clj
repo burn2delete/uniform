@@ -30050,6 +30050,104 @@
         (is (= '[main] (mapv second definitions)))
         (is (= expected (last (first definitions))))))))
 
+(defn- let-vector-slice-first-membership-kernel-context [input]
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        {:keys [core nodes bindings types forms module child slice query membership] :as input}
+        ((ns-resolve upstream 'let-vector-slice-first-membership-established) input)
+        descriptors (if child [(:descriptor child) (:descriptor slice) (:descriptor query) (:descriptor membership)] [(:descriptor slice) (:descriptor query) (:descriptor membership)])
+        fact-names (if child ['sh08-scv-call-fact 'sh08-vsl-call-fact 'sh08-lq-call-fact 'sh08-ksm-call-fact] ['sh08-vsl-call-fact 'sh08-lq-call-fact 'sh08-ksm-call-fact])
+        row-names (if child ['sh08-scv-constraint 'sh08-vsl-constraint 'sh08-lq-constraint 'sh08-ksm-constraint] ['sh08-vsl-constraint 'sh08-lq-constraint 'sh08-ksm-constraint])
+        facts (mapv (fn [name descriptor] (c7 name [descriptor module])) fact-names descriptors)
+        rows (mapv (fn [name descriptor] (c7 name [descriptor])) row-names descriptors)
+        locals (c7 'sh08-ft-local-facts [(:lexical-bindings core) types {:slice-let-binding (types :call)} nodes module])]
+    {:input input :descriptors descriptors
+     :context {:core core :nodes nodes :bindings bindings :types types :forms forms
+               :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+               :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+               :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+               :call-facts (into {} (map (juxt :call-core-node-id identity) facts)) :ledger rows
+               :lexical (:lexical-bindings core) :local-facts (into {} (map (juxt :binding-id identity) locals))
+               :locals {} :parameter-types {} :tail? true}}))
+
+(deftest current-gravity-let-vector-slice-first-membership-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'let-vector-slice-first-membership-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)) rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal #(hash-map :op :literal :value %)
+        say (fn [label value] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} value]})
+        instrument (fn [ir] (-> ir (update-in [:bindings 0 :expr] #(say "initializer" %))
+                                  (update-in [:body 0 :body 0 :args 0] #(say "set" %))
+                                  (update-in [:body 0 :body 0 :args 1] #(say "candidate" %))
+                                  (update :body #(mapv (fn [body] (say "body" body)) %))))
+        hex (vec "0123456789abcdef")]
+    (doseq [[value members position answer] [["a" hex nil true] ["g" hex nil false] ["a" [] nil false] ["0" (vec "00") nil true]
+                                             ["a" hex 0 nil] ["a" hex 1 nil] ["a" hex 2 nil]
+                                             ["a" [] 0 nil] ["a" [] 1 nil] ["a" [] 2 nil] [[65 66] [] 1 nil]]]
+      (let [{:keys [context descriptors]}
+            (let-vector-slice-first-membership-kernel-context (input value members (if (nil? position) 0 20) 1 position))
+            compile #(lower 'p15-s23-typed-compile-node %1 :slice-let %2)
+            compiled (compile context 65536) ir (:value compiled)]
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= :let (:op ir)))
+        (is (= 'contains? (get-in ir [:body 0 :body 0 :function])))
+        (is (= :set-literal (get-in ir [:body 0 :body 0 :args 0 :op])))
+        (is (= 'first (get-in ir [:body 0 :body 0 :args 1 :function])))
+        (is (= 'subvec (get-in ir [:body 0 :body 0 :args 1 :args 0 :function])))
+        (is (= {:op :local :name 'characters} (get-in ir [:body 0 :body 0 :args 1 :args 0 :args 0])))
+        (when (= :complete (:status compiled))
+          (is (= compiled (compile context (:work-count compiled))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count compiled))) [:facts :reason])))
+          (is (= (if (nil? position) [answer "" :normal]
+                   [(if (string? value) (if (= position 0) "original vec transfer" "original slice transfer")
+                      (str "original literal slice transfer " position)) "" :thrown]) (evaluate ir)))
+          ;; Raw IR tracing checks L2 order; it grants no effectful Set-source support.
+          (let [traced (evaluate (instrument ir))]
+            (is (= (if (= position 0) "initializer\n" "initializer\nbody\nset\ncandidate\n") (second traced)))
+            (is (= (if (nil? position) :normal :thrown) (last traced))))
+          (when-not (= position 0)
+            (let [payload (Object.) left-ir (assoc-in ir [:body 0 :body 0 :args 0] {:op :throw :value (literal payload)})
+                  result (evaluate (instrument left-ir))]
+              (is (identical? payload (first result)))
+              (is (= ["initializer\nbody\nset\n" :thrown] (subvec result 1)))))
+          (when (nil? position)
+            (let [result (evaluate (assoc-in ir [:body 0 :body 0 :args 1 :args 0 :args 1] (literal 1)))]
+              (is (= :rejected (last result)))
+              (is (= :vector-first-nonempty-premise-required (get-in result [0 :reason])))))
+          (let [original-into clojure.core/into conversions (atom 0)
+                observed (fn ([to from] (when (string? from) (swap! conversions inc)) (original-into to from))
+                             ([to xf from] (when (string? from) (swap! conversions inc)) (original-into to xf from)))]
+            (with-redefs [clojure.core/into observed] (evaluate ir))
+            (is (= (if (and (string? value) (not= position 0)) 1 0) @conversions)))
+          (is (= 1 (count (filter #(= {:op :local :name 'characters} %) (tree-seq coll? seq ir))))))
+        (doseq [id (keys (:call-facts context))]
+          (is (= :rejected (:status (compile (update context :call-facts dissoc id) 65536)))))
+        (doseq [index (range (count (:ledger context)))]
+          (is (= :rejected (:status (compile (update context :ledger #(vec (concat (subvec % 0 index) (subvec % (inc index))))) 65536))))
+          (is (= :rejected (:status (compile (update context :ledger conj (get (:ledger context) index)) 65536)))))
+        (when-not (= position 0)
+          (doseq [mutate [#(assoc-in % [:nodes :let-member-call :evaluation :order] [])
+                          #(assoc-in % [:nodes :slice-let :evaluation :order 1 :core-node-id] :let-first-call)
+                          #(assoc-in % [:forms :let-first-call :parent-form-id] :slice-let)
+                          #(assoc-in % [:forms :let-member-set :parent-form-id] :slice-let)
+                          #(assoc-in % [:bindings :let-member-binding :name] 'get)]]
+            (is (= :rejected (:status (compile (mutate context) 65536)))))
+          (let [index (- (count descriptors) 3) descriptor (get descriptors index)]
+            (doseq [path [[:bounds-proof :receiver :body-consumer :node :evaluation :order]
+                          [:bounds-proof :receiver :body-consumer :membership-container :node :evaluation :order]
+                          [:bounds-proof :receiver :body-consumer :membership-container :set-node :attributes :source-value]
+                          [:bounds-proof :receiver :body-consumer :membership-container :source-forms]]]
+              (let [changed (assoc-in descriptor path :forged)
+                    candidate (-> context (assoc-in [:types :slice-operator] changed)
+                                  (assoc-in [:call-facts :slice-call] (c7 'sh08-vsl-call-fact [changed (get-in context [:core :module])]))
+                                  (assoc-in [:ledger index] (c7 'sh08-vsl-constraint [changed])))]
+                (is (= :rejected (:status (compile candidate 65536))))))))))))
+
+
 (defn- let-vector-slice-first-kernel-context [input]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core nodes bindings types forms module child slice query] :as input}
