@@ -50,25 +50,23 @@
                         {:artifact :gravity/core-node :node-id (str "chain-" index)
                          :form 'do :children {:body [child]}})
                       branch (range 17))
-        original lowering/c6-flatten-core]
+        original-invoke context/invoke-op]
     ;; Fixed tiny shapes, including repeated object occurrences: no deduplication.
     (doseq [root [nil a branch chain]
             flatten [lowering/c6-flatten-core c6/c6-flatten-core]]
       (let [expected (recursive-flatten-oracle root)
             calls (atom [])
-            actual (with-redefs [lowering/c6-flatten-core
-                                (fn [node]
-                                  (swap! calls conj node)
-                                  (original node))]
-                     ;; Resolve the leaf Var after interposition, not saved above.
-                     (if (identical? flatten original)
-                       (lowering/c6-flatten-core root)
-                       (flatten root)))]
+            actual (with-redefs [context/invoke-op
+                                (fn [key fallback & args]
+                                  (when (= :c6-flatten-core key)
+                                    (swap! calls conj (first args)))
+                                  (apply original-invoke key fallback args))]
+                     (flatten root))]
         (is (vector? actual))
         (is (= expected actual))
         (is (every? true? (map identical? expected actual)))
-        (is (= 1 (count @calls)))
-        (is (identical? root (first @calls)))))
+        (is (empty? @calls))
+        (is (identical? root (first actual)))))
     (let [stream [(syntax "ns" '(ns gravity.c6-test))
                   (assoc (syntax "generated" '(let [x (if true 1 2)] (do x 3)))
                          :generated-origin [{:macro 'example :syntax-id "macro-0"}])
@@ -76,10 +74,11 @@
           build #(c6/c6-lowering-artifact "c6-test.gravity" module c5-artifact stream)
           expected (c6/with-operations {:c6-flatten-core recursive-flatten-oracle} build)
           calls (atom [])
-          actual (with-redefs [lowering/c6-flatten-core
-                              (fn [node]
-                                (swap! calls conj (:node-id node))
-                                (original node))]
+          actual (with-redefs [context/invoke-op
+                              (fn [key fallback & args]
+                                (when (= :c6-flatten-core key)
+                                  (swap! calls conj (:node-id (first args))))
+                                (apply original-invoke key fallback args))]
                    (build))
           roots (get-in actual [:core-ast-module :roots])]
       (is (= expected actual))
@@ -89,6 +88,66 @@
       (is (= (:c5-name-resolution-artifact expected)
              (:c5-name-resolution-artifact actual)))
       (is (= (:desugaring-trace expected) (:desugaring-trace actual))))))
+
+(deftest leaf-var-rebinding-retains-original-recursive-semantics
+  (let [a {:artifact :gravity/core-node :node-id "a" :form :literal :children {}}
+        b {:artifact :gravity/core-node :node-id "b" :form :literal :children {}}
+        root {:artifact :gravity/core-node :node-id "root" :form 'do
+              :children (array-map :first a :nested [b a])}
+        replacement (assoc b :node-id "replacement")
+        original-flatten lowering/c6-flatten-core
+        original-children lowering/c6-core-child-nodes
+        failure (ex-info "original leaf callback failure" {:id "C6-ORIGIN" :sentinel 19})]
+    (doseq [public? [false true] throw? [false true]]
+      (let [run (fn [oracle?]
+                  (let [events (atom [])
+                        algorithm (if oracle? recursive-flatten-oracle original-flatten)
+                        callback (fn [node]
+                                   (swap! events conj (:node-id node))
+                                   (if (= "b" (:node-id node))
+                                     (if throw? (throw failure) [replacement])
+                                     (algorithm node)))
+                        result (try
+                                 (if oracle?
+                                   (c6/with-operations {:c6-flatten-core callback}
+                                     #(if public? (callback root) (algorithm root)))
+                                   (with-redefs [lowering/c6-flatten-core callback]
+                                     (if public? (c6/c6-flatten-core root)
+                                         (original-flatten root))))
+                                 (catch clojure.lang.ExceptionInfo error error))]
+                    [result @events]))
+            [expected expected-events] (run true)
+            [actual actual-events] (run false)]
+        (is (= expected-events actual-events))
+        (if throw?
+          (do (is (identical? failure expected actual))
+              (is (= (ex-data expected) (ex-data actual))))
+          (do (is (= expected actual))
+              (is (every? true? (map identical? expected actual)))))))
+    (doseq [public? [false true] throw? [false true]]
+      (let [run (fn [oracle?]
+                  (let [events (atom [])
+                        callback (fn [value]
+                                   (swap! events conj value)
+                                   (if throw? (throw failure)
+                                       (reverse (original-children value))))
+                        result (try
+                                 (if oracle?
+                                   (c6/with-operations {:c6-core-child-nodes callback}
+                                     #(recursive-flatten-oracle root))
+                                   (with-redefs [lowering/c6-core-child-nodes callback]
+                                     (if public? (c6/c6-flatten-core root)
+                                         (original-flatten root))))
+                                 (catch clojure.lang.ExceptionInfo error error))]
+                    [result @events]))
+            [expected expected-events] (run true)
+            [actual actual-events] (run false)]
+        (is (= expected-events actual-events))
+        (if throw?
+          (do (is (identical? failure expected actual))
+              (is (= (ex-data expected) (ex-data actual))))
+          (do (is (= expected actual))
+              (is (every? true? (map identical? expected actual)))))))))
 
 (deftest custom-flatten-operations-retain-recursion-results-and-failures
   (let [a {:artifact :gravity/core-node :node-id "a" :form :literal :children {}}
