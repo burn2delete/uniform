@@ -2101,7 +2101,10 @@
 
 (deftest sh06-authenticated-resolution-is-the-c6-consumer-boundary
   (let [source-path (fixture-path "accepted" "compiler-subset" ".gravity")
-        artifact (sh06-file-artifact source-path)
+        artifact (bootstrap/compiler-c5-resolution-source-artifact
+                  source-path (slurp source-path)
+                  {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                  (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
         source-read-attempts (atom 0)
         original-read-source-form-records bootstrap/read-source-form-records
         audited-source-reader
