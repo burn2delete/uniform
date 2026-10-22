@@ -508,6 +508,19 @@
                 (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
           (finally (.delete temporary)))))))
 
+(deftest sh13-consumes-inner-conditional-as-outer-test
+  (let [source (str (.resolve @(existing 'root)
+                     "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        temporary (java.io.File/createTempFile "gravity-sh13-predicate-if-" ".gravity")]
+    (try
+      (spit temporary (str/replace (slurp source) "(if flag true false)" "(if (if flag false true) 11 22)"))
+      (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
+            verification (invoke 'sh12-verify-branch-join-mir core mir)]
+        (is (= :accepted (:status raw)))
+        (is (= :passed (:status upstream)))
+        (is (= :passed (:status verification)) (pr-str (:diagnostics verification))))
+      (finally (.delete temporary)))))
+
 (deftest sh13-executes-lexical-binding-around-real-nested-graphs
   ;; Original let scope remains a value-producing operation AFTER the outer
   ;; join. Neither the initializer/binding nor the scope is projected away.
