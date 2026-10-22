@@ -173,7 +173,7 @@
           (p15-s23-c6c10-project-front-end source-path raw-front-end)
           _ (validate-ns-syntax! source-path (:forms raw-front-end))
           raw-module (parse-module source-path (:forms raw-front-end))
-          parameter? (contains? #{1 2} (get-in (stage0-function-table raw-module) ['main :arity]))
+          parameter? (contains? #{1 2 3} (get-in (stage0-function-table raw-module) ['main :arity]))
           resolved-parameter (when parameter?
                                (p15-s23-c6c10-resolved-parameter source-path source-text front-end))
           emitter-rule

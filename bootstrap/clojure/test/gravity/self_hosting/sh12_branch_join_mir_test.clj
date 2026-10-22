@@ -258,6 +258,172 @@
           (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
       (finally (.delete temporary)))))
 
+(deftest sh12-current-c6-produces-three-independently-resolved-bool-parameters
+  ;; Three independent c6c10-map-if premises, with real source/C2/C5 joins.
+  ;; Current C11 also reconstructs this family; SH13 owns tuple execution.
+  ;; This is not execution of the complete compiler helper.
+ (let [compiled-binding (parameter-compiled-binding-data
+                         (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/three_bool_parameter_source.gravity")))]
+  (doseq [extension ["gravity" "qst"]]
+    (let [path (str (.resolve @root (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/three_bool_parameter_source." extension)))
+          text (slurp path) products (parameter-source-products path text compiled-binding) input (:envelope products)
+          declaration (:resolved-parameter input) entries (:parameters declaration)
+          raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+      (is (= :gravity/c6-c10-resolved-three-bool-parameters-v1 (:kind declaration)))
+      (is (= #{:kind :source-content-hash :sh06-artifact-id :sh06-semantic-projection-id :projection-binding
+               :root-syntax-id :function-syntax-id :function-scope-id :type-binding :parameters}
+             (set (keys declaration))))
+      (is (= [0 1 2] (mapv :parameter-index entries)))
+      (is (= '[implicit? literal-plan? nil-plan?] (mapv #(get-in % [:parameter-binding :name]) entries)
+             (get-in input [:stage2-plan :functions 'main :params])))
+      (is (= 3 (get-in input [:stage2-plan :functions 'main :arity])))
+      (is (= :gravity/stage2-compiler-artifact-plan (get-in input [:stage2-plan :kind])))
+      (is (true? (get-in input [:stage2-plan :compiler-artifact-plan?])))
+      (is (= :clojure-stage0-seed (get-in input [:stage2-plan :compiler :compiled-by])))
+      (is (= [:core :type 'gravity.core 'Bool]
+             ((juxt :binding-class :kind :namespace :name) (:type-binding declaration))))
+      (is (= 3 (count (set (map #(get-in % [:parameter-binding :binding-id]) entries)))))
+      (is (= 9 (count (set (mapcat #(map :projected-syntax-id (rest (:coordinates %))) entries)))))
+      (is (= :accepted (:status raw)) (pr-str (:diagnostics raw)))
+      (when (= :accepted (:status raw))
+        (let [template (:artifact-template raw) nodes (:core-nodes template) binders (subvec nodes 0 3)
+              ids (mapv :node-id binders) function (last nodes) function-id (:node-id function)
+              fresh (parameter-source-products path text compiled-binding) replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
+              verify (fn [candidate] (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                                            [(:envelope fresh) candidate (:digest-requests replay)]))]
+          (is (= input (:envelope fresh)))
+          (is (= raw replay))
+          (is (= :passed (:status (verify template))))
+          (is (= 13 (count nodes)))
+          (is (= 12 (count (get-in template [:dependency-order-graph :edges]))))
+          (is (= [:parameter :parameter :parameter :local :truthy :local :truthy :local :literal :if :literal :if :function]
+                 (mapv :source-operation nodes)))
+          (is (= '[implicit? literal-plan? nil-plan?] (get-in function [:attributes :params])))
+          (is (= [:gravity/bool :gravity/bool :gravity/bool] (get-in function [:type :params])))
+          (is (= :gravity/bool (get-in function [:type :return])))
+          (is (= (mapv #(get-in template [:type-facts % :type-id]) ids)
+                 (get-in template [:typed-core :functions function-id :params])))
+          (is (= ids (mapv :binding-node-id (:lexical-binding-records template))))
+          (doseq [[binder-index local-index] [[0 3] [1 5] [2 7]]]
+            (is (= [(get ids binder-index)] (get-in nodes [local-index :operands]))))
+          (doseq [[index binder entry] (map vector [0 1 2] binders entries)]
+            (let [id (:node-id binder)]
+              (is (= [] (:operands binder)))
+              (is (= :gravity/bool (:type binder)))
+              (is (= index (get-in binder [:attributes :parameter-index])))
+              (is (= [:functions 'main :parameters index :binder] (:path binder)))
+              (is (= (get-in entry [:parameter-binding :binding-id]) (get-in binder [:attributes :resolved-binding-id])))
+              (is (= (get-in declaration [:type-binding :binding-id]) (get-in entry [:type-resolution :binding-id])
+                     (get-in binder [:attributes :type-binding-id])))
+              (is (= (get-in entry [:coordinates 1 :c2-form-id]) (get-in binder [:attributes :source-form-id])))
+              (is (not (contains? (:attributes binder) :value)))
+              (is (= :resolved-bool-parameter-declaration (get-in template [:type-facts id :producer-rule])))
+              (is (= :proven-safe (get-in binder [:safety :outcome])))))
+          (let [sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
+                context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
+                core (bootstrap/p15-s23-c6c10-public-artifact context (:compiled-binding-data products) (:ingress products) sealed)
+                mir (build-mir core)
+                verification (verify-mir core mir)]
+            (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
+            (is (= :passed (:status verification)) (pr-str (:diagnostics verification))))
+          (doseq [malformed [(assoc-in input [:resolved-parameter :parameters] [])
+                             (assoc-in input [:resolved-parameter :kind] :gravity/unknown-parameter-declaration)
+                             (assoc-in input [:resolved-parameter :parameters] (vec (reverse entries)))
+                             (assoc-in input [:resolved-parameter :parameters 1] (first entries))
+                             (assoc-in input [:resolved-parameter :parameters 1 :parameter-index] 0)
+                             (assoc-in input [:resolved-parameter :parameters 1 :extra] true)
+                             (assoc-in input [:resolved-parameter :parameters 1 :coordinates] [])
+                             (assoc-in input [:resolved-parameter :parameters 1 :coordinates 2 :role] :parameter-name)
+                             (assoc-in input [:resolved-parameter :parameters 1 :coordinates 1] (get-in entries [0 :coordinates 1]))
+                             (assoc-in input [:resolved-parameter :parameters 1 :parameter-binding :binding-id] (get-in entries [0 :parameter-binding :binding-id]))
+                             (assoc-in input [:resolved-parameter :parameters 1 :parameter-binding :name] 'implicit?)
+                             (assoc-in input [:resolved-parameter :parameters 1 :parameter-binding :scope-id] (:root-syntax-id declaration))
+                             (assoc-in input [:resolved-parameter :parameters 1 :parameter-binding :semantic-span :binding-ordinal] 0)
+                             (assoc-in input [:resolved-parameter :parameters 1 :parameter-binding :profile-set] [:meta])
+                             (assoc-in input [:resolved-parameter :parameters 1 :type-resolution :reference-syntax-id] (get-in entries [0 :type-resolution :reference-syntax-id]))
+                             (assoc-in input [:resolved-parameter :type-binding :name] 'I64)
+                             (assoc-in input [:stage2-plan :functions 'main :params] '[nil-plan? literal-plan? implicit?])
+                             (assoc-in input [:stage2-plan :functions 'main :arity] 1)]]
+            (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [malformed])))))
+          (doseq [index [0 1 2]
+                  field [[:parameter-binding :binding-id] [:parameter-binding :definition-syntax-id]
+                        [:type-resolution :binding-id] [:coordinates 1 :projected-syntax-id]]
+                  value [nil "" 17]]
+            (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                                            [(assoc-in input (into [:resolved-parameter :parameters index] field) value)])))))
+          (doseq [index [0 1 2]
+                  malformed [(assoc-in input [:resolved-parameter :parameters index :parameter-index] 3)
+                             (assoc-in input [:resolved-parameter :parameters index :parameter-binding :scope-id] (:root-syntax-id declaration))
+                             (assoc-in input [:resolved-parameter :parameters index :parameter-binding :semantic-span :binding-ordinal] 3)
+                             (assoc-in input [:resolved-parameter :parameters index :coordinates 3] (get-in entries [(mod (inc index) 3) :coordinates 3]))]]
+            (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [malformed])))))
+          (let [replacement (:projection-binding declaration)
+                changed (assoc-in input [:resolved-parameter :sh06-artifact-id] replacement)
+                forged (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [changed])]
+            (is (not= replacement (:sh06-artifact-id declaration)))
+            (is (= :accepted (:status forged)))
+            (is (= :passed (:status (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                                           [changed (:artifact-template forged) (:digest-requests forged)]))))
+            (is (= :rejected (:status (verify (:artifact-template forged))))))
+          (doseq [candidate [(assoc-in template [:core-nodes 1 :attributes :parameter-index] 0)
+                             (assoc-in template [:core-nodes 1 :attributes :resolved-binding-id] (get-in entries [0 :parameter-binding :binding-id]))
+                             (assoc-in template [:core-nodes 7 :operands] [(first ids)])
+                             (assoc-in template [:typed-core :functions function-id :params] [(get-in template [:type-facts (first ids) :type-id])])
+                             (update template :lexical-binding-records #(vec (reverse %)))]]
+            (is (= :rejected (:status (verify candidate)))))))))))
+
+(deftest sh12-three-bool-parameter-ingress-and-unselected-types-fail-closed
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/three_bool_parameter_source.gravity"))
+        text (slurp path) binding (parameter-compiled-binding-data path)]
+    (doseq [[label source expected]
+            [[:wrong-type (str/replace text "nil-plan? :- Bool" "nil-plan? :- I64") "C6-VERIFY"]
+             [:missing-type (str/replace text "nil-plan? :- Bool" "nil-plan?") "C6-VERIFY"]
+             [:unresolved (str/replace text "literal-plan? nil-plan? false" "literal-plan? missing false") "C5-UNRESOLVED"]]]
+      (let [temporary (java.io.File/createTempFile "gravity-sh12-three-bool-reject-" ".gravity")]
+        (try
+          (spit temporary source)
+          (let [observed (try (parameter-source-products (.getAbsolutePath temporary) source binding)
+                              (catch clojure.lang.ExceptionInfo error {:failure (ex-data error)}))]
+            (is (= expected (get-in observed [:failure :id])) (pr-str [label (:failure observed)])))
+          (finally (.delete temporary)))))
+    ;; A selected argument cannot hide the original Bool operand in an
+    ;; integer-only equality inside the nested branch. No execution occurs.
+    (let [source (str/replace text "literal-plan? nil-plan? false" "literal-plan? (= nil-plan? 0) false")
+          temporary (java.io.File/createTempFile "gravity-sh12-three-bool-arm-type-" ".gravity")]
+      (try
+        (spit temporary source)
+        (let [input (:envelope (parameter-source-products (.getAbsolutePath temporary) source binding))
+              raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+          (is (= :rejected (:status raw)))
+          (is (= "C7-TYPE-MISMATCH" (get-in raw [:diagnostics 0 :rule]))))
+        (finally (.delete temporary))))))
+
+(deftest sh12-three-parameter-producer-preserves-one-and-two-parameter-products
+  ;; G-only affected regressions, not a replay of the old paired proof. The
+  ;; original current C6 verifier independently reconstructs each same input.
+  (let [directory "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/"
+        binding (parameter-compiled-binding-data (str (.resolve @root (str directory "bool_parameter_source.gravity"))))]
+    (doseq [[stem kind names count-nodes]
+            [["bool_parameter_source" :gravity/c6-c10-resolved-bool-parameter-v1 '[flag] 7]
+             ["two_bool_parameter_source" :gravity/c6-c10-resolved-two-bool-parameters-v1 '[left right] 12]]]
+      (let [path (str (.resolve @root (str directory stem ".gravity")))
+            input (:envelope (parameter-source-products path (slurp path) binding))
+            raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
+            template (:artifact-template raw) nodes (:core-nodes template) function (last nodes)
+            arity (count names) binders (vec (take arity nodes)) ids (mapv :node-id binders)]
+        (is (= kind (get-in input [:resolved-parameter :kind])))
+        (is (= :accepted (:status raw)))
+        (is (= count-nodes (count nodes)))
+        (is (= names (get-in function [:attributes :params])))
+        (is (= (vec (repeat arity :gravity/bool)) (get-in function [:type :params])))
+        (is (= (vec (range arity)) (mapv #(get-in % [:attributes :parameter-index]) binders)))
+        (is (every? #(= [] (:operands %)) binders))
+        (is (= ids (mapv :binding-node-id (:lexical-binding-records template))))
+        (is (= (mapv #(get-in template [:type-facts % :type-id]) ids)
+               (get-in template [:typed-core :functions (:node-id function) :params])))
+        (is (= :passed (:status (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                                       [input template (:digest-requests raw)]))))))))
+
 (deftest sh12-current-c6-produces-two-independently-resolved-bool-parameters
   ;; Real source/C2/C5 products, not a hand-built type witness or MIR. This
   ;; producer checks retain their original source lineage; the closed C11

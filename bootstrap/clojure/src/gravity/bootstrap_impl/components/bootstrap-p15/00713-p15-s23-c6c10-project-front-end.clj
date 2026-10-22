@@ -146,7 +146,7 @@
         n (quot (count projected) 3)]
     (when-not (and (= hash (get-in front-end [:source-unit-record :bytes-hash]))
                   (= 1 (count (:top-level-form-ids request)))
-                  (contains? #{1 2} n) (= (* 3 n) (count projected) (count source-rows))
+                  (contains? #{1 2 3} n) (= (* 3 n) (count projected) (count source-rows))
                   (= :vector (:kind original)))
       (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path
                                :resolved-single-bool-parameter {}))
@@ -165,7 +165,8 @@
         (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :distinct-resolved-bool-parameters {}))
       (if (= n 1)
         (merge base {:kind :gravity/c6-c10-resolved-bool-parameter-v1} (first rows))
-        (assoc base :kind :gravity/c6-c10-resolved-two-bool-parameters-v1
+        (assoc base :kind (if (= n 2) :gravity/c6-c10-resolved-two-bool-parameters-v1
+                           :gravity/c6-c10-resolved-three-bool-parameters-v1)
                :type-binding (:type-binding (first rows))
                :parameters (mapv #(dissoc % :type-binding) rows))))))
 
