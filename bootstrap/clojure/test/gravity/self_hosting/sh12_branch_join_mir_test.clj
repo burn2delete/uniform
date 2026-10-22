@@ -258,6 +258,16 @@
           (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
       (finally (.delete temporary)))))
 
+(deftest sh12-current-c6-produces-two-i64-order-parameters
+  ;; Actual c6c10-build-edge-list strict-index-order subtree, not a mixed
+  ;; literal comparison, runtime width witness, or complete-helper execution.
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_source.gravity"))
+        observed (try
+                   (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                           [(parameter-input path (slurp path))])
+                   (catch clojure.lang.ExceptionInfo error {:failure (ex-data error)}))]
+    (is (= :accepted (:status observed)) (pr-str observed))))
+
 (deftest sh12-current-c6-produces-resolved-i64-identity
   ;; The declared signed-64 type is not a runtime argument/range witness.
   ;; These are real C2/C5 products and current C6 reconstruction, not admission.

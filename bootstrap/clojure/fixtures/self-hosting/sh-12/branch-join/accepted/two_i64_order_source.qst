@@ -1,0 +1,7 @@
+(ns gravity.sh12.two-i64-order-source
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [dependency-index :- I64 consumer-index :- I64]
+  (< dependency-index consumer-index))
