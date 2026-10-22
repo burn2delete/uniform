@@ -302,7 +302,7 @@
         reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
         binding (parameter-compiled-binding-data
                   (str (.resolve @root (str directory "two_i64_order_condition_source.gravity"))))]
-    (doseq [extension ["gravity"]]
+    (doseq [extension ["gravity" "qst"]]
       (let [path (str (.resolve @root (str directory "two_i64_order_condition_source." extension)))
             text (slurp path) products (parameter-source-products path text binding reader-path)
             input (:envelope products) raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
@@ -336,6 +336,34 @@
             (doseq [node nodes]
               (is (= #{} (:effects node) (:capabilities node)))
               (is (= :proven-safe (get-in node [:safety :outcome]))))
+            (let [forms (get-in input [:front-end-products :form-tree])
+                  form (first (filter #(= (:form-id %) (second (get-in input [:front-end-products :top-level-form-ids]))) forms))
+                  envelope {:form-tree forms :resolved-parameter (:resolved-parameter input)}
+                  plan (get-in input [:stage2-plan :functions 'main]) call (first (:body plan))
+                  gate #(invoke parameter-c6-plan 'c6c10-i64-order-condition-body? [envelope % form])]
+              ;; UNIT guard checks retain original DATA, not new source-auth
+              ;; evidence or accepted products manufactured from substitutions.
+              (is (true? (gate plan)))
+              (doseq [changed [(assoc-in plan [:instructions 0 :test :function] '<=)
+                               (assoc-in plan [:instructions 0 :test :args 0 :name] 'consumer-index)
+                               (assoc-in plan [:instructions 0 :test :args 1] {:op :literal :value 4})
+                               (assoc-in plan [:instructions 0 :then :value] false)
+                               (assoc-in plan [:instructions 0 :then :value] nil)
+                               (assoc-in plan [:instructions 0 :else :value] 0)
+                               (assoc-in plan [:instructions 0 :else :op] :if)
+                               (assoc plan :instructions []) (assoc plan :body [])
+                               (assoc plan :body [call call])
+                               (assoc plan :body [(list 'when (second call) true false)])
+                               (assoc plan :body [(list 'if (list '<= 'binding-index 'consumer-index) true false)])]]
+                (is (false? (gate changed))))
+              (let [calls (atom 0) opaque (proxy [Object] []
+                                          (hashCode [] (swap! calls inc) 0)
+                                          (equals [_] (swap! calls inc) false))]
+                (.hashCode opaque) (.equals opaque :probe)
+                (is (= 2 @calls)) (reset! calls 0)
+                (is (false? (gate (assoc-in plan [:instructions 0 :then :value] opaque))))
+                (is (false? (gate (assoc plan :body [(list 'if (second call) opaque false)]))))
+                (is (zero? @calls))))
             (doseq [candidate [(assoc-in template [:core-nodes 4 :operands] [(get ids 3) (get ids 2)])
                                (assoc-in template [:core-nodes 5 :operands] [(get ids 0)])
                                (assoc-in template [:core-nodes 5 :source :generated-origin 0 :input-origin-id]
@@ -357,6 +385,35 @@
                      ((juxt :diagnostic-id :missing-fact) (diagnostic original))))
               (is (= (:diagnostics original) (:diagnostics result)))
               (is (nil? (:execution result))))))))))
+
+(deftest sh12-i64-order-condition-rejects-broader-source-bodies
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_condition_source.gravity"))
+        text (slurp path) binding (parameter-compiled-binding-data path)
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))]
+    (doseq [source [(str/replace text ") true false)" ") 0 false)")
+                    (str/replace text ") true false)" ") true)")
+                    (str/replace text ") true false))" ") true false) false)")
+                    (str/replace text "binding-index" "<")]]
+      (let [temporary (java.io.File/createTempFile "gravity-sh12-i64-condition-reject-" ".gravity")]
+        (try
+          (spit temporary source)
+          (let [input (:envelope (parameter-source-products (.getCanonicalPath temporary) source binding reader-path))
+                raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+            (is (= :rejected (:status raw)))
+            (is (= "C6-LOWERING-GAP" (get-in raw [:diagnostics 0 :rule]))))
+          (finally (.delete temporary)))))))
+
+(deftest sh12-i64-condition-extension-preserves-the-original-direct-body
+  ;; One affected G source; the old direct guard short-circuits the new case.
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_source.gravity"))
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        input (:envelope (parameter-source-products path (slurp path) nil reader-path))
+        raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input]) template (:artifact-template raw)]
+    (is (= :accepted (:status raw)))
+    (is (= [:parameter :parameter :local :local :integer-lt :function] (mapv :source-operation (:core-nodes template))))
+    (is (= :gravity/bool (get-in template [:core-nodes 5 :type :return])))
+    (is (= :passed (:status (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                                   [input template (:digest-requests raw)]))))))
 
 (deftest sh12-current-c6-produces-two-i64-order-parameters
   ;; c6c10-build-edge-list's strict-index-order subtree, not a mixed literal

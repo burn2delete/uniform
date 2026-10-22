@@ -2226,10 +2226,63 @@
                        (= '< (first call)) (= left (second call)) (= right (first (rest (rest call))))])
                     false) false) false)) false) false) false)) false))
 
+(defn c6c10-i64-order-condition-body? [envelope plan form]
+  ; A separate closed alternative; the standalone ordering guard is unchanged.
+  (if (if (vector? (get form :children)) (= 4 (count (get form :children))) false)
+    (let [forms (get envelope :form-tree) body (c6c10-form-by-id forms (get (get form :children) 3))
+          children (get body :children) instructions (get plan :instructions) source-body (get plan :body)
+          entries (get (get envelope :resolved-parameter) :parameters)
+          left (get (get (get entries 0) :parameter-binding) :name)
+          right (get (get (get entries 1) :parameter-binding) :name)]
+      (if (if (vector? instructions) (= 1 (count instructions)) false)
+        (if (if (vector? source-body) true (list? source-body))
+          (if (= 1 (count source-body))
+            (if (if (vector? children) (= 4 (count children)) false)
+              (let [instruction (get instructions 0) call (first source-body)]
+                (if (if (list? call) (= 4 (count call)) false)
+                  (let [test (c6c10-form-by-id forms (get children 1)) test-children (get test :children)
+                        test-instruction (get instruction :test) args (get test-instruction :args) test-call (second call)
+                        a (c6c10-form-by-id forms (get children 2)) b (c6c10-form-by-id forms (get children 3))
+                        source-a (first (rest (rest call))) source-b (first (rest (rest (rest call))))]
+                    (if (if (vector? test-children) (= 3 (count test-children)) false)
+                      (if (if (vector? args) (= 2 (count args)) false)
+                        (if (if (list? test-call) (= 3 (count test-call)) false)
+                          (if (loop [values [(get a :value) (get b :value)
+                                           (get (get instruction :then) :value) (get (get instruction :else) :value)
+                                           source-a source-b]]
+                                (if (= 0 (count values)) true
+                                  (if (boolean? (first values)) (recur (rest values)) false)))
+                            (c6c10-parameter-checks?
+                              [(if (= '< left) false (if (= '< right) false true))
+                               (if (= 'if left) false (if (= 'if right) false true))
+                               (c6c10-plain-form? body :list)
+                               (c6c10-plain-form? (c6c10-form-by-id forms (get children 0)) :symbol)
+                               (= 'if (get (c6c10-form-by-id forms (get children 0)) :value))
+                               (= 'if (first call)) (= :if (get instruction :op))
+                               (c6c10-plain-form? test :list)
+                               (c6c10-plain-form? (c6c10-form-by-id forms (get test-children 0)) :symbol)
+                               (= '< (get (c6c10-form-by-id forms (get test-children 0)) :value))
+                               (c6c10-plain-form? (c6c10-form-by-id forms (get test-children 1)) :symbol)
+                               (c6c10-plain-form? (c6c10-form-by-id forms (get test-children 2)) :symbol)
+                               (= [left right] [(get (c6c10-form-by-id forms (get test-children 1)) :value)
+                                                (get (c6c10-form-by-id forms (get test-children 2)) :value)])
+                               (= :builtin-call (get test-instruction :op)) (= '< (get test-instruction :function))
+                               (= [:local :local] [(get (get args 0) :op) (get (get args 1) :op)])
+                               (= [left right] [(get (get args 0) :name) (get (get args 1) :name)])
+                               (= '< (first test-call)) (= left (second test-call))
+                               (= right (first (rest (rest test-call))))
+                               (c6c10-plain-form? a :boolean) (c6c10-plain-form? b :boolean)
+                               (= :literal (get (get instruction :then) :op))
+                               (= :literal (get (get instruction :else) :op))
+                               (= [(get a :value) (get b :value)]
+                                  [(get (get instruction :then) :value) (get (get instruction :else) :value)]
+                                  [source-a source-b])]) false) false) false) false)) false)) false) false) false)) false)))
+
 (defn c6c10-build-parameter-function-product [state envelope plan form]
   (if (c6c10-parameter-declaration-valid? envelope plan form)
     (if (if (c6c10-two-i64-parameters? (get envelope :resolved-parameter))
-          (c6c10-i64-order-body? envelope plan form)
+          (if (c6c10-i64-order-body? envelope plan form) true
+            (c6c10-i64-order-condition-body? envelope plan form))
           (if (c6c10-i64-parameter? (get envelope :resolved-parameter))
             (c6c10-i64-identity-body? envelope plan form) true))
     (let [declaration (get envelope :resolved-parameter) entries (c6c10-parameter-entries declaration)
