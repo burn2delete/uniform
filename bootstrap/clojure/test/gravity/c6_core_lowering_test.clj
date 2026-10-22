@@ -402,6 +402,136 @@
     (is (= :complete (get-in artifact [:capability-based-proof :status])))
     (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id artifact)))))
 
+(deftest c6-growing-surface-cost-is-bounded-data-only
+  ;; Diagnostic views only: no artifact schema, decoder or production change.
+  (let [maximum-bytes (* 256 1024)
+        bound! (fn [ok? phase]
+                 (when-not ok?
+                   (throw (ex-info "bounded growing C6 observation stopped"
+                                   {:phase phase}))))
+        stats
+        (fn [value maximum-depth surface?]
+          (loop [pending [[value 0 surface?]] visited 0 core 0 surface 0 bytes 0]
+            (if-let [[value depth surface?] (peek pending)]
+              (let [visited (inc visited)
+                    _ (bound! (and (<= visited 32768) (<= depth maximum-depth)) :walk)
+                    core (+ core (if (and (map? value)
+                                          (= :gravity/core-node (:artifact value))) 1 0))
+                    surface (+ surface (if surface? 1 0))
+                    collection? (coll? value)
+                    _ (when collection? (bound! (<= (count value) 128) :width))
+                    text (when-not collection?
+                           (cond (nil? value) "nil"
+                                 (or (string? value) (keyword? value) (symbol? value)
+                                     (integer? value) (boolean? value)) (str value)
+                                 :else (throw (ex-info "unexpected C6 observation scalar" {}))))
+                    _ (when text
+                        (bound! (and (<= (count text) 64)
+                                     (every? #(<= (int %) 127) text)) :scalar))
+                    bytes (+ bytes (if collection?
+                                     (+ 4 (* (if (map? value) 4 2) (count value)))
+                                     (if (string? value) (+ 2 (* 6 (count text)))
+                                         (count text))))
+                    children (cond
+                               (map? value)
+                               (mapcat (fn [[key item]]
+                                         [[key (inc depth) surface?]
+                                          [item (inc depth)
+                                           (or surface? (= :surface-form key))]]) value)
+                               collection? (map #(vector % (inc depth) surface?) value)
+                               :else [])]
+                (bound! (<= bytes maximum-bytes) :pre-print-reservation)
+                (recur (into (pop pending) children) visited core surface bytes))
+              {:visited visited :core-occurrences core :surface-occurrences surface
+               :print-upper-bound bytes})))
+        bytes (fn [value reservation]
+                (let [text (binding [*print-length* nil *print-level* nil
+                                     *print-meta* false *print-dup* false
+                                     *print-namespace-maps* false]
+                             (pr-str value))
+                      _ (bound! (<= (count text) reservation maximum-bytes) :printed)
+                      encoded (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8)]
+                  (bound! (<= (alength encoded) reservation maximum-bytes) :utf8)
+                  (alength encoded)))
+        chain (fn [depth] (nth (iterate #(list 'do %) :bounded-data) depth))
+        left (chain 1) right (chain 1)
+        cases (concat (map #(vector % [(chain %)]) [1 2 4 8])
+                      [[:equal-distinct [left right]]])
+        observations
+        (mapv
+         (fn [[label forms]]
+           (let [inputs (mapv #(stats % 8 true) forms)
+                 input-occurrences (reduce + (map :surface-occurrences inputs))
+                 _ (bound! (<= input-occurrences 128) :input-surface-occurrences)
+                 counter (atom 0)
+                 roots (mapv (fn [index form]
+                               (c6/c6-lower-form counter module
+                                                 (syntax (str label "-" index) form) form))
+                             (range) forms)
+                 root-stats (stats roots 64 false)
+                 _ (bound! (<= (:core-occurrences root-stats) 64) :core-rows)
+                 rows (vec (mapcat c6/c6-flatten-core roots))
+                 _ (bound! (<= (count rows) 64) :flat-rows)
+                 expected (vec (mapcat recursive-flatten-oracle roots))
+                 ;; Only actual unary-do child nodes become IDs in this view.
+                 ;; All surface payloads and all other fields remain untouched.
+                 view (mapv (fn [row]
+                              (update row :children
+                                      #(if (vector? %) (mapv :node-id %) %))) rows)
+                 original (stats rows 64 false)
+                 referenced (stats view 64 false)
+                 node-count (count rows)
+                 same-payloads? (every? true?
+                                       (map (fn [row projected]
+                                              (and (= (dissoc row :children)
+                                                      (dissoc projected :children))
+                                                   (identical? (:surface-form row)
+                                                               (:surface-form projected))
+                                                   (identical? (:source row) (:source projected))))
+                                            rows view))]
+             (is (= (mapv #(str "c6-core-" %) (range node-count)) (mapv :node-id rows)))
+             (is (= expected rows))
+             (is (every? true? (map identical? expected rows)))
+             (is (= (mapv :node-id rows) (mapv :node-id view)))
+             (is (every? true? (map identical? roots (map #(nth rows %) (if (= 1 (count roots)) [0] [0 2])))))
+             (is (every? true? (map identical? forms (map :surface-form roots))))
+             (when (= :equal-distinct label)
+               (is (not= (:source (first roots)) (:source (second roots)))))
+             (is same-payloads?)
+             (is (= node-count (count (set (map :node-id rows))) (:core-occurrences referenced)))
+             (is (every? true? (map (fn [row projected]
+                                     (= (mapv :node-id (c6/c6-core-child-nodes (:children row)))
+                                        (vec (:children projected)))) rows view)))
+             (is (> (:core-occurrences original) (:core-occurrences referenced)))
+             (is (> (:surface-occurrences original) (:surface-occurrences referenced)
+                    input-occurrences))
+             (when (integer? label)
+               (is (= (inc label) node-count))
+               (is (= (* node-count node-count) (:surface-occurrences referenced))))
+             (let [original-bytes (bytes rows (:print-upper-bound original))
+                   referenced-bytes (bytes view (:print-upper-bound referenced))]
+               (is (> original-bytes referenced-bytes))
+               {:case label :input-surface-occurrences input-occurrences :rows node-count
+                :original-core-occurrences (:core-occurrences original)
+                :referenced-core-occurrences (:core-occurrences referenced)
+                :original-surface-occurrences (:surface-occurrences original)
+                :referenced-surface-occurrences (:surface-occurrences referenced)
+                :original-table-utf8-bytes original-bytes
+                :child-reference-table-utf8-bytes referenced-bytes})))
+         cases)]
+    (is (= left right))
+    (is (not (identical? left right)))
+    (is (= [4 9 25 81] (mapv :referenced-surface-occurrences (take 4 observations))))
+    (is (nil? (find-ns 'gravity.bootstrap)))
+    (let [summary (pr-str {:c6-growing-surface-data-only true :authoritative? false
+                          :view :child-references-only-not-an-accepted-artifact
+                          :surface-unit :all-positions-under-each-surface-form
+                          :nonclaims [:schema :timing :heap :speedup :checked-core-size :cause :self-hosting]
+                          :cases observations})]
+      (bound! (and (<= (count summary) (* 1024 1024))
+                   (every? #(<= (int %) 127) summary)) :scalar-log)
+      (println summary))))
+
 (deftest c6-flat-nested-node-print-amplification-is-bounded-data-only
   ;; C6 preserves nested children in its flat table. These fixed DATA values
   ;; isolate printed occurrences, without compiler construction or proof credit.
