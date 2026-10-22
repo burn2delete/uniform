@@ -191,7 +191,8 @@
             [:arity :params])))
     (is (= #{:gravity.type/integer
              :gravity.type/bool
-             :gravity.type/string}
+             :gravity.type/string
+             :gravity.type/i64}
            (:accepted-types policy)))
     (is (= #{:pure-authenticated-sh08-primitive-typed-core
              :declared-pure-call-effects-with-thrown-effects-pending}
