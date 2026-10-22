@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.latin1-string-vector
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main [] (vec "a\u00e9\u00ff"))

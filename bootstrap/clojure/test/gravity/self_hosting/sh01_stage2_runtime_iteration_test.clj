@@ -31290,7 +31290,7 @@ else
                         #(update-in % [:core :call-edges] conj (get-in % [:core :call-edges 1]))
                         #(assoc-in % [:core :mutations] [{:target-binding-id :slice-let-binding}])]]
           (is (= :rejected (:status (run owner (mutate base) 65536)))))
-        (doseq [[value start] [["0af" 4] ["\u0080" 0] [(apply str (repeat 1025 "a")) 0] [[1 2 3] 1]]]
+        (doseq [[value start] [["0af" 4] ["\u0100" 0] [(apply str (repeat 1025 "a")) 0] [[1 2 3] 1]]]
           (is (= :rejected (:status (run owner (input value start) 65536)))))
         (let [callbacks (atom 0) opaque (proxy [Object] []
                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "count proof hashed opaque value")))
@@ -31823,7 +31823,7 @@ else
         rt (:plan (typed-catch-runtime-projection))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
         text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"]
-    (doseq [[value start end positions] [["" 0 0 nil] [text 0 7 nil] [text 7 71 nil] [text 0 71 nil]
+    (doseq [[value start end positions] [["a\u00e9\u00ff" 0 3 nil] ["a\u00e9\u00ff" 1 2 nil] ["" 0 0 nil] [text 0 7 nil] [text 7 71 nil] [text 0 71 nil]
                                        [text 2N 4N nil] [text 71 71 nil] [text 20 1 0]
                                        [text 20 1 1] [text 20 1 2] [text 20 1 [0 1 2]]]]
       (let [base (if (nil? positions) (input value start end) (transfer value start end positions))
@@ -31999,7 +31999,7 @@ else
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         rt (:plan (typed-catch-runtime-projection))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))]
-    (doseq [value ["" "sha256:" (apply str (map char (range 128))) (apply str (repeat 1024 \a)) nil]]
+    (doseq [value ["" "sha256:" (apply str (map char (range 128))) (apply str (repeat 1024 \a)) "\u00e9" (apply str (map char (range 256))) (apply str (repeat 1024 \u00ff)) nil]]
       (let [base (if (nil? value) (transfer) (input value))
             {:keys [context descriptor result]} (literal-string-vector-kernel-context base)
             compile #(lower 'p15-s23-typed-compile-node %1 :call %2)
@@ -32017,7 +32017,7 @@ else
             (do (is (= {:op :builtin-call :function 'vec :args [{:op :literal :value value}]} (:value compiled)))
                 (is (= [(vec value) "" :normal]
                        (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {} ""]))))))
-        (doseq [changed [(dissoc descriptor :kind) (assoc descriptor :kind nil)
+        (doseq [changed [((ns-resolve upstream 'literal-string-vector-cross-domain-descriptor) descriptor) (dissoc descriptor :kind) (assoc descriptor :kind nil)
                          (assoc descriptor :kind (Object.)) (assoc descriptor :kind :gravity.type/applied-string-concat)
                          (assoc-in descriptor [:conversion-policy :utf16-splitting] :allowed)
                          (assoc-in descriptor [:conversion-proof :scalar-count] 99)
@@ -32027,7 +32027,7 @@ else
                               (assoc-in [:call-facts :call] (c7 'sh08-scv-call-fact [changed (:module base)]))
                               (assoc :ledger [(c7 'sh08-scv-constraint [changed])]))]
             (is (= :rejected (:status (compile candidate 65536))))))
-        (when (= value "sha256:")
+        (when (contains? #{"sha256:" "\u00e9"} value)
           (let [callbacks (atom 0) opaque (proxy [Object] []
                                          (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII lowering ordinal hash")))
                                          (equals [_] (swap! callbacks inc) (throw (AssertionError. "ASCII lowering ordinal equality"))))]
@@ -32050,9 +32050,9 @@ else
   (let [plan (:plan (typed-catch-runtime-projection)) literal #(hash-map :op :literal :value %)
         query #(hash-map :op :builtin-call :function 'vec :args [%])
         evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])]
-    (doseq [value ["" "sha256:" (apply str (map char (range 128))) (apply str (repeat 1024 \a))]]
+    (doseq [value ["" "sha256:" (apply str (map char (range 128))) (apply str (repeat 1024 \a)) "\u00e9" (apply str (map char (range 256))) (apply str (repeat 1024 \u00ff))]]
       (is (= [(vec value) "" :normal] (evaluate (query (literal value))))))
-    (doseq [value ["e\u0301" "\u00E9" "\uD83D\uDE00" "\uD800" "\uDC00"
+    (doseq [value ["e\u0301" "\u0100" "\uD83D\uDE00" "\uD800" "\uDC00"
                    (apply str (repeat 1025 \a)) nil 4 [\s \h \a]]]
       (is (= :rejected (last (evaluate (query (literal value)))))))
     (doseq [instruction [(query {:op :quote :value "sha256:"})
@@ -32072,11 +32072,15 @@ else
                           ([to from] (when (string? from) (swap! conversions inc)) (original-into to from))
                           ([to xf from] (when (string? from) (swap! conversions inc)) (original-into to xf from)))]
       (with-redefs [clojure.core/into observed-into]
-        (doseq [value ["\u00E9" "\uD83D\uDE00" "\uD800" (apply str (repeat 1025 \a))]]
+        (doseq [value ["\u0100" "\uD83D\uDE00" "\uD800" (apply str (repeat 1025 \a))]]
           (is (= :rejected (last (evaluate (query (literal value)))))))
         (is (zero? @conversions))
         (is (= [(vec "sha256:") "" :normal] (evaluate (query (literal "sha256:")))))
-        (is (= 1 @conversions))))
+        (is (= 1 @conversions))
+        (is (= [(vec "\u00e9") "" :normal] (evaluate (query (literal "\u00e9")))))
+        (is (= 2 @conversions))
+        (is (= [[] "" :normal] (evaluate (query (literal "")))))
+        (is (= 3 @conversions))))
     (let [payload (Object.) say (fn [value] {:op :do :body [{:op :println :args [(literal "operand")]
                                                           :effect :io/write :capability :io/stdout} value]})
           thrown (evaluate (query (say {:op :throw :value (literal payload)})))
@@ -32137,7 +32141,8 @@ else
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
     (doseq [[disposition name expected] [["accepted" "local-runtime-ascii-string-vector" "sha256:"]
-                                        ["rejected" "string-vector-unsupported-nonascii" "\u00e9"]]]
+                                        ["accepted" "local-runtime-latin1-string-vector" "a\u00e9\u00ff"]
+                                        ["rejected" "string-vector-unsupported-nonascii" "\u0100"]]]
       (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
             g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
             g (slurp g-path) q (slurp q-path)
@@ -33789,7 +33794,7 @@ else
       (is (= :passed (get-in negative [:verification :status])) (pr-str (:verification negative)))
       (is (= "C7-ANNOTATION" (:rule diagnostic)) (pr-str diagnostics))
       (is (= [:gravity.type/string] (:actual-type diagnostic)))
-      (is (= :original-finite-ascii-string-literal (:expected-type diagnostic)))
+      (is (= :original-finite-supported-scalar-string-literal (:expected-type diagnostic)))
       (is (some? (:core-node-id diagnostic)))
       (is (some? (:syntax-id diagnostic)))
       (is (map? (:source-span diagnostic)))
