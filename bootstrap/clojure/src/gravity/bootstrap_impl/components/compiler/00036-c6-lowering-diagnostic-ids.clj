@@ -26,9 +26,11 @@
          c6-core-verifier-report
          c6-rule-invalidation-record
          c6-lowering-capability-proof
-         c6-lowering-validate!)
+         c6-lowering-validate!
+         ^:private c6-default-flatten-functions)
 
 (defn- c6-lowering-ops []
+  (let [operations
   {:fail! fail! :source-span source-span :c4-artifact-id c4-artifact-id
    :form-effect form-effect :ns-form? ns-form? :core-forms core-forms
    :lowering-gap-forms lowering-gap-forms :known-source-profiles known-source-profiles
@@ -58,4 +60,11 @@
    :c6-core-verifier-report c6-core-verifier-report
    :c6-rule-invalidation-record c6-rule-invalidation-record
    :c6-lowering-capability-proof c6-lowering-capability-proof
-   :c6-lowering-validate! c6-lowering-validate!})
+   :c6-lowering-validate! c6-lowering-validate!}]
+    ;; Only the untouched original pair denotes forwarding, not custom work.
+    (if (and (identical? (first c6-default-flatten-functions) c6-flatten-core)
+             (identical? (second c6-default-flatten-functions) c6-core-child-nodes))
+      (assoc operations
+             :c6-flatten-core c6/c6-flatten-core
+             :c6-core-child-nodes c6/c6-core-child-nodes)
+      operations)))

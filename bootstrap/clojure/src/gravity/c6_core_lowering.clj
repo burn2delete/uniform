@@ -130,7 +130,7 @@
   (valid-operation-map! operations)
   (binding [*operations* (merge *operations* operations)
             *facade-call?* true]
-    (context/with-operations operations thunk)))
+    (context/with-operations (default-flatten-operations operations) thunk)))
 
 (defn c6-lowering-source-overrides [module]
   (leaf-call diagnostics/c6-lowering-source-overrides module))
