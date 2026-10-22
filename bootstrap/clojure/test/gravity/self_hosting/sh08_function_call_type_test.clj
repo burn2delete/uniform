@@ -5185,6 +5185,41 @@
 (defn- list-query-derived [{:keys [core node call edge nodes bindings types forms]}]
   (invoke-c7 'sh08-lq-derive [core node call edge nodes bindings types forms 65536]))
 
+
+(deftest sh08-vector-empty-development-kernel
+  (doseq [type [:gravity.type/vector
+                 {:kind :gravity.type/vector :shape :literal :element-types []}
+                 {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/nil :gravity.type/bool]}]]
+    (let [result (list-query-derived (list-query-input 'empty? [type])) descriptor (:descriptor result)]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/bool (:type result)))
+      (is (= :gravity.type/applied-vector-empty (:kind descriptor)))
+      (is (= :sh08-vector-empty-v1 (:version descriptor)))))
+  (doseq [type [{:kind :gravity.type/list :shape :literal :element-types []} :gravity.type/never]]
+    (let [{:keys [core node call edge nodes bindings module] :as input} (list-query-input 'empty? [type])
+          result (list-query-derived input) normal? (not= :gravity.type/never type)
+          expected-type (if normal? :gravity.type/bool :gravity.type/never)
+          expected {:kind :gravity.type/applied-list-query :version :sh08-list-query-v1
+                    :operation 'empty? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-list-query
+                    :resolution :gravity.core-compatibility :operator-node-id (:operator-node-id call)
+                    :operator-binding-id (:operator-binding-id call) :call-core-node-id (:node-id node)
+                    :source (:source node) :operator-source (:source (nodes (:operator-node-id call)))
+                    :source-call call :source-edge edge :source-binding (bindings (:operator-binding-id call))
+                    :argument-types [type]
+                    :query-policy {:input :persistent-list :operand-evaluation :once :payload-evaluation :none
+                                   :original :unchanged :test :zero-elements :static-length :not-required}
+                    :storage-policy {:representation :development-persistent-list :empty? :stored-emptiness-test :copy :none}
+                    :value-origin {:kind :list-value-query :operation 'empty? :operand-node-id (first (:argument-node-ids call))}
+                    :operand-type-work 1 :application (if normal? :normal :not-invoked)
+                    :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+                    :profile (:profile module) :target (:target module)
+                    :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                                   :callee-body :operand-types :query-policy :storage-policy :value-origin :profile :target :evaluation-order]
+                    :parameter-types [type] :return expected-type :result-type expected-type}]
+      (is (= [:accepted expected-type (+ 66 (count (:function-records core)))]
+             ((juxt :status :type :work-count) result)))
+      (is (= expected (:descriptor result))))))
+
 (deftest sh08-list-query-development-kernel
   (let [s :gravity.type/string b :gravity.type/bool n :gravity.type/nil nv :gravity.type/never
         positional (fn [types] {:kind :gravity.type/list :element-types types :shape :literal})
