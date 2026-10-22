@@ -188,16 +188,17 @@
             value)
     :else []))
 
+(declare ^:private default-flatten-functions)
 (defn c6-flatten-core [node]
-  (if (and (identical? c6-flatten-core
+  (if (and (identical? (first default-flatten-functions)
                        (context/op-fn :c6-flatten-core c6-flatten-core))
-           (identical? c6-core-child-nodes
+           (identical? (second default-flatten-functions)
                        (context/op-fn :c6-core-child-nodes c6-core-child-nodes)))
     ;; One root-local result, retaining original nested nodes in preorder.
     (loop [pending (list node) result (transient [])]
       (if (seq pending)
         (let [current (first pending)
-              children (c6-core-child-nodes (:children current))]
+              children ((second default-flatten-functions) (:children current))]
           (recur (reduce conj (rest pending) (reverse children))
                  (conj! result current)))
         (persistent! result)))
@@ -208,3 +209,6 @@
                        (context/invoke-op :c6-core-child-nodes
                                           c6-core-child-nodes
                                           (:children node)))))))
+
+(def ^:private default-flatten-functions
+  [c6-flatten-core c6-core-child-nodes])

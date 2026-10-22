@@ -110,7 +110,9 @@
   (if (and (identical? (first default-flatten-functions)
                        (:c6-flatten-core operations))
            (identical? (second default-flatten-functions)
-                       (:c6-core-child-nodes operations)))
+                       (:c6-core-child-nodes operations))
+           (identical? (nth default-flatten-functions 2) lowering/c6-flatten-core)
+           (identical? (nth default-flatten-functions 3) lowering/c6-core-child-nodes))
     (assoc operations
            :c6-flatten-core lowering/c6-flatten-core
            :c6-core-child-nodes lowering/c6-core-child-nodes)
@@ -176,7 +178,8 @@
              source-path module c5-artifact expanded-stream))
 
 (def ^:private default-flatten-functions
-  [c6-flatten-core c6-core-child-nodes])
+  [c6-flatten-core c6-core-child-nodes
+   lowering/c6-flatten-core lowering/c6-core-child-nodes])
 
 (def public-api
   {'public-api {:kind :contract}
