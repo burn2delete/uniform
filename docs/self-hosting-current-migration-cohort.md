@@ -115,6 +115,16 @@ structural runner alone does not authenticate that membership. The incomplete
 large-source attempt neither undoes already executed bounded Gravity-owner
 checks nor supplies a completed successor-cohort result.
 
+The selected endpoint is `sh07-core-from-resolution-artifact` -> authenticated
+SH06 projection -> Gravity `sh07-build-core-template` -> template verification
+-> digest resolution -> resolved verification/publication. Its rows already use
+child IDs and source-occurrence links; it does not call hosted `c6-lowering-artifact`.
+The old helper chose that legacy constructor: exit 143 remains INCOMPLETE, cause
+unresolved. [PR270](https://github.com/burn2delete/uniform/pull/270)'s 82-assertion
+fixed-DATA lossless feasibility result has the combined view 984 bytes larger
+than child-only, not a production benefit or redesign prerequisite. Current
+Gravity source-analysis/replay/provenance remains OPEN for its own finite decision.
+
 ## Exact proposed repository inputs
 
 These are content observations at the assessment revision, not new migration
@@ -419,13 +429,12 @@ The bounded work needed to make that decision real is:
    exact supported operations, input/output schemas, reader/macro policy,
    grants and resource bounds. Compare against the per-input evidence map;
    retain compatible historical evidence instead of rerunning it by count.
-2. Resolve the specific incomplete checked-Core **source-analysis** question.
-   Preserve the exit-143 attempt before any successor. Use the existing helper
-   and its bounded cost follow-up to separate construction, redundant test
-   verification and mandatory public consumer verification before deciding a
-   new experiment. Do not retry unchanged at a higher ceiling, cache a proof,
-   skip a verifier, prune this required subject or introduce a new lane.
-   Its printed `:c5-after` boundary is not a complete C5/C6 test pass.
+2. Select the current Gravity **source-analysis/replay/provenance** transaction
+   through its existing authenticated owner, with exact subject/resource fit.
+   Preserve the legacy exit-143 attempt as INCOMPLETE; its printed `:c5-after`
+   is not a completed result. No legacy hosted-product redesign is prerequisite.
+   Keep the original verifiers; no unchanged large retry, cache, verifier skip, required
+   subject pruning or new lane is selected here.
 3. Independently select the required **actual Gravity-Core execution** cases
    from the existing SH07 owners/tests: accepted/rejected values/quote,
    references/definitions, bindings/control, functions/calls/recur, errors,
