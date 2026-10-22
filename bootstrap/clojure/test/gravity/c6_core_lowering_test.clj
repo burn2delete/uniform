@@ -120,7 +120,7 @@
             [actual actual-events] (run false)]
         (is (= expected-events actual-events))
         (if throw?
-          (do (is (identical? failure expected actual))
+          (do (is (and (identical? failure expected) (identical? failure actual)))
               (is (= (ex-data expected) (ex-data actual))))
           (do (is (= expected actual))
               (is (every? true? (map identical? expected actual)))))))
@@ -144,7 +144,7 @@
             [actual actual-events] (run false)]
         (is (= expected-events actual-events))
         (if throw?
-          (do (is (identical? failure expected actual))
+          (do (is (and (identical? failure expected) (identical? failure actual)))
               (is (= (ex-data expected) (ex-data actual))))
           (do (is (= expected actual))
               (is (every? true? (map identical? expected actual)))))))))
