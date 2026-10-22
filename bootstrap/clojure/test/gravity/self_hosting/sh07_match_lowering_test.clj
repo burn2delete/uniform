@@ -703,6 +703,111 @@
       (doseq [pattern ['[{:when true}] '{:outer {:when false}}]]
         (is (= :guard-pattern-deferred (get-in (lower pattern) [:result :facts :reason])))))))
 
+(deftest sh07-completion-duplicate-pattern-bindings-development-kernel
+  ;; Original Gravity kernel on normalized source graphs, not authenticated C5
+  ;; or execution of application matching. L7 owns illegal duplicate names.
+  (let [plan (:plan (bootstrap/sh07-core-current-binding!))
+        invoke #(bootstrap/p15-s23-stage2-runtime-execute-function
+                 {:engine :gravity-sh07-development-fixture :compiler-artifact-plan? true} plan %1 %2)
+        sha #(str "sha256:" (format "%064x" %))
+        counter (atom 0) forms (atom {})]
+    (letfn [(make! [value]
+              (let [kind (cond (map? value) :map (vector? value) :vector (seq? value) :list
+                               (symbol? value) :symbol (keyword? value) :keyword
+                               (nil? value) :nil (boolean? value) :boolean :else :integer)
+                    children (mapv make! (cond (map? value) (vec (mapcat identity value))
+                                               (coll? value) (vec value) :else []))
+                    n (swap! counter inc)
+                    form {:form-id (sha n) :syntax-id (sha (+ n 10000)) :kind kind :value value
+                          :child-form-ids (mapv :form-id children) :scope-id (sha 50000)
+                          :source-span {:byte-start n :byte-end (inc n) :line-start 1 :column-start n}
+                          :metadata {} :origin-chain [] :generated-origin []}]
+                (swap! forms assoc (:form-id form) form)
+                (doseq [child children] (swap! forms assoc-in [(:form-id child) :parent-form-id] (:form-id form)))
+                form))
+            (input []
+              (let [bindings (for [form (vals @forms)
+                                   :when (contains? '#{x y repeated same} (:value form))]
+                               {:binding-id (:form-id form) :binding-class :lexical :kind :local
+                                :name (:value form) :scope-id (:scope-id form)
+                                :definition-syntax-id (:syntax-id form)})]
+                {:module {:namespace 'completion.match :profile :meta :target :jvm
+                          :effects #{} :capabilities #{} :safety :safe}
+                 :lineage {:authenticated-sh06-artifact-id (sha 60000) :sh06-semantic-projection-id (sha 60001)}
+                 :provenance {:actual-source-path "<completion-match-binding-guards>"}
+                 :internal-indexes {:forms {:by-id @forms :by-syntax (into {} (map (juxt :syntax-id identity) (vals @forms)))}
+                                    :bindings {:by-definition (into {} (map (juxt :definition-syntax-id identity) bindings))}}}))
+            (check [value]
+              (reset! forms {})
+              (let [pattern (make! value) request (input)]
+                {:pattern pattern :request request
+                 :result (invoke 'sh07-match-pattern-descriptor [request pattern 0])}))]
+      (doseq [value ['[x x] '[x {:id x}] '{:left x :right [x]}
+                     (array-map :left '[x] :right '{:id x} :when true)
+                     '[repeated repeated repeated]]]
+        (let [{:keys [request pattern result]} (check value)
+              name (if (= value '[repeated repeated repeated]) 'repeated 'x)
+              occurrences (sort-by #(get-in % [:source-span :byte-start])
+                                   (filter #(= name (:value %)) (vals @forms)))
+              first-binding (first occurrences) duplicate (second occurrences)
+              diagnostic (:diagnostic (invoke 'sh07-diagnostic
+                                              [request (:rule result) (:form result) (:facts result)]))]
+          (is (= :rejected (:status result)))
+          (is (= "C6-VERIFY" (:rule result)))
+          (is (= [:duplicate-match-binding "L7-DUP-BINDING" name]
+                 ((juxt :reason :semantic-rule :binding) (:facts result))))
+          (is (= (:form-id duplicate) (get-in result [:form :form-id]) (:form-id diagnostic)))
+          (is (= (:syntax-id duplicate) (:syntax-id diagnostic)))
+          (is (= (:form-id first-binding) (get-in result [:facts :first-binding-form-id])))
+          (is (= (:syntax-id first-binding) (get-in result [:facts :first-binding-syntax-id])))
+          (is (= (:source-span first-binding) (get-in result [:facts :first-binding-source-span])))
+          (is (= (:source-span duplicate) (get-in result [:facts :duplicate-binding-source-span])))
+          (is (= "L7-DUP-BINDING" (get-in diagnostic [:facts :semantic-rule])))
+          (is (= "<completion-match-binding-guards>" (get-in diagnostic [:source-span :source])))
+          (is (= (get-in duplicate [:source-span :byte-start]) (get-in diagnostic [:source-span :byte-start])))
+          (is (= "Use each binding name only once within a match pattern; sibling clauses may bind the same name independently."
+                 (:remediation diagnostic)))
+          (is (nil? (:records result)))
+          ;; Original source order chooses the first duplicate, not the last.
+          (is (not= (:form-id pattern) (:form-id diagnostic)))))
+      (doseq [value ['[x y] '[x {:id y}] (array-map :left 'x :right '[y] :when true)
+                     '[_ _] '[(quote x) x] '{:when false}]]
+        (let [{:keys [result]} (check value)]
+          (is (= :accepted (:status result)))
+          (is (= (count (:bindings result)) (count (set (map :name (:bindings result))))))))
+      (doseq [guard [true false '(if true (throw 1) false)]]
+        (reset! forms {})
+        (let [form (make! (list 'match 0 (array-map :id 'same :when guard) 10 '{:other same} 20))
+              result (invoke 'sh07-lower-match [(input) (invoke 'sh07-empty-state []) form])
+              state (:state result) branches (:match-branch-records state)]
+          (is (= :accepted (:status result)))
+          (is (= 2 (count branches)))
+          (is (= 2 (count (set (mapcat :pattern-binding-ids branches)))))
+          (is (= :once-after-structural-success (get-in branches [0 :guard :evaluation])))
+          (is (= :next-candidate (get-in branches [0 :guard :on-pattern-failure])))
+          (is (= 1 (count (get-in (last (:nodes state)) [:evaluation :order]))))
+          (when (seq? guard)
+            (is (= :match-guard (get-in state [:error-transfers 0 :evaluation-region :parent-region-kind]))))))
+      ;; Duplicate detection precedes guard/body lowering, but not outer shape
+      ;; or scrutinee errors; neither an illegal guard nor malformed branch wins.
+      (doseq [[source reason]
+              [['(match 0 {:a x :b x :when (var 1)} (var 2) _ 0) :duplicate-match-binding]
+               ['(match (var 1) {:a x :b x} 1 _ 0) :var-symbol-required]
+               ['(match 0 {:a x :b x} 1 _) :match-pattern-expression-pairs-required]
+               ['(match 0 [x & x] 1 _ 0) :variable-width-vector-pattern-deferred]]]
+        (reset! forms {})
+        (let [form (make! source) result (invoke 'sh07-lower-match [(input) (invoke 'sh07-empty-state []) form])]
+          (is (= :rejected (:status result)))
+          (is (= reason (get-in result [:facts :reason])))))
+      (let [contract (with-open [reader (java.io.PushbackReader.
+                                        (io/reader (path "bootstrap/gravity/src/gravity/checked_core.gravity")))]
+                       (binding [*read-eval* false]
+                         (loop []
+                           (let [form (read reader)]
+                             (if (and (seq? form) (= 'def (first form)) (= 'sh07-core-contract (second form)))
+                               (nth form 2) (recur))))))]
+        (is (= "L7-DUP-BINDING" (get-in contract [:match-policy :vector-pattern-policy :duplicate-binding-diagnostic])))))))
+
 (deftest sh07-b10-root-map-guard-authentic-composition
   (let [artifact (file-artifact "accepted" "root-map-guards" ".gravity")
         canonical (core artifact) boundary (:gravity-core-boundary artifact)
