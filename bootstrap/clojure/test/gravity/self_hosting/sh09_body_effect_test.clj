@@ -1094,6 +1094,78 @@
                                           (assoc-in request [:canonical-core-artifact :module :effects] [])
                                           (assoc-in facts [:module :effects] []) {} 65536)))))))))))
 
+(deftest body-private-map-keys-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        {:keys [core node call edge nodes bindings forms types facts type-result descriptor join-result]}
+        ((ns-resolve upstream 'private-map-keys-typed-input))
+        c7 (ns-resolve upstream 'invoke-c7)
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        parameter-context (leaf 'body-lp-context request facts bindings 65536)
+        facts (assoc facts :list-parameter-context (:context parameter-context))
+        prepare #(leaf 'body-lq-context request % bindings %2)
+        context (prepare facts 65536) facts (assoc facts :list-query-context (:context context))
+        valid #(leaf 'body-lq-call-valid? core % bindings node call edge nodes)
+        coherent (fn [changed]
+                   (-> facts (assoc-in [:type-table :operator] changed)
+                       (assoc-in [:constraint-ledger 0] (c7 'sh08-mkeys-constraint [changed]))
+                       (assoc-in [:call-type-facts 0] (c7 'sh08-mkeys-call-fact [changed (:module core)]))))
+        graph (into {} (map (fn [[id type]] [id {:type type :direct #{} :transitive #{}}]) types))
+        record (leaf 'body-node-record node nil graph (:type type-result))]
+    (is (= :accepted (:status type-result) (:status context)) (pr-str (select-keys context [:status :reason :work-count])) )
+    (is (= [] (:diagnostics join-result)))
+    (is (= :accepted (:status parameter-context)) (pr-str parameter-context))
+    (is (true? (valid facts)))
+    (is (true? (leaf 'body-call-joins-with-foreign-valid? core facts bindings {})))
+    (is (= context (prepare facts (:work-count context))))
+    (is (= :body-deferred-work-limit (:reason (prepare facts (dec (:work-count context))))))
+    (is (= :gravity.type/map (get-in facts [:type-table :input])))
+    (is (= #{:memory/allocate} (:direct record) (:transitive record)))
+    (is (= :sh09-private-map-keys-allocation-v1 (get-in record [:allocation :rule-version])))
+    (is (nil? (get-in record [:allocation :extent])))
+    (is (= (:storage-policy descriptor) (get-in record [:allocation :storage-policy])))
+    (is (= (:key-domain-proof descriptor) (get-in record [:allocation :key-domain-proof])))
+    (let [inherited (leaf 'body-node-record node nil (assoc-in graph [:input :transitive] #{:error/throw}) (:type type-result))]
+      (is (= #{:memory/allocate} (:direct inherited)))
+      (is (= #{:memory/allocate :error/throw} (:transitive inherited))))
+    (is (true? (valid (assoc-in facts [:list-query-context :type-checks :present-get :work-count] 0))))
+    (is (true? (valid (assoc-in facts [:list-query-context :type-checks] {}))))
+    (doseq [changed [((ns-resolve upstream 'private-map-keys-cross-family-descriptor) descriptor)
+                     (assoc descriptor :entry-proof-work 0)
+                     (assoc-in descriptor [:key-domain-proof :normal-witness-count] 0)
+                     (update-in descriptor [:key-domain-proof :entries] pop)
+                     (assoc-in descriptor [:key-domain-proof :entries 0 :compatibility :actual-type] :gravity.type/map)
+                     (assoc descriptor :result-count 0)
+                     (assoc descriptor :latent-effects [] :direct-effects [])]]
+      (is (false? (valid (coherent changed)))))
+    (doseq [mutate [#(update % :call-type-facts (fn [items] (vec (concat (subvec items 0 1) (subvec items 2)))))
+                    #(update % :call-type-facts conj (get-in % [:call-type-facts 1]))
+                    #(assoc-in % [:call-type-facts 1 :argument-types] [:gravity.type/map])
+                    #(assoc-in % [:call-type-facts 1 :syntax-id] :orphan)
+                    #(assoc-in % [:constraint-ledger 1 :rhs 0 :chosen] (get-in descriptor [:key-domain-proof :entries 0 :argument-type]))
+                    #(assoc-in % [:constraint-ledger 1 :rhs 0 :compatibility :forgets] [:all-value-obligations])
+                    #(assoc-in % [:constraint-ledger 1 :constraint-id-request :call-core-node-id] :orphan)
+                    #(update % :constraint-ledger (fn [items] (vec (concat (subvec items 0 1) (subvec items 2)))))]]
+      (let [candidate (mutate facts)]
+        (is (= :rejected (:status (prepare candidate 65536))))
+        (is (false? (valid candidate)))))
+    (let [callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "private keys hash" {})))
+                   (equals [_] (swap! callbacks conj :equals) (throw (ex-info "private keys equals" {})))
+                   (toString [] (swap! callbacks conj :format) (throw (ex-info "private keys format" {}))))]
+      (doseq [[changed-request changed-facts changed-bindings budget]
+              [[request (assoc-in facts [:type-table :input-0] opaque) bindings 65536]
+               [request (assoc-in facts [:type-table :input-0 :member-types] [:gravity.type/keyword opaque]) bindings 65536]
+               [request (assoc-in facts [:call-type-facts 1 :result-type] opaque) bindings 65536]
+               [request (assoc-in facts [:constraint-ledger 1 :rhs 0 :compatibility] opaque) bindings 65536]
+               [(assoc-in request [:canonical-core-artifact :module :namespace] opaque) facts bindings 65536]
+               [(assoc-in request [:canonical-core-artifact :module :effects] opaque) facts bindings 65536]
+               [request facts (assoc-in bindings [:ordering-binding :profile-set] [opaque]) 65536]
+               [request facts (assoc-in bindings [:ordering-binding :profile-set] (conj (vec (repeat 40000 :meta)) opaque)) 256]]]
+        (is (= :rejected (:status (leaf 'body-lq-context changed-request changed-facts changed-bindings budget))))
+        (is (empty? @callbacks))))))
+
 (deftest body-map-keys-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test

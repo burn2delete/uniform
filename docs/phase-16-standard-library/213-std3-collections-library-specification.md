@@ -333,11 +333,28 @@ The initial checked subset accepts complete finite literal Map types whose
 physical even `member-types` Vector contains at most 1024 slots (512 pairs),
 with every key-slot type exactly Keyword and every value type fully validated.
 The normal result type is exactly the homogeneous Keyword List, including for
-an empty Map. Bare/general Maps and other key families reject in this subset.
+an empty Map. Other key families and general Maps reject in this subset.
+A bare Map parameter is accepted only through L5's complete private call-entry
+key-domain rule: each normal entry independently establishes the whole finite
+Keyword-key Map and validates every stored value type within the same 512-pair
+limit. Different entry shapes and value types are permitted; the parameter
+remains bare Map and the result remains the homogeneous Keyword List.
+
+This exception requires the complete closed private function/use/call census,
+actual argument sources and types, bare-Map compatibility and call facts.
+Selected-key presence evidence cannot authorize it. At least one normal entry
+is required, and an empty Map is a valid witness. A Never argument in any
+coordinate makes that call non-invoking. Unknown, circular, unaccounted or
+all-non-invoking entries cannot ground the proof. Public entry, escape,
+mutation and parameter re-entry cannot be silently excluded. Each consuming
+compiler stage must reconstruct the proof and retain its function, parameter,
+`keys` use and complete caller dependencies and invalidations.
+
 Depth 128 and logical work 65536 remain unchanged. Reserve all profile, target,
 type, key-domain, census and construction work before the corresponding walk
 or construction; ignored values and malformed tails remain subject to complete
-type validation.
+type validation. This exception adds no common shape, key presence, extent,
+cardinality, nonempty, flow or specialization facts.
 
 Normal completion permits `:memory/allocate`, including for an empty result.
 The development provider checks the actual Map and its width before temporary
@@ -495,6 +512,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Proven-nonempty Vector first covers singleton and ordered multi-element values, stored false/nil, ordinary operand evaluation and transfers, inert payloads and original-value preservation without selecting an empty-Vector result policy.
 - Persistent Vector rest returns an ordered persistent List suffix, including an empty List for empty and singleton inputs, preserves false/nil, inert payloads, operand evaluation, effects, transfers and the original Vector, and declares possible allocation, List-spine copying, shallow stored-value sharing and persistent lifetimes without borrowing Vector storage.
 - Map keys returns a persistent homogeneous Keyword List for the initial finite Keyword-key Map subset, includes every stored key once, permits allocation even when empty, preserves stronger provider order contracts without default order or cardinality facts, validates all input types and physical keys before output construction, and preserves inert values, operand effects, capabilities and transfers.
+- Private bare-Map `keys` fixtures reconstruct complete entry-specific whole-key-domain and compatibility evidence at each compiler consumer, cover different normal entry shapes and empty Maps, reject String keys, ignored malformed values, unknown or non-invoking-only witnesses and uncovered callers/escape/mutation/re-entry, and preserve the same result and allocation/storage policy without refining the parameter.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.
 - Binary persistent Map removal covers present, absent and empty Maps, stored false/nil, original-value preservation, eager operand evaluation and transfers, inert payloads, and explicit allocation/storage policy.

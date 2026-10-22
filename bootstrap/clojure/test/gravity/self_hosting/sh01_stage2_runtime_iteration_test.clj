@@ -9996,6 +9996,74 @@
       (is (identical? opaque (first transfer))))
     (is (empty? @callbacks))))
 
+(deftest current-gravity-private-map-keys-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        {:keys [core node call edge nodes bindings forms types facts descriptor]} ((ns-resolve upstream 'private-map-keys-typed-input))
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        context {:core core :nodes nodes :forms forms :bindings bindings :types types
+                 :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                 :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                 :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+                 :call-facts (:call-type-facts facts) :ledger (:constraint-ledger facts)
+                 :current-function (first (:function-records core))
+                 :locals {:span-binding 'span} :parameter-types {:span-binding :gravity.type/map}}
+        compile #(invoke 'p15-s23-typed-compile-node %1 :present-get %2)
+        lowered (compile context 65536)
+        coherent (fn [changed]
+                   (-> context (assoc-in [:types :operator] changed)
+                       (assoc-in [:ledger 0] (c7 'sh08-mkeys-constraint [changed]))
+                       (assoc-in [:call-facts 0] (c7 'sh08-mkeys-call-fact [changed (:module core)]))))]
+    (is (= :complete (:status lowered)) (pr-str lowered))
+    (is (= {:op :builtin-call :function 'keys :args [{:op :local :name 'span}]} (:value lowered)))
+    (when (= :complete (:status lowered))
+      (is (= lowered (compile context (:work-count lowered))))
+      (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+    (is (= :gravity.type/map (get-in context [:types :input])))
+    (is (= lowered (compile (assoc context :type-checks {} :private-map-keys-context {:work-count 0}) 65536)))
+    (doseq [changed [((ns-resolve upstream 'private-map-keys-cross-family-descriptor) descriptor)
+                     (assoc descriptor :entry-proof-work 0)
+                     (assoc-in descriptor [:key-domain-proof :normal-witness-count] 0)
+                     (update-in descriptor [:key-domain-proof :entries] pop)
+                     (assoc-in descriptor [:key-domain-proof :entries 0 :compatibility :actual-type] :gravity.type/map)
+                     (assoc descriptor :result-count 0)
+                     (assoc descriptor :latent-effects [] :direct-effects [])]]
+      (is (= :rejected (:status (compile (coherent changed) 65536)))))
+    (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                    #(assoc % :call-facts []) #(update % :call-facts conj (get-in % [:call-facts 1]))
+                    #(assoc-in % [:call-facts 1 :argument-types] [:gravity.type/map])
+                    #(assoc-in % [:call-facts 1 :syntax-id] :orphan)
+                    #(assoc-in % [:ledger 1 :rhs 0 :compatibility :forgets] [:all-value-obligations])
+                    #(assoc-in % [:ledger 1 :rhs 0 :chosen] (get-in descriptor [:key-domain-proof :entries 0 :argument-type]))
+                    #(assoc-in % [:ledger 1 :constraint-id-request :call-core-node-id] :orphan)
+                    #(update % :ledger (fn [rows] (vec (concat (subvec rows 0 1) (subvec rows 2)))))
+                    #(update-in % [:core :calls] into (get-in % [:core :calls]))
+                    #(assoc-in % [:forms :input :parent-form-id] :orphan)
+                    #(assoc-in % [:types :input-0 :member-types 0] :gravity.type/string)
+                    #(assoc-in % [:call-order :present-get] 999)
+                    #(assoc-in % [:current-function :function-syntax-id] :orphan)]]
+      (is (= :rejected (:status (compile (mutate context) 65536)))))
+    (let [callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "private keys lowering hash" {})))
+                   (equals [_] (swap! callbacks conj :equals) (throw (ex-info "private keys lowering equals" {})))
+                   (toString [] (swap! callbacks conj :format) (throw (ex-info "private keys lowering format" {}))))]
+      (doseq [[candidate budget]
+              [[(assoc-in context [:types :input-0] opaque) 65536]
+               [(assoc-in context [:types :input-0 :member-types] [:gravity.type/keyword opaque]) 65536]
+               [(assoc-in context [:call-facts 1 :result-type] opaque) 65536]
+               [(assoc-in context [:ledger 1 :rhs 0 :compatibility] opaque) 65536]
+               [(assoc-in context [:core :module :namespace] opaque) 65536]
+               [(assoc-in context [:core :module :effects] opaque) 65536]
+               [(assoc-in context [:bindings :ordering-binding :profile-set] [opaque]) 65536]
+               [(assoc-in context [:bindings :ordering-binding :profile-set] (conj (vec (repeat 40000 :meta)) opaque)) 256]]]
+        (is (= :rejected (:status (compile candidate budget))))
+        (is (empty? @callbacks))))))
+
 (deftest current-gravity-map-keys-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'map-keys-input)
