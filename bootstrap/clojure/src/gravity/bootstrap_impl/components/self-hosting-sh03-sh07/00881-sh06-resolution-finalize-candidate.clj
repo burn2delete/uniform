@@ -93,6 +93,7 @@
                retained (get-in candidate [:sh05-macro-artifact :gravity-macro-boundary
                                           :authenticated-sh04-artifact :c2-reader-artifact
                                           :sh03-reader-authentication :reader-source-revision])
+               artifact (sh06-resolution-finalize-candidate source-path candidate)
                after (sh03-reader-read-selected-source-bytes! source-path reader-source-path)]
            (when-not (and (map? retained)
                           (contains? (get-in retained [:function-shapes sh03-reader-verifier]) :semantic-hash)
@@ -101,9 +102,8 @@
              (sh06-resolution-boundary-fail!
               "C5-UNRESOLVED" source-path :selected-current-reader-parent
               (select-keys retained identity-keys) {:reason :current-reader-parent-revision-mismatch}))
-           (let [artifact (sh06-resolution-finalize-candidate source-path candidate)]
-             (sh06-resolution-binding-current! source-path plan-binding)
-             artifact)))))))
+           (sh06-resolution-binding-current! source-path plan-binding)
+           artifact))))))
 
 (defn sh06-resolution-file-artifact
   ([source-path]
