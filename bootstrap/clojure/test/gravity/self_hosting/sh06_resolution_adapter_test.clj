@@ -3,7 +3,9 @@
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
-            [gravity.c6-core-lowering :as hosted-c6]))
+            [gravity.c6-core-lowering :as hosted-c6]
+            [gravity.c6-core-lowering.context :as c6-context]
+            [gravity.c6-core-lowering.lowering :as c6-lowering]))
 
 (defn- repository-root
   []
@@ -1977,6 +1979,125 @@
             (is (= "C5-UNRESOLVED" (:id result)))
             (is (nil? (:unexpected-success result)))
             (is (nil? (:raw-host-error result)))))))))
+
+(defn- bootstrap-c6-recursive-flatten-oracle [node]
+  ;; Frozen recursive operation semantics, not a constructor/verifier substitute.
+  (vec (cons node
+             (mapcat #(c6-context/invoke-op :c6-flatten-core
+                                           bootstrap-c6-recursive-flatten-oracle %)
+                     (c6-context/invoke-op :c6-core-child-nodes
+                                          c6-lowering/c6-core-child-nodes
+                                          (:children node))))))
+
+(deftest sh06-bootstrap-c6-default-flatten-preserves-normalized-artifact
+  ;; Normalized C6 DATA exercises the actual bootstrap c6-call operation map.
+  ;; The separate authenticated consumer below owns real fresh SH06 gates.
+  (let [module {:module 'c6.bootstrap-normalized :source-path "normalized.gravity"
+                :profile :hosted :target :jvm :effects #{} :capabilities #{}
+                :safety :safe :metadata {}}
+        c5 {:kind :gravity/stage0-c5-name-resolution-artifact :artifact-id "sha256:normalized-c5"
+            :namespace-analysis {:namespace 'c6.bootstrap-normalized}
+            :binding-table {:bindings [{:binding-id "normalized-binding"}]}
+            :alias-table {} :dependency-graph {:nodes [] :edges []}}
+        syntax (fn [id form] {:syntax-id id :form form :origin :source
+                              :span {:source "normalized.gravity" :form-index id}
+                              :generated-origin [] :metadata {}})
+        stream [(syntax "ns" '(ns c6.bootstrap-normalized))
+                (assoc (syntax "generated" '(let [x (if true 1 2)] (do x 3)))
+                       :generated-origin [{:macro 'example :syntax-id "macro-0"}])
+                (syntax "plain" '(def answer 42))]
+        via (private-bootstrap-var 'c6-call)
+        build (fn [candidate]
+                (via hosted-c6/c6-lowering-artifact "normalized.gravity" candidate c5 stream))
+        old-build (fn [candidate]
+                    (via #(hosted-c6/with-operations
+                            {:c6-flatten-core bootstrap-c6-recursive-flatten-oracle}
+                            (fn [] (hosted-c6/c6-lowering-artifact
+                                    "normalized.gravity" candidate c5 stream)))))
+        expected (old-build module)
+        original-invoke c6-context/invoke-op
+        original-proof bootstrap/c6-lowering-capability-proof
+        calls (atom []) proof-calls (atom 0)
+        actual (with-redefs [c6-context/invoke-op
+                            (fn [key fallback & args]
+                              (when (= :c6-flatten-core key)
+                                (swap! calls conj (:node-id (first args))))
+                              (apply original-invoke key fallback args))
+                            bootstrap/c6-lowering-capability-proof
+                            (fn [artifact]
+                              (swap! proof-calls inc)
+                              (original-proof artifact))]
+                 (build module))
+        roots (get-in actual [:core-ast-module :roots])]
+    (is (= expected actual))
+    (is (= (:artifact-id expected) (:artifact-id actual)))
+    (is (= :passed (get-in actual [:core-verifier-report :status])))
+    (is (= 2 (count roots)))
+    (is (= (concat roots roots) @calls))
+    (is (= 2 @proof-calls) "validation and published capability proofs both remain")
+    (is (= c5 (:c5-name-resolution-artifact actual)))
+    (doseq [failure [:origin :verify]]
+      (let [candidate (assoc-in module [:metadata :compiler :c6-lowering :fail] failure)
+            rejected (fn [thunk]
+                       (try (thunk) {:unexpected-success true}
+                            (catch clojure.lang.ExceptionInfo error (ex-data error))))
+            old-error (rejected #(old-build candidate))
+            error (rejected #(build candidate))]
+        (is (= old-error error))
+        (is (= (if (= :origin failure) "C6-ORIGIN" "C6-VERIFY") (:id error)))
+        (is (= "C6" (:document-id error)))
+        (is (nil? (:unexpected-success error)))))))
+
+(deftest sh06-bootstrap-c6-custom-flatten-retains-original-operations
+  (let [a {:artifact :gravity/core-node :node-id "a" :form :literal :children {}}
+        b {:artifact :gravity/core-node :node-id "b" :form :literal :children {}}
+        root {:artifact :gravity/core-node :node-id "root" :form 'do
+              :children (array-map :first a :nested [b a])}
+        replacement (assoc b :node-id "replacement")
+        original-bootstrap bootstrap/c6-flatten-core
+        original-children c6-lowering/c6-core-child-nodes
+        failure (ex-info "original bootstrap C6 callback failure" {:id "C6-ORIGIN" :sentinel 29})]
+    (doseq [layer [:bootstrap :facade :leaf]
+            operation [:c6-flatten-core :c6-core-child-nodes]
+            throw? [false true]]
+      (let [flatten? (= :c6-flatten-core operation)
+            var (case [layer operation]
+                  [:bootstrap :c6-flatten-core] #'bootstrap/c6-flatten-core
+                  [:bootstrap :c6-core-child-nodes] #'bootstrap/c6-core-child-nodes
+                  [:facade :c6-flatten-core] #'hosted-c6/c6-flatten-core
+                  [:facade :c6-core-child-nodes] #'hosted-c6/c6-core-child-nodes
+                  [:leaf :c6-flatten-core] #'c6-lowering/c6-flatten-core
+                  [:leaf :c6-core-child-nodes] #'c6-lowering/c6-core-child-nodes)
+            original @var
+            run (fn [oracle?]
+                  (let [events (atom [])
+                        callback (if flatten?
+                                   (fn [node]
+                                     (swap! events conj (:node-id node))
+                                     (if (= "b" (:node-id node))
+                                       (if throw? (throw failure) [replacement])
+                                       ((if oracle? bootstrap-c6-recursive-flatten-oracle original) node)))
+                                   (fn [value]
+                                     (swap! events conj value)
+                                     (if throw? (throw failure)
+                                         (reverse (original-children value)))))
+                        result (try
+                                 (if oracle?
+                                   (hosted-c6/with-operations {operation callback}
+                                     #(if (and flatten? (not= :bootstrap layer))
+                                        (callback root)
+                                        (bootstrap-c6-recursive-flatten-oracle root)))
+                                   (with-redefs-fn {var callback} #(original-bootstrap root)))
+                                 (catch clojure.lang.ExceptionInfo error error))]
+                    [result @events]))
+            [expected expected-events] (run true)
+            [actual actual-events] (run false)]
+        (is (= expected-events actual-events))
+        (if throw?
+          (do (is (and (identical? failure expected) (identical? failure actual)))
+              (is (= (ex-data expected) (ex-data actual))))
+          (do (is (= expected actual))
+              (is (every? true? (map identical? expected actual)))))))))
 
 (deftest sh06-authenticated-resolution-is-the-c6-consumer-boundary
   (let [source-path (fixture-path "accepted" "compiler-subset" ".gravity")
