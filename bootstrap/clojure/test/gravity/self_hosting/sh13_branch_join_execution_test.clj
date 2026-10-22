@@ -527,6 +527,20 @@
                 verification (invoke 'sh12-verify-branch-join-mir core mir)
                 verification-end (System/nanoTime)]
             (println "nested-if fresh-c11-verification(ns)" extension (- verification-end verification-start))
+            (when (not= :passed (:status verification))
+              ;; Failure-only observations from THIS already-built source
+              ;; product; never another producer run or alternate acceptance.
+              (let [view (invoke 'sh12-c6p-role-view core)]
+                (println "nested-if original-product predicates"
+                         {:lineage (invoke 'sh12-c6p-lineage-valid? core)
+                          :producer (invoke 'sh12-c6p-producer-metadata-valid? core)
+                          :shape (invoke 'sh12-c6p-shape-valid? core view)
+                          :nodes (invoke 'sh12-c6p-role-nodes-valid? core 0)
+                          :declaration (invoke 'sh12-c6p-declaration-valid? core)
+                          :node-problem (invoke 'sh12-c6p-nodes-problem core nodes 0)
+                          :graphs (invoke 'sh12-c6p-graphs-valid? core view)})
+                (println "nested-if original-node rows"
+                         (mapv #(select-keys % [:source-operation :kind :path :plan-node? :plan-depth :type :attributes]) nodes))))
             (is (= :accepted (:status raw)))
             (is (= :passed (:status upstream)))
             (is (= :passed (:status verification)) (pr-str (:diagnostics verification)))
