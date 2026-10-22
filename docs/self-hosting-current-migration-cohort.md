@@ -480,3 +480,48 @@ governance/admission record, manifest or shared index changes here. Retained
 failed, skipped and incomplete outcomes stay so. This document supplies no
 fresh current-compiler admission, self-hosting, seedless/release, all-target,
 performance or safety-completion claim.
+
+## PR266: bounded current hex-source composition
+
+[PR266](https://github.com/burn2delete/uniform/pull/266) merged on 2026-10-22 at
+`ddef9c1a4df10bb66d240362bf25e0cd7caae848`, tree
+`82cbb1946cd8d76a8704d2ece7f251a9cfb714aa`, identical to tested candidate
+`020e5b59ba33267ee4e7d5fd6900a1203e80daa9`. Scoped development evidence only;
+no cohort renewal or authoritative migration follows.
+Later PR265/main `6aba074a` changes emitter freshness inputs: these artifacts
+are not renewed current-cohort provenance. Reassess affected provenance at a
+concrete stable-cohort admission decision, not by replaying now or blocking
+ordinary development; the reader/helper semantic result retains its tested scope.
+
+The exact selector `sh03-current-hex-definitions-compose-through-authenticated-core`
+in [the SH03 adapter tests](../bootstrap/clojure/test/gravity/self_hosting/sh03_reader_adapter_test.clj)
+uses the two actual current `sh03-lowercase-hex?`/`sh03-sha256-id?` definitions
+as a new, at-most-2-KiB `.gravity` subject with authentic new-path provenance,
+under `:meta/:jvm/:safe` with no imports. Explicit current-reader source4 builds
+genuine C3/SH05/C5 parents, then the actual Gravity Core owner and fresh public
+verifier run. This is neither hosted-C6 source analysis nor a default-pin update.
+
+V3 naturally exited 0 at 512 MiB: one test/342 passed assertions, no failures or
+errors. Both exact definition/body/origin pairs, selected bindings,
+operator/argument order and loop/recur joins passed. Fresh original replay
+passed; a coherent reordered-`subvec` operand carrier, retaining the original
+authenticated request, C5 parent and source, was rejected by six public replay
+checks. Raw output and the non-authoritative timing EDN share the prefix
+`/tmp/sh03-hex-source-composition-v3-020e5b59-20261022` (`.log`/`.edn`).
+See the PR for detailed change/evidence context and scoped independent acceptance.
+
+Preserved V1 (`0e73ef48`) exited 2 during namespace reading: no EDN or selector
+execution. After the one-parenthesis fix `08e108cc`, V2 remains FAILED:
+332 passed/two failed assertions/no errors. The test incorrectly applied
+`rest` to the already body-only expanded forms, mispairing and truncating the
+comparison. `020e5b59` removes that extra `rest` and guards all five streams at
+exactly two entries, retaining both name/body checks. V3 is a new aligned-pair
+run, not a relabelled V2 result.
+
+Only this two-definition composition is resolved; full reader/checked-Core
+source comparisons, Core variants and dependency/toolchain/bootstrap evidence
+remain open. SH-05.1, SH-05.6, SH-06.6 and full-cohort C16 remain OPEN;
+the resolver remains
+`:development-unadmitted`. No historical row, pin, score or status is promoted.
+No QST, typed-bounds/C7, C8/effect, runtime, full-reader or migration claim is
+made; C7-C10 facts remain pending.
