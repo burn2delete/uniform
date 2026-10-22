@@ -480,3 +480,84 @@ governance/admission record, manifest or shared index changes here. Retained
 failed, skipped and incomplete outcomes stay so. This document supplies no
 fresh current-compiler admission, self-hosting, seedless/release, all-target,
 performance or safety-completion claim.
+
+## PR266: bounded current hex-source composition
+
+This appended reconciliation records actual merged development evidence, not a
+new cohort assessment or authoritative migration. [PR266](https://github.com/burn2delete/uniform/pull/266)
+merged on 2026-10-22 at `ddef9c1a4df10bb66d240362bf25e0cd7caae848`, tree
+`82cbb1946cd8d76a8704d2ece7f251a9cfb714aa`, identical to tested candidate
+`020e5b59ba33267ee4e7d5fd6900a1203e80daa9`. The sole executable change is
+the test `sh03-current-hex-definitions-compose-through-authenticated-core` in
+[the SH03 adapter tests](../bootstrap/clojure/test/gravity/self_hosting/sh03_reader_adapter_test.clj).
+Its tested file SHA-256 is
+`88fdda7d6c48f66c1199a27aefc78926d5d11831866b56d81e902d86fb6c8bf2`.
+The historical assessment tables and evidence classifications above are unchanged.
+
+The test selects the two actual current reader definitions
+`sh03-lowercase-hex?` and `sh03-sha256-id?`, including the changed vector-tail
+`subvec` expression. It writes a new temporary `.gravity` source subject of at
+most 2 KiB, with a new namespace and authentic new-path provenance, under
+`:meta/:jvm/:safe` with no imports. The selected reader source is the
+257,183-byte revision with SHA-256
+`e3f840456ac3f2df71bb5ddf894f9524d5a8df74297252bad49925d9060a9f71`.
+Host parsing selects the original bodies; it does not authenticate the subject.
+The existing explicit-current-reader source4 interface constructs genuine
+C3/SH05/C5 parents with empty actual module inputs, then
+`sh07-core-from-resolution-artifact` executes the Gravity Core owner and
+`sh07-core-artifact-verification` performs fresh public replay. This is not
+hosted-C6 source analysis, a default-pinned invocation, or a historical reader
+pin update. Default arities still enforce their historical pins.
+
+Actual checks cover both complete definition/body pairs, prior-stage expansion
+parity, generated origins/hygiene, source occurrences, selected bindings,
+operator-first argument evaluation, and loop/recur joins. An exact two-entry
+guard on all five zipped streams prevents truncation from hiding either pair.
+A coherent mutation reorders the changed `subvec` operands and updates the
+node, call, call-edge, evaluation-order and identity-preimage copies, while
+retaining the authenticated source request and C5 parent. Fresh public replay
+rejects it with `:call-edges-replay?`, `:authoritative-products-replay?`,
+`:canonical-core-replays?`, `:calls-replay?`, `:module-replay?` and
+`:semantic-artifact-id-current?` failed. The original source stays unchanged;
+the temporary file is deleted afterward.
+
+The original V3 invocation used a 512 MiB heap and naturally exited 0: one
+test, 342 passed assertions, no failures/errors. Execution took 153.240 seconds
+after 7.038 seconds namespace loading; these are development scheduling
+observations, not a benchmark or speedup claim. Original TTY session `80914`
+returned exit 0 in terminal result `7910f5`; owned Java PID `83086` was absent
+afterward. Pre/post source and test hashes matched, with no temporary-source
+survivor. The local raw log is
+`/tmp/sh03-hex-source-composition-v3-020e5b59-20261022.log` (823 bytes, SHA-256
+`2dffb8d8faef9cfc0524eb717d2c3d453b7d6cdc4dd474d889634e2250f480af`);
+the existing non-authoritative timing receipt is the same prefix plus `.edn`
+(1,513 bytes, SHA-256
+`107c4dc29294161217a7423bd7540773092df178b24f0672a0f4ea02737e827d`).
+Independent review accepted only this scoped development result.
+
+Failed predecessors remain distinct. Candidate `0e73ef48` naturally exited 2
+during namespace reading, with a 116-byte log and no EDN or selector execution:
+`/tmp/sh03-hex-source-composition-v1-0e73ef48-20261022.log`. A missing close
+parenthesis was corrected at `08e108cc`; its separate namespace-list setup
+check exited 0 without running tests. The V2 material run at that candidate
+naturally exited 1: 332 passed, two failed assertions, no errors, retained at
+`/tmp/sh03-hex-source-composition-v2-08e108cc-20261022.log` and `.edn`.
+Those failures were the test's extra `rest` on the already body-only
+`:expanded-forms` projection: it paired the first original with the second
+expansion and truncated to one pair. Candidate `020e5b59` removes only that
+extra `rest` and adds the exact two-pair guard; both name/body checks remain.
+V3 is a new actual aligned-pair result, not a relabelled V2 aggregate.
+
+This closes only the bounded changed-hex-source -> genuine C5 -> actual Gravity
+Core composition question. It neither replays nor renews the earlier census,
+finite hex kernels, historical owner compositions or entire six-source cohort.
+The complete current reader and checked-Core source-analysis/comparison rows,
+required Core variants and selected dependency/toolchain/bootstrap evidence
+remain separate work. SH-05.1, SH-05.6, SH-06.6 and full-cohort C16 remain OPEN;
+the resolver stays `:development-unadmitted`. There is no QST composition,
+general macro, typed-bounds/C7, C8/effect, C9/C10 safety, runtime, full-reader,
+migration, self-hosting or seed-retirement claim. C7-C10 facts remain pending.
+Input/product caps are pre/post guards, not hard producer resource containment.
+Future source/transport/compiler/dependency changes require their own affected
+comparison under C16; this one result supplies no new manifest, pin, score or
+status promotion.
