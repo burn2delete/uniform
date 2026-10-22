@@ -2763,7 +2763,7 @@
         (is (= :rejected (:status (check (assoc-in established (into [:slice-operator] path) :forged) 65536)))))))
   (doseq [[value start end] [["abc" -1 1] ["abc" 2 1] ["abc" 0 4]
                             [[65 66 67] -1 1] [[65 66 67] 2 1] [[65 66 67] 0 4]
-                            ["\u00e9" 0 1] [(vec (range 1025)) 0 1]]]
+                            ["\u0100" 0 1] [(vec (range 1025)) 0 1]]]
     (let [{:keys [core node call edge nodes bindings types forms]} (let-vector-slice-input value start end)]
       (is (= :rejected (:status (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536]))))))
   (let [transfer (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'vector-slice-transfer-input)]
@@ -3725,7 +3725,7 @@
   (let [result (let-vector-slice-first-established (let-vector-count-slice-first-input "f" 2 nil))]
     (is (= :rejected (get-in result [:slice :status])))
     (is (= "STD3002" (get-in result [:slice :rule]))))
-  (doseq [value ["\u0080" (apply str (repeat 1025 "a")) [1 2 3]]]
+  (doseq [value ["\u0100" (apply str (repeat 1025 "a")) [1 2 3]]]
     (let [input (let-vector-count-slice-first-input value 0 nil)
           result (let-vector-slice-first-established input)]
       (when (vector? value) (is (= :accepted (get-in input [:count-result :status]))))
@@ -4606,7 +4606,7 @@
         (is (= :start-inclusive-end-exclusive (get-in descriptor [:slice-policy :range])))))))
 
 (deftest sh08-vector-slice-proof-development-kernel
-  (doseq [[text start end] [["" 0 0] ["sha256:abcd" 0 7] ["sha256:abcd" 7 11]
+  (doseq [[text start end] [["a\u00e9\u00ff" 0 3] ["a\u00e9\u00ff" 1 2] ["" 0 0] ["sha256:abcd" 0 7] ["sha256:abcd" 7 11]
                            ["sha256:abcd" 11 11] ["sha256:abcd" 0 11] ["sha256:abcd" 2N 4N]]]
     (let [input (vector-slice-established (vector-slice-input text start end))
           result (vector-slice-derived input 65536) descriptor (:descriptor result) proof (:bounds-proof descriptor)
@@ -4692,7 +4692,7 @@
     (is (= :rejected (:status (vector-slice-derived (vector-slice-transfer-input "sha256:abcd" start end positions) 65536))))))
 
 (deftest sh08-vector-slice-child-priority-development-kernel
-  (doseq [[text expected] [["\u00e9" :string-character-vector-unsupported-text]
+  (doseq [[text expected] [["\u0100" :string-character-vector-unsupported-text]
                            [(apply str (repeat 1025 \a)) :string-character-vector-width]]]
     (let [{:keys [core nodes forms bindings products binding-types]} (vector-slice-input text 0 1)
           context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
@@ -4748,6 +4748,103 @@
                             :law :one-character-per-unicode-scalar :normalization :none :coercion :none}}]
       (is (= expected actual)))))
 
+(defn- literal-string-vector-cross-domain-descriptor [descriptor]
+  ;; A coherent descriptor-family substitution must fail fresh reconstruction.
+  (if (= :latin1-scalars (get-in descriptor [:conversion-proof :validated-domain]))
+    (-> descriptor
+        (assoc :version :sh08-string-character-vector-v1)
+        (assoc-in [:conversion-policy :supported-domain] :original-ascii-string-literal)
+        (update :conversion-proof #(-> % (dissoc :selection)
+                                      (assoc :schema :gravity/string-character-vector-proof-v1 :validated-domain :ascii))))
+    (-> descriptor
+        (assoc :version :sh08-string-character-vector-latin1-v1)
+        (assoc-in [:conversion-policy :supported-domain] :original-latin1-scalar-string-literal)
+        (update :conversion-proof assoc :schema :gravity/string-character-vector-latin1-proof-v1
+                :validated-domain :latin1-scalars :selection :failed-ascii-then-latin1))))
+
+(deftest sh08-latin1-string-vector-proof-development-kernel
+  (doseq [value ["\u0080" "\u00e9" "\u00ff" "a\u00e9z"
+                 (apply str (map char (range 256))) (apply str (repeat 1024 \u00ff))]]
+    (let [input (literal-string-vector-input value) result (literal-string-vector-derived input 65536)
+          descriptor (:descriptor result) proof (:conversion-proof descriptor) n (count value)
+          expected-work (+ 128 (count (get-in input [:core :function-records])) (* 40 n))
+          types (assoc (:types input) :operator descriptor :call (:type result))
+          check #(invoke-c7 'sh08-scv-inferred-call [(:core input) (:node input) (:call input) (:edge input)
+                                                    (:nodes input) (:bindings input) %1 %2])
+          measured (check types 65536)]
+      (is (= :accepted (:status result) (:status measured)))
+      (is (= expected-work (:work-count result)))
+      (is (= (vec (repeat n :gravity.type/character)) (:element-types (:type result))))
+      (is (= [:gravity/string-character-vector-latin1-proof-v1 :latin1-scalars :failed-ascii-then-latin1 n]
+             ((juxt :schema :validated-domain :selection :scalar-count) proof)))
+      (is (= [:sh08-string-character-vector-latin1-v1 :original-latin1-scalar-string-literal]
+             [(:version descriptor) (get-in descriptor [:conversion-policy :supported-domain])]))
+      (is (= :sh08-string-character-vector-v1 (:producer-rule (invoke-c7 'sh08-scv-constraint [descriptor]))))
+      (is (= result (literal-string-vector-derived input expected-work)))
+      (is (= [:rejected :string-character-vector-work-limit expected-work]
+             ((juxt :status :reason :work-count) (literal-string-vector-derived input (dec expected-work)))))
+      (is (= measured (check types (:work-count measured))))
+      (is (= :string-character-vector-work-limit (:reason (check types (dec (:work-count measured))))))
+      (doseq [changed [(literal-string-vector-cross-domain-descriptor descriptor)
+                       (assoc-in descriptor [:conversion-proof :selection] :ascii)
+                       (update descriptor :conversion-proof dissoc :selection)
+                       (assoc-in descriptor [:conversion-policy :supported-domain] :original-ascii-string-literal)
+                       (assoc descriptor :version :sh08-string-character-vector-v1)]]
+        (is (= :rejected (:status (check (assoc types :operator changed) 65536)))))))
+  (doseq [input [(literal-string-vector-input "") (literal-string-vector-input "A")
+                 (literal-string-vector-transfer-input)]]
+    (let [result (literal-string-vector-derived input 65536)
+          types (assoc (:types input) :operator (literal-string-vector-cross-domain-descriptor (:descriptor result))
+                                    :call (:type result))]
+      (is (= :rejected (:status (invoke-c7 'sh08-scv-inferred-call
+                                  [(:core input) (:node input) (:call input) (:edge input)
+                                   (:nodes input) (:bindings input) types 65536]))))))
+  (let [input (literal-string-vector-input "\u00e9") callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Latin1 proof hash callback")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "Latin1 proof equality callback")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "Latin1 proof formatting callback"))))]
+    (doseq [path [[:nodes :arg0 :source :form-id] [:forms :call :child-form-ids 1]
+                  [:nodes :arg0 :attributes :value] [:forms :arg0 :value]]
+            budget [0 65536]]
+      (is (= :rejected (:status (literal-string-vector-derived (assoc-in input path opaque) budget))))
+      (is (zero? @callbacks))))
+  (doseq [value ["\u0100" "\u00ffe\u0301" "\uD83D\uDE00" "\uD800" "\uDC00"]]
+    (is (= :string-character-vector-unsupported-text
+           (:reason (literal-string-vector-derived (literal-string-vector-input value) 65536)))))
+  (is (= :string-character-vector-width
+         (:reason (literal-string-vector-derived (literal-string-vector-input (apply str (repeat 1025 \u00ff))) 65536)))))
+
+(deftest sh08-latin1-string-vector-current-source-composition
+  ;; Distinct genuine G input; Q parity is only file parity, not source authority.
+  (let [source-path (fixture-path "accepted" "local-runtime-latin1-string-vector" ".gravity")
+        {:keys [request]} (parameter-vector-count-slice-current-source-request source-path)
+        result (invoke-c7 'sh08-function-type-core-artifact [request])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (let [core (:canonical-core-artifact request)
+            call (first (:calls core)) operator-id (:operator-node-id call)
+            descriptor (get-in result [:type-table operator-id])
+            forged (literal-string-vector-cross-domain-descriptor descriptor)
+            mutant (walk/postwalk-replace {descriptor forged} result)
+            report (invoke-c7 'sh08-verify-function-type-result [request result])
+            rejected (invoke-c7 'sh08-verify-function-type-result [request mutant])
+            row (first (filter #(= :sh08-string-character-vector-v1 (:producer-rule %)) (:constraint-ledger mutant)))
+            fact (first (filter #(= (:core-node-id call) (:call-core-node-id %)) (:call-type-facts mutant)))]
+        (is (= :passed (:status report)))
+        (is (= :sh08-string-character-vector-latin1-v1 (:version descriptor)))
+        (is (= [:gravity/string-character-vector-latin1-proof-v1 :latin1-scalars :failed-ascii-then-latin1 3]
+               ((juxt :schema :validated-domain :selection :scalar-count) (:conversion-proof descriptor))))
+        (is (= (vec (repeat 3 :gravity.type/character)) (get-in result [:type-table (:core-node-id call) :element-types])))
+        (is (= :original-latin1-scalar-string-literal (get-in descriptor [:conversion-policy :supported-domain])))
+        (is (= :sh08-string-character-vector-v1 (:producer-rule row)))
+        (is (= forged (get-in mutant [:type-table operator-id]) (:dependencies row) (:applied-string-character-vector fact)))
+        (is (not= result mutant))
+        (is (= :rejected (:status rejected)))
+        (is (= result (:expected rejected)))
+        (is (= mutant (:candidate rejected)))
+        (is (= (slurp source-path) (slurp (fixture-path "accepted" "local-runtime-latin1-string-vector" ".qst"))))))))
+
 (deftest sh08-ascii-string-vector-proof-development-kernel
   (doseq [value ["" "sha256:" (apply str (map char (range 128))) (apply str (repeat 1024 \a))]]
     (let [input (literal-string-vector-input value)
@@ -4777,7 +4874,7 @@
                          (assoc-in types [:operator :storage-policy :allocation] :none)
                          (assoc-in types [:operator :direct-effects] [])]]
         (is (= :rejected (:status (check candidate 65536)))))))
-  (doseq [value ["e\u0301" "\u00E9" "\uD83D\uDE00" "\uD800" "\uDC00"]]
+  (doseq [value ["e\u0301" "\u0100" "\uD83D\uDE00" "\uD800" "\uDC00"]]
     ;; Valid non-ASCII and malformed host units share unsupported-subset status.
     (let [result (literal-string-vector-derived (literal-string-vector-input value) 65536)]
       (is (= :rejected (:status result)))

@@ -7306,7 +7306,7 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         input (ns-resolve upstream 'vector-slice-input) transfer (ns-resolve upstream 'vector-slice-transfer-input)]
-    (doseq [[text start end positions] [["" 0 0 nil] ["sha256:abcd" 0 7 nil]
+    (doseq [[text start end positions] [["a\u00e9\u00ff" 0 3 nil] ["a\u00e9\u00ff" 1 2 nil] ["" 0 0 nil] ["sha256:abcd" 0 7 nil]
                                        ["sha256:abcd" 7 11 nil] ["sha256:abcd" 11 11 nil]
                                        ["sha256:abcd" 0 11 nil] ["sha256:abcd" 20 1 0]
                                        ["sha256:abcd" 20 1 1] ["sha256:abcd" 20 1 2]
@@ -7446,7 +7446,7 @@
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         c7 (ns-resolve upstream 'invoke-c7) input (ns-resolve upstream 'literal-string-vector-input)
         transfer (ns-resolve upstream 'literal-string-vector-transfer-input)]
-    (doseq [value ["" "sha256:" (apply str (map char (range 128))) nil]]
+    (doseq [value ["" "sha256:" (apply str (map char (range 128))) "\u00e9" (apply str (map char (range 256))) nil]]
       (let [base (if (nil? value) (transfer) (input value))
             ids (zipmap (keys (:nodes base)) (map sha (range 2900 3000)))
             convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
@@ -7482,7 +7482,7 @@
         (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
         (is (= context (leaf 'body-nq-context request facts bindings (:work-count context))))
         (is (= :rejected (:status (leaf 'body-nq-context request facts bindings (dec (:work-count context))))))
-        (doseq [changed [(dissoc descriptor :kind) (assoc descriptor :kind nil)
+        (doseq [changed [((ns-resolve upstream 'literal-string-vector-cross-domain-descriptor) descriptor) (dissoc descriptor :kind) (assoc descriptor :kind nil)
                          (assoc descriptor :kind (Object.))
                          (assoc descriptor :kind :gravity.type/applied-string-concat)
                          (assoc-in descriptor [:conversion-proof :scalar-count] 99)
@@ -7499,7 +7499,7 @@
                            (update facts :call-type-facts conj (first (:call-type-facts facts)))
                            (assoc facts :quotient-context nil)]]
           (is (false? (valid candidate))))
-        (when (= value "sha256:")
+        (when (contains? #{"sha256:" "\u00e9"} value)
           (let [callbacks (atom 0) opaque (proxy [Object] []
                                          (hashCode [] (swap! callbacks inc) (throw (AssertionError. "C8 ASCII hash")))
                                          (equals [_] (swap! callbacks inc) (throw (AssertionError. "C8 ASCII equality"))))

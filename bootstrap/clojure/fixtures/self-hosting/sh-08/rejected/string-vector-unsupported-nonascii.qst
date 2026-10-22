@@ -6,4 +6,4 @@
   (:safety :safe)
   (:exports [main]))
 
-(defn main [] (vec "\u00e9"))
+(defn main [] (vec "\u0100"))
