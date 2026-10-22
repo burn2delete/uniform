@@ -7,6 +7,11 @@ completion, target change, or release decision.
 Assessment revision: `e1c05842181c1b3002ccbd013cc8b1148472badf`.
 This document does not include subsequent working-tree compiler changes.
 
+The [C01/C16 reconciliation below](#c01c16-reconciliation-at-2a94fb71) records
+a later committed input snapshot. It does not replace this historical
+assessment's identities, select an authoritative revision, or include the
+concurrent private-Map `keys` implementation.
+
 Concurrent work known during assessment is not part of this revision: C5
 internal projection sharing in `00877`, `00880-03` and `00879-bounded-02` plus
 its owning SH06 test; seed module-local `let` work in `00575` and the `00580`
@@ -175,6 +180,104 @@ requirements**, not fabricated evidence. Thus this document proposes an exact
 repository-input cohort but does not assert a closed, executed stable compiler
 artifact or complete external environment. A future migration must bind those
 actual dependencies and compiler artifacts in existing BOOT5/BOOT8 records.
+
+## C01/C16 reconciliation at 2a94fb71
+
+This is a committed-input desk reconciliation on 2026-10-22, at
+`2a94fb7156f9e85ad085bc88f4d6f0b05b973e4c`, tree
+`cd2380533645332e1b9473eab4e064bf686c2c20`. The proposed ordinary
+`:meta/:jvm` endpoint still has exactly the six complete owner sources above,
+plus their actual seed, rule, freshness and producer/consumer dependencies.
+It constructs canonical Core with downstream legality pending. It is not the
+69-plus-five directory inventory, a compiled compiler build recipe, or a
+replacement for the milestone-wide SH-07 exit gate.
+
+These are actual file observations at that commit, not renewed pins:
+
+| Input relative to `bootstrap/gravity/` | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `src/gravity/compiler/authenticated_envelope.gravity` | 59495 | `04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71` |
+| `src/gravity/bootstrap/reader.gravity` | 257183 | `e3f840456ac3f2df71bb5ddf894f9524d5a8df74297252bad49925d9060a9f71` |
+| `src/gravity/bootstrap/syntax.gravity` | 81241 | `afcab42f39743e1609657e389ee478a79f8e98cabcc6fe331c2168106e584553` |
+| `src/gravity/macro.gravity` | 56488 | `19fe589efb27228b8788347439381b61c907a7b6a562a2a3ac3f7256ae77e549` |
+| `src/gravity/resolution.gravity` | 97032 | `32be5f6759d3841df30d3c296cff4ceb549bce3b9d6b117f6b51517a75201d08` |
+| `src/gravity/checked_core.gravity` | 537749 | `511e715e66f12cc3945e177ef667d073ec6294166e1140d548f3152d933e7337` |
+| `p15_s23/compiler.gravity` (interpreted rules) | 128447 | `be4ba46088d413322ba5cf86156bb22bb79aeb7bec1fcf3899d8b081019ef854` |
+| `p15_s23/emitter.gravity` (freshness input) | 1599698 | `0911e08ec4e7323f348b592b40db76b4a95ff5087a749c8007ab48d7839ded15` |
+
+Five owner sources and the rule source match the older table; the reader and
+emitter do not. An unchanged owner hash alone cannot retain a result through a
+changed reader, adapter, seed or explicit freshness dependency. SOURCE's dirty
+private-Map `keys` changes in C7/effects/emitter, L5/STD3 and their tests are
+not a frozen input to this snapshot. Their eventual merge requires another
+affected-input comparison; this table must not silently absorb those bytes.
+
+### Loaded dependencies and identities still needed
+
+The existing loader is the actual load graph: `gravity.bootstrap` requires its
+host namespaces, then [loader](../bootstrap/clojure/src/gravity/bootstrap_impl/loader.clj)
+loads every component named by
+[load_order.edn](../bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn),
+including the referenced data shards. The complete tracked host-resource tree
+below conservatively includes that closure; it is not a claim that every
+loaded function executes. There is no new pruned seed or build recipe here.
+
+| Repository input at this snapshot | Git object | Remaining selection/binding |
+| --- | --- | --- |
+| `bootstrap/clojure/src/` | tree `f4204197ce5cdc099ab55d3468b8a22dc8855111` | Actual loaded resource URLs/classpath order and generated function-plan/digest graph identities are not captured by this document. |
+| `bootstrap/clojure/test/` | tree `6b248d9f5854916e51a170dde3c5058ea8008293` | Select exact vars and their actual fixture/module artifacts; the tree is not a passing test population. |
+| `bootstrap/clojure/fixtures/` | tree `20cd1c4c64d0d184a5da5f808ec2700bfd0f0e56` | Bind actual imported callee artifacts, grants, exports and paths for each selected composition. |
+| `contracts/` | tree `af05a81f544b3a2d78429dad79f047c69376e748` | Applicable schemas, grants, bounds and compatibility rows remain claim-specific. |
+| `deps.edn` | blob `f05e98ad6df21dca09d9183a82cb8d0ec30c23de` | The unchanged aliases select runners, not external compiler/runtime identities. |
+
+The following remain **missing for stable migration**, rather than guessed
+from a previous run: resolved Clojure/CLI/JDK artifacts and hashes; effective
+classpath and user/system dependency configuration; launcher/JVM options and
+environment; actual plan/function manifest and used primitive/instruction
+population; both compared compiler artifacts; output/digest graph identities;
+and the applicable BOOT5 support, BOOT7 comparison and BOOT8 provenance records.
+The seed's allowed builtin table is not the exact set of builtins used by this
+candidate. Source-header/global-literal construction and generic function,
+call, loop/recur and primitive execution remain trusted seed behavior.
+
+The current development intake is explicit, not a historical pin refresh:
+[source4](../bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00884-compiler-c5-resolution-source-artifact.clj)
+takes `[source-path source-text module-inputs reader-source-path]` and retains
+the original C3 -> SH05 -> SH06 parents. The corresponding from-parent route
+authenticates the retained reader revision and brackets construction/final
+verification with actual selected-source checks. Default arities still enforce
+historical reader pins. The existing SH06 frontend-subject helper uses that
+default file route; it is not already a current-reader six-subject invocation.
+The current-intake tests and limits are recorded in the
+[development workflow](development-verification.md#default-sh-07-workflow-three-boundaries).
+
+### Evidence reuse and C16 disposition
+
+The audit's **39 S / three P out of 42 requirement groups** is traceability at
+its stated historical revision, not 39 current passing source modules, a
+functional percentage, or a coherent current toolchain. The three partial
+groups remain SH-05.1, SH-05.6 and SH-06.6. The separate historical 39-of-41 and
+later 41/42 source-proof steps are not that denominator. Resolver status stays
+`:development-unadmitted`.
+
+| Retained evidence | What remains useful | Current reconciliation still open |
+| --- | --- | --- |
+| E02-E06 and the five frontend subject results in the audit | Original accepted/rejected semantics, source/origin/binding preservation and reviewed failures at their exact cohorts. | Reader/host/plan/context and emitter-freshness changes require an actual dependency comparison before reuse for a selected stable revision. Do not replay unchanged expensive subjects by count or relabel them current. |
+| SH05 `defn` census and original Stage0 expansion comparisons | The retained five-owner and checked-Core censuses distinguish executable macro positions from quote/catalog DATA; no new required macro was demonstrated by the bounded review. | They do not execute every body, establish general user macros, or close a new complete current cohort. C16 remains open, not a demand for marginal macro fixtures. |
+| SH06 genuine imports/private/unresolved, cycles, referred ambiguity, alias, lexical, profile/capability and authenticated-consumer checks | Their exact selectors and original outcomes are mapped in the audit; current source4/from-parent transport has separate development evidence. | Default-pinned historical selectors are not explicit current-reader compositions. Cross-target source imports remain fenced before C5 by the JVM frontdoor. No newly required small resolution behavior was demonstrated. |
+| Interrupted checked-Core source analysis | Preserve the exit-143 log and the observed `:c5-after` / `:hosted-c6-before` boundaries. | No completed hosted-C6 result, final counters or receipt exists. C12 must separate construction and verification cost before another bounded question; no unchanged hour-long retry is selected. |
+| Actual Gravity Core kernels and later ordinary source compositions | Existing owning tests exercise canonical construction and rejection, separately from hosted C6 source analysis. | Select the exact required variants and actual candidate-bound results through C11-C15; normalized DATA is not a full-source analysis pass. |
+
+C01 therefore remains OPEN: the six source subjects and repository dependency
+boundary are explicit, but the source-occurrence/primitive-use matrix and
+actual plan/external-toolchain identities are incomplete. C16 also remains
+OPEN. The [working task map](self-hosting-sh07-completion-plan.md#c01-working-support-map)
+names concrete uses and existing checks without converting located support
+into accepted coverage. The next migration decision must name which missing
+rows are closed by reusable evidence, which changed dependencies need affected
+checks, and which required semantics still need implementation. C17 cannot be
+inferred from this desk reconciliation; C18 must distinguish a bounded module
+migration from completion of the milestone's whole declared compiler subset.
 
 ## Per-owner evidence, use contracts and missing work
 
