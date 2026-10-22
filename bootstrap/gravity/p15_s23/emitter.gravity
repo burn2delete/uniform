@@ -13208,6 +13208,109 @@
           {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
         {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))))
 
+(defn p15-s23-vsl-let [core slice-node reference nodes bindings types forms budget]
+  ; A single immutable binding and direct slice body; no inferred parameter origin.
+  (let [records (get core :lexical-bindings []) mutations (get core :mutations [])
+      work (+ 128 (if (vector? records) (* 8 (count records)) 0) (if (vector? mutations) (* 2 (count mutations)) 0))
+      bid (get (get reference :attributes) :binding-id) ]
+    (if (> work budget)
+      {:status :rejected :reason :vector-slice-work-limit :work-count work}
+      (if (if (if (vector? records) (vector? mutations) false)
+          (if (p15-s23-sse-ids? [(get reference :node-id) (get (get reference :source) :form-id) (get (get reference :source) :syntax-id) bid (get slice-node :node-id)] 5)
+            (p15-s23-sse-ids? [(get (get slice-node :source) :form-id) (get (get slice-node :source) :syntax-id)] 2) false) false)
+        (if (if (loop [rows records] (if (= 0 (count rows)) true
+                (if (p15-s23-sse-ids? [(get (first rows) :binding-id) (get (first rows) :let-core-node-id)] 2) (recur (rest rows)) false)))
+            (loop [rows mutations] (if (= 0 (count rows)) true
+                (if (= nil (get (first rows) :target-binding-id)) (recur (rest rows))
+                  (if (p15-s23-sse-ids? [(get (first rows) :target-binding-id)] 1) (recur (rest rows)) false)))) false)
+          (let [record (p15-s23-nq-one records :binding-id bid) ]
+            (if (map? record)
+              (if (if (p15-s23-sse-ids? [(get record :let-core-node-id) (get record :initializer-node-id) (get record :definition-form-id) (get record :definition-syntax-id) (get record :initializer-form-id) (get record :initializer-syntax-id)] 6)
+                  (p15-s23-sse-ids? [(get record :binding-scope-id) (get record :initializer-scope-id)] 2) false)
+                (let [let-node (get nodes (get record :let-core-node-id)) initializer (get nodes (get record :initializer-node-id))
+                    binding (get bindings bid) ref-form (get forms (get (get reference :source) :form-id))
+                    slice-form (get forms (get (get slice-node :source) :form-id))
+                    name-form (get forms (get record :definition-form-id)) init-form (get forms (get record :initializer-form-id)) ]
+                  (if (if (p15-s23-sse-ids? [(get (get let-node :source) :form-id) (get (get let-node :source) :syntax-id)
+                          (get (get let-node :attributes) :binding-vector-form-id) (get (get let-node :attributes) :binding-vector-syntax-id) (get binding :definition-syntax-id)] 5)
+                      (if (p15-s23-sse-ids? [(get let-node :node-id) (get initializer :node-id) (get binding :binding-id)] 3)
+                        (symbol? (get binding :name)) false) false)
+                    (let [let-form (get forms (get (get let-node :source) :form-id))
+                        vector-form (get forms (get (get let-node :attributes) :binding-vector-form-id)) ]
+                      (if (p15-s23-typed-all [(p15-s23-sse-ids? [(get ref-form :form-id) (get ref-form :syntax-id) (get name-form :form-id) (get name-form :syntax-id) (get init-form :form-id) (get init-form :syntax-id)] 6)
+                            (p15-s23-sse-ids? [(get slice-form :form-id) (get slice-form :syntax-id) (get let-form :form-id) (get let-form :syntax-id) (get vector-form :form-id) (get vector-form :syntax-id)] 6)])
+                        (if (if (p15-s23-sse-ids? (get let-form :child-form-ids) 3)
+                            (if (p15-s23-sse-ids? (get vector-form :child-form-ids) 2)
+                              (if (p15-s23-sse-ids? [(get ref-form :scope-id) (get name-form :scope-id) (get slice-form :scope-id) (get init-form :scope-id) (get let-form :scope-id) (get binding :scope-id)] 6)
+                                (p15-s23-sse-ids? [(get (get let-node :attributes) :outer-scope-id) (get (get let-node :attributes) :body-scope-id) (get reference :binding-context) (get initializer :binding-context) (get let-node :binding-context) (get slice-node :binding-context)] 6) false) false) false)
+                          (let [op-form (get forms (get (get let-form :child-form-ids) 0))
+                              body (get record :binding-scope-id) outer (get record :initializer-scope-id) ]
+                            (if (p15-s23-typed-all [(p15-s23-sse-ids? [(get op-form :form-id) (get op-form :syntax-id)] 2)
+                                  (symbol? (get op-form :value)) (symbol? (get ref-form :value)) (symbol? (get name-form :value))
+                                  (symbol? (get record :name)) (symbol? (get (get reference :attributes) :symbol))])
+                              (if (p15-s23-typed-all [
+                                    (= [:lexical :local] [(get binding :binding-class) (get binding :kind)])
+                                    (= bid (get binding :binding-id))
+                                    (if (= nil (get binding :mutability)) true (= :immutable (get binding :mutability)))
+                                    (= :reference (get reference :core-form))
+                                    (= [] (get reference :children))
+                                    (= [bid] (get reference :resolved-binding-ids))
+                                    (= {:symbol (get binding :name) :position :expression :binding-id bid :binding-class :lexical :definition-syntax-id (get binding :definition-syntax-id)} (get reference :attributes))
+                                    (= :symbol (get ref-form :kind) (get name-form :kind))
+                                    (= (get binding :name) (get ref-form :value) (get name-form :value) (get record :name))
+                                    (= [] (get ref-form :child-form-ids) (get name-form :child-form-ids))
+                                    (= (get reference :source) (p15-s23-typed-source ref-form))
+                                    (= (get slice-node :source) (p15-s23-typed-source slice-form))
+                                    (= (get let-node :source) (p15-s23-typed-source let-form))
+                                    (= (get initializer :source) (p15-s23-typed-source init-form))
+                                    (= (get slice-node :node-id) (get (get let-node :children) 1))
+                                    (= [(get initializer :node-id) (get slice-node :node-id)] (get let-node :children))
+                                    (= [bid] (get let-node :resolved-binding-ids))
+                                    (= :let (get let-node :core-form))
+                                    (= {:binding-vector-form-id (get vector-form :form-id) :binding-vector-syntax-id (get vector-form :syntax-id) :outer-scope-id outer :body-scope-id body :binding-count 1 :body-count 1 :initializer-child-indexes [0] :body-child-indexes [1] :evaluation-order :initializers-then-body-left-to-right :result-policy {:kind :last-body :child-index 1}} (get let-node :attributes))
+                                    (= :initializers-then-body-left-to-right (get (get let-node :evaluation) :kind))
+                                    (= [{:index 0 :core-node-id (get initializer :node-id)} {:index 1 :core-node-id (get slice-node :node-id)}] (get (get let-node :evaluation) :order))
+                                    (= :list (get let-form :kind))
+                                    (= [(get op-form :form-id) (get vector-form :form-id) (get slice-form :form-id)] (get let-form :child-form-ids))
+                                    (= :symbol (get op-form :kind))
+                                    (= 'let (get op-form :value))
+                                    (= [] (get op-form :child-form-ids))
+                                    (= (get let-form :form-id) (get op-form :parent-form-id) (get vector-form :parent-form-id) (get slice-form :parent-form-id))
+                                    (= :vector (get vector-form :kind))
+                                    (= [(get name-form :form-id) (get init-form :form-id)] (get vector-form :child-form-ids))
+                                    (= (get vector-form :form-id) (get name-form :parent-form-id) (get init-form :parent-form-id))
+                                    (= (get slice-form :form-id) (get ref-form :parent-form-id))
+                                    (= outer (get let-form :scope-id) (get init-form :scope-id) (get (get let-node :attributes) :outer-scope-id) (get let-node :binding-context) (get initializer :binding-context))
+                                    (= body (get binding :scope-id) (get ref-form :scope-id) (get name-form :scope-id) (get slice-form :scope-id) (get reference :binding-context) (get slice-node :binding-context) (get (get let-node :attributes) :body-scope-id))
+                                    (= (get binding :definition-syntax-id) (get record :definition-syntax-id) (get name-form :syntax-id))
+                                    (= {:let-core-node-id (get let-node :node-id) :ordinal 0 :name (get binding :name) :binding-id bid :definition-form-id (get name-form :form-id) :definition-syntax-id (get name-form :syntax-id) :binding-scope-id body :initializer-form-id (get init-form :form-id) :initializer-syntax-id (get init-form :syntax-id) :initializer-scope-id outer :initializer-node-id (get initializer :node-id) :visible-prior-binding-ids [] :mutability :immutable} record)
+                                    (= record (p15-s23-nq-one records :let-core-node-id (get let-node :node-id)))
+                                    (loop [rows mutations] (if (= 0 (count rows)) true (if (= bid (get (first rows) :target-binding-id)) false (recur (rest rows)))))])
+                                (let [origin (p15-s23-vsl-receiver core initializer nodes bindings types forms (- budget work))
+                                    total (+ work (get origin :work-count))
+                                    members (get (get origin :type) :element-types)
+                                    total (+ total (if (vector? members) (* 4 (+ 1 (count members))) 0)) ]
+                                  (if (> total budget)
+                                    {:status :rejected :reason :vector-slice-work-limit :work-count total}
+                                    (if (= :accepted (get origin :status))
+                                      (if (if (vector? members) (= (get origin :type) (get types (get reference :node-id))) false)
+                                        {:status :accepted :work-count total :type (get origin :type)
+                                          :source-forms (loop [remaining (get origin :source-forms) out [ref-form let-form op-form vector-form name-form]]
+                                            (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining)))))
+                                          :receiver {:kind :immutable-let-vector :reference reference :binding binding :record record :owner let-node
+                                            :source-forms [ref-form let-form op-form vector-form name-form] :origin (get origin :receiver)}}
+                                        {:status :rejected :reason :vector-slice-receiver-proof-required :work-count total})
+                                      (assoc origin :work-count total))))
+                                {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
+                              {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
+                          {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
+                        {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
+                    {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
+                {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
+              {:status :rejected :reason :vector-slice-receiver-proof-required :work-count work}))
+          {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
+        {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))))
+
 (defn p15-s23-vsl-proof [core node call nodes bindings types forms budget]
   ; STD3 bounds apply only to a normal invocation. Each normal operand still
   ; requires its own proof; a child proof is reconstructed and paid again.
@@ -13243,7 +13346,10 @@
                                                      (if (= [] (get form :child-form-ids)) (= (get form :value) (get (get child :attributes) :symbol)) false) false) true)])
                                                (recur (+ i 1)) false))))]) false)]
                 (if valid-source?
-                  (let [receiver (p15-s23-vsl-receiver core receiver-node nodes bindings types forms (- budget base))
+                  (let [receiver (if (if (= :reference (get receiver-node :core-form))
+                                  (= false (= :gravity.type/never (get types (get receiver-node :node-id)))) false)
+                             (p15-s23-vsl-let core node receiver-node nodes bindings types forms (- budget base))
+                             (p15-s23-vsl-receiver core receiver-node nodes bindings types forms (- budget base)))
                         work (+ base (get receiver :work-count))]
                     (if (= :accepted (get receiver :status))
                       (let [start-type (get arguments 1) end-type (get arguments 2)
@@ -13343,8 +13449,9 @@
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :slice-policy {:range :start-inclusive-end-exclusive
-                      :receiver (if (= :original-integer-vector-literal (get (get proof :receiver) :kind))
-                                  :original-integer-vector-literal :authenticated-string-character-vector)
+                      :receiver (if (= :immutable-let-vector (get (get proof :receiver) :kind)) :immutable-let-vector
+                                  (if (= :original-integer-vector-literal (get (get proof :receiver) :kind))
+                                    :original-integer-vector-literal :authenticated-string-character-vector))
                       :indexes :source-proven-nonnegative-integer-literals
                       :bounds :zero-le-start-le-end-le-count :operand-evaluation :receiver-then-start-then-end-once
                       :input-preserved? true :payloads :inert :allocation :normal-invocation-even-empty-or-full
@@ -13360,8 +13467,9 @@
        :application (if invoked? :normal :not-invoked)
        :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
-       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :receiver-conversion-proof :index-literal-proofs :slice-policy :source-bounds-proof :selected-positional-types :result-storage-policy :allocation-condition :profile :target :evaluation-order]} nil)) nil) nil))
+       :invalidation (let [fields [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :receiver-conversion-proof :index-literal-proofs :slice-policy :source-bounds-proof :selected-positional-types :result-storage-policy :allocation-condition :profile :target :evaluation-order]]
+                       (if (= :immutable-let-vector (get (get proof :receiver) :kind)) (conj fields :mutations) fields))} nil)) nil) nil))
 (defn p15-s23-vsl-finish [header]
   (let [type (if (= :normal (get header :application))
                {:kind :gravity.type/vector :shape :literal :element-types (get (get header :bounds-proof) :selected-types)}
@@ -13416,7 +13524,8 @@
                        (= (get (get context :current-function) :function-syntax-id) (get edge :caller-function-syntax-id))
                        (= [(p15-s23-vsl-constraint descriptor)] rows)
                        (= (p15-s23-vsl-call-fact descriptor (get core :module)) (get (get context :call-facts) id))
-                       (let [receiver (get (get checked :proof) :receiver)]
+                       (let [outer (get (get checked :proof) :receiver)
+                             receiver (if (= :immutable-let-vector (get outer :kind)) (get outer :origin) outer)]
                          (if (= :authenticated-string-character-vector (get receiver :kind))
                            (let [child (get receiver :descriptor) child-id (get child :call-core-node-id)
                                  child-rows (loop [remaining (get context :ledger) out []]
