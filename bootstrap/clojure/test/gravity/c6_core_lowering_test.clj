@@ -429,7 +429,7 @@
                         (bound! (and (<= (count text) 64)
                                      (every? #(<= (int %) 127) text)) :scalar))
                     bytes (+ bytes (if collection?
-                                     (+ 4 (* 2 (count value)))
+                                     (+ 4 (* (if (map? value) 4 2) (count value)))
                                      (if (string? value) (+ 2 (* 6 (count text)))
                                          (count text))))
                     children (cond
