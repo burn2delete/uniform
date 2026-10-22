@@ -11031,6 +11031,125 @@
         (is (= (slurp (fixture-path "rejected" "private-map-keys-string-entry" ".gravity"))
                (slurp (fixture-path "rejected" "private-map-keys-string-entry" ".qst"))))))))
 
+(deftest sh08-private-map-key-set-anchor-paired-bytes-and-seed-parser
+  ;; Co-canonical byte/seed-parser parity only, not Q source composition.
+  (let [paths (mapv #(fixture-path "accepted" "local-runtime-private-map-key-set-anchor" %) [".gravity" ".qst"])
+        texts (mapv slurp paths)]
+    (is (= (first texts) (second texts)))
+    (is (= (bootstrap/read-forms (first paths) (first texts)) (bootstrap/read-forms (second paths) (second texts))))))
+
+(deftest sh08-private-map-key-set-anchor-normalized-chain-development-kernel
+  ;; Independently reconstructed normalized stages; the genuine G test below
+  ;; owns actual source composition and whole-result verification.
+  (let [{:keys [core node call edge nodes bindings types forms type-result descriptor]} (private-map-keys-typed-input)
+        keyword-list {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}
+        set-input (list-set-input (:type type-result))
+        converted (set-conversion-derived set-input 65536) set-descriptor (:descriptor converted)
+        anchor {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/keyword]}
+        equality-input (atomic-equality-input [(:type converted) anchor])
+        compared (invoke-c7 'sh08-kse-derive [(:core equality-input) (:node equality-input) (:call equality-input) (:edge equality-input)
+                                            (:nodes equality-input) (:bindings equality-input) (:types equality-input) (:forms equality-input) 65536])
+        equality-descriptor (:descriptor compared)
+        check-keys #(invoke-c7 'sh08-pmk-inferred-call [core node call edge nodes bindings (assoc types :operator %) forms 65536])
+        check-set #(invoke-c7 'sh08-lset-inferred-call [(:core set-input) (:node set-input) (:call set-input) (:edge set-input)
+                                                      (:nodes set-input) (:bindings set-input)
+                                                      (assoc (:types set-input) :operator % :call (:type converted)) 65536])]
+    (is (= :accepted (:status type-result) (:status converted) (:status compared)))
+    (is (= [keyword-list :gravity.type/set :gravity.type/bool] [(:type type-result) (:type converted) (:type compared)]))
+    (is (= [:gravity.type/map] (:argument-types descriptor)))
+    (is (= 3 (get-in descriptor [:key-domain-proof :normal-witness-count])))
+    (is (= [5 0 1] (mapv #(quot (count (:member-types (:argument-type %))) 2) (get-in descriptor [:key-domain-proof :entries]))))
+    (is (= [keyword-list] (:argument-types set-descriptor)))
+    (is (= [:gravity.type/set anchor] (:argument-types equality-descriptor)))
+    (is (= [[:memory/allocate] [:memory/allocate] []] (mapv :direct-effects [descriptor set-descriptor equality-descriptor])))
+    (is (= [nil 2] (:operand-counts equality-descriptor)))
+    (is (every? #(nil? (:result-count %)) [descriptor set-descriptor equality-descriptor]))
+    (is (= :accepted (:status (check-keys descriptor)) (:status (check-set set-descriptor))))
+    (is (= :rejected (:status (check-keys (private-map-keys-cross-family-descriptor descriptor)))))
+    (is (= :rejected (:status (check-set (list-set-cross-family-descriptor set-descriptor)))))))
+
+(deftest sh08-private-map-key-set-anchor-current-source-composition
+  ;; One genuine G composition. Q establishes byte/seed-parser parity only.
+  (let [source-path (fixture-path "accepted" "local-runtime-private-map-key-set-anchor" ".gravity")
+        {:keys [request]} (parameter-vector-count-slice-current-source-request source-path)
+        result (invoke-c7 'sh08-function-type-core-artifact [request])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (let [core (:canonical-core-artifact request) nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+            observe (fn [kind producer]
+                      (let [selected (filter #(= kind (get-in result [:type-table (:operator-node-id %) :kind])) (:calls core))
+                            call (first selected) id (:core-node-id call)]
+                        {:selected-count (count selected) :id id :call call :node (nodes id)
+                         :edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))
+                         :descriptor (get-in result [:type-table (:operator-node-id call)])
+                         :row (first (filter #(and (= producer (:producer-rule %)) (= id (get-in % [:lhs :core-node-id]))) (:constraint-ledger result)))
+                         :fact (first (filter #(= id (:call-core-node-id %)) (:call-type-facts result)))}))
+            keys-observation (observe :gravity.type/applied-private-map-keys :sh08-private-map-keys-v1)
+            set-observation (observe :gravity.type/applied-list-set-conversion :sh08-list-set-conversion-v1)
+            equality-observation (observe :gravity.type/applied-bare-keyword-anchor-set-equality :sh08-bare-keyword-anchor-set-equality-v1)
+            observations [keys-observation set-observation equality-observation]
+            keyword-list {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}
+            anchor {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/keyword]}
+            proof (get-in keys-observation [:descriptor :key-domain-proof])
+            helper (get-in proof [:census :function-record :function-core-node-id])
+            original-report (invoke-c7 'sh08-verify-function-type-result [request result])]
+        (is (= [1 1 1] (mapv :selected-count observations)))
+        (is (= :passed (:status original-report)))
+        (is (= [keyword-list :gravity.type/set :gravity.type/bool] (mapv #(get-in result [:type-table (:id %)]) observations)))
+        (is (= [[:gravity.type/map] [keyword-list] [:gravity.type/set anchor]] (mapv #(get-in % [:descriptor :argument-types]) observations)))
+        (is (= [[:memory/allocate] [:memory/allocate] []] (mapv #(get-in % [:descriptor :direct-effects]) observations)))
+        (is (= [[:memory/allocate] [:memory/allocate] []] (mapv #(get-in % [:descriptor :latent-effects]) observations)))
+        (is (= :gravity.type/map (get-in result [:type-table helper :parameters 0 :type])))
+        (is (= :gravity.type/map (get-in result [:type-table (first (get-in keys-observation [:call :argument-node-ids]))])))
+        (is (= :gravity.type/bool (get-in result [:type-table helper :return])))
+        (is (= 3 (:normal-witness-count proof) (count (:entries proof))))
+        (is (= [2 1 0] (mapv #(quot (count (get-in % [:argument-type :member-types])) 2) (:entries proof))))
+        (is (= [:normal :normal :normal] (mapv :entry (:entries proof))))
+        (is (= :none (:result-refinement proof)))
+        (is (= [0 1 [nil 2]] ((juxt :bare-operand-index :anchor-operand-index :operand-counts) (:descriptor equality-observation))))
+        (is (= [:not-refined :independent-nonempty-finite-keyword-set] ((juxt :bare-domain :anchor-premise) (get-in equality-observation [:descriptor :equality-policy]))))
+        (is (every? #(nil? (get-in % [:descriptor :result-count])) observations))
+        (is (every? #(nil? (get-in % [:descriptor :input-element-count])) [keys-observation set-observation]))
+        (is (= [(:id keys-observation) (:id set-observation)] [(first (get-in set-observation [:call :argument-node-ids])) (first (get-in equality-observation [:call :argument-node-ids]))]))
+        (is (= anchor (get-in result [:type-table (second (get-in equality-observation [:call :argument-node-ids]))])))
+        (is (= [:common-shape :key-presence :key-identity :extent :cardinality :nonempty :flow :specialization] (:no-refinement proof)))
+        (is (= [:sh08-private-map-keys-v1 :sh08-list-set-conversion-v1 :sh08-bare-keyword-anchor-set-equality-v1] (mapv #(get-in % [:descriptor :version]) observations)))
+        (doseq [[observation operation producer projection dispatch effects row-function fact-function]
+                [[keys-observation 'keys :sh08-private-map-keys-v1 :private-map-keys :direct-private-map-keys [:memory/allocate] 'sh08-lq-constraint 'sh08-lq-call-fact]
+                 [set-observation 'set :sh08-list-set-conversion-v1 :list-set-conversion :direct-list-set-conversion [:memory/allocate] 'sh08-st-constraint 'sh08-st-call-fact]
+                 [equality-observation '= :sh08-bare-keyword-anchor-set-equality-v1 :bare-keyword-anchor-set-equality :direct-bare-keyword-anchor-set-equality [] 'sh08-kse-constraint 'sh08-kse-call-fact]]]
+          (let [{:keys [call node edge descriptor row fact]} observation]
+            (is (= [(:operator-binding-id call) (:operator-node-id call) (:source node) call edge] [(:operator-binding-id descriptor) (:operator-node-id descriptor) (:source descriptor) (:source-call descriptor) (:source-edge descriptor)]))
+            (is (= [operation (symbol "gravity.core") :core] ((juxt :name :namespace :binding-class) (:source-binding descriptor))))
+            (is (= [(:operator-binding-id call) operation] [(get-in nodes [(:operator-node-id call) :attributes :binding-id]) (get-in nodes [(:operator-node-id call) :attributes :symbol])]))
+            (is (= [:operator-then-arguments (:ordered-evaluation-node-ids call)] [(:evaluation-order call) (mapv :core-node-id (get-in node [:evaluation :order]))]))
+            (is (= row (invoke-c7 row-function [descriptor])))
+            (is (= fact (invoke-c7 fact-function [descriptor (:module core)])))
+            (is (= [producer projection dispatch effects] [(:producer-rule row) (get-in row [:lhs :projection]) (:dispatch fact) (:effects fact)]))))
+        (doseq [entry (:entries proof)]
+          (let [id (:call-core-node-id entry)
+                actual-fact (first (filter #(= id (:call-core-node-id %)) (:call-type-facts result)))
+                actual-row (first (filter #(= id (get-in % [:constraint-id-request :call-core-node-id])) (:constraint-ledger result)))]
+            (is (= (:call-input-facts entry) (select-keys actual-fact (keys (:call-input-facts entry)))))
+            (is (= (:compatibility entry) (get-in actual-row [:rhs 0 :compatibility])))))
+        (doseq [[observation convert row-function fact-function producer projection dispatch field]
+                [[keys-observation private-map-keys-cross-family-descriptor 'sh08-lq-constraint 'sh08-lq-call-fact :sh08-map-keys-v1 :map-keys :direct-map-keys :applied-map-keys]
+                 [set-observation list-set-cross-family-descriptor 'sh08-st-constraint 'sh08-st-call-fact :sh08-set-conversion-v1 :set-conversion :direct-set-conversion :applied-set-conversion]]]
+          (let [{:keys [call descriptor row fact]} observation
+                forged (convert descriptor) forged-row (invoke-c7 row-function [forged])
+                forged-fact (invoke-c7 fact-function [forged (:module core)])
+                preserved [:source :operator-source :source-call :source-edge :source-binding :operator-node-id :operator-binding-id
+                           :call-core-node-id :argument-types :parameter-types :return :result-type :application :profile :target
+                           :direct-effects :latent-effects :capabilities :thrown-error-effects]
+                mutant (walk/prewalk-replace {descriptor forged row forged-row fact forged-fact} result)
+                rejected (invoke-c7 'sh08-verify-function-type-result [request mutant])]
+            (is (= (select-keys descriptor preserved) (select-keys forged preserved)))
+            (is (= [producer projection dispatch] [(:producer-rule forged-row) (get-in forged-row [:lhs :projection]) (:dispatch forged-fact)]))
+            (is (= forged (get-in mutant [:type-table (:operator-node-id call)]) (:dependencies forged-row) (get forged-fact field)))
+            (is (not= result mutant))
+            (is (= :rejected (:status rejected)))
+            (is (= [result mutant] [(:expected rejected) (:candidate rejected)]))))))))
+
 (deftest sh08-private-entry-get-development-kernel
   (let [input (private-entry-get-input) result (map-present-get-derived input)
         descriptor (:descriptor result) proof (:presence-proof descriptor)]
