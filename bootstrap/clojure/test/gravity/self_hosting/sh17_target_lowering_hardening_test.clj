@@ -254,6 +254,98 @@
   ;; multioperand forwarding must not use the discarded first operand's type.
   (check-scalar-forwarding [[:sequence :do] [:lexical-scope :let]]))
 
+(deftest sh17-development-c-process-results-use-existing-b2-boolean-exit-codes
+  ;; UNIT supplied MIR/preflight premises, not authenticated C11/B1 input,
+  ;; whole independent-raw execution, emitted C, or native execution.
+  (let [core "core/c-process-result" entry (str core ":mir:entry")
+        op (fn [id opcode type operands payload]
+             {:artifact :gravity/mir-operation :op-id id :block-id entry
+              :opcode opcode :source-operation (if (= opcode :constant) :literal opcode)
+              :type type :operands operands :constant-payload payload
+              :verifier-status :passed :effects #{} :capabilities #{} :domain-anchor nil})
+        literal (fn [type value]
+                  [(op "result" :constant type [] {:present? true :value value})])
+        comparison (fn [left right]
+                     [(op "left" :constant :gravity/integer [] {:present? true :value left})
+                      (op "right" :constant :gravity/integer [] {:present? true :value right})
+                      (op "result" :integer-lt :gravity/bool ["left" "right"] :not-applicable)])
+        mir (fn [operations]
+              {:source-core core :profile :hosted :source-target :jvm :target-request :c
+               :target-independent? true :verification-status :passed :diagnostics []
+               :runtime-check-table {} :domain-anchors {} :globals {}
+               :functions {'main {:entry entry :params [] :latent-effects #{} :capabilities #{}
+                                  :blocks {entry {:instructions operations
+                                                  :terminator {:opcode :return :operands ["result"]}}}}}})
+        eligible? (fn [operations]
+                    (invoke 'c14-c-bounded-mir-surface-valid?
+                            [{:optimized-mir (mir operations)}
+                             {:supported-operation-ids (mapv :op-id operations)}]))
+        preflight (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-c13-c14-b1-c-preflight!))
+        checked (fn [operations]
+                  (try {:value (preflight (path engine-path)
+                                         {:kind :gravity/p15-s23-c11-authenticated-mir-artifact
+                                          :mir-module (mir operations)
+                                          :b1-preflight {:status :verified-mir-candidate-for-b1}})}
+                       (catch clojure.lang.ExceptionInfo error {:error (ex-data error)})))
+        convert-var (ns-resolve 'gravity.bootstrap 'p15-s23-b2-c17-process-exit-code)
+        b2-path (path "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity")
+        b2-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan
+                 (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! b2-path :jvm))
+                 b2-path (slurp b2-path))
+        b2-exit (fn [value]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function
+                   {:engine :gravity-sh17-b2-exit-code-unit :compiler-artifact-plan? true}
+                   b2-plan 'b2-exit-code [value]))]
+    (is (some? convert-var))
+    (doseq [[operations value] [[(literal :gravity/bool true) true]
+                               [(literal :gravity/bool false) false]
+                               [(comparison 2 4) true] [(comparison 4 2) false]
+                               [(literal :gravity/integer 0) 0]
+                               [(literal :gravity/integer 255) 255]]]
+      (let [result (checked operations)]
+        (is (true? (eligible? operations)))
+        (is (nil? (:error result)))
+        (when-let [product (:value result)]
+          (is (= value (:semantic-result product)))
+          (is (= (mir operations) (:mir product)))
+          (is (= operations (:operations product))))
+        (when convert-var
+          (is (= (b2-exit value) (convert-var value)))
+          (is (integer? (convert-var value))))))
+    (doseq [[type value reason] [[:gravity/nil nil :process-result-outside-0-to-255]
+                                [:gravity/integer -1 :process-result-outside-0-to-255]
+                                [:gravity/integer 256 :process-result-outside-0-to-255]
+                                [:gravity/bool 1 :bounded-scalar-constant-payload]
+                                [:gravity/integer true :bounded-scalar-constant-payload]]]
+      (let [operations (literal type value) result (checked operations)]
+        (is (false? (eligible? operations)))
+        (is (nil? (:value result)))
+        (is (= "C14-UNSUPPORTED" (get-in result [:error :id])))
+        (is (= reason (get-in result [:error :missing-fact])))))
+    ;; B2's general nil conversion does not grant this C14 eligibility.
+    (is (= 0 (b2-exit nil)))
+    (when convert-var (is (nil? (convert-var nil))))
+    (let [relative "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-b2-c17-proof-to-c-assumption-record-through-p15-s23-b2-c17-independent-raw.clj"
+          forms (binding [*read-eval* false]
+                  (with-open [reader (java.io.PushbackReader. (io/reader (path relative)))]
+                    (loop [forms []]
+                      (let [form (read {:eof ::eof} reader)]
+                        (if (= ::eof form) forms (recur (conj forms form)))))))
+          definitions (filter #(and (seq? %) (= 'defn- (first %))
+                                    (= 'p15-s23-b2-c17-independent-raw (second %)))
+                              (tree-seq coll? seq forms))]
+      (is (= 1 (count definitions)))
+      (let [definition (first definitions)
+            bindings (partition 2 (second (first (drop 3 definition))))
+            result-map (last (first (drop 3 definition)))]
+        (is (= '(p15-s23-b2-c17-process-exit-code (:semantic-result preflight))
+               (second (first (filter #(= 'semantic-result (first %)) bindings)))))
+        (is (= 'semantic-result (:semantic-result result-map)))
+        (is (= 'semantic-result (:expected-exit-code result-map)))
+        (is (= 'semantic-result
+               (last (first (calls-named 'p15-s23-b2-c17-proof-to-c-assumption-record
+                                        [definition])))))))))
+
 (deftest sh17-source-compiles-and-c11-revision-is-complete
   (let [plan @engine-plan
         if-calls (calls-named 'if (source-forms))
