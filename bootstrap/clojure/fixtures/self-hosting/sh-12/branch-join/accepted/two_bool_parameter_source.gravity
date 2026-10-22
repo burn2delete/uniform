@@ -1,0 +1,6 @@
+(ns gravity.sh12.two-bool-parameter-source
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [left :- Bool right :- Bool] (if (if left right false) 11 22))
