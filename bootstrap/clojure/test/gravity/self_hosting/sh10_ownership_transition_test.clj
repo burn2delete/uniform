@@ -348,7 +348,7 @@
                              :events (assoc-in reads [1023 :op] :write))]]
         (let [result (check r)]
           (is (= :rejected (:status result)))
-          (is (= ["C9-UNSAFE" :malformed-ownership-request]
+          (is (= ["C9-UNSAFE" :malformed-normalized-ownership-request]
                  ((juxt :rule :reason) (first (:diagnostics result)))))
           (is (empty? (:ownership-facts result)))
           (is (= :passed (:status (verify r result))))))
