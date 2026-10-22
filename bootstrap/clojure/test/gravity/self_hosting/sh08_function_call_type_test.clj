@@ -2997,9 +2997,12 @@
     (assoc input :slice slice :comparison comparison
                  :types (assoc types :prefix-operator (:descriptor comparison) :prefix-call (:type comparison)))))
 
-(defn- let-vector-count-slice-input [text start]
+(defn- let-vector-count-slice-input
+  ([text start] (let-vector-count-slice-input text start nil))
+  ([text start position]
   ;; Two distinct local occurrences; count observes the same immutable Vector.
-  (let [base (let-vector-slice-input text start (count text))
+  (let [value (if (nil? position) text (vector-slice-transfer-input text start (count text) position))
+        base (let-vector-slice-input value start (count text))
         body :slice-let-body op :slice-count-operator ref :slice-count-reference
         bid :slice-count-binding definition :slice-count-definition
         source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
@@ -3022,7 +3025,8 @@
         call {:core-node-id :slice-end :operator-node-id op :operator-binding-id bid
               :argument-node-ids [ref] :ordered-evaluation-node-ids children
               :evaluation-order :operator-then-arguments :result-policy :call-result}
-        edge {:ordinal 1 :call-core-node-id :slice-end :caller-function-syntax-id nil :caller-function-core-node-id nil
+        ordinal (dec (count (get-in base [:core :calls])))
+        edge {:ordinal ordinal :call-core-node-id :slice-end :caller-function-syntax-id nil :caller-function-core-node-id nil
               :callee-binding-id bid :callee-definition-syntax-id definition
               :callee-function-syntax-id nil :callee-function-core-node-id nil
               :argument-core-node-ids [ref] :ordered-evaluation-node-ids children
@@ -3033,7 +3037,7 @@
                     (vec (walk :slice-let)))
         calls (vec (concat (butlast (get-in base [:core :calls])) [call (:call base)]))
         edges (vec (concat (butlast (get-in base [:core :call-edges]))
-                           [edge (assoc (:edge base) :ordinal 2)]))
+                           [edge (assoc (:edge base) :ordinal (inc ordinal))]))
         form (fn [id kind value parent children]
                {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
                 :scope-id body :kind kind :value value :parent-form-id parent :child-form-ids children})
@@ -3042,15 +3046,15 @@
                      op (form op :symbol 'count :slice-end [])
                      ref (form ref :symbol 'characters :slice-end []))
         core (assoc (:core base) :nodes node-list :calls calls :call-edges edges)
-        input (vector-slice-established
-               (assoc base :core core :nodes nodes :forms forms :node (nodes :slice-call)
-                      :edge (last edges) :bindings (assoc (:bindings base) bid binding)))
+        input (assoc base :core core :nodes nodes :forms forms :node (nodes :slice-call)
+                     :edge (last edges) :bindings (assoc (:bindings base) bid binding))
+        input (if (:child base) (vector-slice-established input) input)
         types (assoc (:types input) ref (get-in input [:types :slice-ref]))
         count-result (invoke-c7 'sh08-cq-derive
                                [core (nodes :slice-end) call edge nodes (:bindings input) types forms 65536])]
     (assoc input :count-result count-result
            :types (assoc types op (:descriptor count-result) :slice-end (:type count-result))
-           :products {:module (:module core) :calls calls :call-edges edges})))
+           :products {:module (:module core) :calls calls :call-edges edges}))))
 
 (deftest sh08-let-vector-count-slice-end-development-kernel
   (doseq [[text start] [["0af" 1] ["0" 1] ["" 0] ["0af" 0]]]
@@ -3059,7 +3063,28 @@
           result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
       (is (= :accepted (:status count-result)))
       (is (= :accepted (:status result)) (pr-str result))
-      (is (= (- (count text) start) (get-in result [:descriptor :bounds-proof :result-count])))))
+      (is (= :same-immutable-vector-count (get-in result [:descriptor :bounds-proof :end :kind])))
+      (is (= :source-proven-literal-start-and-same-vector-count-end (get-in result [:descriptor :slice-policy :indexes])))
+      (is (= 14 (count (get-in result [:descriptor :bounds-proof :source-forms]))))
+      (is (= (- (count text) start) (get-in result [:descriptor :bounds-proof :result-count])))
+      (let [established (assoc types :slice-operator (:descriptor result) :slice-call (:type result))
+            check #(invoke-c7 'sh08-vsl-inferred-call [core node call edge nodes bindings %1 %2])
+            measured (check established 65536)]
+        (is (= :accepted (:status measured)))
+        (is (= measured (check established (:work-count measured))))
+        (is (= :vector-slice-work-limit (:reason (check established (dec (:work-count measured))))))
+        (doseq [path [[:bounds-proof :end :value] [:bounds-proof :end :reference :node-id]
+                      [:bounds-proof :end :cardinality-proof :descriptor :query-semantics :operation]
+                      [:slice-policy :indexes]]]
+          (is (= :rejected (:status (check (assoc-in established (into [:slice-operator] path) :forged) 65536))))))
+      (let [context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings))
+                     :shape-call-products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core)}}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                               [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {} {} 12 context])]
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= (:type result) (get-in inferred [:type-table :slice-let]))))))
   (let [{:keys [core node call edge nodes bindings types forms]} (let-vector-count-slice-input "" 1)
         result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
     (is (= :rejected (:status result)))
