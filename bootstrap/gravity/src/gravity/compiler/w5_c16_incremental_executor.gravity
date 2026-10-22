@@ -701,7 +701,7 @@
                                        :backend
                                        (if (= (get change :cause) :plugin-change)
                                          :plugin
-                                         :diagnostic-schema))))))))))))
+                                         :diagnostic-schema))))))))))))))
           (if (w5-c16-id? (get change :before))
             (if (w5-c16-id? (get change :after))
               (if (= (get change :before) (get change :after))
@@ -712,7 +712,7 @@
           false)
         false)
       false)
-    false))))
+    false))
 
 (defn w5-c16-change-list-valid? [changes index]
   (if (= index (count changes))
@@ -956,7 +956,9 @@
           false)
         false)
       false)
-    false))))
+    false)
+    false)
+    false))
 
 (defn w5-c16-revalidate-cache-entry [request]
   (let [key (get request :cache-key)

@@ -320,6 +320,23 @@
           result (run-request input)
           verify (fn [request-value candidate]
                    (invoke engine-plan 'w5-c16-verify-result [request-value candidate]))]
+      ;; Exercise the restored, previously uncompilable guard chain before
+      ;; relying on the new reader cause. The original fourteen stay legal.
+      (doseq [existing (remove #(= :reader-change (:cause %)) (:changes base))]
+        (is (true? (invoke engine-plan 'w5-c16-change-valid? [existing])))
+        (is (false? (invoke engine-plan 'w5-c16-change-valid?
+                            [(assoc existing :field :not-the-cause-field)]))))
+      (let [existing (first (:changes base))]
+        (doseq [invalid [nil [] 42 {} (assoc existing :extra true)
+                         (assoc existing :cause :unknown-change)
+                         (assoc existing :before nil) (assoc existing :after nil)
+                         (assoc existing :after (:before existing))]]
+          (is (false? (invoke engine-plan 'w5-c16-change-valid? [invalid])))))
+      (is (true? (invoke engine-plan 'w5-c16-request-shell-valid? [base])))
+      (doseq [invalid [nil [] {} (assoc base :extra true)
+                       (assoc base :artifact :wrong) (assoc base :schema-version 2)
+                       (assoc base :execution-id "not-a-keyword") (assoc base :mode :unknown)]]
+        (is (false? (invoke engine-plan 'w5-c16-request-shell-valid? [invalid]))))
       (is (true? (invoke engine-plan 'w5-c16-change-valid? [change])))
       (is (= :accepted (:status result)))
       (when (= :accepted (:status result))
