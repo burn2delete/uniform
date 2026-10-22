@@ -75,12 +75,16 @@
                [:authenticated-checked-core-input
                 :single-function-mir-module
                 :linear-or-single-conditional-cfg
+                :closed-original-c6-two-conditional-seven-block-cfg
                 :typed-operation-and-terminator-use-def
                 :runtime-check-token-and-guard-edge
                 :id-referenced-fact-and-proof-tables
                 :checked-core-origin-preservation
                 :independent-seed-verifier-handoff]
                :bounded-executable-limits
+               ; Default linear/single-if contract. The exact original-C6
+               ; nested variant specializes artifact/pass/report scope to
+               ; two conditionals and seven blocks, not arbitrary nesting.
                {:maximum-conditionals 1
                 :maximum-module-carrier-nodes 16384
                 :maximum-final-artifact-carrier-nodes 32768
@@ -4044,7 +4048,8 @@
             branch (get nested :terminator) predecessors (get branch :successors)
             join-id (get (get branch :facts) :join) join (get blocks join-id)
             operation (get (get join :instructions) 0) index (get edge :operand-index)]
-        (if (contains? #{1 2} index)
+        (if (integer? index)
+         (if (contains? #{1 2} index)
           (let [predecessor (get predecessors (- index 1)) producer (get blocks predecessor)
                 terminator (get producer :terminator) value (get edge :from)]
             (sh12-c6p-all?
@@ -4058,7 +4063,7 @@
                (= :branch (get terminator :kind)) (= (get terminator :operands) [value])
                (= (get terminator :successors) [join-id])
                (= (get terminator :facts) {:incoming-value value})
-               (sh12-branch-join-same-block-terminator-use-valid? mir definition)])) false)) false) false)))
+               (sh12-branch-join-same-block-terminator-use-valid? mir definition)])) false) false)) false) false)))
 
 (defn sh12-branch-join-edge-specific-join-use-valid?
   [mir edge definition]

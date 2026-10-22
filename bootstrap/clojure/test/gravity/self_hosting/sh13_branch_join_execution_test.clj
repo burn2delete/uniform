@@ -658,6 +658,47 @@
                          (assoc-in mir [:pass-contract :scope :maximum-conditionals] 2)]]
         (is (= :rejected (:status (invoke 'sh12-verify-branch-join-mir core candidate))))))))
 
+(deftest sh13-rejects-foreign-nested-join-operand-index-before-callback
+  (let [source (str (.resolve @(existing 'root)
+                     "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        temporary (java.io.File/createTempFile "gravity-sh13-nested-index-" ".gravity")]
+    (try
+      (spit temporary (str/replace (slurp source) "(if flag true false)" "(if flag (if false 11 22) 33)"))
+      (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
+            inner (get-in core [:core-nodes 7 :node-id])
+            edges (get-in mir [:data-flow-graph :edges])
+            index (first (keep-indexed #(when (= [inner 1] [(:consumer-id %2) (:operand-index %2)]) %1) edges))
+            callbacks (atom 0)
+            hostile (proxy [Object] []
+                      (hashCode [] (swap! callbacks inc) 7)
+                      (equals [_] (swap! callbacks inc) false))]
+        (is (= :accepted (:status raw)))
+        (is (= :passed (:status upstream)))
+        (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
+        (is (integer? index))
+        (doseq [argument [true false]]
+          (let [result (argument-run-observation core mir [argument])]
+            (is (= :accepted (:status result)))
+            (is (= (if argument 22 33) (get-in result [:execution :value])))
+            (is (= (if argument 502 506) (get-in result [:execution :fuel])))
+            (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
+                                           core mir [argument] result))))))
+        ;; The hostile methods are live, then the original public verifier
+        ;; and consumer must reject this same edge without reaching them.
+        (.hashCode hostile)
+        (is (= 1 @callbacks))
+        (reset! callbacks 0)
+        (doseq [bad-index [hostile nil "1" :index 1.0 [] {} Long/MIN_VALUE Long/MAX_VALUE 3]]
+          (let [candidate (assoc-in mir [:data-flow-graph :edges index :operand-index] bad-index)
+                report (invoke 'sh12-verify-branch-join-mir core candidate)
+                result (argument-run-observation core candidate [true])]
+            (is (= :rejected (:status report) (:status result)))
+            (is (= "C11-DOMINANCE" (get-in report [:diagnostics 0 :diagnostic-id])))
+            (is (= (:diagnostics report) (:diagnostics result)))
+            (is (nil? (:execution result)))
+            (is (zero? @callbacks)))))
+      (finally (.delete temporary)))))
+
 (defn- scalar-core [core condition type then-value else-value]
   (let [values [condition then-value else-value nil nil]
         types [:gravity.type/bool type type type type]]
