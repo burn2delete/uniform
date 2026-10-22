@@ -10781,6 +10781,53 @@
     (is (= :deferred (:status (derive (-> input (assoc-in [:types :input-0] :gravity.type/never)
                                                (assoc-in [:types :unused-0] :gravity.type/unknown))))))))
 
+(deftest sh08-private-map-keys-throw-source-index-budget-development-kernel
+  ;; Normalized SOURCE DATA drives the actual active throw-product consumer.
+  (let [{:keys [core nodes bindings types forms node call edge]} (private-map-keys-input)
+        callers (mapv (fn [entry edge]
+                        (let [id (:caller-function-core-node-id edge) body (:core-node-id entry)]
+                          {:node {:node-id id :core-form :fn :children [body] :attributes {} :resolved-binding-ids []
+                                  :source {:form-id id :syntax-id (:caller-function-syntax-id edge) :semantic-span nil :origin-chain [] :generated-origin nil}
+                                  :evaluation {:kind :function-creation :order []}}
+                           :body body :id id})) (rest (:calls core)) (rest (:call-edges core)))
+        core (-> core (update :nodes into (mapv :node callers))
+                      (assoc :root-core-node-ids (into [:helper-def] (map :id callers)))
+                      (update :function-records (fn [records]
+                                                 (mapv (fn [record]
+                                                         (if-let [caller (first (filter #(= (:id %) (:function-core-node-id record)) callers))]
+                                                           (assoc record :body-core-node-id (:body caller) :parameter-binding-ids [] :fixed-arity 0) record)) records))))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        result (invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms 65536])
+        expected (:type result)
+        callee (assoc (invoke-c7 'sh08-ft-function-type-skeleton [(first (:function-records core)) (:module core)]) :return expected)
+        types (reduce (fn [out entry] (assoc out (:operator-node-id entry) callee (:core-node-id entry) expected))
+                      (assoc types :operator (:descriptor result) :present-get expected :helper-fn callee) (rest (:calls core)))
+        functions (into {:helper-form callee}
+                        (map (fn [caller] [(:id caller) {:function-id (:id caller) :body-core-node-id (:body caller)
+                                                        :parameters [] :return expected :latent-effects [:memory/allocate]
+                                                        :capabilities [] :thrown-error-effects []}]) callers))
+        bindings (vec (vals bindings)) source-forms (vec (vals forms))
+        direct {:status :accepted :throws {:helper-form []} :constraints [] :diagnostics [] :work-count 0}
+        check #(invoke-c7 'sh08-tc-products-with-source-forms [core types functions bindings direct source-forms %])
+        scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) 65536 types])
+        initial (+ (:work-count scoped) (* 8 (count (:nodes core))) (* 100 (count (:error-handlers core)))
+                   (* 70 (count (:call-edges core))) (count bindings) (count (:definitions core))
+                   (* 3 (count (:function-records core)))
+                   (* (count (:calls core)) (+ (count bindings) (count (:definitions core)) (* 2 (count (:function-records core))))))
+        owners (invoke-c7 'sh08-th-owners [core (- 65536 initial)])
+        accepted (check 65536)
+        index-work (* 3 (count source-forms)) budget (+ initial index-work)
+        rejected (check budget)]
+    (is (= :accepted (:status result) (:status scoped) (:status owners)))
+    (is (true? (:active? scoped)))
+    (is (pos? (:work-count owners)))
+    (is (= :accepted (:status accepted)) (pr-str (select-keys accepted [:status :diagnostics :work-count])))
+    (is (= [] (get-in accepted [:throws :helper-form])))
+    (is (= :rejected (:status rejected)))
+    (is (= ["C7-GENERIC" :private-map-keys-work-limit]
+           ((juxt :rule :reason) (first (:diagnostics rejected)))))
+    (is (= (+ budget (:work-count owners)) (:work-count rejected)))))
+
 (deftest sh08-private-map-keys-fixtures-file-parity-development-kernel
   (doseq [[disposition name] [["accepted" "local-runtime-private-map-keys"]
                               ["rejected" "private-map-keys-string-entry"]]]
