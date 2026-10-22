@@ -2997,6 +2997,99 @@
     (assoc input :slice slice :comparison comparison
                  :types (assoc types :prefix-operator (:descriptor comparison) :prefix-call (:type comparison)))))
 
+(defn- let-vector-count-slice-input
+  ([text start] (let-vector-count-slice-input text start nil))
+  ([text start position]
+  ;; Two distinct local occurrences; count observes the same immutable Vector.
+  (let [value (if (nil? position) text (vector-slice-transfer-input text start (count text) position))
+        base (let-vector-slice-input value start (count text))
+        body :slice-let-body op :slice-count-operator ref :slice-count-reference
+        bid :slice-count-binding definition :slice-count-definition
+        source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
+        binding (assoc (get-in base [:bindings :slice-binding])
+                       :binding-id bid :name 'count :definition-syntax-id definition)
+        operator {:node-id op :core-form :reference :children [] :resolved-binding-ids [bid]
+                  :source (source op) :binding-context body
+                  :attributes {:symbol 'count :position :operator :binding-id bid :binding-class :core
+                               :definition-syntax-id definition}
+                  :evaluation {:kind :value :order []}}
+        reference (-> (get-in base [:nodes :slice-ref])
+                      (assoc :node-id ref :source (source ref)))
+        children [op ref]
+        node {:node-id :slice-end :core-form :call :children children :resolved-binding-ids [bid]
+              :source (source :slice-end) :binding-context body
+              :attributes {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+              :evaluation {:kind :operator-then-arguments
+                           :order [{:index 0 :core-node-id op} {:index 1 :core-node-id ref}]}}
+        call {:core-node-id :slice-end :operator-node-id op :operator-binding-id bid
+              :argument-node-ids [ref] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :result-policy :call-result}
+        ordinal (dec (count (get-in base [:core :calls])))
+        edge {:ordinal ordinal :call-core-node-id :slice-end :caller-function-syntax-id nil :caller-function-core-node-id nil
+              :callee-binding-id bid :callee-definition-syntax-id definition
+              :callee-function-syntax-id nil :callee-function-core-node-id nil
+              :argument-core-node-ids [ref] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        nodes (into {} (map (fn [[id value]] [id (assoc-in value [:evaluation :region] :module-initialization)]))
+                    (assoc (:nodes base) op operator ref reference :slice-end node))
+        node-list (letfn [(walk [id] (conj (vec (mapcat walk (:children (nodes id)))) (nodes id)))]
+                    (vec (walk :slice-let)))
+        calls (vec (concat (butlast (get-in base [:core :calls])) [call (:call base)]))
+        edges (vec (concat (butlast (get-in base [:core :call-edges]))
+                           [edge (assoc (:edge base) :ordinal (inc ordinal))]))
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :scope-id body :kind kind :value value :parent-form-id parent :child-form-ids children})
+        forms (assoc (:forms base)
+                     :slice-end (form :slice-end :list '(count characters) :slice-call children)
+                     op (form op :symbol 'count :slice-end [])
+                     ref (form ref :symbol 'characters :slice-end []))
+        core (assoc (:core base) :nodes node-list :calls calls :call-edges edges)
+        input (assoc base :core core :nodes nodes :forms forms :node (nodes :slice-call)
+                     :edge (last edges) :bindings (assoc (:bindings base) bid binding))
+        input (if (:child base) (vector-slice-established input) input)
+        types (assoc (:types input) ref (get-in input [:types :slice-ref]))
+        count-result (invoke-c7 'sh08-cq-derive
+                               [core (nodes :slice-end) call edge nodes (:bindings input) types forms 65536])]
+    (assoc input :count-result count-result
+           :types (assoc types op (:descriptor count-result) :slice-end (:type count-result))
+           :products {:module (:module core) :calls calls :call-edges edges}))))
+
+(deftest sh08-let-vector-count-slice-end-development-kernel
+  (doseq [[text start] [["0af" 1] ["0" 1] ["" 0] ["0af" 0]]]
+    (let [{:keys [core node call edge nodes bindings types forms count-result]}
+          (let-vector-count-slice-input text start)
+          result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
+      (is (= :accepted (:status count-result)))
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= :same-immutable-vector-count (get-in result [:descriptor :bounds-proof :end :kind])))
+      (is (= :source-proven-literal-start-and-same-vector-count-end (get-in result [:descriptor :slice-policy :indexes])))
+      (is (= 14 (count (get-in result [:descriptor :bounds-proof :source-forms]))))
+      (is (= (- (count text) start) (get-in result [:descriptor :bounds-proof :result-count])))
+      (let [established (assoc types :slice-operator (:descriptor result) :slice-call (:type result))
+            check #(invoke-c7 'sh08-vsl-inferred-call [core node call edge nodes bindings %1 %2])
+            measured (check established 65536)]
+        (is (= :accepted (:status measured)))
+        (is (= measured (check established (:work-count measured))))
+        (is (= :vector-slice-work-limit (:reason (check established (dec (:work-count measured))))))
+        (doseq [path [[:bounds-proof :end :value] [:bounds-proof :end :reference :node-id]
+                      [:bounds-proof :end :cardinality-proof :descriptor :query-semantics :operation]
+                      [:slice-policy :indexes]]]
+          (is (= :rejected (:status (check (assoc-in established (into [:slice-operator] path) :forged) 65536))))))
+      (let [context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings))
+                     :shape-call-products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core)}}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                               [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {} {} 12 context])]
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= (:type result) (get-in inferred [:type-table :slice-let]))))))
+  (let [{:keys [core node call edge nodes bindings types forms]} (let-vector-count-slice-input "" 1)
+        result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
+    (is (= :rejected (:status result)))
+    (is (= :vector-slice-bounds-required (:reason result)))))
+
 (defn- let-vector-slice-first-input
   ([value start end] (let-vector-slice-first-input value start end nil))
   ([value start end positions]
