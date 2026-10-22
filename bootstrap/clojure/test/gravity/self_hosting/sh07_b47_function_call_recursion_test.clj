@@ -260,7 +260,7 @@
            (get-in product [:provenance :actual-source-path])))
     (is (= {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
            (get-in artifact [:execution-boundary :downstream-fact-statuses])))
-    (is (= [:meta :jvm #{} #{} :safe]
+    (is (= [:meta :jvm [] [] :safe]
            ((juxt :profile :target :effects :capabilities :safety) (:module product))))
     (doseq [function [callee caller]]
       (let [signature (:signature function) parameter (first (:parameters signature))
