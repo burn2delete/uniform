@@ -11986,6 +11986,144 @@
             {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
         {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))))
 
+(defn body-vsl-let-call-body [core let-node slice-node nodes bindings forms budget]
+  ; Original call argument container; no callee parameter/result type is read.
+  (let [calls (get core :calls) edges (get core :call-edges)
+        records (get core :function-records) definitions (get core :definitions)
+        base (+ 256 (* 8 (+ (if (vector? calls) (count calls) 0) (if (vector? edges) (count edges) 0)
+                            (if (vector? records) (count records) 0) (if (vector? definitions) (count definitions) 0))))
+        children (get let-node :children)]
+    (if (> base budget)
+      {:status :rejected :reason :vector-slice-work-limit :work-count base}
+      (if (if (if (vector? calls) (vector? edges) false) (if (if (vector? records) (vector? definitions) false) (body-sse-ids? children 2) false) false)
+        (if (body-all? [(loop [rows calls] (if (= 0 (count rows)) true (if (body-sse-ids? [(get (first rows) :core-node-id)] 1) (recur (rest rows)) false))) (loop [rows edges] (if (= 0 (count rows)) true (if (body-sse-ids? [(get (first rows) :call-core-node-id)] 1) (recur (rest rows)) false))) (loop [rows records] (if (= 0 (count rows)) true (if (body-sse-ids? [(get (first rows) :function-syntax-id) (get (first rows) :function-core-node-id)] 2) (recur (rest rows)) false))) (loop [rows definitions] (if (= 0 (count rows)) true (if (body-sse-ids? [(get (first rows) :binding-id)] 1) (recur (rest rows)) false)))])
+          (let [node (get nodes (get children 1)) ids (get node :children)
+                owner (get (get node :evaluation) :owner-function-syntax-id)
+                scope (get (get let-node :attributes) :body-scope-id) region (get (get node :evaluation) :region)]
+            (if (if (body-sse-ids? ids 2) (if (body-sse-ids? [(get node :node-id) (get slice-node :node-id) scope (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 5) (if (keyword? region) (if (= nil owner) true (body-sse-ids? [owner] 1)) false) false) false)
+              (let [operator (get nodes (get ids 0)) bid (get (get operator :attributes) :binding-id)
+                    call (body-nq-one calls :core-node-id (get node :node-id))
+                    edge (body-nq-one edges :call-core-node-id (get node :node-id))]
+                (if (if (body-all? [(body-sse-ids? (get call :argument-node-ids) 1) (body-sse-ids? (get call :ordered-evaluation-node-ids) 2) (body-sse-ids? (get edge :argument-core-node-ids) 1) (body-sse-ids? (get edge :ordered-evaluation-node-ids) 2)]) (if (body-sse-ids? [(get operator :node-id) bid (get (get operator :source) :form-id) (get (get operator :source) :syntax-id) (get edge :callee-function-syntax-id) (get edge :callee-function-core-node-id)] 6) (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false) false)
+                  (let [binding (get bindings bid) callee (body-nq-one records :function-syntax-id (get edge :callee-function-syntax-id))
+                        definition (body-nq-one definitions :binding-id bid)
+                        caller (if (= nil owner) nil (body-nq-one records :function-syntax-id owner))
+                        local-ids (get let-node :resolved-binding-ids)]
+                    (if (if (body-sse-ids? [(get callee :function-core-node-id) (get callee :definition-core-node-id) (get callee :definition-binding-id) (get callee :function-form-id) (get binding :definition-syntax-id) (get callee :body-core-node-id)] 6) (if (body-sse-ids? local-ids 1) (body-sse-ids? (get callee :parameter-binding-ids) 1) false) false)
+                      (let [fn-node (get nodes (get callee :function-core-node-id)) def-node (get nodes (get callee :definition-core-node-id))
+                            callee-body (get nodes (get callee :body-core-node-id))
+                            local (get bindings (get local-ids 0))]
+                        (if (body-sse-ids? [(get (get def-node :source) :form-id) (get (get fn-node :source) :form-id)] 2)
+                          (let [call-form (get forms (get (get node :source) :form-id)) op-form (get forms (get (get operator :source) :form-id))
+                            def-form (get forms (get (get def-node :source) :form-id)) fn-form (get forms (get (get fn-node :source) :form-id))
+                            def-ids (get def-form :child-form-ids) fn-ids (get fn-form :child-form-ids)]
+                        (if (if (body-all? [(body-sse-ids? (get fn-node :children) 1) (body-sse-ids? (get def-node :children) 1)]) (if (body-sse-ids? def-ids 3) (if (body-sse-ids? fn-ids 3) (if (body-sse-ids? (get call-form :child-form-ids) 2) (if (body-sse-ids? [(get def-form :form-id) (get def-form :syntax-id) (get fn-form :form-id) (get fn-form :syntax-id) (get op-form :form-id) (get op-form :syntax-id)] 6) (if (body-sse-ids? (get fn-node :resolved-binding-ids) 1) (body-sse-ids? (get def-node :resolved-binding-ids) 1) false) false) false) false) false) false)
+                          (let [def-op (get forms (get def-ids 0)) name-form (get forms (get def-ids 1))
+                                fn-op (get forms (get fn-ids 0)) parameters (get forms (get fn-ids 1))
+                                parameter-ids (get parameters :child-form-ids)
+                                work (+ base 128)]
+                            (if (> work budget)
+                              {:status :rejected :reason :vector-slice-work-limit :work-count work}
+                              (if (if (body-sse-ids? parameter-ids 1) (if (vector? (get parameters :value)) (if (= 1 (count (get parameters :value))) (if (vector? (get (get fn-node :attributes) :parameters)) (= 1 (count (get (get fn-node :attributes) :parameters))) false) false) false) false)
+                                (let [parameter-name (get forms (get parameter-ids 0))
+ scalar? (body-all? [(symbol? (get binding :name)) (symbol? (get binding :namespace))
+                        (symbol? (get (get core :module) :namespace)) (symbol? (get (get operator :attributes) :symbol))
+                        (symbol? (get op-form :value)) (symbol? (get name-form :value))
+                        (symbol? (get definition :name)) (symbol? (get callee :definition-name))
+                        (symbol? (get (get def-node :attributes) :name)) (symbol? (get local :name))
+                        (symbol? (get parameter-name :value)) (symbol? (get (get parameters :value) 0))
+                        (symbol? (get (get (get fn-node :attributes) :parameters) 0))
+                        (if (= nil (get local :mutability)) true (keyword? (get local :mutability)))])]
+                                  (if (if scalar?
+       (if (body-sse-ids? [(get callee-body :node-id) (get (get callee-body :source) :form-id)] 2)
+         (loop [rows [call-form op-form def-form def-op name-form fn-form fn-op parameters parameter-name]]
+           (if (= 0 (count rows)) true
+             (if (map? (first rows))
+               (if (body-sse-ids? [(get (first rows) :form-id) (get (first rows) :syntax-id)] 2)
+                 (recur (rest rows)) false) false))) false) false)
+                                    (if (body-all?
+                                          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+                                           (= [(get operator :node-id) (get slice-node :node-id)] ids)
+                                           (= (get node :node-id) (get children 1)) (= [] (get operator :children))
+                                           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                                           (= [:namespace :function] [(get binding :binding-class) (get binding :kind)])
+                                           (= (get (get core :module) :namespace) (get binding :namespace))
+                                           (= (get binding :name) (get definition :name) (get callee :definition-name) (get name-form :value) (get (get def-node :attributes) :name))
+                                           (= {:symbol (get binding :name) :position :operator :binding-id bid :binding-class :namespace
+                                               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+                                           (= (get binding :name) (get op-form :value))
+                                           (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                               :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                                           (= {:core-node-id (get node :node-id) :operator-node-id (get operator :node-id) :operator-binding-id bid
+                                               :argument-node-ids [(get slice-node :node-id)] :ordered-evaluation-node-ids ids
+                                               :evaluation-order :operator-then-arguments :result-policy :call-result} call)
+                                           (= {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                                               :caller-function-syntax-id owner :caller-function-core-node-id (get caller :function-core-node-id)
+                                               :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                                               :callee-function-syntax-id (get callee :function-syntax-id) :callee-function-core-node-id (get callee :function-core-node-id)
+                                               :argument-core-node-ids [(get slice-node :node-id)] :ordered-evaluation-node-ids ids
+                                               :evaluation-order :operator-then-arguments :classification :local-function} edge)
+                                           (if (= nil owner) (= :module-initialization region) (map? caller))
+                                           (= :named-top-level (get callee :definition-kind)) (= 1 (get callee :fixed-arity))
+                                           (= nil (get callee :signature) (get (get fn-node :attributes) :signature))
+                                           (= bid (get callee :definition-binding-id) (get definition :binding-id))
+                                           (= (get callee :definition-core-node-id) (get definition :core-node-id) (get def-node :node-id))
+                                           (= (get callee :function-core-node-id) (get definition :value-node-id) (get fn-node :node-id))
+                                           (= :def (get def-node :core-form)) (= [(get fn-node :node-id)] (get def-node :children))
+                                           (= [bid] (get def-node :resolved-binding-ids))
+                                           (= (get binding :definition-syntax-id) (get (get def-node :attributes) :name-syntax-id) (get name-form :syntax-id))
+                                           (= (get callee :function-syntax-id) (get (get fn-node :source) :syntax-id) (get fn-form :syntax-id))
+                                           (= :fn (get fn-node :core-form))
+                                           (= [(get callee :body-core-node-id)] (get fn-node :children))
+                                           (= (get callee :parameter-binding-ids) (get fn-node :resolved-binding-ids))
+                                           (= 1 (count (get fn-node :resolved-binding-ids)) (get (get fn-node :attributes) :fixed-arity))
+                                           (= :list (get def-form :kind) (get fn-form :kind) (get call-form :kind))
+                                           (= :symbol (get def-op :kind) (get fn-op :kind) (get name-form :kind) (get parameter-name :kind) (get op-form :kind))
+                                           (= 'def (get def-op :value)) (= 'fn (get fn-op :value))
+                                           (= :vector (get parameters :kind))
+                                           (= [(get def-op :form-id) (get name-form :form-id) (get fn-form :form-id)] def-ids)
+                                           (= [(get fn-op :form-id) (get parameters :form-id) (get (get callee-body :source) :form-id)] fn-ids)
+                                           (= (get parameter-name :form-id) (get parameter-ids 0))
+                                           (= (get callee-body :node-id) (get callee :body-core-node-id))
+                                           (= [(get parameter-name :value)] (get parameters :value) (get (get fn-node :attributes) :parameters))
+                                           (= (get parameters :form-id) (get (get fn-node :attributes) :parameter-form-id) (get parameter-name :parent-form-id))
+                                           (= (get parameters :syntax-id) (get (get fn-node :attributes) :parameter-syntax-id))
+                                           (= (get fn-form :form-id) (get callee :function-form-id) (get (get fn-node :source) :form-id)
+                                                (get def-ids 2) (get parameters :parent-form-id) (get fn-op :parent-form-id))
+                                           (= (get def-form :form-id) (get fn-form :parent-form-id) (get def-op :parent-form-id) (get name-form :parent-form-id))
+                                           (= (get node :source) (body-ix-form-source call-form))
+                                           (= (get operator :source) (body-ix-form-source op-form))
+                                           (= (get fn-node :source) (body-ix-form-source fn-form))
+                                           (= (get def-node :source) (body-ix-form-source def-form))
+                                           (= [(get op-form :form-id) (get (get slice-node :source) :form-id)] (get call-form :child-form-ids))
+                                           (= (get call-form :form-id) (get op-form :parent-form-id) (get (get forms (get (get slice-node :source) :form-id)) :parent-form-id))
+                                           (= (get (get let-node :source) :form-id) (get call-form :parent-form-id))
+                                           (= scope (get node :binding-context) (get operator :binding-context) (get slice-node :binding-context)
+                                                    (get call-form :scope-id) (get op-form :scope-id))
+                                           (contains? #{:module-initialization :function-body} region)
+                                           (= region (get (get let-node :evaluation) :region) (get (get operator :evaluation) :region) (get (get slice-node :evaluation) :region))
+                                           (= owner (get (get let-node :evaluation) :owner-function-syntax-id)
+                                                    (get (get operator :evaluation) :owner-function-syntax-id) (get (get slice-node :evaluation) :owner-function-syntax-id))
+                                           (= :operator-then-arguments (get (get node :evaluation) :kind))
+                                           (= [{:index 0 :core-node-id (get operator :node-id)} {:index 1 :core-node-id (get slice-node :node-id)}]
+                                              (get (get node :evaluation) :order))
+                                           (= :value (get (get operator :evaluation) :kind)) (= [] (get (get operator :evaluation) :order))
+                                           (contains? #{nil :immutable} (get local :mutability))])
+                                      {:status :accepted :work-count work :node node :form call-form
+                                       :source-forms [call-form op-form def-form def-op name-form fn-form fn-op parameters parameter-name]
+                                       :proof {:kind :direct-local-function-slice-argument :node node :operator operator :call call :edge edge
+                                               :callee-record callee :definition definition :binding binding :parameter-index 0}}
+                                      {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
+                                    {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
+                                {:status :rejected :reason :vector-slice-source-mismatch :work-count work})))
+                          {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
+                          {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
+                      {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
+                  {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
+              {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
+          {:status :rejected :reason :vector-slice-source-mismatch :work-count base})
+        {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))))
+
 (defn body-vsl-let-equality-body [core let-node slice-node nodes bindings types forms budget]
   ; One fixed parent edge. The enclosing VE still proves its own operand domain.
   (let [children (get let-node :children) base 64]
@@ -11995,11 +12133,19 @@
               membership-consumer? (if (body-sse-ids? (get root :children) 3)
                                      (let [left (get nodes (get (get root :children) 1))]
                                        (if (= :collection-literal (get left :core-form)) (= :set (get (get left :attributes) :literal-kind)) false)) false)
+              local-call-consumer? (if (body-sse-ids? (get root :children) 2)
+                                  (let [operator (get nodes (get (get root :children) 0))
+                                        bid (get (get operator :attributes) :binding-id)]
+                                    (if (body-sse-ids? [bid] 1)
+                                      (= [:namespace :function] [(get (get bindings bid) :binding-class) (get (get bindings bid) :kind)]) false)) false)
               conditional? (= :if (get root :core-form))
               container (if conditional? (body-vsl-prefix-if core let-node root nodes forms (- budget base)) nil)
               container-work (if conditional? (get container :work-count) 0)
               node (if conditional? (get container :condition) root) children (get node :children)]
-          (if first-consumer?
+          (if local-call-consumer?
+            (let [selected (body-vsl-let-call-body core let-node slice-node nodes bindings forms (- budget base))]
+              (assoc selected :work-count (+ base (get selected :work-count))))
+            (if first-consumer?
             (let [selected (body-vsl-let-first-body core let-node slice-node nodes bindings forms (- budget base))]
               (assoc selected :work-count (+ base (get selected :work-count))))
             (if membership-consumer?
@@ -12112,7 +12258,7 @@
                         {:status :rejected :reason :vector-slice-source-mismatch :work-count work})))
                     {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))))
             {:status :rejected :reason :vector-slice-source-mismatch :work-count base})
-            (assoc container :work-count (+ base container-work))))))
+            (assoc container :work-count (+ base container-work)))))))
         {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))))
 
 (defn body-vsl-parameter [core slice-node reference nodes bindings types forms budget]
