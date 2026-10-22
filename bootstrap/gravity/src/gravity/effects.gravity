@@ -12115,6 +12115,122 @@
             (assoc container :work-count (+ base container-work))))))
         {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))))
 
+(defn body-vsl-parameter [core slice-node reference nodes bindings types forms budget]
+  ; The owning function slot is an existing typing premise. Whole-product C7
+  ; verification dominates the cold C8/lowering consumers of this local rule.
+  (let [records (get core :function-records) mutations (get core :mutations [])
+        owner (get (get reference :evaluation) :owner-function-syntax-id)
+        bid (get (get reference :attributes) :binding-id)
+        base (+ 128 (* 8 (if (vector? records) (count records) 0))
+                    (* 2 (if (vector? mutations) (count mutations) 0)))]
+    (if (> base budget) {:status :rejected :reason :vector-slice-work-limit :work-count base}
+      (if (= nil owner) {:status :not-applicable :work-count base}
+        (if (if (if (vector? records) (vector? mutations) false)
+              (body-sse-ids? [owner bid (get reference :node-id)] 3) false)
+          (if (loop [rows records]
+                (if (= 0 (count rows)) true
+                  (if (body-sse-ids? [(get (first rows) :function-syntax-id) (get (first rows) :function-core-node-id)] 2)
+                    (recur (rest rows)) false)))
+            (let [record (body-nq-one records :function-syntax-id owner)
+                  params (get record :parameter-binding-ids)]
+              (if (if (body-sse-ids? params 1) (= [bid] params) false)
+                (let [fn-node (get nodes (get record :function-core-node-id))
+                      function (get types (get record :function-core-node-id))
+                      parameters (get function :parameters)
+                      slot (if (vector? parameters) (if (= 1 (count parameters)) (get parameters 0) nil) nil)
+                      binding (get bindings bid) type (get types (get reference :node-id))
+                      members (if (map? type) (get type :element-types) nil)
+                      n (if (vector? members) (count members) 0)
+                      work (+ base (* 16 (+ n 1)))]
+                  (if (> work budget) {:status :rejected :reason :vector-slice-work-limit :work-count work}
+                    (if (> n 1024) {:status :rejected :reason :vector-slice-receiver-proof-required :work-count work}
+                      (let [validation (body-lc-type-work [type (get slot :type)] (- budget work))
+                            work (+ work (get validation :work-count))]
+                        (if (= false (= :accepted (get validation :status)))
+                          {:status :rejected :reason (if (= :work-limit (get validation :reason))
+                                                       :vector-slice-work-limit :vector-slice-receiver-proof-required) :work-count work}
+                          (if (if (body-sse-ids? [(get (get fn-node :source) :form-id) (get (get fn-node :source) :syntax-id)
+                                      (get (get fn-node :attributes) :parameter-form-id) (get binding :definition-syntax-id)
+                                      (get binding :scope-id) (get reference :binding-context)] 6)
+                                (body-sse-ids? [(get (get reference :source) :form-id) (get (get reference :source) :syntax-id)
+                                      (get (get slice-node :source) :form-id) (get slice-node :node-id)] 4) false)
+                            (let [fn-form (get forms (get (get fn-node :source) :form-id))
+                                  ids (get fn-form :child-form-ids)
+                                  parameter-form (get forms (get (get fn-node :attributes) :parameter-form-id))
+                                  names (get parameter-form :child-form-ids)]
+                              (if (if (body-sse-ids? ids 3) (body-sse-ids? names 1) false)
+                                (let [operator (get forms (get ids 0)) name-form (get forms (get names 0))
+                                      ref-form (get forms (get (get reference :source) :form-id))
+                                      scope (get binding :scope-id)]
+                                  (if (if (symbol? (get binding :name))
+                                        (if (= nil (get binding :mutability)) true (keyword? (get binding :mutability))) false)
+                                  (if (body-all?
+                                        [(= :accepted (get validation :status))
+                                         (= {:kind :gravity.type/vector :shape :literal :element-types members} type)
+                                         (= :gravity/c7-function-type (get function :artifact))
+                                         (= :inferred (get function :status))
+                                         (= owner (get function :function-id) (get record :function-syntax-id) (get fn-form :syntax-id))
+                                         (= (get record :function-core-node-id) (get fn-node :node-id) (get function :function-core-node-id))
+                                         (body-sse-ids? (get function :parameter-binding-ids) 1)
+                                         (body-sse-ids? (get fn-node :resolved-binding-ids) 1)
+                                         (= params (get function :parameter-binding-ids) (get fn-node :resolved-binding-ids))
+                                         (= 1 (get function :fixed-arity) (get record :fixed-arity))
+                                         (= nil (get record :signature) (get function :signature) (get (get fn-node :attributes) :signature))
+                                         (= :fn (get fn-node :core-form)) (body-sse-ids? (get fn-node :children) 1)
+                                         (= [(get slice-node :node-id)] (get fn-node :children))
+                                         (= :call (get (get nodes (get (get slice-node :children) 3)) :core-form))
+                                         (= (get slice-node :node-id) (get record :body-core-node-id) (get function :body-core-node-id))
+                                         (= :list (get fn-form :kind)) (= :symbol (get operator :kind)) (= 'fn (get operator :value))
+                                         (= [] (get operator :child-form-ids))
+                                         (= [(get operator :form-id) (get parameter-form :form-id) (get (get slice-node :source) :form-id)] ids)
+                                         (= (get fn-form :form-id) (get record :function-form-id) (get operator :parent-form-id)
+                                              (get parameter-form :parent-form-id) (get (get forms (get (get slice-node :source) :form-id)) :parent-form-id))
+                                         (= :vector (get parameter-form :kind))
+                                         (= (get parameter-form :syntax-id) (get (get fn-node :attributes) :parameter-syntax-id))
+                                         (= (get parameter-form :form-id) (get name-form :parent-form-id))
+                                         (= :symbol (get name-form :kind) (get ref-form :kind))
+                                         (= [] (get name-form :child-form-ids) (get ref-form :child-form-ids))
+                                         (symbol? (get binding :name))
+                                         (if (vector? (get parameter-form :value)) (= 1 (count (get parameter-form :value))) false)
+                                         (if (vector? (get (get fn-node :attributes) :parameters)) (= 1 (count (get (get fn-node :attributes) :parameters))) false)
+                                         (= [(get binding :name)] (get parameter-form :value) (get (get fn-node :attributes) :parameters))
+                                         (= (get binding :name) (get name-form :value) (get ref-form :value))
+                                         (= (get binding :definition-syntax-id) (get name-form :syntax-id))
+                                         (= [:lexical :local] [(get binding :binding-class) (get binding :kind)])
+                                         (= bid (get binding :binding-id) (get slot :binding-id))
+                                         (if (vector? (get function :parameters)) (= 1 (count (get function :parameters))) false)
+                                         (if (map? slot) (if (= 2 (count slot))
+                                           (if (loop [fields (keys slot)] (if (= 0 (count fields)) true
+                                                 (if (keyword? (first fields)) (recur (rest fields)) false)))
+                                             (= #{:binding-id :type} (set (keys slot))) false) false) false)
+                                         (= type (get slot :type))
+                                         (contains? #{nil :immutable} (get binding :mutability))
+                                         (= :reference (get reference :core-form)) (= [] (get reference :children))
+                                         (= [bid] (get reference :resolved-binding-ids))
+                                         (= {:symbol (get binding :name) :position :expression :binding-id bid :binding-class :lexical
+                                             :definition-syntax-id (get binding :definition-syntax-id)} (get reference :attributes))
+                                         (= (get reference :source) (body-ix-form-source ref-form))
+                                         (= (get fn-node :source) (body-ix-form-source fn-form))
+                                         (= scope (get name-form :scope-id) (get ref-form :scope-id) (get reference :binding-context)
+                                                  (get slice-node :binding-context))
+                                         (= :function-body (get (get reference :evaluation) :region) (get (get slice-node :evaluation) :region))
+                                         (= owner (get (get slice-node :evaluation) :owner-function-syntax-id))
+                                         (= :value (get (get reference :evaluation) :kind)) (= [] (get (get reference :evaluation) :order))
+                                         (loop [rows mutations]
+                                           (if (= 0 (count rows)) true
+                                             (if (= bid (get (first rows) :target-binding-id)) false (recur (rest rows)))))])
+                                    {:status :accepted :work-count work :type type
+                                     :source-forms [fn-form operator parameter-form name-form]
+                                     :receiver {:kind :immutable-parameter-vector :reference reference :binding binding :record record
+                                                :owner fn-node :parameter-index 0 :parameter-type type}}
+                                    {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
+                                  {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
+                                {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
+                            {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))))))
+                {:status :not-applicable :work-count base}))
+            {:status :rejected :reason :vector-slice-source-mismatch :work-count base})
+          {:status :rejected :reason :vector-slice-source-mismatch :work-count base})))))
+
 (defn body-vsl-let [core slice-node reference nodes bindings types forms budget]
   ; One immutable binding, a direct slice or fixed left equality consumer; no parameter origin.
   (let [records (get core :lexical-bindings []) mutations (get core :mutations [])
@@ -12230,12 +12346,13 @@
         {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))))
 
 (defn body-vsl-count-end [core slice-node node receiver nodes bindings types forms budget]
-  ; The caller independently reconstructed the immutable ASCII Vector origin.
+  ; The caller independently checked the immutable local or parameter Vector.
   ; Prepay table/type visits; reserve membership scans after physical ID checks.
   (let [calls (get core :calls) edges (get core :call-edges) functions (get core :function-records)
         members (get (get receiver :type) :element-types)
         body-consumer (get (get receiver :receiver) :body-consumer)
         first-body? (= :direct-vector-first (get body-consumer :kind))
+        parameter? (= :immutable-parameter-vector (get (get receiver :receiver) :kind))
         work (+ 128 (if first-body? 32 0) (* 8 (+ (if (vector? calls) (count calls) 0)
                             (if (vector? edges) (count edges) 0)
                             (if (vector? functions) (count functions) 0)))
@@ -12278,7 +12395,7 @@
                           op-form (get forms (get (get operator :source) :form-id))
                           arg-form (get forms (get (get argument :source) :form-id))
                           slice-form (get forms (get (get slice-node :source) :form-id))
-                          scope (get record :binding-scope-id) region (get (get slice-node :evaluation) :region)
+                          scope (if parameter? (get local-binding :scope-id) (get record :binding-scope-id)) region (get (get slice-node :evaluation) :region)
                           caller (get (get slice-node :evaluation) :owner-function-syntax-id)]
                       (if (if (body-all? [(body-sse-ids? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
                                             (get arg-form :form-id) (get arg-form :syntax-id)] 6)
@@ -12287,10 +12404,10 @@
                               (if (symbol? (get (get argument :attributes) :symbol))
                                 (if (= nil caller) true (body-sse-ids? [caller] 1)) false) false) false) false)
                         (if (body-all?
-                              [(= :immutable-let-vector (get lexical :kind))
-                               (= :authenticated-string-character-vector (get (get lexical :origin) :kind))
+                              [(if parameter? true (= :immutable-let-vector (get lexical :kind)))
+                               (if parameter? true (= :authenticated-string-character-vector (get (get lexical :origin) :kind)))
                                (if (= nil body-consumer)
-                                 (= (get slice-node :node-id) (get (get (get lexical :owner) :children) 1))
+                                 (= (get slice-node :node-id) (get (get (get lexical :owner) :children) (if parameter? 0 1)))
                                  (if first-body?
                                    (let [head-node (get body-consumer :node) head-op (get body-consumer :operator)]
                                      (if (if (body-sse-ids? [(get head-node :node-id) (get head-op :node-id)] 2)
@@ -12375,7 +12492,11 @@
                 (if valid-source?
                   (let [receiver (if (if (= :reference (get receiver-node :core-form))
                                   (= false (= :gravity.type/never (get types (get receiver-node :node-id)))) false)
-                             (body-vsl-let core node receiver-node nodes bindings types forms (- budget base))
+                             (let [parameter (body-vsl-parameter core node receiver-node nodes bindings types forms (- budget base))]
+                               (if (= :not-applicable (get parameter :status))
+                                 (let [local (body-vsl-let core node receiver-node nodes bindings types forms
+                                               (- budget base (get parameter :work-count)))]
+                                   (assoc local :work-count (+ (get parameter :work-count) (get local :work-count)))) parameter))
                              (body-vsl-receiver core receiver-node nodes bindings types forms (- budget base)))
                         work (+ base (get receiver :work-count))]
                     (if (= :accepted (get receiver :status))
@@ -12482,9 +12603,10 @@
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :slice-policy {:range :start-inclusive-end-exclusive
-                      :receiver (if (= :immutable-let-vector (get (get proof :receiver) :kind)) :immutable-let-vector
+                      :receiver (if (= :immutable-parameter-vector (get (get proof :receiver) :kind)) :immutable-parameter-vector
+                                  (if (= :immutable-let-vector (get (get proof :receiver) :kind)) :immutable-let-vector
                                   (if (= :original-integer-vector-literal (get (get proof :receiver) :kind))
-                                    :original-integer-vector-literal :authenticated-string-character-vector))
+                                    :original-integer-vector-literal :authenticated-string-character-vector)))
                       :indexes (if (= :same-immutable-vector-count (get (get proof :end) :kind))
                                  :source-proven-literal-start-and-same-vector-count-end :source-proven-nonnegative-integer-literals)
                       :bounds :zero-le-start-le-end-le-count :operand-evaluation :receiver-then-start-then-end-once
@@ -12505,10 +12627,12 @@
                       :callee-body :receiver-conversion-proof :index-literal-proofs :slice-policy :source-bounds-proof :selected-positional-types :result-storage-policy :allocation-condition :profile :target :evaluation-order]
                            fields (if (= :same-immutable-vector-count (get (get proof :end) :kind))
                                     (conj (conj fields :same-local-reference-proof) :count-cardinality-proof) fields)]
-                       (if (= :immutable-let-vector (get (get proof :receiver) :kind))
+                       (if (= :immutable-parameter-vector (get (get proof :receiver) :kind))
+                         (conj (conj (conj fields :mutations) :parameter-bindings) :function-type-table)
+                         (if (= :immutable-let-vector (get (get proof :receiver) :kind))
                          (let [fields (conj fields :mutations)]
                            (if (= :prefix-gate-if (get (get (get (get proof :receiver) :body-consumer) :condition-container) :kind))
-                             (conj fields :control-flow) fields)) fields))} nil)) nil) nil))
+                             (conj fields :control-flow) fields)) fields)))} nil)) nil) nil))
 
 (defn body-vsl-finish [header]
   (let [type (if (= :normal (get header :application))
@@ -12560,7 +12684,7 @@
                      (if (= (body-scv-constraint child) (get receiver :constraint))
                        (if (= (body-scv-call-fact child (get core :module)) (get receiver :call-fact))
                          (body-scv-call-valid? core facts bindings child-node child-call (get child :source-edge) nodes) false) false))
-                   (if (= :original-integer-vector-literal (get receiver :kind)) true
+                   (if (contains? #{:original-integer-vector-literal :immutable-parameter-vector} (get receiver :kind)) true
                      (= :non-invoked-operand (get receiver :kind)))))
                (= (body-vsl-call-fact expected (get core :module))
                   (body-nq-one (get facts :call-type-facts) :call-core-node-id (get node :node-id)))

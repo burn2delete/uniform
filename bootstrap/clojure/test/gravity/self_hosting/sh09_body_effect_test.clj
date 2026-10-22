@@ -6842,6 +6842,57 @@
         (is (false? (leaf 'body-graph-equations-valid? core facts {}
                           (assoc-in (:nodes graph) [id :direct] #{:memory/allocate}))))))))
 
+(defn- parameter-vector-count-slice-body-products [text start]
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'clojure.walk)
+  (let [input ((sh08-helper 'parameter-vector-count-slice-products) text start)
+        ids (zipmap (keys (:nodes input)) (map sha (range 8400 8500)))
+        scalar-fields [:node-id :core-node-id :call-core-node-id :operator-node-id :function-core-node-id
+                       :body-core-node-id :definition-core-node-id :value-node-id :initializer-node-id :let-core-node-id
+                       :caller-function-core-node-id :callee-function-core-node-id :receiver-node-id :argument-node-id]
+        vector-fields [:children :argument-node-ids :ordered-evaluation-node-ids :argument-core-node-ids]
+        convert (fn [value]
+                  (if (map? value)
+                    (let [value (reduce (fn [out key] (if (contains? out key) (update out key #(get ids % %)) out)) value scalar-fields)
+                          value (reduce (fn [out key] (if (vector? (get out key))
+                                                       (update out key #(mapv (fn [id] (get ids id id)) %)) out)) value vector-fields)]
+                      (reduce (fn [out key]
+                                (if (map? (get out key))
+                                  (update out key #(into {} (map (fn [[id item]] [(get ids id id) item])) %)) out))
+                              value [:nodes :types :type-table])) value))
+        converted (clojure.walk/postwalk convert input)]
+    (assoc converted :ids ids)))
+
+(deftest body-parameter-vector-count-slice-development-kernel
+  ;; These are original caller-derived normalized products, not C7 authority.
+  (doseq [[text start] [["0af" 1] ["0" 1] ["" 0]]]
+    (let [{:keys [core bindings request facts inference ids]} (parameter-vector-count-slice-body-products text start)
+          fresh (fn [candidate]
+                  (let [counts (leaf 'body-cq-context request candidate bindings 65536)
+                        candidate (assoc candidate :count-context (:context counts))
+                        quotient (leaf 'body-nq-context request candidate bindings 65536)]
+                    [counts quotient (assoc candidate :quotient-context (:context quotient))]))
+          [counts quotient complete] (fresh facts)
+          valid (fn [candidate]
+                  (let [[cq nq candidate] (fresh candidate)]
+                    (and (= :accepted (:status cq) (:status nq))
+                         (leaf 'body-function-joins-valid? core candidate bindings)
+                         (leaf 'body-call-joins-with-foreign-valid? core candidate bindings {}))))
+          graph (leaf 'body-derive-nodes-with-foreign core complete {} 65536)]
+      (is (= :converged (:convergence-status inference)))
+      (is (= :accepted (:status counts) (:status quotient) (:status graph)))
+      (is (true? (valid facts)))
+      (is (= #{:memory/allocate} (get-in graph [:nodes (ids :slice-call) :direct])))
+      (is (= #{} (get-in graph [:nodes (ids :slice-end) :direct])))
+      (is (nil? (get-in graph [:nodes (ids :slice-end) :allocation])))
+      (is (true? (leaf 'body-graph-equations-valid? core complete {} (:nodes graph))))
+      (doseq [mutate [#(update % :call-type-facts pop)
+                      #(update % :constraint-ledger conj (first (filter (fn [row] (= :sh08-vector-slice-v1 (:producer-rule row))) (:constraint-ledger %))))
+                      #(assoc-in % [:type-table (ids :parameter-fn) :parameters 0 :type] :gravity.type/string)
+                      #(assoc-in % [:function-type-table 0 :parameters 0 :binding-id] :sibling)]]
+        (is (false? (valid (mutate facts)))))
+      (is (= quotient (leaf 'body-nq-context request (assoc facts :count-context (:context counts)) bindings (:work-count quotient))))
+      (is (= :rejected (:status (leaf 'body-nq-context request (assoc facts :count-context (:context counts)) bindings (dec (:work-count quotient)))))))))
+
 (defn- let-vector-count-slice-body-products [text start position]
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
