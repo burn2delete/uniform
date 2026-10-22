@@ -195,8 +195,8 @@
                    [:blocks (last block-order) :terminator :operands]))
           result (get values return-id)]
       (when-not (and (contains? values return-id)
-                     (integer? result)
-                     (<= 0 result 255))
+                     (or (boolean? result)
+                         (and (integer? result) (<= 0 result 255))))
         (p15-s23-c-backend-fail!
          "C14-UNSUPPORTED" source-path
          (or (get (into {} (map (juxt :op-id identity)) operations)

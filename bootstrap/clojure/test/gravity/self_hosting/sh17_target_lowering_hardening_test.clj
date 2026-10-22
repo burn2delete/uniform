@@ -325,7 +325,7 @@
     ;; B2's general nil conversion does not grant this C14 eligibility.
     (is (= 0 (b2-exit nil)))
     (when convert-var (is (nil? (convert-var nil))))
-    (let [relative "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-b2-c17-proof-to-c-assumption-record-through-p15-s23-b2-c17-independent-raw.clj"
+    (let [relative "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-024-p15-s23-b2-c17-proof-to-c-assumption-record-through-p15-s23-b2-c17-independent-raw.clj"
           forms (binding [*read-eval* false]
                   (with-open [reader (java.io.PushbackReader. (io/reader (path relative)))]
                     (loop [forms []]

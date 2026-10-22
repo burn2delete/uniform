@@ -1,4 +1,8 @@
 (let [p15-s23-c13-c14-b1-authority-token (nth __gravity_bootstrap_lexical_values_126914 0)]
+(defn- p15-s23-b2-c17-process-exit-code
+  [value]
+  (if (boolean? value) (if value 1 0) value))
+
 (defn p15-s23-b2-c17-proof-to-c-assumption-record
   [b1-record mir operations operation-records return-id
    return-value-name semantic-result]
@@ -103,7 +107,8 @@
         source-text
         (p15-s23-b2-c17-source-text
          operation-records return-value-name)
-        semantic-result (:semantic-result preflight)
+        semantic-result
+        (p15-s23-b2-c17-process-exit-code (:semantic-result preflight))
         source-debug-map
         (p15-s23-b2-c17-source-debug-map-record
          b1-record operations operation-records return-id
