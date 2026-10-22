@@ -5220,6 +5220,177 @@
              ((juxt :status :type :work-count) result)))
       (is (= expected (:descriptor result))))))
 
+
+(deftest sh08-vector-empty-type-limits-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec %))
+        nested (fn [depth] (nth (iterate #(finite [%]) :gravity.type/bool) depth))
+        derive #(list-query-derived (list-query-input 'empty? [%]))]
+    (is (= :accepted (:status (derive (nested 128)))))
+    (is (= :rejected (:status (derive (nested 129)))))
+    (let [member (finite (repeat 1024 :gravity.type/bool))
+          small (derive (finite (repeat 63 member)))
+          input (list-query-input 'empty? [(finite (repeat 64 member))])
+          large (invoke-c7 'sh08-lq-derive [(:core input) (:node input) (:call input) (:edge input)
+                                          (:nodes input) (:bindings input) (:types input) (:forms input) 1000000])]
+      (is (= :accepted (:status small)))
+      (is (= :rejected (:status large)))
+      (is (= :vector-empty-vector-type-required (:reason large)))
+      (is (<= (:work-count large) 65536)))))
+
+
+(defn- vector-empty-cross-family-descriptor [descriptor]
+  ;; Keep the established operand type; forge the complete other family.
+  (let [type (first (:argument-types descriptor))
+        other (if (= :gravity.type/applied-vector-empty (:kind descriptor))
+                (if (= :gravity.type/vector type) :gravity.type/list (assoc type :kind :gravity.type/list))
+                (if (= :gravity.type/never type) :gravity.type/vector
+                  (if (= :gravity.type/list type) :gravity.type/vector (assoc type :kind :gravity.type/vector))))
+        alternate (:descriptor (list-query-derived (list-query-input 'empty? [other])))]
+    (assoc (merge alternate (select-keys descriptor [:resolution :operator-node-id :operator-binding-id :call-core-node-id
+                                                    :source :operator-source :source-call :source-edge :source-binding :profile :target]))
+                     :value-origin (assoc (:value-origin alternate) :operand-node-id (get-in descriptor [:value-origin :operand-node-id]))
+                     :argument-types [type] :parameter-types [type]
+                     :operand-type-work (:operand-type-work descriptor)
+                     :return (:return descriptor) :result-type (:result-type descriptor)
+                     :application (:application descriptor))))
+
+
+(deftest sh08-vector-empty-current-source-composition
+  ;; Distinct genuine G input; Q parity and the negative fixture remain file checks.
+  (let [source-path (fixture-path "accepted" "local-runtime-vector-empty" ".gravity")
+        {:keys [request]} (parameter-vector-count-slice-current-source-request source-path)
+        result (invoke-c7 'sh08-function-type-core-artifact [request])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (let [core (:canonical-core-artifact request)
+            selected (filter #(= :gravity.type/applied-vector-empty
+                                 (get-in result [:type-table (:operator-node-id %) :kind])) (:calls core))
+            call (first selected) operator-id (:operator-node-id call) id (:core-node-id call)
+            descriptor (get-in result [:type-table operator-id])
+            row (first (filter #(and (= :sh08-vector-empty-v1 (:producer-rule %)) (= id (get-in % [:lhs :core-node-id]))) (:constraint-ledger result)))
+            fact (first (filter #(= id (:call-core-node-id %)) (:call-type-facts result)))
+            forged (vector-empty-cross-family-descriptor descriptor)
+            forged-row (invoke-c7 'sh08-lq-constraint [forged])
+            forged-fact (invoke-c7 'sh08-lq-call-fact [forged (:module core)])
+            mutant (walk/prewalk-replace {descriptor forged row forged-row fact forged-fact} result)
+            report (invoke-c7 'sh08-verify-function-type-result [request result])
+            rejected (invoke-c7 'sh08-verify-function-type-result [request mutant])]
+        (is (= 1 (count selected)))
+        (is (= :passed (:status report)))
+        (is (= [:gravity.type/applied-vector-empty :sh08-vector-empty-v1]
+               ((juxt :kind :version) descriptor)))
+        (is (= :gravity.type/bool (get-in result [:type-table id])))
+        (is (= [{:kind :gravity.type/vector :shape :literal :element-types []}] (:argument-types descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= :sh08-vector-empty-v1 (:producer-rule row)))
+        (is (= :direct-vector-empty (:dispatch fact)))
+        (is (= (:source-call descriptor) (:source-call forged)))
+        (is (= forged (get-in mutant [:type-table operator-id]) (:dependencies forged-row) (:applied-list-query forged-fact)))
+        (is (= [:sh08-list-query-v1 :list-query :direct-list-query]
+               [(:producer-rule forged-row) (get-in forged-row [:lhs :projection]) (:dispatch forged-fact)]))
+        (is (not= result mutant))
+        (is (= :rejected (:status rejected)))
+        (is (= result (:expected rejected)))
+        (is (= mutant (:candidate rejected)))
+        (is (= (slurp source-path) (slurp (fixture-path "accepted" "local-runtime-vector-empty" ".qst"))))
+        (is (= (slurp (fixture-path "rejected" "vector-empty-string-receiver" ".gravity"))
+               (slurp (fixture-path "rejected" "vector-empty-string-receiver" ".qst"))))))))
+
+(deftest sh08-vector-empty-cold-and-budget-development-kernel
+  (let [vector-type (fn [elements] {:kind :gravity.type/vector :shape :literal :element-types elements})]
+    (doseq [type [:gravity.type/vector (vector-type []) (vector-type [:gravity.type/nil])
+                   (vector-type [:gravity.type/bool :gravity.type/string (vector-type [])])
+                   (vector-type (vec (repeat 1024 :gravity.type/integer)))]]
+      (let [{:keys [core node call edge nodes bindings types forms products binding-types] :as input}
+            (list-query-input 'empty? [type])
+            derive #(invoke-c7 'sh08-lq-derive [core node call edge nodes bindings types forms %])
+            result (derive 65536) descriptor (:descriptor result)
+            checked-types (assoc types :operator descriptor :call :gravity.type/bool)
+            check #(invoke-c7 'sh08-vemp-inferred-call [core node call edge nodes bindings %1 %2])
+            checked (check checked-types 65536)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result) (:status checked)))
+        (is (= :gravity.type/bool (:type result) (:result-type descriptor)))
+        (is (= [:gravity.type/applied-vector-empty :sh08-vector-empty-v1 'gravity.collections :gravity.collections/persistent-vector-empty]
+               ((juxt :kind :version :semantic-owner :intrinsic) descriptor)))
+        (is (= [:persistent-vector :once :non-tail :none :zero-elements :not-required :none]
+               ((juxt :input :operand-evaluation :operand-position :payload-evaluation :test :static-length :flow-refinement)
+                (:query-policy descriptor))))
+        (is (= :none (get-in descriptor [:storage-policy :collection-construction])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
+        (is (= :sh08-vector-empty-v1 (:producer-rule (:constraint result))))
+        (is (= :vector-empty (get-in result [:constraint :lhs :projection])))
+        (is (= :direct-vector-empty (:dispatch (invoke-c7 'sh08-lq-call-fact [descriptor (:module core)]))))
+        (is (= result (derive (:work-count result))))
+        (is (= :vector-empty-work-limit (:reason (derive (dec (:work-count result))))))
+        (is (= checked (check checked-types (:work-count checked))))
+        (is (= :vector-empty-work-limit (:reason (check checked-types (dec (:work-count checked))))))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= :gravity.type/bool (get-in inferred [:type-table :call])))
+        (doseq [changed [(vector-empty-cross-family-descriptor descriptor)
+                         (assoc descriptor :kind :gravity.type/applied-list-query)
+                         (assoc descriptor :version :sh08-list-query-v1)
+                         (assoc descriptor :profile-validation-work 0)
+                         (assoc descriptor :operand-type-work 0)
+                         (assoc-in descriptor [:query-policy :payload-evaluation] :execute)
+                         (assoc-in descriptor [:query-policy :flow-refinement] :nonempty-else)
+                         (assoc-in descriptor [:storage-policy :collection-construction] :vector)
+                         (assoc descriptor :direct-effects [:memory/allocate])]]
+          (is (= :rejected (:status (check (assoc checked-types :operator changed) 65536)))))))
+    (doseq [type [:gravity.type/list {:kind :gravity.type/list :shape :literal :element-types []} :gravity.type/never]]
+      (let [{:keys [core node call edge nodes bindings types] :as input} (list-query-input 'empty? [type])
+            result (list-query-derived input)
+            candidate (assoc types :operator (vector-empty-cross-family-descriptor (:descriptor result)) :call (:type result))]
+        (is (false? (invoke-c7 'sh08-lq-inferred-call-valid? [core node call edge nodes bindings candidate])))))
+    (doseq [type [nil :gravity.type/unknown :gravity.type/nil :gravity.type/string :gravity.type/map :gravity.type/set
+                   (vector-type [:gravity.type/integer :gravity.type/unknown])
+                   (vector-type [:gravity.type/never])
+                   (assoc (vector-type []) :shape :forged)
+                   (assoc (vector-type []) :extra true)
+                   (vector-type (vec (repeat 1025 :gravity.type/integer)))]]
+      (is (= :rejected (:status (list-query-derived (list-query-input 'empty? [type]))))))
+    (doseq [arguments [[] [:gravity.type/vector :gravity.type/vector]]]
+      (is (= :list-query-arity-mismatch (:reason (list-query-derived (list-query-input 'empty? arguments))))))
+    (is (= :rejected (:status (list-query-derived (list-query-input 'first [(vector-type [])])))))
+    (is (= :rejected (:status (list-query-derived (list-query-input 'rest [(vector-type [:gravity.type/bool])])))))))
+
+(deftest sh08-vector-empty-physical-preflight-development-kernel
+  (let [base (list-query-input 'empty? [:gravity.type/vector]) callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Vector empty metadata hash callback")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "Vector empty metadata equality callback")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "Vector empty metadata format callback"))))
+        derive (fn [input budget] (invoke-c7 'sh08-lq-derive
+                                   [(:core input) (:node input) (:call input) (:edge input) (:nodes input)
+                                    (:bindings input) (:types input) (:forms input) budget]))]
+    (doseq [path [[:call :operator-node-id] [:call :operator-binding-id] [:call :argument-node-ids 0]
+                  [:node :node-id] [:node :children 0] [:node :children 1] [:node :source :form-id]
+                  [:node :source :syntax-id] [:node :evaluation :owner-function-syntax-id]
+                  [:nodes :arg0 :source :form-id] [:nodes :arg0 :source :syntax-id]
+                  [:nodes :operator :attributes :symbol] [:bindings :ordering-binding :name]
+                  [:bindings :ordering-binding :definition-syntax-id] [:bindings :ordering-binding :profile-set 0]
+                  [:bindings :ordering-binding :target-set 0] [:core :module :profile] [:core :module :target]
+                  [:edge :ordinal] [:edge :caller-function-syntax-id] [:forms :operator :value]
+                  [:forms :call :child-form-ids 1]]
+            budget [0 65536]]
+      (is (= :rejected (:status (derive (assoc-in base path opaque) budget))))
+      (is (zero? @callbacks)))
+    (let [type (array-map opaque [])]
+      (doseq [budget [0 65536]]
+        (is (= :rejected (:status (derive (assoc-in base [:types :arg0] type) budget))))
+        (is (zero? @callbacks))))
+    (let [profiles (conj (vec (repeat 2048 :meta)) opaque)
+          input (assoc-in base [:bindings :ordering-binding :profile-set] profiles)
+          result (derive input 256)]
+      (is (= :vector-empty-work-limit (:reason result)))
+      (is (zero? @callbacks)))
+    (is (= :accepted (:status (derive base 65536))))))
+
 (deftest sh08-list-query-development-kernel
   (let [s :gravity.type/string b :gravity.type/bool n :gravity.type/nil nv :gravity.type/never
         positional (fn [types] {:kind :gravity.type/list :element-types types :shape :literal})

@@ -776,6 +776,149 @@
                                           (assoc-in request [:canonical-core-artifact :module :effects] [])
                                           (assoc-in facts [:module :effects] []) {} 65536)))))))))))
 
+
+(deftest body-vector-empty-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'list-query-input) derive (ns-resolve upstream 'list-query-derived)
+        c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [[operation input-type] [['empty? :gravity.type/vector]
+                                   ['empty? {:kind :gravity.type/vector :element-types [] :shape :literal}]
+                                   ['empty? {:kind :gravity.type/vector :element-types [:gravity.type/bool :gravity.type/nil] :shape :literal}]
+                                   ['empty? {:kind :gravity.type/vector :element-types [{:kind :gravity.type/vector :element-types [] :shape :literal}] :shape :literal}]]]
+      (let [base (-> (input-fn operation [input-type]) (assoc-in [:module :effects] [:memory/allocate])
+                     (assoc-in [:core :module :effects] [:memory/allocate])) ids (zipmap (keys (:nodes base)) (map sha (range 1250 1260)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                         :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
+            result (derive input) descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc (:types input) (ids :operator) descriptor (ids :call) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-lq-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-lq-constraint [descriptor])]}
+            context (leaf 'body-lq-context request facts (:bindings base) 65536)
+            facts (assoc facts :list-query-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :call)]) normal? (not= :gravity.type/never input-type)]
+        (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str graph))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record) (:transitive record)))
+        (is (= [] (:latent-effects descriptor)))
+        (is (nil? (:allocation record)))
+        (let [operand (ids :arg0)
+              inherited #{:memory/allocate :error/throw}
+              seeded (assoc-in (:nodes graph) [operand :transitive] inherited)
+              derived (leaf 'body-node-record (:node input) nil seeded (:type result))]
+          (is (= #{} (:direct derived)))
+          (is (= inherited (:transitive derived)))
+          (is (nil? (:allocation derived))))
+        (is (= (mapv ids (get-in base [:node :children])) (:dependencies record) (:evaluated-children record)))
+        (is (nil? (:call-body-dependency record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= :body-list-query-source-forms-required
+               (:reason (leaf 'body-lq-context (assoc-in request [:b47-context :authenticated-core-request :forms] 7)
+                          facts (:bindings base) 65536))))
+        (is (= context (leaf 'body-lq-context request facts (:bindings base) (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-lq-context request facts (:bindings base) (dec (:work-count context))))))
+        (doseq [changed [((ns-resolve upstream 'vector-empty-cross-family-descriptor) descriptor)
+                         (assoc descriptor :producer-version :sh08-list-query-v1)
+                         (assoc-in descriptor [:query-policy :payload-evaluation] :execute)
+                         (assoc-in descriptor [:storage-policy :rest] :copy)
+                         (assoc-in descriptor [:value-origin :kind] :quoted-data)
+                         (assoc descriptor :latent-effects [:memory/allocate])
+                         (assoc descriptor :return :gravity.type/unknown :result-type :gravity.type/unknown)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-lq-call-fact [changed (:module base)])]
+                                     :constraint-ledger [(c7 'sh08-lq-constraint [changed])]))]
+            (is (false? (valid candidate)))))
+        (doseq [mutate [#(assoc % :constraint-ledger [])
+                        #(update % :constraint-ledger into (:constraint-ledger %))
+                        #(assoc-in % [:constraint-ledger 0 :producer-rule] :sh08-list-query-v1)
+                        #(assoc-in % [:constraint-ledger 0 :lhs :core-node-id] (sha 1299))
+                        #(assoc % :call-type-facts [])
+                        #(update % :call-type-facts into (:call-type-facts %))
+                        #(assoc-in % [:call-type-facts 0 :dispatch] :direct-list-query)
+                        #(assoc-in % [:call-type-facts 0 :call-core-node-id] (sha 1299))]]
+          (let [candidate (mutate facts)]
+            (is (= :rejected (:status (leaf 'body-lq-context request candidate (:bindings base) 65536))))
+            (is (false? (valid candidate)))))
+        (doseq [field [:calls :call-edges]]
+          (is (= :rejected (:status (leaf 'body-lq-context
+                                     (update-in request [:canonical-core-artifact field] #(into % %))
+                                     facts (:bindings base) 65536)))))
+        (let [callbacks (atom [])
+              opaque (proxy [Object] []
+                       (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "source hash" {})))
+                       (equals [other] (swap! callbacks conj :equals) (throw (ex-info "source equals" {})))
+                       (toString [] (swap! callbacks conj :format) (throw (ex-info "source format" {}))))]
+          (doseq [[changed-request changed-facts changed-bindings budget]
+                  [[request (assoc-in facts [:type-table (ids :arg0)] (array-map opaque [])) (:bindings base) 65536]
+                   [request facts (assoc-in (:bindings base) [:ordering-binding :profile-set] [opaque]) 65536]
+                   [request facts (assoc-in (:bindings base) [:ordering-binding :target-set] [opaque]) 65536]
+                   [(assoc-in request [:canonical-core-artifact :module :profile] opaque) facts (:bindings base) 65536]
+                   [(assoc-in request [:b47-context :authenticated-core-request :forms 0 :form-id] opaque) facts (:bindings base) 65536]
+                   [request (assoc-in facts [:constraint-ledger 0 :producer-rule] opaque) (:bindings base) 65536]
+                   [request (assoc-in facts [:call-type-facts 0 :dispatch] opaque) (:bindings base) 65536]
+                   [request facts (assoc-in (:bindings base) [:ordering-binding :profile-set]
+                                           (conj (vec (repeat 2048 :meta)) opaque)) 256]]]
+            (is (= :rejected (:status (leaf 'body-lq-context changed-request changed-facts changed-bindings budget))))
+            (is (empty? @callbacks))))
+        (let [callbacks (atom [])
+              opaque (proxy [Object] []
+                       (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "cold hash" {})))
+                       (equals [other] (swap! callbacks conj :equals) (throw (ex-info "cold equals" {})))
+                       (toString [] (swap! callbacks conj :format) (throw (ex-info "cold format" {}))))]
+          (doseq [[changed-core changed-facts changed-bindings]
+                  [[core facts (assoc-in (:bindings base) [:ordering-binding :profile-set] [opaque])]
+                   [core facts (assoc-in (:bindings base) [:ordering-binding :target-set] [opaque])]
+                   [(assoc-in core [:module :profile] opaque) facts (:bindings base)]
+                   [(assoc-in core [:nodes 0 :node-id] opaque) facts (:bindings base)]
+                   [(assoc-in core [:call-edges 0 :call-core-node-id] opaque) facts (:bindings base)]
+                   [(assoc-in core [:call-edges 0 :callee-binding-id] opaque) facts (:bindings base)]
+                   [(assoc-in core [:call-edges 0 :ordinal] opaque) facts (:bindings base)]
+                   [(assoc-in core [:call-edges 0 :classification] opaque) facts (:bindings base)]
+                   [(assoc-in core [:calls 0 :operator-binding-id] opaque) facts (:bindings base)]
+                   [(assoc-in core [:module :target] opaque) facts (:bindings base)]
+                   [core (assoc facts :function-type-table [{:function-id opaque}]) (:bindings base)]
+                   [core facts (assoc-in (:bindings base) [:ordering-binding :name] opaque)]
+                   [core facts (assoc-in (:bindings base) [:ordering-binding :binding-class] opaque)]
+                   [(assoc core :function-records [{:function-syntax-id opaque :function-core-node-id :owner}]) facts (:bindings base)]
+                   [core (assoc-in facts [:call-type-facts 0 :call-core-node-id] opaque) (:bindings base)]
+                   [core facts (assoc-in (:bindings base) [:ordering-binding :profile-set]
+                                        (conj (vec (repeat 40000 :meta)) opaque))]]]
+            (is (false? (leaf 'body-call-joins-with-foreign-valid? changed-core changed-facts changed-bindings {})))
+            (is (empty? @callbacks))))
+        (when (= input-type :gravity.type/vector)
+          (let [core (merge core {:root-core-node-ids [(ids :call)] :definitions [] :lexical-bindings []
+                                 :match-branch-records [] :match-pattern-records [] :match-decision-skeletons []
+                                 :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
+                preimage (assoc (select-keys core [:root-core-node-ids :definitions :function-records :call-edges :calls
+                                                   :evaluation-order :lexical-bindings :match-branch-records :match-decision-skeletons :match-pattern-records])
+                                :nodes (leaf 'body-throw-semantic-nodes core))
+                core (assoc core :identity-preimage preimage)
+                request (-> request (assoc :canonical-core-artifact core)
+                            (assoc-in [:b47-context :authenticated-core-request :binding-table] (vec (vals (:bindings base)))))
+                facts (merge facts (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings]) {:local-binding-facts []})
+                analyze #(leaf 'body-analyze-module request facts {} %)
+                analyzed (analyze 65536) work (:work-count analyzed)]
+            (is (= :accepted (:status analyzed)) (pr-str analyzed))
+            (when (= :accepted (:status analyzed))
+              (is (>= work (+ (:work-count context) (:work-count graph))))
+              (is (= analyzed (analyze work)))
+              (is (= :rejected (:status (analyze (dec work)))))
+              (is (= :accepted (:status (leaf 'body-analyze-module
+                                          (assoc-in request [:canonical-core-artifact :module :effects] [])
+                                          (assoc-in facts [:module :effects] []) {} 65536)))))))))))
+
 (deftest body-list-construction-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test

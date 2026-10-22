@@ -6294,7 +6294,7 @@
           (recur next (get core :call-edges) next work touched))
         (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)
               local? (= :local-function (get edge :classification))
-              intrinsic? (if (keyword? (get (get types (first (get (get nodes (get edge :call-core-node-id)) :children))) :kind)) (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first}
+              intrinsic? (if (keyword? (get (get types (first (get (get nodes (get edge :call-core-node-id)) :children))) :kind)) (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first :gravity.type/applied-vector-empty}
                             (get (get types (first (get (get nodes (get edge :call-core-node-id)) :children))) :kind)) false)
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (if local? false (= false intrinsic?)) false)
@@ -6585,7 +6585,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (if (keyword? (get (get types (first (get node :children))) :kind)) (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first}
+                 :callee-normal-type (if (if (keyword? (get (get types (first (get node :children))) :kind)) (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first :gravity.type/applied-vector-empty}
                                                     (get (get types (first (get node :children))) :kind)) false)
                    (get types (first (get node :children)))
                    (sh08-bm-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))
@@ -6623,21 +6623,26 @@
                           (if (= 0 (count edges)) {:status :accepted :edge nil :work-count work}
                             (let [edge (first edges) call (get calls (get edge :call-core-node-id))
                                   node (get nodes (get edge :call-core-node-id))
-                                  vector? (if (contains? scope (get edge :caller-function-syntax-id))
-                                            (if (keyword? (get (get types (first (get node :children))) :kind)) (contains? #{:gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains} (get (get types (first (get node :children))) :kind)) false) false)
-                                  predicate? (if (contains? scope (get edge :caller-function-syntax-id))
-                                               (if (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-ip-binding? (get binding-index (get call :operator-binding-id)) (get core :module))))))))))) true (sh08-vp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) false)
-                                  vector-first? (if (contains? scope (get edge :caller-function-syntax-id))
-                                                  (= :gravity.type/applied-vector-first (get (get types (first (get node :children))) :kind)) false)
-                                  get2? (if (contains? scope (get edge :caller-function-syntax-id))
+                                  vector-empty? (if (contains? scope (get edge :caller-function-syntax-id))
+                                                  (sh08-vemp-entry? node call nodes binding-index types (get core :module)) false)
+                                  vector? (if vector-empty? false (if (contains? scope (get edge :caller-function-syntax-id))
+                                            (if (keyword? (get (get types (first (get node :children))) :kind)) (contains? #{:gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains} (get (get types (first (get node :children))) :kind)) false) false))
+                                  predicate? (if vector-empty? false (if (contains? scope (get edge :caller-function-syntax-id))
+                                               (if (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-ip-binding? (get binding-index (get call :operator-binding-id)) (get core :module))))))))))) true (sh08-vp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) false))
+                                  vector-first? (if vector-empty? false (if (contains? scope (get edge :caller-function-syntax-id))
+                                                  (= :gravity.type/applied-vector-first (get (get types (first (get node :children))) :kind)) false))
+                                  get2? (if vector-empty? false (if (contains? scope (get edge :caller-function-syntax-id))
                                           (if (= 2 (count (get call :argument-node-ids)))
                                             (let [receiver (get types (get (get call :argument-node-ids) 0))
                                                   key-type (get types (get (get call :argument-node-ids) 1))]
                                               (if (if (= :gravity.type/map receiver) true
                                                       (if (map? receiver) (= :gravity.type/map (get receiver :kind))
                                                         (if (= :gravity.type/never receiver) (= :gravity.type/keyword key-type) false)))
-                                                (sh08-mg-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) false)) false) false)
-                                  checked (if (if (contains? scope (get edge :caller-function-syntax-id))
+                                                (sh08-mg-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) false)) false) false))
+                                  checked (if vector-empty?
+                                            (sh08-vemp-inferred-call core node call edge nodes binding-index types
+                                              (- budget initial (get owners :work-count) work))
+(if (if (contains? scope (get edge :caller-function-syntax-id))
                                             (if (if (if (sh08-vsl-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-scv-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (sh08-cqs-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (sh08-nq-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) false)
                                             (if (if (if (sh08-vsl-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-scv-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (sh08-cqs-binding? (get binding-index (get call :operator-binding-id)) (get core :module)))
                                               (if (if (sh08-vsl-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-scv-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-vsl-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-vsl-inferred-call core node call edge nodes binding-index types
@@ -6691,7 +6696,7 @@
                                                   (- budget initial (get owners :work-count) work)))))))))))
                                                 (sh08-vp-inferred-call core node call edge nodes binding-index types
                                                   (- budget initial (get owners :work-count) work)))
-                                              {:status :accepted :work-count 0})))))
+                                              {:status :accepted :work-count 0}))))))
                                   total (+ work (get checked :work-count))]
                               (if (= :accepted (get checked :status))
                               (if (if (contains? scope (get edge :caller-function-syntax-id))
@@ -6707,9 +6712,10 @@
                                              (= (get callee :function-syntax-id) (get (get fn-node :source) :syntax-id))
                                              (= (get edge :caller-function-syntax-id)
                                                 (get (get owners :owners) (get edge :call-core-node-id)))])) false)
-                                      (let [node (get nodes (get edge :call-core-node-id))
+                                      (if vector-empty? (= :accepted (get checked :status))
+(let [node (get nodes (get edge :call-core-node-id))
                                             descriptor (if get2? nil
-                                                       (if (contains? #{:gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-keyword-set-contains :gravity.type/applied-set-conversion :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first} (get (get types (first (get node :children))) :kind))
+                                                       (if (contains? #{:gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-keyword-set-contains :gravity.type/applied-set-conversion :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first :gravity.type/applied-vector-empty} (get (get types (first (get node :children))) :kind))
                                                          nil
                                                          (sh08-io-descriptor core node call edge nodes binding-index types (get core :module))))]
                                         (if (map? descriptor) (= descriptor (get types (first (get node :children))))
@@ -6747,7 +6753,7 @@
                                                   (sh08-ae-inferred-call-valid? core node call edge nodes binding-index types))
                                                 (if (sh08-mr-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
                                                   (sh08-mr-inferred-call-valid? core node call edge nodes binding-index types)
-                                                  (sh08-ma-inferred-call-valid? core node call edge nodes binding-index types)))))))))))))) true)
+                                                  (sh08-ma-inferred-call-valid? core node call edge nodes binding-index types))))))))))))))) true)
                                 (recur (rest edges) total)
                                 {:status :rejected :edge edge :reason (if predicate? (if (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-ip-binding? (get binding-index (get call :operator-binding-id)) (get core :module)))))))))))
                                                                           (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :set-conversion-source-mismatch (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :atomic-inequality-source-mismatch (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :character-predicate-source-mismatch :nil-predicate-source-mismatch) (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :boolean-predicate-source-mismatch (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :symbol-predicate-source-mismatch (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :list-predicate-source-mismatch :set-predicate-source-mismatch) (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :map-predicate-source-mismatch (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :keyword-predicate-source-mismatch (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :string-predicate-source-mismatch :integer-predicate-source-mismatch))))))))) :vector-predicate-source-mismatch)
@@ -6765,7 +6771,7 @@
                         (assoc (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-reconstruction-visits (+ initial validation-work))
                           :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (= :rejected (get owners :status)) owners
-                        (if (contains? #{:list-inequality-work-limit :list-equality-work-limit :string-set-insertion-work-limit :nonnegative-integer-quotient-work-limit :vector-slice-work-limit :string-character-vector-work-limit :count-quotient-scaling-work-limit :keyword-set-insertion-work-limit :symbol-set-insertion-work-limit :keyword-set-contains-work-limit :keyword-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :list-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :symbol-set-contains-work-limit :integer-set-contains-work-limit :vector-first-work-limit :map-get-work-limit} (get checked-edges :reason))
+                        (if (contains? #{:list-inequality-work-limit :list-equality-work-limit :string-set-insertion-work-limit :nonnegative-integer-quotient-work-limit :vector-slice-work-limit :string-character-vector-work-limit :count-quotient-scaling-work-limit :keyword-set-insertion-work-limit :symbol-set-insertion-work-limit :keyword-set-contains-work-limit :keyword-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :list-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :symbol-set-contains-work-limit :integer-set-contains-work-limit :vector-first-work-limit :map-get-work-limit :vector-empty-work-limit} (get checked-edges :reason))
                           (assoc (sh08-th-error "C7-GENERIC" (get checked-edges :reason) {} :bounded-reconstruction-visits (+ initial validation-work))
                             :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (if (= bad-edge nil) (= false recursive?) false)
@@ -6812,7 +6818,7 @@
                             :string-set-equality-source-mismatch :string-set-equality-operand-type-required :string-set-equality-type-width
                             :vector-predicate-source-mismatch :vector-predicate-operand-type-required :vector-predicate-arity-mismatch
                             :integer-predicate-source-mismatch :integer-predicate-operand-type-required :integer-predicate-arity-mismatch
-                            :set-conversion-source-mismatch :set-conversion-operand-type-required :set-conversion-arity-mismatch :map-predicate-source-mismatch :map-predicate-operand-type-required :map-predicate-arity-mismatch  :keyword-predicate-source-mismatch :keyword-predicate-operand-type-required :keyword-predicate-arity-mismatch :string-predicate-source-mismatch :string-predicate-operand-type-required :string-predicate-arity-mismatch :set-predicate-arity-mismatch :set-predicate-operand-type-required :set-predicate-source-mismatch :symbol-predicate-arity-mismatch :symbol-predicate-operand-type-required :symbol-predicate-source-mismatch :boolean-predicate-arity-mismatch :boolean-predicate-operand-type-required :boolean-predicate-source-mismatch :nil-predicate-arity-mismatch :character-predicate-arity-mismatch :nil-predicate-operand-type-required :character-predicate-operand-type-required :nil-predicate-source-mismatch :character-predicate-source-mismatch :atomic-inequality-arity-mismatch :atomic-inequality-operand-type-required :atomic-inequality-source-mismatch :character-set-contains-type-width :string-set-contains-type-width :character-set-contains-arity-mismatch :string-set-contains-arity-mismatch :character-set-contains-operand-type-required :string-set-contains-operand-type-required :character-set-contains-source-mismatch :string-set-contains-source-mismatch :vector-first-source-mismatch :vector-first-nonempty-complete-positional-type-required :map-get-source-mismatch :map-get-private-entry-presence-required :map-get-private-entry-selected-type-required}
+                            :set-conversion-source-mismatch :set-conversion-operand-type-required :set-conversion-arity-mismatch :map-predicate-source-mismatch :map-predicate-operand-type-required :map-predicate-arity-mismatch  :keyword-predicate-source-mismatch :keyword-predicate-operand-type-required :keyword-predicate-arity-mismatch :string-predicate-source-mismatch :string-predicate-operand-type-required :string-predicate-arity-mismatch :set-predicate-arity-mismatch :set-predicate-operand-type-required :set-predicate-source-mismatch :symbol-predicate-arity-mismatch :symbol-predicate-operand-type-required :symbol-predicate-source-mismatch :boolean-predicate-arity-mismatch :boolean-predicate-operand-type-required :boolean-predicate-source-mismatch :nil-predicate-arity-mismatch :character-predicate-arity-mismatch :nil-predicate-operand-type-required :character-predicate-operand-type-required :nil-predicate-source-mismatch :character-predicate-source-mismatch :atomic-inequality-arity-mismatch :atomic-inequality-operand-type-required :atomic-inequality-source-mismatch :character-set-contains-type-width :string-set-contains-type-width :character-set-contains-arity-mismatch :string-set-contains-arity-mismatch :character-set-contains-operand-type-required :string-set-contains-operand-type-required :character-set-contains-source-mismatch :string-set-contains-source-mismatch :vector-first-source-mismatch :vector-first-nonempty-complete-positional-type-required :map-get-source-mismatch :map-get-private-entry-presence-required :map-get-private-entry-selected-type-required :vector-empty-source-mismatch :vector-empty-vector-type-required}
                   (get checked-edges :reason))
               (assoc derived :work-count (+ initial validation-work (get owners :work-count 0) (get derived :work-count 0))) derived)))) scoped))))
 
@@ -9248,6 +9254,202 @@
      (contains? (set (get binding :profile-set)) (get module :profile))
      (contains? (set (get binding :target-set)) :all)]) false))
 
+(defn sh08-vemp-ids? [node call nodes bindings module]
+  (if (if (map? node) (map? call) false)
+    (if (sh08-ft-all-true? [(map? nodes) (map? bindings) (map? module)
+                           (map? (get node :source)) (map? (get node :evaluation)) (map? (get node :attributes))])
+  ; Fixed physical groups only: no profile or target traversal before reservation.
+  (if (if (map? node) (map? call) false)
+    (let [args (get call :argument-node-ids) children (get node :children)]
+      (if (if (vector? args) (if (= 1 (count args)) (if (vector? children) (= 2 (count children)) false) false) false)
+        (if (if (sh08-sse-ids? args 1) (sh08-sse-ids? children 2) false)
+          (if (sh08-sse-ids? [(get node :node-id) (get call :core-node-id) (get call :operator-node-id)
+                             (get call :operator-binding-id) (get (get node :source) :form-id)
+                             (get (get node :source) :syntax-id)] 6)
+            (let [operator (get nodes (get call :operator-node-id)) binding (get bindings (get call :operator-binding-id))
+                  argument (get nodes (first args))]
+              (if (if (map? operator) (if (map? binding) (map? argument) false) false)
+                (if (sh08-ft-all-true? [(map? (get operator :source)) (map? (get operator :attributes)) (map? (get argument :source))])
+                  (if (if (sh08-sse-ids? [(get operator :node-id) (get (get operator :source) :form-id)
+                                     (get (get operator :source) :syntax-id) (get binding :binding-id)
+                                     (get binding :definition-syntax-id)] 5)
+                    (sh08-sse-ids? [(get argument :node-id) (get (get argument :source) :form-id)
+                                    (get (get argument :source) :syntax-id)] 3) false)
+                (if (if (symbol? (get (get operator :attributes) :symbol)) (symbol? (get binding :name)) false)
+                  (if (if (keyword? (get module :profile)) (keyword? (get module :target)) false)
+                    (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false) false) false) false) false) false))
+            false) false) false)) false)
+      false) false))
+
+(defn sh08-vemp-type-fields? [type]
+  (if (map? type)
+    (if (<= (count type) 3)
+      (loop [fields (keys type)]
+        (if (= 0 (count fields)) true
+          (if (keyword? (first fields)) (recur (rest fields)) false))) false)
+    (if (= nil type) true (keyword? type))))
+
+(defn sh08-vemp-type? [type]
+  (if (= :gravity.type/vector type) true
+    (if (map? type)
+      (if (<= (count type) 3)
+        (if (loop [fields (keys type)]
+              (if (= 0 (count fields)) true
+                (if (keyword? (first fields)) (recur (rest fields)) false)))
+          (= :gravity.type/vector (get type :kind)) false) false) false)))
+
+(defn sh08-vemp-optional-id? [id]
+  (if (= nil id) true (sh08-sse-ids? [id] 1)))
+
+(defn sh08-vemp-header [core node call edge nodes bindings types module budget]
+  (if (vector? (get core :function-records))
+  (let [limit (if (> budget 65536) 65536 budget)
+        base (+ 129 (count (get core :function-records)))]
+    (if (> base limit) {:status :rejected :reason :vector-empty-work-limit :work-count base}
+      (if (sh08-vemp-ids? node call nodes bindings module)
+        (let [args (get call :argument-node-ids) children (get node :children)
+              operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
+              binding (get bindings bid) receiver (get types (first args))
+              reserved (+ base (* 2 (+ (count (get binding :profile-set)) (count (get binding :target-set)))))]
+          (if (> reserved limit) {:status :rejected :reason :vector-empty-work-limit :work-count reserved}
+            (let [validation (sh08-lc-type-work [receiver] (- limit reserved))
+                  work (+ reserved (get validation :work-count))]
+              (if (= false (= :accepted (get validation :status)))
+                {:status :rejected :reason (if (= :work-limit (get validation :reason)) :vector-empty-work-limit :vector-empty-vector-type-required)
+                 :work-count work}
+                (if (sh08-vemp-type? receiver)
+                  (if (if (sh08-nq-ids? node call nodes bindings module)
+                        (if (map? edge)
+                          (if (integer? (get edge :ordinal))
+                            (if (>= (get edge :ordinal) 0)
+                              (sh08-ft-all-true? [(sh08-vemp-optional-id? (get (get node :evaluation) :owner-function-syntax-id))
+                                                 (sh08-vemp-optional-id? (get edge :caller-function-syntax-id))
+                                                 (sh08-vemp-optional-id? (get edge :caller-function-core-node-id))]) false) false) false) false)
+                    (let [caller (loop [remaining (get core :function-records)]
+                                   (if (= 0 (count remaining)) nil
+                                     (let [record (first remaining)]
+                                       (if (if (map? record)
+                                             (sh08-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
+                                         (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
+                                           record (recur (rest remaining))) :invalid-vector-empty-owner))))
+                          expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                                         :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                                         :evaluation-order :operator-then-arguments :result-policy :call-result}
+                          expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                                         :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                                         :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                                         :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                                         :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+                      (if (sh08-ft-all-true?
+                            [(= false (= :invalid-vector-empty-owner caller))
+                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
+                             (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                             (= expected-call call) (= expected-edge edge) (sh08-lq-binding? binding module)
+                             (= 'empty? (get binding :name))
+                             (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                             (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+                                 :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+                             (contains? '#{empty? gravity.core/empty?} (get (get operator :attributes) :symbol))
+                             (= :operator-then-arguments (get (get node :evaluation) :kind))
+                             (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
+                                (get (get node :evaluation) :order))])
+                        {:status :accepted :work-count work
+                         :descriptor {:kind :gravity.type/applied-vector-empty :version :sh08-vector-empty-v1
+                                      :operation 'empty? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-vector-empty
+                                      :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+                                      :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+                                      :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
+                                      :query-policy {:input :persistent-vector :operand-evaluation :once :operand-position :non-tail
+                                                     :payload-evaluation :none :original :unchanged :test :zero-elements
+                                                     :static-length :not-required :flow-refinement :none}
+                                      :storage-policy {:representation :pending-profile-representation :query :stored-emptiness-test
+                                                       :collection-construction :none :copy :none :provider-allocation-bound :not-established}
+                                      :value-origin {:kind :vector-value-query :operation 'empty? :operand-node-id (first args)}
+                                      :operand-type-work (get validation :work-count) :profile-validation-work (- reserved base)
+                                      :application :normal :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+                                      :parameter-types [receiver] :return :gravity.type/bool :result-type :gravity.type/bool
+                                      :profile (get module :profile) :target (get module :target)
+                                      :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :profile :target :evaluation-order]}}
+                        {:status :rejected :reason :vector-empty-source-mismatch :work-count work}))
+                    {:status :rejected :reason :vector-empty-source-mismatch :work-count work})
+                  {:status :rejected :reason :vector-empty-vector-type-required :work-count work})))))
+        {:status :rejected :reason :vector-empty-source-mismatch :work-count base})))
+    {:status :rejected :reason :vector-empty-source-mismatch :work-count 129}))
+
+(defn sh08-vemp-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-vector-empty-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-vector-empty-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-empty}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application :normal :direct-effects []}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn sh08-vemp-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-vector-empty-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type :gravity.type/bool
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects [] :capabilities [] :status :inferred
+     :dispatch :direct-vector-empty :applied-vector-empty descriptor :effect-facts-source :audited-vector-value-query}))
+
+(defn sh08-vemp-derive [core node call edge nodes bindings types forms budget]
+  (let [result (sh08-vemp-header core node call edge nodes bindings types (get core :module) budget)
+        work (get result :work-count)]
+    (if (= :accepted (get result :status))
+      (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
+        (if (if (sh08-sse-ids? ids 2)
+              (if (= :list (get owner :kind))
+                (if (= (get node :source) (sh08-ma-form-source owner))
+                  (loop [index 0]
+                    (if (= index 2) true
+                      (let [form (get forms (get ids index)) child (get nodes (get (get node :children) index))]
+                        (if (if (= (get owner :form-id) (get form :parent-form-id))
+                              (if (= (get child :source) (sh08-ma-form-source form))
+                                (if (= index 0) (if (symbol? (get form :value))
+                                                 (= (get form :value) (get (get child :attributes) :symbol)) false) true) false) false)
+                          (recur (+ index 1)) false)))) false) false) false)
+          (assoc result :type :gravity.type/bool :constraint (sh08-vemp-constraint (get result :descriptor)))
+          (assoc (sh08-sm-failure "C7-VERIFY" :vector-empty-source-mismatch nil :original-unary-vector-empty-call (get node :node-id)) :work-count work)))
+      (assoc (sh08-sm-failure (if (= :vector-empty-work-limit (get result :reason)) "C7-GENERIC"
+                               (if (= :vector-empty-source-mismatch (get result :reason)) "C7-VERIFY" "C7-TYPE-MISMATCH"))
+               (get result :reason) nil :independently-established-vector (get call :argument-node-ids)) :work-count work))))
+
+(defn sh08-vemp-call? [node call nodes bindings types module]
+  (if (sh08-vemp-ids? node call nodes bindings module)
+    (let [input (get types (first (get call :argument-node-ids)))]
+      (if (sh08-vemp-type-fields? input)
+        (if (= 'empty? (get (get bindings (get call :operator-binding-id)) :name)) (sh08-vemp-type? input) false) false)) false))
+
+(defn sh08-vemp-entry? [node call nodes bindings types module]
+  ; Route only the resolved unary core spelling; this is not admission evidence.
+  (if (if (map? call) (if (vector? (get call :argument-node-ids)) (= 1 (count (get call :argument-node-ids))) false) false)
+    (if (sh08-sse-ids? [(get call :operator-binding-id)] 1)
+      (let [binding (get bindings (get call :operator-binding-id))]
+        (if (if (map? binding) (if (symbol? (get binding :name))
+                               (if (= 'empty? (get binding :name)) (= :core (get binding :binding-class)) false) false) false)
+          (if (sh08-vemp-ids? node call nodes bindings module)
+            (let [input (get types (first (get call :argument-node-ids)))]
+              (if (sh08-vemp-type-fields? input)
+                (if (= :gravity.type/never input) false
+                  (if (= :gravity.type/list input) false
+                    (if (map? input) (= false (= :gravity.type/list (get input :kind))) true))) true)) true)
+          false)) false) false))
+
+(defn sh08-vemp-inferred-call [core node call edge nodes bindings types budget]
+  (let [result (sh08-vemp-header core node call edge nodes bindings types (get core :module) budget)]
+    (if (= :accepted (get result :status))
+      (if (if (= :gravity.type/bool (get types (get node :node-id)))
+              (= (get result :descriptor) (get types (get call :operator-node-id))) false)
+        {:status :accepted :work-count (get result :work-count)}
+        {:status :rejected :reason :vector-empty-source-mismatch :work-count (get result :work-count)})
+      result)))
+
 (defn sh08-lq-source [core node call edge nodes bindings types module validation]
   (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
   (let [children (get node :children) operator (get nodes (get call :operator-node-id))
@@ -9334,6 +9536,8 @@
             :invalidation (conj (get header :invalidation) :control-flow :mutations :branch-facts)) header))) nil)) nil))
 
 (defn sh08-lq-constraint [descriptor]
+  (if (= :gravity.type/applied-vector-empty (get descriptor :kind))
+    (sh08-vemp-constraint descriptor)
   (let [record {:constraint-id-request {:domain :gravity/sh08-list-query-constraint-v1 :application descriptor}
    :kind :equality :producer-rule :sh08-list-query-v1
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :list-query}
@@ -9346,9 +9550,12 @@
       (assoc record :constraint-id-request {:domain :gravity/sh08-vector-first-constraint-v1 :application descriptor}
         :producer-rule :sh08-vector-first-v1
         :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-first}
-        :solution (assoc (get record :solution) :bounds-proof (get descriptor :bounds-proof))) record)))
+        :solution (assoc (get record :solution) :bounds-proof (get descriptor :bounds-proof))) record))
+  ))
 
 (defn sh08-lq-call-fact [descriptor module]
+  (if (= :gravity.type/applied-vector-empty (get descriptor :kind))
+    (sh08-vemp-call-fact descriptor module)
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     (if (= :gravity.type/applied-vector-first (get descriptor :kind))
       {:artifact :gravity/c7-call-type-fact
@@ -9366,7 +9573,8 @@
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-list-query :applied-list-query descriptor :effect-facts-source :audited-list-value-query})))
+     :dispatch :direct-list-query :applied-list-query descriptor :effect-facts-source :audited-list-value-query}))
+  ))
 
 
 (defn sh08-lq-finish [header]
@@ -9515,6 +9723,13 @@
       {:status :not-applicable :work-count 0})))
 
 (defn sh08-lq-derive [core node call edge nodes bindings types forms budget]
+  (let [unary? (if (vector? (get call :argument-node-ids)) (= 1 (count (get call :argument-node-ids))) false)
+        physical? (if unary? (sh08-vemp-ids? node call nodes bindings (get core :module)) true)
+        input-type (if (if unary? physical? false) (get types (first (get call :argument-node-ids))) nil)]
+    (if (= false physical?)
+      (assoc (sh08-sm-failure "C7-VERIFY" :list-query-source-mismatch nil :physical-unary-query-source (get node :node-id)) :work-count 64)
+      (if (sh08-vemp-entry? node call nodes bindings types (get core :module))
+          (sh08-vemp-derive core node call edge nodes bindings types forms budget)
   ; STD3 queries inspect established List values, not constructor ancestry.
   ; The selected development representation returns an existing immutable tail.
   (let [args (get call :argument-node-ids) receiver (first (sh08-ft-ordered-child-types args types))
@@ -9557,12 +9772,19 @@
             (let [descriptor (sh08-lq-finish header)]
               {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
                :constraint (sh08-lq-constraint descriptor) :work-count work})
-            (assoc (sh08-sm-failure "C7-VERIFY" (if vector-first? :vector-first-source-mismatch :list-query-source-mismatch) nil :exact-operator-and-ordered-operand-source (get node :node-id)) :work-count work))))))))
+            (assoc (sh08-sm-failure "C7-VERIFY" (if vector-first? :vector-first-source-mismatch :list-query-source-mismatch) nil :exact-operator-and-ordered-operand-source (get node :node-id)) :work-count work)))))))
+        ))))
 
 (defn sh08-lq-node? [node context]
   (if (= :call (get node :core-form))
-    (sh08-lq-binding? (get (get context :ordering-bindings) (first (get node :resolved-binding-ids)))
-                     (get (get context :ordering-core) :module)) false))
+    (if (sh08-sse-ids? (get node :resolved-binding-ids) 1)
+      (let [binding (get (get context :ordering-bindings) (first (get node :resolved-binding-ids)))
+            module (get (get context :ordering-core) :module)]
+        (if (if (symbol? (get binding :name)) (= 'empty? (get binding :name)) false)
+          ; Profile membership is checked by the budgeted new-family builder.
+          (if (= :core (get binding :binding-class))
+            (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false) false)
+          (sh08-lq-binding? binding module))) false) false))
 
 (defn sh08-vf-inferred-call [core node call edge nodes bindings types budget]
   ; Charge the complete positional type before reusing a checked Vector first.
@@ -9582,12 +9804,22 @@
          :work-count used}))))
 
 (defn sh08-lq-inferred-call-valid? [core node call edge nodes bindings types]
+  (let [unary? (if (vector? (get call :argument-node-ids)) (= 1 (count (get call :argument-node-ids))) false)
+        physical? (if unary? (sh08-vemp-ids? node call nodes bindings (get core :module)) true)
+        input-type (if (if unary? physical? false) (get types (first (get call :argument-node-ids))) nil)]
+    (if (= false physical?) false
+      (if (sh08-vemp-entry? node call nodes bindings types (get core :module))
+          (let [result (sh08-vemp-header core node call edge nodes bindings types (get core :module) 65536)]
+            (if (= :accepted (get result :status))
+              (if (= :gravity.type/bool (get types (get node :node-id)))
+                (= (get result :descriptor) (get types (get call :operator-node-id))) false) false))
   (let [validation (sh08-lc-type-work (sh08-ft-ordered-child-types (get call :argument-node-ids) types) 65536)
         head (sh08-lq-head-proof core node call nodes bindings types 65536)
         validation (if (= :accepted (get head :status)) (assoc validation :head-proof (get head :proof)) validation)
         header (sh08-lq-source core node call edge nodes bindings types (get core :module) validation)]
     (if (= :rejected (get head :status)) false
-      (if (map? header) (= (get types (get call :operator-node-id)) (sh08-lq-finish header)) false))))
+      (if (map? header) (= (get types (get call :operator-node-id)) (sh08-lq-finish header)) false)))
+        ))))
 
 (defn sh08-lq-step [node types binding-types functions context budget]
   (sh08-lq-derive (get context :ordering-core) node
@@ -21735,9 +21967,9 @@
         (recur
          (rest remaining)
          (rest remaining-edges)
-         (conj values (if (contains? #{:gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-vector-first} (get intrinsic :kind))
-                       (if (contains? #{:gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-vector-first} (get intrinsic :kind))
-                         (if (contains? #{:gravity.type/applied-list-query :gravity.type/applied-vector-first} (get intrinsic :kind))
+         (conj values (if (contains? #{:gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-vector-first :gravity.type/applied-vector-empty} (get intrinsic :kind))
+                       (if (contains? #{:gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-vector-first :gravity.type/applied-vector-empty} (get intrinsic :kind))
+                         (if (contains? #{:gravity.type/applied-list-query :gravity.type/applied-vector-first :gravity.type/applied-vector-empty} (get intrinsic :kind))
                            (sh08-lq-call-fact intrinsic module) (sh08-lc-call-fact intrinsic module)) (if (contains? #{:gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling} (get intrinsic :kind))
                            (if (if (if (= :gravity.type/applied-vector-slice (get intrinsic :kind)) true (= :gravity.type/applied-string-character-vector (get intrinsic :kind))) true (= :gravity.type/applied-count-quotient-scaling (get intrinsic :kind))) (if (if (= :gravity.type/applied-vector-slice (get intrinsic :kind)) true (= :gravity.type/applied-string-character-vector (get intrinsic :kind))) (if (= :gravity.type/applied-vector-slice (get intrinsic :kind)) (sh08-vsl-call-fact intrinsic module) (sh08-scv-call-fact intrinsic module)) (sh08-cqs-call-fact intrinsic module)) (sh08-nq-call-fact intrinsic module)) (sh08-sc-call-fact intrinsic module)))
                        (if (= :gravity.type/applied-map-get (get intrinsic :kind))

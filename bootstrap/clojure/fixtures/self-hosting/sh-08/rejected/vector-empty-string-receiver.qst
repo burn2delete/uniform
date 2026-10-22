@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.vector-empty-string-receiver
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main [] (empty? ""))
