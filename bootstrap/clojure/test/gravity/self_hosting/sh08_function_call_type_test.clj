@@ -5221,6 +5221,33 @@
       (is (= expected (:descriptor result))))))
 
 
+(defn- vector-rest-input [type]
+  (-> (list-query-input 'rest [type])
+      (assoc-in [:module :effects] [:memory/allocate])
+      (assoc-in [:core :module :effects] [:memory/allocate])))
+
+(deftest sh08-vector-rest-development-kernel
+  (let [finite #(hash-map :kind %1 :shape :literal :element-types (vec %2))]
+    (doseq [elements [[] [:gravity.type/bool] [:gravity.type/bool :gravity.type/nil]
+                      [:gravity.type/nil :gravity.type/character :gravity.type/string]]]
+      (let [input (vector-rest-input (finite :gravity.type/vector elements))
+            result (list-query-derived input) descriptor (:descriptor result)
+            expected (finite :gravity.type/list (if (empty? elements) [] (subvec elements 1)))]
+        (is (= :accepted (:status result)))
+        (is (= expected (:type result)))
+        (is (= :gravity.type/applied-vector-rest (:kind descriptor)))
+        (is (= :sh08-vector-rest-v1 (:version descriptor)))
+        (is (= [:memory/allocate] (:direct-effects descriptor)))))
+    (doseq [type [:gravity.type/never
+                  (finite :gravity.type/list [])
+                  (finite :gravity.type/list [:gravity.type/bool :gravity.type/nil])]]
+      (let [input (list-query-input 'rest [type]) result (list-query-derived input)]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/applied-list-query (get-in result [:descriptor :kind])))
+        (is (= (+ 66 (count (get-in input [:core :function-records])) (if (map? type) (count (:element-types type)) 0)) (:work-count result)))
+        (is (= [] (get-in result [:descriptor :direct-effects])))))))
+
+
 (deftest sh08-vector-empty-type-limits-development-kernel
   (let [finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec %))
         nested (fn [depth] (nth (iterate #(finite [%]) :gravity.type/bool) depth))
