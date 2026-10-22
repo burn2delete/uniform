@@ -224,6 +224,211 @@
       (is (false? (current-sh03-seed-execute 'sh03-sha256-id? [value]))
           (pr-str value)))))
 
+(deftest sh03-current-hex-definitions-compose-through-authenticated-core
+  ;; A new two-function source subject, not whole-reader analysis or execution.
+  (let [reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        require! (fn [ok? phase]
+                   (when-not ok?
+                     (throw (ex-info "bounded hex source composition stopped" {:phase phase}))))
+        check (fn [ok? label] (is (boolean ok?) (name label)))
+        stage (fn [label operation]
+                (println (pr-str {:hex-source-stage label :event :begin}))
+                (let [value (operation)]
+                  (println (pr-str {:hex-source-stage label :event :complete})) value))
+        _ (require! (<= (.length (io/file reader-path)) 1048576) :reader-source-bytes)
+        reader-text (slurp reader-path :encoding "UTF-8")
+        names '[sh03-lowercase-hex? sh03-sha256-id?]
+        definitions (filterv #(and (seq? %) (= 'defn (first %))
+                                  (some #{(second %)} names))
+                             (map :form (bootstrap/read-source-form-records reader-path reader-text)))
+        _ (require! (= names (mapv second definitions)) :two-current-definitions)
+        header '(ns self-hosting.sh03.hex-source-composition
+                  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{})
+                  (:safety :safe) (:exports [sh03-sha256-id?]))
+        text (str (pr-str header) "\n" (apply str (map #(str (pr-str %) "\n") definitions)))
+        _ (require! (<= (alength (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8))
+                         2048) :two-kib-source)
+        temporary (java.io.File/createTempFile "gravity-sh03-hex-source-" ".gravity")
+        source-path (.getCanonicalPath temporary)
+        core-path [:gravity-core-boundary :canonical-core-artifact]
+        one (fn [values predicate]
+              (let [selected (filterv predicate values)]
+                (require! (= 1 (count selected)) :unique-selected-record) (first selected)))]
+    (try
+      (spit temporary text :encoding "UTF-8")
+      ;; Host parsing selects the current bodies; only source4 authenticates the new subject.
+      (check (= definitions (mapv :form (rest (bootstrap/read-source-form-records source-path text))))
+             :selected-current-bodies)
+      (let [resolved (stage :current-reader-c5
+                           #(bootstrap/compiler-c5-resolution-source-artifact
+                             source-path text
+                             {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                             reader-path))
+            expanded (:sh05-macro-artifact resolved)
+            c3 (get-in expanded [:gravity-macro-boundary :authenticated-sh04-artifact])
+            c2 (:c2-reader-artifact c3)
+            forms (:parsed-semantic-values c2)
+            seeds (:syntax-seed-stream c2)
+            input-syntax (bootstrap/sh05-source-syntax-stream c3)
+            output-syntax (:expanded-syntax-stream expanded)
+            trace (:macro-expansion-trace expanded)
+            records (mapv (fn [form seed] (assoc seed :form form)) forms seeds)
+            reference (bootstrap/macro-source-artifact-from-records source-path text records)
+            artifact (stage :gravity-core #(bootstrap/sh07-core-from-resolution-artifact resolved))
+            product (get-in artifact core-path)
+            request (get-in artifact [:gravity-core-boundary :authenticated-core-request])
+            _ (require! (and (<= (count (:nodes product)) 256)
+                             (<= (count (:forms request)) 512)
+                             (<= (count (:calls product)) 64)) :bounded-products)
+            index (into {} (map (juxt :node-id identity)) (:nodes product))
+            source-forms (into {} (map (juxt :form-id identity)) (:forms request))
+            bindings (into {} (map (juxt :binding-id identity)) (:binding-table request))
+            mappings (into {} (map (juxt :core-node-id identity)) (:source-map product))
+            calls (:calls product)
+            operator #(get-in index [(:operator-node-id %) :attributes :symbol])
+            subvec-calls (filterv #(= 'subvec (operator %)) calls)
+            changed (one subvec-calls
+                         #(= 1 (get-in index [(second (:argument-node-ids %)) :attributes :value])))
+            arguments (:argument-node-ids changed)
+            count-call (one calls #(= (last arguments) (:core-node-id %)))
+            remaining (get index (first arguments))
+            counted (get index (first (:argument-node-ids count-call)))
+            loop-binding (one (:loop-bindings product) #(= 'remaining (:name %)))
+            loop-target (one (:recur-targets product) #(= :loop (:target-kind %)))
+            transfer (one (:recur-transfers product) (constantly true))
+            hex-function (one (:function-records product) #(= 'sh03-lowercase-hex? (:definition-name %)))
+            function-target (one (:recur-targets product)
+                                 #(= (:function-core-node-id hex-function) (:owner-core-node-id %)))
+            report (stage :fresh-public-verification #(bootstrap/sh07-core-artifact-verification artifact))]
+        (check (= :accepted (:status resolved) (:status expanded) (:status artifact)) :accepted-products)
+        (check (= :passed (:status report)) :fresh-public-replay)
+        (check (= source-path (get-in resolved [:provenance :source-path])
+                  (get-in c2 [:source-unit-record :path])
+                  (get-in product [:provenance :actual-source-path]) (:source-path report)) :new-source-provenance)
+        (check (not= source-path reader-path) :not-whole-reader-provenance)
+        (check (= (str "sha256:" (bootstrap/sha256-hex reader-text))
+                  (get-in c3 [:gravity-syntax-boundary :reader-source-revision :source-content-hash])
+                  (get-in c2 [:sh03-reader-authentication :reader-source-revision :source-content-hash]))
+               :actual-reader-revision)
+        (check (= (str "sha256:" (bootstrap/sha256-hex text))
+                  (get-in c2 [:source-unit-record :bytes-hash])) :actual-subject-bytes)
+        (check (= 3 (count forms) (count seeds) (count input-syntax) (count output-syntax)) :complete-source-streams)
+        (check (= 2 (:expanded-defn-count expanded) (count trace) (count (:function-records product)))
+               :two-function-expansion)
+        (check (= (:expanded-forms reference) (:expanded-forms expanded)) :prior-stage-expansion-parity)
+        (doseq [[original lowered input output step]
+                (map vector (rest forms) (rest (:expanded-forms expanded))
+                     (rest input-syntax) (rest output-syntax) trace)]
+          (check (= 'def (first lowered)) :generated-definition)
+          (check (= (second original) (second lowered)) :definition-name)
+          (check (= (cons 'fn (drop 2 original)) (nth lowered 2)) :parameters-and-original-body)
+          (check (= (:syntax/id input) (:input-syntax-id step)) :input-syntax-origin)
+          (check (= (:syntax/id output) (:output-syntax-id step)) :output-syntax-origin)
+          (check (= (:span input) (:call-site-span step) (:span output)) :macro-source-span)
+          (check (and (seq (:generated-origin step))
+                      (= (last (:origin output)) (first (:generated-origin step)))
+                 :introduced-origin)
+          (check (seq (get-in step [:hygiene :introduced-identifiers])) :introduced-hygiene))
+        (check (= 3 (count subvec-calls)) :three-actual-subvec-calls)
+        (doseq [call (filter #(contains? '#{subvec count sh03-lowercase-hex?} (operator %)) calls)]
+          (let [symbol (operator call)
+                binding (get bindings (:operator-binding-id call))
+                ids (into [(:operator-node-id call)] (:argument-node-ids call))
+                node (get index (:core-node-id call))
+                form (get source-forms (get-in node [:source :form-id]))]
+            (check (= (if (= 'sh03-lowercase-hex? symbol)
+                        [:namespace 'self-hosting.sh03.hex-source-composition symbol]
+                        [:core 'gravity.core symbol])
+                      ((juxt :binding-class :namespace :name) binding)) :actual-operator-binding)
+            (check (= ids (:children node) (:ordered-evaluation-node-ids call)
+                      (mapv :core-node-id (get-in node [:evaluation :order]))) :operator-then-arguments)
+            (check (= (:child-form-ids form) (mapv #(get-in index [% :source :form-id]) ids))
+                   :ordered-source-occurrences)))
+        (check (= 3 (count arguments)) :changed-subvec-arity)
+        (check (= ['remaining 1] [(get-in remaining [:attributes :symbol])
+                                 (get-in index [(second arguments) :attributes :value])]) :subvec-prefix-operands)
+        (check (= 'count (operator count-call)) :derived-count-operator)
+        (check (= 1 (count (:argument-node-ids count-call))) :derived-count-arity)
+        (check (= 'remaining (get-in counted [:attributes :symbol])) :derived-count-source)
+        (check (and (= (get-in remaining [:attributes :binding-id]) (:binding-id loop-binding)
+                       (get-in counted [:attributes :binding-id]))
+                    (not= (get-in remaining [:source :form-id]) (get-in counted [:source :form-id])))
+               :same-binding-distinct-occurrences)
+        (check (= (:loop-core-node-id loop-binding) (:owner-core-node-id loop-target)) :loop-binding-owner)
+        (check (= 'characters (get-in index [(:initializer-node-id loop-binding) :attributes :symbol]))
+               :original-loop-initializer)
+        (check (= [(:binding-id loop-binding)] (:binding-ids loop-target)) :loop-binding-target)
+        (check (= (:target-id function-target) (:parent-target-id loop-target)) :nested-function-target)
+        (check (= :loop (:target-kind transfer)) :nearest-loop-target-kind)
+        (check (= (:target-id loop-target) (:target-id transfer)) :nearest-loop-target)
+        (check (= 1 (:arity loop-target) (:arity transfer) (count (:argument-node-ids transfer))) :recur-arity)
+        (check (= [(:core-node-id changed)] (:argument-node-ids transfer)) :recur-subvec-value)
+        (check (and (:tail-position transfer) (= :nearest-lexical-recur-target (:transfer-policy transfer)))
+               :recur-tail-transfer)
+        (doseq [node (:nodes product)]
+          (let [source (:source node)
+                form (get source-forms (:form-id source))
+                mapping (get mappings (:node-id node))
+                fields [:syntax-id :form-id :origin-chain :generated-origin]]
+            (check (and (map? form) (map? mapping)) :source-records-present)
+            (check (= (select-keys form fields) (select-keys source fields) (select-keys mapping fields))
+                   :source-and-generated-origin-joins)
+            (check (= (:source-span form) (:source-span mapping)) :source-map-span)
+            (when (#{:def :fn} (:core-form node))
+              (check (seq (:generated-origin source)) :generated-core-origin))))
+        (let [changed-id (:core-node-id changed)
+              swapped [(first arguments) (last arguments) (second arguments)]
+              ordered (into [(:operator-node-id changed)] swapped)
+              update-table (fn [candidate table key transform]
+                             (update-in candidate (conj core-path table)
+                                        #(mapv (fn [row] (if (= changed-id (get row key))
+                                                          (transform row) row)) %)))
+              candidate
+              (-> artifact
+                  (update-table :nodes :node-id
+                                #(assoc % :children ordered :evaluation
+                                        (assoc (:evaluation %) :order
+                                               (mapv (fn [index id] {:index index :core-node-id id})
+                                                     (range) ordered))))
+                  (update-table :calls :core-node-id
+                                #(assoc % :argument-node-ids swapped :ordered-evaluation-node-ids ordered))
+                  (update-table :evaluation-order :core-node-id #(assoc % :children ordered))
+                  (update-table :call-edges :call-core-node-id
+                                #(assoc % :argument-core-node-ids swapped :ordered-evaluation-node-ids ordered)))
+              candidate (update-in candidate (conj core-path :identity-preimage)
+                                   merge (select-keys (get-in candidate core-path)
+                                                      [:nodes :calls :call-edges :evaluation-order]))
+              changed-product (get-in candidate core-path)
+              rejected (stage :fresh-mutated-public-verification
+                              #(bootstrap/sh07-core-artifact-verification candidate))]
+          (check (not= arguments swapped) :nonidentity-operand-carrier)
+          (check (identical? request (get-in candidate [:gravity-core-boundary :authenticated-core-request]))
+                 :unchanged-authenticated-source-request)
+          (check (identical? resolved (:sh06-resolution-artifact candidate)) :unchanged-authenticated-parent)
+          (check (= ordered (:children (get (into {} (map (juxt :node-id identity))
+                                                     (get-in candidate (conj core-path :nodes))) changed-id)))
+                 :coherent-node-child-copy)
+          (check (= swapped (:argument-node-ids (one (:calls changed-product)
+                                                    #(= changed-id (:core-node-id %))))) :coherent-call-copy)
+          (check (= ordered (:children (one (:evaluation-order changed-product)
+                                            #(= changed-id (:core-node-id %))))) :coherent-evaluation-copy)
+          (check (= swapped (:argument-core-node-ids (one (:call-edges changed-product)
+                                                         #(= changed-id (:call-core-node-id %)))))
+                 :coherent-call-edge-copy)
+          (check (= (select-keys changed-product [:nodes :calls :call-edges :evaluation-order])
+                    (select-keys (:identity-preimage changed-product)
+                                 [:nodes :calls :call-edges :evaluation-order])) :coherent-preimage-copies)
+          (check (= :failed (:status rejected)) :mutated-carrier-rejected)
+          (check (= source-path (:source-path rejected)) :original-rejection-source)
+          (check (every? (set (:failed-checks rejected))
+                         [:canonical-core-replays? :authoritative-products-replay?]) :original-replay-failures)
+          (println (pr-str {:hex-source-mutation :subvec-operands-reordered
+                            :status (:status rejected) :failed-checks (:failed-checks rejected)})))
+        (check (= text (slurp source-path :encoding "UTF-8")) :subject-unchanged)
+        (check (= {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
+                  (get-in artifact [:execution-boundary :downstream-fact-statuses])) :no-typed-or-runtime-claim))
+      (finally (check (.delete temporary) :temporary-source-removed)))))
+
 (def ^:private sh03-facade-source-relative-path
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity")
 
