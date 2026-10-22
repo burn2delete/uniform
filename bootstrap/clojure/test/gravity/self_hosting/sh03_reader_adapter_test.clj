@@ -648,6 +648,15 @@
         binding (bootstrap/sh03-reader-current-binding! source-path reader-path)
         plan (:plan binding)
         structure (ns-resolve 'gravity.bootstrap 'sh03-reader-plan-structure!)
+        identities (bootstrap/sh03-reader-plan-identities plan)
+        functions (:functions plan)
+        function-names (vec (sort-by str (keys functions)))
+        function-shapes (into (sorted-map)
+                              (map (fn [[name function]]
+                                     [name (select-keys function [:arity :params])])) functions)
+        summary (bootstrap/sh03-reader-plan-instruction-summary source-path functions)
+        audit (bootstrap/sh03-reader-plan-static-audit! source-path plan)
+        builtin-names (vec (sort-by str (:builtin-functions audit)))
         removable (first (remove #{bootstrap/sh03-reader-entrypoint bootstrap/sh03-reader-verifier}
                                   (keys (:functions plan))))
         wrong-count (-> plan (update :functions dissoc removable)
@@ -658,7 +667,58 @@
     (is (= [:exact-sh03-reader-plan-envelope]
            (:missing-fields (thrown-data #(bootstrap/sh03-reader-plan-validate! source-path wrong-count)))))
     (is (= [:pinned-recomputable-sh03-reader-plan-identities]
-           (:missing-fields (thrown-data #(bootstrap/sh03-reader-plan-validate! source-path plan)))))))
+           (:missing-fields (thrown-data #(bootstrap/sh03-reader-plan-validate! source-path plan)))))
+    ;; One returned current plan, not a new pin or a runtime-used population.
+    (is (= identities (select-keys binding (keys identities))))
+    (is (= (:plan-id plan) (:plan-semantic-hash identities)
+           (bootstrap/reader-canonical-hash (dissoc plan :plan-id))))
+    (is (= (:instruction-summary plan) (:instruction-summary identities)
+           (:instruction-summary summary) (:instruction-summary audit)))
+    (is (= summary audit))
+    (is (every? #(contains? bootstrap/sh03-reader-allowed-builtins %) builtin-names))
+    (is (= (:builtin-functions-hash binding) (bootstrap/reader-canonical-hash builtin-names)))
+    (is (= (:function-count binding) (count function-names)))
+    (is (= (:function-names-hash binding) (bootstrap/reader-canonical-hash function-names)))
+    (is (= (:function-shapes-hash binding) (bootstrap/reader-canonical-hash function-shapes)))
+    (is (= (:functions-semantic-hash binding) (bootstrap/reader-canonical-hash functions)))
+    (is (= (:source-content-hash binding) (get-in plan [:source :sha256])))
+    (is (= (:source-byte-count binding) (get-in plan [:source :byte-count])))
+    (let [observation
+          (pr-str {:current-reader-plan-observation
+                   (merge identities
+                          (select-keys binding [:source-path :source-byte-count :source-content-hash])
+                          {:plan-id (:plan-id plan) :compiler (:compiler plan)
+                           :population :compiled-potential
+                           :function-names function-names :builtin-functions builtin-names})})]
+      (when (> (alength (.getBytes ^String observation java.nio.charset.StandardCharsets/UTF_8)) 65536)
+        (throw (ex-info "current reader plan observation exceeds 64 KiB" {:maximum-bytes 65536})))
+      (println observation))
+    ;; Supplied DATA for the existing static auditor only: no substituted plan
+    ;; is admitted or executed, and quote payloads are not instructions.
+    (let [instruction-path [:functions bootstrap/sh03-reader-entrypoint :instructions]
+          fake-payload [{:op :unreviewed-current-test}
+                        {:op :builtin-call :function 'unreviewed-current-builtin-test :args []}
+                        {:op :function-call :function 'sh03-unbound-plan-boundary-callee :args []}]
+          benign (assoc-in plan instruction-path [{:op :quote :value :plain-data}])
+          quoted (assoc-in plan instruction-path [{:op :quote :value fake-payload}])]
+      (is (= (bootstrap/sh03-reader-plan-static-audit! source-path benign)
+             (bootstrap/sh03-reader-plan-static-audit! source-path quoted)))
+      (is (= (bootstrap/sh03-reader-plan-instruction-summary source-path (:functions benign))
+             (bootstrap/sh03-reader-plan-instruction-summary source-path (:functions quoted))))
+      (is (not= (bootstrap/reader-canonical-hash (:functions benign))
+                (bootstrap/reader-canonical-hash (:functions quoted))))
+      (is (not (contains? bootstrap/sh03-reader-allowed-builtins 'unreviewed-current-builtin-test)))
+      (is (not (contains? functions 'sh03-unbound-plan-boundary-callee)))
+      (doseq [[instruction missing]
+              [[{:op :unreviewed-current-test} :exact-bounded-sh03-reader-instruction]
+               [{:op :builtin-call :function 'unreviewed-current-builtin-test :args []}
+                :approved-pure-sh03-reader-builtin]
+               [{:op :function-call :function 'sh03-unbound-plan-boundary-callee :args []}
+                :exact-sh03-reader-function-call]]]
+        (let [failure (thrown-data #(bootstrap/sh03-reader-plan-static-audit!
+                                    source-path (assoc-in plan instruction-path [instruction])))]
+          (is (= "C2-HASH" (:id failure)))
+          (is (= [missing] (:missing-fields failure))))))))
 
 (deftest sh03-current-reader-selection-is-source-input-not-product-authority
   (let [source-path (fixture-path "accepted" "newline-lf" ".gravity")
