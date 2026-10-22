@@ -30821,7 +30821,12 @@
             normal (run base 65536)
             visits (atom 0)
             opaque (reify clojure.lang.IHashEq
-                     (hasheq [_] (swap! visits inc) (throw (ex-info "opaque parameter field hashed" {}))))
+                     (hasheq [_] (swap! visits inc) (throw (ex-info "opaque parameter key hashed" {}))))
+            opaque-field (reify clojure.lang.IHashEq
+                     (hasheq [_] (swap! visits inc) (throw (ex-info "opaque parameter field hashed" {})))
+                     Object
+                     (hashCode [_] (swap! visits inc) (throw (ex-info "opaque parameter field hashCode" {})))
+                     (equals [_ _] (swap! visits inc) (throw (ex-info "opaque parameter field compared" {}))))
             bad-slot (assoc-in base [:types :parameter-fn :parameters]
                                    [(array-map :type (get-in base [:types :slice-ref]) opaque :unused)])]
         (is (= :accepted (:status normal)))
@@ -30829,6 +30834,15 @@
         (is (= :vector-slice-work-limit (:reason (run base (dec (:work-count normal))))))
         (is (= :rejected (:status (parameter bad-slot 65536))))
         (is (= :rejected (:status (parameter (assoc-in base [:nodes :slice-ref :evaluation :owner-function-syntax-id] opaque) 65536))))
+        (is (= 0 @visits))
+        (is (= :accepted (:status (parameter (assoc-in base [:bindings :slice-let-binding :name] 'characters) 65536))))
+        (is (= :rejected (:status (parameter (assoc-in base [:bindings :slice-let-binding :name] :characters) 65536))))
+        (is (= :rejected (:status (parameter (assoc-in base [:bindings :slice-let-binding :name] opaque-field) 65536))))
+        (is (= 0 @visits))
+        (is (= :accepted (:status (parameter (assoc-in base [:bindings :slice-let-binding :mutability] nil) 65536))))
+        (is (= :accepted (:status (parameter (assoc-in base [:bindings :slice-let-binding :mutability] :immutable) 65536))))
+        (is (= :rejected (:status (parameter (assoc-in base [:bindings :slice-let-binding :mutability] :mutable) 65536))))
+        (is (= :rejected (:status (parameter (assoc-in base [:bindings :slice-let-binding :mutability] opaque-field) 65536))))
         (is (= 0 @visits))
         (is (= :vector-slice-work-limit (:reason (parameter bad-slot 0))))
         (is (= 0 @visits))

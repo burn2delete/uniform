@@ -13698,6 +13698,8 @@
                                 (let [operator (get forms (get ids 0)) name-form (get forms (get names 0))
                                       ref-form (get forms (get (get reference :source) :form-id))
                                       scope (get binding :scope-id)]
+                                  (if (if (symbol? (get binding :name))
+                                        (if (= nil (get binding :mutability)) true (keyword? (get binding :mutability))) false)
                                   (if (p15-s23-typed-all
                                         [(= :accepted (get validation :status))
                                          (= {:kind :gravity.type/vector :shape :literal :element-types members} type)
@@ -13757,7 +13759,8 @@
                                      :source-forms [fn-form operator parameter-form name-form]
                                      :receiver {:kind :immutable-parameter-vector :reference reference :binding binding :record record
                                                 :owner fn-node :parameter-index 0 :parameter-type type}}
-                                    {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
+                                    {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
+                                  {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
                                 {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
                             {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))))))
                 {:status :not-applicable :work-count base}))
