@@ -3233,7 +3233,7 @@
 (defn sh12-c6p-parameter-types [core]
   (if (= 2 (sh12-c6p-parameter-count core)) [:gravity/bool :gravity/bool] [:gravity/bool]))
 
-(defn sh12-c6p-two-direct-parameters? [core]
+(defn sh12-c6p-two-direct-parameter-side [core]
   ; Separate from the twelve-row predicate and twelve-row two-let families.
   ; The complete original source/operand/fact joins still follow preflight.
   (let [kind (get (get core :resolved-parameter) :kind) nodes (get core :core-nodes)]
@@ -3241,10 +3241,15 @@
       (if (= :gravity/c6-c10-resolved-two-bool-parameters-v1 kind)
         (if (vector? nodes)
           (if (= 8 (count nodes))
-            (= [:parameter :parameter :local :truthy :local :literal :if :function]
-               (loop [index 0 result []]
+            (let [operations (loop [index 0 result []]
                  (if (= index 8) result
-                   (recur (+ index 1) (conj result (get (get nodes index) :source-operation)))))) false) false) false) false)))
+                   (recur (+ index 1) (conj result (get (get nodes index) :source-operation)))))]
+              (if (= [:parameter :parameter :local :truthy :local :literal :if :function] operations) :then
+                (if (= [:parameter :parameter :local :truthy :literal :local :if :function] operations) :else nil)))
+            nil) nil) nil) nil)))
+
+(defn sh12-c6p-two-direct-parameters? [core]
+  (contains? #{:then :else} (sh12-c6p-two-direct-parameter-side core)))
 
 (defn sh12-c6p-predicate-local-side [core]
   ; Candidate only: fourteen rows also describe an arm-nested let or a
@@ -3288,7 +3293,7 @@
 (defn sh12-c6p-arm-local-side [core]
   ; Candidate only. Complete original binding/source/operand/fact joins
   ; distinguish the condition's parameter from the arm's lexical alias.
- (if (sh12-c6p-two-direct-parameters? core) :then
+ (if (sh12-c6p-two-direct-parameters? core) (sh12-c6p-two-direct-parameter-side core)
   (let [nodes (get core :core-nodes)]
     (if (vector? nodes)
       (if (= 10 (count nodes))
@@ -3398,7 +3403,8 @@
   (if (sh12-c6p-later-body-local? core) 9 (+ 1 (sh12-c6p-index core 5))))
 
 (defn sh12-c6p-role [core index]
- (if (sh12-c6p-two-direct-parameters? core) (get [0 0 1 2 1 4 5 6] index)
+ (if (sh12-c6p-two-direct-parameters? core)
+   (get (if (= :then (sh12-c6p-two-direct-parameter-side core)) [0 0 1 2 1 4 5 6] [0 0 1 2 3 1 5 6]) index)
  (if (sh12-c6p-two-parameters? core) (get [0 0 1 2 1 4 5 2 3 4 5 6] index)
   (if (sh12-c6p-nested? core)
     (get (if (sh12-c6p-predicate? core)
@@ -4220,7 +4226,8 @@
                      (recur (+ index 1) (assoc result id {:type (get (get maps :types) id)
                                             :mutability :immutable :ownership :persistent-shared})))))
         edges (loop [rows (if (sh12-c6p-two-direct-parameters? core)
-                          [[0 2 0 :binding-use] [2 3 0 :control] [1 4 0 :binding-use]
+                          [[0 2 0 :binding-use] [2 3 0 :control]
+                           [1 (if (= :then (sh12-c6p-two-direct-parameter-side core)) 4 5) 0 :binding-use]
                            [3 6 0 :control] [4 6 1 :conditional-incoming] [5 6 2 :conditional-incoming]
                            [6 7 0 :result]]
                           (if (sh12-c6p-two-parameters? core)
