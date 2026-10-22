@@ -30824,21 +30824,27 @@
       (let [base (input "0af" 1) measured (run owner base 65536)
             validator (symbol (str prefix "-nq-ids?"))
             observe (fn [candidate budget]
-                      (let [entered (atom 0)
+                      (let [entered (atom 0) returns (atom [])
                             result (with-redefs-fn
                                      {entry-var
                                       (fn [runtime plan callee arguments scope]
-                                        (when (and (= validator callee) (= :slice-end (:node-id (first arguments))))
-                                          (swap! entered inc))
-                                        (original-entry runtime plan callee arguments scope))}
+                                        (let [observed? (and (= validator callee) (= :slice-end (:node-id (first arguments))))]
+                                          (when observed? (swap! entered inc))
+                                          (let [result (original-entry runtime plan callee arguments scope)]
+                                            (when observed? (swap! returns conj result))
+                                            result)))}
                                      #(run owner candidate budget))]
-                        [result @entered]))
-            [positive entered] (observe base 65536)
-            [negative rejected-entered] (observe (assoc-in base [:bindings :slice-count-binding :name] 'rest) 65536)]
+                        [result @entered @returns]))
+            [positive entered positive-returns] (observe base 65536)
+            [negative rejected-entered negative-returns] (observe (assoc-in base [:bindings :slice-count-binding :name] :not-a-symbol) 65536)]
         (is (= :accepted (:status measured) (:status positive)))
         (is (pos? entered))
+        (is (= entered (count positive-returns)))
+        (is (every? true? positive-returns))
         (is (= :rejected (:status negative)))
         (is (pos? rejected-entered))
+        (is (= rejected-entered (count negative-returns)))
+        (is (every? false? negative-returns))
         (let [callbacks (atom 0) opaque (proxy [Object] []
                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "membership tail hashed")))
                                         (equals [_] (swap! callbacks inc) (throw (AssertionError. "membership tail compared")))
