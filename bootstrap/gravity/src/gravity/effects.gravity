@@ -4273,6 +4273,288 @@
      (contains? (set (get binding :profile-set)) (get module :profile))
      (contains? (set (get binding :target-set)) :all)]) false))
 
+(defn body-vemp-ids? [node call nodes bindings module]
+  (if (if (map? node) (map? call) false)
+    (if (body-all? [(map? nodes) (map? bindings) (map? module)
+                           (map? (get node :source)) (map? (get node :evaluation)) (map? (get node :attributes))])
+  ; Fixed physical groups only: no profile or target traversal before reservation.
+  (if (if (map? node) (map? call) false)
+    (let [args (get call :argument-node-ids) children (get node :children)]
+      (if (if (vector? args) (if (= 1 (count args)) (if (vector? children) (= 2 (count children)) false) false) false)
+        (if (if (body-sse-ids? args 1) (body-sse-ids? children 2) false)
+          (if (body-sse-ids? [(get node :node-id) (get call :core-node-id) (get call :operator-node-id)
+                             (get call :operator-binding-id) (get (get node :source) :form-id)
+                             (get (get node :source) :syntax-id)] 6)
+            (let [operator (get nodes (get call :operator-node-id)) binding (get bindings (get call :operator-binding-id))
+                  argument (get nodes (first args))]
+              (if (if (map? operator) (if (map? binding) (map? argument) false) false)
+                (if (body-all? [(map? (get operator :source)) (map? (get operator :attributes)) (map? (get argument :source))])
+                  (if (if (body-sse-ids? [(get operator :node-id) (get (get operator :source) :form-id)
+                                     (get (get operator :source) :syntax-id) (get binding :binding-id)
+                                     (get binding :definition-syntax-id)] 5)
+                    (body-sse-ids? [(get argument :node-id) (get (get argument :source) :form-id)
+                                    (get (get argument :source) :syntax-id)] 3) false)
+                (if (if (symbol? (get (get operator :attributes) :symbol)) (symbol? (get binding :name)) false)
+                  (if (if (keyword? (get module :profile)) (keyword? (get module :target)) false)
+                    (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false) false) false) false) false) false))
+            false) false) false)) false)
+      false) false))
+
+(defn body-vemp-type-fields? [type]
+  (if (map? type)
+    (if (<= (count type) 3)
+      (loop [fields (keys type)]
+        (if (= 0 (count fields)) true
+          (if (keyword? (first fields)) (recur (rest fields)) false))) false)
+    (if (= nil type) true (keyword? type))))
+
+(defn body-vemp-type? [type]
+  (if (= :gravity.type/vector type) true
+    (if (map? type)
+      (if (<= (count type) 3)
+        (if (loop [fields (keys type)]
+              (if (= 0 (count fields)) true
+                (if (keyword? (first fields)) (recur (rest fields)) false)))
+          (= :gravity.type/vector (get type :kind)) false) false) false)))
+
+(defn body-vemp-optional-id? [id]
+  (if (= nil id) true (body-sse-ids? [id] 1)))
+
+(defn body-vemp-header [core node call edge nodes bindings types module budget]
+  (if (vector? (get core :function-records))
+  (let [limit (if (> budget 65536) 65536 budget)
+        base (+ 129 (count (get core :function-records)))]
+    (if (> base limit) {:status :rejected :reason :vector-empty-work-limit :work-count base}
+      (if (body-vemp-ids? node call nodes bindings module)
+        (let [args (get call :argument-node-ids) children (get node :children)
+              operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
+              binding (get bindings bid) receiver (get types (first args))
+              reserved (+ base (* 2 (+ (count (get binding :profile-set)) (count (get binding :target-set)))))]
+          (if (> reserved limit) {:status :rejected :reason :vector-empty-work-limit :work-count reserved}
+            (let [validation (body-lc-type-work [receiver] (- limit reserved))
+                  work (+ reserved (get validation :work-count))]
+              (if (= false (= :accepted (get validation :status)))
+                {:status :rejected :reason (if (= :work-limit (get validation :reason)) :vector-empty-work-limit :vector-empty-vector-type-required)
+                 :work-count work}
+                (if (body-vemp-type? receiver)
+                  (if (if (body-nq-ids? node call nodes bindings module)
+                        (if (map? edge)
+                          (if (integer? (get edge :ordinal))
+                            (if (>= (get edge :ordinal) 0)
+                              (body-all? [(body-vemp-optional-id? (get (get node :evaluation) :owner-function-syntax-id))
+                                                 (body-vemp-optional-id? (get edge :caller-function-syntax-id))
+                                                 (body-vemp-optional-id? (get edge :caller-function-core-node-id))]) false) false) false) false)
+                    (let [caller (loop [remaining (get core :function-records)]
+                                   (if (= 0 (count remaining)) nil
+                                     (let [record (first remaining)]
+                                       (if (if (map? record)
+                                             (body-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
+                                         (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
+                                           record (recur (rest remaining))) :invalid-vector-empty-owner))))
+                          expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                                         :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                                         :evaluation-order :operator-then-arguments :result-policy :call-result}
+                          expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                                         :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                                         :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                                         :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                                         :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+                      (if (body-all?
+                            [(= false (= :invalid-vector-empty-owner caller))
+                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
+                             (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                             (= expected-call call) (= expected-edge edge) (body-lq-binding? binding module)
+                             (= 'empty? (get binding :name))
+                             (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                             (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+                                 :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+                             (contains? '#{empty? gravity.core/empty?} (get (get operator :attributes) :symbol))
+                             (= :operator-then-arguments (get (get node :evaluation) :kind))
+                             (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
+                                (get (get node :evaluation) :order))])
+                        {:status :accepted :work-count work
+                         :descriptor {:kind :gravity.type/applied-vector-empty :version :sh08-vector-empty-v1
+                                      :operation 'empty? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-vector-empty
+                                      :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+                                      :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+                                      :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
+                                      :query-policy {:input :persistent-vector :operand-evaluation :once :operand-position :non-tail
+                                                     :payload-evaluation :none :original :unchanged :test :zero-elements
+                                                     :static-length :not-required :flow-refinement :none}
+                                      :storage-policy {:representation :pending-profile-representation :query :stored-emptiness-test
+                                                       :collection-construction :none :copy :none :provider-allocation-bound :not-established}
+                                      :value-origin {:kind :vector-value-query :operation 'empty? :operand-node-id (first args)}
+                                      :operand-type-work (get validation :work-count) :profile-validation-work (- reserved base)
+                                      :application :normal :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+                                      :parameter-types [receiver] :return :gravity.type/bool :result-type :gravity.type/bool
+                                      :profile (get module :profile) :target (get module :target)
+                                      :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :profile :target :evaluation-order]}}
+                        {:status :rejected :reason :vector-empty-source-mismatch :work-count work}))
+                    {:status :rejected :reason :vector-empty-source-mismatch :work-count work})
+                  {:status :rejected :reason :vector-empty-vector-type-required :work-count work})))))
+        {:status :rejected :reason :vector-empty-source-mismatch :work-count base})))
+    {:status :rejected :reason :vector-empty-source-mismatch :work-count 129}))
+
+(defn body-vemp-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-vector-empty-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-vector-empty-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-empty}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application :normal :direct-effects []}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn body-vemp-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-vector-empty-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type :gravity.type/bool
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects [] :capabilities [] :status :inferred
+     :dispatch :direct-vector-empty :applied-vector-empty descriptor :effect-facts-source :audited-vector-value-query}))
+
+(defn body-vemp-call? [node call nodes bindings types module]
+  (if (body-vemp-ids? node call nodes bindings module)
+    (let [input (get types (first (get call :argument-node-ids)))]
+      (if (body-vemp-type-fields? input)
+        (if (= 'empty? (get (get bindings (get call :operator-binding-id)) :name)) (body-vemp-type? input) false) false)) false))
+
+(defn body-vemp-entry? [node call nodes bindings types module]
+  ; Route unary empty? candidates; this is not admission evidence.
+  ; Established noncore routes keep their dispatch. Other classes must reach
+  ; canonical rejection instead of eager legacy profile/target classifiers.
+  (if (if (map? call) (if (vector? (get call :argument-node-ids)) (= 1 (count (get call :argument-node-ids))) false) false)
+    (if (body-sse-ids? [(get call :operator-binding-id)] 1)
+      (let [binding (get bindings (get call :operator-binding-id))]
+        (if (if (map? binding) (if (symbol? (get binding :name))
+                               (if (= 'empty? (get binding :name))
+                                 (if (keyword? (get binding :binding-class))
+                                   (if (contains? #{:lexical :namespace :import} (get binding :binding-class)) false true) true) false) false) false)
+          (if (body-vemp-ids? node call nodes bindings module)
+            (let [input (get types (first (get call :argument-node-ids)))]
+              (if (body-vemp-type-fields? input)
+                (if (= :gravity.type/never input) false
+                  (if (= :gravity.type/list input) false
+                    (if (map? input) (= false (= :gravity.type/list (get input :kind))) true))) true)) true)
+          false)) false) false))
+
+(defn body-vemp-index [rows field]
+  ; The caller reserves this index census before visiting any row.
+  (if (vector? rows)
+    (loop [index 0 out {}]
+      (if (= index (count rows)) {:status :accepted :index out}
+        (let [row (get rows index) id (if (map? row) (get row field) nil)]
+          (if (body-sse-ids? [id] 1)
+            (if (contains? out id) {:status :rejected :reason :body-query-duplicate-id}
+              (recur (+ index 1) (assoc out id row)))
+            {:status :rejected :reason :body-query-physical-id-required}))))
+    {:status :rejected :reason :body-query-row-vector-required}))
+
+(defn body-vemp-originals [rows field target]
+  (if (vector? rows)
+    (loop [index 0 items [] table {}]
+      (if (= index (count rows)) {:status :accepted :items items :index table}
+        (let [row (get rows index) id (if (map? row) (get row field) nil)]
+          (if (body-sse-ids? [id] 1)
+            (if (contains? table id) {:status :rejected}
+              (recur (+ index 1) (if (= target id) (conj items row) items) (assoc table id row)))
+            {:status :rejected})))) {:status :rejected}))
+
+(defn body-vemp-row-census [core ledger nodes bindings types calls edges target descriptor budget]
+  (let [base (* 4 (count ledger))]
+    (if (> base budget) {:status :rejected :reason :vector-empty-work-limit :work-count base}
+      (loop [index 0 items [] seen #{} descriptors {} used base]
+        (if (= index (count ledger)) {:status :accepted :items items :descriptors descriptors :work-count used}
+          (let [row (get ledger index) producer (if (map? row) (get row :producer-rule) nil)]
+            (if (keyword? producer)
+              (if (= :sh08-vector-empty-v1 producer)
+                (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)]
+                  (if (body-sse-ids? [id] 1)
+                    (if (contains? seen id) {:status :rejected :reason :vector-empty-source-mismatch :work-count used}
+                      (let [source-call (get calls id) source-edge (get edges id) source-node (get nodes id)
+                            result (if (= target id) {:status :accepted :descriptor descriptor :work-count 0}
+                                     (body-vemp-header core source-node source-call source-edge nodes bindings types (get core :module) (- budget used)))
+                            total (+ used (get result :work-count)) canonical (get result :descriptor)]
+                        (if (= :accepted (get result :status))
+                          (if (if (body-vemp-ids? source-node source-call nodes bindings (get core :module))
+                                (if (= canonical (get types (get source-call :operator-node-id)))
+                                  (= (body-vemp-constraint canonical) row) false) false)
+                            (recur (+ index 1) (if (= target id) (conj items row) items) (conj seen id) (assoc descriptors id canonical) total)
+                            {:status :rejected :reason :vector-empty-source-mismatch :work-count total})
+                          {:status :rejected :reason (get result :reason) :work-count total})))
+                    {:status :rejected :reason :vector-empty-source-mismatch :work-count used}))
+                (recur (+ index 1) items seen descriptors used))
+              {:status :rejected :reason :vector-empty-source-mismatch :work-count used})))))))
+
+(defn body-vemp-fact-census [facts module descriptors target budget]
+  (let [work (* 3 (count facts))]
+    (if (> work budget) {:status :rejected :reason :vector-empty-work-limit :work-count work}
+      (loop [remaining (if (map? facts) (keys facts) facts) index 0 items [] seen #{}]
+        (if (= index (count facts))
+          (if (= (set (keys descriptors)) seen) {:status :accepted :items items :work-count work}
+            {:status :rejected :reason :vector-empty-source-mismatch :work-count work})
+          (let [entry (first remaining) fact (if (map? facts) (if (body-sse-ids? [entry] 1) (get facts entry) nil) entry)
+                id (if (map? fact) (get fact :call-core-node-id) nil)
+                dispatch (if (map? fact) (get fact :dispatch) nil)]
+            (if (if (body-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
+              (if (keyword? dispatch)
+                (if (= :direct-vector-empty dispatch)
+                  (if (contains? seen id) {:status :rejected :reason :vector-empty-source-mismatch :work-count work}
+                    (let [canonical (get descriptors id)]
+                      (if (if (map? canonical) (= (body-vemp-call-fact canonical module) fact) false)
+                        (recur (rest remaining) (+ index 1) (if (= target id) (conj items fact) items) (conj seen id))
+                        {:status :rejected :reason :vector-empty-source-mismatch :work-count work})))
+                  (recur (rest remaining) (+ index 1) items seen))
+                {:status :rejected :reason :vector-empty-source-mismatch :work-count work})
+              {:status :rejected :reason :vector-empty-source-mismatch :work-count work})))))))
+
+(defn body-vemp-evidence [core ledger facts node call edge nodes bindings types budget]
+  (if (if (vector? ledger) (if (if (vector? facts) true (map? facts))
+                          (if (vector? (get core :calls)) (vector? (get core :call-edges)) false) false) false)
+    (let [limit (if (> budget 65536) 65536 budget)
+          derived (body-vemp-header core node call edge nodes bindings types (get core :module) limit)
+          base (+ (get derived :work-count) (* 2 (count (get core :calls))) (* 2 (count (get core :call-edges))))]
+      (if (= :accepted (get derived :status))
+        (if (> base limit) {:status :rejected :reason :vector-empty-work-limit :work-count base}
+          (let [id (get node :node-id) descriptor (get derived :descriptor)
+                original-calls (body-vemp-originals (get core :calls) :core-node-id id)
+                original-edges (body-vemp-originals (get core :call-edges) :call-core-node-id id)]
+            (if (body-all? [(= :accepted (get original-calls :status)) (= :accepted (get original-edges :status))
+                                   (= [call] (get original-calls :items)) (= [edge] (get original-edges :items))])
+              (let [rows (body-vemp-row-census core ledger nodes bindings types (get original-calls :index) (get original-edges :index)
+                           id descriptor (- limit base)) work (+ base (get rows :work-count))]
+                (if (= :accepted (get rows :status))
+                  (let [calls (body-vemp-fact-census facts (get core :module) (get rows :descriptors) id (- limit work))
+                        total (+ work (get calls :work-count))]
+                    (if (if (= :accepted (get calls :status))
+                          (if (= [(body-vemp-constraint descriptor)] (get rows :items))
+                            (= [(body-vemp-call-fact descriptor (get core :module))] (get calls :items)) false) false)
+                      {:status :accepted :descriptor descriptor :work-count total}
+                      {:status :rejected :reason (if (= :vector-empty-work-limit (get calls :reason)) :vector-empty-work-limit :vector-empty-source-mismatch)
+                       :work-count total}))
+                  {:status :rejected :reason (get rows :reason) :work-count work}))
+              {:status :rejected :reason :vector-empty-source-mismatch :work-count base})))
+        derived))
+    {:status :rejected :reason :vector-empty-source-mismatch :work-count 0}))
+
+(defn body-vemp-forms? [node call nodes forms]
+  (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
+    (if (body-sse-ids? ids 2)
+      (if (= :list (get owner :kind))
+        (if (= (get node :source) (get (body-ma-form-node {} owner) :source))
+          (loop [index 0]
+            (if (= index 2) true
+              (let [form (get forms (get ids index)) child (get nodes (get (get node :children) index))]
+                (if (if (= (get owner :form-id) (get form :parent-form-id))
+                      (if (= (get child :source) (get (body-ma-form-node {} form) :source))
+                        (if (= index 0) (if (symbol? (get form :value))
+                                         (= (get form :value) (get (get child :attributes) :symbol)) false) true) false) false)
+                  (recur (+ index 1)) false)))) false) false) false)))
+
 (defn body-lq-source [core node call edge nodes bindings types module validation]
   (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
   (let [children (get node :children) operator (get nodes (get call :operator-node-id))
@@ -4359,6 +4641,8 @@
             :invalidation (conj (get header :invalidation) :control-flow :mutations :branch-facts)) header))) nil)) nil))
 
 (defn body-lq-constraint [descriptor]
+  (if (= :gravity.type/applied-vector-empty (get descriptor :kind))
+    (body-vemp-constraint descriptor)
   (let [record {:constraint-id-request {:domain :gravity/sh08-list-query-constraint-v1 :application descriptor}
    :kind :equality :producer-rule :sh08-list-query-v1
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :list-query}
@@ -4371,9 +4655,12 @@
       (assoc record :constraint-id-request {:domain :gravity/sh08-vector-first-constraint-v1 :application descriptor}
         :producer-rule :sh08-vector-first-v1
         :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-first}
-        :solution (assoc (get record :solution) :bounds-proof (get descriptor :bounds-proof))) record)))
+        :solution (assoc (get record :solution) :bounds-proof (get descriptor :bounds-proof))) record))
+  ))
 
 (defn body-lq-call-fact [descriptor module]
+  (if (= :gravity.type/applied-vector-empty (get descriptor :kind))
+    (body-vemp-call-fact descriptor module)
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     (if (= :gravity.type/applied-vector-first (get descriptor :kind))
       {:artifact :gravity/c7-call-type-fact
@@ -4391,7 +4678,8 @@
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-list-query :applied-list-query descriptor :effect-facts-source :audited-list-value-query})))
+     :dispatch :direct-list-query :applied-list-query descriptor :effect-facts-source :audited-list-value-query}))
+  ))
 
 
 (defn body-lq-finish [header]
@@ -4555,25 +4843,62 @@
       {:status :not-applicable :work-count 0})))
 
 (defn body-lq-context [request facts bindings budget]
-  (let [core (get request :canonical-core-artifact)
-        present? (loop [remaining (get core :calls)]
-                   (if (= 0 (count remaining)) false
-                     (if (body-lq-binding? (get bindings (get (first remaining) :operator-binding-id)) (get core :module))
-                       true (recur (rest remaining)))))]
-    (if (= false present?) {:status :accepted :context nil :work-count 0}
-      (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
-        (if (= false (vector? forms)) (body-failure :body-list-query-source-forms-required)
-          (let [base (+ (count forms) (count bindings) (count (get core :nodes)) (count (get core :calls)) (count (get core :call-edges)))
-                nodes (body-index (get core :nodes) :node-id)]
-          (if (> base budget) (assoc (body-failure :body-deferred-work-limit) :work-count base)
-            (loop [remaining (get core :calls) used base checks {}]
-              (if (= 0 (count remaining))
-                {:status :accepted :work-count used
-                 :context {:forms (body-index forms :form-id) :nodes nodes
-                           :calls (body-index (get core :calls) :core-node-id) :edges (body-index (get core :call-edges) :call-core-node-id)
-                           :bindings bindings :type-checks checks}}
-                (let [call (first remaining) args (get call :argument-node-ids)]
-                  (if (body-lq-binding? (get bindings (get call :operator-binding-id)) (get core :module))
+  (if (if (map? request) (if (map? facts) (map? bindings) false) false)
+    (let [core (get request :canonical-core-artifact)]
+      (if (if (map? core) (if (vector? (get core :calls)) (if (vector? (get core :nodes)) (vector? (get core :call-edges)) false) false) false)
+        (let [present? (loop [remaining (get core :calls)]
+                         (if (= 0 (count remaining)) false
+                           (let [call (first remaining) bid (if (map? call) (get call :operator-binding-id) nil)]
+                             (if (body-sse-ids? [bid] 1)
+                               (let [binding (get bindings bid) name (if (map? binding) (get binding :name) nil)]
+                                 (if (if (symbol? name) (contains? '#{first rest empty?} name) false)
+                                   (if (if (= 'empty? name) (= :core (get binding :binding-class))
+                                         (body-lq-binding? binding (get core :module)))
+                                     true (recur (rest remaining)))
+                                   (recur (rest remaining)))) :invalid-query-source))))]
+          (if (= :invalid-query-source present?) (body-failure :body-query-physical-id-required)
+            (if (= false present?) {:status :accepted :context nil :work-count 0}
+              (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
+                (if (= false (vector? forms)) (body-failure :body-list-query-source-forms-required)
+                  (let [base (+ (count forms) (count bindings) (count (get core :nodes)) (count (get core :calls)) (count (get core :call-edges)))]
+                    (if (> base budget) (assoc (body-failure :body-deferred-work-limit) :work-count base)
+                      (let [node-index (body-vemp-index (get core :nodes) :node-id)
+                            form-index (body-vemp-index forms :form-id)
+                            call-index (body-vemp-index (get core :calls) :core-node-id)
+                            edge-index (body-vemp-index (get core :call-edges) :call-core-node-id)]
+                        (if (body-all? [(= :accepted (get node-index :status)) (= :accepted (get form-index :status))
+                                       (= :accepted (get call-index :status)) (= :accepted (get edge-index :status))])
+                          (let [nodes (get node-index :index)]
+                            (loop [remaining (get core :calls) used base checks {}]
+                              (if (= 0 (count remaining))
+                                {:status :accepted :work-count used
+                                 :context {:forms (get form-index :index) :nodes nodes :calls (get call-index :index)
+                                           :edges (get edge-index :index) :bindings bindings :type-checks checks}}
+                                (let [call (first remaining) args (get call :argument-node-ids)
+                                      binding (if (body-sse-ids? [(get call :operator-binding-id)] 1)
+                                                (get bindings (get call :operator-binding-id)) nil)
+                                      name (if (map? binding) (get binding :name) nil)
+                                      query? (if (symbol? name) (contains? '#{first rest empty?} name) false)
+                                      unary-empty? (if (= 'empty? name) (if (vector? args) (= 1 (count args)) false) false)
+                                      node (get nodes (get call :core-node-id)) fixed (+ 65 (count (get core :function-records)))]
+                                  (if (= false (map? binding))
+                                    (assoc (body-failure :body-query-physical-id-required) :work-count used)
+                                    (if (if unary-empty? (> (+ used fixed) budget) false)
+                                    (assoc (body-failure :body-deferred-work-limit) :work-count (+ used fixed))
+                                    (if (if unary-empty?
+                                          (if (body-vemp-ids? node call nodes bindings (get core :module))
+                                            (body-vemp-type-fields? (get (get facts :type-table) (first args))) false) true)
+                                      (if (body-vemp-entry? node call nodes bindings (get facts :type-table) (get core :module))
+                                        (let [result (body-vemp-evidence core (get facts :constraint-ledger) (get facts :call-type-facts)
+                                                       node call (get (get edge-index :index) (get call :core-node-id)) nodes bindings
+                                                       (get facts :type-table) (- budget used))
+                                              total (+ used (get result :work-count))]
+                                          (if (= :accepted (get result :status))
+                                            (recur (rest remaining) total (assoc checks (get call :core-node-id) result))
+                                            (assoc (body-failure (if (= :vector-empty-work-limit (get result :reason))
+                                                                  :body-deferred-work-limit :body-vector-empty-source-mismatch)) :work-count total)))
+                                        (if query?
+(if (body-lq-binding? (get bindings (get call :operator-binding-id)) (get core :module))
                     (let [receiver (first (body-io-child-types args (get facts :type-table)))
                           vector-first? (if (= 'first (get (get bindings (get call :operator-binding-id)) :name))
                                           (if (= :gravity.type/vector receiver) true (if (map? receiver) (= :gravity.type/vector (get receiver :kind)) false)) false)
@@ -4595,9 +4920,29 @@
                                 (if (map? receiver) (if (vector? (get receiver :element-types)) (> (count (get receiver :element-types)) 0) false) false) true) false)
                           (recur (rest remaining) work (assoc checks (get call :core-node-id) validation))
                           (assoc (body-failure (if vector-first? :body-vector-first-nonempty-complete-positional-type-required :body-list-query-operand-type-required)) :work-count work)))))
-                    (recur (rest remaining) used checks))))))))))))
+                    (recur (rest remaining) used checks))
+                                          (recur (rest remaining) used checks)))
+                                      (assoc (body-failure :body-vector-empty-source-mismatch) :work-count (+ used fixed)))))))))
+                          (assoc (body-failure :body-query-physical-id-required) :work-count base))))))))))
+        (body-failure :body-query-core-shape-required)))
+    (body-failure :body-query-core-shape-required)))
 
 (defn body-lq-call-valid? [core facts bindings node call edge nodes]
+  (let [types (get facts :type-table)
+        unary? (if (vector? (get call :argument-node-ids)) (= 1 (count (get call :argument-node-ids))) false)
+        physical? (if unary? (body-vemp-ids? node call nodes bindings (get core :module)) true)
+        input (if (if unary? physical? false) (get types (first (get call :argument-node-ids))) nil)]
+    (if (= false physical?) false
+      (if (= false (body-vemp-type-fields? input)) false
+        (if (body-vemp-entry? node call nodes bindings types (get core :module))
+          (let [context (get facts :list-query-context)
+                result (body-vemp-evidence core (get facts :constraint-ledger) (get facts :call-type-facts)
+                         node call edge nodes bindings types 65536)]
+            (if (= :accepted (get result :status))
+              (if (if (map? context) (map? (get context :forms)) false)
+                (body-all? [(= (get result :descriptor) (get types (get call :operator-node-id)))
+                            (= :gravity.type/bool (get types (get node :node-id)))
+                            (body-vemp-forms? node call nodes (get context :forms))]) false) false))
   (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
         validation (get (get (get facts :list-query-context) :type-checks) (get node :node-id))
         header (body-lq-source core node call edge nodes bindings types (get core :module) validation)
@@ -4622,7 +4967,8 @@
                      (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
                  (recur (+ i 1)) false))))
          (= (body-lq-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
-         (= [(body-lq-constraint descriptor)] rows)]) false)))
+         (= [(body-lq-constraint descriptor)] rows)]) false))
+        )))))
 
 (defn body-lq-node? [node facts core]
   (let [context (get facts :list-query-context) id (get node :node-id)]
@@ -14628,11 +14974,12 @@
                           (get (get context :edges) id) (get context :nodes)) false)))
 
 (defn body-call-joins-with-foreign-valid? [core facts bindings foreign]
-  (let [nodes (body-index (get core :nodes) :node-id)
-        functions (body-index (get facts :function-type-table) :function-id)
-        records (body-index (get core :function-records) :function-syntax-id)
-        calls (body-index (get core :calls) :core-node-id)
-        call-facts (body-index (get facts :call-type-facts) :call-core-node-id)]
+  (let [nodes (get (body-vemp-index (get core :nodes) :node-id) :index)
+        functions (get (body-vemp-index (get facts :function-type-table) :function-id) :index)
+        records (get (body-vemp-index (get core :function-records) :function-syntax-id) :index)
+        calls (get (body-vemp-index (get core :calls) :core-node-id) :index)
+        call-facts (get (body-vemp-index (get facts :call-type-facts) :call-core-node-id) :index)]
+    (if (body-all? [(map? nodes) (map? functions) (map? records) (map? calls) (map? call-facts)])
     (loop [remaining (get core :call-edges) ordinal 0 used #{} intrinsic-rows [] association-rows [] removal-rows [] count-rows [] nth-rows [] successor-rows [] append-rows [] equality-rows [] not-rows [] contains-rows [] get-rows [] concat-rows [] list-rows [] query-rows [] vector-predicate-rows [] integer-predicate-rows [] string-predicate-rows [] keyword-predicate-rows [] map-predicate-rows [] set-predicate-rows [] list-predicate-rows [] symbol-predicate-rows [] boolean-predicate-rows [] atomic-inequality-rows [] nil-predicate-rows [] character-predicate-rows [] set-conversion-rows []]
       (if (= 0 (count remaining))
         (body-all? [(= (count used) (count foreign))
@@ -14697,11 +15044,20 @@
                                     (if (= 0 (count remaining)) out
                                       (let [row (first remaining)]
                                         (recur (rest remaining)
-                                          (if (contains? #{:sh08-list-query-v1 :sh08-vector-first-v1} (get row :producer-rule))
+                                          (if (if (keyword? (get row :producer-rule))
+                                                (contains? #{:sh08-list-query-v1 :sh08-vector-first-v1 :sh08-vector-empty-v1} (get row :producer-rule)) false)
                                             (conj out row) out))))))])
-        (let [edge (first remaining) id (get edge :call-core-node-id)
-              imported (get foreign (get edge :callee-binding-id))
-              local? (= :local-function (get edge :classification))]
+        (let [edge (first remaining)]
+          (if (if (map? edge)
+                (if (body-sse-ids? [(get edge :call-core-node-id) (get edge :callee-binding-id)] 2)
+                  (if (keyword? (get edge :classification))
+                    (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false) false) false)
+            (let [id (get edge :call-core-node-id) call (get calls id)]
+              (if (if (map? call)
+                    (if (body-sse-ids? [(get call :operator-binding-id)] 1)
+                      (= (get edge :callee-binding-id) (get call :operator-binding-id)) false) false)
+                (let [imported (get foreign (get edge :callee-binding-id))
+                      local? (= :local-function (get edge :classification))]
           (if (if (= ordinal (get edge :ordinal))
                 (if local?
                   (if (if (body-ho-outer-fact-valid? edge (get call-facts id) (get facts :higher-order-proof))
@@ -14712,7 +15068,12 @@
                     (body-ho-inner-call-valid? edge (get calls id) (get call-facts id) nodes facts)
                     (if (map? imported)
                       (body-import-call-valid? edge (get calls id) (get call-facts id) nodes records imported (get facts :type-table))
-                      (if (body-si-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
+                      (let [binding (get bindings (get edge :callee-binding-id))]
+                      (if (if (map? binding) (if (symbol? (get binding :name)) (keyword? (get binding :binding-class)) false) false)
+                        (if (if (body-vemp-entry? (get nodes id) (get calls id) nodes bindings (get facts :type-table) (get core :module)) true
+                              (if (= 'empty? (get binding :name)) (= :core (get binding :binding-class)) false))
+                          (body-lq-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
+                        (if (body-si-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                         (body-si-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
                       (if (body-vn-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                         (body-vn-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
@@ -14750,7 +15111,7 @@
                               (body-nt-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))
                           (if (body-ae-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                             (body-ae-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
-                            (body-io-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)))))))))))))) false)
+                            (body-io-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)))))))))))) false))))) false)
             (recur (rest remaining) (+ ordinal 1)
               (if (map? imported) (conj used (get edge :callee-binding-id)) used)
               (if (= :direct-integral-ordering (get (get call-facts id) :dispatch))
@@ -14796,7 +15157,7 @@
                     (body-sc-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))) concat-rows)
               (if (= :direct-list-construction (get (get call-facts id) :dispatch))
                 (conj list-rows (body-lc-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) list-rows)
-              (if (contains? #{:direct-list-query :direct-vector-first} (get (get call-facts id) :dispatch))
+              (if (contains? #{:direct-list-query :direct-vector-first :direct-vector-empty} (get (get call-facts id) :dispatch))
                 (conj query-rows (body-lq-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) query-rows)
               (if (= :direct-vector-predicate (get (get call-facts id) :dispatch))
                 (conj vector-predicate-rows (body-vp-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) vector-predicate-rows)
@@ -14823,7 +15184,7 @@
               (if (= :direct-character-predicate (get (get call-facts id) :dispatch))
                 (conj character-predicate-rows (body-chp-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) character-predicate-rows)
               (if (= :direct-set-conversion (get (get call-facts id) :dispatch))
-                (conj set-conversion-rows (body-st-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) set-conversion-rows)) false))))))
+                (conj set-conversion-rows (body-st-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) set-conversion-rows)) false)) false)) false)))) false)))
 
 (defn body-ho-outer-fact-valid? [edge fact proof]
   (if (= (get edge :call-core-node-id) (get proof :outer-call-core-node-id))
@@ -16873,7 +17234,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first :gravity.type/applied-vector-empty}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (body-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))

@@ -237,6 +237,18 @@ to literal Vectors. `gravity.collections` owns the semantics; compatibility
 bindings do not grant representation or profile support. An implementation's
 supported proof and operand subset must be stated separately.
 
+## Persistent Vector Emptiness
+
+For a persistent Vector, unary `(empty? items)` returns Bool true exactly when
+it contains no stored elements, and false otherwise, including when its stored
+values are false or nil. Its operand follows ordinary L2 evaluation exactly
+once; operand effects are preserved, and a control transfer aborts invocation.
+The query neither evaluates stored payloads, mutates the Vector nor itself
+constructs a collection. It establishes no member, extent, nonempty-branch or
+flow-typing fact. This rule does not promise allocation-free internal execution,
+provider complexity, representation or profile support; their governing
+requirements still apply. Collection semantics remain owned by `gravity.collections`.
+
 ## Persistent Vector First With Established Nonempty Input
 
 For a persistent Vector containing at least one stored value, unary
@@ -398,6 +410,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Binary persistent List equality covers empty, equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules, without substituting type or object identity.
 - Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.
 - Proven-in-range Vector slicing covers empty, full, prefix, middle and suffix ranges, preserves stored order, inert payloads and the original input, retains ordinary eager operand evaluation and transfers, and declares allocation/storage policy.
+- Persistent Vector emptiness covers empty and nonempty values, including stored false/nil and inert payloads, preserves ordinary evaluation, effects, transfers and the original value, and does not construct a collection or invent extent, member or flow-typing facts.
 - Proven-nonempty Vector first covers singleton and ordered multi-element values, stored false/nil, ordinary operand evaluation and transfers, inert payloads and original-value preservation without selecting an empty-Vector result policy.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.
