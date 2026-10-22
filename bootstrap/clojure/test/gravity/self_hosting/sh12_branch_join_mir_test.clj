@@ -295,6 +295,116 @@
           (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
       (finally (.delete temporary)))))
 
+(deftest sh12-current-c6-forwards-ordered-i64-parameter-arms
+  ;; c6c10-product-depth's scalar selection subtree, not Map field typing,
+  ;; a range witness, a new max primitive or execution of the whole helper.
+  (let [directory "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/"
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        binding (parameter-compiled-binding-data (str (.resolve @root (str directory "two_i64_depth_choice_source.gravity"))))]
+    (doseq [extension ["gravity" "qst"]]
+      (let [path (str (.resolve @root (str directory "two_i64_depth_choice_source." extension))) text (slurp path)
+            products (parameter-source-products path text binding reader-path) input (:envelope products)
+            raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+        (is (= :gravity/c6-c10-resolved-two-i64-parameters-v1 (get-in input [:resolved-parameter :kind])))
+        (is (= :if (get-in input [:stage2-plan :functions 'main :instructions 0 :op])))
+        (is (= :accepted (:status raw)) (pr-str (:diagnostics raw)))
+        (when (= :accepted (:status raw))
+          (let [template (:artifact-template raw) nodes (:core-nodes template) ids (mapv :node-id nodes)
+                fresh (parameter-source-products path text binding reader-path)
+                replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
+                verify #(invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                                [(:envelope fresh) % (:digest-requests replay)])]
+            (is (= input (:envelope fresh))) (is (= raw replay))
+            (is (= :passed (:status (verify template))))
+            (is (= [:parameter :parameter :local :local :integer-lt :truthy :local :local :if :function]
+                   (mapv :source-operation nodes)))
+            (is (= 10 (count nodes)))
+            (is (= 11 (count (get-in template [:dependency-order-graph :edges]))))
+            (is (= [:gravity/i64 :gravity/i64] (get-in nodes [9 :type :params])))
+            (is (= :gravity/i64 (get-in nodes [9 :type :return]) (get-in nodes [6 :type]) (get-in nodes [7 :type]) (get-in nodes [8 :type])))
+            (is (= :gravity/bool (get-in nodes [4 :type]) (get-in nodes [5 :type])))
+            (is (= [[(get ids 1)] [(get ids 0)]] (mapv :operands (subvec nodes 6 8))))
+            (is (= ['right-depth 'left-depth] (mapv #(get-in % [:attributes :name]) (subvec nodes 6 8))))
+            (is (= [(get ids 1) (get ids 0)] (mapv #(get-in % [:attributes :resolved-binding]) (subvec nodes 6 8))))
+            (is (= [(get ids 5) (get ids 6) (get ids 7)] (get-in nodes [8 :operands])))
+            (is (= (get-in nodes [8 :source :origin-id]) (get-in nodes [5 :source :generated-origin 0 :input-origin-id])))
+            (is (= :exact-integer-ordering (get-in nodes [4 :safety :basis])))
+            (is (= :integer-exact (get-in nodes [4 :safety :proof :mathematical-mode])))
+            (doseq [node nodes]
+              (is (= #{} (:effects node) (:capabilities node)))
+              (is (= :proven-safe (get-in node [:safety :outcome]))))
+            (doseq [index [6 7]]
+              (is (= :resolved-lexical-local (get-in nodes [index :safety :basis])))
+              (is (= :resolved-binding-type (get-in template [:type-facts (get ids index) :producer-rule]))))
+            (let [forms (get-in input [:front-end-products :form-tree])
+                  form (first (filter #(= (:form-id %) (second (get-in input [:front-end-products :top-level-form-ids]))) forms))
+                  envelope {:form-tree forms :resolved-parameter (:resolved-parameter input)}
+                  plan (get-in input [:stage2-plan :functions 'main]) call (first (:body plan))
+                  gate #(invoke parameter-c6-plan 'c6c10-i64-depth-choice-body? [envelope % form])]
+              ;; UNIT original-data shape checks, not source-authenticated products.
+              (is (true? (gate plan)))
+              (doseq [changed [(assoc-in plan [:instructions 0 :then :name] 'left-depth)
+                               (assoc-in plan [:instructions 0 :else :name] 'right-depth)
+                               (assoc-in plan [:instructions 0 :then] {:op :literal :value true})
+                               (assoc-in plan [:instructions 0 :test :function] '<=)
+                               (assoc-in plan [:instructions 0 :test :args 0 :name] 'right-depth)
+                               (assoc plan :instructions []) (assoc plan :body [])
+                               (assoc plan :body [call call])
+                               (assoc plan :body [(list 'if (second call) 'left-depth 'right-depth)])
+                               (assoc plan :body [(list 'when (second call) 'right-depth 'left-depth)])]]
+                (is (false? (gate changed))))
+              (let [calls (atom 0) opaque (proxy [Object] []
+                                          (hashCode [] (swap! calls inc) 0) (equals [_] (swap! calls inc) false))]
+                (.hashCode opaque) (.equals opaque :probe) (is (= 2 @calls)) (reset! calls 0)
+                (is (false? (gate (assoc-in plan [:instructions 0 :then :name] opaque))))
+                (is (false? (gate (assoc plan :body [(list 'if (second call) opaque 'left-depth)]))))
+                (is (zero? @calls))))
+            (doseq [candidate [(assoc-in template [:core-nodes 6 :operands] [(get ids 0)])
+                               (assoc-in template [:core-nodes 7 :attributes :resolved-binding] (get ids 1))
+                               (assoc-in template [:core-nodes 8 :type] :gravity/bool)
+                               (assoc-in template [:core-nodes 9 :type :return] :gravity/bool)
+                               (assoc-in template [:core-nodes 5 :source :generated-origin 0 :input-origin-id] (get-in nodes [4 :source :origin-id]))
+                               (assoc-in template [:resolved-parameter :parameters 1 :parameter-index] 0)
+                               (assoc-in template [:proof-records (get ids 6) :basis] :closed-scalar-literal)
+                               (assoc-in template [:type-facts (get ids 7) :type] :gravity/bool)]]
+              (is (= :rejected (:status (verify candidate)))))
+            (let [sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
+                  context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
+                  core (bootstrap/p15-s23-c6c10-public-artifact context (:compiled-binding-data products) (:ingress products) sealed)
+                  mir (build-mir core) original (verify-mir core mir)
+                  result (invoke c11-plan 'sh13-run-branch-join-mir-with-arguments [core mir [0 1]])]
+              (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
+              (is (= :rejected (:status original) (:status result)))
+              (is (= ["C11-MODULE" :original-c6-bool-parameter-family] ((juxt :diagnostic-id :missing-fact) (diagnostic original))))
+              (is (= (:diagnostics original) (:diagnostics result)))
+              (is (nil? (:execution result))))))))))
+
+(deftest sh12-i64-depth-choice-rejects-nonmatching-source-arms
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_depth_choice_source.gravity"))
+        text (slurp path) binding (parameter-compiled-binding-data path)
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))]
+    (doseq [source [(str/replace text ") right-depth left-depth)" ") right-depth right-depth)")
+                    (str/replace text ") right-depth left-depth)" ") true left-depth)")]]
+      (let [temporary (java.io.File/createTempFile "gravity-sh12-i64-choice-reject-" ".gravity")]
+        (try
+          (spit temporary source)
+          (let [input (:envelope (parameter-source-products (.getCanonicalPath temporary) source binding reader-path))
+                raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+            (is (= :rejected (:status raw)))
+            (is (= "C6-LOWERING-GAP" (get-in raw [:diagnostics 0 :rule]))))
+          (finally (.delete temporary)))))))
+
+(deftest sh12-i64-depth-choice-preserves-original-bool-condition
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_condition_source.gravity"))
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        input (:envelope (parameter-source-products path (slurp path) nil reader-path))
+        raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input]) template (:artifact-template raw)]
+    (is (= :accepted (:status raw)))
+    (is (= [:parameter :parameter :local :local :integer-lt :truthy :literal :literal :if :function]
+           (mapv :source-operation (:core-nodes template))))
+    (is (= :gravity/bool (get-in template [:core-nodes 9 :type :return])))
+    (is (= :passed (:status (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template [input template (:digest-requests raw)]))))))
+
 (deftest sh12-current-c6-consumes-i64-order-as-a-condition
   ;; c6c10-all-lexical-bindings-resolve-loop? consumes strict index ordering
   ;; as control. This closed predicate subtree does not execute its recursion.
