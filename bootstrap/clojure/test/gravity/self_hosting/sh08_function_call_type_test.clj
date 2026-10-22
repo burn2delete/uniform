@@ -4727,6 +4727,27 @@
   (invoke-c7 'sh08-scv-derive [(:core input) (:node input) (:call input) (:edge input)
                               (:nodes input) (:bindings input) (:types input) (:forms input) budget]))
 
+(deftest sh08-latin1-string-vector-development-kernel
+  (let [input (literal-string-vector-input "\u00e9") result (literal-string-vector-derived input 65536)
+        descriptor (:descriptor result)]
+    (is (= :accepted (:status result)))
+    (is (= {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/character]} (:type result)))
+    (is (= :sh08-string-character-vector-latin1-v1 (:version descriptor)))
+    (is (= :latin1-scalars (get-in descriptor [:conversion-proof :validated-domain]))))
+  (doseq [input [(literal-string-vector-input "") (literal-string-vector-input "A") (literal-string-vector-transfer-input)]]
+    (let [{:keys [core node call nodes bindings types forms]} input
+          normal? (= :gravity.type/string (types :arg0)) value (get-in nodes [:arg0 :attributes :value])
+          n (if normal? (count value) 0)
+          actual (invoke-c7 'sh08-scv-proof [core node call nodes bindings types forms 65536])
+          expected {:status :accepted :work-count (+ 128 (count (:function-records core)) (* 32 n))
+                    :proof {:schema :gravity/string-character-vector-proof-v1 :call-core-node-id (:node-id node)
+                            :source-forms [(forms :call) (forms :operator) (forms :arg0)]
+                            :operand (if normal? {:kind :original-string-literal :node (nodes :arg0) :source-form (forms :arg0) :value value}
+                                         {:kind :non-invoked-operand})
+                            :scalar-count (when normal? n) :validated-domain :ascii
+                            :law :one-character-per-unicode-scalar :normalization :none :coercion :none}}]
+      (is (= expected actual)))))
+
 (deftest sh08-ascii-string-vector-proof-development-kernel
   (doseq [value ["" "sha256:" (apply str (map char (range 128))) (apply str (repeat 1024 \a))]]
     (let [input (literal-string-vector-input value)
