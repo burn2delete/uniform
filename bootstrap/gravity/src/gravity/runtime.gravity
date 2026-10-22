@@ -1763,13 +1763,19 @@
                     [(get left 0) (second arguments-result) :normal]
                     [{:diagnostic "P15S23X002" :reason :vector-first-nonempty-premise-required :operation operation}
                      (second arguments-result) :rejected])
+                (if (if (= function 'rest) (vector? left) false)
+                  [(loop [index (- (count left) 1) result '()]
+                     (if (< index 1) result
+                       (recur (- index 1) (conj result (get left index)))))
+                   (second arguments-result) :normal]
                 (if (if (= function 'empty?) (vector? left) false)
                   [(= 0 (count left)) (second arguments-result) :normal]
                   (if (list? left)
                   [(if (= function 'empty?) (= 0 (count left))
                      (if (= function 'first) (first left) (rest left))) (second arguments-result) :normal]
-                  [{:diagnostic "P15S23X002" :reason (if (= function 'empty?) :collection-empty-list-or-vector-required :list-query-persistent-list-required) :operation operation}
-                   (second arguments-result) :rejected])))))
+                  [{:diagnostic "P15S23X002" :reason (if (= function 'empty?) :collection-empty-list-or-vector-required
+                                                                    (if (= function 'rest) :collection-rest-list-or-vector-required :list-query-persistent-list-required)) :operation operation}
+                   (second arguments-result) :rejected]))))))
               (if (= function 'get)
                 (if (if (map? left) (if (string? right) true (keyword? right)) false)
                   [(get left right (get values 2)) (second arguments-result) :normal]

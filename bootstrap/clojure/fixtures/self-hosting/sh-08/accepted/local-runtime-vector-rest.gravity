@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.vector-rest
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main [] (first (rest (vec "ab"))))

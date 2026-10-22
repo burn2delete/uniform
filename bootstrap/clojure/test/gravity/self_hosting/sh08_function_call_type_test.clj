@@ -5248,6 +5248,211 @@
         (is (= [] (get-in result [:descriptor :direct-effects])))))))
 
 
+(defn- vector-rest-cross-family-descriptor [descriptor]
+  (let [type (first (:argument-types descriptor))
+        vector? (= :gravity.type/applied-vector-rest (:kind descriptor))
+        other (if vector? (assoc type :kind :gravity.type/list) (assoc type :kind :gravity.type/vector))
+        alternate (:descriptor (list-query-derived (list-query-input 'rest [other])))]
+    (assoc (merge alternate (select-keys descriptor [:resolution :operator-node-id :operator-binding-id :call-core-node-id
+                                                    :source :operator-source :source-call :source-edge :source-binding :profile :target]))
+           :value-origin (assoc (:value-origin alternate) :operand-node-id (get-in descriptor [:value-origin :operand-node-id]))
+           :argument-types [type] :parameter-types [type] :operand-type-work (:operand-type-work descriptor)
+           :return (:return descriptor) :result-type (:result-type descriptor) :application (:application descriptor))))
+
+(deftest sh08-vector-rest-cold-and-budget-development-kernel
+  (let [finite #(hash-map :kind %1 :shape :literal :element-types (vec %2))
+        derive (fn [input budget] (invoke-c7 'sh08-lq-derive
+                                   [(:core input) (:node input) (:call input) (:edge input) (:nodes input)
+                                    (:bindings input) (:types input) (:forms input) budget]))]
+    (doseq [elements [[] [:gravity.type/bool] [:gravity.type/bool :gravity.type/nil]
+                      [:gravity.type/nil :gravity.type/character :gravity.type/string]
+                      [(finite :gravity.type/vector [:gravity.type/bool]) (finite :gravity.type/list [:gravity.type/nil])]
+                      (vec (repeat 1024 :gravity.type/bool))]]
+      (let [{:keys [core node call edge nodes bindings types forms products binding-types] :as input}
+            (vector-rest-input (finite :gravity.type/vector elements))
+            result (derive input 65536) descriptor (:descriptor result)
+            expected (finite :gravity.type/list (if (empty? elements) [] (subvec elements 1)))
+            established (assoc types :operator descriptor :call expected)
+            checked #(invoke-c7 'sh08-vrest-inferred-call [core node call edge nodes bindings %1 %2])
+            paid (checked established 65536)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result) (:status paid)))
+        (is (= expected (:type result) (:return descriptor) (:result-type descriptor)))
+        (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= :list-spine (get-in descriptor [:storage-policy :copy])))
+        (is (= :shallow-share (get-in descriptor [:storage-policy :stored-values])))
+        (is (= :persistent-values (get-in descriptor [:storage-policy :lifetime])))
+        (is (= :none (get-in descriptor [:storage-policy :borrow])))
+        (is (= :not-retained (get-in descriptor [:storage-policy :input-storage])))
+        (is (= :possible (get-in descriptor [:allocation-policy :empty-result])))
+        (is (= (max 1 (count elements)) (:construction-work descriptor)))
+        (is (= :sh08-vector-rest-v1 (:producer-rule (invoke-c7 'sh08-lq-constraint [descriptor]))))
+        (is (= :direct-vector-rest (:dispatch (invoke-c7 'sh08-lq-call-fact [descriptor (:module input)]))))
+        (is (= result (derive input (:work-count result))))
+        (is (= :vector-rest-work-limit (:reason (derive input (dec (:work-count result))))))
+        (is (= paid (checked established (:work-count paid))))
+        (is (= :vector-rest-work-limit (:reason (checked established (dec (:work-count paid))))))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= expected (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-lq-constraint [descriptor])] (:constraints inferred)))
+        (let [consumer (list-query-derived (list-query-input 'first [expected]))]
+          (is (= :accepted (:status consumer)))
+          (is (= (if (empty? (:element-types expected)) :gravity.type/nil (first (:element-types expected))) (:type consumer))))
+        (doseq [changed [(vector-rest-cross-family-descriptor descriptor)
+                         (assoc descriptor :construction-work 0)
+                         (assoc descriptor :result-count 2048)
+                         (assoc descriptor :direct-effects [] :latent-effects [])
+                         (assoc descriptor :result-type (finite :gravity.type/vector []) :return (finite :gravity.type/vector []))
+                         (assoc-in descriptor [:storage-policy :copy] :none)
+                         (assoc-in descriptor [:storage-policy :borrow] :vector-backing-storage)
+                         (assoc-in descriptor [:allocation-policy :empty-result] :none)
+                         (assoc-in descriptor [:query-policy :payload-evaluation] :execute)]]
+          (is (= :rejected (:status (checked (assoc established :operator changed) 65536)))))))
+    (doseq [bad [:gravity.type/vector :gravity.type/unknown :gravity.type/string :gravity.type/map :gravity.type/set
+                 (finite :gravity.type/vector [:gravity.type/unknown :gravity.type/character])
+                 (finite :gravity.type/vector [:gravity.type/never :gravity.type/character])
+                 (finite :gravity.type/vector [{:kind :gravity.type/function :parameters [] :return :gravity.type/bool} :gravity.type/character])
+                 (finite :gravity.type/vector [:gravity.type/character :gravity.type/unknown])
+                 (assoc (finite :gravity.type/vector []) :extra true)
+                 (finite :gravity.type/vector (repeat 1025 :gravity.type/bool))]]
+      (is (= :rejected (:status (derive (vector-rest-input bad) 65536)))))
+    (let [literal-type (invoke-c7 'sh08-ft-collection-type
+                        [{:core-form :collection-literal :attributes {:literal-kind :set} :children [:member]}
+                         {:member :gravity.type/string}])]
+      (is (= (finite :gravity.type/set [:gravity.type/string]) literal-type))
+      (is (= ["C7-TYPE-MISMATCH" :vector-rest-finite-positional-vector-type-required]
+             ((juxt :rule :reason) (derive (vector-rest-input literal-type) 65536)))))
+    (doseq [elements [[] [:gravity.type/bool :gravity.type/nil]]]
+      (let [input (list-query-input 'rest [(finite :gravity.type/list elements)]) result (list-query-derived input)
+            descriptor (:descriptor result) changed (vector-rest-cross-family-descriptor descriptor)]
+        (is (false? (invoke-c7 'sh08-lq-inferred-call-valid?
+                     [(:core input) (:node input) (:call input) (:edge input) (:nodes input) (:bindings input)
+                      (assoc (:types input) :operator changed :call (:type result))])))))
+    (let [nested #(nth (iterate (fn [type] (finite :gravity.type/vector [type])) :gravity.type/bool) %)]
+      (is (= :accepted (:status (derive (vector-rest-input (nested 128)) 65536))))
+      (is (= :rejected (:status (derive (vector-rest-input (nested 129)) 65536)))))
+    (let [empty-result (derive (vector-rest-input (finite :gravity.type/vector [])) 65536)
+          reserved (- (:work-count empty-result) (get-in empty-result [:descriptor :operand-type-work])
+                      (get-in empty-result [:descriptor :construction-work]))
+          remaining (- 65536 reserved)
+          member (finite :gravity.type/vector (repeat 1024 :gravity.type/bool))
+          small (finite :gravity.type/vector (repeat 63 member))
+          prefix-work (:work-count (invoke-c7 'sh08-lc-type-work [[small] 65536]))
+          width (- remaining prefix-work 33)
+          near (finite :gravity.type/vector (conj (vec (repeat 63 member))
+                                                   (finite :gravity.type/vector (repeat width :gravity.type/bool))))
+          validated (invoke-c7 'sh08-lc-type-work [[near] remaining])
+          checked (derive (vector-rest-input near) 1000000)]
+      (is (<= 0 width 1024))
+      (is (= :accepted (:status (derive (vector-rest-input small) 65536))))
+      (is (= :accepted (:status validated)))
+      (is (= :rejected (:status checked)))
+      (is (= :vector-rest-work-limit (:reason checked)))
+      (is (> (:work-count checked) 65536)))
+))
+
+(deftest sh08-vector-rest-current-source-composition
+  ;; Distinct genuine G input; Q and negative fixture checks are file parity only.
+  (let [source-path (fixture-path "accepted" "local-runtime-vector-rest" ".gravity")
+        {:keys [request]} (parameter-vector-count-slice-current-source-request source-path)
+        result (invoke-c7 'sh08-function-type-core-artifact [request])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (let [core (:canonical-core-artifact request)
+            selected (filter #(= :gravity.type/applied-vector-rest
+                                 (get-in result [:type-table (:operator-node-id %) :kind])) (:calls core))
+            call (first selected) operator-id (:operator-node-id call) id (:core-node-id call)
+            descriptor (get-in result [:type-table operator-id])
+            expected {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/character]}
+            consumer (first (filter #(= 'first (get-in result [:type-table (:operator-node-id %) :operation])) (:calls core)))
+            consumer-type (get-in result [:type-table (:operator-node-id consumer)])
+            row (first (filter #(and (= :sh08-vector-rest-v1 (:producer-rule %)) (= id (get-in % [:lhs :core-node-id]))) (:constraint-ledger result)))
+            fact (first (filter #(= id (:call-core-node-id %)) (:call-type-facts result)))
+            forged (vector-rest-cross-family-descriptor descriptor)
+            forged-row (invoke-c7 'sh08-lq-constraint [forged])
+            forged-fact (invoke-c7 'sh08-lq-call-fact [forged (:module core)])
+            mutant (walk/prewalk-replace {descriptor forged row forged-row fact forged-fact} result)
+            report (invoke-c7 'sh08-verify-function-type-result [request result])
+            rejected (invoke-c7 'sh08-verify-function-type-result [request mutant])]
+        (is (= 1 (count selected)))
+        (is (= :passed (:status report)))
+        (is (= [:gravity.type/applied-vector-rest :sh08-vector-rest-v1] ((juxt :kind :version) descriptor)))
+        (is (= expected (:result-type descriptor) (get-in result [:type-table id])))
+        (is (= [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/character :gravity.type/character]}]
+               (:argument-types descriptor)))
+        (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= [2 1] ((juxt :construction-work :result-count) descriptor)))
+        (is (= :list-spine (get-in descriptor [:storage-policy :copy])))
+        (is (= :sh08-vector-rest-v1 (:producer-rule row)))
+        (is (= [:direct-vector-rest [:memory/allocate]] ((juxt :dispatch :effects) fact)))
+        (is (= [[expected] :gravity.type/character :gravity.type/character]
+               [(:argument-types consumer-type) (:result-type consumer-type) (get-in result [:type-table (:core-node-id consumer)])]))
+        (is (= (:source-call descriptor) (:source-call forged)))
+        (is (= forged (get-in mutant [:type-table operator-id]) (:dependencies forged-row) (:applied-list-query forged-fact)))
+        (is (= [:sh08-list-query-v1 :list-query :direct-list-query []]
+               [(:producer-rule forged-row) (get-in forged-row [:lhs :projection]) (:dispatch forged-fact) (:effects forged-fact)]))
+        (is (not= result mutant))
+        (is (= :rejected (:status rejected)))
+        (is (= result (:expected rejected)))
+        (is (= mutant (:candidate rejected)))
+        (is (= (slurp source-path) (slurp (fixture-path "accepted" "local-runtime-vector-rest" ".qst"))))
+        (is (= (slurp (fixture-path "rejected" "vector-rest-string-receiver" ".gravity"))
+               (slurp (fixture-path "rejected" "vector-rest-string-receiver" ".qst"))))))))
+
+(deftest sh08-vector-rest-physical-preflight-development-kernel
+  (let [base (vector-rest-input {:kind :gravity.type/vector :shape :literal :element-types []}) callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Vector empty metadata hash callback")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "Vector empty metadata equality callback")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "Vector empty metadata format callback"))))
+        derive (fn [input budget] (invoke-c7 'sh08-lq-derive
+                                   [(:core input) (:node input) (:call input) (:edge input) (:nodes input)
+                                    (:bindings input) (:types input) (:forms input) budget]))]
+    (doseq [path [[:call :operator-node-id] [:call :operator-binding-id] [:call :argument-node-ids 0]
+                  [:node :node-id] [:node :children 0] [:node :children 1] [:node :source :form-id]
+                  [:node :source :syntax-id] [:node :evaluation :owner-function-syntax-id]
+                  [:nodes :arg0 :source :form-id] [:nodes :arg0 :source :syntax-id]
+                  [:nodes :operator :attributes :symbol] [:bindings :ordering-binding :name]
+                  [:bindings :ordering-binding :definition-syntax-id] [:bindings :ordering-binding :profile-set 0]
+                  [:bindings :ordering-binding :target-set 0] [:core :module :profile] [:core :module :target]
+                  [:edge :ordinal] [:edge :caller-function-syntax-id] [:forms :operator :value]
+                  [:forms :call :child-form-ids 1]]
+            budget [0 65536]]
+      (is (= :rejected (:status (derive (assoc-in base path opaque) budget))))
+      (is (zero? @callbacks)))
+    (let [type (array-map opaque [])]
+      (doseq [budget [0 65536]]
+        (is (= :rejected (:status (derive (assoc-in base [:types :arg0] type) budget))))
+        (is (zero? @callbacks))))
+    (let [profiles (conj (vec (repeat 2048 :meta)) opaque)
+          input (assoc-in base [:bindings :ordering-binding :profile-set] profiles)
+          result (derive input 256)]
+      (is (= :vector-rest-work-limit (:reason result)))
+      (is (zero? @callbacks)))
+    (doseq [binding-class [:lexical :namespace :import]]
+      (let [input (assoc-in base [:bindings :ordering-binding :binding-class] binding-class)]
+        (is (false? (invoke-c7 'sh08-vrest-entry? [(:node input) (:call input) (:nodes input) (:bindings input) (:types input) (:module input)])))))
+    (doseq [type [:gravity.type/list :gravity.type/never {:kind :gravity.type/list :shape :literal :element-types []}]]
+      (let [input (-> base (assoc-in [:types :arg0] type)
+                          (assoc-in [:bindings :ordering-binding :binding-class] :bogus))]
+        (is (false? (invoke-c7 'sh08-vrest-entry? [(:node input) (:call input) (:nodes input) (:bindings input) (:types input) (:module input)])))))
+    (doseq [binding-class [:bogus nil opaque]
+            field [:profile-set :target-set]
+            values [[opaque] (conj (vec (repeat 40000 :meta)) opaque)]
+            budget [256 65536]]
+      (let [input (-> base (assoc-in [:bindings :ordering-binding :binding-class] binding-class)
+                          (assoc-in [:bindings :ordering-binding field] values))]
+        (is (true? (invoke-c7 'sh08-vrest-entry? [(:node input) (:call input) (:nodes input) (:bindings input) (:types input) (:module input)])))
+        (is (= :rejected (:status (derive input budget))))
+        (is (zero? @callbacks))))
+    (is (= :accepted (:status (derive base 65536))))))
+
+
 (deftest sh08-vector-empty-type-limits-development-kernel
   (let [finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec %))
         nested (fn [depth] (nth (iterate #(finite [%]) :gravity.type/bool) depth))
@@ -5384,7 +5589,8 @@
     (doseq [arguments [[] [:gravity.type/vector :gravity.type/vector]]]
       (is (= :list-query-arity-mismatch (:reason (list-query-derived (list-query-input 'empty? arguments))))))
     (is (= :rejected (:status (list-query-derived (list-query-input 'first [(vector-type [])])))))
-    (is (= :rejected (:status (list-query-derived (list-query-input 'rest [(vector-type [:gravity.type/bool])])))))))
+    ;; The initial Vector-rest subset still requires complete positional facts.
+    (is (= :rejected (:status (list-query-derived (list-query-input 'rest [:gravity.type/vector])))))))
 
 (deftest sh08-vector-empty-physical-preflight-development-kernel
   (let [base (list-query-input 'empty? [:gravity.type/vector]) callbacks (atom 0)
@@ -5483,7 +5689,10 @@
                   {:kind :gravity.type/list :element-types [s] :shape :literal :quote-id :forged}
                   {:kind :gravity.type/list :element-types '() :shape :literal}]]
       (is (= :rejected (:status (list-query-derived (list-query-input operation [type])))) (pr-str [operation type])))
-    (is (= :rejected (:status (list-query-derived (list-query-input 'rest [{:kind :gravity.type/vector :element-types [s] :shape :literal}])))))
+    (let [result (list-query-derived (list-query-input 'rest [{:kind :gravity.type/vector :element-types [s] :shape :literal}]))]
+      (is (= :accepted (:status result)))
+      (is (= {:kind :gravity.type/list :shape :literal :element-types []} (:type result)))
+      (is (= [:memory/allocate] (get-in result [:descriptor :direct-effects]))))
     (doseq [operation ['first 'rest] arguments [[] [empty-list empty-list]]]
       (is (= :list-query-arity-mismatch (:reason (list-query-derived (list-query-input operation arguments))))))
     (doseq [operation ['first 'rest]]
