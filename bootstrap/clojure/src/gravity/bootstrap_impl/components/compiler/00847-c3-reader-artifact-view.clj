@@ -1,3 +1,10 @@
+(defn- c3-current-reader-identity-view [source-path c2-artifact]
+  (if (:registered-literal-projection c2-artifact) c2-artifact
+    (let [registry (sh04-syntax-registered-literal-registry source-path c2-artifact)]
+      (if (seq (:bindings registry))
+        (sh04-syntax-project-registered-literal-values source-path registry c2-artifact)
+        c2-artifact))))
+
 (defn- c3-current-reader-revision-authentic? [c2-artifact boundary]
   (if (nil? boundary) true
     (let [retained (or (get-in c2-artifact [:sh03-reader-authentication :reader-source-revision])

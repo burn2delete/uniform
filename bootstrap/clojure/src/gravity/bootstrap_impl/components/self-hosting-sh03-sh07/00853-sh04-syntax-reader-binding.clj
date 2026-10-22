@@ -19,6 +19,7 @@
                                  (map reader-source [:source-content-hash :plan-semantic-hash
                                                      :functions-semantic-hash :builder-semantic-hash])))))
             (sh03-reader-boundary-fail! source-path :actual-sh03-reader-source-revision nil {}))
+        c2-artifact (if current? (c3-current-reader-identity-view source-path c2-artifact) c2-artifact)
         source-unit (:source-unit-record c2-artifact)
         token-stream (:token-stream c2-artifact)
         form-tree (:form-tree c2-artifact)
