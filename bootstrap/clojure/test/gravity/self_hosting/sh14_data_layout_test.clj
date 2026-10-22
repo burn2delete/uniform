@@ -468,6 +468,73 @@
     (is (= 4096 (count (get-in layout [:identity-input :payload]))))
     (is (= :passed (:status verification)))))
 
+(deftest sh14-requires-explicit-kind-allocation-and-alignment
+  ;; Original normalized layout kernel, not allocation or source admission.
+  (let [immutable (request accepted-gravity-plan 'sh14-bytes-request)
+        mutable (request accepted-gravity-plan 'sh14-mutable-buffer-request)
+        cases
+        [[immutable (assoc immutable :kind nil)
+          "C12-SCHEMA" :unsupported-kind]
+         [immutable (dissoc immutable :kind)
+          "C12-SCHEMA" :unsupported-kind]
+         [immutable (assoc immutable :allocation-regime nil)
+          "L10-HIDDEN-ALLOC" :allocation-regime]
+         [mutable (assoc mutable :allocation-regime nil)
+          "L10-HIDDEN-ALLOC" :allocation-regime]
+         [immutable (assoc immutable :alignment nil)
+          "S7-LAYOUT" :invalid-alignment]
+         [immutable (dissoc immutable :allocation-regime)
+          "C12-SCHEMA" :unexpected-request-fields]
+         [immutable (dissoc immutable :alignment)
+          "C12-SCHEMA" :unexpected-request-fields]
+         [immutable (assoc immutable :allocation-regime nil :source-span {})
+          "C12-SCHEMA" :invalid-source-span]
+         [immutable (assoc immutable :alignment nil :type-fact-id nil)
+          "C12-FACTS" :invalid-type-fact]
+         [immutable (assoc immutable :alignment nil :capacity -1)
+          "SAFE2-BOUNDS" :negative-capacity]]]
+    (doseq [original [immutable mutable]]
+      (let [layout (build original)]
+        (is (= :accepted (:status layout)))
+        (is (= (:mutable original) (get-in layout [:layout :mutable])))
+        (is (= :passed
+               (:status (invoke-engine 'sh14-verify-layout [original layout]))))))
+    (doseq [alignment [1 2 4 8 16 32 64]]
+      (let [supplied (assoc immutable :alignment alignment
+                            :size-bytes (* alignment
+                                           (quot (+ 4 (dec alignment)) alignment)))
+            layout (build supplied)]
+        (is (= :accepted (:status layout)))
+        (is (= alignment (get-in layout [:layout :alignment])))
+        (is (= :passed
+               (:status (invoke-engine 'sh14-verify-layout [supplied layout]))))))
+    (doseq [regime [:persistent :static :stack :region :bounded]]
+      (let [supplied (assoc immutable :allocation-regime regime)
+            layout (build supplied)]
+        (is (= :accepted (:status layout)))
+        (is (= regime (get-in layout [:layout :allocation-regime])))
+        (is (= :passed
+               (:status (invoke-engine 'sh14-verify-layout [supplied layout]))))))
+    (doseq [[original supplied rule reason] cases]
+      (let [{:keys [layout host-error]}
+            (try {:layout (build supplied)}
+                 (catch Throwable error
+                   {:host-error (.getName (class error))}))
+            diagnostic (first (:diagnostics layout))]
+        (is (nil? host-error) {:reason reason :host-error host-error})
+        (when layout
+          (is (= :rejected (:status layout)))
+          (is (= rule (:rule diagnostic)))
+          (is (= reason (:reason diagnostic)))
+          (is (= (:value-id supplied) (:value-id diagnostic)))
+          (is (= (:source-span supplied) (:source-span diagnostic)))
+          (is (= (:origin-chain supplied) (:generated-origin-chain diagnostic)))
+          (is (= :passed
+                 (:status (invoke-engine 'sh14-verify-layout [supplied layout]))))
+          (is (= :rejected
+                 (:status (invoke-engine 'sh14-verify-layout
+                                         [supplied (build original)])))))))))
+
 (deftest sh14-rejects-incomplete-and-unsafe-layouts-structurally
   (doseq [[function [rule reason]] rejected-cases]
     (testing (str function)
