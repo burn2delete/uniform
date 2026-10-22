@@ -1,0 +1,12 @@
+(ns self-hosting.sh08.let-vector-slice-first-membership
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  [(let [characters (vec "sha256:0")] (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f} (first (subvec characters 7 8))))
+   (let [characters (vec "sha256:g")] (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f} (first (subvec characters 7 8))))
+   (let [characters (vec "a")] (contains? #{} (first (subvec characters 0 1))))])

@@ -3143,6 +3143,188 @@
       (is (= ["C7-VERIFY" :vector-slice-source-mismatch] ((juxt :rule :reason) malformed))))))
 
 
+(defn- let-vector-slice-first-membership-input [value members start end positions]
+  ;; Actual two-parent client DATA; the standalone suffix path already works.
+  (let [base (let-vector-slice-first-input value start end positions) body :slice-let-body
+        values (vec members) leaves (mapv #(keyword (str "let-member-character-" %)) (range (count values)))
+        id :let-member-call op :let-member-operator bid :let-member-binding definition :let-member-definition
+        source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
+        form (fn [id kind value parent children] {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                                                 :kind kind :value value :parent-form-id parent :child-form-ids children :scope-id body})
+        binding (assoc (get-in base [:bindings :slice-binding]) :binding-id bid :name 'contains? :definition-syntax-id definition)
+        operator {:node-id op :core-form :reference :children [] :resolved-binding-ids [bid] :source (source op) :binding-context body
+                  :attributes {:symbol 'contains? :position :operator :binding-id bid :binding-class :core :definition-syntax-id definition}
+                  :evaluation {:kind :value :order [] :region :module-initialization}}
+        characters (mapv (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                                        :source (source id) :binding-context body :attributes {:literal-kind :character :value value}
+                                        :evaluation {:kind :value :order [] :region :module-initialization}}) leaves values)
+        set-node {:node-id :let-member-set :core-form :collection-literal :children leaves :resolved-binding-ids []
+                  :source (source :let-member-set) :binding-context body
+                  :attributes {:literal-kind :set :element-count (count leaves) :source-value (set values)}
+                  :evaluation {:kind :left-to-right :region :module-initialization
+                               :order (mapv #(hash-map :index %1 :core-node-id %2) (range) leaves)}}
+        children [op :let-member-set :let-first-call]
+        node {:node-id id :core-form :call :children children :resolved-binding-ids [bid] :source (source id) :binding-context body
+              :attributes {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+              :evaluation {:owner-function-syntax-id nil :region :module-initialization :kind :operator-then-arguments
+                           :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}}
+        call {:core-node-id id :operator-node-id op :operator-binding-id bid :argument-node-ids [:let-member-set :let-first-call]
+              :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal (count (get-in base [:core :calls])) :call-core-node-id id
+              :caller-function-syntax-id nil :caller-function-core-node-id nil :callee-binding-id bid
+              :callee-definition-syntax-id definition :callee-function-syntax-id nil :callee-function-core-node-id nil
+              :argument-core-node-ids [:let-member-set :let-first-call] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        owner (-> (get-in base [:nodes :slice-let]) (assoc-in [:children 1] id) (assoc-in [:evaluation :order 1 :core-node-id] id))
+        added (into [operator] (concat characters [set-node node]))
+        nodes (into (assoc (:nodes base) :slice-let owner) (map (juxt :node-id identity) added))
+        forms (-> (:forms base) (assoc-in [:slice-let :child-form-ids 2] id) (assoc-in [:let-first-call :parent-form-id] id)
+                  (assoc op (form op :symbol 'contains? id []) id (form id :list nil :slice-let children)
+                         :let-member-set (form :let-member-set :set (set values) id leaves))
+                  (into (map (fn [id value] [id (form id :character value :let-member-set [])]) leaves values)))
+        ;; Fixture postorder follows actual Core children and declared operand order.
+        ordered (letfn [(visit [id] (let [node (nodes id)] (conj (vec (mapcat visit (:children node))) node)))] (visit :slice-let))
+        core (-> (:core base) (assoc :nodes ordered) (update :calls conj call) (update :call-edges conj edge))
+        types (merge (:types base) (zipmap leaves (repeat :gravity.type/character))
+                     {:let-member-set {:kind :gravity.type/set :shape :literal :element-types (vec (repeat (count leaves) :gravity.type/character))}})]
+    (assoc base :core core :nodes nodes :forms forms :bindings (assoc (:bindings base) bid binding)
+                :types types :node node :call call :edge edge)))
+
+(defn- let-vector-slice-first-membership-established [input]
+  (let [{:keys [core nodes bindings forms types]} input
+        derive (fn [name id types] (let [call (first (filter #(= id (:core-node-id %)) (:calls core)))
+                                         edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))]
+                                     (invoke-c7 name [core (nodes id) call edge nodes bindings types forms 65536])))
+        slice (derive 'sh08-vsl-derive :slice-call types)
+        types (assoc types :slice-operator (:descriptor slice) :slice-call (:type slice))
+        query (derive 'sh08-lq-derive :let-first-call types)
+        types (assoc types :let-first-operator (:descriptor query) :let-first-call (:type query))
+        membership (derive 'sh08-ksm-derive :let-member-call types)]
+    (assoc input :slice slice :query query :membership membership
+                 :types (assoc types :let-member-operator (:descriptor membership) :let-member-call (:type membership) :slice-let (:type membership)))))
+
+(deftest sh08-let-vector-slice-first-membership-development-kernel
+  (let [old (sha-suffix-character-membership-established (sha-suffix-character-membership-input "sha256:a" 7 8 nil))
+        input (let-vector-slice-first-membership-established
+               (let-vector-slice-first-membership-input "sha256:a" (vec "0123456789abcdef") 7 8 nil))]
+    (is (= :accepted (get-in old [:membership :status])) "the standalone consumer already works")
+    (is (= :accepted (get-in input [:slice :status])))
+    (is (= :accepted (get-in input [:query :status])))
+    (is (= :accepted (get-in input [:membership :status])))))
+
+
+(deftest sh08-let-vector-slice-first-membership-proof-development-kernel
+  (doseq [[value members start end] [["sha256:a" (vec "0123456789abcdef") 7 8]
+                                    ["sha256:g" (vec "0123456789abcdef") 7 8]
+                                    ["a" [] 0 1] ["0" (vec "0") 0 1]]]
+    (let [{:keys [core nodes bindings forms types slice query membership] :as input}
+          (let-vector-slice-first-membership-established (let-vector-slice-first-membership-input value members start end nil))
+          call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
+          edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))
+          derive #(invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) call edge nodes bindings types forms %])
+          check #(invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings %1 %2])
+          measured (check types 65536)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                   :lookup-bindings (vec (vals bindings))
+                   :shape-call-products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core)}}
+          cold (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                 [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {} {} 10 context])]
+      (is (= :accepted (:status slice) (:status query) (:status membership) (:status measured)))
+      (is (= :gravity.type/character (:type query)))
+      (is (= :gravity.type/bool (:type membership)))
+      (is (= :gravity.type/applied-character-set-contains (get-in membership [:descriptor :kind])))
+      (is (= :direct-character-set-first-membership (get-in slice [:descriptor :bounds-proof :receiver :body-consumer :kind])))
+      (is (= (nodes :let-first-call) (get-in slice [:descriptor :bounds-proof :receiver :body-consumer :node])))
+      (is (= (nodes :let-member-call) (get-in slice [:descriptor :bounds-proof :receiver :body-consumer :membership-container :node])))
+      (is (= (+ 17 (count members)) (count (get-in slice [:descriptor :bounds-proof :source-forms]))))
+      (is (= :validated-finite-positional-type (get-in query [:descriptor :bounds-proof :basis])))
+      (is (= :unselected (get-in query [:descriptor :query-policy :empty-result-policy])))
+      (is (= [] (get-in query [:descriptor :direct-effects]) (get-in membership [:descriptor :direct-effects])))
+      (is (= slice (derive (:work-count slice))))
+      (is (= :vector-slice-work-limit (:reason (derive (dec (:work-count slice))))))
+      (is (= measured (check types (:work-count measured))))
+      (is (= :vector-slice-work-limit (:reason (check types (dec (:work-count measured))))))
+      (is (= :converged (:convergence-status cold)))
+      (is (= [] (:diagnostics cold)))
+      (is (= :gravity.type/bool (get-in cold [:type-table :let-member-call]) (get-in cold [:type-table :slice-let])))
+      (doseq [path [[:node :children] [:operator :source :syntax-id] [:source-forms]
+                    [:membership-container :node :evaluation :order] [:membership-container :set-node :attributes :source-value]
+                    [:membership-container :binding :definition-syntax-id] [:membership-container :source-forms]]]
+        (is (= :rejected (:status (check (assoc-in types (into [:slice-operator :bounds-proof :receiver :body-consumer] path) :forged) 65536))))))))
+
+(deftest sh08-let-vector-slice-first-membership-boundaries-development-kernel
+  (doseq [members [[] (vec "0123456789abcdef")]]
+    (let [input (let-vector-slice-first-membership-established (let-vector-slice-first-membership-input "a" members 0 0 nil))]
+      (is (= :accepted (get-in input [:slice :status])))
+      (is (= ["C7-ANNOTATION" :vector-first-nonempty-complete-positional-type-required] ((juxt :rule :reason) (:query input))))
+      (is (= :rejected (get-in input [:membership :status])))))
+  (doseq [value ["abc" [65 66 67]] members [[] (vec "0123456789abcdef")] positions [0 1 2 [0 1 2]]]
+    (let [input (let-vector-slice-first-membership-established (let-vector-slice-first-membership-input value members 20 1 positions))]
+      (is (= :accepted (get-in input [:slice :status]) (get-in input [:query :status]) (get-in input [:membership :status])))
+      (is (= :gravity.type/never (get-in input [:query :type]) (get-in input [:membership :type])))
+      (is (= :not-invoked (get-in input [:membership :descriptor :application])))
+      (when (empty? members)
+        (is (= :gravity.type/applied-keyword-set-contains (get-in input [:membership :descriptor :kind]))))))
+  (let [input (let-vector-slice-first-membership-established (let-vector-slice-first-membership-input [48] (vec "0") 0 1 nil))]
+    (is (= :accepted (get-in input [:slice :status]) (get-in input [:query :status])))
+    (is (= :rejected (get-in input [:membership :status])))
+    (is (= "C7-TYPE-MISMATCH" (get-in input [:membership :rule]))))
+  (let [base (let-vector-slice-first-membership-input "abc" (vec "a") 0 4 nil)
+        refresh (fn [input] (assoc-in input [:core :nodes] (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes]))))
+        derive (fn [input] (let [{:keys [core nodes bindings forms types]} (refresh input)
+                                call (second (:calls core)) edge (second (:call-edges core))]
+                            (invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) call edge nodes bindings types forms 65536])))]
+    (is (= ["STD3002" :vector-slice-bounds-required] ((juxt :rule :reason) (derive base))))
+    (is (= ["C7-VERIFY" :vector-slice-source-mismatch]
+           ((juxt :rule :reason) (derive (assoc-in base [:forms :let-first-call :parent-form-id] :slice-let)))))
+    (doseq [mutate [#(assoc-in % [:nodes :let-member-call :children] [:let-member-operator :let-first-call :let-member-set])
+                    #(assoc-in % [:nodes :let-member-call :evaluation :order] [])
+                    #(assoc-in % [:forms :let-member-call :scope-id] :sibling)
+                    #(assoc-in % [:nodes :let-member-set :evaluation :order] [])
+                    #(assoc-in % [:forms :let-member-set :parent-form-id] :slice-let)
+                    #(assoc-in % [:forms :let-member-character-0 :parent-form-id] :let-member-call)
+                    #(assoc-in % [:nodes :let-member-character-0 :binding-context] :sibling)
+                    #(assoc-in % [:forms :let-member-character-0 :value] (char 98))
+                    #(assoc-in % [:nodes :slice-let :evaluation :order 1 :core-node-id] :let-first-call)
+                    #(assoc-in % [:nodes :let-member-call :evaluation :region] :match-guard)
+                    #(assoc-in % [:bindings :let-member-binding :name] 'get)]]
+      (is (= ["C7-VERIFY" :vector-slice-source-mismatch] ((juxt :rule :reason) (derive (mutate base)))))))
+  (let [{:keys [core nodes bindings forms types call edge]}
+        (let-vector-slice-first-membership-established (let-vector-slice-first-membership-input "a" (vec "a") 0 1 nil))
+        bad (assoc-in types [:let-member-set :element-types] [:gravity.type/string])
+        result (invoke-c7 'sh08-ksm-derive [core (nodes :let-member-call) call edge nodes bindings bad forms 65536])]
+    (is (= :rejected (:status result)))
+    (is (= "C7-TYPE-MISMATCH" (:rule result)))))
+
+(deftest sh08-let-vector-slice-first-membership-work-development-kernel
+  (let [members (mapv char (range 1024))
+        {:keys [core nodes bindings forms types slice membership]}
+        (let-vector-slice-first-membership-established (let-vector-slice-first-membership-input "a" members 0 1 nil))
+        call (second (:calls core)) edge (second (:call-edges core))
+        check #(invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings %1 %2])
+        measured (check types 65536)]
+    (is (= :accepted (:status slice) (:status membership) (:status measured)))
+    (is (= 1041 (count (get-in slice [:descriptor :bounds-proof :source-forms]))))
+    (is (= measured (check types (:work-count measured))))
+    (is (= :vector-slice-work-limit (:reason (check types (dec (:work-count measured))))))
+    (is (= :rejected (:status (check (assoc-in types [:slice-operator :bounds-proof :receiver :body-consumer :kind] :direct-vector-first) 65536)))))
+  (let [{:keys [core nodes bindings forms types]}
+        (let-vector-slice-first-membership-input (vec (range 1024)) (mapv char (range 1024)) 0 1 nil)
+        result (invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms 65536])]
+    (is (= :rejected (:status result)))
+    (is (= ["C7-GENERIC" :vector-slice-work-limit] ((juxt :rule :reason) result)))))
+
+
+(deftest sh08-let-vector-slice-first-membership-duplicate-source-development-kernel
+  ;; L1 and C2 reject duplicate decidable Set literals; conversion is separate.
+  (let [{:keys [core nodes bindings forms types]} (let-vector-slice-first-membership-input "0" (vec "00") 0 1 nil)
+        result (invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) (second (:calls core)) (second (:call-edges core))
+                                          nodes bindings types forms 65536])]
+    (is (= :rejected (:status result)))
+    (is (= ["C7-VERIFY" :vector-slice-source-mismatch] ((juxt :rule :reason) result)))))
+
+
 (defn- let-vector-slice-equality-input [value expected positions]
   ;; One fixed consumer over existing normalized owners, not source admission.
   (let [inner (let-vector-slice-input (if (nil? positions) value
