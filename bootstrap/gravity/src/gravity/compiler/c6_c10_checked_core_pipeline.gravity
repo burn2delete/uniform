@@ -2030,43 +2030,39 @@
        (c6c10-parameter-id? (get row :projected-form-id))
        (c6c10-parameter-id? (get row :projected-syntax-id))]) false))
 
-(defn c6c10-parameter-declaration-valid? [envelope plan function-form]
-  (let [declaration (get envelope :resolved-parameter)
-        forms (get envelope :form-tree)
+(defn c6c10-parameter-entry-valid? [envelope plan function-form declaration entry index arity]
+  (let [forms (get envelope :form-tree)
         parameters (c6c10-form-by-id forms (get (get function-form :children) 2))
-        ids (get parameters :children) rows (get declaration :coordinates)]
-    (if (c6c10-exact-map-keys? declaration
-          #{:kind :source-content-hash :sh06-artifact-id :sh06-semantic-projection-id
-            :projection-binding :root-syntax-id :function-syntax-id :function-scope-id :parameter-index
-            :coordinates :parameter-binding :type-binding :type-resolution})
+        ids (get parameters :children) rows (get entry :coordinates) params (get plan :params)]
+    (if (vector? params)
+    (if (= arity (count params))
       (if (vector? rows)
         (if (= (count rows) 4)
           (if (vector? ids)
-            (if (= (count ids) 3)
-              (let [name-form (c6c10-form-by-id forms (get ids 0))
-                    marker (c6c10-form-by-id forms (get ids 1))
-                    type-form (c6c10-form-by-id forms (get ids 2))
-                    binding (get declaration :parameter-binding)
+            (if (= (count ids) (* 3 arity))
+              (let [offset (* 3 index) name-form (c6c10-form-by-id forms (get ids offset))
+                    marker (c6c10-form-by-id forms (get ids (+ offset 1)))
+                    type-form (c6c10-form-by-id forms (get ids (+ offset 2)))
+                    binding (get entry :parameter-binding)
                     type-binding (get declaration :type-binding)
-                    reference (get declaration :type-resolution)]
+                    reference (get entry :type-resolution)]
                 (if (c6c10-parameter-binding-shape? binding)
                   (if (c6c10-parameter-binding-shape? type-binding)
                     (if (c6c10-exact-map-keys? reference
                           #{:reference-syntax-id :symbol :position :binding-id
                             :resolution-order :source-span :upstream-binding-id})
                       (c6c10-parameter-checks?
-                        [(= (get declaration :kind) :gravity/c6-c10-resolved-bool-parameter-v1)
-                         (= (get declaration :source-content-hash) (get envelope :source-content-hash))
+                        [(= (get declaration :source-content-hash) (get envelope :source-content-hash))
                          (c6c10-parameter-id? (get declaration :sh06-artifact-id))
                          (c6c10-parameter-id? (get declaration :sh06-semantic-projection-id))
                          (c6c10-parameter-id? (get declaration :projection-binding))
                          (c6c10-parameter-id? (get declaration :root-syntax-id))
                          (c6c10-parameter-id? (get declaration :function-syntax-id))
                          (c6c10-parameter-id? (get declaration :function-scope-id))
-                         (= (get declaration :parameter-index) 0)
+                         (= (get entry :parameter-index) index)
                          (= (get plan :name) 'main)
                          (= (get plan :definition-form) :def-fn)
-                         (= (get plan :arity) 1) (= (get plan :params) [(get name-form :value)])
+                         (= (get plan :arity) arity) (= (get params index) (get name-form :value))
                          (= (get plan :body-form-count) (+ (count (get function-form :children)) -3))
                          (= (count (get plan :instructions)) (get plan :body-form-count))
                          (= (count (get plan :body)) (get plan :body-form-count))
@@ -2093,7 +2089,7 @@
                          (= (get binding :effects) []) (= (get binding :capabilities) [])
                          (= (get binding :safety) :safe)
                          (= (get binding :scope-id) (get declaration :function-scope-id))
-                         (= (get binding :semantic-span) {:scope-ordinal 1 :binding-ordinal 0})
+                         (= (get binding :semantic-span) {:scope-ordinal 1 :binding-ordinal index})
                          (= [(get type-binding :binding-class) (get type-binding :kind)
                              (get type-binding :namespace) (get type-binding :name)]
                             [:core :type 'gravity.core 'Bool])
@@ -2114,32 +2110,82 @@
                          (= (get reference :binding-id) (get type-binding :binding-id))
                          (= (get reference :upstream-binding-id) (get type-binding :upstream-binding-id))])
                       false) false) false))
-              false) false) false) false) false)))
+              false) false) false) false) false) false)))
+
+(defn c6c10-parameter-declaration-valid? [envelope plan function-form]
+  (let [declaration (get envelope :resolved-parameter)]
+    (if (= :gravity/c6-c10-resolved-two-bool-parameters-v1 (get declaration :kind))
+      (if (c6c10-exact-map-keys? declaration
+            #{:kind :source-content-hash :sh06-artifact-id :sh06-semantic-projection-id
+              :projection-binding :root-syntax-id :function-syntax-id :function-scope-id :type-binding :parameters})
+        (let [rows (get declaration :parameters)]
+          (if (vector? rows)
+            (if (= 2 (count rows))
+              (if (loop [index 0]
+                    (if (= index 2) true
+                      (let [entry (get rows index)]
+                        (if (c6c10-exact-map-keys? entry #{:parameter-index :coordinates :parameter-binding :type-resolution})
+                          (if (integer? (get entry :parameter-index))
+                            (if (= index (get entry :parameter-index))
+                              (if (symbol? (get (get entry :parameter-binding) :name))
+                                (if (c6c10-parameter-id? (get (get entry :parameter-binding) :scope-id))
+                                  (if (c6c10-parameter-entry-valid? envelope plan function-form declaration entry index 2)
+                                    (recur (+ index 1)) false) false) false) false) false) false))))
+                (let [a (get rows 0) b (get rows 1)
+                      names [(get (get a :parameter-binding) :name) (get (get b :parameter-binding) :name)]
+                      binding-ids [(get (get a :parameter-binding) :binding-id) (get (get b :parameter-binding) :binding-id)]
+                      coordinates (conj (conj (conj (subvec (get a :coordinates) 1 4)
+                                        (get (get b :coordinates) 1)) (get (get b :coordinates) 2)) (get (get b :coordinates) 3))]
+                  (c6c10-parameter-checks?
+                    [(symbol? (get names 0)) (symbol? (get names 1)) (= 2 (count (set names)))
+                     (= 2 (count (set binding-ids)))
+                     (= (get (get a :coordinates) 0) (get (get b :coordinates) 0))
+                     (= 6 (count (set (loop [left coordinates result []]
+                                       (if (= 0 (count left)) result
+                                         (recur (rest left) (conj result (get (first left) :c2-form-id))))))))
+                     (= 6 (count (set (loop [left coordinates result []]
+                                       (if (= 0 (count left)) result
+                                         (recur (rest left) (conj result (get (first left) :projected-syntax-id))))))))])) false)
+              false) false)) false)
+      (if (c6c10-exact-map-keys? declaration
+            #{:kind :source-content-hash :sh06-artifact-id :sh06-semantic-projection-id
+              :projection-binding :root-syntax-id :function-syntax-id :function-scope-id :parameter-index
+              :coordinates :parameter-binding :type-binding :type-resolution})
+        (if (= :gravity/c6-c10-resolved-bool-parameter-v1 (get declaration :kind))
+          (c6c10-parameter-entry-valid? envelope plan function-form declaration declaration 0 1) false) false))))
+
+(defn c6c10-parameter-entries [declaration]
+  (if (= :gravity/c6-c10-resolved-two-bool-parameters-v1 (get declaration :kind))
+    (get declaration :parameters) [declaration]))
 
 (defn c6c10-build-parameter-function-product [state envelope plan form]
   (if (c6c10-parameter-declaration-valid? envelope plan form)
-    (let [declaration (get envelope :resolved-parameter)
-          row (get (get declaration :coordinates) 1)
-          name-form (c6c10-form-by-id (get envelope :form-tree) (get row :c2-form-id))
-          name (get name-form :value) path [:functions 'main :parameters 0 :binder]
-          attributes {:name name :parameter-index 0 :source-form-id (get name-form :form-id)
-                      :resolved-binding-id (get (get declaration :parameter-binding) :binding-id)
-                      :type-binding-id (get (get declaration :type-binding) :binding-id)}
-          binder (c6c10-add-node (c6c10-empty-product state) envelope name-form path
-                   :binding :parameter false 0 [] attributes :gravity/bool :function-parameter
-                   {:storage :persistent-parameter-value} nil nil)
-          binder-id (get binder :result-node-id)
-          binder (assoc binder :binding-records
-                   [(assoc (assoc attributes :binding-node-id binder-id) :path path)])
+    (let [declaration (get envelope :resolved-parameter) entries (c6c10-parameter-entries declaration)
+          parameters (loop [index 0 accumulated (c6c10-empty-product state) env {} names [] types []]
+                       (if (= index (count entries)) {:product accumulated :environment env :names names :types types}
+                         (let [entry (get entries index) row (get (get entry :coordinates) 1)
+                               name-form (c6c10-form-by-id (get envelope :form-tree) (get row :c2-form-id))
+                               name (get name-form :value) path [:functions 'main :parameters index :binder]
+                               attributes {:name name :parameter-index index :source-form-id (get name-form :form-id)
+                                 :resolved-binding-id (get (get entry :parameter-binding) :binding-id)
+                                 :type-binding-id (get (get declaration :type-binding) :binding-id)}
+                               binder (c6c10-add-node (c6c10-empty-product (get accumulated :state)) envelope name-form path
+                                        :binding :parameter false 0 [] attributes :gravity/bool :function-parameter
+                                        {:storage :persistent-parameter-value} nil nil)
+                               id (get binder :result-node-id)
+                               binder (assoc binder :binding-records [(assoc (assoc attributes :binding-node-id id) :path path)])]
+                           (recur (+ index 1) (c6c10-merge-products accumulated binder)
+                             (assoc env name {:node-id id :type :gravity/bool}) (conj names name) (conj types :gravity/bool)))))
+          binder (get parameters :product)
           body (c6c10-map-sequence (get binder :state) envelope (get plan :instructions)
                  (rest (rest (rest (get form :children)))) [:functions 'main] :body
-                 {name {:node-id binder-id :type :gravity/bool}} 0 form :implicit-function-nil)]
+                 (get parameters :environment) 0 form :implicit-function-nil)]
       (if (= (get body :status) :rejected) body
         (let [result (c6c10-add-node (c6c10-merge-products binder body) envelope form
                        [:functions 'main] :function :function false 0 (get body :direct-root-node-ids)
-                       {:name 'main :params [name] :arity 1 :body-count (count (get plan :instructions))
+                       {:name 'main :params (get parameters :names) :arity (count entries) :body-count (count (get plan :instructions))
                         :visibility :public :entrypoint? true}
-                       {:params [:gravity/bool] :return (get body :type) :latent-effects #{}
+                       {:params (get parameters :types) :return (get body :type) :latent-effects #{}
                         :capabilities #{} :throws #{} :ownership-constraints #{:persistent-immutable-shareable}
                         :profile-constraints #{:hosted}}
                        :function-result {:storage :forwarded-persistent-value
@@ -2561,8 +2607,9 @@
          (c6c10-binding-locals-with-types bindings type-ids {})
          :functions
          {root-node-id
-          {:params (if (= (count (get (get function-node :type) :params)) 0) []
-                     [(get type-ids (get (first bindings) :binding-node-id))])
+          {:params (loop [index 0 result []]
+                     (if (= index (count (get (get function-node :type) :params))) result
+                       (recur (+ index 1) (conj result (get type-ids (get (get bindings index) :binding-node-id))))))
            :return (get type-ids return-node-id)
            :latent-effects #{}
            :capabilities #{}
@@ -2934,7 +2981,7 @@
       false)
     false))
 
-(defn c6c10-private-raw-parameter-plan-shape? [plan]
+(defn c6c10-private-raw-parameter-plan-shape? [plan arity]
   (if (c6c10-exact-map-keys? plan
         #{:kind :compiler-artifact-plan? :entrypoint :source :compiler :module
           :functions :instruction-summary :effect-summary :plan-id})
@@ -2956,11 +3003,12 @@
          (c6c10-exact-map-keys? function
            #{:name :instructions :params :definition-form :binding :body-form-count :arity :body})
          (vector? (get function :instructions)) (vector? (get function :params))
-         (= (get function :arity) 1) (= (get function :definition-form) :def-fn)])) false))
+         (= arity (get function :arity)) (= (get function :definition-form) :def-fn)])) false))
 
-(defn c6c10-private-plan-shape? [plan]
+(defn c6c10-private-plan-shape? [plan declaration]
   (if (= (get plan :kind) :gravity/stage2-compiler-artifact-plan)
-    (c6c10-private-raw-parameter-plan-shape? plan)
+    (c6c10-private-raw-parameter-plan-shape? plan
+      (if (= :gravity/c6-c10-resolved-two-bool-parameters-v1 (get declaration :kind)) 2 1))
     (c6c10-private-hosted-plan-shape? plan)))
 
 (defn c6c10-private-binding-pins-shape? [pins]
@@ -3614,7 +3662,7 @@
               false)
             false)
           plan-shape-valid?
-          (if (c6c10-private-plan-shape? plan)
+          (if (c6c10-private-plan-shape? plan (get input :resolved-parameter))
             (if (= (get plan :kind)
                    (if (contains? input :resolved-parameter)
                      :gravity/stage2-compiler-artifact-plan :gravity/stage2-hosted-core-compiled-plan))

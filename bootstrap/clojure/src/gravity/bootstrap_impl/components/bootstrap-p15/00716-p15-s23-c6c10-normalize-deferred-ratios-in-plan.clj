@@ -1,4 +1,25 @@
-
+(defn p15-s23-c6c10-resolved-parameter-row
+  [path parameters original projected source-rows bindings resolutions index]
+  (let [start (* 3 index) forms (subvec projected start (+ start 3))
+        source (subvec source-rows start (+ start 3)) [name-form marker type-form] forms
+        parameter (first (filter #(= (:syntax-id name-form) (:definition-syntax-id %)) bindings))
+        reference (first (filter #(= (:syntax-id type-form) (:reference-syntax-id %)) resolutions))
+        type (first (filter #(= (:binding-id reference) (:binding-id %)) bindings))]
+    (when-not (and (= [:symbol :keyword :symbol] (mapv :kind source))
+                  (= (mapv :value source) (mapv :value forms)) (= :- (:value marker))
+                  (= [:lexical :local (:value name-form) (:scope-id name-form)]
+                     ((juxt :binding-class :kind :name :scope-id) parameter))
+                  (= (:scope-id parameter) (:scope-id type-form))
+                  (= [:type (:value type-form) (:binding-id type)]
+                     ((juxt :position :symbol :binding-id) reference))
+                  (= [:core :type 'gravity.core 'Bool] ((juxt :binding-class :kind :namespace :name) type)))
+      (p15-s23-c6c10-host-fail! "C6-VERIFY" path :resolved-single-bool-parameter {}))
+    {:parameter-index index :parameter-binding parameter :type-binding type :type-resolution reference
+     :coordinates (mapv (fn [role c2 form]
+                          {:role role :c2-form-id (:form-id c2) :projected-form-id (:form-id form)
+                           :projected-syntax-id (:syntax-id form)})
+                        [:parameter-vector :parameter-name :annotation-marker :annotation-type]
+                        (into [original] source) (into [parameters] forms))}))
 
 (defn p15-s23-c6c10-normalize-deferred-ratios-in-plan
   [source-path literal-authentication raw-plan]
@@ -152,7 +173,7 @@
           (p15-s23-c6c10-project-front-end source-path raw-front-end)
           _ (validate-ns-syntax! source-path (:forms raw-front-end))
           raw-module (parse-module source-path (:forms raw-front-end))
-          parameter? (= 1 (get-in (stage0-function-table raw-module) ['main :arity]))
+          parameter? (contains? #{1 2} (get-in (stage0-function-table raw-module) ['main :arity]))
           resolved-parameter (when parameter?
                                (p15-s23-c6c10-resolved-parameter source-path source-text front-end))
           emitter-rule
