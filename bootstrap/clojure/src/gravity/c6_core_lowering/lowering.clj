@@ -189,8 +189,22 @@
     :else []))
 
 (defn c6-flatten-core [node]
-  (vec (cons node
-             (mapcat #(context/invoke-op :c6-flatten-core c6-flatten-core %)
-                     (context/invoke-op :c6-core-child-nodes
-                                        c6-core-child-nodes
-                                        (:children node))))))
+  (if (and (identical? c6-flatten-core
+                       (context/op-fn :c6-flatten-core c6-flatten-core))
+           (identical? c6-core-child-nodes
+                       (context/op-fn :c6-core-child-nodes c6-core-child-nodes)))
+    ;; One root-local result, retaining original nested nodes in preorder.
+    (loop [pending (list node) result (transient [])]
+      (if (seq pending)
+        (let [current (first pending)
+              children (c6-core-child-nodes (:children current))]
+          (recur (reduce conj (rest pending) (reverse children))
+                 (conj! result current)))
+        (persistent! result)))
+    ;; A custom operation can replace recursive results or child selection.
+    ;; Preserve that original dispatch and its returned vectors exactly.
+    (vec (cons node
+               (mapcat #(context/invoke-op :c6-flatten-core c6-flatten-core %)
+                       (context/invoke-op :c6-core-child-nodes
+                                          c6-core-child-nodes
+                                          (:children node)))))))

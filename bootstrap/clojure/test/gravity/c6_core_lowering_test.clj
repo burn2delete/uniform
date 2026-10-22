@@ -119,6 +119,32 @@
             (is (= expected actual))
             (is (every? true? (map identical? expected actual)))
             (is (= events actual-events))))))
+    ;; Rebinding a facade Var is not the captured default function identity.
+    (let [original-flatten c6/c6-flatten-core
+          original-children c6/c6-core-child-nodes]
+      (doseq [operation [:c6-flatten-core :c6-core-child-nodes]]
+        (let [events (atom [])
+              callback (if (= operation :c6-flatten-core)
+                         (fn [node]
+                           (swap! events conj [:flatten (:node-id node)])
+                           (if (= "b" (:node-id node)) [replacement]
+                               (original-flatten node)))
+                         (fn [value]
+                           (swap! events conj [:children value])
+                           (reverse (original-children value))))
+              expected (c6/with-operations {operation callback}
+                         #(original-flatten root))
+              expected-events @events
+              _ (reset! events [])
+              actual (if (= operation :c6-flatten-core)
+                       (with-redefs [c6/c6-flatten-core callback]
+                         (original-flatten root))
+                       (with-redefs [c6/c6-core-child-nodes callback]
+                         (original-flatten root)))]
+          (is (= expected actual))
+          (is (every? true? (map identical? expected actual)))
+          (is (seq expected-events))
+          (is (= expected-events @events)))))
     (let [failure (ex-info "original custom operation failure" {:id "C6-ORIGIN" :sentinel 7})]
       (doseq [operation [:c6-flatten-core :c6-core-child-nodes]
               algorithm [lowering/c6-flatten-core c6/c6-flatten-core]]

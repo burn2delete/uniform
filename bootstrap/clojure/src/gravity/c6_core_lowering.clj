@@ -103,11 +103,25 @@
    :c6-lowering-validate! c6-lowering-validate!})
 
 (def ^:private ^:dynamic *facade-call?* false)
+(declare ^:private default-flatten-functions)
+(defn- default-flatten-operations [operations]
+  ;; Normalize only the captured original forwarding pair, never redefined
+  ;; facade Vars or partial overrides. Custom callbacks keep their recursion.
+  (if (and (identical? (first default-flatten-functions)
+                       (:c6-flatten-core operations))
+           (identical? (second default-flatten-functions)
+                       (:c6-core-child-nodes operations)))
+    (assoc operations
+           :c6-flatten-core lowering/c6-flatten-core
+           :c6-core-child-nodes lowering/c6-core-child-nodes)
+    operations))
+
 (defn- leaf-call [f & args]
   (if *facade-call?*
     (apply f args)
     (binding [*facade-call?* true]
-      (context/with-operations (merge (facade-operations) *operations*)
+      (context/with-operations (default-flatten-operations
+                               (merge (facade-operations) *operations*))
         #(apply f args)))))
 
 (defn with-operations [operations thunk]
@@ -160,6 +174,9 @@
 (defn c6-lowering-artifact [source-path module c5-artifact expanded-stream]
   (leaf-call artifact/c6-lowering-artifact
              source-path module c5-artifact expanded-stream))
+
+(def ^:private default-flatten-functions
+  [c6-flatten-core c6-core-child-nodes])
 
 (def public-api
   {'public-api {:kind :contract}
