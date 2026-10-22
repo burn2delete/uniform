@@ -57,6 +57,21 @@
        (catch clojure.lang.ExceptionInfo error
          {:consumer-exception (select-keys (ex-data error) [:id :function])})))
 
+(deftest sh13-reads-the-else-parameter-only-when-selected
+  ;; c6c10-map-if's exact-child-count? uses an established Bool condition,
+  ;; true then value, and a second independent Bool else expression.
+  (let [path (str (.resolve @(existing 'root)
+                    "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity"))
+        temporary (java.io.File/createTempFile "gravity-sh13-two-bool-else-" ".gravity")]
+    (try
+      (spit temporary (str/replace (slurp path) "(if (if left right false) 11 22)" "(if left true right)"))
+      (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))]
+        (is (= :accepted (:status raw)))
+        (is (= :passed (:status upstream)))
+        (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))
+            (pr-str (:diagnostics mir))))
+      (finally (.delete temporary)))))
+
 (deftest sh13-returns-the-direct-two-bool-condition-result
   ;; C6's actual dependency/lexical-fact conjunction motivates this direct
   ;; Bool value, not execution of that complete compiler helper.
