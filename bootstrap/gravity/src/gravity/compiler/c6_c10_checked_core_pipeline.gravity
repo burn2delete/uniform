@@ -1,6 +1,6 @@
 ; Gravity-owned bounded C6-C10 checked-core construction pipeline.
-; The resolved I64 parameter variant is identity-only; :gravity/i64 denotes
-; its declared signed-64 type, not generic Integer or a runtime range proof.
+; Resolved I64 variants are one-parameter identity or two-parameter strict
+; order. :gravity/i64 is declared signed-64, not a runtime range proof.
 (ns gravity.compiler.c6-c10-checked-core-pipeline
   (:profile :meta)
   (:target :jvm)
@@ -1763,7 +1763,9 @@
                     right-type (get right :type)]
                 (if (if (= left-type :gravity/integer)
                       (= right-type :gravity/integer)
-                      false)
+                      (if (c6c10-two-i64-parameters? (get envelope :resolved-parameter))
+                        (if (= source-operation :integer-lt)
+                          (if (= left-type :gravity/i64) (= right-type :gravity/i64) false) false) false))
                   (c6c10-add-node
                    arguments-product envelope form path
                    :comparison source-operation true depth operand-ids
@@ -1772,7 +1774,7 @@
                      :arity 2
                      :evaluation-order :left-to-right
                      :operand-types
-                     [:gravity/integer :gravity/integer]
+                     [left-type right-type]
                      :result-type :gravity/bool
                      :numeric-semantics
                      (if equality?
@@ -1795,7 +1797,7 @@
                     (if equality?
                       :binary-integer-equality-operands
                       :binary-integer-order-comparison-operands)
-                    :expected-type :gravity/integer
+                    :expected-type (if (c6c10-two-i64-parameters? (get envelope :resolved-parameter)) :gravity/i64 :gravity/integer)
                     :actual-type
                     (if (= left-type :gravity/integer)
                       right-type
@@ -2036,8 +2038,12 @@
        (c6c10-parameter-id? (get row :projected-form-id))
        (c6c10-parameter-id? (get row :projected-syntax-id))]) false))
 
+(defn c6c10-two-i64-parameters? [declaration]
+  (= :gravity/c6-c10-resolved-two-i64-parameters-v1 (get declaration :kind)))
+
 (defn c6c10-i64-parameter? [declaration]
-  (= :gravity/c6-c10-resolved-i64-parameter-v1 (get declaration :kind)))
+  (if (c6c10-two-i64-parameters? declaration) true
+    (= :gravity/c6-c10-resolved-i64-parameter-v1 (get declaration :kind))))
 
 (defn c6c10-parameter-entry-valid? [envelope plan function-form declaration entry index arity]
   (let [forms (get envelope :form-tree)
@@ -2124,8 +2130,9 @@
               false) false) false) false) false) false)))
 
 (defn c6c10-parameter-arity [declaration]
-  (if (= :gravity/c6-c10-resolved-three-bool-parameters-v1 (get declaration :kind)) 3
-    (if (= :gravity/c6-c10-resolved-two-bool-parameters-v1 (get declaration :kind)) 2 1)))
+  (if (c6c10-two-i64-parameters? declaration) 2
+    (if (= :gravity/c6-c10-resolved-three-bool-parameters-v1 (get declaration :kind)) 3
+      (if (= :gravity/c6-c10-resolved-two-bool-parameters-v1 (get declaration :kind)) 2 1))))
 
 (defn c6c10-parameter-declaration-valid? [envelope plan function-form]
   (let [declaration (get envelope :resolved-parameter) arity (c6c10-parameter-arity declaration)]
@@ -2190,10 +2197,41 @@
                  (= :local (get (get instructions 0) :op)) (= name (get (get instructions 0) :name))
                  (= name (first source-body))]) false) false) false) false)) false))
 
+(defn c6c10-i64-order-body? [envelope plan form]
+  (if (= 4 (count (get form :children)))
+    (let [forms (get envelope :form-tree) body (c6c10-form-by-id forms (get (get form :children) 3))
+          children (get body :children) entries (get (get envelope :resolved-parameter) :parameters)
+          left (get (get (get entries 0) :parameter-binding) :name)
+          right (get (get (get entries 1) :parameter-binding) :name)
+          instructions (get plan :instructions) source-body (get plan :body)]
+      (if (if (vector? instructions) (= 1 (count instructions)) false)
+        (if (if (vector? source-body) true (list? source-body))
+          (if (= 1 (count source-body))
+            (let [instruction (get instructions 0) args (get instruction :args) call (first source-body)]
+              (if (if (vector? args) (= 2 (count args)) false)
+                (if (if (vector? children) (= 3 (count children)) false)
+                  (if (if (list? call) (= 3 (count call)) false)
+                    (c6c10-parameter-checks?
+                      [(if (= '< left) false (if (= '< right) false true))
+                       (c6c10-plain-form? body :list)
+                       (c6c10-plain-form? (c6c10-form-by-id forms (get children 0)) :symbol)
+                       (= '< (get (c6c10-form-by-id forms (get children 0)) :value))
+                       (c6c10-plain-form? (c6c10-form-by-id forms (get children 1)) :symbol)
+                       (c6c10-plain-form? (c6c10-form-by-id forms (get children 2)) :symbol)
+                       (= [left right] [(get (c6c10-form-by-id forms (get children 1)) :value)
+                                        (get (c6c10-form-by-id forms (get children 2)) :value)])
+                       (= :builtin-call (get instruction :op)) (= '< (get instruction :function))
+                       (= [:local :local] [(get (get args 0) :op) (get (get args 1) :op)])
+                       (= [left right] [(get (get args 0) :name) (get (get args 1) :name)])
+                       (= '< (first call)) (= left (second call)) (= right (first (rest (rest call))))])
+                    false) false) false)) false) false) false)) false))
+
 (defn c6c10-build-parameter-function-product [state envelope plan form]
   (if (c6c10-parameter-declaration-valid? envelope plan form)
-    (if (if (c6c10-i64-parameter? (get envelope :resolved-parameter))
-          (c6c10-i64-identity-body? envelope plan form) true)
+    (if (if (c6c10-two-i64-parameters? (get envelope :resolved-parameter))
+          (c6c10-i64-order-body? envelope plan form)
+          (if (c6c10-i64-parameter? (get envelope :resolved-parameter))
+            (c6c10-i64-identity-body? envelope plan form) true))
     (let [declaration (get envelope :resolved-parameter) entries (c6c10-parameter-entries declaration)
           parameter-type (if (c6c10-i64-parameter? declaration) :gravity/i64 :gravity/bool)
           parameters (loop [index 0 accumulated (c6c10-empty-product state) env {} names [] types []]
@@ -2228,7 +2266,10 @@
                                          :result-disposition :shared-persistent-value-return} nil nil)]
           (assoc (assoc result :root-node-id (get result :result-node-id)) :entrypoint 'main))))
       (c6c10-form-rejection state envelope form :C6-LOWERING-GAP :lower-to-core :diagnostic/c6-lowering-gap
-        {:missing-fact :bounded-i64-parameter-identity} :use-one-original-i64-parameter-local))
+        {:missing-fact (if (c6c10-two-i64-parameters? (get envelope :resolved-parameter))
+                         :bounded-two-i64-strict-order :bounded-i64-parameter-identity)}
+        (if (c6c10-two-i64-parameters? (get envelope :resolved-parameter))
+          :use-the-original-closed-two-i64-order-body :use-one-original-i64-parameter-local)))
     (c6c10-form-rejection state envelope form :C6-VERIFY :lower-to-core :diagnostic/c6-verify
       {:missing-fact :resolved-single-bool-parameter} :restore-original-resolved-parameter)))
 

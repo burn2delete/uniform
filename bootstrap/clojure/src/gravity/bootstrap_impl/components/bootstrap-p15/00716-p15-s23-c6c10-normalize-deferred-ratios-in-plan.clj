@@ -14,7 +14,9 @@
                      ((juxt :position :symbol :binding-id) reference))
                   (= [:core :type 'gravity.core] ((juxt :binding-class :kind :namespace) type))
                   (or (= 'Bool (:name type))
-                      (and (= 3 (count projected)) (= index 0) (= 'I64 (:name type)))))
+                      (and (contains? #{3 6} (count projected)) (= 'I64 (:name type))
+                           (every? #(contains? '#{I64 gravity.core/I64} (:value (get projected %)))
+                                   (if (= 3 (count projected)) [2] [2 5])))))
       (p15-s23-c6c10-host-fail! "C6-VERIFY" path :resolved-single-bool-parameter {}))
     {:parameter-index index :parameter-binding parameter :type-binding type :type-resolution reference
      :coordinates (mapv (fn [role c2 form]
