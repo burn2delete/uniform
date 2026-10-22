@@ -186,7 +186,8 @@
        source-path {:cause-message (.getMessage error)}))))
 
 (defn- sh03-reader-read-selected-source-bytes! [request-source selected-path]
-  (when-not (string? selected-path)
+  (when-not (and (string? selected-path)
+                 (<= (.length ^String selected-path) sh03-reader-input-maximum-identity-code-units))
     (sh03-reader-boundary-fail! request-source :selected-current-sh03-reader-source
                                nil {:required-source sh03-reader-source-relative-path}))
   (try

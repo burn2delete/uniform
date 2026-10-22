@@ -444,7 +444,8 @@
     (.equals opaque (Object.))
     (is (= {:hash 1 :equal 1} @callbacks))
     (reset! callbacks {:hash 0 :equal 0})
-    (doseq [selected [opaque nil false 17 [] {} source-path (str reader-path \u0000)]]
+    (doseq [selected [opaque nil false 17 [] {} source-path (str reader-path \u0000)
+                     (apply str (repeat 1025 "x"))]]
       (is (= "C2-HASH" (:id (thrown-data #(bootstrap/sh03-reader-current-binding!
                                           source-path selected))))))
     (is (= {:hash 0 :equal 0} @callbacks))
