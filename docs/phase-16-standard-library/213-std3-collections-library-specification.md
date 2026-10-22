@@ -289,6 +289,39 @@ bindings do not grant representation or profile support. A compiler must state
 its supported operand and member-type subset and account for construction work
 without inventing facts for an unvalidated input.
 
+## Persistent Map Keys As A List
+
+Unary `(keys items)` returns a persistent List containing each stored Map key
+exactly once. An empty Map returns an empty List. Default Map enumeration order
+is unspecified; ordered or sorted provider contracts retain their stronger
+guarantees. The result establishes no positional order, key identity, presence,
+cardinality, nonempty or flow-refinement facts.
+
+Evaluate the operand once in non-tail position before enumeration. Preserve
+operand effects, capabilities and transfers. A non-completing operand prevents
+enumeration and construction; its result is Never, with no direct allocation
+from `keys`. Stored values are inert: enumeration neither evaluates nor hashes
+them as keys. The original Map is unchanged.
+
+The initial checked subset accepts complete finite literal Map types whose
+physical even `member-types` Vector contains at most 1024 slots (512 pairs),
+with every key-slot type exactly Keyword and every value type fully validated.
+The normal result type is exactly the homogeneous Keyword List, including for
+an empty Map. Bare/general Maps and other key families reject in this subset.
+Depth 128 and logical work 65536 remain unchanged. Reserve all profile, target,
+type, key-domain, census and construction work before the corresponding walk
+or construction; ignored values and malformed tails remain subject to complete
+type validation.
+
+Normal completion permits `:memory/allocate`, including for an empty result.
+The development provider checks the actual Map and its width before temporary
+enumeration, validates every physical Keyword key before fresh output List
+construction, and accounts cumulatively for temporary enumeration, indexed
+snapshot and output copying. The returned List owns its copied spine, shares
+stored keys shallowly, has persistent value lifetimes and borrows no Map backing
+storage. This establishes no allocation bound for other providers. It does not
+extend the Vector-only Set conversion contract to Lists.
+
 ## Map Lookup With An Explicit Default
 
 For maps, `(get map key default)` returns the associated value when the key is
@@ -435,6 +468,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Persistent Vector emptiness covers empty and nonempty values, including stored false/nil and inert payloads, preserves ordinary evaluation, effects, transfers and the original value, and does not construct a collection or invent extent, member or flow-typing facts.
 - Proven-nonempty Vector first covers singleton and ordered multi-element values, stored false/nil, ordinary operand evaluation and transfers, inert payloads and original-value preservation without selecting an empty-Vector result policy.
 - Persistent Vector rest returns an ordered persistent List suffix, including an empty List for empty and singleton inputs, preserves false/nil, inert payloads, operand evaluation, effects, transfers and the original Vector, and declares possible allocation, List-spine copying, shallow stored-value sharing and persistent lifetimes without borrowing Vector storage.
+- Map keys returns a persistent homogeneous Keyword List for the initial finite Keyword-key Map subset, includes every stored key once, permits allocation even when empty, preserves stronger provider order contracts without default order or cardinality facts, validates all input types and physical keys before output construction, and preserves inert values, operand effects, capabilities and transfers.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.
 - Binary persistent Map removal covers present, absent and empty Maps, stored false/nil, original-value preservation, eager operand evaluation and transfers, inert payloads, and explicit allocation/storage policy.
