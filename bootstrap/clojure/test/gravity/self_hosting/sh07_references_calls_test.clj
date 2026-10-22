@@ -833,7 +833,9 @@
         (is (= (count (:argument-node-ids call)) (get-in node [:attributes :argument-count])))))
     (is (= (vec (mapcat (fn [n] [(keyword (str "k" n)) n]) (range 1 11)))
            (mapv #(get-in index [% :attributes :value]) (rest (:argument-node-ids assoc-call)))))
-    (is (= :map (get-in index [(first (:argument-node-ids assoc-call)) :core-form])))
+    (is (= [:collection-literal :map]
+           (let [receiver (get index (first (:argument-node-ids assoc-call)))]
+             [(:core-form receiver) (get-in receiver [:attributes :literal-kind])]))))
     (is (= :if (:core-form default-node)))
     (is (= [true :fallback :unused]
            (mapv #(get-in index [% :attributes :value]) (:children default-node))))
