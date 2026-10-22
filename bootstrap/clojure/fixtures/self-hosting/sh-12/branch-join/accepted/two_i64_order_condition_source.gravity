@@ -1,0 +1,7 @@
+(ns gravity.sh12.two-i64-order-condition-source
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [binding-index :- I64 consumer-index :- I64]
+  (if (< binding-index consumer-index) true false))

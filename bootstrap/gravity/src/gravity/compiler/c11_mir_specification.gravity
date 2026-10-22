@@ -3241,8 +3241,44 @@
                  (if (= index 6) result
                    (recur (+ index 1) (conj result (get (get nodes index) :source-operation)))))) false) false) false) false)))
 
-(defn sh12-c6p-i64-parameters? [core]
+(defn sh12-c6p-i64-linear? [core]
   (if (sh12-c6p-i64-identity? core) true (sh12-c6p-i64-order? core)))
+
+(defn sh12-c6p-i64-order-condition? [core]
+  ; Candidate only: the old ten-row Bool let is a different original family.
+  (let [kind (get (get core :resolved-parameter) :kind) nodes (get core :core-nodes)]
+    (if (keyword? kind)
+      (if (= :gravity/c6-c10-resolved-two-i64-parameters-v1 kind)
+        (if (vector? nodes)
+          (if (= 10 (count nodes))
+            (= [:parameter :parameter :local :local :integer-lt :truthy :literal :literal :if :function]
+               (loop [index 0 result []]
+                 (if (= index 10) result
+                   (recur (+ index 1) (conj result (get (get nodes index) :source-operation)))))) false) false) false) false)))
+
+(defn sh12-c6p-i64-order-family? [core]
+  (if (sh12-c6p-i64-order? core) true (sh12-c6p-i64-order-condition? core)))
+
+(defn sh12-c6p-i64-depth-choice? [core]
+  ; Candidate only; original right/left binding and source joins follow.
+  (let [kind (get (get core :resolved-parameter) :kind) nodes (get core :core-nodes)]
+    (if (keyword? kind)
+      (if (= :gravity/c6-c10-resolved-two-i64-parameters-v1 kind)
+        (if (vector? nodes)
+          (if (= 10 (count nodes))
+            (= [:parameter :parameter :local :local :integer-lt :truthy :local :local :if :function]
+               (loop [index 0 result []]
+                 (if (= index 10) result
+                   (recur (+ index 1) (conj result (get (get nodes index) :source-operation)))))) false) false) false) false)))
+
+(defn sh12-c6p-i64-ordered-pair? [core]
+  (if (sh12-c6p-i64-order-family? core) true (sh12-c6p-i64-depth-choice? core)))
+
+(defn sh12-c6p-i64-conditional? [core]
+  (if (sh12-c6p-i64-order-condition? core) true (sh12-c6p-i64-depth-choice? core)))
+
+(defn sh12-c6p-i64-parameters? [core]
+  (if (sh12-c6p-i64-linear? core) true (sh12-c6p-i64-conditional? core)))
 
 (defn sh12-c6p-two-parameters? [core]
   ; Candidate only. The old twelve-row two-let family must not be selected
@@ -3273,11 +3309,11 @@
 
 (defn sh12-c6p-parameter-count [core]
   (if (sh12-c6p-three-parameters? core) 3
-    (if (if (sh12-c6p-i64-order? core) true
+    (if (if (sh12-c6p-i64-ordered-pair? core) true
           (if (sh12-c6p-two-parameters? core) true (sh12-c6p-two-direct-parameters? core))) 2 1)))
 
 (defn sh12-c6p-parameter-types [core]
-  (if (sh12-c6p-i64-order? core) [:gravity/i64 :gravity/i64]
+  (if (sh12-c6p-i64-ordered-pair? core) [:gravity/i64 :gravity/i64]
   (if (sh12-c6p-i64-identity? core) [:gravity/i64]
     (if (= 3 (sh12-c6p-parameter-count core)) [:gravity/bool :gravity/bool :gravity/bool]
       (if (= 2 (sh12-c6p-parameter-count core)) [:gravity/bool :gravity/bool] [:gravity/bool])))))
@@ -3430,7 +3466,7 @@
 (defn sh12-c6p-let-count [core]
   (let [nodes (get core :core-nodes)]
     (if (vector? nodes)
-      (if (sh12-c6p-two-parameters? core) 0
+      (if (if (sh12-c6p-two-parameters? core) true (sh12-c6p-i64-conditional? core)) 0
       (if (sh12-c6p-later-body-local? core) 1
         (if (contains? #{10 14} (count nodes)) 1 (if (= 12 (count nodes)) 2 0)))) 0)))
 
@@ -3438,6 +3474,7 @@
   (> (sh12-c6p-let-count core) 0))
 
 (defn sh12-c6p-index [core role]
+ (if (sh12-c6p-i64-conditional? core) (get [0 2 5 6 7 8 9] role)
  (if (sh12-c6p-i64-order? core) (get [0 2 nil nil nil 4 5] role)
  (if (sh12-c6p-i64-identity? core) (get [0 1 nil nil nil 1 2] role)
  (if (sh12-c6p-two-direct-parameters? core) (get [0 2 3 4 5 6 7] role)
@@ -3451,12 +3488,14 @@
         (get (if (= :then (sh12-c6p-nested-side core)) [0 1 2 7 8 9 10] [0 1 2 3 8 9 10]) role)))
     (if (= 2 (sh12-c6p-let-count core)) (get [0 5 6 7 8 9 11] role)
       (if (sh12-c6p-let-layout? core)
-        (get (if (sh12-c6p-later-body-local? core) [0 3 4 5 6 7 10] [0 3 4 5 6 7 9]) role) role)))))))
+        (get (if (sh12-c6p-later-body-local? core) [0 3 4 5 6 7 10] [0 3 4 5 6 7 9]) role) role))))))))
 
 (defn sh12-c6p-scope-index [core]
   (if (sh12-c6p-later-body-local? core) 9 (+ 1 (sh12-c6p-index core 5))))
 
 (defn sh12-c6p-role [core index]
+ (if (sh12-c6p-i64-depth-choice? core) (get [0 0 1 1 10 2 1 1 5 6] index)
+ (if (sh12-c6p-i64-order-condition? core) (get [0 0 1 1 10 2 3 4 5 6] index)
  (if (sh12-c6p-i64-order? core) (get [0 0 1 1 10 6] index)
  (if (sh12-c6p-i64-identity? core) (get [0 1 6] index)
  (if (sh12-c6p-three-parameters? core) (get [0 0 0 1 2 1 2 1 4 5 4 5 6] index)
@@ -3478,13 +3517,14 @@
     (if (sh12-c6p-arm-local? core)
       (get (if (= :then (sh12-c6p-arm-local-side core)) [0 1 7 1 2 1 4 5 8 6] [0 1 7 1 2 3 1 5 8 6]) index)
       (if (= 2 (sh12-c6p-let-count core)) (get [0 1 7 1 7 1 2 3 4 5 8 6] index)
-        (if (sh12-c6p-let-layout? core) (get [0 1 7 1 2 3 4 5 8 6] index) index)))))))))))
+        (if (sh12-c6p-let-layout? core) (get [0 1 7 1 2 3 4 5 8 6] index) index)))))))))))))
 
 (defn sh12-c6p-result-type [core]
-  (if (sh12-c6p-i64-order? core) :gravity/bool
+  (if (sh12-c6p-i64-depth-choice? core) :gravity/i64
+  (if (sh12-c6p-i64-order-family? core) :gravity/bool
   (if (sh12-c6p-i64-identity? core) :gravity/i64
     (get (get (get core :core-nodes)
-              (if (sh12-c6p-nested? core) (sh12-c6p-index core 5) (sh12-c6p-index core 3))) :type))))
+              (if (sh12-c6p-nested? core) (sh12-c6p-index core 5) (sh12-c6p-index core 3))) :type)))))
 
 (defn sh12-c6p-function-type-for-return [result-type]
   {:params [:gravity/bool] :return result-type :latent-effects #{} :capabilities #{}
@@ -4001,7 +4041,10 @@
 (defn sh12-c6p-i64-order-shape-valid? [core view]
   (let [nodes (get core :core-nodes) ids (get view :ids) origins (get view :origins)
         declaration (get core :resolved-parameter) entries (get declaration :parameters)
-        catalog (get declaration :type-binding) root (get nodes 5) comparison (get nodes 4)
+        conditional? (sh12-c6p-i64-conditional? core) choice? (sh12-c6p-i64-depth-choice? core)
+        root-index (if conditional? 9 5) result-index (if conditional? 8 4)
+        path (if conditional? [:functions 'main :body 0 :test] [:functions 'main :body 0])
+        catalog (get declaration :type-binding) root (get nodes root-index) comparison (get nodes 4)
         purity {:intrinsic-effects #{} :intrinsic-capabilities #{} :aggregate-effects #{} :aggregate-capabilities #{}}]
     (if (vector? entries)
       (if (= 2 (count entries))
@@ -4017,14 +4060,14 @@
                                :type-binding-id (get attrs :type-binding-id)
                                :binding-node-id (get ids index) :path (get binder :path)})))))]
           (sh12-c6p-all?
-            [(= 6 (count nodes) (count (set ids)) (count (set origins)))
-             (= (get core :root-node-ids) [(get ids 5)])
-             (= (get root :type) (sh12-c6p-original-function-type core :gravity/bool))
+            [(= (if conditional? 10 6) (count nodes) (count (set ids)) (count (set origins)))
+             (= (get core :root-node-ids) [(get ids root-index)])
+             (= (get root :type) (sh12-c6p-original-function-type core (sh12-c6p-result-type core)))
              (= (get root :path) [:functions 'main])
-             (= (get root :operands) [(get ids 4)])
+             (= (get root :operands) [(get ids result-index)])
              (= (get root :attributes) (assoc (assoc (assoc (assoc (assoc (assoc purity
                   :name 'main) :params names) :arity 2) :body-count 1) :visibility :public) :entrypoint? true))
-             (= (get comparison :path) [:functions 'main :body 0])
+             (= (get comparison :path) path)
              (= (get comparison :operands) [(get ids 2) (get ids 3)])
              (= (get comparison :attributes)
                 {:primitive '< :arity 2 :evaluation-order :left-to-right
@@ -4032,6 +4075,24 @@
                  :numeric-semantics :exact-integer-ordering :overflow :not-applicable
                  :numeric-mode :proof-required :mathematical-mode :integer-exact
                  :intrinsic-effects #{} :intrinsic-capabilities #{} :aggregate-effects #{} :aggregate-capabilities #{}})
+             (if conditional?
+               (sh12-c6p-all?
+                 [(= (get (get nodes 5) :path) [:functions 'main :body 0 :truthy])
+                  (= (get (get nodes 5) :operands) [(get ids 4)])
+                  (= (get (get nodes 5) :attributes) (assoc (assoc purity :false-values [nil false]) :result-type :gravity/bool))
+                  (= (get (get nodes 6) :path) [:functions 'main :body 0 :then])
+                  (= (get (get nodes 7) :path) [:functions 'main :body 0 :else])
+                  (= (get (get nodes 6) :operands) (if choice? [(get ids 1)] []))
+                  (= (get (get nodes 7) :operands) (if choice? [(get ids 0)] []))
+                  (if choice?
+                    (sh12-c6p-all?
+                      [(= (get (get nodes 6) :attributes)
+                          (assoc (assoc purity :name (get names 1)) :resolved-binding (get ids 1)))
+                       (= (get (get nodes 7) :attributes)
+                          (assoc (assoc purity :name (get names 0)) :resolved-binding (get ids 0)))]) true)
+                  (= (get (get nodes 8) :path) [:functions 'main :body 0])
+                  (= (get (get nodes 8) :operands) [(get ids 5) (get ids 6) (get ids 7)])
+                  (= (get (get nodes 8) :attributes) (assoc purity :truthiness :nil-and-false-only))]) true)
              (= (get declaration :source-content-hash) (get core :source-content-hash))
              (= [(get catalog :binding-class) (get catalog :kind) (get catalog :namespace)
                  (get catalog :name) (get catalog :type-ref) (get catalog :package)]
@@ -4048,7 +4109,7 @@
                       (= (get binder :attributes) (assoc (assoc (assoc (assoc (assoc purity
                            :name name) :parameter-index index) :source-form-id (get (get rows 1) :c2-form-id))
                            :resolved-binding-id (get binding :binding-id)) :type-binding-id (get catalog :binding-id)))
-                      (= (get local :path) [:functions 'main :body 0 :args index])
+                      (= (get local :path) (conj (conj path :args) index))
                       (= (get local :operands) [(get ids index)])
                       (= (get local :attributes) (assoc (assoc purity :name name) :resolved-binding (get ids index)))
                       (= (get binding :scope-id) (get declaration :function-scope-id))
@@ -4104,7 +4165,7 @@
        (= (get attrs :source-form-id) (get (get (get core :source-origin-table) (get origins 0)) :c2-form-id))])))
 
 (defn sh12-c6p-shape-valid? [core view]
- (if (sh12-c6p-i64-order? core) (sh12-c6p-i64-order-shape-valid? core view)
+ (if (sh12-c6p-i64-ordered-pair? core) (sh12-c6p-i64-order-shape-valid? core view)
  (if (sh12-c6p-i64-identity? core) (sh12-c6p-i64-shape-valid? core view)
  (if (sh12-c6p-nested? core) (sh12-c6p-nested-shape-valid? core view)
   (let [original (get core :core-nodes) let? (sh12-c6p-let-layout? core)
@@ -4200,11 +4261,13 @@
        (sh12-c10-mir-sha256-id? (get core :provenance-binding-id))
        (sh12-c10-mir-sha256-id? (get source :plan-id))
        (= source {:module module :plan-id (get source :plan-id) :entrypoint 'main
-                  :operation-set (if (sh12-c6p-i64-order? core) #{:parameter :local :integer-lt :function}
+                  :operation-set (if (sh12-c6p-i64-depth-choice? core) #{:parameter :local :integer-lt :truthy :if :function}
+                                 (if (sh12-c6p-i64-order-condition? core) #{:parameter :local :integer-lt :truthy :literal :if :function}
+                                 (if (sh12-c6p-i64-order? core) #{:parameter :local :integer-lt :function}
                                  (if (sh12-c6p-i64-identity? core) #{:parameter :local :function}
                                   (if (sh12-c6p-let-layout? core)
                                    #{:parameter :local :let-binding :truthy :literal :if :let :function}
-                                   #{:parameter :local :truthy :literal :if :function})))
+                                   #{:parameter :local :truthy :literal :if :function})))))
                   :declared-effects #{} :declared-capabilities #{}})
        (= request {:requested-target :jvm :source-target :jvm
                    :identity-bearing? false :downstream-lowering-required? true})
@@ -4282,9 +4345,10 @@
              (= (get node :kind)
                 (get [:binding :local :truthiness :literal :literal :conditional :function :binding :let :literal :comparison] role))
              (= (get node :type)
-                (if (sh12-c6p-i64-order? core)
-                  (if (= role 6) (sh12-c6p-original-function-type core :gravity/bool)
-                    (if (= role 10) :gravity/bool :gravity/i64))
+                (if (sh12-c6p-i64-ordered-pair? core)
+                  (if (= role 6) (sh12-c6p-original-function-type core (sh12-c6p-result-type core))
+                    (if (contains? #{0 1} role) :gravity/i64
+                      (if (= role 5) (sh12-c6p-result-type core) :gravity/bool)))
                 (if (sh12-c6p-i64-identity? core)
                   (if (= role 6) (sh12-c6p-original-function-type core :gravity/i64) :gravity/i64)
                 (if (if (sh12-c6p-predicate-bool-node? core index) true
@@ -4293,7 +4357,8 @@
                     (sh12-c6p-original-function-type core (sh12-c6p-result-type core))
                     (sh12-c6p-result-type core))))))
              (= (get node :profile) :hosted)
-             (= (get node :plan-node?) (get (if (sh12-c6p-i64-order? core) [false false true true true false]
+             (= (get node :plan-node?) (get (if (sh12-c6p-i64-conditional? core) [false false true true true false true true true false]
+               (if (sh12-c6p-i64-order? core) [false false true true true false]
                (if (sh12-c6p-i64-identity? core) [false true false]
                (if (sh12-c6p-three-parameters? core)
                 [false false false true false true false true true true true true false]
@@ -4319,8 +4384,9 @@
                 (if (= 2 (sh12-c6p-let-count core))
                 [false true false true false true false true true true true false]
                 (if (sh12-c6p-let-layout? core)
-                  [false true false true false true true true true false] [false true false true true true false]))))))))) index))
-             (= (get node :plan-depth) (get (if (sh12-c6p-i64-order? core) [0 0 2 2 1 0]
+                  [false true false true false true true true true false] [false true false true true true false])))))))))) index))
+             (= (get node :plan-depth) (get (if (sh12-c6p-i64-conditional? core) [0 0 3 3 2 2 2 2 1 0]
+               (if (sh12-c6p-i64-order? core) [0 0 2 2 1 0]
                (if (sh12-c6p-i64-identity? core) [0 1 0]
                (if (sh12-c6p-three-parameters? core)
                 [0 0 0 2 2 3 3 3 3 2 2 1 0]
@@ -4342,7 +4408,7 @@
                 (if (= 2 (sh12-c6p-let-count core))
                 [0 2 2 2 2 3 3 3 3 2 1 0]
                 (if (sh12-c6p-let-layout? core)
-                  [0 2 2 3 3 3 3 2 1 0] [0 2 2 2 2 1 0]))))))))) index))
+                  [0 2 2 3 3 3 3 2 1 0] [0 2 2 2 2 1 0])))))))))) index))
              (if (contains? #{3 4 9} role)
                (if (if (if (sh12-c6p-predicate-bool-node? core index) false
                          (if (= role 9) false (= :gravity/integer (sh12-c6p-result-type core))))
@@ -4463,7 +4529,16 @@
                    (let [id (get ids (sh12-c6p-let-binder-index core index))]
                      (recur (+ index 1) (assoc result id {:type (get (get maps :types) id)
                                             :mutability :immutable :ownership :persistent-shared})))))
-        edges (loop [rows (if (sh12-c6p-i64-order? core)
+        edges (loop [rows (if (sh12-c6p-i64-depth-choice? core)
+                          [[0 2 0 :binding-use] [1 3 0 :binding-use]
+                           [2 4 0 :argument-value] [3 4 1 :argument-value] [4 5 0 :control]
+                           [1 6 0 :binding-use] [0 7 0 :binding-use]
+                           [5 8 0 :control] [6 8 1 :conditional-incoming] [7 8 2 :conditional-incoming] [8 9 0 :result]]
+                         (if (sh12-c6p-i64-order-condition? core)
+                          [[0 2 0 :binding-use] [1 3 0 :binding-use]
+                           [2 4 0 :argument-value] [3 4 1 :argument-value] [4 5 0 :control]
+                           [5 8 0 :control] [6 8 1 :conditional-incoming] [7 8 2 :conditional-incoming] [8 9 0 :result]]
+                         (if (sh12-c6p-i64-order? core)
                           [[0 2 0 :binding-use] [1 3 0 :binding-use]
                            [2 4 0 :argument-value] [3 4 1 :argument-value] [4 5 0 :result]]
                          (if (sh12-c6p-i64-identity? core) [[0 1 0 :binding-use] [1 2 0 :result]]
@@ -4542,7 +4617,7 @@
                             [3 4 0 :control] [4 7 0 :control] [5 7 1 :conditional-incoming]
                             [6 7 2 :conditional-incoming] [2 8 0 :initializer] [7 8 1 :result] [8 9 0 :result]]
                            [[0 1 0 :binding-use] [1 2 0 :control] [2 5 0 :control]
-                            [3 5 1 :conditional-incoming] [4 5 2 :conditional-incoming] [5 6 0 :result]])))))))))) result []]
+                            [3 5 1 :conditional-incoming] [4 5 2 :conditional-incoming] [5 6 0 :result]])))))))))))) result []]
                 (if (= (count rows) 0) result
                   (let [row (first rows) from (get row 0) to (get row 1)]
                     (recur (rest rows) (conj result
@@ -4752,6 +4827,34 @@
                 [(get (get operations 0) :type) (get (get operations 1) :type)
                  (get (get operations 2) :type) (get (get operations 3) :type)])]) false) false) false)))
 
+(defn sh12-c6p-i64-condition-definition-shape? [mir function]
+  (let [params (get function :params) blocks (get function :blocks)
+        operations (get (get blocks (get function :entry)) :instructions)]
+    (if (if (vector? params) (= 2 (count params)) false)
+      (if (if (vector? operations) (= 4 (count operations)) false)
+        (if (loop [index 0]
+              (if (= index 4) true
+                (let [operation (get operations index) operands (get operation :operands)]
+                  (if (if (string? (get operation :op-id)) (vector? operands) false)
+                    (if (loop [operand 0]
+                          (if (= operand (count operands)) true
+                            (if (string? (get operands operand)) (recur (+ operand 1)) false)))
+                      (recur (+ index 1)) false) false))))
+          (= [4 (if (= :gravity/i64 (get function :returns)) :gravity/i64 :gravity/bool)
+              [:local :local :integer-lt :truthiness]
+              [:gravity/i64 :gravity/i64 :gravity/bool :gravity/bool]
+              [[(get params 0)] [(get params 1)]
+               [(get (get operations 0) :op-id) (get (get operations 1) :op-id)]
+               [(get (get operations 2) :op-id)]]]
+             [(count blocks) (get function :returns)
+              (loop [index 0 result []]
+                (if (= index 4) result (recur (+ index 1) (conj result (get (get operations index) :opcode)))))
+              (loop [index 0 result []]
+                (if (= index 4) result (recur (+ index 1) (conj result (get (get operations index) :type)))))
+              (loop [index 0 result []]
+                (if (= index 4) result (recur (+ index 1) (conj result (get (get operations index) :operands)))))])
+          false) false) false)))
+
 (defn sh12-branch-join-entry-parameter-definition-valid? [mir definition]
   (let [function (sh12-branch-join-function mir) id (get definition :value-id)
         value (get (get (get mir :data-flow-graph) :values) id)
@@ -4768,7 +4871,9 @@
        (string? id) (= (get params index) id) (= (count params) (count (set params)))
        (= (get value :kind) :parameter) (= (get value :value-id) id)
        (if (= :gravity/i64 (get value :type))
-         (if (= 2 (count params)) (sh12-c6p-i64-order-definition-shape? mir function)
+         (if (= 2 (count params))
+           (if (sh12-c6p-i64-order-definition-shape? mir function) true
+             (sh12-c6p-i64-condition-definition-shape? mir function))
          (sh12-c6p-all? [(= 1 (count params) (count (get function :blocks)))
                          (= :gravity/i64 (get function :returns))
                          (= [] (get (get mir :control-flow-graph) :edges))
@@ -5629,16 +5734,16 @@
 (defn sh12-branch-join-passed [checked-core mir]
   {:artifact :gravity/sh12-branch-join-mir-report
    :schema-version 1
-   :scope (if (sh12-c6p-i64-parameters? checked-core) :closed-i64-parameter-linear
+   :scope (if (sh12-c6p-i64-linear? checked-core) :closed-i64-parameter-linear
             (if (sh12-c6p-nested? checked-core) :closed-nested-conditional-branch-join :single-conditional-branch-join))
    :phase :verification
    :status :passed
    :checked-core-artifact-id (get checked-core :artifact-id)
    :mir-module-id (get mir :module-id)
-   :checks [(if (sh12-c6p-i64-parameters? checked-core) :single-function-linear
+   :checks [(if (sh12-c6p-i64-linear? checked-core) :single-function-linear
               (if (sh12-c6p-nested? checked-core) :single-function-nested-diamonds :single-function-diamond))
             :blocks-terminators-and-cfg-edges
-            (if (sh12-c6p-i64-parameters? checked-core) :entry-parameter-and-local-dominance :edge-specific-join-dominance)
+            (if (sh12-c6p-i64-linear? checked-core) :entry-parameter-and-local-dominance :edge-specific-join-dominance)
             :type-fact-preservation
             :effect-order-preservation
             :ownership-capability-and-profile-preservation
@@ -10757,8 +10862,53 @@
         (get (get entry :terminator) :kind) (get (get entry :terminator) :operands)
         (get (get entry :terminator) :successors)]))))
 
+(defn sh13-c6p-depth-choice-arm-valid? [core operation arm]
+  (let [index (if (= :then arm) 1 0)
+        binder (get (get (get core :core-nodes) index) :node-id) operands (get operation :operands)]
+    (if (if (= :local (get operation :opcode)) (= :gravity/i64 (get operation :type)) false)
+      (if (vector? operands)
+        (if (= 1 (count operands))
+          (if (if (string? binder) (string? (first operands)) false)
+            (= binder (first operands)) false) false) false) false)))
+
+(defn sh13-c6p-i64-condition-shape-valid? [core mir context]
+  (let [nodes (get core :core-nodes) ids (loop [index 0 result []]
+          (if (= index 10) result (recur (+ index 1) (conj result (get (get nodes index) :node-id)))))
+        function (get context :function) entry (get (get context :entry) :instructions)
+        then-ops (get (get context :then) :instructions) else-ops (get (get context :else) :instructions)
+        join (get (get context :join) :instructions) choice? (sh12-c6p-i64-depth-choice? core)
+        result-type (sh12-c6p-result-type core)]
+    (if (if choice?
+          (if (sh13-c6p-depth-choice-arm-valid? core (get then-ops 0) :then)
+            (sh13-c6p-depth-choice-arm-valid? core (get else-ops 0) :else) false)
+          (if (sh13-c6p-literal-runtime-valid? (get then-ops 0) :gravity/bool)
+            (sh13-c6p-literal-runtime-valid? (get else-ops 0) :gravity/bool) false))
+      (= [10 8 [4 1 1 2] [(get ids 0) (get ids 1)] result-type :hosted :jvm :jvm #{} #{} 0
+          [(get ids 2) (get ids 3) (get ids 4) (get ids 5)] [(get ids 6)] [(get ids 7)] [(get ids 8) (get ids 9)]
+          [:local :local :integer-lt :truthiness] [(if choice? :local :constant)] [(if choice? :local :constant)]
+          [:conditional-join :function-boundary]
+          [[(get ids 0)] [(get ids 1)] [(get ids 2) (get ids 3)] [(get ids 4)]]
+          [:gravity/i64 :gravity/i64 :gravity/bool :gravity/bool]
+          result-type (sh12-c6p-original-function-type core result-type)]
+         [(count nodes) (count (get context :operations))
+          [(count entry) (count then-ops) (count else-ops) (count join)]
+          (get function :params) (get function :returns) (get mir :profile) (get mir :source-target) (get mir :target-request)
+          (get function :latent-effects) (get function :capabilities) (count (get mir :runtime-check-table))
+          (sh12-branch-join-operation-ids entry []) (sh12-branch-join-operation-ids then-ops [])
+          (sh12-branch-join-operation-ids else-ops []) (sh12-branch-join-operation-ids join [])
+          (loop [index 0 result []]
+            (if (= index 4) result (recur (+ index 1) (conj result (get (get entry index) :opcode)))))
+          [(get (get then-ops 0) :opcode)] [(get (get else-ops 0) :opcode)]
+          [(get (get join 0) :opcode) (get (get join 1) :opcode)]
+          (loop [index 0 result []]
+            (if (= index 4) result (recur (+ index 1) (conj result (get (get entry index) :operands)))))
+          (loop [index 0 result []]
+            (if (= index 4) result (recur (+ index 1) (conj result (get (get entry index) :type)))))
+          (get (get join 0) :type) (get (get join 1) :type)]) false)))
+
 (defn sh13-c6p-shape-valid? [core mir context]
- (if (sh12-c6p-i64-parameters? core) (sh13-c6p-i64-shape-valid? core mir context)
+ (if (sh12-c6p-i64-conditional? core) (sh13-c6p-i64-condition-shape-valid? core mir context)
+ (if (sh12-c6p-i64-linear? core) (sh13-c6p-i64-shape-valid? core mir context)
  (if (sh12-c6p-predicate? core) (sh13-c6p-predicate-shape-valid? core mir context)
  (if (sh12-c6p-nested? core) (sh13-c6p-nested-shape-valid? core mir context)
   (if (sh12-c6p-family? core)
@@ -10825,7 +10975,7 @@
                      (get (get join 2) :opcode) (get (get join 3) :opcode)]
           (if let? [(get (get join 0) :opcode) (get (get join 1) :opcode) (get (get join 2) :opcode)]
                    [(get (get join 0) :opcode) (get (get join 1) :opcode)]))
-          (get (get join 0) :type) (get (c11-last-value join) :type)]) false)) false)))))
+          (get (get join 0) :type) (get (c11-last-value join) :type)]) false)) false))))))
 
 (defn sh13-c6p-arguments-valid? [core arguments]
   (if (vector? arguments)
@@ -10867,13 +11017,19 @@
                             :operations (sh13-c6p-frame-operations executed 0 [])
                             :terminator {:opcode :return :value (first (get (get entry :terminator) :operands))}}]}]}))
 
+(defn sh13-c6p-frame-arm-binding [core arm]
+  (get (get (get core :core-nodes)
+         (if (sh12-c6p-i64-depth-choice? core) (if (= :then arm) 1 0)
+           (if (sh12-c6p-two-direct-parameters? core) 1 2))) :node-id))
+
 (defn sh13-c6p-frame-arm [core context arm]
   (let [block (get context arm)
         incoming (sh13-find-by-key (get (get (get context :graph) :join) :incoming)
                    :predecessor (get block :block-id) 0)]
     {:block-id (get block :block-id)
-     :params (if (if (sh12-c6p-later-body-local? core) true (= arm (sh12-c6p-arm-local-side core)))
-               [(get (get (get core :core-nodes) (if (sh12-c6p-two-direct-parameters? core) 1 2)) :node-id)] [])
+     :params (if (if (sh12-c6p-i64-depth-choice? core) true
+                   (if (sh12-c6p-later-body-local? core) true (= arm (sh12-c6p-arm-local-side core))))
+               [(sh13-c6p-frame-arm-binding core arm)] [])
      :operations (sh13-c6p-frame-operations (get block :instructions) 0 [])
      :terminator {:opcode :branch :target (get (get context :join) :block-id)
                   :arguments (if (sh12-c6p-later-body-local? core)
@@ -10896,9 +11052,11 @@
          :operations (sh13-c6p-frame-operations (get entry :instructions) 0 [])
          :terminator {:opcode :conditional-branch :condition (get condition :result)
                       :then-target (get (get context :then) :block-id)
-                      :then-arguments (if (if later? true (= :then (sh12-c6p-arm-local-side core))) [arm-binding] [])
+                      :then-arguments (if (sh12-c6p-i64-depth-choice? core) [(sh13-c6p-frame-arm-binding core :then)]
+                                        (if (if later? true (= :then (sh12-c6p-arm-local-side core))) [arm-binding] []))
                       :else-target (get (get context :else) :block-id)
-                      :else-arguments (if (if later? true (= :else (sh12-c6p-arm-local-side core))) [arm-binding] [])}}
+                      :else-arguments (if (sh12-c6p-i64-depth-choice? core) [(sh13-c6p-frame-arm-binding core :else)]
+                                        (if (if later? true (= :else (sh12-c6p-arm-local-side core))) [arm-binding] []))}}
         (sh13-c6p-frame-arm core context :then) (sh13-c6p-frame-arm core context :else)
         {:block-id (get (get context :join) :block-id)
          :params (if later? [(get join-op :result) arm-binding] [(get join-op :result)])
@@ -10955,7 +11113,7 @@
     {:function-id (get (get context :function) :fn-id)
      :entry-block (get (get context :entry) :block-id)
      :control-flow-graph (get context :graph)
-     :return-value-id (if (sh12-c6p-i64-parameters? core)
+     :return-value-id (if (sh12-c6p-i64-linear? core)
                         (first (get (get (get context :entry) :terminator) :operands))
                         (first (get (c11-last-value (get (get context :join) :instructions)) :operands)))
      :parameters (loop [index 0 result []]
@@ -10990,14 +11148,14 @@
 (defn sh13-run-branch-join-mir-with-arguments [checked-core mir arguments]
   (let [verification (sh12-verify-branch-join-mir checked-core mir)]
     (if (= :passed (get verification :status))
-      (let [context (if (sh12-c6p-i64-parameters? checked-core) (sh13-c6p-i64-context checked-core mir)
+      (let [context (if (sh12-c6p-i64-linear? checked-core) (sh13-c6p-i64-context checked-core mir)
                     (if (sh12-c6p-predicate? checked-core) (sh13-c6p-predicate-context checked-core mir)
                        (if (sh12-c6p-nested? checked-core) (sh13-c6p-nested-context checked-core mir)
                          (sh13-branch-join-context checked-core mir))))]
         (if (sh13-c6p-shape-valid? checked-core mir context)
           (if (sh13-c6p-arguments-valid? checked-core arguments)
             (let [execution (sh13-execute-function
-                              (if (sh12-c6p-i64-parameters? checked-core) (sh13-c6p-i64-frame checked-core context)
+                              (if (sh12-c6p-i64-linear? checked-core) (sh13-c6p-i64-frame checked-core context)
                                 (if (sh12-c6p-nested? checked-core) (sh13-c6p-nested-frame checked-core context) (sh13-c6p-frame checked-core context)))
                               (get (get context :function) :fn-id) arguments 0
                               (get (sh13-control-flow-policy) :maximum-execution-steps) [])]
@@ -11008,7 +11166,7 @@
                      "C11-VERIFY" :bounded-execution-result checked-core mir)])))
             (let [binder (first (get checked-core :core-nodes)) source (get binder :source)
                   diagnostic (sh12-branch-join-diagnostic
-                               "C11-TYPE" (if (sh12-c6p-i64-order? checked-core) :two-i64-entry-arguments
+                               "C11-TYPE" (if (sh12-c6p-i64-ordered-pair? checked-core) :two-i64-entry-arguments
                                          (if (sh12-c6p-i64-identity? checked-core) :single-i64-entry-argument
                                           (if (= 3 (sh12-c6p-parameter-count checked-core)) :three-bool-entry-arguments
                                             (if (= 2 (sh12-c6p-parameter-count checked-core))
