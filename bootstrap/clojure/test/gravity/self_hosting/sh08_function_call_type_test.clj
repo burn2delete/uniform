@@ -6977,6 +6977,36 @@
 (defn- set-conversion-derived [{:keys [core node call edge nodes bindings types forms]} budget]
   (invoke-c7 'sh08-st-derive [core node call edge nodes bindings types forms budget]))
 
+(defn- list-set-input [type]
+  (-> (set-conversion-input [type])
+      (assoc-in [:module :effects] [:memory/allocate])
+      (assoc-in [:core :module :effects] [:memory/allocate])))
+
+(deftest sh08-list-set-development-kernel
+  (let [input {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}
+        result (set-conversion-derived (list-set-input input) 65536)
+        descriptor (:descriptor result)]
+    (is (= :accepted (:status result)))
+    (is (= :gravity.type/set (:type result)))
+    (is (= :gravity.type/applied-list-set-conversion (:kind descriptor)))
+    (is (= :sh08-list-set-conversion-v1 (:version descriptor)))
+    (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+    (is (= :bounded-prepaid-first-rest (get-in descriptor [:runtime-census-policy :traversal])))
+    (is (= :all-physical-keywords-before-equality-or-hash (get-in descriptor [:runtime-census-policy :domain-validation])))
+    (is (not (contains? descriptor :input-element-count)))
+    (is (not (contains? descriptor :result-count))))
+  (doseq [type [:gravity.type/list
+                {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/keyword]}
+                {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}
+                {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/unknown}
+                {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword :extra true}]]
+    (is (= :rejected (:status (set-conversion-derived (list-set-input type) 65536)))))
+  (let [result (set-conversion-derived (list-set-input :gravity.type/never) 65536)]
+    (is (= :accepted (:status result)))
+    (is (= :gravity.type/never (:type result)))
+    (is (= :not-invoked (get-in result [:descriptor :application])))
+    (is (= [] (get-in result [:descriptor :direct-effects])))))
+
 (deftest sh08-set-conversion-development-kernel
   (let [vector-type (fn [n] {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat n :gravity.type/string))})]
     (doseq [type (conj (mapv vector-type [0 1 3 1024]) :gravity.type/never)]
