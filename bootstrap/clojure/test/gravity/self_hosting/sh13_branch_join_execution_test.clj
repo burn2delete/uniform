@@ -508,6 +508,22 @@
                 (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
           (finally (.delete temporary)))))))
 
+(deftest sh13-preserves-live-lexical-value-after-conditional
+  ;; The first body result is deliberately ignored; the later lexical read
+  ;; must survive the join and determine the original scope's final value.
+  (let [source (str (.resolve @(existing 'root)
+                     "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        temporary (java.io.File/createTempFile "gravity-sh13-live-through-" ".gravity")]
+    (try
+      (spit temporary (str/replace (slurp source) "(if flag true false)"
+                                  "(let [ready flag] (if flag true false) ready)"))
+      (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))]
+        (is (= :accepted (:status raw)))
+        (is (= :passed (:status upstream)))
+        (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))
+            (pr-str (:diagnostics mir))))
+      (finally (.delete temporary)))))
+
 (deftest sh13-reads-lexical-local-only-in-selected-arm
   ;; The aliased value equals the parameter, but original source/resolution
   ;; identities still distinguish the condition from the arm's local read.
