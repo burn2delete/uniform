@@ -2206,7 +2206,8 @@
              :pointer-and-lifetime-layouts]})
 
 (defn sh14-member? [values value]
-  (= (get values value) value))
+  (if (= nil value) false
+      (= (get values value) value)))
 
 (defn sh14-unique-from? [values index seen]
   (loop [cursor index
