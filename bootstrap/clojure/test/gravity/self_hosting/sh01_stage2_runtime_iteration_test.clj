@@ -30806,7 +30806,8 @@
 (deftest current-gravity-let-vector-count-slice-membership-prepay-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input (ns-resolve upstream 'let-vector-count-slice-input)
+        inputs [(ns-resolve upstream 'let-vector-count-slice-input)
+                (ns-resolve upstream 'let-vector-count-slice-first-input)]
         c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -30815,13 +30816,13 @@
         original-entry @entry-var
         run (fn [owner base budget]
               (let [{:keys [core node call nodes bindings types forms]} base
-                    arguments [core node call nodes bindings types forms budget]]
+                    arguments [core (nodes :slice-call) (first (filter #(= :slice-call (:core-node-id %)) (:calls core))) nodes bindings types forms budget]]
                 (case owner
                   :c7 (c7 'sh08-vsl-proof arguments)
                   :c8 (apply c8 'body-vsl-proof arguments)
                   :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-proof arguments))))]
-    (doseq [[owner prefix] [[:c7 "sh08"] [:c8 "body"] [:emitter "p15-s23"]]]
-      (let [base (input "0af" 1) measured (run owner base 65536)
+    (doseq [[owner prefix] [[:c7 "sh08"] [:c8 "body"] [:emitter "p15-s23"]] input inputs]
+      (let [base (input "0af" 1 nil) measured (run owner base 65536)
             validator (symbol (str prefix "-nq-ids?"))
             observe (fn [candidate budget]
                       (let [entered (atom 0) returns (atom [])
@@ -30918,6 +30919,167 @@
           (is (= :vector-slice-work-limit
                  (:reason (run owner (assoc-in base [:nodes :slice-count-reference :node-id] opaque) 0))))
           (is (= 0 @callbacks)))))))
+
+(defn- let-vector-count-slice-first-kernel-context [input]
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        result (let-vector-slice-first-kernel-context input)
+        count-descriptor (get-in input [:count-result :descriptor]) module (get-in input [:core :module])
+        context (-> (:context result)
+                    (assoc-in [:call-facts :slice-end] (c7 'sh08-cq-call-fact [count-descriptor module]))
+                    (update :ledger #(vec (concat (take 1 %) [(c7 'sh08-cq-constraint [count-descriptor])] (drop 1 %)))))]
+    (assoc result :context context :descriptors (vec (concat (take 1 (:descriptors result)) [count-descriptor] (drop 1 (:descriptors result)))))))
+
+(deftest current-gravity-let-vector-count-slice-first-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'let-vector-count-slice-first-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        rt (:plan (typed-catch-runtime-projection))
+        lower #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-typed-compile-node [%1 :slice-let %2])
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])]
+    (doseq [[text start position expected] [["0af" 1 nil \a] ["f" 0 nil \f]
+                                          [(str "sha256:" (apply str (repeat 64 "0"))) 7 nil \0]
+                                          ["0af" 9 0 "original vec transfer"] ["0af" 9 1 "original slice transfer"]]]
+      (let [{:keys [context descriptors]} (let-vector-count-slice-first-kernel-context (input text start position))
+            compiled (lower context 65536) ir (:value compiled)
+            calls (filter #(and (map? %) (= :builtin-call (:op %))) (tree-seq coll? seq ir))]
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= compiled (lower context (:work-count compiled))))
+        (is (= :typed-lowering-work-limit (get-in (lower context (dec (:work-count compiled))) [:facts :reason])))
+        (doseq [callee ['first 'subvec 'count]] (is (= 1 (count (filter #(= callee (:function %)) calls)))))
+        (when (= :complete (:status compiled))
+          (is (= [expected "" (if (nil? position) :normal :thrown)] (evaluate ir)))
+          (let [traced (update-in ir [:bindings 0 :expr]
+                                 #(hash-map :op :do :body [{:op :println :args [{:op :literal :value "initializer"}]
+                                                           :effect :io/write :capability :io/stdout} %]))]
+            (is (= "initializer\n" (second (evaluate traced))))))
+        (doseq [id (keys (:call-facts context))]
+          (is (= :rejected (:status (lower (update context :call-facts dissoc id) 65536)))))
+        (doseq [index (range 4)]
+          (is (= :rejected (:status (lower (update context :ledger #(vec (concat (subvec % 0 index) (subvec % (inc index))))) 65536))))
+          (is (= :rejected (:status (lower (update context :ledger conj (get (:ledger context) index)) 65536)))))
+        (when (nil? position)
+          (doseq [[index operator fact-name row-name path]
+                  [[2 :slice-operator 'sh08-vsl-call-fact 'sh08-vsl-constraint [:bounds-proof :receiver :body-consumer :node :children]]
+                   [2 :slice-operator 'sh08-vsl-call-fact 'sh08-vsl-constraint [:bounds-proof :end :value]]
+                   [3 :let-first-operator 'sh08-lq-call-fact 'sh08-lq-constraint [:bounds-proof :selected-index]]]]
+            (let [changed (assoc-in (descriptors index) path :forged)
+                  candidate (-> context (assoc-in [:types operator] changed)
+                                (assoc-in [:call-facts (:call-core-node-id changed)] (c7 fact-name [changed (:module (:core context))]))
+                                (assoc-in [:ledger index] (c7 row-name [changed])))]
+              (is (= :rejected (:status (lower candidate 65536)))))))))))
+
+(deftest current-gravity-let-vector-count-slice-first-proof-preflight-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input (ns-resolve upstream 'let-vector-count-slice-first-input)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [owner prefix suffix arguments]
+                 (let [name (symbol (str prefix suffix))]
+                   (case owner :c7 (c7 name arguments) :c8 (apply c8 name arguments)
+                         :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name arguments))))]
+    (doseq [[owner prefix] [[:c7 "sh08"] [:c8 "body"] [:emitter "p15-s23"]]]
+      (let [{:keys [core nodes bindings types forms] :as base} (input "0af" 1 nil)
+            call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
+            prove (fn [candidate budget]
+                    (let [{:keys [core nodes bindings types forms]} candidate]
+                      (invoke owner prefix "-vsl-proof" [core (nodes :slice-call) call nodes bindings types forms budget])))
+            receiver (invoke owner prefix "-vsl-let" [core (nodes :slice-call) (nodes :slice-ref) nodes bindings types forms 65536])
+            end-proof (fn [candidate budget]
+                        (invoke owner prefix "-vsl-count-end" [core (nodes :slice-call) (nodes :slice-end) candidate nodes bindings types forms budget]))
+            result (prove base 65536) end (end-proof receiver 65536)]
+        (is (= :accepted (:status receiver) (:status result) (:status end)))
+        (is (= 16 (count (get-in result [:proof :source-forms]))))
+        (is (= result (prove base (:work-count result))))
+        (is (= :vector-slice-work-limit (:reason (prove base (dec (:work-count result))))))
+        (is (= end (end-proof receiver (:work-count end))))
+        (is (= :vector-slice-work-limit (:reason (end-proof receiver (dec (:work-count end))))))
+        (doseq [mutate [#(assoc-in % [:nodes :let-first-call :children] [:let-first-operator :sibling])
+                        #(assoc-in % [:nodes :let-first-call :evaluation :order] [])
+                        #(assoc-in % [:forms :let-first-call :parent-form-id] :sibling)
+                        #(assoc-in % [:forms :let-first-operator :value] 'rest)
+                        #(assoc-in % [:bindings :let-first-binding :namespace] 'foreign)
+                        #(assoc-in % [:nodes :let-first-call :evaluation :owner-function-syntax-id] :foreign)
+                        #(assoc-in % [:nodes :let-first-operator :binding-context] :foreign)
+                        #(assoc-in % [:nodes :slice-call :evaluation :region] :conditional)]]
+          (is (= :rejected (:status (prove (mutate base) 65536)))))
+        (doseq [mutate [#(assoc-in % [:receiver :body-consumer] nil)
+                        #(assoc-in % [:receiver :body-consumer :kind] :direct-character-set-first-membership)
+                        #(assoc-in % [:receiver :body-consumer :node :node-id] :sibling)
+                        #(assoc-in % [:receiver :body-consumer :node :children] [:let-first-operator :sibling])
+                        #(assoc-in % [:receiver :body-consumer :operator :node-id] :sibling)
+                        #(assoc-in % [:receiver :owner :children 1] :slice-call)]]
+          (is (= :rejected (:status (end-proof (mutate receiver) 65536)))))
+        (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "first envelope ID hashed")))
+                                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "first envelope ID compared")))
+                                        (toString [] (swap! callbacks inc) (throw (AssertionError. "first envelope ID formatted"))))
+              poisoned (assoc-in receiver [:receiver :body-consumer :node :node-id] opaque)
+              membership-work (* 4 (+ (count (get-in bindings [:slice-count-binding :profile-set]))
+                                       (count (get-in bindings [:slice-count-binding :target-set]))))]
+          (is (= :rejected (:status (end-proof poisoned 65536))))
+          (is (= :vector-slice-work-limit (:reason (end-proof poisoned (- (:work-count end) membership-work 1)))))
+          (is (= 0 @callbacks)))))))
+
+(deftest current-gravity-let-vector-count-slice-first-runtime-development-kernel
+  (let [rt (:plan (typed-catch-runtime-projection)) local {:op :local :name 'characters}
+        slice {:op :builtin-call :function 'subvec
+               :args [local {:op :literal :value 1} {:op :builtin-call :function 'count :args [local]}]}
+        ir {:op :builtin-call :function 'first :args [slice]}
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function
+                   runtime rt 'p15-s23-runtime-evaluate-closed-instruction [%1 {'characters %2} ""])]
+    (is (= [\a "" :normal] (evaluate ir (vec "0af"))))
+    (is (= :rejected (last (evaluate ir (vec "0")))))
+    (is (= [\f "" :normal] (evaluate (assoc-in ir [:args 0 :args 1 :value] 0) (vec "f"))))
+    (doseq [[candidate expected lookups]
+            [[ir [\a "" :normal] 2]
+             [(assoc-in ir [:args 0 :args 1] {:op :throw :value {:op :literal :value "index aborted"}}) ["index aborted" "" :thrown] 1]
+             [(assoc-in ir [:args 0 :args 0] {:op :throw :value {:op :literal :value "receiver aborted"}}) ["receiver aborted" "" :thrown] 0]]]
+      (let [environment {'characters (vec "0af")} observed (atom 0)
+            get-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original-get @get-var
+            note (fn [target key] (when (and (identical? environment target) (= 'characters key)) (swap! observed inc)))
+            actual (with-redefs-fn
+                     {get-var (fn ([plan target key] (note target key) (original-get plan target key))
+                                  ([plan target key fallback] (note target key) (original-get plan target key fallback)))}
+                     #(bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction
+                                                                        [candidate environment ""]))]
+        (is (= expected actual))
+        (is (= lookups @observed))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "first payload hashed")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "first payload compared")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "first payload formatted"))))
+          result (evaluate ir [:start opaque :end])]
+      (is (= :normal (last result)))
+      (is (identical? opaque (first result)))
+      (is (= 0 @callbacks)))))
+
+(deftest current-gravity-let-vector-count-slice-first-fixtures-development-kernel
+  ;; Explicit seed parity plus normalized DATA; no source-admission claim.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input (ns-resolve upstream 'let-vector-count-slice-first-input)
+        establish (ns-resolve upstream 'let-vector-slice-first-established)
+        root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[directory name text start expected]
+            [["accepted" "local-runtime-let-vector-count-slice-first" "0af" 1 :accepted]
+             ["rejected" "let-vector-count-slice-first-empty" "f" 1 :rejected]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" directory "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g-text (slurp g-path) q-text (slurp q-path)
+            forms (bootstrap/read-forms g-path g-text)
+            result (establish (input text start nil))]
+        (is (= g-text q-text))
+        (is (= forms (bootstrap/read-forms q-path q-text)))
+        (is (= (list 'let ['characters (list 'vec text)] (list 'first (list 'subvec 'characters start (list 'count 'characters))))
+               (nth (last forms) 3)))
+        (is (= :accepted (get-in result [:slice :status])))
+        (is (= expected (get-in result [:query :status])))))))
 
 (deftest current-gravity-let-vector-count-slice-runtime-development-kernel
   (let [rt (:plan (typed-catch-runtime-projection))
