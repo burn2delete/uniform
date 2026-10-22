@@ -99,6 +99,16 @@ its current-input revalidation, secure admission and capacity limits still
 apply. A cache policy rejection is not permission to clear shared state,
 increase limits or suppress unrelated compiler failures.
 
+For explicit current-reader development, the source constructors' final
+`reader-source-path` argument selects the actual repository reader source and
+internally rebuilds its identities. Products remain development-unadmitted;
+the default APIs still require the historical reader pins and fail closed on
+drift. This does not renew migration authority. Run the existing intake check:
+
+```bash
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh03-reader-adapter-test --exact sh03-current-source-c3-intake-retains-the-original-reader-revision
+```
+
 When debugging a shared parser or plan-loading error, the existing
 `--fail-fast` option stops after the first failed test var, avoiding the same
 load-error stack from every selected var. It does not stop within a test var,

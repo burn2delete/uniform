@@ -419,7 +419,7 @@
           (spit temporary source)
           (let [observed (try
                            (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
-                                   [(:envelope (parameter-source-products (.getAbsolutePath temporary) source binding reader-path))])
+                                   [(:envelope (parameter-source-products (.getCanonicalPath temporary) source binding reader-path))])
                            (catch clojure.lang.ExceptionInfo error {:failure (ex-data error)}))]
             (is (= expected (or (get-in observed [:failure :id]) (get-in observed [:diagnostics 0 :rule]))) (pr-str observed)))
           (finally (.delete temporary)))))))
@@ -436,7 +436,20 @@
     (is (= [:gravity/i64] (get-in nodes [2 :type :params])))
     (is (= [:gravity/i64 :gravity/i64] (mapv :type (take 2 nodes))))
     (is (= :gravity/i64 (get-in nodes [2 :type :return])))
-    (is (= :passed (:status (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template [input template (:digest-requests raw)]))))))
+    (is (= :passed (:status (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template [input template (:digest-requests raw)]))))
+    (let [calls (atom {:hash 0 :equals 0})
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! calls update :hash inc) 424242)
+                   (equals [_] (swap! calls update :equals inc) false))]
+      (.hashCode opaque)
+      (.equals opaque :probe)
+      (is (= {:hash 1 :equals 1} @calls))
+      (reset! calls {:hash 0 :equals 0})
+      (let [rejected (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                             [(assoc-in input [:resolved-parameter :kind] opaque)])]
+        (is (= :rejected (:status rejected)))
+        (is (= "C6-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= {:hash 0 :equals 0} @calls))))))
 
 (deftest sh12-current-c6-produces-resolved-i64-identity
   ;; The declared signed-64 type is not a runtime argument/range witness.
