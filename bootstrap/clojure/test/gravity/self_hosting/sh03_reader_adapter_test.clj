@@ -409,7 +409,27 @@
                  [retained boundary] [c2 replaced] [retained replaced] [coherent-c2 coherent-boundary]
                  [(assoc-in c2 [:sh03-reader-authentication :reader-source-revision
                                 :function-shapes bootstrap/sh03-reader-verifier :semantic-hash] nil) boundary]]]
-          (is (false? (authentic? candidate candidate-boundary)))))
+          (is (false? (authentic? candidate candidate-boundary))))
+        ;; Supplied DATA isolates the current-only obligation even when the
+        ;; source SHA equals history; this does not execute a historical reader.
+        (let [guard (ns-resolve 'gravity.bootstrap 'c3-current-reader-revision-authentic?)
+              omitted (update c2 :sh03-reader-authentication dissoc :reader-source-revision)
+              historical (-> boundary
+                             (assoc-in [:reader-source-revision :source-content-hash]
+                                       bootstrap/sh03-reader-expected-source-content-hash)
+                             (assoc-in [:reader-authentication-provenance
+                                        :actual-sh03-envelope-descriptor :source-revision :source-content-hash]
+                                       bootstrap/sh03-reader-expected-source-content-hash))]
+          (is (true? (guard c2 boundary)))
+          (doseq [hash [(get-in revision [:function-shapes bootstrap/sh03-reader-verifier :semantic-hash]) nil]]
+            (let [candidate (assoc-in historical [:reader-authentication-provenance
+                                                  :actual-sh03-envelope-descriptor :source-revision
+                                                  :function-shapes bootstrap/sh03-reader-verifier :semantic-hash] hash)]
+              (is (contains? (get-in candidate [:reader-authentication-provenance
+                                               :actual-sh03-envelope-descriptor :source-revision
+                                               :function-shapes bootstrap/sh03-reader-verifier]) :semantic-hash))
+              (is (false? (guard omitted candidate)))
+              (is (false? (authentic? omitted candidate)))))))
       (finally (.delete temporary)))))
 
 (deftest sh03-current-reader-plan-checks-keep-historical-priority

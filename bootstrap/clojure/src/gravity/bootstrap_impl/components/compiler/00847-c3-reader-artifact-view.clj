@@ -15,6 +15,7 @@
           descriptor (:actual-sh03-envelope-descriptor provenance)
           actual (:source-revision descriptor)]
       (if (or (some? retained)
+              (contains? (get-in actual [:function-shapes sh03-reader-verifier]) :semantic-hash)
               (not= sh03-reader-expected-source-content-hash (:source-content-hash actual))
               (not= sh03-reader-expected-source-content-hash
                     (get-in boundary [:reader-source-revision :source-content-hash])))
