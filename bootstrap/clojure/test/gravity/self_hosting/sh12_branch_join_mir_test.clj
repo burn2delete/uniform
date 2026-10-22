@@ -312,10 +312,10 @@
           (finally (.delete temporary)))))))
 
 (deftest sh12-two-bool-parameter-producer-checks-both-source-arms
-  ;; Actual source/C2/C5 input reaches C6. No argument selection can hide the
-  ;; Bool else arm's disagreement with the Integer then arm.
+  ;; Actual source/C2/C5 input reaches C6. No argument selection can hide a
+  ;; Bool operand in the else arm's integer-only equality operation.
   (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity"))
-        source (str/replace (slurp path) ") 11 22)" ") 11 true)")
+        source (str/replace (slurp path) ") 11 22)" ") 11 (= right 0))")
         temporary (java.io.File/createTempFile "gravity-sh12-two-bool-arm-type-" ".gravity")]
     (try
       (spit temporary source)
