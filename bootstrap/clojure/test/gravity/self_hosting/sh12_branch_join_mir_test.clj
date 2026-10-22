@@ -258,6 +258,16 @@
           (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
       (finally (.delete temporary)))))
 
+(deftest sh12-current-c6-produces-three-independently-resolved-bool-parameters
+  ;; The three independent premises of c6c10-map-if's exact-implicit-plan?.
+  ;; This producer-only increment does not execute the compiler helper.
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/three_bool_parameter_source.gravity"))
+        input (try (parameter-input path (slurp path))
+                   (catch clojure.lang.ExceptionInfo error {:failure (ex-data error)}))]
+    (is (nil? (:failure input)) (pr-str (:failure input)))
+    (when-not (:failure input)
+      (is (= :accepted (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])))))))
+
 (deftest sh12-current-c6-produces-two-independently-resolved-bool-parameters
   ;; Real source/C2/C5 products, not a hand-built type witness or MIR. This
   ;; producer checks retain their original source lineage; the closed C11
