@@ -3142,6 +3142,40 @@
     (assoc input :slice slice :query query :types (assoc types :let-first-operator (:descriptor query)
                                                            :let-first-call (:type query) :slice-let (:type query)))))
 
+(defn- let-vector-count-slice-first-input [text start position]
+  ;; Compose existing normalized client stems; preserve every original source
+  ;; occurrence, and give count its own physical local-reference occurrence.
+  (let [base (let-vector-count-slice-input text start position)
+        first-input (let-vector-slice-first-input text start (count text) position)
+        first-keys [:slice-let :let-first-call :let-first-operator]
+        nodes (merge (:nodes base) (select-keys (:nodes first-input) first-keys))
+        forms (merge (:forms base) (select-keys (:forms first-input) (conj first-keys :slice-call)))
+        bindings (assoc (:bindings base) :let-first-binding (get-in first-input [:bindings :let-first-binding]))
+        calls (conj (get-in base [:core :calls]) (:call first-input))
+        edges (conj (get-in base [:core :call-edges]) (assoc (:edge first-input) :ordinal 3))
+        node-list (letfn [(walk [id] (conj (vec (mapcat walk (:children (nodes id)))) (nodes id)))]
+                    (vec (walk :slice-let)))
+        core (assoc (:core base) :nodes node-list :calls calls :call-edges edges)]
+    (assoc base :core core :nodes nodes :forms forms :bindings bindings
+           :node (nodes :let-first-call) :call (last calls) :edge (last edges)
+           :products {:module (:module core) :calls calls :call-edges edges})))
+
+(deftest sh08-let-vector-count-slice-first-development-kernel
+  (let [literal (let-vector-slice-first-established (let-vector-slice-first-input "0af" 1 3))
+        direct (let-vector-count-slice-input "0af" 1)
+        {:keys [core node call edge nodes bindings types forms]} direct]
+    (is (= :accepted (get-in literal [:slice :status]) (get-in literal [:query :status])))
+    (is (= :accepted (:status (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])))))
+  (let [{:keys [core nodes bindings types forms count-result] :as input} (let-vector-count-slice-first-input "0af" 1 nil)
+        receiver (invoke-c7 'sh08-vsl-let [core (nodes :slice-call) (nodes :slice-ref) nodes bindings types forms 65536])
+        established (let-vector-slice-first-established input)]
+    (is (= :accepted (:status count-result)))
+    (is (= :accepted (:status receiver)))
+    (is (= :direct-vector-first (get-in receiver [:receiver :body-consumer :kind])))
+    (is (= :accepted (get-in established [:slice :status])) (pr-str (:slice established)))
+    (is (= :accepted (get-in established [:query :status])) (pr-str (:query established)))
+    (is (= :gravity.type/character (get-in established [:query :type])))))
+
 (deftest sh08-let-vector-slice-first-development-kernel
   (doseq [value ["abc" [65 66 67]]]
     (let [input (let-vector-slice-first-established (let-vector-slice-first-input value 1 2))]

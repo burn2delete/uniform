@@ -30919,6 +30919,17 @@
                  (:reason (run owner (assoc-in base [:nodes :slice-count-reference :node-id] opaque) 0))))
           (is (= 0 @callbacks)))))))
 
+(deftest current-gravity-let-vector-count-slice-first-runtime-development-kernel
+  (let [rt (:plan (typed-catch-runtime-projection)) local {:op :local :name 'characters}
+        slice {:op :builtin-call :function 'subvec
+               :args [local {:op :literal :value 1} {:op :builtin-call :function 'count :args [local]}]}
+        ir {:op :builtin-call :function 'first :args [slice]}
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function
+                   runtime rt 'p15-s23-runtime-evaluate-closed-instruction [%1 {'characters %2} ""])]
+    (is (= [\a "" :normal] (evaluate ir (vec "0af"))))
+    (is (= :rejected (last (evaluate ir (vec "0")))))
+    (is (= [\f "" :normal] (evaluate (assoc-in ir [:args 0 :args 1 :value] 0) (vec "f"))))))
+
 (deftest current-gravity-let-vector-count-slice-runtime-development-kernel
   (let [rt (:plan (typed-catch-runtime-projection))
         local {:op :local :name 'characters}
