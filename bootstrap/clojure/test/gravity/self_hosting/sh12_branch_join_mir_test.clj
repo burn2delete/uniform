@@ -295,6 +295,162 @@
           (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
       (finally (.delete temporary)))))
 
+(deftest sh12-current-c6-produces-two-i64-order-parameters
+  ;; c6c10-build-edge-list's strict-index-order subtree, not a mixed literal
+  ;; comparison, runtime width witness, or execution of that complete helper.
+  (let [directory "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/"
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        binding (parameter-compiled-binding-data (str (.resolve @root (str directory "two_i64_order_source.gravity"))))]
+    (doseq [extension ["gravity" "qst"]]
+      (let [path (str (.resolve @root (str directory "two_i64_order_source." extension))) text (slurp path)
+            products (parameter-source-products path text binding reader-path) input (:envelope products)
+            declaration (:resolved-parameter input) entries (:parameters declaration)
+            raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+        (is (= :gravity/c6-c10-resolved-two-i64-parameters-v1 (:kind declaration)))
+        (is (= #{:kind :source-content-hash :sh06-artifact-id :sh06-semantic-projection-id :projection-binding
+                 :root-syntax-id :function-syntax-id :function-scope-id :type-binding :parameters} (set (keys declaration))))
+        (is (= [0 1] (mapv :parameter-index entries)))
+        (is (= '[dependency-index consumer-index] (mapv #(get-in % [:parameter-binding :name]) entries)
+               (get-in input [:stage2-plan :functions 'main :params])))
+        (is (= {:catalog :gravity/core :ordinal 21} (get-in declaration [:type-binding :semantic-span])))
+        (is (= [:core :type 'gravity.core 'I64] ((juxt :binding-class :kind :namespace :name) (:type-binding declaration))))
+        (is (= :accepted (:status raw)) (pr-str (:diagnostics raw)))
+        (when (= :accepted (:status raw))
+          (let [template (:artifact-template raw) nodes (:core-nodes template) ids (mapv :node-id nodes)
+                comparison (get nodes 4) function (get nodes 5)
+                fresh (parameter-source-products path text binding reader-path)
+                replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
+                verify (fn [candidate] (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                                              [(:envelope fresh) candidate (:digest-requests replay)]))]
+            (is (= input (:envelope fresh)))
+            (is (= raw replay))
+            (is (= :passed (:status (verify template))))
+            (is (= [:parameter :parameter :local :local :integer-lt :function] (mapv :source-operation nodes)))
+            (is (= 6 (count nodes)))
+            (is (= 5 (count (get-in template [:dependency-order-graph :edges]))))
+            (is (= [[] [] [(get ids 0)] [(get ids 1)] [(get ids 2) (get ids 3)] [(get ids 4)]] (mapv :operands nodes)))
+            (is (= [:gravity/i64 :gravity/i64 :gravity/i64 :gravity/i64 :gravity/bool] (mapv :type (take 5 nodes))))
+            (is (= [:gravity/i64 :gravity/i64] (get-in function [:type :params])))
+            (is (= :gravity/bool (get-in function [:type :return])))
+            (is (= '[dependency-index consumer-index] (get-in function [:attributes :params])))
+            (is (= (subvec ids 0 2) (mapv :binding-node-id (:lexical-binding-records template))))
+            (is (= :exact-integer-ordering (get-in comparison [:attributes :numeric-semantics])
+                   (get-in comparison [:safety :basis]) (get-in comparison [:safety :proof :numeric-semantics])))
+            (is (= :proof-required (get-in comparison [:attributes :numeric-mode]) (get-in comparison [:safety :proof :numeric-mode])))
+            (is (= :integer-exact (get-in comparison [:attributes :mathematical-mode])))
+            (is (= :not-applicable (get-in comparison [:attributes :overflow])))
+            (is (= [:gravity/i64 :gravity/i64] (get-in comparison [:attributes :operand-types])))
+            (is (= :binary-integer-order-comparison-bool (get-in template [:type-facts (get ids 4) :producer-rule])))
+            (doseq [index [0 1]]
+              (let [node (get nodes index) id (get ids index) entry (get entries index)]
+                (is (= [] (:operands node)))
+                (is (not (contains? (:attributes node) :value)))
+                (is (= index (get-in node [:attributes :parameter-index])))
+                (is (= (get-in entry [:parameter-binding :binding-id]) (get-in node [:attributes :resolved-binding-id])))
+                (is (= (get-in declaration [:type-binding :binding-id]) (get-in entry [:type-resolution :binding-id]) (get-in node [:attributes :type-binding-id])))
+                (is (= :resolved-i64-parameter-binding (get-in node [:safety :basis]) (get-in node [:safety :proof :basis])))
+                (is (= :resolved-i64-parameter-declaration (get-in template [:type-facts id :producer-rule])))))
+            (doseq [node nodes]
+              (is (= #{} (:effects node) (:capabilities node)))
+              (is (= :proven-safe (get-in node [:safety :outcome]))))
+            (let [forms (get-in input [:front-end-products :form-tree])
+                  form (first (filter #(= (:form-id %) (second (get-in input [:front-end-products :top-level-form-ids]))) forms))
+                  envelope {:form-tree forms :resolved-parameter declaration}
+                  plan (get-in input [:stage2-plan :functions 'main])]
+              ;; UNIT body guards on derived original DATA, not source-auth
+              ;; or passed-upstream mutation claims. Positive gate is live.
+              (is (true? (invoke parameter-c6-plan 'c6c10-i64-order-body? [envelope plan form])))
+              (doseq [changed [(assoc-in plan [:instructions 0 :function] '<=)
+                               (assoc-in plan [:instructions 0 :function] '=)
+                               (assoc-in plan [:instructions 0 :args 0 :name] 'consumer-index)
+                               (assoc-in plan [:instructions 0 :args 1 :name] 'dependency-index)
+                               (assoc-in plan [:instructions 0 :args 1] {:op :literal :value 4})
+                               (assoc plan :instructions []) (assoc plan :body [])]]
+                (is (false? (invoke parameter-c6-plan 'c6c10-i64-order-body? [envelope changed form])))))
+            (let [sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
+                  context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
+                  core (bootstrap/p15-s23-c6c10-public-artifact context (:compiled-binding-data products) (:ingress products) sealed)
+                  mir (build-mir core) verification (verify-mir core mir)
+                  run (invoke c11-plan 'sh13-run-branch-join-mir-with-arguments [core mir [0 1]])]
+              (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
+              (is (= :passed (:status verification)))
+              (is (= :accepted (:status run)))
+              (is (= true (get-in run [:execution :value])))
+              (is (= [0 1] (:arguments run))))
+            (doseq [malformed [(assoc-in input [:resolved-parameter :parameters] (vec (reverse entries)))
+                               (assoc-in input [:resolved-parameter :parameters 1] (first entries))
+                               (assoc-in input [:resolved-parameter :type-binding :name] 'Bool)
+                               (assoc-in input [:resolved-parameter :type-binding :semantic-span :ordinal] 12)
+                               (assoc-in input [:resolved-parameter :parameters 1 :parameter-binding :scope-id] (:root-syntax-id declaration))
+                               (assoc-in input [:resolved-parameter :parameters 1 :parameter-index] 0)
+                               (assoc-in input [:resolved-parameter :parameters 1 :coordinates 3] (get-in entries [0 :coordinates 1]))
+                               (assoc-in input [:stage2-plan :functions 'main :params] '[consumer-index dependency-index])]]
+              (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [malformed])))))
+            (doseq [index [0 1] field [[:parameter-binding :binding-id] [:type-resolution :binding-id] [:coordinates 1 :projected-syntax-id]]
+                    value [nil "" 17]]
+              (is (= :rejected (:status (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                                              [(assoc-in input (into [:resolved-parameter :parameters index] field) value)])))))
+            (doseq [candidate [(assoc-in template [:core-nodes 1 :type] :gravity/integer)
+                               (assoc-in template [:core-nodes 3 :operands] [(get ids 0)])
+                               (assoc-in template [:core-nodes 4 :attributes :operand-types] [:gravity/integer :gravity/integer])
+                               (assoc-in template [:core-nodes 4 :attributes :primitive] '<=)
+                               (assoc-in template [:type-facts (get ids 1) :producer-rule] :resolved-bool-parameter-declaration)
+                               (assoc-in template [:core-nodes 5 :type :params] [:gravity/i64])
+                               (update template :lexical-binding-records #(vec (reverse %)))]]
+              (is (= :rejected (:status (verify candidate)))))
+            (let [changed (assoc-in input [:resolved-parameter :sh06-artifact-id] (:projection-binding declaration))
+                  substituted (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [changed])]
+              (is (not= (:sh06-artifact-id declaration) (:projection-binding declaration)))
+              (is (= :accepted (:status substituted)))
+              (is (= :passed (:status (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                                             [changed (:artifact-template substituted) (:digest-requests substituted)]))))
+              (is (= :rejected (:status (verify (:artifact-template substituted))))))))))))
+
+(deftest sh12-two-i64-order-rejects-mixed-literal-and-shadowed-operator
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_source.gravity"))
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        text (slurp path) binding (parameter-compiled-binding-data path)]
+    (doseq [[source expected]
+            [[(str/replace text "consumer-index :- I64" "consumer-index :- Bool") "C6-VERIFY"]
+             [(str/replace text "(< dependency-index consumer-index)" "(< dependency-index 4)") "C6-LOWERING-GAP"]
+             [(str/replace text "dependency-index" "<") "C6-LOWERING-GAP"]]]
+      (let [temporary (java.io.File/createTempFile "gravity-sh12-two-i64-order-reject-" ".gravity")]
+        (try
+          (spit temporary source)
+          (let [observed (try
+                           (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                                   [(:envelope (parameter-source-products (.getCanonicalPath temporary) source binding reader-path))])
+                           (catch clojure.lang.ExceptionInfo error {:failure (ex-data error)}))]
+            (is (= expected (or (get-in observed [:failure :id]) (get-in observed [:diagnostics 0 :rule]))) (pr-str observed)))
+          (finally (.delete temporary)))))))
+
+(deftest sh12-two-i64-order-preserves-single-i64-identity
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/i64_parameter_source.gravity"))
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        input (:envelope (parameter-source-products path (slurp path) nil reader-path))
+        raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
+        template (:artifact-template raw) nodes (:core-nodes template)]
+    (is (= :gravity/c6-c10-resolved-i64-parameter-v1 (get-in input [:resolved-parameter :kind])))
+    (is (= :accepted (:status raw)))
+    (is (= [:parameter :local :function] (mapv :source-operation nodes)))
+    (is (= [:gravity/i64] (get-in nodes [2 :type :params])))
+    (is (= [:gravity/i64 :gravity/i64] (mapv :type (take 2 nodes))))
+    (is (= :gravity/i64 (get-in nodes [2 :type :return])))
+    (is (= :passed (:status (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template [input template (:digest-requests raw)]))))
+    (let [calls (atom {:hash 0 :equals 0})
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! calls update :hash inc) 424242)
+                   (equals [_] (swap! calls update :equals inc) false))]
+      (.hashCode opaque)
+      (.equals opaque :probe)
+      (is (= {:hash 1 :equals 1} @calls))
+      (reset! calls {:hash 0 :equals 0})
+      (let [rejected (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                             [(assoc-in input [:resolved-parameter :kind] opaque)])]
+        (is (= :rejected (:status rejected)))
+        (is (= "C6-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= {:hash 0 :equals 0} @calls))))))
+
 (deftest sh12-current-c6-produces-resolved-i64-identity
   ;; The declared signed-64 type is not a runtime argument/range witness.
   ;; These are real C2/C5 products and current C6 reconstruction, not admission.
@@ -726,7 +882,8 @@
 (deftest sh12-two-parameter-producer-preserves-singular-kind-and-arity-priority
   ;; One affected original G source, not an unchanged paired-source proof.
   (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
-        input (parameter-input path (slurp path)) declaration (:resolved-parameter input)
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        input (:envelope (parameter-source-products path (slurp path) nil reader-path)) declaration (:resolved-parameter input)
         raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
         template (:artifact-template raw) function (last (:core-nodes template))
         bad (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
