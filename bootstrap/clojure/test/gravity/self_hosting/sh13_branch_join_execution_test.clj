@@ -27,13 +27,15 @@
 (defn- current-parameter-pair
  ([path] (current-parameter-pair path nil))
  ([path compiled-binding]
+  (current-parameter-pair path compiled-binding nil))
+ ([path compiled-binding reader-source-path]
   ;; Original current-source products and original assembler, not a supplied
   ;; normalized module, patched MIR or public pinned-source admission.
   (let [source-start (System/nanoTime)
-        text (slurp path) products ((existing 'parameter-source-products) path text compiled-binding)
+        text (slurp path) products ((existing 'parameter-source-products) path text compiled-binding reader-source-path)
         c6-plan (existing 'parameter-c6-plan) call (existing 'invoke)
         raw (call c6-plan 'c6-c10-build-checked-core-template [(:envelope products)])
-        fresh ((existing 'parameter-source-products) path text (:compiled-binding-data products))
+        fresh ((existing 'parameter-source-products) path text (:compiled-binding-data products) reader-source-path)
         replay (call c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
         upstream (call c6-plan 'c6-c10-verify-checked-core-template
                        [(:envelope fresh) (:artifact-template raw) (:digest-requests replay)])
@@ -56,6 +58,114 @@
   (try (invoke 'sh13-run-branch-join-mir-with-arguments core mir arguments)
        (catch clojure.lang.ExceptionInfo error
          {:consumer-exception (select-keys (ex-data error) [:id :function])})))
+
+(deftest sh13-consumes-two-i64-parameters-in-original-strict-order
+  ;; Actual c6c10-build-edge-list ordering subtree, not that complete helper,
+  ;; a generic Integer/literal conversion, or public source admission.
+  (let [directory "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/"
+        reader-path (str (.resolve @(existing 'root) "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        binding ((existing 'parameter-compiled-binding-data)
+                 (str (.resolve @(existing 'root) (str directory "two_i64_order_source.gravity"))))]
+    (doseq [extension ["gravity"]]
+      (let [path (str (.resolve @(existing 'root) (str directory "two_i64_order_source." extension)))
+            {:keys [raw upstream core mir]} (current-parameter-pair path binding reader-path)
+            verification (invoke 'sh12-verify-branch-join-mir core mir)
+            nodes (:core-nodes core) ids (mapv :node-id nodes)
+            [left right left-local right-local comparison root] ids
+            function (get-in mir [:functions 'main]) entry (:entry function)]
+        (is (= :accepted (:status raw)))
+        (is (= :passed (:status upstream)))
+        (is (= :passed (:status verification)) (pr-str (:diagnostics mir)))
+        (when (= :passed (:status verification))
+          (let [context (invoke 'sh13-c6p-i64-context core mir)
+                frame (invoke 'sh13-c6p-i64-frame core context)
+                arguments [[Long/MIN_VALUE Long/MAX_VALUE] [Long/MAX_VALUE Long/MIN_VALUE]
+                           [0 0] [-1 0] [0 -1] [0 1] [1 0] [Long/MAX_VALUE Long/MAX_VALUE]
+                           [(biginteger Long/MIN_VALUE) (biginteger Long/MAX_VALUE)]]
+                outcomes (mapv #(argument-run-observation core mir %) arguments)
+                snapshot [core mir]]
+            (is (= [:parameter :parameter :local :local :integer-lt :function] (mapv :source-operation nodes)))
+            (is (= 6 (count (get-in mir [:data-flow-graph :values])) (count (get-in mir [:data-flow-graph :definitions]))))
+            (is (= 5 (count (get-in core [:dependency-order-graph :edges])) (count (get-in mir [:data-flow-graph :edges]))))
+            (is (= [left-local right-local comparison root] (mapv :op-id (:operations context))))
+            (is (= [:local :local :integer-lt :function-boundary] (mapv :opcode (:operations context))))
+            (is (= {entry [entry]} (get-in mir [:control-flow-graph :dominance])))
+            (is (= [] (get-in mir [:control-flow-graph :edges])))
+            (is (nil? (get-in mir [:control-flow-graph :join])))
+            (is (= 1 (count (:blocks function)) (count (get-in frame [:functions 0 :blocks]))))
+            (is (= [left right] (:params function) (get-in frame [:functions 0 :params]) (get-in frame [:functions 0 :blocks 0 :params])))
+            (is (= [left-local right-local comparison] (mapv :op-id (get-in frame [:functions 0 :blocks 0 :operations]))))
+            (is (= [:local :local :lt] (mapv :opcode (get-in frame [:functions 0 :blocks 0 :operations]))))
+            (is (= [:i64 :i64 :bool] (mapv :type (get-in frame [:functions 0 :blocks 0 :operations]))))
+            (is (= {:opcode :return :value comparison} (get-in frame [:functions 0 :blocks 0 :terminator])))
+            (is (= :gravity/bool (:returns function) (get-in nodes [4 :type]) (get-in nodes [5 :type :return])))
+            (is (= [:gravity/i64 :gravity/i64] (get-in nodes [5 :type :params])))
+            (is (= :single-function-linear (first (:checks verification))))
+            (is (not-any? #{:single-function-diamond :edge-specific-join-dominance} (:checks verification)))
+            (doseq [[index id] (map-indexed vector [left right])]
+              (is (= {:value-id id :parameter-index index :block-id entry}
+                     (get-in mir [:data-flow-graph :definitions id]) (get-in mir [:data-flow-graph :values id :defined-by]))))
+            (doseq [[args result] (map vector arguments outcomes)]
+              (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+              (when (= :accepted (:status result))
+                (is (= args (:arguments result)))
+                (is (= (< (first args) (second args)) (get-in result [:execution :value])))
+                (is (boolean? (get-in result [:execution :value])))
+                (is (= 508 (get-in result [:execution :fuel])))
+                (is (= [left-local right-local comparison] (vec (keep :operation (get-in result [:execution :trace])))))
+                (is (= comparison (get-in result [:projection :return-value-id])))
+                (is (= [:gravity/i64 :gravity/i64] (mapv :source-type (get-in result [:projection :parameters]))))
+                (is (= [:i64 :i64] (mapv :runtime-type (get-in result [:projection :parameters]))))
+                (is (= [:i64 :i64 :bool :bool] (mapv :runtime-type (get-in result [:projection :operations]))))
+                (is (= (:type (last nodes)) (get-in result [:projection :operations 3 :source-type])))
+                (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir args result))))
+                (doseq [candidate [(assoc result :arguments [17 18])
+                                   (update-in result [:execution :value] not)
+                                   (assoc-in result [:execution :trace] [])
+                                   (assoc-in result [:projection :parameters 1 :definition :operation-id] nil)
+                                   (assoc-in result [:projection :operations 2 :source-type] :gravity/i64)]]
+                  (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir args candidate)))))))
+            ;; Both are true, but the explicit ordered argument bindings differ.
+            (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [0 2] (get outcomes 5)))))
+            (let [calls (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! calls inc) 0)
+                                        (equals [_] (swap! calls inc) false))]
+              (.hashCode opaque) (.equals opaque :probe)
+              (is (= 2 @calls)) (reset! calls 0)
+              (is (= :accepted (:status (argument-run-observation core mir [0 1]))))
+              (doseq [args (concat [nil {} '(0 1) [] [0] [0 1 2]]
+                                  (for [bad [nil true false 0.0 "0" :zero 'zero [0] {} inc opaque
+                                             (dec (bigint Long/MIN_VALUE)) (inc (bigint Long/MAX_VALUE))]
+                                        index [0 1]] (assoc [0 1] index bad)))]
+                (let [result (argument-run-observation core mir args)]
+                  (is (= :rejected (:status result)))
+                  (is (= ["C11-TYPE" :two-i64-entry-arguments] ((juxt :diagnostic-id :missing-fact) (first (:diagnostics result)))))
+                  (is (= :not-applicable (:arguments result)))
+                  (is (nil? (:execution result)))))
+              (is (zero? @calls)))
+            (doseq [[bad-core bad-mir]
+                    [[(assoc-in core [:core-nodes 1 :type] :gravity/integer) mir]
+                     [(assoc-in core [:core-nodes 3 :operands] [left]) mir]
+                     [(assoc-in core [:core-nodes 4 :attributes :primitive] '<=) mir]
+                     [(assoc-in core [:resolved-parameter :parameters 1 :parameter-index] 0) mir]
+                     [(assoc-in core [:resolved-parameter :type-binding :semantic-span :ordinal] 12) mir]
+                     [(assoc-in core [:type-facts right :type] :gravity/bool) mir]
+                     [(assoc-in core [:proof-records comparison :numeric-mode] :unchecked) mir]
+                     [(assoc-in core [:source-origin-table (get-in nodes [4 :source :origin-id]) :c2-form-kind] :symbol) mir]
+                     [core (assoc-in mir [:functions 'main :params] [right left])]
+                     [core (assoc-in mir [:functions 'main :blocks entry :instructions 2 :operands] [right-local left-local])]
+                     [core (assoc-in mir [:functions 'main :blocks entry :instructions 2 :opcode] :integer-lte)]
+                     [core (assoc-in mir [:data-flow-graph :definitions right :operation-id] nil)]
+                     [core (assoc-in mir [:data-flow-graph :definitions right :parameter-index] 0)]
+                     [core (assoc-in mir [:data-flow-graph :definitions right :block-id] "foreign")]
+                     [core (assoc-in mir [:control-flow-graph :edges] [{:from entry :to entry}])]]]
+              (let [original (invoke 'sh12-verify-branch-join-mir bad-core bad-mir)
+                    result (argument-run-observation bad-core bad-mir [nil nil])]
+                (is (= :rejected (:status original) (:status result)))
+                (is (= (:diagnostics original) (:diagnostics result)))
+                (is (nil? (:execution result)))))
+            (is (= :rejected (:status (run core mir))))
+            (is (= snapshot [core mir]))))))))
 
 (deftest sh13-consumes-resolved-i64-identity-with-signed-arguments
   ;; Original three-row declared-I64 identity, not generic Integer coercion,
