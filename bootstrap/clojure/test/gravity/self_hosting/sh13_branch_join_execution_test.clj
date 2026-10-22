@@ -59,6 +59,18 @@
        (catch clojure.lang.ExceptionInfo error
          {:consumer-exception (select-keys (ex-data error) [:id :function])})))
 
+(deftest sh13-consumes-two-i64-order-as-original-conditional-control
+  ;; The actual lexical-binding-index guard's comparison controls a branch;
+  ;; this is not a mixed generic-Integer/literal comparison or whole helper.
+  (let [path (str (.resolve @(existing 'root)
+                  "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_condition_source.gravity"))
+        reader-path (str (.resolve @(existing 'root) "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        {:keys [raw upstream core mir]} (current-parameter-pair path nil reader-path)
+        verification (invoke 'sh12-verify-branch-join-mir core mir)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream)))
+    (is (= :passed (:status verification)) (pr-str (:diagnostics mir)))))
+
 (deftest sh13-consumes-two-i64-parameters-in-original-strict-order
   ;; Actual c6c10-build-edge-list ordering subtree, not that complete helper,
   ;; a generic Integer/literal conversion, or public source admission.
