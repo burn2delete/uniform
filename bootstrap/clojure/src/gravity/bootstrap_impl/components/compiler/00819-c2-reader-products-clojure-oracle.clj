@@ -6,8 +6,6 @@
     source-path source-text reader-options
     (reader-project-context-for-source source-path)))
   ([source-path source-text reader-options project-context]
-   (c2-reader-products source-path source-text reader-options project-context nil))
-  ([source-path source-text reader-options project-context reader-source-path]
    (let [source-unit (c2-source-unit-record source-path source-text
                                             reader-options project-context)
          table (stage1-reader-table)]
@@ -53,6 +51,8 @@
    (c2-reader-products source-path source-text reader-options
                        (reader-project-context-for-source source-path)))
   ([source-path source-text reader-options project-context]
+   (c2-reader-products source-path source-text reader-options project-context nil))
+  ([source-path source-text reader-options project-context reader-source-path]
    (let [source-bytes (.getBytes source-text
                                  java.nio.charset.StandardCharsets/UTF_8)
          resolved (sh03-reader-resolved-result!
