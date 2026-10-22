@@ -2671,6 +2671,62 @@
     (assoc input :child child :types (assoc types (:operator-node-id call) (:descriptor child)
                                                   (:core-node-id call) (:type child :gravity.type/unknown)))))
 
+(defn- let-vector-slice-input [value start end]
+  ;; One immutable binding and direct slice body, as normalized DATA.
+  (let [base (if (string? value) (vector-slice-input value start end) (literal-vector-slice-input value start end))
+        bid :slice-let-binding name 'characters outer :slice-let-outer body :slice-let-body
+        source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
+        form (fn [id kind value parent children scope]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :kind kind :value value :parent-form-id parent :child-form-ids children :scope-id scope})
+        reference {:node-id :slice-ref :core-form :reference :children [] :resolved-binding-ids [bid] :source (source :slice-ref)
+                   :binding-context body :attributes {:symbol name :position :expression :binding-id bid :binding-class :lexical
+                                                     :definition-syntax-id :slice-let-name} :evaluation {:kind :value :order []}}
+        children [:slice-operator :slice-ref :slice-start :slice-end]
+        node (-> (:node base) (assoc :children children :binding-context body)
+                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        call (assoc (:call base) :argument-node-ids [:slice-ref :slice-start :slice-end] :ordered-evaluation-node-ids children)
+        edge (assoc (:edge base) :argument-core-node-ids [:slice-ref :slice-start :slice-end] :ordered-evaluation-node-ids children)
+        owner {:node-id :slice-let :core-form :let :children [:call :slice-call] :resolved-binding-ids [bid] :source (source :slice-let)
+               :binding-context outer
+               :attributes {:binding-vector-form-id :slice-let-bindings :binding-vector-syntax-id :slice-let-bindings
+                            :outer-scope-id outer :body-scope-id body :binding-count 1 :body-count 1
+                            :initializer-child-indexes [0] :body-child-indexes [1] :evaluation-order :initializers-then-body-left-to-right
+                            :result-policy {:kind :last-body :child-index 1}}
+               :evaluation {:kind :initializers-then-body-left-to-right
+                            :order [{:index 0 :core-node-id :call} {:index 1 :core-node-id :slice-call}]}}
+        record {:let-core-node-id :slice-let :ordinal 0 :name name :binding-id bid
+                :definition-form-id :slice-let-name :definition-syntax-id :slice-let-name :binding-scope-id body
+                :initializer-form-id :call :initializer-syntax-id :call :initializer-scope-id outer
+                :initializer-node-id :call :visible-prior-binding-ids [] :mutability :immutable}
+        forms (-> (:forms base) (assoc-in [:call :parent-form-id] :slice-let-bindings) (assoc-in [:call :scope-id] outer)
+                  (assoc-in [:slice-call :parent-form-id] :slice-let) (assoc-in [:slice-call :scope-id] body)
+                  (assoc-in [:slice-call :child-form-ids] children)
+                  (assoc :slice-ref (form :slice-ref :symbol name :slice-call [] body)
+                         :slice-let (form :slice-let :list nil nil [:slice-let-op :slice-let-bindings :slice-call] outer)
+                         :slice-let-op (form :slice-let-op :symbol 'let :slice-let [] outer)
+                         :slice-let-bindings (form :slice-let-bindings :vector nil :slice-let [:slice-let-name :call] outer)
+                         :slice-let-name (form :slice-let-name :symbol name :slice-let-bindings [] body)))
+        forms (reduce #(assoc-in %1 [%2 :scope-id] body) forms [:slice-operator :slice-start :slice-end])
+        nodes (assoc (:nodes base) :slice-call node :slice-ref reference :slice-let owner)
+        core (-> (:core base) (assoc :nodes (into (mapv #(get nodes (:node-id %)) (get-in base [:core :nodes])) [reference owner])
+                                    :lexical-bindings [record] :mutations [])
+                 (update :calls #(mapv (fn [row] (if (= :slice-call (:core-node-id row)) call row)) %))
+                 (update :call-edges #(mapv (fn [row] (if (= :slice-call (:call-core-node-id row)) edge row)) %)))
+        input (assoc base :core core :nodes nodes :node node :call call :edge edge :forms forms
+                          :bindings (assoc (:bindings base) bid {:binding-id bid :name name :binding-class :lexical :kind :local
+                                                               :scope-id body :definition-syntax-id :slice-let-name :mutability :immutable}))
+        input (if (string? value) (vector-slice-established input) input)]
+    (assoc-in input [:types :slice-ref] (get-in input [:types :call]))))
+
+(deftest sh08-let-vector-slice-development-kernel
+  (doseq [value ["sha256:abcd" [65 66 67]]]
+    (let [{:keys [core node call edge nodes bindings types forms]} (let-vector-slice-input value 1 2)
+          result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= {:kind :gravity.type/vector :shape :literal :element-types [(if (string? value) :gravity.type/character :gravity.type/integer)]}
+             (:type result))))))
+
 (defn- vector-slice-derived [input budget]
   (invoke-c7 'sh08-vsl-derive [(:core input) (:node input) (:call input) (:edge input)
                               (:nodes input) (:bindings input) (:types input) (:forms input) budget]))
