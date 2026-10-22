@@ -251,14 +251,15 @@
           (let [sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
                 context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
                 core (bootstrap/p15-s23-c6c10-public-artifact context (:compiled-binding-data products) (:ingress products) sealed)
-                mir (build-mir core)]
+                mir (build-mir core)
+                rejected-verification (verify-mir core mir)]
             (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
             (is (= ["C11-MODULE" :original-c6-bool-parameter-family]
                    ((juxt :diagnostic-id :missing-fact) (diagnostic mir))))
             (doseq [arguments [[false false] [false true] [true false] [true true]]]
               (let [report (invoke c11-plan 'sh13-run-branch-join-mir-with-arguments [core mir arguments])]
                 (is (= :rejected (:status report)))
-                (is (= (:diagnostics mir) (:diagnostics report))))))
+                (is (= (:diagnostics rejected-verification) (:diagnostics report))))))
           (doseq [malformed [(assoc-in input [:resolved-parameter :parameters] [])
                              (assoc-in input [:resolved-parameter :parameters] (vec (reverse entries)))
                              (assoc-in input [:resolved-parameter :parameters 1] (first entries))
@@ -309,6 +310,20 @@
                               (catch clojure.lang.ExceptionInfo error {:failure (ex-data error)}))]
             (is (= expected (get-in observed [:failure :id])) (pr-str [label (:failure observed)])))
           (finally (.delete temporary)))))))
+
+(deftest sh12-two-bool-parameter-producer-checks-both-source-arms
+  ;; Actual source/C2/C5 input reaches C6. No argument selection can hide the
+  ;; Bool else arm's disagreement with the Integer then arm.
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity"))
+        source (str/replace (slurp path) ") 11 22)" ") 11 true)")
+        temporary (java.io.File/createTempFile "gravity-sh12-two-bool-arm-type-" ".gravity")]
+    (try
+      (spit temporary source)
+      (let [input (parameter-input (.getAbsolutePath temporary) source)
+            raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+        (is (= :rejected (:status raw)))
+        (is (= "C7-TYPE-MISMATCH" (get-in raw [:diagnostics 0 :rule]))))
+      (finally (.delete temporary)))))
 
 (deftest sh12-two-parameter-producer-preserves-singular-kind-and-arity-priority
   ;; One affected original G source, not an unchanged paired-source proof.
