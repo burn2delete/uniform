@@ -54,6 +54,135 @@
        (catch clojure.lang.ExceptionInfo error
          {:consumer-exception (select-keys (ex-data error) [:id :function])})))
 
+(deftest sh13-consumes-two-independently-resolved-bool-parameters
+  ;; Actual independently resolved C6 parameters, not aliased caller values.
+  ;; Development source composition only, not public frozen-source admission.
+  (doseq [extension ["gravity" "qst"]]
+    (let [path (str (.resolve @(existing 'root)
+                      (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source." extension)))
+          {:keys [raw upstream core mir]} (current-parameter-pair path)
+          verification (invoke 'sh12-verify-branch-join-mir core mir)
+          nodes (:core-nodes core) ids (mapv :node-id nodes) left (get ids 0) right (get ids 1)]
+      (is (= :accepted (:status raw)))
+      (is (= :passed (:status upstream)))
+      (is (= :passed (:status verification)) (pr-str (:diagnostics mir)))
+      (when (not= :passed (:status verification))
+        (println "two-parameter original predicates"
+                 {:shape (invoke 'sh12-c6p-shape-valid? core (invoke 'sh12-c6p-role-view core))
+                  :roles (invoke 'sh12-c6p-role-nodes-valid? core 0)
+                  :declaration (invoke 'sh12-c6p-declaration-valid? core)
+                  :problem (invoke 'sh12-c6p-nodes-problem core nodes 0)
+                  :graphs (invoke 'sh12-c6p-graphs-valid? core (invoke 'sh12-c6p-role-view core))})
+        (println "two-parameter original rows"
+                 (mapv #(select-keys % [:source-operation :path :plan-node? :plan-depth :type]) nodes)))
+      (when (= :passed (:status verification))
+        (let [context (invoke 'sh13-c6p-predicate-context core mir)
+              e (get-in context [:entry :block-id]) k (get-in context [:inner-join :block-id])
+              j (get-in context [:join :block-id]) inner (get ids 6) outer (get ids 10)
+              frame (invoke 'sh13-c6p-nested-frame core context) blocks (get-in frame [:functions 0 :blocks])
+              outcomes (mapv #(argument-run-observation core mir %) [[false false] [false true] [true false] [true true]])]
+          (is (= 12 (count nodes) (count (get-in mir [:data-flow-graph :values]))))
+          (is (= 10 (count (:operations context))))
+          (is (= 11 (count (get-in core [:dependency-order-graph :edges]))
+                 (count (get-in mir [:data-flow-graph :edges]))))
+          (is (= 8 (count (get-in mir [:control-flow-graph :edges]))))
+          (is (= [2 1 1 2 1 1 2]
+                 (mapv #(count (get-in context [% :instructions])) [:entry :inner-then :inner-else :inner-join :then :else :join])))
+          (is (= [left right] (get-in mir [:functions 'main :params]) (get-in frame [:functions 0 :params])
+                 (get-in blocks [0 :params]) (mapv :binding-node-id (:lexical-binding-records core))))
+          (doseq [index [0 1]]
+            (let [id (get ids index) definition {:value-id id :parameter-index index :block-id e}]
+              (is (= definition (get-in mir [:data-flow-graph :definitions id])
+                     (get-in mir [:data-flow-graph :values id :defined-by])))
+              (is (= :parameter (get-in mir [:data-flow-graph :values id :kind])))
+              (is (not-any? #(= id (:op-id %)) (:operations context)))))
+          (is (= [right] (get-in blocks [0 :terminator :then-arguments]) (get-in blocks [1 :params])))
+          (is (= [] (get-in blocks [0 :terminator :else-arguments]) (get-in blocks [2 :params])))
+          (is (= [(get ids 4)] (get-in blocks [1 :terminator :arguments])))
+          (is (= [inner] (get-in blocks [3 :params])))
+          (is (= [outer] (get-in blocks [6 :params]) (get-in nodes [11 :operands])))
+          (is (= [(get-in nodes [6 :source :origin-id]) (get-in nodes [10 :source :origin-id])]
+                 [(get-in nodes [3 :source :generated-origin 0 :input-origin-id])
+                  (get-in nodes [7 :source :generated-origin 0 :input-origin-id])]))
+          ;; Derived-context UNIT gates, not public passed-upstream mutations.
+          (is (true? (invoke 'sh13-c6p-shape-valid? core mir context)))
+          (doseq [payload [nil 0 1 "false"]]
+            (is (false? (invoke 'sh13-c6p-shape-valid? core mir
+                                (assoc-in context [:inner-else :instructions 0 :constant-payload :value] payload)))))
+          (doseq [role [:then :else] payload [9223372036854775808N -9223372036854775809N]]
+            (is (false? (invoke 'sh13-c6p-shape-valid? core mir
+                                (assoc-in context [role :instructions 0 :constant-payload :value] payload)))))
+          (doseq [operands [[left] [] [right right]]]
+            (is (false? (invoke 'sh13-c6p-shape-valid? core mir
+                                (assoc-in context [:inner-then :instructions 0 :operands] operands)))))
+          (doseq [[arguments result] (map vector [[false false] [false true] [true false] [true true]] outcomes)]
+            (let [[a b] arguments]
+              (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+              (when (= :accepted (:status result))
+                (is (= arguments (:arguments result)))
+                (is (= (if (and a b) 11 22) (get-in result [:execution :value])))
+                (is (= 502 (get-in result [:execution :fuel])))
+                (is (= [(get ids 2) (get ids 3) (get ids (if a 4 5)) (get ids 7) (get ids (if (and a b) 8 9))]
+                       (vec (keep :operation (get-in result [:execution :trace])))))
+                (is (= (if a 1 0) (count (filter #(= (get ids 4) (:operation %)) (get-in result [:execution :trace])))))
+                (is (= [left right] (mapv :value-id (get-in result [:projection :parameters]))))
+                (doseq [index [0 1]]
+                  (is (= (get-in mir [:data-flow-graph :definitions (get ids index)])
+                         (get-in result [:projection :parameters index :definition])))
+                  (is (= (get-in nodes [index :source]) (get-in result [:projection :parameters index :source]))))
+                (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments result))))
+                (doseq [candidate [(assoc result :arguments [(not a) b]) (assoc result :arguments [a (not b)])
+                                   (assoc-in result [:execution :value] -1)
+                                   (update-in result [:projection :parameters] #(vec (reverse %)))
+                                   (assoc-in result [:projection :parameters 1 :definition :operation-id] nil)
+                                   (update-in result [:execution :trace] #(vec (drop 1 %)))]]
+                  (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments candidate))))))))
+          ;; The skipped right argument still binds identity even when both
+          ;; complete executions return the same value.
+          (is (= 22 (get-in outcomes [0 :execution :value]) (get-in outcomes [1 :execution :value])))
+          (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [false true] (first outcomes)))))
+          (let [calls (atom 0) hostile (proxy [Object] [] (equals [_] (swap! calls inc) true))]
+            (is (true? (.equals hostile false))) (is (= 1 @calls)) (reset! calls 0)
+            (doseq [arguments [nil true {} '(true false) [] [true] [true false true]
+                               [nil false] [false nil] [0 true] [true 0] [hostile false] [false hostile] hostile]]
+              (let [result (argument-run-observation core mir arguments)]
+                (is (= :rejected (:status result)))
+                (is (= ["C11-TYPE" :two-bool-entry-arguments]
+                       ((juxt :diagnostic-id :missing-fact) (first (:diagnostics result)))))
+                (is (nil? (:execution result)))))
+            (is (zero? @calls)))
+          (doseq [[bad-core bad-mir]
+                  [[(assoc-in core [:core-nodes 4 :operands] [left]) mir]
+                   [(assoc-in core [:core-nodes 4 :attributes :resolved-binding] left) mir]
+                   [(assoc-in core [:core-nodes 1 :attributes :name] 'left) mir]
+                   [(assoc-in core [:core-nodes 1 :attributes :parameter-index] 0) mir]
+                   [(assoc-in core [:resolved-parameter :parameters 1 :parameter-binding :binding-id]
+                              (get-in core [:resolved-parameter :parameters 0 :parameter-binding :binding-id])) mir]
+                   [(assoc-in core [:resolved-parameter :parameters 1 :parameter-binding :scope-id]
+                              (get-in core [:resolved-parameter :root-syntax-id])) mir]
+                   [(assoc-in core [:resolved-parameter :parameters 1 :type-resolution :reference-syntax-id]
+                              (get-in core [:resolved-parameter :parameters 0 :type-resolution :reference-syntax-id])) mir]
+                   [(update core :lexical-binding-records #(vec (reverse %))) mir]
+                   [(assoc-in core [:core-nodes 11 :attributes :params] '[right left]) mir]
+                   [(assoc-in core [:type-facts right :dependencies] [left]) mir]
+                   [(assoc-in core [:effect-facts right :direct] #{:io/write}) mir]
+                   [(assoc-in core [:proof-records right :proof-id] nil) mir]
+                   [(assoc-in core [:source-origin-table (get-in nodes [1 :source :origin-id])] nil) mir]
+                   [(assoc-in core [:core-nodes 5 :attributes :value] 0) mir]
+                   [core (assoc-in mir [:functions 'main :params] [right left])]
+                   [core (assoc-in mir [:data-flow-graph :definitions right :operation-id] nil)]
+                   [core (assoc-in mir [:data-flow-graph :definitions right :parameter-index] 0)]
+                   [core (assoc-in mir [:data-flow-graph :definitions right :block-id] k)]
+                   [core (assoc-in mir [:functions 'main :blocks e :instructions 0 :operands] [right])]
+                   [core (assoc-in mir [:control-flow-graph :join :incoming 0 :value] inner)]]]
+            (let [original (invoke 'sh12-verify-branch-join-mir bad-core bad-mir)
+                  result (argument-run-observation bad-core bad-mir [nil nil])]
+              (is (= :rejected (:status original) (:status result)))
+              (is (= (:diagnostics original) (:diagnostics result)))
+              (is (nil? (:execution result)))))
+          (is (= :rejected (:status (run core mir))))
+          (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))))
+
 (deftest sh13-executes-original-c6-bool-parameter-through-explicit-arguments
   (let [root @(existing 'root)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"
