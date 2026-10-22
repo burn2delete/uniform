@@ -2999,7 +2999,11 @@
 
 (defn- let-vector-slice-first-input [value start end]
   ;; Literal-origin local client stem; no parameter or source-admission premise.
-  (let [input (let-vector-slice-input value start end) body :slice-let-body
+  (let [input (let-vector-slice-input value start end)
+        node-list (mapv #(assoc-in % [:evaluation :region] :module-initialization) (get-in input [:core :nodes]))
+        input (assoc input :nodes (into {} (map (juxt :node-id identity) node-list)) :core (assoc (:core input) :nodes node-list))
+        input (if (:child input) (vector-slice-established input) input)
+        body :slice-let-body
         id :let-first-call op :let-first-operator bid :let-first-binding definition :let-first-definition
         source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
         binding (assoc (get-in input [:bindings :ordering-binding]) :binding-id bid :name 'first :definition-syntax-id definition)
