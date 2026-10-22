@@ -93,10 +93,19 @@
    {:target :windows :support :unsupported
     :invokes-clojure? false :links-jvm? false :fallback? false}])
 (def w5-c16-target-scope
-  {:candidate-target w5-c16-candidate-target
-   :candidate-platform w5-c16-candidate-platform
-   :unsupported-targets w5-c16-unsupported-targets
-   :unsupported-target-policies w5-c16-unsupported-target-policies
+  {:candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}]
    :cross-target-inference? false
    :fallback? false})
 
@@ -158,11 +167,19 @@
                    :public-authority? false
                    :full-language-credit? false
                    :matrix-240-credit? false
-                   :candidate-target w5-c16-candidate-target
-                   :candidate-platform w5-c16-candidate-platform
-                   :unsupported-targets w5-c16-unsupported-targets
+                   :candidate-target :llvm-x86_64-linux
+                   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                        :artifact-format :elf :abi :sysv-amd64}
+                   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
                    :unsupported-target-policies
-                   w5-c16-unsupported-target-policies
+                   [{:target :darwin :support :unsupported
+                     :invokes-clojure? false :links-jvm? false :fallback? false}
+                    {:target :darwin-arm64 :support :unsupported
+                     :invokes-clojure? false :links-jvm? false :fallback? false}
+                    {:target :darwin-x86_64 :support :unsupported
+                     :invokes-clojure? false :links-jvm? false :fallback? false}
+                    {:target :windows :support :unsupported
+                     :invokes-clojure? false :links-jvm? false :fallback? false}]
                    :cross-target-inference? false
                    :fallback? false}})
 

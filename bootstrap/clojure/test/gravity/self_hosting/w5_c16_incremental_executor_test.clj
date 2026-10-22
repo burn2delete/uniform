@@ -320,6 +320,7 @@
           result (run-request input)
           verify (fn [request-value candidate]
                    (invoke engine-plan 'w5-c16-verify-result [request-value candidate]))]
+      (is (true? (invoke engine-plan 'w5-c16-change-valid? [change])))
       (is (= :accepted (:status result)))
       (when (= :accepted (:status result))
         (let [[unchanged changed] (:operations result)
