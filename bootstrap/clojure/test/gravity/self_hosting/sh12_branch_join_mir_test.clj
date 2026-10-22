@@ -299,10 +299,11 @@
   ;; c6c10-build-edge-list's strict-index-order subtree, not a mixed literal
   ;; comparison, runtime width witness, or execution of that complete helper.
   (let [directory "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/"
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
         binding (parameter-compiled-binding-data (str (.resolve @root (str directory "two_i64_order_source.gravity"))))]
     (doseq [extension ["gravity" "qst"]]
       (let [path (str (.resolve @root (str directory "two_i64_order_source." extension))) text (slurp path)
-            products (parameter-source-products path text binding) input (:envelope products)
+            products (parameter-source-products path text binding reader-path) input (:envelope products)
             declaration (:resolved-parameter input) entries (:parameters declaration)
             raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
         (is (= :gravity/c6-c10-resolved-two-i64-parameters-v1 (:kind declaration)))
@@ -317,7 +318,7 @@
         (when (= :accepted (:status raw))
           (let [template (:artifact-template raw) nodes (:core-nodes template) ids (mapv :node-id nodes)
                 comparison (get nodes 4) function (get nodes 5)
-                fresh (parameter-source-products path text binding)
+                fresh (parameter-source-products path text binding reader-path)
                 replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
                 verify (fn [candidate] (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
                                               [(:envelope fresh) candidate (:digest-requests replay)]))]
@@ -407,6 +408,7 @@
 
 (deftest sh12-two-i64-order-rejects-mixed-literal-and-shadowed-operator
   (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_source.gravity"))
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
         text (slurp path) binding (parameter-compiled-binding-data path)]
     (doseq [[source expected]
             [[(str/replace text "consumer-index :- I64" "consumer-index :- Bool") "C6-VERIFY"]
@@ -417,14 +419,16 @@
           (spit temporary source)
           (let [observed (try
                            (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
-                                   [(:envelope (parameter-source-products (.getAbsolutePath temporary) source binding))])
+                                   [(:envelope (parameter-source-products (.getAbsolutePath temporary) source binding reader-path))])
                            (catch clojure.lang.ExceptionInfo error {:failure (ex-data error)}))]
             (is (= expected (or (get-in observed [:failure :id]) (get-in observed [:diagnostics 0 :rule]))) (pr-str observed)))
           (finally (.delete temporary)))))))
 
 (deftest sh12-two-i64-order-preserves-single-i64-identity
   (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/i64_parameter_source.gravity"))
-        input (parameter-input path (slurp path)) raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        input (:envelope (parameter-source-products path (slurp path) nil reader-path))
+        raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
         template (:artifact-template raw) nodes (:core-nodes template)]
     (is (= :gravity/c6-c10-resolved-i64-parameter-v1 (get-in input [:resolved-parameter :kind])))
     (is (= :accepted (:status raw)))
@@ -865,7 +869,8 @@
 (deftest sh12-two-parameter-producer-preserves-singular-kind-and-arity-priority
   ;; One affected original G source, not an unchanged paired-source proof.
   (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
-        input (parameter-input path (slurp path)) declaration (:resolved-parameter input)
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        input (:envelope (parameter-source-products path (slurp path) nil reader-path)) declaration (:resolved-parameter input)
         raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
         template (:artifact-template raw) function (last (:core-nodes template))
         bad (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
