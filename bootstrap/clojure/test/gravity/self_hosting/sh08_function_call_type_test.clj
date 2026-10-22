@@ -3143,6 +3143,77 @@
       (is (= ["C7-VERIFY" :vector-slice-source-mismatch] ((juxt :rule :reason) malformed))))))
 
 
+(defn- let-vector-slice-first-membership-input [value members start end positions]
+  ;; Actual two-parent client DATA; the standalone suffix path already works.
+  (let [base (let-vector-slice-first-input value start end positions) body :slice-let-body
+        values (vec members) leaves (mapv #(keyword (str "let-member-character-" %)) (range (count values)))
+        id :let-member-call op :let-member-operator bid :let-member-binding definition :let-member-definition
+        source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
+        form (fn [id kind value parent children] {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                                                 :kind kind :value value :parent-form-id parent :child-form-ids children :scope-id body})
+        binding (assoc (get-in base [:bindings :slice-binding]) :binding-id bid :name 'contains? :definition-syntax-id definition)
+        operator {:node-id op :core-form :reference :children [] :resolved-binding-ids [bid] :source (source op) :binding-context body
+                  :attributes {:symbol 'contains? :position :operator :binding-id bid :binding-class :core :definition-syntax-id definition}
+                  :evaluation {:kind :value :order [] :region :module-initialization}}
+        characters (mapv (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                                        :source (source id) :binding-context body :attributes {:literal-kind :character :value value}
+                                        :evaluation {:kind :value :order [] :region :module-initialization}}) leaves values)
+        set-node {:node-id :let-member-set :core-form :collection-literal :children leaves :resolved-binding-ids []
+                  :source (source :let-member-set) :binding-context body
+                  :attributes {:literal-kind :set :element-count (count leaves) :source-value (set values)}
+                  :evaluation {:kind :left-to-right :region :module-initialization
+                               :order (mapv #(hash-map :index %1 :core-node-id %2) (range) leaves)}}
+        children [op :let-member-set :let-first-call]
+        node {:node-id id :core-form :call :children children :resolved-binding-ids [bid] :source (source id) :binding-context body
+              :attributes {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+              :evaluation {:owner-function-syntax-id nil :region :module-initialization :kind :operator-then-arguments
+                           :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}}
+        call {:core-node-id id :operator-node-id op :operator-binding-id bid :argument-node-ids [:let-member-set :let-first-call]
+              :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal (count (get-in base [:core :calls])) :call-core-node-id id
+              :caller-function-syntax-id nil :caller-function-core-node-id nil :callee-binding-id bid
+              :callee-definition-syntax-id definition :callee-function-syntax-id nil :callee-function-core-node-id nil
+              :argument-core-node-ids [:let-member-set :let-first-call] :ordered-evaluation-node-ids children
+              :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        owner (-> (get-in base [:nodes :slice-let]) (assoc-in [:children 1] id) (assoc-in [:evaluation :order 1 :core-node-id] id))
+        added (into [operator] (concat characters [set-node node]))
+        nodes (into (assoc (:nodes base) :slice-let owner) (map (juxt :node-id identity) added))
+        forms (-> (:forms base) (assoc-in [:slice-let :child-form-ids 2] id) (assoc-in [:let-first-call :parent-form-id] id)
+                  (assoc op (form op :symbol 'contains? id []) id (form id :list nil :slice-let children)
+                         :let-member-set (form :let-member-set :set (set values) id leaves))
+                  (into (map (fn [id value] [id (form id :character value :let-member-set [])]) leaves values)))
+        ;; Fixture postorder follows actual Core children and declared operand order.
+        ordered (letfn [(visit [id] (let [node (nodes id)] (conj (vec (mapcat visit (:children node))) node)))] (visit :slice-let))
+        core (-> (:core base) (assoc :nodes ordered) (update :calls conj call) (update :call-edges conj edge))
+        types (merge (:types base) (zipmap leaves (repeat :gravity.type/character))
+                     {:let-member-set {:kind :gravity.type/set :shape :literal :element-types (vec (repeat (count leaves) :gravity.type/character))}})]
+    (assoc base :core core :nodes nodes :forms forms :bindings (assoc (:bindings base) bid binding)
+                :types types :node node :call call :edge edge)))
+
+(defn- let-vector-slice-first-membership-established [input]
+  (let [{:keys [core nodes bindings forms types]} input
+        derive (fn [name id types] (let [call (first (filter #(= id (:core-node-id %)) (:calls core)))
+                                         edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))]
+                                     (invoke-c7 name [core (nodes id) call edge nodes bindings types forms 65536])))
+        slice (derive 'sh08-vsl-derive :slice-call types)
+        types (assoc types :slice-operator (:descriptor slice) :slice-call (:type slice))
+        query (derive 'sh08-lq-derive :let-first-call types)
+        types (assoc types :let-first-operator (:descriptor query) :let-first-call (:type query))
+        membership (derive 'sh08-ksm-derive :let-member-call types)]
+    (assoc input :slice slice :query query :membership membership
+                 :types (assoc types :let-member-operator (:descriptor membership) :let-member-call (:type membership) :slice-let (:type membership)))))
+
+(deftest sh08-let-vector-slice-first-membership-development-kernel
+  (let [old (sha-suffix-character-membership-established (sha-suffix-character-membership-input "sha256:a" 7 8 nil))
+        input (let-vector-slice-first-membership-established
+               (let-vector-slice-first-membership-input "sha256:a" (vec "0123456789abcdef") 7 8 nil))]
+    (is (= :accepted (get-in old [:membership :status])) "the standalone consumer already works")
+    (is (= :accepted (get-in input [:slice :status])))
+    (is (= :accepted (get-in input [:query :status])))
+    (is (= :accepted (get-in input [:membership :status])))))
+
+
 (defn- let-vector-slice-equality-input [value expected positions]
   ;; One fixed consumer over existing normalized owners, not source admission.
   (let [inner (let-vector-slice-input (if (nil? positions) value
