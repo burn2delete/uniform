@@ -508,6 +508,20 @@
                 (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
           (finally (.delete temporary)))))))
 
+(deftest sh13-binds-conditional-result-before-consuming-local
+  (let [source (str (.resolve @(existing 'root)
+                     "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        temporary (java.io.File/createTempFile "gravity-sh13-conditional-initializer-" ".gravity")]
+    (try
+      (spit temporary (str/replace (slurp source) "(if flag true false)"
+                       "(let [ready (if flag false true)] (if ready 11 22))"))
+      (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
+            verification (invoke 'sh12-verify-branch-join-mir core mir)]
+        (is (= :accepted (:status raw)))
+        (is (= :passed (:status upstream)))
+        (is (= :passed (:status verification)) (pr-str (:diagnostics verification))))
+      (finally (.delete temporary)))))
+
 (deftest sh13-consumes-inner-conditional-as-outer-test
   ;; Real C6 source products: the inner Bool join is an actual operand of
   ;; outer truthiness, not an eagerly substituted literal or patched MIR.
