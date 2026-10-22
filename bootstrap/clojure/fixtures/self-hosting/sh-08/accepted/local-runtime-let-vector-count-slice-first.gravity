@@ -1,0 +1,11 @@
+(ns self-hosting.sh08.let-vector-count-slice-first
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  (let [characters (vec "0af")]
+    (first (subvec characters 1 (count characters)))))

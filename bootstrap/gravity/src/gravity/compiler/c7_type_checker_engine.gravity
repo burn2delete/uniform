@@ -17214,7 +17214,9 @@
   ; Prepay table/type visits; reserve membership scans after physical ID checks.
   (let [calls (get core :calls) edges (get core :call-edges) functions (get core :function-records)
         members (get (get receiver :type) :element-types)
-        work (+ 128 (* 8 (+ (if (vector? calls) (count calls) 0)
+        body-consumer (get (get receiver :receiver) :body-consumer)
+        first-body? (= :direct-vector-first (get body-consumer :kind))
+        work (+ 128 (if first-body? 32 0) (* 8 (+ (if (vector? calls) (count calls) 0)
                             (if (vector? edges) (count edges) 0)
                             (if (vector? functions) (count functions) 0)))
                     (* 8 (+ 1 (if (vector? members) (count members) 0))))]
@@ -17267,8 +17269,17 @@
                         (if (sh08-ft-all-true?
                               [(= :immutable-let-vector (get lexical :kind))
                                (= :authenticated-string-character-vector (get (get lexical :origin) :kind))
-                               (= nil (get lexical :body-consumer))
-                               (= (get slice-node :node-id) (get (get (get lexical :owner) :children) 1))
+                               (if (= nil body-consumer)
+                                 (= (get slice-node :node-id) (get (get (get lexical :owner) :children) 1))
+                                 (if first-body?
+                                   (let [head-node (get body-consumer :node) head-op (get body-consumer :operator)]
+                                     (if (if (sh08-sse-ids? [(get head-node :node-id) (get head-op :node-id)] 2)
+                                           (sh08-sse-ids? (get head-node :children) 2) false)
+                                       (sh08-ft-all-true? [(= head-node (get nodes (get head-node :node-id)))
+                                                (= head-op (get nodes (get head-op :node-id)))
+                                                (= (get head-node :node-id) (get (get (get lexical :owner) :children) 1))
+                                                (= [(get head-op :node-id) (get slice-node :node-id)] (get head-node :children))]) false))
+                                   false))
                                (= node (get nodes (get node :node-id)))
                                (= :call (get node :core-form)) (= 2 (count children))
                                (= :reference (get argument :core-form))
@@ -17558,7 +17569,7 @@
         (if (if (map? descriptor)
               (if (keyword? (get descriptor :kind))
                 (if (= :gravity.type/applied-vector-slice (get descriptor :kind))
-                  (if (vector? source-forms) (if alias? (if count-end? (= 14 width) (if membership-consumer? (<= 15 width 2063) (if first-consumer? (<= 12 width 1036) (if wrapped? (<= 13 width 2061) (<= 10 width 1034))))) (if literal? (<= 5 width 1029) (contains? #{5 7} width))) false) false) false) false)
+                  (if (vector? source-forms) (if alias? (if count-end? (if first-consumer? (= 16 width) (= 14 width)) (if membership-consumer? (<= 15 width 2063) (if first-consumer? (<= 12 width 1036) (if wrapped? (<= 13 width 2061) (<= 10 width 1034))))) (if literal? (<= 5 width 1029) (contains? #{5 7} width))) false) false) false) false)
           (if (> base budget) {:status :rejected :reason :vector-slice-work-limit :work-count base}
           (let [forms (loop [remaining source-forms out {}]
                         (if (= 0 (count remaining)) out
