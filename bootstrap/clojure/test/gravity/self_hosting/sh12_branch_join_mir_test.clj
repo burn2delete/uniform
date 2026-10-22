@@ -295,6 +295,69 @@
           (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
       (finally (.delete temporary)))))
 
+(deftest sh12-current-c6-consumes-i64-order-as-a-condition
+  ;; c6c10-all-lexical-bindings-resolve-loop? consumes strict index ordering
+  ;; as control. This closed predicate subtree does not execute its recursion.
+  (let [directory "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/"
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        binding (parameter-compiled-binding-data
+                  (str (.resolve @root (str directory "two_i64_order_condition_source.gravity"))))]
+    (doseq [extension ["gravity"]]
+      (let [path (str (.resolve @root (str directory "two_i64_order_condition_source." extension)))
+            text (slurp path) products (parameter-source-products path text binding reader-path)
+            input (:envelope products) raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+        (is (= :gravity/c6-c10-resolved-two-i64-parameters-v1 (get-in input [:resolved-parameter :kind])))
+        (is (= :if (get-in input [:stage2-plan :functions 'main :instructions 0 :op])))
+        (is (= :accepted (:status raw)) (pr-str (:diagnostics raw)))
+        (when (= :accepted (:status raw))
+          (let [template (:artifact-template raw) nodes (:core-nodes template) ids (mapv :node-id nodes)
+                fresh (parameter-source-products path text binding reader-path)
+                replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
+                verify #(invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                                [(:envelope fresh) % (:digest-requests replay)])]
+            (is (= input (:envelope fresh)))
+            (is (= raw replay))
+            (is (= :passed (:status (verify template))))
+            (is (= [:parameter :parameter :local :local :integer-lt :truthy :literal :literal :if :function]
+                   (mapv :source-operation nodes)))
+            (is (= 10 (count nodes)))
+            (is (= 9 (count (get-in template [:dependency-order-graph :edges]))))
+            (is (= [true false] (mapv #(get-in nodes [% :attributes :value]) [6 7])))
+            (is (= [:gravity/i64 :gravity/i64] (get-in nodes [9 :type :params])))
+            (is (= :gravity/bool (get-in nodes [9 :type :return]) (get-in nodes [4 :type]) (get-in nodes [8 :type])))
+            (is (= [(get ids 4)] (get-in nodes [5 :operands])))
+            (is (= [(get ids 5) (get ids 6) (get ids 7)] (get-in nodes [8 :operands])))
+            (is (= [(get ids 8)] (get-in nodes [9 :operands])))
+            (is (= (get-in nodes [8 :source :origin-id])
+                   (get-in nodes [5 :source :generated-origin 0 :input-origin-id])))
+            (is (= :exact-integer-ordering (get-in nodes [4 :safety :basis])
+                   (get-in nodes [4 :safety :proof :numeric-semantics])))
+            (is (= :integer-exact (get-in nodes [4 :safety :proof :mathematical-mode])))
+            (doseq [node nodes]
+              (is (= #{} (:effects node) (:capabilities node)))
+              (is (= :proven-safe (get-in node [:safety :outcome]))))
+            (doseq [candidate [(assoc-in template [:core-nodes 4 :operands] [(get ids 3) (get ids 2)])
+                               (assoc-in template [:core-nodes 5 :operands] [(get ids 0)])
+                               (assoc-in template [:core-nodes 5 :source :generated-origin 0 :input-origin-id]
+                                         (get-in nodes [4 :source :origin-id]))
+                               (assoc-in template [:core-nodes 6 :type] :gravity/integer)
+                               (assoc-in template [:core-nodes 8 :operands] [(get ids 5) (get ids 7) (get ids 6)])
+                               (assoc-in template [:core-nodes 9 :type :return] :gravity/i64)
+                               (assoc-in template [:resolved-parameter :parameters 1 :parameter-index] 0)
+                               (assoc-in template [:proof-records (get ids 4) :numeric-mode] :unchecked)]]
+              (is (= :rejected (:status (verify candidate)))))
+            (let [sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
+                  context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
+                  core (bootstrap/p15-s23-c6c10-public-artifact context (:compiled-binding-data products) (:ingress products) sealed)
+                  mir (build-mir core) original (verify-mir core mir)
+                  result (invoke c11-plan 'sh13-run-branch-join-mir-with-arguments [core mir [0 1]])]
+              (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
+              (is (= :rejected (:status original) (:status result)))
+              (is (= ["C11-MODULE" :original-c6-bool-parameter-family]
+                     ((juxt :diagnostic-id :missing-fact) (diagnostic original))))
+              (is (= (:diagnostics original) (:diagnostics result)))
+              (is (nil? (:execution result))))))))))
+
 (deftest sh12-current-c6-produces-two-i64-order-parameters
   ;; c6c10-build-edge-list's strict-index-order subtree, not a mixed literal
   ;; comparison, runtime width witness, or execution of that complete helper.
