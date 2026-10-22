@@ -344,6 +344,32 @@
       {:unexpected-host-error (.getName (class error))
        :message (.getMessage error)})))
 
+(deftest sh03-current-source-c3-intake-retains-the-original-reader-revision
+  ;; Explicit source input selects development construction, not migration or
+  ;; permission to substitute a reader plan, accepted product, or authority.
+  (let [source-path (fixture-path "accepted" "newline-lf" ".gravity")
+        text (slurp source-path)
+        context (bootstrap/reader-project-context-for-source source-path)
+        reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        failure (thrown-data #(bootstrap/compiler-c2-reader-source-artifact
+                              source-path text context))]
+    (is (= "C2-HASH" (:id failure)))
+    (let [artifact (bootstrap/compiler-c3-syntax-source-artifact
+                    source-path text context nil nil reader-path)
+          boundary (:gravity-syntax-boundary artifact)
+          revision (:reader-source-revision boundary)
+          actual (get-in boundary [:reader-authentication-provenance
+                                   :actual-sh03-envelope-descriptor :source-revision])]
+      (is (= :passed (get-in artifact [:syntax-verification-report :status])))
+      (is (= (str "sha256:" (bootstrap/sha256-hex (slurp reader-path)))
+             (:source-content-hash revision) (:source-content-hash actual)))
+      (is (not= bootstrap/sh03-reader-expected-source-content-hash
+                (:source-content-hash revision)))
+      (is (= actual (get-in artifact [:c2-reader-artifact :sh03-reader-authentication
+                                     :reader-source-revision])))
+      (is (true? (bootstrap/c3-syntax-stream-reader-products-authentic?
+                   (:syntax-object-stream artifact) (:c2-reader-artifact artifact) boundary))))))
+
 (defn- accepted-reader-products
   [result]
   (select-keys
