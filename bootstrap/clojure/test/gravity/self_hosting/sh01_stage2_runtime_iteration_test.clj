@@ -9735,6 +9735,18 @@
                        (toString [] (swap! callbacks conj :format) (throw (ex-info "lowering format" {}))))]
           (doseq [[candidate budget]
                   [[(assoc-in context [:bindings :ordering-binding :profile-set] [opaque]) 65536]
+                   [(-> context (assoc-in [:types :operator :kind] :gravity.type/applied-list-query)
+                                (assoc-in [:bindings :ordering-binding :binding-class] :bogus)
+                                (assoc-in [:bindings :ordering-binding :profile-set] [opaque])) 65536]
+                   [(-> context (assoc-in [:types :operator :kind] :gravity.type/applied-list-query)
+                                (assoc-in [:bindings :ordering-binding :binding-class] :bogus)
+                                (assoc-in [:bindings :ordering-binding :target-set] [opaque])) 65536]
+                   [(-> context (assoc-in [:types :operator :kind] :gravity.type/applied-list-query)
+                                (assoc-in [:bindings :ordering-binding :binding-class] :bogus)
+                                (assoc-in [:bindings :ordering-binding :profile-set] (conj (vec (repeat 40000 :meta)) opaque))) 256]
+                   [(-> context (assoc-in [:types :operator :kind] :gravity.type/applied-list-query)
+                                (assoc-in [:bindings :ordering-binding :binding-class] :bogus)
+                                (assoc-in [:bindings :ordering-binding :target-set] (conj (vec (repeat 40000 :meta)) opaque))) 256]
                    [(assoc-in context [:bindings :ordering-binding :target-set] [opaque]) 65536]
                    [(assoc-in context [:core :module :profile] opaque) 65536]
                    [(assoc-in context [:nodes :arg0 :source :syntax-id] opaque) 65536]

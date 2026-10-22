@@ -4424,12 +4424,16 @@
         (if (= 'empty? (get (get bindings (get call :operator-binding-id)) :name)) (body-vemp-type? input) false) false)) false))
 
 (defn body-vemp-entry? [node call nodes bindings types module]
-  ; Route only the resolved unary core spelling; this is not admission evidence.
+  ; Route unary empty? candidates; this is not admission evidence.
+  ; Established noncore routes keep their dispatch. Other classes must reach
+  ; canonical rejection instead of eager legacy profile/target classifiers.
   (if (if (map? call) (if (vector? (get call :argument-node-ids)) (= 1 (count (get call :argument-node-ids))) false) false)
     (if (body-sse-ids? [(get call :operator-binding-id)] 1)
       (let [binding (get bindings (get call :operator-binding-id))]
         (if (if (map? binding) (if (symbol? (get binding :name))
-                               (if (= 'empty? (get binding :name)) (= :core (get binding :binding-class)) false) false) false)
+                               (if (= 'empty? (get binding :name))
+                                 (if (keyword? (get binding :binding-class))
+                                   (if (contains? #{:lexical :namespace :import} (get binding :binding-class)) false true) true) false) false) false)
           (if (body-vemp-ids? node call nodes bindings module)
             (let [input (get types (first (get call :argument-node-ids)))]
               (if (body-vemp-type-fields? input)

@@ -5389,6 +5389,22 @@
           result (derive input 256)]
       (is (= :vector-empty-work-limit (:reason result)))
       (is (zero? @callbacks)))
+    (doseq [binding-class [:lexical :namespace :import]]
+      (let [input (assoc-in base [:bindings :ordering-binding :binding-class] binding-class)]
+        (is (false? (invoke-c7 'sh08-vemp-entry? [(:node input) (:call input) (:nodes input) (:bindings input) (:types input) (:module input)])))))
+    (doseq [type [:gravity.type/list :gravity.type/never {:kind :gravity.type/list :shape :literal :element-types []}]]
+      (let [input (-> base (assoc-in [:types :arg0] type)
+                          (assoc-in [:bindings :ordering-binding :binding-class] :bogus))]
+        (is (false? (invoke-c7 'sh08-vemp-entry? [(:node input) (:call input) (:nodes input) (:bindings input) (:types input) (:module input)])))))
+    (doseq [binding-class [:bogus nil opaque]
+            field [:profile-set :target-set]
+            values [[opaque] (conj (vec (repeat 40000 :meta)) opaque)]
+            budget [256 65536]]
+      (let [input (-> base (assoc-in [:bindings :ordering-binding :binding-class] binding-class)
+                          (assoc-in [:bindings :ordering-binding field] values))]
+        (is (true? (invoke-c7 'sh08-vemp-entry? [(:node input) (:call input) (:nodes input) (:bindings input) (:types input) (:module input)])))
+        (is (= :rejected (:status (derive input budget))))
+        (is (zero? @callbacks))))
     (is (= :accepted (:status (derive base 65536))))))
 
 (deftest sh08-list-query-development-kernel

@@ -891,6 +891,14 @@
                    [core (assoc facts :function-type-table [{:function-id opaque}]) (:bindings base)]
                    [core facts (assoc-in (:bindings base) [:ordering-binding :name] opaque)]
                    [core facts (assoc-in (:bindings base) [:ordering-binding :binding-class] opaque)]
+                   [core facts (-> (:bindings base) (assoc-in [:ordering-binding :binding-class] :bogus)
+                                   (assoc-in [:ordering-binding :profile-set] [opaque]))]
+                   [core facts (-> (:bindings base) (assoc-in [:ordering-binding :binding-class] :bogus)
+                                   (assoc-in [:ordering-binding :target-set] [opaque]))]
+                   [core facts (-> (:bindings base) (assoc-in [:ordering-binding :binding-class] :bogus)
+                                   (assoc-in [:ordering-binding :profile-set] (conj (vec (repeat 40000 :meta)) opaque)))]
+                   [core facts (-> (:bindings base) (assoc-in [:ordering-binding :binding-class] :bogus)
+                                   (assoc-in [:ordering-binding :target-set] (conj (vec (repeat 40000 :meta)) opaque))) ]
                    [(assoc core :function-records [{:function-syntax-id opaque :function-core-node-id :owner}]) facts (:bindings base)]
                    [core (assoc-in facts [:call-type-facts 0 :call-core-node-id] opaque) (:bindings base)]
                    [core facts (assoc-in (:bindings base) [:ordering-binding :profile-set]
