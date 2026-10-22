@@ -4286,6 +4286,171 @@
     (is (= :accepted (:status (derive :argument-slice-call))))
     (is (= :accepted (:status (:slice (let-prefix-gate-established (let-prefix-gate-input "sha256:0af" "sha256:" true false nil))))))))
 
+(deftest sh08-prefix-gated-slice-call-proof-development-kernel
+  (let [input (prefix-gated-slice-call-input "sha256:0af" "sha256:" 7 10)
+        derive (fn [{:keys [core nodes bindings types forms]} id budget]
+                 (let [call (first (filter #(= id (:core-node-id %)) (:calls core)))
+                       edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))]
+                   (invoke-c7 'sh08-vsl-derive [core (nodes id) call edge nodes bindings types forms budget])))]
+    (doseq [[id op width kind] [[:gate-slice-call :gate-slice-operator 35 :direct-left-vector-equality]
+                              [:argument-slice-call :argument-slice-operator 34 :prefix-gated-local-function-slice-argument]]]
+      (let [result (derive input id 65536) descriptor (:descriptor result)
+            witness (get-in descriptor [:bounds-proof :source-forms])
+            established (-> input (assoc-in [:types op] descriptor) (assoc-in [:types id] (:type result)))
+            cold (fn [{:keys [core nodes bindings types]} budget]
+                   (let [call (first (filter #(= id (:core-node-id %)) (:calls core)))
+                         edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))]
+                     (invoke-c7 'sh08-vsl-inferred-call [core (nodes id) call edge nodes bindings types budget])))
+            checked (cold established 65536)
+            consumer (get-in descriptor [:bounds-proof :receiver :body-consumer])]
+        (is (= :accepted (:status result) (:status checked)) (pr-str checked))
+        (is (= kind (:kind consumer)))
+        (is (= :prefix-gate-call-if (get-in consumer [:condition-container :kind])))
+        (is (= width (count witness) (count (set (map :form-id witness)))))
+        (is (some #{:control-flow} (:invalidation descriptor)))
+        (is (= result (derive input id (:work-count result))))
+        (is (= :vector-slice-work-limit (:reason (derive input id (dec (:work-count result))))))
+        (is (= checked (cold established (:work-count checked))))
+        (is (= :vector-slice-work-limit (:reason (cold established (dec (:work-count checked))))))
+        (doseq [path [[:bounds-proof :receiver :body-consumer :condition-container :control :branch-exclusivity]
+                      [:bounds-proof :receiver :body-consumer :condition-container :then :evaluation :region :role]
+                      [:bounds-proof :receiver :body-consumer :condition-container :then-call :edge :callee-function-syntax-id]
+                      [:bounds-proof :receiver :body-consumer :condition-container :node :evaluation :order]]]
+          (is (= :rejected (:status (cold (assoc-in established (into [:types op] path) :forged) 65536)))))
+        (doseq [[index mutate] (map-indexed vector [#(assoc-in % [:core :call-edges 4 :callee-function-syntax-id] :sibling)
+                        #(assoc-in % [:core :control-flow 0 :branches 0 :core-node-id] :prefix-else)
+                        #(assoc-in % [:nodes :parameter-entry :evaluation :region :role] :else)
+                        #(assoc-in % [:nodes :argument-slice-call :evaluation :region :if-form-id] :sibling)
+                        #(assoc-in % [:nodes :argument-slice-operator :evaluation :region :execution] :maybe)
+                        #(assoc-in % [:nodes :prefix-if :evaluation :order] [{:index 0 :core-node-id :prefix-call} {:index 1 :core-node-id :parameter-entry}])
+                        #(assoc-in % [:forms :parameter-entry :parent-form-id] :argument-let)
+                        #(assoc-in % [:forms :parameter-name :value] 'substitute)
+                        #(assoc-in % [:nodes :prefix-else :attributes :value] true)])]
+          (is (= :rejected (:status (derive (mutate input) id 65536))) (str id " mutation " index)))
+        (when (= id :argument-slice-call)
+          (is (= :parameter-entry (get-in consumer [:node :node-id])))
+          (is (= 0 (:parameter-index consumer)))
+          (is (not (contains? consumer :parameter-type)))
+          (is (not (contains? consumer :return))))))
+    (doseq [[text expected start end] [["short" "sha256:" 1 2] ["sha257:0af" "sha256:" 7 11]
+                                      ["sha256:0af" "sha256:" -1 3] ["sha256:0af" "sha256:" 10 7]]]
+      (let [input (prefix-gated-slice-call-input text expected start end)
+            id (if (= text "short") :gate-slice-call :argument-slice-call)
+            result (derive input id 65536)]
+        (is (= ["STD3002" :vector-slice-bounds-required] ((juxt :rule :reason) result)))))))
+
+(deftest sh08-prefix-gated-slice-call-inference-development-kernel
+  (doseq [[text expected start end] [["sha256:0af" "sha256:" 7 10] ["sha257:0af" "sha256:" 7 10]
+                                    ["f" "" 0 1] ["" "" 0 0]]]
+    (let [input (prefix-gated-slice-call-input text expected start end)
+          result (parameter-vector-count-slice-infer input)
+          argument {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat (- end start) :gravity.type/character))}]
+      (is (= {} (:initial-binding-types input)))
+      (is (= :converged (:convergence-status result)))
+      (is (= [] (:diagnostics result)))
+      (is (= argument (get-in result [:type-table :argument-slice-call]) (get-in result [:binding-types :slice-let-binding])))
+      (is (= :gravity.type/bool (get-in result [:type-table :prefix-call]) (get-in result [:type-table :parameter-entry])
+             (get-in result [:type-table :prefix-if]) (get-in result [:type-table :argument-let])))))
+  (let [{:keys [nodes]} (prefix-gated-slice-call-input "sha256:0af" "sha256:" 7 10)]
+    ;; Existing non-returning branch join, conditional DATA only.
+    (is (= :gravity.type/bool (invoke-c7 'sh08-ft-infer-node-with-context
+                               [(nodes :prefix-if) {:prefix-call :gravity.type/bool :parameter-entry :gravity.type/never :prefix-else :gravity.type/bool}
+                                {} {} [] {}])))))
+
+(defn- prefix-gated-slice-call-products [text expected start end]
+  (let [input (prefix-gated-slice-call-input text expected start end)
+        {:keys [core nodes forms]} input
+        inferred (parameter-vector-count-slice-infer input)
+        facts {:module (:module core) :type-table (:type-table inferred)
+               :function-type-table (invoke-c7 'sh08-ft-function-facts [(:function-types inferred) nodes (:module core)])
+               :call-type-facts (invoke-c7 'sh08-ft-call-facts-with-context
+                                          [(:calls core) (:call-edges core) nodes (:type-table inferred)
+                                           (:function-types inferred) (:module core) {}])
+               :constraint-ledger (:constraints inferred)
+               :local-binding-facts (invoke-c7 'sh08-ft-local-facts
+                                              [(:lexical-bindings core) (:type-table inferred) (:binding-types inferred) nodes (:module core)])}
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}]
+    (assoc input :inference inferred :facts facts :request request)))
+
+(deftest sh08-prefix-gated-slice-call-current-source-composition
+  ;; Distinct actual source/current-reader parents followed by fresh C7 replay.
+  (let [source-path (fixture-path "accepted" "local-runtime-prefix-gated-slice-call" ".gravity")
+        {:keys [request]} (parameter-vector-count-slice-current-source-request source-path)
+        result (invoke-c7 'sh08-function-type-core-artifact [request])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (let [core (:canonical-core-artifact request) nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+            calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+            records (into {} (map (juxt :definition-name identity) (:function-records core)))
+            caller (records 'main) callee (records 'tail-characters)
+            entry (first (filter #(= :local-function (:classification %)) (:call-edges core)))
+            local (nodes (:body-core-node-id caller)) gate (nodes (second (:children local)))
+            prefix-call (calls (first (:children gate)))
+            prefix-slice (calls (first (:argument-node-ids prefix-call)))
+            suffix-slice (calls (first (:argument-core-node-ids entry)))
+            prefix (get-in result [:type-table (:operator-node-id prefix-slice)])
+            suffix (get-in result [:type-table (:operator-node-id suffix-slice)])
+            report (invoke-c7 'sh08-verify-function-type-result [request result])
+            mutant (walk/postwalk-replace {:gravity.type/character :gravity.type/integer} result)
+            rejected (invoke-c7 'sh08-verify-function-type-result [request mutant])]
+        (is (= :passed (:status report)))
+        (is (= :let (:core-form local)))
+        (is (= :if (:core-form gate)))
+        (is (= (:function-syntax-id caller) (:caller-function-syntax-id entry)))
+        (is (= (:function-syntax-id callee) (:callee-function-syntax-id entry)))
+        (is (= :prefix-gate-call-if (get-in prefix [:bounds-proof :receiver :body-consumer :condition-container :kind])))
+        (is (= :prefix-gated-local-function-slice-argument (get-in suffix [:bounds-proof :receiver :body-consumer :kind])))
+        (is (= (first (:control-flow core)) (get-in suffix [:bounds-proof :receiver :body-consumer :condition-container :control])))
+        (is (= (vec (repeat 3 :gravity.type/character)) (get-in result [:type-table (:core-node-id suffix-slice) :element-types])))
+        (is (= :gravity.type/bool (get-in result [:type-table (:call-core-node-id entry)]) (get-in result [:type-table (:node-id gate)])))
+        (is (not= result mutant))
+        (is (= :rejected (:status rejected)))
+        (is (= result (:expected rejected)))
+        (is (= mutant (:candidate rejected)))))))
+
+(deftest sh08-prefix-gated-slice-call-boundaries-development-kernel
+  (let [base (prefix-gated-slice-call-input "sha256:0af" "sha256:" 7 10)
+        changed-node (assoc-in (get-in base [:nodes :prefix-callee-true]) [:attributes] {:literal-kind :integer :value 1})
+        changed-forms (-> (:forms base)
+                          (assoc-in [:prefix-callee-true :kind] :integer) (assoc-in [:prefix-callee-true :value] 1)
+                          (assoc-in [:parameter-function :value] '(fn [characters] 1))
+                          (assoc-in [:parameter-definition :value] '(def tail-characters (fn [characters] 1))))
+        input (-> base (assoc-in [:nodes :prefix-callee-true] changed-node)
+                  (update-in [:core :nodes] (fn [rows] (mapv #(if (= :prefix-callee-true (:node-id %)) changed-node %) rows)))
+                  (assoc :forms changed-forms) (assoc-in [:types :prefix-callee-true] :gravity.type/integer))
+        {:keys [core nodes bindings types forms call edge]} input
+        proof (invoke-c7 'sh08-vsl-derive [core (nodes :argument-slice-call) call edge nodes bindings types forms 65536])
+        inferred (parameter-vector-count-slice-infer input)]
+    ;; The structural argument proof neither demands Bool nor borrows a return type.
+    (is (= :accepted (:status proof)))
+    (is (= :gravity.type/integer (get-in inferred [:type-table :parameter-entry])))
+    (is (= :gravity.type/unknown (get-in inferred [:type-table :prefix-if]))))
+  (let [base (prefix-gated-slice-call-input "sha256:0af" "sha256:" 7 10)
+        else-node (assoc-in (get-in base [:nodes :prefix-else]) [:attributes :value] true)
+        raw-if (list 'if (get-in base [:forms :prefix-call :value]) (get-in base [:forms :parameter-entry :value]) true)
+        raw-let (list 'let ['characters '(vec "sha256:0af")] raw-if)
+        input (-> base (assoc-in [:nodes :prefix-else] else-node)
+                  (update-in [:core :nodes] (fn [rows] (mapv #(if (= :prefix-else (:node-id %)) else-node %) rows)))
+                  (assoc-in [:forms :prefix-else :value] true) (assoc-in [:forms :prefix-if :value] raw-if)
+                  (assoc-in [:forms :argument-let :value] raw-let)
+                  (assoc-in [:forms :parameter-caller :value] (list 'fn [] raw-let))
+                  (assoc-in [:forms :parameter-caller-definition :value] (list 'def 'call-tail (list 'fn [] raw-let))))
+        {:keys [core nodes bindings types forms]} input]
+    (is (= :rejected (:status (invoke-c7 'sh08-vsl-let-equality-body
+                               [core (nodes :argument-let) (nodes :argument-slice-call) nodes bindings types forms 65536])))))
+  (let [input (prefix-gated-slice-call-input (apply str (repeat 1024 "a")) "a" 1 1024)
+        {:keys [core nodes bindings types forms]} input]
+    (is (= :accepted (get-in input [:conversion :status])))
+    (doseq [id [:gate-slice-call :argument-slice-call]]
+      (let [call (first (filter #(= id (:core-node-id %)) (:calls core)))
+            edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))]
+        (is (= :accepted (:status (invoke-c7 'sh08-vsl-derive [core (nodes id) call edge nodes bindings types forms 65536])))))))
+  (let [{:keys [core nodes bindings types forms] :as input}
+        (prefix-gated-slice-call-input (apply str (repeat 1024 "a")) (apply str (repeat 1025 "a")) 0 0)
+        call (first (filter #(= :gate-slice-call (:core-node-id %)) (:calls core)))
+        edge (first (filter #(= :gate-slice-call (:call-core-node-id %)) (:call-edges core)))]
+    (is (= :rejected (:status (invoke-c7 'sh08-vsl-derive [core (nodes :gate-slice-call) call edge nodes bindings types forms 65536]))))))
+
 (deftest sh08-let-prefix-gate-development-kernel
   (doseq [[value expected] [["sha256:abcd" "sha256:"] ["sha257:abcd" "sha256:"] ["" ""]
                             [[65 66 67] [65 66]] [[] []] [[-5 999999999999999999999999999999999999N] [-5]]]]
