@@ -9462,7 +9462,7 @@
           (assoc (sh08-sm-failure "C7-VERIFY" :map-keys-source-mismatch nil :original-unary-map-keys-call (get node :node-id)) :work-count work)))
       (assoc (sh08-sm-failure (if (= :map-keys-work-limit (get result :reason)) "C7-GENERIC"
                                (if (= :map-keys-source-mismatch (get result :reason)) "C7-VERIFY" "C7-TYPE-MISMATCH"))
-               (get result :reason) nil :validated-complete-finite-positional-vector (get call :argument-node-ids)) :work-count work))))
+               (get result :reason) nil :validated-complete-finite-keyword-key-map (get call :argument-node-ids)) :work-count work))))
 
 (defn sh08-mkeys-entry? [node call nodes bindings types module]
   ; Routing only. Fresh budgeted source and binding reconstruction is admission.

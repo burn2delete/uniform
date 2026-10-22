@@ -5243,7 +5243,9 @@
                   (finite [:gravity.type/string :gravity.type/bool])
                   (finite [:gravity.type/keyword :gravity.type/never])
                   (finite [:gravity.type/keyword])]]
-      (is (= :rejected (:status (list-query-derived (map-keys-input type))))))
+      (let [result (list-query-derived (map-keys-input type))]
+        (is (= :rejected (:status result)))
+        (is (= :validated-complete-finite-keyword-key-map (:expected result)))))
     (let [result (list-query-derived (map-keys-input :gravity.type/never))]
       (is (= :accepted (:status result)))
       (is (= :gravity.type/never (:type result)))

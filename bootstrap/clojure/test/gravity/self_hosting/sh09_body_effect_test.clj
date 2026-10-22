@@ -964,6 +964,12 @@
         (is (= (if normal? #{:memory/allocate} #{}) (:direct record) (:transitive record)))
         (is (= [:memory/allocate] (:latent-effects descriptor)))
         (is (= [:sh09-map-keys-allocation-v1 normal? :list] ((juxt :rule-version :normal-completion-possible? :collection-kind) (:allocation record))))
+        (is (= :possible-persistent-map-key-list-construction
+               (get-in record [:allocation :behavior]) (get-in descriptor [:allocation-policy :behavior])))
+        (is (= :body-map-keys-source-mismatch
+               (:reason (leaf 'body-lq-context request
+                          (assoc-in facts [:type-table (ids :arg0)] {:kind :gravity.type/map :shape :literal :member-types [] :extra true})
+                          (:bindings base) 65536))))
         (is (= (:storage-policy descriptor) (get-in record [:allocation :storage-policy])))
         (is (= (get-in descriptor [:allocation-policy :empty-result]) :possible))
         (let [operand (ids :arg0)

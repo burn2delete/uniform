@@ -4567,7 +4567,7 @@
   (let [descriptor (get (get graph (first (get node :children))) :type)]
     (if (if (= :call (get node :core-form)) (= :gravity.type/applied-map-keys (get descriptor :kind)) false)
       {:rule-version :sh09-map-keys-allocation-v1 :collection-kind :list :value-kind :list
-       :behavior :possible-persistent-list-suffix-construction :condition :normal-operand-completion
+       :behavior :possible-persistent-map-key-list-construction :condition :normal-operand-completion
        :normal-completion-possible? (= :normal (get descriptor :application))
        :extent nil
        :construction-work (get descriptor :construction-work)
@@ -5536,7 +5536,8 @@
                           (assoc (body-failure (if vector-first? :body-vector-first-nonempty-complete-positional-type-required :body-list-query-operand-type-required)) :work-count work)))))
                     (recur (rest remaining) used checks))
                                           (recur (rest remaining) used checks)))))
-                                      (assoc (body-failure (if (= 'rest name) :body-vector-rest-source-mismatch :body-vector-empty-source-mismatch)) :work-count (+ used fixed)))))))))
+                                      (assoc (body-failure (if (= 'keys name) :body-map-keys-source-mismatch
+                                                              (if (= 'rest name) :body-vector-rest-source-mismatch :body-vector-empty-source-mismatch))) :work-count (+ used fixed)))))))))
                           (assoc (body-failure :body-query-physical-id-required) :work-count base))))))))))
         (body-failure :body-query-core-shape-required)))
     (body-failure :body-query-core-shape-required)))
