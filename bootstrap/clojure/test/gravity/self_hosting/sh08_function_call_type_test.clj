@@ -3056,6 +3056,72 @@
            :types (assoc types op (:descriptor count-result) :slice-end (:type count-result))
            :products {:module (:module core) :calls calls :call-edges edges}))))
 
+(defn- parameter-vector-count-slice-input [text start]
+  ;; Conditional normalized typing context; whole-product tests establish it.
+  (let [base (let-vector-count-slice-input text start)
+        owner :parameter-function scope :slice-let-body
+        source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :scope-id scope :kind kind :value value :parent-form-id parent :child-form-ids children})
+        record {:function-syntax-id owner :function-form-id owner :function-core-node-id :parameter-fn
+                :body-core-node-id :slice-call :parameter-binding-ids [:slice-let-binding] :fixed-arity 1
+                :definition-kind :named-top-level :definition-binding-id :parameter-definition-binding
+                :definition-core-node-id :parameter-definition :definition-name 'tail-characters}
+        binding (assoc (get-in base [:bindings :slice-let-binding]) :definition-syntax-id :parameter-name
+                       :scope-id scope :mutability :immutable)
+        fn-node {:node-id :parameter-fn :core-form :fn :children [:slice-call] :source (source owner)
+                 :resolved-binding-ids [:slice-let-binding] :binding-context :slice-let-outer
+                 :attributes {:parameters ['characters] :parameter-form-id :parameter-vector
+                              :parameter-syntax-id :parameter-vector :fixed-arity 1}
+                 :evaluation {:kind :left-to-right :order [{:index 0 :core-node-id :slice-call}]
+                              :region :module-initialization :owner-function-syntax-id nil}}
+        ids [:slice-operator :slice-ref :slice-start :slice-count-operator :slice-count-reference :slice-end :slice-call]
+        nodes (into {} (map (fn [id]
+                             [id (-> (get-in base [:nodes id])
+                                     (assoc-in [:evaluation :region] :function-body)
+                                     (assoc-in [:evaluation :owner-function-syntax-id] owner))]) ids))
+        nodes (reduce (fn [out id] (assoc-in out [id :attributes :definition-syntax-id] :parameter-name))
+                      nodes [:slice-ref :slice-count-reference])
+        nodes (assoc nodes :parameter-fn fn-node)
+        forms (-> (select-keys (:forms base) ids)
+                  (assoc-in [:slice-call :parent-form-id] owner)
+                  (assoc owner (form owner :list (list 'fn ['characters] (list 'subvec 'characters start '(count characters)))
+                                     :parameter-definition [:parameter-fn-operator :parameter-vector :slice-call])
+                         :parameter-fn-operator (form :parameter-fn-operator :symbol 'fn owner [])
+                         :parameter-vector (form :parameter-vector :vector ['characters] owner [:parameter-name])
+                         :parameter-name (form :parameter-name :symbol 'characters :parameter-vector [])))
+        calls (vec (take-last 2 (get-in base [:core :calls])))
+        edges (mapv (fn [ordinal edge] (assoc edge :ordinal ordinal :caller-function-syntax-id owner
+                                                 :caller-function-core-node-id :parameter-fn))
+                    (range) (take-last 2 (get-in base [:core :call-edges])))
+        core (assoc (:core base) :nodes (mapv nodes (conj ids :parameter-fn)) :function-records [record]
+                    :lexical-bindings [] :calls calls :call-edges edges :mutations [])
+        bindings (assoc (:bindings base) :slice-let-binding binding)
+        type (get-in base [:types :slice-ref])
+        function (assoc (invoke-c7 'sh08-ft-function-type-skeleton [record (:module core)])
+                        :parameters [{:binding-id :slice-let-binding :type type}])
+        types (assoc (select-keys (:types base) ids) :parameter-fn function)
+        cq (invoke-c7 'sh08-cq-derive [core (nodes :slice-end) (first calls) (first edges) nodes bindings types forms 65536])
+        types (assoc types :slice-count-operator (:descriptor cq) :slice-end (:type cq))]
+    (assoc base :core core :nodes nodes :node (nodes :slice-call) :call (last calls) :edge (last edges)
+           :forms forms :bindings bindings :types types :record record :function function :count-result cq
+           :products {:module (:module core) :calls calls :call-edges edges})))
+
+(deftest sh08-parameter-vector-count-slice-development-kernel
+  (doseq [[text start] [["0af" 1] ["0af" 0] ["0" 1] ["" 0]]]
+    (let [{:keys [core node call edge nodes bindings types forms count-result]}
+          (parameter-vector-count-slice-input text start)
+          result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
+      (is (= :accepted (:status count-result)))
+      (is (= :accepted (:status result)) (pr-str (select-keys result [:status :rule :reason])))
+      (is (= {:kind :gravity.type/vector :shape :literal
+              :element-types (vec (repeat (- (count text) start) :gravity.type/character))} (:type result)))))
+  (let [{:keys [core node call edge nodes bindings types forms]} (parameter-vector-count-slice-input "" 1)
+        result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
+    (is (= :rejected (:status result)))
+    (is (= :vector-slice-bounds-required (:reason result)))))
+
 (deftest sh08-let-vector-count-slice-end-development-kernel
   (doseq [[text start] [["0af" 1] ["0" 1] ["" 0] ["0af" 0]]]
     (let [{:keys [core node call edge nodes bindings types forms count-result]}
