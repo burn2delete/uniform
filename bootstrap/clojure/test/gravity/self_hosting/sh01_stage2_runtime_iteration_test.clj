@@ -30828,6 +30828,143 @@ callee
                         #(assoc-in % [:forms :parameter-name :value] 'substitute)]]
           (is (= :rejected (:status (invoke 'p15-s23-typed-lower-function module (definitions 'call-tail) (mutate context))))))))))
 
+(deftest current-gravity-prefix-gated-slice-call-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [products (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'prefix-gated-slice-call-products)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        rt (:plan (typed-catch-runtime-projection))
+        activate (fn [function functions]
+                   (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt
+                     'p15-s23-runtime-activate-function-in-instance [function [] "" functions ['call-tail] nil]))
+        literal #(hash-map :op :literal :value %)
+        say (fn [label value] {:op :do :body [{:op :println :args [(literal label)]
+                                              :effect :io/write :capability :io/stdout} value]})]
+    (doseq [[text expected start end] [["sha256:0af" "sha256:" 7 10] ["sha257:0af" "sha256:" 7 10]
+                                      ["f" "" 0 1] ["" "" 0 0]]]
+      (let [{:keys [context module]} (parameter-vector-count-slice-kernel-context (products text expected start end))
+            definitions (:function-table module)
+            callee (invoke 'p15-s23-typed-lower-function module (definitions 'tail-characters) context)
+            caller (invoke 'p15-s23-typed-lower-function module (definitions 'call-tail) context)
+            compiled (:value caller) ir (first (:instructions compiled)) gate (get-in ir [:body 0 :body 0])
+            functions {'tail-characters (:value callee) 'call-tail compiled}
+            answer (= (subvec (vec text) 0 (count expected)) (vec expected))]
+        (is (= :complete (:status callee) (:status caller)) (pr-str (select-keys caller [:status :facts])))
+        (is (= :let (:op ir)))
+        (is (= :if (:op gate)))
+        (is (= '= (get-in gate [:test :function])))
+        (is (= :function-call (get-in gate [:then :op])))
+        (is (= 'tail-characters (get-in gate [:then :function])))
+        (is (= 'subvec (get-in gate [:then :args 0 :function])))
+        (is (= {:op :literal :value false} (:else gate)))
+        (when (= :complete (:status callee) (:status caller))
+          (is (= [answer "" :normal] (activate compiled functions)))
+          (let [traced (-> compiled
+                           (update-in [:instructions 0 :bindings 0 :expr] #(say "initializer" %))
+                           (update-in [:instructions 0 :body 0 :body 0 :test] #(say "condition" %))
+                           (update-in [:instructions 0 :body 0 :body 0 :then :args 0] #(say "argument" %))
+                           (update-in [:instructions 0 :body 0 :body 0 :else] #(say "else" %)))
+                traced-callee (update-in (:value callee) [:instructions 0] #(say "callee" %))
+                expected-output (str "initializer
+condition
+" (if answer "argument
+callee
+" "else
+"))
+                payload (String. "held branch argument")
+                transferred (assoc-in traced [:instructions 0 :body 0 :body 0 :then :args 0]
+                                      (say "argument" {:op :throw :value (literal payload)}))
+                result (activate transferred (assoc functions 'tail-characters traced-callee))]
+            (is (= [answer expected-output :normal] (activate traced (assoc functions 'tail-characters traced-callee))))
+            (if answer
+              (do (is (= [payload "initializer
+condition
+argument
+" :thrown] result))
+                  (is (identical? payload (first result))))
+              (is (= [false "initializer
+condition
+else
+" :normal] result)))))
+        (doseq [id [:call :gate-slice-call :prefix-call :argument-slice-call :parameter-entry]]
+          (is (= :rejected (:status (invoke 'p15-s23-typed-lower-function module (definitions 'call-tail)
+                                      (update context :call-facts dissoc id))))))
+        (doseq [mutate [#(assoc-in % [:core :control-flow] [])
+                        #(assoc-in % [:nodes :argument-slice-operator :evaluation :region :role] :else)
+                        #(assoc-in % [:nodes :parameter-entry :evaluation :region :if-syntax-id] :sibling)
+                        #(assoc-in % [:forms :parameter-entry :parent-form-id] :argument-let)
+                        #(assoc-in % [:types :argument-slice-operator :bounds-proof :receiver :body-consumer :condition-container :control :branch-exclusivity] :both)]]
+          (is (= :rejected (:status (invoke 'p15-s23-typed-lower-function module (definitions 'call-tail) (mutate context))))))))))
+
+(deftest current-gravity-prefix-gated-slice-call-preflight-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input (ns-resolve upstream 'prefix-gated-slice-call-input)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        emit (fn [name args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name args))
+        base (input "sha256:0af" "sha256:" 7 10)
+        owners [[c7 'sh08-vsl-let-equality-body] [(fn [name args] (apply c8 name args)) 'body-vsl-let-equality-body]
+                [emit 'p15-s23-vsl-let-equality-body]]]
+    (doseq [[invoke helper] owners id [:gate-slice-call :argument-slice-call]]
+      (let [run (fn [{:keys [core nodes bindings types forms]} budget]
+                  (invoke helper [core (nodes :argument-let) (nodes id) nodes bindings types forms budget]))
+            normal (run base 65536) visits (atom 0)
+            opaque (reify clojure.lang.IHashEq
+                     (hasheq [_] (swap! visits inc) (throw (ex-info "opaque prefix field hashed" {})))
+                     Object
+                     (hashCode [_] (swap! visits inc) (throw (ex-info "opaque prefix field hashCode" {})))
+                     (equals [_ _] (swap! visits inc) (throw (ex-info "opaque prefix field compared" {}))))]
+        (is (= :accepted (:status normal)))
+        (is (= normal (run base (:work-count normal))))
+        (is (= :vector-slice-work-limit (:reason (run base (dec (:work-count normal))))))
+        (doseq [field [[:nodes :prefix-if :source :form-id] [:nodes :prefix-if :source :syntax-id]
+                       [:nodes :parameter-entry :source :form-id] [:nodes :parameter-entry :source :syntax-id]
+                       [:nodes :argument-slice-call :source :form-id] [:nodes :argument-slice-call :source :syntax-id]
+                       [:nodes :parameter-definition :source :form-id] [:nodes :parameter-definition :source :syntax-id]
+                       [:nodes :parameter-fn :source :form-id] [:nodes :parameter-fn :source :syntax-id]
+                       [:nodes :argument-slice-operator :evaluation :region :if-form-id]
+                       [:nodes :argument-slice-ref :evaluation :region :parent-region-kind]
+                       [:nodes :argument-slice-start :evaluation :region :execution]
+                       [:nodes :argument-slice-end :evaluation :region :role]
+                       [:nodes :argument-slice-operator :evaluation :owner-function-syntax-id]
+                       [:nodes :argument-slice-ref :binding-context]
+                       [:core :control-flow 0 :condition-node-id]
+                       [:core :call-edges 4 :callee-function-syntax-id]
+                       [:bindings :parameter-definition-binding :name] [:bindings :argument-local :mutability]]]
+          (is (= :rejected (:status (run (assoc-in base field opaque) 65536))) (str id " " field))
+          (is (= 0 @visits) (str id " " field)))
+        (is (= :vector-slice-work-limit (:reason (run (assoc-in base [:nodes :prefix-if :source :form-id] opaque) 0))))
+        (is (= 0 @visits))))))
+
+(deftest current-gravity-prefix-gated-slice-call-fixtures-development-kernel
+  ;; Seed byte/parser parity and normalized C7 outcomes, not genuine QST execution.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input (ns-resolve upstream 'prefix-gated-slice-call-input) c7 (ns-resolve upstream 'invoke-c7)
+        root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[directory name text end expected]
+            [["accepted" "local-runtime-prefix-gated-slice-call" "sha256:0af" 10 :accepted]
+             ["rejected" "prefix-gated-slice-call-overrun" "sha257:0af" 11 :rejected]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" directory "/" name)
+            g (.getPath (io/file root (str stem ".gravity"))) q (.getPath (io/file root (str stem ".qst")))
+            content (slurp g) source-forms (bootstrap/read-forms g content)
+            {:keys [core nodes bindings types forms call edge]} (input text "sha256:" 7 end)
+            result (c7 'sh08-vsl-derive [core (nodes :argument-slice-call) call edge nodes bindings types forms 65536])
+            expected-body (list 'let ['characters (list 'vec text)]
+                               (list 'if (list '= '(subvec characters 0 7) (vec "sha256:"))
+                                     (list 'tail-characters (list 'subvec 'characters 7 end)) false))]
+        (is (= content (slurp q)))
+        (is (= source-forms (bootstrap/read-forms q (slurp q))))
+        (is (= true (nth (second source-forms) 3)))
+        (is (= expected-body (nth (last source-forms) 3)))
+        (is (= expected (:status result)))
+        (when (= :rejected expected) (is (= "STD3002" (:rule result))))))))
+
 (deftest current-gravity-let-vector-slice-call-argument-preflight-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test

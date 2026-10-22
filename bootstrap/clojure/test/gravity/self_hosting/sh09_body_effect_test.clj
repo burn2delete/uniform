@@ -6851,7 +6851,7 @@
   (let [ids (zipmap (keys (:nodes input)) (map sha (range 8400 8500)))
         scalar-fields [:node-id :core-node-id :call-core-node-id :operator-node-id :function-core-node-id
                        :body-core-node-id :definition-core-node-id :value-node-id :initializer-node-id :let-core-node-id
-                       :caller-function-core-node-id :callee-function-core-node-id :receiver-node-id :argument-node-id]
+                       :caller-function-core-node-id :callee-function-core-node-id :receiver-node-id :argument-node-id :condition-node-id]
         vector-fields [:children :argument-node-ids :ordered-evaluation-node-ids :argument-core-node-ids]
         convert (fn [value]
                   (if (map? value)
@@ -6869,6 +6869,55 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (parameter-vector-count-slice-body-products
     ((sh08-helper 'let-vector-slice-call-products) text start end callee-start)))
+
+(defn- prefix-gated-slice-call-body-products [text expected start end]
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (parameter-vector-count-slice-body-products ((sh08-helper 'prefix-gated-slice-call-products) text expected start end)))
+
+(deftest body-prefix-gated-slice-call-development-kernel
+  ;; Conditional normalized C7 facts; full public C8 intake remains separate.
+  (doseq [[text expected start end] [["sha256:0af" "sha256:" 7 10] ["sha257:0af" "sha256:" 7 10] ["" "" 0 0]]]
+    (let [{:keys [core bindings request facts inference ids]} (prefix-gated-slice-call-body-products text expected start end)
+          fresh (fn [candidate]
+                  (let [cq (leaf 'body-cq-context request candidate bindings 65536)
+                        candidate (assoc candidate :count-context (:context cq))
+                        nq (leaf 'body-nq-context request candidate bindings 65536)
+                        candidate (assoc candidate :quotient-context (:context nq))
+                        ae (leaf 'body-ae-context request candidate bindings 65536)]
+                    [cq nq ae (assoc candidate :equality-context (:context ae))]))
+          [cq nq ae complete] (fresh facts)
+          valid (fn [candidate]
+                  (let [[cq nq ae candidate] (fresh candidate)]
+                    (and (= :accepted (:status cq) (:status nq) (:status ae))
+                         (leaf 'body-function-joins-valid? core candidate bindings)
+                         (leaf 'body-local-joins-valid? core candidate bindings)
+                         (leaf 'body-call-joins-with-foreign-valid? core candidate bindings {}))))
+          graph (leaf 'body-derive-nodes-with-foreign core complete {} 65536)
+          gate (get-in graph [:nodes (ids :prefix-if)])
+          entry (first (filter #(= (ids :parameter-entry) (:node-id %)) (:nodes core)))]
+      (is (= :converged (:convergence-status inference)))
+      (is (= :accepted (:status cq) (:status nq) (:status ae) (:status graph)))
+      (is (true? (valid facts)))
+      (is (= [(ids :prefix-call)] (:evaluated-children gate)))
+      (is (= [(ids :prefix-call) (ids :parameter-entry) (ids :prefix-else)] (:dependencies gate)))
+      (is (= [{:node-id (ids :parameter-entry) :child-index 1 :role :then}
+              {:node-id (ids :prefix-else) :child-index 2 :role :else}] (:conditional-coverage gate)))
+      (is (= #{} (:direct gate) (get-in graph [:nodes (ids :parameter-entry) :direct])))
+      (is (= #{:memory/allocate} (:transitive gate) (get-in graph [:nodes (ids :parameter-entry) :transitive])))
+      (is (= #{:memory/allocate} (get-in graph [:nodes (ids :gate-slice-call) :direct])
+             (get-in graph [:nodes (ids :argument-slice-call) :direct])))
+      (is (true? (leaf 'body-call-invokes? entry (:type-table facts))))
+      (is (false? (leaf 'body-call-invokes? entry (assoc (:type-table facts) (ids :argument-slice-call) :gravity.type/never))))
+      (is (true? (leaf 'body-graph-equations-valid? core complete {} (:nodes graph))))
+      (doseq [id [:gate-slice-call :prefix-call :argument-slice-call :parameter-entry]]
+        (is (false? (valid (update facts :call-type-facts
+                            (fn [rows] (vec (remove (fn [row] (= (ids id) (:call-core-node-id row))) rows))))))))
+      (doseq [operator [:gate-slice-operator :argument-slice-operator]]
+        (is (false? (valid (assoc-in facts [:type-table (ids operator) :bounds-proof :receiver :body-consumer :condition-container :then :evaluation :region :role] :else)))))
+      (is (= nq (leaf 'body-nq-context request (assoc facts :count-context (:context cq)) bindings (:work-count nq))))
+      (is (= :rejected (:status (leaf 'body-nq-context request (assoc facts :count-context (:context cq)) bindings (dec (:work-count nq))))))
+      (is (= ae (leaf 'body-ae-context request (assoc facts :quotient-context (:context nq)) bindings (:work-count ae))))
+      (is (= :rejected (:status (leaf 'body-ae-context request (assoc facts :quotient-context (:context nq)) bindings (dec (:work-count ae)))))))))
 
 (deftest body-let-vector-slice-call-argument-development-kernel
   (doseq [[text start end callee-start] [["sha256:0af" 7 10 1] ["f" 0 1 1] ["" 0 0 0]]]
