@@ -104,7 +104,7 @@
             :from :source-unit
             :to :syntax-stream
             :dependency-kind :syntax
-            :invalidated-by #{:source-change :macro-change
+            :invalidated-by #{:source-change :reader-change :macro-change
                               :namespace-change}
             :source-span (w5-c16-source-span)
             :producer-stage :reader
@@ -191,7 +191,7 @@
                      :type-change :effect-change :profile-change
                      :capability-change :safety-change :proof-change
                      :dependency-change :target-change :backend-change
-                     :plugin-change :diagnostic-change}
+                     :plugin-change :diagnostic-change :reader-change}
    :diagnostics {:stream-id "sha256:w5-c16-diagnostic-v1"
                  :schema-version 1
                  :facts-id "sha256:w5-c16-diagnostic-facts-v1"}
@@ -266,7 +266,9 @@
                   "sha256:w5-c16-plugin-set-v2")
    (w5-c16-change :diagnostic-change :diagnostic-schema
                   "sha256:w5-c16-diagnostic-schema-v1"
-                  "sha256:w5-c16-diagnostic-schema-v2")])
+                  "sha256:w5-c16-diagnostic-schema-v2")
+   (w5-c16-change :reader-change :reader
+                  "sha256:w5-c16-reader-v1" "sha256:w5-c16-reader-v2")])
 
 (defn w5-c16-request [checkout extension kind]
   (let [source-path

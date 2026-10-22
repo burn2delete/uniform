@@ -140,7 +140,7 @@
                       (false? (:links-jvm? %))
                       (false? (:fallback? %)))
                 (:unsupported-target-policies policy)))
-    (is (= 14 (count (:invalidation-causes policy))))
+    (is (= 15 (count (:invalidation-causes policy))))
     (is (= 10 (count (:diagnostics policy))))
     (is (true? (:clojure-seed-boundary? policy)))
     (is (false? (:self-hosted? policy)))
@@ -164,14 +164,14 @@
           operations (:operations result)
           changed (rest operations)]
       (is (= :accepted (:status result)))
-      (is (= 15 (count operations)))
+      (is (= 16 (count operations)))
       (is (= :unchanged-reuse (:operation-id (first operations))))
       (is (= :reused (:decision (first operations))))
       (is (= :accepted (:proof-reuse (first operations))))
       (is (= :accepted (:diagnostic-reuse (first operations))))
       (is (true? (:publishable? (first operations))))
-      (is (= 14 (count (:invalidation-traces result))))
-      (is (= 15 (count (:reuse-reports result))))
+      (is (= 15 (count (:invalidation-traces result))))
+      (is (= 16 (count (:reuse-reports result))))
       (is (empty? (:diagnostics result)))
       (is (true? (:publishable? result)))
       (is (true? (:clojure-seed-boundary? result)))
@@ -184,7 +184,7 @@
                :effect-change :profile-change :capability-change
                :safety-change :proof-change :dependency-change
                :target-change :backend-change :plugin-change
-               :diagnostic-change}
+               :diagnostic-change :reader-change}
              (set (map :cause changed))))
       (is (every? #(= :invalidated (:decision %)) changed))
       (is (every? #(= :rejected (:proof-reuse %)) changed))

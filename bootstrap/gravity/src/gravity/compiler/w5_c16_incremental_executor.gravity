@@ -136,7 +136,8 @@
    :target-change
    :backend-change
    :plugin-change
-   :diagnostic-change])
+   :diagnostic-change
+   :reader-change])
 
 (def w5-c16-diagnostic-catalog
   {:artifact :gravity/w5-c16-diagnostic-catalog
@@ -701,7 +702,9 @@
                                        :backend
                                        (if (= (get change :cause) :plugin-change)
                                          :plugin
-                                         :diagnostic-schema))))))))))))))
+                                         (if (= (get change :cause) :reader-change)
+                                           :reader
+                                           :diagnostic-schema)))))))))))))))
           (if (w5-c16-id? (get change :before))
             (if (w5-c16-id? (get change :after))
               (if (= (get change :before) (get change :after))
@@ -1002,10 +1005,23 @@
                         :before (get change :before)
                         :after (get change :after)}
    :changed-field (get change :field)
-   :affected-nodes [:source-unit :typed-core :diagnostic-stream
-                    :proof-certificate :target-artifact]
-   :downstream-stages [:type-check :effect-check :safety-analysis :mir
-                       :target-lowering :diagnostics]
+   :affected-nodes
+   (if (= :reader-change (get change :cause))
+     ; The executor has validated that every graph node is root-reachable.
+     ; Conservatively invalidate all of them, including the syntax stream.
+     (let [nodes (get (get request :dependency-graph) :nodes)]
+       (loop [index 0 result []]
+         (if (= index (count nodes))
+           result
+           (recur (+ index 1) (conj result (get (get nodes index) :node-id))))))
+     [:source-unit :typed-core :diagnostic-stream
+      :proof-certificate :target-artifact])
+   :downstream-stages
+   (if (= :reader-change (get change :cause))
+     [:reader :macro-expansion :namespace-analysis :type-check :effect-check
+      :safety-analysis :mir :target-lowering :diagnostics]
+     [:type-check :effect-check :safety-analysis :mir
+      :target-lowering :diagnostics])
    :proofs-invalidated true
    :diagnostics-invalidated true
    :runtime-checks-restored true
