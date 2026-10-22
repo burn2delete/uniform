@@ -3159,11 +3159,112 @@
     (assoc input :gate-type gate-type :types (assoc types :prefix-if gate-type :slice-let gate-type))))
 
 (deftest sh08-let-prefix-gate-development-kernel
-  (let [{:keys [core nodes slice gate-type]} (let-prefix-gate-established (let-prefix-gate-input "sha256:abcd" "sha256:" true false nil))]
-    (is (= (get-in nodes [:slice-let :children]) (mapv :core-node-id (get-in nodes [:slice-let :evaluation :order]))))
-    (is (= [(get-in core [:control-flow 0 :condition-node-id])] (mapv :core-node-id (get-in nodes [:prefix-if :evaluation :order]))))
-    (is (= :accepted (:status slice)) (pr-str slice))
-    (is (= :gravity.type/bool gate-type))))
+  (doseq [[value expected] [["sha256:abcd" "sha256:"] ["sha257:abcd" "sha256:"] ["" ""]
+                            [[65 66 67] [65 66]] [[] []] [[-5 999999999999999999999999999999999999N] [-5]]]]
+    (let [{:keys [core nodes bindings types forms slice comparison gate-type] :as input}
+          (let-prefix-gate-established (let-prefix-gate-input value expected true false nil))
+          slice-call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
+          slice-edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))
+          bridge (invoke-c7 'sh08-vsl-let-equality-body [core (nodes :slice-let) (nodes :slice-call) nodes bindings types forms 65536])
+          derive #(invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) slice-call slice-edge nodes bindings types forms %])
+          checked #(invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) slice-call slice-edge nodes bindings %1 %2])
+          measured (checked types 65536)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                   :lookup-bindings (vec (vals bindings))
+                   :shape-call-products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core)}}
+          cold (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                 [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {} {} 10 context])]
+      (is (= :accepted (:status bridge) (:status slice) (:status comparison) (:status measured)) (pr-str slice))
+      (is (= :gravity.type/bool (:type comparison) gate-type))
+      (is (= (first (:control-flow core)) (get-in slice [:descriptor :bounds-proof :receiver :body-consumer :condition-container :control])))
+      (is (some #{:control-flow} (get-in slice [:descriptor :invalidation])))
+      (is (= (nodes :prefix-if) (:node bridge)))
+      (is (= :direct-left-vector-equality (get-in slice [:descriptor :bounds-proof :receiver :body-consumer :kind])))
+      (is (= (get types :prefix-expected) (get-in bridge [:proof :literal-type])))
+      (is (= slice (derive (:work-count slice))))
+
+    (is (= :vector-slice-work-limit (:reason (derive (dec (:work-count slice))))))
+      (is (= measured (checked types (:work-count measured))))
+      (is (= :vector-slice-work-limit (:reason (checked types (dec (:work-count measured))))))
+      (is (= :converged (:convergence-status cold)))
+      (is (= [] (:diagnostics cold)))
+      (is (= :gravity.type/bool (get-in cold [:type-table :prefix-call]) (get-in cold [:type-table :prefix-if]) (get-in cold [:type-table :slice-let])))
+      (doseq [path [[:bounds-proof :receiver :body-consumer :node :children]
+                    [:bounds-proof :receiver :body-consumer :right :node-id]
+                    [:bounds-proof :receiver :body-consumer :literal-type]
+                    [:bounds-proof :receiver :body-consumer :source-forms]
+                    [:bounds-proof :receiver :body-consumer :condition-container :control :branch-exclusivity]
+                    [:bounds-proof :receiver :body-consumer :condition-container :node :evaluation :order]
+                    [:bounds-proof :receiver :body-consumer :condition-container :then :evaluation :region :role]]]
+        (is (= :rejected (:status (checked (assoc-in types (into [:slice-operator] path) :forged) 65536)))))))
+  (let [base (let-prefix-gate-input "sha256:abcd" "sha256:" true false nil)
+        derive (fn [input] (:slice (let-prefix-gate-established input)))]
+    (doseq [mutate [#(assoc-in % [:nodes :slice-let :children 1] :slice-call)
+                    #(assoc-in % [:nodes :slice-let :evaluation :order 1 :core-node-id] :slice-call)
+                    #(assoc-in % [:nodes :prefix-call :children] [:prefix-operator :prefix-expected :slice-call])
+                    #(assoc-in % [:nodes :prefix-call :attributes :argument-child-indexes] [2 1])
+                    #(assoc-in % [:nodes :prefix-call :evaluation :order 1 :core-node-id] :prefix-expected)
+                    #(assoc-in % [:nodes :prefix-call :binding-context] :sibling)
+                    #(assoc-in % [:nodes :prefix-operator :attributes :symbol] 'first)
+                    #(assoc-in % [:bindings :prefix-binding :name] 'first)
+                    #(assoc-in % [:nodes :prefix-expected :core-form] :reference)
+                    #(assoc-in % [:nodes :prefix-character-0 :core-form] :call)
+                    #(assoc-in % [:forms :prefix-call :parent-form-id] :sibling)
+                    #(assoc-in % [:forms :slice-call :parent-form-id] :slice-let)
+                    #(assoc-in % [:forms :prefix-expected :scope-id] :sibling)
+                    #(assoc-in % [:forms :prefix-character-0 :value] \x)
+                    #(assoc-in % [:types :prefix-expected :element-types] [:gravity.type/integer])
+                    #(assoc-in % [:nodes :prefix-if :attributes :then-child-index] 2)
+                    #(assoc-in % [:nodes :prefix-if :evaluation :order] [{:index 0 :core-node-id :prefix-call} {:index 1 :core-node-id :prefix-then}])
+                    #(assoc-in % [:nodes :prefix-if :children] [:prefix-then :prefix-call :prefix-else])
+                    #(assoc-in % [:nodes :prefix-else :evaluation :region :role] :then)
+                    #(assoc-in % [:nodes :prefix-call :evaluation :region] :function-body)
+                    #(assoc-in % [:nodes :prefix-if :evaluation :region] nil)
+                    #(assoc-in % [:nodes :prefix-then :binding-context] :sibling)
+                    #(assoc-in % [:nodes :prefix-then :attributes :value] 1)
+                    #(assoc-in % [:forms :prefix-if :parent-form-id] :sibling)
+                    #(assoc-in % [:forms :prefix-if-op :value] (quote do))
+                    #(assoc-in % [:forms :prefix-else :scope-id] :sibling)
+                    #(assoc-in % [:core :control-flow] [])
+                    #(update-in % [:core :control-flow] conj (first (get-in % [:core :control-flow])))
+                    #(assoc-in % [:core :control-flow 0 :branch-exclusivity] :both)
+                    #(assoc-in % [:core :control-flow 0 :branches 1 :role] :then)]]
+      (is (= :rejected (:status (derive (mutate base))))))
+    (doseq [position [0 1 2 [0 1 2]]]
+      (let [{:keys [slice comparison]} (let-prefix-gate-established (let-prefix-gate-input "sha256:abcd" "sha256:" true false position))]
+        (is (= :accepted (:status slice) (:status comparison)))
+        (is (= :gravity.type/never (:type slice) (:type comparison)))))
+    (doseq [position [1 2]]
+      (is (= :rejected (:status (derive (assoc-in (let-prefix-gate-input "sha256:abcd" "sha256:" true false position)
+                                                  [:forms :prefix-character-0 :value] \x))))))
+    (let [refresh (fn [input] (assoc-in input [:core :nodes] (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes]))))
+          out-of-bounds (refresh (-> (let-prefix-gate-input "short" "sha256:" true false nil)
+                                     (assoc-in [:nodes :slice-end :attributes :value] 7) (assoc-in [:forms :slice-end :value] 7)))
+          bounds (derive out-of-bounds)
+          source-first (derive (assoc-in out-of-bounds [:core :control-flow 0 :branch-exclusivity] :both))
+          other-branch (refresh (-> base (assoc-in [:nodes :prefix-then :attributes] {:literal-kind :integer :value 1})
+                                         (assoc-in [:forms :prefix-then :kind] :integer) (assoc-in [:forms :prefix-then :value] 1)
+                                         (assoc-in [:types :prefix-then] :gravity.type/integer)))]
+      (is (= ["STD3002" :vector-slice-bounds-required] ((juxt :rule :reason) bounds)))
+      (is (= ["C7-VERIFY" :vector-slice-source-mismatch] ((juxt :rule :reason) source-first)))
+      (is (= :rejected (:status (derive other-branch))))
+      (is (= ["C7-VERIFY" :vector-slice-source-mismatch]
+             ((juxt :rule :reason) (derive (assoc-in (let-prefix-gate-input "sha256:abcd" "sha256:" true false 1)
+                                                   [:core :control-flow 0 :branch-exclusivity] :both))))))
+    (doseq [[then-value else-value] [[true false] [false true] [false false] [true true]]
+            value ["sha256:abcd" "sha257:abcd"]]
+      (let [{:keys [slice comparison gate-type]} (let-prefix-gate-established (let-prefix-gate-input value "sha256:" then-value else-value nil))]
+        (is (= :accepted (:status slice) (:status comparison)))
+        (is (= :gravity.type/bool gate-type))))
+    (is (= :vector-slice-work-limit (:reason (derive (let-prefix-gate-input (apply str (repeat 1024 \s)) (apply str (repeat 1024 \s)) true false nil)))))
+    (let [wide (let-prefix-gate-established (let-prefix-gate-input "sha256:abcd" (apply str (repeat 1024 \s)) true false nil))
+          {:keys [core nodes bindings types slice]} wide
+          call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
+          edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))]
+      (is (= :accepted (:status slice)))
+      (is (= 1043 (count (get-in slice [:descriptor :bounds-proof :source-forms]))))
+      (is (= :accepted (:status (invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings types 65536]))))
+      (is (= :rejected (:status (derive (let-prefix-gate-input "sha256:abcd" (apply str (repeat 1025 \s)) true false nil))))))))
 
 (deftest sh08-sha-prefix-comparison-development-kernel
   (let [text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"]
