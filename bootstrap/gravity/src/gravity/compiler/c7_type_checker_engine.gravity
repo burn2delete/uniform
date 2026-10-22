@@ -16751,16 +16751,83 @@
             {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
         {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))))
 
+(defn sh08-vsl-let-first-body [core let-node slice-node nodes bindings forms budget]
+  ; One original unary first parent edge; its owner proves nonemptiness later.
+  (let [base 128 children (get let-node :children)]
+    (if (> base budget) {:status :rejected :reason :vector-slice-work-limit :work-count base}
+      (if (sh08-sse-ids? children 2)
+        (let [node (get nodes (get children 1)) ids (get node :children)]
+          (if (if (sh08-sse-ids? ids 2)
+                (sh08-sse-ids? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3) false)
+            (let [operator (get nodes (get ids 0)) bid (get (get operator :attributes) :binding-id)
+                  scope (get (get let-node :attributes) :body-scope-id)]
+              (if (if (sh08-sse-ids? [(get operator :node-id) bid scope (get slice-node :node-id)] 4)
+                    (if (sh08-sse-ids? [(get (get operator :source) :form-id) (get (get operator :source) :syntax-id)
+                               (get (get slice-node :source) :form-id) (get (get slice-node :source) :syntax-id)] 4)
+                      (symbol? (get (get operator :attributes) :symbol)) false) false)
+                (let [binding (get bindings bid) owner (get forms (get (get node :source) :form-id))
+                      op-form (get forms (get (get operator :source) :form-id))
+                      profiles (get binding :profile-set) targets (get binding :target-set)
+                      work (+ base (if (vector? profiles) (* 2 (count profiles)) 0) (if (vector? targets) (* 2 (count targets)) 0))
+                      region (get (get node :evaluation) :region)
+                      caller (get (get node :evaluation) :owner-function-syntax-id)]
+                  (if (> work budget) {:status :rejected :reason :vector-slice-work-limit :work-count work}
+                    (if (if (sh08-sse-ids? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
+                                   (get binding :definition-syntax-id)] 5)
+                          (if (sh08-sse-ids? (get owner :child-form-ids) 2)
+                            (if (if (symbol? (get binding :name)) (symbol? (get op-form :value)) false)
+                              (if (if (vector? profiles) (vector? targets) false)
+                                (if (loop [remaining profiles] (if (= 0 (count remaining)) true
+                                      (if (keyword? (first remaining)) (recur (rest remaining)) false)))
+                                  (if (loop [remaining targets] (if (= 0 (count remaining)) true
+                                        (if (keyword? (first remaining)) (recur (rest remaining)) false)))
+                                    (if (keyword? region) (if (= nil caller) true (sh08-sse-ids? [caller] 1)) false) false) false) false) false) false) false)
+                      (if (sh08-ft-all-true? [
+                            (= :call (get node :core-form)) (= :reference (get operator :core-form))
+                            (= [(get operator :node-id) (get slice-node :node-id)] ids)
+                            (= (get node :node-id) (get children 1))
+                            (= [] (get operator :children)) (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+                                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+                            (contains? '#{first gravity.core/first} (get (get operator :attributes) :symbol))
+                            (= 'first (get binding :name)) (sh08-lq-binding? binding (get core :module))
+                            (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                            (= :operator-then-arguments (get (get node :evaluation) :kind))
+                            (= [{:index 0 :core-node-id (get operator :node-id)} {:index 1 :core-node-id (get slice-node :node-id)}]
+                               (get (get node :evaluation) :order))
+                            (= [] (get (get operator :evaluation) :order))
+                            (contains? #{:module-initialization :function-body} region)
+                            (= region (get (get let-node :evaluation) :region) (get (get slice-node :evaluation) :region))
+                            (= caller (get (get slice-node :evaluation) :owner-function-syntax-id) (get (get let-node :evaluation) :owner-function-syntax-id))
+                            (= :list (get owner :kind)) (= :symbol (get op-form :kind)) (= [] (get op-form :child-form-ids))
+                            (= (get (get operator :attributes) :symbol) (get op-form :value))
+                            (= [(get op-form :form-id) (get (get slice-node :source) :form-id)] (get owner :child-form-ids))
+                            (= (get owner :form-id) (get op-form :parent-form-id))
+                            (= (get node :source) (sh08-ma-form-source owner)) (= (get operator :source) (sh08-ma-form-source op-form))
+                            (= scope (get node :binding-context) (get operator :binding-context) (get owner :scope-id) (get op-form :scope-id))])
+                        {:status :accepted :work-count work :node node :form owner :source-forms [owner op-form]
+                         :proof {:kind :direct-vector-first :node node :operator operator :binding binding :source-forms [owner op-form]}}
+                        {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
+                      {:status :rejected :reason :vector-slice-source-mismatch :work-count work})))
+                {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
+            {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
+        {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))))
+
 (defn sh08-vsl-let-equality-body [core let-node slice-node nodes bindings types forms budget]
   ; One fixed parent edge. The enclosing VE still proves its own operand domain.
   (let [children (get let-node :children) base 64]
     (if (> base budget) {:status :rejected :reason :vector-slice-work-limit :work-count base}
       (if (sh08-sse-ids? children 2)
-        (let [root (get nodes (get children 1)) conditional? (= :if (get root :core-form))
+        (let [root (get nodes (get children 1)) first-consumer? (if (vector? (get root :children)) (= 2 (count (get root :children))) false)
+              conditional? (= :if (get root :core-form))
               container (if conditional? (sh08-vsl-prefix-if core let-node root nodes forms (- budget base)) nil)
               container-work (if conditional? (get container :work-count) 0)
               node (if conditional? (get container :condition) root) children (get node :children)]
-          (if (if conditional? (= :accepted (get container :status)) true)
+          (if first-consumer?
+            (let [selected (sh08-vsl-let-first-body core let-node slice-node nodes bindings forms (- budget base))]
+              (assoc selected :work-count (+ base (get selected :work-count))))
+            (if (if conditional? (= :accepted (get container :status)) true)
             (if (if (sh08-sse-ids? children 3)
                 (sh08-sse-ids? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3) false)
             (let [operator (get nodes (get children 0)) right (get nodes (get children 2))
@@ -16867,7 +16934,7 @@
                         {:status :rejected :reason :vector-slice-source-mismatch :work-count work})))
                     {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))))
             {:status :rejected :reason :vector-slice-source-mismatch :work-count base})
-            (assoc container :work-count (+ base container-work))))
+            (assoc container :work-count (+ base container-work)))))
         {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))))
 
 (defn sh08-vsl-let [core slice-node reference nodes bindings types forms budget]
@@ -17219,12 +17286,13 @@
             alias? (= :immutable-let-vector (get (get (get descriptor :bounds-proof) :receiver) :kind))
             literal? (= :original-integer-vector-literal (get (get (get descriptor :bounds-proof) :receiver) :kind))
             wrapped? (if alias? (= :direct-left-vector-equality (get (get (get (get descriptor :bounds-proof) :receiver) :body-consumer) :kind)) false)
+            first-consumer? (if alias? (= :direct-vector-first (get (get (get (get descriptor :bounds-proof) :receiver) :body-consumer) :kind)) false)
             width (if (vector? source-forms) (count source-forms) 0)
             base (+ 16 (if (if alias? true literal?) (* 2 width) 0))]
         (if (if (map? descriptor)
               (if (keyword? (get descriptor :kind))
                 (if (= :gravity.type/applied-vector-slice (get descriptor :kind))
-                  (if (vector? source-forms) (if alias? (if wrapped? (<= 13 width 2061) (<= 10 width 1034)) (if literal? (<= 5 width 1029) (contains? #{5 7} width))) false) false) false) false)
+                  (if (vector? source-forms) (if alias? (if first-consumer? (<= 12 width 1036) (if wrapped? (<= 13 width 2061) (<= 10 width 1034))) (if literal? (<= 5 width 1029) (contains? #{5 7} width))) false) false) false) false)
           (if (> base budget) {:status :rejected :reason :vector-slice-work-limit :work-count base}
           (let [forms (loop [remaining source-forms out {}]
                         (if (= 0 (count remaining)) out
