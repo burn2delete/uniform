@@ -66,7 +66,7 @@
         reader-path (str (.resolve @(existing 'root) "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
         binding ((existing 'parameter-compiled-binding-data)
                  (str (.resolve @(existing 'root) (str directory "two_i64_order_source.gravity"))))]
-    (doseq [extension ["gravity"]]
+    (doseq [extension ["gravity" "qst"]]
       (let [path (str (.resolve @(existing 'root) (str directory "two_i64_order_source." extension)))
             {:keys [raw upstream core mir]} (current-parameter-pair path binding reader-path)
             verification (invoke 'sh12-verify-branch-join-mir core mir)
@@ -166,6 +166,22 @@
                 (is (nil? (:execution result)))))
             (is (= :rejected (:status (run core mir))))
             (is (= snapshot [core mir]))))))))
+
+(deftest sh13-i64-order-extension-preserves-the-original-linear-identity
+  ;; One affected G source through the changed linear frame, not an old pair.
+  (let [path (str (.resolve @(existing 'root)
+                   "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/i64_parameter_source.gravity"))
+        reader-path (str (.resolve @(existing 'root) "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        {:keys [raw upstream core mir]} (current-parameter-pair path nil reader-path)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream)))
+    (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
+    (doseq [value [Long/MIN_VALUE 0 Long/MAX_VALUE]]
+      (let [result (argument-run-observation core mir [value])]
+        (is (= :accepted (:status result)))
+        (is (= value (get-in result [:execution :value])))
+        (is (= 510 (get-in result [:execution :fuel])))
+        (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [value] result))))))))
 
 (deftest sh13-consumes-resolved-i64-identity-with-signed-arguments
   ;; Original three-row declared-I64 identity, not generic Integer coercion,
@@ -276,7 +292,8 @@
   ;; One genuinely affected original G source, not three old paired proofs.
   (let [path (str (.resolve @(existing 'root)
                   "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
-        {:keys [raw upstream core mir]} (current-parameter-pair path)]
+        reader-path (str (.resolve @(existing 'root) "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        {:keys [raw upstream core mir]} (current-parameter-pair path nil reader-path)]
     (is (= :accepted (:status raw)))
     (is (= :passed (:status upstream)))
     (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
