@@ -504,6 +504,63 @@
         (is (= :rejected (:status (verify incompatible accepted))))
         (is (= :result-substitution (reason (verify incompatible accepted))))))))
 
+(deftest sh17-return-operations-preserve-one-defined-operand-type
+  ;; Supplied normalized declarations, not native or authenticated MIR input.
+  (doseq [backend [:llvm :c :wasm]]
+    (let [base (request backend "/checkout-return-signature")
+          function-path [:mir :functions 0]
+          ops-path (conj function-path :blocks 0 :operations)
+          bool-input (-> base
+                         (assoc-in (conj function-path :return-type) :gravity/bool)
+                         (assoc-in (conj ops-path 0 :type) :gravity/bool)
+                         (assoc-in (conj ops-path 1 :type) :gravity/bool))]
+      (doseq [input [base bool-input]]
+        (let [result (build input)
+              original (get-in input (conj ops-path 1))
+              lowered (get-in result [:target-program 0 :operations 1])
+              check-rejected
+              (fn [hostile]
+                (let [rejected (build hostile)]
+                  (is (= :rejected (:status rejected)))
+                  (is (= "C14-INPUT" (get-in rejected [:diagnostics 0 :diagnostic-id])))
+                  (is (= :invalid-normalized-request (reason rejected)))
+                  (is (nil? (:target-program rejected)))
+                  (is (= :passed (:status (verify hostile rejected))))
+                  (is (= :rejected (:status (verify hostile result))))))]
+          (is (= :accepted (:status result)))
+          (is (= (:type original) (:type lowered)))
+          (is (= (:operands original) (:operands lowered)))
+          (is (= (:source-id original) (:source-id lowered)))
+          (is (= (:effects original) (:effects lowered)))
+          (is (= :passed (:status (verify input result))))
+          (doseq [operands [[] [:value/constant :value/constant]
+                            [:value/missing] [:value/return]]]
+            (check-rejected (assoc-in input (conj ops-path 1 :operands) operands)))
+          (check-rejected
+           (assoc-in input (conj ops-path 1 :type)
+                     (if (= (:type original) :gravity/bool)
+                       :gravity/integer :gravity/bool)))))
+      ;; The terminator, not the return operation or final operation, selects
+      ;; the function's returned value in this bounded normalized carrier.
+      (let [bool-source (digest "6")
+            later-source (digest "7")
+            bool-value (assoc (operation :op/bool :constant [] :value/bool bool-source)
+                              :type :gravity/bool)
+            returned (assoc (get-in base (conj ops-path 1))
+                            :type :gravity/bool :operands [:value/bool])
+            later (operation :op/later :constant [] :value/later later-source)
+            input (-> base
+                      (assoc-in ops-path [(get-in base (conj ops-path 0))
+                                          bool-value returned later])
+                      (update :source-map into
+                              [(source-entry :op/bool bool-source "/checkout-return-signature")
+                               (source-entry :op/later later-source "/checkout-return-signature")]))
+            result (build input)]
+        (is (= :accepted (:status result)))
+        (is (= :gravity/bool (get-in result [:target-program 0 :operations 2 :type])))
+        (is (= :value/constant (get-in result [:target-program 0 :terminator :value-id])))
+        (is (= :passed (:status (verify input result))))))))
+
 (deftest sh17-integer-operations-check-their-declared-signatures
   ;; Normalized declarations only: no integer evaluation, widths or overflow.
   (doseq [backend [:llvm :c :wasm]
