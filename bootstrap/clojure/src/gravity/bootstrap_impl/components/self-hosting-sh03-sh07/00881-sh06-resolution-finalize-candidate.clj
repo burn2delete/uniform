@@ -81,7 +81,29 @@
      source-path
      (sh06-resolution-source-artifact-candidate
       source-path sh05-artifact false context)
-     context))))
+     context)))
+  ([source-path sh05-artifact module-inputs reader-source-path]
+   (let [before (sh03-reader-read-selected-source-bytes! source-path reader-source-path)
+         plan-binding (sh06-resolution-current-binding! source-path)
+         identity-keys [:source-content-hash :source-byte-count]]
+     (binding [*sh06-resolution-operation-binding* plan-binding]
+       (with-sh06-resolution-transport-bounds
+         (let [candidate (sh06-resolution-source-artifact-candidate
+                          source-path sh05-artifact false ::legacy module-inputs)
+               retained (get-in candidate [:sh05-macro-artifact :gravity-macro-boundary
+                                          :authenticated-sh04-artifact :c2-reader-artifact
+                                          :sh03-reader-authentication :reader-source-revision])
+               after (sh03-reader-read-selected-source-bytes! source-path reader-source-path)]
+           (when-not (and (map? retained)
+                          (contains? (get-in retained [:function-shapes sh03-reader-verifier]) :semantic-hash)
+                          (= (select-keys before identity-keys) (select-keys after identity-keys)
+                             (select-keys retained identity-keys)))
+             (sh06-resolution-boundary-fail!
+              "C5-UNRESOLVED" source-path :selected-current-reader-parent
+              (select-keys retained identity-keys) {:reason :current-reader-parent-revision-mismatch}))
+           (let [artifact (sh06-resolution-finalize-candidate source-path candidate)]
+             (sh06-resolution-binding-current! source-path plan-binding)
+             artifact)))))))
 
 (defn sh06-resolution-file-artifact
   ([source-path]
