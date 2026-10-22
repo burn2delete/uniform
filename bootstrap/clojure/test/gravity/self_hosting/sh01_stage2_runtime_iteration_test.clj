@@ -30085,7 +30085,7 @@
                                   (update-in [:body 0 :body 0 :args 1] #(say "candidate" %))
                                   (update :body #(mapv (fn [body] (say "body" body)) %))))
         hex (vec "0123456789abcdef")]
-    (doseq [[value members position answer] [["a" hex nil true] ["g" hex nil false] ["a" [] nil false] ["0" (vec "00") nil true]
+    (doseq [[value members position answer] [["a" hex nil true] ["g" hex nil false] ["a" [] nil false] ["0" (vec "0") nil true]
                                              ["a" hex 0 nil] ["a" hex 1 nil] ["a" hex 2 nil]
                                              ["a" [] 0 nil] ["a" [] 1 nil] ["a" [] 2 nil] [[65 66] [] 1 nil]]]
       (let [{:keys [context descriptors]}
@@ -30146,6 +30146,69 @@
                                   (assoc-in [:call-facts :slice-call] (c7 'sh08-vsl-call-fact [changed (get-in context [:core :module])]))
                                   (assoc-in [:ledger index] (c7 'sh08-vsl-constraint [changed])))]
                 (is (= :rejected (:status (compile candidate 65536))))))))))))
+
+
+(deftest current-gravity-let-vector-slice-first-membership-proof-preflight-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        input (ns-resolve upstream 'let-vector-slice-first-membership-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        args (fn [input budget] [(:core input) (get-in input [:nodes :slice-let]) (get-in input [:nodes :slice-call])
+                                (:nodes input) (:bindings input) (:forms input) budget])
+        refresh (fn [input] (assoc-in input [:core :nodes] (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes]))))
+        run (fn [owner input budget]
+              (let [arguments (args (refresh input) budget)]
+                (case owner :c7 (c7 'sh08-vsl-let-first-membership-body arguments)
+                            :c8 (apply c8 'body-vsl-let-first-membership-body arguments)
+                            :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-let-first-membership-body arguments))))]
+    (doseq [value ["a" [65 66]] members [[] (vec "ab")] owner [:c7 :c8 :emitter]]
+      (let [base (update (input value members 0 1 nil) :forms #(into clojure.lang.PersistentHashMap/EMPTY %))
+            measured (run owner base 65536)
+            function-body (update base :nodes #(into {} (map (fn [[id node]] [id (assoc-in node [:evaluation :region] :function-body)]) %)))]
+        (is (instance? clojure.lang.PersistentHashMap (:forms base)))
+        (is (= :accepted (:status measured) (:status (run owner function-body 65536))))
+        (is (= :rejected (:status (run owner (input value (vec "aa") 0 1 nil) 65536))))
+        (is (= measured (run owner base (:work-count measured))))
+        (is (= :vector-slice-work-limit (:reason (run owner base (dec (:work-count measured))))))
+        (when (seq members)
+          (let [callbacks (atom 0) armed (atom false)
+                opaque (proxy [Object] []
+                         (hashCode [] (swap! callbacks inc) (if @armed (throw (AssertionError. "membership source hash")) 0))
+                         (equals [_] (swap! callbacks inc) (if @armed (throw (AssertionError. "membership source equality")) false))
+                         (toString [] (swap! callbacks inc) (if @armed (throw (AssertionError. "membership source formatting")) "opaque")))
+                bad-set (hash-set opaque (char 97))]
+            (reset! callbacks 0) (reset! armed true)
+            (doseq [path [[:nodes :slice-let :children 1] [:nodes :let-member-call :node-id]
+                          [:nodes :let-member-call :source :form-id] [:nodes :let-member-call :source :syntax-id]
+                          [:nodes :let-member-operator :attributes :binding-id] [:nodes :let-member-operator :attributes :symbol]
+                          [:nodes :let-first-call :node-id] [:nodes :let-first-call :source :form-id]
+                          [:nodes :let-member-set :node-id] [:nodes :let-member-set :source :form-id]
+                          [:nodes :let-member-set :children 0] [:forms :let-member-set :child-form-ids 0]
+                          [:nodes :let-member-character-0 :node-id] [:nodes :let-member-character-0 :source :form-id]
+                          [:nodes :let-member-character-0 :attributes :value] [:forms :let-member-character-0 :value]
+                          [:forms :let-member-character-0 :syntax-id] [:forms :let-member-operator :value]
+                          [:forms :let-first-operator :value] [:nodes :slice-let :attributes :body-scope-id]
+                          [:bindings :let-member-binding :definition-syntax-id] [:bindings :let-member-binding :name]
+                          [:bindings :let-member-binding :profile-set 0] [:bindings :let-member-binding :target-set 0]
+                          [:nodes :let-member-call :evaluation :region] [:nodes :let-member-call :evaluation :owner-function-syntax-id]
+                          [:nodes :let-first-call :evaluation :owner-function-syntax-id]
+                          [:nodes :let-member-set :evaluation :owner-function-syntax-id]
+                          [:nodes :let-member-character-0 :evaluation :owner-function-syntax-id]]]
+              (is (= :rejected (:status (run owner (assoc-in base path opaque) 65536)))))
+            (doseq [candidate [(assoc-in base [:nodes :let-member-set :attributes :source-value] opaque)
+                               (assoc-in base [:forms :let-member-set :value] opaque)
+                               (-> base (assoc-in [:nodes :let-member-set :attributes :source-value] bad-set)
+                                        (assoc-in [:forms :let-member-set :value] bad-set))]]
+              (is (= :rejected (:status (run owner candidate 65536)))))
+            (is (= :vector-slice-work-limit (:reason (run owner (assoc-in base [:nodes :slice-let :children 1] opaque) 0))))
+            (is (= :vector-slice-work-limit
+                   (:reason (run owner (assoc-in base [:bindings :let-member-binding :profile-set] (vec (repeat 12000 opaque))) 128))))
+            (is (= :vector-slice-work-limit
+                   (:reason (run owner (assoc-in base [:nodes :let-member-set :children] (vec (repeat 12000 opaque))) 65536))))
+            (is (= 0 @callbacks))))))))
 
 
 (defn- let-vector-slice-first-kernel-context [input]
@@ -30731,6 +30794,22 @@
         (is (= '[main] (mapv second definitions)))
         (is (= expected (last (first definitions))))))))
 
+(deftest current-gravity-let-vector-slice-first-membership-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name expected]
+            [["accepted" "local-runtime-let-vector-slice-first-membership" (quote [(let [characters (vec "sha256:0")] (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f} (first (subvec characters 7 8))))
+                (let [characters (vec "sha256:g")] (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f} (first (subvec characters 7 8))))
+                (let [characters (vec "a")] (contains? #{} (first (subvec characters 0 1))))])]
+             ["rejected" "let-vector-slice-first-membership-empty" (quote (let [characters (vec "a")] (contains? #{} (first (subvec characters 0 0)))))]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
+        (is (= (slurp g-path) (slurp q-path)))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
+        (is (= '[main] (mapv second definitions)))
+        (is (= expected (last (first definitions))))))))
 (deftest current-gravity-let-vector-slice-first-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

@@ -3217,7 +3217,7 @@
 (deftest sh08-let-vector-slice-first-membership-proof-development-kernel
   (doseq [[value members start end] [["sha256:a" (vec "0123456789abcdef") 7 8]
                                     ["sha256:g" (vec "0123456789abcdef") 7 8]
-                                    ["a" [] 0 1] ["0" (vec "00") 0 1]]]
+                                    ["a" [] 0 1] ["0" (vec "0") 0 1]]]
     (let [{:keys [core nodes bindings forms types slice query membership] :as input}
           (let-vector-slice-first-membership-established (let-vector-slice-first-membership-input value members start end nil))
           call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))

@@ -6493,7 +6493,7 @@
 
 (defn- let-vector-slice-first-membership-body-products [value members positions]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
-        base ((ns-resolve upstream 'let-vector-slice-first-membership-input) value members (if (nil? positions) 0 20) (if (nil? positions) 1 1) positions)
+        base ((ns-resolve upstream 'let-vector-slice-first-membership-input) value members (if (nil? positions) 0 20) 1 positions)
         ids (zipmap (keys (:nodes base)) (map sha (range 8000 (+ 8000 (count (:nodes base))))))
         convert-node #(-> % (update :node-id ids) (update :children (fn [xs] (mapv ids xs)))
                           (update-in [:evaluation :order] (fn [xs] (mapv (fn [entry] (update entry :core-node-id ids)) xs))))

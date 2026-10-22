@@ -13411,7 +13411,8 @@
                     (= (get node :source) (p15-s23-typed-source form))])
                 (loop [i 0 selected [form] members [] seen #{} seen-forms #{(get form :form-id)}]
                   (if (= i n)
-                    (if (= (set members) values source-values)
+                    ; L1/C2 uniqueness is checked after the complete physical Character census.
+                    (if (if (= n (count values) (count source-values)) (= (set members) values source-values) false)
                       {:status :accepted :work-count work :node node :form form :source-forms selected}
                       {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
                     (let [id (get ids i) child (get nodes id) source (get child :source)]
