@@ -2277,7 +2277,17 @@
                                (= :literal (get (get instruction :else) :op))
                                (= [(get a :value) (get b :value)]
                                   [(get (get instruction :then) :value) (get (get instruction :else) :value)]
-                                  [source-a source-b])]) false) false) false) false)) false)) false) false) false)) false)))
+                                  [source-a source-b])])
+                            false)
+                          false)
+                        false)
+                      false))
+                  false))
+              false)
+            false)
+          false)
+        false))
+    false))
 
 (defn c6c10-build-parameter-function-product [state envelope plan form]
   (if (c6c10-parameter-declaration-valid? envelope plan form)
