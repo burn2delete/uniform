@@ -30125,6 +30125,45 @@
         (is (= :rejected (last (evaluate (query [opaque] 0 1)))))
         (is (= 0 @callbacks))))))
 
+(deftest current-gravity-literal-vector-slice-proof-preflight-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        input (ns-resolve upstream 'literal-vector-slice-input)
+        base (update (input [65 66 67] 1 2) :forms #(into clojure.lang.PersistentHashMap/EMPTY %))
+        wide (update (input (vec (range 1025)) 0 1) :forms #(into clojure.lang.PersistentHashMap/EMPTY %))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name args))
+        args (fn [input budget] [(get-in input [:nodes :call]) (:nodes input) (:types input) (:forms input) budget])
+        run (fn [owner input budget]
+              (case owner
+                :c7 (c7 'sh08-vsl-literal (args input budget))
+                :c8 (apply c8 'body-vsl-literal (args input budget))
+                :emitter (lower 'p15-s23-vsl-literal (args input budget))))]
+    (is (instance? clojure.lang.PersistentHashMap (:forms base)))
+    (doseq [owner [:c7 :c8 :emitter]]
+      (is (= :accepted (:status (run owner base 65536))))
+      (let [callbacks (atom 0) opaque (proxy [Object] []
+                                      (hashCode [] (swap! callbacks inc) (throw (AssertionError. "literal source ID hashed")))
+                                      (equals [_] (swap! callbacks inc) (throw (AssertionError. "literal source ID compared")))
+                                      (toString [] (swap! callbacks inc) (throw (AssertionError. "literal source ID formatted"))))
+            candidate (assoc-in base [:nodes :slice-item-0 :source :form-id] opaque)]
+        (is (= :rejected (:status (run owner candidate 65536))))
+        (is (= 0 @callbacks)))
+      (doseq [[candidate budget expected] [[base 0 :vector-slice-work-limit]
+                                          [wide 65536 :vector-slice-receiver-proof-required]]]
+        (let [original-keys clojure.core/keys scans (atom 0) attrs (get-in candidate [:nodes :call :attributes])
+              observed-keys (fn [value] (when (identical? value attrs) (swap! scans inc)) (original-keys value))]
+          (with-redefs [clojure.core/keys observed-keys]
+            (is (= expected (:reason (run owner candidate budget)))))
+          (is (= 0 @scans))))
+      (let [original-keys clojure.core/keys scans (atom 0) attrs (get-in base [:nodes :call :attributes])]
+        (with-redefs [clojure.core/keys (fn [value] (when (identical? value attrs) (swap! scans inc)) (original-keys value))]
+          (is (= :accepted (:status (run owner base 65536)))))
+        (is (pos? @scans))))))
+
 (deftest current-gravity-literal-vector-slice-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

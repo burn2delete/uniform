@@ -2617,7 +2617,11 @@
     (let [{:keys [core node call edge nodes bindings types forms]} (literal-vector-slice-input values start end)
           result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
       (is (= :rejected (:status result)))
-      (is (= reason (:reason result)))))
+      (is (= reason (:reason result)))
+      (when (= :vector-slice-bounds-required reason)
+        (is (= "STD3002" (:rule result)))
+        (is (= [:authenticated-ascii-string-vector :original-integer-vector-literal]
+               (get-in result [:expected :receiver]))))))
   (doseq [positions [[0] [1] [2] [0 1 2]]]
     (let [{:keys [core node call edge nodes bindings types forms]} (literal-vector-slice-transfer-input [65 66 67] 20 1 positions)
           result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])
