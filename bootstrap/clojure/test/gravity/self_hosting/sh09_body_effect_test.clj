@@ -6491,6 +6491,77 @@
         (is (false? (leaf 'body-graph-equations-valid? core facts {}
                           (assoc-in (:nodes graph) [id :direct] #{:memory/allocate}))))))))
 
+(deftest body-let-vector-slice-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'let-vector-slice-input) transfer (ns-resolve upstream 'vector-slice-transfer-input)]
+    (doseq [[value start end position] [["sha256:abcd" 1 2 nil] [[65 66 67] 1 2 nil] ["" 0 0 nil] [[] 0 0 nil]
+                                       ["sha256:abcd" 20 1 0] ["sha256:abcd" 20 1 1] ["sha256:abcd" 20 1 2]]]
+      (let [base (input (if (nil? position) value (transfer value start end position)) start end)
+            ids (zipmap (keys (:nodes base)) (map sha (range 6000 6100)))
+            convert-node #(-> % (update :node-id ids) (update :children (fn [xs] (mapv ids xs)))
+                              (update-in [:evaluation :order] (fn [xs] (mapv (fn [x] (update x :core-node-id ids)) xs))))
+            convert-call #(-> % (update :core-node-id ids) (update :operator-node-id ids)
+                              (update :argument-node-ids (fn [xs] (mapv ids xs))) (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+            convert-edge #(-> % (update :call-core-node-id ids) (update :argument-core-node-ids (fn [xs] (mapv ids xs)))
+                              (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+            node-list (mapv convert-node (get-in base [:core :nodes])) nodes (into {} (map (juxt :node-id identity) node-list))
+            calls (mapv convert-call (get-in base [:core :calls])) edges (mapv convert-edge (get-in base [:core :call-edges]))
+            records (mapv #(-> % (update :let-core-node-id ids) (update :initializer-node-id ids)) (get-in base [:core :lexical-bindings]))
+            core (assoc (:core base) :nodes node-list :calls calls :call-edges edges :lexical-bindings records)
+            types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+            init-id (ids :call) ref-id (ids :slice-ref) id (ids :slice-call) let-id (ids :slice-let)
+            forms (:forms base) bindings (:bindings base)
+            child-call (first (filter #(= init-id (:core-node-id %)) calls))
+            child (when child-call (c7 'sh08-scv-derive [core (nodes init-id) child-call
+                                                        (first (filter #(= init-id (:call-core-node-id %)) edges)) nodes bindings types forms 65536]))
+            types (if child (assoc types (:operator-node-id child-call) (:descriptor child) init-id (:type child) ref-id (:type child)) types)
+            call (last calls) edge (last edges)
+            result (c7 'sh08-vsl-derive [core (nodes id) call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            types (assoc types (:operator-node-id call) descriptor id (:type result) let-id (:type result))
+            descriptors (if child [(:descriptor child) descriptor] [descriptor])
+            facts {:module (:module core) :function-type-table [] :type-table types
+                   :call-type-facts (mapv (fn [name descriptor] (c7 name [descriptor (:module core)]))
+                                         (if child ['sh08-scv-call-fact 'sh08-vsl-call-fact] ['sh08-vsl-call-fact]) descriptors)
+                   :constraint-ledger (mapv (fn [name descriptor] (c7 name [descriptor]))
+                                           (if child ['sh08-scv-constraint 'sh08-vsl-constraint] ['sh08-vsl-constraint]) descriptors)
+                   :local-binding-facts (c7 'sh08-ft-local-facts [records types {:slice-let-binding (types init-id)} nodes (:module core)])}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            quotient (leaf 'body-nq-context request facts bindings 65536)
+            facts (assoc facts :quotient-context (:context quotient))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536) record (get-in graph [:nodes id])
+            init-record (get-in graph [:nodes init-id]) ref-record (get-in graph [:nodes ref-id]) let-record (get-in graph [:nodes let-id])]
+        (is (= :accepted (:status result) (:status quotient) (:status graph)) (pr-str graph))
+        (is (true? (valid facts)))
+        (is (= (if child 2 1) (count calls) (count (:call-type-facts facts)) (count (:constraint-ledger facts))))
+        (is (= #{} (:direct ref-record) (:transitive ref-record) (:direct let-record)))
+        (is (nil? (:allocation ref-record)))
+        (is (nil? (:allocation let-record)))
+        (is (= (if (= position 0) #{} #{:memory/allocate}) (:direct init-record)))
+        (is (= (if (nil? position) #{:memory/allocate} #{}) (:direct record)))
+        (is (= (cond (= position 0) #{} (nil? position) #{:memory/allocate} :else #{:error/throw}) (:transitive record)))
+        (is (= (cond (= position 0) #{:error/throw} (nil? position) #{:memory/allocate} :else #{:memory/allocate :error/throw}) (:transitive let-record)))
+        (is (= (nil? position) (get-in record [:allocation :normal-completion-possible?])))
+        ;; Graph order is declarative; dynamic abort order is checked at runtime.
+        (is (= [init-id id] (:dependencies let-record) (:evaluated-children let-record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= quotient (leaf 'body-nq-context request facts bindings (:work-count quotient))))
+        (is (= :rejected (:status (leaf 'body-nq-context request facts bindings (dec (:work-count quotient))))))
+        (doseq [field [:call-type-facts :constraint-ledger] index (range (count descriptors))]
+          (is (false? (valid (update facts field #(vec (concat (subvec % 0 index) (subvec % (inc index))))))))
+          (is (false? (valid (update facts field conj (get (get facts field) index))))))
+        (when-not (= position 0)
+          (is (= :rejected (:status (leaf 'body-nq-context (assoc-in request [:canonical-core-artifact :lexical-bindings 0 :binding-scope-id] :sibling)
+                                         facts bindings 65536))))
+          (doseq [path [[:bounds-proof :receiver :record :binding-scope-id] [:bounds-proof :receiver :reference :attributes :symbol]
+                        [:bounds-proof :receiver :origin :kind] [:bounds-proof :result-count]]]
+            (let [changed (assoc-in descriptor path :forged)
+                  candidate (-> facts (assoc-in [:type-table (:operator-node-id call)] changed)
+                                (assoc-in [:call-type-facts (dec (count descriptors))] (c7 'sh08-vsl-call-fact [changed (:module core)]))
+                                (assoc-in [:constraint-ledger (dec (count descriptors))] (c7 'sh08-vsl-constraint [changed])))]
+              (is (false? (valid candidate))))))))))
+
 (deftest body-literal-vector-slice-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)

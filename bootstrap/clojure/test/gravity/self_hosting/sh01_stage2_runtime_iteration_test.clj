@@ -30050,6 +30050,173 @@
         (is (= '[main] (mapv second definitions)))
         (is (= expected (last (first definitions))))))))
 
+(defn- let-vector-slice-kernel-context [input]
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        {:keys [core node call edge nodes forms bindings types module child]} input
+        result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        types (assoc types :slice-operator descriptor :slice-call (:type result) :slice-let (:type result))
+        descriptors (if child [(:descriptor child) descriptor] [descriptor])
+        fact-names (if child ['sh08-scv-call-fact 'sh08-vsl-call-fact] ['sh08-vsl-call-fact])
+        row-names (if child ['sh08-scv-constraint 'sh08-vsl-constraint] ['sh08-vsl-constraint])
+        facts (mapv (fn [name descriptor] (c7 name [descriptor module])) fact-names descriptors)
+        rows (mapv (fn [name descriptor] (c7 name [descriptor])) row-names descriptors)
+        local-facts (c7 'sh08-ft-local-facts [(:lexical-bindings core) types {:slice-let-binding (types :call)} nodes module])]
+    {:result result :descriptor descriptor :descriptors descriptors
+     :context {:core core :nodes nodes :forms forms :bindings bindings :types types
+               :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+               :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+               :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+               :call-facts (into {} (map (juxt :call-core-node-id identity) facts)) :ledger rows
+               :lexical (:lexical-bindings core) :local-facts (into {} (map (juxt :binding-id identity) local-facts))
+               :locals {} :parameter-types {} :tail? true}}))
+
+(deftest current-gravity-let-vector-slice-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'let-vector-slice-input) transfer (ns-resolve upstream 'vector-slice-transfer-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)) rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal #(hash-map :op :literal :value %)]
+    (doseq [[value start end position] [["sha256:abcd" 1 2 nil] [[65 66 67] 1 2 nil] ["" 0 0 nil] [[] 0 0 nil]
+                                       [[-5 999999999999999999999999999999999999N] 0N 2N nil]
+                                       ["sha256:abcd" 20 1 0] ["sha256:abcd" 20 1 1] ["sha256:abcd" 20 1 2]]]
+      (let [base (input (if (nil? position) value (transfer value start end position)) start end)
+            {:keys [context result descriptor]} (let-vector-slice-kernel-context base)
+            compile #(lower 'p15-s23-typed-compile-node %1 :slice-let %2)
+            compiled (compile context 65536) ir (:value compiled)]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= :let (:op ir)))
+        (is (= 'characters (get-in ir [:bindings 0 :name])))
+        (is (= {:op :local :name 'characters} (get-in ir [:body 0 :body 0 :args 0])))
+        (is (= compiled (compile context (:work-count compiled))))
+        (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count compiled))) [:facts :reason])))
+        (when (= :complete (:status compiled))
+          (if (nil? position)
+            (is (= [(subvec (vec value) start end) "" :normal] (evaluate ir)))
+            (is (= [(if (= 0 position) "original vec transfer" "original slice transfer") "" :thrown] (evaluate ir))))
+          (let [original-into clojure.core/into conversions (atom 0)
+                observed-into (fn
+                                ([to from] (when (string? from) (swap! conversions inc)) (original-into to from))
+                                ([to xf from] (when (string? from) (swap! conversions inc)) (original-into to xf from)))]
+            (with-redefs [clojure.core/into observed-into] (evaluate ir))
+            (is (= (if (and (string? value) (not= position 0)) 1 0) @conversions))
+            (is (= 1 (count (filter #(= {:op :local :name 'characters} %) (tree-seq coll? seq ir))))))
+          (let [say (fn [label value] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} value]})
+                traced (evaluate (-> ir (update-in [:bindings 0 :expr] #(say "initializer" %))
+                                     (update :body #(mapv (fn [body] (say "body" body)) %))))]
+            (is (= (if (= position 0) "initializer\n" "initializer\nbody\n") (second traced)))
+            (is (= (if (nil? position) :normal :thrown) (last traced)))))
+        (doseq [id (keys (:call-facts context))]
+          (is (= :rejected (:status (compile (update context :call-facts dissoc id) 65536)))))
+        (doseq [index (range (count (:ledger context)))]
+          (is (= :rejected (:status (compile (update context :ledger #(vec (concat (subvec % 0 index) (subvec % (inc index))))) 65536))))
+          (is (= :rejected (:status (compile (update context :ledger conj (get (:ledger context) index)) 65536)))))
+        (doseq [mutate [#(assoc % :local-facts {}) #(assoc % :lexical [])
+                        #(assoc-in % [:bindings :slice-let-binding :scope-id] :sibling)
+                        #(assoc-in % [:forms :slice-let-name :value] 'substitute)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))
+        (when-not (= position 0)
+          (is (= :rejected (:status (compile (assoc-in context [:core :mutations] [{:target-binding-id :slice-let-binding}]) 65536))))
+          (doseq [path [[:bounds-proof :receiver :record :binding-scope-id] [:bounds-proof :receiver :reference :attributes :symbol]
+                        [:bounds-proof :receiver :origin :kind] [:bounds-proof :result-count] [:slice-policy :receiver]]]
+            (let [changed (assoc-in descriptor path :forged)
+                  candidate (-> context (assoc-in [:types :slice-operator] changed)
+                                (assoc-in [:call-facts :slice-call] (c7 'sh08-vsl-call-fact [changed (:module base)]))
+                                (assoc-in [:ledger (dec (count (:ledger context)))] (c7 'sh08-vsl-constraint [changed])))]
+              (is (= :rejected (:status (compile candidate 65536)))))))))
+    (let [{:keys [context]} (let-vector-slice-kernel-context (input [65 66 67] 1 2))
+          ir (:value (lower 'p15-s23-typed-compile-node context :slice-let 65536))
+          observed (evaluate (update-in ir [:bindings 0 :expr] #(hash-map :op :do :body [{:op :println :args [(literal "initializer")]
+                                                                                      :effect :io/write :capability :io/stdout} %])))]
+      (is (= [[66] "initializer\n" :normal] observed)))))
+
+(deftest current-gravity-let-vector-slice-proof-preflight-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        input (ns-resolve upstream 'let-vector-slice-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        args (fn [input budget] [(:core input) (:node input) (get-in input [:nodes :slice-ref])
+                                (:nodes input) (:bindings input) (:types input) (:forms input) budget])
+        run (fn [owner input budget]
+              (case owner
+                :c7 (c7 'sh08-vsl-let (args input budget))
+                :c8 (apply c8 'body-vsl-let (args input budget))
+                :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-let (args input budget))))]
+    (doseq [value ["sha256:abcd" [65 66 67]] owner [:c7 :c8 :emitter]]
+      (let [base (update (input value 1 2) :forms #(into clojure.lang.PersistentHashMap/EMPTY %))
+            measured (run owner base 65536)]
+        (is (instance? clojure.lang.PersistentHashMap (:forms base)))
+        (is (= :accepted (:status measured)))
+        (is (= measured (run owner base (:work-count measured))))
+        (is (= :vector-slice-work-limit (:reason (run owner base (dec (:work-count measured))))))
+        (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "let source ID hashed")))
+                                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "let source ID compared")))
+                                        (toString [] (swap! callbacks inc) (throw (AssertionError. "let source ID formatted"))))]
+          (doseq [path [[:core :lexical-bindings 0 :binding-id] [:core :lexical-bindings 0 :definition-form-id]
+                        [:core :lexical-bindings 0 :initializer-node-id] [:nodes :slice-let :source :form-id]
+                        [:nodes :slice-let :node-id] [:forms :slice-let-op :form-id]
+                        [:forms :slice-let-name :syntax-id] [:bindings :slice-let-binding :name]
+                        [:forms :slice-ref :value] [:nodes :slice-ref :source :form-id]]]
+            (is (= :rejected (:status (run owner (assoc-in base path opaque) 65536)))))
+          (is (= :vector-slice-work-limit
+                 (:reason (run owner (assoc-in base [:core :lexical-bindings 0 :binding-id] opaque) 0))))
+          (is (= 0 @callbacks)))))))
+
+(deftest current-gravity-let-vector-slice-runtime-guards-development-kernel
+  (let [rt (:plan (typed-catch-runtime-projection))
+        literal #(hash-map :op :literal :value %)
+        ir {:op :builtin-call :function 'subvec :args [{:op :local :name 'characters} (literal 1) (literal 2)]}
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [%1 {'characters %2} ""])]
+    (is (= [[66] "" :normal] (evaluate ir [65 66 67])))
+    (is (= [[] "" :normal] (evaluate (assoc ir :args [{:op :local :name 'characters} (literal 0) (literal 0)]) [])))
+    (doseq [[candidate value] [[ir "ABC"] [ir '(65 66 67)] [ir (vec (range 1025))]
+                              [(assoc-in ir [:args 1 :value] -1) [65 66 67]]
+                              [(assoc-in ir [:args 2 :value] 4) [65 66 67]]
+                              [(assoc-in ir [:args 1 :value] 3) [65 66 67]]
+                              [(assoc-in ir [:args 1 :value] 1/2) [65 66 67]]
+                              [(assoc-in ir [:args 0 :extra] true) [65 66 67]]
+                              [(assoc-in ir [:args 1 :extra] true) [65 66 67]]
+                              [(assoc-in ir [:args 2 :extra] true) [65 66 67]]
+                              [(assoc-in ir [:args 1] {:op :builtin-call :function 'quot :args [(literal 2) (literal 2)]}) [65 66 67]]]]
+      (is (= :rejected (last (evaluate candidate value)))))
+    ;; Runtime bounds preserve inert payloads; source provenance is checked by C7/C8/lowering.
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "slice payload hashed")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "slice payload compared")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "slice payload formatted"))))
+          observed (evaluate ir [nil opaque :end])]
+      (is (= :normal (last observed)))
+      (is (= 1 (count (first observed))))
+      (is (identical? opaque (first (first observed))))
+      (is (= :rejected (last (evaluate (assoc-in ir [:args 0 :name] opaque) [65 66 67]))))
+      (is (= 0 @callbacks)))))
+
+(deftest current-gravity-let-vector-slice-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name expected]
+            [["accepted" "local-runtime-let-vector-slice"
+              '[(let [characters (vec "sha256:abcd")] (subvec characters 1 2))
+                (let [bytes [65 66 67]] (subvec bytes 1 2))
+                (let [empty []] (subvec empty 0 0))]]
+             ["rejected" "let-vector-slice-bounds" '(let [bytes [65 66 67]] (subvec bytes 0 4))]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
+        (is (= (slurp g-path) (slurp q-path)))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
+        (is (= '[main] (mapv second definitions)))
+        (is (= expected (last (first definitions))))))))
+
 (defn- literal-vector-slice-kernel-context [input]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core node call edge nodes forms bindings types module]} input
