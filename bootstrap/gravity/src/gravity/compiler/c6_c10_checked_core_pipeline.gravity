@@ -1,4 +1,6 @@
 ; Gravity-owned bounded C6-C10 checked-core construction pipeline.
+; The resolved I64 parameter variant is identity-only; :gravity/i64 denotes
+; its declared signed-64 type, not generic Integer or a runtime range proof.
 (ns gravity.compiler.c6-c10-checked-core-pipeline
   (:profile :meta)
   (:target :jvm)
@@ -981,6 +983,10 @@
         (c6c10-add-digest-request
          (get node-request :state) ownership-input)
         ownership-digest (get ownership-request :ref)
+        safety-basis (if (= source-operation :parameter)
+                       (if (= type :gravity/i64) :resolved-i64-parameter-binding
+                         (c6c10-safety-basis source-operation))
+                       (c6c10-safety-basis source-operation))
         proof-input-base
         {:domain :gravity/c10-pure-safety-proof-v1
          :artifact :gravity/c6-c10-pure-safety-proof
@@ -990,7 +996,7 @@
          :core-node-id node-id
          :source-operation source-operation
          :operand-node-ids operands
-         :basis (c6c10-safety-basis source-operation)
+         :basis safety-basis
          :source-origin {:origin-id origin-id
                          :span (get form :span)
                          :plan-path path}
@@ -1044,7 +1050,7 @@
          :ownership ownership
          :safety
          {:outcome :proven-safe
-          :basis (c6c10-safety-basis source-operation)
+          :basis safety-basis
           :proof (assoc proof-input :proof-id proof-id)}
          :profile :hosted
          :source (get origin-products :source)}]
@@ -2030,6 +2036,9 @@
        (c6c10-parameter-id? (get row :projected-form-id))
        (c6c10-parameter-id? (get row :projected-syntax-id))]) false))
 
+(defn c6c10-i64-parameter? [declaration]
+  (= :gravity/c6-c10-resolved-i64-parameter-v1 (get declaration :kind)))
+
 (defn c6c10-parameter-entry-valid? [envelope plan function-form declaration entry index arity]
   (let [forms (get envelope :form-tree)
         parameters (c6c10-form-by-id forms (get (get function-form :children) 2))
@@ -2074,7 +2083,8 @@
                          (c6c10-plain-form? name-form :symbol)
                          (c6c10-plain-form? marker :keyword) (= (get marker :value) :-)
                          (c6c10-plain-form? type-form :symbol)
-                         (contains? '#{Bool gravity.core/Bool} (get type-form :value))
+                         (contains? (if (c6c10-i64-parameter? declaration)
+                                      '#{I64 gravity.core/I64} '#{Bool gravity.core/Bool}) (get type-form :value))
                          (c6c10-parameter-coordinate? (get rows 0) :parameter-vector parameters)
                          (c6c10-parameter-coordinate? (get rows 1) :parameter-name name-form)
                          (c6c10-parameter-coordinate? (get rows 2) :annotation-marker marker)
@@ -2092,14 +2102,15 @@
                          (= (get binding :semantic-span) {:scope-ordinal 1 :binding-ordinal index})
                          (= [(get type-binding :binding-class) (get type-binding :kind)
                              (get type-binding :namespace) (get type-binding :name)]
-                            [:core :type 'gravity.core 'Bool])
+                            [:core :type 'gravity.core (if (c6c10-i64-parameter? declaration) 'I64 'Bool)])
                          (= (get type-binding :package) {:name 'gravity/core :version "bootstrap-contract-v1"})
                          (= (get type-binding :type-ref) :gravity.type/type)
                          (= (get type-binding :scope-id) nil)
                          (= (get type-binding :target-set) [:all])
                          (= (get type-binding :visibility) :public)
                          (= (get type-binding :safety) :safe)
-                         (= (get type-binding :semantic-span) {:catalog :gravity/core :ordinal 12})
+                         (= (get type-binding :semantic-span)
+                            {:catalog :gravity/core :ordinal (if (c6c10-i64-parameter? declaration) 21 12)})
                          (= (get type-binding :profile-set)
                             [:ai :core :distributed :firmware :formal :gpu :hardware :hosted :kernel :meta :native])
                          (= (get type-binding :effects) []) (= (get type-binding :capabilities) [])
@@ -2156,16 +2167,34 @@
             #{:kind :source-content-hash :sh06-artifact-id :sh06-semantic-projection-id
               :projection-binding :root-syntax-id :function-syntax-id :function-scope-id :parameter-index
               :coordinates :parameter-binding :type-binding :type-resolution})
-        (if (= :gravity/c6-c10-resolved-bool-parameter-v1 (get declaration :kind))
+        (if (contains? #{:gravity/c6-c10-resolved-bool-parameter-v1 :gravity/c6-c10-resolved-i64-parameter-v1}
+                       (get declaration :kind))
           (c6c10-parameter-entry-valid? envelope plan function-form declaration declaration 0 1) false) false))))
 
 (defn c6c10-parameter-entries [declaration]
   (if (> (c6c10-parameter-arity declaration) 1)
     (get declaration :parameters) [declaration]))
 
+(defn c6c10-i64-identity-body? [envelope plan form]
+  (if (= 4 (count (get form :children)))
+    (let [body (c6c10-form-by-id (get envelope :form-tree) (get (get form :children) 3))
+          name (get (get (get envelope :resolved-parameter) :parameter-binding) :name)
+          instructions (get plan :instructions) source-body (get plan :body)]
+      (if (vector? instructions)
+        (if (= 1 (count instructions))
+          (if (vector? source-body)
+            (if (= 1 (count source-body))
+              (c6c10-parameter-checks?
+                [(c6c10-plain-form? body :symbol) (= name (get body :value))
+                 (= :local (get (get instructions 0) :op)) (= name (get (get instructions 0) :name))
+                 (= name (get source-body 0))]) false) false) false) false)) false))
+
 (defn c6c10-build-parameter-function-product [state envelope plan form]
   (if (c6c10-parameter-declaration-valid? envelope plan form)
+    (if (if (c6c10-i64-parameter? (get envelope :resolved-parameter))
+          (c6c10-i64-identity-body? envelope plan form) true)
     (let [declaration (get envelope :resolved-parameter) entries (c6c10-parameter-entries declaration)
+          parameter-type (if (c6c10-i64-parameter? declaration) :gravity/i64 :gravity/bool)
           parameters (loop [index 0 accumulated (c6c10-empty-product state) env {} names [] types []]
                        (if (= index (count entries)) {:product accumulated :environment env :names names :types types}
                          (let [entry (get entries index) row (get (get entry :coordinates) 1)
@@ -2175,12 +2204,12 @@
                                  :resolved-binding-id (get (get entry :parameter-binding) :binding-id)
                                  :type-binding-id (get (get declaration :type-binding) :binding-id)}
                                binder (c6c10-add-node (c6c10-empty-product (get accumulated :state)) envelope name-form path
-                                        :binding :parameter false 0 [] attributes :gravity/bool :function-parameter
+                                        :binding :parameter false 0 [] attributes parameter-type :function-parameter
                                         {:storage :persistent-parameter-value} nil nil)
                                id (get binder :result-node-id)
                                binder (assoc binder :binding-records [(assoc (assoc attributes :binding-node-id id) :path path)])]
                            (recur (+ index 1) (c6c10-merge-products accumulated binder)
-                             (assoc env name {:node-id id :type :gravity/bool}) (conj names name) (conj types :gravity/bool)))))
+                             (assoc env name {:node-id id :type parameter-type}) (conj names name) (conj types parameter-type)))))
           binder (get parameters :product)
           body (c6c10-map-sequence (get binder :state) envelope (get plan :instructions)
                  (rest (rest (rest (get form :children)))) [:functions 'main] :body
@@ -2197,6 +2226,8 @@
                                          :result-node-id (get body :result-node-id)
                                          :result-disposition :shared-persistent-value-return} nil nil)]
           (assoc (assoc result :root-node-id (get result :result-node-id)) :entrypoint 'main))))
+      (c6c10-form-rejection state envelope form :C6-LOWERING-GAP :lower-to-core :diagnostic/c6-lowering-gap
+        {:missing-fact :bounded-i64-parameter-identity} :use-one-original-i64-parameter-local))
     (c6c10-form-rejection state envelope form :C6-VERIFY :lower-to-core :diagnostic/c6-verify
       {:missing-fact :resolved-single-bool-parameter} :restore-original-resolved-parameter)))
 
@@ -2394,7 +2425,10 @@
          :type-id type-id
          :type (get node :type)
          :producer-rule
-         (c6c10-type-producer-rule (get node :source-operation))
+         (if (= (get node :source-operation) :parameter)
+           (if (= (get node :type) :gravity/i64) :resolved-i64-parameter-declaration
+             (c6c10-type-producer-rule (get node :source-operation)))
+           (c6c10-type-producer-rule (get node :source-operation)))
          :dependencies (get node :operands)
          :source-origin-id source-origin-id
          :profile :hosted

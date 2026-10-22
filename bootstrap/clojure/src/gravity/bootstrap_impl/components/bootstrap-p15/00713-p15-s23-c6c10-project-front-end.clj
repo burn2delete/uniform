@@ -164,7 +164,9 @@
                      (apply = (map :type-binding rows)))
         (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :distinct-resolved-bool-parameters {}))
       (if (= n 1)
-        (merge base {:kind :gravity/c6-c10-resolved-bool-parameter-v1} (first rows))
+        (merge base {:kind (if (= 'I64 (get-in (first rows) [:type-binding :name]))
+                            :gravity/c6-c10-resolved-i64-parameter-v1
+                            :gravity/c6-c10-resolved-bool-parameter-v1)} (first rows))
         (assoc base :kind (if (= n 2) :gravity/c6-c10-resolved-two-bool-parameters-v1
                            :gravity/c6-c10-resolved-three-bool-parameters-v1)
                :type-binding (:type-binding (first rows))
