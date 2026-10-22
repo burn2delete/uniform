@@ -2997,6 +2997,60 @@
     (assoc input :slice slice :comparison comparison
                  :types (assoc types :prefix-operator (:descriptor comparison) :prefix-call (:type comparison)))))
 
+(defn- let-vector-slice-equality-input [value expected positions]
+  ;; One fixed consumer over existing normalized owners, not source admission.
+  (let [inner (let-vector-slice-input (if (nil? positions) value
+                                      (if (string? value) (vector-slice-transfer-input value 20 1 positions)
+                                        (literal-vector-slice-transfer-input value 20 1 (if (vector? positions) positions [positions]))))
+                                     (if (nil? positions) 0 20) (if (nil? positions) (count expected) 1))
+        prefix (sha-prefix-comparison-input "sha256:abcd" (apply str (repeat (count expected) \s)) nil)
+        values (vec expected) ids (mapv #(keyword (str "prefix-character-" %)) (range (count values)))
+        body :slice-let-body
+        added-ids (conj (into [:prefix-operator] ids) :prefix-expected :prefix-call)
+        added (mapv #(get-in prefix [:nodes %]) added-ids)
+        added (mapv #(assoc % :binding-context body) added)
+        added (mapv (fn [node]
+                      (if (= :literal (:core-form node))
+                        (let [value (get values (.indexOf ids (:node-id node)))]
+                          (assoc node :attributes {:literal-kind (if (char? value) :character :integer) :value value}))
+                        (if (= :prefix-expected (:node-id node))
+                          (assoc-in node [:attributes :source-value] values) node))) added)
+        owner (assoc-in (get-in inner [:nodes :slice-let]) [:children 1] :prefix-call)
+        node-list (conj (into (filterv #(not= :slice-let (:node-id %)) (get-in inner [:core :nodes])) added) owner)
+        forms (merge (:forms inner) (select-keys (:forms prefix) added-ids))
+        forms (-> forms (assoc-in [:slice-let :child-form-ids 2] :prefix-call)
+                  (assoc-in [:slice-call :parent-form-id] :prefix-call)
+                  (assoc-in [:prefix-call :parent-form-id] :slice-let)
+                  (assoc-in [:prefix-expected :value] values))
+        forms (reduce #(assoc-in %1 [%2 :scope-id] body) forms added-ids)
+        forms (reduce (fn [forms [id value]] (assoc forms id (assoc (forms id) :kind (if (char? value) :character :integer) :value value)))
+                      forms (map vector ids values))
+        edge (assoc (:edge prefix) :ordinal (count (get-in inner [:core :calls])))
+        core (-> (:core inner) (assoc :nodes node-list)
+                 (update :calls conj (:call prefix)) (update :call-edges conj edge))
+        types (merge (:types inner) (zipmap ids (mapv #(if (char? %) :gravity.type/character :gravity.type/integer) values))
+                     {:prefix-expected {:kind :gravity.type/vector :shape :literal
+                                        :element-types (mapv #(if (char? %) :gravity.type/character :gravity.type/integer) values)}})]
+    (assoc inner :core core :nodes (into {} (map (juxt :node-id identity) node-list))
+                 :forms forms :types types :bindings (assoc (:bindings inner) :prefix-binding (get-in prefix [:bindings :prefix-binding]))
+                 :node (first (filter #(= :prefix-call (:node-id %)) node-list)) :call (:call prefix) :edge edge)))
+
+(defn- let-vector-slice-equality-established [input]
+  (let [{:keys [core nodes bindings forms types]} input
+        slice-call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
+        slice-edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))
+        slice (invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) slice-call slice-edge nodes bindings types forms 65536])
+        types (assoc types :slice-operator (:descriptor slice) :slice-call (:type slice))
+        comparison (invoke-c7 'sh08-ve-derive [core (nodes :prefix-call) (:call input) (:edge input) nodes bindings types forms 65536])]
+    (assoc input :slice slice :comparison comparison
+                 :types (assoc types :prefix-operator (:descriptor comparison) :prefix-call (:type comparison) :slice-let (:type comparison)))))
+
+(deftest sh08-let-vector-slice-equality-development-kernel
+  (let [{:keys [slice comparison]} (let-vector-slice-equality-established (let-vector-slice-equality-input "sha256:abcd" "sha256:" nil))]
+    (is (= :accepted (:status slice)))
+    (is (= :accepted (:status comparison)))
+    (is (= :gravity.type/bool (:type comparison)))))
+
 (deftest sh08-sha-prefix-comparison-development-kernel
   (let [text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"]
     (doseq [[value positions] [[text nil] [(str "sha257:" (subs text 7)) nil] [text 0] [text 1] [text 2]]]
