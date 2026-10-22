@@ -146,6 +146,39 @@ exports, arguments, binding or transfer facts change. This introduces no Map
 annotation, coercion, runtime check elision or public structural-record API.
 Other ownership, effect, profile and safety obligations remain unchanged.
 
+### Private Call-Entry Key-Domain Facts
+
+For `keys` on an immutable bare Map parameter, local inference may establish
+that every stored key is Keyword from complete private call-entry evidence.
+This is a whole-key-domain obligation, separate from the selected-key presence
+rule above. A witness for one key, matching member-type vectors, an expected
+result type or a family predicate does not establish the domain of all keys.
+
+The function must be closed to unaccounted callers. Retain its actual private
+visibility, exports, definition, all resolved uses, calls, entries and parameter
+re-entry facts. Every normally invoking entry must independently establish a
+complete finite Keyword-key Map and validate all stored value types, including
+values ignored by `keys`. Entry shapes and value types may differ. Retain each
+actual argument source and type, its compatibility with the bare Map parameter,
+and the corresponding call facts; do not replace them with a common shape.
+
+At least one normal entry is required. An empty Map is a valid normal witness
+because every one of its keys satisfies the domain. A Never argument in any
+coordinate makes the whole call non-invoking and supplies no normal witness.
+Unknown, circular or unaccounted evidence and an all-non-invoking entry set do
+not establish the domain. Public or external entry, escaping function values,
+mutation and recursive parameter re-entry require separate complete evidence;
+they cannot be omitted from the census.
+
+The parameter remains bare Map. The result is the existing homogeneous Keyword
+List, including when empty. This rule adds no Map or List annotation, common
+constructor, key identity or presence, extent, cardinality, nonempty, flow or
+specialization fact. Reconstruct the evidence at each consuming compiler stage
+and invalidate it when the function, parameter, `keys` use, callers, uses,
+visibility, exports, argument sources or types, compatibility, binding, mutation
+or transfer facts change. Existing ownership, effects, capabilities, profile,
+safety and bounded validation obligations remain in force.
+
 ### Homogeneous List Declarations
 
 `(List T)` in a parameter or return annotation denotes persistent Lists whose elements
@@ -376,6 +409,7 @@ L5 rejects:
 - Explicit bare-List parameter fixtures retain actual argument types and compatibility evidence while rejecting unrelated sequence families and preserving other type obligations.
 - Explicit bare-Map parameter fixtures retain actual argument types and per-parameter compatibility evidence, including mixed collection/scalar calls, while rejecting unrelated values and uses that require unestablished member or key facts.
 - Private call-entry member fixtures retain each actual incoming key witness, reject missing or vacuous evidence and uncovered entry/escape/re-entry paths, and do not invent a common constructor shape from matching member types.
+- Private call-entry key-domain fixtures cover different finite Keyword Map shapes and value types plus an empty normal witness, reject incomplete or vacuous entry/domain/compatibility evidence and uncovered visibility, escape, mutation or re-entry paths, and preserve the bare Map parameter and existing homogeneous Keyword List result.
 - Homogeneous List parameter fixtures check every positional member type, preserve the element type through `rest`, and reject head-result refinements justified by the wrong value or control-flow path.
 - Homogeneous List return fixtures accept independently established matching finite, empty and homogeneous body types, retain return-specific compatibility evidence, and reject bare, unknown or mismatched member types without expected-type-driven inference.
 - Canonical `if` List-join fixtures preserve actual branch types and join-specific evidence, cover both branch orders and empty branches, and reject missing or incompatible independent element evidence without changing other control-flow joins.

@@ -10468,6 +10468,569 @@
                             :function-index (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
                             :recursion-components []}))))
 
+(defn- private-map-keys-input []
+  (let [base (private-entry-get-input)
+        unary (map-keys-input :gravity.type/map)
+        declaration-input (bare-map-parameter-input :gravity.type/map)
+        declaration (:declaration declaration-input) signature (:signature declaration-input)
+        type-binding-id (:type-binding-id declaration)
+        rename-id (fn [id] (if (keyword? id) (keyword (str (name id) "-keys-copy")) id))
+        map-zero (get-in base [:nodes :input-0])
+        map-one (get-in base [:nodes :input-1])
+        copied-ids (zipmap (concat [:entry-0 :entry-operator-0 :input-0] (:children map-zero))
+                          (map rename-id (concat [:entry-0 :entry-operator-0 :input-0] (:children map-zero))))
+        rid #(get copied-ids % %)
+        copy-node (fn [n]
+                    (-> n (update :node-id rid) (update :children #(mapv rid %))
+                        (update-in [:source :form-id] rid) (update-in [:source :syntax-id] rid)
+                        (assoc-in [:evaluation :owner-function-syntax-id] :caller-2)
+                        (update-in [:evaluation :order] #(mapv (fn [e] (update e :core-node-id rid)) %))))
+        copy-form (fn [f]
+                    (-> f (update :form-id rid) (update :syntax-id rid) (update :parent-form-id rid)
+                        (update :child-form-ids #(mapv rid %))))
+        selected (take 2 (:children map-zero))
+        third-map-id (rid :input-0) third-entry-id (rid :entry-0) third-op-id (rid :entry-operator-0)
+        third-map (-> (copy-node map-zero) (assoc :children (mapv rid selected) :attributes {:literal-kind :map :element-count 2})
+                      (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) (map rid selected))))
+        third-key (copy-node (get-in base [:nodes (first selected)]))
+        third-value (-> (copy-node (get-in base [:nodes (second selected)]))
+                        (assoc :attributes {:literal-kind :boolean :value false}))
+        third-op (copy-node (get-in base [:nodes :entry-operator-0]))
+        third-node (copy-node (get-in base [:nodes :entry-0]))
+        third-call (-> (get-in base [:core :calls 1]) (update :core-node-id rid) (update :operator-node-id rid)
+                       (update :argument-node-ids #(mapv rid %)) (update :ordered-evaluation-node-ids #(mapv rid %)))
+        third-edge (-> (get-in base [:core :call-edges 1]) (assoc :ordinal 3 :caller-function-syntax-id :caller-2 :caller-function-core-node-id :caller-2)
+                       (update :call-core-node-id rid) (update :argument-core-node-ids #(mapv rid %))
+                       (update :ordered-evaluation-node-ids #(mapv rid %)))
+        third-use (-> (get-in base [:core :reference-uses 0]) (update :core-node-id rid) (update :form-id rid) (update :syntax-id rid))
+        third-resolution (-> (get-in base [:core :preserved-resolution :resolution-table 0])
+                              (update :reference-syntax-id rid) (assoc :resolution-order 2))
+        empty-map (-> map-one (assoc :children [] :attributes {:literal-kind :map :element-count 0}) (assoc-in [:evaluation :order] []))
+        receiver (get-in base [:nodes :input])
+        operator (get-in unary [:nodes :operator])
+        query (-> (:node unary) (assoc :node-id :present-get :children [:operator :input] :source (get-in base [:node :source]))
+                  (assoc-in [:evaluation :owner-function-syntax-id] :helper-form)
+                  (assoc-in [:evaluation :order] [{:index 0 :core-node-id :operator} {:index 1 :core-node-id :input}]))
+        call (assoc (:call unary) :core-node-id :present-get :argument-node-ids [:input] :ordered-evaluation-node-ids [:operator :input])
+        edge (assoc (:edge unary) :call-core-node-id :present-get :argument-core-node-ids [:input] :ordered-evaluation-node-ids [:operator :input]
+                                  :caller-function-syntax-id :helper-form :caller-function-core-node-id :helper-fn)
+        removed (into #{:key :operator :present-get} (:children map-one))
+        node-list (vec (concat (remove #(or (contains? removed (:node-id %)) (= :input-1 (:node-id %))) (get-in base [:core :nodes]))
+                              [operator query empty-map third-key third-value third-map third-op third-node]))
+        node-list (mapv (fn [n] (if (= :helper-fn (:node-id n))
+                                 (assoc n :lowering-rule-version :sh07-atomic-function-signature-v1
+                                          :attributes {:parameters ['span] :parameter-form-id :helper-parameters :parameter-syntax-id :helper-parameters
+                                                       :fixed-arity 1 :recur-target-id :helper-form :signature signature}) n)) node-list)
+        bindings (-> (assoc (merge (:bindings base) (:bindings unary)) type-binding-id (get (:bindings declaration-input) type-binding-id))
+                     (assoc-in [:span-binding :definition-syntax-id] :span-name))
+        forms (-> (apply dissoc (:forms base) (conj (vec (:children map-one)) :key))
+                  (assoc :operator (get-in unary [:forms :operator]))
+                  (assoc-in [:present-get :child-form-ids] [:operator :input])
+                  (assoc-in [:input-1 :child-form-ids] []))
+        third-forms (into {} (map (fn [id] [(rid id) (copy-form (get-in base [:forms id]))])
+                                  (concat [:entry-0 :entry-operator-0 :input-0] selected)))
+        forms (-> (merge forms third-forms)
+                  (assoc-in [:operator :parent-form-id] :present-get)
+                  (assoc-in [third-map-id :child-form-ids] (mapv rid selected))
+                  (assoc-in [(rid (second selected)) :kind] :boolean)
+                  (assoc-in [(rid (second selected)) :value] false))
+        source-form (fn [id sid kind value parent children]
+                      {:form-id id :syntax-id sid :source-span nil :origin-chain [] :generated-origin nil
+                       :kind kind :value value :parent-form-id parent :child-form-ids children})
+        forms (-> forms
+                  (assoc-in [:helper-form :child-form-ids] [:helper-fn-operator :helper-parameters :present-get])
+                  (assoc-in [:present-get :parent-form-id] :helper-form)
+                  (assoc :helper-fn-operator (source-form :helper-fn-operator :helper-fn-operator :symbol 'fn :helper-form [])
+                         :helper-parameters (source-form :helper-parameters :helper-parameters :vector ['span :- 'Map] :helper-form
+                                                         [:span-name (:marker-form-id declaration) (:type-form-id declaration)])
+                         :span-name (source-form :span-name :span-name :symbol 'span :helper-parameters [])
+                         (:marker-form-id declaration) (source-form (:marker-form-id declaration) (:marker-syntax-id declaration)
+                                                                    :keyword :- :helper-parameters [])
+                         (:type-form-id declaration) (source-form (:type-form-id declaration) (:type-syntax-id declaration)
+                                                                  :symbol 'Map :helper-parameters [])))
+        types (-> (apply dissoc (:types base) (conj (vec (:children map-one)) :key))
+                  (assoc :input :gravity.type/map :input-1 {:kind :gravity.type/map :shape :literal :member-types []}
+                         third-map-id {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
+                         (rid (first selected)) :gravity.type/keyword (rid (second selected)) :gravity.type/bool))
+        core (-> (:core base) (assoc :nodes node-list :calls (conj (assoc (get-in base [:core :calls]) 0 call) third-call)
+                                                    :call-edges (conj (assoc (get-in base [:core :call-edges]) 0 edge) third-edge))
+                 (update :function-records #(conj (mapv (fn [record] (if (= :helper-form (:function-syntax-id record))
+                                                                      (assoc record :ordinal 0 :signature signature) record)) %)
+                                                  {:function-syntax-id :caller-2 :function-core-node-id :caller-2}))
+                 (update :reference-uses conj third-use)
+                 (update-in [:preserved-resolution :resolution-table] conj third-resolution)
+                 (assoc-in [:preserved-resolution :binding-table] (vec (vals bindings)))
+                 (assoc-in [:module :effects] [:memory/allocate]))]
+    {:core core :module (:module core) :node query :nodes (into {} (map (juxt :node-id identity) node-list))
+     :call call :edge edge :bindings bindings :forms forms :types types :binding-types {:span-binding :gravity.type/map}
+     :entry-arguments [:input-0 :input-1 third-map-id]}))
+
+(deftest sh08-private-map-keys-entry-domain-development-kernel
+  (let [{:keys [core node call edge nodes bindings types forms entry-arguments]} (private-map-keys-input)
+        reserved (invoke-c7 'sh08-pe-reserve [core (get nodes :input) nodes bindings 65536])
+        census (invoke-c7 'sh08-pe-census [{:application :normal :source-call call} core nodes bindings forms])
+        result (invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms 65536])
+        descriptor (:descriptor result) proof (:key-domain-proof descriptor)]
+    (is (= :accepted (:status reserved)))
+    (is (= :closed-private-parameter-entry (:kind census)))
+    (is (= 3 (count (:calls census))))
+    (is (= :gravity.type/map (:input types)))
+    (is (true? (invoke-c7 'sh08-ft-function-signature-valid? [(first (:function-records core)) (get nodes :helper-fn) bindings])))
+    (is (= :gravity.type/map (get-in (invoke-c7 'sh08-ft-function-type-skeleton [(first (:function-records core)) (:module core)]) [:parameters 0 :type])))
+    (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :rule :work-count])))
+    (is (= {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword} (:type result)))
+    (is (= :gravity.type/applied-private-map-keys (:kind descriptor)))
+    (is (= :sh08-private-map-keys-v1 (:version descriptor)))
+    (is (= [:gravity.type/map] (:argument-types descriptor) (:parameter-types descriptor)))
+    (is (= :complete-private-call-entry-key-domain (:kind proof)))
+    (is (= :span-binding (:parameter-binding-id proof)))
+    (is (= 3 (count (:entries proof))))
+    (is (= (mapv types entry-arguments) (mapv :argument-type (:entries proof))))
+    (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+    (is (nil? (:input-element-count descriptor)))
+    (is (nil? (:result-count descriptor)))))
+
+(defn- private-map-keys-cross-family-descriptor [descriptor]
+  (let [actual (get-in descriptor [:key-domain-proof :entries 0 :argument-type])
+        {:keys [core node call edge nodes bindings types forms]} (map-keys-input actual)
+        alternate (:descriptor (invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms 65536]))]
+    (merge alternate (select-keys descriptor [:resolution :operator-node-id :operator-binding-id :call-core-node-id
+                                             :source :operator-source :source-call :source-edge :source-binding :profile :target
+                                             :argument-types :parameter-types :return :result-type :application :direct-effects :latent-effects]))))
+
+(deftest sh08-private-map-keys-cold-and-budget-development-kernel
+  (let [{:keys [core node call edge nodes bindings types forms binding-types] :as input} (private-map-keys-input)
+        derive #(invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms %])
+        result (derive 65536) descriptor (:descriptor result) expected (:type result)
+        callee (assoc (invoke-c7 'sh08-ft-function-type-skeleton [(first (:function-records core)) (:module core)]) :return expected)
+        table (reduce (fn [out entry] (assoc out (:operator-node-id entry) callee (:core-node-id entry) expected))
+                      (assoc types :operator descriptor :present-get expected :helper-fn callee) (rest (:calls core)))
+        check #(invoke-c7 'sh08-pmk-inferred-call [core node call edge nodes bindings %1 forms %2])
+        checked (check table 65536)
+        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
+                 :lookup-forms (vec (vals forms)) :association-forms forms :loop-work-left 65536}
+        joined (invoke-c7 'sh08-ft-call-constraints-with-context [(:calls core) (:call-edges core) nodes table binding-types {:helper-form callee} context])
+        facts (invoke-c7 'sh08-ft-call-facts-with-context [(:calls core) (:call-edges core) nodes table {:helper-form callee} (:module core) {}])]
+    (is (= :accepted (:status result) (:status checked)))
+    (is (= result (derive (:work-count result))))
+    (is (= :private-map-keys-work-limit (:reason (derive (dec (:work-count result))))))
+    (is (= checked (check table (:work-count checked))))
+    (is (= :private-map-keys-work-limit (:reason (check table (dec (:work-count checked))))))
+    (is (= [] (:diagnostics joined)) (pr-str (:diagnostics joined)))
+    (is (= :gravity.type/map (get-in joined [:binding-types :span-binding])))
+    (is (= 3 (count (:constraints joined))))
+    (is (= (mapv :compatibility (get-in descriptor [:key-domain-proof :entries]))
+           (mapv #(get-in % [:rhs 0 :compatibility]) (:constraints joined))))
+    (is (= (invoke-c7 'sh08-mkeys-call-fact [descriptor (:module core)]) (first facts)))
+    (is (= :sh08-private-map-keys-v1 (:producer-rule (invoke-c7 'sh08-lq-constraint [descriptor]))))
+    (is (= :direct-private-map-keys (:dispatch (invoke-c7 'sh08-lq-call-fact [descriptor (:module core)]))))
+    (doseq [[entry fact] (map vector (get-in descriptor [:key-domain-proof :entries]) (rest facts))]
+      (is (= (:call-input-facts entry) (select-keys fact (keys (:call-input-facts entry))))))
+    (doseq [changed [(private-map-keys-cross-family-descriptor descriptor)
+                     (assoc descriptor :entry-proof-work 0)
+                     (assoc descriptor :key-domain-work 0)
+                     (assoc descriptor :input-element-count 0 :result-count 0)
+                     (assoc-in descriptor [:key-domain-proof :normal-witness-count] 0)
+                     (update-in descriptor [:key-domain-proof :entries] pop)
+                     (update-in descriptor [:key-domain-proof :entries] conj (first (get-in descriptor [:key-domain-proof :entries])))
+                     (assoc-in descriptor [:key-domain-proof :entries 1 :argument-type] :gravity.type/map)
+                     (assoc-in descriptor [:key-domain-proof :entries 0 :compatibility :actual-type] :gravity.type/map)
+                     (assoc-in descriptor [:query-policy :type-validation] :keys-only)
+                     (assoc descriptor :direct-effects [] :latent-effects [])
+                     (assoc descriptor :return :gravity.type/list :result-type :gravity.type/list)]]
+      (is (= :rejected (:status (check (assoc table :operator changed) 65536)))))))
+
+(defn- private-map-keys-typed-input []
+  (let [{:keys [core node call edge nodes bindings types forms binding-types] :as input} (private-map-keys-input)
+        result (invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms 65536])
+        descriptor (:descriptor result) expected (:type result)
+        callee (assoc (invoke-c7 'sh08-ft-function-type-skeleton [(first (:function-records core)) (:module core)]) :return expected)
+        table (reduce (fn [out entry] (assoc out (:operator-node-id entry) callee (:core-node-id entry) expected))
+                      (assoc types :operator descriptor :present-get expected :helper-fn callee) (rest (:calls core)))
+        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
+                 :lookup-forms (vec (vals forms)) :association-forms forms :loop-work-left 65536}
+        joined (invoke-c7 'sh08-ft-call-constraints-with-context [(:calls core) (:call-edges core) nodes table binding-types {:helper-form callee} context])
+        facts (invoke-c7 'sh08-ft-call-facts-with-context [(:calls core) (:call-edges core) nodes table {:helper-form callee} (:module core) {}])]
+    (assoc input :types table :type-result result :descriptor descriptor :functions {:helper-form callee}
+                 :facts {:module (:module core) :type-table table :function-type-table (invoke-c7 'sh08-ft-function-facts [{:helper-form callee} nodes (:module core)]) :call-type-facts facts
+                         :constraint-ledger (into [(invoke-c7 'sh08-mkeys-constraint [descriptor])] (:constraints joined))}
+                 :join-result joined)))
+
+(defn- private-map-keys-two-argument-input []
+  (let [base (private-map-keys-input) record (first (get-in base [:core :function-records]))
+        signature (-> (:signature record) (update :parameters conj nil) (update :parameter-source-child-indexes conj 3))
+        binding (assoc (get-in base [:bindings :span-binding]) :binding-id :other-binding :name 'other :definition-syntax-id :other-name)
+        entries (rest (get-in base [:core :calls]))
+        additions (into {} (map-indexed
+                            (fn [i call]
+                              (let [id (keyword (str "unused-" i)) owner (:core-node-id call)
+                                    original (get-in base [:nodes owner]) source (assoc (:source original) :form-id id :syntax-id id)]
+                                [owner {:id id :node {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                                                      :source source :attributes {:literal-kind :keyword :value :unused}
+                                                      :evaluation {:kind :value :order [] :owner-function-syntax-id (get-in original [:evaluation :owner-function-syntax-id])}}
+                                        :form (-> (get-in base [:forms owner])
+                                                  (assoc :form-id id :syntax-id id :kind :keyword :value :unused
+                                                         :parent-form-id owner :child-form-ids []))}])) entries))
+        calls (mapv (fn [call] (if-let [extra (additions (:core-node-id call))]
+                                 (-> call (update :argument-node-ids conj (:id extra)) (update :ordered-evaluation-node-ids conj (:id extra))) call))
+                    (get-in base [:core :calls]))
+        index (into {} (map (juxt :core-node-id identity) calls))
+        edges (mapv (fn [edge] (if-let [extra (additions (:call-core-node-id edge))]
+                                 (-> edge (update :argument-core-node-ids conj (:id extra)) (update :ordered-evaluation-node-ids conj (:id extra))) edge))
+                    (get-in base [:core :call-edges]))
+        sequence (vec (mapcat (fn [node]
+                               (if-let [extra (additions (:node-id node))]
+                                 (let [children (:ordered-evaluation-node-ids (index (:node-id node)))]
+                                   [(:node extra) (-> node (assoc :children children)
+                                                     (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))])
+                                 [(if (= :helper-fn (:node-id node))
+                                    (-> node (update :resolved-binding-ids conj :other-binding)
+                                        (assoc-in [:attributes :parameters] ['span 'other]) (assoc-in [:attributes :fixed-arity] 2)
+                                        (assoc-in [:attributes :signature] signature)) node)])) (get-in base [:core :nodes])))
+        records (mapv #(if (= (:function-syntax-id record) (:function-syntax-id %))
+                         (-> % (update :parameter-binding-ids conj :other-binding) (assoc :fixed-arity 2 :signature signature)) %)
+                      (get-in base [:core :function-records]))
+        forms (reduce (fn [out [owner extra]] (-> out (assoc (:id extra) (:form extra)) (update-in [owner :child-form-ids] conj (:id extra))))
+                      (:forms base) additions)
+        forms (-> forms (update-in [:helper-parameters :child-form-ids] conj :other-name)
+                        (update-in [:helper-parameters :value] conj 'other)
+                        (assoc :other-name (assoc (get forms :span-name) :form-id :other-name :syntax-id :other-name :value 'other)))
+        core (-> (:core base) (assoc :nodes sequence :calls calls :call-edges edges :function-records records)
+                             (update-in [:preserved-resolution :binding-table] conj binding))]
+    (-> base (assoc :core core :nodes (into {} (map (juxt :node-id identity) sequence)) :forms forms)
+        (assoc-in [:bindings :other-binding] binding)
+        (update :types merge (into {} (map (fn [[_ extra]] [(:id extra) :gravity.type/keyword]) additions))))))
+
+(deftest sh08-private-map-keys-deferred-development-kernel
+  (let [{:keys [core node call edge nodes bindings types forms facts functions descriptor]} (private-map-keys-typed-input)
+        check #(invoke-c7 'sh08-pmk-inferred-call [core node call edge nodes bindings % forms 65536])
+        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
+                 :lookup-forms (vec (vals forms)) :association-forms forms :loop-work-left 65536}
+        join #(invoke-c7 'sh08-ft-call-constraints-with-context [(:calls core) (:call-edges core) nodes %
+                                                              {:span-binding :gravity.type/map} functions context])
+        cold (assoc types :operator :gravity.type/core-var :present-get :gravity.type/unknown)]
+    (doseq [operator [nil :gravity.type/unknown :gravity.type/core-var descriptor]]
+      (let [table (assoc cold :operator operator)]
+        (is (= :deferred (:status (check table))))
+        (is (= [] (:diagnostics (join table))))
+        (is (= :gravity.type/map (get-in (join table) [:binding-types :span-binding])))))
+    (is (= :deferred (:status (check (assoc cold :input-0 :gravity.type/unknown)))))
+    (is (= :rejected (:status (check (assoc cold :operator :gravity.type/string)))))
+    (is (= :rejected (:status (check (assoc cold :operator (assoc descriptor :entry-proof-work 0))))))
+    (is (= :accepted (:status (check types))))
+    (is (= [] (:diagnostics (join types))))
+    (is (= :private-map-keys-work-limit
+           (get-in (invoke-c7 'sh08-ft-call-constraints-with-context
+                             [(:calls core) (:call-edges core) nodes types {:span-binding :gravity.type/map}
+                              functions (assoc context :loop-work-left 1)]) [:diagnostics 0 :reason])))))
+
+(deftest sh08-private-map-keys-entry-rejection-development-kernel
+  (let [input (private-map-keys-input)
+        derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input]
+                            (invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms 65536])))
+        bid (get-in input [:core :function-records 0 :definition-binding-id])
+        definition (get-in input [:core :function-records 0 :definition-core-node-id])
+        name (get-in input [:bindings bid :name])]
+    (doseq [mutate [#(assoc-in % [:bindings bid :visibility] :public)
+                    #(assoc-in % [:nodes definition :attributes :visibility] :public)
+                    #(assoc-in % [:core :module :exports] [name])
+                    #(assoc-in % [:core :var-references] [{:binding-id bid}])
+                    #(assoc-in % [:core :mutations] [{:target-binding-id bid}])
+                    #(assoc-in % [:core :mutations] [{:target-binding-id :span-binding}])
+                    #(assoc-in % [:bindings :span-binding :mutability] :mutable)
+                    #(update-in % [:core :reference-uses] pop)
+                    #(update-in % [:core :preserved-resolution :resolution-table] pop)
+                    #(update-in % [:core :calls] pop)
+                    #(update-in % [:core :call-edges] pop)
+                    #(update-in % [:core :reference-uses] conj (first (get-in % [:core :reference-uses])))
+                    #(assoc-in % [:core :recursion-components] [{:function-syntax-ids [:helper-form]}])
+                    #(-> % (assoc-in [:core :recur-targets] [{:target-id :helper-form :target-kind :function :owner-core-node-id :helper-fn :binding-ids [:span-binding]}])
+                           (assoc-in [:core :recur-transfers] [{:target-id :helper-form :target-kind :function}]))
+                    #(assoc-in % [:forms :input-0 :parent-form-id] :orphan)
+                    #(assoc-in % [:forms :span-name :value] 'forged)
+                    #(assoc-in % [:nodes :input-0 :source :syntax-id] :orphan)
+                    #(assoc-in % [:types :input-0] :gravity.type/map)
+                    #(assoc-in % [:types :input-0 :member-types 0] :gravity.type/string)
+                    #(assoc-in % [:types :input-0 :member-types 1] {:kind :gravity.type/not-a-type})
+                    #(assoc-in % [:types :input-0 :member-types] (vec (mapcat identity (repeat 513 [:gravity.type/keyword :gravity.type/bool]))))
+                    #(assoc-in % [:types :input-0 :member-types 1] (nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) :gravity.type/bool) 129))]]
+      (let [result (derive (mutate input))]
+        (is (= :rejected (:status result)) (pr-str (select-keys result [:status :reason :work-count])))))
+    (is (= :deferred (:status (derive (assoc-in input [:types :input-0] :gravity.type/unknown)))))
+    (let [one (derive (assoc-in input [:types :input-0] :gravity.type/never))]
+      (is (= :accepted (:status one)))
+      (is (= [:not-invoked :normal :normal] (mapv :entry (get-in one [:descriptor :key-domain-proof :entries])))))
+    (is (= :rejected (:status (derive (reduce #(assoc-in %1 [:types %2] :gravity.type/never) input (:entry-arguments input))))))))
+
+(deftest sh08-private-map-keys-other-argument-normality-development-kernel
+  (let [input (private-map-keys-two-argument-input)
+        derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input]
+                            (invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms 65536])))
+        baseline (derive input)]
+    (is (= :accepted (:status baseline)) (pr-str (select-keys baseline [:status :reason :work-count])))
+    (let [changed (-> input (assoc-in [:types :unused-0] :gravity.type/never)
+                           (assoc-in [:types :input-0] :gravity.type/string))
+          result (derive changed)]
+      (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+      (is (= [:not-invoked :normal :normal] (mapv :entry (get-in result [:descriptor :key-domain-proof :entries]))))
+      (is (= :gravity.type/string (get-in result [:descriptor :key-domain-proof :entries 0 :argument-type])))
+      (is (nil? (get-in result [:descriptor :key-domain-proof :entries 0 :compatibility])))
+      (is (= 2 (get-in result [:descriptor :key-domain-proof :normal-witness-count])))
+      (is (= :rejected (:status (derive (reduce #(assoc-in %1 [:types %2] :gravity.type/never) changed [:unused-1 :unused-2]))))))
+    (is (= :deferred (:status (derive (assoc-in input [:types :unused-0] :gravity.type/unknown)))))
+    (is (= :deferred (:status (derive (-> input (assoc-in [:types :input-0] :gravity.type/never)
+                                               (assoc-in [:types :unused-0] :gravity.type/unknown))))))))
+
+(defn- private-map-keys-count-source-input []
+  (let [base (private-map-keys-input) count-input (integral-ordering-input 'count [:gravity.type/unknown])
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        count-binding (assoc (get-in count-input [:bindings :ordering-binding]) :binding-id :count-binding)
+        count-operator (-> (get-in count-input [:nodes :operator])
+                           (assoc :node-id :count-operator :source (source :count-operator) :resolved-binding-ids [:count-binding])
+                           (assoc-in [:attributes :binding-id] :count-binding)
+                           (assoc-in [:evaluation :owner-function-syntax-id] :helper-form))
+        children [:count-operator :present-get]
+        count-node (-> (:node count-input) (assoc :node-id :count-query :source (source :count-query) :children children :resolved-binding-ids [:count-binding])
+                        (assoc-in [:evaluation :owner-function-syntax-id] :helper-form)
+                        (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        count-call (assoc (:call count-input) :core-node-id :count-query :operator-node-id :count-operator :operator-binding-id :count-binding
+                                             :argument-node-ids [:present-get] :ordered-evaluation-node-ids children)
+        count-edge (assoc (:edge count-input) :ordinal 1 :call-core-node-id :count-query :callee-binding-id :count-binding
+                                              :caller-function-syntax-id :helper-form :caller-function-core-node-id :helper-fn
+                                              :argument-core-node-ids [:present-get] :ordered-evaluation-node-ids children)
+        sequence (vec (concat [count-operator (get-in base [:nodes :operator]) (get-in base [:nodes :input])
+                               (get-in base [:nodes :present-get]) count-node
+                               (assoc (get-in base [:nodes :helper-fn]) :children [:count-query]) (get-in base [:nodes :helper-def])]
+                              (mapcat (fn [call]
+                                        (let [argument (get-in base [:nodes (first (:argument-node-ids call))])]
+                                          (concat [(get-in base [:nodes (:operator-node-id call)])]
+                                                  (map (:nodes base) (:children argument))
+                                                  [argument (get-in base [:nodes (:core-node-id call)])])))
+                                      (rest (get-in base [:core :calls])))))
+        core (-> (:core base) (assoc :nodes sequence
+                                    :calls (into [(first (get-in base [:core :calls])) count-call] (rest (get-in base [:core :calls])))
+                                    :call-edges (into [(first (get-in base [:core :call-edges])) count-edge]
+                                                      (map #(update % :ordinal inc) (rest (get-in base [:core :call-edges])))))
+                             (assoc-in [:function-records 0 :body-core-node-id] :count-query)
+                             (update-in [:preserved-resolution :binding-table] conj count-binding))
+        forms (-> (:forms base) (assoc-in [:helper-form :child-form-ids 2] :count-query)
+                                (assoc-in [:present-get :parent-form-id] :count-query)
+                                (assoc :count-query (-> (get-in count-input [:forms :call])
+                                                       (assoc :form-id :count-query :syntax-id :count-query :parent-form-id :helper-form :child-form-ids children))
+                                       :count-operator (-> (get-in count-input [:forms :operator])
+                                                          (assoc :form-id :count-operator :syntax-id :count-operator :parent-form-id :count-query))))]
+    (-> base (assoc :core core :nodes (into {} (map (juxt :node-id identity) sequence)) :forms forms)
+        (assoc-in [:bindings :count-binding] count-binding))))
+
+(deftest sh08-private-map-keys-current-source-order-development-kernel
+  (let [{:keys [core nodes forms bindings]} (private-map-keys-count-source-input)
+        skeletons (invoke-c7 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
+        seeds (invoke-c7 'sh08-ft-declaration-seeds [skeletons {}])
+        products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core) :definitions (:definitions core)
+                  :function-index (into {} (map (juxt :function-syntax-id identity) (:function-records core)))}
+        context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms)) :lookup-bindings (vec (vals bindings))
+                 :boolean-matches [] :shape-call-products products :loop-work-left 65536}
+        first-pass (invoke-c7 'sh08-ft-infer-pass-with-context
+                              [(:nodes core) [] (:definitions core) (:calls core) (:call-edges core) skeletons seeds context])
+        infer #(invoke-c7 'sh08-ft-infer-acyclic-with-context
+                         [(:nodes core) nodes [] (:definitions core) (:calls core) (:call-edges core) skeletons seeds 12
+                          (assoc context :loop-work-left %)])
+        inferred (infer 65536)
+        order (zipmap (map :node-id (:nodes core)) (range))
+        expected {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}]
+    (is (every? #(< (:present-get order) (order %)) [:input-0 :input-1 :input-0-keys-copy]))
+    (is (= :gravity.type/unknown (get-in first-pass [:type-table :present-get])))
+    (is (= :gravity.type/map (get-in first-pass [:type-table :input])))
+    (is (= [:gravity.type/map :gravity.type/map :gravity.type/map]
+           (mapv #(get-in first-pass [:type-table % :kind]) [:input-0 :input-1 :input-0-keys-copy])))
+    (is (= :converged (:convergence-status inferred)) (pr-str (select-keys inferred [:diagnostics :round-count :type-join-work-left])))
+    (is (= [] (:diagnostics inferred)))
+    (is (= expected (get-in inferred [:type-table :present-get])))
+    (is (= :gravity.type/integer (get-in inferred [:type-table :count-query])))
+    (is (= :gravity.type/map (get-in inferred [:binding-types :span-binding])))
+    (is (= 3 (get-in inferred [:type-table :operator :key-domain-proof :normal-witness-count])))
+    (is (< 1 (:round-count inferred) 12))))
+
+(deftest sh08-private-map-keys-prior-view-controls-development-kernel
+  (let [{:keys [core nodes forms bindings node call edge]} (private-map-keys-count-source-input)
+        skeletons (invoke-c7 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
+        seeds (invoke-c7 'sh08-ft-declaration-seeds [skeletons {}])
+        context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms)) :lookup-bindings (vec (vals bindings))
+                 :boolean-matches [] :loop-work-left 65536}
+        first-pass (invoke-c7 'sh08-ft-infer-pass-with-context
+                              [(:nodes core) [] (:definitions core) (:calls core) (:call-edges core) skeletons seeds context])
+        prepared (invoke-c7 'sh08-ft-source-join-context [context])
+        prior (:type-table first-pass)
+        early (select-keys prior (map :node-id (take-while #(not= :present-get (:node-id %)) (:nodes core))))
+        step (fn [current previous ctx budget]
+               (invoke-c7 'sh08-lq-step [node current seeds skeletons (assoc ctx :prior-type-table previous) budget]))
+        cold (step early {} prepared 65536)
+        warm (step early prior prepared 65536)
+        view (invoke-c7 'sh08-pmk-type-view [early prior 65536])
+        fresh (invoke-c7 'sh08-lq-derive [core node call edge nodes bindings (:types view) forms 65536])]
+    (is (= :deferred (:status cold)))
+    (is (= :accepted (:status warm) (:status view) (:status fresh)))
+    (is (= (:descriptor fresh) (:descriptor warm)))
+    (is (= (+ (:work-count view) (:work-count fresh)) (:work-count warm)))
+    (is (= warm (step early prior prepared (:work-count warm))))
+    (let [below (step early prior prepared (dec (:work-count warm)))]
+    (is (= :rejected (:status below)))
+    (is (= :private-map-keys-work-limit (:reason below)))
+    (is (<= (:work-count view) (:work-count below))))
+    (let [below (step early prior prepared (dec (:work-count view)))]
+    (is (= ["C7-GENERIC" :private-map-keys-work-limit (:work-count view)] ((juxt :rule :reason :work-count) below))))
+    (doseq [bad [:gravity.type/string :gravity.type/vector {:kind :gravity.type/not-a-type}]]
+    (is (= :rejected (:status (step (assoc early :input-0 bad) prior prepared 65536)))))
+    (is (= :accepted (:status (step (assoc early :input-0 :gravity.type/unknown) prior prepared 65536))))
+    (is (= :deferred (:status (step early (assoc prior :input-0 :gravity.type/unknown) prepared 65536))))
+    (is (= :deferred (:status (step early (assoc (select-keys prior [:operator :helper-fn]) :present-get {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword} :count-query :gravity.type/integer) prepared 65536))))
+    (let [one (step (assoc early :input-0 :gravity.type/never) prior prepared 65536)]
+    (is (= :accepted (:status one)))
+    (is (= [:not-invoked :normal :normal] (mapv :entry (get-in one [:descriptor :key-domain-proof :entries])))))
+    (is (= :rejected (:status (step (reduce #(assoc %1 %2 :gravity.type/never) early [:input-0 :input-1 :input-0-keys-copy]) prior prepared 65536))))
+    (doseq [[previous ctx]
+     [[(assoc-in prior [:input-0 :member-types 1] {:kind :gravity.type/not-a-type}) prepared]
+     [prior (assoc-in prepared [:association-forms (first (get-in nodes [:input-0 :children])) :value] "forged")]
+     [prior (assoc-in prepared [:ordering-core :module :exports] ['without-path])]
+     [prior (update-in prepared [:ordering-core :calls] pop)]
+     [prior (assoc-in prepared [:ordering-core :recursion-components] [{:function-syntax-ids [:helper-form]}])]]]
+    (is (= :rejected (:status (step early previous ctx 65536)))))
+    (let [callbacks (atom [])
+     opaque (proxy [Object] []
+     (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "prior type hash" {})))
+     (equals [_] (swap! callbacks conj :equals) (throw (ex-info "prior type equals" {})))
+     (toString [] (swap! callbacks conj :format) (throw (ex-info "prior type format" {}))))]
+     (doseq [[current previous budget]
+     [[early (array-map opaque :gravity.type/map) 65536]
+     [(assoc early :input-0 opaque) prior 65536]
+     [early (assoc prior :input-0 opaque) 65536]
+     [early (assoc (into prior (map #(vector (keyword (str "later-" %)) :gravity.type/bool) (range 10000))) :tail opaque) 256]]]
+     (is (= :rejected (:status (step current previous prepared budget))))
+     (is (empty? @callbacks))))))
+
+(deftest sh08-private-map-keys-prior-other-argument-development-kernel
+  (let [{:keys [core node nodes bindings forms types]} (private-map-keys-two-argument-input)
+        context (invoke-c7 'sh08-ft-source-join-context
+                           [{:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms (vec (vals forms))}])
+        step (fn [current prior]
+               (invoke-c7 'sh08-lq-step [node current {:span-binding :gravity.type/map} {} (assoc context :prior-type-table prior) 65536]))
+        current {:input :gravity.type/map :input-0 :gravity.type/string :unused-0 :gravity.type/never}
+        one (step current types)]
+    (is (= :accepted (:status one)))
+    (is (= [:not-invoked :normal :normal] (mapv :entry (get-in one [:descriptor :key-domain-proof :entries]))))
+    (is (= [:gravity.type/string :gravity.type/never] (get-in one [:descriptor :key-domain-proof :entries 0 :argument-types])))
+    (is (= 2 (get-in one [:descriptor :key-domain-proof :normal-witness-count])))
+    (is (= :rejected (:status (step (assoc current :unused-1 :gravity.type/never :unused-2 :gravity.type/never) types))))
+    (is (= :deferred (:status (step {:input :gravity.type/map} (assoc types :unused-0 :gravity.type/unknown)))))))
+
+(deftest sh08-private-map-keys-throw-source-index-budget-development-kernel
+  ;; Normalized SOURCE DATA drives the actual active throw-product consumer.
+  (let [{:keys [core nodes bindings types forms node call edge]} (private-map-keys-input)
+        callers (mapv (fn [entry edge]
+                        (let [id (:caller-function-core-node-id edge) body (:core-node-id entry)]
+                          {:node {:node-id id :core-form :fn :children [body] :attributes {} :resolved-binding-ids []
+                                  :source {:form-id id :syntax-id (:caller-function-syntax-id edge) :semantic-span nil :origin-chain [] :generated-origin nil}
+                                  :evaluation {:kind :function-creation :order []}}
+                           :body body :id id})) (rest (:calls core)) (rest (:call-edges core)))
+        core (-> core (update :nodes into (mapv :node callers))
+                      (assoc :root-core-node-ids (into [:helper-def] (map :id callers)))
+                      (update :function-records (fn [records]
+                                                 (mapv (fn [record]
+                                                         (if-let [caller (first (filter #(= (:id %) (:function-core-node-id record)) callers))]
+                                                           (assoc record :body-core-node-id (:body caller) :parameter-binding-ids [] :fixed-arity 0) record)) records))))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        result (invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms 65536])
+        expected (:type result)
+        callee (assoc (invoke-c7 'sh08-ft-function-type-skeleton [(first (:function-records core)) (:module core)]) :return expected)
+        types (reduce (fn [out entry] (assoc out (:operator-node-id entry) callee (:core-node-id entry) expected))
+                      (assoc types :operator (:descriptor result) :present-get expected :helper-fn callee) (rest (:calls core)))
+        functions (into {:helper-form callee}
+                        (map (fn [caller] [(:id caller) {:function-id (:id caller) :body-core-node-id (:body caller)
+                                                        :parameters [] :return expected :latent-effects [:memory/allocate]
+                                                        :capabilities [] :thrown-error-effects []}]) callers))
+        bindings (vec (vals bindings)) source-forms (vec (vals forms))
+        direct {:status :accepted :throws {:helper-form []} :constraints [] :diagnostics [] :work-count 0}
+        check #(invoke-c7 'sh08-tc-products-with-source-forms [core types functions bindings direct source-forms %])
+        scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) 65536 types])
+        initial (+ (:work-count scoped) (* 8 (count (:nodes core))) (* 100 (count (:error-handlers core)))
+                   (* 70 (count (:call-edges core))) (count bindings) (count (:definitions core))
+                   (* 3 (count (:function-records core)))
+                   (* (count (:calls core)) (+ (count bindings) (count (:definitions core)) (* 2 (count (:function-records core))))))
+        owners (invoke-c7 'sh08-th-owners [core (- 65536 initial)])
+        accepted (check 65536)
+        index-work (* 3 (count source-forms)) budget (+ initial index-work)
+        rejected (check budget)]
+    (is (= :accepted (:status result) (:status scoped) (:status owners)))
+    (is (true? (:active? scoped)))
+    (is (pos? (:work-count owners)))
+    (is (= :accepted (:status accepted)) (pr-str (select-keys accepted [:status :diagnostics :work-count])))
+    (is (= [] (get-in accepted [:throws :helper-form])))
+    (is (= :rejected (:status rejected)))
+    (is (= ["C7-GENERIC" :private-map-keys-work-limit]
+           ((juxt :rule :reason) (first (:diagnostics rejected)))))
+    (is (= (+ budget (:work-count owners)) (:work-count rejected)))))
+
+(deftest sh08-private-map-keys-fixtures-file-parity-development-kernel
+  (doseq [[disposition name] [["accepted" "local-runtime-private-map-keys"]
+                              ["rejected" "private-map-keys-string-entry"]]]
+    (is (= (slurp (fixture-path disposition name ".gravity"))
+           (slurp (fixture-path disposition name ".qst"))))))
+
+(deftest sh08-private-map-keys-current-source-composition
+  ;; Genuine G input. Q and negative files below establish file parity only.
+  (let [source-path (fixture-path "accepted" "local-runtime-private-map-keys" ".gravity")
+        {:keys [request]} (parameter-vector-count-slice-current-source-request source-path)
+        result (invoke-c7 'sh08-function-type-core-artifact [request])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (let [core (:canonical-core-artifact request)
+            selected (filter #(= :gravity.type/applied-private-map-keys
+                                 (get-in result [:type-table (:operator-node-id %) :kind])) (:calls core))
+            call (first selected) operator-id (:operator-node-id call) id (:core-node-id call)
+            descriptor (get-in result [:type-table operator-id]) proof (:key-domain-proof descriptor)
+            helper (get-in proof [:census :function-record :function-core-node-id])
+            expected {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}
+            consumer (first (filter #(= 'count (get-in result [:type-table (:operator-node-id %) :operation])) (:calls core)))
+            consumer-type (get-in result [:type-table (:operator-node-id consumer)])
+            row (first (filter #(and (= :sh08-private-map-keys-v1 (:producer-rule %)) (= id (get-in % [:lhs :core-node-id]))) (:constraint-ledger result)))
+            fact (first (filter #(= id (:call-core-node-id %)) (:call-type-facts result)))
+            forged (private-map-keys-cross-family-descriptor descriptor)
+            forged-row (invoke-c7 'sh08-lq-constraint [forged])
+            forged-fact (invoke-c7 'sh08-lq-call-fact [forged (:module core)])
+            mutant (walk/prewalk-replace {descriptor forged row forged-row fact forged-fact} result)
+            report (invoke-c7 'sh08-verify-function-type-result [request result])
+            rejected (invoke-c7 'sh08-verify-function-type-result [request mutant])]
+        (is (= 1 (count selected)))
+        (is (= :passed (:status report)))
+        (is (= [:gravity.type/applied-private-map-keys :sh08-private-map-keys-v1] ((juxt :kind :version) descriptor)))
+        (is (= expected (:result-type descriptor) (get-in result [:type-table id])))
+        (is (= [:gravity.type/map] (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= :gravity.type/map (get-in result [:type-table helper :parameters 0 :type])))
+        (is (= :gravity.type/map (get-in result [:type-table (first (:argument-node-ids call))])))
+        (is (= :complete-private-call-entry-key-domain (:kind proof)))
+        (is (= 3 (:normal-witness-count proof) (count (:entries proof))))
+        (is (= [2 1 0] (mapv #(quot (count (get-in % [:argument-type :member-types])) 2) (:entries proof))))
+        (is (= [:normal :normal :normal] (mapv :entry (:entries proof))))
+        (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor) (:effects fact)))
+        (is (nil? (:result-count descriptor)))
+        (is (= :none (:result-refinement proof)))
+        (is (= :sh08-private-map-keys-v1 (:producer-rule row)))
+        (is (= :direct-private-map-keys (:dispatch fact)))
+        (is (= [expected] (:argument-types consumer-type)))
+        (is (= (:source-call descriptor) (:source-call forged)))
+        (is (= (:result-type descriptor) (:result-type forged)))
+        (is (= (:direct-effects descriptor) (:direct-effects forged)))
+        (is (= forged (get-in mutant [:type-table operator-id]) (:dependencies forged-row) (:applied-map-keys forged-fact)))
+        (is (= [:sh08-map-keys-v1 :map-keys :direct-map-keys [:memory/allocate]]
+               [(:producer-rule forged-row) (get-in forged-row [:lhs :projection]) (:dispatch forged-fact) (:effects forged-fact)]))
+        (is (not= result mutant))
+        (is (= :rejected (:status rejected)))
+        (is (= result (:expected rejected)))
+        (is (= mutant (:candidate rejected)))
+        (is (= (slurp source-path) (slurp (fixture-path "accepted" "local-runtime-private-map-keys" ".qst"))))
+        (is (= (slurp (fixture-path "rejected" "private-map-keys-string-entry" ".gravity"))
+               (slurp (fixture-path "rejected" "private-map-keys-string-entry" ".qst"))))))))
+
 (deftest sh08-private-entry-get-development-kernel
   (let [input (private-entry-get-input) result (map-present-get-derived input)
         descriptor (:descriptor result) proof (:presence-proof descriptor)]
@@ -10579,9 +11142,11 @@
                        :source-core core :budget-left 65536)
         args [node nodes types {bid (:input types)} {} (:lexical-bindings group) (:binding-index group) forms {} context]
         finite (invoke-c7 'sh08-mg-present-finite-derive (conj args 65536))
-        budget (+ 2 (:work-count finite))
+        high (invoke-c7 'sh08-mg-present-derive (conj args 65536))
+        budget (:work-count high)
         checked (invoke-c7 'sh08-mg-present-derive (conj args budget))]
     (is (= :accepted (:status finite)) (pr-str finite))
+    (is (= :accepted (:status high)))
     (is (< budget (invoke-c7 'sh08-pe-work [core])))
     (is (= :accepted (:status checked)) (pr-str checked))
     (is (= (:descriptor finite) (:descriptor checked)))

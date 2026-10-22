@@ -4729,8 +4729,781 @@
         {:status :rejected :reason :map-keys-source-mismatch :work-count base})))
     {:status :rejected :reason :map-keys-source-mismatch :work-count 129}))
 
+(defn body-pmk-id-vector? [values]
+  (if (vector? values)
+    (loop [remaining values]
+      (if (= 0 (count remaining)) true
+        (if (body-sse-ids? [(first remaining)] 1) (recur (rest remaining)) false))) false))
+
+(defn body-pmk-record-ids? [record required optional vectors]
+  (if (map? record)
+    (if (loop [fields required]
+          (if (= 0 (count fields)) true
+            (if (body-sse-ids? [(get record (first fields))] 1) (recur (rest fields)) false)))
+      (if (loop [fields optional]
+            (if (= 0 (count fields)) true
+              (let [value (get record (first fields))]
+                (if (= nil value) (recur (rest fields))
+                  (if (body-sse-ids? [value] 1) (recur (rest fields)) false)))))
+        (loop [fields vectors]
+          (if (= 0 (count fields)) true
+            (if (body-pmk-id-vector? (get record (first fields))) (recur (rest fields)) false))) false) false) false))
+
+(defn body-pmk-fields? [value expected]
+  (if (map? value)
+    (if (= (count value) (count expected))
+      (if (loop [fields (keys value)]
+            (if (= 0 (count fields)) true
+              (if (keyword? (first fields)) (recur (rest fields)) false)))
+        (= expected (set (keys value))) false) false) false))
+
+(defn body-pmk-physical [core nodes bindings forms budget]
+  ; Only the source fields traversed by the existing private-entry census.
+  ; Reserve global visits first, then every variable ID field before traversal.
+  (let [families [(get core :nodes) (get core :definitions) (get core :function-records)
+                  (get core :reference-uses) (get (get core :preserved-resolution) :resolution-table)
+                  (get core :calls) (get core :call-edges) (get core :var-references) (get core :mutations)
+                  (get core :recur-targets) (get core :recur-transfers) (get core :recursion-components)]
+        base (+ 128 (* 8 (+ (if (map? nodes) (count nodes) 0) (if (map? bindings) (count bindings) 0) (if (map? forms) (count forms) 0)))
+                    (* 8 (+ (if (vector? (get (get core :module) :effects)) (count (get (get core :module) :effects)) 0)
+                            (if (vector? (get (get core :module) :capabilities)) (count (get (get core :module) :capabilities)) 0)))
+                    (* 8 (loop [rows families n 0] (if (= 0 (count rows)) n (recur (rest rows) (+ n (if (vector? (first rows)) (count (first rows)) 0)))))))]
+    (if (> base budget) {:status :rejected :reason :private-map-keys-work-limit :work-count base}
+      (if (if (if (map? nodes) (if (map? bindings) (map? forms) false) false)
+            (if (if (symbol? (get (get core :module) :namespace))
+                  (if (vector? (get (get core :module) :exports))
+                    (if (vector? (get (get core :module) :effects))
+                      (if (vector? (get (get core :module) :capabilities))
+                        (loop [groups [(get (get core :module) :effects) (get (get core :module) :capabilities)]]
+                          (if (= 0 (count groups)) true
+                            (if (loop [values (first groups)]
+                                  (if (= 0 (count values)) true
+                                    (if (keyword? (first values)) (recur (rest values)) false)))
+                              (recur (rest groups)) false))) false) false) false) false)
+              (loop [rows families] (if (= 0 (count rows)) true (if (vector? (first rows)) (recur (rest rows)) false))) false) false)
+        (let [width (loop [groups [[(get core :nodes) [:children :resolved-binding-ids]]
+                                  [(get core :function-records) [:parameter-binding-ids]]
+                                  [(get core :calls) [:argument-node-ids :ordered-evaluation-node-ids]]
+                                  [(get core :call-edges) [:argument-core-node-ids :ordered-evaluation-node-ids]]
+                                  [(get core :recur-targets) [:binding-ids]]
+                                  [(get core :recursion-components) [:function-syntax-ids]]]
+                          n 0]
+                      (if (= 0 (count groups)) n
+                        (let [group (first groups) measured
+                              (loop [rows (get group 0) size 0]
+                                (if (= 0 (count rows)) size
+                                  (if (map? (first rows))
+                                    (let [next (loop [fields (get group 1) out size]
+                                                 (if (= 0 (count fields)) out
+                                                   (let [value (get (first rows) (first fields))]
+                                                     (if (= nil value) (recur (rest fields) out)
+                                                       (if (vector? value) (recur (rest fields) (+ out (count value))) nil)))))]
+                                      (if (integer? next) (recur (rest rows) next) nil)) nil)))]
+                          (if (integer? measured) (recur (rest groups) (+ n measured)) nil))))
+              nested-width (loop [rows (get core :nodes) n 0]
+                             (if (= 0 (count rows)) n
+                               (let [row (first rows) evaluation (get row :evaluation) source (get row :source) attributes (get row :attributes)]
+                                 (if (if (map? evaluation) (if (map? source) (if (map? attributes) (vector? (get evaluation :order)) false) false) false)
+                                   (recur (rest rows) (+ n (count (get evaluation :order)))) nil))))
+              form-width (loop [ids (keys forms) n 0]
+                           (if (= 0 (count ids)) n
+                             (if (body-sse-ids? [(first ids)] 1)
+                               (let [row (get forms (first ids)) children (get row :child-form-ids)]
+                                 (if (if (map? row) (vector? children) false)
+                                   (recur (rest ids) (+ n (count children))) nil)) nil)))
+              work (+ base (* 4 (+ (if (integer? width) width 0) (if (integer? nested-width) nested-width 0)
+                                     (if (integer? form-width) form-width 0))))]
+          (if (> work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count work}
+            (if (if (if (integer? width) (if (integer? nested-width) (integer? form-width) false) false)
+                  (loop [groups [[(get core :nodes) [:node-id] [] [:children :resolved-binding-ids]]
+                                [(get core :definitions) [:binding-id :core-node-id :value-node-id] [:syntax-id] []]
+                                [(get core :function-records) [:function-syntax-id :function-core-node-id] [:body-core-node-id :definition-binding-id :definition-core-node-id :function-form-id] []]
+                                [(get core :reference-uses) [:core-node-id :form-id :syntax-id :binding-id] [:definition-syntax-id] []]
+                                [(get (get core :preserved-resolution) :resolution-table) [:reference-syntax-id :binding-id] [:upstream-binding-id] []]
+                                [(get core :calls) [:core-node-id :operator-node-id :operator-binding-id] [] [:argument-node-ids :ordered-evaluation-node-ids]]
+                                [(get core :call-edges) [:call-core-node-id :callee-binding-id] [:caller-function-syntax-id :caller-function-core-node-id :callee-definition-syntax-id :callee-function-syntax-id :callee-function-core-node-id] [:argument-core-node-ids :ordered-evaluation-node-ids]]
+                                [(get core :var-references) [:binding-id] [] []] [(get core :mutations) [:target-binding-id] [] []]
+                                [(get core :recur-targets) [:target-id :owner-core-node-id] [] [:binding-ids]]
+                                [(get core :recur-transfers) [:target-id] [] []]
+                                [(get core :recursion-components) [] [] [:function-syntax-ids]]]]
+                    (if (= 0 (count groups)) true
+                      (let [group (first groups)]
+                        (if (loop [rows (get group 0)]
+                              (if (= 0 (count rows)) true
+                                (if (body-pmk-record-ids? (first rows) (get group 1) (get group 2) (get group 3))
+                                  (recur (rest rows)) false))) (recur (rest groups)) false)))) false)
+              (if (body-all?
+                  [(loop [rows (get core :nodes)]
+                     (if (= 0 (count rows)) true
+                       (let [row (first rows) source (get row :source) attrs (get row :attributes) evaluation (get row :evaluation)]
+                         (if (if (keyword? (get row :core-form))
+                               (if (body-pmk-record-ids? source [:form-id :syntax-id] [] [])
+                                 (if (body-pmk-record-ids? attrs [] [:binding-id :definition-syntax-id] [])
+                                   (if (if (= nil (get attrs :symbol)) true (symbol? (get attrs :symbol)))
+                                     (if (if (= nil (get attrs :binding-class)) true (keyword? (get attrs :binding-class)))
+                                       (if (body-pmk-record-ids? evaluation [] [:owner-function-syntax-id] [])
+                                         (loop [order (get evaluation :order)]
+                                           (if (= 0 (count order)) true
+                                             (if (if (body-pmk-record-ids? (first order) [:core-node-id] [] [])
+                                                   (integer? (get (first order) :index)) false)
+                                               (recur (rest order)) false))) false) false) false) false) false) false)
+                           (recur (rest rows)) false))))
+                   (loop [rows (get core :function-records)]
+                     (if (= 0 (count rows)) true
+                       (let [parameters (get (first rows) :parameter-binding-ids)]
+                         (if (if (= nil parameters) true (body-pmk-id-vector? parameters))
+                           (recur (rest rows)) false))))
+                   (loop [ids (keys forms)]
+                     (if (= 0 (count ids)) true
+                       (let [row (get forms (first ids)) kind (get row :kind)]
+                         (if (if (body-pmk-record-ids? row [:form-id :syntax-id] [:parent-form-id] [:child-form-ids])
+                               (if (keyword? kind)
+                                 (if (= :symbol kind) (symbol? (get row :value))
+                                   (if (= :keyword kind) (keyword? (get row :value)) true)) false) false)
+                           (recur (rest ids)) false))))
+                   (loop [ids (keys bindings)]
+                     (if (= 0 (count ids)) true
+                       (if (body-sse-ids? [(first ids)] 1)
+                         (let [binding (get bindings (first ids))]
+                           (if (if (body-pmk-record-ids? binding [:binding-id] [:definition-syntax-id :upstream-binding-id :scope-id] [])
+                                 (if (symbol? (get binding :name))
+                                   (if (if (= nil (get binding :namespace)) true (symbol? (get binding :namespace)))
+                                     (loop [fields [:binding-class :kind :visibility :mutability]]
+                                       (if (= 0 (count fields)) true
+                                         (let [value (get binding (first fields))]
+                                           (if (= nil value) (recur (rest fields))
+                                             (if (keyword? value) (recur (rest fields)) false))))) false) false) false)
+                             (recur (rest ids)) false)) false)))])
+                (if (loop [exports (get (get core :module) :exports)]
+                      (if (= 0 (count exports)) true
+                        (if (symbol? (first exports)) (recur (rest exports)) false)))
+                  {:status :accepted :work-count work}
+                  {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
+                {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
+              {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})))
+        {:status :rejected :reason :private-map-keys-source-mismatch :work-count base}))))
+
+(defn body-pmk-source [core node call edge nodes bindings types module budget]
+  (if (vector? (get core :function-records))
+  (let [limit (if (> budget 65536) 65536 budget)
+        base (+ 129 (count (get core :function-records)))]
+    (if (> base limit) {:status :rejected :reason :private-map-keys-work-limit :work-count base}
+      (if (body-mkeys-ids? node call nodes bindings module)
+        (let [args (get call :argument-node-ids) children (get node :children)
+              operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
+              binding (get bindings bid) receiver (get types (first args))
+              reserved (+ base (* 2 (+ (count (get binding :profile-set)) (count (get binding :target-set)))))]
+          (if (> reserved limit) {:status :rejected :reason :private-map-keys-work-limit :work-count reserved}
+            (let [validation (body-lc-type-work [receiver] (- limit reserved))
+                  work (+ reserved (get validation :work-count))]
+              (if (= false (= :accepted (get validation :status)))
+                {:status :rejected :reason (if (= :work-limit (get validation :reason)) :private-map-keys-work-limit :private-map-keys-finite-keyword-map-type-required)
+                 :work-count work}
+                (if (if (keyword? receiver) (= :gravity.type/map receiver) false)
+                  (let [normal? true key-domain-work 0 construction-work 1
+                        total (+ work key-domain-work construction-work)]
+                    (if (> total limit) {:status :rejected :reason :private-map-keys-work-limit :work-count total}
+                      (if true
+                      (let [result-type (if normal? {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword} :gravity.type/never)
+                            work total]
+                        (if (if (body-nq-ids? node call nodes bindings module)
+                        (if (map? edge)
+                          (if (integer? (get edge :ordinal))
+                            (if (>= (get edge :ordinal) 0)
+                              (body-all? [(body-mkeys-optional-id? (get (get node :evaluation) :owner-function-syntax-id))
+                                                 (body-mkeys-optional-id? (get edge :caller-function-syntax-id))
+                                                 (body-mkeys-optional-id? (get edge :caller-function-core-node-id))]) false) false) false) false)
+                    (let [caller (loop [remaining (get core :function-records)]
+                                   (if (= 0 (count remaining)) nil
+                                     (let [record (first remaining)]
+                                       (if (if (map? record)
+                                             (body-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
+                                         (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
+                                           record (recur (rest remaining))) :invalid-map-keys-owner))))
+                          expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                                         :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                                         :evaluation-order :operator-then-arguments :result-policy :call-result}
+                          expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                                         :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                                         :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                                         :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                                         :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+                      (if (body-all?
+                            [(= false (= :invalid-map-keys-owner caller))
+                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
+                             (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                             (= expected-call call) (= expected-edge edge) (body-mkeys-binding? binding module)
+                             (= 'keys (get binding :name))
+                             (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                             (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+                                 :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+                             (contains? '#{keys gravity.core/keys} (get (get operator :attributes) :symbol))
+                             (= :operator-then-arguments (get (get node :evaluation) :kind))
+                             (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
+                                (get (get node :evaluation) :order))])
+                        {:status :accepted :work-count work
+                         :descriptor {:kind :gravity.type/applied-private-map-keys :version :sh08-private-map-keys-v1
+                                      :operation 'keys :semantic-owner 'gravity.collections :intrinsic :gravity.collections/private-parameter-map-keys
+                                      :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+                                      :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+                                      :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
+                                      :query-policy (if normal? {:input :private-bare-map-with-complete-key-domain-proof :operand-evaluation :once :operand-position :non-tail
+                                                     :payload-evaluation :none :original :unchanged :order :unspecified
+                                                     :provider-order :preserved :selection :each-stored-key-once :result-carrier :persistent-list :flow-refinement :none
+                                                     :type-validation :all-normal-entry-maps-including-all-values}
+                                                    {:operand-evaluation :once :operand-position :non-tail :invocation :not-reached})
+                                      :allocation-policy {:behavior :possible-persistent-map-key-list-construction :condition :normal-operand-completion
+                                                          :effect :memory/allocate :empty-result :possible}
+                                      :storage-policy (if normal? {:representation :development-persistent-list :collection-construction :list-spine-copy
+                                                       :copy :list-spine :stored-values :shallow-share :input-storage :not-retained :borrow :none
+                                                       :lifetime :persistent-values :allocation :possible-even-empty
+                                                       :provider-allocation-bound :not-established}
+                                                      {:collection-construction :not-invoked})
+                                      :value-origin {:kind :map-value-keys :operation 'keys :operand-node-id (first args)}
+                                      :operand-type-work (get validation :work-count) :profile-validation-work (- reserved base)
+                                      :key-domain-work key-domain-work :construction-work construction-work
+                                      :application (if normal? :normal :not-invoked) :latent-effects [:memory/allocate] :direct-effects (if normal? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+                                      :parameter-types [receiver] :return result-type :result-type result-type
+                                      :profile (get module :profile) :target (get module :target)
+                                      :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy :construction-work
+                                                     :private-entry-domain :caller-entries :reference-uses :preserved-resolution :exports :mutations :var-references :recur-targets :recur-transfers :recursion-components
+                                                     :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
+                        {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}))
+                    {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}))
+                      {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required :work-count total})))
+                  {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required :work-count work})))))
+        {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})))
+    {:status :rejected :reason :private-map-keys-source-mismatch :work-count 129}))
+
+(defn body-pmk-parameter [census core node nodes bindings forms budget]
+  (let [record (get census :function-record) params (get record :parameter-binding-ids)
+        signature (get record :signature) fn-node (get nodes (get record :function-core-node-id))
+        attrs (get fn-node :attributes) parameter (get census :parameter-binding)
+        index (get census :parameter-index) fn-form (get forms (get record :function-form-id))
+        parameter-form (get forms (get attrs :parameter-form-id)) names (get parameter-form :child-form-ids)
+        declarations (get signature :parameters) coordinates (get signature :parameter-source-child-indexes)
+        base (+ 64 (* 12 (count params)) (if (vector? names) (count names) 0))]
+    (if (> base budget) {:status :rejected :reason :private-map-keys-work-limit :work-count base}
+      (if (if (body-pmk-fields? signature #{:rule-version :mapping-rule-version :parameters :return :parameter-source-child-indexes :body-source-child-index})
+            (if (vector? declarations) (if (vector? coordinates) (body-pmk-id-vector? names) false) false) false)
+        (if (body-all?
+              [(= [:sh07-atomic-function-signature-v1 :sh07-atomic-function-declaration-map-v1]
+                  [(get signature :rule-version) (get signature :mapping-rule-version)])
+               (= nil (get signature :return)) (= 2 (get signature :body-source-child-index))
+               (= (count params) (count declarations) (count coordinates) (get record :fixed-arity))
+               (body-pmk-record-ids? attrs [:parameter-form-id :parameter-syntax-id :recur-target-id] [] [])
+               (= (get record :function-syntax-id) (get attrs :recur-target-id))
+               (= :sh07-atomic-function-signature-v1 (get fn-node :lowering-rule-version))
+               (vector? (get attrs :parameters)) (= (count params) (count (get attrs :parameters)))
+               (contains? #{nil :immutable} (get parameter :mutability))
+               (= :list (get fn-form :kind)) (= :vector (get parameter-form :kind))
+               (vector? (get parameter-form :value)) (= (count names) (count (get parameter-form :value)))
+               (= (get parameter-form :syntax-id) (get attrs :parameter-syntax-id))
+               (body-sse-ids? (get fn-form :child-form-ids) 3)])
+          (let [fn-ids (get fn-form :child-form-ids) operator (get forms (get fn-ids 0))
+                body (get nodes (get record :body-core-node-id))]
+            (if (body-all?
+                  [(= :symbol (get operator :kind)) (= 'fn (get operator :value))
+                   (= (get fn-form :form-id) (get operator :parent-form-id) (get parameter-form :parent-form-id))
+                   (= (get parameter-form :form-id) (get fn-ids 1))
+                   (= (get (get body :source) :form-id) (get fn-ids 2))
+                   (= (get fn-node :source) (get (body-ma-form-node {} fn-form) :source))])
+              (loop [i 0 coordinate 0 slots []]
+                (if (= i (count params))
+                  (if (= coordinate (count names))
+                    (if (= signature (get attrs :signature))
+                      {:status :accepted :work-count base
+                       :callee {:function-id (get record :function-syntax-id) :signature signature :parameters slots}
+                       :source {:function-node fn-node :function-form fn-form :parameter-form parameter-form
+                                :declaration (get declarations index) :parameter-index index :parameter-binding parameter}}
+                      {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})
+                    {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})
+                  (let [binding (get bindings (get params i)) name-form (get forms (get names coordinate))
+                        declaration (get declarations i) declared? (= false (= nil declaration))
+                        step (if declared? 3 1)]
+                    (if (if (integer? (get coordinates i)) (= coordinate (get coordinates i)) false)
+                      (if (body-all?
+                            [(= :symbol (get name-form :kind)) (= (get binding :name) (get name-form :value) (get (get attrs :parameters) i))
+                             (= (get binding :definition-syntax-id) (get name-form :syntax-id))
+                             (= (get parameter-form :form-id) (get name-form :parent-form-id))
+                             (if declared?
+                               (if (body-pmk-fields? declaration #{:source-child-index :marker-form-id :marker-syntax-id :type-form-id :type-syntax-id :type-symbol :type-binding-id :type-id})
+                                 (if (body-pmk-record-ids? declaration [:marker-form-id :marker-syntax-id :type-form-id :type-syntax-id :type-binding-id] [] [])
+                                   (if (symbol? (get declaration :type-symbol)) (keyword? (get declaration :type-id)) false) false) false) true)])
+                        (let [marker (if declared? (get forms (get declaration :marker-form-id)) nil)
+                              type-form (if declared? (get forms (get declaration :type-form-id)) nil)
+                              type-binding (if declared? (get bindings (get declaration :type-binding-id)) nil)]
+                          (if (if declared?
+                                (body-all?
+                                  [(= (+ coordinate 1) (get declaration :source-child-index))
+                                   (= [(get declaration :marker-form-id) (get declaration :type-form-id)] [(get names (+ coordinate 1)) (get names (+ coordinate 2))])
+                                   (= :keyword (get marker :kind)) (= :- (get marker :value))
+                                   (= (get declaration :marker-syntax-id) (get marker :syntax-id))
+                                   (= (get declaration :type-syntax-id) (get type-form :syntax-id))
+                                   (= :symbol (get type-form :kind)) (= (get declaration :type-symbol) (get type-form :value) (get type-binding :name))
+                                   (= :core (get type-binding :binding-class)) (= :type (get type-binding :kind)) (= 'gravity.core (get type-binding :namespace))
+                                   (= (get parameter-form :form-id) (get marker :parent-form-id) (get type-form :parent-form-id))
+                                   (if (= i index) (= ['Map :gravity.type/map] [(get declaration :type-symbol) (get declaration :type-id)]) true)])
+                                (= false (= i index)))
+                            (recur (+ i 1) (+ coordinate step) (conj slots {:binding-id (get params i) :type (if declared? (get declaration :type-id) :gravity.type/unknown)}))
+                            {:status :rejected :reason :private-map-keys-entry-domain-required :work-count base}))
+                        {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})
+                      {:status :rejected :reason :private-map-keys-source-mismatch :work-count base}))))
+              {:status :rejected :reason :private-map-keys-source-mismatch :work-count base}))
+          {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})
+        {:status :rejected :reason :private-map-keys-entry-domain-required :work-count base}))))
+
+(defn body-pmk-map-source [argument actual nodes forms types budget]
+  ; The initial entry-source subset uses original finite Map constructors.
+  ; All member types were validated before this source/domain walk.
+  (let [children (get argument :children) members (get actual :member-types)
+        work (+ 16 (* 8 (count members))) source (get argument :source)
+        owner (get forms (get source :form-id))]
+    (if (> work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count work}
+      (if (body-all?
+            [(= :collection-literal (get argument :core-form)) (= :map (get (get argument :attributes) :literal-kind))
+             (= (count members) (get (get argument :attributes) :element-count) (count children) (count (get owner :child-form-ids)))
+             (= :map (get owner :kind)) (= source (get (body-ma-form-node {} owner) :source))])
+        (if (loop [i 0]
+              (if (= i (count members)) true
+                (let [child (get nodes (get children i)) form (get forms (get (get owner :child-form-ids) i))
+                      type (get types (get children i)) key? (= i (* 2 (quot i 2)))]
+                  (if (body-all?
+                        [(= (get owner :form-id) (get form :parent-form-id))
+                         (= (get child :source) (get (body-ma-form-node {} form) :source))
+                         (= type (get members i))
+                         (= {:index i :core-node-id (get child :node-id)} (get (get (get argument :evaluation) :order) i))
+                         (if key?
+                           (if (= :literal (get child :core-form))
+                             (if (= :keyword (get (get child :attributes) :literal-kind))
+                               (if (keyword? (get (get child :attributes) :value))
+                                 (if (= :keyword (get form :kind))
+                                   (if (keyword? (get form :value))
+                                     (= (get form :value) (get (get child :attributes) :value)) false) false) false) false) false) true)])
+                    (recur (+ i 1)) false))))
+          {:status :accepted :work-count work :source-node argument :source-form owner}
+          {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
+        {:status :rejected :reason :private-map-keys-entry-domain-required :work-count work}))))
+
+(defn body-pmk-acyclic [core root budget]
+  (let [edges (get core :call-edges) maximum (+ 1 (count (get core :function-records)))
+        work (+ 8 (* 4 maximum (count edges)))]
+    (if (> work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count work}
+      (loop [pass 0 reached #{root}]
+        (if (> pass maximum) {:status :rejected :reason :private-map-keys-entry-domain-required :work-count work}
+          (let [next (loop [remaining edges out reached]
+                       (if (= 0 (count remaining)) out
+                         (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)]
+                           (if (if (= nil callee) false (contains? reached caller))
+                             (if (= root callee) nil (recur (rest remaining) (conj out callee)))
+                             (recur (rest remaining) out)))))]
+            (if (= nil next) {:status :rejected :reason :private-map-keys-entry-domain-required :work-count work}
+              (if (= next reached) {:status :accepted :work-count work}
+                (recur (+ pass 1) next)))))))))
+
+(defn body-pmk-metadata-work [proof budget]
+  ; Budget and first-order checks. Owning reconstruction checks closed field domains.
+  ; Parent facts have independent validation in their current typed tables.
+  (loop [pending [[proof 0]] used 0]
+    (if (= 0 (count pending)) {:status :accepted :work-count used}
+      (if (>= used budget) {:status :rejected :reason :private-map-keys-work-limit :work-count used}
+        (let [frame (get pending (- (count pending) 1)) value (get frame 0) depth (get frame 1)
+              tail (subvec pending 0 (- (count pending) 1)) work (+ used 1)]
+          (if (> depth 128) {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}
+            (if (if (map? value) true (vector? value))
+              (let [width (if (map? value) (* 2 (count value)) (count value))]
+                (if (> (+ work (count tail) width) budget)
+                  {:status :rejected :reason :private-map-keys-work-limit :work-count (+ work (count tail) width)}
+                  (let [next (if (map? value)
+                               (loop [entries (vec value) out tail]
+                                 (if (= 0 (count entries)) out
+                                   (let [entry (first entries)]
+                                     (recur (rest entries) (conj (conj out [(get entry 0) (+ depth 1)])
+                                                                    [(get entry 1) (+ depth 1)])))))
+                               (loop [remaining value out tail]
+                                 (if (= 0 (count remaining)) out
+                                   (recur (rest remaining) (conj out [(first remaining) (+ depth 1)])))))]
+                    (recur next work))))
+              (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
+                    (if (symbol? value) true (if (string? value) true (if (integer? value) true (char? value)))))))
+                (let [scalar-work (+ work (if (string? value) (count value)
+                                           (if (if (symbol? value) true (keyword? value)) (count (str value)) 0)))]
+                  (if (> scalar-work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count scalar-work}
+                    (recur tail scalar-work)))
+                {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}))))))))
+
+(defn body-pmk-unknown? [value]
+  (if (= nil value) true
+    (if (keyword? value) (= :gravity.type/unknown value) false)))
+
+(defn body-pmk-proof [header core node nodes bindings types forms budget]
+  (let [physical (body-pmk-physical core nodes bindings forms budget) first-work (get physical :work-count)]
+    (if (= :accepted (get physical :status))
+      (let [receiver (get nodes (first (get (get header :source-call) :argument-node-ids)))
+            reserved (body-pe-reserve core receiver nodes bindings (- budget first-work))
+            work (+ first-work (get reserved :work-count))]
+        (if (= :accepted (get reserved :status))
+          (let [census (body-pe-census header core nodes bindings forms)]
+            (if (map? census)
+              (let [parameter (body-pmk-parameter census core node nodes bindings forms (- budget work))
+                    used (+ work (get parameter :work-count))
+                    graph (if (= :accepted (get parameter :status))
+                            (body-pmk-acyclic core (get (get census :function-record) :function-syntax-id) (- budget used))
+                            parameter)
+                    work (+ used (if (= :accepted (get parameter :status)) (get graph :work-count) 0))]
+                (if (if (= :accepted (get parameter :status)) (= :accepted (get graph :status)) false)
+                  (loop [remaining (get census :calls) entries [] normal-count 0 used work domain-work 0]
+                    (if (= 0 (count remaining))
+                      (if (< 0 normal-count)
+                        {:status :accepted :work-count used :key-domain-work domain-work
+                         :proof {:kind :complete-private-call-entry-key-domain :version :sh08-private-map-keys-entry-domain-v1
+                                 :domain :keyword :parameter-type :gravity.type/map :result-refinement :none
+                                 :parameter-binding-id (get (get census :parameter-binding) :binding-id)
+                                 :parameter-index (get census :parameter-index) :function-syntax-id (get (get census :function-record) :function-syntax-id)
+                                 :normal-witness-count normal-count :entries entries :census census :parameter-source (get parameter :source)
+                                 :keys-use {:source (get header :source) :source-call (get header :source-call) :source-edge (get header :source-edge)}
+                                 :coverage :all-resolved-private-entries :normality :all-argument-coordinates
+                                 :validation :entire-normal-map-including-all-values :ground :independent-entry-types-and-original-source
+                                 :no-refinement [:common-shape :key-presence :key-identity :extent :cardinality :nonempty :flow :specialization]}}
+                        {:status :rejected :reason :private-map-keys-entry-domain-required :work-count used})
+                      (let [call (first remaining) args (get call :argument-node-ids)
+                            prefix (+ used 32 (* 2 (count args)))
+                            arguments (if (> prefix budget) [] (body-io-child-types args types))
+                            complete? (if (> prefix budget) false
+                                        (loop [values arguments]
+                                          (if (= 0 (count values)) true
+                                            (if (body-pmk-unknown? (first values)) false (recur (rest values))))))]
+                        (if (> prefix budget) {:status :rejected :reason :private-map-keys-work-limit :work-count prefix}
+                          (if (= false complete?) {:status :deferred :reason :private-map-keys-entry-domain-required :type :gravity.type/unknown :work-count prefix}
+                            (let [validation (body-lc-type-work arguments (- budget prefix))
+                                  used (+ prefix (get validation :work-count)) normal? (body-pe-invoked? types args)
+                                  index (get census :parameter-index) argument-id (get args index)
+                                  argument (get nodes argument-id) actual (get arguments index)
+                                  call-node (get nodes (get call :core-node-id)) call-source (get call-node :source)
+                                  call-form (get forms (get call-source :form-id))
+                                  edge (body-pe-one (get census :edges) :call-core-node-id (get call :core-node-id))]
+                              (if (= :accepted (get validation :status))
+                                (if (= call-source (get (body-ma-form-node {} call-form) :source))
+                                (if normal?
+                                  (if (body-mkeys-type? actual)
+                                    (let [key-work (quot (count (get actual :member-types)) 2)
+                                          prefix (+ used key-work)
+                                          source (if (> prefix budget) {:status :rejected :reason :private-map-keys-work-limit :work-count 0}
+                                                   (body-pmk-map-source argument actual nodes forms types (- budget prefix)))
+                                          used (+ prefix (get source :work-count))
+                                          compatibility (if (= :accepted (get source :status))
+                                                          (body-mp-compatibility core call edge (get parameter :callee) index actual nodes bindings (- budget used)) source)
+                                          total (+ used (if (= :accepted (get source :status)) (get compatibility :work-count) 0))]
+                                      (if (if (= :accepted (get source :status)) (= :accepted (get compatibility :status)) false)
+                                        (recur (rest remaining)
+                                          (conj entries {:call-core-node-id (get call :core-node-id) :argument-node-id argument-id :argument-source (get argument :source) :call-source call-source
+                                                         :argument-type actual :argument-types arguments :entry :normal :source-call call :source-edge edge
+                                                         :source-node (get source :source-node) :source-form (get source :source-form)
+                                                         :compatibility (get compatibility :premise)
+                                                         :call-input-facts {:call-core-node-id (get call :core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+                                                                            :callee-function-syntax-id (get edge :callee-function-syntax-id) :argument-types arguments
+                                                                            :evaluation-order :operator-then-arguments
+                                                                            :source-span (get call-source :semantic-span) :syntax-id (get call-source :syntax-id)
+                                                                            :origin-chain (get call-source :origin-chain) :generated-origin (get call-source :generated-origin)
+                                                                            :profile (get (get core :module) :profile) :target (get (get core :module) :target)}})
+                                          (+ normal-count 1) total (+ domain-work key-work))
+                                        {:status :rejected :reason (if (if (= :private-map-keys-work-limit (get source :reason)) true
+                                                                                                      (= :map-parameter-work-limit (get compatibility :reason)))
+                                                                 :private-map-keys-work-limit :private-map-keys-source-mismatch) :work-count total}))
+                                    {:status :rejected :reason :private-map-keys-entry-domain-required :work-count used})
+                                  (recur (rest remaining)
+                                    (conj entries {:call-core-node-id (get call :core-node-id) :argument-node-id argument-id :argument-source (get argument :source) :call-source call-source
+                                                   :argument-type actual :argument-types arguments :entry :not-invoked :source-call call :source-edge edge :compatibility nil
+                                                   :call-input-facts {:call-core-node-id (get call :core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+                                                                      :callee-function-syntax-id (get edge :callee-function-syntax-id) :argument-types arguments
+                                                                      :evaluation-order :operator-then-arguments
+                                                                            :source-span (get call-source :semantic-span) :syntax-id (get call-source :syntax-id)
+                                                                            :origin-chain (get call-source :origin-chain) :generated-origin (get call-source :generated-origin)
+                                                                            :profile (get (get core :module) :profile) :target (get (get core :module) :target)}})
+                                    normal-count used domain-work))
+                                  {:status :rejected :reason :private-map-keys-source-mismatch :work-count used})
+                                {:status :rejected :reason (if (= :work-limit (get validation :reason)) :private-map-keys-work-limit
+                                                             :private-map-keys-entry-domain-required) :work-count used})))))))
+                  {:status :rejected :reason (get graph :reason) :work-count work}))
+              {:status :rejected :reason :private-map-keys-entry-domain-required :work-count work}))
+          {:status :rejected :reason (if (= :map-get-work-limit (get reserved :reason)) :private-map-keys-work-limit :private-map-keys-source-mismatch)
+           :work-count work}))
+      physical)))
+
+(defn body-pmk-header [core node call edge nodes bindings types forms budget]
+  (let [limit (if (> budget 65536) 65536 budget)
+        source (body-pmk-source core node call edge nodes bindings types (get core :module) limit)
+        initial (+ 3 (get source :work-count))]
+    (if (> initial limit) {:status :rejected :reason :private-map-keys-work-limit :work-count initial}
+      (if (= :accepted (get source :status))
+        (let [proof (body-pmk-proof (get source :descriptor) core node nodes bindings types forms (- limit initial))
+              work (+ initial (get proof :work-count))]
+          (if (= :accepted (get proof :status))
+            {:status :accepted :work-count work
+             :descriptor (assoc (get source :descriptor) :key-domain-proof (get proof :proof)
+                           :key-domain-work (get proof :key-domain-work) :entry-proof-work (get proof :work-count)
+                           :result-type-work 3 :construction-work-basis :one-static-operation-with-separate-existing-runtime-census)}
+            (assoc proof :work-count work)))
+        (assoc source :work-count initial)))))
+
+(defn body-pmk-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-private-map-keys-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-private-map-keys-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :private-map-keys}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application) :direct-effects (get descriptor :direct-effects)
+              :construction-work (get descriptor :construction-work) :allocation-policy (get descriptor :allocation-policy)
+              :storage-policy (get descriptor :storage-policy) :key-domain-proof (get descriptor :key-domain-proof)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn body-pmk-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-private-map-keys-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-private-map-keys :applied-private-map-keys descriptor :effect-facts-source :audited-private-entry-map-key-list-construction}))
+
+(defn body-pmk-entry? [node call nodes bindings types module]
+  (if (body-mkeys-entry? node call nodes bindings types module)
+    (if (if (map? call) (vector? (get call :argument-node-ids)) false)
+      (if (body-sse-ids? (get call :argument-node-ids) 1)
+        (let [type (get types (first (get call :argument-node-ids)))]
+          (if (keyword? type) (= :gravity.type/map type) false)) false) false) false))
+
+(defn body-pmk-entry-evidence [core ledger facts descriptor nodes bindings types budget]
+  (let [proof (get descriptor :key-domain-proof) entries (get proof :entries)
+        census (get proof :census) record (get census :function-record) params (get record :parameter-binding-ids)
+        index (get proof :parameter-index)
+        callee {:function-id (get record :function-syntax-id) :signature (get record :signature)
+                :parameters (loop [i 0 out []]
+                              (if (= i (count params)) out
+                                (recur (+ i 1) (conj out {:binding-id (get params i) :type (if (= i index) :gravity.type/map :gravity.type/unknown)}))))}
+        base (+ 16 (* 4 (count params)))]
+    (if (> base budget) {:status :rejected :reason :private-map-keys-work-limit :work-count base}
+      (loop [remaining entries used base]
+        (if (= 0 (count remaining)) {:status :accepted :work-count used}
+          (let [entry (first remaining) id (get entry :call-core-node-id)
+                prefix (+ used 32 (* 4 (+ (count ledger) (count facts))) (* 4 (count params)))]
+            (if (> prefix budget) {:status :rejected :reason :private-map-keys-work-limit :work-count prefix}
+              (let [selected-facts
+                    (loop [rows (if (map? facts) (keys facts) facts) out []]
+                      (if (= 0 (count rows)) out
+                        (let [item (first rows) fact (if (map? facts) (if (body-sse-ids? [item] 1) (get facts item) nil) item)
+                              fact-id (if (map? fact) (get fact :call-core-node-id) nil)]
+                          (if (body-sse-ids? [fact-id] 1)
+                            (recur (rest rows) (if (= id fact-id) (conj out fact) out)) nil))))
+                    selected-rows
+                    (loop [rows ledger out []]
+                      (if (= 0 (count rows)) out
+                        (let [row (first rows) request (get row :constraint-id-request) domain (get request :domain)]
+                          (if (if (map? row) (if (map? request) (keyword? domain) false) false)
+                            (if (= :gravity/sh08-function-call-constraint-v1 domain)
+                              (let [row-id (get request :call-core-node-id)]
+                                (if (body-sse-ids? [row-id] 1)
+                                  (recur (rest rows) (if (= id row-id) (conj out row) out)) nil))
+                              (recur (rest rows) out)) nil))))]
+                (if (if (vector? selected-facts) (if (vector? selected-rows) (= 1 (count selected-facts) (count selected-rows)) false) false)
+                  (let [fact (first selected-facts) row (first selected-rows)
+                        metadata (body-pmk-metadata-work [fact row] (- budget prefix))
+                        used (+ prefix (get metadata :work-count))]
+                    (if (= :accepted (get metadata :status))
+                      (let [call (get entry :source-call) edge (get entry :source-edge) actual (get entry :argument-type)
+                            normal? (= :normal (get entry :entry))
+                            compatibility (if normal? {:status :accepted :work-count 0 :premise (get entry :compatibility)}
+                                            (if (if (map? actual) (= :gravity.type/map (get actual :kind)) false)
+                                              (body-mp-compatibility core call edge callee index actual nodes bindings (- budget used))
+                                              {:status :not-applicable :work-count 0}))
+                            total (+ used (get compatibility :work-count))
+                            pair {:parameter (get params index) :argument actual :chosen :gravity.type/map}
+                            pair (if (= :accepted (get compatibility :status)) (assoc pair :compatibility (get compatibility :premise)) pair)
+                            call-type (get types id)
+                            type-validation (body-lc-type-work [call-type] (- budget total))
+                            spent (+ total (get type-validation :work-count))
+                            expected-fact (assoc (get entry :call-input-facts)
+                                            :artifact :gravity/c7-call-type-fact
+                                            :fact-id-request {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id id
+                                                              :callee-function-syntax-id (get record :function-syntax-id)
+                                                              :argument-types (get entry :argument-types) :result-type call-type}
+                                            :result-type call-type :effects (get (get core :module) :effects)
+                                            :capabilities (get (get core :module) :capabilities) :status :inferred)
+                            pairs (get row :rhs) kind (get row :kind)]
+                        (if (if (> spent budget) true (if (= :work-limit (get type-validation :reason)) true (= :map-parameter-work-limit (get compatibility :reason))))
+                          {:status :rejected :reason :private-map-keys-work-limit :work-count spent}
+                          (if (body-all?
+                                [(= :accepted (get type-validation :status)) (= false (body-pmk-unknown? call-type))
+                                 (= expected-fact fact)
+                                 (= {:domain :gravity/sh08-function-call-constraint-v1 :call-core-node-id id
+                                     :callee-function-syntax-id (get record :function-syntax-id)} (get row :constraint-id-request))
+                                 (= (get record :function-syntax-id) (get row :lhs))
+                                 (if (keyword? kind) (contains? #{:equality :argument-compatibility} kind) false)
+                                 (if (= :argument-compatibility kind)
+                                   (= :sh08-map-list-parameter-compatibility-v1 (get row :compatibility-rule-version)) true)
+                                 (vector? pairs) (= (count params) (count pairs))
+                                 (= pair (get pairs index))
+                                 (if (= :accepted (get compatibility :status)) (= :argument-compatibility kind) (= :gravity.type/never actual))
+                                 (= :solved (get row :status)) (= [] (get row :diagnostics))
+                                 (= (get (get core :module) :profile) (get row :profile))
+                                 (= (get (get core :module) :target) (get row :target))
+                                 (= (get (get (get nodes id) :source) :origin-chain) (get row :origin))
+                                 (loop [i 0]
+                                   (if (= i (count params)) true
+                                     (let [pair (get pairs i)]
+                                       (if (if (= (get params i) (get pair :parameter))
+                                             (= (get (get entry :argument-types) i) (get pair :argument)) false)
+                                         (recur (+ i 1)) false))))])
+                            (recur (rest remaining) spent)
+                            {:status :rejected :reason :private-map-keys-source-mismatch :work-count spent})))
+                      {:status :rejected :reason (get metadata :reason) :work-count used}))
+                  {:status :rejected :reason :private-map-keys-source-mismatch :work-count prefix})))))))))
+
+(defn body-pmk-originals [rows field target]
+  (if (vector? rows)
+    (loop [index 0 items [] table {}]
+      (if (= index (count rows)) {:status :accepted :items items :index table}
+        (let [row (get rows index) id (if (map? row) (get row field) nil)]
+          (if (body-sse-ids? [id] 1)
+            (if (contains? table id) {:status :rejected}
+              (recur (+ index 1) (if (= target id) (conj items row) items) (assoc table id row)))
+            {:status :rejected})))) {:status :rejected}))
+
+(defn body-pmk-row-census [core ledger nodes bindings types forms calls edges target descriptor budget]
+  (let [base (* 4 (count ledger))]
+    (if (> base budget) {:status :rejected :reason :private-map-keys-work-limit :work-count base}
+      (loop [index 0 items [] seen #{} descriptors {} used base]
+        (if (= index (count ledger)) {:status :accepted :items items :descriptors descriptors :work-count used}
+          (let [row (get ledger index) producer (if (map? row) (get row :producer-rule) nil)]
+            (if (if (map? row)
+                    (let [request (get row :constraint-id-request) domain (get request :domain)]
+                      (if (if (map? request) (keyword? domain) false)
+                        (if (keyword? producer)
+                          (if (= :gravity/sh08-private-map-keys-constraint-v1 domain) (= :sh08-private-map-keys-v1 producer) true)
+                          (if (= nil producer) (= false (= :gravity/sh08-private-map-keys-constraint-v1 domain)) false)) false)) false)
+              (if (if (keyword? producer) (= :sh08-private-map-keys-v1 producer) false)
+                (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)]
+                  (if (body-sse-ids? [id] 1)
+                    (if (contains? seen id) {:status :rejected :reason :private-map-keys-source-mismatch :work-count used}
+                      (let [source-call (get calls id) source-edge (get edges id) source-node (get nodes id)
+                            result (if (= target id) {:status :accepted :descriptor descriptor :work-count 0}
+                                     (body-pmk-header core source-node source-call source-edge nodes bindings types forms (- budget used)))
+                            total (+ used (get result :work-count)) canonical (get result :descriptor)]
+                        (if (= :accepted (get result :status))
+                          (if (if (body-mkeys-ids? source-node source-call nodes bindings (get core :module))
+                                (if (= canonical (get types (get source-call :operator-node-id)))
+                                  (= (body-pmk-constraint canonical) row) false) false)
+                            (recur (+ index 1) (if (= target id) (conj items row) items) (conj seen id) (assoc descriptors id canonical) total)
+                            {:status :rejected :reason :private-map-keys-source-mismatch :work-count total})
+                          {:status :rejected :reason (get result :reason) :work-count total})))
+                    {:status :rejected :reason :private-map-keys-source-mismatch :work-count used}))
+                (recur (+ index 1) items seen descriptors used))
+              {:status :rejected :reason :private-map-keys-source-mismatch :work-count used})))))))
+
+(defn body-pmk-fact-census [facts module descriptors target budget]
+  (let [work (* 3 (count facts))]
+    (if (> work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count work}
+      (loop [remaining (if (map? facts) (keys facts) facts) index 0 items [] seen #{}]
+        (if (= index (count facts))
+          (if (= (set (keys descriptors)) seen) {:status :accepted :items items :work-count work}
+            {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
+          (let [entry (first remaining) fact (if (map? facts) (if (body-sse-ids? [entry] 1) (get facts entry) nil) entry)
+                id (if (map? fact) (get fact :call-core-node-id) nil)
+                dispatch (if (map? fact) (get fact :dispatch) nil)]
+            (if (if (body-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
+              (if (let [request (get fact :fact-id-request) domain (get request :domain)]
+                    (if (if (map? request) (keyword? domain) false)
+                      (if (keyword? dispatch)
+                        (if (= :gravity/sh08-private-map-keys-call-type-fact-v1 domain) (= :direct-private-map-keys dispatch) true)
+                        (if (= nil dispatch)
+                          (if (= false (= :gravity/sh08-private-map-keys-call-type-fact-v1 domain))
+                            (body-sse-ids? [(get fact :callee-function-syntax-id)] 1) false) false)) false))
+                (if (if (keyword? dispatch) (= :direct-private-map-keys dispatch) false)
+                  (if (contains? seen id) {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}
+                    (let [canonical (get descriptors id)]
+                      (if (if (map? canonical) (= (body-pmk-call-fact canonical module) fact) false)
+                        (recur (rest remaining) (+ index 1) (if (= target id) (conj items fact) items) (conj seen id))
+                        {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})))
+                  (recur (rest remaining) (+ index 1) items seen))
+                {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})
+              {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})))))))
+
+(defn body-pmk-evidence [core ledger facts node call edge nodes bindings types forms budget]
+  (if (if (vector? ledger) (if (if (vector? facts) true (map? facts))
+                          (if (vector? (get core :calls)) (vector? (get core :call-edges)) false) false) false)
+    (let [limit (if (> budget 65536) 65536 budget)
+          derived (body-pmk-header core node call edge nodes bindings types forms limit)
+          base (+ (get derived :work-count) (* 2 (count (get core :calls))) (* 2 (count (get core :call-edges))))]
+      (if (= :accepted (get derived :status))
+        (if (> base limit) {:status :rejected :reason :private-map-keys-work-limit :work-count base}
+          (let [id (get node :node-id) descriptor (get derived :descriptor)
+                original-calls (body-pmk-originals (get core :calls) :core-node-id id)
+                original-edges (body-pmk-originals (get core :call-edges) :call-core-node-id id)]
+            (if (body-all? [(= :accepted (get original-calls :status)) (= :accepted (get original-edges :status))
+                                   (= [call] (get original-calls :items)) (= [edge] (get original-edges :items))])
+              (let [rows (body-pmk-row-census core ledger nodes bindings types forms (get original-calls :index) (get original-edges :index)
+                           id descriptor (- limit base)) work (+ base (get rows :work-count))]
+                (if (= :accepted (get rows :status))
+                  (let [calls (body-pmk-fact-census facts (get core :module) (get rows :descriptors) id (- limit work))
+                        total (+ work (get calls :work-count))]
+                    (if (if (= :accepted (get calls :status))
+                          (if (= [(body-pmk-constraint descriptor)] (get rows :items))
+                            (= [(body-pmk-call-fact descriptor (get core :module))] (get calls :items)) false) false)
+                      (let [entries (body-pmk-entry-evidence core ledger facts descriptor nodes bindings types (- limit total))
+                            spent (+ total (get entries :work-count))]
+                        (if (= :accepted (get entries :status))
+                          {:status :accepted :descriptor descriptor :work-count spent}
+                          {:status :rejected :reason (get entries :reason) :work-count spent}))
+                      {:status :rejected :reason (if (= :private-map-keys-work-limit (get calls :reason)) :private-map-keys-work-limit :private-map-keys-source-mismatch)
+                       :work-count total}))
+                  {:status :rejected :reason (get rows :reason) :work-count work}))
+              {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})))
+        derived))
+    {:status :rejected :reason :private-map-keys-source-mismatch :work-count 0}))
+
+(defn body-pmk-forms? [node call nodes forms]
+  (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
+    (if (body-sse-ids? ids 2)
+      (if (= :list (get owner :kind))
+        (if (= (get node :source) (get (body-ma-form-node {} owner) :source))
+          (loop [index 0]
+            (if (= index 2) true
+              (let [form (get forms (get ids index)) child (get nodes (get (get node :children) index))]
+                (if (if (= (get owner :form-id) (get form :parent-form-id))
+                      (if (= (get child :source) (get (body-ma-form-node {} form) :source))
+                        (if (= index 0) (if (symbol? (get form :value))
+                                         (= (get form :value) (get (get child :attributes) :symbol)) false) true) false) false)
+                  (recur (+ index 1)) false)))) false) false) false)))
+
+(defn body-pmk-allocation [node graph]
+  (let [descriptor (get (get graph (first (get node :children))) :type)]
+    (if (if (= :call (get node :core-form)) (= :gravity.type/applied-private-map-keys (get descriptor :kind)) false)
+      {:rule-version :sh09-private-map-keys-allocation-v1 :collection-kind :list :value-kind :list
+       :behavior :possible-persistent-map-key-list-construction :condition :normal-operand-completion
+       :normal-completion-possible? (= :normal (get descriptor :application))
+       :extent nil
+       :construction-work (get descriptor :construction-work) :construction-work-basis (get descriptor :construction-work-basis)
+       :key-domain-proof (get descriptor :key-domain-proof)
+       :allocation-policy (get descriptor :allocation-policy) :storage-policy (get descriptor :storage-policy)
+       :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis} nil)))
+
+(defn body-pmk-call-valid? [core facts bindings node call edge nodes]
+  (let [context (get facts :list-query-context) forms (get context :forms)
+        result (body-pmk-evidence core (get facts :constraint-ledger) (get facts :call-type-facts)
+                 node call edge nodes bindings (get facts :type-table) forms 65536)]
+    (if (= :accepted (get result :status))
+      (body-all? [(= (get result :descriptor) (get (get facts :type-table) (get call :operator-node-id)))
+                  (= (get (get result :descriptor) :result-type) (get (get facts :type-table) (get node :node-id)))
+                  (body-pmk-forms? node call nodes forms)]) false)))
+
 (defn body-mkeys-constraint [descriptor]
-  {:constraint-id-request {:domain :gravity/sh08-map-keys-constraint-v1 :application descriptor}
+  (if (if (keyword? (get descriptor :kind)) (= :gravity.type/applied-private-map-keys (get descriptor :kind)) false)
+    (body-pmk-constraint descriptor)
+    {:constraint-id-request {:domain :gravity/sh08-map-keys-constraint-v1 :application descriptor}
    :kind :equality :producer-rule :sh08-map-keys-v1
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :map-keys}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
@@ -4738,10 +5511,12 @@
               :construction-work (get descriptor :construction-work) :allocation-policy (get descriptor :allocation-policy)
               :storage-policy (get descriptor :storage-policy)}
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []})
+   :status :solved :diagnostics []}))
 
 (defn body-mkeys-call-fact [descriptor module]
-  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+  (if (if (keyword? (get descriptor :kind)) (= :gravity.type/applied-private-map-keys (get descriptor :kind)) false)
+    (body-pmk-call-fact descriptor module)
+    (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-map-keys-call-type-fact-v1 :application descriptor}
      :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
@@ -4749,7 +5524,7 @@
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-map-keys :applied-map-keys descriptor :effect-facts-source :audited-map-key-list-construction}))
+     :dispatch :direct-map-keys :applied-map-keys descriptor :effect-facts-source :audited-map-key-list-construction})))
 
 (defn body-mkeys-entry? [node call nodes bindings types module]
   ; Routing only. Fresh budgeted source and binding reconstruction is admission.
@@ -4864,7 +5639,9 @@
                   (recur (+ index 1)) false)))) false) false) false)))
 
 (defn body-mkeys-allocation [node graph]
-  (let [descriptor (get (get graph (first (get node :children))) :type)]
+  (if (if (keyword? (get (get (get graph (first (get node :children))) :type) :kind)) (= :gravity.type/applied-private-map-keys (get (get (get graph (first (get node :children))) :type) :kind)) false)
+    (body-pmk-allocation node graph)
+    (let [descriptor (get (get graph (first (get node :children))) :type)]
     (if (if (= :call (get node :core-form)) (= :gravity.type/applied-map-keys (get descriptor :kind)) false)
       {:rule-version :sh09-map-keys-allocation-v1 :collection-kind :list :value-kind :list
        :behavior :possible-persistent-map-key-list-construction :condition :normal-operand-completion
@@ -4872,7 +5649,7 @@
        :extent nil
        :construction-work (get descriptor :construction-work)
        :allocation-policy (get descriptor :allocation-policy) :storage-policy (get descriptor :storage-policy)
-       :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis} nil)))
+       :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis} nil))))
 
 (defn body-vrest-ids? [node call nodes bindings module]
   (if (if (map? node) (map? call) false)
@@ -5526,7 +6303,7 @@
             :invalidation (conj (get header :invalidation) :control-flow :mutations :branch-facts)) header))) nil)) nil))
 
 (defn body-lq-constraint [descriptor]
-  (if (= :gravity.type/applied-map-keys (get descriptor :kind))
+  (if (if (keyword? (get descriptor :kind)) (contains? #{:gravity.type/applied-map-keys :gravity.type/applied-private-map-keys} (get descriptor :kind)) false)
 (body-mkeys-constraint descriptor)
 (if (= :gravity.type/applied-vector-rest (get descriptor :kind))
     (body-vrest-constraint descriptor)
@@ -5548,7 +6325,7 @@
   ))))
 
 (defn body-lq-call-fact [descriptor module]
-  (if (= :gravity.type/applied-map-keys (get descriptor :kind))
+  (if (if (keyword? (get descriptor :kind)) (contains? #{:gravity.type/applied-map-keys :gravity.type/applied-private-map-keys} (get descriptor :kind)) false)
 (body-mkeys-call-fact descriptor module)
 (if (= :gravity.type/applied-vector-rest (get descriptor :kind))
     (body-vrest-call-fact descriptor module)
@@ -5736,7 +6513,11 @@
       {:status :not-applicable :work-count 0})))
 
 (defn body-lq-context [request facts bindings budget]
-  (if (if (map? request) (if (map? facts) (map? bindings) false) false)
+  (if (map? request)
+    (let [source-core (get request :canonical-core-artifact)
+          calls (get source-core :calls) census (if (vector? calls) (* 2 (count calls)) 0)]
+      (if (> census budget) (assoc (body-failure :body-deferred-work-limit) :work-count census)
+        (let [budget (- budget census) result (if (if (map? request) (if (map? facts) (map? bindings) false) false)
     (let [core (get request :canonical-core-artifact)]
       (if (if (map? core) (if (vector? (get core :calls)) (if (vector? (get core :nodes)) (vector? (get core :call-edges)) false) false) false)
         (let [present? (loop [remaining (get core :calls)]
@@ -5775,7 +6556,7 @@
                                                 (get bindings (get call :operator-binding-id)) nil)
                                       name (if (map? binding) (get binding :name) nil)
                                       query? (if (symbol? name) (contains? '#{keys first rest empty?} name) false)
-                                      unary-value-query? (if (if (= 'keys name) true (if (= 'empty? name) true (= 'rest name))) (if (vector? args) (= 1 (count args)) false) false)
+                                      unary-value-query? (if (if (symbol? name) (contains? '#{keys empty? rest} name) false) (if (vector? args) (= 1 (count args)) false) false)
                                       node (get nodes (get call :core-node-id)) fixed (+ 65 (count (get core :function-records)))]
                                   (if (= false (map? binding))
                                     (assoc (body-failure :body-query-physical-id-required) :work-count used)
@@ -5784,7 +6565,16 @@
                                     (if (if unary-value-query?
                                           (if (body-vemp-ids? node call nodes bindings (get core :module))
                                             (body-vemp-type-fields? (get (get facts :type-table) (first args))) false) true)
-                                      (if (body-mkeys-entry? node call nodes bindings (get facts :type-table) (get core :module))
+                                      (if (body-pmk-entry? node call nodes bindings (get facts :type-table) (get core :module))
+(let [result (body-pmk-evidence core (get facts :constraint-ledger) (get facts :call-type-facts)
+                                                       node call (get (get edge-index :index) (get call :core-node-id)) nodes bindings
+                                                       (get facts :type-table) (get form-index :index) (- budget used))
+                                              total (+ used (get result :work-count))]
+                                          (if (= :accepted (get result :status))
+                                            (recur (rest remaining) total (assoc checks (get call :core-node-id) result))
+                                            (assoc (body-failure (if (= :private-map-keys-work-limit (get result :reason))
+                                                                  :body-deferred-work-limit :body-private-map-keys-source-mismatch)) :work-count total)))
+(if (body-mkeys-entry? node call nodes bindings (get facts :type-table) (get core :module))
 (let [result (body-mkeys-evidence core (get facts :constraint-ledger) (get facts :call-type-facts)
                                                        node call (get (get edge-index :index) (get call :core-node-id)) nodes bindings
                                                        (get facts :type-table) (- budget used))
@@ -5835,15 +6625,19 @@
                           (recur (rest remaining) work (assoc checks (get call :core-node-id) validation))
                           (assoc (body-failure (if vector-first? :body-vector-first-nonempty-complete-positional-type-required :body-list-query-operand-type-required)) :work-count work)))))
                     (recur (rest remaining) used checks))
-                                          (recur (rest remaining) used checks)))))
+                                          (recur (rest remaining) used checks))))))
                                       (assoc (body-failure (if (= 'keys name) :body-map-keys-source-mismatch
                                                               (if (= 'rest name) :body-vector-rest-source-mismatch :body-vector-empty-source-mismatch))) :work-count (+ used fixed)))))))))
                           (assoc (body-failure :body-query-physical-id-required) :work-count base))))))))))
         (body-failure :body-query-core-shape-required)))
-    (body-failure :body-query-core-shape-required)))
+    (body-failure :body-query-core-shape-required))]
+          (assoc result :work-count (+ census (get result :work-count 0))))))
+    (assoc (body-failure :body-query-physical-id-required) :work-count 0)))
 
 (defn body-lq-call-valid? [core facts bindings node call edge nodes]
-  (let [types (get facts :type-table)
+  (if (body-pmk-entry? node call nodes bindings (get facts :type-table) (get core :module))
+    (body-pmk-call-valid? core facts bindings node call edge nodes)
+    (let [types (get facts :type-table)
         unary? (if (vector? (get call :argument-node-ids)) (= 1 (count (get call :argument-node-ids))) false)
         physical? (if unary? (body-vemp-ids? node call nodes bindings (get core :module)) true)
         input (if (if unary? physical? false) (get types (first (get call :argument-node-ids))) nil)]
@@ -5901,7 +6695,7 @@
                  (recur (+ i 1)) false))))
          (= (body-lq-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
          (= [(body-lq-constraint descriptor)] rows)]) false))
-        )))))))
+        ))))))))
 
 (defn body-lq-node? [node facts core]
   (let [context (get facts :list-query-context) id (get node :node-id)]
@@ -16384,7 +17178,13 @@
                     (= set-conversion-rows (loop [remaining (get facts :constraint-ledger) out []]
                       (if (= 0 (count remaining)) out
                         (let [row (first remaining)]
-                          (if (if (map? row) (keyword? (get row :producer-rule)) false)
+                          (if (if (map? row)
+                                (if (keyword? (get row :producer-rule)) true
+                                  (if (= nil (get row :producer-rule))
+                                    (let [request (get row :constraint-id-request)]
+                                      (if (map? request)
+                                        (if (keyword? (get request :domain))
+                                          (= :gravity/sh08-function-call-constraint-v1 (get request :domain)) false) false)) false)) false)
                             (recur (rest remaining)
                               (if (contains? #{:sh08-set-conversion-v1 :sh08-list-set-conversion-v1} (get row :producer-rule)) (conj out row) out))
                             :invalid-set-conversion-ledger)))))
@@ -16407,7 +17207,7 @@
                                       (let [row (first remaining)]
                                         (recur (rest remaining)
                                           (if (if (keyword? (get row :producer-rule))
-                                                (contains? #{:sh08-list-query-v1 :sh08-vector-first-v1 :sh08-vector-empty-v1 :sh08-vector-rest-v1 :sh08-map-keys-v1} (get row :producer-rule)) false)
+                                                (contains? #{:sh08-list-query-v1 :sh08-vector-first-v1 :sh08-vector-empty-v1 :sh08-vector-rest-v1 :sh08-map-keys-v1 :sh08-private-map-keys-v1} (get row :producer-rule)) false)
                                             (conj out row) out))))))])
         (let [edge (first remaining)]
           (if (if (map? edge)
@@ -16526,7 +17326,7 @@ true
                     (body-sc-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))) concat-rows)
               (if (= :direct-list-construction (get (get call-facts id) :dispatch))
                 (conj list-rows (body-lc-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) list-rows)
-              (if (contains? #{:direct-list-query :direct-vector-first :direct-vector-empty :direct-vector-rest :direct-map-keys} (get (get call-facts id) :dispatch))
+              (if (contains? #{:direct-list-query :direct-vector-first :direct-vector-empty :direct-vector-rest :direct-map-keys :direct-private-map-keys} (get (get call-facts id) :dispatch))
                 (conj query-rows (body-lq-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) query-rows)
               (if (= :direct-vector-predicate (get (get call-facts id) :dispatch))
                 (conj vector-predicate-rows (body-vp-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) vector-predicate-rows)
@@ -18606,7 +19406,7 @@ true
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-list-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-bare-keyword-anchor-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first :gravity.type/applied-vector-empty :gravity.type/applied-vector-rest :gravity.type/applied-map-keys}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-list-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-bare-keyword-anchor-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first :gravity.type/applied-vector-empty :gravity.type/applied-vector-rest :gravity.type/applied-map-keys :gravity.type/applied-private-map-keys}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (body-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))
