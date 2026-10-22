@@ -54,6 +54,21 @@
        (catch clojure.lang.ExceptionInfo error
          {:consumer-exception (select-keys (ex-data error) [:id :function])})))
 
+(deftest sh13-returns-the-direct-two-bool-condition-result
+  ;; C6's actual dependency/lexical-fact conjunction motivates this direct
+  ;; Bool value, not execution of that complete compiler helper.
+  (let [path (str (.resolve @(existing 'root)
+                    "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity"))
+        temporary (java.io.File/createTempFile "gravity-sh13-two-bool-direct-" ".gravity")]
+    (try
+      (spit temporary (str/replace (slurp path) "(if (if left right false) 11 22)" "(if left right false)"))
+      (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))]
+        (is (= :accepted (:status raw)))
+        (is (= :passed (:status upstream)))
+        (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))
+            (pr-str (:diagnostics mir))))
+      (finally (.delete temporary)))))
+
 (deftest sh13-consumes-two-independently-resolved-bool-parameters
   ;; Actual independently resolved C6 parameters, not aliased caller values.
   ;; Development source composition only, not public frozen-source admission.
