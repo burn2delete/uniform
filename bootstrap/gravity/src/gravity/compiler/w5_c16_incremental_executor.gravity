@@ -1302,6 +1302,7 @@
                            :missing-build-effect-replay))
                         (w5-c16-rejected
                          request "C16-GRAPH" :dependency-graph
+                         :dependency-graph
                          :dependency-graph-inconsistency))
                       (w5-c16-rejected
                        request "C16-STALE" :source :cache-entry
