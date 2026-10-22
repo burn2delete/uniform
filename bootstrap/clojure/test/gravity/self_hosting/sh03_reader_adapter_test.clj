@@ -326,7 +326,7 @@
           (check (= (:syntax/id output) (:output-syntax-id step)) :output-syntax-origin)
           (check (= (:span input) (:call-site-span step) (:span output)) :macro-source-span)
           (check (and (seq (:generated-origin step))
-                      (= (last (:origin output)) (first (:generated-origin step)))
+                      (= (last (:origin output)) (first (:generated-origin step))))
                  :introduced-origin)
           (check (seq (get-in step [:hygiene :introduced-identifiers])) :introduced-hygiene))
         (check (= 3 (count subvec-calls)) :three-actual-subvec-calls)
