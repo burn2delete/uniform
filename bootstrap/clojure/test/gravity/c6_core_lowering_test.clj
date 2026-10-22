@@ -605,7 +605,7 @@
                  (identical? right (:surface-form (nth rows 4)))
                  (not (identical? (:surface-form (nth rows 2)) (:surface-form (nth rows 4))))))
         (is (and (identical? shared (:surface-form (nth rows 7)))
-                 (identical? shared (:surface-form (nth rows 9))))))
+                 (identical? shared (:surface-form (nth rows 9)))))
         (is (= ['mix 'mix] (mapv #(get-in % [:children :operator]) (filter #(= :call (:form %)) rows))))
         (is (empty? (core-children (last rows))))
         (is (not-any? #(= "quoted" (:node-id %)) rows))
