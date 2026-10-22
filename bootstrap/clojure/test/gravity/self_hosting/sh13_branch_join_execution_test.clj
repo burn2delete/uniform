@@ -24,14 +24,16 @@
 (defn- verify [core mir result]
   (invoke 'sh13-verify-branch-join-execution core mir result))
 
-(defn- current-parameter-pair [path]
+(defn- current-parameter-pair
+ ([path] (current-parameter-pair path nil))
+ ([path compiled-binding]
   ;; Original current-source products and original assembler, not a supplied
   ;; normalized module, patched MIR or public pinned-source admission.
   (let [source-start (System/nanoTime)
-        text (slurp path) products ((existing 'parameter-source-products) path text)
+        text (slurp path) products ((existing 'parameter-source-products) path text compiled-binding)
         c6-plan (existing 'parameter-c6-plan) call (existing 'invoke)
         raw (call c6-plan 'c6-c10-build-checked-core-template [(:envelope products)])
-        fresh ((existing 'parameter-source-products) path text)
+        fresh ((existing 'parameter-source-products) path text (:compiled-binding-data products))
         replay (call c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
         upstream (call c6-plan 'c6-c10-verify-checked-core-template
                        [(:envelope fresh) (:artifact-template raw) (:digest-requests replay)])
@@ -43,9 +45,10 @@
     ;; Observations around already-required calls only: no extra build,
     ;; acceptance cache, timing API or benchmark/isolation claim.
     (println "parameter-pair phases(ns)" (.getName (java.io.File. path))
+             :compiled-binding-data (if (nil? compiled-binding) :derived-in-first-source-products :supplied)
              :source-c6-replay-seal (- source-end source-start)
              :initial-c11-construction (- construction-end source-end))
-    {:raw raw :upstream upstream :core core :mir mir}))
+    {:raw raw :upstream upstream :core core :mir mir})))
 
 (defn- argument-run-observation [core mir arguments]
   ;; Preserve the real missing-entrypoint RED as an observation, not a fake
@@ -57,13 +60,15 @@
 (deftest sh13-returns-the-direct-two-bool-condition-result
   ;; C6's actual dependency/lexical-fact conjunction motivates this direct
   ;; Bool value, not execution of that complete compiler helper.
+ (let [compiled-binding ((existing 'parameter-compiled-binding-data)
+                         (str (.resolve @(existing 'root) "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity")))]
   (doseq [extension ["gravity" "qst"]]
     (let [path (str (.resolve @(existing 'root)
                       (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source." extension)))
           temporary (java.io.File/createTempFile "gravity-sh13-two-bool-direct-" (str "." extension))]
       (try
         (spit temporary (str/replace (slurp path) "(if (if left right false) 11 22)" "(if left right false)"))
-        (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
+        (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary) compiled-binding)
               verification (invoke 'sh12-verify-branch-join-mir core mir)
               nodes (:core-nodes core) ids (mapv :node-id nodes) left (get ids 0) right (get ids 1)]
           (is (= :accepted (:status raw)))
@@ -179,15 +184,17 @@
                   (is (nil? (:execution result)))))
               (is (= :rejected (:status (run core mir))))
               (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
-        (finally (.delete temporary))))))
+        (finally (.delete temporary)))))))
 
 (deftest sh13-consumes-two-independently-resolved-bool-parameters
   ;; Actual independently resolved C6 parameters, not aliased caller values.
   ;; Development source composition only, not public frozen-source admission.
+ (let [compiled-binding ((existing 'parameter-compiled-binding-data)
+                         (str (.resolve @(existing 'root) "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity")))]
   (doseq [extension ["gravity" "qst"]]
     (let [path (str (.resolve @(existing 'root)
                       (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source." extension)))
-          {:keys [raw upstream core mir]} (current-parameter-pair path)
+          {:keys [raw upstream core mir]} (current-parameter-pair path compiled-binding)
           verification (invoke 'sh12-verify-branch-join-mir core mir)
           nodes (:core-nodes core) ids (mapv :node-id nodes) left (get ids 0) right (get ids 1)]
       (is (= :accepted (:status raw)))
@@ -308,7 +315,7 @@
               (is (= (:diagnostics original) (:diagnostics result)))
               (is (nil? (:execution result)))))
           (is (= :rejected (:status (run core mir))))
-          (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))))
+          (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))))))))
 
 (deftest sh13-executes-original-c6-bool-parameter-through-explicit-arguments
   (let [root @(existing 'root)
