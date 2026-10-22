@@ -984,7 +984,7 @@
    #{:pure-authenticated-sh08-primitive-typed-core
      :declared-pure-call-effects-with-thrown-effects-pending}
    :accepted-types
-   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string :gravity.type/i64}
    :ownership-kind :persistent-immutable
    :accepted-events [:read]
    :profile :meta
@@ -1053,6 +1053,13 @@
    #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
    value))
 
+(defn sh10-authenticated-persistent-read-type? [value]
+  (if (keyword? value)
+    (sh10-member?
+     (get (sh10-authenticated-sh09-adapter-policy) :accepted-types)
+     value)
+    false))
+
 (defn sh10-authenticated-pure-node? [node]
   (if (= :gravity/c8-effect-node (get node :artifact))
     (if (= #{} (get node :direct))
@@ -1103,7 +1110,7 @@
           (get (get (get effected :effect-graph) :nodes) core-node-id)
           value-type (get (get effected :type-table) core-node-id)
           identities (get (get bound :fact-identities) core-node-id)]
-      (if (sh10-authenticated-primitive-type? value-type)
+      (if (sh10-authenticated-persistent-read-type? value-type)
         (if (sh10-authenticated-pure-node? node)
           (if (map? identities)
             (if (sh10-sha256-id? (get identities :type-fact-id))
