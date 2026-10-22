@@ -37,3 +37,6 @@
   (c6-call c6/c6-lowering-capability-proof artifact))
 (defn c6-lowering-validate! [source-path artifact]
   (c6-call c6/c6-lowering-validate! source-path artifact))
+
+(def ^:private c6-default-flatten-functions
+  [c6-flatten-core c6-core-child-nodes])
