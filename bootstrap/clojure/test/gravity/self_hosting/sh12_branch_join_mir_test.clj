@@ -260,8 +260,8 @@
 
 (deftest sh12-current-c6-produces-three-independently-resolved-bool-parameters
   ;; Three independent c6c10-map-if premises, with real source/C2/C5 joins.
-  ;; Producer-only: every eight-tuple consumer attempt still rejects before
-  ;; trace. This is not execution of the complete compiler helper.
+  ;; Current C11 also reconstructs this family; SH13 owns tuple execution.
+  ;; This is not execution of the complete compiler helper.
  (let [compiled-binding (parameter-compiled-binding-data
                          (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/three_bool_parameter_source.gravity")))]
   (doseq [extension ["gravity" "qst"]]
@@ -325,14 +325,7 @@
                 mir (build-mir core)
                 verification (verify-mir core mir)]
             (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
-            (is (= :rejected (:status verification)))
-            (is (= ["C11-MODULE" :original-c6-bool-parameter-family]
-                   ((juxt :diagnostic-id :missing-fact) (first (:diagnostics verification)))))
-            (doseq [a [false true] b [false true] c [false true]]
-              (let [result (invoke c11-plan 'sh13-run-branch-join-mir-with-arguments [core mir [a b c]])]
-                (is (= :rejected (:status result)))
-                (is (= (:diagnostics verification) (:diagnostics result)))
-                (is (nil? (:execution result))))))
+            (is (= :passed (:status verification)) (pr-str (:diagnostics verification))))
           (doseq [malformed [(assoc-in input [:resolved-parameter :parameters] [])
                              (assoc-in input [:resolved-parameter :kind] :gravity/unknown-parameter-declaration)
                              (assoc-in input [:resolved-parameter :parameters] (vec (reverse entries)))
