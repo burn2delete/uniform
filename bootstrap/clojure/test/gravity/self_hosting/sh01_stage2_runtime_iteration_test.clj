@@ -30803,6 +30803,55 @@
                                 (assoc-in [:ledger 2] (c7 'sh08-vsl-constraint [changed])))]
               (is (= :rejected (:status (lower candidate 65536)))))))))))
 
+(deftest current-gravity-let-vector-count-slice-membership-prepay-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input (ns-resolve upstream 'let-vector-count-slice-input)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        entry-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-entry @entry-var
+        run (fn [owner base budget]
+              (let [{:keys [core node call nodes bindings types forms]} base
+                    arguments [core node call nodes bindings types forms budget]]
+                (case owner
+                  :c7 (c7 'sh08-vsl-proof arguments)
+                  :c8 (apply c8 'body-vsl-proof arguments)
+                  :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-proof arguments))))]
+    (doseq [[owner prefix] [[:c7 "sh08"] [:c8 "body"] [:emitter "p15-s23"]]]
+      (let [base (input "0af" 1) measured (run owner base 65536)
+            validator (symbol (str prefix "-nq-ids?"))
+            observe (fn [candidate budget]
+                      (let [entered (atom 0)
+                            result (with-redefs-fn
+                                     {entry-var
+                                      (fn [runtime plan callee arguments scope]
+                                        (when (and (= validator callee) (= :slice-end (:node-id (first arguments))))
+                                          (swap! entered inc))
+                                        (original-entry runtime plan callee arguments scope))}
+                                     #(run owner candidate budget))]
+                        [result @entered]))
+            [positive entered] (observe base 65536)
+            [negative rejected-entered] (observe (assoc-in base [:bindings :slice-count-binding :name] 'rest) 65536)]
+        (is (= :accepted (:status measured) (:status positive)))
+        (is (pos? entered))
+        (is (= :rejected (:status negative)))
+        (is (pos? rejected-entered))
+        (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "membership tail hashed")))
+                                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "membership tail compared")))
+                                        (toString [] (swap! callbacks inc) (throw (AssertionError. "membership tail formatted"))))]
+          (doseq [[field member] [[:profile-set :meta] [:target-set :all]]
+                  hostile? [false true]]
+            (let [values (cond-> (vec (repeat 4096 member)) hostile? (conj opaque))
+                  [result entered] (observe (assoc-in base [:bindings :slice-count-binding field] values) (:work-count measured))]
+              (is (= :rejected (:status result)))
+              (is (= :vector-slice-work-limit (:reason result)))
+              (is (= 0 entered))))
+          (is (= 0 @callbacks)))))))
+
 (deftest current-gravity-let-vector-count-slice-three-owner-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
