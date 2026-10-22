@@ -401,14 +401,14 @@
         (is (= [] (:bindings result))))
       (doseq [[value reason] [['{symbol x} :non-keyword-map-pattern-key-deferred]
                               ['{:nested {:when true :id x}} :guard-pattern-deferred]
-                              ['{:a x :b x} :duplicate-vector-binding-deferred]
+                              ['{:a x :b x} :duplicate-match-binding]
                               ['{:id (Ok x)} :unsupported-vector-pattern-leaf]
                               ['{:id [x & y]} :variable-width-vector-pattern-deferred]
                               [(into {} (map (fn [n] [(keyword (str "wide" n)) n]) (range 257))) :vector-pattern-width-bound]]]
         (let [form (make! value)
               result (invoke 'sh07-match-pattern-descriptor [(request) form 0])]
           (is (= :rejected (:status result)))
-          (is (= "C6-LOWERING-GAP" (:rule result)))
+          (is (= (if (= reason :duplicate-match-binding) "C6-VERIFY" "C6-LOWERING-GAP") (:rule result)))
           (is (= reason (get-in result [:facts :reason]))))))))
 
 (deftest sh07-b11-keyword-map-authentic-composition
@@ -576,7 +576,7 @@
     (is (some #(str/includes? % required-name) accepted-fixtures)))
   (doseq [required-name ["list" "map" "set" "rest"]]
     (is (some #(str/includes? % required-name) rejected-fixtures)))
-  (is (= :duplicate-vector-binding-deferred
+  (is (= :duplicate-match-binding
          (:expected-reason (fixture-oracle "duplicate-map-bindings" ".gravity"))))
   (is (not-any? #(str/includes? % "variable-width") accepted-fixtures)))
 
@@ -1168,5 +1168,5 @@
              :unsupported-vector-pattern-leaf
              :variable-width-vector-pattern-deferred
              :vector-pattern-width-bound
-             :non-keyword-map-pattern-key-deferred :duplicate-vector-binding-deferred}
+             :non-keyword-map-pattern-key-deferred :duplicate-match-binding}
            @observed-reasons))))

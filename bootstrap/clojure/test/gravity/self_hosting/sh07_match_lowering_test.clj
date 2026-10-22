@@ -770,6 +770,24 @@
           (is (nil? (:records result)))
           ;; Original source order chooses the first duplicate, not the last.
           (is (not= (:form-id pattern) (:form-id diagnostic)))))
+      (let [{:keys [pattern request result]} (check '[x x])
+            first-id (get-in result [:facts :first-binding-form-id])
+            first-form (get @forms first-id)
+            changed-span (assoc (:source-span first-form) :line-start 9)
+            changed (assoc-in request [:internal-indexes :forms :by-id first-id :source-span] changed-span)
+            rerun (invoke 'sh07-match-pattern-descriptor [changed pattern 0])
+            original-diagnostic (invoke 'sh07-diagnostic [request (:rule result) (:form result) (:facts result)])
+            changed-diagnostic (invoke 'sh07-diagnostic [changed (:rule rerun) (:form rerun) (:facts rerun)])]
+        (is (= :rejected (:status rerun)))
+        (is (= changed-span (get-in rerun [:facts :first-binding-source-span])))
+        (is (= (get-in result [:form :form-id]) (get-in rerun [:form :form-id])))
+        (is (not= (get-in original-diagnostic [:request :preimage]) (get-in changed-diagnostic [:request :preimage])))
+        (is (= result (invoke 'sh07-match-pattern-descriptor [request pattern 0]))))
+      (let [bindings [{:name 'x :definition-syntax-id (sha 81000)}
+                      {:name 'x :definition-syntax-id (sha 81001)}
+                      {:name 'x :definition-syntax-id (sha 81002)}]]
+        (is (= {:first-binding (first bindings) :duplicate-binding (second bindings)}
+               (invoke 'sh07-duplicate-match-binding [bindings]))))
       (doseq [value ['[x y] '[x {:id y}] (array-map :left 'x :right '[y] :when true)
                      '[_ _] '[(quote x) x] '{:when false}]]
         (let [{:keys [result]} (check value)]
@@ -799,6 +817,27 @@
         (let [form (make! source) result (invoke 'sh07-lower-match [(input) (invoke 'sh07-empty-state []) form])]
           (is (= :rejected (:status result)))
           (is (= reason (get-in result [:facts :reason])))))
+      ;; Pair parity and the fixture patterns themselves feed the owning
+      ;; normalized kernel. This host DATA reader is not fresh SH03/C5 intake.
+      (doseq [[family base]
+              [["accepted" "bootstrap/clojure/fixtures/self-hosting/sh-07/accepted/completion-match-binding-guards"]
+               ["rejected" "bootstrap/clojure/fixtures/self-hosting/sh-07/rejected/completion-match-binding-guards"]
+               ["rejected" "bootstrap/clojure/fixtures/self-hosting/sh-07-b11/rejected/duplicate-map-bindings"]]]
+        (let [
+              g (path (str base ".gravity")) q (path (str base ".qst"))
+              read-data (fn [file]
+                          (with-open [reader (java.io.PushbackReader. (io/reader file))]
+                            (binding [*read-eval* false]
+                              (let [eof (Object.)]
+                                (loop [out []]
+                                  (let [form (read {:eof eof} reader)]
+                                    (if (identical? eof form) out (recur (conj out form)))))))))
+              values (read-data g) match-form (last (last values))]
+          (is (= (seq (source-bytes g)) (seq (source-bytes q))))
+          (is (= values (read-data q)))
+          (is (= 'match (first match-form)))
+          (doseq [pattern (if (= family "accepted") [(nth match-form 2) (nth match-form 4)] [(nth match-form 2)])]
+            (is (= (if (= family "accepted") :accepted :rejected) (get-in (check pattern) [:result :status]))))))
       (let [contract (with-open [reader (java.io.PushbackReader.
                                         (io/reader (path "bootstrap/gravity/src/gravity/checked_core.gravity")))]
                        (binding [*read-eval* false]

@@ -41,6 +41,7 @@
                              :literal-wildcard-and-binding-patterns
                              :fixed-width-recursive-vector-patterns
                              :branch-local-pattern-bindings
+                             :duplicate-match-binding-rejection
                              :resolved-symbol-references
                              :declared-alias-qualified-expression-and-operator-references
                              :symbol-headed-general-calls
@@ -62,7 +63,6 @@
                :pending [:types :effects :ownership :safety
                          :non-keyword-map-list-set-record-constructor-patterns
                          :variable-width-vector-patterns
-                         :duplicate-pattern-binding-policy
                          :guard-patterns
                          :match-exhaustiveness :match-result-type-join
                          :try-finally
@@ -163,7 +163,7 @@
     {:width :fixed
      :nesting :recursive
      :binding-names :unique-only
-     :duplicate-binding-diagnostic :pending-l7-owner
+     :duplicate-binding-diagnostic "L7-DUP-BINDING"
      :rest-patterns :deferred}
     :scrutinee-evaluation :evaluate-scrutinee-once
     :branch-evaluation :conditionally-evaluate-selected-branch
@@ -1996,8 +1996,8 @@
               "Reduce recursive vector-pattern depth to the declared SH-07-B11 bound."
               (if (= reason :vector-pattern-width-bound)
                 "Reduce vector-pattern width to the declared SH-07-B11 bound."
-                (if (= reason :duplicate-vector-binding-deferred)
-                  "Use unique binding names in each SH-07-B11 vector pattern; duplicate-binding diagnostics remain owned by a later L7 slice."
+                (if (= reason :duplicate-match-binding)
+                  "Use each binding name only once within a match pattern; sibling clauses may bind the same name independently."
                   (if (= reason :unsupported-vector-pattern-leaf)
                     "Use only nested fixed-width vectors, wildcards, scalar literals, or unique symbol bindings in SH-07-B11."
                     (if (= reason :composite-pattern-deferred)
@@ -5653,6 +5653,17 @@
         :definition-syntax-id (get pattern :syntax-id)
         :scope-id (get pattern :scope-id)}})))
 
+(defn sh07-duplicate-match-binding-failure [pattern first-pattern]
+  {:status :rejected :rule "C6-VERIFY" :form pattern
+   :facts {:reason :duplicate-match-binding :semantic-rule "L7-DUP-BINDING"
+           :binding (get pattern :value)
+           :first-binding-form-id (get first-pattern :form-id)
+           :first-binding-syntax-id (get first-pattern :syntax-id)
+           :first-binding-source-span (get first-pattern :source-span)
+           :duplicate-binding-form-id (get pattern :form-id)
+           :duplicate-binding-syntax-id (get pattern :syntax-id)
+           :duplicate-binding-source-span (get pattern :source-span)}})
+
 (defn sh07-match-pattern-preflight-children
   [request child-form-ids depth seen]
   (loop [remaining child-form-ids
@@ -5724,13 +5735,8 @@
           (if (= value '_)
             {:status :accepted :seen seen}
             (if (contains? seen value)
-              {:status :rejected
-               :rule "C6-LOWERING-GAP"
-               :form pattern
-               :facts
-               {:reason :duplicate-vector-binding-deferred
-                :binding value}}
-              {:status :accepted :seen (conj seen value)})))
+              (sh07-duplicate-match-binding-failure pattern (get seen value))
+              {:status :accepted :seen (assoc seen value pattern)})))
         (if (sh07-match-pattern-literal? pattern)
           {:status :accepted :seen seen}
           (if (contains? #{:vector :map} kind)
@@ -5860,7 +5866,7 @@
                   width (count child-form-ids)
                   preflight
                   (if (= (get shape :status) :accepted)
-                    (sh07-match-pattern-preflight request pattern depth #{}) shape)]
+                    (sh07-match-pattern-preflight request pattern depth {}) shape)]
               (if (= (get preflight :status) :accepted)
                 (let [children
                       (sh07-match-vector-child-descriptors
@@ -5898,14 +5904,14 @@
                 :pattern-kind kind}})))))))
 
 (defn sh07-duplicate-match-binding [bindings]
-  (loop [remaining bindings seen #{}]
+  (loop [remaining bindings seen {}]
     (if (= (count remaining) 0)
       nil
       (let [binding (first remaining)
             name (get binding :name)]
         (if (contains? seen name)
-          name
-          (recur (rest remaining) (conj seen name)))))))
+          {:first-binding (get seen name) :duplicate-binding binding}
+          (recur (rest remaining) (assoc seen name binding)))))))
 
 (defn sh07-match-pattern-descriptor
   [request pattern clause-ordinal]
@@ -5923,12 +5929,11 @@
             (if (= guard nil) result
               (assoc (assoc result :guard guard) :records
                      (assoc records 0 (assoc (first records) :guard guard)))))
-          {:status :rejected
-           :rule "C6-LOWERING-GAP"
-           :form pattern
-           :facts
-           {:reason :duplicate-vector-binding-deferred
-            :binding duplicate}}))
+          (sh07-duplicate-match-binding-failure
+           (sh07-find-form-by-syntax (get request :internal-indexes)
+             (get (get duplicate :duplicate-binding) :definition-syntax-id))
+           (sh07-find-form-by-syntax (get request :internal-indexes)
+             (get (get duplicate :first-binding) :definition-syntax-id)))))
       descriptor)))
 
 (defn sh07-binding-use-syntax-ids-after
