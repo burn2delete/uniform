@@ -3335,6 +3335,113 @@
         (is (= result (:expected forged-report)))
         (is (= mutant (:candidate forged-report)))))))
 
+(defn- let-vector-slice-call-input
+  ([text start end] (let-vector-slice-call-input text start end 1))
+  ([text start end callee-start]
+   ;; One original local call body; expected callee types do not prove its arg.
+   (let [base (parameter-vector-count-slice-caller-input text callee-start)
+         outer :parameter-caller-scope body :argument-let-body bid :argument-local
+         source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
+         form (fn [id kind value parent children scope]
+                {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                 :scope-id scope :kind kind :value value :parent-form-id parent :child-form-ids children})
+         call-children [:argument-slice-operator :argument-slice-ref :argument-slice-start :argument-slice-end]
+         evaluation (fn [kind ids] {:kind kind :owner-function-syntax-id :parameter-caller :region :function-body
+                              :order (mapv #(hash-map :index %1 :core-node-id %2) (range) ids)})
+         node (fn [id kind children attributes bindings]
+                {:node-id id :core-form kind :children children :attributes attributes :resolved-binding-ids bindings
+                 :source (source id) :binding-context body :evaluation (evaluation :value children)})
+         slice-op (node :argument-slice-operator :reference []
+                        {:symbol 'subvec :position :operator :binding-id :slice-binding :binding-class :core
+                         :definition-syntax-id :slice-definition} [:slice-binding])
+         reference (node :argument-slice-ref :reference []
+                         {:symbol 'characters :position :expression :binding-id bid :binding-class :lexical
+                          :definition-syntax-id :argument-name} [bid])
+         literal (fn [id value] (node id :literal [] {:literal-kind :integer :value value} []))
+         slice (assoc (node :argument-slice-call :call call-children
+                            {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
+                             :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} [:slice-binding])
+                      :evaluation (evaluation :operator-then-arguments call-children))
+         entry-children [:parameter-entry-operator :argument-slice-call]
+         entry (-> (get-in base [:nodes :parameter-entry]) (assoc :children entry-children :binding-context body)
+                   (assoc :evaluation (evaluation :operator-then-arguments entry-children)))
+         entry-op (assoc (get-in base [:nodes :parameter-entry-operator]) :binding-context body)
+         let-node {:node-id :argument-let :core-form :let :children [:call :parameter-entry] :resolved-binding-ids [bid]
+                   :source (source :argument-let) :binding-context outer
+                   :attributes {:binding-vector-form-id :argument-bindings :binding-vector-syntax-id :argument-bindings
+                                :outer-scope-id outer :body-scope-id body :binding-count 1 :body-count 1
+                                :initializer-child-indexes [0] :body-child-indexes [1] :evaluation-order :initializers-then-body-left-to-right
+                                :result-policy {:kind :last-body :child-index 1}}
+                   :evaluation (evaluation :initializers-then-body-left-to-right [:call :parameter-entry])}
+         record {:let-core-node-id :argument-let :ordinal 0 :name 'characters :binding-id bid
+                 :definition-form-id :argument-name :definition-syntax-id :argument-name :binding-scope-id body
+                 :initializer-form-id :call :initializer-syntax-id :call :initializer-scope-id outer
+                 :initializer-node-id :call :visible-prior-binding-ids [] :mutability :immutable}
+         binding {:binding-id bid :name 'characters :binding-class :lexical :kind :local
+                  :scope-id body :definition-syntax-id :argument-name :mutability :immutable}
+         call {:core-node-id :argument-slice-call :operator-node-id :argument-slice-operator :operator-binding-id :slice-binding
+               :argument-node-ids (vec (rest call-children)) :ordered-evaluation-node-ids call-children
+               :evaluation-order :operator-then-arguments :result-policy :call-result}
+         edge {:ordinal 3 :call-core-node-id :argument-slice-call :caller-function-syntax-id :parameter-caller
+               :caller-function-core-node-id :parameter-caller-fn :callee-binding-id :slice-binding
+               :callee-definition-syntax-id :slice-definition :callee-function-syntax-id nil :callee-function-core-node-id nil
+               :argument-core-node-ids (vec (rest call-children)) :ordered-evaluation-node-ids call-children
+               :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+         calls (conj (conj (vec (butlast (get-in base [:core :calls]))) call)
+                     (assoc (last (get-in base [:core :calls])) :argument-node-ids [:argument-slice-call]
+                            :ordered-evaluation-node-ids entry-children))
+         edges (conj (conj (vec (butlast (get-in base [:core :call-edges]))) edge)
+                     (assoc (last (get-in base [:core :call-edges])) :ordinal 4 :argument-core-node-ids [:argument-slice-call]
+                            :ordered-evaluation-node-ids entry-children))
+         raw-call (list 'tail-characters (list 'subvec 'characters start end))
+         raw-let (list 'let ['characters (list 'vec text)] raw-call)
+         forms (-> (:forms base)
+                   (assoc-in [:call :parent-form-id] :argument-bindings)
+                   (assoc-in [:parameter-entry :parent-form-id] :argument-let)
+                   (assoc-in [:parameter-entry :scope-id] body) (assoc-in [:parameter-entry :value] raw-call)
+                   (assoc-in [:parameter-entry :child-form-ids] entry-children)
+                   (assoc-in [:parameter-entry-operator :scope-id] body)
+                   (assoc-in [:parameter-caller :child-form-ids 2] :argument-let)
+                   (assoc-in [:parameter-caller :value] (list 'fn [] raw-let))
+                   (assoc :argument-let (form :argument-let :list raw-let :parameter-caller [:argument-let-operator :argument-bindings :parameter-entry] outer)
+                          :argument-let-operator (form :argument-let-operator :symbol 'let :argument-let [] outer)
+                          :argument-bindings (form :argument-bindings :vector ['characters (list 'vec text)] :argument-let [:argument-name :call] outer)
+                          :argument-name (form :argument-name :symbol 'characters :argument-bindings [] body)
+                          :argument-slice-call (form :argument-slice-call :list (list 'subvec 'characters start end) :parameter-entry call-children body)
+                          :argument-slice-operator (form :argument-slice-operator :symbol 'subvec :argument-slice-call [] body)
+                          :argument-slice-ref (form :argument-slice-ref :symbol 'characters :argument-slice-call [] body)
+                          :argument-slice-start (form :argument-slice-start :integer start :argument-slice-call [] body)
+                          :argument-slice-end (form :argument-slice-end :integer end :argument-slice-call [] body)))
+         forms (-> forms
+                   (assoc-in [:parameter-definition :value] (list 'def 'tail-characters (get-in forms [:parameter-function :value])))
+                   (assoc-in [:parameter-caller-definition :value] (list 'def 'call-tail (get-in forms [:parameter-caller :value]))))
+         caller (assoc (:caller base) :body-core-node-id :argument-let)
+         removed #{:parameter-entry-operator :operator :arg0 :call :parameter-entry :parameter-caller-fn :parameter-caller-definition}
+         prefix (remove #(contains? removed (:node-id %)) (get-in base [:core :nodes]))
+         all-nodes (vec (concat prefix (map (:nodes base) [:operator :arg0 :call])
+                                [entry-op slice-op reference (literal :argument-slice-start start) (literal :argument-slice-end end) slice entry let-node
+                                 (assoc (get-in base [:nodes :parameter-caller-fn]) :children [:argument-let])
+                                 (get-in base [:nodes :parameter-caller-definition])]))
+         core (assoc (:core base) :nodes all-nodes :function-records [(:record base) caller] :calls calls :call-edges edges
+                     :lexical-bindings [record])
+         nodes (into {} (map (juxt :node-id identity) all-nodes)) bindings (assoc (:bindings base) bid binding)
+         types {:arg0 :gravity.type/string :argument-slice-start :gravity.type/integer :argument-slice-end :gravity.type/integer}
+         conversion (invoke-c7 'sh08-scv-derive [core (nodes :call) (nth calls 2) (nth edges 2) nodes bindings types forms 65536])
+         types (assoc types :operator (:descriptor conversion) :call (:type conversion) :argument-slice-ref (:type conversion))]
+     (assoc base :core core :nodes nodes :node slice :call call :edge edge :caller caller :forms forms :bindings bindings
+            :types types :conversion conversion :initial-binding-types {}))))
+
+(deftest sh08-let-vector-slice-call-argument-development-kernel
+  (let [{:keys [core node call edge nodes bindings types forms conversion]} (let-vector-slice-call-input "sha256:0af" 7 10)
+        result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])]
+    (is (= :accepted (:status conversion)))
+    (is (nil? (get types :parameter-fn)))
+    (is (nil? (get types :parameter-entry)))
+    (is (= :accepted (:status result)) (pr-str (select-keys result [:status :rule :reason])))
+    (is (= {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 3 :gravity.type/character))} (:type result))))
+  (let [{:keys [core node call edge nodes bindings types forms]} (let-vector-slice-input "sha256:0af" 7 10)]
+    (is (= :accepted (:status (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536]))))))
+
 (deftest sh08-let-vector-count-slice-end-development-kernel
   (doseq [[text start] [["0af" 1] ["0" 1] ["" 0] ["0af" 0]]]
     (let [{:keys [core node call edge nodes bindings types forms count-result]}
