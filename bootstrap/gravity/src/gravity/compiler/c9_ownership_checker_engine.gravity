@@ -766,7 +766,8 @@
                  :multiple-active-mutable-borrows
                  :retain-only-one-mutable-borrow))))
           (if (= operation :end-borrow)
-            (if (= (get event :borrow-id) mutable-id)
+            (if (if (= nil mutable-id) false
+                    (= (get event :borrow-id) mutable-id))
               (sh10-transition-accepted
                request event state
                (assoc state :mutable-borrow-id nil))
