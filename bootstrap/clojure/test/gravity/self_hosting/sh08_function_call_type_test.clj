@@ -4168,6 +4168,124 @@
         gate-type (invoke-c7 'sh08-ft-infer-node-with-context [(nodes :prefix-if) types {} {} (:call-edges core) {}])]
     (assoc input :gate-type gate-type :types (assoc types :prefix-if gate-type :slice-let gate-type))))
 
+(defn- prefix-gated-slice-call-input [text expected start end]
+  ;; Original fixed if/then call DATA, with empty function/binding inference seeds.
+  (let [base (let-vector-slice-call-input text start end)
+        comparison (let-vector-slice-equality-input text expected nil)
+        scope :argument-let-body owner :parameter-caller
+        source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :scope-id scope :kind kind :value value :parent-form-id parent :child-form-ids children})
+        branch {:kind :conditional-branch :if-syntax-id :prefix-if :if-form-id :prefix-if :role :then
+                :execution :selected-exactly-once :parent-region-kind :function-body
+                :parent-if-syntax-id nil :parent-branch-role nil}
+        evaluation (fn [kind ids region] {:kind kind :owner-function-syntax-id owner :region region
+                                         :order (mapv #(hash-map :index %1 :core-node-id %2) (range) ids)})
+        node (fn [id kind children attributes resolved]
+               {:node-id id :core-form kind :children children :attributes attributes :resolved-binding-ids resolved
+                :source (source id) :binding-context scope :evaluation (evaluation :value children :function-body)})
+        pids [:gate-slice-operator :gate-slice-ref :gate-slice-start :gate-slice-end]
+        copy (fn [old id] (assoc (get-in base [:nodes old]) :node-id id :source (source id)
+                                                   :evaluation (evaluation :value [] :function-body)))
+        pop (copy :argument-slice-operator (pids 0)) pref (copy :argument-slice-ref (pids 1))
+        pstart (assoc (copy :argument-slice-start (pids 2)) :attributes {:literal-kind :integer :value 0})
+        pend (assoc (copy :argument-slice-end (pids 3)) :attributes {:literal-kind :integer :value (count expected)})
+        pslice (-> (copy :argument-slice-call :gate-slice-call) (assoc :children pids)
+                   (assoc :evaluation (evaluation :operator-then-arguments pids :function-body)))
+        mids (mapv #(keyword (str "prefix-character-" %)) (range (count expected)))
+        comparison-ids (vec (concat [:prefix-operator] mids [:prefix-expected :prefix-call]))
+        cchildren [:prefix-operator :gate-slice-call :prefix-expected]
+        cnodes (mapv (fn [id] (let [n (get-in comparison [:nodes id])]
+                               (assoc n :binding-context scope
+                                        :evaluation (assoc (:evaluation n) :owner-function-syntax-id owner :region :function-body)))) comparison-ids)
+        cnodes (mapv #(if (= :prefix-call (:node-id %))
+                       (assoc % :children cchildren :evaluation (evaluation :operator-then-arguments cchildren :function-body)) %) cnodes)
+        cmap (into {} (map (juxt :node-id identity) cnodes))
+        tnodes (mapv #(assoc-in (get-in base [:nodes %]) [:evaluation :region] branch)
+                    [:parameter-entry-operator :argument-slice-operator :argument-slice-ref :argument-slice-start :argument-slice-end :argument-slice-call :parameter-entry])
+        false-node (assoc (node :prefix-else :literal [] {:literal-kind :boolean :value false} [])
+                          :evaluation (evaluation :value [] (assoc branch :role :else)))
+        callee-node (-> (get-in base [:nodes :slice-start])
+                        (assoc :node-id :prefix-callee-true :core-form :literal :children [] :resolved-binding-ids []
+                               :source (source :prefix-callee-true) :binding-context :slice-let-body
+                               :attributes {:literal-kind :boolean :value true}
+                               :evaluation {:kind :value :owner-function-syntax-id :parameter-function :region :function-body :order []}))
+        gate-children [:prefix-call :parameter-entry :prefix-else]
+        gate (assoc (node :prefix-if :if gate-children
+                         {:condition-child-index 0 :then-child-index 1 :else-child-index 2 :condition-evaluation :always-first
+                          :branch-evaluation :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}} [])
+                    :evaluation (evaluation :condition-then-exclusive-branch [:prefix-call] :function-body))
+        let-node (-> (get-in base [:nodes :argument-let]) (assoc-in [:children 1] :prefix-if)
+                     (assoc-in [:evaluation :order 1 :core-node-id] :prefix-if))
+        callee-fn (assoc (get-in base [:nodes :parameter-fn]) :children [:prefix-callee-true])
+        raw-call (list 'tail-characters (list 'subvec 'characters start end))
+        raw-condition (list '= (list 'subvec 'characters 0 (count expected)) (vec expected))
+        raw-if (list 'if raw-condition raw-call false)
+        raw-let (list 'let ['characters (list 'vec text)] raw-if)
+        raw-callee (list 'fn ['characters] true)
+        forms (merge (:forms base) (select-keys (:forms comparison) comparison-ids))
+        forms (reduce #(assoc-in %1 [%2 :scope-id] scope) forms comparison-ids)
+        forms (-> forms (assoc-in [:prefix-call :child-form-ids] cchildren)
+                  (assoc-in [:prefix-call :parent-form-id] :prefix-if) (assoc-in [:prefix-call :value] raw-condition)
+                  (assoc-in [:argument-let :child-form-ids 2] :prefix-if) (assoc-in [:argument-let :value] raw-let)
+                  (assoc-in [:parameter-entry :parent-form-id] :prefix-if)
+                  (assoc-in [:parameter-caller :value] (list 'fn [] raw-let))
+                  (assoc-in [:parameter-function :child-form-ids 2] :prefix-callee-true)
+                  (assoc-in [:parameter-function :value] raw-callee)
+                  (assoc :gate-slice-call (form :gate-slice-call :list (list 'subvec 'characters 0 (count expected)) :prefix-call pids)
+                         :gate-slice-operator (form :gate-slice-operator :symbol 'subvec :gate-slice-call [])
+                         :gate-slice-ref (form :gate-slice-ref :symbol 'characters :gate-slice-call [])
+                         :gate-slice-start (form :gate-slice-start :integer 0 :gate-slice-call [])
+                         :gate-slice-end (form :gate-slice-end :integer (count expected) :gate-slice-call [])
+                         :prefix-if (form :prefix-if :list raw-if :argument-let [:prefix-if-op :prefix-call :parameter-entry :prefix-else])
+                         :prefix-if-op (form :prefix-if-op :symbol 'if :prefix-if [])
+                         :prefix-else (form :prefix-else :boolean false :prefix-if [])
+                         :prefix-callee-true (assoc (form :prefix-callee-true :boolean true :parameter-function []) :scope-id :slice-let-body)))
+        forms (-> forms (assoc-in [:parameter-definition :value] (list 'def 'tail-characters raw-callee))
+                  (assoc-in [:parameter-caller-definition :value] (list 'def 'call-tail (list 'fn [] raw-let))))
+        pcall (assoc (nth (get-in base [:core :calls]) 3) :core-node-id :gate-slice-call :operator-node-id :gate-slice-operator
+                     :argument-node-ids (subvec pids 1) :ordered-evaluation-node-ids pids)
+        ccall (assoc (:call comparison) :argument-node-ids (subvec cchildren 1) :ordered-evaluation-node-ids cchildren)
+        calls (vec (concat [(nth (get-in base [:core :calls]) 2) pcall ccall] (drop 3 (get-in base [:core :calls]))))
+        pedge (assoc (nth (get-in base [:core :call-edges]) 3) :call-core-node-id :gate-slice-call
+                     :argument-core-node-ids (subvec pids 1) :ordered-evaluation-node-ids pids)
+        cedge (assoc (:edge comparison) :argument-core-node-ids (subvec cchildren 1) :ordered-evaluation-node-ids cchildren
+                     :caller-function-syntax-id owner :caller-function-core-node-id :parameter-caller-fn)
+        edges (mapv #(assoc %2 :ordinal %1) (range)
+                    (vec (concat [(nth (get-in base [:core :call-edges]) 2) pedge cedge] (drop 3 (get-in base [:core :call-edges])))))
+        all-nodes (vec (concat [callee-node callee-fn (get-in base [:nodes :parameter-definition])]
+                              (map (:nodes base) [:operator :arg0 :call]) [(cmap :prefix-operator) pop pref pstart pend pslice]
+                              (map cmap (concat mids [:prefix-expected :prefix-call])) tnodes
+                              [false-node gate let-node (get-in base [:nodes :parameter-caller-fn]) (get-in base [:nodes :parameter-caller-definition])]))
+        nodes (into {} (map (juxt :node-id identity) all-nodes))
+        control {:core-node-id :prefix-if :kind :if :condition-node-id :prefix-call
+                 :branches [{:role :then :predicate :truthy :core-node-id :parameter-entry} {:role :else :predicate :falsey :core-node-id :prefix-else}]
+                 :branch-exclusivity :exactly-one :truthiness {:false-values [:nil :false] :other-values :true} :result-policy :selected-branch}
+        records (assoc-in (get-in base [:core :function-records]) [0 :body-core-node-id] :prefix-callee-true)
+        core (assoc (:core base) :nodes all-nodes :calls calls :call-edges edges :function-records records :control-flow [control])
+        bindings (assoc (:bindings base) :prefix-binding (get-in comparison [:bindings :prefix-binding]))
+        leaves (into {} (keep (fn [[id n]] (when (= :literal (:core-form n))
+                                          [id (case (get-in n [:attributes :literal-kind]) :string :gravity.type/string
+                                                    :integer :gravity.type/integer :character :gravity.type/character :boolean :gravity.type/bool)])) nodes))
+        conversion (invoke-c7 'sh08-scv-derive [core (nodes :call) (first calls) (first edges) nodes bindings leaves forms 65536])
+        types (assoc leaves :operator (:descriptor conversion) :call (:type conversion)
+                            :gate-slice-ref (:type conversion) :argument-slice-ref (:type conversion))]
+    (assoc base :core core :nodes nodes :forms forms :bindings bindings :types types :conversion conversion
+                :node (nodes :argument-slice-call) :call (nth calls 3) :edge (nth edges 3))))
+
+(deftest sh08-prefix-gated-slice-call-argument-development-kernel
+  (let [{:keys [core nodes bindings types forms conversion]} (prefix-gated-slice-call-input "sha256:0af" "sha256:" 7 10)
+        derive (fn [id] (let [call (first (filter #(= id (:core-node-id %)) (:calls core)))
+                             edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))]
+                         (invoke-c7 'sh08-vsl-derive [core (nodes id) call edge nodes bindings types forms 65536])))]
+    (is (= :accepted (:status conversion)))
+    (is (not (contains? types :parameter-fn)))
+    (is (not (contains? types :parameter-entry)))
+    (is (= :accepted (:status (derive :gate-slice-call))))
+    (is (= :accepted (:status (derive :argument-slice-call))))
+    (is (= :accepted (:status (:slice (let-prefix-gate-established (let-prefix-gate-input "sha256:0af" "sha256:" true false nil))))))))
+
 (deftest sh08-let-prefix-gate-development-kernel
   (doseq [[value expected] [["sha256:abcd" "sha256:"] ["sha257:abcd" "sha256:"] ["" ""]
                             [[65 66 67] [65 66]] [[] []] [[-5 999999999999999999999999999999999999N] [-5]]]]
