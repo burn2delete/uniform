@@ -172,8 +172,10 @@
         (merge base {:kind (if (= 'I64 (get-in (first rows) [:type-binding :name]))
                             :gravity/c6-c10-resolved-i64-parameter-v1
                             :gravity/c6-c10-resolved-bool-parameter-v1)} (first rows))
-        (assoc base :kind (if (= n 2) :gravity/c6-c10-resolved-two-bool-parameters-v1
-                           :gravity/c6-c10-resolved-three-bool-parameters-v1)
+        (assoc base :kind (if (= 'I64 (get-in (first rows) [:type-binding :name]))
+                           :gravity/c6-c10-resolved-two-i64-parameters-v1
+                           (if (= n 2) :gravity/c6-c10-resolved-two-bool-parameters-v1
+                             :gravity/c6-c10-resolved-three-bool-parameters-v1))
                :type-binding (:type-binding (first rows))
                :parameters (mapv #(dissoc % :type-binding) rows)))))))
 
