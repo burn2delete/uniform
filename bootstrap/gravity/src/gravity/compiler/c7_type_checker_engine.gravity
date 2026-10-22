@@ -17943,7 +17943,7 @@
                          "C7-TYPE-MISMATCH" "STD3002"))))]
         (assoc (sh08-sm-failure rule reason nil
                  (if child? :original-finite-supported-scalar-string-literal
-                   {:operation 'subvec :receiver [:authenticated-ascii-string-vector :original-integer-vector-literal :immutable-let-vector]
+                   {:operation 'subvec :receiver [:authenticated-string-character-vector :original-integer-vector-literal :immutable-let-vector]
                     :indexes :source-proven-nonnegative-integer-literals :bounds :zero-le-start-le-end-le-count})
                  (if (sh08-sse-ids? (get call :argument-node-ids) 3)
                    (sh08-ft-ordered-child-types (get call :argument-node-ids) types) [])) :work-count work)))))

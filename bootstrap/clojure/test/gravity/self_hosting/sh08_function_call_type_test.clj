@@ -2620,7 +2620,7 @@
       (is (= reason (:reason result)))
       (when (= :vector-slice-bounds-required reason)
         (is (= "STD3002" (:rule result)))
-        (is (= [:authenticated-ascii-string-vector :original-integer-vector-literal :immutable-let-vector]
+        (is (= [:authenticated-string-character-vector :original-integer-vector-literal :immutable-let-vector]
                (get-in result [:expected :receiver]))))))
   (doseq [positions [[0] [1] [2] [0 1 2]]]
     (let [{:keys [core node call edge nodes bindings types forms]} (literal-vector-slice-transfer-input [65 66 67] 20 1 positions)
