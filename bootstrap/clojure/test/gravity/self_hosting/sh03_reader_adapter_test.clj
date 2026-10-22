@@ -316,8 +316,11 @@
         (check (= 2 (:expanded-defn-count expanded) (count trace) (count (:function-records product)))
                :two-function-expansion)
         (check (= (:expanded-forms reference) (:expanded-forms expanded)) :prior-stage-expansion-parity)
+        (require! (= 2 (count (rest forms)) (count (:expanded-forms expanded))
+                     (count (rest input-syntax)) (count (rest output-syntax)) (count trace))
+                  :two-definition-pair-cardinality)
         (doseq [[original lowered input output step]
-                (map vector (rest forms) (rest (:expanded-forms expanded))
+                (map vector (rest forms) (:expanded-forms expanded)
                      (rest input-syntax) (rest output-syntax) trace)]
           (check (= 'def (first lowered)) :generated-definition)
           (check (= (second original) (second lowered)) :definition-name)
