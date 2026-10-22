@@ -3113,6 +3113,58 @@
       (is (= :accepted (:status (invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings types 65536]))))
       (is (= :rejected (:status (derive (let-vector-slice-equality-input "sha256:abcd" (apply str (repeat 1025 \s)) nil))))))))
 
+(defn- let-prefix-gate-input [value expected then-value else-value positions]
+  ;; One canonical conditional over the existing normalized equality composition.
+  (let [base (let-vector-slice-equality-input value expected positions) scope :slice-let-body region :module-initialization
+        source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :kind kind :value value :parent-form-id parent :child-form-ids children :scope-id scope})
+        branch-region (fn [role] {:kind :conditional-branch :if-syntax-id :prefix-if :if-form-id :prefix-if :role role
+                                 :execution :selected-exactly-once :parent-region-kind region :parent-if-syntax-id nil :parent-branch-role nil})
+        literal (fn [id value role] {:node-id id :core-form :literal :children [] :resolved-binding-ids [] :binding-context scope
+                                    :source (source id) :attributes {:literal-kind :boolean :value value}
+                                    :evaluation {:kind :value :region (branch-region role) :owner-function-syntax-id nil :order []}})
+        then-node (literal :prefix-then then-value :then) else-node (literal :prefix-else else-value :else)
+        gate {:node-id :prefix-if :core-form :if :children [:prefix-call :prefix-then :prefix-else] :resolved-binding-ids []
+              :binding-context scope :source (source :prefix-if)
+              :attributes {:condition-child-index 0 :then-child-index 1 :else-child-index 2 :condition-evaluation :always-first
+                           :branch-evaluation :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}}
+              :evaluation {:kind :condition-then-exclusive-branch :region region :owner-function-syntax-id nil
+                           :order [{:index 0 :core-node-id :prefix-call}]}}
+        base-nodes (mapv #(assoc-in % [:evaluation :region] region) (get-in base [:core :nodes]))
+        owner (-> (first (filter #(= :slice-let (:node-id %)) base-nodes))
+                  (assoc-in [:children 1] :prefix-if) (assoc-in [:evaluation :order 1 :core-node-id] :prefix-if))
+        node-list (into (filterv #(not= :slice-let (:node-id %)) base-nodes) [then-node else-node gate owner])
+        nodes (into {} (map (juxt :node-id identity) node-list))
+        control {:core-node-id :prefix-if :kind :if :condition-node-id :prefix-call
+                 :branches [{:role :then :predicate :truthy :core-node-id :prefix-then}
+                            {:role :else :predicate :falsey :core-node-id :prefix-else}]
+                 :branch-exclusivity :exactly-one :truthiness {:false-values [:nil :false] :other-values :true} :result-policy :selected-branch}
+        forms (-> (:forms base) (assoc-in [:slice-let :child-form-ids 2] :prefix-if)
+                  (assoc-in [:prefix-call :parent-form-id] :prefix-if)
+                  (assoc :prefix-if (form :prefix-if :list nil :slice-let [:prefix-if-op :prefix-call :prefix-then :prefix-else])
+                         :prefix-if-op (form :prefix-if-op :symbol 'if :prefix-if [])
+                         :prefix-then (form :prefix-then :boolean then-value :prefix-if [])
+                         :prefix-else (form :prefix-else :boolean else-value :prefix-if [])))
+        input (assoc base :nodes nodes :node (nodes :prefix-call) :forms forms
+                          :core (-> (:core base) (assoc :nodes node-list) (update :control-flow (fnil conj []) control))
+                          :types (assoc (:types base) :prefix-then :gravity.type/bool :prefix-else :gravity.type/bool))
+        input (if (:child base) (vector-slice-established input) input)]
+    (assoc-in input [:types :slice-ref] (get-in input [:types :call]))))
+
+(defn- let-prefix-gate-established [input]
+  (let [{:keys [core nodes types] :as input} (let-vector-slice-equality-established input)
+        gate-type (invoke-c7 'sh08-ft-infer-node-with-context [(nodes :prefix-if) types {} {} (:call-edges core) {}])]
+    (assoc input :gate-type gate-type :types (assoc types :prefix-if gate-type :slice-let gate-type))))
+
+(deftest sh08-let-prefix-gate-development-kernel
+  (let [{:keys [core nodes slice gate-type]} (let-prefix-gate-established (let-prefix-gate-input "sha256:abcd" "sha256:" true false nil))]
+    (is (= (get-in nodes [:slice-let :children]) (mapv :core-node-id (get-in nodes [:slice-let :evaluation :order]))))
+    (is (= [(get-in core [:control-flow 0 :condition-node-id])] (mapv :core-node-id (get-in nodes [:prefix-if :evaluation :order]))))
+    (is (= :accepted (:status slice)) (pr-str slice))
+    (is (= :gravity.type/bool gate-type))))
+
 (deftest sh08-sha-prefix-comparison-development-kernel
   (let [text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"]
     (doseq [[value positions] [[text nil] [(str "sha257:" (subs text 7)) nil] [text 0] [text 1] [text 2]]]
