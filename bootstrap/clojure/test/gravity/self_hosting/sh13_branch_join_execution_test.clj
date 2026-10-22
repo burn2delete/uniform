@@ -57,6 +57,15 @@
        (catch clojure.lang.ExceptionInfo error
          {:consumer-exception (select-keys (ex-data error) [:id :function])})))
 
+(deftest sh13-consumes-resolved-i64-identity-with-signed-arguments
+  (let [path (str (.resolve @(existing 'root)
+                  "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/i64_parameter_source.gravity"))
+        {:keys [raw upstream core mir]} (current-parameter-pair path)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream)))
+    (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))
+        (pr-str (:diagnostics mir)))))
+
 (deftest sh13-consumes-three-independent-bool-premises
   ;; Real current C6 products, not an aliased two-argument approximation of
   ;; c6c10-map-if's three independent exact-implicit-plan? premises.
