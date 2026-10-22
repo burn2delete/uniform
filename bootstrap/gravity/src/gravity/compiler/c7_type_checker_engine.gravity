@@ -11372,11 +11372,40 @@
       (if (map? header) (= (get types (get call :operator-node-id)) (sh08-lq-finish header)) false)))
         ))))))
 
+(defn sh08-pmk-type-view [types prior budget]
+  (if (if (map? types) (map? prior) false)
+    (let [work (+ 8 (* 6 (count types)) (* 6 (count prior)))]
+      (if (> work budget)
+        {:status :rejected :reason :private-map-keys-work-limit :work-count work}
+        (if (loop [groups [types prior]]
+              (if (= 0 (count groups)) true
+                (let [table (first groups) ids (vec (keys table))]
+                  (if (loop [i 0]
+                        (if (= i (count ids)) true
+                          (let [id (get ids i)]
+                            (if (sh08-sse-ids? [id] 1)
+                              (let [value (get table id)]
+                                (if (if (= nil value) true (if (keyword? value) true (map? value)))
+                                  (recur (+ i 1)) false)) false))))
+                    (recur (rest groups)) false))))
+          {:status :accepted :types (sh08-pe-type-view types prior) :work-count work}
+          {:status :rejected :reason :private-map-keys-source-mismatch :work-count work})))
+    {:status :rejected :reason :private-map-keys-source-mismatch :work-count 1}))
+
 (defn sh08-lq-step [node types binding-types functions context budget]
-  (sh08-lq-derive (get context :ordering-core) node
-    (get (get context :ordering-operators) (first (get node :children)))
-    (get (get context :ordering-edges) (get node :node-id))
-    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))
+  (let [core (get context :ordering-core)
+        call (get (get context :ordering-operators) (first (get node :children)))
+        edge (get (get context :ordering-edges) (get node :node-id))
+        nodes (get context :lookup-nodes) bindings (get context :ordering-bindings)]
+    (if (sh08-pmk-entry? node call nodes bindings types (get core :module))
+      (let [view (sh08-pmk-type-view types (get context :prior-type-table {}) budget)
+            work (get view :work-count)]
+        (if (= :accepted (get view :status))
+          (let [result (sh08-lq-derive core node call edge nodes bindings (get view :types) (get context :association-forms) (- budget work))]
+            (assoc result :work-count (+ work (get result :work-count))))
+          (assoc (sh08-sm-failure (if (= :private-map-keys-work-limit (get view :reason)) "C7-GENERIC" "C7-VERIFY")
+                   (get view :reason) nil :bounded-current-request-inference-types budget) :work-count work)))
+      (sh08-lq-derive core node call edge nodes bindings types (get context :association-forms) budget))))
 
 (defn sh08-sc-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
