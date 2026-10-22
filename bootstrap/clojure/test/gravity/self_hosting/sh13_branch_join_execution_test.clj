@@ -508,6 +508,20 @@
                 (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
           (finally (.delete temporary)))))))
 
+(deftest sh13-reads-lexical-local-only-in-selected-arm
+  (let [source (str (.resolve @(existing 'root)
+                     "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        temporary (java.io.File/createTempFile "gravity-sh13-arm-local-" ".gravity")]
+    (try
+      (spit temporary (str/replace (slurp source) "(if flag true false)"
+                       "(let [ready flag] (if flag ready false))"))
+      (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
+            verification (invoke 'sh12-verify-branch-join-mir core mir)]
+        (is (= :accepted (:status raw)))
+        (is (= :passed (:status upstream)))
+        (is (= :passed (:status verification)) (pr-str (:diagnostics verification))))
+      (finally (.delete temporary)))))
+
 (deftest sh13-binds-conditional-result-before-consuming-local
   ;; Original C6 resolves each initializer before installing its binding.
   ;; The conditional result, binder, local and final scope all survive MIR.
