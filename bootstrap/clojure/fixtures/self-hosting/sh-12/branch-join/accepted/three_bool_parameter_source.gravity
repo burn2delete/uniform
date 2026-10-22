@@ -1,0 +1,7 @@
+(ns gravity.sh12.three-bool-parameter-source
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [implicit? :- Bool literal-plan? :- Bool nil-plan? :- Bool]
+  (if implicit? (if literal-plan? nil-plan? false) true))
