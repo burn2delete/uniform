@@ -1,0 +1,14 @@
+(ns self-hosting.sh08.let-vector-slice-call-argument-overrun
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn tail-characters [characters]
+  (subvec characters 1 (count characters)))
+
+(defn main []
+  (let [characters (vec "sha256:0af")]
+    (tail-characters (subvec characters 7 11))))

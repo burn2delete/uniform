@@ -30746,11 +30746,13 @@
                  (:reason (run owner (assoc-in base [:core :lexical-bindings 0 :binding-id] opaque) 0))))
           (is (= 0 @callbacks)))))))
 
-(defn- parameter-vector-count-slice-kernel-context [text start]
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input ((ns-resolve upstream 'parameter-vector-count-slice-products) text start)
-        {:keys [core nodes forms bindings facts]} input
+(defn- parameter-vector-count-slice-kernel-context
+  ([text start]
+   (require 'gravity.self-hosting.sh08-function-call-type-test)
+   (parameter-vector-count-slice-kernel-context
+     ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'parameter-vector-count-slice-products) text start)))
+  ([input]
+  (let [{:keys [core nodes forms bindings facts]} input
         callee (list 'def 'tail-characters (get-in forms [:parameter-function :value]))
         caller (list 'def 'call-tail (get-in forms [:parameter-caller :value]))
         forms (-> forms (assoc-in [:parameter-definition :value] callee)
@@ -30765,11 +30767,131 @@
                  :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
                  :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
                  :call-facts (into {} (map (juxt :call-core-node-id identity) (:call-type-facts facts)))
-                 :ledger (:constraint-ledger facts) :locals {} :parameter-types {} :budget 65536
+                 :ledger (:constraint-ledger facts) :lexical (get core :lexical-bindings [])
+                 :local-facts (into {} (map (juxt :binding-id identity) (:local-binding-facts facts))) :locals {} :parameter-types {} :budget 65536
                  :raw-roots {:parameter-definition callee :parameter-caller-definition caller}
-                 :tail? false :nearest-target nil}]
+                 :recursion-components (get core :recursion-components []) :tail? false :nearest-target nil}]
     {:input input :context context :module (assoc module :function-table definitions)
-     :definition (get definitions 'tail-characters)}))
+     :definition (get definitions 'tail-characters)})))
+
+(deftest current-gravity-let-vector-slice-call-argument-lowering-development-kernel
+  ;; Conditional C7 products retain the original call and its independently proven argument.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [products (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'let-vector-slice-call-products)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        rt (:plan (typed-catch-runtime-projection))
+        activate (fn [function functions]
+                   (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt
+                     'p15-s23-runtime-activate-function-in-instance [function [] "" functions ['call-tail] nil]))
+        literal #(hash-map :op :literal :value %)
+        say (fn [label value] {:op :do :body [{:op :println :args [(literal label)]
+                                              :effect :io/write :capability :io/stdout} value]})]
+    (doseq [[text start end callee-start] [["sha256:0af" 7 10 1] ["f" 0 1 1] ["" 0 0 0]]]
+      (let [{:keys [context module]} (parameter-vector-count-slice-kernel-context (products text start end callee-start))
+            definitions (:function-table module)
+            callee (invoke 'p15-s23-typed-lower-function module (definitions 'tail-characters) context)
+            caller (invoke 'p15-s23-typed-lower-function module (definitions 'call-tail) context)
+            compiled (:value caller) ir (first (:instructions compiled))
+            functions {'tail-characters (:value callee) 'call-tail compiled}
+            expected (subvec (subvec (vec text) start end) callee-start)]
+        (is (= :complete (:status callee) (:status caller)) (pr-str (select-keys caller [:status :facts])))
+        (is (= :let (:op ir)))
+        (is (= :function-call (get-in ir [:body 0 :body 0 :op])))
+        (is (= 'tail-characters (get-in ir [:body 0 :body 0 :function])))
+        (is (= {:op :builtin-call :function 'subvec
+                :args [{:op :local :name 'characters} (literal start) (literal end)]}
+               (get-in ir [:body 0 :body 0 :args 0])))
+        (when (= :complete (:status callee) (:status caller))
+          (is (= [expected "" :normal] (activate compiled functions)))
+          (let [traced (-> compiled
+                           (update-in [:instructions 0 :bindings 0 :expr] #(say "initializer" %))
+                           (update-in [:instructions 0 :body 0 :body 0 :args 0] #(say "argument" %)))
+                traced-callee (update-in (:value callee) [:instructions 0] #(say "callee" %))]
+            (is (= [expected "initializer
+argument
+callee
+" :normal]
+                   (activate traced (assoc functions 'tail-characters traced-callee)))))
+          (let [payload {:op :throw :value (literal "held argument transfer")}
+                transferred (assoc-in compiled [:instructions 0 :body 0 :body 0 :args 0] payload)
+                observed-callee (update-in (:value callee) [:instructions 0] #(say "callee" %))]
+            (is (= ["held argument transfer" "" :thrown]
+                   (activate transferred (assoc functions 'tail-characters observed-callee))))))
+        (doseq [id [:argument-slice-call :parameter-entry :call :slice-call :slice-end]]
+          (is (= :rejected (:status (invoke 'p15-s23-typed-lower-function module (definitions (if (contains? #{:slice-call :slice-end} id) 'tail-characters 'call-tail))
+                                      (update context :call-facts dissoc id))))))
+        (doseq [mutate [#(assoc % :lexical []) #(assoc % :local-facts {})
+                        #(assoc-in % [:core :call-edges 4 :callee-function-syntax-id] :sibling)
+                        #(assoc-in % [:forms :parameter-name :value] 'substitute)]]
+          (is (= :rejected (:status (invoke 'p15-s23-typed-lower-function module (definitions 'call-tail) (mutate context))))))))))
+
+(deftest current-gravity-let-vector-slice-call-argument-preflight-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input (ns-resolve upstream 'let-vector-slice-call-input)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        emit (fn [name args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name args))
+        base (input "sha256:0af" 7 10)
+        function-binding (get-in base [:nodes :parameter-entry-operator :attributes :binding-id])
+        owners [[c7 'sh08-vsl-let-call-body] [(fn [name args] (apply c8 name args)) 'body-vsl-let-call-body]
+                [emit 'p15-s23-vsl-let-call-body]]]
+    (doseq [[invoke helper] owners]
+      (let [run (fn [{:keys [core nodes bindings forms]} budget]
+                  (invoke helper [core (nodes :argument-let) (nodes :argument-slice-call) nodes bindings forms budget]))
+            normal (run base 65536) visits (atom 0)
+            opaque (reify clojure.lang.IHashEq
+                     (hasheq [_] (swap! visits inc) (throw (ex-info "opaque bridge field hashed" {})))
+                     Object
+                     (hashCode [_] (swap! visits inc) (throw (ex-info "opaque bridge field hashCode" {})))
+                     (equals [_ _] (swap! visits inc) (throw (ex-info "opaque bridge field compared" {}))))]
+        (is (= :accepted (:status normal)))
+        (is (= normal (run base (:work-count normal))))
+        (is (= :vector-slice-work-limit (:reason (run base (dec (:work-count normal))))))
+        (doseq [field [[:bindings function-binding :name] [:bindings function-binding :namespace]
+                       [:bindings :argument-local :name] [:bindings :argument-local :mutability]
+                       [:nodes :parameter-entry-operator :attributes :binding-id]
+                       [:nodes :parameter-entry-operator :attributes :symbol]
+                       [:nodes :parameter-entry :children]
+                       [:core :call-edges 4 :callee-function-syntax-id]
+                       [:core :function-records 0 :definition-name]
+                       [:core :calls 4 :argument-node-ids]
+                       [:forms :parameter-name :value]
+                       [:forms :parameter-name :form-id]]]
+          (is (= :rejected (:status (run (assoc-in base field opaque) 65536))) (pr-str field))
+          (is (= 0 @visits) (pr-str field)))
+        (is (= :accepted (:status (run (assoc-in base [:bindings :argument-local :mutability] :immutable) 65536))))
+        (is (= :rejected (:status (run (assoc-in base [:bindings :argument-local :mutability] :mutable) 65536))))
+        (is (= :vector-slice-work-limit (:reason (run (assoc-in base [:bindings function-binding :name] opaque) 0))))
+        (is (= 0 @visits))))))
+
+(deftest current-gravity-let-vector-slice-call-argument-fixtures-development-kernel
+  ;; Byte/parser parity is separate from normalized C7 evidence and fresh source execution.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input (ns-resolve upstream 'let-vector-slice-call-input) c7 (ns-resolve upstream 'invoke-c7)
+        root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[directory name end expected]
+            [["accepted" "local-runtime-let-vector-slice-call-argument" 10 :accepted]
+             ["rejected" "let-vector-slice-call-argument-overrun" 11 :rejected]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" directory "/" name)
+            g (.getPath (io/file root (str stem ".gravity"))) q (.getPath (io/file root (str stem ".qst")))
+            text (slurp g) {:keys [core node call edge nodes bindings types forms]} (input "sha256:0af" 7 end)
+            result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])
+            source-forms (bootstrap/read-forms g text)]
+        (is (= text (slurp q)))
+        (is (= source-forms (bootstrap/read-forms q (slurp q))))
+        (is (= '(subvec characters 1 (count characters)) (nth (second source-forms) 3)))
+        (is (= (list 'let ['characters (list 'vec "sha256:0af")]
+                     (list 'tail-characters (list 'subvec 'characters 7 end))) (nth (last source-forms) 3)))
+        (is (= expected (:status result)))
+        (when (= :rejected expected) (is (= "STD3002" (:rule result))))))))
 
 (deftest current-gravity-parameter-vector-count-slice-lowering-development-kernel
   ;; Conditional normalized products exercise original function/parameter joins.

@@ -6842,10 +6842,13 @@
         (is (false? (leaf 'body-graph-equations-valid? core facts {}
                           (assoc-in (:nodes graph) [id :direct] #{:memory/allocate}))))))))
 
-(defn- parameter-vector-count-slice-body-products [text start]
+(defn- parameter-vector-count-slice-body-products
+  ([text start]
+   (require 'gravity.self-hosting.sh08-function-call-type-test)
+   (parameter-vector-count-slice-body-products ((sh08-helper 'parameter-vector-count-slice-products) text start)))
+  ([input]
   (require 'gravity.self-hosting.sh08-function-call-type-test 'clojure.walk)
-  (let [input ((sh08-helper 'parameter-vector-count-slice-products) text start)
-        ids (zipmap (keys (:nodes input)) (map sha (range 8400 8500)))
+  (let [ids (zipmap (keys (:nodes input)) (map sha (range 8400 8500)))
         scalar-fields [:node-id :core-node-id :call-core-node-id :operator-node-id :function-core-node-id
                        :body-core-node-id :definition-core-node-id :value-node-id :initializer-node-id :let-core-node-id
                        :caller-function-core-node-id :callee-function-core-node-id :receiver-node-id :argument-node-id]
@@ -6860,7 +6863,47 @@
                                   (update out key #(into {} (map (fn [[id item]] [(get ids id id) item])) %)) out))
                               value [:nodes :types :type-table])) value))
         converted (clojure.walk/postwalk convert input)]
-    (assoc converted :ids ids)))
+    (assoc converted :ids ids))))
+
+(defn- let-vector-slice-call-body-products [text start end callee-start]
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (parameter-vector-count-slice-body-products
+    ((sh08-helper 'let-vector-slice-call-products) text start end callee-start)))
+
+(deftest body-let-vector-slice-call-argument-development-kernel
+  (doseq [[text start end callee-start] [["sha256:0af" 7 10 1] ["f" 0 1 1] ["" 0 0 0]]]
+    (let [{:keys [core bindings request facts inference ids]} (let-vector-slice-call-body-products text start end callee-start)
+          fresh (fn [candidate]
+                  (let [cq (leaf 'body-cq-context request candidate bindings 65536)
+                        candidate (assoc candidate :count-context (:context cq))
+                        nq (leaf 'body-nq-context request candidate bindings 65536)]
+                    [cq nq (assoc candidate :quotient-context (:context nq))]))
+          [cq nq complete] (fresh facts)
+          valid (fn [candidate]
+                  (let [[cq nq candidate] (fresh candidate)]
+                    (and (= :accepted (:status cq) (:status nq))
+                         (leaf 'body-function-joins-valid? core candidate bindings)
+                         (leaf 'body-local-joins-valid? core candidate bindings)
+                         (leaf 'body-call-joins-with-foreign-valid? core candidate bindings {}))))
+          graph (leaf 'body-derive-nodes-with-foreign core complete {} 65536)
+          entry (first (filter #(= (ids :parameter-entry) (:node-id %)) (:nodes core)))]
+      (is (= :converged (:convergence-status inference)))
+      (is (= :accepted (:status cq) (:status nq) (:status graph)))
+      (is (true? (valid facts)))
+      (is (= #{:memory/allocate} (get-in graph [:nodes (ids :argument-slice-call) :direct])))
+      (is (= #{} (get-in graph [:nodes (ids :parameter-entry) :direct])))
+      (is (= #{:memory/allocate} (get-in graph [:nodes (ids :parameter-entry) :transitive])))
+      (is (= #{:memory/allocate} (get-in graph [:nodes (ids :argument-let) :transitive])))
+      (is (true? (leaf 'body-call-invokes? entry (:type-table facts))))
+      (is (false? (leaf 'body-call-invokes? entry (assoc (:type-table facts) (ids :argument-slice-call) :gravity.type/never))))
+      (is (true? (leaf 'body-graph-equations-valid? core complete {} (:nodes graph))))
+      (doseq [mutate [#(update % :call-type-facts (fn [rows] (vec (remove (fn [row] (= (ids :parameter-entry) (:call-core-node-id row))) rows))))
+                      #(update % :constraint-ledger conj (first (filter (fn [row] (= {:core-node-id (ids :argument-slice-call) :projection :vector-slice} (:lhs row))) (:constraint-ledger %))))
+                      #(assoc-in % [:type-table (ids :argument-slice-operator) :bounds-proof :receiver :body-consumer :edge :callee-function-syntax-id] :sibling)
+                      #(assoc-in % [:local-binding-facts 0 :type] :gravity.type/string)]]
+        (is (false? (valid (mutate facts)))))
+      (is (= nq (leaf 'body-nq-context request (assoc facts :count-context (:context cq)) bindings (:work-count nq))))
+      (is (= :rejected (:status (leaf 'body-nq-context request (assoc facts :count-context (:context cq)) bindings (dec (:work-count nq)))))))))
 
 (deftest body-parameter-vector-count-slice-development-kernel
   ;; These are original caller-derived normalized products, not C7 authority.
