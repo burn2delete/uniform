@@ -9922,6 +9922,32 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
         (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
 
+(deftest sh08-bare-keyword-anchor-set-equality-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        k :gravity.type/keyword
+        derive (fn [pair]
+                 (let [{:keys [core node call edge nodes bindings types forms]} (atomic-equality-input pair)]
+                   (invoke-c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536])))]
+    (doseq [[pair counts] [[[:gravity.type/set (finite [k])] [nil 1]]
+                          [[(finite [k k]) :gravity.type/set] [2 nil]]]]
+      (let [result (derive pair) descriptor (:descriptor result)]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/bool (:type result)))
+        (is (= :gravity.type/applied-bare-keyword-anchor-set-equality (:kind descriptor)))
+        (is (= :sh08-bare-keyword-anchor-set-equality-v1 (:version descriptor)))
+        (is (= pair (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= counts (:operand-counts descriptor)))
+        (is (= :type-conforming-typed-calls (get-in descriptor [:equality-policy :entry-contract])))
+        (is (= :independent-nonempty-finite-keyword-set (get-in descriptor [:equality-policy :anchor-premise])))
+        (is (= :not-refined (get-in descriptor [:equality-policy :bare-domain])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))))
+    (doseq [pair [[:gravity.type/set (finite [])] [(finite []) :gravity.type/set]
+                  [:gravity.type/set :gravity.type/set]
+                  [:gravity.type/set (finite [:gravity.type/string])]
+                  [(finite [:gravity.type/string]) :gravity.type/set]
+                  [:gravity.type/set :gravity.type/unknown]]]
+      (is (= :rejected (:status (derive pair)))))))
+
 (deftest sh08-keyword-set-equality-development-kernel
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/keyword
