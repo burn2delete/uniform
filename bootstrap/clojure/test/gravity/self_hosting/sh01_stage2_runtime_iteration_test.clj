@@ -30862,7 +30862,9 @@ callee
                        [:core :function-records 0 :definition-name]
                        [:core :calls 4 :argument-node-ids]
                        [:forms :parameter-name :value]
-                       [:forms :parameter-name :form-id]]]
+                       [:forms :parameter-name :form-id]
+                       [:nodes :parameter-definition :source :form-id]
+                       [:nodes :parameter-fn :source :form-id]]]
           (is (= :rejected (:status (run (assoc-in base field opaque) 65536))) (pr-str field))
           (is (= 0 @visits) (pr-str field)))
         (is (= :accepted (:status (run (assoc-in base [:bindings :argument-local :mutability] :immutable) 65536))))

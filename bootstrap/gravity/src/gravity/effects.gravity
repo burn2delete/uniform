@@ -12012,8 +12012,9 @@
                     (if (if (body-sse-ids? [(get callee :function-core-node-id) (get callee :definition-core-node-id) (get callee :definition-binding-id) (get callee :function-form-id) (get binding :definition-syntax-id) (get callee :body-core-node-id)] 6) (if (body-sse-ids? local-ids 1) (body-sse-ids? (get callee :parameter-binding-ids) 1) false) false)
                       (let [fn-node (get nodes (get callee :function-core-node-id)) def-node (get nodes (get callee :definition-core-node-id))
                             callee-body (get nodes (get callee :body-core-node-id))
-                            local (get bindings (get local-ids 0))
-                            call-form (get forms (get (get node :source) :form-id)) op-form (get forms (get (get operator :source) :form-id))
+                            local (get bindings (get local-ids 0))]
+                        (if (body-sse-ids? [(get (get def-node :source) :form-id) (get (get fn-node :source) :form-id)] 2)
+                          (let [call-form (get forms (get (get node :source) :form-id)) op-form (get forms (get (get operator :source) :form-id))
                             def-form (get forms (get (get def-node :source) :form-id)) fn-form (get forms (get (get fn-node :source) :form-id))
                             def-ids (get def-form :child-form-ids) fn-ids (get fn-form :child-form-ids)]
                         (if (if (body-all? [(body-sse-ids? (get fn-node :children) 1) (body-sse-ids? (get def-node :children) 1)]) (if (body-sse-ids? def-ids 3) (if (body-sse-ids? fn-ids 3) (if (body-sse-ids? (get call-form :child-form-ids) 2) (if (body-sse-ids? [(get def-form :form-id) (get def-form :syntax-id) (get fn-form :form-id) (get fn-form :syntax-id) (get op-form :form-id) (get op-form :syntax-id)] 6) (if (body-sse-ids? (get fn-node :resolved-binding-ids) 1) (body-sse-ids? (get def-node :resolved-binding-ids) 1) false) false) false) false) false) false)
@@ -12115,6 +12116,7 @@
                                       {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
                                     {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
                                 {:status :rejected :reason :vector-slice-source-mismatch :work-count work})))
+                          {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
                           {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
                       {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
                   {:status :rejected :reason :vector-slice-source-mismatch :work-count base}))
