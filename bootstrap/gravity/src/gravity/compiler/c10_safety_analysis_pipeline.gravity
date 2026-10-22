@@ -466,7 +466,8 @@
   (if left right false))
 
 (defn sh11-member? [values value]
-  (= (get values value) value))
+  (if (= nil value) false
+      (= (get values value) value)))
 
 (defn sh11-boolean? [value]
   (sh11-member? #{true false} value))

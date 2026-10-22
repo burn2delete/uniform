@@ -251,6 +251,122 @@
                (mapv :fact-id-request
                      (:ownership-facts result)))))))))
 
+(deftest sh10-ending-a-borrow-requires-an-active-non-nil-identity
+  ;; Original normalized ownership kernel; no C8/source admission is implied.
+  (let [base (request accepted-gravity-plan 'sh10-exclusive-mutable-request)
+        [borrow end read] (:events base)
+        immutable (assoc borrow :op :borrow-immutable :borrow-id :immutable)
+        invalid-end (assoc end :event-id :invalid-end
+                           :source-span {:source "end-borrow-identity.gravity"
+                                         :start-byte 3 :end-byte 4}
+                           :origin-chain [{:from :end-borrow-identity}])
+        verify (fn [r result]
+                 (invoke-c9 'sh10-verify-ownership-result [r result]))]
+    (doseq [prefix [[] [borrow end] [immutable] [borrow]]
+            missing? [false true]]
+      (let [before (check (assoc base :events prefix))
+            event (if missing? (dissoc invalid-end :borrow-id)
+                      (assoc invalid-end :borrow-id nil))
+            r (assoc base :events (conj prefix event))
+            result (check r)
+            diagnostic (first (:diagnostics result))]
+        (is (= :accepted (:status before)))
+        (is (= :rejected (:status result)))
+        (is (= ["C9-UNSAFE" :end-of-inactive-borrow :end-borrow :invalid-end]
+               ((juxt :rule :reason :operation :event-id) diagnostic)))
+        (is (= (:state before) (:state result)))
+        (is (= (:ownership-facts before) (:ownership-facts result)))
+        (is (not-any? #(= :invalid-end (:event-id %)) (:ownership-facts result)))
+        (is (= [(:source-span event) (:origin-chain event)]
+               [(:source-span diagnostic) (:generated-origin-chain diagnostic)]))
+        (is (= r (get-in result [:identity-input :request])))
+        (is (= :passed (:status (verify r result))))
+        (is (= :rejected (:status (verify r (assoc result :status :accepted)))))))
+    ;; False is an existing legal, non-nil identity, not an inactive sentinel.
+    (doseq [operation [:borrow-immutable :borrow-mutable]]
+      (let [r (assoc base :events [(assoc borrow :op operation :borrow-id false)
+                                  (assoc end :borrow-id false)])
+            result (check r)]
+        (is (= :accepted (:status result)))
+        (is (= [false false] (mapv :borrow-id (:ownership-facts result))))
+        (is (nil? (get-in result [:state :mutable-borrow-id])))
+        (is (= 0 (get-in result [:state :immutable-borrow-count])))
+        (is (= :passed (:status (verify r result))))
+        (is (= :rejected (:status (verify r (assoc-in result [:ownership-facts 1 :borrow-id] nil)))))))
+    (doseq [r [(assoc base :events [(assoc invalid-end :borrow-id :unknown)])
+               (assoc base :events [borrow end (assoc end :event-id :duplicate-end)])]]
+      (let [result (check r)]
+        (is (= :rejected (:status result)))
+        (is (= :end-of-inactive-borrow (get-in result [:diagnostics 0 :reason])))
+        (is (= :passed (:status (verify r result))))))
+    (doseq [function ['sh10-many-immutable-request 'sh10-exclusive-mutable-request]]
+      (let [r (request accepted-gravity-plan function) result (check r)]
+        (is (= :accepted (:status result)))
+        (is (= :passed (:status (verify r result))))))
+    (doseq [[initialization prefix rule reason]
+            [[:uninitialized [] "L10-UNINIT-READ" :operation-before-initialization]
+             [:initialized [(assoc read :event-id :move :op :move :destination-owner "next-owner")]
+              "C9-USE-AFTER-MOVE" :operation-after-move]
+             [:initialized [(assoc read :event-id :consume :op :consume)]
+              "C9-USE-AFTER-CONSUME" :operation-after-consume]]]
+      (let [r (assoc base :initialization initialization
+                          :events (conj prefix (dissoc invalid-end :borrow-id)))
+            result (check r)]
+        (is (= :rejected (:status result)))
+        (is (= [rule reason] ((juxt :rule :reason) (first (:diagnostics result)))))
+        (is (= :passed (:status (verify r result))))))))
+
+(deftest sh10-executes-the-declared-event-bound-without-host-recursion
+  ;; Exercise the original normalized kernel, not public C8/source admission.
+  (let [base (request accepted-gravity-plan 'sh10-exclusive-mutable-request)
+        read (last (:events base))
+        reads (mapv #(assoc read :event-id %) (range 1024))
+        verify (fn [r result] (invoke-c9 'sh10-verify-ownership-result [r result]))
+        observe (fn [r]
+                  (try (check r)
+                       (catch StackOverflowError error
+                         {:host-error (.getName (class error))})))
+        maximum (observe (assoc base :events reads))]
+    (is (= :accepted (:status maximum)) (pr-str (select-keys maximum [:status :host-error])))
+    ;; Keep latent checks explicit when the original builder cannot finish.
+    (when (= :accepted (:status maximum))
+      (doseq [kind [:owned-mutable :persistent-immutable]]
+        (let [r (assoc base :ownership-kind kind :events reads)
+              result (if (= kind :owned-mutable) maximum (check r))
+              facts (:ownership-facts result)]
+          (is (= :accepted (:status result)))
+          (is (= 1024 (count facts)))
+          (is (= (mapv :event-id reads) (mapv :event-id facts)))
+          (is (every? #(= :read (:operation %)) facts))
+          (is (= (:state-before (first facts)) (:state result) (:state-after (last facts))))
+          (is (= r (get-in result [:identity-input :request])))
+          (is (= :passed (:status (verify r result))))
+          (is (= :rejected (:status (verify r (update result :ownership-facts pop)))))))
+      (doseq [r [(assoc base :events (conj reads (assoc read :event-id 1024)))
+                 (assoc base :events (assoc-in reads [1023 :event-id] 0))
+                 (assoc base :ownership-kind :persistent-immutable
+                             :events (assoc-in reads [1023 :op] :write))]]
+        (let [result (check r)]
+          (is (= :rejected (:status result)))
+          (is (= ["C9-UNSAFE" :malformed-normalized-ownership-request]
+                 ((juxt :rule :reason) (first (:diagnostics result)))))
+          (is (empty? (:ownership-facts result)))
+          (is (= :passed (:status (verify r result))))))
+      (let [failure (assoc read :event-id 1023 :op :end-borrow :borrow-id nil
+                               :source-span {:source "last-event.gravity" :start-byte 8 :end-byte 9}
+                               :origin-chain [{:from :last-event}])
+            r (assoc base :events (assoc reads 1023 failure))
+            result (check r) diagnostic (first (:diagnostics result))]
+        (is (= :rejected (:status result)))
+        (is (= 1023 (count (:ownership-facts result))))
+        (is (= ["C9-UNSAFE" :end-of-inactive-borrow 1023]
+               ((juxt :rule :reason :event-id) diagnostic)))
+        (is (= [(:source-span failure) (:origin-chain failure)]
+               [(:source-span diagnostic) (:generated-origin-chain diagnostic)]))
+        (is (= (:state maximum) (:state result)))
+        (is (= :passed (:status (verify r result))))
+        (is (= :rejected (:status (verify r (assoc-in result [:diagnostics 0 :event-id] 0)))))))))
+
 (deftest sh10-rejects-invalid-state-transitions-structurally
   (doseq [[function [rule reason operation]] rejected-cases]
     (testing (str function)

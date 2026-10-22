@@ -439,13 +439,13 @@
     true))
 
 (defn sh10-events-allowed-for-ownership-kind? [ownership-kind remaining]
-  (if (= (count remaining) 0)
-    true
-    (if (sh10-event-allowed-for-ownership-kind?
-         ownership-kind (first remaining))
-      (sh10-events-allowed-for-ownership-kind?
-       ownership-kind (rest remaining))
-      false)))
+  (loop [remaining remaining]
+    (if (= (count remaining) 0)
+      true
+      (if (sh10-event-allowed-for-ownership-kind?
+           ownership-kind (first remaining))
+        (recur (rest remaining))
+        false))))
 
 (defn sh10-lowercase-hex? [characters]
   (if (= (count characters) 0)
@@ -467,16 +467,15 @@
     false))
 
 (defn sh10-unique-event-ids? [remaining seen]
-  (if (= (count remaining) 0)
-    true
-    (let [event-id (get (first remaining) :event-id)]
-      (if (= nil event-id)
-        false
-        (if (= true (get seen event-id))
+  (loop [remaining remaining seen seen]
+    (if (= (count remaining) 0)
+      true
+      (let [event-id (get (first remaining) :event-id)]
+        (if (= nil event-id)
           false
-          (sh10-unique-event-ids?
-           (rest remaining)
-           (assoc seen event-id true)))))))
+          (if (= true (get seen event-id))
+            false
+            (recur (rest remaining) (assoc seen event-id true))))))))
 
 (defn sh10-active-borrow? [state]
   (if (> (get state :immutable-borrow-count) 0)
@@ -766,7 +765,8 @@
                  :multiple-active-mutable-borrows
                  :retain-only-one-mutable-borrow))))
           (if (= operation :end-borrow)
-            (if (= (get event :borrow-id) mutable-id)
+            (if (if (= nil mutable-id) false
+                    (= (get event :borrow-id) mutable-id))
               (sh10-transition-accepted
                request event state
                (assoc state :mutable-borrow-id nil))
@@ -882,23 +882,22 @@
           (recur (rest remaining)))))))
 
 (defn sh10-run-events [request remaining state facts]
-  (if (= (count remaining) 0)
-    {:status :accepted
-     :state state
-     :ownership-facts facts
-     :diagnostics []}
-    (let [event (first remaining)
-          transition (sh10-transition request event state)]
-      (if (= :accepted (get transition :status))
-        (sh10-run-events
-         request
-         (rest remaining)
-         (get transition :state)
-         (conj facts (get transition :fact)))
-        {:status :rejected
-         :state (get transition :state)
-         :ownership-facts facts
-         :diagnostics [(get transition :diagnostic)]}))))
+  (loop [remaining remaining state state facts facts]
+    (if (= (count remaining) 0)
+      {:status :accepted
+       :state state
+       :ownership-facts facts
+       :diagnostics []}
+      (let [event (first remaining)
+            transition (sh10-transition request event state)]
+        (if (= :accepted (get transition :status))
+          (recur (rest remaining)
+                 (get transition :state)
+                 (conj facts (get transition :fact)))
+          {:status :rejected
+           :state (get transition :state)
+           :ownership-facts facts
+           :diagnostics [(get transition :diagnostic)]})))))
 
 (defn sh10-check-ownership-request [request]
   (if (sh10-valid-request-shape? request)
@@ -984,7 +983,7 @@
    #{:pure-authenticated-sh08-primitive-typed-core
      :declared-pure-call-effects-with-thrown-effects-pending}
    :accepted-types
-   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string :gravity.type/i64}
    :ownership-kind :persistent-immutable
    :accepted-events [:read]
    :profile :meta
@@ -1053,6 +1052,13 @@
    #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
    value))
 
+(defn sh10-authenticated-persistent-read-type? [value]
+  (if (keyword? value)
+    (sh10-member?
+     (get (sh10-authenticated-sh09-adapter-policy) :accepted-types)
+     value)
+    false))
+
 (defn sh10-authenticated-pure-node? [node]
   (if (= :gravity/c8-effect-node (get node :artifact))
     (if (= #{} (get node :direct))
@@ -1103,7 +1109,7 @@
           (get (get (get effected :effect-graph) :nodes) core-node-id)
           value-type (get (get effected :type-table) core-node-id)
           identities (get (get bound :fact-identities) core-node-id)]
-      (if (sh10-authenticated-primitive-type? value-type)
+      (if (sh10-authenticated-persistent-read-type? value-type)
         (if (sh10-authenticated-pure-node? node)
           (if (map? identities)
             (if (sh10-sha256-id? (get identities :type-fact-id))

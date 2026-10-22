@@ -450,6 +450,65 @@
       (is (= :target-support-without-runtime-check
              (get-in result [:diagnostics 0 :reason]))))))
 
+(deftest sh11-rejects-absent-numeric-and-safety-modes
+  ;; Normalized kernel DATA, not authenticated current-source admission.
+  (let [bases (mapv #(request accepted-gravity-plan %)
+                    '[sh11-proven-index-request
+                      sh11-proven-overflow-request
+                      sh11-proven-division-request
+                      sh11-proven-cast-request
+                      sh11-proven-shift-request])
+        overflow (second bases)
+        cases (into
+               (vec
+                (for [base bases
+                      malformed [(assoc-in base [:facts :numeric-mode] nil)
+                                 (update base :facts dissoc :numeric-mode)
+                                 (assoc base :safety-mode nil)
+                                 (dissoc base :safety-mode)]]
+                  [base malformed]))
+               [[overflow
+                 (assoc-in overflow
+                           [:facts :arbitrary-precision-supported] nil)]
+                [overflow
+                 (update overflow :facts dissoc
+                         :arbitrary-precision-supported)]])]
+    (doseq [value [true false]]
+      (is (true? (invoke-c10 'sh11-boolean? [value])))
+      (is (= :accepted
+             (:status
+              (classify
+               (assoc-in overflow
+                         [:facts :arbitrary-precision-supported] value))))))
+    (is (false? (invoke-c10 'sh11-boolean? [nil])))
+    (doseq [base bases]
+      (let [result (classify base)]
+        (is (= :accepted (:status result)))
+        (is (= :proven-safe (:outcome result)))
+        (is (= base (get-in result [:identity-input :request])))
+        (is (= :passed
+               (:status
+                (invoke-c10 'sh11-verify-safety-result [base result]))))))
+    (doseq [[base malformed] cases]
+      (let [result (classify malformed)
+            diagnostic (first (:diagnostics result))]
+        (is (= :rejected (:status result)))
+        (is (= :rejected (:outcome result)))
+        (is (= "C10-NO-OUTCOME" (:rule diagnostic)))
+        (is (= :malformed-safety-operation (:reason diagnostic)))
+        (is (= (:source-span malformed) (:source-span diagnostic)))
+        (is (= (:facts malformed) (:operands diagnostic)))
+        (is (= malformed (get-in result [:identity-input :request])))
+        (is (empty? (:proofs result)))
+        (is (= 1 (count (:outcomes result))))
+        (is (= :passed
+               (:status
+                (invoke-c10 'sh11-verify-safety-result [malformed result]))))
+        (is (= :rejected
+               (:status
+                (invoke-c10 'sh11-verify-safety-result
+                            [malformed (classify base)]))))))))
+
 (deftest sh11-fails-closed-on-schema-mode-lineage-and-structural-attacks
   (let [base
         (request accepted-gravity-plan 'sh11-proven-overflow-request)
