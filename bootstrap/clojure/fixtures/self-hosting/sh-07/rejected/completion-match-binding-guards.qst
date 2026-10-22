@@ -1,0 +1,10 @@
+(ns completion.match.reject-duplicate
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{}))
+
+(def invalid
+  (match :value
+    {:left repeated :right [repeated] :when true} :bad
+    _ nil))

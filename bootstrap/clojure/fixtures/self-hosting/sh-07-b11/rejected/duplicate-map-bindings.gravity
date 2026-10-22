@@ -4,7 +4,7 @@
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
-  (:metadata {:slice :SH-07-B11 :sh07-b11 {:expected-rule "C6-LOWERING-GAP" :expected-stage :core-lowering :expected-severity :error
-               :expected-reason :duplicate-vector-binding-deferred :expected-remediation "Use unique binding names in each SH-07-B11 vector pattern; duplicate-binding diagnostics remain owned by a later L7 slice."}}))
+  (:metadata {:slice :SH-07-B11 :sh07-b11 {:expected-rule "C6-VERIFY" :expected-stage :core-lowering :expected-severity :error
+               :expected-reason :duplicate-match-binding :expected-remediation "Use each binding name only once within a match pattern; sibling clauses may bind the same name independently."}}))
 
 (def invalid (match :value {:a repeated :b repeated} :bad _ nil))
