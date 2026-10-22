@@ -124,13 +124,18 @@
    :functions :instruction-summary :effect-summary :plan-id])
 
 (declare sh06-resolution-source-artifact sh07-core-authenticated-request
+         sh05-macro-artifact-from-c3-artifact sh06-resolution-artifact-from-sh05-artifact
          p15-s23-c6c10-resolved-parameter-row)
 
 (defn p15-s23-c6c10-resolved-parameter
-  [source-path source-text front-end]
+  ([source-path source-text front-end]
+   (p15-s23-c6c10-resolved-parameter source-path source-text front-end nil))
+  ([source-path source-text front-end c3-parent]
   ;; This existing resolver projection constructs no SH-07 Core. Its original
   ;; SH-06 replay and C2 occurrence bijection own the binding/source premise.
-  (let [resolved (sh06-resolution-source-artifact source-path source-text)
+  (let [resolved (if (nil? c3-parent) (sh06-resolution-source-artifact source-path source-text)
+                   (sh06-resolution-artifact-from-sh05-artifact source-path
+                     (sh05-macro-artifact-from-c3-artifact source-path c3-parent)))
         request (sh07-core-authenticated-request resolved)
         forms (into {} (map (juxt :form-id identity)) (:forms request))
         root (get forms (first (:top-level-form-ids request)))
@@ -172,7 +177,7 @@
                            (if (= n 2) :gravity/c6-c10-resolved-two-bool-parameters-v1
                              :gravity/c6-c10-resolved-three-bool-parameters-v1))
                :type-binding (:type-binding (first rows))
-               :parameters (mapv #(dissoc % :type-binding) rows))))))
+               :parameters (mapv #(dissoc % :type-binding) rows)))))))
 
 (def p15-s23-c6c10-function-projection-keys
   [:name :instructions :params :definition-form :binding

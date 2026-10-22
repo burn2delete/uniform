@@ -51,10 +51,12 @@
    (c2-reader-products source-path source-text reader-options
                        (reader-project-context-for-source source-path)))
   ([source-path source-text reader-options project-context]
+   (c2-reader-products source-path source-text reader-options project-context nil))
+  ([source-path source-text reader-options project-context reader-source-path]
    (let [source-bytes (.getBytes source-text
                                  java.nio.charset.StandardCharsets/UTF_8)
          resolved (sh03-reader-resolved-result!
-                   source-path source-bytes project-context reader-options)]
+                   source-path source-bytes project-context reader-options reader-source-path)]
      (sh03-reader-adapt-products!
       source-path source-text source-bytes reader-options project-context
       resolved))))

@@ -6842,6 +6842,98 @@
         (is (false? (leaf 'body-graph-equations-valid? core facts {}
                           (assoc-in (:nodes graph) [id :direct] #{:memory/allocate}))))))))
 
+(defn- let-vector-count-slice-body-products [text start position]
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        c7 (ns-resolve upstream 'invoke-c7)
+        base ((ns-resolve upstream 'let-vector-count-slice-input) text start position)
+        ids (zipmap (keys (:nodes base)) (map sha (range 8000 8100)))
+        convert-node #(-> % (update :node-id ids) (update :children (fn [xs] (mapv ids xs)))
+                          (update-in [:evaluation :order] (fn [xs] (mapv (fn [x] (update x :core-node-id ids)) xs))))
+        convert-call #(-> % (update :core-node-id ids) (update :operator-node-id ids)
+                          (update :argument-node-ids (fn [xs] (mapv ids xs)))
+                          (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+        convert-edge #(-> % (update :call-core-node-id ids) (update :argument-core-node-ids (fn [xs] (mapv ids xs)))
+                          (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+        node-list (mapv convert-node (get-in base [:core :nodes]))
+        nodes (into {} (map (juxt :node-id identity) node-list))
+        calls (mapv convert-call (get-in base [:core :calls]))
+        edges (mapv convert-edge (get-in base [:core :call-edges]))
+        records (mapv #(-> % (update :let-core-node-id ids) (update :initializer-node-id ids))
+                      (get-in base [:core :lexical-bindings]))
+        core (assoc (:core base) :nodes node-list :calls calls :call-edges edges :lexical-bindings records)
+        forms (:forms base) bindings (:bindings base)
+        initial-types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+        derived (reduce
+                 (fn [{:keys [types results]} [name call edge]]
+                   (let [result (c7 name [core (nodes (:core-node-id call)) call edge nodes bindings types forms 65536])]
+                     {:types (assoc types (:operator-node-id call) (:descriptor result) (:core-node-id call) (:type result))
+                      :results (conj results result)}))
+                 {:types initial-types :results []}
+                 (map vector ['sh08-scv-derive 'sh08-cq-derive 'sh08-vsl-derive] calls edges))
+        results (:results derived) descriptors (mapv :descriptor results)
+        types (assoc (:types derived) (ids :slice-let) (:type (last results)))
+        facts {:module (:module core) :function-type-table [] :type-table types
+               :call-type-facts (mapv (fn [name descriptor] (c7 name [descriptor (:module core)]))
+                                     ['sh08-scv-call-fact 'sh08-cq-call-fact 'sh08-vsl-call-fact] descriptors)
+               :constraint-ledger (mapv (fn [name descriptor] (c7 name [descriptor]))
+                                       ['sh08-scv-constraint 'sh08-cq-constraint 'sh08-vsl-constraint] descriptors)
+               :local-binding-facts (c7 'sh08-ft-local-facts
+                                       [records types {:slice-let-binding (types (ids :call))} nodes (:module core)])}
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}]
+    {:core core :nodes nodes :calls calls :edges edges :forms forms :bindings bindings :ids ids
+     :facts facts :request request :results results :descriptors descriptors}))
+
+(deftest body-let-vector-count-slice-development-kernel
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test]
+    (doseq [[text start position] [["0af" 1 nil] ["" 0 nil] ["0" 1 nil] ["0af" 9 0] ["0af" 9 1]]]
+      (let [{:keys [core bindings ids facts request results descriptors]}
+            (let-vector-count-slice-body-products text start position)
+            c7 (ns-resolve upstream 'invoke-c7)
+            fresh (fn [candidate]
+                    (let [counts (leaf 'body-cq-context request candidate bindings 65536)
+                          candidate (assoc candidate :count-context (:context counts))
+                          context (leaf 'body-nq-context request candidate bindings 65536)]
+                      [counts context (assoc candidate :quotient-context (:context context))]))
+            [counts quotient complete] (fresh facts)
+            valid (fn [candidate]
+                    (let [[counts context candidate] (fresh candidate)]
+                      (and (= :accepted (:status counts) (:status context))
+                           (leaf 'body-call-joins-with-foreign-valid? core candidate bindings {}))))
+            graph (leaf 'body-derive-nodes-with-foreign core complete {} 65536)
+            count-record (get-in graph [:nodes (ids :slice-end)])
+            slice-record (get-in graph [:nodes (ids :slice-call)])
+            let-record (get-in graph [:nodes (ids :slice-let)])]
+        (is (every? #(= :accepted (:status %)) results))
+        (is (= :accepted (:status counts) (:status quotient) (:status graph)))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct count-record) (:transitive count-record)))
+        (is (nil? (:allocation count-record)))
+        (doseq [id [:slice-ref :slice-count-reference]]
+          (is (= #{} (get-in graph [:nodes (ids id) :direct]) (get-in graph [:nodes (ids id) :transitive]))))
+        (is (= (if (nil? position) #{:memory/allocate} #{}) (:direct slice-record)))
+        (is (= (case position 0 #{} 1 #{:error/throw} #{:memory/allocate}) (:transitive slice-record)))
+        (is (= (case position 0 #{:error/throw} 1 #{:memory/allocate :error/throw} #{:memory/allocate}) (:transitive let-record)))
+        (is (= (nil? position) (get-in slice-record [:allocation :normal-completion-possible?])))
+        (is (true? (leaf 'body-graph-equations-valid? core complete {} (:nodes graph))))
+        (is (= quotient (leaf 'body-nq-context request facts bindings (:work-count quotient))))
+        (is (= :rejected (:status (leaf 'body-nq-context request facts bindings (dec (:work-count quotient))))))
+        (is (= counts (leaf 'body-cq-context request facts bindings (:work-count counts))))
+        (is (= :rejected (:status (leaf 'body-cq-context request facts bindings (dec (:work-count counts))))))
+        (doseq [field [:call-type-facts :constraint-ledger] index (range 3)]
+          (is (false? (valid (update facts field #(vec (concat (subvec % 0 index) (subvec % (inc index))))))))
+          (is (false? (valid (update facts field conj (get (get facts field) index))))))
+        (when (nil? position)
+          (doseq [path [[:bounds-proof :end :value] [:bounds-proof :end :reference :node-id]
+                        [:bounds-proof :end :cardinality-proof :descriptor :query-semantics :operation]]]
+            (let [changed (assoc-in (descriptors 2) path :forged)
+                  candidate (-> facts (assoc-in [:type-table (ids :slice-operator)] changed)
+                                (assoc-in [:call-type-facts 2] (c7 'sh08-vsl-call-fact [changed (:module core)]))
+                                (assoc-in [:constraint-ledger 2] (c7 'sh08-vsl-constraint [changed])))]
+              (is (false? (valid candidate))))))
+        (is (false? (leaf 'body-graph-equations-valid? core complete {}
+                          (assoc-in (:nodes graph) [(ids :slice-end) :direct] #{:memory/allocate}))))))))
+
 (deftest body-let-vector-slice-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)

@@ -166,7 +166,10 @@
       :builder-semantic-hash (:entrypoint-semantic-hash binding)
       :function-shapes
       {sh03-reader-entrypoint {:arity 3}
-       sh03-reader-verifier {:arity 4}}}
+       sh03-reader-verifier
+       (cond-> {:arity 4}
+         (= :gravity/sh03-current-source-reader-plan-binding (:artifact binding))
+         (assoc :semantic-hash (:verifier-semantic-hash binding)))}}
      :projection-contract
      {:contract-kind :gravity/sh03-reader-product-envelope-contract
       :contract-version 1

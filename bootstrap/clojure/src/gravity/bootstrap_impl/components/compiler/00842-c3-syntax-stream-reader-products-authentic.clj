@@ -1,12 +1,12 @@
-
-
+(declare ^:private c3-current-reader-revision-authentic?)
 (defn c3-syntax-stream-reader-products-authentic?
   ([syntax-stream c2-artifact]
    (c3-syntax-stream-reader-products-authentic?
     syntax-stream c2-artifact nil))
   ([syntax-stream c2-artifact gravity-boundary]
    (try
-     (if (:registered-literal-projection c2-artifact)
+     (if-not (c3-current-reader-revision-authentic? c2-artifact gravity-boundary) false
+      (if (:registered-literal-projection c2-artifact)
        (if gravity-boundary
          (let [result (:resolved-syntax-result gravity-boundary)
                result-stream (:syntax-object-stream result)
@@ -217,7 +217,7 @@
                     (first expected-base)))
                expected-stream (conj expected-base expected-generated)]
            (and (:authentic? integrity-report)
-                (= expected-stream syntax-stream))))))
+                (= expected-stream syntax-stream)))))))
      (catch StackOverflowError _ false)
      (catch Exception _ false))))
 

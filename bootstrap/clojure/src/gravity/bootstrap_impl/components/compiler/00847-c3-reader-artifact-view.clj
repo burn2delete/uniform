@@ -1,5 +1,34 @@
+(defn- c3-current-reader-identity-view [source-path c2-artifact]
+  (if (:registered-literal-projection c2-artifact) c2-artifact
+    (let [registry (sh04-syntax-registered-literal-registry source-path c2-artifact)]
+      (if (seq (:bindings registry))
+        (sh04-syntax-project-registered-literal-values source-path registry c2-artifact)
+        c2-artifact))))
 
-
+(defn- c3-current-reader-revision-authentic? [c2-artifact boundary]
+  (if (nil? boundary) true
+    (let [retained (or (get-in c2-artifact [:sh03-reader-authentication :reader-source-revision])
+                      (when (= :gravity/sh03-current-source-reader-plan-binding
+                               (get-in c2-artifact [:gravity-reader-boundary :plan-binding :artifact]))
+                        (get-in c2-artifact [:gravity-reader-boundary :authenticated-envelope-descriptor :source-revision])))
+          provenance (:reader-authentication-provenance boundary)
+          descriptor (:actual-sh03-envelope-descriptor provenance)
+          actual (:source-revision descriptor)]
+      (if (or (some? retained)
+              (contains? (get-in actual [:function-shapes sh03-reader-verifier]) :semantic-hash)
+              (not= sh03-reader-expected-source-content-hash (:source-content-hash actual))
+              (not= sh03-reader-expected-source-content-hash
+                    (get-in boundary [:reader-source-revision :source-content-hash])))
+        (and (map? retained) (= actual retained)
+             (= :passed (p15-s23-stage2-sh02-descriptor-envelope-verify!
+                          (:actual-sh03-authenticated-envelope provenance) :c2-reader
+                          :gravity/sh03-reader-products descriptor
+                          (get-in c2-artifact [:source-unit-record :path])))
+             (let [path (get-in c2-artifact [:source-unit-record :path])
+                   expected (sh04-syntax-reader-binding path c2-artifact
+                              (sh04-syntax-semantic-source-id path (:source-unit-record c2-artifact)))]
+               (and (= (:reader-binding expected) (:reader-semantic-binding boundary))
+                    (= (:reader-source-revision expected) (:reader-source-revision boundary))))) true))))
 (defn c3-reader-artifact-view
   [c2-artifact]
   (let [boundary (:gravity-reader-boundary c2-artifact)
@@ -45,7 +74,7 @@
            :reader-extension-invocation-records :reader-diagnostics
            :incremental-reader-hashes :reader-product-integrity])
          :sh03-reader-authentication
-         {:reader-result-id
+         (cond-> {:reader-result-id
           (get-in boundary
                   [:resolved-reader-result :incremental-reader-hashes
                    :reader-result])
@@ -54,7 +83,11 @@
                   [:authenticated-envelope :semantic-envelope-id])
           :provenance-binding-id
           (get-in boundary
-                  [:authenticated-envelope :provenance-binding-id])})]
+                  [:authenticated-envelope :provenance-binding-id])}
+           (= :gravity/sh03-current-source-reader-plan-binding
+              (get-in boundary [:plan-binding :artifact]))
+           (assoc :reader-source-revision
+                  (get-in boundary [:authenticated-envelope-descriptor :source-revision]))))]
     (if (seq projection-bindings)
       (sh04-syntax-project-registered-literal-values
        source-path registry

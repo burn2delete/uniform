@@ -1,7 +1,7 @@
 
 
-(defn sh03-reader-plan-validate!
-  [source-path plan]
+(defn- sh03-reader-plan-structure!
+  [source-path plan historical-count]
   (let [carrier
         (p15-s23-trusted-carrier-validation
          plan :default-only sh03-reader-plan-maximum-nodes
@@ -35,9 +35,14 @@
             (true? (get-in plan [:compiler :generic-bridge-residual?]))
             (false? (get-in plan [:compiler :self-hosted?]))
             (map? functions)
-            (= sh03-reader-expected-function-count (count functions))
+            (if (nil? historical-count)
+              (<= 1 (count functions) sh03-reader-plan-maximum-width)
+              (= historical-count (count functions)))
             (contains? functions sh03-reader-entrypoint)
             (contains? functions sh03-reader-verifier)
+            (if (nil? historical-count)
+              (and (= 3 (get-in functions [sh03-reader-entrypoint :arity]))
+                   (= 4 (get-in functions [sh03-reader-verifier :arity]))) true)
             (every?
              (fn [[function-name function]]
                (and (str/starts-with? (name function-name)
@@ -73,22 +78,6 @@
             (reader-canonical-hash (dissoc plan :plan-id))]
         (when-not
          (and (= expected-plan-id (:plan-id plan))
-              (= sh03-reader-expected-plan-semantic-hash
-                 (:plan-semantic-hash identities))
-              (= sh03-reader-expected-functions-semantic-hash
-                 (:functions-semantic-hash identities))
-              (= sh03-reader-expected-function-count
-                 (:function-count identities))
-              (= sh03-reader-expected-function-names-hash
-                 (:function-names-hash identities))
-              (= sh03-reader-expected-function-shapes-hash
-                 (:function-shapes-hash identities))
-              (= sh03-reader-expected-entrypoint-semantic-hash
-                 (:entrypoint-semantic-hash identities))
-              (= sh03-reader-expected-verifier-semantic-hash
-                 (:verifier-semantic-hash identities))
-              (= sh03-reader-expected-builtin-functions-hash
-                 (:builtin-functions-hash identities))
               (= (:instruction-summary plan)
                  (:instruction-summary static-audit)
                  (:instruction-summary identities))
@@ -100,6 +89,23 @@
            source-path :pinned-recomputable-sh03-reader-plan-identities
            identities {:observed-plan-id (:plan-id plan)}))
         identities))))
+
+(defn sh03-reader-plan-validate! [source-path plan]
+  (let [identities (sh03-reader-plan-structure! source-path plan sh03-reader-expected-function-count)]
+    (when-not (= (select-keys identities [:plan-semantic-hash :functions-semantic-hash
+                                         :function-count :function-names-hash :function-shapes-hash
+                                         :entrypoint-semantic-hash :verifier-semantic-hash :builtin-functions-hash])
+                 {:plan-semantic-hash sh03-reader-expected-plan-semantic-hash
+                  :functions-semantic-hash sh03-reader-expected-functions-semantic-hash
+                  :function-count sh03-reader-expected-function-count
+                  :function-names-hash sh03-reader-expected-function-names-hash
+                  :function-shapes-hash sh03-reader-expected-function-shapes-hash
+                  :entrypoint-semantic-hash sh03-reader-expected-entrypoint-semantic-hash
+                  :verifier-semantic-hash sh03-reader-expected-verifier-semantic-hash
+                  :builtin-functions-hash sh03-reader-expected-builtin-functions-hash})
+      (sh03-reader-boundary-fail! source-path :pinned-recomputable-sh03-reader-plan-identities
+                                 identities {:observed-plan-id (:plan-id plan)}))
+    identities))
 
 (defn sh03-reader-build-pinned-binding!
   [request-source]
@@ -122,7 +128,7 @@
   (delay (sh03-reader-build-pinned-binding! "<sh03-reader-bootstrap>")))
 
 (defn sh03-reader-current-binding!
-  [request-source]
+  ([request-source]
   (let [current-source
         (sh03-reader-read-pinned-source-bytes! request-source)
         binding @sh03-reader-cached-binding
@@ -156,6 +162,19 @@
        binding {:current-source-content-hash
                 (:source-content-hash current-source)}))
     binding))
+  ([request-source reader-source-path]
+   (let [source (sh03-reader-read-selected-source-bytes! request-source reader-source-path)
+         built (sh03-reader-build-plan! request-source source)
+         identities (sh03-reader-plan-structure! request-source (:plan built) nil)
+         after (sh03-reader-read-selected-source-bytes! request-source reader-source-path)]
+     (when-not (= (dissoc source :bytes) (dissoc after :bytes))
+       (sh03-reader-boundary-fail! request-source :fresh-current-sh03-reader-source
+                                  nil {:before (dissoc source :bytes) :after (dissoc after :bytes)}))
+     (merge (dissoc built :builtin-functions) identities
+            {:artifact :gravity/sh03-current-source-reader-plan-binding :status :complete
+             :semantic-authority :gravity-source :compiled-by :clojure-stage0-seed
+             :executed-by :clojure-stage2-generic-rule-runner
+             :generic-bridge-residual? true :self-hosted? false}))))
 
 (def sh03-reader-result-keys
   #{:artifact :schema-version :status :source-unit :actual-path-provenance

@@ -149,7 +149,9 @@
                (sh03-reader-canonical-digest source-path request)))))
 
 (defn sh03-reader-resolved-result!
-  [source-path source-bytes project-context reader-options]
+  ([source-path source-bytes project-context reader-options]
+   (sh03-reader-resolved-result! source-path source-bytes project-context reader-options nil))
+  ([source-path source-bytes project-context reader-options reader-source-path]
   (when-not (qst-or-gravity-source? source-path)
     (try
       (source-path-policy-fail! source-path source-bytes)
@@ -159,7 +161,8 @@
     (sh03-reader-boundary-fail!
      source-path :bounded-sh03-reader-source-bytes
      (alength source-bytes) {:maximum-source-bytes 1048576}))
-  (let [binding (sh03-reader-current-binding! source-path)
+  (let [binding (if (nil? reader-source-path) (sh03-reader-current-binding! source-path)
+                 (sh03-reader-current-binding! source-path reader-source-path))
         plan (:plan binding)
         source-unit
         (sh03-reader-input-source-unit
@@ -189,7 +192,7 @@
            :result result
            :raw-result raw-result
            :verification-report verifier-result
-           :plan-binding (dissoc binding :plan))))
+           :plan-binding (dissoc binding :plan)))))
 
 (defn sh03-reader-decode-raw-bytes!
   [source-path raw bytes]

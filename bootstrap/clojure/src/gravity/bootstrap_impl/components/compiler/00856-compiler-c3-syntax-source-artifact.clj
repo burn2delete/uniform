@@ -19,12 +19,18 @@
       source-path source-text project-context nil
       sh03-reader-internal-product-authority)))
   ([source-path source-text project-context precomputed-c2-artifact candidate]
+   (compiler-c3-syntax-source-artifact source-path source-text project-context
+                                       precomputed-c2-artifact candidate nil))
+  ([source-path source-text project-context precomputed-c2-artifact candidate reader-source-path]
+  (when (and (some? reader-source-path) (or (some? precomputed-c2-artifact) (some? candidate)))
+    (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                     {:missing-fields [:direct-current-sh03-reader-construction]}))
   (let [c2-artifact
         (if precomputed-c2-artifact
           (sh03-c3-precomputed-c2-verify!
            candidate source-path precomputed-c2-artifact)
           (compiler-c2-reader-source-artifact
-           source-path source-text project-context))
+           source-path source-text project-context nil nil reader-source-path))
         integrity-report
         (c3-validate-c2-reader-artifact! source-path c2-artifact)
         forms (:parsed-semantic-values c2-artifact)
