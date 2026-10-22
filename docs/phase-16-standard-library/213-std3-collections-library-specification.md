@@ -90,11 +90,11 @@ compatibility binding does not change that ownership.
 
 ## Persistent Set Conversion And Cardinality
 
-For a finite Vector whose stored values support Gravity equality and hashing,
+For a finite Vector or finite persistent List whose stored values support Gravity equality and hashing,
 `(set items)` returns a persistent Set containing one representative of each
-value-equality class in the Vector. Duplicate occurrences do not add members;
-an empty Vector produces an empty Set. This rule does not promise an iteration
-order, object identity or physical sharing. The original Vector is unchanged,
+value-equality class in the input. Duplicate occurrences do not add members;
+an empty input produces an empty Set. This rule does not promise an iteration
+order, object identity or physical sharing. The original input is unchanged,
 and stored payloads are not evaluated.
 
 The unary operand follows ordinary L2 evaluation exactly once; a control
@@ -102,6 +102,32 @@ transfer aborts invocation. The selected representation must declare possible
 allocation, including empty conversion, and storage/lifetime policy under
 effects, ownership and profile rules. Value equality and hashing follow STD2;
 a host representation must not silently substitute different value rules.
+
+The initial List compiler subset accepts exactly a homogeneous Keyword List
+and returns a bare Set. The input has no established static length; conversion
+establishes no Set member-domain, cardinality, order or nonempty refinement.
+Arbitrary sequence views and nil remain outside this conversion contract.
+Existing Vector conversion behavior is preserved.
+
+The development List provider must reserve bounded first/rest traversal,
+termination observations and temporary capture before performing them. It must
+not count or materialize the whole input before that bounded census. Validate
+every physical Keyword member before member comparison, formatting, hashing or
+Set insertion. A bounded temporary snapshot may then use the existing Keyword
+deduplication implementation with the remaining budget; all partial capture,
+temporary construction and returned conversion work remain cumulative.
+The existing 1024-element and 65536 logical-work guards remain residual
+development checks, with P15S23X002 on rejection. They are not safety
+certificates, provider CPU bounds or permission to increase a resource cap.
+Temporary and output storage may allocate, including for empty conversion;
+stored values are shared shallowly with persistent lifetimes and no borrowed
+input List spine.
+
+A Never operand retains the shared Set-constructor non-invocation route. Its
+result is Never, latent allocation remains possible in the signature, and
+direct allocation is empty. It establishes no invoked List or Vector domain,
+count, census, output or cardinality premise. Original source, profile, target,
+binding and operand effect/capability legality still require validation.
 
 For a persistent Set, `(count items)` returns the non-negative integer number
 of distinct stored members, including zero for an empty Set. It evaluates its
@@ -319,8 +345,8 @@ enumeration, validates every physical Keyword key before fresh output List
 construction, and accounts cumulatively for temporary enumeration, indexed
 snapshot and output copying. The returned List owns its copied spine, shares
 stored keys shallowly, has persistent value lifetimes and borrows no Map backing
-storage. This establishes no allocation bound for other providers. It does not
-extend the Vector-only Set conversion contract to Lists.
+storage. This establishes no allocation bound for other providers. Conversion
+of this List follows the separate Set-conversion contract above.
 
 ## Map Lookup With An Explicit Default
 
@@ -456,7 +482,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Vector family classification distinguishes Vector and non-Vector values, preserves ordinary unary evaluation and transfers, and neither evaluates stored payloads nor invents member or bounds facts.
 - Map family classification distinguishes Map and non-Map values, preserves ordinary unary evaluation and transfers, and neither evaluates stored keys/values nor invents key, member, presence or cardinality facts.
 - Set family classification distinguishes Set and non-Set values, preserves ordinary unary evaluation and transfers, and does not evaluate stored payloads, mutate the value or construct a collection.
-- Persistent Set conversion covers empty, unique and duplicate Vector values under supported Gravity equality/hash rules, preserves ordinary evaluation and transfers and the old value, and declares allocation/storage policy; Set cardinality counts distinct stored members without evaluating payloads or promising iteration order.
+- Persistent Set conversion covers empty, unique and duplicate Vector and persistent List values under supported Gravity equality/hash rules, preserves ordinary evaluation, transfers and the old value, and declares allocation/storage policy. The initial homogeneous Keyword List subset uses a bounded prepaid census before member equality/hash/insertion and returns a bare Set without static member-domain or cardinality facts. Set cardinality counts distinct stored members without evaluating payloads or promising iteration order.
 - Persistent Set equality covers empty, reordered and differing membership under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and does not evaluate stored payloads or depend on enumeration order or object identity.
 - Persistent Set membership covers empty, present and absent values under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and neither evaluates stored payloads nor depends on enumeration order or object identity.
 - Binary persistent Set insertion covers empty input, absent values and equal existing members under applicable Gravity equality, preserves ordinary operand evaluation, transfers and original values, and declares allocation/storage policy without inventing cardinality, member-type, order or identity facts.

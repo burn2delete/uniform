@@ -7005,7 +7005,186 @@
     (is (= :accepted (:status result)))
     (is (= :gravity.type/never (:type result)))
     (is (= :not-invoked (get-in result [:descriptor :application])))
-    (is (= [] (get-in result [:descriptor :direct-effects])))))
+    (is (= [] (get-in result [:descriptor :direct-effects])))
+    (is (= :gravity.collections/persistent-set-construction (get-in result [:descriptor :intrinsic])))
+    (is (= {:operation :persistent-set-construction :operand-evaluation :once :operand-position :non-tail
+            :transfer :aborts-invocation :invocation :not-reached :allocation :normal-invocation-even-empty}
+           (get-in result [:descriptor :construction-policy])))
+    (is (not (contains? (:descriptor result) :input-element-count)))
+    (is (nil? (get-in result [:descriptor :input-policy])))
+    (is (nil? (get-in result [:descriptor :runtime-census-policy])))))
+
+(defn- list-set-cross-family-descriptor [descriptor]
+  (let [alternate (:descriptor (set-conversion-derived (set-conversion-input [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]) 65536))]
+    (merge alternate (select-keys descriptor [:resolution :operator-node-id :operator-binding-id :call-core-node-id
+                                             :source :operator-source :source-call :source-edge :source-binding :profile :target
+                                             :argument-types :parameter-types :return :result-type :application :operand-type-work :direct-effects :latent-effects]))))
+
+(defn- list-set-stale-string-never-descriptor [descriptor]
+  (let [alternate (:descriptor (set-conversion-derived (set-conversion-input [{:kind :gravity.type/vector :shape :literal :element-types []}]) 65536))]
+    (assoc (merge alternate (select-keys descriptor [:resolution :operator-node-id :operator-binding-id :call-core-node-id
+                                                    :source :operator-source :source-call :source-edge :source-binding :profile :target
+                                                    :argument-types :parameter-types :return :result-type :application :operand-type-work
+                                                    :direct-effects :latent-effects])) :input-element-count nil)))
+
+(deftest sh08-list-set-cold-and-budget-development-kernel
+  (let [type {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}
+        {:keys [core node call edge nodes bindings types forms products binding-types] :as input} (list-set-input type)
+        derive #(set-conversion-derived input %) result (derive 65536) descriptor (:descriptor result)
+        established (assoc types :operator descriptor :call :gravity.type/set)
+        checked #(invoke-c7 'sh08-st-inferred-call [core node call edge nodes bindings %1 %2]) paid (checked established 65536)
+        context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                 :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+        inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                   [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+    (is (= :accepted (:status result) (:status paid)))
+    (is (= :gravity.type/set (:type result) (:return descriptor) (:result-type descriptor)))
+    (is (= result (derive (:work-count result))))
+    (is (= :list-set-conversion-work-limit (:reason (derive (dec (:work-count result))))))
+    (is (= paid (checked established (:work-count paid))))
+    (is (= :list-set-conversion-work-limit (:reason (checked established (dec (:work-count paid))))))
+    (is (= :converged (:convergence-status inferred)))
+    (is (= [] (:diagnostics inferred)))
+    (is (= descriptor (get-in inferred [:type-table :operator])))
+    (is (= :gravity.type/set (get-in inferred [:type-table :call])))
+    (is (= [(invoke-c7 'sh08-st-constraint [descriptor])] (:constraints inferred)))
+    (is (= :sh08-list-set-conversion-v1 (:producer-rule (invoke-c7 'sh08-st-constraint [descriptor]))))
+    (is (= :direct-list-set-conversion (:dispatch (invoke-c7 'sh08-st-call-fact [descriptor (:module input)]))))
+    (doseq [changed [(list-set-cross-family-descriptor descriptor)
+                     (assoc descriptor :input-element-count 0 :result-count 0)
+                     (assoc descriptor :result-type {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/keyword})
+                     (assoc descriptor :direct-effects [] :latent-effects [])
+                     (assoc-in descriptor [:runtime-census-policy :maximum-input-elements] 1025)
+                     (assoc-in descriptor [:runtime-census-policy :traversal] :upfront-count)
+                     (assoc-in descriptor [:runtime-work-policy :limit] 1000000)
+                     (assoc-in descriptor [:runtime-work-policy :accounting] :reset-before-deduplication)
+                     (assoc-in descriptor [:storage-policy :borrow] :list-spine)
+                     (assoc-in descriptor [:allocation-policy :empty-result] :none)]]
+      (is (= :rejected (:status (checked (assoc established :operator changed) 65536)))))
+    (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+          counted ((ns-resolve upstream 'list-count-derived) ((ns-resolve upstream 'list-count-input) :gravity.type/set))]
+      (is (= :accepted (:status counted)))
+      (is (= :gravity.type/integer (:type counted))))
+    (let [literal-type (:type (invoke-c7 'sh08-lc-derive
+                               (let [built ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'list-construction-input) [:gravity.type/string])]
+                                 [(:core built) (:node built) (:call built) (:edge built) (:nodes built) (:bindings built) (:types built) (:forms built) 65536])))
+          rejected (set-conversion-derived (list-set-input literal-type) 65536)]
+      (is (= {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]} literal-type))
+      (is (= ["C7-TYPE-MISMATCH" :list-set-conversion-homogeneous-keyword-list-type-required]
+             ((juxt :rule :reason) rejected)))))
+  (let [{:keys [core node call edge nodes bindings types] :as input} (list-set-input :gravity.type/never)
+        result (set-conversion-derived input 65536) descriptor (:descriptor result)
+        established (assoc types :operator descriptor :call :gravity.type/never)
+        checked #(invoke-c7 'sh08-st-inferred-call [core node call edge nodes bindings %1 %2]) paid (checked established 65536)]
+    (is (= :accepted (:status paid)))
+    (is (= paid (checked established (:work-count paid))))
+    (is (= :set-conversion-work-limit (:reason (checked established (dec (:work-count paid))))))
+    (doseq [changed [(list-set-stale-string-never-descriptor descriptor)
+                     (list-set-cross-family-descriptor descriptor)
+                     (assoc descriptor :application :normal)
+                     (assoc descriptor :input-element-count 0)
+                     (assoc descriptor :input-policy {:family :finite-homogeneous-keyword-vector})]]
+      (is (= :rejected (:status (checked (assoc established :operator changed) 65536)))))))
+
+(deftest sh08-list-set-physical-preflight-development-kernel
+  (let [base (list-set-input {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}) callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Vector empty metadata hash callback")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "Vector empty metadata equality callback")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "Vector empty metadata format callback"))))
+        derive (fn [input budget] (invoke-c7 'sh08-st-derive
+                                   [(:core input) (:node input) (:call input) (:edge input) (:nodes input)
+                                    (:bindings input) (:types input) (:forms input) budget]))]
+    (doseq [path [[:call :operator-node-id] [:call :operator-binding-id] [:call :argument-node-ids 0]
+                  [:node :node-id] [:node :children 0] [:node :children 1] [:node :source :form-id]
+                  [:node :source :syntax-id] [:node :evaluation :owner-function-syntax-id]
+                  [:nodes :arg0 :source :form-id] [:nodes :arg0 :source :syntax-id]
+                  [:nodes :operator :attributes :symbol] [:bindings :ordering-binding :name]
+                  [:bindings :ordering-binding :definition-syntax-id] [:bindings :ordering-binding :profile-set 0]
+                  [:bindings :ordering-binding :target-set 0] [:core :module :profile] [:core :module :target]
+                  [:edge :ordinal] [:edge :caller-function-syntax-id] [:forms :operator :value]
+                  [:forms :call :child-form-ids 1]]
+            budget [0 65536]]
+      (is (= :rejected (:status (derive (assoc-in base path opaque) budget))))
+      (is (zero? @callbacks)))
+    (let [type (array-map opaque [])]
+      (doseq [budget [0 65536]]
+        (is (= :rejected (:status (derive (assoc-in base [:types :arg0] type) budget))))
+        (is (zero? @callbacks))))
+    (let [profiles (conj (vec (repeat 2048 :meta)) opaque)
+          input (assoc-in base [:bindings :ordering-binding :profile-set] profiles)
+          result (derive input 256)]
+      (is (= :list-set-conversion-work-limit (:reason result)))
+      (is (zero? @callbacks)))
+    (doseq [binding-class [:lexical :namespace :import]]
+      (let [input (assoc-in base [:bindings :ordering-binding :binding-class] binding-class)]
+        (is (false? (invoke-c7 'sh08-lset-entry? [(:node input) (:call input) (:nodes input) (:bindings input) (:types input) (:module input)])))))
+    (doseq [type [:gravity.type/list :gravity.type/never {:kind :gravity.type/list :shape :literal :element-types []}]]
+      (let [input (-> base (assoc-in [:types :arg0] type)
+                          (assoc-in [:bindings :ordering-binding :binding-class] :bogus))]
+        (is (= (not= :gravity.type/never type) (invoke-c7 'sh08-lset-entry? [(:node input) (:call input) (:nodes input) (:bindings input) (:types input) (:module input)])))))
+    (doseq [binding-class [:bogus nil opaque]
+            field [:profile-set :target-set]
+            values [[opaque] (conj (vec (repeat 40000 :meta)) opaque)]
+            budget [256 65536]]
+      (let [input (-> base (assoc-in [:bindings :ordering-binding :binding-class] binding-class)
+                          (assoc-in [:bindings :ordering-binding field] values))]
+        (is (true? (invoke-c7 'sh08-lset-entry? [(:node input) (:call input) (:nodes input) (:bindings input) (:types input) (:module input)])))
+        (is (= :rejected (:status (derive input budget))))
+        (is (zero? @callbacks))))
+    (is (= :accepted (:status (derive base 65536))))))
+
+(deftest sh08-list-set-current-source-composition
+  ;; Distinct genuine G input; Q and negative fixture checks are file parity only.
+  (let [source-path (fixture-path "accepted" "local-runtime-list-set-from-map-keys" ".gravity")
+        {:keys [request]} (parameter-vector-count-slice-current-source-request source-path)
+        result (invoke-c7 'sh08-function-type-core-artifact [request])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (let [core (:canonical-core-artifact request)
+            selected (filter #(= :gravity.type/applied-list-set-conversion
+                                 (get-in result [:type-table (:operator-node-id %) :kind])) (:calls core))
+            call (first selected) operator-id (:operator-node-id call) id (:core-node-id call)
+            descriptor (get-in result [:type-table operator-id])
+            expected :gravity.type/set
+            consumer (first (filter #(= 'count (get-in result [:type-table (:operator-node-id %) :operation])) (:calls core)))
+            consumer-type (get-in result [:type-table (:operator-node-id consumer)])
+            row (first (filter #(and (= :sh08-list-set-conversion-v1 (:producer-rule %)) (= id (get-in % [:lhs :core-node-id]))) (:constraint-ledger result)))
+            fact (first (filter #(= id (:call-core-node-id %)) (:call-type-facts result)))
+            forged (list-set-cross-family-descriptor descriptor)
+            forged-row (invoke-c7 'sh08-st-constraint [forged])
+            forged-fact (invoke-c7 'sh08-st-call-fact [forged (:module core)])
+            mutant (walk/prewalk-replace {descriptor forged row forged-row fact forged-fact} result)
+            report (invoke-c7 'sh08-verify-function-type-result [request result])
+            rejected (invoke-c7 'sh08-verify-function-type-result [request mutant])]
+        (is (= 1 (count selected)))
+        (is (= :passed (:status report)))
+        (is (= [:gravity.type/applied-list-set-conversion :sh08-list-set-conversion-v1] ((juxt :kind :version) descriptor)))
+        (is (= expected (:result-type descriptor) (get-in result [:type-table id])))
+        (is (= [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}] (:argument-types descriptor)))
+        (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= [1024 :bounded-prepaid-first-rest :all-physical-keywords-before-equality-or-hash]
+               ((juxt :maximum-input-elements :traversal :domain-validation) (:runtime-census-policy descriptor))))
+        (is (= [65536 :cumulative-capture-plus-remaining-keyword-dedup]
+               ((juxt :limit :accounting) (:runtime-work-policy descriptor))))
+        (is (not (contains? descriptor :input-element-count)))
+        (is (not (contains? descriptor :result-count)))
+        (is (= :temporary-snapshot-and-output-storage (get-in descriptor [:storage-policy :copy])))
+        (is (= :sh08-list-set-conversion-v1 (:producer-rule row)))
+        (is (= [:direct-list-set-conversion [:memory/allocate]] ((juxt :dispatch :effects) fact)))
+        (is (= [expected] (:argument-types consumer-type)))
+        (is (= (:result-type consumer-type) (get-in result [:type-table (:core-node-id consumer)])))
+        (is (= (:source-call descriptor) (:source-call forged)))
+        (is (= forged (get-in mutant [:type-table operator-id]) (:dependencies forged-row) (:applied-set-conversion forged-fact)))
+        (is (= [:sh08-set-conversion-v1 :set-conversion :direct-set-conversion [:memory/allocate]]
+               [(:producer-rule forged-row) (get-in forged-row [:lhs :projection]) (:dispatch forged-fact) (:effects forged-fact)]))
+        (is (not= result mutant))
+        (is (= :rejected (:status rejected)))
+        (is (= result (:expected rejected)))
+        (is (= mutant (:candidate rejected)))
+        (is (= (slurp source-path) (slurp (fixture-path "accepted" "local-runtime-list-set-from-map-keys" ".qst"))))
+        (is (= (slurp (fixture-path "rejected" "list-set-string-members" ".gravity"))
+               (slurp (fixture-path "rejected" "list-set-string-members" ".qst"))))))))
 
 (deftest sh08-set-conversion-development-kernel
   (let [vector-type (fn [n] {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat n :gravity.type/string))})]
@@ -7026,7 +7205,7 @@
         (is (= (if invoked? [:memory/allocate] []) (:direct-effects descriptor)))
         (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
         (is (= :normal-invocation-even-empty (get-in descriptor [:construction-policy :allocation])))
-        (is (= :not-established (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
+        (is (= (when invoked? :not-established) (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
         (is (= :converged (:convergence-status inferred)))
         (is (= [] (:diagnostics inferred)))
         (is (= descriptor (get-in inferred [:type-table :operator])))
@@ -7041,7 +7220,9 @@
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string :gravity.type/keyword]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string :gravity.type/unknown]}
                   (assoc (vector-type 1) :extra true) (vector-type 1025)]]
-      (is (= :set-conversion-operand-type-required (:reason (set-conversion-derived (set-conversion-input [type]) 65536)))))
+      (is (= (if (and (map? type) (= :gravity.type/list (:kind type)))
+               :list-set-conversion-homogeneous-keyword-list-type-required :set-conversion-operand-type-required)
+             (:reason (set-conversion-derived (set-conversion-input [type]) 65536)))))
     (let [input (set-conversion-input [(vector-type 3)])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
                       #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
@@ -7172,7 +7353,7 @@
         (is (= (if invoked? [:memory/allocate] []) (:direct-effects descriptor)))
         (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
         (is (= :normal-invocation-even-empty (get-in descriptor [:construction-policy :allocation])))
-        (is (= :not-established (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
+        (is (= (when invoked? :not-established) (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
         (is (= :converged (:convergence-status inferred)))
         (is (= [] (:diagnostics inferred)))
         (is (= descriptor (get-in inferred [:type-table :operator])))
@@ -7187,7 +7368,9 @@
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword :gravity.type/string]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword :gravity.type/unknown]}
                   (assoc (vector-type 1) :extra true) (vector-type 1025)]]
-      (is (= :set-conversion-operand-type-required (:reason (set-conversion-derived (set-conversion-input [type]) 65536)))))
+      (is (= (if (and (map? type) (= :gravity.type/list (:kind type)))
+               :list-set-conversion-homogeneous-keyword-list-type-required :set-conversion-operand-type-required)
+             (:reason (set-conversion-derived (set-conversion-input [type]) 65536)))))
     (let [input (set-conversion-input [(vector-type 3)])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
                       #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
