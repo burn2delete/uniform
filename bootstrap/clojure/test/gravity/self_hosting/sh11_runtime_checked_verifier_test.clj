@@ -1,4 +1,5 @@
 (ns gravity.self-hosting.sh11-runtime-checked-verifier-test
+  "Historical pinned-source compositions, not normalized-kernel tests or current-source admission."
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.self-hosting.sh09-error-effect-integration-test]
             [gravity.self-hosting.sh11-authenticated-safety-integration-test]))
@@ -110,7 +111,7 @@
       value
       (recur (dec remaining) [value]))))
 
-(deftest sh11-runtime-checked-classification-is-accepted-without-host-stack-failure
+(deftest sh11-pinned-source-runtime-checked-classification-is-accepted-without-host-stack-failure
   (doseq [extension [".gravity" ".qst"]]
     (testing extension
       (let [product (runtime-product extension)
@@ -132,7 +133,7 @@
         (is (= result (:expected verification)))
         (is (= result (:candidate verification)))))))
 
-(deftest sh11-runtime-checked-verifier-detects-alteration
+(deftest sh11-pinned-source-runtime-checked-verifier-detects-alteration
   (let [product (runtime-product ".gravity")
         prepared (:prepared product)
         run (:run product)
@@ -168,7 +169,7 @@
         (is (= :rejected
                (:status (verify candidate))))))))
 
-(deftest sh11-verifier-rejects-deep-candidates-without-echoing-them
+(deftest sh11-pinned-source-verifier-rejects-deep-candidates-without-echoing-them
   (let [accepted-product (runtime-product ".gravity")
         accepted-prepared (:prepared accepted-product)
         accepted-run (:run accepted-product)
