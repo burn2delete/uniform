@@ -321,11 +321,10 @@
                   mir (build-mir core) verification (verify-mir core mir)
                   run (invoke c11-plan 'sh13-run-branch-join-mir-with-arguments [core mir [0]])]
               (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
-              (is (= :rejected (:status mir) (:status verification) (:status run)))
-              (is (= ["C11-MODULE" :original-c6-bool-parameter-family]
-                     ((juxt :diagnostic-id :missing-fact) (diagnostic verification))))
-              (is (= (:diagnostics verification) (:diagnostics run)))
-              (is (nil? (:execution run))))
+              (is (= :passed (:status verification)))
+              (is (= :accepted (:status run)))
+              (is (= 0 (get-in run [:execution :value])))
+              (is (= [0] (:arguments run))))
             (let [calls (atom {:hash 0 :equals 0})
                   opaque (proxy [Object] []
                            (hashCode [] (swap! calls update :hash inc) 424242)
