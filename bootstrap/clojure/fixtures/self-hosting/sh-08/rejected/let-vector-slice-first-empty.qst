@@ -1,0 +1,10 @@
+(ns self-hosting.sh08.let-vector-slice-first-empty
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  (let [characters (vec "sha256:abcd")] (first (subvec characters 7 7))))
