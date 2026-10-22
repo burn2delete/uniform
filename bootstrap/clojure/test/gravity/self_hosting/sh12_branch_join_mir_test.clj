@@ -191,6 +191,18 @@
           (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
       (finally (.delete temporary)))))
 
+(deftest sh12-current-c6-produces-two-independently-resolved-bool-parameters
+  (let [path (str (.resolve @root
+                   "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity"))
+        outcome (try
+                  (let [input (parameter-input path (slurp path))]
+                    {:input input :result (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])})
+                  (catch clojure.lang.ExceptionInfo error
+                    {:ingress-exception (select-keys (ex-data error) [:id :missing-fact :rule :function])}))]
+    (is (map? (:input outcome)) (pr-str outcome))
+    (when (:input outcome)
+      (is (= :accepted (get-in outcome [:result :status])) (pr-str (:result outcome))))))
+
 (deftest sh12-current-c6-produces-a-resolved-bool-parameter-without-a-mir-instruction
   (doseq [extension [".gravity" ".qst"]]
     (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source" extension)
