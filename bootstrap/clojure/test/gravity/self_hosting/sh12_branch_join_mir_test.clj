@@ -322,8 +322,23 @@
                   run (invoke c11-plan 'sh13-run-branch-join-mir-with-arguments [core mir [0]])]
               (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
               (is (= :rejected (:status mir) (:status verification) (:status run)))
+              (is (= ["C11-MODULE" :original-c6-bool-parameter-family]
+                     ((juxt :diagnostic-id :missing-fact) (diagnostic verification))))
               (is (= (:diagnostics verification) (:diagnostics run)))
-              (is (empty? (:trace run))))
+              (is (nil? (:execution run))))
+            (let [calls (atom {:hash 0 :equals 0})
+                  opaque (proxy [Object] []
+                           (hashCode [] (swap! calls update :hash inc) 424242)
+                           (equals [_] (swap! calls update :equals inc) false))]
+              (.hashCode opaque)
+              (.equals opaque :probe)
+              (is (= {:hash 1 :equals 1} @calls))
+              (reset! calls {:hash 0 :equals 0})
+              (let [rejected (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                                     [(assoc-in input [:resolved-parameter :kind] opaque)])]
+                (is (= :rejected (:status rejected)))
+                (is (= "C6-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+                (is (= {:hash 0 :equals 0} @calls))))
             (doseq [malformed [(assoc-in input [:resolved-parameter :kind] :gravity/c6-c10-resolved-bool-parameter-v1)
                                (assoc-in input [:resolved-parameter :parameter-index] 1)
                                (assoc-in input [:resolved-parameter :type-binding :name] 'Bool)

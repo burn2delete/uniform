@@ -2167,9 +2167,10 @@
             #{:kind :source-content-hash :sh06-artifact-id :sh06-semantic-projection-id
               :projection-binding :root-syntax-id :function-syntax-id :function-scope-id :parameter-index
               :coordinates :parameter-binding :type-binding :type-resolution})
-        (if (contains? #{:gravity/c6-c10-resolved-bool-parameter-v1 :gravity/c6-c10-resolved-i64-parameter-v1}
-                       (get declaration :kind))
-          (c6c10-parameter-entry-valid? envelope plan function-form declaration declaration 0 1) false) false))))
+        (if (keyword? (get declaration :kind))
+          (if (contains? #{:gravity/c6-c10-resolved-bool-parameter-v1 :gravity/c6-c10-resolved-i64-parameter-v1}
+                         (get declaration :kind))
+            (c6c10-parameter-entry-valid? envelope plan function-form declaration declaration 0 1) false) false) false))))
 
 (defn c6c10-parameter-entries [declaration]
   (if (> (c6c10-parameter-arity declaration) 1)
@@ -2182,12 +2183,12 @@
           instructions (get plan :instructions) source-body (get plan :body)]
       (if (vector? instructions)
         (if (= 1 (count instructions))
-          (if (vector? source-body)
+          (if (if (vector? source-body) true (list? source-body))
             (if (= 1 (count source-body))
               (c6c10-parameter-checks?
                 [(c6c10-plain-form? body :symbol) (= name (get body :value))
                  (= :local (get (get instructions 0) :op)) (= name (get (get instructions 0) :name))
-                 (= name (get source-body 0))]) false) false) false) false)) false))
+                 (= name (first source-body))]) false) false) false) false)) false))
 
 (defn c6c10-build-parameter-function-product [state envelope plan form]
   (if (c6c10-parameter-declaration-valid? envelope plan form)
