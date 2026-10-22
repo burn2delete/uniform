@@ -5,4 +5,6 @@
   (:capabilities #{})
   (:safety :safe))
 
-(defn main [] (rest ["value"]))
+;; Historical filename: finite Vector rest now returns a persistent List.
+;; A Set receiver remains unsupported.
+(defn main [] (rest #{"value"}))

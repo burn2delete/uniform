@@ -267,6 +267,28 @@ supported subset must state which nonempty and stored-value facts it accepts.
 Collection semantics remain owned by `gravity.collections`; compatibility
 bindings do not grant profile or target support.
 
+## Persistent Vector Rest As A List Suffix
+
+For a persistent Vector, unary `(rest items)` returns a persistent List of
+the stored values after index 0, in their original order. Empty and singleton
+Vectors produce an empty List. Stored false and nil remain values, stored
+payloads are not evaluated, and the original Vector is unchanged.
+
+The operand follows ordinary L2 evaluation exactly once; operand effects are
+preserved, and a control transfer aborts invocation. Constructing the List may
+allocate, including when the result is empty. The selected representation must
+declare its allocation, List-spine copying and shallow stored-value sharing
+policy under effect, ownership, lifetime and profile rules. The returned List
+has persistent value lifetimes and does not borrow the Vector's backing storage.
+Shared stored values must retain their required lifetimes independently of the
+input Vector's storage. This rule promises no object identity, physical sharing,
+allocation-free execution, provider complexity or profile availability.
+
+Collection semantics remain owned by `gravity.collections`; compatibility
+bindings do not grant representation or profile support. A compiler must state
+its supported operand and member-type subset and account for construction work
+without inventing facts for an unvalidated input.
+
 ## Map Lookup With An Explicit Default
 
 For maps, `(get map key default)` returns the associated value when the key is
@@ -412,6 +434,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Proven-in-range Vector slicing covers empty, full, prefix, middle and suffix ranges, preserves stored order, inert payloads and the original input, retains ordinary eager operand evaluation and transfers, and declares allocation/storage policy.
 - Persistent Vector emptiness covers empty and nonempty values, including stored false/nil and inert payloads, preserves ordinary evaluation, effects, transfers and the original value, and does not construct a collection or invent extent, member or flow-typing facts.
 - Proven-nonempty Vector first covers singleton and ordered multi-element values, stored false/nil, ordinary operand evaluation and transfers, inert payloads and original-value preservation without selecting an empty-Vector result policy.
+- Persistent Vector rest returns an ordered persistent List suffix, including an empty List for empty and singleton inputs, preserves false/nil, inert payloads, operand evaluation, effects, transfers and the original Vector, and declares possible allocation, List-spine copying, shallow stored-value sharing and persistent lifetimes without borrowing Vector storage.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.
 - Binary persistent Map removal covers present, absent and empty Maps, stored false/nil, original-value preservation, eager operand evaluation and transfers, inert payloads, and explicit allocation/storage policy.
