@@ -124,6 +124,106 @@
   (delay (:plan (bootstrap/sh03-reader-current-binding!
                  "<sh03-dedicated-test>"))))
 
+;; These checks exercise current source in the Clojure seed. They neither use
+;; nor renew the authenticated reader binding, whose source bytes are pinned.
+(def ^:private current-sh03-seed-plan
+  (delay
+    (let [source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+          source-text (utf8-text (source-bytes source-path))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan
+       (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+                  source-path :jvm))
+       source-path source-text))))
+
+(defn- current-sh03-seed-execute
+  [function arguments]
+  (with-redefs [bootstrap/sh03-reader-current-binding!
+                (fn [& _]
+                  (throw (ex-info "Current-source test invoked the pinned reader"
+                                  {:id "SH03-CURRENT-SOURCE-PINNED-ROUTE"})))]
+    (bootstrap/p15-s23-stage2-runtime-execute-function
+     {:engine :gravity-sh03-current-source-seed-test
+      :compiler-artifact-plan? true}
+     @current-sh03-seed-plan function arguments)))
+
+(defn- previous-sh03-hex-boolean-reference
+  [characters]
+  ;; Reference for the previous seed algorithm's Bool result only. Host rest
+  ;; here supplies no Gravity Vector-rest law or collection-preservation claim.
+  (loop [remaining characters]
+    (if (= (count remaining) 0)
+      true
+      (if (contains? (set "0123456789abcdef") (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(deftest sh03-current-source-hex-seed-binding
+  (is (true? (current-sh03-seed-execute 'sh03-lowercase-hex? [[]])))
+  (let [source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        source-text (utf8-text (source-bytes source-path))]
+    (is (= (str "sha256:" (bootstrap/sha256-hex source-text))
+           (get-in @current-sh03-seed-plan [:source :sha256])))
+    (is (contains? (:functions @current-sh03-seed-plan) 'sh03-sha256-id?))))
+
+(deftest sh03-current-source-hex-preserves-vector-tail
+  (let [invoke bootstrap/p15-s23-stage2-runtime-invoke-builtin
+        unary-var (ns-resolve 'gravity.bootstrap
+                              'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin)
+        invoke-unary @unary-var
+        calls (atom [])
+        characters (vec "0af")]
+    ;; Force compilation before tracing just the helper's actual execution.
+    (current-sh03-seed-execute 'sh03-lowercase-hex? [[]])
+    (with-redefs-fn
+      {#'bootstrap/p15-s23-stage2-runtime-invoke-builtin
+       (fn [runtime plan callee arguments]
+         (swap! calls conj [callee arguments])
+         (invoke runtime plan callee arguments))
+       unary-var
+       (fn [runtime plan callee value]
+         (swap! calls conj [callee [value]])
+         (invoke-unary runtime plan callee value))}
+      #(is (true? (current-sh03-seed-execute
+                   'sh03-lowercase-hex? [characters]))))
+    (is (= [] (filterv #(= 'rest (first %)) @calls)))
+    (is (= [[characters 1 3] [(vec "af") 1 2] [(vec "f") 1 1]]
+           (mapv second (filter #(= 'subvec (first %)) @calls))))
+    (is (every? vector?
+                (map #(first (second %))
+                     (filter #(contains? #{'count 'first 'subvec} (first %))
+                             @calls))))
+    (is (= characters (vec "0af")))))
+
+(deftest sh03-current-source-hex-finite-boolean-equivalence
+  (let [hexadecimal "0123456789abcdef"
+        full (vec (take 64 (cycle hexadecimal)))
+        cases (concat [[] full (vec hexadecimal)]
+                      (map #(vector (char %)) (range 128))
+                      (map #(vec (take % (cycle hexadecimal))) (range 65))
+                      (for [position (range 64) invalid [\g \A]]
+                        (assoc full position invalid)))]
+    (doseq [characters cases]
+      (let [expected (previous-sh03-hex-boolean-reference characters)
+            actual (current-sh03-seed-execute 'sh03-lowercase-hex? [characters])]
+        (is (boolean? actual))
+        (is (= expected actual) (pr-str characters))))))
+
+(deftest sh03-current-source-sha256-caller-seed-behavior
+  (let [suffix (apply str (take 64 (cycle "0123456789abcdef")))
+        valid (str "sha256:" suffix)
+        rejected [nil false 71 [] (vec valid) "" suffix
+                  (str "SHA256:" suffix) (str "sha257:" suffix)
+                  (str "sha256:" (subs suffix 1))
+                  (str valid "0")
+                  (str "sha256:g" (subs suffix 1))
+                  (str "sha256:" (subs suffix 0 63) "g")
+                  (str "sha256:A" (subs suffix 1))
+                  (str "sha256:" (subs suffix 0 63) "F")]]
+    (is (true? (current-sh03-seed-execute 'sh03-sha256-id? [valid])))
+    (doseq [value rejected]
+      (is (false? (current-sh03-seed-execute 'sh03-sha256-id? [value]))
+          (pr-str value)))))
+
 (def ^:private sh03-facade-source-relative-path
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity")
 
