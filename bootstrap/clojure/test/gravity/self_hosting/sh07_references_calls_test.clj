@@ -34,7 +34,8 @@
    "higher-order-lexical-call"
    "call-evaluation-order"
    "operator-argument-same-symbol"
-   "keyword-headed-call"])
+   "keyword-headed-call"
+   "required-primitive-call-arities"])
 (def ^:private rejected-oracles
   {"empty-call"
    {:rule "C6-CORE-SHAPE"
@@ -732,3 +733,162 @@
       (is (= :failed (:status report)))
       (is (some #{:canonical-core-replays?}
                 (:failed-checks report))))))
+
+;; L2/C5/C6: these are concrete assoc/21 and get/3 uses from the selected
+;; compiler sources, not a primitive implementation or a new arity policy.
+(defn- required-primitive-stage [label operation]
+  (println (pr-str {:required-primitive-stage label :event :begin}))
+  (let [start (System/nanoTime)
+        value (operation)]
+    (println (pr-str {:required-primitive-stage label :event :complete
+                     :elapsed-ms (quot (- (System/nanoTime) start) 1000000)}))
+    value))
+
+(defn- required-primitive-current-artifact []
+  (let [source-path (fixture-path "accepted" "required-primitive-call-arities" ".gravity")
+        resolved
+        (required-primitive-stage
+         :current-reader-c5
+         #(bootstrap/compiler-c5-resolution-source-artifact
+           source-path (source-text source-path)
+           {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+           (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")))]
+    ;; Preserve the ordinary helper's historical pins and cache. Only this
+    ;; explicit development composition selects the actual current reader.
+    (required-primitive-stage
+     :gravity-core #(bootstrap/sh07-core-from-resolution-artifact resolved))))
+
+(defn- rewrite-required-call-arguments [artifact call arguments]
+  (let [call-id (:core-node-id call)
+        ordered (into [(:operator-node-id call)] arguments)
+        candidate
+        (-> artifact
+            (update-call call-id #(assoc % :argument-node-ids arguments
+                                        :ordered-evaluation-node-ids ordered))
+            (update-node call-id
+                         #(-> %
+                              (assoc :children ordered)
+                              (assoc-in [:attributes :argument-count] (count arguments))
+                              (assoc-in [:attributes :argument-child-indexes]
+                                        (vec (range 1 (inc (count arguments)))))
+                              (assoc-in [:evaluation :order]
+                                        (mapv (fn [index id] {:index index :core-node-id id})
+                                              (range) ordered))))
+            (update-core-records
+             :evaluation-order
+             #(mapv (fn [row] (if (= call-id (:core-node-id row))
+                               (assoc row :children ordered) row)) %))
+            (update-core-records
+             :call-edges
+             #(mapv (fn [row] (if (= call-id (:call-core-node-id row))
+                               (assoc row :argument-core-node-ids arguments
+                                          :ordered-evaluation-node-ids ordered) row)) %)))]
+    ;; Keep the obvious product copies coherent: rejection must still compare
+    ;; against the original source/producer, not just a stale identity preimage.
+    (update-in candidate [:gravity-core-boundary :canonical-core-artifact :identity-preimage]
+               merge (select-keys (core candidate) [:nodes :calls :call-edges :evaluation-order]))))
+
+(deftest sh07-b2-required-primitive-arities-current-gravity-composition
+  (let [artifact (required-primitive-current-artifact)
+        product (core artifact)
+        input (request artifact)
+        index (node-index artifact)
+        forms (exactly-once-index (:forms input) :form-id)
+        bindings (exactly-once-index (:binding-table input) :binding-id)
+        source-maps (exactly-once-index (:source-map product) :core-node-id)
+        calls (exactly-once-index (:calls product)
+                                  #(get-in index [(:operator-node-id %) :attributes :symbol]))
+        assoc-call (get calls 'assoc)
+        get-call (get calls 'get)
+        default-id (last (:argument-node-ids get-call))
+        default-node (get index default-id)
+        report (required-primitive-stage
+                :fresh-public-verification #(bootstrap/sh07-core-artifact-verification artifact))]
+    (is (= :accepted (:status artifact)))
+    (is (= :passed (:status report)) (pr-str (:failed-checks report)))
+    (is (= '#{assoc get} (set (keys calls))))
+    (is (= [21 3] (mapv #(count (:argument-node-ids %)) [assoc-call get-call])))
+    (is (= (fixture-path "accepted" "required-primitive-call-arities" ".gravity")
+           (:source-path report) (get-in product [:provenance :actual-source-path])))
+    (is (= {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
+           (get-in artifact [:execution-boundary :downstream-fact-statuses])))
+    (doseq [[operator call] calls]
+      (let [operator-node (get index (:operator-node-id call))
+            binding (get bindings (:operator-binding-id call))
+            ids (into [(:operator-node-id call)] (:argument-node-ids call))
+            node (get index (:core-node-id call))
+            form (get forms (get-in node [:source :form-id]))]
+        (is (= [:core 'gravity.core operator]
+               ((juxt :binding-class :namespace :name) binding)))
+        (is (= [:reference :operator operator (:operator-binding-id call)]
+               ((juxt :core-form #(get-in % [:attributes :position])
+                      #(get-in % [:attributes :symbol]) #(get-in % [:attributes :binding-id]))
+                operator-node)))
+        (is (= ids (:children node) (:ordered-evaluation-node-ids call)
+               (mapv :core-node-id (get-in node [:evaluation :order]))))
+        (is (= (count ids) (count (set ids))))
+        (is (= (:child-form-ids form)
+               (mapv #(get-in index [% :source :form-id]) ids)))
+        (is (= :operator-then-arguments (:evaluation-order call)))
+        (is (= (count (:argument-node-ids call)) (get-in node [:attributes :argument-count])))))
+    (is (= (vec (mapcat (fn [n] [(keyword (str "k" n)) n]) (range 1 11)))
+           (mapv #(get-in index [% :attributes :value]) (rest (:argument-node-ids assoc-call)))))
+    (is (= [:collection-literal :map]
+           (let [receiver (get index (first (:argument-node-ids assoc-call)))]
+             [(:core-form receiver) (get-in receiver [:attributes :literal-kind])])))
+    (is (= :if (:core-form default-node)))
+    (is (= [true :fallback :unused]
+           (mapv #(get-in index [% :attributes :value]) (:children default-node))))
+    (is (= 1 (count (filter #{default-id} (:ordered-evaluation-node-ids get-call)))))
+    (is (= 1 (count (:function-records product)) (count (:macro-origin-traces input))))
+    (doseq [node (:nodes product)]
+      (let [source (:source node)
+            form (get forms (:form-id source))
+            mapping (get source-maps (:node-id node))]
+        (is (map? form))
+        (is (map? mapping))
+        (is (= (select-keys form [:syntax-id :form-id :origin-chain :generated-origin])
+               (select-keys source [:syntax-id :form-id :origin-chain :generated-origin])
+               (select-keys mapping [:syntax-id :form-id :origin-chain :generated-origin])))
+        (is (= (:source-span form) (:source-span mapping)))
+        (when (#{:def :fn} (:core-form node))
+          (is (seq (:generated-origin source))))))
+    (is (= (:source-map product) (:source-map (identity-input artifact))))
+    (let [session (required-primitive-stage
+                   :original-verification-session
+                   #(bootstrap/sh07-core-verification-session (:sh06-resolution-artifact artifact)))
+          verify #(bootstrap/sh07-core-artifact-verification-against-expected % session)
+          assoc-arguments (:argument-node-ids assoc-call)
+          get-arguments (:argument-node-ids get-call)
+          reversed-pairs (into [(first assoc-arguments)]
+                               (mapcat identity (reverse (partition 2 (rest assoc-arguments)))))
+          substituted (first (:children default-node))
+          candidates
+          [["assoc final pair omitted" (rewrite-required-call-arguments artifact assoc-call (vec (drop-last 2 assoc-arguments)))]
+           ["assoc pairs reordered" (rewrite-required-call-arguments artifact assoc-call reversed-pairs)]
+           ["get default omitted" (rewrite-required-call-arguments artifact get-call (pop get-arguments))]
+           ["get default replaced by existing condition occurrence"
+            (rewrite-required-call-arguments artifact get-call (assoc get-arguments 2 substituted))]]]
+      (is (= :ready (:status session)))
+      (is (= :passed (:status (verify artifact))))
+      (doseq [[label candidate] candidates]
+        (testing label
+          (is (not= artifact candidate))
+          (let [rejected (verify candidate)]
+            (is (= :failed (:status rejected)))
+            (is (= (:source-path report) (:source-path rejected)))
+            (is (every? (set (:failed-checks rejected))
+                        [:canonical-core-replays? :authoritative-products-replay?]))
+            (println (pr-str {:required-primitive-mutation label
+                              :status (:status rejected)
+                              :failed-checks (:failed-checks rejected)}))))))))
+
+(deftest sh07-b2-required-primitive-arities-paired-bytes-and-seed-parser
+  ;; This is explicitly not a second current-reader/C5/Gravity-Core execution.
+  (let [paths (mapv #(fixture-path "accepted" "required-primitive-call-arities" %) extensions)
+        texts (mapv source-text paths)]
+    (is (= (seq (source-bytes (first paths))) (seq (source-bytes (second paths)))))
+    (is (= (bootstrap/read-forms (first paths) (first texts))
+           (bootstrap/read-forms (second paths) (second texts)))))
+  (doseq [extension extensions]
+    (is (= (set accepted-basenames) (fixture-basenames "accepted" extension)))))

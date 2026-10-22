@@ -1,0 +1,14 @@
+; SH07-C01 required assoc/21 and get/3 call-product variants, L2/C5/C6.
+(ns self-hosting.sh07-b2.required-primitive-call-arities
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [required-calls])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B2 :fixture :required-primitive-call-arities}))
+
+(defn required-calls []
+  [(assoc {} :k1 1 :k2 2 :k3 3 :k4 4 :k5 5
+             :k6 6 :k7 7 :k8 8 :k9 9 :k10 10)
+   (get {:present 0} :absent (if true :fallback :unused))])
