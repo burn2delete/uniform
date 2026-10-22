@@ -16686,12 +16686,16 @@
                                     (if (if (sh08-sse-ids? [(get region :if-syntax-id) (get region :if-form-id)] 2)
                                           (if (if (= nil (get region :parent-if-syntax-id)) true (sh08-sse-ids? [(get region :parent-if-syntax-id)] 1))
                                             (if (keyword? (get region :role))
-                                              (if (if (= nil (get region :parent-region-kind)) true (keyword? (get region :parent-region-kind)))
+                                              (if (keyword? (get region :parent-region-kind))
                                                 (if (= nil (get region :parent-branch-role)) true (keyword? (get region :parent-branch-role))) false) false) false) false)
                                       (sh08-ft-all-true? [(= #{:kind :if-syntax-id :if-form-id :role :execution :parent-region-kind :parent-if-syntax-id :parent-branch-role} (set (keys region)))
                                             (= :conditional-branch (get region :kind)) (= :selected-exactly-once (get region :execution))
                                             (contains? #{:then :else} (get region :role))
-                                            (if (= nil (get region :parent-branch-role)) true (contains? #{:then :else} (get region :parent-branch-role)))]) false) false))]
+                                            (contains? #{:module-initialization :function-body :conditional-branch :match-guard} (get region :parent-region-kind))
+                                            (if (= :conditional-branch (get region :parent-region-kind))
+                                              (if (sh08-sse-ids? [(get region :parent-if-syntax-id)] 1)
+                                                (contains? #{:then :else} (get region :parent-branch-role)) false)
+                                              (if (= nil (get region :parent-if-syntax-id)) (= nil (get region :parent-branch-role)) false))]) false) false))]
               (if (if region-valid?
                     (if (symbol? (get operator :value))
                       (if (sh08-sse-ids? [(get control :condition-node-id) (get (get (get control :branches) 0) :core-node-id)

@@ -30385,8 +30385,26 @@
                              (assoc-in [:nodes :prefix-then :evaluation :region :parent-branch-role] :then)
                              (assoc-in [:nodes :prefix-else :evaluation :region :parent-region-kind] :conditional-branch)
                              (assoc-in [:nodes :prefix-else :evaluation :region :parent-if-syntax-id] :outer-if)
-                             (assoc-in [:nodes :prefix-else :evaluation :region :parent-branch-role] :then))]
-          (is (= :accepted (:status (run owner local 65536)))))
+                             (assoc-in [:nodes :prefix-else :evaluation :region :parent-branch-role] :then))
+              envelope (fn [region] (-> local (assoc-in [:nodes :prefix-if :evaluation :region] region)
+                                             (assoc-in [:nodes :prefix-call :evaluation :region] region)))]
+          (is (= :accepted (:status (run owner local 65536))))
+          (doseq [kind [:module-initialization :function-body :match-guard]]
+            (is (= :accepted (:status (run owner (envelope (assoc outer :parent-region-kind kind)) 65536)))))
+          (doseq [role [:then :else]]
+            (is (= :accepted (:status (run owner (envelope (assoc outer :parent-region-kind :conditional-branch
+                                                                  :parent-if-syntax-id :parent-if :parent-branch-role role)) 65536)))))
+          ;; Keep every child envelope coherent, so only parent coupling can reject.
+          (doseq [region [(assoc outer :parent-region-kind :bogus)
+                          (assoc outer :parent-region-kind nil)
+                          (assoc outer :parent-region-kind :conditional-branch :parent-branch-role :then)
+                          (assoc outer :parent-region-kind :conditional-branch :parent-if-syntax-id :parent-if)
+                          (assoc outer :parent-region-kind :conditional-branch)
+                          (assoc outer :parent-if-syntax-id :spurious-parent)
+                          (assoc outer :parent-region-kind :function-body :parent-branch-role :then)
+                          (assoc outer :parent-region-kind :match-guard :parent-if-syntax-id :spurious-parent :parent-branch-role :else)
+                          (assoc outer :parent-if-syntax-id :spurious-parent :parent-branch-role :then)]]
+            (is (= :rejected (:status (run owner (envelope region) 65536))))))
         (is (= measured (run owner base (:work-count measured))))
         (is (= :vector-slice-work-limit (:reason (run owner base (dec (:work-count measured))))))
         (let [callbacks (atom 0) opaque (proxy [Object] []
