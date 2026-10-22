@@ -121,12 +121,10 @@
     (is (= expected (invoke parameter-c6-plan 'c6c10-source-value-ids
                            [{:source-operation operation :operands operands}])))))
 
-(defn- parameter-source-products [source-path source-text]
-  ;; Original source-derived C2/C5 and raw seed plan; these are development
-  ;; DATA, not an authenticated frozen C6 source-binding or SH-07 Core.
-  (let [ingress ((ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
-                 source-path source-text)
-        plan @parameter-c6-plan hash (get-in plan [:source :sha256])
+(defn- parameter-compiled-binding-data [source-path]
+  ;; Immutable DATA from the same delayed compiled C6 plan, not a cached
+  ;; source ingress, accepted Core, verifier report or source admission.
+  (let [plan @parameter-c6-plan hash (get-in plan [:source :sha256])
         digest #(bootstrap/p15-s23-c6c10-canonical-digest source-path %)
         manifest (bootstrap/p15-s23-c6c10-function-merkle-manifest source-path hash (:functions plan))
         binding {:source-path (str (.resolve @root parameter-c6-source))
@@ -136,11 +134,80 @@
                  (digest {:domain :gravity/c6-c10-exported-builder-v1 :source-content-hash hash
                           :definition (bootstrap/p15-s23-c6c10-path-neutral-value
                                        hash (get-in plan [:functions 'c6-c10-build-checked-core-template]))})}]
-    {:ingress ingress :compiled-binding-data binding
-     :envelope (bootstrap/p15-s23-c6c10-private-builder-envelope source-path ingress binding)}))
+    binding))
+
+(defn- parameter-source-products
+  ([source-path source-text] (parameter-source-products source-path source-text nil))
+  ([source-path source-text compiled-binding]
+   ;; Always reconstruct original source-derived C2/C5 BEFORE using binding
+   ;; DATA. These products remain development DATA, not frozen admission.
+   (let [ingress ((ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
+                  source-path source-text)
+         binding (if (nil? compiled-binding) (parameter-compiled-binding-data source-path) compiled-binding)]
+     {:ingress ingress :compiled-binding-data binding
+      :envelope (bootstrap/p15-s23-c6c10-private-builder-envelope source-path ingress binding)})))
 
 (defn- parameter-input [source-path source-text]
   (:envelope (parameter-source-products source-path source-text)))
+
+(deftest sh12-compiled-binding-data-reuse-preserves-fresh-source-products
+  ;; Six original source ingresses: one default baseline per extension, then
+  ;; four G/G/Q/Q supplied-binding calls. No Core/result/report is cached.
+  (let [paths (mapv #(str (.resolve @root
+                           (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source." %)))
+                    ["gravity" "qst"])
+        texts (mapv slurp paths)
+        ingress-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
+        original-ingress @ingress-var
+        original-manifest bootstrap/p15-s23-c6c10-function-merkle-manifest
+        ingress-calls (atom []) manifest-calls (atom 0)]
+    (with-redefs-fn
+      {ingress-var (fn [path text]
+                     (swap! ingress-calls conj [path text])
+                     (original-ingress path text))
+       #'bootstrap/p15-s23-c6c10-function-merkle-manifest
+       (fn [path hash functions]
+         (swap! manifest-calls inc)
+         (original-manifest path hash functions))}
+      (fn []
+        (let [baselines (mapv parameter-source-products paths texts)
+              binding (:compiled-binding-data (first baselines))
+              plan @parameter-c6-plan hash (get-in plan [:source :sha256])
+              diagnostic-path (second paths)]
+          ;; Positive controls establish that both original observers are live.
+          (is (= (mapv vector paths texts) @ingress-calls))
+          (is (= 2 @manifest-calls))
+          (is (= binding (:compiled-binding-data (second baselines))))
+          ;; Independent original inline formula, using the other fixture's
+          ;; diagnostic context. The binding DATA itself is path-neutral.
+          (let [digest #(bootstrap/p15-s23-c6c10-canonical-digest diagnostic-path %)
+                manifest (bootstrap/p15-s23-c6c10-function-merkle-manifest
+                           diagnostic-path hash (:functions plan))
+                expected {:source-path (str (.resolve @root parameter-c6-source))
+                          :source-content-hash hash
+                          :plan-semantic-hash
+                          (digest (bootstrap/p15-s23-c6c10-plan-pin-input hash plan manifest))
+                          :builder-semantic-hash
+                          (digest {:domain :gravity/c6-c10-exported-builder-v1 :source-content-hash hash
+                                   :definition (bootstrap/p15-s23-c6c10-path-neutral-value
+                                                hash (get-in plan [:functions 'c6-c10-build-checked-core-template]))})}]
+            (is (= expected binding))
+            (is (= 3 @manifest-calls)))
+          (reset! ingress-calls [])
+          (reset! manifest-calls 0)
+          (let [indexes [0 0 1 1]
+                products (mapv #(parameter-source-products (get paths %) (get texts %) binding) indexes)]
+            (is (= (mapv #(vector (get paths %) (get texts %)) indexes) @ingress-calls))
+            (is (= 4 (count @ingress-calls)))
+            (is (zero? @manifest-calls))
+            (doseq [[index product] (map vector indexes products)]
+              (is (= (get baselines index) product))
+              (is (= (:envelope (get baselines index)) (:envelope product)))
+              (is (= (:ingress (get baselines index)) (:ingress product)))
+              (is (identical? binding (:compiled-binding-data product))))
+            (println "compiled-binding DATA parity" :compiled-function-count (count (:functions plan))
+                     :candidate-original-ingress-calls (count @ingress-calls)
+                     :candidate-manifest-constructions @manifest-calls)))))))
 
 (deftest sh12-current-c6-types-the-last-body-result-and-preserves-diagnostic-selection
   (let [source (str (.resolve @root
@@ -195,9 +262,11 @@
   ;; Real source/C2/C5 products, not a hand-built type witness or MIR. This
   ;; producer checks retain their original source lineage; the closed C11
   ;; consumer now also reconstructs this family. SH13 owns tuple execution.
+ (let [compiled-binding (parameter-compiled-binding-data
+                         (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity")))]
   (doseq [extension ["gravity" "qst"]]
     (let [path (str (.resolve @root (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source." extension)))
-          text (slurp path) products (parameter-source-products path text) input (:envelope products)
+          text (slurp path) products (parameter-source-products path text compiled-binding) input (:envelope products)
           declaration (:resolved-parameter input) entries (:parameters declaration)
           raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
       (is (= :gravity/c6-c10-resolved-two-bool-parameters-v1 (:kind declaration)))
@@ -219,7 +288,7 @@
       (when (= :accepted (:status raw))
         (let [template (:artifact-template raw) nodes (:core-nodes template) binders (subvec nodes 0 2)
               ids (mapv :node-id binders) function (last nodes) function-id (:node-id function)
-              fresh (parameter-source-products path text) replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
+              fresh (parameter-source-products path text compiled-binding) replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
               verify (fn [candidate] (invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
                                             [(:envelope fresh) candidate (:digest-requests replay)]))]
           (is (= input (:envelope fresh)))
@@ -292,7 +361,7 @@
                              (assoc-in template [:core-nodes 4 :operands] [(first ids)])
                              (assoc-in template [:typed-core :functions function-id :params] [(get-in template [:type-facts (first ids) :type-id])])
                              (update template :lexical-binding-records #(vec (reverse %)))]]
-            (is (= :rejected (:status (verify candidate))))))))))
+            (is (= :rejected (:status (verify candidate)))))))))))
 
 (deftest sh12-two-bool-parameter-ingress-rejects-wrong-annotation-and-unresolved-local
   (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source.gravity"))
