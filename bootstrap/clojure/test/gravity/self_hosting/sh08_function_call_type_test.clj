@@ -9922,6 +9922,146 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
         (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
 
+(defn- bare-keyword-anchor-cross-family-descriptor [descriptor]
+  (let [finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+        {:keys [core node call edge nodes bindings types forms]} (atomic-equality-input [finite finite])
+        alternate (:descriptor (invoke-c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536]))]
+    (merge alternate (select-keys descriptor [:resolution :operator-node-id :operator-binding-id :call-core-node-id
+                                             :source :operator-source :source-call :source-edge :source-binding :profile :target
+                                             :argument-types :parameter-types :return :result-type :application :direct-effects :latent-effects]))))
+
+(defn- bare-keyword-anchor-forgeries [descriptor]
+  [(bare-keyword-anchor-cross-family-descriptor descriptor)
+   (assoc descriptor :operand-counts [1 1])
+   (assoc descriptor :anchor-operand-index (:bare-operand-index descriptor))
+   (assoc descriptor :anchor-type {:kind :gravity.type/set :shape :literal :element-types []})
+   (assoc descriptor :operand-type-work 0 :anchor-domain-work 0)
+   (assoc-in descriptor [:equality-policy :bare-domain] :keyword-only)
+   (assoc-in descriptor [:equality-policy :anchor-premise] :possibly-empty)
+   (assoc-in descriptor [:equality-policy :identity] :observed)
+   (assoc-in descriptor [:runtime-policy :guard] :none)
+   (assoc-in descriptor [:runtime-policy :logical-work-limit] 1000000)
+   (assoc descriptor :direct-effects [:memory/allocate])
+   (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)])
+
+(deftest sh08-bare-keyword-anchor-cold-and-budget-development-kernel
+  (let [finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/keyword]}]
+    (doseq [pair [[:gravity.type/set finite] [finite :gravity.type/set]]]
+      (let [{:keys [core node call edge nodes bindings types forms products binding-types]} (atomic-equality-input pair)
+            derive #(invoke-c7 'sh08-kse-derive [core node call edge nodes bindings types forms %])
+            result (derive 65536) descriptor (:descriptor result) established (assoc types :operator descriptor :call :gravity.type/bool)
+            check #(invoke-c7 'sh08-kse-inferred-call [core node call edge nodes bindings %1 %2])
+            checked (check established 65536)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result) (:status checked)))
+        (is (= result (derive (:work-count result))))
+        (is (= :bare-keyword-anchor-set-equality-work-limit (:reason (derive (dec (:work-count result))))))
+        (is (= checked (check established (:work-count checked))))
+        (is (= :bare-keyword-anchor-set-equality-work-limit (:reason (check established (dec (:work-count checked))))))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= :gravity.type/bool (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-kse-constraint [descriptor])] (:constraints inferred)))
+        (is (= :sh08-bare-keyword-anchor-set-equality-v1 (:producer-rule (invoke-c7 'sh08-kse-constraint [descriptor]))))
+        (is (= :direct-bare-keyword-anchor-set-equality (:dispatch (invoke-c7 'sh08-kse-call-fact [descriptor (:module core)]))))
+        (doseq [changed (bare-keyword-anchor-forgeries descriptor)]
+          (is (= :rejected (:status (check (assoc established :operator changed) 65536)))))
+        (let [callbacks (atom [])
+              opaque (proxy [Object] []
+                       (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "unexpected hash" {})))
+                       (equals [_] (swap! callbacks conj :equals) (throw (ex-info "unexpected equals" {})))
+                       (toString [] (swap! callbacks conj :format) (throw (ex-info "unexpected format" {}))))]
+          (doseq [[changed-nodes changed-bindings changed-types budget]
+                  [[(assoc-in nodes [:arg0 :source :syntax-id] opaque) bindings types 65536]
+                   [nodes (assoc-in bindings [:ordering-binding :profile-set] [opaque]) types 65536]
+                   [nodes (assoc-in bindings [:ordering-binding :target-set] [opaque]) types 65536]
+                   [nodes bindings (assoc types :arg1 (array-map opaque [])) 65536]
+                   [nodes (assoc-in bindings [:ordering-binding :binding-class] :bogus)
+                    (assoc types :arg1 (array-map opaque [])) 65536]
+                   [nodes (assoc-in bindings [:ordering-binding :profile-set] (conj (vec (repeat 40000 :meta)) opaque)) types 256]
+                   [nodes bindings (assoc types (if (= :gravity.type/set (first pair)) :arg1 :arg0)
+                                          (assoc finite :element-types (conj (vec (repeat 1024 :gravity.type/keyword)) opaque))) 256]]]
+            (is (= :rejected (:status (invoke-c7 'sh08-kse-derive [core node call edge changed-nodes changed-bindings changed-types forms budget]))))
+            (is (empty? @callbacks))))))))
+
+(deftest sh08-bare-keyword-anchor-current-source-composition
+  ;; Genuine G input. Q and negative checks below establish file parity only.
+  (let [source-path (fixture-path "accepted" "local-runtime-bare-keyword-anchor-set-equality" ".gravity")
+        {:keys [request]} (parameter-vector-count-slice-current-source-request source-path)
+        result (invoke-c7 'sh08-function-type-core-artifact [request])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (let [core (:canonical-core-artifact request)
+            selected (filter #(= :gravity.type/applied-bare-keyword-anchor-set-equality
+                                 (get-in result [:type-table (:operator-node-id %) :kind])) (:calls core))
+            call (first selected) operator-id (:operator-node-id call) id (:core-node-id call)
+            descriptor (get-in result [:type-table operator-id])
+            row (first (filter #(and (= :sh08-bare-keyword-anchor-set-equality-v1 (:producer-rule %))
+                                    (= id (get-in % [:lhs :core-node-id]))) (:constraint-ledger result)))
+            fact (first (filter #(= id (:call-core-node-id %)) (:call-type-facts result)))
+            forged (bare-keyword-anchor-cross-family-descriptor descriptor)
+            forged-row (invoke-c7 'sh08-kse-constraint [forged])
+            forged-fact (invoke-c7 'sh08-kse-call-fact [forged (:module core)])
+            mutant (walk/prewalk-replace {descriptor forged row forged-row fact forged-fact} result)
+            report (invoke-c7 'sh08-verify-function-type-result [request result])
+            rejected (invoke-c7 'sh08-verify-function-type-result [request mutant])]
+        (is (= 1 (count selected)))
+        (is (= :passed (:status report)))
+        (is (= [:gravity.type/applied-bare-keyword-anchor-set-equality :sh08-bare-keyword-anchor-set-equality-v1]
+               ((juxt :kind :version) descriptor)))
+        (is (= :gravity.type/bool (:result-type descriptor) (get-in result [:type-table id])))
+        (is (= [:gravity.type/set {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/keyword]}]
+               (:argument-types descriptor)))
+        (is (= [nil 2] (:operand-counts descriptor)))
+        (is (= [0 1] ((juxt :bare-operand-index :anchor-operand-index) descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+        (is (= :not-refined (get-in descriptor [:equality-policy :bare-domain])))
+        (is (= :independent-nonempty-finite-keyword-set (get-in descriptor [:equality-policy :anchor-premise])))
+        (is (= :existing-complete-both-set-census (get-in descriptor [:runtime-policy :guard])))
+        (is (= :sh08-bare-keyword-anchor-set-equality-v1 (:producer-rule row)))
+        (is (= [:direct-bare-keyword-anchor-set-equality []] ((juxt :dispatch :effects) fact)))
+        (is (= (:source-call descriptor) (:source-call forged)))
+        (is (= forged (get-in mutant [:type-table operator-id]) (:dependencies forged-row) (:applied-keyword-set-equality forged-fact)))
+        (is (= [:sh08-keyword-set-equality-v1 :keyword-set-equality :direct-keyword-set-equality []]
+               [(:producer-rule forged-row) (get-in forged-row [:lhs :projection]) (:dispatch forged-fact) (:effects forged-fact)]))
+        (is (not= result mutant))
+        (is (= :rejected (:status rejected)))
+        (is (= result (:expected rejected)))
+        (is (= mutant (:candidate rejected)))
+        (is (= (slurp source-path) (slurp (fixture-path "accepted" "local-runtime-bare-keyword-anchor-set-equality" ".qst"))))
+        (is (= (slurp (fixture-path "rejected" "bare-set-empty-keyword-anchor-equality" ".gravity"))
+               (slurp (fixture-path "rejected" "bare-set-empty-keyword-anchor-equality" ".qst"))))))))
+
+(deftest sh08-bare-keyword-anchor-set-equality-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        k :gravity.type/keyword
+        derive (fn [pair]
+                 (let [{:keys [core node call edge nodes bindings types forms]} (atomic-equality-input pair)]
+                   (invoke-c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536])))]
+    (doseq [[pair counts] [[[:gravity.type/set (finite [k])] [nil 1]]
+                          [[(finite [k k]) :gravity.type/set] [2 nil]]]]
+      (let [result (derive pair) descriptor (:descriptor result)]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/bool (:type result)))
+        (is (= :gravity.type/applied-bare-keyword-anchor-set-equality (:kind descriptor)))
+        (is (= :sh08-bare-keyword-anchor-set-equality-v1 (:version descriptor)))
+        (is (= pair (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= counts (:operand-counts descriptor)))
+        (is (= :type-conforming-typed-calls (get-in descriptor [:equality-policy :entry-contract])))
+        (is (= :independent-nonempty-finite-keyword-set (get-in descriptor [:equality-policy :anchor-premise])))
+        (is (= :not-refined (get-in descriptor [:equality-policy :bare-domain])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))))
+    (doseq [pair [[:gravity.type/set (finite [])] [(finite []) :gravity.type/set]
+                  [:gravity.type/set :gravity.type/set]
+                  [:gravity.type/set (finite [:gravity.type/string])]
+                  [(finite [:gravity.type/string]) :gravity.type/set]
+                  [:gravity.type/set :gravity.type/unknown]]]
+      (is (= :rejected (:status (derive pair)))))))
+
 (deftest sh08-keyword-set-equality-development-kernel
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/keyword
@@ -9971,7 +10111,9 @@
                  (finite [:gravity.type/never]) (finite [{:kind :gravity.type/nil-or :value-type k}])]
             other [(finite []) :gravity.type/never]
             pair [[bad other] [other bad]]]
-      (is (= :keyword-set-equality-operand-type-required (:reason (derive (atomic-equality-input pair) 65536)))))
+      (is (= (if (and (some #{:gravity.type/set} pair) (not (some #{:gravity.type/never} pair)))
+               :bare-keyword-anchor-set-equality-operand-type-required :keyword-set-equality-operand-type-required)
+             (:reason (derive (atomic-equality-input pair) 65536)))))
     (let [input (atomic-equality-input [(finite [k]) (finite [k])])]
       (doseq [mutate [#(assoc-in % [:core :module :target] :native)
                       #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)

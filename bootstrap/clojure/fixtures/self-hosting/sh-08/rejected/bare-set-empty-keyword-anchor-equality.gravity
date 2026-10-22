@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.bare-set-empty-keyword-anchor-equality
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main [] (= (set (keys {})) #{}))

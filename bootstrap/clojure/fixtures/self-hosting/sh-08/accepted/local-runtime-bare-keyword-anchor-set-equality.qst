@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.local-runtime-bare-keyword-anchor-set-equality
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn main [] (= (set (keys {:a 1 :b false})) #{:a :b}))
