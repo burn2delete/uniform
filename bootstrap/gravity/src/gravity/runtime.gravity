@@ -1452,6 +1452,49 @@
         {:status :rejected :reason :set-conversion-keyword-vector-required :work-count 0 :comparison-attempts 0 :insertions 0}))
     {:status :rejected :reason :set-conversion-work-limit :work-count 0 :comparison-attempts 0 :insertions 0}))
 
+(defn p15-s23-runtime-keyword-list-set-work [input budget]
+  ; A bounded physical List census precedes every member comparison or hash.
+  ; The empty carrier is the first equality operand and never reads a payload.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [limit (if (< budget 65536) budget 65536)]
+      (if (< limit 1)
+        {:status :rejected :reason :list-set-conversion-work-limit :work-count 1
+         :work-count-kind :capture-reservation :comparison-attempts 0 :insertions 0}
+        (if (list? input)
+          (loop [remaining input snapshot [] size 0 used 1]
+            (let [stop-work (+ used 1)]
+              (if (> stop-work limit)
+                {:status :rejected :reason :list-set-conversion-work-limit :work-count stop-work
+                 :work-count-kind :capture-reservation :comparison-attempts 0 :insertions 0}
+                (if (= '() remaining)
+                  (let [converted (p15-s23-runtime-keyword-vector-set-work snapshot (- limit stop-work))
+                        total (+ stop-work (get converted :work-count))
+                        result (assoc converted :work-count total :capture-work stop-work
+                                 :deduplication-work (get converted :work-count)
+                                 :deduplication-work-count-kind (get converted :work-count-kind)
+                                 :work-count-kind (if (= :accepted (get converted :status))
+                                                    :exact-cumulative-logical-reservation :capture-plus-helper-reservation)
+                                 :value-work-model :gravity/keyword-list-set-logical-content-work-v1)]
+                    (if (= :accepted (get converted :status)) result
+                      (assoc result :reason (if (= :set-conversion-work-limit (get converted :reason))
+                                              :list-set-conversion-work-limit :list-set-conversion-keyword-list-required))))
+                  (if (>= size 1024)
+                    {:status :rejected :reason :list-set-conversion-value-width :work-count stop-work
+                     :work-count-kind :capture-reservation :comparison-attempts 0 :insertions 0}
+                    (let [next-work (+ stop-work 4)]
+                      (if (> next-work limit)
+                        {:status :rejected :reason :list-set-conversion-work-limit :work-count next-work
+                         :work-count-kind :capture-reservation :comparison-attempts 0 :insertions 0}
+                        (let [value (first remaining)]
+                          (if (keyword? value)
+                            (recur (rest remaining) (conj snapshot value) (+ size 1) next-work)
+                            {:status :rejected :reason :list-set-conversion-keyword-list-required :work-count next-work
+                             :work-count-kind :capture-reservation :comparison-attempts 0 :insertions 0})))))))))
+          {:status :rejected :reason :list-set-conversion-keyword-list-required :work-count 1
+           :work-count-kind :capture-reservation :comparison-attempts 0 :insertions 0})))
+    {:status :rejected :reason :list-set-conversion-work-limit :work-count 0
+     :work-count-kind :capture-reservation :comparison-attempts 0 :insertions 0}))
+
 (defn p15-s23-runtime-set-conversion-work [values budget]
   ; This quota is a logical content-work reservation in the selected JVM
   ; representation, not a host hash-trie CPU, native, or realtime bound.
@@ -1769,7 +1812,9 @@
    (second arguments-result) :rejected])
 (if (contains? '#{set string? keyword? map? integer? vector? first rest empty? set? symbol? boolean? list?} function)
                 (if (= function 'set)
-                  (let [conversion (p15-s23-runtime-set-conversion-work left 65536)]
+                  (let [conversion (if (list? left)
+                                     (p15-s23-runtime-keyword-list-set-work left 65536)
+                                     (p15-s23-runtime-set-conversion-work left 65536))]
                     (if (= :accepted (get conversion :status))
                       [(get conversion :value) (second arguments-result) :normal]
                       [{:diagnostic "P15S23X002" :reason (get conversion :reason) :operation operation
