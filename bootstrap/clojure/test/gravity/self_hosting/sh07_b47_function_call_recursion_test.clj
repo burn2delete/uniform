@@ -346,6 +346,17 @@
 (deftest sh07-b47-two-i64-call-current-qst-composition
   (assert-two-i64-canonical-call ".qst" false))
 
+(deftest sh07-b47-two-i64-call-paired-bytes-and-seed-parser
+  ;; Cheap seed-parser parity is not a second current-reader/Core execution.
+  (let [paths (mapv #(path (str fixture-root "/two-i64-local-call" %)) extensions)
+        texts (mapv slurp paths)
+        forms (mapv bootstrap/read-forms paths texts)]
+    (is (= (seq (source-bytes (first paths))) (seq (source-bytes (second paths)))))
+    (is (= (first forms) (second forms)))
+    (is (= '[(defn identity-i64 [x :- I64] :- I64 x)
+             (defn forward-i64 [y :- I64] :- I64 (identity-i64 y))]
+           (vec (rest (first forms)))))))
+
 (defn- duplicate-call-and-edge-substitution
   [carrier]
   (let [replacement-call (get-in carrier [:calls 1])
