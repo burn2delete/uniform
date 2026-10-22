@@ -508,6 +508,22 @@
                 (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
           (finally (.delete temporary)))))))
 
+(deftest sh13-consumes-selected-lexical-arm-as-outer-predicate
+  ;; C6's dependency/binding guard motivates this alias-only composition;
+  ;; independent parameters and the complete compiler helper remain outside it.
+  (let [source (str (.resolve @(existing 'root)
+                     "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        temporary (java.io.File/createTempFile "gravity-sh13-predicate-local-" ".gravity")]
+    (try
+      (spit temporary (str/replace (slurp source) "(if flag true false)"
+                                  "(let [ready flag] (if (if flag ready false) 11 22))"))
+      (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))]
+        (is (= :accepted (:status raw)))
+        (is (= :passed (:status upstream)))
+        (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))
+            (pr-str (:diagnostics mir))))
+      (finally (.delete temporary)))))
+
 (deftest sh13-preserves-live-lexical-value-after-conditional
   ;; The first body result is deliberately ignored; the later lexical read
   ;; must survive the join and determine the original scope's final value.
