@@ -17565,6 +17565,139 @@
                         #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)]]
           (is (= :rejected (:status (compile (mutate context) 65536)))))))))
 
+(deftest current-gravity-bare-keyword-anchor-set-equality-fixtures-file-parity-development-kernel
+  ;; File parity only; this does not substitute a host reader for Gravity.
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name] [["accepted" "local-runtime-bare-keyword-anchor-set-equality"]
+                                ["rejected" "bare-set-empty-keyword-anchor-equality"]]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)]
+        (is (= (slurp (io/file root (str relative ".gravity")))
+               (slurp (io/file root (str relative ".qst")))))))))
+
+(deftest current-gravity-bare-keyword-anchor-set-equality-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'atomic-equality-input)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
+        k :gravity.type/keyword s :gravity.type/string
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [arguments [[:gravity.type/set (finite [k k])] [(finite [k]) :gravity.type/set]]]
+      (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
+            result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536])
+            descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-kse-call-fact [descriptor module])} :ledger [(c7 'sh08-kse-constraint [descriptor])]
+                     :locals {:arg0 'left :arg1 'right} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node %1 :call %2) lowered (compile context 65536)
+            coherent (fn [changed]
+                       (-> context (assoc-in [:types :operator] changed)
+                           (assoc :call-facts {:call (c7 'sh08-kse-call-fact [changed module])}
+                                  :ledger [(c7 'sh08-kse-constraint [changed])])))]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+        (let [callbacks (atom [])
+              opaque (proxy [Object] []
+                       (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "lowering hash" {})))
+                       (equals [other] (swap! callbacks conj :equals) (throw (ex-info "lowering equals" {})))
+                       (toString [] (swap! callbacks conj :format) (throw (ex-info "lowering format" {}))))]
+          (doseq [[candidate budget]
+                  [[(assoc-in context [:bindings :ordering-binding :profile-set] [opaque]) 65536]
+                   [(-> context (assoc-in [:types :operator :kind] :gravity.type/applied-list-query)
+                                (assoc-in [:bindings :ordering-binding :binding-class] :bogus)
+                                (assoc-in [:bindings :ordering-binding :profile-set] [opaque])) 65536]
+                   [(-> context (assoc-in [:types :operator :kind] :gravity.type/applied-list-query)
+                                (assoc-in [:bindings :ordering-binding :binding-class] :bogus)
+                                (assoc-in [:bindings :ordering-binding :target-set] [opaque])) 65536]
+                   [(-> context (assoc-in [:types :operator :kind] :gravity.type/applied-list-query)
+                                (assoc-in [:bindings :ordering-binding :binding-class] :bogus)
+                                (assoc-in [:bindings :ordering-binding :profile-set] (conj (vec (repeat 40000 :meta)) opaque))) 256]
+                   [(-> context (assoc-in [:types :operator :kind] :gravity.type/applied-list-query)
+                                (assoc-in [:bindings :ordering-binding :binding-class] :bogus)
+                                (assoc-in [:bindings :ordering-binding :target-set] (conj (vec (repeat 40000 :meta)) opaque))) 256]
+                   [(assoc-in context [:bindings :ordering-binding :target-set] [opaque]) 65536]
+                   [(assoc-in context [:core :module :profile] opaque) 65536]
+                   [(assoc-in context [:nodes :arg0 :source :syntax-id] opaque) 65536]
+                   [(assoc-in context [:core :calls 0 :core-node-id] opaque) 65536]
+                   [(assoc-in context [:types :arg0] (array-map opaque [])) 65536]
+                   [(assoc context :call-facts (array-map opaque (get-in context [:call-facts :call]))) 65536]
+                   [(assoc-in context [:ledger 0 :producer-rule] opaque) 65536]
+                   [(assoc context :ledger (conj (vec (repeat 4096 (first (:ledger context)))) opaque)) 256]
+                   [(assoc-in context [:bindings :ordering-binding :profile-set]
+                              (conj (vec (repeat 2048 :meta)) opaque)) 256]]]
+            (is (= :rejected (:status (compile candidate budget))))
+            (is (empty? @callbacks))))
+        (doseq [changed ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'bare-keyword-anchor-forgeries) descriptor)]
+          (is (= :rejected (:status (compile (coherent changed) 65536)))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] {:opaque true}))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:types :arg0] (finite [:gravity.type/integer]))
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)
+                        #(assoc % :call-facts {})
+                        #(assoc-in % [:call-facts :call :dispatch] :direct-keyword-set-equality)
+                        #(update-in % [:core :calls] into (get-in % [:core :calls]))
+                        #(update-in % [:core :call-edges] into (get-in % [:core :call-edges]))]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-bare-keyword-anchor-set-equality-runtime-development-kernel
+  ;; This exercises the existing runtime guard under a nonempty Keyword anchor.
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        work #(invoke 'p15-s23-runtime-keyword-set-equality-work %1 %2 %3)
+        lit (fn [value] {:op :literal :value value})
+        equal (fn [a b] {:op :builtin-call :function '= :args [a b]})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        protected (fn [members]
+                    (reify clojure.lang.IPersistentSet
+                      (count [_] (count members)) (seq [_] (seq members))
+                      (cons [_ _] (throw (AssertionError. "construction")))
+                      (empty [_] (throw (AssertionError. "construction")))
+                      (equiv [_ _] (throw (AssertionError. "set equality")))
+                      (contains [_ _] (throw (AssertionError. "lookup")))
+                      (get [_ _] (throw (AssertionError. "lookup")))
+                      (disjoin [_ _] (throw (AssertionError. "mutation")))
+                      Object
+                      (equals [_ _] (throw (AssertionError. "set equality")))
+                      (hashCode [_] (throw (AssertionError. "set hash")))))]
+    (doseq [[members expected] [[[:a :b] true] [[:b :a] true] [[:a :c] false] [[] false]]
+            [a b] [[(protected members) #{:a :b}] [#{:a :b} (protected members)]]]
+      (let [result (work a b 65536)]
+        (is (= :accepted (:status result)))
+        (is (= expected (:value result)))
+        (is (= result (work a b (:work-count result))))
+        (is (= :keyword-set-equality-work-limit (:reason (work a b (dec (:work-count result))))))
+        (is (= [expected "" :normal] (evaluate (equal (lit a) (lit b)))))))
+    (let [callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "member hash")))
+                   (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "member equals")))
+                   (toString [] (swap! callbacks conj :format) (throw (AssertionError. "member format"))))]
+      (doseq [members [["value"] [:a "value"] [opaque] [:a opaque] [:a :a]]
+              [a b] [[(protected members) #{:a}] [#{:a} (protected members)]]]
+        (is (= :rejected (:status (work a b 65536))))
+        (is (contains? #{:keyword-set-value-domain-required :string-set-value-domain-required} (:reason (work a b 65536))))
+        (is (= :rejected (last (evaluate (equal (lit a) (lit b))))))
+        (is (empty? @callbacks))))
+    (let [marked (fn [label expression]
+                   {:op :do :body [{:op :println :args [(lit label)] :effect :io/write :capability :io/stdout} expression]})
+          escape {:op :throw :value (lit :stop)}]
+      (is (= [true "left\nright\n" :normal] (evaluate (equal (marked "left" (lit #{:a})) (marked "right" (lit #{:a}))))))
+      (is (= [:stop "left\n" :thrown] (evaluate (equal (marked "left" escape) (marked "right" (lit #{:a}))))))
+      (is (= [:stop "left\nright\n" :thrown] (evaluate (equal (marked "left" (lit #{:a})) (marked "right" escape))))))))
+
 (deftest current-gravity-keyword-set-equality-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'atomic-equality-input)
