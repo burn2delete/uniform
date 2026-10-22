@@ -6491,6 +6491,65 @@
         (is (false? (leaf 'body-graph-equations-valid? core facts {}
                           (assoc-in (:nodes graph) [id :direct] #{:memory/allocate}))))))))
 
+(deftest body-literal-vector-slice-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'literal-vector-slice-input) transfer (ns-resolve upstream 'literal-vector-slice-transfer-input)
+        construction-transfer (ns-resolve upstream 'literal-vector-slice-construction-transfer-input)]
+    (doseq [[values start end positions] [[[65 66 67] 1 2 nil] [[] 0 0 nil] [[65 66 67] 0 3 nil] [[65 66 67] 3 3 nil]
+                                         [[-5 0 999999999999999999999999999999999999N] 0N 3N nil]
+                                         [[65 66 67] 20 1 [0]] [[65 66 67] 20 1 [1]] [[65 66 67] 20 1 [2]]
+                                         [[65 66 67] 20 1 [0 1 2]] [[65 66] 99 1 :construction]]]
+      (let [construction? (= :construction positions)
+            base (cond construction? (construction-transfer) positions (transfer values start end positions) :else (input values start end))
+            ids (zipmap (keys (:nodes base)) (map sha (range 5000 5100)))
+            convert-node #(-> % (update :node-id ids) (update :children (fn [xs] (mapv ids xs)))
+                              (update-in [:evaluation :order] (fn [xs] (mapv (fn [x] (update x :core-node-id ids)) xs))))
+            convert-call #(-> % (update :core-node-id ids) (update :operator-node-id ids)
+                              (update :argument-node-ids (fn [xs] (mapv ids xs))) (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+            convert-edge #(-> % (update :call-core-node-id ids) (update :argument-core-node-ids (fn [xs] (mapv ids xs)))
+                              (update :ordered-evaluation-node-ids (fn [xs] (mapv ids xs))))
+            node-list (mapv convert-node (get-in base [:core :nodes])) nodes (into {} (map (juxt :node-id identity) node-list))
+            call (convert-call (:call base)) edge (convert-edge (:edge base))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+            id (ids :slice-call) receiver-id (ids :call) node (nodes id) forms (:forms base) bindings (:bindings base)
+            result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            facts {:module (:module core) :function-type-table []
+                   :type-table (assoc types (:operator-node-id call) descriptor id (:type result))
+                   :call-type-facts [(c7 'sh08-vsl-call-fact [descriptor (:module core)])]
+                   :constraint-ledger [(c7 'sh08-vsl-constraint [descriptor])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            quotient (leaf 'body-nq-context request facts bindings 65536)
+            facts (assoc facts :quotient-context (:context quotient))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536) record (get-in graph [:nodes id])]
+        (is (= :accepted (:status result) (:status quotient) (:status graph)))
+        (is (true? (valid facts)))
+        (is (= (if positions #{} #{:memory/allocate}) (:direct record)))
+        (is (= (cond construction? #{:error/throw} (some #{0} positions) #{:error/throw} positions #{:memory/allocate :error/throw}
+                    :else #{:memory/allocate}) (:transitive record)))
+        (is (= (nil? positions) (get-in record [:allocation :normal-completion-possible?])))
+        (is (= (if positions nil {:unit :elements :count (- end start)})
+               (get-in record [:allocation :extent])))
+        (is (= (:ordered-evaluation-node-ids call) (:dependencies record) (:evaluated-children record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= quotient (leaf 'body-nq-context request facts bindings (:work-count quotient))))
+        (is (= :rejected (:status (leaf 'body-nq-context request facts bindings (dec (:work-count quotient))))))
+        (doseq [field [:call-type-facts :constraint-ledger]]
+          (is (false? (valid (assoc facts field []))))
+          (is (false? (valid (update facts field conj (first (get facts field)))))))
+        (doseq [path [[:bounds-proof :receiver :kind] [:bounds-proof :receiver :node :attributes :element-count]
+                      [:bounds-proof :result-count] [:bounds-proof :selected-types] [:slice-policy :receiver] [:storage-policy :allocation]]]
+          (let [changed (assoc-in descriptor path :forged)
+                candidate (-> facts (assoc-in [:type-table (:operator-node-id call)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-vsl-call-fact [changed (:module core)])])
+                              (assoc :constraint-ledger [(c7 'sh08-vsl-constraint [changed])]))]
+            (is (false? (valid candidate)))))
+        (is (false? (leaf 'body-graph-equations-valid? core facts {} (assoc-in (:nodes graph) [id :direct] #{:io/write}))))
+        (when-not (or construction? (some #{0} positions))
+          (is (= #{:memory/allocate} (get-in graph [:nodes receiver-id :direct]))))))))
+
 (deftest body-vector-slice-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)

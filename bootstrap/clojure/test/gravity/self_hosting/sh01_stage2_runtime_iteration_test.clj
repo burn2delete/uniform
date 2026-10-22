@@ -30050,6 +30050,97 @@
         (is (= '[main] (mapv second definitions)))
         (is (= expected (last (first definitions))))))))
 
+(defn- literal-vector-slice-kernel-context [input]
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        {:keys [core node call edge nodes forms bindings types module]} input
+        result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)]
+    {:result result :descriptor descriptor
+     :context {:core core :nodes nodes :forms forms :bindings bindings
+               :types (assoc types (:operator-node-id call) descriptor (:core-node-id call) (:type result))
+               :calls {(:core-node-id call) call} :edges {(:core-node-id call) edge} :call-order {(:core-node-id call) (:ordinal edge)}
+               :call-facts {(:core-node-id call) (c7 'sh08-vsl-call-fact [descriptor module])}
+               :ledger [(c7 'sh08-vsl-constraint [descriptor])] :locals {} :parameter-types {} :tail? true}}))
+
+(deftest current-gravity-literal-vector-slice-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        input (ns-resolve upstream 'literal-vector-slice-input) transfer (ns-resolve upstream 'literal-vector-slice-transfer-input)
+        construction-transfer (ns-resolve upstream 'literal-vector-slice-construction-transfer-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)) rt (:plan (typed-catch-runtime-projection))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal #(hash-map :op :literal :value %)]
+    (doseq [[values start end positions] [[[65 66 67] 1 2 nil] [[] 0 0 nil] [[65 66 67] 0 3 nil] [[65 66 67] 3 3 nil]
+                                         [[-5 0 999999999999999999999999999999999999N] 0N 3N nil]
+                                         [[65 66 67] 20 1 [0]] [[65 66 67] 20 1 [1]] [[65 66 67] 20 1 [2]]
+                                         [[65 66 67] 20 1 [0 1 2]] [[65 66] 99 1 :construction]]]
+      (let [base (cond (= :construction positions) (construction-transfer) positions (transfer values start end positions) :else (input values start end))
+            {:keys [context result descriptor]} (literal-vector-slice-kernel-context base)
+            compile #(lower 'p15-s23-typed-compile-node %1 :slice-call %2)
+            compiled (compile context 65536) ir (:value compiled)]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status compiled)) (pr-str compiled))
+        (is (= 'subvec (:function ir)))
+        (when (= :complete (:status compiled))
+          (is (= compiled (compile context (:work-count compiled))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count compiled))) [:facts :reason])))
+          (if positions
+            (is (= [(str "original literal slice transfer " (if (= :construction positions) 0 (first positions))) "" :thrown] (evaluate ir)))
+            (do (is (= :vector-literal (get-in ir [:args 0 :op])))
+                (is (= [(subvec values start end) "" :normal] (evaluate ir)))
+                (when (< start end)
+                  (is (= [(get values start) "" :normal] (evaluate {:op :builtin-call :function 'first :args [ir]}))))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger conj (first (:ledger %)))
+                        #(assoc % :call-facts {}) #(assoc-in % [:forms :slice-start :value] :forged)
+                        #(assoc-in % [:types :slice-operator :kind] :gravity.type/applied-string-character-vector)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))
+        (doseq [path [[:bounds-proof :receiver :kind] [:bounds-proof :receiver :node :attributes :element-count]
+                      [:bounds-proof :result-count] [:bounds-proof :selected-types] [:slice-policy :receiver]
+                      [:storage-policy :allocation]]]
+          (let [changed (assoc-in descriptor path :forged)
+                candidate (-> context (assoc-in [:types :slice-operator] changed)
+                              (assoc-in [:call-facts :slice-call] (c7 'sh08-vsl-call-fact [changed (:module base)]))
+                              (assoc :ledger [(c7 'sh08-vsl-constraint [changed])]))]
+            (is (= :rejected (:status (compile candidate 65536)))))))))
+    (let [query (fn [items start end] {:op :builtin-call :function 'subvec :args [{:op :vector-literal :items (mapv literal items)} (literal start) (literal end)]})
+          ir (query [65 66 67] 1 2) payload (Object.)
+          say (fn [label value] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} value]})]
+      (doseq [position (range 3)]
+        (let [changed (update ir :args #(mapv (fn [index value] (say (str index) (if (= index position) {:op :throw :value (literal payload)} value))) (range) %))
+              result (evaluate changed)]
+          (is (identical? payload (first result)))
+          (is (= [(apply str (map #(str % "\n") (range (inc position)))) :thrown] (subvec result 1)))))
+      (doseq [bad [(query [65 66 67] 0 4) (query [65 66 67] -1 2) (query [65 66 67] 2 1)
+                    (query (vec (range 1025)) 0 1) (query [65 :keyword] 0 1)
+                    (assoc-in ir [:args 0 :extra] true) (assoc-in ir [:args 0 :items 0 :extra] true)
+                    (assoc-in ir [:args 1 :extra] true) (assoc-in ir [:args 2 :value] 1.0)
+                    (assoc-in ir [:args 0 :items 0 :op] :quote) (assoc-in ir [:args 0] (literal [65 66 67]))]]
+        (is (= :rejected (last (evaluate bad)))))
+      (let [callbacks (atom 0) opaque (proxy [Object] []
+                                      (hashCode [] (swap! callbacks inc) (throw (AssertionError. "slice runtime hash")))
+                                      (equals [_] (swap! callbacks inc) (throw (AssertionError. "slice runtime equality")))
+                                      (toString [] (swap! callbacks inc) (throw (AssertionError. "slice runtime formatting"))))]
+        (is (= :rejected (last (evaluate (query [opaque] 0 1)))))
+        (is (= 0 @callbacks))))))
+
+(deftest current-gravity-literal-vector-slice-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name expected]
+            [["accepted" "local-runtime-literal-vector-slice"
+              '[(first (subvec [65 66 67] 1 2)) (subvec [] 0 0) (subvec [-5 999999999999999999999999999999999999N] 0 2)]]
+             ["rejected" "literal-vector-slice-bounds" '(subvec [65 66 67] 0 4)]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact g-path))
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)]
+        (is (= (slurp g-path) (slurp q-path)))
+        (is (= forms (:parsed-semantic-values (bootstrap/compiler-c2-reader-file-artifact q-path))))
+        (is (= '[main] (mapv second definitions)))
+        (is (= expected (last (first definitions))))))))
+
 (defn- vector-slice-kernel-context [input]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         establish (ns-resolve upstream 'vector-slice-established)
