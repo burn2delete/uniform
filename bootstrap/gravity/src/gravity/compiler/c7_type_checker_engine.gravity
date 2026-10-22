@@ -17211,7 +17211,7 @@
 
 (defn sh08-vsl-count-end [core slice-node node receiver nodes bindings types forms budget]
   ; The caller independently reconstructed the immutable ASCII Vector origin.
-  ; Prepay table, type and membership visits before lookup or descriptor work.
+  ; Prepay table/type visits; reserve membership scans after physical ID checks.
   (let [calls (get core :calls) edges (get core :call-edges) functions (get core :function-records)
         members (get (get receiver :type) :element-types)
         work (+ 128 (* 8 (+ (if (vector? calls) (count calls) 0)
@@ -17234,14 +17234,17 @@
                 lexical (get receiver :receiver) original (get lexical :reference)
                 local-binding (get lexical :binding) record (get lexical :record)]
             (if (if (if (map? call) (map? edge) false)
-                  (if (sh08-nq-ids? node call nodes bindings (get core :module))
+                  (if (sh08-ft-all-true? [(sh08-sse-ids? [(get call :operator-node-id) (get call :operator-binding-id)] 2)
+                                      (sh08-sse-ids? (get node :children) 2)
+                                      (sh08-sse-ids? (get call :argument-node-ids) 1)])
                     (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false) false)
               (let [operator (get nodes (get call :operator-node-id)) binding (get bindings (get call :operator-binding-id))
                     children (get node :children) argument (get nodes (get children 1))
                     profiles (get binding :profile-set) targets (get binding :target-set)
                     work (+ work (* 4 (+ (if (vector? profiles) (count profiles) 0) (if (vector? targets) (count targets) 0))))]
                 (if (> work budget) {:status :rejected :reason :vector-slice-work-limit :work-count work}
-                  (if (if (sh08-ft-all-true? [(sh08-sse-ids? [(get argument :node-id) (get (get argument :source) :form-id) (get (get argument :source) :syntax-id)
+                  (if (sh08-nq-ids? node call nodes bindings (get core :module))
+                    (if (if (sh08-ft-all-true? [(sh08-sse-ids? [(get argument :node-id) (get (get argument :source) :form-id) (get (get argument :source) :syntax-id)
                                         (get (get argument :attributes) :binding-id) (get (get argument :attributes) :definition-syntax-id)
                                         (get argument :binding-context)] 6)
                                         (sh08-sse-ids? [(get node :binding-context) (get operator :binding-context)
@@ -17298,6 +17301,7 @@
                               {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
                           {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
                         {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
+                    {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
                     {:status :rejected :reason :vector-slice-source-mismatch :work-count work})))
               {:status :rejected :reason :vector-slice-source-mismatch :work-count work}))
           {:status :rejected :reason :vector-slice-source-mismatch :work-count work})
