@@ -5221,6 +5221,35 @@
       (is (= expected (:descriptor result))))))
 
 
+(defn- map-keys-input [type]
+  (-> (list-query-input 'keys [type])
+      (assoc-in [:module :effects] [:memory/allocate])
+      (assoc-in [:core :module :effects] [:memory/allocate])))
+
+(deftest sh08-map-keys-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/map :shape :literal :member-types (vec %))
+        expected {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}]
+    (doseq [members [[] [:gravity.type/keyword :gravity.type/bool]
+                     [:gravity.type/keyword :gravity.type/nil :gravity.type/keyword :gravity.type/string]]]
+      (let [result (list-query-derived (map-keys-input (finite members))) descriptor (:descriptor result)]
+        (is (= :accepted (:status result)))
+        (is (= expected (:type result)))
+        (is (= :gravity.type/applied-map-keys (:kind descriptor)))
+        (is (= :sh08-map-keys-v1 (:version descriptor)))
+        (is (= [:memory/allocate] (:direct-effects descriptor)))
+        (is (= :unspecified (get-in descriptor [:query-policy :order])))
+        (is (not (contains? descriptor :result-count)))))
+    (doseq [type [:gravity.type/map :gravity.type/vector
+                  (finite [:gravity.type/string :gravity.type/bool])
+                  (finite [:gravity.type/keyword :gravity.type/never])
+                  (finite [:gravity.type/keyword])]]
+      (is (= :rejected (:status (list-query-derived (map-keys-input type))))))
+    (let [result (list-query-derived (map-keys-input :gravity.type/never))]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/never (:type result)))
+      (is (= :not-invoked (get-in result [:descriptor :application])))
+      (is (= [] (get-in result [:descriptor :direct-effects]))))))
+
 (defn- vector-rest-input [type]
   (-> (list-query-input 'rest [type])
       (assoc-in [:module :effects] [:memory/allocate])
