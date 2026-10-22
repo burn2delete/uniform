@@ -152,6 +152,101 @@
   [source-path source-text]
   ((required-var 'sh06-resolution-source-artifact) source-path source-text (fixture-module-inputs source-path source-text)))
 
+(deftest sh06-current-reader-module-source-and-parent-composition
+  ;; New ordinary transport only, not B51 or authoritative reader admission.
+  (let [reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        library-path (fixture-path "modules" "values" ".gravity")
+        caller-path (fixture-path "modules" "consumer" ".gravity")
+        empty-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        stage (fn [label operation]
+                (println (pr-str {:current-module-stage label :event :begin}))
+                (let [start (System/nanoTime) value (operation)]
+                  (println (pr-str {:current-module-stage label :event :complete
+                                    :elapsed-ms (quot (- (System/nanoTime) start) 1000000)})) value))
+        observed (try {:value (stage :library #(bootstrap/compiler-c5-resolution-source-artifact
+                                                library-path (slurp library-path) empty-inputs reader))}
+                      (catch clojure.lang.ArityException error {:arity-error (.getMessage error)}))
+        library (:value observed)]
+    (is (= :accepted (:status library)) (pr-str (dissoc observed :value)))
+    (when (= :accepted (:status library))
+      (let [inputs (assoc empty-inputs :module-artifacts [library])
+            text (slurp caller-path)
+            syntax (stage :caller-c3 #(bootstrap/compiler-c3-syntax-source-artifact
+                                      caller-path text (bootstrap/reader-project-context-for-source caller-path)
+                                      nil nil reader))
+            parent (stage :caller-sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact caller-path syntax))
+            caller (stage :caller-from-parent #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                                                caller-path parent inputs reader))
+            replay (stage :caller-from-source #(bootstrap/compiler-c5-resolution-source-artifact
+                                                caller-path text inputs reader))
+            report (stage :fresh-c5 #(bootstrap/sh06-resolution-artifact-verification caller))
+            exported (first (filter #(and (= :namespace (:binding-class %)) (= 'identity-i64 (:name %)))
+                                    (get-in library [:binding-table :bindings])))
+            imported (first (filter #(and (= :import (:binding-class %)) (= 'identity-i64 (:name %)))
+                                    (get-in caller [:binding-table :bindings])))]
+        (is (= :accepted (:status caller) (:status replay)))
+        (is (= caller replay))
+        (is (= :passed (:status report)))
+        (is (= :gravity/sh06-ordinary-module-resolution-request
+               (get-in caller [:gravity-resolution-boundary :authenticated-resolution-request :artifact])))
+        (is (= 2 (get-in caller [:gravity-resolution-boundary :authenticated-resolution-request :schema-version])))
+        (is (= inputs (get-in caller [:gravity-resolution-boundary :module-inputs])))
+        (is (= (:artifact-id library) (:definition-artifact-id imported)))
+        (is (= (:definition-syntax-id exported) (:definition-syntax-id imported)))
+        (is (= (:binding-id exported) (get-in imported [:semantic-span :origin-binding-id])))
+        (is (= [(:artifact-id library)] (get-in caller [:incremental-invalidation-keys :inputs :module-artifact-ids])))
+        (is (= caller-path (get-in caller [:provenance :source-path])))
+        (let [reject (fn [supplied-parent supplied-inputs]
+                       (try
+                         (bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                          caller-path supplied-parent supplied-inputs reader)
+                         {:unexpected-success true}
+                         (catch clojure.lang.ExceptionInfo error (ex-data error))))
+              retained-path [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact
+                             :sh03-reader-authentication :reader-source-revision]]
+          (doseq [[supplied-parent supplied-inputs]
+                  [[parent nil]
+                   [parent empty-inputs]
+                   [parent (assoc inputs :module-artifacts [library library])]
+                   [parent (assoc inputs :module-artifacts [(assoc library :artifact-id (sha256-text "stale"))])]
+                   [(update-in parent (pop retained-path) dissoc (peek retained-path)) inputs]
+                   [(assoc-in parent (conj retained-path :source-content-hash) (sha256-text "changed")) inputs]]]
+            (let [failure (reject supplied-parent supplied-inputs)]
+              (is (contains? c5-rules (:id failure)) (pr-str failure))
+              (is (nil? (:unexpected-success failure))))))
+        (doseq [name ["values" "consumer"]]
+          (is (= (slurp (fixture-path "modules" name ".gravity"))
+                 (slurp (fixture-path "modules" name ".qst")))))))))
+
+(deftest sh06-current-reader-module-physical-path-and-arity-fences
+  (let [source (fixture-path "modules" "consumer" ".gravity")
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        failure (fn [operation]
+                  (try (operation) {:unexpected-success true}
+                       (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+    (is (= [2 3 4] (mapv count (:arglists (meta #'bootstrap/compiler-c5-resolution-source-artifact)))))
+    (is (= [1 2 3 4] (mapv count (:arglists (meta #'bootstrap/sh06-resolution-artifact-from-sh05-artifact)))))
+    ;; This current cohort differs from the historical default reader pin.
+    (is (= "C2-HASH" (:id (failure #(bootstrap/compiler-c5-resolution-source-artifact
+                                    source (slurp source))))))
+    (doseq [reader [nil 17 (str "bad" \u0000 "reader") source]]
+      (is (= "C2-HASH" (:id (failure #(bootstrap/compiler-c5-resolution-source-artifact source "" inputs reader)))))
+      (is (= "C2-HASH" (:id (failure #(bootstrap/sh06-resolution-artifact-from-sh05-artifact source nil inputs reader))))))
+    (let [b51 (failure #(bootstrap/sh06-resolution-artifact-from-sh05-artifact source nil nil))]
+      (is (= "C5-UNRESOLVED" (:id b51)))
+      (is (= :missing-context (get-in b51 [:observed :reason]))))
+    (let [callbacks (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) 7)
+                   (equals [_] (swap! callbacks inc) false)
+                   (toString [] (swap! callbacks inc) "opaque-reader"))]
+      (.hashCode opaque) (.equals opaque :probe) (.toString opaque)
+      (is (= 3 @callbacks))
+      (reset! callbacks 0)
+      (is (= "C2-HASH" (:id (failure #(bootstrap/compiler-c5-resolution-source-artifact source "" inputs opaque)))))
+      (is (= "C2-HASH" (:id (failure #(bootstrap/sh06-resolution-artifact-from-sh05-artifact source nil inputs opaque)))))
+      (is (= 0 @callbacks)))))
+
 (defn- verification
   [artifact]
   ((required-var 'sh06-resolution-artifact-verification) artifact))
