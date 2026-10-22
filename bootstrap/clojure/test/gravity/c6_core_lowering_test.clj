@@ -1,5 +1,6 @@
 (ns gravity.c6-core-lowering-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is testing]]
             [gravity.c6-core-lowering :as c6]
             [gravity.c6-core-lowering.context :as context]
             [gravity.c6-core-lowering.lowering :as lowering]))
@@ -401,6 +402,226 @@
            (set (map :diagnostic (:rejected-design-coverage artifact)))))
     (is (= :complete (get-in artifact [:capability-based-proof :status])))
     (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id artifact)))))
+
+(deftest c6-lossless-two-channel-feasibility-is-bounded-data-only
+  ;; One fixed hosted product; these local views are not accepted artifacts.
+  (let [limit (* 256 1024)
+        bound! (fn [ok? phase]
+                 (when-not ok? (throw (ex-info "bounded C6 feasibility stopped" {:phase phase}))))
+        children (fn [value]
+                   (cond (map? value) (mapcat identity value)
+                         (coll? value) value
+                         :else []))
+        stats (fn [value maximum-depth]
+                (loop [pending [[value 0]] visited 0 bytes 0 metadata-count 0 observed-depth 0]
+                  (if-let [[value depth] (peek pending)]
+                    (let [collection? (coll? value)
+                          n (if collection? (count value) 0)
+                          metadata (meta value)
+                          child-count (+ (if (map? value) (* 2 n) n) (if metadata 1 0))
+                          _ (bound! (and (<= depth maximum-depth) (<= n 128)
+                                         (<= (+ visited (count pending) child-count) 32768)) :walk)
+                          text (when-not collection?
+                                 (cond (nil? value) "nil"
+                                       (or (string? value) (symbol? value) (keyword? value)
+                                           (integer? value) (boolean? value)) (str value)
+                                       :else (throw (ex-info "unsupported feasibility scalar" {}))))
+                          _ (when text
+                              (bound! (and (<= (count text) 64)
+                                           (every? #(<= (int %) 127) text)) :scalar))
+                          bytes (+ bytes (if collection? (+ 4 (* (if (map? value) 4 2) n))
+                                             (if (string? value) (+ 2 (* 6 (count text))) (count text))))
+                          _ (bound! (<= bytes limit) :reservation)
+                          tasks (map #(vector % (inc depth)) (cond-> (children value) metadata (concat [metadata])))]
+                      (recur (into (pop pending) tasks) (inc visited) bytes
+                             (+ metadata-count (if metadata 1 0)) (max observed-depth depth)))
+                    {:visited visited :reservation bytes :metadata-count metadata-count
+                     :maximum-depth observed-depth})))
+        shared (with-meta (list 'do 7) {:mark :shared})
+        left (with-meta (list 'do 11) {:mark :equal})
+        right (with-meta (list 'do 11) {:mark :equal})
+        datum (with-meta (array-map :artifact :gravity/core-node :node-id "quoted"
+                                   :children [{:core-ref "not-an-edge"}]
+                                   :surface-form {:surface-ref 0}) {:mark :quoted-map})
+        quoted (with-meta (list 'quote (with-meta [datum 'do] {:mark :quoted-vector})) {:mark :quote})
+        form (with-meta (list 'do (list 'mix left right) (list 'mix shared shared) quoted) {:mark :root})
+        input-stats (stats form 8)
+        _ (bound! (<= (:visited input-stats) 128) :surface-occurrences)
+        _ (bound! (<= (* 1024 (:visited input-stats)) limit) :surface-table-reservation)
+        surface-rows (atom [])
+        surface-metadata (atom {})]
+    (letfn [(kind [value]
+              (cond (map? value) :map (vector? value) :vector (set? value) :set
+                    (seq? value) :list (coll? value) (throw (ex-info "unsupported collection" {}))
+                    :else :scalar))
+            (rebuild [value values]
+              (case (kind value)
+                :map (into (empty value) (map vec (partition 2 values)))
+                :vector (vec values) :set (into (empty value) values)
+                :list (apply list values) :scalar value))
+            (walk-data [f value path]
+              (when (map? value)
+                (bound! (every? #(or (keyword? %) (integer? %)) (keys value)) :metadata-locator-keys))
+              (let [rebuilt (if (map? value)
+                              (into (empty value)
+                                    (map (fn [[key item]]
+                                           [(walk-data f key (conj path [:key key]))
+                                            (walk-data f item (conj path [:value key]))])) value)
+                              (rebuild value (map-indexed #(walk-data f %2 (conj path %1))
+                                                         (children value))))]
+                (f rebuilt value path)))
+            (strip-metadata [value]
+              (let [ledger (atom {})
+                    plain (walk-data (fn [rebuilt original path]
+                                       (when-let [m (meta original)] (swap! ledger assoc path m))
+                                       (if (instance? clojure.lang.IObj rebuilt) (with-meta rebuilt nil) rebuilt))
+                                     value [])]
+                {:data plain :metadata @ledger}))
+            (restore-metadata [{:keys [data metadata]}]
+              (walk-data (fn [rebuilt _ path]
+                           (if (instance? clojure.lang.IObj rebuilt)
+                             (with-meta rebuilt (get metadata path)) rebuilt)) data []))
+            (surface! [value parent edge]
+              (let [id (count @surface-rows)
+                    _ (bound! (< id 128) :surface-table)
+                    _ (swap! surface-rows conj nil)
+                    row (if (= :scalar (kind value))
+                          {:id id :parent parent :edge edge :kind :scalar
+                           :value (if (instance? clojure.lang.IObj value) (with-meta value nil) value)}
+                          {:id id :parent parent :edge edge :kind (kind value)
+                           :items (mapv #(surface! %2 id %1) (range) (children value))})]
+                (when-let [m (meta value)] (swap! surface-metadata assoc id m))
+                (swap! surface-rows assoc id row)
+                id))
+            (core-children [node]
+              (case (:form node)
+                do (:children node) :call (get-in node [:children :arguments])
+                quote [] :literal []
+                (throw (ex-info "fixture needs a broader Core child grammar" {:form (:form node)}))))
+            (count-core [value]
+              (if (seq? value)
+                (if (= 'quote (first value)) 1 (inc (reduce + (map count-core (rest value))))) 1))
+            (count-nodes [node]
+              (inc (reduce + (map count-nodes (core-children node)))))
+            (core-depth [node]
+              (inc (reduce max 0 (map core-depth (core-children node)))))
+            (join! [node surface-id locators]
+              (let [row (nth @surface-rows surface-id)
+                    child-ids (if (seq (core-children node)) (subvec (:items row) 1) [])]
+                (bound! (= (count child-ids) (count (core-children node))) :surface-child-join)
+                (reduce (fn [result [child id]] (join! child id result))
+                        (assoc locators (:node-id node) surface-id)
+                        (map vector (core-children node) child-ids))))
+            (project [node child? surface? locators]
+              (let [convert #(if child? {:core-ref (:node-id %)} (project % false surface? locators))
+                    child-view (case (:form node)
+                                 do (mapv convert (:children node))
+                                 :call (update (:children node) :arguments #(mapv convert %))
+                                 quote (:children node) :literal (:children node)
+                                 (throw (ex-info "unsupported fixture child view" {})))]
+                (cond-> (assoc node :children child-view)
+                  surface? (assoc :surface-form {:surface-ref (get locators (:node-id node))}))))
+            (decode-surface [view id]
+              (let [row (nth (:surfaces view) id)
+                    values (map #(decode-surface view %) (:items row))
+                    value (case (:kind row)
+                            :scalar (:value row) :list (apply list values) :vector (vec values)
+                            :set (set values) :map (into (array-map) (map vec (partition 2 values))))]
+                (if (instance? clojure.lang.IObj value)
+                  (with-meta value (get (:surface-metadata view) id)) value)))
+            (decode-node [view index node child? surface?]
+              (let [convert #(decode-node view index (if child? (get index (:core-ref %)) %) child? surface?)
+                    child-view (case (:form node)
+                                 do (mapv convert (:children node))
+                                 :call (update (:children node) :arguments #(mapv convert %))
+                                 quote (:children node) :literal (:children node))]
+                (cond-> (assoc node :children child-view)
+                  surface? (assoc :surface-form (decode-surface view (get-in node [:surface-form :surface-ref]))))))]
+      (bound! (<= (count-core form) 64) :prepaid-core-rows)
+      (let [root (c6/c6-lower-form (atom 0) module
+                                  (assoc (syntax "feasibility" form) :metadata {:declared :preserved}
+                                         :generated-origin [{:macro 'tiny :syntax-id "generated"}]) form)
+            _ (stats root 64)
+            _ (bound! (<= (core-depth root) 8) :core-depth)
+            rows (c6/c6-flatten-core root)
+            _ (bound! (<= (count rows) 64) :core-rows)
+            _ (bound! (every? #(<= (count (:node-id %)) 32) rows) :core-reference-width)
+            row-stats (stats rows 64)
+            ;; Prepay fixed reference framing, occurrence rows, and metadata
+            ;; path sidecars before allocating the four view-copy walks.
+            view-reservation (+ 4096 (:reservation row-stats)
+                                (* 128 (reduce + (map count-nodes rows)))
+                                (* 1024 (:visited input-stats))
+                                (* (:metadata-count row-stats)
+                                   (+ 64 (* 96 (:maximum-depth row-stats)))))
+            _ (bound! (and (<= view-reservation limit)
+                           (<= (* 4 view-reservation) (* 2 1024 1024))) :prepaid-views)
+            surface-root (surface! form nil 0)
+            locators (join! root surface-root {})
+            specs [[:original false false] [:child-only true false] [:surface-only false true] [:both true true]]
+            raw-views (mapv (fn [[label child? surface?]]
+                              (cond-> {:view label :roots [(:node-id root)]
+                                       :rows (mapv #(project % child? surface? locators) rows)}
+                                surface? (assoc :surface-roots [surface-root] :surfaces @surface-rows
+                                                :surface-metadata @surface-metadata))) specs)
+            ;; All source/Core caps precede the bounded copying walks. Metadata
+            ;; sidecars and occurrence/reference/root tables are part of each view.
+            raw-reservations (mapv #(stats % 64) raw-views)
+            _ (bound! (<= (reduce + (map :reservation raw-reservations)) (* 2 1024 1024)) :copy-reservation)
+            views (mapv strip-metadata raw-views)
+            reservations (mapv #(stats % 64) views)
+            _ (bound! (every? #(<= (:reservation %) view-reservation) reservations) :complete-view-reservations)
+            _ (bound! (<= (reduce + (map :reservation reservations)) (* 2 1024 1024)) :total-reservation)
+            original-metadata (:metadata (strip-metadata rows))
+            observations
+            (mapv (fn [[label child? surface?] encoded reservation]
+                    (let [text (binding [*print-length* nil *print-level* nil *print-meta* false
+                                         *print-dup* false *print-namespace-maps* false] (pr-str encoded))
+                          bytes (alength (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8))
+                          _ (bound! (<= bytes (:reservation reservation) limit) :printed-bytes)
+                          view (restore-metadata (edn/read-string {:readers {}} text))
+                          index (into {} (map (juxt :node-id identity)) (:rows view))
+                          decoded (mapv #(decode-node view index % child? surface?) (:rows view))
+                          _ (is (= rows decoded))
+                          _ (is (= original-metadata (:metadata (strip-metadata decoded))))
+                          _ (is (= (mapv :node-id rows) (mapv :node-id decoded)))
+                          _ (is (= (mapv :source rows) (mapv :source decoded)))
+                          _ (is (= (mapv :children rows) (mapv :children decoded)))
+                          _ (is (= (mapv :surface-form rows) (mapv :surface-form decoded)))
+                          _ (is (= rows (c6/c6-flatten-core (first decoded))))]
+                      {:view label :utf8-bytes bytes :reserved-bytes (:reservation reservation)}))
+                  specs views reservations)
+            first-call (nth (:items (nth @surface-rows surface-root)) 1)
+            second-call (nth (:items (nth @surface-rows surface-root)) 2)
+            equal-ids (subvec (:items (nth @surface-rows first-call)) 1)
+            shared-ids (subvec (:items (nth @surface-rows second-call)) 1)]
+        (is (= left right))
+        (is (not (identical? left right)))
+        (is (identical? (second (nth form 2)) (nth (nth form 2) 2)))
+        (is (= 12 (count rows)))
+        (is (= rows (recursive-flatten-oracle root)))
+        (is (= (mapv #(str "c6-core-" %) (range 12)) (mapv :node-id rows)))
+        (is (and (identical? left (:surface-form (nth rows 2)))
+                 (identical? right (:surface-form (nth rows 4)))
+                 (not (identical? (:surface-form (nth rows 2)) (:surface-form (nth rows 4))))))
+        (is (and (identical? shared (:surface-form (nth rows 7)))
+                 (identical? shared (:surface-form (nth rows 9)))))
+        (is (= ['mix 'mix] (mapv #(get-in % [:children :operator]) (filter #(= :call (:form %)) rows))))
+        (is (empty? (core-children (last rows))))
+        (is (not-any? #(= "quoted" (:node-id %)) rows))
+        (is (= 2 (count (set equal-ids)) (count (set shared-ids))))
+        (is (= (count rows) (count locators) (count (set (map :node-id rows)))))
+        (is (= (range (count @surface-rows)) (map :id @surface-rows)))
+        (doseq [{:keys [id parent edge]} (rest @surface-rows)]
+          (is (= id (nth (:items (nth @surface-rows parent)) edge))))
+        (is (= rows (:data (strip-metadata rows))))
+        (is (seq original-metadata))
+        (is (not= original-metadata (:metadata (strip-metadata (:data (strip-metadata rows))))))
+        (is (= datum (-> (decode-surface (restore-metadata (last views)) surface-root) last second first)))
+        (is (nil? (find-ns 'gravity.bootstrap)))
+        (println (pr-str {:c6-lossless-two-channel-data-only true :core-rows (count rows)
+                          :surface-occurrences (count @surface-rows) :input-walk (:visited input-stats)
+                          :views observations :authoritative? false}))))))
 
 (deftest c6-growing-surface-cost-is-bounded-data-only
   ;; Diagnostic views only: no artifact schema, decoder or production change.
