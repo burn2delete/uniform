@@ -27,7 +27,8 @@
 (defn- current-parameter-pair [path]
   ;; Original current-source products and original assembler, not a supplied
   ;; normalized module, patched MIR or public pinned-source admission.
-  (let [text (slurp path) products ((existing 'parameter-source-products) path text)
+  (let [source-start (System/nanoTime)
+        text (slurp path) products ((existing 'parameter-source-products) path text)
         c6-plan (existing 'parameter-c6-plan) call (existing 'invoke)
         raw (call c6-plan 'c6-c10-build-checked-core-template [(:envelope products)])
         fresh ((existing 'parameter-source-products) path text)
@@ -37,8 +38,14 @@
         sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
         context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
         core (bootstrap/p15-s23-c6c10-public-artifact
-              context (:compiled-binding-data products) (:ingress products) sealed)]
-    {:raw raw :upstream upstream :core core :mir (build core)}))
+              context (:compiled-binding-data products) (:ingress products) sealed)
+        source-end (System/nanoTime) mir (build core) construction-end (System/nanoTime)]
+    ;; Observations around already-required calls only: no extra build,
+    ;; acceptance cache, timing API or benchmark/isolation claim.
+    (println "parameter-pair phases(ns)" (.getName (java.io.File. path))
+             :source-c6-replay-seal (- source-end source-start)
+             :initial-c11-construction (- construction-end source-end))
+    {:raw raw :upstream upstream :core core :mir mir}))
 
 (defn- argument-run-observation [core mir arguments]
   ;; Preserve the real missing-entrypoint RED as an observation, not a fake
@@ -507,7 +514,7 @@
   (let [root @(existing 'root)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source"]
     (doseq [[extension nested-side inner-condition]
-            [["gravity" :then false]]]
+            [["gravity" :then false] ["qst" :else true]]]
       (let [source (str (.resolve root (str relative "." extension)))
             temporary (java.io.File/createTempFile "gravity-sh13-nested-if-" (str "." extension))
             expression (if (= nested-side :then)
@@ -516,7 +523,10 @@
           (spit temporary (str/replace (slurp source) "(if flag true false)" expression))
           (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
                 nodes (:core-nodes core) ids (mapv :node-id nodes)
-                verification (invoke 'sh12-verify-branch-join-mir core mir)]
+                verification-start (System/nanoTime)
+                verification (invoke 'sh12-verify-branch-join-mir core mir)
+                verification-end (System/nanoTime)]
+            (println "nested-if fresh-c11-verification(ns)" extension (- verification-end verification-start))
             (is (= :accepted (:status raw)))
             (is (= :passed (:status upstream)))
             (is (= :passed (:status verification)) (pr-str (:diagnostics verification)))
@@ -534,7 +544,23 @@
                     inner-then-index (+ inner-literal-index 2) inner-else-index (+ inner-literal-index 3)
                     other-index (if (= nested-side :then) 8 3)
                     operations (vec (mapcat #(get-in blocks [% :instructions]) order))
-                    dominators {e [e] n [e n] a [e n a] b [e n b] k [e n k] o [e o] j [e j]}]
+                    dominators {e [e] n [e n] a [e n a] b [e n b] k [e n k] o [e o] j [e j]}
+                    unit-context (invoke 'sh13-c6p-nested-context core mir)]
+                ;; UNIT runtime-gate checks on an actual derived context.
+                ;; Mutated contexts are never submitted as public verified
+                ;; executions or evidence of passed upstream source binding.
+                (is (true? (invoke 'sh13-c6p-nested-shape-valid? core mir unit-context)))
+                (doseq [role [:inner-then :inner-else :other]]
+                  (is (false? (invoke 'sh13-c6p-nested-shape-valid? core mir
+                                      (assoc-in unit-context [role :instructions 0 :constant-payload :value]
+                                                9223372036854775808N))))
+                  (doseq [endpoint [Long/MIN_VALUE Long/MAX_VALUE]]
+                    (is (true? (invoke 'sh13-c6p-nested-shape-valid? core mir
+                                       (assoc-in unit-context [role :instructions 0 :constant-payload :value]
+                                                 endpoint))))))
+                (doseq [payload [nil 0 1 "false"]]
+                  (is (false? (invoke 'sh13-c6p-nested-shape-valid? core mir
+                                      (assoc-in unit-context [:nested :instructions 0 :constant-payload :value] payload)))))
                 (is (= 11 (count nodes) (count (get-in mir [:data-flow-graph :values]))))
                 (is (= 7 (count blocks)))
                 (is (= #{e n a b k o j} (set (keys blocks))))
@@ -608,7 +634,9 @@
                     (is (= :rejected (:status original) (:status result)))
                     (is (= (:diagnostics original) (:diagnostics result)))
                     (is (nil? (:execution result)))))
-                (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
+                (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
+                (println "nested-if execution-recompute-and-tamper-checks(ns)" extension
+                         (- (System/nanoTime) verification-end)))))
           (finally (.delete temporary)))))
     (let [core (checked ".gravity") mir (build core)]
       (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
