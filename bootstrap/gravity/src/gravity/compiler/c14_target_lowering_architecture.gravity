@@ -2382,11 +2382,13 @@
         values (c14-c-evaluate-operations operations operations-by-id {})
         result (get values return-id)]
     (if (contains? values return-id)
-      (if (integer? result)
-        (if (<= 0 result)
-          (<= result 255)
-          false)
-        false)
+      (if (boolean? result)
+        true
+        (if (integer? result)
+          (if (<= 0 result)
+            (<= result 255)
+            false)
+          false))
       false)))
 
 (defn c14-c-bounded-mir-surface-valid?

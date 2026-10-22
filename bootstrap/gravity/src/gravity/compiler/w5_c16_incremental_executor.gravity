@@ -93,10 +93,19 @@
    {:target :windows :support :unsupported
     :invokes-clojure? false :links-jvm? false :fallback? false}])
 (def w5-c16-target-scope
-  {:candidate-target w5-c16-candidate-target
-   :candidate-platform w5-c16-candidate-platform
-   :unsupported-targets w5-c16-unsupported-targets
-   :unsupported-target-policies w5-c16-unsupported-target-policies
+  {:candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}]
    :cross-target-inference? false
    :fallback? false})
 
@@ -127,7 +136,8 @@
    :target-change
    :backend-change
    :plugin-change
-   :diagnostic-change])
+   :diagnostic-change
+   :reader-change])
 
 (def w5-c16-diagnostic-catalog
   {:artifact :gravity/w5-c16-diagnostic-catalog
@@ -158,11 +168,19 @@
                    :public-authority? false
                    :full-language-credit? false
                    :matrix-240-credit? false
-                   :candidate-target w5-c16-candidate-target
-                   :candidate-platform w5-c16-candidate-platform
-                   :unsupported-targets w5-c16-unsupported-targets
+                   :candidate-target :llvm-x86_64-linux
+                   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                        :artifact-format :elf :abi :sysv-amd64}
+                   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
                    :unsupported-target-policies
-                   w5-c16-unsupported-target-policies
+                   [{:target :darwin :support :unsupported
+                     :invokes-clojure? false :links-jvm? false :fallback? false}
+                    {:target :darwin-arm64 :support :unsupported
+                     :invokes-clojure? false :links-jvm? false :fallback? false}
+                    {:target :darwin-x86_64 :support :unsupported
+                     :invokes-clojure? false :links-jvm? false :fallback? false}
+                    {:target :windows :support :unsupported
+                     :invokes-clojure? false :links-jvm? false :fallback? false}]
                    :cross-target-inference? false
                    :fallback? false}})
 
@@ -684,7 +702,9 @@
                                        :backend
                                        (if (= (get change :cause) :plugin-change)
                                          :plugin
-                                         :diagnostic-schema))))))))))))
+                                         (if (= (get change :cause) :reader-change)
+                                           :reader
+                                           :diagnostic-schema)))))))))))))))
           (if (w5-c16-id? (get change :before))
             (if (w5-c16-id? (get change :after))
               (if (= (get change :before) (get change :after))
@@ -695,7 +715,7 @@
           false)
         false)
       false)
-    false))))
+    false))
 
 (defn w5-c16-change-list-valid? [changes index]
   (if (= index (count changes))
@@ -939,7 +959,9 @@
           false)
         false)
       false)
-    false))))
+    false)
+    false)
+    false))
 
 (defn w5-c16-revalidate-cache-entry [request]
   (let [key (get request :cache-key)
@@ -983,10 +1005,23 @@
                         :before (get change :before)
                         :after (get change :after)}
    :changed-field (get change :field)
-   :affected-nodes [:source-unit :typed-core :diagnostic-stream
-                    :proof-certificate :target-artifact]
-   :downstream-stages [:type-check :effect-check :safety-analysis :mir
-                       :target-lowering :diagnostics]
+   :affected-nodes
+   (if (= :reader-change (get change :cause))
+     ; The executor has validated that every graph node is root-reachable.
+     ; Conservatively invalidate all of them, including the syntax stream.
+     (let [nodes (get (get request :dependency-graph) :nodes)]
+       (loop [index 0 result []]
+         (if (= index (count nodes))
+           result
+           (recur (+ index 1) (conj result (get (get nodes index) :node-id))))))
+     [:source-unit :typed-core :diagnostic-stream
+      :proof-certificate :target-artifact])
+   :downstream-stages
+   (if (= :reader-change (get change :cause))
+     [:reader :macro-expansion :namespace-analysis :type-check :effect-check
+      :safety-analysis :mir :target-lowering :diagnostics]
+     [:type-check :effect-check :safety-analysis :mir
+      :target-lowering :diagnostics])
    :proofs-invalidated true
    :diagnostics-invalidated true
    :runtime-checks-restored true
@@ -1267,6 +1302,7 @@
                            :missing-build-effect-replay))
                         (w5-c16-rejected
                          request "C16-GRAPH" :dependency-graph
+                         :dependency-graph
                          :dependency-graph-inconsistency))
                       (w5-c16-rejected
                        request "C16-STALE" :source :cache-entry

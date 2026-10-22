@@ -140,7 +140,7 @@
                       (false? (:links-jvm? %))
                       (false? (:fallback? %)))
                 (:unsupported-target-policies policy)))
-    (is (= 14 (count (:invalidation-causes policy))))
+    (is (= 15 (count (:invalidation-causes policy))))
     (is (= 10 (count (:diagnostics policy))))
     (is (true? (:clojure-seed-boundary? policy)))
     (is (false? (:self-hosted? policy)))
@@ -164,14 +164,14 @@
           operations (:operations result)
           changed (rest operations)]
       (is (= :accepted (:status result)))
-      (is (= 15 (count operations)))
+      (is (= 16 (count operations)))
       (is (= :unchanged-reuse (:operation-id (first operations))))
       (is (= :reused (:decision (first operations))))
       (is (= :accepted (:proof-reuse (first operations))))
       (is (= :accepted (:diagnostic-reuse (first operations))))
       (is (true? (:publishable? (first operations))))
-      (is (= 14 (count (:invalidation-traces result))))
-      (is (= 15 (count (:reuse-reports result))))
+      (is (= 15 (count (:invalidation-traces result))))
+      (is (= 16 (count (:reuse-reports result))))
       (is (empty? (:diagnostics result)))
       (is (true? (:publishable? result)))
       (is (true? (:clojure-seed-boundary? result)))
@@ -184,7 +184,7 @@
                :effect-change :profile-change :capability-change
                :safety-change :proof-change :dependency-change
                :target-change :backend-change :plugin-change
-               :diagnostic-change}
+               :diagnostic-change :reader-change}
              (set (map :cause changed))))
       (is (every? #(= :invalidated (:decision %)) changed))
       (is (every? #(= :rejected (:proof-reuse %)) changed))
@@ -302,3 +302,101 @@
            (get-in altered-verification [:diagnostics 0 :rule])))
     (is (= :rejected (:status recomputed)))
     (is (= "C16-STALE" (get-in recomputed [:diagnostics 0 :rule])))))
+
+(deftest w5-c16-reader-change-invalidates-syntax-and-downstream-records
+  ;; Supplied cache-record execution only, not a cache store, source compiler,
+  ;; actual artifact rebuild, or external proof/diagnostic recomputation.
+  (doseq [[plan extension kind] [[accepted-gravity-plan ".gravity" :gravity]
+                                [accepted-qst-plan ".qst" :qst]]]
+    (let [base (request plan 'w5-c16-incremental-execution-request
+                        "/checkout-a" extension kind)
+          before (get-in base [:cache-key :reader])
+          after "sha256:w5-c16-reader-v2"
+          change {:cause :reader-change :field :reader :before before :after after}
+          input (-> base
+                    (assoc :changes [change])
+                    (update-in [:cache-entry :invalidated-by] conj :reader-change)
+                    (update-in [:dependency-graph :edges 0 :invalidated-by] conj :reader-change))
+          result (run-request input)
+          verify (fn [request-value candidate]
+                   (invoke engine-plan 'w5-c16-verify-result [request-value candidate]))]
+      ;; Exercise the restored, previously uncompilable guard chain before
+      ;; relying on the new reader cause. The original fourteen stay legal.
+      (doseq [existing (remove #(= :reader-change (:cause %)) (:changes base))]
+        (is (true? (invoke engine-plan 'w5-c16-change-valid? [existing])))
+        (is (false? (invoke engine-plan 'w5-c16-change-valid?
+                            [(assoc existing :field :not-the-cause-field)]))))
+      (let [existing (first (:changes base))]
+        (doseq [invalid [nil [] 42 {} (assoc existing :extra true)
+                         (assoc existing :cause :unknown-change)
+                         (assoc existing :before nil) (assoc existing :after nil)
+                         (assoc existing :after (:before existing))]]
+          (is (false? (invoke engine-plan 'w5-c16-change-valid? [invalid])))))
+      (is (true? (invoke engine-plan 'w5-c16-request-shell-valid? [base])))
+      (doseq [invalid [nil [] {} (assoc base :extra true)
+                       (assoc base :artifact :wrong) (assoc base :schema-version 2)
+                       (assoc base :execution-id "not-a-keyword") (assoc base :mode :unknown)]]
+        (is (false? (invoke engine-plan 'w5-c16-request-shell-valid? [invalid]))))
+      (is (true? (invoke engine-plan 'w5-c16-change-valid? [change])))
+      (is (= :accepted (:status result)))
+      (when (= :accepted (:status result))
+        (let [[unchanged changed] (:operations result)
+              trace (:invalidation-trace changed)]
+          (is (= 2 (count (:operations result))))
+          (is (= :reused (:decision unchanged)))
+          (is (= :accepted (:proof-reuse unchanged) (:diagnostic-reuse unchanged)))
+          (is (= :reader-change (:operation-id changed) (:cause changed)))
+          (is (= :invalidated (:decision changed)))
+          (is (= {:reader after}
+                 (into {} (remove (fn [[field value]] (= value (get (:cache-key input) field)))
+                                  (get-in changed [:after-key :semantic-input])))))
+          (is (= (:cache-key input) (get-in changed [:before-key :semantic-input])))
+          (is (= :rejected (:proof-reuse changed) (:diagnostic-reuse changed)))
+          (is (= {:field :reader :before before :after after} (:invalidating-input trace)))
+          (is (= (mapv :node-id (get-in input [:dependency-graph :nodes]))
+                 (:affected-nodes trace)))
+          (is (some #{:syntax-stream} (:affected-nodes trace)))
+          (is (= [:reader :macro-expansion :namespace-analysis :type-check :effect-check
+                  :safety-analysis :mir :target-lowering :diagnostics]
+                 (:downstream-stages trace)))
+          (is (every? true? ((juxt :proofs-invalidated :diagnostics-invalidated
+                                  :runtime-checks-restored) trace)))
+          (is (= (get-in input [:source :source-span]) (:source-span trace)))
+          (is (= (:dependency-graph input) (:dependency-graph result)))
+          (is (= [trace] (:invalidation-traces result)))
+          (is (= :passed (:status (verify input result))))
+          (doseq [candidate [(assoc-in result [:operations 1 :decision] :reused)
+                             (assoc-in result [:operations 1 :after-key :semantic-input :reader] before)
+                             (assoc-in result [:operations 1 :proof-reuse] :accepted)
+                             (assoc-in result [:operations 1 :diagnostic-reuse] :accepted)
+                             (assoc-in result [:invalidation-traces 0 :affected-nodes] [:typed-core])
+                             (assoc-in result [:invalidation-traces 0 :downstream-stages] [:type-check])]]
+            (let [report (verify input candidate)]
+              (is (= :rejected (:status report)))
+              (is (= "C16-VERIFY" (get-in report [:diagnostics 0 :rule])))))))
+      (let [unchanged (run-request (assoc input :changes []))]
+        (is (= :accepted (:status unchanged)))
+        (is (= [:reused] (mapv :decision (:operations unchanged))))
+        (is (= [] (:invalidation-traces unchanged))))
+      (doseq [[invalid rule reason]
+              [[(update-in input [:cache-entry :invalidated-by] disj :reader-change)
+                "C16-ENTRY" :malformed-cache-entry]
+               [(assoc-in input [:changes 0 :field] :source)
+                "C16-KEY" :invalid-or-incomplete-change]
+               [(assoc-in input [:changes 0 :after] before)
+                "C16-KEY" :invalid-or-incomplete-change]
+               [(assoc-in input [:changes 0 :before] "sha256:stale-reader")
+                "C16-STALE" :cache-key-baseline-substitution]
+               [(update input :cache-key dissoc :reader)
+                "C16-KEY" :malformed-or-incomplete-cache-key]
+               [(assoc-in input [:cache-key :reader] after)
+                "C16-STALE" :cache-key-mismatch]
+               [(assoc-in input [:cache-entry :proof :status] :stale)
+                "C16-PROOF" :stale-proof-or-certificate]]]
+        (let [rejected (run-request invalid)]
+          (is (= :rejected (:status rejected)))
+          (is (= rule (get-in rejected [:diagnostics 0 :rule])))
+          (is (= reason (get-in rejected [:diagnostics 0 :facts :reason])))
+          (is (= (get-in input [:source :source-span])
+                 (get-in rejected [:diagnostics 0 :source-span])))
+          (is (= :passed (:status (verify invalid rejected)))))))))
