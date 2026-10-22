@@ -3009,12 +3009,12 @@
         binding (assoc (get-in input [:bindings :ordering-binding]) :binding-id bid :name 'first :definition-syntax-id definition)
         operator {:node-id op :core-form :reference :children [] :resolved-binding-ids [bid] :source (source op)
                   :binding-context body :attributes {:symbol 'first :position :operator :binding-id bid :binding-class :core
-                                                    :definition-syntax-id definition} :evaluation {:kind :value :order []}}
+                                                    :definition-syntax-id definition} :evaluation {:kind :value :order [] :region :module-initialization}}
         children [op :slice-call]
         node {:node-id id :core-form :call :children children :resolved-binding-ids [bid] :source (source id) :binding-context body
               :attributes {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
                            :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
-              :evaluation {:owner-function-syntax-id nil :kind :operator-then-arguments
+              :evaluation {:owner-function-syntax-id nil :region :module-initialization :kind :operator-then-arguments
                            :order [{:index 0 :core-node-id op} {:index 1 :core-node-id :slice-call}]}}
         call {:core-node-id id :operator-node-id op :operator-binding-id bid :argument-node-ids [:slice-call]
               :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :result-policy :call-result}
