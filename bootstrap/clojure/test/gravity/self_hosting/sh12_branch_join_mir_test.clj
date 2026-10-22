@@ -295,6 +295,17 @@
           (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
       (finally (.delete temporary)))))
 
+(deftest sh12-current-c6-forwards-ordered-i64-parameter-arms
+  ;; c6c10-product-depth's scalar selection subtree, not Map field typing,
+  ;; a range witness, a new max primitive or execution of the whole helper.
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_depth_choice_source.gravity"))
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        input (:envelope (parameter-source-products path (slurp path) nil reader-path))
+        raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
+    (is (= :gravity/c6-c10-resolved-two-i64-parameters-v1 (get-in input [:resolved-parameter :kind])))
+    (is (= :if (get-in input [:stage2-plan :functions 'main :instructions 0 :op])))
+    (is (= :accepted (:status raw)) (pr-str (:diagnostics raw)))))
+
 (deftest sh12-current-c6-consumes-i64-order-as-a-condition
   ;; c6c10-all-lexical-bindings-resolve-loop? consumes strict index ordering
   ;; as control. This closed predicate subtree does not execute its recursion.

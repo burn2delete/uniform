@@ -1,0 +1,7 @@
+(ns gravity.sh12.two-i64-depth-choice-source
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [left-depth :- I64 right-depth :- I64]
+  (if (< left-depth right-depth) right-depth left-depth))
