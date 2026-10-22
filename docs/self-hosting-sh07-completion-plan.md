@@ -5,6 +5,14 @@ Assessment date: 2026-10-21.
 Planning baseline: main `192dafcc86867ec6d067ee31d6b46fea4d1b0b92`,
 tree `d4a01026dfe10d147c01e9f4bcd6bef8443c7165`.
 
+Current desk reconciliation: 2026-10-22, committed main
+`2a94fb7156f9e85ad085bc88f4d6f0b05b973e4c`, tree
+`cd2380533645332e1b9473eab4e064bf686c2c20`. The historical planning observations
+below retain their original binding. See the
+[C01 working support map](#c01-working-support-map) and
+[current input/evidence reconciliation](self-hosting-current-migration-cohort.md#c01c16-reconciliation-at-2a94fb71).
+No task is closed by this documentation update.
+
 ## Purpose and authority
 
 This document decomposes the existing six
@@ -160,6 +168,71 @@ The 13 core forms are covered by C02 (`quote`), C03 (`def`, `var`), C04
 (`try`, `throw`) and C10 (`match`). C06 covers ordinary calls/dispatch rather
 than inventing a fourteenth special form. C11-C15 cover cross-cutting C6
 artifacts, preservation, authentic composition and rejection obligations.
+
+## C01 working support map
+
+The selected *source subjects* are the six complete owner files in the
+[current cohort table](self-hosting-current-migration-cohort.md#c01c16-reconciliation-at-2a94fb71),
+not six snippets, every directory entry, or every later typed/native owner.
+The output is ordinary verified canonical Core under `:meta/:jvm`. Source
+analysis, execution of the owning Gravity lowerer, and typed execution of a
+compiled compiler are three different claims. Only the first two belong to
+this bounded proposed module decision; the third still needs its real later
+producer/consumer/build graph.
+
+The retained source censuses identify `defn` expansion into original `def`/`fn`
+and reused bodies, with quote/catalog DATA kept separate. They do not provide
+the complete source-occurrence-to-Core/primitive matrix required to close C01.
+The table below populates concrete starting rows without inventing the missing
+variant population. Each test name is a locator in the existing owning test
+file, not a newly executed or automatically applicable result. Status is
+**located-only** unless the original scoped result is explicitly retained by
+the audit; candidate-wide acceptance remains **verification-open**.
+
+The [Core test owner](../bootstrap/clojure/test/gravity/self_hosting/sh07_checked_core_test.clj),
+[B47 composition owner](../bootstrap/clojure/test/gravity/self_hosting/sh07_b47_function_call_recursion_test.clj)
+and [fragment owner](../bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj)
+contain the named checks below; the remaining owner paths are in
+[Existing validation starting points](#existing-validation-starting-points).
+
+| Required use or unresolved variant decision | Tasks and owning rule/product | Existing accepted/rejected checks and evidence boundary | Missing closure / invalidation |
+| --- | --- | --- | --- |
+| Six owner `def` DATA and `defn` bodies; quoted type/catalog maps, for example `sh07-atomic-type-id` | C02/C04/C05/C11; L1/L2/C4/C6 preserve kinds, inert quote, constructor order and generated `def`/`fn`. | `sh07_checked_core_test.clj` carrier-shaped DATA and decimal kernels; mutation tests for character occurrences, map source order and quoted duplicates; retained SH05 subject/reference comparisons. | Join every required literal/constructor/quote occurrence, including rejected shape/value/origin cases. A `defn` count is not execution of every body or completeness of primitive support. |
+| Named owner calls and exact source binding identities; `sh07-lower-reference`, `sh07-lower-def`, `sh07-lower-var` | C03/C05/C06; C5/C6 retain lexical/namespace/definition/value and call-edge distinctions. | `sh07_references_calls_test.clj`, alias-qualified and var-reference owners; `sh07-b5-qualified-var-development-kernel`; SH06 genuine imported/private/unresolved and stale binding compositions in the audit. | Select actual qualified/import/var uses, if any, from executable positions, not quoted handlers. Preserve upstream C5 rejection versus Core rejection. No ambient host lookup or inferred callee artifacts. |
+| Ordinary owner `if`/`let`/`loop`/`recur` algorithms; for example `sh07-vector-contains?` and `sh07-b13-flatten-fragment-field` | C04/C07/C11; L2 control/order/lexical/nearest-target records. | `sh07-b1-if-and-do-preserve-order-and-exclusive-branches`, malformed-control and replay-mutation selectors; `sh07-b3-let-products-preserve-sequential-scope`; owning loop/recur tests. | Exact body/empty/terminal/nested/transfer variants still need occurrence joins. A lowered recur is not a C7 type-compatible transfer or executable runtime loop. |
+| Ordinary functions/calls, including real two-function products | C05/C06/C12-C14; original function signatures, parameter IDs, ordered arguments, captures and recursion components. | `sh07-b47-two-i64-call-current-gravity-composition`: retained real current-reader G composition, public fresh verification and session mutations at its original revision; Q source selector was not run. B48 is separate direct-call legality. | Do not turn paired byte/seed-parser checks into Q composition, raw Core into checked C7-C10, or B48 into public ordinary-call routing. Required closure/cross-module/indirect/variadic variants need an explicit use and consumer decision. |
+| Mutation, typed errors/handlers and structural/guard match variants | C08-C10; L2/L7/L9/C6 location/RHS order, control exits, clause scopes and structural-failure skipping. | Qualified mutation, throw/try/multiple-catch, match/vector-pattern owners; quoted-symbol, keyword-map and root-map-guard kernels plus their source/forgery negatives. | Implementation exists for scoped variants, but source spelling in the lowerer's quoted dispatch DATA is not a required executable use. Do not exclude a variant as optional or close its task without the complete selected use matrix. Later guard Bool/totality, effects and ownership remain their owners' obligations. |
+| Complete Core graph, fragments, maps, retained metadata and declarations | C11/C13-C15; C6 canonical products and authentic source/input joins. | `sh07-b13-fragment-manifest-is-exact-root-aligned-and-exhaustive`, `sh07-b13-fragment-coverage-is-exact-ordered-and-complete`, `sh07-b13-fragment-request-alterations-fail-closed`; owning template/resolved/origin/source-map checks. | Inspect actual tested inputs/results and constructor route. Public default-pinned tests are not current-reader evidence. Graph/identity/provenance/source mutations require the real affected boundary, not a copied passed flag. |
+| Full checked-Core source as an analyzed subject versus the Gravity builder as executor | C12/C16, distinct from C02-C11 kernels. | Audit records the incomplete exit-143 source attempt and bounded smaller subject results. Existing `b-run-frontend-subject` ends in hosted `gravity.c6-core-lowering`, not `gravity.checked-core`. | Construction/verification cost and explicit current-reader helper selection remain open. No completed whole checked-Core hosted-C6 result is available; no unchanged large retry is selected here. |
+| Required raw seed primitives behind all six executed owner plans | C01/C11-C12; D1/L2/C6 and declared temporary TCB. | `compiler.gravity` rule DATA, `00575`/`00576`/`00580` seed construction and `00588`/`00591`/`00593` execution; repository closure bound in the cohort document. | Exact used primitive/instruction manifest and actual compiled plan identities are MISSING. The allowed builtin list is not a used-call census. A required unsupported primitive remains open at its implementation owner. |
+| Typed downstream primitives used by the actual Core source: `sh07-exact-keys?` uses `map?`, both `count`s, `keys`, `set` and equality; Vector traversal uses `first`/`rest` | C14 affected integration; SH08/SH09/SH13/SH14/SH22 implementation ownership, not new Core forms. | In `sh08_function_call_type_test.clj`: `sh08-vector-rest-current-source-composition`, `sh08-map-keys-current-source-composition`, `sh08-list-set-current-source-composition`, `sh08-bare-keyword-anchor-current-source-composition`; owning SH09 body and SH01 lowering/runtime kernels are separate results. | Those direct expressions do not type or execute the whole helper. Its `value`/`expected` are unannotated; `map?` supplies no key-domain facts. Different call shapes have no automatic parameter generalization, and a bare Set is not a proven nonempty Keyword anchor. Concurrent private **explicit** BareMap key-domain work is unmerged and not accepted here. Do not narrow the helper's non-Map-to-false behavior by silently adding a Map annotation. |
+
+### C01 and C16 stopping point
+
+The six full subjects, ordinary current-reader intake, repository load boundary
+and concrete evidence locators are recorded. Still MISSING are the complete
+occurrence/primitive/import variant matrix, actual selected plans and external
+compiler/environment identities, and candidate-bound acceptance/rejection
+results for every required row. This is useful reconciliation, not completion
+of C01. No source or fixture was excluded to obtain a passing count.
+
+C16 retains the audit's historical 39-S/three-P traceability classification,
+not a current 39/42 execution score. SH-05.1, SH-05.6 and SH-06.6 remain OPEN;
+the resolver stays development-unadmitted. Earlier expansion/resolution and
+hosted-consumer results may retain their original scope where dependency
+comparison justifies it. The changed reader, seed/adapters and explicit emitter
+freshness input prevent treating them as one fresh selected cohort. C16's
+remaining action is that exact upstream/cohort reconciliation, not an invented
+new macro feature, marginal resolution fixture or historical corpus repin.
+
+Before C17, the coordinator selects one genuinely stable, independently
+reviewed revision and comparison method in the existing BOOT5/BOOT7/BOOT8
+records. Source-unchanged evidence is reused only with its actual dependency
+assumptions. Any remaining required semantic or interface row receives its
+existing C02-C15 owner and proportionate accepted/rejected checks. If only this
+bounded module migration succeeds, C18 records it and leaves milestone-wide
+SH-07 partial; it does not assert SH25 compiler rebuild, seed retirement,
+release, or support for all later targets.
 
 ## Existing validation starting points
 
