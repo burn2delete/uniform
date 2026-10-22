@@ -835,7 +835,7 @@
            (mapv #(get-in index [% :attributes :value]) (rest (:argument-node-ids assoc-call)))))
     (is (= [:collection-literal :map]
            (let [receiver (get index (first (:argument-node-ids assoc-call)))]
-             [(:core-form receiver) (get-in receiver [:attributes :literal-kind])]))))
+             [(:core-form receiver) (get-in receiver [:attributes :literal-kind])])))
     (is (= :if (:core-form default-node)))
     (is (= [true :fallback :unused]
            (mapv #(get-in index [% :attributes :value]) (:children default-node))))
