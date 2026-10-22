@@ -193,7 +193,8 @@
 
 (deftest sh12-current-c6-produces-two-independently-resolved-bool-parameters
   ;; Real source/C2/C5 products, not a hand-built type witness or MIR. This
-  ;; phase stops at C6; all four argument tuples remain rejected by C11.
+  ;; producer checks retain their original source lineage; the closed C11
+  ;; consumer now also reconstructs this family. SH13 owns tuple execution.
   (doseq [extension ["gravity" "qst"]]
     (let [path (str (.resolve @root (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_bool_parameter_source." extension)))
           text (slurp path) products (parameter-source-products path text) input (:envelope products)
@@ -252,14 +253,9 @@
                 context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
                 core (bootstrap/p15-s23-c6c10-public-artifact context (:compiled-binding-data products) (:ingress products) sealed)
                 mir (build-mir core)
-                rejected-verification (verify-mir core mir)]
+                verification (verify-mir core mir)]
             (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
-            (is (= ["C11-MODULE" :original-c6-bool-parameter-family]
-                   ((juxt :diagnostic-id :missing-fact) (diagnostic mir))))
-            (doseq [arguments [[false false] [false true] [true false] [true true]]]
-              (let [report (invoke c11-plan 'sh13-run-branch-join-mir-with-arguments [core mir arguments])]
-                (is (= :rejected (:status report)))
-                (is (= (:diagnostics rejected-verification) (:diagnostics report))))))
+            (is (= :passed (:status verification)) (pr-str (:diagnostics verification))))
           (doseq [malformed [(assoc-in input [:resolved-parameter :parameters] [])
                              (assoc-in input [:resolved-parameter :parameters] (vec (reverse entries)))
                              (assoc-in input [:resolved-parameter :parameters 1] (first entries))
