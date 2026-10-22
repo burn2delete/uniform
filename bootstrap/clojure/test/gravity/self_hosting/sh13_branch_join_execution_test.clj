@@ -509,18 +509,124 @@
           (finally (.delete temporary)))))))
 
 (deftest sh13-executes-lexical-binding-around-real-nested-graphs
-  (let [source (str (.resolve @(existing 'root)
-                     "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
-        temporary (java.io.File/createTempFile "gravity-sh13-let-nested-" ".gravity")]
-    (try
-      (spit temporary (str/replace (slurp source) "(if flag true false)"
-                       "(let [ready flag] (if ready (if false 11 22) 33))"))
-      (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
-            verification (invoke 'sh12-verify-branch-join-mir core mir)]
-        (is (= :accepted (:status raw)))
-        (is (= :passed (:status upstream)))
-        (is (= :passed (:status verification)) (pr-str (:diagnostics verification))))
-      (finally (.delete temporary)))))
+  ;; Original let scope remains a value-producing operation AFTER the outer
+  ;; join. Neither the initializer/binding nor the scope is projected away.
+  (doseq [[extension side inner-condition] [["gravity" :then false] ["qst" :else true]]]
+    (let [source (str (.resolve @(existing 'root)
+                       (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source." extension)))
+          temporary (java.io.File/createTempFile "gravity-sh13-let-nested-" (str "." extension))
+          body (if (= side :then) "(if ready (if false 11 22) 33)" "(if ready 11 (if true 22 33))")]
+      (try
+        (spit temporary (str/replace (slurp source) "(if flag true false)" (str "(let [ready flag] " body ")")))
+        (let [{:keys [raw upstream core mir]} (current-parameter-pair (.getAbsolutePath temporary))
+              nodes (:core-nodes core) ids (mapv :node-id nodes)
+              verification (invoke 'sh12-verify-branch-join-mir core mir)]
+          (is (= :accepted (:status raw)))
+          (is (= :passed (:status upstream)))
+          (is (= :passed (:status verification)) (pr-str (:diagnostics verification)))
+          (when (not= :passed (:status verification))
+            ;; Failure-only observations from the SAME original product.
+            (println "let-nested original predicates"
+                     {:shape (invoke 'sh12-c6p-shape-valid? core (invoke 'sh12-c6p-role-view core))
+                      :nodes (invoke 'sh12-c6p-role-nodes-valid? core 0)
+                      :problem (invoke 'sh12-c6p-nodes-problem core nodes 0)
+                      :graphs (invoke 'sh12-c6p-graphs-valid? core (invoke 'sh12-c6p-role-view core))})
+            (println "let-nested original rows"
+                     (mapv #(select-keys % [:source-operation :path :plan-node? :plan-depth :attributes]) nodes)))
+          (when (= :passed (:status verification))
+            (let [function (get-in mir [:functions 'main]) blocks (:blocks function)
+                  e (:entry function) [t f] (get-in blocks [e :terminator :successors])
+                  n (if (= side :then) t f) o (if (= side :then) f t)
+                  [a b] (get-in blocks [n :terminator :successors])
+                  k (get-in blocks [n :terminator :facts :join]) j (get-in mir [:control-flow-graph :join :block-id])
+                  order (if (= side :then) [e n a b k o j] [e o n a b k j])
+                  operations (vec (mapcat #(get-in blocks [% :instructions]) order))
+                  parameter (get ids 0) binding (get ids 2) outer (get ids 11) scope (get ids 12)
+                  inner-literal (if (= side :then) 5 6) inner-truthy (inc inner-literal)
+                  inner-then (+ 2 inner-literal) inner-else (+ 3 inner-literal)
+                  inner-if (if (= side :then) 9 10) other (if (= side :then) 10 5)
+                  context (invoke 'sh13-c6p-nested-context core mir)]
+              (is (= 14 (count nodes) (count (get-in mir [:data-flow-graph :values]))))
+              (is (= 13 (count operations)))
+              (is (= (set (rest ids)) (set (map :op-id operations))))
+              (is (= 14 (count (get-in core [:dependency-order-graph :edges]))))
+              (is (= 7 (count blocks)))
+              (is (= 8 (count (get-in mir [:control-flow-graph :edges]))))
+              (is (= [4 2 1 1 1 1 3] (mapv #(count (get-in blocks [% :instructions])) [e n a b k o j])))
+              (is (= [parameter binding] (mapv :binding-node-id (:lexical-binding-records core))))
+              (is (= [binding] (get-in nodes [3 :operands])))
+              (is (= [binding outer] (get-in nodes [12 :operands])))
+              (is (= [scope] (get-in nodes [13 :operands]) (get-in blocks [j :terminator :operands])))
+              (is (= [outer scope (get ids 13)] (mapv :op-id (get-in blocks [j :instructions]))))
+              (is (= {:value-id parameter :parameter-index 0 :block-id e}
+                     (get-in mir [:data-flow-graph :definitions parameter])))
+              (is (= {:value-id binding :operation-id binding :block-id e}
+                     (get-in mir [:data-flow-graph :definitions binding])))
+              (is (= {:value-id scope :operation-id scope :block-id j}
+                     (get-in mir [:data-flow-graph :definitions scope])))
+              (is (= 2 (get-in mir [:scope :maximum-conditionals]) (get-in mir [:pass-contract :scope :maximum-conditionals])))
+              (doseq [operation operations]
+                (is (= (:source (first (filter #(= (:op-id operation) (:node-id %)) nodes))) (:source operation))))
+              ;; Private runtime-gate UNIT controls, not public verification
+              ;; of the mutated contexts. All three leaves are checked.
+              (is (true? (invoke 'sh13-c6p-nested-shape-valid? core mir context)))
+              (doseq [role [:inner-then :inner-else :other]]
+                (is (false? (invoke 'sh13-c6p-nested-shape-valid? core mir
+                                    (assoc-in context [role :instructions 0 :constant-payload :value] 9223372036854775808N))))
+                (doseq [endpoint [Long/MIN_VALUE Long/MAX_VALUE]]
+                  (is (true? (invoke 'sh13-c6p-nested-shape-valid? core mir
+                                     (assoc-in context [role :instructions 0 :constant-payload :value] endpoint))))))
+              (doseq [payload [nil 0 1 "false"]]
+                (is (false? (invoke 'sh13-c6p-nested-shape-valid? core mir
+                                    (assoc-in context [:nested :instructions 0 :constant-payload :value] payload)))))
+              (doseq [argument [true false]]
+                (let [nested? (= argument (= side :then)) result (argument-run-observation core mir [argument])
+                      selected (if inner-condition inner-then inner-else)
+                      executed (into [(get ids 1) binding (get ids 3) (get ids 4)]
+                                     (if nested? [(get ids inner-literal) (get ids inner-truthy) (get ids selected) scope]
+                                                 [(get ids other) scope]))]
+                  (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+                  (when (= :accepted (:status result))
+                    (is (= (if (= side :then) (if argument 22 33) (if argument 11 22)) (get-in result [:execution :value])))
+                    (is (= (if nested? 499 503) (get-in result [:execution :fuel])))
+                    (is (= executed (vec (keep :operation (get-in result [:execution :trace])))))
+                    (is (= scope (get-in result [:projection :return-value-id])))
+                    (is (= 13 (count (get-in result [:projection :operations]))))
+                    (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] result))))
+                    (doseq [candidate [(assoc result :arguments [(not argument)])
+                                       (assoc-in result [:projection :return-value-id] outer)
+                                       (assoc-in result [:execution :fuel] 512)
+                                       (update-in result [:execution :trace] #(vec (remove (fn [row] (= scope (:operation row))) %)))]]
+                      (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] candidate))))))))
+              (doseq [[bad-core bad-mir]
+                      [[(assoc-in core [:core-nodes 1 :operands] [binding]) mir]
+                       [(assoc-in core [:core-nodes 2 :attributes :name] 'flag) mir]
+                       [(assoc-in core [:core-nodes 3 :operands] [parameter]) mir]
+                       [(assoc-in core [:core-nodes 3 :attributes :name] 'flag) mir]
+                       [(update core :lexical-binding-records #(vec (reverse %))) mir]
+                       [(assoc-in core [:lexical-binding-records 1 :shadowed-binding] parameter) mir]
+                       [(assoc-in core [:core-nodes 12 :attributes :binding-count] 2) mir]
+                       [(assoc-in core [:core-nodes 12 :operands] [outer binding]) mir]
+                       [(assoc-in core [:core-nodes 13 :operands] [outer]) mir]
+                       [(assoc-in core [:core-nodes 2 :path] (get-in nodes [3 :path])) mir]
+                       [(assoc-in core [:effect-facts binding :direct] #{:io/write}) mir]
+                       [(assoc-in core [:type-facts scope :dependencies] []) mir]
+                       [(assoc-in core [:source-origin-table (get-in nodes [12 :source :origin-id])] nil) mir]
+                       [(assoc-in core [:core-nodes inner-literal :attributes :value] nil) mir]
+                       [(assoc-in core [:core-nodes inner-else :attributes :value] false) mir]
+                       [core (assoc-in mir [:data-flow-graph :definitions binding :block-id] j)]
+                       [core (assoc-in mir [:data-flow-graph :definitions scope :block-id] e)]
+                       [core (assoc-in mir [:data-flow-graph :definitions parameter :operation-id] nil)]
+                       [core (update-in mir [:functions 'main :blocks j :instructions] #(vec (remove (fn [row] (= scope (:op-id row))) %)))]
+                       [core (assoc-in mir [:functions 'main :blocks k :predecessors] [b a])]
+                       [core (assoc-in mir [:control-flow-graph :join :incoming 0 :value] (get ids inner-then))]]]
+                (let [original (invoke 'sh12-verify-branch-join-mir bad-core bad-mir)
+                      result (argument-run-observation bad-core bad-mir [nil])]
+                  (is (= :rejected (:status original) (:status result)))
+                  (is (= (:diagnostics original) (:diagnostics result)))
+                  (is (nil? (:execution result)))))
+              (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir)))))))
+        (finally (.delete temporary))))))
 
 (deftest sh13-executes-real-nested-conditional-graphs
   ;; Two authentic producer conditionals require seven real blocks. No
