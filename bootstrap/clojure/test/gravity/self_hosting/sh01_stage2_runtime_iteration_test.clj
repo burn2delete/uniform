@@ -30746,6 +30746,18 @@
                  (:reason (run owner (assoc-in base [:core :lexical-bindings 0 :binding-id] opaque) 0))))
           (is (= 0 @callbacks)))))))
 
+(deftest current-gravity-let-vector-count-slice-runtime-development-kernel
+  (let [rt (:plan (typed-catch-runtime-projection))
+        local {:op :local :name 'characters}
+        ir {:op :builtin-call :function 'subvec
+            :args [local {:op :literal :value 1}
+                   {:op :builtin-call :function 'count :args [local]}]}
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function
+                   runtime rt 'p15-s23-runtime-evaluate-closed-instruction [%1 {'characters %2} ""])]
+    (is (= [[\a \f] "" :normal] (evaluate ir (vec "0af"))))
+    (is (= [[] "" :normal] (evaluate ir (vec "0"))))
+    (is (= [[] "" :normal] (evaluate (assoc-in ir [:args 1 :value] 0) [])))))
+
 (deftest current-gravity-let-vector-slice-runtime-guards-development-kernel
   (let [rt (:plan (typed-catch-runtime-projection))
         literal #(hash-map :op :literal :value %)
