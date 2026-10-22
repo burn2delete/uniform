@@ -1,0 +1,7 @@
+(ns self-hosting.sh07-b47.two-i64-local-call
+  (:profile :meta) (:target :jvm)
+  (:exports [identity-i64 forward-i64])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn identity-i64 [x :- I64] :- I64 x)
+(defn forward-i64 [y :- I64] :- I64 (identity-i64 y))

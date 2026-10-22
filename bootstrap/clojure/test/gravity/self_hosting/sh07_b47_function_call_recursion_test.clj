@@ -218,6 +218,134 @@
         (update-in [:calls 0] merge call-fields)
         (update-in [:call-edges 0] merge edge-fields))))
 
+(defn- two-i64-current-core [extension]
+  ;; The existing canonical producer, not the fused main-only C6 family.
+  (let [source-path (path (str fixture-root "/two-i64-local-call" extension))
+        stage (fn [label operation]
+                (println (pr-str {:two-i64-source-stage label :event :begin}))
+                (let [start (System/nanoTime) value (operation)]
+                  (println (pr-str {:two-i64-source-stage label :event :complete
+                                    :elapsed-ms (quot (- (System/nanoTime) start) 1000000)}))
+                  value))
+        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact
+                           source-path (slurp source-path)
+                           (bootstrap/reader-project-context-for-source source-path)
+                           nil nil (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")))
+        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax))
+        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact source-path expanded))
+        artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
+        report (stage :fresh-sh07-verification #(bootstrap/sh07-core-artifact-verification artifact))]
+    {:artifact artifact :report report :resolved resolved :source-path source-path}))
+
+(defn- assert-two-i64-canonical-call [extension mutation-checks?]
+  ;; These are resolved source declarations, not C7 compatibility or C10 proof.
+  (let [{:keys [artifact report resolved source-path]} (two-i64-current-core extension)
+        product (core artifact) input (request artifact)
+        functions (function-by-name artifact)
+        callee (get functions 'identity-i64) caller (get functions 'forward-i64)
+        nodes (exactly-once-index (:nodes product) :node-id)
+        bindings (exactly-once-index (:binding-table input) :binding-id)
+        forms (exactly-once-index (:forms input) :form-id)
+        call (first (:calls product)) edge (first (:call-edges product))
+        operator (get nodes (:operator-node-id call))
+        argument (get nodes (first (:argument-node-ids call)))
+        callee-parameter (first (:parameter-binding-ids callee))
+        caller-parameter (first (:parameter-binding-ids caller))]
+    (is (= :accepted (:status artifact)))
+    (is (= :passed (:status report)) (pr-str (:failed-checks report)))
+    (is (= '#{identity-i64 forward-i64} (set (keys functions))))
+    (is (= [2 1 1] [(count (:function-records product)) (count (:calls product)) (count (:call-edges product))]))
+    (is (= [] (:recursion-components product)))
+    (is (= source-path (get-in artifact [:provenance :source-path])
+           (get-in product [:provenance :actual-source-path])))
+    (is (= {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
+           (get-in artifact [:execution-boundary :downstream-fact-statuses])))
+    (is (= [:meta :jvm #{} #{} :safe]
+           ((juxt :profile :target :effects :capabilities :safety) (:module product))))
+    (doseq [function [callee caller]]
+      (let [signature (:signature function) parameter (first (:parameters signature))
+            result (:return signature) fn-node (get nodes (:function-core-node-id function))]
+        (is (= 1 (:fixed-arity function) (count (:parameter-binding-ids function))))
+        (is (= signature (get-in fn-node [:attributes :signature])))
+        (is (= :sh07-atomic-function-signature-v1 (:rule-version signature)))
+        (is (= [:gravity.type/i64 :gravity.type/i64] [(:type-id parameter) (:type-id result)]))
+        (is (= [0] (:parameter-source-child-indexes signature)))
+        (doseq [declaration [parameter result]]
+          (is (= [:core :type 'gravity.core 'I64]
+                 ((juxt :binding-class :kind :namespace :name) (get bindings (:type-binding-id declaration)))))
+          (is (= 'I64 (:value (get forms (:type-form-id declaration)))))
+          (is (= (:type-syntax-id declaration) (:syntax-id (get forms (:type-form-id declaration))))))
+        (is (= (:function-syntax-id function) (get-in fn-node [:source :syntax-id])))
+        (is (= (:function-form-id function) (get-in fn-node [:source :form-id])))))
+    (is (not= callee-parameter caller-parameter))
+    (is (= ['x 'y] (mapv #(get-in bindings [% :name]) [callee-parameter caller-parameter])))
+    (is (= [:reference :operator 'identity-i64]
+           [(:core-form operator) (get-in operator [:attributes :position]) (get-in operator [:attributes :symbol])]))
+    (is (= [(:definition-binding-id callee)] (:resolved-binding-ids operator)))
+    (is (= [(:definition-binding-id callee) (:operator-binding-id call) (:callee-binding-id edge)]
+           (repeat 3 (:definition-binding-id callee))))
+    (is (= :reference (:core-form argument)))
+    (is (= [caller-parameter] (:resolved-binding-ids argument)))
+    (is (= caller-parameter (get-in argument [:attributes :binding-id])))
+    (is (= 'y (get-in argument [:attributes :symbol])))
+    (is (= [(:operator-node-id call) (:node-id argument)] (:ordered-evaluation-node-ids call)
+           (:ordered-evaluation-node-ids edge)))
+    (is (= [(:node-id argument)] (:argument-node-ids call) (:argument-core-node-ids edge)))
+    (is (= :operator-then-arguments (:evaluation-order call) (:evaluation-order edge)))
+    (is (= :local-function (:classification edge)))
+    (is (= (:function-core-node-id caller) (:caller-function-core-node-id edge)))
+    (is (= (:function-syntax-id caller) (:caller-function-syntax-id edge)))
+    (is (= (:function-core-node-id callee) (:callee-function-core-node-id edge)))
+    (is (= (:function-syntax-id callee) (:callee-function-syntax-id edge)))
+    (is (= (:definition-syntax-id (get bindings (:definition-binding-id callee)))
+           (:callee-definition-syntax-id edge)))
+    (doseq [node [operator argument (get nodes (:core-node-id call))]]
+      (is (= (get-in node [:source :syntax-id]) (:syntax-id (get forms (get-in node [:source :form-id]))))))
+    (is (= (slurp (path (str fixture-root "/two-i64-local-call.gravity")))
+           (slurp (path (str fixture-root "/two-i64-local-call.qst")))))
+    (println (pr-str {:two-i64-canonical extension :artifact-id (:artifact-id artifact)
+                      :function-names (mapv :definition-name (:function-records product))
+                      :call-count (count (:calls product)) :fresh-status (:status report)}))
+    (when mutation-checks?
+      ;; Original development session builds its own expected Core and verifies
+      ;; the actual resolver parent; candidates never replace those products.
+      (let [session (bootstrap/sh07-core-verification-session resolved)
+            verify #(bootstrap/sh07-core-artifact-verification-against-expected % session)
+            caller-index (:ordinal caller)
+            operator-index (first (keep-indexed #(when (= (:node-id operator) (:node-id %2)) %1) (:nodes product)))
+            call-index (first (keep-indexed #(when (= (:core-node-id call) (:node-id %2)) %1) (:nodes product)))
+            mutations
+            [#(update-product % :function-records (fn [rows] (assoc-in rows [caller-index :parameter-binding-ids] [])))
+             #(update-product % :function-records (fn [rows] (assoc-in rows [caller-index :parameter-binding-ids] [callee-parameter])))
+             #(update-product % :function-records (fn [rows] (assoc-in rows [caller-index :signature :return :type-id] :gravity.type/bool)))
+             #(update-product % :calls (fn [rows] (assoc-in rows [0 :argument-node-ids] [])))
+             #(update-product % :calls (fn [rows] (assoc-in rows [0 :ordered-evaluation-node-ids] (vec (reverse (:ordered-evaluation-node-ids call))))))
+             #(update-product % :nodes (fn [rows] (assoc-in rows [operator-index :source :syntax-id] (get-in argument [:source :syntax-id]))))
+             #(update-product % :call-edges (fn [rows] (assoc-in rows [0 :callee-function-core-node-id] (:function-core-node-id caller))))
+             #(-> %
+                  (update-product :calls (fn [rows] (assoc-in rows [0 :operator-binding-id] (:definition-binding-id caller))))
+                  (update-product :nodes (fn [rows] (assoc-in rows [call-index :resolved-binding-ids] [(:definition-binding-id caller)])))
+                  (update-product :call-edges (fn [rows] (update rows 0 merge
+                    {:callee-binding-id (:definition-binding-id caller)
+                     :callee-definition-syntax-id (:definition-syntax-id (get bindings (:definition-binding-id caller)))
+                     :callee-function-syntax-id (:function-syntax-id caller)
+                     :callee-function-core-node-id (:function-core-node-id caller)}))))]]
+        (is (= :ready (:status session)))
+        (is (= :passed (:status (verify artifact))))
+        (doseq [mutate mutations]
+          (let [candidate (mutate artifact) rejected (verify candidate)]
+            (is (not= artifact candidate))
+            (is (= :failed (:status rejected)))
+            (is (seq (:failed-checks rejected)))))
+        (is (= :failed (:status (bootstrap/sh07-core-artifact-verification-against-expected
+                                 artifact (assoc session :expected-artifact-id zero-id)))))))))
+
+(deftest sh07-b47-two-i64-call-current-gravity-composition
+  (assert-two-i64-canonical-call ".gravity" true))
+
+(deftest sh07-b47-two-i64-call-current-qst-composition
+  (assert-two-i64-canonical-call ".qst" false))
+
 (defn- duplicate-call-and-edge-substitution
   [carrier]
   (let [replacement-call (get-in carrier [:calls 1])
