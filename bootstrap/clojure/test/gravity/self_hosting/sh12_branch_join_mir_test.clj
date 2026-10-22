@@ -380,11 +380,10 @@
                   mir (build-mir core) original (verify-mir core mir)
                   result (invoke c11-plan 'sh13-run-branch-join-mir-with-arguments [core mir [0 1]])]
               (is (= (:sealed-artifact-template sealed) (dissoc core :target-request-metadata :physical-provenance)))
-              (is (= :rejected (:status original) (:status result)))
-              (is (= ["C11-MODULE" :original-c6-bool-parameter-family]
-                     ((juxt :diagnostic-id :missing-fact) (diagnostic original))))
-              (is (= (:diagnostics original) (:diagnostics result)))
-              (is (nil? (:execution result))))))))))
+              (is (= :passed (:status original)))
+              (is (= :accepted (:status result)))
+              (is (= true (get-in result [:execution :value])))
+              (is (= [0 1] (:arguments result))))))))))
 
 (deftest sh12-i64-order-condition-rejects-broader-source-bodies
   (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_condition_source.gravity"))
