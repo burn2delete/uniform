@@ -258,6 +258,15 @@
           (is (= :not-applicable (get-in absent [:diagnostics 0 :primary :syntax-id])))))
       (finally (.delete temporary)))))
 
+(deftest sh12-current-c6-produces-resolved-i64-identity
+  ;; Original source/C2/C5 producer boundary, not physical runtime arguments.
+  (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/i64_parameter_source.gravity"))
+        observed (try
+                   (let [input (parameter-input path (slurp path))]
+                     (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input]))
+                   (catch clojure.lang.ExceptionInfo error {:failure (ex-data error)}))]
+    (is (= :accepted (:status observed)) (pr-str observed))))
+
 (deftest sh12-current-c6-produces-three-independently-resolved-bool-parameters
   ;; Three independent c6c10-map-if premises, with real source/C2/C5 joins.
   ;; Current C11 also reconstructs this family; SH13 owns tuple execution.

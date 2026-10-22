@@ -1,0 +1,6 @@
+(ns gravity.sh12.i64-parameter-source
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [child-count :- I64] child-count)
