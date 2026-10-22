@@ -488,6 +488,10 @@ performance or safety-completion claim.
 `82cbb1946cd8d76a8704d2ece7f251a9cfb714aa`, identical to tested candidate
 `020e5b59ba33267ee4e7d5fd6900a1203e80daa9`. Scoped development evidence only;
 no cohort renewal or authoritative migration follows.
+Later PR265/main `6aba074a` changes emitter freshness inputs: these artifacts
+are not renewed current-cohort provenance. Reassess affected provenance at a
+concrete stable-cohort admission decision, not by replaying now or blocking
+ordinary development; the reader/helper semantic result retains its tested scope.
 
 The exact selector `sh03-current-hex-definitions-compose-through-authenticated-core`
 in [the SH03 adapter tests](../bootstrap/clojure/test/gravity/self_hosting/sh03_reader_adapter_test.clj)
