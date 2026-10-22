@@ -2,7 +2,24 @@
 
 (defn sh04-syntax-reader-binding
   [source-path c2-artifact semantic-source-id]
-  (let [source-unit (:source-unit-record c2-artifact)
+  (let [reader-source (or (get-in c2-artifact [:gravity-reader-boundary
+                                              :authenticated-envelope-descriptor :source-revision])
+                          (get-in c2-artifact [:sh03-reader-authentication :reader-source-revision]))
+        verifier-hash (get-in reader-source [:function-shapes sh03-reader-verifier :semantic-hash])
+        current? (or (contains? (:sh03-reader-authentication c2-artifact) :reader-source-revision)
+                     (= :gravity/sh03-current-source-reader-plan-binding
+                        (get-in c2-artifact [:gravity-reader-boundary :plan-binding :artifact]))
+                     (and (some? reader-source) (or (some? verifier-hash)
+                       (not= sh03-reader-expected-source-content-hash (:source-content-hash reader-source)))))
+        _ (when (and (or current? (some? reader-source))
+                     (not (and (map? reader-source) (integer? (:source-byte-count reader-source))
+                               (<= 0 (:source-byte-count reader-source) 1048576)
+                               (or (not current?) (p15-s23-sh02-sha256-id? verifier-hash))
+                               (every? p15-s23-sh02-sha256-id?
+                                 (map reader-source [:source-content-hash :plan-semantic-hash
+                                                     :functions-semantic-hash :builder-semantic-hash])))))
+            (sh03-reader-boundary-fail! source-path :actual-sh03-reader-source-revision nil {}))
+        source-unit (:source-unit-record c2-artifact)
         token-stream (:token-stream c2-artifact)
         form-tree (:form-tree c2-artifact)
         seeds (:syntax-seed-stream c2-artifact)
@@ -65,8 +82,8 @@
         envelope-id
         (reader-canonical-hash
          {:domain :gravity/sh04-semantic-sh03-envelope-v1
-          :source-content-hash sh03-reader-expected-source-content-hash
-          :plan-semantic-hash sh03-reader-expected-plan-semantic-hash
+          :source-content-hash (get reader-source :source-content-hash sh03-reader-expected-source-content-hash)
+          :plan-semantic-hash (get reader-source :plan-semantic-hash sh03-reader-expected-plan-semantic-hash)
           :reader-result-id reader-result-id
           :c2-artifact-id c2-artifact-id})
         binding-base
@@ -87,15 +104,15 @@
          :owner :sh03-reader
          :source-language :gravity
          :logical-source-path sh03-reader-source-relative-path
-         :source-content-hash sh03-reader-expected-source-content-hash
-         :source-byte-count sh03-reader-expected-source-byte-count
-         :plan-semantic-hash sh03-reader-expected-plan-semantic-hash
+         :source-content-hash (get reader-source :source-content-hash sh03-reader-expected-source-content-hash)
+         :source-byte-count (get reader-source :source-byte-count sh03-reader-expected-source-byte-count)
+         :plan-semantic-hash (get reader-source :plan-semantic-hash sh03-reader-expected-plan-semantic-hash)
          :functions-semantic-hash
-         sh03-reader-expected-functions-semantic-hash
+         (get reader-source :functions-semantic-hash sh03-reader-expected-functions-semantic-hash)
          :entry-function sh03-reader-entrypoint
-         :entry-semantic-hash sh03-reader-expected-entrypoint-semantic-hash
+         :entry-semantic-hash (get reader-source :builder-semantic-hash sh03-reader-expected-entrypoint-semantic-hash)
          :verifier-function sh03-reader-verifier
-         :verifier-semantic-hash sh03-reader-expected-verifier-semantic-hash
+         :verifier-semantic-hash (if current? verifier-hash sh03-reader-expected-verifier-semantic-hash)
          :reader-result-id reader-result-id
          :c2-artifact-id c2-artifact-id
          :authenticated-envelope-id envelope-id

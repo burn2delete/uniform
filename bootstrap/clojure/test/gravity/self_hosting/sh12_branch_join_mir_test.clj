@@ -139,16 +139,53 @@
 (defn- parameter-source-products
   ([source-path source-text] (parameter-source-products source-path source-text nil))
   ([source-path source-text compiled-binding]
+   (parameter-source-products source-path source-text compiled-binding nil))
+  ([source-path source-text compiled-binding reader-source-path]
    ;; Always reconstruct original source-derived C2/C5 BEFORE using binding
    ;; DATA. These products remain development DATA, not frozen admission.
    (let [ingress ((ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
-                  source-path source-text)
+                  source-path source-text reader-source-path)
          binding (if (nil? compiled-binding) (parameter-compiled-binding-data source-path) compiled-binding)]
      {:ingress ingress :compiled-binding-data binding
       :envelope (bootstrap/p15-s23-c6c10-private-builder-envelope source-path ingress binding)})))
 
 (defn- parameter-input [source-path source-text]
   (:envelope (parameter-source-products source-path source-text)))
+
+(deftest sh12-current-reader-parent-products-feed-original-parameter-production
+  ;; Every source call constructs current C2/C3 and its genuine SH05/SH06
+  ;; parents. Neither a historical pin nor an accepted artifact is substituted.
+  (let [directory "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/"
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        binding (parameter-compiled-binding-data
+                  (str (.resolve @root (str directory "bool_parameter_source.gravity"))))]
+    (doseq [extension ["gravity" "qst"]]
+      (let [path (str (.resolve @root (str directory "bool_parameter_source." extension)))
+            text (slurp path) products (parameter-source-products path text binding reader-path)
+            input (:envelope products)
+            raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
+            template (:artifact-template raw)
+            fresh (parameter-source-products path text binding reader-path)
+            replay (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [(:envelope fresh)])
+            verify #(invoke parameter-c6-plan 'c6-c10-verify-checked-core-template
+                            [(:envelope fresh) % (:digest-requests replay)])]
+        (is (= :accepted (:status raw)) (pr-str (:diagnostics raw)))
+        (is (= input (:envelope fresh)))
+        (is (= raw replay))
+        (is (= :passed (:status (verify template))))
+        (is (= :gravity/c6-c10-resolved-bool-parameter-v1 (get-in input [:resolved-parameter :kind])))
+        (is (= [:parameter :local :truthy :literal :literal :if :function]
+               (mapv :source-operation (:core-nodes template))))
+        (is (= [:gravity/bool] (get-in (last (:core-nodes template)) [:type :params])))
+        (is (= :rejected (:status (verify (assoc-in template [:core-nodes 0 :type] :gravity/i64)))))
+        (let [sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
+              context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
+              core (bootstrap/p15-s23-c6c10-public-artifact
+                     context (:compiled-binding-data products) (:ingress products) sealed)
+              mir (build-mir core)]
+          (is (= (:sealed-artifact-template sealed)
+                 (dissoc core :target-request-metadata :physical-provenance)))
+          (is (= :passed (:status (verify-mir core mir)))))))))
 
 (deftest sh12-compiled-binding-data-reuse-preserves-fresh-source-products
   ;; Six original source ingresses: one default baseline per extension, then

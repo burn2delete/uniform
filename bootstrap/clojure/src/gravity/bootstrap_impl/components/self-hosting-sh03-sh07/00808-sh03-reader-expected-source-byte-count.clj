@@ -184,3 +184,17 @@
       (sh03-reader-boundary-fail!
        request-source :valid-utf8-pinned-sh03-reader-source
        source-path {:cause-message (.getMessage error)}))))
+
+(defn- sh03-reader-read-selected-source-bytes! [request-source selected-path]
+  (when-not (and (string? selected-path)
+                 (= (.getCanonicalPath (java.io.File. (sh03-reader-resolve-source-path)))
+                    (.getCanonicalPath (java.io.File. selected-path))))
+    (sh03-reader-boundary-fail! request-source :selected-current-sh03-reader-source
+                               nil {:required-source sh03-reader-source-relative-path}))
+  (try
+    (let [snapshot (c2-pass-cache/bounded-source-snapshot! selected-path 1048576)]
+      {:source-path (:canonical-path snapshot) :bytes (:bytes snapshot)
+       :source-byte-count (:byte-count snapshot) :source-content-hash (:bytes-hash snapshot)})
+    (catch clojure.lang.ExceptionInfo error
+      (sh03-reader-boundary-fail! request-source :stable-current-sh03-reader-source
+                                 selected-path {:cause-id (:id (ex-data error))}))))

@@ -367,8 +367,76 @@
                 (:source-content-hash revision)))
       (is (= actual (get-in artifact [:c2-reader-artifact :sh03-reader-authentication
                                      :reader-source-revision])))
+      (is (= (:verifier-semantic-hash revision)
+             (get-in actual [:function-shapes bootstrap/sh03-reader-verifier :semantic-hash])))
       (is (true? (bootstrap/c3-syntax-stream-reader-products-authentic?
                    (:syntax-object-stream artifact) (:c2-reader-artifact artifact) boundary))))))
+
+(deftest sh03-current-reader-registered-literals-bind-the-original-envelope
+  (let [temporary (java.io.File/createTempFile "gravity-sh03-current-registered-" ".gravity")
+        source-path (.getAbsolutePath temporary)
+        reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        text (str "(ns gravity.sh03.current-registered (:profile :hosted) (:target :jvm) "
+                  "(:effects #{}) (:capabilities #{}) (:safety :safe) (:exports [main]))\n"
+                  "(defn main [] #uuid \"123e4567-e89b-12d3-a456-426614174000\")\n")]
+    (try
+      (spit temporary text)
+      (let [artifact (bootstrap/compiler-c3-syntax-source-artifact source-path text
+                       (bootstrap/reader-project-context-for-source source-path) nil nil reader-path)
+            c2 (:c2-reader-artifact artifact) boundary (:gravity-syntax-boundary artifact)
+            stream (:syntax-object-stream artifact)
+            authentic? #(bootstrap/c3-syntax-stream-reader-products-authentic? stream %1 %2)
+            revision (get-in c2 [:sh03-reader-authentication :reader-source-revision])
+            other (assoc revision :source-content-hash (:plan-semantic-hash revision))
+            retained (assoc-in c2 [:sh03-reader-authentication :reader-source-revision] other)
+            replaced (assoc-in boundary [:reader-authentication-provenance
+                                         :actual-sh03-envelope-descriptor :source-revision] other)
+            derived (bootstrap/sh04-syntax-reader-binding source-path retained
+                      (bootstrap/sh04-syntax-semantic-source-id source-path (:source-unit-record c2)))
+            coherent-c2 (-> retained
+                            (assoc-in [:registered-literal-projection :reader-binding] (:reader-binding derived))
+                            (assoc-in [:registered-literal-projection :reader-source-revision] (:reader-source-revision derived)))
+            coherent-boundary (assoc replaced :reader-semantic-binding (:reader-binding derived)
+                                              :reader-source-revision (:reader-source-revision derived))]
+        (is (= :passed (get-in artifact [:syntax-verification-report :status])))
+        (is (seq (get-in c2 [:registered-literal-projection :bindings])))
+        (is (true? (authentic? c2 boundary)))
+        (is (not= revision other))
+        (is (= (get-in boundary [:reader-authentication-provenance :actual-sh03-authenticated-envelope])
+               (get-in coherent-boundary [:reader-authentication-provenance :actual-sh03-authenticated-envelope])))
+        (doseq [[candidate candidate-boundary]
+                [[(update c2 :sh03-reader-authentication dissoc :reader-source-revision) boundary]
+                 [retained boundary] [c2 replaced] [retained replaced] [coherent-c2 coherent-boundary]
+                 [(assoc-in c2 [:sh03-reader-authentication :reader-source-revision
+                                :function-shapes bootstrap/sh03-reader-verifier :semantic-hash] nil) boundary]]]
+          (is (false? (authentic? candidate candidate-boundary)))))
+      (finally (.delete temporary)))))
+
+(deftest sh03-current-reader-selection-is-source-input-not-product-authority
+  (let [source-path (fixture-path "accepted" "newline-lf" ".gravity")
+        text (slurp source-path) context (bootstrap/reader-project-context-for-source source-path)
+        reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        callbacks (atom {:hash 0 :equal 0})
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks update :hash inc) 17)
+                 (equals [_] (swap! callbacks update :equal inc) false))]
+    (.hashCode opaque)
+    (.equals opaque (Object.))
+    (is (= {:hash 1 :equal 1} @callbacks))
+    (reset! callbacks {:hash 0 :equal 0})
+    (doseq [selected [opaque nil false 17 [] {} source-path]]
+      (is (= "C2-HASH" (:id (thrown-data #(bootstrap/sh03-reader-current-binding!
+                                          source-path selected))))))
+    (is (= {:hash 0 :equal 0} @callbacks))
+    (doseq [construct [bootstrap/compiler-c2-reader-source-artifact bootstrap/compiler-c3-syntax-source-artifact]]
+      (is (= "C2-HASH" (:id (thrown-data #(construct source-path text context {:forged true})))))
+      (is (= "C2-HASH" (:id (thrown-data #(construct source-path text context
+                                                    {:forged true} nil reader-path))))))
+    (let [rejected (fixture-path "rejected" "delimiter-mismatched" ".gravity")]
+      (is (= "C2-DELIMITER" (:id (thrown-data #(bootstrap/compiler-c3-syntax-source-artifact
+                                               rejected (slurp rejected)
+                                               (bootstrap/reader-project-context-for-source rejected)
+                                               nil nil reader-path))))))))
 
 (defn- accepted-reader-products
   [result]
