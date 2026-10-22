@@ -123,7 +123,8 @@
   [:kind :compiler-artifact-plan? :entrypoint :source :compiler :module
    :functions :instruction-summary :effect-summary :plan-id])
 
-(declare sh06-resolution-source-artifact sh07-core-authenticated-request)
+(declare sh06-resolution-source-artifact sh07-core-authenticated-request
+         p15-s23-c6c10-resolved-parameter-row)
 
 (defn p15-s23-c6c10-resolved-parameter
   [source-path source-text front-end]
@@ -140,44 +141,33 @@
         source (get sources (second (:top-level-form-ids front-end)))
         original (get sources (get (:children source) 2))
         source-rows (mapv sources (:children original))
-        [name-form marker type-form] projected
         bindings (:binding-table request)
-        parameter (first (filter #(= (:syntax-id name-form) (:definition-syntax-id %)) bindings))
-        reference (first (filter #(= (:syntax-id type-form) (:reference-syntax-id %)) (:resolution-table request)))
-        type (first (filter #(= (:binding-id reference) (:binding-id %)) bindings))
-        hash (get-in request [:lineage :source-revision-id])]
+        hash (get-in request [:lineage :source-revision-id])
+        n (quot (count projected) 3)]
     (when-not (and (= hash (get-in front-end [:source-unit-record :bytes-hash]))
                   (= 1 (count (:top-level-form-ids request)))
-                  (= 3 (count projected) (count source-rows))
-                  (= [:vector :symbol :keyword :symbol]
-                     (mapv :kind (into [original] source-rows)))
-                  (= (mapv :value source-rows) (mapv :value projected))
-                  (= :- (:value marker))
-                  (= [:lexical :local (:value name-form) (:scope-id name-form)]
-                     ((juxt :binding-class :kind :name :scope-id) parameter))
-                  (= (:scope-id parameter) (:scope-id type-form))
-                  (= [:type (:value type-form) (:binding-id type)]
-                     ((juxt :position :symbol :binding-id) reference))
-                  (= [:core :type 'gravity.core 'Bool]
-                     ((juxt :binding-class :kind :namespace :name) type)))
+                  (contains? #{1 2} n) (= (* 3 n) (count projected) (count source-rows))
+                  (= :vector (:kind original)))
       (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path
                                :resolved-single-bool-parameter {}))
-    {:kind :gravity/c6-c10-resolved-bool-parameter-v1
-     :source-content-hash hash
-     :sh06-artifact-id (:artifact-id resolved)
-     :sh06-semantic-projection-id (get-in request [:lineage :sh06-semantic-projection-id])
-     :projection-binding (:projection-binding request)
-     :root-syntax-id (:syntax-id root)
-     :function-syntax-id (:syntax-id function)
-     :function-scope-id (:scope-id function)
-     :parameter-index 0
-     :coordinates (mapv (fn [role c2 form]
-                          {:role role :c2-form-id (:form-id c2)
-                           :projected-form-id (:form-id form)
-                           :projected-syntax-id (:syntax-id form)})
-                        [:parameter-vector :parameter-name :annotation-marker :annotation-type]
-                        (into [original] source-rows) (into [parameters] projected))
-     :parameter-binding parameter :type-binding type :type-resolution reference}))
+    (let [rows (mapv #(p15-s23-c6c10-resolved-parameter-row
+                       source-path parameters original projected source-rows bindings (:resolution-table request) %)
+                     (range n))
+          base {:source-content-hash hash :sh06-artifact-id (:artifact-id resolved)
+                :sh06-semantic-projection-id (get-in request [:lineage :sh06-semantic-projection-id])
+                :projection-binding (:projection-binding request) :root-syntax-id (:syntax-id root)
+                :function-syntax-id (:syntax-id function) :function-scope-id (:scope-id function)}]
+      (when-not (and (= n (count (set (map #(get-in % [:parameter-binding :name]) rows))))
+                     (= n (count (set (map #(get-in % [:parameter-binding :binding-id]) rows))))
+                     (= (* 3 n) (count (set (map :form-id source-rows)))
+                        (count (set (map :syntax-id projected))))
+                     (apply = (map :type-binding rows)))
+        (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :distinct-resolved-bool-parameters {}))
+      (if (= n 1)
+        (merge base {:kind :gravity/c6-c10-resolved-bool-parameter-v1} (first rows))
+        (assoc base :kind :gravity/c6-c10-resolved-two-bool-parameters-v1
+               :type-binding (:type-binding (first rows))
+               :parameters (mapv #(dissoc % :type-binding) rows))))))
 
 (def p15-s23-c6c10-function-projection-keys
   [:name :instructions :params :definition-form :binding
