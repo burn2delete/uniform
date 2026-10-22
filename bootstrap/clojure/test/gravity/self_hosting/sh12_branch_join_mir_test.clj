@@ -390,17 +390,26 @@
   (let [path (str (.resolve @root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_condition_source.gravity"))
         text (slurp path) binding (parameter-compiled-binding-data path)
         reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))]
-    (doseq [source [(str/replace text ") true false)" ") 0 false)")
-                    (str/replace text ") true false)" ") true)")
-                    (str/replace text ") true false))" ") true false) false)")
-                    (str/replace text "binding-index" "<")]]
+    (doseq [[source seed-arity-error?]
+            [[(str/replace text ") true false)" ") 0 false)") false]
+             [(str/replace text ") true false)" ") true)") true]
+             [(str/replace text ") true false))" ") true false) false)") false]
+             [(str/replace text "binding-index" "<") false]]]
       (let [temporary (java.io.File/createTempFile "gravity-sh12-i64-condition-reject-" ".gravity")]
         (try
           (spit temporary source)
-          (let [input (:envelope (parameter-source-products (.getCanonicalPath temporary) source binding reader-path))
-                raw (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])]
-            (is (= :rejected (:status raw)))
-            (is (= "C6-LOWERING-GAP" (get-in raw [:diagnostics 0 :rule]))))
+          (let [[raw error]
+                (try
+                  (let [input (:envelope (parameter-source-products (.getCanonicalPath temporary) source binding reader-path))]
+                    [(invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input]) nil])
+                  (catch clojure.lang.ExceptionInfo error [nil (ex-data error)]))]
+            ;; Omitted else is rejected by the original seed before C6 mapping.
+            (if seed-arity-error?
+              (do (is (nil? raw))
+                  (is (= ["L2-UNKNOWN-CORE-FORM" 3 2]
+                         ((juxt :id :expected-arity :actual-arity) error))))
+              (do (is (= :rejected (:status raw)) (pr-str error))
+                  (is (= "C6-LOWERING-GAP" (get-in raw [:diagnostics 0 :rule]))))))
           (finally (.delete temporary)))))))
 
 (deftest sh12-i64-condition-extension-preserves-the-original-direct-body
