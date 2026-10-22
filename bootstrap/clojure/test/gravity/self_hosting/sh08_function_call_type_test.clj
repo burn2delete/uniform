@@ -3152,7 +3152,7 @@
         forms (merge (:forms base) (select-keys (:forms first-input) (conj first-keys :slice-call)))
         bindings (assoc (:bindings base) :let-first-binding (get-in first-input [:bindings :let-first-binding]))
         calls (conj (get-in base [:core :calls]) (:call first-input))
-        edges (conj (get-in base [:core :call-edges]) (assoc (:edge first-input) :ordinal 3))
+        edges (conj (get-in base [:core :call-edges]) (assoc (:edge first-input) :ordinal (count (get-in base [:core :calls]))))
         node-list (letfn [(walk [id] (conj (vec (mapcat walk (:children (nodes id)))) (nodes id)))]
                     (vec (walk :slice-let)))
         core (assoc (:core base) :nodes node-list :calls calls :call-edges edges)]
@@ -3174,7 +3174,61 @@
     (is (= :direct-vector-first (get-in receiver [:receiver :body-consumer :kind])))
     (is (= :accepted (get-in established [:slice :status])) (pr-str (:slice established)))
     (is (= :accepted (get-in established [:query :status])) (pr-str (:query established)))
-    (is (= :gravity.type/character (get-in established [:query :type])))))
+    (is (= :gravity.type/character (get-in established [:query :type])))
+    (let [witness (get-in established [:slice :descriptor :bounds-proof :source-forms])]
+      (is (= 16 (count witness) (count (set (map :form-id witness))))))
+    (is (= :gravity.type/applied-vector-first (get-in established [:query :descriptor :kind])))
+    (is (= 2 (get-in established [:query :descriptor :bounds-proof :vector-length])))
+    (is (= 0 (get-in established [:query :descriptor :bounds-proof :selected-index])))))
+
+(deftest sh08-let-vector-count-slice-first-proof-development-kernel
+  (doseq [[text start] [["0af" 1] ["f" 0]
+                                 [(str "sha256:" (apply str (repeat 64 "0"))) 7]
+                                 [(apply str (repeat 1024 "a")) 1023]]]
+    (let [{:keys [core nodes bindings types forms slice query] :as input}
+          (let-vector-slice-first-established (let-vector-count-slice-first-input text start nil))
+          call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
+          edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))
+          derive #(invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) call edge nodes bindings types forms %])
+          check #(invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings %1 %2])
+          measured (check types 65536) witness (get-in slice [:descriptor :bounds-proof :source-forms])]
+      (is (= :accepted (:status slice) (:status query) (:status measured)))
+      (is (= 16 (count witness) (count (set (map :form-id witness)))))
+      (is (= :gravity.type/character (:type query)))
+      (is (= (- (count text) start) (get-in query [:descriptor :bounds-proof :vector-length])))
+      (is (= 0 (get-in query [:descriptor :bounds-proof :selected-index])))
+      (is (= :retained (get-in query [:descriptor :bounds-proof :runtime-guards])))
+      (is (= slice (derive (:work-count slice))))
+      (is (= :vector-slice-work-limit (:reason (derive (dec (:work-count slice))))))
+      (is (= measured (check types (:work-count measured))))
+      (is (= :vector-slice-work-limit (:reason (check types (dec (:work-count measured))))))
+      (doseq [path [[:bounds-proof :receiver :body-consumer :node :node-id]
+                    [:bounds-proof :receiver :body-consumer :node :children]
+                    [:bounds-proof :end :reference :node-id] [:bounds-proof :end :value]]]
+        (is (= :rejected (:status (check (assoc-in types (into [:slice-operator] path) :forged) 65536)))))
+      (when (< (count text) 1024)
+        (let [context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                       :lookup-bindings (vec (vals bindings))
+                       :shape-call-products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core)}}
+              cold (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {} {} 12 context])]
+          (is (= :converged (:convergence-status cold)))
+          (is (= [] (:diagnostics cold)))
+          (is (= :gravity.type/character (get-in cold [:type-table :slice-let])))))))
+  (doseq [[text start] [["" 0] ["f" 1]]]
+    (let [{:keys [slice query]} (let-vector-slice-first-established (let-vector-count-slice-first-input text start nil))]
+      (is (= :accepted (:status slice)))
+      (is (= 0 (get-in slice [:descriptor :bounds-proof :result-count])))
+      (is (= :rejected (:status query)))
+      (is (= "C7-ANNOTATION" (:rule query)))))
+  (let [result (let-vector-slice-first-established (let-vector-count-slice-first-input "f" 2 nil))]
+    (is (= :rejected (get-in result [:slice :status])))
+    (is (= "STD3002" (get-in result [:slice :rule]))))
+  (doseq [value ["\u0080" (apply str (repeat 1025 "a")) [1 2 3]]]
+    (let [input (let-vector-count-slice-first-input value 0 nil)
+          result (let-vector-slice-first-established input)]
+      (when (vector? value) (is (= :accepted (get-in input [:count-result :status]))))
+      (is (= :rejected (get-in result [:slice :status]))))))
 
 (deftest sh08-let-vector-slice-first-development-kernel
   (doseq [value ["abc" [65 66 67]]]
