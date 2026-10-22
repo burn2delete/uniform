@@ -1,0 +1,11 @@
+(ns completion.match.binding-guards
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn select [value]
+  (match value
+    {:left x :right [y] :when (= x y)} x
+    {:fallback x :when true} x
+    _ nil))
