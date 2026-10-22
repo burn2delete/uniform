@@ -158,6 +158,23 @@
             (is (= :rejected (:status (run core mir))))
             (is (= snapshot [core mir]))))))))
 
+(deftest sh13-i64-condition-extension-preserves-original-linear-order
+  ;; One affected original G product through the shared declaration/shape
+  ;; helper, not a replay of the old paired source proof.
+  (let [path (str (.resolve @(existing 'root)
+                  "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/two_i64_order_source.gravity"))
+        reader-path (str (.resolve @(existing 'root) "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        {:keys [raw upstream core mir]} (current-parameter-pair path nil reader-path)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream)))
+    (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
+    (doseq [arguments [[Long/MIN_VALUE Long/MAX_VALUE] [0 0] [1 -1]]]
+      (let [result (argument-run-observation core mir arguments)]
+        (is (= :accepted (:status result)))
+        (is (= (< (first arguments) (second arguments)) (get-in result [:execution :value])))
+        (is (= 508 (get-in result [:execution :fuel])))
+        (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments result))))))))
+
 (deftest sh13-consumes-two-i64-parameters-in-original-strict-order
   ;; Actual c6c10-build-edge-list ordering subtree, not that complete helper,
   ;; a generic Integer/literal conversion, or public source admission.
