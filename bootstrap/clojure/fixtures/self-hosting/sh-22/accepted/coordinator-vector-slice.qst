@@ -1,0 +1,37 @@
+(ns gravity.self-hosting.sh22.vector-slice.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-vector-slice-request sh22-vector-slice-append-request
+             sh22-vector-slice-assoc-request sh22-vector-slice-nth-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-vector-slice-request []
+  {:artifact :gravity/sh22-library-request
+   :request-id :coordinator/vector-slice
+   :profile :meta
+   :experimental-opt-in true
+   :operation :vector-slice
+   :arguments [[:reader false nil :syntax] 1 3]
+   :effects #{:memory/allocate}
+   :capabilities #{}
+   :allocation-policy :bounded-by-result
+   :source-span {:source-id :coordinator/vector-slice :start 0 :end 64}
+   :origin-chain [{:kind :source :source-id :coordinator/vector-slice}]
+   :actual-source-path "fixtures/coordinator-vector-slice.gravity"})
+
+(defn sh22-vector-slice-append-request []
+  (assoc (assoc (sh22-vector-slice-request) :operation :vector-append)
+         :arguments [[:reader false nil] :syntax]))
+
+(defn sh22-vector-slice-assoc-request []
+  (assoc (assoc (sh22-vector-slice-request) :operation :vector-assoc)
+         :arguments [[:reader false nil :syntax] 3 :mir]))
+
+(defn sh22-vector-slice-nth-request []
+  (assoc (assoc (assoc (assoc (sh22-vector-slice-request)
+                            :operation :vector-nth)
+                     :arguments [[false nil] 0])
+              :effects #{})
+         :allocation-policy :none))
