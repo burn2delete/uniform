@@ -1,0 +1,21 @@
+(ns gravity.self-hosting.sh22.integer-set-equality.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-integer-set-duplicate-request
+             sh22-integer-set-mixed-request
+             sh22-integer-set-malformed-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-integer-set-duplicate-request [request]
+  (assoc request :arguments [{:artifact :gravity/ordered-set :values [1]}
+                            {:artifact :gravity/ordered-set :values [1 2 1]}]))
+
+(defn sh22-integer-set-mixed-request [request]
+  (assoc request :arguments [{:artifact :gravity/ordered-set :values []}
+                            {:artifact :gravity/ordered-set :values [1 :late]}]))
+
+(defn sh22-integer-set-malformed-request [request]
+  (assoc request :arguments [{:artifact :gravity/ordered-set :values [1] :extra true}
+                            {:artifact :gravity/ordered-set :values [1]}]))

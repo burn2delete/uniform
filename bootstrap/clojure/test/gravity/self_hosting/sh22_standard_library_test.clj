@@ -208,7 +208,7 @@
     (is (= 512 (:maximum-carrier-width policy)))
     (is (= 65536 (:maximum-carrier-nodes policy)))
     (is (true? (:experimental-opt-in-required policy)))
-    (is (= 22 (count (:operation-set policy))))
+    (is (= 23 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
     (is (contains? (:diagnostics policy) "STD8001"))
     (is (some #{:authenticated-sh19-runtime-services}
@@ -219,7 +219,7 @@
     (is (= 'gravity.stdlib.self-hosting-core (:module manifest)))
     (is (= :experimental (:stability manifest)))
     (is (empty? (:unsafe-islands manifest)))
-    (is (= 22 (count exports)))
+    (is (= 23 (count exports)))
     (is (every? #(= :experimental (:stability %)) exports))
     (is (every? #(= #{:meta} (:profiles %)) exports))
     (is (every? string? (map :type exports)))
