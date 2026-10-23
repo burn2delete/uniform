@@ -806,3 +806,146 @@
                :artifact :gravity/sh15-diagnostic-boundary-verification))
       (assoc (sh15-rejection request error)
              :artifact :gravity/sh15-diagnostic-boundary-verification))))
+
+; C15 / SH-15.4-5: internal development view, not a stream/schema or CLI change.
+; Only rule, severity and an explicitly cleared primary location are rendered.
+; Other fields (including facts, messages, origins and private outputs) are inert.
+; Inputs: String/Keyword rule <=128 ASCII units, five C15 severities, optional
+; existing SH15 span (path <=512 ASCII units), redactions nil/:not-evaluated or
+; Vector <=64. Only [] clears location disclosure; lifecycle :redacted overrides.
+; Output: one ASCII line <=4096 bytes; absent and redacted locations are explicit.
+; No truncation, diagnostic identity, provenance or redaction authority is added.
+; Existing structured data, stream version, exports and nonclaims stay unchanged.
+
+(defn sh15-text-escape-character [character]
+  (get (quote {
+          \u0000 "\\u0000" \u0001 "\\u0001" \u0002 "\\u0002" \u0003 "\\u0003"
+          \u0004 "\\u0004" \u0005 "\\u0005" \u0006 "\\u0006" \u0007 "\\u0007"
+          \u0008 "\\u0008" \u0009 "\\u0009" \u000a "\\u000a" \u000b "\\u000b"
+          \u000c "\\u000c" \u000d "\\u000d" \u000e "\\u000e" \u000f "\\u000f"
+          \u0010 "\\u0010" \u0011 "\\u0011" \u0012 "\\u0012" \u0013 "\\u0013"
+          \u0014 "\\u0014" \u0015 "\\u0015" \u0016 "\\u0016" \u0017 "\\u0017"
+          \u0018 "\\u0018" \u0019 "\\u0019" \u001a "\\u001a" \u001b "\\u001b"
+          \u001c "\\u001c" \u001d "\\u001d" \u001e "\\u001e" \u001f "\\u001f"
+          \u0020 " " \u0021 "!" \u0022 "\\\"" \u0023 "#"
+          \u0024 "$" \u0025 "%" \u0026 "&" \u0027 "'"
+          \u0028 "(" \u0029 ")" \u002a "*" \u002b "+"
+          \u002c "," \u002d "-" \u002e "." \u002f "/"
+          \u0030 "0" \u0031 "1" \u0032 "2" \u0033 "3"
+          \u0034 "4" \u0035 "5" \u0036 "6" \u0037 "7"
+          \u0038 "8" \u0039 "9" \u003a ":" \u003b ";"
+          \u003c "<" \u003d "=" \u003e ">" \u003f "?"
+          \u0040 "@" \u0041 "A" \u0042 "B" \u0043 "C"
+          \u0044 "D" \u0045 "E" \u0046 "F" \u0047 "G"
+          \u0048 "H" \u0049 "I" \u004a "J" \u004b "K"
+          \u004c "L" \u004d "M" \u004e "N" \u004f "O"
+          \u0050 "P" \u0051 "Q" \u0052 "R" \u0053 "S"
+          \u0054 "T" \u0055 "U" \u0056 "V" \u0057 "W"
+          \u0058 "X" \u0059 "Y" \u005a "Z" \u005b "["
+          \u005c "\\\\" \u005d "]" \u005e "^" \u005f "_"
+          \u0060 "`" \u0061 "a" \u0062 "b" \u0063 "c"
+          \u0064 "d" \u0065 "e" \u0066 "f" \u0067 "g"
+          \u0068 "h" \u0069 "i" \u006a "j" \u006b "k"
+          \u006c "l" \u006d "m" \u006e "n" \u006f "o"
+          \u0070 "p" \u0071 "q" \u0072 "r" \u0073 "s"
+          \u0074 "t" \u0075 "u" \u0076 "v" \u0077 "w"
+          \u0078 "x" \u0079 "y" \u007a "z" \u007b "{"
+          \u007c "|" \u007d "}" \u007e "~" \u007f "\\u007f"
+         }) character))
+
+(defn sh15-text-escape [value]
+  (let [characters (vec value)]
+    (loop [index 0 result ""]
+      (if (= index (count characters))
+        result
+        (let [escaped (sh15-text-escape-character (get characters index))]
+          (if (= nil escaped)
+            nil
+            (recur (+ index 1) (str result escaped))))))))
+
+(defn sh15-text-redaction-state [diagnostic]
+  (let [redactions (get diagnostic :redactions)
+        state
+        (if (= nil redactions) :absent
+          (if (= :not-evaluated redactions) :not-evaluated
+            (if (vector? redactions)
+              (if (<= (count redactions) 64)
+                (if (= 0 (count redactions)) :clear :recorded)
+                :unsupported)
+              :unsupported)))]
+    (if (= :unsupported state)
+      state
+      (if (= :redacted (get diagnostic :lifecycle)) :recorded state))))
+
+(defn sh15-text-location [diagnostic redaction-state]
+  (if (= :clear redaction-state)
+    (let [primary (get diagnostic :primary)]
+      (if (= nil primary)
+        "<absent>"
+        (if (map? primary)
+          (let [span (get primary :span)]
+            (if (= nil span)
+              "<absent>"
+              (if (sh15-source-span-valid? span)
+                (let [path (sh15-text-escape (get span :actual-source-path))
+                      start (get span :start)]
+                  (if (= nil path)
+                    nil
+                    (str "\"" path "\":" (get start :line)
+                         ":" (get start :column))))
+                nil)))
+          nil)))
+    "<redacted>"))
+
+(defn sh15-text-rejection [reason field]
+  {:artifact :gravity/sh15-bounded-diagnostic-text :schema-version 1
+   :status :rejected :rendering-version :bounded-ascii-v1
+   :diagnostics
+   [(assoc (sh15-owned-diagnostic {} reason)
+           :diagnostic-id [:coordinator-digest-required "C15-SCHEMA"
+                           reason :bounded-ascii-diagnostic-view]
+           :message-key :bounded-diagnostic-text-invalid
+           :facts {:reason reason :schema-field field}
+           :remediation [:supply-bounded-ascii-diagnostic-view-fields]
+           :offending-diagnostic-id nil :artifact-id nil)]})
+
+(defn sh15-text-render-fields [diagnostic rule]
+  (if (sh15-member? [:error :warning :info :hint :internal-error]
+                    (get diagnostic :severity))
+    (let [escaped-rule (sh15-text-escape rule)
+          redaction-state (sh15-text-redaction-state diagnostic)]
+      (if (= nil escaped-rule)
+        (sh15-text-rejection :unsupported-rule-character :rule)
+        (if (= :unsupported redaction-state)
+          (sh15-text-rejection :unsupported-redaction-state :redactions)
+          (let [location (sh15-text-location diagnostic redaction-state)]
+            (if (= nil location)
+              (sh15-text-rejection :unsupported-primary-location :primary)
+              (let [text (str "code=\"" escaped-rule
+                              "\" severity=" (get diagnostic :severity)
+                              " location=" location
+                              " redactions=" redaction-state)]
+                (if (<= (count text) 4096)
+                  {:artifact :gravity/sh15-bounded-diagnostic-text
+                   :schema-version 1 :status :accepted
+                   :rendering-version :bounded-ascii-v1 :text text
+                   :redaction-status redaction-state
+                   :semantic-authority :none
+                   :nonclaims [:diagnostic-authority :redaction-policy
+                               :stream-ordering :cli-integration
+                               :complete-c15-conformance :self-hosting :release]}
+                  (sh15-text-rejection :rendered-text-bound :text))))))))
+    (sh15-text-rejection :unsupported-severity :severity)))
+
+(defn sh15-render-bounded-diagnostic-text [diagnostic]
+  (if (map? diagnostic)
+    (let [rule (get diagnostic :rule)]
+      (if (if (string? rule) true (keyword? rule))
+        (let [text-rule (str rule)]
+          (if (<= 1 (count text-rule))
+            (if (<= (count text-rule) 128)
+              (sh15-text-render-fields diagnostic text-rule)
+              (sh15-text-rejection :rule-bound :rule))
+            (sh15-text-rejection :empty-rule :rule)))
+        (sh15-text-rejection :unsupported-rule :rule)))
+    (sh15-text-rejection :diagnostic-not-map :diagnostic)))
