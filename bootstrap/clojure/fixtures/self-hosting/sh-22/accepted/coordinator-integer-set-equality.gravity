@@ -1,0 +1,29 @@
+(ns gravity.self-hosting.sh22.integer-set-equality.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-integer-set-equality-request sh22-integer-set-insertion-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-integer-set-equality-request []
+  {:artifact :gravity/sh22-library-request
+   :request-id :coordinator/integer-set-equality
+   :profile :meta
+   :experimental-opt-in true
+   :operation :ordered-set-equal-integer
+   :arguments [{:artifact :gravity/ordered-set :values [-1 0 1]}
+               {:artifact :gravity/ordered-set :values [1 -1 0]}]
+   :effects #{}
+   :capabilities #{}
+   :allocation-policy :none
+   :source-span {:source-id :coordinator/integer-set-equality :start 0 :end 64}
+   :origin-chain [{:kind :source :source-id :coordinator/integer-set-equality}]
+   :actual-source-path "fixtures/coordinator-integer-set-equality.gravity"})
+
+(defn sh22-integer-set-insertion-request []
+  (assoc (assoc (assoc (assoc (sh22-integer-set-equality-request)
+                            :operation :ordered-set-conj)
+                     :arguments [{:artifact :gravity/ordered-set :values [-1 0]} 1])
+              :effects #{:memory/allocate})
+         :allocation-policy :bounded-by-result))

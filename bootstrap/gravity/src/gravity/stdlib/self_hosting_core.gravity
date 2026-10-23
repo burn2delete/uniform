@@ -42,6 +42,7 @@
      :ordered-set-contains-symbol
      :ordered-set-contains-integer
      :ordered-set-equal-keyword
+     :ordered-set-equal-integer
      :utf8-validate
      :checked-add-i64
      :checked-sub-i64
@@ -133,6 +134,10 @@
     (sh22-export
      :ordered-set-equal-keyword :collections
      "(OrderedSet Keyword) (OrderedSet Keyword) -> (Result Bool CollectionError)"
+     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
+    (sh22-export
+     :ordered-set-equal-integer :collections
+     "(OrderedSet Integer) (OrderedSet Integer) -> (Result Bool CollectionError)"
      #{} #{} :none ["STD3001" "STD10003"] #{:meta})
     (sh22-export
      :utf8-validate :text
@@ -1472,8 +1477,50 @@
         (sh22-rejected request "STD10003" :expected-ordered-set))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
+(defn sh22-integer-set-equal-values? [left right]
+  ; Both vectors are bounded, homogeneous and unique before this comparison.
+  (if (= (count left) (count right))
+    (loop [remaining left]
+      (if (= 0 (count remaining))
+        true
+        (if (sh22-vector-contains? right (first remaining) 0)
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn sh22-ordered-set-equal-integer [request]
+  (let [arguments (get request :arguments)
+        left (get arguments 0)
+        right (get arguments 1)]
+    (if (= 2 (count arguments))
+      (if (if (sh22-ordered-set-shape? left) (sh22-ordered-set-shape? right) false)
+        (let [left-values (get left :values)
+              right-values (get right :values)
+              maximum (get (sh22-library-policy) :maximum-collection-elements)]
+          (if (if (<= (count left-values) maximum) (<= (count right-values) maximum) false)
+            ; STD2/STD3/STD5: both complete Integer domains precede equality;
+            ; uniqueness precedes a count result, with no signed-width narrowing.
+            (if (sh22-integer-vector? left-values maximum)
+              (if (sh22-integer-vector? right-values maximum)
+                (if (sh22-vector-unique? left-values [])
+                  (if (sh22-vector-unique? right-values [])
+                    (sh22-accepted
+                     request (sh22-integer-set-equal-values? left-values right-values)
+                     {:collection-kind :ordered-set :member-family :integer
+                      :equality :integer-set-value :safety-outcome :proven-safe
+                      :allocation :none :persistent-value-semantics true})
+                    (sh22-rejected request "STD10003" :expected-ordered-set))
+                  (sh22-rejected request "STD10003" :expected-ordered-set))
+                (sh22-rejected request "STD10003" :expected-integer-ordered-set))
+              (sh22-rejected request "STD10003" :expected-integer-ordered-set))
+            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+        (sh22-rejected request "STD10003" :expected-ordered-set))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
 (defn sh22-handle-valid-request [request]
   (let [operation (get request :operation)]
+    (if (= operation :ordered-set-equal-integer)
+      (sh22-ordered-set-equal-integer request)
     (if (= operation :ordered-map-dissoc-keyword)
       (sh22-ordered-map-dissoc-keyword request)
       (if (= operation :checked-nonnegative-quot-i64)
@@ -1516,7 +1563,7 @@
                           (sh22-artifact-data request)
                           (if (= operation :meta-view)
                             (sh22-meta-view request)
-                            (sh22-canonical-data request))))))))))))))))))))
+                            (sh22-canonical-data request)))))))))))))))))))))
 
 (defn sh22-operation-effects [operation]
   (if
@@ -1540,6 +1587,8 @@
       #{}))))
 
 (defn sh22-operation-allocation [operation]
+  (if (= operation :ordered-set-equal-integer)
+    :none
   (if (= operation :ordered-map-dissoc-keyword)
     :bounded-by-result
     (if (= operation :checked-nonnegative-quot-i64)
@@ -1570,7 +1619,7 @@
                        #{:io-file-read :io-stdout}
                        operation)
                     :provider-owned
-                    :bounded-by-result)))))))))))))))
+                    :bounded-by-result))))))))))))))))
 
 (defn sh22-operation-capabilities [operation]
   (if (= operation :io-file-read)
