@@ -1,0 +1,24 @@
+(ns gravity.self-hosting.sh16.checked-i64-sub-fold.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [overflowing-sub-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn overflowing-sub-request []
+  {:artifact :gravity/sh16-optimization-request
+   :request-id :request/overflowing-sub :input-mir-id :mir/overflowing-sub
+   :mir-verified true :profile :native :target :portable-mir
+   :source-span {:source-id :fixture/overflowing-sub
+                 :actual-source-path "/fixture/overflowing-sub.gravity" :start 0 :end 8}
+   :origin-chain [{:kind :source :source-id :fixture/overflowing-sub}]
+   :nondeterministic-choice false
+   :operations
+   [{:op-id :op/sub :opcode :sub :operands [-9223372036854775808 1]
+     :result :value/sub :type :i64 :effects #{} :ordering nil
+     :safety-outcome :proven-safe
+     :source-span {:source-id :fixture/overflowing-sub
+                   :actual-source-path "/fixture/overflowing-sub.gravity" :start 0 :end 8}
+     :origin-chain [{:kind :source :source-id :fixture/overflowing-sub}]
+     :constant-operands true :numeric-mode :integer-exact}]})

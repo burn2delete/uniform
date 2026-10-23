@@ -1,0 +1,16 @@
+(ns gravity.self-hosting.sh15.bounded-text.rejected
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-bounded-diagnostic-text-invalid])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Well-formed source producing unsupported diagnostic-view inputs.
+(defn coordinator-bounded-diagnostic-text-invalid []
+  [nil
+   {:rule "" :severity :error}
+   {:rule :C15-SCHEMA :severity :fatal}
+   {:rule "C15-SCHEMA" :severity :error :redactions :unknown}
+   {:rule "C15-\u00e9" :severity :error :redactions []}
+   {:rule "C15-SCHEMA" :severity :error :redactions []
+    :primary {:span {:source-id :fixture :actual-source-path "src/\u00e9.gravity"
+                     :start {:byte 0 :line 1 :column 1}
+                     :end {:byte 1 :line 1 :column 2}}}}])
