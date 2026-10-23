@@ -58,7 +58,7 @@
         manifest (call 'sh22-module-manifest [])
         export (first (filter #(= :ordered-set-equal-integer (:name %)) (:exports manifest)))]
     (is (contains? (:operation-set policy) :ordered-set-equal-integer))
-    (is (= 23 (count (:operation-set policy)) (count (:exports manifest))))
+    (is (= 25 (count (:operation-set policy)) (count (:exports manifest))))
     (is (= 256 (:maximum-collection-elements policy)))
     (is (= :experimental (:stability export)))
     (is (= #{:meta} (:profiles export)))

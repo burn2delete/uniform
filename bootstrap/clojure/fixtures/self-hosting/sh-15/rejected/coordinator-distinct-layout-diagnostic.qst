@@ -1,0 +1,30 @@
+(ns gravity.self-hosting.sh15.distinct-layout-diagnostic.rejected
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-distinct-layout-diagnostic-identical
+             coordinator-distinct-layout-diagnostic-renamed-id
+             coordinator-distinct-layout-diagnostic-malformed])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Rows come from the original C12 producer. These supplied mutations do not
+; assert that C12 itself emitted a second id spelling or malformed data.
+(defn coordinator-distinct-layout-diagnostic-identical [row] [row row])
+
+(defn coordinator-distinct-layout-diagnostic-renamed-id [located-row]
+  [located-row (assoc located-row :diagnostic-id "OTHER-UPSTREAM-ID")])
+
+(defn coordinator-distinct-layout-diagnostic-malformed [row]
+  [(assoc row :owner-document "C11")
+   (assoc row :verifier :gravity.compiler.c11/other)
+   (assoc row :profile :native)
+   (assoc row :target :llvm)
+   (assoc row :value-id :other)
+   (assoc row :kind :record)
+   (assoc row :source-span {})
+   (assoc row :source-span
+          {:source-id :fixture :actual-source-path "/source.gravity"
+           :start {:byte -1 :line 1 :column 1}
+           :end {:byte 1 :line 1 :column 2}})
+   (assoc row :source-span
+          {:source-id :fixture :actual-source-path "/source.gravity"
+           :start {:byte 0 :line 1 :column 1}
+           :end {:byte 2147483648 :line 1 :column 2}})])

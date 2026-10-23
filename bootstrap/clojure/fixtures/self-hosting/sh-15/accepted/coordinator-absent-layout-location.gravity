@@ -1,0 +1,32 @@
+(ns gravity.self-hosting.sh15.absent-layout-location.accepted
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-absent-layout-location-request
+             coordinator-absent-layout-location-references])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Deliberately incomplete C12 request. Its original early rejection is the
+; accepted C15 preservation input; no authenticated layout is built.
+(defn coordinator-absent-layout-location-request []
+  {:profile :safe :target :portable
+   :layout-request {:value-id :authenticated-fixed-slots :kind :tuple}})
+
+; Supplied reference SHAPES only. These are not genuine upstream artifacts
+; or evidence of their recorded statuses. C15 already treats them as unverified.
+(defn coordinator-absent-layout-location-references []
+  {:domain-reference
+   {:artifact :gravity/sh15-external-sh13-evidence-reference
+    :schema-version 1 :source-artifact :gravity/sh13-c11-domain-evidence
+    :source-schema-version 1 :source-status :accepted
+    :artifact-id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    :source-identity-binding-status :coordinator-resolution-shape-checked
+    :source-scope :proof-reference-shape-only :source-lowering-status :rejected
+    :profile :safe :target :portable}
+   :layout-reference
+   {:artifact :gravity/sh15-external-sh14-layout-reference
+    :schema-version 1 :source-artifact :gravity/sh14-authenticated-layout
+    :source-schema-version 1 :source-status :accepted
+    :source-identity-binding-status :unbound
+    :layout-model :fixed-slot-v1 :physical-layout? false
+    :target-independent? true :executable-load? false
+    :source-lowering-status :rejected :source-semantic-authority :none
+    :profile :safe :target :portable}})

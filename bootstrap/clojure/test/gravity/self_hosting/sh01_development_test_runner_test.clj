@@ -377,6 +377,78 @@
                {:exact ["gravity.bootstrap-compatibility.c2-test/shared-test"]
                 :regex [] :prefix []})))))))
 
+(deftest malformed-regex-rejects-before-namespace-loading
+  (let [loads (atom [])
+        selections (atom 0)
+        executions (atom 0)]
+    (with-redefs-fn
+      {#'gravity.development-test-runner/load-selected-namespaces!
+       (fn [records]
+         (swap! loads into records)
+         (throw (ex-info "namespace load must not mask regex error" {})))
+       #'gravity.development-test-runner/test-var-records
+       (fn [_] (swap! selections inc) [])
+       #'gravity.development-test-runner/run-selected-tests
+       (fn [& _] (swap! executions inc))}
+      #(doseq [mode [[] ["--list"]]]
+         (let [data (exception-data
+                     (fn []
+                       (runner/run-cli!
+                        (into ["--namespace" "gravity.bootstrap-test"
+                               "--regex" "["] mode))))]
+           (is (= :gravity.development-test-runner/invalid-selector (:type data)))
+           (is (= "[" (:selector data))))))
+    (is (empty? @loads))
+    (is (zero? @selections))
+    (is (zero? @executions))))
+
+(deftest regex-preflight-preserves-command-precedence-and-selection
+  (let [events (atom [])
+        compile-patterns @#'gravity.development-test-runner/compile-patterns
+        records (mapv (fn [name]
+                        {:name name :qualified-name (str "gravity.bootstrap-test/" name)})
+                      ["exact" "prefix-one" "regex-one" "other"])]
+    (with-redefs-fn
+      {#'gravity.development-test-runner/compile-patterns
+       (fn [patterns]
+         (swap! events conj :compile)
+         (compile-patterns patterns))
+       #'gravity.development-test-runner/print-catalog
+       (fn [] (swap! events conj :catalog))
+       #'gravity.development-test-runner/load-selected-namespaces!
+       (fn [_] (swap! events conj :load))
+       #'gravity.development-test-runner/test-var-records (constantly records)}
+      #(do
+         (with-out-str (is (zero? (runner/run-cli! ["--help" "--regex" "["]))))
+         (is (empty? @events))
+         (is (zero? (runner/run-cli! ["--catalog" "--regex" "["])))
+         (is (= [:catalog] @events))
+         (reset! events [])
+         (is (= :gravity.development-test-runner/unknown-namespace
+                (:type (exception-data
+                        (fn []
+                          (runner/run-cli! ["--namespace" "gravity.missing-test"
+                                            "--regex" "["]))))))
+         (is (empty? @events))
+         (is (= (str "gravity.bootstrap-test/exact\n"
+                     "gravity.bootstrap-test/prefix-one\n"
+                     "gravity.bootstrap-test/regex-one\n")
+                (with-out-str
+                  (is (zero? (runner/run-cli!
+                              ["--list" "--exact" "exact" "--prefix" "prefix-"
+                               "--regex" "^regex-"]))))))
+         (is (= [:compile :load] @events))
+         (doseq [[option selector kind] [["--exact" "missing" :exact]
+                                        ["--prefix" "missing" :prefix]
+                                        ["--regex" "^missing" :regex]]]
+           (reset! events [])
+           (let [data (exception-data
+                       (fn [] (runner/run-cli! ["--list" option selector])))]
+             (is (= :gravity.development-test-runner/unknown-selector (:type data)))
+             (is (= selector (:selector data)))
+             (is (= kind (:kind data)))
+             (is (= [:compile :load] @events))))))))
+
 (deftest multi-namespace-execution-preserves-once-and-each-fixtures
   (let [namespace-a (create-ns 'gravity.runner-fixture-a)
         namespace-b (create-ns 'gravity.runner-fixture-b)

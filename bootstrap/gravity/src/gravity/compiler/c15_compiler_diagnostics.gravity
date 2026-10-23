@@ -529,6 +529,22 @@
     true
     (sh15-bounded-string? value maximum-units)))
 
+(defn sh15-upstream-source-span-valid? [diagnostic]
+  (let [span (get diagnostic :source-span)]
+    (if (= nil span)
+      ; Original C12 early schema rejection can have no available location.
+      ; The enclosing exact row schema still requires :source-span PRESENT;
+      ; producer/verifier, profile/target and all other gates remain below.
+      (= ["S7-LAYOUT" "S7-LAYOUT" :request-schema-mismatch
+          :logical-data-layout :authenticated-layout-contract
+          :domain-ir-layout :compiler-data-layout
+          :supply-exact-authenticated-four-fact-fixed-slot-layout]
+         [(get diagnostic :diagnostic-id) (get diagnostic :rule)
+          (get diagnostic :reason) (get diagnostic :family)
+          (get diagnostic :missing-fact) (get diagnostic :stage)
+          (get diagnostic :domain) (get diagnostic :remediation)])
+      (sh15-source-span-valid? span))))
+
 (defn sh15-upstream-diagnostic-valid? [diagnostic profile target]
   (if (sh15-exact-keys? diagnostic (sh15-upstream-diagnostic-keys))
     (= [true true true true true true true true true true true true true true
@@ -550,7 +566,7 @@
            (get diagnostic :verifier))
         (= profile (get diagnostic :profile))
         (= target (get diagnostic :target))
-        (sh15-source-span-valid? (get diagnostic :source-span))
+        (sh15-upstream-source-span-valid? diagnostic)
         (vector? (get diagnostic :generated-origin-chain))
         (if (vector? (get diagnostic :generated-origin-chain))
           (<= (count (get diagnostic :generated-origin-chain)) 64)
@@ -611,8 +627,14 @@
                       (if (<= (count diagnostics) 256)
                         (if (sh15-diagnostics-valid-from?
                              diagnostics 0 profile target)
+                          ; C12's upstream id is a rule code, not an instance
+                          ; identity. Compare the existing path-neutral partial
+                          ; C15 recipes; retain raw upstream ids in output.
                           (if (sh15-unique-diagnostic-ids-from?
-                               diagnostics 0)
+                               (sh15-identity-diagnostics-from
+                                (sh15-preserve-diagnostics-from
+                                 diagnostics 0 []) 0 [])
+                               0)
                             nil
                             :duplicate-upstream-diagnostic-id)
                           :upstream-diagnostic-schema)
@@ -688,8 +710,10 @@
      (conj result (sh15-preserve-diagnostic (get diagnostics index))))))
 
 (defn sh15-identity-span [span]
-  {:source-id (get span :source-id)
-   :start (get span :start) :end (get span :end)})
+  (if (= nil span)
+    nil
+    {:source-id (get span :source-id)
+     :start (get span :start) :end (get span :end)}))
 
 (defn sh15-identity-origins-from [origins index result]
   (if (= index (count origins))
