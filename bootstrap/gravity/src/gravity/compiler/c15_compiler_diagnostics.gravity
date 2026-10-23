@@ -627,8 +627,14 @@
                       (if (<= (count diagnostics) 256)
                         (if (sh15-diagnostics-valid-from?
                              diagnostics 0 profile target)
+                          ; C12's upstream id is a rule code, not an instance
+                          ; identity. Compare the existing path-neutral partial
+                          ; C15 recipes; retain raw upstream ids in output.
                           (if (sh15-unique-diagnostic-ids-from?
-                               diagnostics 0)
+                               (sh15-identity-diagnostics-from
+                                (sh15-preserve-diagnostics-from
+                                 diagnostics 0 []) 0 [])
+                               0)
                             nil
                             :duplicate-upstream-diagnostic-id)
                           :upstream-diagnostic-schema)
