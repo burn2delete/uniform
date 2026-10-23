@@ -420,30 +420,32 @@
              (re-find % (:qualified-name record)))
         patterns))
 
-(defn- select-test-vars [records {:keys [exact regex prefix]}]
-  (let [compiled-patterns (compile-patterns regex)
-        selector-supplied? (or (seq exact) (seq regex) (seq prefix))
-        selected (->> records
-                      (filter (fn [record]
-                                (or (not selector-supplied?)
-                                    (some #(matches-name? record %) exact)
-                                    (some #(matches-prefix? record %) prefix)
-                                    (matches-regex? record compiled-patterns))))
-                      vec)]
-    (doseq [selector exact]
-      (when-not (some #(matches-name? % selector) records)
-        (throw (ex-info (str "unknown exact test selector: " selector)
-                        {:type ::unknown-selector :selector selector :kind :exact}))))
-    (doseq [selector prefix]
-      (when-not (some #(matches-prefix? % selector) records)
-        (throw (ex-info (str "selector matched no test vars: --prefix " selector)
-                        {:type ::unknown-selector :selector selector :kind :prefix}))))
-    (doseq [[selector pattern] (map vector regex compiled-patterns)]
-      (when-not (some #(or (re-find pattern (:name %))
-                           (re-find pattern (:qualified-name %))) records)
-        (throw (ex-info (str "selector matched no test vars: --regex " selector)
-                        {:type ::unknown-selector :selector selector :kind :regex}))))
-    selected))
+(defn- select-test-vars
+  ([records options]
+   (select-test-vars records options (compile-patterns (:regex options))))
+  ([records {:keys [exact regex prefix]} compiled-patterns]
+   (let [selector-supplied? (or (seq exact) (seq regex) (seq prefix))
+         selected (->> records
+                       (filter (fn [record]
+                                 (or (not selector-supplied?)
+                                     (some #(matches-name? record %) exact)
+                                     (some #(matches-prefix? record %) prefix)
+                                     (matches-regex? record compiled-patterns))))
+                       vec)]
+     (doseq [selector exact]
+       (when-not (some #(matches-name? % selector) records)
+         (throw (ex-info (str "unknown exact test selector: " selector)
+                         {:type ::unknown-selector :selector selector :kind :exact}))))
+     (doseq [selector prefix]
+       (when-not (some #(matches-prefix? % selector) records)
+         (throw (ex-info (str "selector matched no test vars: --prefix " selector)
+                         {:type ::unknown-selector :selector selector :kind :prefix}))))
+     (doseq [[selector pattern] (map vector regex compiled-patterns)]
+       (when-not (some #(or (re-find pattern (:name %))
+                            (re-find pattern (:qualified-name %))) records)
+         (throw (ex-info (str "selector matched no test vars: --regex " selector)
+                         {:type ::unknown-selector :selector selector :kind :regex}))))
+     selected)))
 
 (defn- report-summary [summary]
   (test/do-report (assoc summary :type :summary))
@@ -570,12 +572,13 @@
       (:catalog? options) (do (print-catalog) 0)
       :else
       (let [namespace-records (selected-namespace-records options)
+            compiled-patterns (compile-patterns (:regex options))
             timing-events (when (:timing-receipt options)
                             (atom {:namespace-loads [] :namespace-executions []}))]
         (binding [*timing-events* timing-events]
           (load-selected-namespaces! namespace-records)
           (let [records (test-var-records namespace-records)
-                selected-records (select-test-vars records options)]
+                selected-records (select-test-vars records options compiled-patterns)]
             (when (empty? selected-records)
               (throw (ex-info "selected namespaces contain no test vars"
                               {:type ::empty-selection
