@@ -9908,7 +9908,9 @@
   (if (> right 0)
     (<= left (- 9223372036854775807 right))
     (if (< right 0)
-      (>= left (- -9223372036854775808 right))
+      (if (= right -9223372036854775808)
+        (>= left 0)
+        (>= left (- -9223372036854775808 right)))
       true)))
 
 (defn sh13-sub-safe? [left right]

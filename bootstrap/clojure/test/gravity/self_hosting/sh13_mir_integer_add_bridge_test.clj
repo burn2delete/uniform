@@ -97,3 +97,27 @@
         (is (= :rejected (:status upstream) (:status result)))
         (is (= (:diagnostics upstream) (:diagnostics result)))
         (is (nil? (:execution result)))))))
+
+(deftest sh13-checked-i64-add-original-guard-endpoint-kernel
+  ;; ONE unchanged current original definition, supplied scalar DATA only.
+  (let [path (str (.resolve @(producer/existing 'root) (producer/existing 'c11-source)))
+        forms (binding [*read-eval* false] (read-string (str "[" (slurp path) "]")))
+        selected (filterv #(and (seq? %) (= 'defn (first %)) (= 'sh13-add-safe? (second %))) forms)
+        text (str "(ns gravity.test.original-add-guard-kernel (:profile :meta) (:target :jvm)"
+                  " (:effects #{}) (:capabilities #{}) (:safety :safe))\n"
+                  (apply str (map #(str (pr-str %) "\n") selected)))
+        callees (set (for [form selected expression (tree-seq coll? seq form)
+                          :when (and (seq? expression) (symbol? (first expression)))] (first expression)))
+        _ (assert (= 1 (count selected)))
+        _ (assert (< (count text) 2048))
+        _ (assert (every? '#{defn if > < <= >= = -} callees) (pr-str {:callees callees}))
+        emitter (:emitter (gravity.bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (gravity.bootstrap/p15-s23-stage2-compiler-artifact-plan emitter "original-add-guard-kernel.gravity" text)
+        values [Long/MIN_VALUE (inc Long/MIN_VALUE) -2 -1 0 1 2 (dec Long/MAX_VALUE) Long/MAX_VALUE]]
+    (doseq [left values right values]
+      (let [sum (+' (bigint left) (bigint right))
+            expected (<= (bigint Long/MIN_VALUE) sum (bigint Long/MAX_VALUE))
+            actual (gravity.bootstrap/p15-s23-stage2-runtime-execute-function
+                     {:engine :sh13-original-add-guard-data-kernel :compiler-artifact-plan? true}
+                     plan 'sh13-add-safe? [left right])]
+        (is (= expected actual) (str "left=" left " right=" right))))))
