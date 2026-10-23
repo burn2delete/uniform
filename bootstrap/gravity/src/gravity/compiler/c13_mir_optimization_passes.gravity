@@ -1233,7 +1233,7 @@
     :maximum-collections 2048
     :maximum-scalars 6144
     :maximum-scalar-units 65536}
-   :supported-opcodes #{:const :add :branch-if :branch
+   :supported-opcodes #{:const :add :sub :branch-if :branch
                         :compute :runtime-check :return}
    :elidable-check-classes
    #{:bounds}
@@ -1565,7 +1565,7 @@
           :source-span :origin-chain :safety-outcome}
         opcode (get operation :opcode)
         opcode-keys
-        (if (= opcode :add)
+        (if (sh16-member? #{:add :sub} opcode)
           (conj (conj base :numeric-mode) :constant-operands)
           (if (= opcode :branch-if)
             (conj (conj (conj base :condition) :then-block) :else-block)
@@ -1593,7 +1593,7 @@
       (if (sh16-canonical-identifier? (get operation :op-id))
         (if
          (sh16-member?
-          #{:const :add :branch-if :branch
+          #{:const :add :sub :branch-if :branch
             :compute :runtime-check :return}
           (get operation :opcode))
           (if (sh16-bounded-operands? (get operation :operands))
@@ -1840,7 +1840,7 @@
             (sh16-operation-error-valid-shape
              request operation operations)))
         :contract)
-      (if (= :add (get operation :opcode))
+      (if (sh16-member? #{:add :sub} (get operation :opcode))
         (if (= nil (get operation :numeric-mode))
           :safety
           (sh16-operation-error-valid-shape request operation operations))
@@ -1864,12 +1864,16 @@
         (if (= nil (get operation :unsafe-audit-id))
           :safety
           (sh16-effect-safety-error request operation operations))
-        (if (= :add (get operation :opcode))
+        (if (sh16-member? #{:add :sub} (get operation :opcode))
           (if (= :integer-exact (get operation :numeric-mode))
-            (if (sh16-member? #{true false}
-                              (get operation :constant-operands))
+            (if (if (= :sub (get operation :opcode))
+                  (contains? #{true false} (get operation :constant-operands))
+                  (sh16-member? #{true false}
+                                (get operation :constant-operands)))
               (if (= true (get operation :constant-operands))
-                (if (sh16-foldable-add? operation)
+                (if (if (= :add (get operation :opcode))
+                      (sh16-foldable-add? operation)
+                      (sh16-representable-sub? operation))
                   (sh16-effect-safety-error request operation operations)
                   :safety)
                 (sh16-effect-safety-error request operation operations))
@@ -2027,6 +2031,36 @@
       false)
     false))
 
+(defn sh16-representable-sub? [operation]
+  (if (= :sub (get operation :opcode))
+    (if (= :i64 (get operation :type))
+      (if (= true (get operation :constant-operands))
+        (if (= 2 (count (get operation :operands)))
+          (let [left (get (get operation :operands) 0)
+                right (get (get operation :operands) 1)]
+            (if (sh16-i64? left)
+              (if (sh16-i64? right)
+                (if (> right 0)
+                  (>= left (+ -9223372036854775808 right))
+                  (if (< right 0)
+                    (<= left (+ 9223372036854775807 right))
+                    true))
+                false)
+              false))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh16-foldable-arithmetic? [operation]
+  (if (= :add (get operation :opcode))
+    (sh16-foldable-add? operation)
+    (if (sh16-representable-sub? operation)
+      (if (= :integer-exact (get operation :numeric-mode))
+        (sh16-propagation-pure? operation)
+        false)
+      false)))
+
 (defn sh16-result-definition-counts [operations index counts]
   (if (= index (count operations))
     counts
@@ -2146,11 +2180,18 @@
       output)))
 
 (defn sh16-transform-operation [operation]
-  (if (sh16-foldable-add? operation)
+  (if (sh16-foldable-arithmetic? operation)
     (sh16-output-base-operation
      operation :const
-     [(+ (get (get operation :operands) 0)
-         (get (get operation :operands) 1))])
+     [(if (= :sub (get operation :opcode))
+        (let [left (get (get operation :operands) 0)
+              right (get (get operation :operands) 1)]
+          ; Guarded result-minus-one avoids the seed builtin's negation of MIN.
+          (if (< right 0)
+            (+ (- left (+ right 1)) 1)
+            (- left right)))
+        (+ (get (get operation :operands) 0)
+           (get (get operation :operands) 1)))])
     (if (sh16-simplifiable-branch? operation)
       (sh16-output-base-operation
        operation :branch
@@ -2171,7 +2212,7 @@
 
 (defn sh16-family-changed? [family operation]
   (if (= family :constant-fold)
-    (sh16-foldable-add? operation)
+    (sh16-foldable-arithmetic? operation)
     (if (= family :branch-simplify)
       (sh16-simplifiable-branch? operation)
       (if (= family :dead-code-eliminate)
@@ -2298,7 +2339,7 @@
 
 (defn sh16-operation-changed-in-state? [family operation invalidated]
   (if (= family :constant-fold)
-    (if (sh16-foldable-add? operation)
+    (if (sh16-foldable-arithmetic? operation)
       (if (= true (get operation :dead)) false true)
       false)
     (if (= family :check-retention-or-elision)
@@ -2707,7 +2748,7 @@
 (defn sh16-pass-output-operation-valid? [family operation]
   (if (sh16-common-operation-valid? operation)
     (if (= family :constant-fold)
-      (if (sh16-foldable-add? operation)
+      (if (sh16-foldable-arithmetic? operation)
         (= true (get operation :dead))
         true)
       (if (= family :branch-simplify)

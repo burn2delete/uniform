@@ -1,0 +1,40 @@
+(ns gravity.self-hosting.sh16.checked-i64-sub-fold.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [checked-sub-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn checked-sub-operation [id opcode operands]
+  {:op-id id :opcode opcode :operands operands :result id :type :i64
+   :effects #{} :ordering nil :safety-outcome :proven-safe
+   :source-span {:source-id :fixture/checked-sub
+                 :actual-source-path "/fixture/checked-sub.gravity" :start 0 :end 8}
+   :origin-chain [{:kind :source :source-id :fixture/checked-sub}
+                  {:kind :generated :source-id :fixture/checked-sub
+                   :generator-id :generator/checked-sub}]})
+
+(defn checked-sub-request [left right]
+  {:artifact :gravity/sh16-optimization-request
+   :request-id :request/checked-sub :input-mir-id :mir/checked-sub
+   :mir-verified true :profile :native :target :portable-mir
+   :source-span {:source-id :fixture/checked-sub
+                 :actual-source-path "/fixture/checked-sub.gravity" :start 0 :end 32}
+   :origin-chain [{:kind :source :source-id :fixture/checked-sub}]
+   :nondeterministic-choice false
+   :operations
+   [(assoc (checked-sub-operation :op/sub :sub [left right])
+           :constant-operands true :numeric-mode :integer-exact)
+    (assoc (checked-sub-operation :op/check :runtime-check [2 5])
+           :safety-outcome :runtime-checked
+           :runtime-check-id :check/bounds :check-class :bounds
+           :elide-requested true
+           :proof {:proof-id :proof/bounds :certificate-id :certificate/bounds
+                   :claim :bounds-safe :operation-id :op/check
+                   :check-id :check/bounds :proof-dominates-use true
+                   :certificate-status :verified :result :proven-safe
+                   :method :range-analysis :provider :gravity.compiler/range
+                   :assumptions #{:index-in-range :length-stable}
+                   :profile :native :target :portable-mir :invalidated-by #{}})
+    (checked-sub-operation :op/return :return [:op/sub])]})
