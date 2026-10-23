@@ -183,11 +183,25 @@
                  (map? (:artifact-template raw-result))
                  (vector? (:diagnostics raw-result))
                  (empty? (:diagnostics raw-result))
-                 (= {:semantic-owner :gravity-source
-                     :host-role :generic-validation-hashing-and-instantiation
-                     :scope :bounded-pure-c6-c10
-                     :self-hosted? false}
-                    (:authority raw-result)))
+                 (or
+                  (and (= {:semantic-owner :gravity-source
+                           :host-role :generic-validation-hashing-and-instantiation
+                           :scope :bounded-pure-c6-c10 :self-hosted? false}
+                          (:authority raw-result))
+                       (not= :checked-i64-add-v1 (get-in raw-result [:artifact-template :scope :family])))
+                  (and (= {:semantic-owner :gravity-source
+                           :host-role :generic-validation-hashing-and-instantiation
+                           :scope :bounded-checked-i64-add-c6-c10 :self-hosted? false}
+                          (:authority raw-result))
+                       (= [:gravity/p15-s23-stage2-gravity-checked-core-artifact 1
+                           :complete-for-checked-i64-add-hosted-safe-jvm-slice :hosted :jvm]
+                          ((juxt :kind :schema-version :status :profile :source-target) (:artifact-template raw-result)))
+                       (= {:artifact :gravity/c6-c10-checked-core-scope-contract
+                           :family :checked-i64-add-v1 :profiles [:hosted] :safety-modes [:safe] :source-targets [:jvm]
+                           :source-operations [:parameter :local :integer-add :function]
+                           :scalar-literals [] :intrinsic-effects #{:error/raise} :intrinsic-capabilities #{}
+                           :ownership :persistent-immutable :safety :runtime-checked :whole-language? false}
+                          (get-in raw-result [:artifact-template :scope])))))
             (and (contains?
                   p15-s23-c6c10-rejected-builder-result-keysets keyset)
                  (true? (:fatal? raw-result))

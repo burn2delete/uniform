@@ -114,7 +114,7 @@
   {:L2 ["L2-BUILTIN-ARITY"]
    :C6 ["C6-LOWERING-GAP" "C6-CORE-SHAPE" "C6-ORIGIN" "C6-VERIFY"]
    :C7 ["C7-TYPE-MISMATCH" "C7-VERIFY"]
-   :C8 ["C8-VERIFY"]
+   :C8 ["C8-UNDECLARED" "C8-VERIFY"]
    :C9 []
    :C10 ["C10-PROOF"]})
 
@@ -372,11 +372,13 @@
               "C7-TYPE-MISMATCH"
               (if (= rule :C7-VERIFY)
                 "C7-VERIFY"
-                (if (= rule :C8-VERIFY)
-                  "C8-VERIFY"
-                  (if (= rule :C10-PROOF)
-                    "C10-PROOF"
-                    :unassigned-diagnostic-rule)))))))))))
+                (if (= rule :C8-UNDECLARED)
+                  "C8-UNDECLARED"
+                  (if (= rule :C8-VERIFY)
+                    "C8-VERIFY"
+                    (if (= rule :C10-PROOF)
+                      "C10-PROOF"
+                      :unassigned-diagnostic-rule))))))))))))
 
 (defn c6c10-canonical-diagnostic-stage [stage]
   (if (= stage :core-semantics)
@@ -951,6 +953,32 @@
      (assoc (get product :origin-closure)
             origin-id (get origin-products :raw)))))
 
+(defn c6c10-checked-add-plan? [plan]
+  (let [functions (get plan :functions) function (get functions 'main)
+        body (get function :instructions)]
+    (if (= 1 (count functions))
+      (if (= 1 (count body))
+        (if (= :builtin-call (get (first body) :op))
+          (= '+ (get (first body) :function)) false) false) false)))
+
+(defn c6c10-checked-add-effects [operation]
+  (if (= :integer-add operation) #{:error/raise} #{}))
+
+(defn c6c10-node-latent-effects [node]
+  (if (= :function (get node :source-operation))
+    (get (get node :type) :latent-effects) #{}))
+
+(defn c6c10-checked-add-check [node-id operands source check-id]
+  {:check-id check-id :kind :numeric-overflow :operation-id node-id
+   :condition :overflow :numeric-mode :checked :bit-width 64 :signedness :signed
+   :predicate {:kind :operands-in-declared-width-and-checked-add-result-within-width
+               :operator :add :operand-ids operands :bit-width 64 :signedness :signed}
+   :failure :error/numeric :effects-introduced #{:error/raise}
+   :source source :profile :hosted :target :jvm
+   :capability-proof-id :not-applicable :authority-record-id :not-applicable
+   :invalidation-conditions [:source-origin-change :operand-change :type-change
+                             :numeric-mode-change :effect-change :profile-change :target-change]})
+
 (defn c6c10-add-node-with-origin
   [product envelope form path kind source-operation plan-node? depth
    operands attributes type ownership-role ownership-extra generated-role
@@ -1025,10 +1053,22 @@
             :mathematical-mode (get attributes :mathematical-mode)
             :numeric-semantics (get attributes :numeric-semantics)}
            {}))
+        checked? (= source-operation :integer-add)
         proof-request
         (c6c10-add-digest-request
-         (get ownership-request :state) proof-input)
+         (get ownership-request :state)
+         (if checked?
+           {:domain :gravity/c6-c10-checked-i64-add-check-v1
+            :source-content-hash (get envelope :source-content-hash)
+            :operation-id node-id :operand-node-ids operands :source (get origin-products :source)
+            :ownership-digest ownership-digest
+            :numeric-mode :checked :bit-width 64 :signedness :signed
+            :failure :error/numeric :effects #{:error/raise}}
+           proof-input))
         proof-id (get proof-request :ref)
+        direct-effects (c6c10-checked-add-effects source-operation)
+        latent-effects (if (= source-operation :function) (get type :latent-effects) #{})
+        aggregate-effects (if (= source-operation :function) latent-effects direct-effects)
         node
         {:node-id node-id
          :path path
@@ -1040,18 +1080,21 @@
          :attributes
          (c6c10-merge-maps
           attributes
-          {:intrinsic-effects #{}
+          {:intrinsic-effects direct-effects
            :intrinsic-capabilities #{}
-           :aggregate-effects #{}
+           :aggregate-effects aggregate-effects
            :aggregate-capabilities #{}})
          :type type
-         :effects #{}
+         :effects aggregate-effects
          :capabilities #{}
          :ownership ownership
          :safety
-         {:outcome :proven-safe
-          :basis safety-basis
-          :proof (assoc proof-input :proof-id proof-id)}
+         (if checked?
+           {:outcome :runtime-checked :basis :checked-signed-i64-addition
+            :check (c6c10-checked-add-check node-id operands (get origin-products :source) proof-id)}
+           {:outcome :proven-safe
+            :basis safety-basis
+            :proof (assoc proof-input :proof-id proof-id)})
          :profile :hosted
          :source (get origin-products :source)}]
     {:status :accepted
@@ -1698,6 +1741,29 @@
         :plan-path path}
        :regenerate-fresh-c2-c3-and-stage2-plan))))
 
+(defn c6c10-map-checked-i64-add [state envelope instruction form path env depth]
+  (let [arguments (get instruction :args)]
+    (if (= 2 (count arguments))
+      (let [product (c6c10-map-sequence state envelope arguments (rest (get form :children))
+                      path :args env depth form :binary-i64-add-operands)
+            operands (get product :direct-root-node-ids)
+            left (c6c10-node-by-id (get product :nodes) (first operands))
+            right (c6c10-node-by-id (get product :nodes) (second operands))]
+        (if (= :rejected (get product :status)) product
+          (if (= [:gravity/i64 :gravity/i64] [(get left :type) (get right :type)])
+            (c6c10-add-node product envelope form path :arithmetic :integer-add true depth operands
+              {:primitive '+ :arity 2 :evaluation-order :left-to-right
+               :operand-types [:gravity/i64 :gravity/i64] :result-type :gravity/i64
+               :numeric-semantics :checked-signed-i64-addition :numeric-mode :checked
+               :bit-width 64 :signedness :signed :overflow :error/numeric}
+              :gravity/i64 :arithmetic-result {:storage :static-value :derived-from operands} nil nil)
+            (c6c10-form-rejection (get product :state) envelope form :C7-TYPE-MISMATCH :type-check
+              :diagnostic/c7-type-mismatch {:missing-fact :binary-i64-add-operands :plan-path path}
+              :use-two-declared-i64-operands))))
+      (c6c10-form-rejection state envelope form :L2-BUILTIN-ARITY :core-semantics
+        :diagnostic/l2-builtin-arity {:missing-fact :binary-i64-add-operands :actual-arity (count arguments)}
+        :supply-two-i64-add-operands))))
+
 (defn c6c10-map-integer-comparison
   [state envelope instruction form path env depth]
   (let [arguments (get instruction :args)
@@ -1864,8 +1930,10 @@
                       (c6c10-map-let
                        state envelope instruction form path env depth)
                       (if (= operation :builtin-call)
-                        (c6c10-map-integer-comparison
-                         state envelope instruction form path env depth)
+                        (if (= '+ (get instruction :function))
+                          (c6c10-map-checked-i64-add state envelope instruction form path env depth)
+                          (c6c10-map-integer-comparison
+                           state envelope instruction form path env depth))
                         (c6c10-form-rejection
                          state envelope form :C6-LOWERING-GAP :lower-to-core
                          :diagnostic/c6-lowering-gap
@@ -2083,7 +2151,8 @@
                          (= (count (get plan :body)) (get plan :body-form-count))
                          (= (get plan :binding)
                             {:name 'main :kind :function :namespace (get envelope :module)
-                             :profile :hosted :target :jvm :visibility :stage2-local :effects #{} :capabilities #{}})
+                             :profile :hosted :target :jvm :visibility :stage2-local
+                             :effects (get envelope :declared-effects #{}) :capabilities #{}})
                          (c6c10-function-form? function-form 'main)
                          (c6c10-plain-form? parameters :vector)
                          (c6c10-plain-form? name-form :symbol)
@@ -2203,7 +2272,8 @@
           children (get body :children) entries (get (get envelope :resolved-parameter) :parameters)
           left (get (get (get entries 0) :parameter-binding) :name)
           right (get (get (get entries 1) :parameter-binding) :name)
-          instructions (get plan :instructions) source-body (get plan :body)]
+          instructions (get plan :instructions) source-body (get plan :body)
+          operator (if (= '+ (get (first instructions) :function)) '+ '<)]
       (if (if (vector? instructions) (= 1 (count instructions)) false)
         (if (if (vector? source-body) true (list? source-body))
           (if (= 1 (count source-body))
@@ -2212,18 +2282,18 @@
                 (if (if (vector? children) (= 3 (count children)) false)
                   (if (if (list? call) (= 3 (count call)) false)
                     (c6c10-parameter-checks?
-                      [(if (= '< left) false (if (= '< right) false true))
+                      [(if (= operator left) false (if (= operator right) false true))
                        (c6c10-plain-form? body :list)
                        (c6c10-plain-form? (c6c10-form-by-id forms (get children 0)) :symbol)
-                       (= '< (get (c6c10-form-by-id forms (get children 0)) :value))
+                       (= operator (get (c6c10-form-by-id forms (get children 0)) :value))
                        (c6c10-plain-form? (c6c10-form-by-id forms (get children 1)) :symbol)
                        (c6c10-plain-form? (c6c10-form-by-id forms (get children 2)) :symbol)
                        (= [left right] [(get (c6c10-form-by-id forms (get children 1)) :value)
                                         (get (c6c10-form-by-id forms (get children 2)) :value)])
-                       (= :builtin-call (get instruction :op)) (= '< (get instruction :function))
+                       (= :builtin-call (get instruction :op)) (= operator (get instruction :function))
                        (= [:local :local] [(get (get args 0) :op) (get (get args 1) :op)])
                        (= [left right] [(get (get args 0) :name) (get (get args 1) :name)])
-                       (= '< (first call)) (= left (second call)) (= right (first (rest (rest call))))])
+                       (= operator (first call)) (= left (second call)) (= right (first (rest (rest call))))])
                     false) false) false)) false) false) false)) false))
 
 (defn c6c10-i64-order-condition-body? [envelope plan form]
@@ -2387,8 +2457,11 @@
                        [:functions 'main] :function :function false 0 (get body :direct-root-node-ids)
                        {:name 'main :params (get parameters :names) :arity (count entries) :body-count (count (get plan :instructions))
                         :visibility :public :entrypoint? true}
-                       {:params (get parameters :types) :return (get body :type) :latent-effects #{}
-                        :capabilities #{} :throws #{} :ownership-constraints #{:persistent-immutable-shareable}
+                       {:params (get parameters :types) :return (get body :type)
+                        :latent-effects (get (get (c6c10-node-by-id (get body :nodes) (get body :result-node-id)) :attributes) :aggregate-effects)
+                        :capabilities #{}
+                        :throws (if (= :integer-add (get (c6c10-node-by-id (get body :nodes) (get body :result-node-id)) :source-operation)) #{:error/numeric} #{})
+                        :ownership-constraints #{:persistent-immutable-shareable}
                         :profile-constraints #{:hosted}}
                        :function-result {:storage :forwarded-persistent-value
                                          :result-node-id (get body :result-node-id)
@@ -2494,6 +2567,7 @@
   (c6c10-build-dependency-edges-loop nodes nodes 0 []))
 
 (defn c6c10-type-producer-rule [source-operation]
+  (if (= source-operation :integer-add) :binary-checked-i64-add
   (if (= source-operation :parameter)
     :resolved-bool-parameter-declaration
     (if (= source-operation :implicit-nil)
@@ -2520,7 +2594,7 @@
                   :sequence-result-type
                   (if (= source-operation :let)
                     :lexical-scope-result-type
-                    :closed-function-type)))))))))))))
+                    :closed-function-type))))))))))))))
 
 (defn c6c10-source-value-ids [node]
   (let [operation (get node :source-operation)
@@ -2532,7 +2606,7 @@
         (if (= operation :truthy)
           [(first operands)]
           (if (contains?
-               #{:integer-eq :integer-lt :integer-lte
+               #{:integer-add :integer-eq :integer-lt :integer-lte
                  :integer-gt :integer-gte}
                operation)
             (c6c10-copy-vector operands [])
@@ -2554,7 +2628,7 @@
       (if (= source-operation :truthy)
         :derived-from-test
         (if (contains?
-             #{:integer-eq :integer-lt :integer-lte
+             #{:integer-add :integer-eq :integer-lt :integer-lte
                :integer-gt :integer-gte}
              source-operation)
           :derived-from-binary-integer-operands
@@ -2612,9 +2686,9 @@
            type-fact-base-plain
            {:params (get (get node :type) :params)
             :return (get (get node :type) :return)
-            :latent-effects #{}
+            :latent-effects (c6c10-node-latent-effects node)
             :capabilities #{}
-            :throws #{}
+            :throws (get (get node :type) :throws)
             :ownership-constraints
             #{:persistent-immutable-shareable}
             :profile-constraints #{:hosted}})
@@ -2631,11 +2705,11 @@
         effect-fact-base-plain
         {:core-node-id node-id
          :type-fact-id type-fact-id
-         :direct #{}
-         :latent #{}
-         :transitive #{}
-         :residual #{}
-         :ordering :none
+         :direct (c6c10-checked-add-effects (get node :source-operation))
+         :latent (c6c10-node-latent-effects node)
+         :transitive (get node :effects)
+         :residual (get node :effects)
+         :ordering (if (= (get node :effects) #{}) :none :sequence)
          :source-origin-id source-origin-id
          :profile :hosted
          :source-target :jvm
@@ -2645,10 +2719,10 @@
           (c6c10-merge-maps
            effect-fact-base-plain
            {:function-summary
-            {:declared #{}
-             :inferred #{}
-             :latent #{}
-             :throws #{}}})
+            {:declared (c6c10-node-latent-effects node)
+             :inferred (c6c10-node-latent-effects node)
+             :latent (c6c10-node-latent-effects node)
+             :throws (get (get node :type) :throws)}})
           effect-fact-base-plain)
         effect-fact-request
         (c6c10-add-digest-request
@@ -2729,17 +2803,19 @@
          :facts {:type type-fact-id
                  :effects effect-fact-id
                  :ownership ownership-fact-id}
-         :outcome :proven-safe
-         :condition :always
+         :outcome (get (get node :safety) :outcome)
+         :condition (if (= :integer-add (get node :source-operation)) :overflow :always)
          :proof (get (get (get node :safety) :proof) :proof-id)
-         :runtime-check :not-applicable
+         :runtime-check (if (= :integer-add (get node :source-operation))
+                          (get (get (get node :safety) :check) :check-id) :not-applicable)
          :unsafe-audit :not-applicable
-         :failure-behavior :not-applicable}
+         :failure-behavior (if (= :integer-add (get node :source-operation)) :error/numeric :not-applicable)}
         profile-fact
         {:profile :hosted
          :operation (get node :source-operation)
          :legal? true
-         :scope :gravity-owned-bounded-pure-hosted-jvm-slice}]
+         :scope (if (= (get node :effects) #{}) :gravity-owned-bounded-pure-hosted-jvm-slice
+                    :gravity-owned-checked-i64-add-hosted-jvm-slice)}]
     {:state (get ownership-fact-request :state)
      :owner-domain-id (get fact-product :owner-domain-id)
      :type-ids (assoc (get fact-product :type-ids) node-id type-id)
@@ -2782,10 +2858,10 @@
       (c6c10-effect-graph-nodes
        (rest nodes)
        (assoc result (get node :node-id)
-              {:direct #{}
-               :latent #{}
-               :transitive #{}
-               :ordering :none
+              {:direct (c6c10-checked-add-effects (get node :source-operation))
+               :latent (c6c10-node-latent-effects node)
+               :transitive (get node :effects)
+               :ordering (if (= (get node :effects) #{}) :none :sequence)
                :source (get (get node :source) :span)})))))
 
 (defn c6c10-owner-table [nodes owner-domain-id result]
@@ -2821,9 +2897,9 @@
                      (if (= index (count (get (get function-node :type) :params))) result
                        (recur (+ index 1) (conj result (get type-ids (get (get bindings index) :binding-node-id))))))
            :return (get type-ids return-node-id)
-           :latent-effects #{}
+           :latent-effects (c6c10-node-latent-effects function-node)
            :capabilities #{}
-           :throws #{}}}
+           :throws (get (get function-node :type) :throws)}}
          :constraints []
          :dynamic-boundaries []
          :casts []
@@ -2840,11 +2916,12 @@
          :nodes (c6c10-effect-graph-nodes nodes {})
          :functions
          {root-node-id
-          {:declared #{}
-           :inferred #{}
-           :latent #{}
-           :throws #{}}}
-         :namespace {:declared #{} :inferred #{}}
+          {:declared (c6c10-node-latent-effects function-node)
+           :inferred (c6c10-node-latent-effects function-node)
+           :latent (c6c10-node-latent-effects function-node)
+           :throws (get (get function-node :type) :throws)}}
+         :namespace {:declared (c6c10-node-latent-effects function-node)
+                     :inferred (c6c10-node-latent-effects function-node)}
          :build-effects []
          :replay-required #{}
          :diagnostics []}
@@ -3074,6 +3151,31 @@
    :safety :proven-safe
    :whole-language? false})
 
+(defn c6c10-checked-add-scope-contract []
+  {:artifact :gravity/c6-c10-checked-core-scope-contract
+   :family :checked-i64-add-v1 :profiles [:hosted] :safety-modes [:safe] :source-targets [:jvm]
+   :source-operations [:parameter :local :integer-add :function]
+   :scalar-literals [] :intrinsic-effects #{:error/raise} :intrinsic-capabilities #{}
+   :ownership :persistent-immutable :safety :runtime-checked :whole-language? false})
+
+(defn c6c10-checked-add-pass-history []
+  (loop [rows (c6c10-pass-history) result []]
+    (if (= 0 (count rows)) result
+      (let [row (first rows) safety? (= "C10" (get row :owner-document))]
+        (recur (rest rows)
+          (conj result
+            (assoc row :version "c6-c10-checked-i64-add-v1"
+              :pass (get {"C6" :c6-gravity-checked-add-lowering
+                          "C7" :c7-gravity-i64-add-type-derivation
+                          "C8" :c8-gravity-numeric-error-effect-closure
+                          "C9" :c9-gravity-persistent-ownership-derivation
+                          "C10" :c10-gravity-checked-add-safety-derivation} (get row :owner-document))
+              :status :complete-for-checked-i64-add-slice
+              :requires [:fresh-source-and-plan :resolved-two-i64-parameters :declared-numeric-error-effect
+                         :ordered-operand-facts :original-origin-closure]
+              :not-applicable [:unsafe-islands :taint :ffi :check-elision]
+              :emits (if safety? [:safety-facts :runtime-check-records] (get row :emits)))))))))
+
 (defn c6c10-envelope-diagnostic-source [input]
   (let [front-end (get input :front-end-products)
         source-unit (get front-end :source-unit-record)
@@ -3140,7 +3242,8 @@
       (if (= (get input :kind)
              :gravity/private-fresh-c2-c3-stage2-plan-envelope)
         (= (get input :scope)
-           :bounded-pure-hosted-safe-jvm-source)
+           (if (c6c10-checked-add-plan? (get input :stage2-plan))
+             :bounded-checked-i64-add-hosted-safe-jvm-source :bounded-pure-hosted-safe-jvm-source))
         false)
       false)
     false))
@@ -3325,6 +3428,7 @@
          :entrypoint-syntax-id (get function-syntax :syntax/id)
          :module (get module :module)
          :plan-id (get plan :plan-id)
+         :declared-effects (get module :effects)
          :resolved-parameter (get input :resolved-parameter)}
         initial-state {:next-ordinal 0 :requests []}
         function-product
@@ -3362,7 +3466,7 @@
              :plan-id (get plan :plan-id)
              :entrypoint 'main
              :operation-set operation-set
-             :declared-effects #{}
+             :declared-effects (get module :effects)
              :declared-capabilities #{}}
             dependency-order-graph
             {:artifact :gravity/c6-c10-dependency-order-graph
@@ -3399,8 +3503,10 @@
             artifact-base
             {:kind :gravity/p15-s23-stage2-gravity-checked-core-artifact
              :schema-version 1
-             :status :complete-for-bounded-pure-hosted-safe-jvm-slice
-             :scope (c6c10-runtime-scope-contract)
+             :status (if (c6c10-checked-add-plan? plan)
+                       :complete-for-checked-i64-add-hosted-safe-jvm-slice :complete-for-bounded-pure-hosted-safe-jvm-slice)
+             :scope (if (c6c10-checked-add-plan? plan)
+                      (c6c10-checked-add-scope-contract) (c6c10-runtime-scope-contract))
              :source-content-hash (get input :source-content-hash)
              :source-core-input source-core-input
              :entrypoint 'main
@@ -3440,7 +3546,8 @@
              (get pass-artifacts :ownership-analysis)
              :ownership-analysis-key
              (get pass-artifacts :ownership-analysis-key)
-             :pass-history (c6c10-pass-history)
+             :pass-history (if (c6c10-checked-add-plan? plan)
+                             (c6c10-checked-add-pass-history) (c6c10-pass-history))
              :authenticated-input
              {:kind :gravity/c6-c10-authenticated-input
               :source-content-hash (get input :source-content-hash)
@@ -3514,7 +3621,7 @@
            :authority
            {:semantic-owner :gravity-source
             :host-role :generic-validation-hashing-and-instantiation
-            :scope :bounded-pure-c6-c10
+            :scope (if (c6c10-checked-add-plan? plan) :bounded-checked-i64-add-c6-c10 :bounded-pure-c6-c10)
             :self-hosted? false}}))
           (c6c10-envelope-rejection
            :C6-VERIFY :lower-to-core :diagnostic/c6-verify input
@@ -3916,7 +4023,8 @@
                 (if (= (get module :profile) :hosted)
                 (if (= (get module :target) :jvm)
                   (if (= (get module :safety) :safe)
-                    (if (= (count (get module :effects)) 0)
+                    (if (= (get module :effects)
+                           (if (c6c10-checked-add-plan? plan) #{:error/raise} #{}))
                       (if (= (count (get module :capabilities)) 0)
                         (if (= metadata-form nil)
                           (c6c10-build-accepted-template input)
@@ -3939,11 +4047,12 @@
                           (get module :capabilities)}
                          :remove-capability-requirements))
                       (c6c10-envelope-rejection
-                       :C6-LOWERING-GAP :lower-to-core
-                       :diagnostic/c6-lowering-gap input
-                       {:missing-fact :empty-declared-effects
+                       (if (c6c10-checked-add-plan? plan) :C8-UNDECLARED :C6-LOWERING-GAP)
+                       (if (c6c10-checked-add-plan? plan) :effect-check :lower-to-core)
+                       (if (c6c10-checked-add-plan? plan) :diagnostic/c8-undeclared :diagnostic/c6-lowering-gap) input
+                       {:missing-fact (if (c6c10-checked-add-plan? plan) :declared-numeric-error-effect :empty-declared-effects)
                         :observed-effects (get module :effects)}
-                       :remove-effect-requirements))
+                       (if (c6c10-checked-add-plan? plan) :declare-numeric-error-effect :remove-effect-requirements)))
                     (c6c10-envelope-rejection
                      :C6-LOWERING-GAP :lower-to-core
                      :diagnostic/c6-lowering-gap input

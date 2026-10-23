@@ -134,7 +134,14 @@
           [:source-content-hash :front-end-products :stage2-plan
            :authoritative-module :carrier-validation :resolved-parameter])
          :kind :gravity/private-fresh-c2-c3-stage2-plan-envelope
-         :scope :bounded-pure-hosted-safe-jvm-source
+         :scope
+         (let [plan (:stage2-plan ingress) functions (:functions plan)
+               instructions (get-in functions ['main :instructions])]
+           (if (and (= 1 (count functions)) (= 1 (count instructions))
+                    (= :builtin-call (:op (first instructions)))
+                    (= '+ (:function (first instructions))))
+             :bounded-checked-i64-add-hosted-safe-jvm-source
+             :bounded-pure-hosted-safe-jvm-source))
          :binding-pins
          (p15-s23-c6c10-binding-pins
           source-path ingress source-binding))]
