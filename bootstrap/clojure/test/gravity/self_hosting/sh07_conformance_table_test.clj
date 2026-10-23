@@ -53,9 +53,9 @@
     (is (= table/expected-suite-ids (:suite-order value)))
     (is (= 14 (count (:suites value))))
     (is (= {:suite-count 14
-            :accepted-count 77
+            :accepted-count 78
             :rejected-count 96
-            :pair-count 173
+            :pair-count 174
             :source-of-truth :rows}
            (:coverage value)))
     (is (= :non-authoritative (:authority value)))
@@ -75,6 +75,11 @@
     (is (= (count all-rows) (count (set (map :id all-rows)))))
     (is (= (get-in value [:coverage :accepted-count]) (count accepted)))
     (is (= (get-in value [:coverage :rejected-count]) (count rejected)))
+    (is (= {:rule "C6-VERIFY" :stage :core-lowering :severity :error
+            :reason :duplicate-match-binding
+            :remediation "Use each binding name only once within a match pattern; sibling clauses may bind the same name independently."}
+           (:oracle (first (filter #(= "sh07-b11/duplicate-map-bindings" (:id %))
+                                   rejected)))))
     (is (every? #(and (= (str (:basename %) ".gravity") (:gravity %))
                        (= (str (:basename %) ".qst") (:qst %)))
                 all-rows))
@@ -83,8 +88,11 @@
                        all-rows))))
 
 (deftest fixture-pair-binding-exposes-bounded-content-identity
-  (let [binding (table/fixture-pair-binding
-                 (table/table) "sh07-b15/keyword-lookup-zero-arity")]
+  (let [value (table/table)
+        binding (table/fixture-pair-binding
+                 value "sh07-b15/keyword-lookup-zero-arity")
+        required-id "sh07-b2/required-primitive-call-arities"
+        required-row (first (filter #(= required-id (:id %)) (table/rows value)))]
     (is (= #{:schema :suite-id :row-id :status :sha256 :bytes :authenticated?}
            (set (keys binding))))
     (is (= "sh07-b15" (:suite-id binding)))
@@ -93,6 +101,13 @@
     (is (re-matches #"sha256:[0-9a-f]{64}" (:sha256 binding)))
     (is (<= 1 (:bytes binding) table/maximum-fixture-peer-bytes))
     (is (true? (:authenticated? binding)))
+    (is (= {:schema table/fixture-pair-binding-schema
+            :suite-id "sh07-b2" :row-id required-id :status :accepted
+            :sha256 "sha256:1221b76dccd3161e06d1afa3f9751ef2c74b90afeab19cbcc05331f1b330f649"
+            :bytes 502 :authenticated? true}
+           (table/fixture-pair-binding value required-id)))
+    (is (= {:profile :meta :target :jvm :oracle nil}
+           (select-keys required-row [:profile :target :oracle])))
     (is (= "SH07-CONFORMANCE-FIXTURE-ROW"
            (error-id #(table/fixture-pair-binding
                        (table/table) "sh07-b15/not-reviewed"))))))
@@ -127,6 +142,28 @@
 
 (deftest static-validation-fails-closed
   (let [value (table/table)]
+    (testing "stale duplicate-match oracle fields remain rejected"
+      (doseq [[field stale] [[:rule "C6-LOWERING-GAP"]
+                             [:reason :duplicate-vector-binding-deferred]
+                             [:remediation "Use unique binding names in each SH-07-B11 vector pattern; duplicate-binding diagnostics remain owned by a later L7 slice."]]]
+        (is (= "SH07-CONFORMANCE-ORACLE-MISMATCH"
+               (error-id #(table/validate-table
+                           (update-in value [:suites 10 :rejected]
+                                      (fn [rows]
+                                        (mapv (fn [row]
+                                                (if (= "sh07-b11/duplicate-map-bindings" (:id row))
+                                                  (assoc-in row [:oracle field] stale)
+                                                  row))
+                                              rows)))))))))
+    (testing "omitting the required primitive fixture retains the legacy diagnostic"
+      (is (= "SH07-CONFORMANCE-LEGACY-ACCEPTED"
+             (error-id #(table/validate-table
+                         (update-in value [:suites 1 :accepted]
+                                    (fn [rows]
+                                      (filterv (fn [row]
+                                                 (not= "required-primitive-call-arities"
+                                                       (:basename row)))
+                                               rows))))))))
     (testing "unknown fields are rejected"
       (is (= "SH07-CONFORMANCE-TABLE-KEYS"
              (error-id #(table/validate-table (assoc value :unexpected true))))))
