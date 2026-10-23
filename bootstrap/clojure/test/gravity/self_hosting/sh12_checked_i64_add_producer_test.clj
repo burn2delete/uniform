@@ -221,3 +221,96 @@
                      :digest-requests [(request 0 seed []) (root-request 1 collision [0])])]
       (is (= {:id "C6-VERIFY" :missing-fact :collision-free-resolved-map-keys}
              (boundary-error #(seal raw)))))))
+
+(defn- original-node-kernel []
+  ;; Exact original defn forms on supplied DATA, not full source admission.
+  (let [path (str (.resolve @(existing 'root) (existing 'parameter-c6-source)))
+        names '#{c6c10-vector-contains? c6c10-conj-unique c6c10-exact-digest-ref?
+                 c6c10-insert-ordinal c6c10-sort-ordinals c6c10-collect-ref-sequence
+                 c6c10-collect-ref-map c6c10-collect-digest-refs c6c10-digest-ref
+                 c6c10-digest-intern-sequence c6c10-digest-intern-map-entries
+                 c6c10-digest-intern-key c6c10-request-key-for-preimage c6c10-add-digest-request
+                 c6c10-merge-map-keys c6c10-merge-maps c6c10-safety-basis c6c10-persistent-ownership
+                 c6c10-empty-product c6c10-checked-add-effects c6c10-checked-add-check c6c10-add-node-with-origin}
+        forms (binding [*read-eval* false] (read-string (str "[" (slurp path) "]")))
+        selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? names (second %))) forms)
+        primitives '#{defn if let = < + get count keys first rest contains? conj assoc set
+                      map? vector? set? seq? boolean? integer? string? symbol? keyword? char?}
+        callees (set (for [form selected expression (tree-seq coll? seq form)
+                          :when (and (seq? expression) (symbol? (first expression)))] (first expression)))
+        text (str "(ns gravity.test.original-node-kernel (:profile :meta) (:target :jvm)"
+                  " (:effects #{}) (:capabilities #{}) (:safety :safe))\n"
+                  (apply str (map #(str (pr-str %) "\n") selected)))
+        _ (assert (and (= 22 (count selected)) (= names (set (map second selected))) (< (count text) 20000)
+                       (every? #(or (contains? names %) (contains? primitives %)) callees)))
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter "original-node-kernel.gravity" text)]
+    (fn [name & arguments]
+      (bootstrap/p15-s23-stage2-runtime-execute-function
+        {:engine :sh12-original-node-data-kernel :compiler-artifact-plan? true} plan name (vec arguments)))))
+
+(deftest sh12-checked-i64-add-original-node-builder-ownership-graph-kernel
+  (let [call (original-node-kernel) path "original-node-kernel.gravity"
+        origin (call 'c6c10-add-digest-request {:requests [] :next-ordinal 0} {:origin :supplied-data})
+        source {:origin-id (:ref origin) :span {:start 0 :end 1} :plan-path [:data]}
+        origins {:origin-id (:ref origin) :semantic {:origin :supplied-data} :raw {} :source source}
+        build (fn [product operation operands node-path]
+                (call 'c6c10-add-node-with-origin product {:source-content-hash "supplied-data"}
+                      {:span (:span source)} node-path :expression operation true 1 operands
+                      {:numeric-mode :checked} :gravity/i64 :value {} nil nil origins))
+        first-node (build (call 'c6c10-empty-product (:state origin)) :literal [] [:left])
+        product (build first-node :integer-add [(:result-node-id first-node) (:result-node-id first-node)] [:add])
+        nodes (:nodes product) node (second nodes) check-id (get-in node [:safety :check :check-id])
+        check-ordinal (:digest-ref check-id) owner-ordinal (dec check-ordinal)
+        template (assoc (:artifact-template (envelope-data true)) :core-nodes nodes :source-origin-table (:origin-table product))
+        root (call 'c6c10-add-digest-request (:state product)
+                   {:domain :gravity/c6-c10-checked-core-artifact-v1 :semantic-artifact template})
+        raw (assoc (envelope-data true) :artifact-template (assoc template :artifact-id (:ref root))
+                   :digest-requests (get-in root [:state :requests])
+                   :digest-graph-root (:ref root) :digest-graph-roots [(:ref root)])
+        requests (:digest-requests raw) preimage (get-in requests [check-ordinal :preimage])
+        validate #(bootstrap/p15-s23-c6c10-validate-digest-request-graph! path %)
+        seal #(bootstrap/p15-s23-c6c10-seal-digest-request-result! path %)]
+    (is (= 8 (count requests) (:request-count (validate raw))))
+    (is (= 2 (count nodes) (:plan-node-count product)))
+    (is (= 1 (:maximum-depth product)))
+    (is (= {:digest-ref owner-ordinal} (:ownership-digest preimage)))
+    (is (= (:node-id node) (:operation-id preimage) (get-in requests [owner-ordinal :preimage :core-node-id])))
+    (is (= (:ref origin) (get-in requests [owner-ordinal :preimage :source-origin-id])))
+    (is (= (:ownership node) (get-in requests [owner-ordinal :preimage :ownership])))
+    (is (= :runtime-checked (get-in node [:safety :outcome])))
+    (is (nil? (get-in node [:safety :proof])))
+    (is (= {:digest-ref 2} (get-in nodes [0 :safety :proof :ownership-digest])))
+    (is (= :proven-safe (get-in nodes [0 :safety :outcome])))
+    (is (= :accepted (:status (seal raw))))
+    (let [removed (update-in raw [:digest-requests check-ordinal :preimage] dissoc :ownership-digest)]
+      (is (= {:id "C6-VERIFY" :missing-fact :exact-prior-digest-request-dependency-closure}
+             (boundary-error #(validate removed))))
+      (is (= {:id "C6-VERIFY" :missing-fact :root-reachable-digest-request-closure}
+             (boundary-error #(validate (update-in removed [:digest-requests check-ordinal :depends-on]
+                                         (fn [dependencies] (vec (remove #{owner-ordinal} dependencies)))))))))
+    (let [changed (assoc-in raw [:digest-requests owner-ordinal :preimage :ownership :role] :substituted)
+          before (seal raw) after (seal changed)]
+      (is (= 8 (:request-count (validate changed))))
+      (is (not= (get (:resolved-digests before) owner-ordinal) (get (:resolved-digests after) owner-ordinal)))
+      (is (not= (get (:resolved-digests before) check-ordinal) (get (:resolved-digests after) check-ordinal)))
+      (is (not= (:root-digests before) (:root-digests after))))))
+
+(deftest sh12-checked-i64-add-original-replay-rejects-connected-ownership-substitution
+  ;; Full original source/verifier; excluded from the cheap node DATA selector.
+  (let [{:keys [raw fresh]} @current-pair requests (:digest-requests raw)
+        check-ordinal (first (keep-indexed #(when (= :gravity/c6-c10-checked-i64-add-check-v1
+                                                     (get-in %2 [:preimage :domain])) %1) requests))
+        owner-ref (get-in requests [check-ordinal :preimage :ownership-digest])
+        other-owner (first (keep-indexed #(when (and (= :gravity/c9-persistent-ownership-v1 (get-in %2 [:preimage :domain]))
+                                                     (not= %1 (:digest-ref owner-ref))) {:digest-ref %1}) requests))
+        wrong (-> raw (assoc-in [:digest-requests check-ordinal :preimage :ownership-digest] other-owner)
+                  (assoc-in [:digest-requests check-ordinal :preimage :retained-original-ownership-digest] owner-ref)
+                  (update-in [:digest-requests check-ordinal :depends-on] #(vec (sort (distinct (conj % (:digest-ref other-owner)))))))
+        changed (assoc-in raw [:digest-requests (:digest-ref owner-ref) :preimage :ownership :role] :substituted)]
+    (doseq [candidate [wrong changed]]
+      (is (= (count requests) (:request-count (bootstrap/p15-s23-c6c10-validate-digest-request-graph! (:path @current-pair) candidate))))
+      (let [report (producer 'c6-c10-verify-checked-core-template
+                            (:envelope fresh) (:artifact-template candidate) (:digest-requests candidate))]
+        (is (= :rejected (:status report)))
+        (is (= :exact-digest-request-replay (get-in report [:diagnostics 0 :facts :missing-fact])))))))

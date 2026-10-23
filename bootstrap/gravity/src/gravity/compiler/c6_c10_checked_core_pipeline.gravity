@@ -1059,6 +1059,7 @@
            {:domain :gravity/c6-c10-checked-i64-add-check-v1
             :source-content-hash (get envelope :source-content-hash)
             :operation-id node-id :operand-node-ids operands :source (get origin-products :source)
+            :ownership-digest ownership-digest
             :numeric-mode :checked :bit-width 64 :signedness :signed
             :failure :error/numeric :effects #{:error/raise}}
            proof-input))
