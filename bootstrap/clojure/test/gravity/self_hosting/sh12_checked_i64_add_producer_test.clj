@@ -124,3 +124,100 @@
                        (assoc-in input [:authoritative-module :safety] :unsafe)
                        (assoc-in input [:resolved-parameter :kind] :gravity/c6-c10-resolved-two-bool-parameters-v1)]]
       (is (= :rejected (:status (build candidate)))))))
+
+;; SUPPLIED boundary metadata only: these tiny records have no Core rows or
+;; source authentication. Only current-pair above exercises an original producer.
+(defn- envelope-data [checked?]
+  {:status :accepted :diagnostics [] :digest-requests []
+   :digest-graph-root {:digest-ref 0} :digest-graph-roots [{:digest-ref 0}]
+   :authority {:semantic-owner :gravity-source :host-role :generic-validation-hashing-and-instantiation
+               :scope (if checked? :bounded-checked-i64-add-c6-c10 :bounded-pure-c6-c10) :self-hosted? false}
+   :artifact-template
+   (if checked?
+     {:kind :gravity/p15-s23-stage2-gravity-checked-core-artifact :schema-version 1
+      :status :complete-for-checked-i64-add-hosted-safe-jvm-slice :profile :hosted :source-target :jvm
+      :scope {:artifact :gravity/c6-c10-checked-core-scope-contract
+              :family :checked-i64-add-v1 :profiles [:hosted] :safety-modes [:safe] :source-targets [:jvm]
+              :source-operations [:parameter :local :integer-add :function] :scalar-literals []
+              :intrinsic-effects #{:error/raise} :intrinsic-capabilities #{}
+              :ownership :persistent-immutable :safety :runtime-checked :whole-language? false}}
+     {:kind :gravity/test-artifact :value [1 2]})})
+
+(defn- boundary-error [operation]
+  (try (operation) nil
+       (catch clojure.lang.ExceptionInfo error
+         (select-keys (ex-data error) [:id :missing-fact]))))
+
+(deftest sh12-checked-i64-add-envelope-authority-data-kernel
+  (let [checked (envelope-data true) pure (envelope-data false)
+        validate #(bootstrap/p15-s23-c6c10-validate-builder-result-envelope! "boundary-data.gravity" %)]
+    (is (identical? pure (validate pure)))
+    (is (identical? checked (validate checked)))
+    (doseq [candidate
+            (concat [(assoc checked :authority (:authority pure)) (assoc pure :authority (:authority checked))]
+              (for [[path value] [[[:kind] :gravity/test-artifact] [[:schema-version] 2]
+                                  [[:status] :complete-for-bounded-pure-hosted-safe-jvm-slice]
+                                  [[:profile] :native] [[:source-target] :wasm]
+                                  [[:scope :family] :other-family] [[:scope :artifact] :other-scope]
+                                  [[:scope :profiles] [:native]] [[:scope :safety-modes] [:unsafe]]
+                                  [[:scope :source-targets] [:wasm]] [[:scope :source-operations] [:integer-add]]
+                                  [[:scope :scalar-literals] [:integer]] [[:scope :intrinsic-effects] #{}]
+                                  [[:scope :intrinsic-capabilities] #{:host/ambient}] [[:scope :ownership] :mutable]
+                                  [[:scope :safety] :proven-safe] [[:scope :whole-language?] true]]]
+                (assoc-in checked (into [:artifact-template] path) value))
+              (for [field (keys (:authority checked))] (update checked :authority dissoc field))
+              (for [[field value] [[:semantic-owner :host] [:host-role :semantic-authority]
+                                  [:scope :unknown] [:self-hosted? true]]]
+                (assoc-in checked [:authority field] value))
+              [(assoc-in checked [:authority :extra] true)
+               (assoc-in checked [:artifact-template :scope :extra] true)])]
+      (is (= {:id "C6-VERIFY" :missing-fact :exact-gravity-builder-result-envelope}
+             (boundary-error #(validate candidate)))))))
+
+(deftest sh12-checked-i64-add-envelope-carrier-and-rejection-data-kernel
+  (let [checked (envelope-data true)
+        rejected {:status :rejected :artifact-template nil :fatal? true :diagnostics [{:rule "C6-VERIFY"}]
+                  :containment {} :digest-requests [] :digest-graph-roots []}
+        validate #(bootstrap/p15-s23-c6c10-validate-builder-result-envelope! "boundary-data.gravity" %)]
+    (is (identical? rejected (validate rejected)))
+    (is (= (assoc rejected :propagated-upstream? true) (validate (assoc rejected :propagated-upstream? true))))
+    (doseq [[candidate fact]
+            [[(assoc checked :digest-requests (list)) :bounded-digest-request-vector]
+             [(assoc checked :digest-requests (with-meta [] {:untrusted true})) :bounded-digest-request-vector]
+             [(assoc-in checked [:artifact-template :scope] (with-meta {} {:untrusted true})) :metadata-free-canonical-value]
+             [(assoc checked :authority (with-meta {} {:untrusted true})) :metadata-free-canonical-value]
+             [(assoc checked :artifact-template (Object.)) :canonical-value-domain]
+             [(assoc checked :extra true) :exact-gravity-builder-result-envelope]
+             [(dissoc checked :authority) :exact-gravity-builder-result-envelope]
+             [(assoc checked :diagnostics [{}]) :exact-gravity-builder-result-envelope]
+             [(assoc checked :diagnostics (list)) :exact-gravity-builder-result-envelope]
+             [(assoc rejected :fatal? false) :exact-gravity-builder-result-envelope]
+             [(assoc rejected :artifact-template {}) :exact-gravity-builder-result-envelope]
+             [(assoc rejected :diagnostics []) :exact-gravity-builder-result-envelope]
+             [(assoc rejected :containment nil) :exact-gravity-builder-result-envelope]
+             [(assoc rejected :authority (:authority checked)) :exact-gravity-builder-result-envelope]]]
+      (is (= {:id "C6-VERIFY" :missing-fact fact} (boundary-error #(validate candidate)))))))
+
+(deftest sh12-checked-i64-add-pure-transport-sealer-data-kernel
+  ;; Generic test artifact transport only; never a fabricated original Core.
+  (let [path "boundary-data.gravity" base (:artifact-template (envelope-data false))
+        request (fn [ordinal preimage dependencies]
+                  {:algorithm :sha256 :encoding :gravity/canonical-edn-v1 :key ordinal :ordinal ordinal
+                   :preimage preimage :depends-on dependencies})
+        root-request #(request %1 {:domain :gravity/c6-c10-checked-core-artifact-v1 :semantic-artifact %2} %3)
+        raw (assoc (envelope-data false) :artifact-template (assoc base :artifact-id {:digest-ref 0})
+                   :digest-requests [(root-request 0 base [])])
+        seal #(bootstrap/p15-s23-c6c10-seal-digest-request-result! path %)
+        sealed (seal raw)]
+    (is (= :accepted (:status sealed)))
+    (is (= (:authority raw) (:authority sealed)))
+    (is (= (first (:root-digests sealed)) (get-in sealed [:sealed-artifact-template :artifact-id])))
+    (is (= {:id "C6-VERIFY" :missing-fact :root-bound-gravity-artifact-template}
+           (boundary-error #(seal (assoc-in raw [:artifact-template :value] [2 1])))))
+    (let [seed {:seed 1} seed-digest (bootstrap/p15-s23-c6c10-canonical-digest path seed)
+          collision {:kind :gravity/test-artifact :value {{:digest-ref 0} :from-ref seed-digest :from-digest}}
+          raw (assoc raw :artifact-template (assoc collision :artifact-id {:digest-ref 1})
+                     :digest-graph-root {:digest-ref 1} :digest-graph-roots [{:digest-ref 1}]
+                     :digest-requests [(request 0 seed []) (root-request 1 collision [0])])]
+      (is (= {:id "C6-VERIFY" :missing-fact :collision-free-resolved-map-keys}
+             (boundary-error #(seal raw)))))))
