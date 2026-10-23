@@ -4104,6 +4104,14 @@
        (= (get attrs :source-form-id)
           (get (get (get core :source-origin-table) (get origins 0)) :c2-form-id))]))))
 
+(defn sh12-c6p-i64-operand-parameter-order [core]
+  (if (sh12-c6p-i64-add? core)
+    (let [nodes (get core :core-nodes) a (get (get nodes 0) :node-id) b (get (get nodes 1) :node-id)
+          operands [(get (get nodes 2) :operands) (get (get nodes 3) :operands)]]
+      (if (= a b) nil
+        (if (= [[a] [b]] operands) [0 1]
+          (if (= [[b] [a]] operands) [1 0] nil)))) [0 1]))
+
 (defn sh12-c6p-i64-order-shape-valid? [core view]
   (let [nodes (get core :core-nodes) ids (get view :ids) origins (get view :origins)
         declaration (get core :resolved-parameter) entries (get declaration :parameters)
@@ -4111,6 +4119,7 @@
         root-index (if conditional? 9 5) result-index (if conditional? 8 4)
         path (if conditional? [:functions 'main :body 0 :test] [:functions 'main :body 0])
         catalog (get declaration :type-binding) root (get nodes root-index) comparison (get nodes 4)
+        operand-order (sh12-c6p-i64-operand-parameter-order core)
         purity {:intrinsic-effects #{} :intrinsic-capabilities #{} :aggregate-effects #{} :aggregate-capabilities #{}}]
     (if (vector? entries)
       (if (= 2 (count entries))
@@ -4126,7 +4135,8 @@
                                :type-binding-id (get attrs :type-binding-id)
                                :binding-node-id (get ids index) :path (get binder :path)})))))]
           (sh12-c6p-all?
-            [(= (if conditional? 10 6) (count nodes) (count (set ids)) (count (set origins)))
+            [(= 2 (count operand-order))
+             (= (if conditional? 10 6) (count nodes) (count (set ids)) (count (set origins)))
              (= (get core :root-node-ids) [(get ids root-index)])
              (= (get root :type) (sh12-c6p-original-function-type core (sh12-c6p-result-type core)))
              (= (get root :path) [:functions 'main])
@@ -4175,7 +4185,8 @@
                (if (= index 2) true
                  (let [entry (get entries index) binding (get entry :parameter-binding)
                        rows (get entry :coordinates) reference (get entry :type-resolution)
-                       binder (get nodes index) local (get nodes (+ 2 index)) name (get names index)]
+                       binder (get nodes index) local (get nodes (+ 2 index)) name (get names index)
+                       operand-index (get operand-order index) operand-name (get names operand-index)]
                    (if (sh12-c6p-all?
                      [(symbol? name) (= (get binder :path) [:functions 'main :parameters index :binder])
                       (= (get binder :operands) [])
@@ -4183,8 +4194,8 @@
                            :name name) :parameter-index index) :source-form-id (get (get rows 1) :c2-form-id))
                            :resolved-binding-id (get binding :binding-id)) :type-binding-id (get catalog :binding-id)))
                       (= (get local :path) (conj (conj path :args) index))
-                      (= (get local :operands) [(get ids index)])
-                      (= (get local :attributes) (assoc (assoc purity :name name) :resolved-binding (get ids index)))
+                      (= (get local :operands) [(get ids operand-index)])
+                      (= (get local :attributes) (assoc (assoc purity :name operand-name) :resolved-binding (get ids operand-index)))
                       (= (get binding :scope-id) (get declaration :function-scope-id))
                       (= [(get binding :binding-class) (get binding :kind) (get binding :namespace)
                           (get binding :profile-set) (get binding :target-set)]
@@ -4584,6 +4595,7 @@
 
 (defn sh12-c6p-graphs-valid? [core view]
   (let [nodes (get core :core-nodes) ids (get view :ids) origins (get view :origins)
+        operand-order (sh12-c6p-i64-operand-parameter-order core)
         root (get ids (sh12-c6p-index core 6))
         result (get ids (if (sh12-c6p-let-layout? core) (sh12-c6p-scope-index core)
                           (sh12-c6p-index core 5))) binder (get ids 0)
@@ -4621,7 +4633,7 @@
                            [2 4 0 :argument-value] [3 4 1 :argument-value] [4 5 0 :control]
                            [5 8 0 :control] [6 8 1 :conditional-incoming] [7 8 2 :conditional-incoming] [8 9 0 :result]]
                          (if (if (sh12-c6p-i64-add? core) true (sh12-c6p-i64-order? core))
-                          [[0 2 0 :binding-use] [1 3 0 :binding-use]
+                          [[(get operand-order 0) 2 0 :binding-use] [(get operand-order 1) 3 0 :binding-use]
                            [2 4 0 :argument-value] [3 4 1 :argument-value] [4 5 0 :result]]
                          (if (sh12-c6p-i64-identity? core) [[0 1 0 :binding-use] [1 2 0 :result]]
                          (if (sh12-c6p-three-parameters? core)
@@ -4952,10 +4964,14 @@
         add (get operations 3) root (get operations 4)]
     (sh12-c6p-all?
       [(= 2 (count params)) (= 1 (count blocks)) (= 5 (count operations))
+       (if (= (get params 0) (get params 1)) false true)
        (= :gravity/i64 (get function :returns))
        (= [:local :local :runtime-check :integer-add :function-boundary]
           [(get left :opcode) (get right :opcode) (get check :opcode) (get add :opcode) (get root :opcode)])
-       (= [(get params 0)] (get left :operands)) (= [(get params 1)] (get right :operands))
+       (if (= [(get params 0)] (get left :operands))
+         (= [(get params 1)] (get right :operands))
+         (if (= [(get params 1)] (get left :operands))
+           (= [(get params 0)] (get right :operands)) false))
        (= [(get left :result) (get right :result)] (get check :operands))
        (= [(get check :result) (get left :result) (get right :result)] (get add :operands))
        (= [(get add :result)] (get root :operands) (get (get entry :terminator) :operands))
