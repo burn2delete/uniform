@@ -1,0 +1,38 @@
+(ns gravity.self-hosting.sh22.keyword-map-default.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-keyword-map-default-request sh22-keyword-map-assoc-request
+             sh22-keyword-map-counter-add-request sh22-keyword-map-option-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-keyword-map-default-request []
+  {:artifact :gravity/sh22-library-request
+   :request-id :coordinator/keyword-map-default
+   :profile :meta
+   :experimental-opt-in true
+   :operation :ordered-map-get-default-keyword
+   :arguments [{:artifact :gravity/ordered-map :entries [[:reader false] [:syntax nil]]}
+               :reader :fallback]
+   :effects #{}
+   :capabilities #{}
+   :allocation-policy :none
+   :source-span {:source-id :coordinator/keyword-map-default :start 0 :end 64}
+   :origin-chain [{:kind :source :source-id :coordinator/keyword-map-default}]
+   :actual-source-path "fixtures/coordinator-keyword-map-default.gravity"})
+
+(defn sh22-keyword-map-assoc-request []
+  (assoc (assoc (assoc (assoc (sh22-keyword-map-default-request)
+                            :operation :ordered-map-assoc)
+                     :arguments [{:artifact :gravity/ordered-map :entries []} :call 0])
+              :effects #{:memory/allocate})
+         :allocation-policy :bounded-by-result))
+
+(defn sh22-keyword-map-counter-add-request []
+  (assoc (assoc (sh22-keyword-map-default-request) :operation :checked-add-i64)
+         :arguments [0 1]))
+
+(defn sh22-keyword-map-option-request []
+  (assoc (assoc (sh22-keyword-map-default-request) :operation :ordered-map-get)
+         :arguments [{:artifact :gravity/ordered-map :entries [[:reader false]]} :reader]))
