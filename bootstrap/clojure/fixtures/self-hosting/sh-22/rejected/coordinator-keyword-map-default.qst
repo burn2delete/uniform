@@ -1,0 +1,25 @@
+(ns gravity.self-hosting.sh22.keyword-map-default.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-keyword-map-default-duplicate-request sh22-keyword-map-default-late-key-request
+             sh22-keyword-map-default-malformed-request sh22-keyword-map-default-over-bound-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-keyword-map-default-duplicate-request [request]
+  (assoc request :arguments [{:artifact :gravity/ordered-map :entries [[:reader 1] [:syntax 2] [:reader 3]]}
+                            :reader 0]))
+
+(defn sh22-keyword-map-default-late-key-request [request]
+  (assoc request :arguments [{:artifact :gravity/ordered-map :entries [[:reader 1] ["late" 2]]}
+                            :reader 0]))
+
+(defn sh22-keyword-map-default-malformed-request [request]
+  (assoc request :arguments [{:artifact :gravity/ordered-map :entries [[:reader 1] [:syntax]]}
+                            :reader 0]))
+
+(defn sh22-keyword-map-default-over-bound-request [request]
+  (let [entries (loop [index 0 result []]
+                  (if (= index 257) result (recur (+ index 1) (conj result [:reader index]))))]
+    (assoc request :arguments [{:artifact :gravity/ordered-map :entries entries} :reader 0])))

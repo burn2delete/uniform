@@ -37,6 +37,7 @@
      :vector-slice
      :ordered-map-assoc
      :ordered-map-get
+     :ordered-map-get-default-keyword
      :ordered-map-dissoc-keyword
      :ordered-set-conj
      :ordered-set-contains-keyword
@@ -115,6 +116,10 @@
      :ordered-map-get :collections
      "(OrderedMap k v) k -> (Option v)" #{} #{}
      :none [] #{:meta})
+    (sh22-export
+     :ordered-map-get-default-keyword :collections
+     "(OrderedMap Keyword a) Keyword a -> (Result a CollectionError)"
+     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
     (sh22-export
      :ordered-map-dissoc-keyword :collections
      "(OrderedMap Keyword a) Keyword -> (Result (OrderedMap Keyword a) CollectionError)"
@@ -757,6 +762,36 @@
             (recur (+ index 1))
             false)
           false)))))
+
+(defn sh22-ordered-map-get-default-keyword [request]
+  (let [arguments (get request :arguments)
+        ordered-map (get arguments 0)
+        key (get arguments 1)
+        default (get arguments 2)]
+    (if (= 3 (count arguments))
+      (if (sh22-ordered-map-shape? ordered-map)
+        (let [entries (get ordered-map :entries)
+              maximum (get (sh22-library-policy) :maximum-collection-elements)]
+          (if (<= (count entries) maximum)
+            ; STD2/STD3: complete key/pair and needle domains precede equality;
+            ; uniqueness precedes lookup, and presence never uses truthiness.
+            (if (sh22-keyword-map-entries? entries)
+              (if (keyword? key)
+                (if (sh22-entries-well-formed? entries)
+                  (let [index (sh22-entry-index entries key 0)]
+                    (sh22-accepted
+                     request
+                     (if (= nil index) default (get (get entries index) 1))
+                     {:collection-kind :ordered-map :key-family :keyword
+                      :lookup :explicit-default :equality :keyword-value
+                      :safety-outcome :proven-safe :allocation :none
+                      :persistent-value-semantics true}))
+                  (sh22-rejected request "STD10003" :expected-ordered-map))
+                (sh22-rejected request "STD10003" :expected-keyword))
+              (sh22-rejected request "STD10003" :expected-keyword-ordered-map))
+            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+        (sh22-rejected request "STD10003" :expected-ordered-map))
+      (sh22-rejected request "STD1001" :invalid-arity))))
 
 (defn sh22-remove-map-entry [entries removed-index]
   (loop [index 0 result []]
@@ -1562,6 +1597,8 @@
 
 (defn sh22-handle-valid-request [request]
   (let [operation (get request :operation)]
+    (if (= operation :ordered-map-get-default-keyword)
+      (sh22-ordered-map-get-default-keyword request)
     (if (= operation :vector-slice)
       (sh22-vector-slice request)
     (if (= operation :ordered-set-equal-integer)
@@ -1608,7 +1645,7 @@
                           (sh22-artifact-data request)
                           (if (= operation :meta-view)
                             (sh22-meta-view request)
-                            (sh22-canonical-data request))))))))))))))))))))))
+                            (sh22-canonical-data request)))))))))))))))))))))))
 
 (defn sh22-operation-effects [operation]
   (if
@@ -1633,6 +1670,8 @@
       #{}))))
 
 (defn sh22-operation-allocation [operation]
+  (if (= operation :ordered-map-get-default-keyword)
+    :none
   (if (= operation :vector-slice)
     :bounded-by-result
   (if (= operation :ordered-set-equal-integer)
@@ -1667,7 +1706,7 @@
                        #{:io-file-read :io-stdout}
                        operation)
                     :provider-owned
-                    :bounded-by-result)))))))))))))))))
+                    :bounded-by-result))))))))))))))))))
 
 (defn sh22-operation-capabilities [operation]
   (if (= operation :io-file-read)
