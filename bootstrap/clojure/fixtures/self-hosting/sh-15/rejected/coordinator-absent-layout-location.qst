@@ -1,0 +1,30 @@
+(ns gravity.self-hosting.sh15.absent-layout-location.rejected
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-absent-layout-location-rejected-rows])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Mutate the original producer's row; do not fabricate replacement diagnostics.
+(defn coordinator-absent-layout-location-rejected-rows [diagnostic]
+  [(assoc diagnostic :reason :candidate-substitution)
+   (assoc diagnostic :rule "C12-VERIFY")
+   (assoc diagnostic :diagnostic-id "C12-VERIFY")
+   (assoc diagnostic :family :other)
+   (assoc diagnostic :missing-fact :other)
+   (assoc diagnostic :stage :other)
+   (assoc diagnostic :domain :other)
+   (assoc diagnostic :remediation :other)
+   (assoc diagnostic :owner-document "C11")
+   (assoc diagnostic :verifier :gravity.compiler.c11/other)
+   (assoc diagnostic :value-id :other)
+   (assoc diagnostic :kind :record)
+   (assoc diagnostic :profile :native)
+   (assoc diagnostic :target :llvm)
+   (assoc diagnostic :source-span {})
+   (assoc diagnostic :source-span
+          {:source-id :fixture :actual-source-path "/source.gravity"
+           :start {:byte -1 :line 1 :column 1}
+           :end {:byte 0 :line 1 :column 1}})
+   (assoc diagnostic :source-span
+          {:source-id :fixture :actual-source-path "/source.gravity"
+           :start {:byte 0 :line 1 :column 1}
+           :end {:byte 2147483648 :line 1 :column 1}})])
