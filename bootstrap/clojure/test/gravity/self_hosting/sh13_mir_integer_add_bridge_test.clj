@@ -28,9 +28,13 @@
     (is (= (subvec ids 0 2) (:params function)))
     (is (= :gravity/i64 (:returns function)))
     (is (= #{:error/raise} (:latent-effects function)))
+    (is (= [] (get-in check [:facts :capability-proof-ids])))
+    (is (= [] (get-in check [:facts :proof-certificate-ids])))
+    (is (= [] (get-in mir [:capability-table (get-in check [:facts :capability-fact-id]) :capability-proof-ids])))
     (is (= [token (get ids 2) (get ids 3)] (:operands (get operations 3))))
     (doseq [[arguments expected] [[[0 0] 0] [[Long/MAX_VALUE 0] Long/MAX_VALUE]
                                   [[Long/MIN_VALUE 0] Long/MIN_VALUE]
+                                  [[0 Long/MIN_VALUE] Long/MIN_VALUE]
                                   [[Long/MAX_VALUE Long/MIN_VALUE] -1]
                                   [[Long/MIN_VALUE Long/MAX_VALUE] -1] [[-1 1] 0]]]
       (let [result (run core mir arguments) trace (get-in result [:execution :trace])]
@@ -43,7 +47,8 @@
         (is (= token (:token-value-id (nth trace 2))))
         (is (= :passed (:status (verify core mir arguments result))))
         (is (= :rejected (:status (verify core mir arguments (assoc-in result [:execution :value] 99)))))))
-    (doseq [arguments [[Long/MAX_VALUE 1] [Long/MIN_VALUE -1]]]
+    (doseq [arguments [[Long/MAX_VALUE 1] [Long/MIN_VALUE -1]
+                       [-1 Long/MIN_VALUE] [Long/MIN_VALUE Long/MIN_VALUE]]]
       (let [result (run core mir arguments) execution (:execution result)]
         (is (= :rejected (:status result)))
         (is (= :raised (:status execution)))

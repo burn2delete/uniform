@@ -1269,7 +1269,8 @@
       :effect-fact-id (c11-runtime-check-fact-id check :effect)
       :capability-fact-id
       (c11-runtime-check-fact-id check :capability)
-      :capability-proof-ids [(get check :capability-proof-id)]
+      :capability-proof-ids (if (= :not-applicable (get check :capability-proof-id)) []
+                              [(get check :capability-proof-id)])
       :ownership-fact-id
       (c11-runtime-check-fact-id check :ownership)
       :safety-outcome-id (c11-runtime-check-fact-id check :safety)
