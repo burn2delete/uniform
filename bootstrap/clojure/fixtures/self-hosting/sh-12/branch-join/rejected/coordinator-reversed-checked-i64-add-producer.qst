@@ -4,4 +4,4 @@
   (:exports [main]))
 
 (defn main [left :- I64 right :- I64]
-  (+ right right))
+  (+ right))

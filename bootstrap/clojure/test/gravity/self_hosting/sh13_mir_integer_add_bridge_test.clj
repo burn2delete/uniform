@@ -10,11 +10,75 @@
   (delay
     (producer/invoke 'sh12-build-branch-join-mir (:core @producer/reversed-pair))))
 
+(def repeated-mirs
+  (delay
+    {:left (producer/invoke 'sh12-build-branch-join-mir (:core (get @producer/repeated-pairs :left)))
+     :right (producer/invoke 'sh12-build-branch-join-mir (:core (get @producer/repeated-pairs :right)))}))
+
 (defn run [core mir arguments]
   (producer/invoke 'sh13-run-branch-join-mir-with-arguments core mir arguments))
 
 (defn verify [core mir arguments result]
   (producer/invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments result))
+
+(deftest sh13-repeated-checked-i64-add-original-producer-bridge
+  (doseq [[side index] [[:left 0] [:right 1]]]
+    (let [core (:core (get @producer/repeated-pairs side)) mir (get @repeated-mirs side)
+          ids (mapv :node-id (:core-nodes core)) function (get-in mir [:functions 'main]) entry (:entry function)
+          operations (get-in function [:blocks entry :instructions]) check (get operations 2) token (:result check)
+          arguments #(assoc [Long/MAX_VALUE Long/MIN_VALUE] index %)]
+      (is (= :passed (:status (producer/invoke 'sh12-verify-branch-join-mir core mir))) (pr-str (:diagnostics mir)))
+      (is (= (subvec ids 0 2) (:params function)))
+      (is (= [:local :local :runtime-check :integer-add :function-boundary] (mapv :opcode operations)))
+      (is (= [[(get ids index)] [(get ids index)]] (mapv :operands (subvec operations 0 2))))
+      (is (= (subvec ids 2 4) (mapv :result (subvec operations 0 2))))
+      (is (= 2 (count (set (mapv :result (subvec operations 0 2))))))
+      (is (= (subvec ids 2 4) (:operands check)))
+      (is (= [token (get ids 2) (get ids 3)] (:operands (get operations 3))))
+      (doseq [[value expected] [[0 0] [1 2] [-1 -2] [4611686018427387903 9223372036854775806]
+                                [-4611686018427387904 Long/MIN_VALUE]]]
+        (let [args (arguments value) result (run core mir args) execution (:execution result)]
+          (is (= :accepted (:status result)))
+          (is (= :returned (:status execution)))
+          (is (= expected (:value execution)))
+          (is (= [(get ids 2) (get ids 3) (:op-id check) (get ids 4)] (vec (keep :operation (:trace execution)))))
+          (is (true? (:token-produced? (nth (:trace execution) 2))))
+          (is (= :passed (:status (verify core mir args result))))))
+      (doseq [value [4611686018427387904 -4611686018427387905 Long/MAX_VALUE Long/MIN_VALUE]]
+        (let [args (arguments value) result (run core mir args) execution (:execution result)]
+          (is (= :rejected (:status result)))
+          (is (= :raised (:status execution)))
+          (is (= [:error/numeric :overflow] ((juxt :type :kind) (:error execution))))
+          (is (= [value value] (get-in execution [:error :operands])))
+          (is (= [:local :local :runtime-check] (mapv :opcode (:trace execution))))
+          (is (false? (:token-produced? (last (:trace execution)))))
+          (is (= :not-applicable (:token-value-id (last (:trace execution)))))
+          (is (= :passed (:status (verify core mir args result))))))
+      (doseq [args [(assoc (arguments 0) (- 1 index) true)
+                    (assoc (arguments 0) (- 1 index) (inc (bigint Long/MAX_VALUE)))
+                    (subvec (arguments 0) 0 1) (conj (arguments 0) 0) (assoc (arguments 0) index true)]]
+        (let [result (run core mir args)]
+          (is (= :rejected (:status result)))
+          (is (= "C11-TYPE" (get-in result [:diagnostics 0 :diagnostic-id])))
+          (is (nil? (:execution result))))))))
+
+(deftest sh13-repeated-checked-i64-add-rejects-binding-occurrence-and-check-substitution
+  (doseq [[side index] [[:left 0] [:right 1]]]
+    (let [core (:core (get @producer/repeated-pairs side)) mir (get @repeated-mirs side)
+          ids (mapv :node-id (:core-nodes core)) entry (get-in mir [:functions 'main :entry])
+          path [:functions 'main :blocks entry :instructions] operations (get-in mir path)
+          token (get-in operations [2 :result])]
+      (doseq [candidate [(assoc-in mir (conj path 0 :operands) [(get ids (- 1 index))])
+                         (assoc-in mir (conj path 1 :result) (get-in operations [0 :result]))
+                         (assoc-in mir (conj path 2 :operands) [(get ids 2) (get ids 2)])
+                         (assoc-in mir (conj path 3 :operands) [token (get ids 2) (get ids 2)])
+                         (assoc-in mir path [(get operations 0) (get operations 1) (get operations 3)
+                                            (get operations 2) (get operations 4)])]]
+        (let [report (producer/invoke 'sh12-verify-branch-join-mir core candidate)
+              result (run core candidate [1 2])]
+          (is (= :rejected (:status report) (:status result)))
+          (is (= (:diagnostics report) (:diagnostics result)))
+          (is (nil? (:execution result))))))))
 
 (deftest sh13-reversed-checked-i64-add-original-binding-order-kernel
   ;; Candidate-shape/mapping DATA only; this never accepts a checked Core.
@@ -42,8 +106,9 @@
                 plan 'sh12-c6p-i64-operand-parameter-order [%])]
     (is (= [0 1] (call core)))
     (is (= [1 0] (call (-> core (assoc-in [:core-nodes 2 :operands] [:b]) (assoc-in [:core-nodes 3 :operands] [:a])))))
-    (doseq [candidate [(assoc-in core [:core-nodes 2 :operands] [:b])
-                       (assoc-in core [:core-nodes 2 :operands] [:unknown])
+    (is (= [0 0] (call (assoc-in core [:core-nodes 3 :operands] [:a]))))
+    (is (= [1 1] (call (assoc-in core [:core-nodes 2 :operands] [:b]))))
+    (doseq [candidate [(assoc-in core [:core-nodes 2 :operands] [:unknown])
                        (assoc-in core [:core-nodes 1 :node-id] :a)
                        (assoc-in core [:core-nodes 2 :operands] [:a :b])]]
       (is (nil? (call candidate))))
