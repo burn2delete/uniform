@@ -34,6 +34,7 @@
    #{:vector-assoc
      :vector-append
      :vector-nth
+     :vector-slice
      :ordered-map-assoc
      :ordered-map-get
      :ordered-map-dissoc-keyword
@@ -101,6 +102,10 @@
      :vector-nth :collections
      "(Vector a) Int -> (Result a Error)" #{} #{}
      :none ["STD3001" "STD3002"] #{:meta})
+    (sh22-export
+     :vector-slice :collections
+     "(Vector a) Integer Integer -> (Result (Vector a) CollectionError)"
+     #{:memory/allocate} #{} :bounded-by-result ["STD3001" "STD3002"] #{:meta})
     (sh22-export
      :ordered-map-assoc :collections
      "(OrderedMap k v) k v -> (Result (OrderedMap k v) Error)"
@@ -587,6 +592,44 @@
              request "STD3002" :index-out-of-bounds))
           (sh22-rejected
            request "STD3001" :collection-bound-exceeded))
+        (sh22-rejected request "STD3002" :expected-vector))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
+(defn sh22-vector-slice-bounds? [values start end]
+  (if (integer? start)
+    (if (integer? end)
+      (if (<= 0 start)
+        (if (<= start end) (<= end (count values)) false)
+        false)
+      false)
+    false))
+
+(defn sh22-vector-slice-values [values start end]
+  ; STD3: bounded, checked indexes precede any copy. Build a fresh Vector
+  ; spine rather than retaining a subvec view of the input's backing storage.
+  (loop [index start result []]
+    (if (= index end)
+      result
+      (recur (+ index 1) (conj result (get values index))))))
+
+(defn sh22-vector-slice [request]
+  (let [arguments (get request :arguments)
+        values (get arguments 0)
+        start (get arguments 1)
+        end (get arguments 2)]
+    (if (= 3 (count arguments))
+      (if (vector? values)
+        (if (<= (count values)
+                (get (sh22-library-policy) :maximum-collection-elements))
+          (if (sh22-vector-slice-bounds? values start end)
+            (sh22-accepted
+             request (sh22-vector-slice-values values start end)
+             {:collection-kind :vector :safety-outcome :proven-safe
+              :allocation :bounded-by-result :persistent-value-semantics true
+              :storage :copied-vector-spine :stored-values :shallow-shared
+              :lifetime :persistent :borrows-input-storage false})
+            (sh22-rejected request "STD3002" :slice-out-of-bounds))
+          (sh22-rejected request "STD3001" :collection-bound-exceeded))
         (sh22-rejected request "STD3002" :expected-vector))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -1519,6 +1562,8 @@
 
 (defn sh22-handle-valid-request [request]
   (let [operation (get request :operation)]
+    (if (= operation :vector-slice)
+      (sh22-vector-slice request)
     (if (= operation :ordered-set-equal-integer)
       (sh22-ordered-set-equal-integer request)
     (if (= operation :ordered-map-dissoc-keyword)
@@ -1563,13 +1608,14 @@
                           (sh22-artifact-data request)
                           (if (= operation :meta-view)
                             (sh22-meta-view request)
-                            (sh22-canonical-data request)))))))))))))))))))))
+                            (sh22-canonical-data request))))))))))))))))))))))
 
 (defn sh22-operation-effects [operation]
   (if
    (sh22-member?
     #{:vector-assoc
       :vector-append
+      :vector-slice
       :ordered-map-assoc
       :ordered-map-dissoc-keyword
       :ordered-set-conj
@@ -1587,6 +1633,8 @@
       #{}))))
 
 (defn sh22-operation-allocation [operation]
+  (if (= operation :vector-slice)
+    :bounded-by-result
   (if (= operation :ordered-set-equal-integer)
     :none
   (if (= operation :ordered-map-dissoc-keyword)
@@ -1619,7 +1667,7 @@
                        #{:io-file-read :io-stdout}
                        operation)
                     :provider-owned
-                    :bounded-by-result))))))))))))))))
+                    :bounded-by-result)))))))))))))))))
 
 (defn sh22-operation-capabilities [operation]
   (if (= operation :io-file-read)
