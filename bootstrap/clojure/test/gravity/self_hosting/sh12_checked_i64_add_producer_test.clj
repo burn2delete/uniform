@@ -86,11 +86,14 @@
     (is (false? (:self-hosted? core)))))
 
 (deftest sh12-checked-i64-add-replay-rejects-fact-and-check-substitution
-  (let [{:keys [raw replay fresh]} @current-pair
+  (let [{:keys [raw replay fresh products verification]} @current-pair
         template (:artifact-template raw) nodes (:core-nodes template)
         add-id (:node-id (get nodes 4)) root-id (:node-id (get nodes 5))
         verify #(producer 'c6-c10-verify-checked-core-template
                   (:envelope fresh) % (:digest-requests replay))]
+    (is (= raw replay))
+    (is (= (:envelope products) (:envelope fresh)))
+    (is (= :passed (:status verification)))
     (doseq [candidate [(assoc-in template [:core-nodes 4 :attributes :numeric-mode] :wrapping)
                        (assoc-in template [:core-nodes 4 :operands] (vec (reverse (:operands (get nodes 4)))))
                        (assoc-in template [:core-nodes 4 :safety :outcome] :proven-safe)
