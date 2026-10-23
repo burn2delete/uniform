@@ -372,11 +372,13 @@
               "C7-TYPE-MISMATCH"
               (if (= rule :C7-VERIFY)
                 "C7-VERIFY"
-                (if (= rule :C8-VERIFY)
-                  "C8-VERIFY"
-                  (if (= rule :C10-PROOF)
-                    "C10-PROOF"
-                    :unassigned-diagnostic-rule)))))))))))
+                (if (= rule :C8-UNDECLARED)
+                  "C8-UNDECLARED"
+                  (if (= rule :C8-VERIFY)
+                    "C8-VERIFY"
+                    (if (= rule :C10-PROOF)
+                      "C10-PROOF"
+                      :unassigned-diagnostic-rule))))))))))))
 
 (defn c6c10-canonical-diagnostic-stage [stage]
   (if (= stage :core-semantics)

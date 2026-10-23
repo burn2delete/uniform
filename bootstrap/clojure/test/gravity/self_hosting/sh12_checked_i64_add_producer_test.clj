@@ -314,3 +314,73 @@
                             (:envelope fresh) (:artifact-template candidate) (:digest-requests candidate))]
         (is (= :rejected (:status report)))
         (is (= :exact-digest-request-replay (get-in report [:diagnostics 0 :facts :missing-fact])))))))
+
+(defn- original-diagnostic-kernel []
+  ;; Exact original definitions; supplied diagnostic DATA, no source ingress.
+  (let [path (str (.resolve @(existing 'root) (existing 'parameter-c6-source)))
+        names '#{c6c10-vector-contains? c6c10-conj-unique c6c10-conj-all-unique c6c10-copy-vector c6c10-append
+                 c6c10-exact-digest-ref? c6c10-insert-ordinal c6c10-sort-ordinals c6c10-collect-ref-sequence
+                 c6c10-collect-ref-map c6c10-collect-digest-refs c6c10-digest-ref c6c10-digest-intern-sequence
+                 c6c10-digest-intern-map-entries c6c10-digest-intern-key c6c10-request-key-for-preimage
+                 c6c10-add-digest-request c6c10-merge-map-keys c6c10-merge-maps c6c10-literal-type-from-form-kind
+                 c6c10-diagnostic-zero-span c6c10-diagnostic-primary c6c10-canonical-diagnostic-rule
+                 c6c10-canonical-diagnostic-stage c6c10-diagnostic-involved-artifacts c6c10-diagnostic-related
+                 c6c10-diagnostic-subject-request c6c10-rule-in-family? c6c10-observed-form-type
+                 c6c10-diagnostic-family-facts c6c10-diagnostic-rejection}
+        forms (binding [*read-eval* false] (read-string (str "[" (slurp path) "]")))
+        selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? names (second %))) forms)
+        primitives '#{defn if let quote = < + get count keys first rest contains? conj assoc set
+                      map? vector? set? seq? boolean? integer? string? symbol? keyword? char?}
+        callees (set (for [form selected expression (tree-seq coll? seq form)
+                          :when (and (seq? expression) (symbol? (first expression)))] (first expression)))
+        text (str "(ns gravity.test.original-diagnostic-kernel (:profile :meta) (:target :jvm)"
+                  " (:effects #{}) (:capabilities #{}) (:safety :safe))\n"
+                  (apply str (map #(str (pr-str %) "\n") selected)))
+        _ (assert (= 31 (count selected)) (pr-str {:selected-definitions (count selected)}))
+        _ (assert (= names (set (map second selected))) (pr-str {:selected-names (mapv second selected)}))
+        _ (assert (< (count text) 24000) (pr-str {:source-characters (count text)}))
+        _ (assert (every? #(or (contains? names %) (contains? primitives %)) callees)
+                  (pr-str {:unclosed-callees (vec (remove #(or (contains? names %) (contains? primitives %)) callees))}))
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter "original-diagnostic-kernel.gravity" text)]
+    (fn [name & arguments]
+      (bootstrap/p15-s23-stage2-runtime-execute-function
+        {:engine :sh12-original-diagnostic-data-kernel :compiler-artifact-plan? true} plan name (vec arguments)))))
+
+(deftest sh12-checked-i64-add-original-diagnostic-rule-and-constructor-kernel
+  (let [call (original-diagnostic-kernel)]
+    (doseq [rule [:L2-BUILTIN-ARITY :C6-LOWERING-GAP :C6-CORE-SHAPE :C6-ORIGIN :C6-VERIFY
+                  :C7-TYPE-MISMATCH :C7-VERIFY :C8-UNDECLARED :C8-VERIFY :C10-PROOF]]
+      (is (= (name rule) (call 'c6c10-canonical-diagnostic-rule rule))))
+    (is (= "external/existing-rule" (call 'c6c10-canonical-diagnostic-rule "external/existing-rule")))
+    (doseq [rule [:unknown :C8-CAPABILITY nil 7]]
+      (is (= :unassigned-diagnostic-rule (call 'c6c10-canonical-diagnostic-rule rule))))
+    (let [source {:source-content-hash "supplied-diagnostic-data" :syntax-id :namespace-syntax
+                  :span {:source "supplied-diagnostic-data" :start 0 :end 1}
+                  :origin-id :source-origin :generated-origin [:generated-origin]}
+          facts {:missing-fact :declared-numeric-error-effect :observed-effects #{}}
+          build #(call 'c6c10-diagnostic-rejection {:requests [] :next-ordinal 0}
+                       :C8-UNDECLARED :effect-check :diagnostic/c8-undeclared source % :declare-numeric-error-effect)
+          raw (build facts) diagnostic (first (:diagnostics raw))
+          sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! "diagnostic-data.gravity" raw)
+          sealed-diagnostic (first (:sealed-diagnostics sealed))]
+      (is (= 2 (count (:digest-requests raw))))
+      (is (= :rejected (:status raw) (:status sealed)))
+      (is (nil? (:artifact-template raw)))
+      (is (= ["C8-UNDECLARED" :effect-check :diagnostic/c8-undeclared :error :active :hosted :jvm]
+             ((juxt :rule :stage :message-key :severity :lifecycle :profile :target) diagnostic)))
+      (is (= (:span source) (get-in diagnostic [:primary :span])))
+      (is (= :namespace-syntax (get-in diagnostic [:primary :syntax-id])))
+      (is (= [:generated-origin :source-origin] (:origin-chain diagnostic)))
+      (is (= 'main (get-in diagnostic [:facts :function])))
+      (is (= facts (select-keys (:facts diagnostic) (keys facts))))
+      (is (= :declare-numeric-error-effect (get-in diagnostic [:remediation 0 :kind])))
+      (is (= {:fatal? true :stop-after :effect-check :downstream-artifacts-forbidden true} (:containment raw)))
+      (is (= (:diagnostic-id sealed-diagnostic) (first (:root-digests sealed))))
+      (is (= raw (build facts)))
+      (is (not= (:root-digests sealed)
+                (:root-digests (bootstrap/p15-s23-c6c10-seal-digest-request-result!
+                                "diagnostic-data.gravity" (build (assoc facts :observed-effects #{:error/raise}))))))
+      (is (= {:id "C6-VERIFY" :missing-fact :root-bound-gravity-diagnostic-identity}
+             (boundary-error #(bootstrap/p15-s23-c6c10-seal-digest-request-result!
+                                "diagnostic-data.gravity" (assoc-in raw [:diagnostics 0 :rule] "C8-VERIFY"))))))))
