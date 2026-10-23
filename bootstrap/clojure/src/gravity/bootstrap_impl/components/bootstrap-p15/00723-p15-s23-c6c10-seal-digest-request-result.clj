@@ -139,8 +139,9 @@
                instructions (get-in functions ['main :instructions])]
            (if (and (= 1 (count functions)) (= 1 (count instructions))
                     (= :builtin-call (:op (first instructions)))
-                    (= '+ (:function (first instructions))))
-             :bounded-checked-i64-add-hosted-safe-jvm-source
+                    (contains? '#{+ -} (:function (first instructions))))
+             (if (= '- (:function (first instructions)))
+               :bounded-checked-i64-sub-hosted-safe-jvm-source :bounded-checked-i64-add-hosted-safe-jvm-source)
              :bounded-pure-hosted-safe-jvm-source))
          :binding-pins
          (p15-s23-c6c10-binding-pins
