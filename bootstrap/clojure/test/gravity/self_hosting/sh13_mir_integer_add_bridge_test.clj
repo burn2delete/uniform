@@ -6,11 +6,96 @@
   (delay
     (producer/invoke 'sh12-build-branch-join-mir (:core @producer/current-pair))))
 
+(def reversed-mir
+  (delay
+    (producer/invoke 'sh12-build-branch-join-mir (:core @producer/reversed-pair))))
+
 (defn run [core mir arguments]
   (producer/invoke 'sh13-run-branch-join-mir-with-arguments core mir arguments))
 
 (defn verify [core mir arguments result]
   (producer/invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments result))
+
+(deftest sh13-reversed-checked-i64-add-original-binding-order-kernel
+  ;; Candidate-shape/mapping DATA only; this never accepts a checked Core.
+  (let [path (str (.resolve @(producer/existing 'root) (producer/existing 'c11-source)))
+        names '#{sh12-c6p-i64-add? sh12-c6p-i64-operand-parameter-order}
+        forms (binding [*read-eval* false] (read-string (str "[" (slurp path) "]")))
+        selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? names (second %))) forms)
+        primitives '#{defn let if keyword? vector? get count = loop recur + conj}
+        callees (for [form selected expression (tree-seq coll? seq form)
+                      :when (and (seq? expression) (symbol? (first expression)))] (first expression))
+        text (str "(ns gravity.test.reversed-add-binding-order (:profile :meta) (:target :jvm)"
+                  " (:effects #{}) (:capabilities #{}) (:safety :safe))\n"
+                  (apply str (map #(str (pr-str %) "\n") selected)))
+        _ (assert (= names (set (map second selected))))
+        _ (assert (and (= 2 (count selected)) (< (count text) 4096)))
+        _ (assert (every? #(or (contains? names %) (contains? primitives %)) callees) (pr-str callees))
+        emitter (:emitter (gravity.bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (gravity.bootstrap/p15-s23-stage2-compiler-artifact-plan emitter "reversed-add-binding-order.gravity" text)
+        core {:resolved-parameter {:kind :gravity/c6-c10-resolved-two-i64-parameters-v1}
+              :core-nodes [{:source-operation :parameter :node-id :a} {:source-operation :parameter :node-id :b}
+                           {:source-operation :local :operands [:a]} {:source-operation :local :operands [:b]}
+                           {:source-operation :integer-add} {:source-operation :function}]}
+        call #(gravity.bootstrap/p15-s23-stage2-runtime-execute-function
+                {:engine :sh13-reversed-binding-order-data :compiler-artifact-plan? true}
+                plan 'sh12-c6p-i64-operand-parameter-order [%])]
+    (is (= [0 1] (call core)))
+    (is (= [1 0] (call (-> core (assoc-in [:core-nodes 2 :operands] [:b]) (assoc-in [:core-nodes 3 :operands] [:a])))))
+    (doseq [candidate [(assoc-in core [:core-nodes 2 :operands] [:b])
+                       (assoc-in core [:core-nodes 2 :operands] [:unknown])
+                       (assoc-in core [:core-nodes 1 :node-id] :a)
+                       (assoc-in core [:core-nodes 2 :operands] [:a :b])]]
+      (is (nil? (call candidate))))
+    (is (= [0 1] (call (assoc-in core [:core-nodes 4 :source-operation] :integer-lt))))))
+
+(deftest sh13-reversed-checked-i64-add-original-producer-bridge
+  (let [core (:core @producer/reversed-pair) mir @reversed-mir ids (mapv :node-id (:core-nodes core))
+        function (get-in mir [:functions 'main]) entry (:entry function)
+        operations (get-in function [:blocks entry :instructions]) check (get operations 2) token (:result check)]
+    (is (= :passed (:status (producer/invoke 'sh12-verify-branch-join-mir core mir))) (pr-str (:diagnostics mir)))
+    (is (= (subvec ids 0 2) (:params function)))
+    (is (= [:local :local :runtime-check :integer-add :function-boundary] (mapv :opcode operations)))
+    (is (= [[(get ids 1)] [(get ids 0)]] (mapv :operands (subvec operations 0 2))))
+    (is (= (subvec ids 2 4) (:operands check)))
+    (is (= [token (get ids 2) (get ids 3)] (:operands (get operations 3))))
+    (is (= [] (get-in check [:facts :capability-proof-ids]) (get-in check [:facts :proof-certificate-ids])))
+    (doseq [[arguments expected] [[[2 40] 42] [[Long/MAX_VALUE Long/MIN_VALUE] -1]
+                                  [[0 Long/MIN_VALUE] Long/MIN_VALUE] [[Long/MIN_VALUE 0] Long/MIN_VALUE]]]
+      (let [result (run core mir arguments) execution (:execution result)]
+        (is (= :accepted (:status result)))
+        (is (= :returned (:status execution)))
+        (is (= expected (:value execution)))
+        (is (= [(get ids 2) (get ids 3) (:op-id check) (get ids 4)] (vec (keep :operation (:trace execution)))))
+        (is (true? (:token-produced? (nth (:trace execution) 2))))
+        (is (= :passed (:status (verify core mir arguments result))))))
+    (doseq [arguments [[Long/MAX_VALUE 1] [Long/MIN_VALUE -1]]]
+      (let [result (run core mir arguments) execution (:execution result)]
+        (is (= :rejected (:status result)))
+        (is (= :raised (:status execution)))
+        (is (= [:error/numeric :overflow] ((juxt :type :kind) (:error execution))))
+        (is (= (vec (reverse arguments)) (get-in execution [:error :operands])))
+        (is (= [:local :local :runtime-check] (mapv :opcode (:trace execution))))
+        (is (false? (:token-produced? (last (:trace execution)))))
+        (is (= :not-applicable (:token-value-id (last (:trace execution)))))
+        (is (= :passed (:status (verify core mir arguments result))))))))
+
+(deftest sh13-reversed-checked-i64-add-rejects-binding-and-check-substitution
+  (let [core (:core @producer/reversed-pair) mir @reversed-mir ids (mapv :node-id (:core-nodes core))
+        entry (get-in mir [:functions 'main :entry]) path [:functions 'main :blocks entry :instructions]
+        operations (get-in mir path) token (get-in operations [2 :result])
+        changed-both (-> mir (assoc-in (conj path 0 :operands) [(get ids 0)])
+                            (assoc-in (conj path 1 :operands) [(get ids 1)]))]
+    (doseq [candidate [(assoc-in mir (conj path 0 :operands) [(get ids 0)]) changed-both
+                       (assoc-in mir (conj path 2 :operands) [(get ids 3) (get ids 2)])
+                       (assoc-in mir (conj path 3 :operands) [token (get ids 3) (get ids 2)])
+                       (assoc-in mir path [(get operations 0) (get operations 1) (get operations 3)
+                                          (get operations 2) (get operations 4)])]]
+      (let [report (producer/invoke 'sh12-verify-branch-join-mir core candidate)
+            result (run core candidate [Long/MAX_VALUE 1])]
+        (is (= :rejected (:status report) (:status result)))
+        (is (= (:diagnostics report) (:diagnostics result)))
+        (is (nil? (:execution result)))))))
 
 (deftest sh13-checked-i64-add-original-producer-bridge
   (let [core (:core @producer/current-pair) mir @original-mir
