@@ -10027,7 +10027,11 @@
           (if (= opcode :sub)
             (if (sh13-sub-safe? (get operands 0) (get operands 1))
               (sh13-continued-value
-               operation (- (get operands 0) (get operands 1))
+               ; After the guard, negative right gives MIN+1 <= result <= MAX.
+               ; right+1 and its negation fit; left+(-(right+1)) is result-1.
+               operation (if (< (get operands 1) 0)
+                           (+ (+ (get operands 0) (- (+ (get operands 1) 1))) 1)
+                           (- (get operands 0) (get operands 1)))
                next-fuel next-trace)
               (sh13-execution-rejected
                next-fuel next-trace :integer-range))
