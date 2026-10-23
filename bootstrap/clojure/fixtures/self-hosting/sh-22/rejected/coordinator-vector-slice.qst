@@ -1,0 +1,22 @@
+(ns gravity.self-hosting.sh22.vector-slice.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-vector-slice-reversed-request sh22-vector-slice-wrong-index-request
+             sh22-vector-slice-wrong-vector-request sh22-vector-slice-over-bound-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-vector-slice-reversed-request [request]
+  (assoc request :arguments [[:reader :syntax] 2 1]))
+
+(defn sh22-vector-slice-wrong-index-request [request]
+  (assoc request :arguments [[:reader :syntax] :zero 1]))
+
+(defn sh22-vector-slice-wrong-vector-request [request]
+  (assoc request :arguments [{:values [:reader :syntax]} 0 1]))
+
+(defn sh22-vector-slice-over-bound-request [request]
+  (let [values (loop [index 0 result []]
+                 (if (= index 257) result (recur (+ index 1) (conj result index))))]
+    (assoc request :arguments [values 0 0])))
