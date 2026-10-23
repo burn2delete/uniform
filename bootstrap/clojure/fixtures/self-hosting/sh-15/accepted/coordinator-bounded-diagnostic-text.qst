@@ -1,0 +1,25 @@
+(ns gravity.self-hosting.sh15.bounded-text.accepted
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-bounded-diagnostic-text
+             coordinator-bounded-diagnostic-text-golden])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; C15 view fixture only; no stage/provenance authentication is asserted.
+(defn coordinator-bounded-diagnostic-text []
+  {:diagnostic-id [:fixture-stable-id "C15-SCHEMA"]
+   :rule "C15-SCHEMA" :severity :error :stage :compiler-diagnostics
+   :primary {:span {:source-id :fixture
+                    :actual-source-path "src/input.gravity"
+                    :start {:byte 0 :line 2 :column 3}
+                    :end {:byte 10 :line 2 :column 13}}
+             :syntax-id :fixture-syntax :artifact :fixture-artifact}
+   :related [{:role :generated-by :artifact :fixture-producer}]
+   :origin-chain [{:kind :generated :producer :fixture-producer}]
+   :profile :meta :target :jvm
+   :facts {:reason :fixture-invalid :private-value "PRIVATE-FACT"}
+   :message "PRIVATE-MESSAGE" :raw-tool-output "PRIVATE-TOOL-OUTPUT"
+   :remediation [:supply-exact-bounded-external-reference-request]
+   :redactions []})
+
+(defn coordinator-bounded-diagnostic-text-golden []
+  "code=\"C15-SCHEMA\" severity=:error location=\"src/input.gravity\":2:3 redactions=:clear")
