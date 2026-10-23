@@ -2274,11 +2274,13 @@
           right (get (get (get entries 1) :parameter-binding) :name)
           instructions (get plan :instructions) source-body (get plan :body)
           operator (if (= '+ (get (first instructions) :function)) '+ '<)
+          source-order [(get (c6c10-form-by-id forms (get children 1)) :value)
+                        (get (c6c10-form-by-id forms (get children 2)) :value)]
           operand-order
           (if (= operator '+)
-            (if (= [right left] [(get (c6c10-form-by-id forms (get children 1)) :value)
-                                (get (c6c10-form-by-id forms (get children 2)) :value)])
-              [right left] [left right]) [left right])]
+            (if (= source-order [right left]) [right left]
+              (if (= source-order [left left]) [left left]
+                (if (= source-order [right right]) [right right] [left right]))) [left right])]
       (if (if (vector? instructions) (= 1 (count instructions)) false)
         (if (if (vector? source-body) true (list? source-body))
           (if (= 1 (count source-body))

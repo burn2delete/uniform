@@ -1,0 +1,7 @@
+(ns gravity.sh12.coordinator-left-repeated-checked-i64-add-producer
+  (:profile :hosted) (:target :jvm)
+  (:effects #{:error/raise}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [left :- I64 right :- I64]
+  (+ left left))

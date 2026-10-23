@@ -58,6 +58,98 @@
       {:path path :text text :products first-product :binding binding
        :raw raw :fresh fresh :replay replay :verification verification :core core})))
 
+(defn repeated-fixture [side extension]
+  (str (.resolve @(existing 'root)
+         (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/coordinator-"
+              (name side) "-repeated-checked-i64-add-producer." extension))))
+
+(defn- repeated-source-pair [side compiled-binding]
+  (let [path (repeated-fixture side "gravity") text (slurp path)
+        first-product (products path text compiled-binding) binding (:compiled-binding-data first-product)
+        raw (producer 'c6-c10-build-checked-core-template (:envelope first-product))
+        fresh (products path text binding)
+        replay (producer 'c6-c10-build-checked-core-template (:envelope fresh))
+        verification (producer 'c6-c10-verify-checked-core-template
+                       (:envelope fresh) (:artifact-template raw) (:digest-requests replay))
+        sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
+        context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
+        core (bootstrap/p15-s23-c6c10-public-artifact context binding (:ingress first-product) sealed)]
+    {:path path :products first-product :binding binding :raw raw :fresh fresh
+     :replay replay :verification verification :core core}))
+
+(def repeated-pairs
+  (delay
+    ;; Reuse current compiled C6 binding DATA, never another source's products.
+    (let [left (repeated-source-pair :left nil)
+          right (repeated-source-pair :right (:binding left))]
+      {:left left :right right})))
+
+(deftest sh12-repeated-checked-i64-add-source-shape
+  (doseq [side [:left :right]]
+    (let [g (slurp (repeated-fixture side "gravity")) q (slurp (repeated-fixture side "qst"))
+          [declaration function] (binding [*read-eval* false] (read-string (str "[" g "]")))
+          parameter (symbol (name side))]
+      (is (= g q))
+      (is (every? #(< (int %) 128) g))
+      (is (= '[left :- I64 right :- I64] (nth function 2)))
+      (is (= (list '+ parameter parameter) (nth function 3)))
+      (is (= '(:effects #{:error/raise})
+             (first (filter #(and (seq? %) (= :effects (first %))) declaration)))))))
+
+(deftest sh12-repeated-checked-i64-add-preserves-distinct-occurrences
+  (doseq [[side index] [[:left 0] [:right 1]]]
+    (let [{:keys [raw replay products fresh verification core]} (get @repeated-pairs side)
+          nodes (:core-nodes core) ids (mapv :node-id nodes) locals (subvec nodes 2 4)
+          origins (:source-origin-table core) forms (get-in products [:envelope :front-end-products :form-tree])
+          form-ids (mapv #(get-in origins [(get-in % [:source :origin-id]) :c2-form-id]) locals)
+          source-names (mapv (fn [id] (:value (first (filter #(= id (:form-id %)) forms)))) form-ids)
+          edges (filterv #(= :binding-use (:edge-kind %)) (get-in core [:dependency-order-graph :edges]))]
+      (is (= :accepted (:status raw)))
+      (is (= raw replay))
+      (is (= (:envelope products) (:envelope fresh)))
+      (is (= :passed (:status verification)))
+      (is (= '[left right] (get-in nodes [5 :attributes :params])))
+      (is (= [(symbol (name side)) (symbol (name side))] source-names (mapv #(get-in % [:attributes :name]) locals)))
+      (is (= [[(get ids index)] [(get ids index)]] (mapv :operands locals)))
+      (is (= 6 (count ids) (count (set ids))))
+      (is (= 2 (count (set form-ids)) (count (set (map #(get-in % [:source :origin-id]) locals)))))
+      (is (= [[:functions 'main :body 0 :args 0] [:functions 'main :body 0 :args 1]] (mapv :path locals)))
+      (is (= [[(get ids index) (get ids 2)] [(get ids index) (get ids 3)]] (mapv (juxt :dependency :consumer) edges)))
+      (is (= [[index 2] [index 3]] (mapv (juxt :dependency-index :consumer-index) edges)))
+      (is (= (subvec ids 2 4) (get-in nodes [4 :operands]) (get-in nodes [4 :safety :check :predicate :operand-ids])))
+      (is (= [[(get ids index)] [(get ids index)]]
+             (mapv #(get-in core [:ownership-facts (:node-id %) :source-value-ids]) locals)))
+      (is (= [:gravity/i64 :gravity/i64] (get-in nodes [5 :type :params])))
+      (is (= :runtime-checked (get-in nodes [4 :safety :outcome])))
+      (is (nil? (get-in nodes [4 :safety :proof])))
+      (is (= #{:error/raise} (get-in nodes [5 :type :latent-effects])))
+      (is (= #{:error/numeric} (get-in nodes [5 :type :throws])))
+      (let [verify #(producer 'c6-c10-verify-checked-core-template (:envelope fresh) % (:digest-requests replay))]
+        (doseq [candidate [(assoc-in (:artifact-template raw) [:core-nodes 3 :node-id] (get ids 2))
+                           (assoc-in (:artifact-template raw) [:core-nodes 2 :operands] [(get ids (- 1 index))])]]
+          (is (= :rejected (:status (verify candidate)))))))))
+
+(deftest sh12-repeated-checked-i64-add-rejects-forged-source-plan-and-declaration
+  (doseq [[side index] [[:left 0] [:right 1]]]
+    (let [input (:envelope (:products (get @repeated-pairs side)))
+          other (if (= side :left) 'right 'left)
+          args-path [:stage2-plan :functions 'main :instructions 0 :args]
+          changed (assoc-in input (conj args-path 0 :name) other)
+          coherent (-> input (assoc-in (conj args-path 0 :name) other)
+                             (assoc-in (conj args-path 1 :name) other)
+                             (assoc-in [:stage2-plan :functions 'main :body] [(list '+ other other)]))]
+      (doseq [candidate [changed coherent]]
+        (let [result (producer 'c6-c10-build-checked-core-template candidate)]
+          (is (= :rejected (:status result)))
+          (is (= "C6-LOWERING-GAP" (get-in result [:diagnostics 0 :rule])))
+          (is (nil? (:artifact-template result)))))
+      (doseq [candidate [(assoc-in input [:resolved-parameter :parameters (- 1 index) :parameter-binding :name] (symbol (name side)))
+                         (assoc-in input [:stage2-plan :functions 'main :arity] 1)
+                         (assoc-in input (conj args-path 1 :op) :literal)]]
+        (let [result (producer 'c6-c10-build-checked-core-template candidate)]
+          (is (= :rejected (:status result)))
+          (is (nil? (:artifact-template result))))))))
+
 (deftest sh12-reversed-checked-i64-add-source-shape
   ;; Paired syntax/bytes only; not paired original source composition.
   (doseq [disposition ["accepted" "rejected"]]
@@ -66,7 +158,7 @@
       (is (= g q))
       (is (every? #(< (int %) 128) g))
       (is (= '[left :- I64 right :- I64] (nth function 2)))
-      (is (= (if (= disposition "accepted") '(+ right left) '(+ right right)) (nth function 3)))
+      (is (= (if (= disposition "accepted") '(+ right left) '(+ right)) (nth function 3)))
       (is (= '(:effects #{:error/raise})
              (first (filter #(and (seq? %) (= :effects (first %))) declaration)))))))
 
@@ -101,7 +193,7 @@
                 plan 'c6c10-i64-order-body? %)]
     (doseq [[operator a b expected] [['+ 'left 'right true] ['+ 'right 'left true]
                                     ['< 'left 'right true] ['< 'right 'left false]
-                                    ['+ 'left 'left false] ['+ 'right 'right false]
+                                    ['+ 'left 'left true] ['+ 'right 'right true]
                                     ['+ 'unknown 'left false] ['* 'right 'left false]]]
       (is (= expected (call (data operator a b))) (pr-str [operator a b])))
     (let [original (data '+ 'right 'left)
@@ -138,10 +230,10 @@
       (is (= :rejected (:status (verify (assoc-in (:artifact-template raw) [:core-nodes 2 :operands] [(get ids 0)])))))
       (is (= :rejected (:status (verify (assoc-in (:artifact-template raw) [:core-nodes 4 :operands] (vec (reverse (subvec ids 2 4)))))))))))
 
-(deftest sh12-reversed-checked-i64-add-rejects-duplicate-source-and-forged-plan
+(deftest sh12-reversed-checked-i64-add-rejects-unary-source-and-forged-plan
   (let [pair @reversed-pair binding (:binding pair)
-        path (reversed-fixture "rejected" "gravity") duplicate (products path (slurp path) binding)
-        rejected (producer 'c6-c10-build-checked-core-template (:envelope duplicate))
+        path (reversed-fixture "rejected" "gravity") unsupported (products path (slurp path) binding)
+        rejected (producer 'c6-c10-build-checked-core-template (:envelope unsupported))
         input (:envelope (:products pair)) args-path [:stage2-plan :functions 'main :instructions 0 :args]
         body-path [:stage2-plan :functions 'main :body]
         reversed (update-in input args-path #(vec (reverse %)))
