@@ -20320,19 +20320,31 @@
    (function-work-policy-current-resolution source-path (slurp source-path)
      {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
   ([source-path text module-inputs]
-   ;; Original C3 -> SH05 -> SH06 constructors retain this actual reader
-   ;; revision; the default pinned-reader APIs and their tests stay unchanged.
-   (bootstrap/compiler-c5-resolution-source-artifact source-path text module-inputs
-     (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))))
+   (function-work-policy-current-resolution source-path text module-inputs (fn [_ operation] (operation))))
+  ([source-path text module-inputs stage]
+   ;; Decompose the original 00884 four-arity body, retaining its real guard,
+   ;; parent artifacts, module inputs and selected-reader checks in SH06.
+   (let [reader-source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")]
+     (when-not (string? reader-source-path)
+       ((ns-resolve 'gravity.bootstrap 'sh03-reader-read-selected-source-bytes!) source-path reader-source-path))
+     (let [syntax (stage :c3 (fn [] (bootstrap/compiler-c3-syntax-source-artifact
+                                     source-path text (bootstrap/reader-project-context-for-source source-path)
+                                     nil nil reader-source-path)))
+           parent (stage :sh05 (fn [] (bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax)))]
+       (stage :sh06 (fn [] (bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                            source-path parent module-inputs reader-source-path)))))))
 
 (defn- function-work-policy-current-source
   ([source-path]
    (function-work-policy-current-source source-path (slurp source-path)
      {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
   ([source-path text module-inputs]
-   (let [resolved (function-work-policy-current-resolution source-path text module-inputs)
-         core (bootstrap/sh07-core-from-resolution-artifact resolved)]
-     {:resolved resolved :core core :request (function-request core)})))
+   (function-work-policy-current-source source-path text module-inputs (fn [_ operation] (operation))))
+  ([source-path text module-inputs stage]
+   (let [resolved (function-work-policy-current-resolution source-path text module-inputs stage)
+         core (stage :sh07 (fn [] (bootstrap/sh07-core-from-resolution-artifact resolved)))
+         request (stage :c7-request (fn [] (function-request core)))]
+     {:resolved resolved :core core :request request})))
 
 (def ^:private function-work-policy-current-c8-plan
   ;; Same real Effects dependency and C8 module-bundle construction as the
@@ -20557,10 +20569,26 @@
     (is (= (:identity-input gravity) (:identity-input qst)))))
 
 (deftest sh08-function-work-policy-argument-type-current-source-composition
-  (let [gravity (invoke-c7 'sh08-function-type-core-artifact
-                  [(:request (function-work-policy-current-source (fixture-path "rejected" "function-call-type-mismatch" ".gravity")))])
-        qst (invoke-c7 'sh08-function-type-core-artifact
-              [(:request (function-work-policy-current-source (fixture-path "rejected" "function-call-type-mismatch" ".qst")))])]
+  (let [produce
+        (fn [ordinal extension]
+          (let [stage (fn [label operation]
+                        (let [started (System/nanoTime)]
+                          (println (pr-str {:policy-source-stage label :event :begin :elapsed-ms 0
+                                            :fixture-ordinal ordinal :extension extension}))
+                          (flush)
+                          (let [value (operation)]
+                            (println (pr-str {:policy-source-stage label :event :complete
+                                              :elapsed-ms (quot (- (System/nanoTime) started) 1000000)
+                                              :fixture-ordinal ordinal :extension extension}))
+                            (flush)
+                            value)))
+                source-path (fixture-path "rejected" "function-call-type-mismatch" extension)
+                products (function-work-policy-current-source source-path (slurp source-path)
+                           {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)]
+            ;; This elapsed boundary includes lazy full C7 plan compilation
+            ;; and runtime execution; it is not a semantic CPU measurement.
+            (stage :c7 (fn [] (invoke-c7 'sh08-function-type-core-artifact [(:request products)])))))
+        gravity (produce 1 ".gravity") qst (produce 2 ".qst")]
     (is (= (slurp (fixture-path
                    "rejected" "function-call-type-mismatch" ".gravity"))
            (slurp (fixture-path
