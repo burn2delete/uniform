@@ -4165,14 +4165,15 @@
           (get (get (get core :source-origin-table) (get origins 0)) :c2-form-id))]))))
 
 (defn sh12-c6p-i64-operand-parameter-order [core]
-  (if (sh12-c6p-i64-add? core)
+  (if (if (sh12-c6p-i64-add? core) true (sh12-c6p-i64-mul? core))
     (let [nodes (get core :core-nodes) a (get (get nodes 0) :node-id) b (get (get nodes 1) :node-id)
           operands [(get (get nodes 2) :operands) (get (get nodes 3) :operands)]]
       (if (= a b) nil
         (if (= [[a] [b]] operands) [0 1]
           (if (= [[b] [a]] operands) [1 0]
-            (if (= [[a] [a]] operands) [0 0]
-              (if (= [[b] [b]] operands) [1 1] nil)))))) [0 1]))
+            (if (sh12-c6p-i64-add? core)
+              (if (= [[a] [a]] operands) [0 0]
+                (if (= [[b] [b]] operands) [1 1] nil)) nil))))) [0 1]))
 
 (defn sh12-c6p-i64-order-shape-valid? [core view]
   (let [nodes (get core :core-nodes) ids (get view :ids) origins (get view :origins)
@@ -5039,14 +5040,17 @@
        (= :gravity/i64 (get function :returns))
        (= [:local :local :runtime-check (if mul? :integer-mul (if sub? :integer-sub :integer-add)) :function-boundary]
           [(get left :opcode) (get right :opcode) (get check :opcode) (get add :opcode) (get root :opcode)])
-       (if (if sub? true mul?)
+       (if sub?
          (= [[(get params 0)] [(get params 1)]] [(get left :operands) (get right :operands)])
+       (if mul?
+         (if (= [[(get params 0)] [(get params 1)]] [(get left :operands) (get right :operands)]) true
+           (= [[(get params 1)] [(get params 0)]] [(get left :operands) (get right :operands)]))
        (if (= [(get params 0)] (get left :operands))
          (if (= [(get params 0)] (get right :operands)) true
            (= [(get params 1)] (get right :operands)))
          (if (= [(get params 1)] (get left :operands))
            (if (= [(get params 0)] (get right :operands)) true
-             (= [(get params 1)] (get right :operands))) false)))
+             (= [(get params 1)] (get right :operands))) false))))
        (= [(get left :result) (get right :result)] (get check :operands))
        (= [(get check :result) (get left :result) (get right :result)] (get add :operands))
        (= [(get add :result)] (get root :operands) (get (get entry :terminator) :operands))

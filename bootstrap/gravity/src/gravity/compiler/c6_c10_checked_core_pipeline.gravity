@@ -2315,7 +2315,9 @@
           (if (= operator '+)
             (if (= source-order [right left]) [right left]
               (if (= source-order [left left]) [left left]
-                (if (= source-order [right right]) [right right] [left right]))) [left right])]
+                (if (= source-order [right right]) [right right] [left right])))
+            (if (= operator '*)
+              (if (= source-order [right left]) [right left] [left right]) [left right]))]
       (if (if (vector? instructions) (= 1 (count instructions)) false)
         (if (if (vector? source-body) true (list? source-body))
           (if (= 1 (count source-body))
