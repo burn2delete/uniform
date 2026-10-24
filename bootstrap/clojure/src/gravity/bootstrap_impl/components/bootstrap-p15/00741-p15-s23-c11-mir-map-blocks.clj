@@ -130,7 +130,10 @@
       (assoc :verification-status :pending)
       (assoc :pass-execution-record
              {:artifact :gravity/build-mir-pass-execution-record
-              :pass-id :c11-build-mir-bounded-slice
+              :pass-id (case (get-in mir [:pass-contract :pass-id])
+                         :c11-build-checked-i64-add :c11-build-checked-i64-add
+                         :c11-build-checked-i64-sub :c11-build-checked-i64-sub
+                         :c11-build-mir-bounded-slice)
               :pass-contract-hash :pending-source-binding
               :input-artifact-id (:source-core mir)
               :output-content-id :pending-independent-verifier
