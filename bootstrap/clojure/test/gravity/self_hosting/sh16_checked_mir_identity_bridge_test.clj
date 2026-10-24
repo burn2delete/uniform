@@ -63,7 +63,7 @@
   (let [result (build mir request)]
     (is (= :rejected (:status result)))
     (is (= ["C13-VERIFY"] (:diagnostics result)))
-    (is (nil? (:optimized-mir result)))))
+    (is (true? (nil? (:optimized-mir result))))))
 
 (deftest sh16-identity-comparison-pending-result-development-kernel
   (let [[mir request] (supplied) result (build mir request)]
