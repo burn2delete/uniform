@@ -200,6 +200,39 @@ or budget increase is justified by this optimization. The focused comparison
 checks complete outputs and rejection budgets; it is not a source migration
 proof or a wall-time benchmark.
 
+### Caller-selected function-inference work allowance
+
+The C7 development entrypoints
+`sh08-function-type-core-artifact-with-work-policy` and
+`sh08-verify-function-type-result-with-work-policy` accept trusted invocation
+options: `{}` keeps the default 65536 allowance; the only other accepted shape
+is `{:type-inference-work-allowance N}` for a positive integer `N`. Malformed
+options reject with `C7-GENERIC/:invalid-type-inference-work-policy` before
+inspecting the request or candidate. The original entrypoints keep their
+default behavior and unwrapped result shape.
+
+The reported `:effective-work-policy` envelope is outside the canonical
+schema-3 result and its identity. It is not source, candidate or proof
+authority. Each ordinary module inference invocation receives its own
+cumulative pool, including imported producers. Fresh verification reconstructs
+with its caller's options, never an allowance supplied by the candidate.
+There is no round reset, automatic growth, retry or acceptance cache. Existing
+local ceilings and unrelated depth, round and throw-analysis limits remain.
+This allowance is not a whole-import-graph budget, CPU/RSS bound or hard
+preemption guarantee.
+
+In `gravity.self-hosting.sh08-function-call-type-test`, select the four
+`sh08-function-work-policy-*-development-kernel` vars for options, chain,
+inference and neighbour-fuel checks. Include the existing map-keys, list-set
+and bare-keyword-anchor `*-cold-and-budget-development-kernel` controls when
+changing their remaining-fuel consumers. Select the public, charged-public
+and imported `sh08-function-work-policy-*-composition` vars individually for
+the costlier current-reader source joins and fresh public verification.
+The charged test uses the small `function-work-policy-minimal-map-get` fixture;
+its QST pair has byte parity, not a fresh paired typed-execution claim.
+These checks do not establish that every larger input fits, that a successful
+input consumed more than 65536 units, or that migration/self-hosting passed.
+
 ### Ordered-Map stored false/Nil: producer-consumer coverage
 
 Run `sh22-ordered-map-lookup-preserves-stored-false-and-nil` in
