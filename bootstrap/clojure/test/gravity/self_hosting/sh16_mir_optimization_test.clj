@@ -1769,6 +1769,32 @@
           (pr-str (:identity-input (optimize base)))
           "/checkout-a/")))))
 
+(deftest sh16-structural-preflight-rejects-opaque-map-components-without-callbacks
+  ;; Built-in persistent maps only; custom Map iteration can run host callbacks.
+  (doseq [[make-map class-name] [[array-map "clojure.lang.PersistentArrayMap"]
+                                [hash-map "clojure.lang.PersistentHashMap"]]]
+    (let [carrier (make-map :a 1 :b false)
+          components (invoke-engine 'sh16-aggregate-components [carrier])]
+      (is (= class-name (.getName (class carrier))))
+      (is (= (vec (mapcat identity carrier)) components))
+      (is (= (* 2 (count carrier)) (count components)))
+      (is (= {:status :accepted :nodes 5 :collections 1 :scalars 4 :scalar-units 6}
+             (invoke-engine 'sh16-structural-preflight [carrier]))))
+    (doseq [placement [:key :value]]
+      (let [callbacks (atom {:hash 0 :equals 0 :string 0})
+            opaque (proxy [Object] []
+                     (hashCode [] (swap! callbacks update :hash inc) 1231)
+                     (equals [_] (swap! callbacks update :equals inc) false)
+                     (toString [] (swap! callbacks update :string inc) "opaque"))
+            carrier (make-map :control 1
+                              (if (= placement :key) opaque :opaque)
+                              (if (= placement :value) opaque :payload))]
+        (reset! callbacks {:hash 0 :equals 0 :string 0})
+        (is (= class-name (.getName (class carrier))))
+        (is (= {:status :rejected :reason :structure-scalar-type-or-range}
+               (invoke-engine 'sh16-structural-preflight [carrier])))
+        (is (= {:hash 0 :equals 0 :string 0} @callbacks))))))
+
 (deftest sh16-structural-preflight-contains-deep-and-sequence-carriers
   (let [base
         (request accepted-gravity-plan 'sh16-no-change-request)
