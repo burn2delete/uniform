@@ -186,6 +186,12 @@
                :operation-set [:parameter :local :integer-add :function :runtime-check]
                :maximum-conditionals 0))))
 
+(defn c11-checked-sub-pass-contract []
+  (let [contract (c11-checked-add-pass-contract)]
+    (assoc contract :pass-id :c11-build-checked-i64-sub
+      :scope (assoc (get contract :scope) :family :checked-i64-sub-v1
+               :operation-set [:parameter :local :integer-sub :function :runtime-check]))))
+
 (def c11-mir-contract
   {:artifact :gravity/c11-mir-contract
    :purpose :target-independent-typed-effected-profile-valid-ir
@@ -875,7 +881,7 @@
 (defn c11-opcode
   [node]
   (let [operation (get node :source-operation)]
-    (if (= operation :integer-add) :integer-add
+    (if (contains? #{:integer-add :integer-sub} operation) operation
     (if (= operation :literal)
       :constant
       (if (= operation :implicit-nil)
@@ -2171,11 +2177,14 @@
        {:owner :gravity-source
         :function :c11-build-target-independent-mir
         :status :constructed}
-       :pass-contract (if (sh12-c6p-i64-add? checked-core) (c11-checked-add-pass-contract)
+       :pass-contract (if (sh12-c6p-i64-arithmetic? checked-core)
+                        (if (sh12-c6p-i64-sub? checked-core) (c11-checked-sub-pass-contract) (c11-checked-add-pass-contract))
                         (if (= conditional-count 2) (c11-nested-pass-contract) (c11-build-mir-pass-contract)))
        :pass-execution-record
        {:artifact :gravity/build-mir-pass-execution-record
-        :pass-id (if (sh12-c6p-i64-add? checked-core) :c11-build-checked-i64-add :c11-build-mir-bounded-slice)
+        :pass-id (if (sh12-c6p-i64-arithmetic? checked-core)
+                   (if (sh12-c6p-i64-sub? checked-core) :c11-build-checked-i64-sub :c11-build-checked-i64-add)
+                   :c11-build-mir-bounded-slice)
         :pass-contract-hash :pending-source-binding
         :input-artifact-id (get checked-core :artifact-id)
         :output-content-id :pending-independent-verifier
@@ -2193,12 +2202,13 @@
         :backend-credit? false}
        :scope
        {:operation-set
-        (if (sh12-c6p-i64-add? checked-core) [:parameter :local :integer-add :function :runtime-check]
+        (if (sh12-c6p-i64-arithmetic? checked-core)
+          [:parameter :local (sh12-c6p-arithmetic-operation checked-core) :function :runtime-check]
         [:literal :implicit-nil :quote :local :let-binding :truthy
          :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
          :do :if :let :str :println :function
          :runtime-check])
-        :maximum-conditionals (if (sh12-c6p-i64-add? checked-core) 0 (if (= conditional-count 2) 2 1))
+        :maximum-conditionals (if (sh12-c6p-i64-arithmetic? checked-core) 0 (if (= conditional-count 2) 2 1))
         :maximum-module-carrier-nodes 16384
         :maximum-final-artifact-carrier-nodes 32768
         :maximum-carrier-depth 256
@@ -3266,14 +3276,31 @@
                (if (= index 6) result
                  (recur (+ index 1) (conj result (get (get nodes index) :source-operation)))))) false) false) false)))
 
+(defn sh12-c6p-i64-sub? [core]
+  ; Candidate only; original source, declarations, facts and checks join below.
+  (let [nodes (get core :core-nodes) kind (get (get core :resolved-parameter) :kind)]
+    (if (= :gravity/c6-c10-resolved-two-i64-parameters-v1 kind)
+      (if (vector? nodes)
+        (if (= 6 (count nodes))
+          (= [:parameter :parameter :local :local :integer-sub :function]
+             (loop [index 0 result []]
+               (if (= index 6) result
+                 (recur (+ index 1) (conj result (get (get nodes index) :source-operation)))))) false) false) false)))
+
+(defn sh12-c6p-i64-arithmetic? [core]
+  (if (sh12-c6p-i64-add? core) true (sh12-c6p-i64-sub? core)))
+
+(defn sh12-c6p-arithmetic-operation [core]
+  (if (sh12-c6p-i64-sub? core) :integer-sub :integer-add))
+
 (defn sh12-c6p-error-effects [core]
-  (if (sh12-c6p-i64-add? core) #{:error/raise} #{}))
+  (if (sh12-c6p-i64-arithmetic? core) #{:error/raise} #{}))
 
 (defn sh12-c6p-error-types [core]
-  (if (sh12-c6p-i64-add? core) #{:error/numeric} #{}))
+  (if (sh12-c6p-i64-arithmetic? core) #{:error/numeric} #{}))
 
 (defn sh12-c6p-i64-linear? [core]
-  (if (sh12-c6p-i64-add? core) true
+  (if (sh12-c6p-i64-arithmetic? core) true
     (if (sh12-c6p-i64-identity? core) true (sh12-c6p-i64-order? core))))
 
 (defn sh12-c6p-i64-order-condition? [core]
@@ -3304,7 +3331,7 @@
                    (recur (+ index 1) (conj result (get (get nodes index) :source-operation)))))) false) false) false) false)))
 
 (defn sh12-c6p-i64-ordered-pair? [core]
-  (if (sh12-c6p-i64-add? core) true
+  (if (sh12-c6p-i64-arithmetic? core) true
     (if (sh12-c6p-i64-order-family? core) true (sh12-c6p-i64-depth-choice? core))))
 
 (defn sh12-c6p-i64-conditional? [core]
@@ -3508,7 +3535,7 @@
 
 (defn sh12-c6p-index [core role]
  (if (sh12-c6p-i64-conditional? core) (get [0 2 5 6 7 8 9] role)
- (if (if (sh12-c6p-i64-add? core) true (sh12-c6p-i64-order? core)) (get [0 2 nil nil nil 4 5] role)
+ (if (if (sh12-c6p-i64-arithmetic? core) true (sh12-c6p-i64-order? core)) (get [0 2 nil nil nil 4 5] role)
  (if (sh12-c6p-i64-identity? core) (get [0 1 nil nil nil 1 2] role)
  (if (sh12-c6p-two-direct-parameters? core) (get [0 2 3 4 5 6 7] role)
   (if (sh12-c6p-nested? core)
@@ -3529,7 +3556,7 @@
 (defn sh12-c6p-role [core index]
  (if (sh12-c6p-i64-depth-choice? core) (get [0 0 1 1 10 2 1 1 5 6] index)
  (if (sh12-c6p-i64-order-condition? core) (get [0 0 1 1 10 2 3 4 5 6] index)
- (if (if (sh12-c6p-i64-add? core) true (sh12-c6p-i64-order? core)) (get [0 0 1 1 10 6] index)
+ (if (if (sh12-c6p-i64-arithmetic? core) true (sh12-c6p-i64-order? core)) (get [0 0 1 1 10 6] index)
  (if (sh12-c6p-i64-identity? core) (get [0 1 6] index)
  (if (sh12-c6p-three-parameters? core) (get [0 0 0 1 2 1 2 1 4 5 4 5 6] index)
  (if (sh12-c6p-two-direct-parameters? core)
@@ -3553,7 +3580,7 @@
         (if (sh12-c6p-let-layout? core) (get [0 1 7 1 2 3 4 5 8 6] index) index)))))))))))))
 
 (defn sh12-c6p-result-type [core]
-  (if (if (sh12-c6p-i64-add? core) true (sh12-c6p-i64-depth-choice? core)) :gravity/i64
+  (if (if (sh12-c6p-i64-arithmetic? core) true (sh12-c6p-i64-depth-choice? core)) :gravity/i64
   (if (sh12-c6p-i64-order-family? core) :gravity/bool
   (if (sh12-c6p-i64-identity? core) :gravity/i64
     (get (get (get core :core-nodes)
@@ -3673,8 +3700,11 @@
 (defn sh12-c6p-add-check [node check-id]
   {:check-id check-id :kind :numeric-overflow :operation-id (get node :node-id)
    :condition :overflow :numeric-mode :checked :bit-width 64 :signedness :signed
-   :predicate {:kind :operands-in-declared-width-and-checked-add-result-within-width
-               :operator :add :operand-ids (get node :operands) :bit-width 64 :signedness :signed}
+   :predicate {:kind (if (= :integer-sub (get node :source-operation))
+                       :operands-in-declared-width-and-checked-sub-result-within-width
+                       :operands-in-declared-width-and-checked-add-result-within-width)
+               :operator (if (= :integer-sub (get node :source-operation)) :sub :add)
+               :operand-ids (get node :operands) :bit-width 64 :signedness :signed}
    :failure :error/numeric :effects-introduced #{:error/raise}
    :source (get node :source) :profile :hosted :target :jvm
    :capability-proof-id :not-applicable :authority-record-id :not-applicable
@@ -3689,13 +3719,13 @@
         ef (get (get core :effect-facts) id) of (get (get core :ownership-facts) id)
         cap (get (get core :capability-facts) id) sf (get (get core :safety-facts) id)
         proof (get (get node :safety) :proof) proof-id (get proof :proof-id)
-        checked? (sh12-c6p-i64-add? core) add? (if checked? (= role 10) false)
+        checked? (sh12-c6p-i64-arithmetic? core) add? (if checked? (= role 10) false)
         direct (if add? #{:error/raise} #{})
         latent (if (= role 6) (sh12-c6p-error-effects core) #{})
         aggregate (if add? direct latent)
         own (if add? (assoc (sh12-c6p-own node role) :role :arithmetic-result) (sh12-c6p-own node role))
         owner (get (get (get core :ownership-facts) (first (get core :root-node-ids))) :owner-id)
-        rule (if add? :binary-checked-i64-add
+        rule (if add? (if (sh12-c6p-i64-sub? core) :binary-checked-i64-sub :binary-checked-i64-add)
              (if (if (sh12-c6p-i64-parameters? core) (= role 0) false) :resolved-i64-parameter-declaration
              (get [:resolved-bool-parameter-declaration :resolved-binding-type :truthiness-bool
                    :literal-type :literal-type :branch-type-join :closed-function-type
@@ -3774,7 +3804,9 @@
                       (sh12-c6p-all?
                         [(sh12-c10-mir-sha256-id? check-id)
                          (= check (sh12-c6p-add-check node check-id))
-                         (= (get node :safety) {:outcome :runtime-checked :basis :checked-signed-i64-addition :check check})
+                         (= (get node :safety) {:outcome :runtime-checked
+                              :basis (if (sh12-c6p-i64-sub? core) :checked-signed-i64-subtraction :checked-signed-i64-addition)
+                              :check check})
                          (= nil (get (get core :proof-records) id))
                          (= sf {:artifact :gravity/safety-outcome :operation id :kind operation
                                 :source {:core-node id :span (get (get node :source) :span) :origin-chain [origin]}
@@ -3796,7 +3828,8 @@
                 (if (= (get (get core :profile-facts) id)
                        {:profile :hosted :operation operation :legal? true
                         :scope (if (= aggregate #{}) :gravity-owned-bounded-pure-hosted-jvm-slice
-                                   :gravity-owned-checked-i64-add-hosted-jvm-slice)}) nil
+                                   (if (sh12-c6p-i64-sub? core) :gravity-owned-checked-i64-sub-hosted-jvm-slice
+                                     :gravity-owned-checked-i64-add-hosted-jvm-slice))}) nil
                   (sh12-branch-join-problem "C11-VERIFY" :c6-parameter-profile-fact))
                 (sh12-branch-join-problem "C11-SAFETY" :c6-parameter-safety-proof))
               (sh12-branch-join-problem "C11-VERIFY" :c6-parameter-capability-fact))
@@ -3817,7 +3850,7 @@
   ; original, independently checked producer rows, not a serialized artifact.
   (let [nodes (get core :core-nodes)]
     (if (vector? nodes)
-      (if (if (sh12-c6p-i64-add? core) true
+      (if (if (sh12-c6p-i64-arithmetic? core) true
             (if (sh12-c6p-i64-order? core) true (contains? #{3 7 8 10 11 12 13 14} (count nodes))))
         (loop [index 0 ids [] origins []]
           (if (= index (count nodes)) {:ids ids :origins origins}
@@ -4148,10 +4181,11 @@
              (= (get comparison :path) path)
              (= (get comparison :operands) [(get ids 2) (get ids 3)])
              (= (get comparison :attributes)
-                (if (sh12-c6p-i64-add? core)
-                  {:primitive '+ :arity 2 :evaluation-order :left-to-right
+                (if (sh12-c6p-i64-arithmetic? core)
+                  {:primitive (if (sh12-c6p-i64-sub? core) '- '+) :arity 2 :evaluation-order :left-to-right
                    :operand-types [:gravity/i64 :gravity/i64] :result-type :gravity/i64
-                   :numeric-semantics :checked-signed-i64-addition :numeric-mode :checked
+                   :numeric-semantics (if (sh12-c6p-i64-sub? core) :checked-signed-i64-subtraction :checked-signed-i64-addition)
+                   :numeric-mode :checked
                    :bit-width 64 :signedness :signed :overflow :error/numeric
                    :intrinsic-effects #{:error/raise} :intrinsic-capabilities #{}
                    :aggregate-effects #{:error/raise} :aggregate-capabilities #{}}
@@ -4340,8 +4374,10 @@
         physical (get core :physical-provenance) request (get core :target-request-metadata)]
     (sh12-c6p-all?
       [(= (get core :schema-version) 1)
-       (= (get core :status) (if (sh12-c6p-i64-add? core)
-                               :complete-for-checked-i64-add-hosted-safe-jvm-slice :complete-for-bounded-pure-hosted-safe-jvm-slice))
+       (= (get core :status) (if (sh12-c6p-i64-arithmetic? core)
+                               (if (sh12-c6p-i64-sub? core) :complete-for-checked-i64-sub-hosted-safe-jvm-slice
+                                 :complete-for-checked-i64-add-hosted-safe-jvm-slice)
+                               :complete-for-bounded-pure-hosted-safe-jvm-slice))
        (= (get core :profile) :hosted) (= (get core :source-target) :jvm) (= (get core :entrypoint) 'main)
        (symbol? module) (sh12-c10-mir-sha256-id? hash)
        (sh12-c10-mir-sha256-id? (get core :artifact-id))
@@ -4349,7 +4385,7 @@
        (sh12-c10-mir-sha256-id? (get core :provenance-binding-id))
        (sh12-c10-mir-sha256-id? (get source :plan-id))
        (= source {:module module :plan-id (get source :plan-id) :entrypoint 'main
-                  :operation-set (if (sh12-c6p-i64-add? core) #{:parameter :local :integer-add :function}
+                  :operation-set (if (sh12-c6p-i64-arithmetic? core) (set [:parameter :local (sh12-c6p-arithmetic-operation core) :function])
                                  (if (sh12-c6p-i64-depth-choice? core) #{:parameter :local :integer-lt :truthy :if :function}
                                  (if (sh12-c6p-i64-order-condition? core) #{:parameter :local :integer-lt :truthy :literal :if :function}
                                  (if (sh12-c6p-i64-order? core) #{:parameter :local :integer-lt :function}
@@ -4395,7 +4431,7 @@
                            (map? (get (get core :effect-facts) (get node :node-id)))
                            (map? (get (get core :ownership-facts) (get node :node-id)))
                            (map? (get node :safety))
-                           (if (= :integer-add (get node :source-operation))
+                           (if (contains? #{:integer-add :integer-sub} (get node :source-operation))
                              (map? (get (get node :safety) :check)) (map? (get (get node :safety) :proof)))])
           (sh12-c6p-tables-valid? core nodes ids origins (+ index 1)) false)))))
 
@@ -4434,12 +4470,12 @@
                                   :operands :attributes :type :effects :capabilities :ownership
                                   :safety :profile :source})
              (= (get node :kind)
-                (if (if (sh12-c6p-i64-add? core) (= role 10) false) :arithmetic
+                (if (if (sh12-c6p-i64-arithmetic? core) (= role 10) false) :arithmetic
                   (get [:binding :local :truthiness :literal :literal :conditional :function :binding :let :literal :comparison] role)))
              (= (get node :type)
                 (if (sh12-c6p-i64-ordered-pair? core)
                   (if (= role 6) (sh12-c6p-original-function-type core (sh12-c6p-result-type core))
-                    (if (if (contains? #{0 1} role) true (if (sh12-c6p-i64-add? core) (= role 10) false)) :gravity/i64
+                    (if (if (contains? #{0 1} role) true (if (sh12-c6p-i64-arithmetic? core) (= role 10) false)) :gravity/i64
                       (if (= role 5) (sh12-c6p-result-type core) :gravity/bool)))
                 (if (sh12-c6p-i64-identity? core)
                   (if (= role 6) (sh12-c6p-original-function-type core :gravity/i64) :gravity/i64)
@@ -4450,7 +4486,7 @@
                     (sh12-c6p-result-type core))))))
              (= (get node :profile) :hosted)
              (= (get node :plan-node?) (get (if (sh12-c6p-i64-conditional? core) [false false true true true false true true true false]
-               (if (if (sh12-c6p-i64-add? core) true (sh12-c6p-i64-order? core)) [false false true true true false]
+               (if (if (sh12-c6p-i64-arithmetic? core) true (sh12-c6p-i64-order? core)) [false false true true true false]
                (if (sh12-c6p-i64-identity? core) [false true false]
                (if (sh12-c6p-three-parameters? core)
                 [false false false true false true false true true true true true false]
@@ -4478,7 +4514,7 @@
                 (if (sh12-c6p-let-layout? core)
                   [false true false true false true true true true false] [false true false true true true false])))))))))) index))
              (= (get node :plan-depth) (get (if (sh12-c6p-i64-conditional? core) [0 0 3 3 2 2 2 2 1 0]
-               (if (if (sh12-c6p-i64-add? core) true (sh12-c6p-i64-order? core)) [0 0 2 2 1 0]
+               (if (if (sh12-c6p-i64-arithmetic? core) true (sh12-c6p-i64-order? core)) [0 0 2 2 1 0]
                (if (sh12-c6p-i64-identity? core) [0 1 0]
                (if (sh12-c6p-three-parameters? core)
                 [0 0 0 2 2 3 3 3 3 2 2 1 0]
@@ -4606,7 +4642,7 @@
                (if (= index (count nodes)) {:effects effects :owners owners :types types :source-map source-map :proofs proofs}
                  (let [node (get nodes index) id (get ids index)]
                    (recur (+ index 1)
-                     (assoc effects id {:direct (if (= :integer-add (get node :source-operation)) #{:error/raise} #{})
+                     (assoc effects id {:direct (if (contains? #{:integer-add :integer-sub} (get node :source-operation)) #{:error/raise} #{})
                                         :latent (if (= :function (get node :source-operation)) (sh12-c6p-error-effects core) #{})
                                         :transitive (get node :effects)
                                         :ordering (if (= (get node :effects) #{}) :none :sequence)
@@ -4634,7 +4670,7 @@
                           [[0 2 0 :binding-use] [1 3 0 :binding-use]
                            [2 4 0 :argument-value] [3 4 1 :argument-value] [4 5 0 :control]
                            [5 8 0 :control] [6 8 1 :conditional-incoming] [7 8 2 :conditional-incoming] [8 9 0 :result]]
-                         (if (if (sh12-c6p-i64-add? core) true (sh12-c6p-i64-order? core))
+                         (if (if (sh12-c6p-i64-arithmetic? core) true (sh12-c6p-i64-order? core))
                           [[(get operand-order 0) 2 0 :binding-use] [(get operand-order 1) 3 0 :binding-use]
                            [2 4 0 :argument-value] [3 4 1 :argument-value] [4 5 0 :result]]
                          (if (sh12-c6p-i64-identity? core) [[0 1 0 :binding-use] [1 2 0 :result]]
@@ -4782,10 +4818,11 @@
            (= (get core :clojure-seed-boundary?) true)
            (vector? (get core :pass-history))
            (= (get core :scope)
-              (if (sh12-c6p-i64-add? core)
+              (if (sh12-c6p-i64-arithmetic? core)
                 {:artifact :gravity/c6-c10-checked-core-scope-contract
-                 :family :checked-i64-add-v1 :profiles [:hosted] :safety-modes [:safe] :source-targets [:jvm]
-                 :source-operations [:parameter :local :integer-add :function]
+                 :family (if (sh12-c6p-i64-sub? core) :checked-i64-sub-v1 :checked-i64-add-v1)
+                 :profiles [:hosted] :safety-modes [:safe] :source-targets [:jvm]
+                 :source-operations [:parameter :local (sh12-c6p-arithmetic-operation core) :function]
                  :scalar-literals [] :intrinsic-effects #{:error/raise} :intrinsic-capabilities #{}
                  :ownership :persistent-immutable :safety :runtime-checked :whole-language? false}
               {:artifact :gravity/c6-c10-checked-core-scope-contract :profiles [:hosted]
@@ -4963,19 +5000,21 @@
   (let [params (get function :params) blocks (get function :blocks)
         entry (get blocks (get function :entry)) operations (get entry :instructions)
         left (get operations 0) right (get operations 1) check (get operations 2)
-        add (get operations 3) root (get operations 4)]
+        add (get operations 3) root (get operations 4) sub? (= :integer-sub (get add :opcode))]
     (sh12-c6p-all?
       [(= 2 (count params)) (= 1 (count blocks)) (= 5 (count operations))
        (if (= (get params 0) (get params 1)) false true)
        (= :gravity/i64 (get function :returns))
-       (= [:local :local :runtime-check :integer-add :function-boundary]
+       (= [:local :local :runtime-check (if sub? :integer-sub :integer-add) :function-boundary]
           [(get left :opcode) (get right :opcode) (get check :opcode) (get add :opcode) (get root :opcode)])
+       (if sub?
+         (= [[(get params 0)] [(get params 1)]] [(get left :operands) (get right :operands)])
        (if (= [(get params 0)] (get left :operands))
          (if (= [(get params 0)] (get right :operands)) true
            (= [(get params 1)] (get right :operands)))
          (if (= [(get params 1)] (get left :operands))
            (if (= [(get params 0)] (get right :operands)) true
-             (= [(get params 1)] (get right :operands))) false))
+             (= [(get params 1)] (get right :operands))) false)))
        (= [(get left :result) (get right :result)] (get check :operands))
        (= [(get check :result) (get left :result) (get right :result)] (get add :operands))
        (= [(get add :result)] (get root :operands) (get (get entry :terminator) :operands))
@@ -9988,7 +10027,11 @@
           (if (= opcode :sub)
             (if (sh13-sub-safe? (get operands 0) (get operands 1))
               (sh13-continued-value
-               operation (- (get operands 0) (get operands 1))
+               ; After the guard, negative right gives MIN+1 <= result <= MAX.
+               ; right+1 and its negation fit; left+(-(right+1)) is result-1.
+               operation (if (< (get operands 1) 0)
+                           (+ (+ (get operands 0) (- (+ (get operands 1) 1))) 1)
+                           (- (get operands 0) (get operands 1)))
                next-fuel next-trace)
               (sh13-execution-rejected
                next-fuel next-trace :integer-range))
@@ -10603,7 +10646,8 @@
              {:operation-id (get operation :op-id)
               :result-id (get operation :result)
               :role (if (= :runtime-check (get operation :opcode)) :overflow-check
-                    (if (= :integer-add (get operation :opcode)) :checked-integer-add
+                    (if (contains? #{:integer-add :integer-sub} (get operation :opcode))
+                      (if (= :integer-sub (get operation :opcode)) :checked-integer-sub :checked-integer-add)
                     (if (= :sequence (get operation :opcode)) :sequence-result
                     (if (= :truthiness (get operation :opcode)) :truthiness
                     (if (= :constant (get operation :opcode)) :literal
@@ -10980,7 +11024,7 @@
         (get (get entry :terminator) :successors)])))
 
 (defn sh13-c6p-i64-shape-valid? [core mir context]
- (if (sh12-c6p-i64-add? core)
+ (if (sh12-c6p-i64-arithmetic? core)
    (sh12-c6p-all?
      [(sh12-c6p-i64-add-definition-shape? mir (get context :function))
       (= [:hosted :jvm :jvm] [(get mir :profile) (get mir :source-target) (get mir :target-request)])
@@ -11294,13 +11338,16 @@
   ; locals execute first; the original check token is produced before :add.
   (let [function (get context :function) entry (get context :entry)
         operations (get context :operations) guard (get operations 2) add (get operations 3)
+        sub? (sh12-c6p-i64-sub? core)
         params (get function :params) values (sh13-bind-values params arguments 0 {})
         locals (sh13-c6p-frame-operations [(get operations 0) (get operations 1)] 0 [])
         evaluated (sh13-execute-operations {} function locals 0 values
                     (get (sh13-control-flow-policy) :maximum-execution-steps) 0 [])
         operands (sh13-resolve-values (get guard :operands) (get evaluated :values) 0 [])
         passed (if (sh13-i64? (get operands 0))
-                 (if (sh13-i64? (get operands 1)) (sh13-add-safe? (get operands 0) (get operands 1)) false) false)
+                 (if (sh13-i64? (get operands 1))
+                   (if sub? (sh13-sub-safe? (get operands 0) (get operands 1))
+                     (sh13-add-safe? (get operands 0) (get operands 1))) false) false)
         fuel (- (get evaluated :fuel) 1)
         trace (conj (get evaluated :trace)
                 {:function (get function :fn-id) :block (get entry :block-id)
@@ -11311,7 +11358,7 @@
     (if passed
       (let [guarded-values (assoc (get evaluated :values) (get guard :result) true)
             added (sh13-execute-operations {} function
-                    [{:op-id (get add :op-id) :opcode :add :type :i64
+                    [{:op-id (get add :op-id) :opcode (if sub? :sub :add) :type :i64
                       :operands [(get (get add :operands) 1) (get (get add :operands) 2)]}]
                     0 guarded-values fuel 0 trace)]
         (if (= :continue (get added :status))
@@ -11334,7 +11381,7 @@
                          (sh13-branch-join-context checked-core mir))))]
         (if (sh13-c6p-shape-valid? checked-core mir context)
           (if (sh13-c6p-arguments-valid? checked-core arguments)
-            (let [execution (if (sh12-c6p-i64-add? checked-core)
+            (let [execution (if (sh12-c6p-i64-arithmetic? checked-core)
                              (sh13-c6p-execute-checked-add checked-core context arguments)
                              (sh13-execute-function
                               (if (sh12-c6p-i64-linear? checked-core) (sh13-c6p-i64-frame checked-core context)
