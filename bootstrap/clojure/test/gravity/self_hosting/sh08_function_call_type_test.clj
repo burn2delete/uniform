@@ -20516,16 +20516,25 @@
             [[(clojure.string/replace (slurp source-path) "(values/identity-i64 value)" "(values/identity-i64 true)") :call-argument-type-mismatch]
              [(clojure.string/replace (slurp source-path) "(values/identity-i64 value)" "(values/identity-i64)") :call-arity-mismatch]
              [(clojure.string/replace (slurp source-path) "[value :- I64] :- I64" "[value :- I64] :- String") :function-result-type-mismatch]]]
-      (let [c5 (function-work-policy-current-resolution source-path source inputs)
-            artifact (bootstrap/sh07-core-from-resolution-artifact c5)
-            q (assoc (function-request artifact) :module-type-inputs (:module-type-inputs request))
-            rejected (invoke-c7 'sh08-function-type-core-artifact [q])
-            diagnostic (first (:diagnostics rejected))]
-        (is (= :accepted (:status artifact)))
-        (is (= :rejected (:status rejected)))
-        (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
-        (is (= expected-reason (:reason diagnostic)))
-        (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target :remediation]))))))
+      (let [temporary (java.io.File/createTempFile "gravity-sh08-policy-import-" ".gravity")]
+        (try
+          ;; The explicit current-reader snapshot must see these exact bytes.
+          ;; Keep the real file alive through Core/request verification, C7,
+          ;; and every diagnostic check; failures take the same cleanup path.
+          (spit temporary source :encoding "UTF-8")
+          (let [temporary-path (.getCanonicalPath temporary)
+                c5 (function-work-policy-current-resolution temporary-path source inputs)
+                artifact (bootstrap/sh07-core-from-resolution-artifact c5)
+                q (assoc (function-request artifact) :module-type-inputs (:module-type-inputs request))
+                rejected (invoke-c7 'sh08-function-type-core-artifact [q])
+                diagnostic (first (:diagnostics rejected))]
+            (is (= :accepted (:status artifact)))
+            (is (= :rejected (:status rejected)))
+            (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
+            (is (= expected-reason (:reason diagnostic)))
+            (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target :remediation])))
+          (finally
+            (java.nio.file.Files/deleteIfExists (.toPath temporary))))))))
 
 (deftest sh08-function-work-policy-arity-current-source-composition
   (let [gravity (invoke-c7 'sh08-function-type-core-artifact
