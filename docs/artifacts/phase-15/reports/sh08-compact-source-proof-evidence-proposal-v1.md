@@ -104,8 +104,10 @@ performed. Thus 67410 - 33232 = 34178 available versus 55791 required gives a
 local shortfall of 21613. Its enclosing source-work row 132 reported 314461
 required against 292848 incoming, with 258670 completed. Readset ordinal 5,
 `[sources 3]`, identifies that selected source-prefix vector by static inspection;
-the old comparison bound there is W=18597. An earlier retained row 116 accepted
-that leaf at 798312. Neither row proves the global minimum or the next frontier.
+the old comparison bound there is W=18597. Earlier retained row 116 entered at
+budget 798312 and accepted, charging and completing 89023 units: 33232 validation
+plus 55791 comparison, with storage 0. Neither row proves the global minimum or
+the next frontier.
 
 The original deadlines and failures remain failures or unverified coverage.
 The policy-only scalar, imported-module, neighbour-fuel and minimal charged-map
@@ -174,7 +176,7 @@ Replace its expanded records with the following closed, typed roles:
 | Operation | Subtraction node/operator/binding ids and ordered operand ids | Exact current call/edge/operator records and source occurrence joins. |
 | Parameter | Parameter binding id and index | Unique named function record, unannotated parameter declaration, immutable binding, defining syntax and reference uses. |
 | Control | Outer-if, condition-if, lower/upper-call and false-node ids, with the required then-arm coordinate | Exact unique control topology, ownership, evaluation metadata and all current source/form links. |
-| Numeric claim | Lower/upper/subtrahend values and input/result intervals | Actual Integer literal occurrences and independent ordering operations; subtrahend equals lower bound, lower <= upper <= 127, result interval [0, upper-lower]. |
+| Numeric claim | Lower/upper/subtrahend values and input/result intervals | Actual Integer literal occurrences and independent ordering operations; subtrahend equals lower bound, 0 <= lower <= upper <= 127, result interval [0, upper-lower]. |
 | Ancestry | Ordered form/syntax-id pairs up to the existing ancestry-depth bound | Every current parent step, kind, owning function and full origin evidence used by the rule. No detached ancestry assertion is trusted. |
 
 Ids and ordered coordinates distinguish occurrences with equal values. Equal
@@ -335,7 +337,7 @@ No person or workstream is assigned by this note.
 | --- | --- | --- | --- |
 | Valid minimal packet and complete cold normalized program | Derive v2 without preseeded parameters or declared result borrowing | Independently accept reconstructed output | Exact input/output/version and complete counts; normalized results remain development-only. |
 | Real accepted inline interval, unannotated parameter, actual Integer caller | Original reader -> C3/SH05/SH06 -> Core/B47 -> C7 succeeds | New independent public verification succeeds at its own fixed N | Function parameter/return/call types, range and source facts; exact executed spelling. Paired bytes/parser parity alone is not a second typed pass. |
-| Guard missing, wrong arm/owner/binding, wrong subtrahend, reversed interval, upper >127, mutation/reentry | Reject at the original semantic/source boundary | Reject the corresponding supplied proof independently | Stable reason and full source diagnostic; wrong range never becomes accepted Dynamic. |
+| Guard missing, wrong arm/owner/binding, wrong subtrahend, negative lower/subtrahend/upper literals where applicable, reversed interval, upper >127, mutation/reentry | Reject at the original semantic/source boundary | Reject the corresponding supplied proof independently | Stable reason and full source diagnostic; wrong range never becomes accepted Dynamic. |
 | Valid proof transplanted into changed source with retained or coherently rebuilt ids | Reject or derive a different expected proof | Reject against actual current input | Change source span/origin, source parent/child, package/operator binding, function/parameter, operand type, call edge and control relation independently. Digest-only self-consistency is insufficient. |
 | Hostile packet or compact carrier | No proof; reject safely | No unpaid or untyped leaf callbacks | Opaque values at active metadata and untyped keys/ids, nonfinite/fractional values in Integer/id/coordinate fields, extra/absent fields, duplicate/dangling ids, cycles, depth/width excess and oversized tails. Preserve existing general scalar domains and defined handling of inactive/quoted data. |
 | Tiny, exact, exact-minus-one, accumulated rounds and consumer allowance mismatch | Refuse before unpaid work or accept at exact local payment | Fresh consumer pays its full separate work; cannot inherit producer N or prior validation | Separate assertions for completed versus required work; zero forbidden equality/hash/render after reservation failure; unchanged neighbouring-family controls. |
