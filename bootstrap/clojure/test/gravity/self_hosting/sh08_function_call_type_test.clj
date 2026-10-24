@@ -20141,3 +20141,278 @@
       (is (= :rejected (:status (invoke 'sh08-ksm-domain [[carrier needle] 65536])))))
 )
 )
+
+(deftest sh08-function-work-policy-options-development-kernel
+  (doseq [[options expected] [[{} 65536] [{:type-inference-work-allowance 1} 1]
+                              [{:type-inference-work-allowance 65537} 65537]
+                              [{:type-inference-work-allowance 100000000000000000000N} 100000000000000000000N]]]
+    (is (= expected (invoke-c7 'sh08-ft-work-allowance [options]))))
+  (let [callbacks (atom 0) touches (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "policy opaque hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "policy opaque equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "policy opaque spelling"))))
+        lazy-value (lazy-seq (swap! callbacks inc) (throw (AssertionError. "policy lazy option")))
+        opaque-key (clojure.lang.PersistentArrayMap. (object-array [opaque 1]))
+        invalid [nil [] :policy opaque {:unknown 1} {"type-inference-work-allowance" 1} opaque-key
+                 {:type-inference-work-allowance nil} {:type-inference-work-allowance 0} {:type-inference-work-allowance -1}
+                 {:type-inference-work-allowance 1.0} {:type-inference-work-allowance 1/2}
+                 {:type-inference-work-allowance Double/POSITIVE_INFINITY} {:type-inference-work-allowance Double/NaN}
+                 {:type-inference-work-allowance true} {:type-inference-work-allowance "65536"}
+                 {:type-inference-work-allowance opaque} {:type-inference-work-allowance lazy-value}
+                 {:type-inference-work-allowance 1 :extra 1}]
+        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original-get @getter]
+    (with-redefs-fn {getter (fn [plan value key]
+                             (when (identical? opaque value) (swap! touches inc))
+                             (original-get plan value key))}
+      #(doseq [options invalid]
+         (let [producer (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [opaque options])
+               verifier (invoke-c7 'sh08-verify-function-type-result-with-work-policy [opaque opaque options])
+               private (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-work-policy [opaque opaque opaque opaque options])]
+           (doseq [[envelope key] [[producer :result] [verifier :verification] [private :result]]]
+             (is (nil? (:effective-work-policy envelope)))
+             (is (= [:rejected "C7-GENERIC" :invalid-type-inference-work-policy]
+                    ((juxt :status (fn [value] (get-in value [:diagnostics 0 :rule]))
+                           (fn [value] (get-in value [:diagnostics 0 :reason]))) (get envelope key)))))
+           (is (zero? @touches))
+           (is (zero? @callbacks)))))))
+
+(defn- observe-function-work-policy [operation]
+  ;; Passive observations of original scoped calls, on this test's thread/engine.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped owner (Thread/currentThread) pools (atom []) inference (atom []) passes (atom [])
+        selected? (fn [runtime]
+                    (and (identical? owner (Thread/currentThread)) (= :gravity-sh08-function-call-type-leaf (:engine runtime))))
+        value (with-redefs-fn
+                {scoped (fn [runtime plan callee args scope]
+                          (when (and (selected? runtime) (= 'sh08-ft-function-type-core-artifact-with-imports-and-allowance callee))
+                            (swap! pools conj {:module (get-in (first args) [:module :namespace]) :allowance (last args)}))
+                          (let [result (original runtime plan callee args scope)]
+                            (when (selected? runtime)
+                              (when (= 'sh08-ft-infer-pass-products-prepared callee)
+                                (swap! passes conj {:budget (:loop-work-left (nth args 7))
+                                                    :work (get-in result [:pass :loop-work-count] 0)}))
+                              (when (= 'sh08-ft-infer-acyclic-with-context callee)
+                                (let [context (nth args 9)]
+                                  (swap! inference conj {:module (get-in context [:ordering-core :module :namespace])
+                                                        :budget (:loop-work-left context)
+                                                        :allowance (:type-inference-work-allowance context)
+                                                        :remaining (:type-join-work-left result)
+                                                        :rounds (:round-count result) :status (:convergence-status result)
+                                                        :initial-bindings (count (nth args 7))}))))
+                            result))}
+                operation)]
+    {:value value :pools @pools :inference @inference :passes @passes}))
+
+(deftest sh08-function-work-policy-chain-development-kernel
+  ;; Existing ordinary inference DATA, not canonical Core or source admission.
+  (let [{:keys [nodes node-table function-records definitions calls edges function-types call-node-ids]}
+        (synthetic-chain-input 3)
+        bound (invoke-c7 'sh08-ft-inference-round-bound [nodes function-records calls []])
+        args [nodes node-table [] definitions calls edges function-types {} bound]
+        run (fn [allowance]
+              (observe-function-work-policy
+                (fn [] (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                                 (conj args {:loop-work-left allowance :type-inference-work-allowance allowance})))))
+        allowance 1048576 legacy (invoke-c7 'sh08-ft-infer-acyclic args)
+        high (run allowance) default (run 65536) result (:value high) observation (first (:inference high))
+        semantic (fn [value]
+                   (-> value (dissoc :type-join-work-left)
+                       (update :shape-call-context dissoc :budget-left)))]
+    (is (= :converged (:convergence-status legacy) (:convergence-status result))
+        (pr-str (select-keys result [:convergence-status :diagnostics :round-count :type-join-work-left])))
+    ;; Scalar local calls are uncharged here; do not invent exhaustion work.
+    (is (= (semantic legacy) (semantic (:value default)) (semantic result)))
+    (is (= [allowance allowance] ((juxt :budget :allowance) observation)))
+    (is (= 0 (:initial-bindings observation)))
+    (is (< 1 (:rounds observation)))
+    (is (= (:rounds observation) (count (:passes high))))
+    (is (every? #(= :gravity.type/integer (get (:type-table result) %)) call-node-ids))
+    (is (every? #(= :gravity.type/integer (:return %)) (vals (:function-types result))))
+    (is (every? #(= [:gravity.type/integer] (mapv :type (:parameters %))) (vals (:function-types result))))
+    (is (every? #(= [:gravity.type/unknown] (mapv :type (:parameters %))) (vals function-types)))
+    (is (= bound (:round-bound result) (get-in default [:value :round-bound])))
+    (is (= [65536 65536] ((juxt :budget :allowance) (first (:inference default)))))
+    (is (= 1 (count (:inference high)) (count (:inference default))))))
+
+(deftest sh08-function-work-policy-inference-development-kernel
+  ;; Existing literal-map lookup DATA and context; no new seeds or paid facts.
+  ;; This actual lookup path, unlike scalar chains, charges the ordinary pool.
+  (let [{:keys [core nodes bindings forms products binding-types]} (map-present-get-input :file)
+        context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                 :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+        args [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10]
+        run (fn [allowance]
+              (observe-function-work-policy
+                (fn [] (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                                 (conj args (assoc context :loop-work-left allowance :type-inference-work-allowance allowance))))))
+        allowance 1048576 legacy (invoke-c7 'sh08-ft-infer-acyclic-with-context (conj args context))
+        high (run allowance) result (:value high) observation (first (:inference high))
+        semantic (fn [value] (-> value (dissoc :type-join-work-left) (update :shape-call-context dissoc :budget-left)))]
+    (is (= :converged (:convergence-status legacy) (:convergence-status result)) (pr-str (:diagnostics result)))
+    (when (= :converged (:convergence-status result))
+      (let [used (- allowance (:type-join-work-left result)) default (run 65536)
+            exact (run used) below (run (dec used)) small (run 1)]
+        (is (= (semantic legacy) (semantic (:value default)) (semantic result)))
+        (is (= [allowance allowance] ((juxt :budget :allowance) observation)))
+        (is (= 0 (:initial-bindings observation)))
+        (is (< 1 (:rounds observation)))
+        (is (= (:rounds observation) (count (:passes high))))
+        (is (every? (fn [[a b]] (<= (:budget b) (- (:budget a) (:work a)))) (partition 2 1 (:passes high))))
+        (is (<= (:remaining observation) (- (:budget (last (:passes high))) (:work (last (:passes high))))))
+        (is (pos? used))
+        (is (= :converged (get-in exact [:value :convergence-status])))
+        (is (= 0 (get-in exact [:value :type-join-work-left])))
+        (is (= (semantic result) (semantic (:value exact))))
+        (is (= :resource-limit (get-in below [:value :convergence-status])))
+        (is (= :resource-limit (get-in small [:value :convergence-status])))
+        (is (= [1 1] ((juxt :budget :allowance) (first (:inference small)))))
+        (is (> (:budget observation) 65536))
+        (is (= :gravity.type/string (get-in result [:type-table :present-get])))
+        (is (= :sh08-map-get-present-v1 (get-in result [:type-table :operator :version])))
+        (is (= [] (:diagnostics result)))
+        (is (= 10 (:round-bound result) (get-in exact [:value :round-bound])))
+        (is (= [65536 65536] ((juxt :budget :allowance) (first (:inference default)))))
+        (is (= 1 (count (:inference high)) (count (:inference exact))))))))
+
+(deftest sh08-function-work-policy-neighbour-fuel-development-kernel
+  ;; Dispatch-only DATA: a real unresolved ordering prefix spends2 before
+  ;; each real consumer. Oversized function vectors are rejection sentinels,
+  ;; not admitted Core; count/base reservation must retain the local cap.
+  (doseq [[family callee reason input]
+          [[:anchor 'sh08-bka-inferred-call :bare-keyword-anchor-set-equality-work-limit
+            (atomic-equality-input [:gravity.type/set :gravity.type/set])]
+           [:list-set 'sh08-lset-inferred-call :list-set-conversion-work-limit
+            (list-set-input {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword})]
+           [:map-keys 'sh08-mkeys-inferred-call :map-keys-work-limit
+            (map-keys-input {:kind :gravity.type/map :shape :literal :member-types []})]]]
+    (let [{:keys [core call edge nodes bindings types]} input
+          prefix {:core-node-id :fuel-prefix :operator-node-id :fuel-prefix-op :operator-binding-id :fuel-ordering
+                  :argument-node-ids [:fuel-left :fuel-right] :ordered-evaluation-node-ids [:fuel-prefix-op :fuel-left :fuel-right]
+                  :evaluation-order :operator-then-arguments :result-policy :call-result}
+          prefix-edge {:ordinal 0 :call-core-node-id :fuel-prefix :callee-binding-id :fuel-ordering :classification :nonlocal-or-nonfunction}
+          ordering (get-in (integral-ordering-input '>= [:gravity.type/unknown :gravity.type/integer]) [:bindings :ordering-binding])
+          bindings (assoc bindings :fuel-ordering (assoc ordering :binding-id :fuel-ordering))
+          types (assoc types :fuel-left :gravity.type/unknown :fuel-right :gravity.type/integer)
+          core (assoc core :calls [prefix call] :call-edges [prefix-edge edge] :function-records (vec (repeat 65536 nil)))
+          scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped) original @scoped
+          run (fn [budget]
+                (let [seen (atom [])
+                      result (with-redefs-fn
+                               {scoped (fn [r p c a s]
+                                         (when (= callee c) (swap! seen conj (last a)))
+                                         (original r p c a s))}
+                               #(invoke-c7 'sh08-ft-call-constraints-with-context
+                                           [[prefix call] [prefix-edge edge] nodes types {} {}
+                                            {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
+                                             :association-forms (:forms input) :loop-work-left budget :type-inference-work-allowance 1048576}]))]
+                  {:result result :seen @seen}))
+          low (run 3) middle (run 65540) high (run 1048576)]
+      (is (= [1] (:seen low)))
+      (is (= [65538] (:seen middle)))
+      (is (= [1048574] (:seen high)))
+      (is (= reason (:reason (last (get-in low [:result :diagnostics])))))
+      (is (= (:result middle) (:result high)))
+      (is (> (get-in high [:result :compatibility-work-count]) 65536)))))
+
+(deftest sh08-function-work-policy-public-composition
+  ;; Existing authenticated function-local-call fixture and request constructor.
+  (let [request (function-request @accepted-gravity)
+        legacy (invoke-c7 'sh08-function-type-core-artifact [request])
+        implicit (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {}])
+        explicit (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {:type-inference-work-allowance 65536}])
+        larger (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {:type-inference-work-allowance 1048576}])
+        tiny (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {:type-inference-work-allowance 1}])]
+    (is (= :accepted (:status legacy)))
+    (is (= legacy (:result implicit) (:result explicit) (:result larger)))
+    (is (= (pr-str legacy) (pr-str (:result implicit)) (pr-str (:result explicit))))
+    (is (= 3 (:schema-version legacy)))
+    (is (= (:identity-input legacy) (get-in larger [:result :identity-input])))
+    (is (every? #(not (contains? % :effective-work-policy)) [legacy (:identity-input legacy)]))
+    (is (= {:type-inference-work-allowance 65536 :scope :ordinary-inference-invocation} (:effective-work-policy implicit)))
+    (is (= (:effective-work-policy implicit) (:effective-work-policy explicit)))
+    (is (= 1048576 (get-in larger [:effective-work-policy :type-inference-work-allowance])))
+    ;; This scalar-only fixture does not acquire new per-call charges.
+    (is (= legacy (:result tiny)))
+    (is (= 1 (get-in tiny [:effective-work-policy :type-inference-work-allowance])))
+    (let [legacy-check (invoke-c7 'sh08-verify-function-type-result [request legacy])
+          fresh (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request (:result larger) {}])
+          limited (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request legacy {:type-inference-work-allowance 1}])
+          forged (assoc legacy :effective-work-policy {:type-inference-work-allowance 1048576})
+          rejected (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request forged {}])
+          envelope (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request larger {}])]
+      (is (= :passed (get-in fresh [:verification :status])))
+      (is (= legacy-check (:verification fresh)))
+      (is (= :passed (get-in limited [:verification :status])))
+      (is (= 1 (get-in limited [:effective-work-policy :type-inference-work-allowance])))
+      (is (= :rejected (get-in rejected [:verification :status]) (get-in envelope [:verification :status])))
+      (is (= #{:effective-work-policy :result} (set (keys larger))))
+      (is (= (pr-str legacy-check) (pr-str (:verification fresh)))))))
+
+(deftest sh08-function-work-policy-charged-public-composition
+  ;; Existing map-present-get source fixture supplies actual charged public
+  ;; output. Scalar-only fixtures can legitimately fit an allowance of one.
+  (let [artifact (fixture-artifact "accepted" "local-runtime-map-present-get" ".gravity")
+        request (function-request artifact) options {:type-inference-work-allowance 1048576}
+        produced (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request options])
+        candidate (:result produced)]
+    (is (= :accepted (:status artifact)))
+    (is (= :accepted (:status candidate)) (pr-str (:diagnostics candidate)))
+    (when (= :accepted (:status candidate))
+      (let [tiny-options {:type-inference-work-allowance 1}
+            tiny (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request tiny-options])
+            fresh (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request candidate options])
+            limited (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request candidate tiny-options])]
+        (is (= :rejected (get-in tiny [:result :status])))
+        (is (some #(= "C7-GENERIC" (:rule %)) (get-in tiny [:result :diagnostics])))
+        (is (= :passed (get-in fresh [:verification :status])))
+        (is (= :rejected (get-in limited [:verification :status])))
+        (is (= :rejected (get-in limited [:verification :expected :status])))
+        (is (= 1 (get-in limited [:effective-work-policy :type-inference-work-allowance])))))))
+
+(deftest sh08-function-work-policy-imported-composition
+  ;; Reuse the existing authenticated module constructors and native fixtures.
+  (let [library-c5 (bootstrap/sh06-resolution-file-artifact (fixture-path "modules" "type-values" ".gravity"))
+        library (bootstrap/sh07-core-from-resolution-artifact library-c5)
+        producer (function-request library)
+        source-path (fixture-path "modules" "type-consumer" ".gravity")
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library-c5]}
+        c5 (bootstrap/compiler-c5-resolution-file-artifact source-path inputs)
+        core (bootstrap/sh07-core-from-resolution-artifact c5)
+        request (assoc (function-request core) :module-type-inputs
+                       {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [producer]})
+        allowance 1048576 options {:type-inference-work-allowance allowance}
+        modules #{(get-in producer [:canonical-core-artifact :module :namespace])
+                  (get-in request [:canonical-core-artifact :module :namespace])}
+        legacy (invoke-c7 'sh08-function-type-core-artifact [request])
+        default (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {}])
+        observed (observe-function-work-policy
+                   (fn [] (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request options])))
+        result (get-in observed [:value :result])]
+    (is (= :accepted (:status library-c5) (:status library) (:status c5) (:status core)))
+    (is (= :accepted (:status legacy) (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (is (= legacy (:result default) result))
+      (is (= (pr-str legacy) (pr-str (:result default)) (pr-str result)))
+      (is (= :direct-imported-functions-types-only (:scope result)))
+      (is (= 2 (count (:pools observed))))
+      (is (= (set (map (fn [module] {:module module :allowance allowance}) modules)) (set (:pools observed))))
+      (is (= 2 (count (:inference observed))))
+      (is (every? #(= [allowance allowance] ((juxt :budget :allowance) %)) (:inference observed)))
+      (is (= modules (set (map :module (:inference observed)))))
+      (is (every? #(= :converged (:status %)) (:inference observed)))
+      (is (every? #(<= 0 (:remaining %) allowance) (:inference observed)))
+      (let [fresh (observe-function-work-policy
+                    (fn [] (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request result options])))
+            tiny (observe-function-work-policy
+                   (fn [] (invoke-c7 'sh08-function-type-core-artifact-with-work-policy
+                                   [request {:type-inference-work-allowance 1}])))]
+        (is (= :passed (get-in fresh [:value :verification :status])))
+        (is (= (:pools observed) (:pools fresh)))
+        (is (every? #(= [allowance allowance] ((juxt :budget :allowance) %)) (:inference fresh)))
+        (is (= result (get-in fresh [:value :verification :expected])))
+        (is (= allowance (get-in fresh [:value :effective-work-policy :type-inference-work-allowance])))
+        (is (= result (get-in tiny [:value :result])))
+        (is (every? #(= 1 (:allowance %)) (:pools tiny)))
+        (is (every? #(= [1 1] ((juxt :budget :allowance) %)) (:inference tiny)))
+        (is (= 2 (count (:pools tiny)) (count (:inference tiny))))))))
