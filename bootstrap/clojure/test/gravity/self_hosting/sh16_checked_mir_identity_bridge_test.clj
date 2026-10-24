@@ -97,6 +97,18 @@
       (rejected mir candidate))
     (doseq [field (keys (:reconstruction-report request))]
       (rejected mir (update request :reconstruction-report dissoc field)))
+    (let [entry (get-in mir [:functions 'main :entry]) block [:functions 'main :blocks entry]
+          malformed [(dissoc mir :source-core) (assoc mir :source-core :bad)
+                     (assoc mir :source-core [:bad]) (dissoc mir :functions)
+                     (assoc mir :functions :bad) (assoc mir :functions {'main :bad})
+                     (update-in mir [:functions 'main] dissoc :blocks)
+                     (assoc-in mir [:functions 'main :blocks] :bad)
+                     (assoc-in mir block :bad) (update-in mir block dissoc :instructions)
+                     (assoc-in mir (conj block :instructions) :bad)
+                     (assoc-in mir (conj block :instructions) [:bad])]]
+      (doseq [candidate malformed]
+        (rejected candidate request)
+        (rejected mir (assoc request :reconstructed-mir candidate))))
     (doseq [[field value] [[:type-table {:changed true}] [:effect-table {:changed true}]
                            [:ownership-table {}] [:capability-table {}] [:safety-table {}]
                            [:runtime-check-table {}] [:proof-certificate-table {}] [:source-map {}]
@@ -114,6 +126,45 @@
       (rejected (assoc mir :opaque payload) request)
       (rejected mir (assoc-in request [:reconstructed-mir :opaque] payload))
       (rejected mir (assoc-in request [:reconstruction-report :opaque] payload)))
+    (doseq [placement [:input :reconstruction :report]]
+      (let [callbacks (atom {:hash 0 :equals 0 :string 0})
+            opaque (proxy [Object] []
+                     (hashCode [] (swap! callbacks update :hash inc) 1231)
+                     (equals [_] (swap! callbacks update :equals inc) false)
+                     (toString [] (swap! callbacks update :string inc) "opaque"))
+            input (if (= placement :input) (assoc mir :opaque opaque) mir)
+            candidate (case placement
+                        :input request
+                        :reconstruction (assoc-in request [:reconstructed-mir :opaque] opaque)
+                        :report (assoc-in request [:reconstruction-report :opaque] opaque))]
+        (rejected input candidate)
+        (is (false? (call :c13 'sh16-c13-evidence-scalar? [opaque])))
+        (is (false? (call :c13 'sh16-structural-scalar-valid? [opaque])))
+        (is (= {:hash 0 :equals 0 :string 0} @callbacks))))
+    ;; Only built-in persistent carriers; no custom Map callback guarantee.
+    (doseq [[make-map class-name] [[array-map "clojure.lang.PersistentArrayMap"]
+                                  [hash-map "clojure.lang.PersistentHashMap"]]
+            placement [:input :reconstruction :report]]
+      (let [callbacks (atom {:hash 0 :equals 0 :string 0})
+            opaque (proxy [Object] []
+                     (hashCode [] (swap! callbacks update :hash inc) 1231)
+                     (equals [_] (swap! callbacks update :equals inc) false)
+                     (toString [] (swap! callbacks update :string inc) "opaque"))
+            carrier (make-map opaque :payload)
+            input (if (= placement :input) (assoc mir :opaque-key-map carrier) mir)
+            candidate (case placement
+                        :input request
+                        :reconstruction (assoc-in request [:reconstructed-mir :opaque-key-map] carrier)
+                        :report (assoc-in request [:reconstruction-report :opaque-key-map] carrier))]
+        (reset! callbacks {:hash 0 :equals 0 :string 0})
+        (is (= class-name (.getName (class carrier))))
+        (rejected input candidate)
+        (is (= {:hash 0 :equals 0 :string 0} @callbacks))))
+    (doseq [make-map [array-map hash-map]]
+      (let [carrier (make-map :a 1 :b false)]
+        (is (= (vec (mapcat identity carrier)) (call :c13 'sh16-c13-evidence-children [carrier])))
+        (is (= {:status :accepted :nodes 5 :enqueued 5}
+               (call :c13 'sh16-c13-evidence-preflight [carrier])))))
     ;; Coherent caller-forged records can match; the result claims no validation.
     (let [forged (assoc mir :opaque :coherently-forged) result (build forged (assoc request :reconstructed-mir forged))]
       (is (= :constructed-unverified (:status result)))

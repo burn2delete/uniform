@@ -1246,14 +1246,43 @@
              :backend-credit :self-hosted?] (get report :nonclaims))]))
     false))
 
+(defn c13-reconstruction-mir-carriers? [mir]
+  ; Stage carriers before legacy order/count helpers or eager report checks.
+  (if (map? mir)
+    (if (c13-sha256-id? (get mir :source-core))
+      (let [functions (get mir :functions)]
+        (if (map? functions)
+          (if (= 1 (count functions))
+            (let [function (get functions (first (keys functions)))]
+              (if (map? function)
+                (let [blocks (get function :blocks)]
+                  (if (map? blocks)
+                    (loop [ids (keys blocks)]
+                      (if (= 0 (count ids)) true
+                        (let [block (get blocks (first ids))]
+                          (if (map? block)
+                            (let [rows (get block :instructions)]
+                              (if (vector? rows)
+                                (if (loop [index 0]
+                                      (if (= index (count rows)) true
+                                        (if (map? (get rows index)) (recur (+ index 1)) false)))
+                                  (recur (rest ids)) false)
+                                false))
+                            false))))
+                    false))
+                false))
+            false)
+          false))
+      false)
+    false))
+
 (defn c13-reconstruction-input-valid? [mir evidence]
   (if (c13-reconstruction-bounded? mir)
     (if (c13-reconstruction-bounded? evidence)
       (if (sh16-c13-evidence-exact-keys? evidence
             #{:verification-class :reconstructed-mir :reconstruction-report})
-        (if (map? mir)
-          (if (map? (get mir :functions))
-            (if (= 1 (count (get mir :functions)))
+        (if (c13-reconstruction-mir-carriers? mir)
+          (if (c13-reconstruction-mir-carriers? (get evidence :reconstructed-mir))
           (c13-equality-all?
             [(= :original-c11-reconstruction (get evidence :verification-class))
              (= :gravity/mir-module (get mir :artifact)) (= :hosted (get mir :profile))
@@ -1265,7 +1294,6 @@
              (c13-bounded-mir-operation-shape-valid? mir (c13-bounded-operation-order mir))
              (c13-reconstruction-report-valid? mir (get evidence :reconstruction-report))
              (= mir (get evidence :reconstructed-mir))])
-              false)
             false)
           false)
         false)
@@ -1400,7 +1428,7 @@
 (defn sh16-structural-scalar-valid? [value]
   (if (= nil value)
     true
-    (if (sh16-member? #{true false} value)
+    (if (if (= true value) true (= false value))
       true
       (if (integer? value)
         (if (>= value -9223372036854775808)
@@ -3236,14 +3264,13 @@
 
 (defn sh16-c13-evidence-children [value]
   (if (map? value)
-    (loop [remaining (keys value) result []]
+    (loop [remaining value result []]
       (if (= 0 (count remaining))
         result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
+        (let [entry (first remaining)]
+          (recur
+           (rest remaining)
+           (conj (conj result (first entry)) (second entry))))))
     (if (vector? value)
       value
       (if (set? value) (vec value) []))))
@@ -3268,7 +3295,7 @@
           true
           (if (symbol? value)
             true
-            (contains? #{true false} value)))))))
+            (if (= true value) true (= false value))))))))
 
 (defn sh16-c13-evidence-preflight [value]
   (if (seq? value)
