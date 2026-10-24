@@ -15,7 +15,9 @@
              sh08-verify-type-result
              sh08-function-type-boundary-policy
              sh08-function-type-core-artifact
+             sh08-function-type-core-artifact-with-work-policy
              sh08-verify-function-type-result
+             sh08-verify-function-type-result-with-work-policy
              sh08-record-union-type-boundary-policy
              sh08-record-union-type-core-artifact
              sh08-verify-record-union-type-result
@@ -22654,7 +22656,7 @@
 (let [call (first remaining) edge (first remaining-edges)
       node (if (sh08-sse-ids? [(get call :core-node-id)] 1) (get nodes (get call :core-node-id)) nil)
       checked (sh08-bka-inferred-call (get context :ordering-core) node call edge nodes
-                 (get context :ordering-bindings) type-table (- 65536 work))
+                 (get context :ordering-bindings) type-table (- (get context :loop-work-left 65536) work))
       total (+ work (get checked :work-count))]
   (if (= :accepted (get checked :status))
     (recur (rest remaining) (rest remaining-edges) total next-bindings constraints diagnostics)
@@ -22667,7 +22669,7 @@
 (let [call (first remaining) edge (first remaining-edges)
       node (if (sh08-sse-ids? [(get call :core-node-id)] 1) (get nodes (get call :core-node-id)) nil)
       checked (sh08-lset-inferred-call (get context :ordering-core) node call edge nodes
-                 (get context :ordering-bindings) type-table (- 65536 work))
+                 (get context :ordering-bindings) type-table (- (get context :loop-work-left 65536) work))
       total (+ work (get checked :work-count))]
   (if (= :accepted (get checked :status))
     (recur (rest remaining) (rest remaining-edges) total next-bindings constraints diagnostics)
@@ -22691,7 +22693,7 @@
 (let [call (first remaining) edge (first remaining-edges)
       node (if (sh08-sse-ids? [(get call :core-node-id)] 1) (get nodes (get call :core-node-id)) nil)
       checked (sh08-mkeys-inferred-call (get context :ordering-core) node call edge nodes
-                 (get context :ordering-bindings) type-table (- 65536 work))
+                 (get context :ordering-bindings) type-table (- (get context :loop-work-left 65536) work))
       total (+ work (get checked :work-count))]
   (if (= :accepted (get checked :status))
     (recur (rest remaining) (rest remaining-edges) total next-bindings constraints diagnostics)
@@ -23365,7 +23367,9 @@
          current-private-products {}
          current-loop-products {}
          source-context nil
-         loop-work-left (let [budget (get context :loop-work-left 65536)] (if (< budget 65536) budget 65536))]
+         loop-work-left (let [budget (get context :loop-work-left 65536)
+                              allowance (get context :type-inference-work-allowance 65536)]
+                          (if (< budget allowance) budget allowance))]
     (if (<= rounds-left 0)
       {:convergence-status :nonconverged
        :round-count (- round 1)
@@ -24201,170 +24205,27 @@
   (if (= (count records) 0) false
     (if (contains? (first records) :signature) true (sh08-ft-any-signature? (rest records)))))
 
-(defn sh08-ft-function-type-core-artifact-with-imports [core-artifact bindings source-forms imports]
-  (if (map? core-artifact)
-    (let [shape (sh08-validate-core-shape core-artifact)
-          module (if (map? (get core-artifact :module))
-                   (get core-artifact :module)
-                   {})
-          products (sh08-bm-products core-artifact
-                     (sh08-ft-products-valid? core-artifact shape bindings) source-forms)]
-      (if (= (get products :status) :accepted)
-        (let [core-artifact (assoc core-artifact :sh08-private-self-parameter-premise nil)
-              proof-results
-              (sh08-ft-proof-results
-                (assoc shape :analysis-core core-artifact :analysis-source-forms source-forms :analysis-imports imports)
-                products bindings module)
-              recursive-proof (get proof-results :recursive-proof)
-              higher-order-proof (get proof-results :higher-order-proof)
-              core-artifact (if (sh08-is? recursive-proof)
-                              (assoc core-artifact :sh08-private-self-parameter-premise (get recursive-proof :parameter-value-premise))
-                              core-artifact)]
-          (let [unsupported-higher-order?
-                (= :unsupported-higher-order-primitive-type
-                   (get higher-order-proof :reason))]
-            (if (if unsupported-higher-order?
-                  true
-                  (if (> (count (get products :recursion-components)) 0)
-                (if (= :accepted (get recursive-proof :status)) false true)
-                false))
-              (if unsupported-higher-order?
-                {:artifact :gravity/sh08-function-typed-core-template
-                 :schema-version 3
-                 :status :rejected
-                 :scope :capture-free-higher-order-fixed-arity-one-hop
-                 :authentication-status
-                 :host-resolved-b47-verification-boundary
-                 :module module
-                 :sh07-shaped-artifact-id (get core-artifact :artifact-id)
-                 :diagnostics
-                 [(sh08-ft-diagnostic
-                   "C7-ANNOTATION"
-                   (get higher-order-proof :node)
-                   module
-                   :supported-higher-order-primitive-type
-                   (get higher-order-proof :actual)
-                   :unsupported-higher-order-primitive-type
-                   {})]
-                 :pending [:recursive-type-annotations
-                           :higher-order-functions :records :unions
-                           :protocols :generics :casts :dynamic-boundaries]}
-                {:artifact :gravity/sh08-function-typed-core-template
-                 :schema-version 3
-                 :status :rejected
-                 :scope :first-order-fixed-arity-functions-locals-calls
-                 :authentication-status
-                 :host-resolved-b47-verification-boundary
-                 :module module
-                 :sh07-shaped-artifact-id (get core-artifact :artifact-id)
-                 :diagnostics
-                 [(sh08-ft-recursive-diagnostic recursive-proof module)]
-                 :pending [:recursive-type-annotations
-                           :higher-order-functions :records :unions
-                           :protocols :generics :casts :dynamic-boundaries]})
-              (let [base-function-skeletons
-                (sh08-ft-function-skeletons
-                 (get products :function-records) module)
-                nodes (get products :node-table)
-                recursive?
-                (= :accepted (get recursive-proof :status))
-                higher-order?
-                (= :accepted (get higher-order-proof :status))
-                function-skeletons
-                (sh08-ft-complete-function-skeletons
-                 base-function-skeletons recursive-proof higher-order-proof)
-                quoted-products (sh08-qd-products (get shape :nodes) source-forms module)
-                handler-products (sh08-eh-source-products core-artifact source-forms bindings 65536)
-                unprojected-inference
-                (sh08-ft-infer-acyclic-with-context
-                 (get shape :nodes)
-                 nodes
-                 (get products :lexical-bindings)
-                 (get products :definitions)
-                 (get products :calls)
-                 (get products :call-edges)
-                 function-skeletons
-                 (sh08-eh-seed-bindings (sh08-ft-declaration-seeds function-skeletons (sh08-im-seeds imports (sh08-ft-inference-context
-                  recursive? higher-order? recursive-proof
-                  higher-order-proof function-skeletons))) (get handler-products :seeds {}))
-                 (+ (count (get core-artifact :match-pattern-records)) (sh08-ft-inference-round-bound
-                  (get shape :nodes)
-                  (get products :function-records)
-                  (get products :calls)
-                  (get products :lexical-bindings))
-                  (if (vector? (get core-artifact :loop-bindings)) (count (get core-artifact :loop-bindings)) 0))
-                 (assoc (sh08-ft-context-proof
-                  recursive? higher-order? recursive-proof higher-order-proof)
-                   :boolean-matches (get products :boolean-matches) :quote-types (get quoted-products :type-table)
-                   :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)
-                   :lookup-core (if (> (count (get core-artifact :keyword-lookups)) 0) core-artifact nil)
-                   :lookup-nodes nodes :lookup-forms source-forms :lookup-bindings bindings :ordering-core core-artifact
-                   :loop-work-left (- 65536 (if (sh08-rv? recursive-proof) (get recursive-proof :work-count) 0))
-                   :shape-call-products (assoc products :module module)))
-                handler-types (sh08-eh-type-checks (get handler-products :groups {}) (get unprojected-inference :type-table) nodes)
-                direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table)
-                                (- 65536 (get handler-products :work-count 0)))
-                throw-products (if (sh08-rv? recursive-proof)
-                                 (assoc direct-throws :recursive-error-status :pending-sh09-recursive-body)
-                                 (if (if (= :accepted (get direct-throws :status))
-                                     (if (= [] (get unprojected-inference :diagnostics))
-                                       (= nil (sh08-ft-first-unknown-node (get shape :nodes) (get unprojected-inference :type-table))) false) false)
-                                 (sh08-tc-products-with-source-forms core-artifact (get unprojected-inference :type-table)
-                                   (get unprojected-inference :function-types) bindings direct-throws source-forms
-                                   (- 65536 (get direct-throws :work-count 0) (get handler-products :work-count 0))) direct-throws))
-                raw-inference (if (if (sh08-rv? recursive-proof) true (= 0 (count (get throw-products :throws)))) unprojected-inference
-                  (assoc unprojected-inference
-                    :type-table (sh08-th-type-map (get unprojected-inference :type-table) (get throw-products :throws))
-                    :function-types (sh08-th-type-map (get unprojected-inference :function-types) (get throw-products :throws))))
-                raw-match-checks
-                (sh08-bm-checks (sh08-sm-groups-with-shapes
-                                 (sh08-sm-groups-with-call-context (get products :boolean-matches)
-                                   (assoc (get raw-inference :shape-call-context {}) :budget-left (get raw-inference :type-join-work-left 0)))
-                                 (get raw-inference :binding-shapes)) (get raw-inference :type-table)
-                                (get raw-inference :function-types) module)
-                match-checks (if (> (get raw-match-checks :call-join-work 0) (get raw-inference :type-join-work-left 0))
-                               (assoc raw-match-checks :diagnostics
-                                 (conj (get raw-match-checks :diagnostics) {:rule "C7-GENERIC" :reason :structural-call-join-work-limit
-                                   :node {} :expected :remaining-type-join-units :actual (get raw-inference :type-join-work-left 0)})) raw-match-checks)
-                unknown-node
-                (if (= (get raw-inference :convergence-status)
-                       :converged)
-                  (sh08-ft-first-unknown-node
-                   (get shape :nodes)
-                   (get raw-inference :type-table))
-                  nil)
-                inference
-                (if (= :resource-limit (get unprojected-inference :convergence-status))
-                  raw-inference
-                (if (> (count (get handler-products :diagnostics)) 0)
-                  (assoc raw-inference :diagnostics (get handler-products :diagnostics))
-                (if (> (count (get handler-types :diagnostics)) 0)
-                  (assoc raw-inference :diagnostics (get handler-types :diagnostics))
-                (if (> (count (get throw-products :diagnostics)) 0)
-                  (assoc raw-inference :diagnostics (get throw-products :diagnostics))
-                (if (> (count (get quoted-products :diagnostics)) 0)
-                  (assoc raw-inference :diagnostics (get quoted-products :diagnostics))
-                (if (> (count (get match-checks :diagnostics)) 0)
-                  (assoc raw-inference :diagnostics (get match-checks :diagnostics))
-                (if (map? unknown-node)
-                  (assoc
-                   raw-inference
-                   :diagnostics
-                   (conj
-                    (get raw-inference :diagnostics)
-                    {:node unknown-node
-                     :rule "C7-ANNOTATION"
-                     :reason :unsupported-or-unresolved-core-node-type
-                     :expected :concrete-node-type-or-diagnostic
-                     :actual :gravity.type/unknown}))
-                  raw-inference)))))))
-                functions
-                (sh08-ft-function-facts
-                 (get inference :function-types)
-                 nodes module)
-                final-functions
-                (if (sh08-rv? recursive-proof) (sh08-ft-final-functions functions)
-                  (sh08-th-functions (sh08-ft-final-functions functions) (get throw-products :throws)))]
+(defn sh08-ft-work-allowance [options]
+  ; Trusted invocation options only, never source/Core/proof authority. Native
+  ; entry enumeration avoids hashing or printing an untyped option key/value.
+  (if (map? options)
+    (if (= 0 (count options)) 65536
+      (if (= 1 (count options))
+        (let [entry (first (vec options)) key (get entry 0) value (get entry 1)]
+          (if (keyword? key)
+            (if (= :type-inference-work-allowance key)
+              (if (integer? value) (if (> value 0) value nil) nil) nil) nil)) nil)) nil))
+
+(defn sh08-ft-effective-work-policy [allowance]
+  ; One cumulative ordinary-inference pool per module invocation, not a total
+  ; import-graph/C7/throw-analysis budget or a host CPU/heap/RSS bound.
+  {:type-inference-work-allowance allowance :scope :ordinary-inference-invocation})
+
+(defn sh08-ft-invalid-work-policy []
+  {:status :rejected :diagnostics [{:rule "C7-GENERIC" :reason :invalid-type-inference-work-policy}]})
+
+(defn sh08-ft-finish-function-type-core
+  [core-artifact imports products module recursive-proof higher-order-proof nodes recursive? higher-order? inference quoted-products match-checks throw-products final-functions]
             (if (> (count (get inference :diagnostics)) 0)
               {:artifact :gravity/sh08-function-typed-core-template
                :schema-version 3
@@ -24554,7 +24415,175 @@
                    :unresolved-function-type {})]
                  :pending [:recursive-type-annotations
                            :higher-order-functions :records :unions
-                           :protocols :generics :casts :dynamic-boundaries]}))))))
+                           :protocols :generics :casts :dynamic-boundaries]})))
+
+(defn sh08-ft-function-type-core-artifact-with-imports-and-allowance [core-artifact bindings source-forms imports allowance]
+  (if (map? core-artifact)
+    (let [shape (sh08-validate-core-shape core-artifact)
+          module (if (map? (get core-artifact :module))
+                   (get core-artifact :module)
+                   {})
+          products (sh08-bm-products core-artifact
+                     (sh08-ft-products-valid? core-artifact shape bindings) source-forms)]
+      (if (= (get products :status) :accepted)
+        (let [core-artifact (assoc core-artifact :sh08-private-self-parameter-premise nil)
+              proof-results
+              (sh08-ft-proof-results
+                (assoc shape :analysis-core core-artifact :analysis-source-forms source-forms :analysis-imports imports)
+                products bindings module)
+              recursive-proof (get proof-results :recursive-proof)
+              higher-order-proof (get proof-results :higher-order-proof)
+              core-artifact (if (sh08-is? recursive-proof)
+                              (assoc core-artifact :sh08-private-self-parameter-premise (get recursive-proof :parameter-value-premise))
+                              core-artifact)]
+          (let [unsupported-higher-order?
+                (= :unsupported-higher-order-primitive-type
+                   (get higher-order-proof :reason))]
+            (if (if unsupported-higher-order?
+                  true
+                  (if (> (count (get products :recursion-components)) 0)
+                (if (= :accepted (get recursive-proof :status)) false true)
+                false))
+              (if unsupported-higher-order?
+                {:artifact :gravity/sh08-function-typed-core-template
+                 :schema-version 3
+                 :status :rejected
+                 :scope :capture-free-higher-order-fixed-arity-one-hop
+                 :authentication-status
+                 :host-resolved-b47-verification-boundary
+                 :module module
+                 :sh07-shaped-artifact-id (get core-artifact :artifact-id)
+                 :diagnostics
+                 [(sh08-ft-diagnostic
+                   "C7-ANNOTATION"
+                   (get higher-order-proof :node)
+                   module
+                   :supported-higher-order-primitive-type
+                   (get higher-order-proof :actual)
+                   :unsupported-higher-order-primitive-type
+                   {})]
+                 :pending [:recursive-type-annotations
+                           :higher-order-functions :records :unions
+                           :protocols :generics :casts :dynamic-boundaries]}
+                {:artifact :gravity/sh08-function-typed-core-template
+                 :schema-version 3
+                 :status :rejected
+                 :scope :first-order-fixed-arity-functions-locals-calls
+                 :authentication-status
+                 :host-resolved-b47-verification-boundary
+                 :module module
+                 :sh07-shaped-artifact-id (get core-artifact :artifact-id)
+                 :diagnostics
+                 [(sh08-ft-recursive-diagnostic recursive-proof module)]
+                 :pending [:recursive-type-annotations
+                           :higher-order-functions :records :unions
+                           :protocols :generics :casts :dynamic-boundaries]})
+              (let [base-function-skeletons
+                (sh08-ft-function-skeletons
+                 (get products :function-records) module)
+                nodes (get products :node-table)
+                recursive?
+                (= :accepted (get recursive-proof :status))
+                higher-order?
+                (= :accepted (get higher-order-proof :status))
+                function-skeletons
+                (sh08-ft-complete-function-skeletons
+                 base-function-skeletons recursive-proof higher-order-proof)
+                quoted-products (sh08-qd-products (get shape :nodes) source-forms module)
+                handler-products (sh08-eh-source-products core-artifact source-forms bindings 65536)
+                unprojected-inference
+                (sh08-ft-infer-acyclic-with-context
+                 (get shape :nodes)
+                 nodes
+                 (get products :lexical-bindings)
+                 (get products :definitions)
+                 (get products :calls)
+                 (get products :call-edges)
+                 function-skeletons
+                 (sh08-eh-seed-bindings (sh08-ft-declaration-seeds function-skeletons (sh08-im-seeds imports (sh08-ft-inference-context
+                  recursive? higher-order? recursive-proof
+                  higher-order-proof function-skeletons))) (get handler-products :seeds {}))
+                 (+ (count (get core-artifact :match-pattern-records)) (sh08-ft-inference-round-bound
+                  (get shape :nodes)
+                  (get products :function-records)
+                  (get products :calls)
+                  (get products :lexical-bindings))
+                  (if (vector? (get core-artifact :loop-bindings)) (count (get core-artifact :loop-bindings)) 0))
+                 (assoc (sh08-ft-context-proof
+                  recursive? higher-order? recursive-proof higher-order-proof)
+                   :boolean-matches (get products :boolean-matches) :quote-types (get quoted-products :type-table)
+                   :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)
+                   :lookup-core (if (> (count (get core-artifact :keyword-lookups)) 0) core-artifact nil)
+                   :lookup-nodes nodes :lookup-forms source-forms :lookup-bindings bindings :ordering-core core-artifact
+                   :type-inference-work-allowance allowance
+                   :loop-work-left (- allowance (if (sh08-rv? recursive-proof) (get recursive-proof :work-count) 0))
+                   :shape-call-products (assoc products :module module)))
+                handler-types (sh08-eh-type-checks (get handler-products :groups {}) (get unprojected-inference :type-table) nodes)
+                direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table)
+                                (- 65536 (get handler-products :work-count 0)))
+                throw-products (if (sh08-rv? recursive-proof)
+                                 (assoc direct-throws :recursive-error-status :pending-sh09-recursive-body)
+                                 (if (if (= :accepted (get direct-throws :status))
+                                     (if (= [] (get unprojected-inference :diagnostics))
+                                       (= nil (sh08-ft-first-unknown-node (get shape :nodes) (get unprojected-inference :type-table))) false) false)
+                                 (sh08-tc-products-with-source-forms core-artifact (get unprojected-inference :type-table)
+                                   (get unprojected-inference :function-types) bindings direct-throws source-forms
+                                   (- 65536 (get direct-throws :work-count 0) (get handler-products :work-count 0))) direct-throws))
+                raw-inference (if (if (sh08-rv? recursive-proof) true (= 0 (count (get throw-products :throws)))) unprojected-inference
+                  (assoc unprojected-inference
+                    :type-table (sh08-th-type-map (get unprojected-inference :type-table) (get throw-products :throws))
+                    :function-types (sh08-th-type-map (get unprojected-inference :function-types) (get throw-products :throws))))
+                raw-match-checks
+                (sh08-bm-checks (sh08-sm-groups-with-shapes
+                                 (sh08-sm-groups-with-call-context (get products :boolean-matches)
+                                   (assoc (get raw-inference :shape-call-context {}) :budget-left (get raw-inference :type-join-work-left 0)))
+                                 (get raw-inference :binding-shapes)) (get raw-inference :type-table)
+                                (get raw-inference :function-types) module)
+                match-checks (if (> (get raw-match-checks :call-join-work 0) (get raw-inference :type-join-work-left 0))
+                               (assoc raw-match-checks :diagnostics
+                                 (conj (get raw-match-checks :diagnostics) {:rule "C7-GENERIC" :reason :structural-call-join-work-limit
+                                   :node {} :expected :remaining-type-join-units :actual (get raw-inference :type-join-work-left 0)})) raw-match-checks)
+                unknown-node
+                (if (= (get raw-inference :convergence-status)
+                       :converged)
+                  (sh08-ft-first-unknown-node
+                   (get shape :nodes)
+                   (get raw-inference :type-table))
+                  nil)
+                inference
+                (if (= :resource-limit (get unprojected-inference :convergence-status))
+                  raw-inference
+                (if (> (count (get handler-products :diagnostics)) 0)
+                  (assoc raw-inference :diagnostics (get handler-products :diagnostics))
+                (if (> (count (get handler-types :diagnostics)) 0)
+                  (assoc raw-inference :diagnostics (get handler-types :diagnostics))
+                (if (> (count (get throw-products :diagnostics)) 0)
+                  (assoc raw-inference :diagnostics (get throw-products :diagnostics))
+                (if (> (count (get quoted-products :diagnostics)) 0)
+                  (assoc raw-inference :diagnostics (get quoted-products :diagnostics))
+                (if (> (count (get match-checks :diagnostics)) 0)
+                  (assoc raw-inference :diagnostics (get match-checks :diagnostics))
+                (if (map? unknown-node)
+                  (assoc
+                   raw-inference
+                   :diagnostics
+                   (conj
+                    (get raw-inference :diagnostics)
+                    {:node unknown-node
+                     :rule "C7-ANNOTATION"
+                     :reason :unsupported-or-unresolved-core-node-type
+                     :expected :concrete-node-type-or-diagnostic
+                     :actual :gravity.type/unknown}))
+                  raw-inference)))))))
+                functions
+                (sh08-ft-function-facts
+                 (get inference :function-types)
+                 nodes module)
+                final-functions
+                (if (sh08-rv? recursive-proof) (sh08-ft-final-functions functions)
+                  (sh08-th-functions (sh08-ft-final-functions functions) (get throw-products :throws)))]
+            (sh08-ft-finish-function-type-core
+              core-artifact imports products module recursive-proof higher-order-proof nodes recursive? higher-order? inference quoted-products match-checks throw-products final-functions)))))
         {:artifact :gravity/sh08-function-typed-core-template
          :schema-version 3
          :status :rejected
@@ -24583,6 +24612,16 @@
      [(sh08-ft-diagnostic
        "C7-VERIFY" {} {} :sh07-canonical-core-map core-artifact
        :sh07-shaped-core-map-required {})]}));
+
+(defn sh08-ft-function-type-core-artifact-with-imports [core-artifact bindings source-forms imports]
+  (sh08-ft-function-type-core-artifact-with-imports-and-allowance core-artifact bindings source-forms imports 65536))
+
+(defn sh08-ft-function-type-core-artifact-with-imports-and-work-policy [core-artifact bindings source-forms imports options]
+  (let [allowance (sh08-ft-work-allowance options)]
+    (if (= nil allowance)
+      {:effective-work-policy nil :result (sh08-ft-invalid-work-policy)}
+      {:effective-work-policy (sh08-ft-effective-work-policy allowance)
+       :result (sh08-ft-function-type-core-artifact-with-imports-and-allowance core-artifact bindings source-forms imports allowance)})))
 
 (defn sh08-function-type-boundary-policy []
   {:verification-boundary
@@ -24833,7 +24872,7 @@
                     :authentic-complete-imported-function-type (get failure :actual) (get failure :reason) {})]
    :pending [:imported-body-effects :imported-effect-legality :runtime-linking]})
 
-(defn sh08-im-producers [requests memo active retained]
+(defn sh08-im-producers-with-allowance [requests memo active retained allowance]
   (loop [remaining requests current memo producers {}]
     (if (= (count remaining) 0) {:status :accepted :memo current :producers producers}
       (let [request (first remaining)
@@ -24842,7 +24881,7 @@
           (if (let [matches (sh08-bm-select retained :artifact-id id)]
                 (if (= 1 (count matches))
                   (= (first matches) (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact])) false))
-          (let [derived (sh08-im-derive request current active) result (get derived :result)]
+          (let [derived (sh08-im-derive-with-allowance request current active allowance) result (get derived :result)]
             (if (= :accepted (get result :status))
               (recur (rest remaining) (get derived :memo) (assoc producers id {:request request :result result}))
               (assoc (sh08-im-failure
@@ -24851,6 +24890,9 @@
                      :producer-sh06-artifact-id id :memo (get derived :memo))))
           (assoc (sh08-im-failure "C7-VERIFY" :undeclared-module-type-producer id) :memo current))
           (assoc (sh08-im-failure "C7-VERIFY" :duplicate-or-invalid-module-type-producer id) :memo current))))))
+
+(defn sh08-im-producers [requests memo active retained]
+  (sh08-im-producers-with-allowance requests memo active retained 65536))
 
 (defn sh08-im-inputs-check [inputs]
   (if (sh08-exact-keys? inputs #{:artifact :schema-version :module-requests})
@@ -24888,7 +24930,7 @@
         (sh08-im-failure "C7-VERIFY" :module-type-distinct-producer-limit total))
       (sh08-im-failure "C7-VERIFY" :module-type-producer-core-bound usage))))
 
-(defn sh08-im-derive [request memo active]
+(defn sh08-im-derive-with-allowance [request memo active allowance]
   (let [id (sh08-im-path request [:b47-context :artifact-id]) previous (get memo id)
         preliminary (sh08-im-work-check memo active {:status :accepted :nodes 0 :scalar-units 0})
         resolution (if (if (map? previous) true (if (contains? active id) true (= :rejected (get preliminary :status))))
@@ -24906,27 +24948,40 @@
               work (sh08-im-work-check memo active usage)
               input-check (if (= :accepted (get work :status)) (sh08-im-inputs-check inputs) work)
               producers (if (= :accepted (get input-check :status))
-                          (sh08-im-producers (get inputs :module-requests) memo (assoc active id usage)
+                          (sh08-im-producers-with-allowance (get inputs :module-requests) memo (assoc active id usage)
                             (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact
-                                                  :gravity-resolution-boundary :module-inputs :module-artifacts])) input-check)
+                                                  :gravity-resolution-boundary :module-inputs :module-artifacts]) allowance) input-check)
               imports (if (= :accepted (get producers :status))
                         (sh08-im-imports request resolution (get producers :producers)) producers)
               result (if (= :accepted (get imports :status))
                        (sh08-im-result
-                         (sh08-ft-function-type-core-artifact-with-imports
+                         (sh08-ft-function-type-core-artifact-with-imports-and-allowance
                            (get resolution :core) (get resolution :binding-table)
-                           (sh08-im-path request [:b47-context :authenticated-core-request :forms]) (get imports :imports))
+                           (sh08-im-path request [:b47-context :authenticated-core-request :forms]) (get imports :imports) allowance)
                          (get imports :imports))
                        (sh08-im-rejected-result request imports))
               next (get producers :memo memo)]
           {:result result :memo (assoc next id {:request request :result result :usage usage})})
         {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" (get resolution :reason) (get resolution :reason))) :memo memo}))))))
 
-(defn sh08-function-type-core-artifact [request]
-  (let [result (get (sh08-im-derive request {} {}) :result)]
+(defn sh08-im-derive [request memo active]
+  (sh08-im-derive-with-allowance request memo active 65536))
+
+(defn sh08-function-type-core-artifact-with-allowance [request allowance]
+  (let [result (get (sh08-im-derive-with-allowance request {} {} allowance) :result)]
     (if (if (= :accepted (get result :status)) (= :direct-imported-functions-types-only (get result :scope)) false)
       (if (= :accepted (get (sh08-carrier-preflight result) :status)) result
         (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :imported-type-result-carrier-limit nil))) result)))
+
+(defn sh08-function-type-core-artifact [request]
+  (sh08-function-type-core-artifact-with-allowance request 65536))
+
+(defn sh08-function-type-core-artifact-with-work-policy [request options]
+  (let [allowance (sh08-ft-work-allowance options)]
+    (if (= nil allowance)
+      {:effective-work-policy nil :result (sh08-ft-invalid-work-policy)}
+      {:effective-work-policy (sh08-ft-effective-work-policy allowance)
+       :result (sh08-function-type-core-artifact-with-allowance request allowance)})))
 
 (defn sh08-ft-local-verification-checks [expected]
   (if (= :private-inferred-monomorphic-named-self-value (get expected :scope))
@@ -25002,6 +25057,16 @@
      :checks (sh08-ft-verification-checks expected)
      :expected expected
      :candidate candidate}))
+
+(defn sh08-verify-function-type-result-with-work-policy [request candidate options]
+  (let [allowance (sh08-ft-work-allowance options)]
+    (if (= nil allowance)
+      {:effective-work-policy nil :verification (sh08-ft-invalid-work-policy)}
+      (let [expected (sh08-function-type-core-artifact-with-allowance request allowance)]
+        {:effective-work-policy (sh08-ft-effective-work-policy allowance)
+         :verification {:artifact :gravity/sh08-function-type-verification
+                        :status (if (= expected candidate) :passed :rejected)
+                        :checks (sh08-ft-verification-checks expected) :expected expected :candidate candidate}}))))
 
 ; SH-08 records/unions is an early leaf over the authenticated B47 checked-core
 ; interface.  A named source definition carries a closed descriptor family as
