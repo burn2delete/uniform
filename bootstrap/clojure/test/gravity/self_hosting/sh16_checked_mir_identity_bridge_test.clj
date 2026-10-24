@@ -186,14 +186,18 @@
   (let [[mir request] (supplied) result (build mir request)
         shape (existing 'gravity.self-hosting.sh17-c13-optimized-mir-carrier-test 'development-comparison-input)
         legacy (shape 2 3 false)
-        expected (bootstrap/p15-s23-c13-expected-record (:mir legacy) (:evidence legacy))]
+        before (pr-str legacy)
+        expected (bootstrap/p15-s23-c13-expected-record (:mir legacy) (:evidence legacy))
+        actual (build (:mir legacy) (:evidence legacy))
+        repeated (build (:mir legacy) (:evidence legacy))]
     (is (false? (call :c14 'c14-c13-envelope-valid? [result])))
     (is (false? (call :c14 'c14-bounded-optimized-input-valid? [result {}])))
     (is (false? (call :b1 'b1-bounded-c14-input-valid? [result])))
     (is (false? (call :c14 'c14-c13-envelope-valid? [(assoc result :status :accepted)])))
     (is (false? (call :b1 'b1-bounded-c14-input-valid? [(assoc result :status :accepted)])))
-    (is (= expected (build (:mir legacy) (:evidence legacy))))
-    (is (= (pr-str expected) (pr-str (build (:mir legacy) (:evidence legacy)))))
+    (is (= expected actual))
+    (is (= actual repeated))
+    (is (= before (pr-str legacy)))
     (is (= :rejected (:status (build mir {}))))
     (rejected (:mir legacy) (assoc (:evidence legacy) :verification-class :unknown))))
 
