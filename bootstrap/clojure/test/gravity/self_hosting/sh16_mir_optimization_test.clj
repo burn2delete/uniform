@@ -1785,7 +1785,35 @@
       (let [guard (first (filter #(and (seq? %) (= 'if (first %)) (= condition (second %))) forms))]
         (is (some? guard))
         (is (= 0 (projection-count (nth guard 2 nil))))
-        (is (= 1 (projection-count (nth guard 3 nil))))))))
+        (is (= 1 (projection-count (nth guard 3 nil))))))
+    (let [append-loop (first (filter #(and (seq? %) (= 'loop (first %))
+                                          (= '[remaining components result frontier] (second %))) forms))
+          body (nth append-loop 2 nil)
+          cap-guard (nth body 3 nil)]
+      (is (some? append-loop))
+      (is (= '(= 0 (count remaining)) (second body)))
+      (is (= '(> (count result) maximum-nodes) (second cap-guard)))
+      (is (= 'result (nth cap-guard 2 nil)))
+      (is (= '(recur (rest remaining) (conj result [(first remaining) (+ depth 1)]))
+             (nth cap-guard 3 nil))))))
+
+(deftest sh16-structural-preflight-bounds-frontier-prefix
+  (let [scalars (vec (repeat 1024 0))
+        witness (vec (repeat 1024 scalars))
+        at-node-limit (into (vec (repeat 6 scalars))
+                            [(vec (repeat 1024 [])) (vec (repeat 1015 []))])]
+    (is (= {:status :accepted :nodes 8192 :collections 2048 :scalars 6144 :scalar-units 6144}
+           (invoke-engine 'sh16-structural-preflight [at-node-limit])))
+    ;; Node 8193 must still be visited and refused; the consumed prefix counts.
+    (doseq [[carrier reason]
+            [[(update at-node-limit 7 conj 0) :structure-node-bound]
+             [(update at-node-limit 7 conj []) :structure-node-bound]
+             [witness :structure-scalar-bound]
+             [(assoc witness 1023 (conj scalars 0)) :structure-width-bound]
+             [(assoc witness 1023 (iterate vector nil)) :structure-sequence-carrier]
+             [(assoc witness 0 (assoc scalars 0 9223372036854775808N)) :structure-scalar-type-or-range]]]
+      (is (= {:status :rejected :reason reason}
+             (invoke-engine 'sh16-structural-preflight [carrier]))))))
 
 (deftest sh16-structural-preflight-aggregate-width-boundaries
   (is (= {:maximum-nodes 8192 :maximum-depth 96 :maximum-width 1024
