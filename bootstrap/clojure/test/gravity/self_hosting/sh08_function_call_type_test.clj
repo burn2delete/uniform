@@ -20315,9 +20315,47 @@
       (is (= (:result middle) (:result high)))
       (is (> (get-in high [:result :compatibility-work-count]) 65536)))))
 
+(defn- function-work-policy-current-resolution
+  ([source-path]
+   (function-work-policy-current-resolution source-path (slurp source-path)
+     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
+  ([source-path text module-inputs]
+   ;; Original C3 -> SH05 -> SH06 constructors retain this actual reader
+   ;; revision; the default pinned-reader APIs and their tests stay unchanged.
+   (bootstrap/compiler-c5-resolution-source-artifact source-path text module-inputs
+     (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))))
+
+(defn- function-work-policy-current-source
+  ([source-path]
+   (function-work-policy-current-source source-path (slurp source-path)
+     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
+  ([source-path text module-inputs]
+   (let [resolved (function-work-policy-current-resolution source-path text module-inputs)
+         core (bootstrap/sh07-core-from-resolution-artifact resolved)]
+     {:resolved resolved :core core :request (function-request core)})))
+
+(def ^:private function-work-policy-current-c8-plan
+  ;; Same real Effects dependency and C8 module-bundle construction as the
+  ;; existing C8 test helper, with only explicit current-reader transport.
+  (delay
+    (let [source-path (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+          effects-path (path "bootstrap/gravity/src/gravity/effects.gravity")
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+          dependency (function-work-policy-current-resolution effects-path)
+          inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [dependency]}
+          caller (function-work-policy-current-resolution source-path (slurp source-path) inputs)
+          dependency-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter effects-path (slurp effects-path))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)
+        {:caller-resolution-artifact caller :dependency-plans [dependency-plan]}))))
+
+(defn- function-work-policy-invoke-current-c8 [function arguments]
+  (bootstrap/p15-s23-stage2-runtime-execute-function
+    {:engine :gravity-sh09-c7-effect-adapter-test :compiler-artifact-plan? true}
+    @function-work-policy-current-c8-plan function arguments))
+
 (deftest sh08-function-work-policy-public-composition
   ;; Existing authenticated function-local-call fixture and request constructor.
-  (let [request (function-request @accepted-gravity)
+  (let [request (:request (function-work-policy-current-source (fixture-path "accepted" "function-local-call" ".gravity")))
         legacy (invoke-c7 'sh08-function-type-core-artifact [request])
         implicit (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {}])
         explicit (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {:type-inference-work-allowance 65536}])
@@ -20352,8 +20390,9 @@
 (deftest sh08-function-work-policy-charged-public-composition
   ;; Existing map-present-get source fixture supplies actual charged public
   ;; output. Scalar-only fixtures can legitimately fit an allowance of one.
-  (let [artifact (fixture-artifact "accepted" "local-runtime-map-present-get" ".gravity")
-        request (function-request artifact) options {:type-inference-work-allowance 1048576}
+  (let [{artifact :core request :request}
+        (function-work-policy-current-source (fixture-path "accepted" "local-runtime-map-present-get" ".gravity"))
+        options {:type-inference-work-allowance 1048576}
         produced (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request options])
         candidate (:result produced)]
     (is (= :accepted (:status artifact)))
@@ -20372,14 +20411,13 @@
 
 (deftest sh08-function-work-policy-imported-composition
   ;; Reuse the existing authenticated module constructors and native fixtures.
-  (let [library-c5 (bootstrap/sh06-resolution-file-artifact (fixture-path "modules" "type-values" ".gravity"))
-        library (bootstrap/sh07-core-from-resolution-artifact library-c5)
-        producer (function-request library)
+  (let [library-source (function-work-policy-current-source (fixture-path "modules" "type-values" ".gravity"))
+        library-c5 (:resolved library-source) library (:core library-source) producer (:request library-source)
         source-path (fixture-path "modules" "type-consumer" ".gravity")
         inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library-c5]}
-        c5 (bootstrap/compiler-c5-resolution-file-artifact source-path inputs)
-        core (bootstrap/sh07-core-from-resolution-artifact c5)
-        request (assoc (function-request core) :module-type-inputs
+        consumer-source (function-work-policy-current-source source-path (slurp source-path) inputs)
+        c5 (:resolved consumer-source) core (:core consumer-source)
+        request (assoc (:request consumer-source) :module-type-inputs
                        {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [producer]})
         allowance 1048576 options {:type-inference-work-allowance allowance}
         modules #{(get-in producer [:canonical-core-artifact :module :namespace])
@@ -20416,3 +20454,121 @@
         (is (every? #(= 1 (:allowance %)) (:pools tiny)))
         (is (every? #(= [1 1] ((juxt :budget :allowance) %)) (:inference tiny)))
         (is (= 2 (count (:pools tiny)) (count (:inference tiny))))))))
+
+(deftest sh08-function-work-policy-imported-tamper-current-source-composition
+  (let [cases
+        (mapv
+         (fn [extension]
+           (let [library-source (function-work-policy-current-source (fixture-path "modules" "type-values" extension))
+                 library-c5 (:resolved library-source) library (:core library-source) producer (:request library-source)
+                 source-path (fixture-path "modules" "type-consumer" extension)
+                 inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library-c5]}
+                 consumer-source (function-work-policy-current-source source-path (slurp source-path) inputs)
+                 c5 (:resolved consumer-source) core (:core consumer-source)
+                 request (assoc (:request consumer-source) :module-type-inputs
+                           {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [producer]})
+                 result (invoke-c7 'sh08-function-type-core-artifact [request])]
+             (is (= :accepted (:status library-c5) (:status library) (:status c5) (:status core)))
+             (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+             (when (= :accepted (:status result))
+               (is (= :direct-imported-functions-types-only (:scope result)))
+               (is (= 3 (count (:imported-function-types result)) (count (:function-type-table result)) (count (:call-type-facts result))))
+               (is (= 1 (count (:module-type-producers result))))
+               (is (= #{:gravity.type/i64 :gravity.type/bool :gravity.type/string}
+                      (set (map :return (:function-type-table result)))
+                      (set (map :result-type (:call-type-facts result)))))
+               (is (every? #(= :direct-imported-function (:dispatch %)) (:call-type-facts result)))
+               (doseq [call (:calls (canonical-core core))]
+                 (let [operator-type (get (:type-table result) (:operator-node-id call))]
+                   (is (= :gravity/c7-function-type (:artifact operator-type)))
+                   (is (= 1 (:fixed-arity operator-type)))))
+               (is (every? #(= (:artifact-id library-c5) (:producer-sh06-artifact-id %)) (:imported-function-types result)))
+               (is (every? #(= [:pending-sh09] (get-in % [:function-type :thrown-error-effects])) (:imported-function-types result)))
+               (is (= :passed (:status (invoke-c7 'sh08-verify-function-type-result [request result]))))
+               (is (= :rejected (:status (invoke-c7 'sh08-verify-function-type-result
+                                         [request (assoc-in result [:imported-function-types 0 :function-type :return] :gravity.type/bool)]))))
+               (let [rejected (function-work-policy-invoke-current-c8
+                               'sh09-build-authenticated-pure-effect-result
+                               [result (invoke-c7 'sh08-verify-function-type-result [request result])])
+                     diagnostic (first (:diagnostics rejected))]
+                 (is (= :rejected (:status rejected)))
+                 (is (= :imported-body-effects-pending (:reason diagnostic)))
+                 (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target :remediation]))))
+             {:library-c5 library-c5 :producer producer :core core :request request :result result :source-path source-path :inputs inputs}))
+         [".gravity" ".qst"])
+        {:keys [request result core producer source-path inputs]} (first cases)]
+    (is (= (get-in cases [0 :result :identity-input]) (get-in cases [1 :result :identity-input])) )
+    (let [missing (invoke-c7 'sh08-function-type-core-artifact [(dissoc request :module-type-inputs)])
+          diagnostic (first (:diagnostics missing))]
+      (is (= "C7-ANNOTATION" (:rule diagnostic)))
+      (is (= :missing-imported-function-typing (:reason diagnostic)))
+      (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target :remediation])))
+    (doseq [bad [nil 1 true "wrong" {}]]
+      (let [rejected (invoke-c7 'sh08-function-type-core-artifact [(assoc-in request [:module-type-inputs :module-requests] bad)])]
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= :malformed-module-type-inputs (get-in rejected [:diagnostics 0 :reason])))))
+    (doseq [bad [(assoc producer :signature {:return :gravity.type/bool})
+                 (assoc-in producer [:canonical-core-artifact :function-records 0 :signature :return :type-id] :gravity.type/bool)
+                 (assoc-in producer [:b47-context :authenticated-core-request :lineage :authenticated-sh06-artifact-id] "sha256:stale")]]
+      (let [rejected (invoke-c7 'sh08-function-type-core-artifact [(assoc-in request [:module-type-inputs :module-requests] [bad])])]
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))
+    (doseq [[source expected-reason]
+            [[(clojure.string/replace (slurp source-path) "(values/identity-i64 value)" "(values/identity-i64 true)") :call-argument-type-mismatch]
+             [(clojure.string/replace (slurp source-path) "(values/identity-i64 value)" "(values/identity-i64)") :call-arity-mismatch]
+             [(clojure.string/replace (slurp source-path) "[value :- I64] :- I64" "[value :- I64] :- String") :function-result-type-mismatch]]]
+      (let [c5 (function-work-policy-current-resolution source-path source inputs)
+            artifact (bootstrap/sh07-core-from-resolution-artifact c5)
+            q (assoc (function-request artifact) :module-type-inputs (:module-type-inputs request))
+            rejected (invoke-c7 'sh08-function-type-core-artifact [q])
+            diagnostic (first (:diagnostics rejected))]
+        (is (= :accepted (:status artifact)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
+        (is (= expected-reason (:reason diagnostic)))
+        (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target :remediation]))))))
+
+(deftest sh08-function-work-policy-arity-current-source-composition
+  (let [gravity (invoke-c7 'sh08-function-type-core-artifact
+                  [(:request (function-work-policy-current-source (fixture-path "rejected" "function-call-arity" ".gravity")))])
+        qst (invoke-c7 'sh08-function-type-core-artifact
+              [(:request (function-work-policy-current-source (fixture-path "rejected" "function-call-arity" ".qst")))])]
+    (is (= :rejected (:status gravity) (:status qst)))
+    (is (= :first-order-fixed-arity-functions-locals-calls
+           (:scope gravity)))
+    (is (= (:diagnostics gravity) (:diagnostics qst)))
+    (is (= "C7-TYPE-MISMATCH"
+           (get-in gravity [:diagnostics 0 :rule])))
+    (is (= :call-arity-mismatch
+           (get-in gravity [:diagnostics 0 :reason])))
+    (is (= :type-checking
+           (get-in gravity [:diagnostics 0 :stage])))
+    (is (string? (get-in gravity [:diagnostics 0 :diagnostic-id])))
+    (is (some? (get-in gravity [:diagnostics 0 :type-id])))
+    (is (map? (get-in gravity [:diagnostics 0 :constraint-id])))
+    (is (= (:identity-input gravity) (:identity-input qst)))))
+
+(deftest sh08-function-work-policy-argument-type-current-source-composition
+  (let [gravity (invoke-c7 'sh08-function-type-core-artifact
+                  [(:request (function-work-policy-current-source (fixture-path "rejected" "function-call-type-mismatch" ".gravity")))])
+        qst (invoke-c7 'sh08-function-type-core-artifact
+              [(:request (function-work-policy-current-source (fixture-path "rejected" "function-call-type-mismatch" ".qst")))])]
+    (is (= (slurp (fixture-path
+                   "rejected" "function-call-type-mismatch" ".gravity"))
+           (slurp (fixture-path
+                   "rejected" "function-call-type-mismatch" ".qst"))))
+    (is (= :rejected (:status gravity) (:status qst)))
+    (is (= "C7-TYPE-MISMATCH"
+           (get-in gravity [:diagnostics 0 :rule])))
+    (is (= :call-argument-type-mismatch
+           (get-in gravity [:diagnostics 0 :reason])))
+    (is (= :gravity.type/integer
+           (get-in gravity [:diagnostics 0 :expected-type])))
+    (is (= :gravity.type/string
+           (get-in gravity [:diagnostics 0 :actual-type])))
+    (is (string? (get-in gravity [:diagnostics 0 :diagnostic-id])))
+    (is (= :gravity.type/string
+           (get-in gravity [:diagnostics 0 :type-id])))
+    (is (map? (get-in gravity [:diagnostics 0 :constraint-id])))
+    (is (string?
+         (get-in gravity [:diagnostics 0 :parameter-binding-id])))
+    (is (= (:diagnostics gravity) (:diagnostics qst)))))
