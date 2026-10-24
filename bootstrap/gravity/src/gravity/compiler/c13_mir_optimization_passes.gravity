@@ -1416,13 +1416,13 @@
 
 (defn sh16-aggregate-components [value]
   (if (map? value)
-    (loop [remaining (vec (keys value))
+    (loop [remaining value
            result []]
       (if (= 0 (count remaining))
         result
-        (let [key (first remaining)]
+        (let [entry (first remaining)]
           (recur (rest remaining)
-                 (conj (conj result key) (get value key))))))
+                 (conj (conj result (first entry)) (second entry))))))
     (vec value)))
 
 (defn sh16-structural-scalar-valid? [value]
