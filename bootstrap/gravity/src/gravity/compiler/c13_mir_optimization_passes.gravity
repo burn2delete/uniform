@@ -3277,12 +3277,11 @@
 
 (defn sh16-c13-evidence-push
   [frontier children depth]
-  (if (= 0 (count children))
-    frontier
-    (sh16-c13-evidence-push
-     (conj frontier [(first children) (+ depth 1)])
-     (rest children)
-     depth)))
+  (loop [remaining children result frontier]
+    (if (= 0 (count remaining))
+      result
+      (recur (rest remaining)
+             (conj result [(first remaining) (+ depth 1)])))))
 
 (defn sh16-c13-evidence-scalar? [value]
   (if (= nil value)
