@@ -1471,15 +1471,17 @@
             (if (> depth maximum-depth)
               {:status :rejected :reason :structure-depth-bound}
               (if (sh16-aggregate? current)
-                (let [components (sh16-aggregate-components current)
-                      width (count components)
+                (let [width (if (map? current)
+                              (* 2 (count current))
+                              (count current))
                       next-collections (+ collections 1)]
                   (if (> width maximum-width)
                     {:status :rejected :reason :structure-width-bound}
                     (if (> next-collections maximum-collections)
                       {:status :rejected
                        :reason :structure-collection-bound}
-                      (let [next-frontier
+                      (let [components (sh16-aggregate-components current)
+                            next-frontier
                             (loop [remaining components
                                    result frontier]
                               (if (= 0 (count remaining))
