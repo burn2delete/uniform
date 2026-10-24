@@ -1769,6 +1769,55 @@
           (pr-str (:identity-input (optimize base)))
           "/checkout-a/")))))
 
+(deftest sh16-structural-preflight-guards-before-component-projection
+  (let [source (slurp (path "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"))
+        start (str/index-of source "(defn sh16-structural-preflight ")
+        end (str/index-of source "\n(defn sh16-identifier-character?" start)
+        definition (binding [*read-eval* false] (read-string (subs source start end)))
+        forms (tree-seq coll? seq definition)
+        projection-count (fn [form]
+                           (count (filter #(and (seq? %) (= 'sh16-aggregate-components (first %)))
+                                          (tree-seq coll? seq form))))]
+    ;; Inspect this actual definition's guard order; no execution instrumentation.
+    (is (= 1 (projection-count definition)))
+    (doseq [condition ['(> next-nodes maximum-nodes) '(> depth maximum-depth)
+                       '(> width maximum-width) '(> next-collections maximum-collections)]]
+      (let [guard (first (filter #(and (seq? %) (= 'if (first %)) (= condition (second %))) forms))]
+        (is (some? guard))
+        (is (= 0 (projection-count (nth guard 2 nil))))
+        (is (= 1 (projection-count (nth guard 3 nil))))))))
+
+(deftest sh16-structural-preflight-aggregate-width-boundaries
+  (is (= {:maximum-nodes 8192 :maximum-depth 96 :maximum-width 1024
+          :maximum-collections 2048 :maximum-scalars 6144 :maximum-scalar-units 65536}
+         (:structural-bounds (invoke-engine 'sh16-optimization-policy []))))
+  (doseq [[make-carrier class-name limit]
+          [[(fn [n] (into {} (map (fn [key] [key false]) (range n))))
+            "clojure.lang.PersistentHashMap" 512]
+           [(fn [n] (vec (range n))) "clojure.lang.PersistentVector" 1024]
+           [(fn [n] (set (range n))) "clojure.lang.PersistentHashSet" 1024]]]
+    (let [carrier (make-carrier limit) over (make-carrier (inc limit))
+          components (invoke-engine 'sh16-aggregate-components [carrier])]
+      (is (= class-name (.getName (class carrier))))
+      (is (= class-name (.getName (class over))))
+      (is (= 1024 (count components)))
+      (is (= (if (map? carrier) (vec (mapcat identity carrier)) (vec carrier)) components))
+      (is (= {:status :accepted :nodes 1025 :collections 1 :scalars 1024 :scalar-units 1024}
+             (invoke-engine 'sh16-structural-preflight [carrier])))
+      (is (= {:status :rejected :reason :structure-width-bound}
+             (invoke-engine 'sh16-structural-preflight [over])))))
+  (let [wide (vec (repeat 1025 nil))
+        at-collections [(vec (repeat 1024 [])) (vec (repeat 1021 []))]
+        over-collections [(vec (repeat 1024 [])) (vec (repeat 1024 []))]]
+    (is (= {:status :accepted :nodes 2048 :collections 2048 :scalars 0 :scalar-units 0}
+           (invoke-engine 'sh16-structural-preflight [at-collections])))
+    (doseq [[carrier reason] [[(nested-vector 97 wide) :structure-depth-bound]
+                              [(nested-vector 96 wide) :structure-width-bound]
+                              [over-collections :structure-collection-bound]
+                              [(assoc-in over-collections [1 1021] wide) :structure-width-bound]]]
+      (is (= {:status :rejected :reason reason}
+             (invoke-engine 'sh16-structural-preflight [carrier]))))))
+
 (deftest sh16-structural-preflight-rejects-opaque-map-components-without-callbacks
   ;; Built-in persistent maps only; custom Map iteration can run host callbacks.
   (doseq [[make-map class-name] [[array-map "clojure.lang.PersistentArrayMap"]
