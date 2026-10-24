@@ -33,11 +33,15 @@ target-expansion matrix until every documented target passes. The first honest
 self-hosting claim therefore does not overclaim that every target is already
 implemented.
 
-Use one master coordinator with a fixed, reusable pipeline of writer, auditor,
-and next-slice planner agents. Maintain a single writer for shared or
-monolithic files, prepare the next eligible slice while the current slice is
-being validated, and run each expensive native or public proof only once per
-stable candidate.
+Use three layers: one master coordinator, persistent standalone slice managers
+with finite allocated queues, and bounded disjoint subagents within a manager's
+allocation. Preserve the writer -> independent auditor -> next-slice planner
+pipeline without self-acceptance or a second scheduler. The coordinator alone
+allocates shared files, routes independent acceptance, reconciles current main
+and integrates every main PR. Managers freeze isolated local commits for that
+review and may prepare already allocated eligible disjoint work meanwhile.
+Expensive native or public proof remains separately authorized per stable
+candidate; a manager queue does not revive a consumed grant or held attempt.
 
 Gradually replace the monolithic bootstrap implementation with contract-aligned,
 stage-owned namespaces:
@@ -9557,12 +9561,105 @@ owner:
 | 5 | `SH-25` to `SH-29`; bootstrap/release authority | Independent rebuild | Diverse verification | Provenance, SBOM, signing, and governance review |
 
 The coordinator exclusively owns shared dispatch, generated release artifacts,
-coverage accounting, completion attestations, and final status changes.
-Parallel workers own leaf Gravity modules, new fixtures, and dedicated test
-namespaces. A worker must not edit another lane's files or regenerate global
-artifacts.
+coverage accounting, completion attestations, final status changes and all main
+integration. A manager owns only its explicitly allocated files, fixtures and
+tests; this wave table grants no implementation reservation. Managers may
+delegate bounded disjoint work within that allocation using `gpt-6.1-sol` at
+medium or higher effort. Delegation does not confer independent acceptance or
+additional machine capacity. No manager edits peer files or regenerates global
+artifacts without an exact coordinator allocation.
+
+### Finite SH07 manager queues
+
+The [existing C01-C18 plan](self-hosting-sh07-completion-plan.md#three-layer-ownership-and-finite-queues),
+owned for scope/Core closure by `01a16a54-eeb1-7941-ac35-7be30e47bdc7`,
+is the current finite closure plan, with accountable managers, selected six
+subjects/targets, per-task accepted/rejected gates, exact unknowns and stopping
+rules. It is not another runner, lane, schema or admission system. All 18 tasks
+remain OPEN. C01-C11/Core variants, C12 construction, C13 public ingress, C14
+affected C7 composition, C15 subset negatives, C16 current upstream evidence,
+C17 authoritative migration and C18 completion are distinct responsibilities.
+
+Each manager has at most three concrete items, each with its demonstrated gap,
+contracts, exact allocated paths/tests/fixtures, input/output, prerequisites,
+accepted/rejected checks, completion and stop conditions. Work states are
+`executing`, `resource-queued`, `dependency-blocked`, `awaiting-review`,
+`ready-for-integration` and `queue-empty`. A frozen reviewed candidate stays
+unchanged; another eligible item needs disjoint isolation and existing scope.
+An empty eligible queue yields. Refill only the useful lane after a concrete
+dependency event through the coordinator, without a join-all barrier or an
+invented feature to keep a manager busy.
+
+At the 2026-10-24 orchestration snapshot on inspected remote main
+`64aa890ad5afa6fec23e13bdfbc4b739dbfeead4`, the Core two-document migration
+is frozen for independent review and its one Core-gap proposal lacks C01's
+candidate-bound occurrence join. Construction has acknowledged its charter,
+returned both read-only C12 reconciliations and has an empty queue; C12 remains
+OPEN. Cohort's six-owner read-only invalidation matrix has returned and its
+queue is empty; C16 remains OPEN. SOURCE's one allocated
+read-only C14 helper-shape reconciliation has returned and is awaiting ROOT
+review; its proposed C15 negative frontier is conditional/unallocated. The MIR
+producer's actual Integer edge needs SOURCE mode/range/source facts;
+diagnostics' nested origin needs a real
+producer representation. Optimization and standard library have no eligible
+implementation item. The later compiler C11/C13/C15 manager names must not be
+mistaken for SH07-C11/C13/C15 task ownership.
+The plan records the concrete C12 source-spelling/emitter-cap stop conditions
+and C14 helper typing frontiers separately; none is a new global gate or an
+implementation grant. Core's separate C6 inspection stops at the missing C01
+occurrence-to-product/evidence join, with no invented semantic feature.
+All eight intended managers have acknowledged bounded delegation and
+coordinator-only integration. That configuration observation does not accept
+these documents or complete the migration; advisory review adoption is still
+pending below.
+
+These are planning/reconciliation deliverables and honest queue dispositions,
+not compiler completion or measured sustained throughput. Exact source/test/
+interface reservations remain with their existing writers. Two normal broker
+leases, one memory-heavy lease and exclusive checks holding all slots remain
+the host capacity. Use the existing coordination root and applicable canonical
+heavy lock; extra agents do not add slots. Heavy/native/bootstrap/proof/
+performance holds and consumed grants survive; compact-proof, GIS and H6
+implementation/execution remain HOLD. Ordinary eligible work within the
+allocation does not require a new per-command approval loop.
+
+### Advisory process review
+
+The existing independent process reviewer
+`01a17047-4e39-7013-9490-6feb82746d14` is advisory, not a writer, scheduler,
+integrator or global gate. Material process decisions, stalled lanes and
+integration outcomes travel through the coordinator to that reviewer.
+Actionable findings return only to the coordinator, who records an explicit
+disposition: accepted/assigned; rejected with evidence; deferred with a named
+dependency/event; or bounded evidence requested. The reviewer independently
+investigates, recommends and tracks dispositions/outcomes; only the coordinator
+changes manager priorities, instructions and allocations. Managers report to
+the coordinator, not peers or the reviewer.
+
+The remit includes unnecessary dependencies/serial handoffs, ownership,
+interfaces/goals, approval loops, stale proof/governance burden, queue
+starvation, tool access, resources and genuine technical blockers, including
+tests, builds, compiler behavior, interfaces, integration and toolchains.
+Necessary correctness, security, proof and resource gates remain; no blanket
+bypass is implied. The coordinator reconciles plan, operating memory, the saved
+heartbeat and all manager acknowledgments before reporting orchestration
+migration complete. Existing hourly target/notification preferences are
+unchanged; configuration alone does not establish sustained throughput.
+The reviewer charter/event have been sent, but its exposed state is
+`waitingOnApproval` without exposed pending-operation details; adoption/handoff
+is pending. ROOT's independent configuration acceptance does not accept this
+repository change or establish finished migration.
 
 ## Progress Accounting
+
+Keep manager-queue progress separate from executable implementation, affected
+producer/consumer integration and authoritative migration. The current Core
+plan migration, C12 retained construction reconciliation and C16 invalidation
+matrix do not close a compiler task or change the historical slice counts
+below. All C01-C18 remain OPEN until their actual criteria and independently
+routed acceptance pass. SH-05.1, SH-05.6 and SH-06.6 remain partial OPEN;
+the current resolver remains development-unadmitted. Preserve original failed,
+interrupted, skipped and unsupported results and exact revision bindings.
 
 Progress is reported as four numbers rather than a percentage inferred from
 commit count:

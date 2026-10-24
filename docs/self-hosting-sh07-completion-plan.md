@@ -1,11 +1,15 @@
 # SH-07 Completion Tasks
 
 Status: finite implementation and acceptance checklist; SH-07 remains partial.
-Assessment date: 2026-10-21.
-Planning baseline: main `192dafcc86867ec6d067ee31d6b46fea4d1b0b92`,
+Orchestration snapshot: 2026-10-24, inspected remote main
+`64aa890ad5afa6fec23e13bdfbc4b739dbfeead4`. All 18 C-tasks remain OPEN.
+This updates management of the existing work, not compiler support or admission.
+
+Historical assessment date: 2026-10-21.
+Historical planning baseline: main `192dafcc86867ec6d067ee31d6b46fea4d1b0b92`,
 tree `d4a01026dfe10d147c01e9f4bcd6bef8443c7165`.
 
-Current desk reconciliation: 2026-10-22, committed main
+Retained desk reconciliation: 2026-10-22, committed main
 `2a94fb7156f9e85ad085bc88f4d6f0b05b973e4c`, tree
 `cd2380533645332e1b9473eab4e064bf686c2c20`. The historical planning observations
 below retain their original binding. See the
@@ -59,6 +63,103 @@ workstream reservations continue to apply. This checklist assigns task
 responsibility, not permission to take another writer's files or resume a
 held candidate.
 
+## Three-layer ownership and finite queues
+
+The layers are ROOT coordination, persistent standalone slice managers, and
+bounded disjoint subagents within an allocated manager queue. ROOT alone
+allocates cross-slice/shared files, routes independent acceptance, reconciles
+current remote main and integrates every main PR. Managers own isolated local
+work, focused checks and exact frozen commit/tree handoffs. Subagent research
+or implementation is not independent acceptance of its manager's candidate.
+Managers send cross-slice requests and results to ROOT, not directly to peers;
+they do not create competing schedulers or standalone worker threads.
+
+These accountable managers supersede the generic role labels in the retained
+task descriptions below. This is task accountability, not permission to write
+any implementation file:
+
+| Key | Accountable manager | SH07 responsibility |
+| --- | --- | --- |
+| ROOT | Coordinator `019f4993-78b9-7573-b154-139d87a127b5` | Cross-slice allocation, C17 admission/execution scheduling, C18 decision and all integration. |
+| Core | Scope/Core closure manager `01a16a54-eeb1-7941-ac35-7be30e47bdc7` | C01, C02-C11, C13 public ingress and C15 subset-negative closure. Current write allocation is this plan and only backlog orchestration/dependency/progress-accounting sections. |
+| Construction | `01a138f7-bfa4-7b90-8a22-5b3c417b2e11` | C12 retained construction/source-origin reconciliation. |
+| SOURCE | `01a13b8d-509d-7771-b618-06a24933391b` | C14 affected C7 composition and one allocated read-only helper-shape reconciliation; existing C7/effects/emitter/tests and L5/STD3 reservations remain intact. A proposed C15 frontier is conditional and unallocated. |
+| Cohort | `01a02f9c-2e5a-7d70-ba6d-d3519701b13f` | C16 current-cohort evidence/invalidation matrix. |
+
+Each manager queue has at most three concrete items. An item names the actual
+gap, owning contracts, exact allocated paths/tests/fixtures, input/output,
+prerequisites, accepted/rejected checks, completion and stop conditions. Use
+`executing`, `resource-queued`, `dependency-blocked`, `awaiting-review`,
+`ready-for-integration` and `queue-empty`; these are work states, not C-task
+completion or migration credit. Freeze candidates during independent review.
+Only already allocated eligible disjoint work can proceed meanwhile. Refill
+through ROOT on a concrete dependency event; an empty eligible queue yields.
+Do not invent a compiler feature to demonstrate management migration.
+
+The queue snapshot below is an allocation/adoption observation at handoff, not
+proof of sustained throughput. ROOT has received all eight intended managers'
+acknowledgments of bounded delegation and ROOT-only integration. Advisory
+process-review adoption remains pending as recorded below.
+
+| Manager | Finite current queue / state | Dependency event or stop |
+| --- | --- | --- |
+| Core | 1: existing two-document migration frozen for `awaiting-review`; 2: bounded read-only inspection returned, required-Core-gap allocation proposal `dependency-blocked` by the missing candidate-bound C01 occurrence join. | ROOT routes independent review of item 1. Item 2 stops without implementation because no required missing Core behavior is demonstrated. |
+| Construction | Both allocated read-only reconciliation items returned; `queue-empty`, charter acknowledged. | C12 stays OPEN at the exact construction/source-origin evidence gaps. No H6/B51, compact-proof or GIS implementation/execution follows. |
+| Cohort | Six-owner invalidation matrix returned after two disjoint read-only inspections; `queue-empty`. | The planning deliverable is complete; C16 remains OPEN. Refill only for an actual selected cohort/evidence gap, not a new stamp. |
+| SOURCE | Read-only C14 helper-shape reconciliation returned, `awaiting-review` by ROOT: actual `sh07-exact-keys?` / `sh07-vector-contains?` -> current C7/SH08 tests and retained frontiers. | Supplies C01/C14 input, distinct from Core's C6 gap proposal. The second negative-diagnostic proposal is conditional/unallocated. No JVM, implementation, unannotated-Map extension or held proof trial is granted. |
+| MIR producer `01a16a55-1b44-7551-b595-6caceceef034` | Inferred-Integer producer edge, `dependency-blocked`. | Actual reader `(- codepoint 48)` yields Integer; the existing I64 bridge does not establish its mode/range/source facts. Needs SOURCE's real boundary, not another arithmetic demonstration. |
+| Diagnostics `01a16a55-1b07-7202-b7ce-fd71fc0103c2` | Nested generated-origin edge, `dependency-blocked`. | Needs an explicit representation at the true producer edge; no current client is invented. |
+| Optimization `01a16a55-1b07-7202-b7ce-fda9f821c3ed` | `queue-empty`; no eligible implementation item. | No demonstrated defect in a new supported actual case. ROOT may refill only from a real required producer/consumer gap. |
+| Standard library `01a16a55-1b5b-7250-b702-0168997dbbb3` | `queue-empty`; no eligible implementation item. | Bare-Map compiler-client binding needs Core/SOURCE shape; no new library leaf gap is demonstrated. |
+| ROOT | C17 and C18 decisions are `dependency-blocked` on their required evidence. | Route independent review and any separately authorized execution when the exact stable candidate and dependencies are ready. |
+
+The later MIR, optimization and diagnostics managers own compiler C11, C13 and
+C15 work respectively; those document IDs are not SH07-C11, SH07-C13 or
+SH07-C15 task assignments. All existing source/test/interface reservations and
+held attempts survive this plan. Managers may use bounded disjoint
+`gpt-6.1-sol` subagents at medium or higher effort within their allocations;
+they gain neither extra host capacity nor self-acceptance authority.
+
+Ordinary checks share two normal broker leases and one memory-heavy lease;
+exclusive checks hold all slots. Use the existing trusted broker coordination
+root and canonical heavy lock where applicable. Queue when capacity is
+unavailable rather than launching another JVM. Exact heavy/native/bootstrap/
+proof/performance holds and consumed grants remain unchanged. Compact-proof,
+GIS and H6 implementation/execution remain HOLD; publication of a design
+discussion is not clearance. Ordinary eligible work does not need a new
+per-command ROOT approval loop or unchanged expensive proof replay.
+
+### Advisory process review and dispositions
+
+The existing standalone adversarial process reviewer
+`01a17047-4e39-7013-9490-6feb82746d14` is advisory and independent. It is not a
+writer, scheduler, integrator or global acceptance gate. The durable event path
+is material process decision, stalled lane or integration outcome -> ROOT ->
+advisory process review -> explicit ROOT disposition. ROOT records one of
+accepted/assigned, rejected with evidence, deferred with a named dependency or
+event, or bounded evidence requested in the existing coordination record.
+Managers report events to ROOT; this does not authorize peer messaging.
+The reviewer sends actionable findings only to ROOT and independently
+investigates, recommends and tracks dispositions/outcomes. ROOT alone changes
+manager priorities, instructions and assignments; the reviewer never directs
+managers.
+
+Review may challenge unnecessary dependencies or serial handoffs, ownership,
+interfaces/goals, approval loops, stale proof/governance burden, queue
+starvation, tool access, resource allocation and genuine technical blockers,
+including tests, builds, compiler behavior, interfaces, integration and
+toolchains. It preserves necessary correctness, security, proof and resource gates; it
+grants no blanket bypass. The reviewer charter and material event were sent by
+ROOT; the exposed state is `waitingOnApproval`, with no pending operation
+details exposed. Adoption/handoff is pending, not completed and not a global
+gate. ROOT has received independent configuration acceptance only, not
+acceptance of this repository change or completion of the migration.
+The saved heartbeat's existing schedule, target and notification preferences
+remain unchanged. ROOT reconciles the
+plan, operating memory, heartbeat and all manager acknowledgments before
+claiming orchestration migration complete. Configuration alone, this plan,
+the C12 reconciliation and the C16 matrix are not compiler progress.
+
 ## Candidate scope and change control
 
 The first concrete candidate is the existing proposed `:meta/:jvm`
@@ -69,12 +170,109 @@ generic plan execution, primitives, codecs/digests, source reads and artifact
 binding are declared dependencies. The emitter is a selected freshness input;
 it is not executed target lowering in this endpoint.
 
-At the planning baseline, the first seven input rows of that assessment still
-have identical bytes and SHA-256. The emitter has changed: it is 1,328,259
+The actual selected source-analysis subjects at the orchestration snapshot
+are the following complete files, relative to `bootstrap/gravity/`. This is
+the existing six-subject selection, not a repeated whole-directory inventory
+or a claim that every declared function executes:
+
+| Subject | Existing executing owner / role |
+| --- | --- |
+| `src/gravity/compiler/authenticated_envelope.gravity` | Authenticated envelope construction and replay. |
+| `src/gravity/bootstrap/reader.gravity` | Full source selected for analysis; executed SH03 subset remains separately selected. |
+| `src/gravity/bootstrap/syntax.gravity` | Syntax/origin construction. |
+| `src/gravity/macro.gravity` | The source-required `defn` expansion subset, separate from quoted rule DATA. |
+| `src/gravity/resolution.gravity` | Current resolver; development-unadmitted. |
+| `src/gravity/checked_core.gravity` | Core builder and required full source-analysis subject. |
+
+The endpoint is canonical Core under `:meta/:jvm`, with later type/effect/
+ownership/safety facts pending. `p15_s23/compiler.gravity` is interpreted rule
+DATA; `p15_s23/emitter.gravity` is a freshness dependency here. The complete
+loaded Clojure seed/adapters, actual selected function plans, primitive uses,
+classpath/runtime/environment identities and imported callee products still
+need their candidate-bound joins, as recorded in the cohort assessment.
+Neither a module catalog nor six file paths supplies those joins.
+
+Required now means a real selected executable occurrence, generated form,
+primitive/import dependency or C6 preservation/rejection obligation. Later
+means a feature not required by that declared endpoint, with an explicit
+outside-subset reason and rejection where applicable; discovering a required
+use removes that deferral. Complete typed compiler execution, MIR, native
+providers, build/driver closure and general target expansion retain their
+later owners. The separate staged release target stays
+`:llvm-x86_64-linux`, `x86_64-unknown-linux-gnu`, ELF/SysV AMD64; no JVM or
+Darwin check supplies its toolchain, provider or release evidence.
+
+At the historical planning baseline, the first seven input rows of that
+assessment still had identical bytes and SHA-256. The emitter had changed to 1,328,259
 bytes with SHA-256
 `1bb3568b48b26e994da2cc140ff5597812709786a1f9836ae7ff4af7044e63ed`.
 These are desk observations, not renewed source/plan/proof bindings. C01 must
 capture actual selected seed/dependency identities as well as owner bytes.
+
+The Cohort manager's read-only reconciliation at `64aa890a`, forwarded by
+ROOT on 2026-10-24, supplies a newer invalidation observation without replacing
+the historical tables: five owner sources and compiler rule DATA match
+`2a94fb71`; checked-Core changed from 537749 to 538443 bytes through
+`44709ea9`'s duplicate-binding diagnostics/facts/preflight, and emitter
+freshness changed from 1599698 to 1670330 bytes. The loaded
+`bootstrap/clojure/src/` tree changed from `f4204197...` to
+`5c9aac1b3a98e4ad1b1c2242a1769f73a2443352` (seven host files), despite
+unchanged selected seed/adapter files and `deps.edn`. Test, fixture and
+contract trees also changed. Resolver `00874:50-57` and Core `00885:118-128`
+bind compiler/emitter freshness even when their bodies are not executed.
+These observations require affected-input reasoning, not automatic total
+invalidation or automatic reuse of every old result.
+
+The five separate historical hosted-Stage0 subject checks remain historical;
+they do not execute the Gravity Core builder. The old checked-Core exit-143
+attempt remains INCOMPLETE with unresolved cause. PR266's two-helper,
+at-most-2-KiB current-reader composition is useful bounded C3 -> C5 -> Gravity
+Core evidence, not full-subject acceptance. The default reader still has its
+historical `00808` pin; the explicit current-source route is a separate
+development path. No old failed V1/V2 attempt, interrupted run or skipped
+selector is overwritten by the reconciliation. SH-05.1, SH-05.6 and SH-06.6
+remain partial OPEN, and the resolver remains development-unadmitted.
+
+Construction's returned read-only C12 input identifies separate concrete
+held-route obstructions: `sh07_b51/producer_c.gravity`, `root6_a.gravity` and
+`root6_b.gravity` still retain all 13 `:target-kind=:loop` spellings; their
+source correction is not integrated. The current 1670330-byte emitter exceeds
+the held H6 1048576-byte source-entry cap. That is a static fit mismatch, not
+an observed execution result or permission to raise a bound or resume H6.
+Source correction and resource fit require separate decisions. The old
+checked-Core attempt's named raw `/tmp` log is absent locally; its committed
+audit records progress only through the hosted-C6 call, not a returned result.
+These are exact C12 stop conditions for those retained claims. They neither
+make H6/B51 a prerequisite for the ordinary endpoint nor close the ordinary
+full-source/Gravity-construction evidence gap. The retained 36.2-minute failed
+attempt stays failed and is distinct from the `b999` interruption. Construction
+has acknowledged its charter and returned both read-only items; C12 remains
+OPEN. Private 12/22 construction, retained proof/classpath inputs, independent
+admission-load binding, full comparisons and actual producer/hostile evidence
+remain incomplete. Existing load/test timing does not separate construction
+from verification. The next transaction needs C01/C11-bound current Gravity
+source analysis/replay, authentic producer/consumer/rejection inputs and exact
+resource selection, without an unchanged retry, redesign or C17 grant.
+
+SOURCE's returned C14 read-only input locates current required typing
+frontiers, not observed whole-helper diagnostics. `sh07-exact-keys?` has two
+unannotated parameters; `map?` supplies no refinement. `keys` -> homogeneous
+Keyword List -> `set` yields bare Set, but the current equality subset requires
+one bare Set and an independently nonempty literal Keyword anchor (1..1024).
+A variable expected Set, including empty, does not supply that anchor. The
+existing accepted private fixture annotates Map and hardcodes the anchor, so
+it cannot establish either unannotated Map/key-domain inference or the full
+original helper. A variable-expected-Set equality contract is a prospective
+handoff, not a way to close the earlier Map premise or an implementation grant.
+
+For `sh07-vector-contains?`, the actual guard is `=(count remaining)0` before
+`first`/`rest`. Finite Vector rest produces List, loop/recur compatibility is
+exact, and the homogeneous-List head proof recognizes same-binding `empty?`,
+not this count-zero guard. Callers include binding IDs, alias names and `:-`;
+no general widening or Keyword-only narrowing follows. C01/C14 must retain
+those actual uses and producers before allocating a remedy. SOURCE's input
+awaits ROOT review and does not assert whole-helper acceptance or a freshly
+executed rejection. It does not supply a missing C6 lowering feature.
 
 The first candidate is a useful module endpoint, not the entire eventual
 compiler closure. For milestone-wide credit, C01 must state the supported
@@ -115,7 +313,7 @@ nor an old narrative is an independent completion oracle.
 
 ## Ordered task list
 
-All 18 tasks start OPEN in this checklist. Existing accepted evidence should
+All 18 tasks remain OPEN in this checklist. Existing accepted evidence should
 close matching obligations without unnecessary reruns. "Reconcile" means
 inspect the original implementation, cases, raw result and applicability;
 implement or test only the demonstrated gap. It does not mean rewrite a
@@ -141,6 +339,36 @@ working form.
 | SH07-C16 | SH-06 prerequisite | Coordinator with sh-macro/sh-resolution | C01; semantic work can proceed independently | Reconcile current SH05.1/SH05.6/SH06.6 and resolver support for the exact selected candidate. Retain historical credit; obtain affected source/expansion/resolution/comparison and independent acceptance where missing or invalidated. This task closes the upstream current-cohort dependency, not every optional macro or namespace feature. |
 | SH07-C17 | Migration and uniform gate | Coordinator and independent reviewer | C12-C16 | Select the stable revision and produce the applicable fresh module conformance, provenance, actual compiler identities, stage/IR/diagnostic comparisons, reviewed deltas, BOOT5 support/TCB records and independent acceptance. Reuse valid unchanged expensive evidence; refresh affected evidence. Required skipped/failed/interrupted results block their claims. No new authority wrapper or receipt schema is needed. |
 | SH07-C18 | Completion decision | Coordinator | C17; C01-C16 closed for claimed scope | Review the complete six-requirement matrix and independently accepted clean revision. Update existing status/evidence records with exact support and residuals. Mark SH-07 complete only if its full declared compiler-subset exit gate and applicable uniform gates pass. Otherwise record bounded module completion and the exact still-open task(s); seed retirement and later-stage completion remain separate. |
+
+### Current task accountability, unknowns and stopping criteria
+
+The exit gates above retain their accepted/rejected behavior. This current
+overlay assigns each task to its manager and identifies what still prevents
+closure. Every row is OPEN; none is closed by a source census, test count,
+inventory, manager acknowledgment or completed documentation queue item.
+The existing validation table below supplies exact test-owner paths and
+selectors; its locators are not current passing results.
+
+| Task / status | Manager | Current code/evidence and next concrete closure obligation | Stop or rejection criterion |
+| --- | --- | --- | --- |
+| C01 OPEN | Core | Six subjects and endpoint are selected; populate original executable/generated occurrences -> Core/primitive/import product -> exact accepted/rejected selectors, actual selected plans and tested identities. Use the existing support map and cohort load boundary. | Stop before an implementation allocation if the allegedly missing required occurrence/product is unproven. Do not exclude a required use or infer closure from declarations. |
+| C02 OPEN | Core | Core literal/quote/collection lowerers and carrier/decimal/character/order tests exist. Join each selected subject's required literal and constructor variants to those real products/results. | Accept preserved kinds, inert quote and ordered constructors; reject malformed quote/constructor, unsupported executable payload and forged origin. Missing joins remain OPEN. |
+| C03 OPEN | Core; Cohort for C5 producer facts | Reference/def/var and qualified-name tests exist. Select actual executable local/namespace/import/var occurrences and their real resolver/callee artifacts. | Accept exact binding/source identity and shadowing; reject unresolved/private/substituted targets at the owning ingress. Do not fabricate a callee or host lookup. |
+| C04 OPEN | Core | `if`/`do`/`let` owner tests cover exclusive branches and sequential scope. Match selected empty/terminal/nested/transfer variants to actual Core and source order. | Accept false/nil truthiness and once-only ordered children; reject malformed arity/bindings and reorder/drop/duplicate mutations. No unselected destructuring feature is added. |
+| C05 OPEN | Core | B47 function/parameter/capture products exist. Establish which selected uses require callable values, lexical captures or nested functions, preserving original signature/parameter/body coordinates. | Accept required construction/capture/order facts; reject invalid callable or capture links. Later capture ownership is pending, not inferred here. |
+| C06 OPEN | Core | B47 two-I64 current-source composition is bounded; B48 is separate legality. Select actual local/nonlocal/indirect/recursive/dispatch uses and the consumer of each product. | Accept required arity/edge coverage; reject wrong arity or forged/missing edges. Stop rather than claiming B48 public routing, Q composition or general dispatch from a narrower result. |
+| C07 OPEN | Core | `sh07-vector-contains?` has real loop/tail-recur uses and existing lowering/positive/negative tests. Candidate-bound occurrence-to-target/transfer/order/source joins are still missing. | Accept nearest target, simultaneous operands, tailness and original coverage; reject wrong target, arity, nontail or reordered transfer. Do not replace missing evidence with a new loop feature. |
+| C08 OPEN | Core | Qualified mutation and RHS/target tests exist. First establish which selected executable locations require `set!`; quoted dispatch DATA alone is not such a use. | Accept original mutable location and once-only RHS/result; reject immutable/forged locations or dropped order. Type, authority and safety legality remain later obligations. |
+| C09 OPEN | Core | Throw/try/multiple-handler tests exist. Select actual protected/handler/transfer variants and cleanup requirements from the selected population. | Accept required ordered exits and handler scope; reject malformed handler, placement or lost transfer/origin. A required cleanup gap cannot be called optional; no held exception design resumes. |
+| C10 OPEN | Core | Scalar/quoted-symbol, Vector, Keyword-Map and root-map-guard products/tests exist. Required constructor/rest/nested-guard population still needs C01 disposition. | Accept scrutinee once, branch binding uniqueness and structural-failure skipping; reject duplicate/malformed/forged guard/constructor evidence. Bool/totality/effects remain later owners. |
+| C11 OPEN | Core | Canonical node/source maps, fragments and verifiers exist; header pending declarations are not a current support oracle. Reconcile all selected C02-C10 rows and retained declarations against actual products. | Accept complete L2/primitive/domain coverage and maps; reject residual unowned surface forms, malformed child/binding/source links and dropped metadata. No false checked downstream facts. |
+| C12 OPEN | Construction | Reconcile full-source analysis separately from actual authenticated Gravity builder construction/replay. The legacy hosted-C6 attempt is incomplete; bounded Gravity results do not cover all six subjects. Specific retained H6 source-spelling and emitter-cap mismatches are recorded above. | Accept required subjects and the owning constructor under a selected method/resource boundary; reject stale/substituted source membership. Stop those held claims at their exact obstructions; ordinary-route evidence remains separate. No cap increase, H6 replay or new representation/runner. |
+| C13 OPEN | Core | Existing source/file/public `sh07-core` routes and routing tests are locators. Select accepted/rejected co-canonical inputs with deterministic identity, actual-path provenance and extension/read policy. | Accept the exact spellings actually traversed; reject wrong extension/UTF-8, rereads, stale paths or forged identity. Byte/parser parity alone is not paired downstream composition. |
+| C14 OPEN | SOURCE | Read-only helper-shape frontiers returned for ROOT review: unannotated Map/key domain, variable expected-Set equality, and count-zero/Vector-to-List loop/head premises. Existing real Core -> C7 and primitive compositions remain bounded; no whole-helper diagnostic was executed. | Accept fresh producer outputs and preserved origins/bindings/order; reject substituted/stale/coherently forged facts at affected C7/C8/lowering boundaries. Select actual use/consumer and contract before a remedy; no primitive-kernel-to-whole-helper, native or migration promotion. |
+| C15 OPEN | Core; SOURCE frontier only if allocated by ROOT | Core diagnostics, conformance and graph mutation owners exist. Join each required subset-negative family to its real ingress, stable ID/span/profile/target and retained result, including affected producer failures. | Reject shape/order/origin/effect-drop/unsafe-drop/domain/verify forgeries and above-bound graphs; accept at-bound legal graphs. Missing cases or raw host exceptions prevent closure; no diagnostic weakening. |
+| C16 OPEN | Cohort | Six-owner invalidation matrix returned; five unchanged owner bytes do not preserve changed loaded context or emitter freshness. Reconcile actual SH05.1/SH05.6/SH06.6 and resolver facts for ROOT's selected candidate. | Reuse only evidence whose actual assumptions survive; reject stale/coherently substituted upstream products. Stop at missing selected plans/environment/cohort comparisons; no invented macro/resolver feature or historical repin. |
+| C17 OPEN | ROOT, independently routed reviewers | No stable authoritative candidate is selected here. After required C12-C16 rows, select exact source/compiler/dependencies, support/TCB and comparison modes through existing BOOT5/7/8 records. | Require applicable fresh provenance/conformance/stage/diagnostic comparison and independent acceptance. Failed/interrupted/skipped required evidence or mismatched identities block this claim; no consumed grant replay. |
+| C18 OPEN | ROOT | Decide only from C01-C16 scope coverage plus accepted C17 evidence and the six milestone requirements. Managers supply frozen handoffs, not their own completion attestations. | Accept only the supported bounded module decision or full declared milestone gate actually met. Reject unsupported scope promotion; bounded module migration leaves SH-07 partial when its broader exit gate remains open. |
 
 ## Required cases and evidence per task
 
@@ -216,12 +444,30 @@ compiler/environment identities, and candidate-bound acceptance/rejection
 results for every required row. This is useful reconciliation, not completion
 of C01. No source or fixture was excluded to obtain a passing count.
 
+The manager's bounded read-only next-gap inspection at `64aa890a` did not
+establish a missing required Core feature. For example, the actual
+`sh07-vector-contains?` loop/nested-if/tail-recur occurrence at
+`checked_core.gravity:363-369` already has `sh07-lower-loop`,
+`sh07-lower-recur` and `sh07-lower-if` implementations. Existing
+`sh07-b4-products-bind-targets-transfers-and-order`,
+`sh07-b4-rejections-are-structured-and-oracle-bound` and
+`sh07-b4-target-transfer-and-order-mutations-fail-replay` locate accepted and
+rejected checks in `sh07_loop_recur_test.clj`. What is missing is the
+candidate-bound join from the original expanded/resolved occurrence to its
+actual Gravity-built target/transfer/order/source products, selected checks,
+tested revision and retained outcomes. The old source-coverage selector's
+historical byte/function pins cannot supply that join. Item 2 therefore stops
+at that precise missing C01 input: no new files/tests/fixtures or semantic
+allocation is proposed. SOURCE's separate C7 helper-shape inspection remains
+its own C14 input, not a competing Core implementation investigation.
+
 C16 retains the audit's historical 39-S/three-P traceability classification,
 not a current 39/42 execution score. SH-05.1, SH-05.6 and SH-06.6 remain OPEN;
 the resolver stays development-unadmitted. Earlier expansion/resolution and
 hosted-consumer results may retain their original scope where dependency
-comparison justifies it. The changed reader, seed/adapters and explicit emitter
-freshness input prevent treating them as one fresh selected cohort. C16's
+comparison justifies it. Reader/seed/adapter changes since each original
+result, together with later loaded-context and emitter freshness drift,
+prevent treating them as one fresh selected cohort without that comparison. C16's
 remaining action is that exact upstream/cohort reconciliation, not an invented
 new macro feature, marginal resolution fixture or historical corpus repin.
 
@@ -265,6 +511,17 @@ affected composition, resource bounds and stable-module migration. No heavy
 proof, source-analysis retry or native execution is authorized by a task table.
 
 ## Execution order and stopping rules
+
+The current critical path is C01 selected occurrence rows -> required
+C02-C11 Core closure -> affected C12 construction/C13 ingress/C14 consumer
+joins -> C15 required negative matrix -> C17 stable migration -> C18 decision.
+C16 invalidation/reuse reconciliation runs alongside ordinary work and must
+meet its current upstream obligations before C17; its returned planning matrix
+alone does not close them. Dependencies apply to the actual required row, not
+an unrelated manager's entire queue. Read-only C01/C12/C16 reconciliation can
+proceed in parallel. ROOT alone resolves cross-slice allocation or execution
+holds, and a demonstrated disjoint semantic gap need not wait for admission
+maintenance. Final required evidence is still a real C17 dependency.
 
 The first next action is C01: adopt and populate the exact candidate support
 matrix from the existing cohort/source-use evidence. Independently, C12 selects
