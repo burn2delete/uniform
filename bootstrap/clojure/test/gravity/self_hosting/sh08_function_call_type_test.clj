@@ -20400,10 +20400,10 @@
       (is (= (pr-str legacy-check) (pr-str (:verification fresh)))))))
 
 (deftest sh08-function-work-policy-charged-public-composition
-  ;; Existing map-present-get source fixture supplies actual charged public
-  ;; output. Scalar-only fixtures can legitimately fit an allowance of one.
+  ;; One real map-present-get function exercises charged public output without
+  ;; the broader fixture's aliases, defaults, inert data and throw handlers.
   (let [{artifact :core request :request}
-        (function-work-policy-current-source (fixture-path "accepted" "local-runtime-map-present-get" ".gravity"))
+        (function-work-policy-current-source (fixture-path "accepted" "function-work-policy-minimal-map-get" ".gravity"))
         options {:type-inference-work-allowance 1048576}
         produced (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request options])
         candidate (:result produced)]
@@ -20414,8 +20414,15 @@
             tiny (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request tiny-options])
             fresh (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request candidate options])
             limited (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request candidate tiny-options])]
+        (is (= [{:definition-name 'kind :return :gravity.type/keyword}]
+               (mapv #(select-keys % [:definition-name :return]) (:function-type-table candidate))))
+        (is (= [[:direct-map-get :gravity.type/keyword :sh08-map-get-present-v1 :kind]]
+               (mapv (juxt :dispatch :result-type #(get-in % [:applied-map-get :version])
+                            #(get-in % [:applied-map-get :key])) (:call-type-facts candidate))))
         (is (= :rejected (get-in tiny [:result :status])))
         (is (some #(= "C7-GENERIC" (:rule %)) (get-in tiny [:result :diagnostics])))
+        (is (some #(and (= "C7-GENERIC" (:rule %)) (= :structural-call-index-work-limit (:reason %)))
+                  (get-in tiny [:result :diagnostics])))
         (is (= :passed (get-in fresh [:verification :status])))
         (is (= :rejected (get-in limited [:verification :status])))
         (is (= :rejected (get-in limited [:verification :expected :status])))
