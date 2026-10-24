@@ -1198,7 +1198,140 @@
                          :c11-mir-id (get evidence :c11-mir-id) :output-mir-id output-id :result :passed})
        :semantic-identity (assoc (assoc semantic :c11-output-mir-id output-id) :unchanged? false))))
 
+(defn c13-reconstruction-request? [evidence]
+  (if (map? evidence)
+    (if (contains? evidence :verification-class) true
+      (if (contains? evidence :reconstructed-mir) true
+        (contains? evidence :reconstruction-report)))
+    false))
+
+(defn c13-reconstruction-bounded? [value]
+  ; Reuse the existing 32768-node/256-depth closed-carrier fence, then bound
+  ; scalar payloads before any complete equality or report-field lookup.
+  (if (= :accepted (get (sh16-c13-evidence-preflight value) :status))
+    (loop [frontier [value]]
+      (if (= 0 (count frontier)) true
+        (let [current (first frontier) remaining (subvec frontier 1 (count frontier))]
+          (if (sh16-c13-evidence-aggregate? current)
+            (recur (c13-equality-append (sh16-c13-evidence-children current) remaining))
+            (if (sh16-structural-scalar-valid? current) (recur remaining) false)))))
+    false))
+
+(defn c13-reconstruction-report-valid? [mir report]
+  (if (sh16-c13-evidence-exact-keys? report
+        #{:artifact :schema-version :scope :phase :status :checked-core-artifact-id
+          :mir-module-id :checks :preserves :diagnostics :nonclaims})
+    (let [scope (get report :scope) linear? (= scope :closed-i64-parameter-linear)
+          function (get (get mir :functions) (first (keys (get mir :functions))))]
+      (c13-equality-all?
+        [(= :gravity/sh12-branch-join-mir-report (get report :artifact))
+         (= 1 (get report :schema-version)) (= :verification (get report :phase))
+         (= :passed (get report :status))
+         (= scope (if (= 1 (count (get function :blocks)))
+                    :closed-i64-parameter-linear :single-conditional-branch-join))
+         (c13-sha256-id? (get mir :source-core))
+         (= (get mir :source-core) (get report :checked-core-artifact-id))
+         (symbol? (get mir :module-id)) (= (get mir :module-id) (get report :mir-module-id))
+         (= [(if linear? :single-function-linear :single-function-diamond)
+             :blocks-terminators-and-cfg-edges
+             (if linear? :entry-parameter-and-local-dominance :edge-specific-join-dominance)
+             :type-fact-preservation :effect-order-preservation
+             :ownership-capability-and-profile-preservation
+             :safety-outcome-preservation :source-origin-preservation] (get report :checks))
+         (= [:type-facts :effect-facts :ownership-facts :capability-facts :safety-facts
+             :profile-target-facts :source-spans :source-origin-map :generated-origin-chains
+             :control-flow-edges :data-flow-edges :dominance-facts] (get report :preserves))
+         (= [] (get report :diagnostics))
+         (= [:generic-c11-verifier :independent-acceptance :optimizer-credit
+             :backend-credit :self-hosted?] (get report :nonclaims))]))
+    false))
+
+(defn c13-reconstruction-mir-carriers? [mir]
+  ; Stage carriers before legacy order/count helpers or eager report checks.
+  (if (map? mir)
+    (if (c13-sha256-id? (get mir :source-core))
+      (let [functions (get mir :functions)]
+        (if (map? functions)
+          (if (= 1 (count functions))
+            (let [function (get functions (first (keys functions)))]
+              (if (map? function)
+                (let [blocks (get function :blocks)]
+                  (if (map? blocks)
+                    (loop [ids (keys blocks)]
+                      (if (= 0 (count ids)) true
+                        (let [block (get blocks (first ids))]
+                          (if (map? block)
+                            (let [rows (get block :instructions)]
+                              (if (vector? rows)
+                                (if (loop [index 0]
+                                      (if (= index (count rows)) true
+                                        (if (map? (get rows index)) (recur (+ index 1)) false)))
+                                  (recur (rest ids)) false)
+                                false))
+                            false))))
+                    false))
+                false))
+            false)
+          false))
+      false)
+    false))
+
+(defn c13-reconstruction-input-valid? [mir evidence]
+  (if (c13-reconstruction-bounded? mir)
+    (if (c13-reconstruction-bounded? evidence)
+      (if (sh16-c13-evidence-exact-keys? evidence
+            #{:verification-class :reconstructed-mir :reconstruction-report})
+        (if (c13-reconstruction-mir-carriers? mir)
+          (if (c13-reconstruction-mir-carriers? (get evidence :reconstructed-mir))
+          (c13-equality-all?
+            [(= :original-c11-reconstruction (get evidence :verification-class))
+             (= :gravity/mir-module (get mir :artifact)) (= :hosted (get mir :profile))
+             (= :jvm (get mir :target-request)) (= :pending (get mir :verification-status))
+             (= :constructed-unverified (get (get mir :pass-execution-record) :status))
+             (= :pending-independent-verifier (get (get mir :pass-execution-record) :record-id))
+             (= :pending-c11-verifier (get (get mir :b1-preflight) :status))
+             (= false (get (get mir :b1-preflight) :backend-credit?))
+             (c13-bounded-mir-operation-shape-valid? mir (c13-bounded-operation-order mir))
+             (c13-reconstruction-report-valid? mir (get evidence :reconstruction-report))
+             (= mir (get evidence :reconstructed-mir))])
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c13-build-reconstruction-identity-record [mir evidence]
+  (if (c13-reconstruction-input-valid? mir evidence)
+    {:artifact :gravity/c13-bounded-identity-optimized-mir :schema-version 1
+     :status :constructed-unverified :verification-status :pending
+     :admission-status :not-admitted :semantic-replay-parity :not-established
+     :freshness-status :not-established :scope :reconstruction-comparison-only
+     :optimized-mir mir :reconstruction-report (get evidence :reconstruction-report)
+     :pass-contract {:pass-id :c13-bounded-identity :family :identity :version 1
+                     :input-ir :gravity/mir :output-ir :gravity/optimized-mir
+                     :preconditions [:bounded-complete-carrier-equality]
+                     :preserves [:complete-input-mir] :invalidates [] :regenerates []
+                     :target-assumptions []}
+     :decision-record {:artifact :gravity/optimization-decision :pass-id :c13-bounded-identity
+                       :decision :retain-input-unchanged :changed? false :changed-operations []
+                       :proofs-used [] :verifier-result :not-established}
+     :invalidation-ledger {:analysis-invalidated [] :facts-invalidated [] :facts-regenerated []
+                           :proofs-invalidated [] :certificates-invalidated []
+                           :runtime-checks-restored [] :passes-to-rerun [] :caches-cleared []}
+     :residual-check-report {:status :retained-unverified
+                            :retained-runtime-checks (get mir :runtime-check-table)
+                            :elided-runtime-checks []}
+     :diagnostics [] :clojure-seed-boundary? true :self-hosted? false
+     :nonclaims [:generic-c11-verifier :independent-acceptance :optimizer-credit
+                 :backend-credit :self-hosted? :freshness :authentication :proof-authority
+                 :public-admission :lowering :native-execution :migration :release]}
+    {:artifact :gravity/c13-bounded-identity-optimized-mir :schema-version 1
+     :status :rejected :diagnostic "C13-VERIFY"
+     :missing-fact :bounded-original-c11-reconstruction :diagnostics ["C13-VERIFY"]}))
+
 (defn c13-build-bounded-identity-optimized-mir [mir evidence]
+  (if (c13-reconstruction-request? evidence)
+    (c13-build-reconstruction-identity-record mir evidence)
   (let [original-evidence (if (map? evidence) (c13-equality-without-output-id evidence) evidence)
         base (c13-build-bounded-identity-record mir original-evidence)]
     (if (= :accepted (get base :status))
@@ -1208,7 +1341,7 @@
           (if (c13-sha256-id? (get evidence :output-mir-id))
             (c13-equality-translated-record mir evidence base selected)
             {:artifact :gravity/c13-bounded-identity-optimized-mir :schema-version 1 :status :rejected
-             :diagnostic "C13-VERIFY" :missing-fact :fresh-c11-verifier-and-fact-closure :diagnostics ["C13-VERIFY"]}))) base)))
+             :diagnostic "C13-VERIFY" :missing-fact :fresh-c11-verifier-and-fact-closure :diagnostics ["C13-VERIFY"]}))) base))))
 
 ; SH-16 bounded executable optimization leaf. Authenticated SH-15 input and
 ; complete C11 MIR adaptation remain pending. This engine accepts normalized,
@@ -1295,7 +1428,7 @@
 (defn sh16-structural-scalar-valid? [value]
   (if (= nil value)
     true
-    (if (sh16-member? #{true false} value)
+    (if (if (= true value) true (= false value))
       true
       (if (integer? value)
         (if (>= value -9223372036854775808)
@@ -3131,26 +3264,24 @@
 
 (defn sh16-c13-evidence-children [value]
   (if (map? value)
-    (loop [remaining (keys value) result []]
+    (loop [remaining value result []]
       (if (= 0 (count remaining))
         result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
+        (let [entry (first remaining)]
+          (recur
+           (rest remaining)
+           (conj (conj result (first entry)) (second entry))))))
     (if (vector? value)
       value
       (if (set? value) (vec value) []))))
 
 (defn sh16-c13-evidence-push
   [frontier children depth]
-  (if (= 0 (count children))
-    frontier
-    (sh16-c13-evidence-push
-     (conj frontier [(first children) (+ depth 1)])
-     (rest children)
-     depth)))
+  (loop [remaining children result frontier]
+    (if (= 0 (count remaining))
+      result
+      (recur (rest remaining)
+             (conj result [(first remaining) (+ depth 1)])))))
 
 (defn sh16-c13-evidence-scalar? [value]
   (if (= nil value)
@@ -3163,7 +3294,7 @@
           true
           (if (symbol? value)
             true
-            (contains? #{true false} value)))))))
+            (if (= true value) true (= false value))))))))
 
 (defn sh16-c13-evidence-preflight [value]
   (if (seq? value)
