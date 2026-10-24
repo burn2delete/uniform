@@ -175,7 +175,8 @@
    source-path raw-result)
   (let [status (:status raw-result)
         keyset (when (map? raw-result) (set (keys raw-result)))
-        sub? (= :checked-i64-sub-v1 (get-in raw-result [:artifact-template :scope :family]))]
+        sub? (= :checked-i64-sub-v1 (get-in raw-result [:artifact-template :scope :family]))
+        mul? (= :checked-i64-mul-v1 (get-in raw-result [:artifact-template :scope :family]))]
     (when-not
      (and (map? raw-result)
           (contains? #{:accepted :rejected} status)
@@ -189,20 +190,22 @@
                            :host-role :generic-validation-hashing-and-instantiation
                            :scope :bounded-pure-c6-c10 :self-hosted? false}
                           (:authority raw-result))
-                       (not (contains? #{:checked-i64-add-v1 :checked-i64-sub-v1}
+                       (not (contains? #{:checked-i64-add-v1 :checked-i64-sub-v1 :checked-i64-mul-v1}
                               (get-in raw-result [:artifact-template :scope :family]))))
                   (and (= {:semantic-owner :gravity-source
                            :host-role :generic-validation-hashing-and-instantiation
-                           :scope (if sub? :bounded-checked-i64-sub-c6-c10 :bounded-checked-i64-add-c6-c10) :self-hosted? false}
+                           :scope (if mul? :bounded-checked-i64-mul-c6-c10
+                                    (if sub? :bounded-checked-i64-sub-c6-c10 :bounded-checked-i64-add-c6-c10)) :self-hosted? false}
                           (:authority raw-result))
                        (= [:gravity/p15-s23-stage2-gravity-checked-core-artifact 1
-                           (if sub? :complete-for-checked-i64-sub-hosted-safe-jvm-slice
-                             :complete-for-checked-i64-add-hosted-safe-jvm-slice) :hosted :jvm]
+                           (if mul? :complete-for-checked-i64-mul-hosted-safe-jvm-slice
+                             (if sub? :complete-for-checked-i64-sub-hosted-safe-jvm-slice
+                               :complete-for-checked-i64-add-hosted-safe-jvm-slice)) :hosted :jvm]
                           ((juxt :kind :schema-version :status :profile :source-target) (:artifact-template raw-result)))
                        (= {:artifact :gravity/c6-c10-checked-core-scope-contract
-                           :family (if sub? :checked-i64-sub-v1 :checked-i64-add-v1)
+                           :family (if mul? :checked-i64-mul-v1 (if sub? :checked-i64-sub-v1 :checked-i64-add-v1))
                            :profiles [:hosted] :safety-modes [:safe] :source-targets [:jvm]
-                           :source-operations [:parameter :local (if sub? :integer-sub :integer-add) :function]
+                           :source-operations [:parameter :local (if mul? :integer-mul (if sub? :integer-sub :integer-add)) :function]
                            :scalar-literals [] :intrinsic-effects #{:error/raise} :intrinsic-capabilities #{}
                            :ownership :persistent-immutable :safety :runtime-checked :whole-language? false}
                           (get-in raw-result [:artifact-template :scope])))))
