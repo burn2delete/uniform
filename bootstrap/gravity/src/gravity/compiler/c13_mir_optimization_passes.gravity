@@ -1486,11 +1486,13 @@
                                    result frontier]
                               (if (= 0 (count remaining))
                                 result
-                                (recur
-                                 (rest remaining)
-                                 (conj result
-                                       [(first remaining)
-                                        (+ depth 1)]))))]
+                                (if (> (count result) maximum-nodes)
+                                  result
+                                  (recur
+                                   (rest remaining)
+                                   (conj result
+                                         [(first remaining)
+                                          (+ depth 1)])))))]
                         (recur next-frontier (+ cursor 1)
                                next-nodes next-collections
                                scalars scalar-units)))))
