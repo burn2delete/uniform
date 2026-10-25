@@ -37,7 +37,7 @@
   (get values id))
 (defn- walk [mir]
   (let [function (get-in mir [:functions 'main]) blocks (:blocks function)]
-    (loop [id (:entry function) values {} trace []]
+    (loop [id (:entry function) values {} trace [] predecessor nil]
       (assert (< (count trace) 4))
       (let [block (get blocks id)
             values (reduce (fn [values operation]
@@ -45,14 +45,18 @@
                                    value (case (:opcode operation)
                                            :constant (get-in operation [:constant-payload :value])
                                            :truthiness (not (contains? #{nil false} (known values (first operands))))
-                                           :conditional-join (known values (get operands (if (true? (known values (first operands))) 1 2)))
+                                           :conditional-join
+                                           (let [incoming (filter #(= predecessor (:predecessor %))
+                                                                  (get-in mir [:control-flow-graph :join :incoming]))]
+                                             (assert (= 1 (count incoming)))
+                                             (known values (:value (first incoming))))
                                            :function-boundary (known values (first operands)))]
                                (assoc values (:result operation) value))) values (:instructions block))
             terminator (:terminator block) successors (:successors terminator) trace (conj trace id)]
         (case (:kind terminator)
           :return {:value (known values (first (:operands terminator))) :blocks trace}
-          :branch (do (assert (= 1 (count successors))) (recur (first successors) values trace))
-          :conditional-branch (recur (get successors (if (true? (known values (first (:operands terminator)))) 0 1)) values trace))))))
+          :branch (do (assert (= 1 (count successors))) (recur (first successors) values trace id))
+          :conditional-branch (recur (get successors (if (true? (known values (first (:operands terminator)))) 0 1)) values trace id))))))
 
 (defn- check-original [condition]
   (let [{:keys [raw upstream core mir report]} (original condition)
