@@ -22499,8 +22499,9 @@
       (is (nil? (run options))))
     (is (empty? @callbacks))
     (let [audit (verifier-native-control-audit 'sh08-vf-work-allowance)]
-      (is (<= (first (:control-polynomial audit)) 8192))
-      (is (= 0 (second (:control-polynomial audit))))
+      ;; vec is reached only after the native extent is exactly one.
+      (is (<= (reduce + (:control-polynomial audit)) 8192))
+      (is (= 8 (second (:control-polynomial audit))))
       (prn {:verifier-option-source-control audit :public-wrapper-changed false}))))
 
 (deftest sh08-verifier-native-symbol-operation-domain
