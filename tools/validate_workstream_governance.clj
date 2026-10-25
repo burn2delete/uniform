@@ -8,8 +8,6 @@
            (java.security MessageDigest)
            (java.time Instant DateTimeException)))
 
-(def ^:private maximum-json-bytes (* 2 1024 1024))
-
 (def ^:private contract-keys
   #{"schema_version" "contract_id" "normative_sources" "ledger_schema"
     "lifecycle" "admission_policy" "diagnostics" "nonclaims"})
@@ -25,8 +23,7 @@
     "transitions"})
 
 (def ^:private admission-keys
-  #{"one_active_candidate_per_invariant_family"
-    "architecture_decision_after_failures" "dependency_state_floor"
+  #{"dependency_state_floor"
     "integration_eligible_requires" "review_kinds" "review_results"
     "self_audit_confers_eligibility" "commit_pattern"
     "no_overclaim_authority"})
@@ -120,14 +117,13 @@
    "WG003" "a workstream record or nested record is not closed"
    "WG004" "a lifecycle history or transition is illegal"
    "WG005" "an identifier, invariant family, owner, or list is invalid or duplicated"
-   "WG006" "more than one active candidate occupies an invariant family"
    "WG007" "a dependency is missing, cyclic, or below its required admission state"
-   "WG008" "two failed candidates require a nonempty architecture decision before new active work"
    "WG009" "integration evidence is incomplete or malformed"
    "WG010" "an independent accepted review is absent or is not independent"
    "WG011" "a self-audit attempted to confer integration eligibility"
    "WG012" "an authority or product-completion overclaim was attempted"
-   "WG013" "a sharded manifest, active reservation, or immutable terminal record was tampered with"})
+   "WG013" "a sharded manifest, active reservation, or immutable terminal record was tampered with"
+   "WG014" "active candidates by different authors claim overlapping owned paths"})
 (def ^:private nonclaims
   ["Ledger acceptance does not establish implementation correctness."
    "Integration eligibility is authority only to request integration of the exact candidate commit over the exact base commit."
@@ -288,13 +284,10 @@
                     {:cause (.getMessage exception)})))))
 
 (defn load-json
-  "Loads a bounded UTF-8 JSON file using strict object semantics."
+  "Loads a UTF-8 JSON file using strict object semantics."
   [path]
   (let [resolved (.normalize (.toAbsolutePath (Paths/get (str path) (make-array String 0))))
         bytes (Files/readAllBytes resolved)]
-    (when (> (alength bytes) maximum-json-bytes)
-      (json-error "JSON document exceeds byte limit"
-                  {:path (str resolved) :maximum maximum-json-bytes}))
     (read-strict-json (strict-utf8 bytes))))
 
 (defn- json-escape [value]
@@ -463,19 +456,6 @@
                          "WG002")
           (when (map? admission)
             (concat
-             (when-not (true? (get admission
-                                   "one_active_candidate_per_invariant_family"))
-               [(issue "WG002"
-                       "contract.admission_policy.one_active_candidate_per_invariant_family"
-                       "must remain true")])
-             (when-not (and
-                        (integer? (get admission
-                                       "architecture_decision_after_failures"))
-                        (= 2 (get admission
-                                  "architecture_decision_after_failures")))
-               [(issue "WG002"
-                       "contract.admission_policy.architecture_decision_after_failures"
-                       "must remain 2")])
              (when-not (false? (get admission "self_audit_confers_eligibility"))
                [(issue "WG002"
                        "contract.admission_policy.self_audit_confers_eligibility"
@@ -777,6 +757,41 @@
             errors))]
     (vec (concat basic cycle-errors))))
 
+(defn- owned-path-components [item]
+  (when (and (string? item) (not (str/blank? item))
+             (not (str/starts-with? item "/"))
+             (not (str/starts-with? item "~"))
+             (not (str/includes? item "\\")))
+    (let [parts (str/split item #"/")]
+      (when-not (some #{".."} parts)
+        (vec (remove #(or (str/blank? %) (= "." %)) parts))))))
+
+(defn- owned-path-overlap? [left right]
+  (let [left (owned-path-components left)
+        right (owned-path-components right)]
+    (and left right
+         (= (take (min (count left) (count right)) left)
+            (take (min (count left) (count right)) right)))))
+
+(defn- ownership-errors [items]
+  (let [active (filterv #(and (map? %)
+                             (contains? active-state-set (get % "state")))
+                        items)]
+    (vec
+     (for [left-index (range (count active))
+           right-index (range (inc left-index) (count active))
+           :let [left (nth active left-index) right (nth active right-index)]
+           :when (not= (get left "author") (get right "author"))
+           :when (some true?
+                       (for [left-path (when (vector? (get left "owned_paths"))
+                                         (get left "owned_paths"))
+                             right-path (when (vector? (get right "owned_paths"))
+                                          (get right "owned_paths"))]
+                         (boolean (owned-path-overlap? left-path right-path))))]
+       (issue "WG014" "ledger.workstreams"
+              (str (get left "id") " and " (get right "id")
+                   " have different authors and overlapping owned paths"))))))
+
 (defn- validate-v1-ledger
   "Validates an already-decoded v1 workstream ledger.
 
@@ -795,17 +810,7 @@
                                        (when (and (map? item) (string? (get item "id")))
                                          [(get item "id") item])) items))
                 duplicate-ids (for [[id count] (frequencies ids)
-                                    :when (> count 1)] id)
-                active-by-family (group-by #(get % "invariant_family")
-                                           (filter #(and (map? %)
-                                                         (contains? active-state-set
-                                                                    (get % "state")))
-                                                   items))
-                rejection-counts (frequencies
-                                  (map #(get % "invariant_family")
-                                       (filter #(and (map? %)
-                                                     (= "rejected" (get % "state")))
-                                               items)))]
+                                    :when (> count 1)] id)]
             (vec
              (concat
               (when-not (and (integer? (get ledger "schema_version"))
@@ -831,24 +836,8 @@
               (map #(issue "WG005" "ledger.workstreams"
                            (str "duplicate workstream id " %))
                    duplicate-ids)
-              (mapcat
-               (fn [[family active]]
-                 (when (> (count active) 1)
-                   [(issue "WG006" "ledger.workstreams"
-                           (str "more than one active candidate for " family))]))
-               active-by-family)
-              (dependency-errors (filterv map? items) by-id)
-              (mapcat
-               (fn [[index item]]
-                 (when (and (map? item)
-                            (contains? active-state-set (get item "state"))
-                            (>= (get rejection-counts
-                                     (get item "invariant_family") 0) 2)
-                            (not (nonempty-text? (get item "architecture_decision"))))
-                   [(issue "WG008" (str "ledger.workstreams[" index
-                                         "].architecture_decision")
-                           "two rejected candidates require an architecture decision")]))
-               indexed)))))))))
+              (ownership-errors items)
+              (dependency-errors (filterv map? items) by-id)))))))))
 
 (defn- manifest-issue [location message]
   (issue "WG013" location message))
@@ -899,8 +888,6 @@
     (when-not (Files/isRegularFile path (make-array LinkOption 0))
       (throw (ex-info "shard path is not a regular file" {})))
     (let [bytes (Files/readAllBytes path)]
-      (when (> (alength bytes) maximum-json-bytes)
-        (throw (ex-info "shard exceeds byte limit" {})))
       {:bytes bytes :value (read-strict-json (strict-utf8 bytes))})
     (catch Throwable exception
       {:error (manifest-issue location (.getMessage exception))})))
