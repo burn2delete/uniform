@@ -647,9 +647,12 @@ complete v3 application. Every physical application copy must agree.
 
 The constraint solution's small witness is valid only inside its enclosing
 constraint: its lhs call, dependency application, identity-request application
-and Core identity must match the fresh reconstruction. A detached witness,
-or a solution witness transplanted from another application, must reject.
-There is no standalone witness-acceptance operation. Missing/extra keys,
+and Core identity must match the fresh reconstruction. Detached consumption
+rejects, as do mismatching intervals or enclosing application/Core/call/lhs/
+dependency/identity transplants that fail fresh binding. Byte-identical
+same-range witness values may be copied when every enclosing fresh match
+succeeds; the values make no origin claim. Future hostile tests must preserve
+this distinction. There is no standalone witness-acceptance operation. Missing/extra keys,
 removed v2 fields reintroduced into v3, wrong domains, mixed layouts and
 unknown versions reject before generic shape or empty-effect acceptance.
 Existing implemented numeric v1 families remain unchanged; the held GIS v1
