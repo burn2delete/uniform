@@ -36,8 +36,9 @@ backend, package/driver/build completion, self-hosting or seed retirement.
 
 Core owns the permissible authentic frontend/public-ingress outcome through
 its adapters; SOURCE owns actual Core-to-C7 consumption and affected adoption;
-Diagnostics owns stage-produced preservation joins; Cohort owns current
-applicability of the actual producer/consumer evidence. ROOT resolves genuine
+Diagnostics owns stage-produced preservation joins and the assigned authenticated
+envelope quota-removal producer; Cohort owns the assigned resolver quota-removal
+producer and current applicability of the actual producer/consumer evidence. ROOT resolves genuine
 shared ownership, routes independent acceptance and integrates main. A leaf
 freeze does not leave its joins ownerless. Routine work inside unchanged
 exclusive ownership needs no per-task ticket, prewrite notice or preparation
