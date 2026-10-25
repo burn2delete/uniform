@@ -33,6 +33,33 @@ Exclusions are explicit, such as full AI runtime, GPU lowering, advanced
 macro facilities, formal proofs, full package registry support, and optional
 optimization passes.
 
+## Native Symbol spelling-unit ABI
+
+The temporary JVM seed exposes unary `bootstrap-symbol-utf16-unit-count`
+only through compiler-artifact builtin augmentation. Runtime admission requires
+the compiler-artifact plan kind and flag, with `:module` declaring profile
+`:meta` and target `:jvm`. These fields declare this bootstrap ABI; they are
+not source authentication, C5 binding evidence, or a public Core/library export.
+
+The operand must have exactly native `clojure.lang.Symbol` class. The result
+counts UTF16 spelling units from native `getName` and `getNamespace` String
+lengths without rendering, interning, hashing, metadata inspection, UTF8
+conversion, or user `Named` callbacks. A non-null namespace adds its length
+plus one slash even when empty. Native null names contribute zero with a null
+namespace, or four literal `null` units with a present namespace. Empty names,
+supplementary pairs and unpaired surrogates retain their native unit counts.
+The sum uses integer arithmetic wide enough for two maximal String lengths
+and a separator. This is not Unicode validation or a scalar-count contract.
+
+Ordinary L2 operand evaluation happens once before ABI checks. Wrong arity
+reports `L2-BUILTIN-ARITY`; a wrong operand class or plan context reports
+`L2-BUILTIN-ERROR` without rendering the operand. The ordinary builtin set,
+Core and C5 catalogs, authenticated-source admissions and target backends do
+not gain this operation. Its declaration and host implementation remain seed
+TCB bytes: changes invalidate affected retained fingerprints and require fresh
+evidence for any later migration claim. Existing pins are not renewed by this
+development implementation or its conformance tests.
+
 ## Requirements
 
 - The seed compiler MUST declare implemented and excluded documents.

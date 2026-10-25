@@ -799,7 +799,7 @@
       (is (= :experimental (:stability export)))
       (is (= #{} (:effects export) (:capabilities export)))
       (is (= :none (:allocation export)))
-      (is (= ["STD5001"] (:errors export)))
+      (is (= ["STD5001" "STD10003"] (:errors export)))
       (is (= "I64 I64 -> (Result I64 NumericError)" (:type export)))
       (doseq [[left right expected] (concat accepted
                                          (for [left [-3 -1 0 1 3] right [-3 -1 0 1 3]]
@@ -867,7 +867,7 @@
       (is (= :experimental (:stability export)))
       (is (= #{} (:effects export) (:capabilities export)))
       (is (= :none (:allocation export)))
-      (is (= ["STD5001"] (:errors export)))
+      (is (= ["STD5001" "STD10003"] (:errors export)))
       (is (= "I64 I64 -> (Result I64 NumericError)" (:type export)))
       (doseq [[left right expected] (concat accepted
                                          (for [left [-2 -1 0 1 2] right [-2 -1 0 1 2]]
@@ -939,7 +939,7 @@
         (is (= :experimental (:stability export)))
         (is (= #{} (:effects export) (:capabilities export)))
         (is (= :none (:allocation export)))
-        (is (= ["STD5001" "STD5002"] (:errors export)))
+        (is (= ["STD5001" "STD5002" "STD10003"] (:errors export)))
         (is (= "I64 I64 -> (Result I64 NumericError)" (:type export)))
         (doseq [[left right expected]
                 [[0 1 0] [1 1 1] [9 10 0] [10 10 1] [11 10 1]
