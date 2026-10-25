@@ -447,3 +447,73 @@
         (is (= :metadata-free-canonical-value
                (failure #(cursor path (with-meta (clojure.lang.Cons. :head lazy-tail) {:present true})))))))
     (is (zero? @calls))))
+
+(defn- c11-carrier [value]
+  (b/p15-s23-c11-mir-bounded-value! path :native-c11-test value))
+
+(deftest native-c11-carriers-have-semantic-validation-without-accounting
+  (let [deny (fn [& _] (throw (AssertionError. "obsolete runtime accounting")))
+        shared {:text "λ🙂" :value 3/4}
+        large [(vec (repeat 32769 nil)) (nth (iterate vector nil) 257)
+               (apply str (repeat 65537 "x"))
+               (.shiftLeft BigInteger/ONE 4097)
+               (BigDecimal. BigInteger/ONE 65537)]]
+    (with-redefs [b/p15-s23-reference-runtime-bounded-value! deny]
+      (doseq [value (into large [[shared shared] (list shared shared)
+                                (clojure.lang.Cons. shared (list shared))
+                                (sorted-map :a 1) (sorted-set 1 2)
+                                (float 1.25) (double 1.25)])]
+        (is (= {:status :passed} (c11-carrier value)))
+        (is (= {:status :passed}
+               (b/p15-s23-c11-mir-bounded-value!
+                path :native-c11-test value (Object.) nil)))))))
+
+(deftest native-c11-carriers-reject-invalid-unicode-native-shapes-and-cycles
+  (let [calls (atom 0)
+        deny (fn [] (swap! calls inc) (throw (AssertionError. "foreign callback")))
+        foreign (foreign-map deny)
+        lazy-tail (lazy-seq (deny) (list :unreachable))]
+    (doseq [value [(Object.) foreign [foreign] (cycle-map)
+                   (with-meta [1] {:present true})
+                   (sorted-map-by (fn [_ _] (deny)))
+                   (clojure.lang.Cons. :head lazy-tail)
+                   (clojure.lang.Ratio. BigInteger/ONE BigInteger/ZERO)]]
+      (is (= :valid-native-c11-carrier (failure #(c11-carrier value)))))
+    (doseq [value [(str (char 0xd800)) (char 0xd800)
+                   (symbol (str "name" (char 0xd800)))
+                   (keyword (str "name" (char 0xdc00)))]]
+      (is (= :well-formed-unicode-c11-carrier (failure #(c11-carrier value)))))
+    (is (zero? @calls))))
+
+(deftest native-c11-scope-matches-executed-current-producer-contract
+  ;; Execute the real Gravity producer, without changing its historical
+  ;; default admission pins or claiming full upstream construction.
+  (let [source-path (.getCanonicalPath
+                     (java.io.File.
+                      "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"))
+        emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        plan (b/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path))
+        producer (b/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-native-c11-compatibility-test
+                   :compiler-artifact-plan? true}
+                  plan 'c11-build-mir-pass-contract [])
+        native (b/p15-s23-c11-mir-pass-contract-record)
+        scope (b/p15-s23-c11-mir-scope-record)
+        quotas [:maximum-module-carrier-nodes
+                :maximum-final-artifact-carrier-nodes :maximum-carrier-depth]]
+    (is (= :pinned-gravity-c11-source-byte-size
+           (failure #(b/p15-s23-c11-mir-source-binding! path :jvm))))
+    (is (= producer native))
+    (is (nil? (b/p15-s23-c11-mir-require-strict-structure!
+                path producer native :producer-contract-parity)))
+    ;; The fixed entry/then/else/join constructor is a supported topology,
+    ;; not a work allowance. The producer has separate closed nested variants.
+    (is (= 1 (get-in producer [:scope :maximum-conditionals])
+           (:maximum-conditionals scope)))
+    (doseq [record [(:scope producer) (:scope native) scope]]
+      (is (not-any? #(contains? record %) quotas)))
+    (doseq [key quotas]
+      (is (= :producer-contract-parity
+             (failure #(b/p15-s23-c11-mir-require-strict-structure!
+                         path producer (assoc-in native [:scope key] 1)
+                         :producer-contract-parity)))))))

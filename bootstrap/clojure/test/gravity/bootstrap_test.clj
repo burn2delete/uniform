@@ -33549,13 +33549,10 @@
                 (is (not= (:actual-path-binding-id left)
                           (:actual-path-binding-id wasm)))))
             (testing "pass execution and B1 candidate are content-bound"
-              (is (= bootstrap/p15-s23-c11-mir-max-carrier-nodes
-                     (:maximum-module-carrier-nodes scope)))
-              (is (=
-                   bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
-                   (:maximum-final-artifact-carrier-nodes scope)))
-              (is (= bootstrap/p15-s23-c11-mir-max-carrier-depth
-                     (:maximum-carrier-depth scope)))
+              (is (not-any? #(contains? scope %)
+                            [:maximum-module-carrier-nodes
+                             :maximum-final-artifact-carrier-nodes
+                             :maximum-carrier-depth]))
               (is (= (bootstrap/p15-s23-c11-mir-pass-execution-record
                       module left-core (:verification-report left))
                      (:pass-execution-record module)))
@@ -33891,7 +33888,7 @@
                                         "must-not-escape")))
                 (is (not (str/includes? (pr-str nested-twice)
                                         "secret-")))))
-            (testing "raw and public-final carrier bounds are distinct"
+            (testing "large carriers do not bypass exact module and artifact schemas"
               (let [raw-node-carrier
                     (vec (repeat 4096 [nil nil nil]))
                     final-node-carrier
@@ -33928,20 +33925,16 @@
                     class-validation
                     (bootstrap/p15-s23-trusted-carrier-validation
                      (subvec [nil] 0 1) :reject 8 8 8)]
-                (is (= "C11-VERIFY" (:id raw-data)) raw-data)
-                (is (= bootstrap/p15-s23-c11-mir-max-carrier-nodes
-                       (get-in raw-data [:facts :maximum-nodes])))
+                (is (= "C11-MODULE" (:id raw-data)) raw-data)
+                (is (= :authenticated-c11-module-envelope (:missing-fact raw-data)))
                 (is (= :error (:severity raw-data)))
-                (is (= "C11-VERIFY" (:id depth-data)) depth-data)
-                (is (= bootstrap/p15-s23-c11-mir-max-carrier-depth
-                       (get-in depth-data [:facts :maximum-depth])))
+                (is (= "C11-MODULE" (:id depth-data)) depth-data)
+                (is (= :authenticated-c11-module-envelope (:missing-fact depth-data)))
                 (is (= "C11-VERIFY" (:id cycle-data)) cycle-data)
-                (is (= :bounded-c11-carrier
+                (is (= :valid-native-c11-carrier
                        (:missing-fact cycle-data)))
-                (is (= "C11-VERIFY" (:id final-data)) final-data)
-                (is (=
-                     bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
-                     (get-in final-data [:facts :maximum-nodes])))
+                (is (= "C11-MODULE" (:id final-data)) final-data)
+                (is (= :authenticated-c11-artifact-envelope (:missing-fact final-data)))
                 (is (= :error (:severity final-data)))
                 (is (= :passed (:status final-validation)))
                 (is (not-any? #(contains? final-validation %)
@@ -35493,9 +35486,8 @@
         comparator-backed (into (sorted-map) base)
         malformed-envelope (dissoc base :optimized-mir)
         candidates
-        [[:oversized oversized
-         ["C11-VERIFY" :bounded-c11-carrier
-           :runtime-contract-scalar-bounds]]
+        [[:large-integer oversized
+         ["B1-METADATA" :recomputable-c13-c14-b1-final-identities nil]]
          [:comparator-backed comparator-backed
           ["B1-METADATA" :bounded-c13-c14-b1-final-envelope nil]]
          [:malformed-envelope malformed-envelope
