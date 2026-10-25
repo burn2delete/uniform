@@ -20829,7 +20829,7 @@
     @function-work-policy-current-c8-plan function arguments))
 
 
-(deftest sh08-record-union-descriptor-unmetered-development-kernel
+(deftest record-union-descriptor-rows-have-no-count-quota
   ;; Normalized descriptor DATA exercises the owning closed-family checker.
   ;; This is not authenticated source, nominal records/unions, or roadmap credit.
   (let [names (mapv #(keyword (str "member-" %)) (range 65))
@@ -20875,7 +20875,7 @@
         (is (= :rejected (:status result)))
         (is (= reason (:reason result)))))))
 
-(deftest sh08-union-branch-definition-unmetered-development-kernel
+(deftest union-branch-definitions-have-no-count-quota
   ;; Normalized Core DATA exercises branch-name admission and resolution only.
   ;; This does not establish authenticated source or executable union behavior.
   (let [names (mapv #(symbol (str "branch-" %)) (range 65))
