@@ -886,6 +886,18 @@ the 715635-byte `products.edn` inspection projection, whose SHA256 is
 The projection records actual Core, authenticated request, reader identity and
 negative products; it does not replace an admission artifact.
 
+The consumed C3 construction implementation subsequently changed. After
+reconciliation onto exact `5b80b77feb1a3d12c12b28f1061da9a7fe68deae`, a fresh
+affected source composition and both owning verifier rejections passed again:
+12 tests/73 assertions, focused 1/50, natural exit 0 in 74824.111667 ms under
+the same normal-broker 2GiB/120s limits. All test/fixture bytes were retained;
+the new execution records host subtree
+`eb5eef6acb730dbba3317139b3769b83ad2e3ea8`. Its evidence prefix is
+`/tmp/sh07-current-reader-quote-5b80b77f-`. The inspection projection is
+byte-identical to the earlier projection, with the same SHA256 above. This
+observed output equality does not equate the TCBs, relabel the earlier run,
+renew migration authority or establish a performance improvement.
+
 ### C01 source declarations and leaf equivalence at `c7d31338`
 
 The next source audit found 37 top-level DATA definitions and six namespace
