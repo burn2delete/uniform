@@ -123,6 +123,24 @@
     (is (= :rejected (:status incompatible)))
     (is (= "C5-TARGET" (get-in incompatible [:diagnostics 0 :rule])))))
 
+(deftest actual-compatibility-facade-consumes-the-quota-free-owner-result
+  (let [facade (.getCanonicalPath
+                 (io/file "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"))
+        emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! facade :jvm))
+        plan (b/p15-s23-stage2-compiler-artifact-plan emitter facade (slurp facade :encoding "UTF-8"))
+        result (run 'sh06-build-resolution-template (request))
+        execute (fn [function value]
+                  (b/p15-s23-stage2-runtime-execute-function
+                    {:engine :sh06-compatibility-consumer :compiler-artifact-plan? true}
+                    plan function [value]))
+        packaged (execute 'c5-package-resolution-result result)]
+    (is (true? (execute 'c5-compatible-resolution-result? result)))
+    (is (false? (execute 'c5-compatible-resolution-result? (assoc result :bounds {}))))
+    (is (= :compatible (:status packaged)))
+    (is (false? (:authentication-credit? packaged)))
+    (is (false? (:authoritative-resolution-result? packaged)))
+    (is (= result (:resolution-result packaged)))))
+
 (deftest structural-carriers-have-no-count-quotas-and-never-call-host-objects
   (doseq [value [(vec (repeat 131073 :wide))
                  (loop [n 96 value :leaf] (if (zero? n) value (recur (dec n) [value])))
