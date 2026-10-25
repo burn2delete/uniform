@@ -1,8 +1,10 @@
 # SH-07 Completion Tasks
 
 Status: finite implementation and acceptance checklist; SH-07 remains partial.
-Orchestration snapshot: 2026-10-24, inspected remote main
-`64aa890ad5afa6fec23e13bdfbc4b739dbfeead4`. All 18 C-tasks remain OPEN.
+Current accounting snapshot: 2026-10-24, inspected remote main
+`c4b1d19da11def44f835d552e44d06488d31fe46`, tree
+`a4145adf64c5c7d4ebc558c605f07d27f784cac5`. All 18 C-tasks remain OPEN.
+Earlier `64aa890a` handoff observations below keep their historical scope.
 This updates management of the existing work, not compiler support or admission.
 
 Historical assessment date: 2026-10-21.
@@ -97,8 +99,8 @@ any implementation file:
 | --- | --- | --- |
 | ROOT | Coordinator `019f4993-78b9-7573-b154-139d87a127b5` | Cross-slice allocation, C17 admission/execution scheduling, C18 decision and all integration. |
 | Core | Scope/Core closure manager `01a16a54-eeb1-7941-ac35-7be30e47bdc7` | C01, C02-C11, C13 public ingress and C15 subset-negative closure. Current write allocation is this plan and only backlog orchestration/dependency/progress-accounting sections. |
-| Construction | `01a138f7-bfa4-7b90-8a22-5b3c417b2e11` | C12 retained construction/source-origin reconciliation. |
-| SOURCE | `01a13b8d-509d-7771-b618-06a24933391b` | C14 affected C7 composition and one allocated read-only helper-shape reconciliation; existing C7/effects/emitter/tests and L5/STD3 reservations remain intact. A proposed C15 frontier is conditional and unallocated. |
+| Construction | `01a138f7-bfa4-7b90-8a22-5b3c417b2e11` | C12 retained construction/source-origin reconciliation and the exact disjoint stock typed-lowering options bridge allocated by ROOT. |
+| SOURCE | `01a13b8d-509d-7771-b618-06a24933391b` | C14 affected C7 composition; existing C7/effects/emitter/tests and L5/STD3 reservations remain intact. Frozen candidate, diagnostic-method and compact-design work have distinct outcomes below. |
 | Cohort | `01a02f9c-2e5a-7d70-ba6d-d3519701b13f` | C16 current-cohort evidence/invalidation matrix. |
 
 Each manager queue has at most three concrete items. An item names the actual
@@ -111,17 +113,17 @@ Only already allocated eligible disjoint work can proceed meanwhile. Refill
 through ROOT on a concrete dependency event; an empty eligible queue yields.
 Do not invent a compiler feature to demonstrate management migration.
 
-The queue snapshot below is an allocation/adoption observation at handoff, not
-proof of sustained throughput. ROOT has received all eight intended managers'
-acknowledgments of bounded delegation and ROOT-only integration. Advisory
-process-review adoption remains pending as recorded below.
+The queue snapshot below reconciles allocated work at `c4b1d19d`; it is not
+proof of sustained throughput or a compiler completion score. All ten
+ordinary-autonomy recipients have adopted the instruction. Advisory adoption
+is complete; its later platform flag has no exposed operation details.
 
 | Manager | Finite current queue / state | Dependency event or stop |
 | --- | --- | --- |
-| Core | 1: existing two-document migration frozen for `awaiting-review`; 2: bounded read-only inspection returned, required-Core-gap allocation proposal `dependency-blocked` by the missing candidate-bound C01 occurrence join. | ROOT routes independent review of item 1. Item 2 stops without implementation because no required missing Core behavior is demonstrated. |
-| Construction | Both allocated read-only reconciliation items returned; `queue-empty`, charter acknowledged. | C12 stays OPEN at the exact construction/source-origin evidence gaps. No H6/B51, compact-proof or GIS implementation/execution follows. |
+| Core | One two-document outcome/accounting reconciliation, frozen for `awaiting-review`; PR294 helper composition item is integrated and complete for its bounded scope. | ROOT reviews and bundles with the substantive bridge candidate. No administrative-only PR/count credit or new semantic feature; this accounting does not gate other writers. |
+| Construction | `executing`: two existing `bootstrap-p15/00581` adapter files plus new `sh01_typed_lowering_work_policy_test.clj`, on a disjoint branch from `c4b1d19d`. | Preserve legacy fresh-verifier callee/two arguments for old arities; explicit-options arities alone use the policy-aware fresh callee/three arguments. Require actual fresh verification separately from bridge units; no schema, wrapper, cache or local/default-cap change. |
 | Cohort | Six-owner invalidation matrix returned after two disjoint read-only inspections; `queue-empty`. | The planning deliverable is complete; C16 remains OPEN. Refill only for an actual selected cohort/evidence gap, not a new stamp. |
-| SOURCE | Read-only C14 helper-shape reconciliation returned, `awaiting-review` by ROOT: actual `sh07-exact-keys?` / `sh07-vector-contains?` -> current C7/SH08 tests and retained frontiers. | Supplies C01/C14 input, distinct from Core's C6 gap proposal. The second negative-diagnostic proposal is conditional/unallocated. No JVM, implementation, unannotated-Map extension or held proof trial is granted. |
+| SOURCE | Frozen `f3073c24` has independently accepted focused code/evidence but failed whole-default composition. The allocated producer-only diagnostic returned accepted at N=1048576; compact architecture finalization continues. | Preserve the failed whole run and producer-only boundary. The next Effects local-fit method is preparation only, with no GO; no held GIS run. Original-request transport availability is not compact implementation/fit evidence. |
 | MIR producer `01a16a55-1b44-7551-b595-6caceceef034` | Inferred-Integer producer edge, `dependency-blocked`. | Actual reader `(- codepoint 48)` yields Integer; the existing I64 bridge does not establish its mode/range/source facts. Needs SOURCE's real boundary, not another arithmetic demonstration. |
 | Diagnostics `01a16a55-1b07-7202-b7ce-fd71fc0103c2` | Nested generated-origin edge, `dependency-blocked`. | Needs an explicit representation at the true producer edge; no current client is invented. |
 | Optimization `01a16a55-1b07-7202-b7ce-fda9f821c3ed` | `queue-empty`; no eligible implementation item. | No demonstrated defect in a new supported actual case. ROOT may refill only from a real required producer/consumer gap. |
@@ -139,9 +141,12 @@ Ordinary checks share two normal broker leases and one memory-heavy lease;
 exclusive checks hold all slots. Use the existing trusted broker coordination
 root and canonical heavy lock where applicable. Queue when capacity is
 unavailable rather than launching another JVM. Exact heavy/native/bootstrap/
-proof/performance holds and consumed grants remain unchanged. Compact-proof,
-GIS and H6 implementation/execution remain HOLD; publication of a design
-discussion is not clearance. Ordinary eligible work does not need a new
+proof/performance controls and consumed grants remain applicable. Held GIS/H6
+execution is not resumed by this accounting. Compact representation,
+validation, fees, identity/version fences and affected independent review
+remain technical obligations, not a discretionary human-approval label.
+Publication of a design discussion is not implementation/fit evidence.
+Ordinary eligible work does not need a new
 per-command ROOT approval loop or unchanged expensive proof replay.
 
 ### Advisory process review and dispositions
@@ -168,10 +173,13 @@ grants no blanket bypass. At the frozen PR293 handoff, the reviewer charter and
 event had been sent, with exposed state `waitingOnApproval` and no pending
 operation details; adoption was pending and not a global gate. Subsequent to
 PR293, ROOT observed the reviewer's explicit adoption acknowledgment and
-ACTIVE state with no approval flags or pending approval/denial blocker. The
-reviewer is now idle/unblocked, with three findings pending ROOT disposition;
-it is not a migration gate. The earlier pending label remains historical.
-This is an adoption observation,
+ACTIVE state with no approval flags; the later idle/three-findings observation
+also retains its original scope. The latest supported snapshot instead flags
+`waitingOnApproval` without exposing a specific operation or approval request.
+Do not infer a current unblocked state, approve an unknown action or bypass
+the platform flag. Advisory review is not a global gate: disjoint ordinary
+work continues and ROOT handles any actual exposed action at its boundary.
+These are adoption/platform observations,
 not completed investigation, independent acceptance of this candidate or a
 sustained-throughput claim.
 The saved heartbeat's existing schedule, target and notification preferences
@@ -179,6 +187,86 @@ remain unchanged. ROOT reconciles the
 plan, operating memory, heartbeat and all manager acknowledgments before
 claiming orchestration migration complete. Configuration alone, this plan,
 the C12 reconciliation and the C16 matrix are not compiler progress.
+
+### Merged increments and current composition frontier
+
+These are scoped merged results, not a new inventory or fresh whole-cohort
+run. ROOT retained independent reviews, exact-tree conservation and normal
+integration gates. Counts belong to their actual executions; separate batches
+are not a newly executed aggregate.
+
+| Change | Exact merged revision | Retained actual checks and scope |
+| --- | --- | --- |
+| [PR294](https://github.com/burn2delete/uniform/pull/294), original loop helper | `223aeebdf496e748082b4a20bba5a5da34ba64dc` | 1 test/133 assertions: actual G current-reader/C5/Gravity Core target, binding, transfer, source/order joins and coherent target replay rejection. Q text parity only. This is the 435-byte extracted subject, not full checked-Core analysis or C7/runtime support. |
+| [PR295](https://github.com/burn2delete/uniform/pull/295), lawful selector spelling | `70a9628c37582bd7658ffe28930bc45a83024716` | All 13 malformed private loop-selector spellings repaired in three sources, preserving schema fields/order. V2 current-reader G/Q and seed-leaf checks passed 3 tests/47 assertions; separate V3 boundary/LOC checks passed 11 tests/23 assertions. Reuse after disjoint PR294 was independently checked; no fresh clean-merge run is implied. |
+| [PR296](https://github.com/burn2delete/uniform/pull/296), loop-target selection | `59da4107cb6a606e361f935e76c2269a055e513b` | Changed V2 batch passed 15 tests/102 assertions: lawful function-target skipping before loop-only slot lookup, selected occurrence/order and work/diagnostic conservation, plus boundary/LOC. Original-source seed-leaf scope; reader deliberately unselected. |
+| [PR297](https://github.com/burn2delete/uniform/pull/297), if/do selection | `c4b1d19da11def44f835d552e44d06488d31fe46` | Changed V2 batch passed 17 tests/314 assertions: four registered if/do field-selector pairs, mixed/skipped occurrence order, charges and malformed-selection priority, plus boundary/LOC. Existing loop behavior and standalone handlers conserved; reader deliberately unselected. |
+
+PR294's failed parent-EOF preflight, PR295's failed C2-pin attempt and
+PR296/PR297's failed delimiter/EOF loads remain failed. Passing changed-content
+executions used repaired worktree bytes subsequently frozen and independently
+matched; they are not invented clean-frozen-revision JVM runs. None closes
+full B51/H6, current migration, native support or a C-task.
+
+SOURCE's unmerged candidate is `f3073c247303c9eec6023a82d574b6569001a179`,
+tree `d188d97759563f01ce11592bfb94e4ac53c1b2fd`, based on `c4b1d19d`.
+Its focused 13 tests/678 assertions have independent CODE and focused EVIDENCE
+acceptance. The 317-byte bare-Set fixture's actual supervised whole-default
+composition is nevertheless FAILED:
+1 test, 0 passed assertions, 1 failure, 1 error; parent duration 126284 ms.
+Current-reader/C3, SH05, SH06, SH07, request and C7 returned, with
+`C7-GENERIC/:loop-type-work-limit` reports followed by Map-key/Set-conversion
+work-limit reports and the deliberate prerequisite stop. Fresh C7 verification,
+public C8, assembly and runtime were UNREACHED. No timeout/truncation occurred;
+observed cleanup completed. Original artifacts remain at
+`/private/tmp/source-dse-full-f3073c24-20261024a`. First printed refusal is not
+established as first internal refusal; minimum sufficient N and global-versus-
+local cause in that failed run remain unresolved. Focused acceptance does not make the whole result
+passing or the candidate ready for integration.
+
+[PR291](https://github.com/burn2delete/uniform/pull/291), merged as
+`25cc478b7982c921614c0cdcf40f5f3933d12514`, already provides trusted
+caller-selected cumulative C7 work policy. Its default 65536 is not a universal
+language-semantic requirement. Options remain outside canonical schema-3
+identity and candidate authority; local DSE `min(remaining,65536)` and
+independent C8/lowering/runtime limits remain. The stock
+`00581-p15-s23-stage2-typed-lowering-operation.clj` still invokes the legacy
+fresh C7 verifier with two arguments and has no caller-options bridge.
+That concrete interface gap does not establish fresh-verifier or downstream fit.
+C12 owns the disjoint two-`00581`-file/new-test repair: old public arities
+retain the legacy callee/two arguments; new explicit-options arities alone
+use the policy-aware fresh callee/three arguments and unwrap only its
+verification envelope. Keep the typed input's exact three keys, source/report
+joins, Gravity malformed-option validation and all local/default ceilings;
+no new schema, wrapper, cache or implicit allowance change.
+
+C12's prewrite 228-byte minimal-Map-get producer/fresh-policy-verifier probe
+passed naturally in 91.403380041 s under the normal 2GiB/120s bound. This is
+not DSE fit or completed bridge validation; bridge units and actual fresh
+verification remain distinct required evidence. Two actual C12 negative groups
+passed separately, 1 test/19 assertions and 1 test/17 assertions; the candidate
+is unfrozen and no passing current positive aggregate is claimed.
+
+SOURCE's actual producer-only diagnostic accepted the genuine 317-byte source
+at existing trusted N=1048576, converging in five rounds within bound 34.
+The ordinary inference pool charged 220380 and retained 828196; this is not
+minimum N or full C7 total work. The largest observed local DSE charge was
+31728, within unchanged 65536 on this trajectory; overlapping rows must not
+be summed. All 22 observed calls produced rows, with zero drops and no observer
+error. Parent/child exited zero in 119415 ms parent duration, cleanup completed
+and the frozen candidate remained clean. Raw evidence is at
+`/private/tmp/source-dse-producer-f3073c24-20261024b`; `probe.edn` SHA256 is
+`6cb021a30b1a3f998cf838c483690696288e820f2b757327b982c188f7265697`.
+This supplies no separate fresh C7 verifier, C8, assembly or runtime result.
+The earlier whole-default failure remains FAILED. SOURCE's next Effects
+local-fit question is method preparation only, with no execution GO.
+
+The existing three-argument body-effects route already carries the original
+request at `binding.digest-resolution.preimage.request`; the detached
+two-argument route lacks it and is unsupported for compact GIS. No new context
+API is needed for that selected route, but compact representation, validation,
+fees, identity/version and independent consumer evidence remain unresolved.
+No held GIS execution follows from transport availability.
 
 ## Candidate scope and change control
 
@@ -253,22 +341,24 @@ development path. No old failed V1/V2 attempt, interrupted run or skipped
 selector is overwritten by the reconciliation. SH-05.1, SH-05.6 and SH-06.6
 remain partial OPEN, and the resolver remains development-unadmitted.
 
-Construction's returned read-only C12 input identifies separate concrete
-held-route obstructions: `sh07_b51/producer_c.gravity`, `root6_a.gravity` and
-`root6_b.gravity` still retain all 13 `:target-kind=:loop` spellings; their
-source correction is not integrated. The current 1670330-byte emitter exceeds
+Construction's historical `64aa890a` C12 reconciliation found all 13 malformed
+`:target-kind=:loop` spellings in `sh07_b51/producer_c.gravity`, `root6_a.gravity`
+and `root6_b.gravity`. PR295 subsequently integrated their lawful spelling
+repair; PR296/PR297 separately repaired selector-before-field traversal.
+Those defects no longer remain in current main; that does not update or admit
+held H6 inputs/pins. The retained 1670330-byte emitter observation exceeds
 the held H6 1048576-byte source-entry cap. That is a static fit mismatch, not
 an observed execution result or permission to raise a bound or resume H6.
-Source correction and resource fit require separate decisions. The old
+The integrated source correction does not establish resource fit. The old
 checked-Core attempt's named raw `/tmp` log is absent locally; its committed
 audit records progress only through the hosted-C6 call, not a returned result.
 These are exact C12 stop conditions for those retained claims. They neither
 make H6/B51 a prerequisite for the ordinary endpoint nor close the ordinary
 full-source/Gravity-construction evidence gap. The retained 36.2-minute failed
 attempt stays failed and is distinct from the `b999` interruption. Construction
-has acknowledged its charter and returned both read-only items; C12 remains
-OPEN. Private 12/22 construction, retained proof/classpath inputs, independent
-admission-load binding, full comparisons and actual producer/hostile evidence
+returned those read-only items and now owns the separate options bridge above;
+C12 remains OPEN. Private 12/22 construction, retained proof/classpath inputs,
+independent admission-load binding, full comparisons and actual producer/hostile evidence
 remain incomplete. Existing load/test timing does not separate construction
 from verification. The next transaction needs C01/C11-bound current Gravity
 source analysis/replay, authentic producer/consumer/rejection inputs and exact
@@ -377,14 +467,14 @@ selectors; its locators are not current passing results.
 | C04 OPEN | Core | `if`/`do`/`let` owner tests cover exclusive branches and sequential scope. Match selected empty/terminal/nested/transfer variants to actual Core and source order. | Accept false/nil truthiness and once-only ordered children; reject malformed arity/bindings and reorder/drop/duplicate mutations. No unselected destructuring feature is added. |
 | C05 OPEN | Core | B47 function/parameter/capture products exist. Establish which selected uses require callable values, lexical captures or nested functions, preserving original signature/parameter/body coordinates. | Accept required construction/capture/order facts; reject invalid callable or capture links. Later capture ownership is pending, not inferred here. |
 | C06 OPEN | Core | B47 two-I64 current-source composition is bounded; B48 is separate legality. Select actual local/nonlocal/indirect/recursive/dispatch uses and the consumer of each product. | Accept required arity/edge coverage; reject wrong arity or forged/missing edges. Stop rather than claiming B48 public routing, Q composition or general dispatch from a narrower result. |
-| C07 OPEN | Core | `sh07-vector-contains?` has real loop/tail-recur uses and existing lowering/positive/negative tests. Candidate-bound occurrence-to-target/transfer/order/source joins are still missing. | Accept nearest target, simultaneous operands, tailness and original coverage; reject wrong target, arity, nontail or reordered transfer. Do not replace missing evidence with a new loop feature. |
+| C07 OPEN | Core | PR294 supplies the extracted `sh07-vector-contains?` G source-to-target/transfer/order/source join, 1/133, with Q text parity only. Other required occurrences and full-subject candidate-bound joins remain missing. | Accept nearest target, simultaneous operands, tailness and original coverage; reject wrong target, arity, nontail or reordered transfer. Do not promote this bounded fixture to full-source closure or add a replacement loop feature. |
 | C08 OPEN | Core | Qualified mutation and RHS/target tests exist. First establish which selected executable locations require `set!`; quoted dispatch DATA alone is not such a use. | Accept original mutable location and once-only RHS/result; reject immutable/forged locations or dropped order. Type, authority and safety legality remain later obligations. |
 | C09 OPEN | Core | Throw/try/multiple-handler tests exist. Select actual protected/handler/transfer variants and cleanup requirements from the selected population. | Accept required ordered exits and handler scope; reject malformed handler, placement or lost transfer/origin. A required cleanup gap cannot be called optional; no held exception design resumes. |
 | C10 OPEN | Core | Scalar/quoted-symbol, Vector, Keyword-Map and root-map-guard products/tests exist. Required constructor/rest/nested-guard population still needs C01 disposition. | Accept scrutinee once, branch binding uniqueness and structural-failure skipping; reject duplicate/malformed/forged guard/constructor evidence. Bool/totality/effects remain later owners. |
 | C11 OPEN | Core | Canonical node/source maps, fragments and verifiers exist; header pending declarations are not a current support oracle. Reconcile all selected C02-C10 rows and retained declarations against actual products. | Accept complete L2/primitive/domain coverage and maps; reject residual unowned surface forms, malformed child/binding/source links and dropped metadata. No false checked downstream facts. |
-| C12 OPEN | Construction | Reconcile full-source analysis separately from actual authenticated Gravity builder construction/replay. The legacy hosted-C6 attempt is incomplete; bounded Gravity results do not cover all six subjects. Specific retained H6 source-spelling and emitter-cap mismatches are recorded above. | Accept required subjects and the owning constructor under a selected method/resource boundary; reject stale/substituted source membership. Stop those held claims at their exact obstructions; ordinary-route evidence remains separate. No cap increase, H6 replay or new representation/runner. |
+| C12 OPEN | Construction | PR295-297 integrated scoped spelling/selector repairs; full-source analysis and actual authenticated Gravity construction remain separate open claims. The exact disjoint stock work-policy bridge is executing; its minimal-Map-get prewrite probe is not DSE fit. | Preserve old-arity legacy fresh verification and new explicit-options policy-aware verification, original source/report joins and local/default ceilings. Held H6 resource/full-reconstruction gaps are not ordinary-work gates; no cap increase or unchanged H6 replay. |
 | C13 OPEN | Core | Existing source/file/public `sh07-core` routes and routing tests are locators. Select accepted/rejected co-canonical inputs with deterministic identity, actual-path provenance and extension/read policy. | Accept the exact spellings actually traversed; reject wrong extension/UTF-8, rereads, stale paths or forged identity. Byte/parser parity alone is not paired downstream composition. |
-| C14 OPEN | SOURCE | Read-only helper-shape frontiers returned for ROOT review: unannotated Map/key domain, variable expected-Set equality, and count-zero/Vector-to-List loop/head premises. Existing real Core -> C7 and primitive compositions remain bounded; no whole-helper diagnostic was executed. | Accept fresh producer outputs and preserved origins/bindings/order; reject substituted/stale/coherently forged facts at affected C7/C8/lowering boundaries. Select actual use/consumer and contract before a remedy; no primitive-kernel-to-whole-helper, native or migration promotion. |
+| C14 OPEN | SOURCE | Unmerged `f3073c24` has independently accepted focused 13/678 code/evidence, but its 317-byte fixture whole-default composition failed C7 work limits; fresh verification/C8/assembly/runtime were unreached. The producer-only diagnostic accepted at existing N=1048576 with observed local DSE charges within unchanged limits. | Preserve the failed whole result and unknown first-internal/minimum frontier. Producer-only acceptance does not establish fresh verification/downstream fit or permit raised local limits. Original helper Map/key-domain and loop/head frontiers remain separate. |
 | C15 OPEN | Core; SOURCE frontier only if allocated by ROOT | Core diagnostics, conformance and graph mutation owners exist. Join each required subset-negative family to its real ingress, stable ID/span/profile/target and retained result, including affected producer failures. | Reject shape/order/origin/effect-drop/unsafe-drop/domain/verify forgeries and above-bound graphs; accept at-bound legal graphs. Missing cases or raw host exceptions prevent closure; no diagnostic weakening. |
 | C16 OPEN | Cohort | Six-owner invalidation matrix returned; five unchanged owner bytes do not preserve changed loaded context or emitter freshness. Reconcile actual SH05.1/SH05.6/SH06.6 and resolver facts for ROOT's selected candidate. | Reuse only evidence whose actual assumptions survive; reject stale/coherently substituted upstream products. Stop at missing selected plans/environment/cohort comparisons; no invented macro/resolver feature or historical repin. |
 | C17 OPEN | ROOT, independently routed reviewers | No stable authoritative candidate is selected here. After required C12-C16 rows, select exact source/compiler/dependencies, support/TCB and comparison modes through existing BOOT5/7/8 records. | Require applicable fresh provenance/conformance/stage/diagnostic comparison and independent acceptance. Failed/interrupted/skipped required evidence or mismatched identities block this claim; no consumed grant replay. |
@@ -476,10 +566,12 @@ rejected checks in `sh07_loop_recur_test.clj`. What is missing is the
 candidate-bound join from the original expanded/resolved occurrence to its
 actual Gravity-built target/transfer/order/source products, selected checks,
 tested revision and retained outcomes. The old source-coverage selector's
-historical byte/function pins cannot supply that join. Item 2 therefore stops
-at that precise missing C01 input: no new files/tests/fixtures or semantic
-allocation is proposed. SOURCE's separate C7 helper-shape inspection remains
-its own C14 input, not a competing Core implementation investigation.
+historical byte/function pins cannot supply that join. That initial handoff
+therefore stopped before proposing a new Core feature. PR294 subsequently
+closed one extracted-helper G composition/evidence gap without a production
+Core change; full-subject and other required occurrence joins remain open.
+SOURCE's separate C7 helper-shape work remains its own C14 input. No new
+semantic feature is allocated by this accounting update.
 
 C16 retains the audit's historical 39-S/three-P traceability classification,
 not a current 39/42 execution score. SH-05.1, SH-05.6 and SH-06.6 remain OPEN;
