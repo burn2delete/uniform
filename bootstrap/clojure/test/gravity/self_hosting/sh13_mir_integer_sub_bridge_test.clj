@@ -30,7 +30,7 @@
                  sh13-execute-operations sh13-execute-terminator sh13-execute-block sh13-execute-function}
         forms (binding [*read-eval* false] (read-string (str "[" (slurp path) "]")))
         selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? names (second %))) forms)
-        primitives '#{defn if let get count = integer? <= >= < > + - * quot conj assoc}
+        primitives '#{defn if let loop recur get count = integer? <= >= < > + - * quot conj assoc}
         callees (for [form selected expression (tree-seq coll? seq form)
                       :when (and (seq? expression) (symbol? (first expression)))] (first expression))
         text (str "(ns gravity.test.original-sub-execution (:profile :meta) (:target :jvm)"

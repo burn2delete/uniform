@@ -9314,7 +9314,6 @@
    :version 1
    :maximum-functions 32
    :maximum-blocks-per-function 32
-   :maximum-operations-per-block 64
    :maximum-parameters 8
    :maximum-call-depth 32
    :maximum-execution-steps 512
@@ -9684,46 +9683,51 @@
                 :type)
               :type)))))))))
 
-(defn sh13-operations-error
-  [module function operations index available types]
-  (if (= index (count operations))
-    nil
-    (let [operation (get operations index)
-          operation-id (get operation :op-id)]
-      (if (sh13-operation-common-valid? operation)
-        (if (= (get operation :profile) (get module :profile))
-          (if (sh13-operation-facts-match-module? module operation)
-            (if (contains? available operation-id)
-          :dominance
-          (if (sh13-operation-effect-family-valid? operation)
-            (if (sh13-operation-effect-order-valid? operation)
-            (if
-             (sh13-vector-values-present?
-              (get operation :operands) available 0)
-              (if
-               (sh13-set-subset?
-                (get operation :effects)
-                (get function :latent-effects))
-                (let [call-error
-                      (sh13-call-error module function operation)
-                      type-error
-                      (sh13-operation-type-error
-                       module function operation types)]
-                  (if (= nil call-error)
-                    (if (= nil type-error)
-                      (sh13-operations-error
-                       module function operations (+ index 1)
-                       (conj available operation-id)
-                       (assoc types operation-id (get operation :type)))
-                      type-error)
-                    call-error))
-                :effect)
-              :dominance)
-            :effect)
-            :effect))
-            :verify)
-          :module)
-        :origin))))
+(defn sh13-operations-error [module function operations index available types]
+  (loop [module module
+         function function
+         operations operations
+         index index
+         available available
+         types types]
+    (if (= index (count operations))
+      nil
+      (let [operation (get operations index) operation-id (get operation :op-id)]
+        (if (sh13-operation-common-valid? operation)
+          (if (= (get operation :profile) (get module :profile))
+            (if (sh13-operation-facts-match-module? module operation)
+              (if (contains? available operation-id)
+                :dominance
+                (if (sh13-operation-effect-family-valid? operation)
+                  (if (sh13-operation-effect-order-valid? operation)
+                    (if (sh13-vector-values-present? (get operation :operands) available 0)
+                      (if (sh13-set-subset?
+                            (get operation :effects)
+                            (get function :latent-effects))
+                        (let [call-error (sh13-call-error module function operation)
+                              type-error (sh13-operation-type-error
+                                           module
+                                           function
+                                           operation
+                                           types)]
+                          (if (= nil call-error)
+                            (if (= nil type-error)
+                              (recur
+                                module
+                                function
+                                operations
+                                (+ index 1)
+                                (conj available operation-id)
+                                (assoc types operation-id (get operation :type)))
+                              type-error)
+                            call-error))
+                        :effect)
+                      :dominance)
+                    :effect)
+                  :effect))
+              :verify)
+            :module)
+          :origin)))))
 
 (defn sh13-block-available [block]
   (set (get block :params)))
@@ -9733,12 +9737,11 @@
    (get block :params) (get block :param-types) 0 {}))
 
 (defn sh13-block-result-types [block index result]
-  (if (= index (count (get block :operations)))
-    result
-    (let [operation (get (get block :operations) index)]
-      (sh13-block-result-types
-       block (+ index 1)
-       (assoc result (get operation :op-id) (get operation :type))))))
+  (loop [block block index index result result]
+    (if (= index (count (get block :operations)))
+      result
+      (let [operation (get (get block :operations) index)]
+        (recur block (+ index 1) (assoc result (get operation :op-id) (get operation :type)))))))
 
 (defn sh13-target-arguments-error
   [function target-id arguments types]
@@ -9832,17 +9835,12 @@
       false
       (if (vector? (get block :params))
         (if (vector? (get block :param-types))
-          (if (= (count (get block :params))
-                 (count (get block :param-types)))
-            (if (sh13-unique-values?
-                 (get block :params) 0 #{})
+          (if (= (count (get block :params)) (count (get block :param-types)))
+            (if (sh13-unique-values? (get block :params) 0 #{})
               (if (<= (count (get block :params)) 8)
               (if (vector? (get block :operations))
-                (if (<= (count (get block :operations)) 64)
-                  (if (sh13-source-span-valid? (get block :source-span))
-                    (sh13-origin-chain-valid?
-                     (get block :origin-chain))
-                    false)
+                (if (sh13-source-span-valid? (get block :source-span))
+                  (sh13-origin-chain-valid? (get block :origin-chain))
                   false)
                 false)
               false)
@@ -9863,23 +9861,19 @@
           (sh13-unique-values?
            values (+ index 1) (conj seen value)))))))
 
-(defn sh13-operation-ids-unique?
-  [blocks block-index operation-index seen]
-  (if (= block-index (count blocks))
-    true
-    (let [operations (get (get blocks block-index) :operations)]
-      (if (= operation-index (count operations))
-        (sh13-operation-ids-unique?
-         blocks (+ block-index 1) 0 seen)
-        (let [operation-id
-              (get (get operations operation-index) :op-id)]
-          (if (= nil operation-id)
-            false
-            (if (contains? seen operation-id)
+(defn sh13-operation-ids-unique? [blocks block-index operation-index seen]
+  (loop [blocks blocks block-index block-index operation-index operation-index seen seen]
+    (if (= block-index (count blocks))
+      true
+      (let [operations (get (get blocks block-index) :operations)]
+        (if (= operation-index (count operations))
+          (recur blocks (+ block-index 1) 0 seen)
+          (let [operation-id (get (get operations operation-index) :op-id)]
+            (if (= nil operation-id)
               false
-              (sh13-operation-ids-unique?
-               blocks block-index (+ operation-index 1)
-               (conj seen operation-id)))))))))
+              (if (contains? seen operation-id)
+                false
+                (recur blocks block-index (+ operation-index 1) (conj seen operation-id))))))))))
 
 (defn sh13-block-successors [block]
   (let [terminator (get block :terminator)
@@ -10055,20 +10049,16 @@
           :dominance)
         :module))))
 
-(defn sh13-cross-callees-in-operations
-  [function-id operations index result]
-  (if (= index (count operations))
-    result
-    (let [operation (get operations index)
-          callee (get operation :callee)]
-      (if (= :call (get operation :opcode))
-        (if (= callee function-id)
-          (sh13-cross-callees-in-operations
-           function-id operations (+ index 1) result)
-          (sh13-cross-callees-in-operations
-           function-id operations (+ index 1) (conj result callee)))
-        (sh13-cross-callees-in-operations
-         function-id operations (+ index 1) result)))))
+(defn sh13-cross-callees-in-operations [function-id operations index result]
+  (loop [function-id function-id operations operations index index result result]
+    (if (= index (count operations))
+      result
+      (let [operation (get operations index) callee (get operation :callee)]
+        (if (= :call (get operation :opcode))
+          (if (= callee function-id)
+            (recur function-id operations (+ index 1) result)
+            (recur function-id operations (+ index 1) (conj result callee)))
+          (recur function-id operations (+ index 1) result))))))
 
 (defn sh13-cross-callees-in-blocks
   [function-id blocks index result]
@@ -10084,29 +10074,26 @@
    (get function :fn-id) (get function :blocks) 0 []))
 
 (defn sh13-append-values [values index result]
-  (if (= index (count values))
-    result
-    (sh13-append-values
-     values (+ index 1) (conj result (get values index)))))
+  (loop [values values index index result result]
+    (if (= index (count values))
+      result
+      (recur values (+ index 1) (conj result (get values index))))))
 
-(defn sh13-call-path-reaches?
-  [module pending target visited]
-  (if (= 0 (count pending))
-    false
-    (let [function-id (first pending)
-          remaining (vec (rest pending))]
-      (if (= function-id target)
-        true
-        (if (contains? visited function-id)
-          (sh13-call-path-reaches?
-           module remaining target visited)
-          (let [function (sh13-function module function-id)]
-            (sh13-call-path-reaches?
-             module
-             (sh13-append-values
-              (sh13-cross-callees function) 0 remaining)
-             target
-             (conj visited function-id))))))))
+(defn sh13-call-path-reaches? [module pending target visited]
+  (loop [module module pending pending target target visited visited]
+    (if (= 0 (count pending))
+      false
+      (let [function-id (first pending) remaining (vec (rest pending))]
+        (if (= function-id target)
+          true
+          (if (contains? visited function-id)
+            (recur module remaining target visited)
+            (let [function (sh13-function module function-id)]
+              (recur
+                module
+                (sh13-append-values (sh13-cross-callees function) 0 remaining)
+                target
+                (conj visited function-id)))))))))
 
 (defn sh13-mutual-call-cycle-from? [module function-id]
   (let [function (sh13-function module function-id)]
@@ -10337,23 +10324,30 @@
                        :trace (get call-result :trace)}
                       call-result))))))))))))
 
-(defn sh13-execute-operations
-  [module function operations index values fuel depth trace]
-  (if (= index (count operations))
-    {:status :continue
-     :values values
-     :fuel fuel
-     :trace trace}
-    (let [operation (get operations index)
-          result
-          (sh13-execute-operation
-           module function operation values fuel depth trace)]
-      (if (= :continue (get result :status))
-        (sh13-execute-operations
-         module function operations (+ index 1)
-         (assoc values (get operation :op-id) (get result :value))
-         (get result :fuel) depth (get result :trace))
-        result))))
+(defn sh13-execute-operations [module function operations index values fuel depth trace]
+  (loop [module module
+         function function
+         operations operations
+         index index
+         values values
+         fuel fuel
+         depth depth
+         trace trace]
+    (if (= index (count operations))
+      {:status :continue, :values values, :fuel fuel, :trace trace}
+      (let [operation (get operations index)
+            result (sh13-execute-operation module function operation values fuel depth trace)]
+        (if (= :continue (get result :status))
+          (recur
+            module
+            function
+            operations
+            (+ index 1)
+            (assoc values (get operation :op-id) (get result :value))
+            (get result :fuel)
+            depth
+            (get result :trace))
+          result)))))
 
 (defn sh13-execute-terminator
   [module function block terminator values fuel depth trace]
