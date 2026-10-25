@@ -5,6 +5,8 @@ Current accounting snapshot: 2026-10-24, inspected remote main
 `c4b1d19da11def44f835d552e44d06488d31fe46`, tree
 `a4145adf64c5c7d4ebc558c605f07d27f784cac5`. All 18 C-tasks remain OPEN.
 Earlier `64aa890a` handoff observations below keep their historical scope.
+The C01 seed-plan supplement below is based on `0067e9418de992900a95cd47d016029af62ff99c`;
+it does not refresh unrelated queue or compiler evidence snapshots.
 This updates management of the existing work, not compiler support or admission.
 
 Historical assessment date: 2026-10-21.
@@ -98,7 +100,7 @@ any implementation file:
 | Key | Accountable manager | SH07 responsibility |
 | --- | --- | --- |
 | ROOT | Coordinator `019f4993-78b9-7573-b154-139d87a127b5` | Cross-slice allocation, C17 admission/execution scheduling, C18 decision and all integration. |
-| Core | Scope/Core closure manager `01a16a54-eeb1-7941-ac35-7be30e47bdc7` | C01, C02-C11, C13 public ingress and C15 subset-negative closure. Current write allocation is this plan and only backlog orchestration/dependency/progress-accounting sections. |
+| Core | Scope/Core closure manager `01a16a54-eeb1-7941-ac35-7be30e47bdc7` | C01, C02-C11, C13 public ingress and C15 subset-negative closure. Allocated documents remain this plan, the selected-owner EDN map and backlog orchestration/dependency/progress sections. Contract-settled Core production/tests/fixtures follow ROOT's exclusive standing scope; foreign/shared interfaces stay outside it. |
 | Construction | `01a138f7-bfa4-7b90-8a22-5b3c417b2e11` | C12 retained construction/source-origin reconciliation and the exact disjoint stock typed-lowering options bridge allocated by ROOT. |
 | SOURCE | `01a13b8d-509d-7771-b618-06a24933391b` | C14 affected C7 composition; existing C7/effects/emitter/tests and L5/STD3 reservations remain intact. Frozen candidate, diagnostic-method and compact-design work have distinct outcomes below. |
 | Cohort | `01a02f9c-2e5a-7d70-ba6d-d3519701b13f` | C16 current-cohort evidence/invalidation matrix. |
@@ -113,6 +115,19 @@ Only already allocated eligible disjoint work can proceed meanwhile. Refill
 through ROOT on a concrete dependency event; an empty eligible queue yields.
 Do not invent a compiler feature to demonstrate management migration.
 
+ROOT's standing finite-goal charters apply to all eight implementation
+managers. Three limits active work, not the total number of tasks. Managers
+curate confirmed dependency-ready work inside their exclusive families and
+send ROOT the gap, contract, exact paths/interfaces, checks, dependencies and
+stop criteria before writing. They pull the next already eligible item in
+the same active turn, including during review of an isolated immutable
+candidate. Before yielding, report COMPLETED plus NEXT_EXECUTING, or NEED_REFILL
+with the exhausted alternatives, exact current-main blocker and next trigger.
+After one bounded readiness pass finds no independent work, yield; do not
+invent work or poll. ROOT retains shared allocation, independent acceptance
+and integration. Completion wakeups and the hourly all-eight fallback retain
+their existing cadence and preferences.
+
 The queue snapshot below reconciles allocated work at `c4b1d19d`; it is not
 proof of sustained throughput or a compiler completion score. All ten
 ordinary-autonomy recipients have adopted the instruction. Advisory adoption
@@ -120,7 +135,7 @@ is complete; its later platform flag has no exposed operation details.
 
 | Manager | Finite current queue / state | Dependency event or stop |
 | --- | --- | --- |
-| Core | Two-document accounting `fc29cdd4` independently accepted; this bounded bridge-status successor is frozen for review and bundling. PR294 helper composition is integrated for its bounded scope. | ROOT bundles with the substantive bridge candidate. No administrative-only PR/count credit or new semantic feature; this accounting does not gate other writers. |
+| Core | Prior accounting was bundled with the substantive PR298 bridge. The C01 selected-owner plan/use map and focused tests have returned; its four-path candidate is being frozen for independent review. | Self-pull the allocated C01 evidence/queue update in the same turn, then inspect the remaining finite goal for a confirmed independent item. Frozen review does not block eligible disjoint work; no administrative-only PR/count credit. |
 | Construction | Frozen `1af5fd81`/`39ad9017`, `awaiting-integration`, with independent CODE and EVIDENCE acceptance: two existing `bootstrap-p15/00581` adapters plus new `sh01_typed_lowering_work_policy_test.clj`, based on `c4b1d19d`. | Preserve legacy fresh-verifier callee/two arguments for old arities; explicit-options arities alone use the policy-aware fresh callee/three arguments. Preserve exact evidence scopes below; no schema, wrapper, cache or local/default-cap change. |
 | Cohort | Six-owner invalidation matrix returned after two disjoint read-only inspections; `queue-empty`. | The planning deliverable is complete; C16 remains OPEN. Refill only for an actual selected cohort/evidence gap, not a new stamp. |
 | SOURCE | Frozen `f3073c24` has independently accepted focused code/evidence but failed whole-default composition. The allocated producer-only diagnostic returned accepted at N=1048576; compact architecture finalization continues. | Preserve the failed whole run and producer-only boundary. The next Effects local-fit method is preparation only, with no GO; no held GIS run. Original-request transport availability is not compact implementation/fit evidence. |
@@ -469,7 +484,7 @@ selectors; its locators are not current passing results.
 
 | Task / status | Manager | Current code/evidence and next concrete closure obligation | Stop or rejection criterion |
 | --- | --- | --- | --- |
-| C01 OPEN | Core | Six subjects and endpoint are selected; populate original executable/generated occurrences -> Core/primitive/import product -> exact accepted/rejected selectors, actual selected plans and tested identities. Use the existing support map and cohort load boundary. | Stop before an implementation allocation if the allegedly missing required occurrence/product is unproven. Do not exclude a required use or infer closure from declarations. |
+| C01 OPEN | Core | The new selected-owner EDN map joins actual seed plans to 12668 builtin-call occurrences across the six sources, with the reader's 44 excluded functions explicit. Runtime case evidence, actual invocation reachability, generated/Core product joins and migration identities remain open. | Use exact source/plan/dependency identities and original body paths, not an allowlist or count. Do not infer execution of every retained function, whole-reader compilation or complete C01 closure. |
 | C02 OPEN | Core | Core literal/quote/collection lowerers and carrier/decimal/character/order tests exist. Join each selected subject's required literal and constructor variants to those real products/results. | Accept preserved kinds, inert quote and ordered constructors; reject malformed quote/constructor, unsupported executable payload and forged origin. Missing joins remain OPEN. |
 | C03 OPEN | Core; Cohort for C5 producer facts | Reference/def/var and qualified-name tests exist. Select actual executable local/namespace/import/var occurrences and their real resolver/callee artifacts. | Accept exact binding/source identity and shadowing; reject unresolved/private/substituted targets at the owning ingress. Do not fabricate a callee or host lookup. |
 | C04 OPEN | Core | `if`/`do`/`let` owner tests cover exclusive branches and sequential scope. Match selected empty/terminal/nested/transfer variants to actual Core and source order. | Accept false/nil truthiness and once-only ordered children; reject malformed arity/bindings and reorder/drop/duplicate mutations. No unselected destructuring feature is added. |
@@ -550,17 +565,68 @@ contain the named checks below; the remaining owner paths are in
 | Mutation, typed errors/handlers and structural/guard match variants | C08-C10; L2/L7/L9/C6 location/RHS order, control exits, clause scopes and structural-failure skipping. | Qualified mutation, throw/try/multiple-catch, match/vector-pattern owners; quoted-symbol, keyword-map and root-map-guard kernels plus their source/forgery negatives. | Implementation exists for scoped variants, but source spelling in the lowerer's quoted dispatch DATA is not a required executable use. Do not exclude a variant as optional or close its task without the complete selected use matrix. Later guard Bool/totality, effects and ownership remain their owners' obligations. |
 | Complete Core graph, fragments, maps, retained metadata and declarations | C11/C13-C15; C6 canonical products and authentic source/input joins. | `sh07-b13-fragment-manifest-is-exact-root-aligned-and-exhaustive`, `sh07-b13-fragment-coverage-is-exact-ordered-and-complete`, `sh07-b13-fragment-request-alterations-fail-closed`; owning template/resolved/origin/source-map checks. | Inspect actual tested inputs/results and constructor route. Public default-pinned tests are not current-reader evidence. Graph/identity/provenance/source mutations require the real affected boundary, not a copied passed flag. |
 | Full checked-Core source as an analyzed subject versus the Gravity builder as executor | C12/C16, distinct from C02-C11 kernels. | Audit records the incomplete exit-143 source attempt and bounded smaller subject results. Existing `b-run-frontend-subject` ends in hosted `gravity.c6-core-lowering`, not `gravity.checked-core`. | Current Gravity source-analysis/replay/provenance remains OPEN with its own finite subject/resource decision. The legacy attempt remains INCOMPLETE, cause unresolved; no unchanged large retry or mandatory hosted-product redesign follows. |
-| Required raw seed primitives behind all six executed owner plans | C01/C11-C12; D1/L2/C6 and declared temporary TCB. | `compiler.gravity` rule DATA, `00575`/`00576`/`00580` seed construction and `00588`/`00591`/`00593` execution; repository closure bound in the cohort document. | Exact used primitive/instruction manifest and actual compiled plan identities are MISSING. The allowed builtin list is not a used-call census. A required unsupported primitive remains open at its implementation owner. |
+| Required raw seed primitives behind all six selected owner plans | C01/C11-C12; D1/L2/C6/BOOT2/BOOT8 and declared temporary TCB. | The [selected-owner map](artifacts/phase-15/reports/sh07-c01-selected-owner-use-map-v1.edn) and `sh07_selected_owner_primitive_use_test.clj` construct actual seed plans and join emitted calls to original function spans/body paths; details below. `compiler.gravity` remains rule DATA. | Potential compiled-use mapping is now recorded for all six selected plans. Accepted/rejected primitive case joins, actual runtime reachability and subsequent Core products remain OPEN. An allowed builtin declaration is still not actual use or implementation acceptance. |
 | Typed downstream primitives used by the actual Core source: `sh07-exact-keys?` uses `map?`, both `count`s, `keys`, `set` and equality; Vector traversal uses `first`/`rest` | C14 affected integration; SH08/SH09/SH13/SH14/SH22 implementation ownership, not new Core forms. | In `sh08_function_call_type_test.clj`: `sh08-vector-rest-current-source-composition`, `sh08-map-keys-current-source-composition`, `sh08-list-set-current-source-composition`, `sh08-bare-keyword-anchor-current-source-composition`. Merged [PR265](https://github.com/burn2delete/uniform/pull/265) and [PR269](https://github.com/burn2delete/uniform/pull/269) add accepted scoped G composition: explicit private `BareMap keys -> HList Keyword -> List set -> bare Set -> nonempty literal Keyword anchor -> Bool`, 61 assertions. | This does not type or execute the whole unannotated helper or establish a variable expected Set, C8, runtime or migration. `map?` supplies no key-domain facts; call shapes do not automatically generalize parameters. Owning SH09/SH01 results remain separate. Do not narrow the helper's non-Map-to-false behavior by silently adding a Map annotation. |
+
+### C01 selected-owner seed-plan use map at `0067e941`
+
+The [EDN report](artifacts/phase-15/reports/sh07-c01-selected-owner-use-map-v1.edn)
+records actual construction at base `0067e9418de992900a95cd47d016029af62ff99c`.
+The new test uses existing seed/compiler APIs and owning SH03-SH07 builders;
+SH02 uses its raw seed plan before the owner's byte-count augmentation, named
+explicitly in the report. Each selected function has its original definition
+span, definition/plan hashes, instruction summary and emitted call rows with
+original body path, plan path, callee and arity. Quoted payloads are inert.
+All six complete sources are read, but SH03 compiles its existing prefix
+closure only; the 44 other reader functions are named with their source spans.
+
+| Source owner | Selected functions | Builtin-call occurrences | Actual plan SHA256 suffix |
+| --- | ---: | ---: | --- |
+| Authenticated envelope | 72 | 648 | `e0d42dd125d186e8a1e0a37f0b69d052ef60eecd568a46f3c902b0aba473d10e` |
+| Reader | 231 | 2138 | `c419442a5a64d534484bc0181c862aeb118024ae979bcaa7c4d0af628eeb3f96` |
+| Syntax | 102 | 858 | `07178c6b5b68b9b17bbd3bd4144aa3e4b97171fa6bda6494410cb339677f0adc` |
+| Macro | 46 | 460 | `382fd0afe5e271a96d006f69cc76d40a67a68f0ef8abd091c133271b1f7c3e93` |
+| Resolution | 111 | 1474 | `8e029b8266fd3cc88a9a62ec6e83eca41ae86291598a803da2ff14a4a751c506` |
+| Checked Core | 402 | 7090 | `4fd7a53bac6597c496e0baf3f4a0db5ae153b075e80087b235fd3fb7dffad4e0` |
+
+The total 12668 builtin-call occurrences describe potential uses in compiled
+functions, not a trace of invoked functions. Per-primitive case-join obligations
+remain explicit, with existing check owners and locations in the function rows.
+The report binds actual source bytes, compiler rule DATA, emitter freshness,
+bootstrap/loader/load-order inputs, dependency options and a content identity
+over all 2146 seed resources. Runtime/classpath/JVM observations are included;
+external toolchain migration identity remains unfilled. These are construction
+dependencies, not a claim that Gravity compiled its successor or that emitter
+lowering ran.
+
+One actual normal-broker 2GiB/120s-watchdog batch passed 13 tests/40 assertions
+in 11730.156792 ms: the new tests 2/17, boundary 6/11 and LOC 5/12. Actual
+plan construction/source-call joins and instruction conservation passed.
+Missing/duplicate owner, changed input, forged plan/function identity and
+unknown-instruction mutations reject in the test join; those record checks
+are not compiler source rejection or a compiler build. The quote control
+retains unknown symbols as inert DATA. Raw output is
+`/tmp/sh07-c01-selected-owner-0067e941-20261024-attempt2.log`, SHA256
+`92a1f92841309e8bbbc85df5974a2ae4a1a6832d90f93776d0eb4e5db6a65445`.
+The earlier parent namespace preflight failed before test loading, source-plan
+construction or assertions; preserve `attempt1.log` beside it, SHA256
+`861d20b465985fdbeaeceff08633cce45bba070100999d035a627c8fee9bc90b`.
+The report SHA256 is
+`e2792e6582e1c328d977150ff0b44f9bdd5f46ff03494796b4d27ba40b3d964b`.
+No full source-to-Core, runtime primitive, native, migration or C01 completion
+credit follows. Subsequent required occurrence/product and accepted/rejected
+case joins must use this actual population rather than substituting an allowlist.
 
 ### C01 and C16 stopping point
 
 The six full subjects, ordinary current-reader intake, repository load boundary
 and concrete evidence locators are recorded. Still MISSING are the complete
-occurrence/primitive/import variant matrix, actual selected plans and external
-compiler/environment identities, and candidate-bound acceptance/rejection
+occurrence/primitive/import-to-Core variant matrix, external compiler/environment
+identities, and candidate-bound acceptance/rejection
 results for every required row. This is useful reconciliation, not completion
-of C01. No source or fixture was excluded to obtain a passing count.
+of C01. The selected seed plans and potential builtin-use joins are now
+recorded above, with the existing reader subset explicit; no source or fixture
+was newly excluded to obtain a passing count.
 
 The manager's bounded read-only next-gap inspection at `64aa890a` did not
 establish a missing required Core feature. For example, the actual
