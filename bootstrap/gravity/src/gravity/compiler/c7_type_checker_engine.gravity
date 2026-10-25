@@ -2605,505 +2605,124 @@
                     (recur tail work)))
                 {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}))))))))
 
-; Fee-only reuse of the independently reviewed physical DATA walk. This is
-; not an Integer, source, cryptographic identity, or numeric-proof validator.
-(defn sh08-gis3-data-tallies [value budget]
-  (if (< budget 8) {:status :rejected :reason :compact-gis-work-limit :work-count 8 :completed-work-count 0}
-    (loop [pending (list [value 0]) visits 0 accounting 8 comparison 0]
-      (if (= 0 (count pending))
-        {:status :accepted :work-count (+ visits accounting) :completed-work-count (+ visits accounting)
-         :visit-work visits :accounting-work accounting :comparison-bound-work comparison}
-        (let [paid (+ visits accounting) common (+ paid 4)]
-          (if (> common budget)
-            {:status :rejected :reason :compact-gis-work-limit :work-count common :completed-work-count paid}
-            (let [frame (first pending) item (get frame 0) depth (get frame 1)
-                  tail (rest pending)]
-              (if (> depth 128)
-                {:status :rejected :reason :compact-gis-canonical-domain :work-count (+ common 1) :completed-work-count paid}
-                (if (if (map? item) true (if (vector? item) true (if (set? item) true (list? item))))
-                  (let [size (count item) width (if (map? item) (* 2 size) size)
-                        local (+ 1 size (if (map? item) (+ 1 (* 3 size)) 0) 1 (* 4 width))
-                        work (+ common local 10) required (+ work (count tail) width)]
-                    (if (> size 1024)
-                      {:status :rejected :reason :compact-gis-canonical-domain :work-count (+ common 1) :completed-work-count paid}
-                      (if (> required budget)
-                        {:status :rejected :reason :compact-gis-work-limit :work-count required :completed-work-count paid}
-                        (let [bound (+ 1 (if (map? item) (+ (* size size) width)
-                                          (if (set? item) (+ (* size size) width) width)))
-                              next-pending (if (map? item)
-                                             (loop [entries (vec item) ordinal 0 out tail]
-                                               (if (= ordinal size) out
-                                                 (let [entry (get entries ordinal)]
-                                                   (recur entries (+ ordinal 1)
-                                                     (conj (conj out [(get entry 0) (+ depth 1)])
-                                                                    [(get entry 1) (+ depth 1)])))))
-                                             (loop [items (vec item) ordinal 0 out tail]
-                                               (if (= ordinal size) out
-                                                 (recur items (+ ordinal 1) (conj out [(get items ordinal) (+ depth 1)])))))]
-                          (recur next-pending
-                                 (+ visits local) (+ accounting 14) (+ comparison bound))))))
-                  (if (if (= nil item) true (if (boolean? item) true (if (keyword? item) true
-                        (if (symbol? item) true (if (string? item) true (if (number? item) true (char? item)))))))
-                    (let [local (+ 2 (if (string? item) (count item) (if (symbol? item) (bootstrap-symbol-utf16-unit-count item) 0)))
-                          work (+ common local 4)]
-                      (if (> work budget)
-                        {:status :rejected :reason :compact-gis-work-limit :work-count work :completed-work-count paid}
-                        (recur tail (+ visits local) (+ accounting 8) (+ comparison local))))
-                    {:status :rejected :reason :compact-gis-canonical-domain
-                     :work-count (+ common 1) :completed-work-count paid}))))))))))
 
 
-(defn sh08-gis3-complete-data-tallies [value budget]
-  ; Complete, separate ledger: original physical V/T/W plus source control.
-  ; Each visit reserves 4096 control units before reading its frame. Each
-  ; container reserves 256 units per child before vec/frame/list creation.
-  ; The independent source audit covers both loop cursors and result Maps.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [start 4104]
-      (if (> start budget)
-        {:status :rejected :reason :compact-gis-work-limit :work-count start :completed-work-count 0}
-        (loop [pending (list [value 0]) used start visits 0 accounting 8 comparison 0 control 4096]
-          (if (= 0 (count pending))
-            {:status :accepted :work-count used :completed-work-count used
-             :visit-work visits :accounting-work accounting :comparison-bound-work comparison
-             :physical-work-count (+ visits accounting) :control-work-count control}
-            (let [visit-required (+ used 4096)]
-              (if (> visit-required budget)
-                {:status :rejected :reason :compact-gis-work-limit
-                 :work-count visit-required :completed-work-count used}
-                (let [frame (first pending) item (get frame 0) depth (get frame 1) tail (rest pending)]
-                  (if (> depth 128)
-                    {:status :rejected :reason :compact-gis-canonical-domain
-                     :work-count visit-required :completed-work-count visit-required}
-                    (if (if (map? item) true (if (vector? item) true (if (set? item) true (list? item))))
-                      (let [size (count item) width (if (map? item) (* 2 size) size)
-                            local (+ 1 size (if (map? item) (+ 1 (* 3 size)) 0) 1 (* 4 width))
-                            edge-control (* 256 width) required (+ visit-required local 14 edge-control)]
-                        (if (> size 1024)
-                          {:status :rejected :reason :compact-gis-canonical-domain
-                           :work-count visit-required :completed-work-count visit-required}
-                          (if (> required budget)
-                            {:status :rejected :reason :compact-gis-work-limit
-                             :work-count required :completed-work-count visit-required}
-                            (let [bound (+ 1 (if (map? item) (+ (* size size) width)
-                                              (if (set? item) (+ (* size size) width) width)))
-                                  next-pending (if (map? item)
-                                                 (loop [entries (vec item) i 0 out tail]
-                                                   (if (= i size) out
-                                                     (let [entry (get entries i)]
-                                                       (recur entries (+ i 1)
-                                                         (conj (conj out [(get entry 0) (+ depth 1)])
-                                                                        [(get entry 1) (+ depth 1)])))))
-                                                 (loop [items (vec item) i 0 out tail]
-                                                   (if (= i size) out
-                                                     (recur items (+ i 1) (conj out [(get items i) (+ depth 1)])))))]
-                              (recur next-pending required (+ visits local) (+ accounting 14) (+ comparison bound)
-                                     (+ control 4096 edge-control))))))
-                      (if (if (= nil item) true (if (boolean? item) true (if (keyword? item) true
-                            (if (symbol? item) true (if (string? item) true (if (number? item) true (char? item)))))))
-                        (let [local (+ 2 (if (string? item) (count item)
-                                          (if (symbol? item) (bootstrap-symbol-utf16-unit-count item) 0)))
-                              required (+ visit-required local 8)]
-                          (if (> required budget)
-                            {:status :rejected :reason :compact-gis-work-limit
-                             :work-count required :completed-work-count visit-required}
-                            (recur tail required (+ visits local) (+ accounting 8) (+ comparison local) (+ control 4096))))
-                        {:status :rejected :reason :compact-gis-canonical-domain
-                         :work-count visit-required :completed-work-count visit-required}))))))))))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
+
 
 (defn sh08-gis3-view-get [value key]
-  ; The caller prepays bounded Native key lookup before this helper runs.
-  ; No untyped key is hashed and no lazy/foreign sequence is counted.
-  (if (if (keyword? key) true
-        (if (integer? key) (if (>= key 0) (<= key 1024) false) (sh08-pc-id? key)))
-    (if (map? value) (if (<= (count value) 1024) (get value key) nil)
-      (if (vector? value) (if (<= (count value) 1024) (get value key) nil) nil)) nil))
+  ; Wrappers validate complete native DATA first. Field lookup enumerates
+  ; entries so a supplied TreeMap cannot compare an incompatible key kind.
+  (if (if (keyword? key) true (if (integer? key) (>= key 0) (sh08-pc-id? key)))
+    (if (map? value)
+      (loop [entries (vec value) i 0]
+        (if (= i (count entries)) nil
+          (let [entry (get entries i) candidate (get entry 0)
+                compatible? (if (keyword? key) (keyword? candidate)
+                              (if (integer? key) (integer? candidate) (string? candidate)))]
+            (if (if compatible? (= key candidate) false) (get entry 1)
+              (recur entries (+ i 1))))))
+      (if (vector? value)
+        (if (if (integer? key) (< key (count value)) false) (get value key) nil) nil)) nil))
 
-(defn sh08-gis3-view-project [row fields]
-  (if (if (vector? fields) (<= (count fields) 9) false)
-    (loop [remaining fields result {}]
-      (if (= 0 (count remaining)) result
-        (let [key (first remaining)]
-          (if (keyword? key)
-            (recur (rest remaining) (assoc result key (sh08-gis3-view-get row key))) nil)))) nil))
 
-(defn sh08-gis3-index [rows key budget]
-  ; Together, contains? and assoc compare at most n*n prior keys. Reserve
-  ; the existing scalar W=2+71 for each Native ID comparison, including
-  ; String hash collisions; Keyword W=2 is below this common bound.
-  (if (if (keyword? key) (if (vector? rows) (<= (count rows) 1024) false) false)
-    (let [size (count rows) base (+ 2697 (* 2615 size) (* 74 size size))]
-      (if (> base budget) {:status :rejected :reason :compact-gis-index-work-limit :work-count base :completed-work-count 0}
-        (loop [remaining rows index {} used base]
-          (if (= 0 (count remaining)) {:status :accepted :index index :work-count used :completed-work-count used}
+
+(defn sh08-gis3-index [rows key]
+  (let [data (sh08-vf-original-data rows)]
+    (if (= :accepted (get data :status))
+      (if (if (keyword? key) (vector? rows) false)
+        (loop [remaining rows index {}]
+          (if (= 0 (count remaining)) {:status :accepted :index index}
             (let [row (first remaining) id (sh08-gis3-view-get row key)]
               (if (sh08-pc-id? id)
-                (let [next (+ used (* 2 (+ 2 (if (string? id) (count id) 0))))]
-                  (if (> next budget)
-                    {:status :rejected :reason :compact-gis-index-work-limit :work-count next :completed-work-count used}
-                    (if (contains? index id)
-                      {:status :rejected :reason :compact-gis-duplicate-id :work-count next :completed-work-count next}
-                      (recur (rest remaining) (assoc index id row) next))))
-                {:status :rejected :reason :compact-gis-source-id-required :work-count used :completed-work-count used}))))))
-    {:status :rejected :reason :compact-gis-source-rows-required :work-count 0 :completed-work-count 0}))
+                (if (contains? index id) {:status :rejected :reason :compact-gis-duplicate-id}
+                  (recur (rest remaining) (assoc index id row)))
+                {:status :rejected :reason :compact-gis-source-id-required}))))
+        {:status :rejected :reason :compact-gis-source-rows-required}) data)))
 
 (defn sh08-gis3-pick [index id]
   (if (sh08-pc-id? id) (sh08-gis3-view-get index id) nil))
 
-(defn sh08-gis3-form-prefix [form value?]
-  (let [prefix (sh08-gis3-view-project form [:form-id :syntax-id :kind :parent-form-id :child-form-ids
-                                     :source-span :origin-chain :generated-origin])]
-    (if value? (assoc prefix :value (sh08-gis3-view-get form :value)) prefix)))
 
-(defn sh08-gis3-original-readsets [core indexes target]
-  ; Internal collection only. Its caller prepays all fixed view construction
-  ; and global selection work. Selection uses native typed IDs, never a proof.
-  (let [nodes (sh08-gis3-view-get indexes :nodes) calls (sh08-gis3-view-get indexes :calls) edges (sh08-gis3-view-get indexes :edges)
-        forms (sh08-gis3-view-get indexes :forms) bindings (sh08-gis3-view-get indexes :bindings) records (sh08-gis3-view-get indexes :records)
-        node (sh08-gis3-pick nodes target) call (sh08-gis3-pick calls target) edge (sh08-gis3-pick edges target)
-        owner (sh08-gis3-view-get (sh08-gis3-view-get node :evaluation) :owner-function-syntax-id)
-        record (sh08-gis3-pick records owner)
-        outer (loop [remaining (sh08-gis3-view-get core :nodes) found nil]
-                (if (= 0 (count remaining)) found
-                  (let [row (first remaining) children (sh08-gis3-view-get row :children) kind (sh08-gis3-view-get row :core-form)]
-                    (if (if (keyword? kind) (if (= :if kind)
-                          (if (vector? children) (if (= 3 (count children))
-                            (if (sh08-pc-id? (sh08-gis3-view-get children 1)) (= target (sh08-gis3-view-get children 1)) false) false) false) false) false)
-                      (if (= nil found) (recur (rest remaining) row) nil)
-                      (recur (rest remaining) found)))))
-        inner (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get outer :children) 0))
-        low (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get inner :children) 0))
-        high (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get inner :children) 1))
-        no (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get inner :children) 2))
-        fallback (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get outer :children) 2))
-        function (sh08-gis3-pick nodes (sh08-gis3-view-get record :function-core-node-id))
-        fn-form (sh08-gis3-pick forms (sh08-gis3-view-get record :function-form-id))
-        params (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get function :attributes) :parameter-form-id))
-        name (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get params :child-form-ids) 0))
-        packets (loop [remaining [node low high] out []]
-                  (if (= 0 (count remaining)) out
-                    (let [n (first remaining) id (sh08-gis3-view-get n :node-id) c (sh08-gis3-pick calls id)
-                          e (sh08-gis3-pick edges id) args (sh08-gis3-view-get c :argument-node-ids)
-                          caller (sh08-gis3-pick records (sh08-gis3-view-get (sh08-gis3-view-get n :evaluation) :owner-function-syntax-id))]
-                      (if (if (map? n) (if (map? c) (if (map? e)
-                            (if (sh08-sse-ids? args 2) (map? caller) false) false) false) false)
-                        (recur (rest remaining)
-                          (conj out [n c e (sh08-gis3-pick nodes (sh08-gis3-view-get c :operator-node-id))
-                                     (sh08-gis3-pick bindings (sh08-gis3-view-get c :operator-binding-id))
-                                     (sh08-gis3-pick nodes (sh08-gis3-view-get args 0)) (sh08-gis3-pick nodes (sh08-gis3-view-get args 1))
-                                     (sh08-gis3-view-project caller [:function-syntax-id :function-core-node-id])])) nil))))]
-    (if (if (= 3 (count packets)) (if (map? outer) (if (map? inner) (if (map? record) (map? function) false) false) false) false)
-      (let [control-children (loop [remaining [outer inner] out []]
-                               (if (= 0 (count remaining)) out
-                                 (let [n (first remaining)]
-                                   (recur (rest remaining)
-                                     (conj out (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get n :children) 0))
-                                               (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get n :children) 1))
-                                               (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get n :children) 2)))))))
-            selected (loop [remaining packets out (sh08-lsi-first-append [outer inner no fallback function] control-children)]
-                       (if (= 0 (count remaining)) out
-                         (let [p (first remaining)]
-                           (recur (rest remaining) (conj out (sh08-gis3-view-get p 0) (sh08-gis3-view-get p 3) (sh08-gis3-view-get p 5) (sh08-gis3-view-get p 6))))))
-            sources (loop [remaining selected out []]
-                      (if (= 0 (count remaining)) out
-                        (let [n (first remaining) kind (sh08-gis3-view-get n :core-form)
-                              f (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get n :source) :form-id))]
-                          (recur (rest remaining)
-                            (conj out (sh08-gis3-form-prefix f
-                                       (if (keyword? kind) (contains? #{:literal :reference} kind) false)))))))
-            heads (loop [remaining [outer inner function] out []]
-                    (if (= 0 (count remaining)) out
-                      (let [n (first remaining) f (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get n :source) :form-id))
-                            h (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get f :child-form-ids) 0))]
-                        (recur (rest remaining) (conj out (sh08-gis3-view-project h [:kind :value :parent-form-id]))))))
-            stages (loop [remaining [node low high outer inner] out []]
-                     (if (= 0 (count remaining)) out
-                       (let [n (first remaining) f (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get n :source) :form-id))
-                             kind (sh08-gis3-view-get n :core-form) offset (if (if (keyword? kind) (= :if kind) false) 1 0)
-                             pairs (loop [i 0 values []]
-                                     (if (= i 3) values
-                                       (let [child (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get n :children) i))]
-                                         (recur (+ i 1) (conj values [(sh08-gis3-view-get (sh08-gis3-view-get child :source) :form-id)
-                                                                    (sh08-gis3-view-get (sh08-gis3-view-get f :child-form-ids) (+ i offset))])))))]
-                         (recur (rest remaining) (conj out pairs)))))
-            parameter (sh08-gis3-pick bindings (sh08-gis3-view-get (sh08-gis3-view-get (sh08-gis3-view-get (sh08-gis3-view-get packets 0) 5) :attributes) :binding-id))]
-        {:status :selected-original-data :outer outer :record record
-         :readsets [(sh08-gis3-view-get packets 0) (sh08-gis3-view-get packets 1) (sh08-gis3-view-get packets 2)
-                    [outer inner no fallback control-children]
-                    [record function parameter params name (sh08-gis3-form-prefix fn-form false)
-                     (sh08-gis3-view-get (sh08-gis3-view-get (sh08-gis3-pick nodes (sh08-gis3-view-get record :body-core-node-id)) :source) :form-id)]
-                    sources heads (sh08-gis3-view-project (sh08-gis3-view-get core :module) [:profile :target :safety])
-                    (loop [remaining packets out []]
-                      (if (= 0 (count remaining)) out
-                        (let [p (first remaining)]
-                          (recur (rest remaining) (conj out (sh08-gis3-view-get (sh08-gis3-view-get indexes :types) (sh08-gis3-view-get (sh08-gis3-view-get p 5) :node-id))
-                                                            (sh08-gis3-view-get (sh08-gis3-view-get indexes :types) (sh08-gis3-view-get (sh08-gis3-view-get p 6) :node-id)))))))
-                    [stages [(sh08-gis3-view-get record :function-form-id) (sh08-gis3-view-get (sh08-gis3-view-get function :source) :form-id)]]]})
-      {:status :rejected :reason :compact-gis-original-topology-required})))
 
-(defn sh08-gis3-view-control-work [node-count]
-  (+ 2011065 (* 9385 node-count) (* node-count node-count)))
 
-(defn sh08-gis3-source-payment [core binding-rows form-rows types target budget]
-  ; First construction gate only. Complete original DATA payment precedes
-  ; semantic matching and v3 output construction; success grants no proof.
-  ; The private caller supplies its remaining trusted inference allowance.
-  ; Validate before touching source inputs; zero is an exhausted valid pool.
-  (if (if (integer? budget) (>= budget 0) false)
-  (let [limit budget prefix 512]
-    (if (> prefix limit) {:status :rejected :reason :compact-gis-work-limit :work-count prefix :completed-work-count 0}
-      (if (if (map? core) (if (<= (count core) 1024)
-            (if (map? types) (if (<= (count types) 1024) (sh08-pc-id? target) false) false) false) false)
-        (let [entry-control 783575 reserved-entry (+ prefix entry-control)]
-          (if (> reserved-entry limit)
-            {:status :rejected :reason :compact-gis-entry-control-work-limit :stage :original-entry-control
-             :work-count reserved-entry :completed-work-count prefix}
-            (let [tables [[:nodes (sh08-gis3-view-get core :nodes) :node-id] [:calls (sh08-gis3-view-get core :calls) :core-node-id]
-                          [:edges (sh08-gis3-view-get core :call-edges) :call-core-node-id]
-                          [:records (sh08-gis3-view-get core :function-records) :function-syntax-id]
-                          [:bindings binding-rows :binding-id] [:forms form-rows :form-id]]]
-        (loop [remaining tables indexes {:types types} used reserved-entry maximum-index-size (count types)]
-          (if (= 0 (count remaining))
-            ; The source-derived control bound prepays bounded field reads,
-            ; loop/frame visits, constructor cells and private Map/Set work.
-            ; Complete original values still pay independent DATA B below.
-            ; At most 97 Native ID map lookups: initial13, packets21,
-            ; control6, sources23, heads6, stages20, parameter1, body1,
-            ; and types6. Each pays dispatch1, String hash W73 and at
-            ; most M canonical W73 collision comparisons. M includes types.
-            (let [id-lookup-work (* 97 (+ 1 73 (* 73 maximum-index-size)))
-                  selection-work (+ (sh08-gis3-view-control-work (count (sh08-gis3-view-get core :nodes))) id-lookup-work)
-                  reserved (+ used selection-work)]
-              (if (> reserved limit)
-                {:status :rejected :reason :compact-gis-view-construction-work-limit
-                 :work-count reserved :completed-work-count used :stage :original-view-construction}
-                (let [selected (sh08-gis3-original-readsets core indexes target)]
-                  (if (= :selected-original-data (sh08-gis3-view-get selected :status))
-                    (loop [parts (sh08-gis3-view-get selected :readsets) ordinal 0 work reserved]
-                      (if (= 0 (count parts))
-                        {:status :original-data-payment-complete :work-count work :completed-work-count work
-                         :numeric-proof-established false :selected selected :indexes indexes}
-                        (let [checked (sh08-gis3-data-tallies (first parts) (- limit work))
-                              total (+ work (sh08-gis3-view-get checked :work-count))]
-                          (if (= :accepted (sh08-gis3-view-get checked :status))
-                            (recur (rest parts) (+ ordinal 1) total)
-                            {:status :rejected :reason (sh08-gis3-view-get checked :reason) :stage :original-readset
-                             :readset-ordinal ordinal :work-count total
-                             :completed-work-count (+ work (sh08-gis3-view-get checked :completed-work-count))
-                             :completed-readsets ordinal :numeric-proof-established false
-                             :comparison-work 0 :storage-work 0}))))
-                    {:status :rejected :reason (sh08-gis3-view-get selected :reason) :work-count reserved :completed-work-count reserved}))))
-            (let [part (first remaining) result (sh08-gis3-index (sh08-gis3-view-get part 1) (sh08-gis3-view-get part 2) (- limit used))
-                  work (+ used (sh08-gis3-view-get result :work-count))]
-              (if (= :accepted (sh08-gis3-view-get result :status))
-                (recur (rest remaining) (assoc indexes (sh08-gis3-view-get part 0) (sh08-gis3-view-get result :index)) work
-                       (if (> (count (sh08-gis3-view-get result :index)) maximum-index-size) (count (sh08-gis3-view-get result :index)) maximum-index-size))
-                {:status :rejected :reason (sh08-gis3-view-get result :reason) :stage :original-index
-                 :table (sh08-gis3-view-get part 0) :work-count work :completed-work-count (+ used (sh08-gis3-view-get result :completed-work-count))}))))
-        )))
-        {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix})))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
-(defn sh08-gis3-complete-source-payment [core binding-rows form-rows types target budget]
-  ; First construction gate only. Complete original DATA payment precedes
-  ; semantic matching and v3 output construction; success grants no proof.
-  ; The private caller supplies its remaining trusted inference allowance.
-  ; Validate before touching source inputs; zero is an exhausted valid pool.
-  (if (if (integer? budget) (>= budget 0) false)
-  (let [limit budget prefix 512]
-    (if (> prefix limit) {:status :rejected :reason :compact-gis-work-limit :work-count prefix :completed-work-count 0}
-      (if (if (map? core) (if (<= (count core) 1024)
-            (if (map? types) (if (<= (count types) 1024) (sh08-pc-id? target) false) false) false) false)
-        (let [entry-control 2097152 reserved-entry (+ prefix entry-control)]
-          (if (> reserved-entry limit)
-            {:status :rejected :reason :compact-gis-entry-control-work-limit :stage :original-entry-control
-             :work-count reserved-entry :completed-work-count prefix}
-            (let [tables [[:nodes (sh08-gis3-view-get core :nodes) :node-id] [:calls (sh08-gis3-view-get core :calls) :core-node-id]
-                          [:edges (sh08-gis3-view-get core :call-edges) :call-core-node-id]
-                          [:records (sh08-gis3-view-get core :function-records) :function-syntax-id]
-                          [:bindings binding-rows :binding-id] [:forms form-rows :form-id]]]
-        (loop [remaining tables indexes {:types types} used reserved-entry maximum-index-size (count types)]
-          (if (= 0 (count remaining))
-            ; The source-derived control bound prepays bounded field reads,
-            ; loop/frame visits, constructor cells and private Map/Set work.
-            ; Complete original values still pay independent DATA B below.
-            ; At most 97 Native ID map lookups: initial13, packets21,
-            ; control6, sources23, heads6, stages20, parameter1, body1,
-            ; and types6. Each pays dispatch1, String hash W73 and at
-            ; most M canonical W73 collision comparisons. M includes types.
-            (let [id-lookup-work (* 97 (+ 1 73 (* 73 maximum-index-size)))
-                  selection-work (+ (sh08-gis3-view-control-work (count (sh08-gis3-view-get core :nodes))) id-lookup-work)
-                  reserved (+ used selection-work)]
-              (if (> reserved limit)
-                {:status :rejected :reason :compact-gis-view-construction-work-limit
-                 :work-count reserved :completed-work-count used :stage :original-view-construction}
-                (let [selected (sh08-gis3-original-readsets core indexes target)]
-                  (if (= :selected-original-data (sh08-gis3-view-get selected :status))
-                    (loop [parts (sh08-gis3-view-get selected :readsets) ordinal 0 work reserved comparison 0 ledger []]
-                      (if (= 0 (count parts))
-                        {:status :original-data-payment-complete :work-count work :completed-work-count work
-                         :numeric-proof-established false :selected selected :indexes indexes
-                         :comparison-bound-work comparison :readset-fees ledger :complete-original-readset-control true}
-                        (let [checked (sh08-gis3-complete-data-tallies (first parts) (- limit work))
-                              total (+ work (sh08-gis3-view-get checked :work-count))]
-                          (if (= :accepted (sh08-gis3-view-get checked :status))
-                            (recur (rest parts) (+ ordinal 1) total
-                              (+ comparison (sh08-gis3-view-get checked :comparison-bound-work))
-                              (conj ledger [ordinal (sh08-gis3-view-get checked :physical-work-count)
-                                            (sh08-gis3-view-get checked :control-work-count)
-                                            (sh08-gis3-view-get checked :comparison-bound-work)
-                                            (sh08-gis3-view-get checked :work-count)]))
-                            {:status :rejected :reason (sh08-gis3-view-get checked :reason) :stage :original-readset
-                             :readset-ordinal ordinal :work-count total
-                             :completed-work-count (+ work (sh08-gis3-view-get checked :completed-work-count))
-                             :completed-readsets ordinal :numeric-proof-established false
-                             :comparison-work 0 :storage-work 0}))))
-                    {:status :rejected :reason (sh08-gis3-view-get selected :reason) :work-count reserved :completed-work-count reserved}))))
-            (let [part (first remaining) result (sh08-gis3-index (sh08-gis3-view-get part 1) (sh08-gis3-view-get part 2) (- limit used))
-                  work (+ used (sh08-gis3-view-get result :work-count))]
-              (if (= :accepted (sh08-gis3-view-get result :status))
-                (recur (rest remaining) (assoc indexes (sh08-gis3-view-get part 0) (sh08-gis3-view-get result :index)) work
-                       (if (> (count (sh08-gis3-view-get result :index)) maximum-index-size) (count (sh08-gis3-view-get result :index)) maximum-index-size))
-                {:status :rejected :reason (sh08-gis3-view-get result :reason) :stage :original-index
-                 :table (sh08-gis3-view-get part 0) :work-count work :completed-work-count (+ used (sh08-gis3-view-get result :completed-work-count))}))))
-        )))
-        {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix})))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
-(defn sh08-gis3-entry-original-data [core binding-rows form-rows budget]
-  ; Fee-only preparation for the complete original entry census. The vector
-  ; retains whole original row families, including unread metadata. Payment
-  ; does not establish a parameter type, source match, or numeric proof.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [prefix 512 control 80903 reserved (+ prefix control)]
-      (if (> prefix budget)
-        {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
-        (if (if (map? core) (if (<= (count core) 1024)
-              (if (vector? binding-rows) (if (<= (count binding-rows) 1024)
-                (if (vector? form-rows) (<= (count form-rows) 1024) false) false) false) false) false)
-          (if (> reserved budget)
-            {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count prefix}
-            (let [rows [(sh08-gis3-view-get core :module) (sh08-gis3-view-get core :preserved-resolution)
-                        (sh08-gis3-view-get core :nodes) (sh08-gis3-view-get core :calls)
-                        (sh08-gis3-view-get core :call-edges) (sh08-gis3-view-get core :function-records)
-                        (sh08-gis3-view-get core :definitions) (sh08-gis3-view-get core :reference-uses)
-                        (sh08-gis3-view-get core :var-references) (sh08-gis3-view-get core :mutations)
-                        (sh08-gis3-view-get core :recur-targets) (sh08-gis3-view-get core :recur-transfers)
-                        (sh08-gis3-view-get core :recursion-components) (sh08-gis3-view-get core :lexical-bindings)
-                        (sh08-gis3-view-get core :control-flow) binding-rows form-rows]
-                  valid? (loop [i 0]
-                           (if (= i 17) true
-                             (let [value (get rows i)]
-                               (if (if (< i 2) (if (map? value) (<= (count value) 1024) false)
-                                     (if (vector? value) (<= (count value) 1024) false))
-                                 (recur (+ i 1)) false))))]
-              (if valid?
-                (let [checked (sh08-gis3-data-tallies rows (- budget reserved))
-                      work (+ reserved (get checked :work-count))]
-                  (if (= :accepted (get checked :status))
-                    {:status :entry-original-data-payment-complete :work-count work :completed-work-count work
-                     :comparison-bound-work (get checked :comparison-bound-work) :rows rows
-                     :numeric-proof-established false}
-                    {:status :rejected :reason (get checked :reason) :stage :entry-original-data
-                     :work-count work :completed-work-count (+ reserved (get checked :completed-work-count))}))
-                {:status :rejected :reason :compact-gis-entry-families-required
-                 :work-count reserved :completed-work-count reserved})))
-          {:status :rejected :reason :compact-gis-entry-input-required :work-count prefix :completed-work-count prefix})))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
-(defn sh08-gis3-entry-complete-data [core binding-rows form-rows budget]
-  ; Fee-only preparation for the complete original entry census. The vector
-  ; retains whole original row families, including unread metadata. Payment
-  ; does not establish a parameter type, source match, or numeric proof.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [prefix 512 control 83069 reserved (+ prefix control)]
-      (if (> prefix budget)
-        {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
-        (if (if (map? core) (if (<= (count core) 1024)
-              (if (vector? binding-rows) (if (<= (count binding-rows) 1024)
-                (if (vector? form-rows) (<= (count form-rows) 1024) false) false) false) false) false)
-          (if (> reserved budget)
-            {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count prefix}
-            (let [rows [(sh08-gis3-view-get core :module) (sh08-gis3-view-get core :preserved-resolution)
-                        (sh08-gis3-view-get core :nodes) (sh08-gis3-view-get core :calls)
-                        (sh08-gis3-view-get core :call-edges) (sh08-gis3-view-get core :function-records)
-                        (sh08-gis3-view-get core :definitions) (sh08-gis3-view-get core :reference-uses)
-                        (sh08-gis3-view-get core :var-references) (sh08-gis3-view-get core :mutations)
-                        (sh08-gis3-view-get core :recur-targets) (sh08-gis3-view-get core :recur-transfers)
-                        (sh08-gis3-view-get core :recursion-components) (sh08-gis3-view-get core :lexical-bindings)
-                        (sh08-gis3-view-get core :control-flow) binding-rows form-rows]
-                  valid? (loop [i 0]
-                           (if (= i 17) true
-                             (let [value (get rows i)]
-                               (if (if (< i 2) (if (map? value) (<= (count value) 1024) false)
-                                     (if (vector? value) (<= (count value) 1024) false))
-                                 (recur (+ i 1)) false))))]
-              (if valid?
-                (let [checked (sh08-gis3-complete-data-tallies rows (- budget reserved))
-                      work (+ reserved (get checked :work-count))]
-                  (if (= :accepted (get checked :status))
-                    {:status :entry-original-data-payment-complete :work-count work :completed-work-count work
-                     :comparison-bound-work (get checked :comparison-bound-work) :rows rows
-                     :physical-DATA-work (get checked :physical-work-count)
-                     :DATA-control-work (get checked :control-work-count)
-                     :all-DATA-control-fees-closed true :numeric-proof-established false}
-                    {:status :rejected :reason (get checked :reason) :stage :entry-original-data
-                     :work-count work :completed-work-count (+ reserved (get checked :completed-work-count))}))
-                {:status :rejected :reason :compact-gis-entry-families-required
-                 :work-count reserved :completed-work-count reserved})))
-          {:status :rejected :reason :compact-gis-entry-input-required :work-count prefix :completed-work-count prefix})))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
-(defn sh08-gis3-entry-indexes [rows budget]
-  ; Fresh indexes for the original census families. The caller separately
-  ; pays full original DATA; indexes confer no semantic or proof authority.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [prefix 512 control 270910 reserved (+ prefix control)]
-      (if (> prefix budget)
-        {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
-        (if (if (vector? rows) (= 17 (count rows)) false)
-          (if (> reserved budget)
-            {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count prefix}
-            (let [tables [[:nodes (get rows 2) :node-id] [:calls (get rows 3) :core-node-id]
-                          [:edges (get rows 4) :call-core-node-id] [:records (get rows 5) :function-syntax-id]
-                          [:definitions (get rows 6) :binding-id] [:uses (get rows 7) :core-node-id]
-                          [:bindings (get rows 15) :binding-id] [:forms (get rows 16) :form-id]
-                          [:resolutions (sh08-gis3-view-get (get rows 1) :resolution-table) :reference-syntax-id]
-                          [:controls (get rows 14) :core-node-id] [:recur-targets (get rows 10) :target-id]
-                          [:var-references (get rows 8) :core-node-id] [:mutations (get rows 9) :core-node-id]
-                          [:recur-transfers (get rows 11) :recur-core-node-id] [:lexicals (get rows 13) :binding-id]]]
-              (loop [remaining tables indexes {} used reserved]
-                (if (= 0 (count remaining))
-                  {:status :entry-indexes-complete :indexes indexes :work-count used :completed-work-count used
-                   :numeric-proof-established false}
-                  (let [part (first remaining) key (get part 0)
-                        indexed (sh08-gis3-index (get part 1) (get part 2) (- budget used))
-                        work (+ used (get indexed :work-count))]
-                    (if (= :accepted (get indexed :status))
-                      (recur (rest remaining) (assoc indexes key (get indexed :index)) work)
-                      {:status :rejected :reason (get indexed :reason) :stage :entry-original-index :table key
-                       :work-count work :completed-work-count (+ used (get indexed :completed-work-count))}))))))
-          {:status :rejected :reason :compact-gis-entry-rows-required :work-count prefix :completed-work-count prefix})))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
+
+
+
+
+(defn sh08-gis3-entry-data [core binding-rows form-rows]
+  ; Validate the entire original inputs, including fields not selected by
+  ; semantic matching. The retained row families are DATA, not a receipt.
+  (let [data (sh08-vf-original-data [core binding-rows form-rows])]
+    (if (= :accepted (get data :status))
+      (if (if (sh08-gis3-keyword-record? core)
+            (if (vector? binding-rows) (vector? form-rows) false) false)
+        (let [rows [(sh08-gis3-view-get core :module) (sh08-gis3-view-get core :preserved-resolution)
+                    (sh08-gis3-view-get core :nodes) (sh08-gis3-view-get core :calls)
+                    (sh08-gis3-view-get core :call-edges) (sh08-gis3-view-get core :function-records)
+                    (sh08-gis3-view-get core :definitions) (sh08-gis3-view-get core :reference-uses)
+                    (sh08-gis3-view-get core :var-references) (sh08-gis3-view-get core :mutations)
+                    (sh08-gis3-view-get core :recur-targets) (sh08-gis3-view-get core :recur-transfers)
+                    (sh08-gis3-view-get core :recursion-components) (sh08-gis3-view-get core :lexical-bindings)
+                    (sh08-gis3-view-get core :control-flow) binding-rows form-rows]
+              valid? (loop [i 0]
+                       (if (= i 17) true
+                         (if (if (< i 2) (sh08-gis3-keyword-record? (get rows i)) (vector? (get rows i)))
+                           (recur (+ i 1)) false)))]
+          (if valid? {:status :entry-original-data-complete :rows rows :numeric-proof-established false}
+            {:status :rejected :reason :compact-gis-entry-families-required}))
+        {:status :rejected :reason :compact-gis-entry-input-required}) data)))
+
+(defn sh08-gis3-entry-indexes [rows]
+  (let [data (sh08-vf-original-data rows)]
+  (if (= :accepted (get data :status))
+  (if (if (vector? rows) (= 17 (count rows)) false)
+    (let [tables [[:nodes (get rows 2) :node-id] [:calls (get rows 3) :core-node-id]
+                  [:edges (get rows 4) :call-core-node-id] [:records (get rows 5) :function-syntax-id]
+                  [:definitions (get rows 6) :binding-id] [:uses (get rows 7) :core-node-id]
+                  [:bindings (get rows 15) :binding-id] [:forms (get rows 16) :form-id]
+                  [:resolutions (sh08-gis3-view-get (get rows 1) :resolution-table) :reference-syntax-id]
+                  [:controls (get rows 14) :core-node-id] [:recur-targets (get rows 10) :target-id]
+                  [:var-references (get rows 8) :core-node-id] [:mutations (get rows 9) :core-node-id]
+                  [:recur-transfers (get rows 11) :recur-core-node-id] [:lexicals (get rows 13) :binding-id]]]
+      (loop [remaining tables indexes {}]
+        (if (= 0 (count remaining))
+          {:status :entry-indexes-complete :indexes indexes :numeric-proof-established false}
+          (let [part (first remaining) indexed (sh08-gis3-index (get part 1) (get part 2))]
+            (if (= :accepted (get indexed :status))
+              (recur (rest remaining) (assoc indexes (get part 0) (get indexed :index)))
+              {:status :rejected :reason (get indexed :reason) :stage :entry-original-index :table (get part 0)})))))
+    {:status :rejected :reason :compact-gis-entry-rows-required}) data)))
+
+(defn sh08-gis3-prepare-source [core binding-rows form-rows target]
+  ; Every owning entry rebuilds from original inputs in this invocation.
+  (if (sh08-pc-id? target)
+    (let [data (sh08-gis3-entry-data core binding-rows form-rows)]
+      (if (= :entry-original-data-complete (get data :status))
+        (sh08-gis3-entry-indexes (get data :rows)) data))
+    {:status :rejected :reason :compact-gis-source-id-required}))
 
 (defn sh08-gis3-keyword-record? [value]
   (if (map? value)
-    (if (<= (count value) 1024)
-      (let [fields (vec (keys value))]
-        (loop [i 0]
-          (if (= i (count fields)) true
-            (if (keyword? (get fields i)) (recur (+ i 1)) false)))) false) false))
+    (loop [entries (vec value) i 0 seen #{}]
+      (if (= i (count entries)) true
+        (let [key (get (get entries i) 0)]
+          (if (keyword? key)
+            (if (contains? seen key) false (recur entries (+ i 1) (conj seen key))) false)))) false))
 
 (defn sh08-gis3-ids? [values]
   (if (vector? values)
-    (if (<= (count values) 1024)
-      (loop [i 0]
-        (if (= i (count values)) true
-          (if (sh08-pc-id? (get values i)) (recur (+ i 1)) false))) false) false))
+    (loop [i 0]
+      (if (= i (count values)) true
+        (if (sh08-pc-id? (get values i)) (recur (+ i 1)) false))) false))
 
 (defn sh08-gis3-allowed-keyword? [values selected allow-all?]
-  (if (if (keyword? selected) (if (vector? values) (<= (count values) 1024) false) false)
+  (if (if (keyword? selected) (vector? values) false)
     (loop [i 0 found false]
       (if (= i (count values)) found
         (let [value (get values i)]
@@ -3113,7 +2732,7 @@
 (defn sh08-gis3-comparison-data? [value]
   ; Active source comparison trees have Keyword Map keys and no Sets.
   ; Unread metadata keeps the wider canonical DATA domain and is not copied
-  ; into this comparison domain. The owning wrapper pays this walk afresh.
+  ; into this comparison domain. Complete native DATA validation runs first.
   (loop [pending (list value)]
     (if (= 0 (count pending)) true
       (let [item (first pending) tail (rest pending)]
@@ -3161,7 +2780,8 @@
           (if (sh08-gis3-comparison-data? [source expected]) (= source expected) false)) false) false)))
 
 (defn sh08-gis3-entry-header [core indexes target]
-  ; Internal matching after original DATA/index payment. This header alone
+  ; Internal matching after original DATA validation and fresh indexing.
+  ; This header alone
   ; establishes neither Integer arguments nor the closed entry census.
   (let [nodes (get indexes :nodes) records (get indexes :records) bindings (get indexes :bindings)
         forms (get indexes :forms) definitions (get indexes :definitions)
@@ -3214,7 +2834,8 @@
              (sh08-gis3-allowed-keyword? (get operator-binding :target-set) (get (get core :module) :target) true)
              (= :reference (get receiver :core-form)) (= [pid] (get receiver :resolved-binding-ids))
              (= pid (get (get receiver :attributes) :binding-id))
-             (= 1 (get record :fixed-arity)) (if (<= 0 (get record :ordinal)) (<= (get record :ordinal) 1024) false)
+             (= 1 (get record :fixed-arity))
+             (if (integer? (get record :ordinal)) (>= (get record :ordinal) 0) false)
              (= :named-top-level (get record :definition-kind))
              (= :lexical (get parameter :binding-class)) (= :local (get parameter :kind))
              (contains? #{nil :immutable} (get parameter :mutability))
@@ -3254,7 +2875,7 @@
         owner (get record :function-syntax-id) fid (get record :function-core-node-id)
         bid (get binding :binding-id) pid (get parameter :binding-id)
         exports (get (get core :module) :exports)]
-    (if (if (vector? exports) (<= (count exports) 1024) false)
+    (if (vector? exports)
       (sh08-ft-all-true?
         [(loop [remaining exports]
            (if (= 0 (count remaining)) true
@@ -3302,7 +2923,7 @@
 
 (defn sh08-gis3-entry-families? [core indexes]
   ; Reject malformed active scalar IDs before any semantic filtering. Whole
-  ; original rows, including inactive metadata, have separate DATA payment.
+  ; Original rows, including inactive metadata, are validated in full first.
   (let [families [[(get core :calls) [:core-node-id :operator-node-id :operator-binding-id]]
                   [(get core :call-edges) [:call-core-node-id :callee-binding-id :callee-definition-syntax-id]]
                   [(get core :reference-uses) [:core-node-id :form-id :syntax-id :binding-id :definition-syntax-id]]
@@ -3495,7 +3116,7 @@
              :resolution-order (get resolution :resolution-order) :source-span (get form :source-span)} resolution)]) false)))
 
 (defn sh08-gis3-entry-census [core indexes target]
-  ; Internal semantic census. Only the eventual paid, fresh owning wrapper
+  ; Internal semantic census. Only the fresh owning wrapper
   ; may consume this result; this is not a supplied validation token.
   (if (sh08-gis3-entry-families? core indexes)
     (let [header (sh08-gis3-entry-header core indexes target)]
@@ -3523,7 +3144,7 @@
 (defn sh08-gis3-entry-unify [core indexes target]
   ; Ground each actual caller through the existing literal rule and the
   ; same parameter choice used by ordinary call inference. All construction
-  ; is local and modeled; no opaque legacy constructor or parameter seed.
+  ; is local; no opaque legacy constructor or parameter seed is used.
   (let [established (sh08-gis3-entry-census core indexes target)]
     (if (= :original-entry-census-complete (get established :status))
       (let [header (get established :header) census (get established :census)
@@ -3542,57 +3163,17 @@
            :literal-types (get derived :literal-types)
            :ordinary-argument-unification {:rule :ordinary-scalar-parameter-choice
                                           :binding-types (assoc {} pid (get derived :type))
-                                          :pairs (get derived :pairs) :diagnostics [] :compatibility-work-count 0}
+                                          :pairs (get derived :pairs) :diagnostics []}
            :numeric-proof-established false}
           {:status :rejected :reason :compact-gis-entry-Integer-required})) established)))
 
-(defn sh08-gis3-entry-semantic-work [n d]
-  ; Source-derived, nonnegative reservation for entry-unify and all of its
-  ; semantic/construction helpers. N bounds every original row family; D
-  ; covers two full original comparison trees plus fixed wrappers.
-  (+ 1447429583309 (* 32992 d)
-     (* 165632411667 n) (* 24732 n d)
-     (* 299401 n n) (* 4 n n d) (* 2 n n n)))
 
-(defn sh08-gis3-cold-entry [core binding-rows form-rows target budget]
-  ; Fresh owning payment path. No caller-supplied census/index/validation
-  ; object is accepted. The complete DATA walk, indexes and semantic work
-  ; are separate cumulative debits. This establishes no GIS numeric proof.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [prefix 512 control 62000 reserved (+ prefix control)]
-      (if (> prefix budget)
-        {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
-        (if (> reserved budget)
-          {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count prefix}
-          (if (sh08-pc-id? target)
-            (let [data (sh08-gis3-entry-complete-data core binding-rows form-rows (- budget reserved))
-                  data-work (+ reserved (get data :work-count))]
-              (if (= :entry-original-data-payment-complete (get data :status))
-                (let [rows (get data :rows)
-                      indexed (sh08-gis3-entry-indexes rows (- budget data-work))
-                      used (+ data-work (get indexed :work-count))]
-                  (if (= :entry-indexes-complete (get indexed :status))
-                    (let [n (loop [i 0 maximum 1]
-                              (if (= i 17) maximum
-                                (let [size (count (get rows i))]
-                                  (recur (+ i 1) (if (> size maximum) size maximum)))))
-                          d (+ 64 (* 2 (get data :comparison-bound-work)))
-                          semantic (sh08-gis3-entry-semantic-work n d)
-                          required (+ used semantic)]
-                      (if (> required budget)
-                        {:status :rejected :reason :compact-gis-entry-work-limit :stage :entry-semantic
-                         :work-count required :completed-work-count used}
-                        (let [result (sh08-gis3-entry-unify core (get indexed :indexes) target)]
-                          (assoc result :work-count required :completed-work-count required
-                            :surrounding-work reserved :original-DATA-work (get data :work-count)
-                            :fresh-index-work (get indexed :work-count) :semantic-work semantic
-                            :fresh-indexes (get indexed :indexes) :all-DATA-control-fees-closed true))))
-                    {:status :rejected :reason (get indexed :reason) :stage :entry-original-index
-                     :work-count used :completed-work-count (+ data-work (get indexed :completed-work-count))}))
-                {:status :rejected :reason (get data :reason) :stage :entry-original-DATA
-                 :work-count data-work :completed-work-count (+ reserved (get data :completed-work-count))}))
-            {:status :rejected :reason :compact-gis-source-id-required :work-count reserved :completed-work-count reserved}))))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
+(defn sh08-gis3-cold-entry [core binding-rows form-rows target]
+  (let [prepared (sh08-gis3-prepare-source core binding-rows form-rows target)]
+    (if (= :entry-indexes-complete (get prepared :status))
+      (assoc (sh08-gis3-entry-unify core (get prepared :indexes) target)
+        :fresh-indexes (get prepared :indexes)) prepared)))
 
 (defn sh08-gis3-binary-call-source? [core indexes header call operation]
   ; Original binary core calls only. Parameter type/range is checked by the
@@ -3704,8 +3285,8 @@
 
 (defn sh08-gis3-owned-ancestry [indexes outer record]
   (let [forms (get indexes :forms) endpoint (get record :function-form-id)]
-    (loop [id (get (get outer :source) :form-id) depth 0 seen #{} out []]
-      (if (if (sh08-pc-id? id) (if (<= depth 128) (= false (contains? seen id)) false) false)
+    (loop [id (get (get outer :source) :form-id) seen #{} out []]
+      (if (if (sh08-pc-id? id) (= false (contains? seen id)) false)
         (let [form (sh08-gis3-pick forms id) parent-id (get form :parent-form-id)
               parent (sh08-gis3-pick forms parent-id) children (get parent :child-form-ids)]
           (if (if (sh08-gis3-keyword-record? form)
@@ -3720,7 +3301,7 @@
                   (if (= 1 (loop [i 0 matches 0]
                              (if (= i (count children)) matches
                                (recur (+ i 1) (if (= id (get children i)) (+ matches 1) matches)))))
-                    (recur parent-id (+ depth 1) (conj seen id) next) nil) nil))) nil)) nil))))
+                    (recur parent-id (conj seen id) next) nil) nil))) nil)) nil))))
 
 (defn sh08-gis3-integer-literal [indexes node]
   (let [attrs (get node :attributes) value (get attrs :value)
@@ -3743,8 +3324,8 @@
             (recur (rest rows)) false))))))
 
 (defn sh08-gis3-numeric-match [core indexes target]
-  ; Internal source reconstruction. The eventual owning producer pays this
-  ; entire graph and output separately. This returns no public proof value.
+  ; Internal source reconstruction from original rows. This returns no
+  ; public proof value or authentication authority.
   (let [entry (sh08-gis3-entry-unify core indexes target)]
     (if (= :original-entry-Integer-derived (get entry :status))
       (let [header (sh08-gis3-entry-header core indexes target) record (get header :record)
@@ -3813,51 +3394,13 @@
               {:status :rejected :reason :compact-gis-original-literals-or-ancestry-required}))
           {:status :rejected :reason :compact-gis-original-control-or-call-required})) entry)))
 
-(defn sh08-gis3-numeric-semantic-work [n d]
-  ; Independent whole-source model of numeric-match and every semantic child.
-  (+ 2280268919977 (* 182963 d)
-     (* 166330493394 n) (* 26805 n d)
-     (* 299410 n n) (* 4 n n d) (* 2 n n n)))
 
-(defn sh08-gis3-numeric-source [core binding-rows form-rows target budget]
-  ; Fresh owning numeric-source payment. No supplied census/index/validation
-  ; object is accepted. The complete DATA walk, indexes and semantic work
-  ; are separate debits. The v3 product and fresh consumer remain separate.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [prefix 512 control 62000 reserved (+ prefix control)]
-      (if (> prefix budget)
-        {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
-        (if (> reserved budget)
-          {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count prefix}
-          (if (sh08-pc-id? target)
-            (let [data (sh08-gis3-entry-complete-data core binding-rows form-rows (- budget reserved))
-                  data-work (+ reserved (get data :work-count))]
-              (if (= :entry-original-data-payment-complete (get data :status))
-                (let [rows (get data :rows)
-                      indexed (sh08-gis3-entry-indexes rows (- budget data-work))
-                      used (+ data-work (get indexed :work-count))]
-                  (if (= :entry-indexes-complete (get indexed :status))
-                    (let [n (loop [i 0 maximum 1]
-                              (if (= i 17) maximum
-                                (let [size (count (get rows i))]
-                                  (recur (+ i 1) (if (> size maximum) size maximum)))))
-                          d (+ 64 (* 2 (get data :comparison-bound-work)))
-                          semantic (sh08-gis3-numeric-semantic-work n d)
-                          required (+ used semantic)]
-                      (if (> required budget)
-                        {:status :rejected :reason :compact-gis-entry-work-limit :stage :entry-semantic
-                         :work-count required :completed-work-count used}
-                        (let [result (sh08-gis3-numeric-match core (get indexed :indexes) target)]
-                          (assoc result :work-count required :completed-work-count required
-                            :surrounding-work reserved :original-DATA-work (get data :work-count)
-                            :fresh-index-work (get indexed :work-count) :semantic-work semantic
-                            :fresh-indexes (get indexed :indexes) :all-DATA-control-fees-closed true))))
-                    {:status :rejected :reason (get indexed :reason) :stage :entry-original-index
-                     :work-count used :completed-work-count (+ data-work (get indexed :completed-work-count))}))
-                {:status :rejected :reason (get data :reason) :stage :entry-original-DATA
-                 :work-count data-work :completed-work-count (+ reserved (get data :completed-work-count))}))
-            {:status :rejected :reason :compact-gis-source-id-required :work-count reserved :completed-work-count reserved}))))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
+(defn sh08-gis3-numeric-source [core binding-rows form-rows target]
+  (let [prepared (sh08-gis3-prepare-source core binding-rows form-rows target)]
+    (if (= :entry-indexes-complete (get prepared :status))
+      (assoc (sh08-gis3-numeric-match core (get prepared :indexes) target)
+        :fresh-indexes (get prepared :indexes)) prepared)))
 
 (defn sh08-gis3-v3-product [core indexes matched]
   ; Internal construction from this invocation's fresh numeric matcher only.
@@ -3905,77 +3448,20 @@
        :operand-types (get matched :operand-types) :input-range (get matched :input-range)
        :result-range (get matched :result-range)} matched)))
 
-(defn sh08-gis3-output-reservation [d]
-  ; Five application copies, a separate solution witness, and three original
-  ; origin/generated-origin occurrences. Fixed expanded W <=8192; remaining
-  ; W <=3*original-W. Complete DATA costs <=4369*W+4104; storage pays W again.
-  ; This bound is prepaid before product construction, not inferred afterward.
-  (+ 67108864 (* 32768 d)))
 
-(defn sh08-gis3-product-semantic-work [n d]
-  (+ 2280276927070 (* 182964 d)
-     (* 166330493394 n) (* 26805 n d)
-     (* 299410 n n) (* 4 n n d) (* 2 n n n)))
 
-(defn sh08-gis3-produce-product [core binding-rows form-rows target budget]
-  ; Standalone private packet construction. Input, matching, all ten original
-  ; readsets, and every expanded packet output occurrence have separate fees.
-  ; There is no public C7/schema dispatch and no accepted producer token input.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [reserved (+ 512 4194304)]
-      (if (> reserved budget)
-        {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count 0}
-        (if (sh08-pc-id? target)
-          (let [data (sh08-gis3-entry-complete-data core binding-rows form-rows (- budget reserved))
-                data-work (+ reserved (get data :work-count))]
-            (if (= :entry-original-data-payment-complete (get data :status))
-              (let [rows (get data :rows) indexed (sh08-gis3-entry-indexes rows (- budget data-work))
-                    used (+ data-work (get indexed :work-count))]
-                (if (= :entry-indexes-complete (get indexed :status))
-                  (let [indexes (get indexed :indexes)
-                        n (loop [i 0 maximum 1]
-                            (if (= i 17) maximum
-                              (let [size (count (get rows i))]
-                                (recur (+ i 1) (if (> size maximum) size maximum)))))
-                        d (+ 64 (* 2 (get data :comparison-bound-work)))
-                        semantic (sh08-gis3-product-semantic-work n d)
-                        output-reserved (sh08-gis3-output-reservation d)
-                        phase-required (+ used semantic output-reserved)]
-                    (if (> phase-required budget)
-                      {:status :rejected :reason :compact-gis-product-work-limit :stage :product-construction
-                       :work-count phase-required :completed-work-count used}
-                      (let [reconstructed (sh08-gis3-reconstruct-product core indexes target)]
-                        (if (= :reconstructed (get reconstructed :status))
-                          (let [selected (sh08-gis3-complete-source-payment core binding-rows form-rows
-                                           (get reconstructed :operand-types) target (- budget phase-required))
-                                work (+ phase-required (get selected :work-count))]
-                            (if (= :original-data-payment-complete (get selected :status))
-                              (let [product (get reconstructed :product)
-                                    output (sh08-gis3-complete-data-tallies product output-reserved)
-                                    output-used (+ (get output :work-count) (get output :comparison-bound-work 0))]
-                                (if (if (= :accepted (get output :status)) (<= output-used output-reserved) false)
-                                  {:status :constructed :type :gravity.type/integer :product product
-                                   :work-count work :completed-work-count work
-                                   :fees {:surrounding reserved :original-DATA (get data :work-count)
-                                          :fresh-indexes (get indexed :work-count) :semantic semantic
-                                          :source-readsets (get selected :work-count) :output-reserved output-reserved
-                                          :output-DATA (get output :work-count) :output-storage (get output :comparison-bound-work)}
-                                   :readset-fees (get selected :readset-fees)
-                                   :output-physical {:V (get output :visit-work) :T (get output :accounting-work)
-                                                     :W (get output :comparison-bound-work)}
-                                   :numeric-proof-established false}
-                                  {:status :rejected :reason :compact-gis-output-reservation-exceeded :stage :output
-                                   :work-count (+ (- work output-reserved) output-used) :completed-work-count work}))
-                              {:status :rejected :reason (get selected :reason) :stage :original-readsets
-                               :work-count work :completed-work-count (+ phase-required (get selected :completed-work-count))}))
-                          {:status :rejected :reason (get reconstructed :reason) :stage :numeric-source
-                           :work-count phase-required :completed-work-count phase-required}))))
-                  {:status :rejected :reason (get indexed :reason) :stage :original-indexes
-                   :work-count used :completed-work-count (+ data-work (get indexed :completed-work-count))}))
-              {:status :rejected :reason (get data :reason) :stage :original-DATA
-               :work-count data-work :completed-work-count (+ reserved (get data :completed-work-count))}))
-          {:status :rejected :reason :compact-gis-source-id-required :work-count reserved :completed-work-count reserved})))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
+
+(defn sh08-gis3-produce-product [core binding-rows form-rows target]
+  (let [prepared (sh08-gis3-prepare-source core binding-rows form-rows target)]
+    (if (= :entry-indexes-complete (get prepared :status))
+      (let [rebuilt (sh08-gis3-reconstruct-product core (get prepared :indexes) target)]
+        (if (= :reconstructed (get rebuilt :status))
+          (let [product (get rebuilt :product) data (sh08-vf-original-data product)]
+            (if (= :accepted (get data :status))
+              {:status :constructed :type :gravity.type/integer :product product :numeric-proof-established false}
+              (assoc data :stage :product-DATA)))
+          (assoc rebuilt :stage :numeric-source))) prepared)))
 
 (defn sh08-gis3-witness-shape? [value]
   (if (if (map? value) (if (= 2 (count value))
@@ -4038,7 +3524,7 @@
   (if (sh08-gis3-comparison-data? candidate) (sh08-gis3-product-shape? candidate) false))
 
 (defn sh08-gis3-same-data-kinds? [expected candidate]
-  ; Both complete DATA values have already been paid. Every Map key in this
+  ; Both complete native DATA values are valid. Every Map key in this
   ; comparison domain is a Keyword. Traverse physical copies even when host
   ; objects are shared; List and Vector are distinct canonical carriers.
   (loop [pending (list [expected candidate])]
@@ -4073,60 +3559,29 @@
                 (recur tail) false))))))))
 
 (defn sh08-gis3-products-equal? [expected candidate]
-  ; The owning consumer prepays max(W(expected),W(candidate)) before this call.
-  (= expected candidate))
+  (= true (get (sh08-vf-compare-data expected candidate) :equal?)))
 
-(defn sh08-gis3-candidate-semantic-work [d]
-  (+ 275646674 (* 4393 d)))
 
-(defn sh08-gis3-kind-comparison-work [d]
-  (+ 65536 (* 65536 d)))
 
-(defn sh08-gis3-consume-product [core binding-rows form-rows target candidate budget]
-  ; Candidate DATA and shape pay first. Expected semantics and all original
-  ; indexes/readsets are then rebuilt in this invocation with its own pool.
-  ; No producer receipt, prior work count or supplied verification is input.
-  (if (if (integer? budget) (>= budget 0) false)
-    (let [reserved (+ 512 4194304)]
-      (if (> reserved budget)
-        {:status :rejected :reason :compact-gis-consumer-work-limit :work-count reserved :completed-work-count 0}
-        (let [checked (sh08-gis3-complete-data-tallies candidate (- budget reserved))
-              candidate-work (+ reserved (get checked :work-count))]
-          (if (= :accepted (get checked :status))
-            (let [candidate-W (get checked :comparison-bound-work)
-                  d (+ 64 (* 2 candidate-W)) shape-work (sh08-gis3-candidate-semantic-work d)
-                  shaped (+ candidate-work shape-work)]
-              (if (> shaped budget)
-                {:status :rejected :reason :compact-gis-consumer-work-limit :stage :candidate-shape
-                 :work-count shaped :completed-work-count candidate-work}
-                (if (sh08-gis3-candidate-valid? candidate)
-                  (let [expected (sh08-gis3-produce-product core binding-rows form-rows target (- budget shaped))
-                        used (+ shaped (get expected :work-count))]
-                    (if (= :constructed (get expected :status))
-                      (let [expected-W (get (get expected :fees) :output-storage)
-                            comparison (if (> expected-W candidate-W) expected-W candidate-W)
-                            compare-d (+ 64 (* 2 comparison)) kind-work (sh08-gis3-kind-comparison-work compare-d)
-                            required (+ used kind-work comparison)]
-                        (if (> required budget)
-                          {:status :rejected :reason :compact-gis-consumer-work-limit :stage :product-comparison
-                           :work-count required :completed-work-count used}
-                          (if (sh08-gis3-same-data-kinds? (get expected :product) candidate)
-                            (if (sh08-gis3-products-equal? (get expected :product) candidate)
-                              {:status :accepted :type :gravity.type/integer :work-count required :completed-work-count required
-                               :fees {:surrounding reserved :candidate-DATA (get checked :work-count) :candidate-shape shape-work
-                                      :fresh-reconstruction (get expected :work-count) :kind-comparison kind-work :value-comparison comparison}
-                               :fresh-original-reconstruction true :numeric-proof-established false}
-                              {:status :rejected :reason :compact-gis-v3-candidate-mismatch :stage :product-value
-                               :work-count required :completed-work-count required})
-                            {:status :rejected :reason :compact-gis-v3-candidate-kind-mismatch :stage :product-kinds
-                             :work-count required :completed-work-count required})))
-                      {:status :rejected :reason (get expected :reason) :stage :fresh-original-source
-                       :work-count used :completed-work-count (+ shaped (get expected :completed-work-count))}))
-                  {:status :rejected :reason :compact-gis-v3-candidate-required :stage :candidate-shape
-                   :work-count shaped :completed-work-count shaped})))
-            {:status :rejected :reason (get checked :reason) :stage :candidate-DATA
-             :work-count candidate-work :completed-work-count (+ reserved (get checked :completed-work-count))}))))
-    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
+
+(defn sh08-gis3-consume-product [core binding-rows form-rows target candidate]
+  ; Candidate DATA is checked first. Expected semantics and original indexes
+  ; are independently reconstructed here; no producer receipt is accepted.
+  (let [data (sh08-vf-original-data candidate)]
+    (if (= :accepted (get data :status))
+      (if (sh08-gis3-candidate-valid? candidate)
+        (let [expected (sh08-gis3-produce-product core binding-rows form-rows target)]
+          (if (= :constructed (get expected :status))
+            (if (sh08-gis3-same-data-kinds? (get expected :product) candidate)
+              (if (sh08-gis3-products-equal? (get expected :product) candidate)
+                {:status :accepted :type :gravity.type/integer
+                 :fresh-original-reconstruction true :numeric-proof-established false}
+                {:status :rejected :reason :compact-gis-v3-candidate-mismatch :stage :product-value})
+              {:status :rejected :reason :compact-gis-v3-candidate-kind-mismatch :stage :product-kinds})
+            (assoc expected :stage :fresh-original-source)))
+        {:status :rejected :reason :compact-gis-v3-candidate-required :stage :candidate-shape})
+      (assoc data :stage :candidate-DATA))))
 
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.

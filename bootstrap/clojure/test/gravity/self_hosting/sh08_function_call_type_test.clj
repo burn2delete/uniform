@@ -9833,1049 +9833,27 @@
         (is (= :accepted (:status (derive work))))
         (is (= :not-work-limit (:reason (derive (dec work)))))))))
 
-(defn- gis3-original-row-input [lower upper]
-  ;; Fully materialized normalized original rows, not a reader/source pass.
-  ;; Integer parameter facts below come from current C7 literal typing and
-  ;; ordinary caller unification; no proof or parameter type is preseeded.
-  (let [id #(str "sha256:" (format "%064x" %)) counter (atom 50000) forms (atom {})
-        form-tree (fn form-tree [value parent]
-                    (let [start (swap! counter inc) fid (id start)
-                          kind (cond (integer? value) :integer (boolean? value) :boolean
-                                     (symbol? value) :symbol (vector? value) :vector :else :list)
-                          children (if (coll? value) (mapv #(form-tree % fid) value) [])]
-                      (swap! forms assoc fid {:form-id fid :syntax-id fid :kind kind :value value
-                                             :parent-form-id parent :child-form-ids children
-                                             :source-span {:byte-start start :byte-end (inc @counter)}
-                                             :origin-chain [] :generated-origin nil}) fid))
-        fn-form (form-tree (list 'fn ['x] (list 'if (list 'if (list '>= 'x lower) (list '<= 'x upper) false)
-                                              (list '- 'x lower) 0)) nil)
-        entry-form (form-tree '(bounded 42) nil)
-        fn-children (:child-form-ids (@forms fn-form)) parameter-form (second fn-children)
-        name-form (first (:child-form-ids (@forms parameter-form))) parameter-id (id 51000)
-        bindings (into {} (map-indexed
-                            (fn [n op]
-                              (let [bid (id (+ 52000 n))]
-                                [bid {:binding-id bid :name op :binding-class :core :kind :var :namespace 'gravity.core
-                                      :package {:name 'gravity/core :version "bootstrap-contract-v1"}
-                                      :type-ref :gravity.type/core-var :safety :safe :effects [] :capabilities []
-                                      :profile-set [:meta] :target-set [:all] :definition-syntax-id (id (+ 53000 n))}]))
-                            ['>= '<= '-]))
-        function-binding (id 54000)
-        bindings (assoc bindings parameter-id {:binding-id parameter-id :name 'x :binding-class :lexical :kind :local
-                                               :mutability :immutable :definition-syntax-id name-form}
-                                 function-binding {:binding-id function-binding :name 'bounded :binding-class :namespace
-                                                   :kind :function :definition-syntax-id fn-form})
-        by-name (into {} (map (fn [[bid row]] [(:name row) bid]) bindings))
-        nodes (atom {}) calls (atom []) edges (atom [])
-        emit (fn emit [fid owner operator?]
-               (let [form (@forms fid) value (:value form) fids (:child-form-ids form)
-                     kind (cond (= :symbol (:kind form)) :reference
-                                (contains? #{:integer :boolean} (:kind form)) :literal
-                                (= 'fn (first value)) :fn (= 'if (first value)) :if :else :call)
-                     child-forms (case kind :fn [(nth fids 2)] :if (vec (rest fids)) :call fids [])
-                     children (mapv #(emit % (if (= kind :fn) fid owner) (and (= kind :call) (= % (first fids)))) child-forms)
-                     bid (when (= kind :reference) (by-name value))
-                     attrs (case kind
-                             :literal {:literal-kind (:kind form) :value value}
-                             :reference (if operator?
-                                          {:symbol value :position :operator :binding-id bid :binding-class (:binding-class (bindings bid))
-                                           :definition-syntax-id (:definition-syntax-id (bindings bid))}
-                                          {:binding-id bid})
-                             :fn {:parameters ['x] :signature nil :parameter-form-id parameter-form :parameter-syntax-id parameter-form}
-                             :if {:condition-child-index 0 :then-child-index 1 :else-child-index 2
-                                  :condition-evaluation :always-first :branch-evaluation :exactly-one
-                                  :truthiness {:false-values [:nil :false] :other-values :true}}
-                             :call {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
-                                    :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
-                     attrs (if (and (= kind :call) (= 'bounded (first value)))
-                             (assoc attrs :argument-count 1 :argument-child-indexes [1]) attrs)
-                     resolved (case kind :reference [bid] :call [(by-name (first value))] :fn [parameter-id] [])
-                     evaluation {:kind (case kind :call :operator-then-arguments :if :condition-then-exclusive-branch
-                                             :fn :function-creation :value)
-                                 :owner-function-syntax-id owner :region (if owner :function-body :module-initialization)
-                                 :order (if (contains? #{:call :if} kind)
-                                          (mapv #(hash-map :index %1 :core-node-id %2) (range) children) [])}
-                     node {:node-id fid :core-form kind :children children :attributes attrs :resolved-binding-ids resolved
-                           :binding-context (id 55000) :evaluation evaluation
-                           :source {:form-id fid :syntax-id fid :semantic-span (:source-span form)
-                                    :origin-chain (:origin-chain form) :generated-origin (:generated-origin form)}}]
-                 (swap! nodes assoc fid node)
-                 (when (= kind :call)
-                   (let [callee (by-name (first value)) binding (bindings callee) local? (= callee function-binding)
-                         call {:core-node-id fid :operator-node-id (first children) :operator-binding-id callee
-                               :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
-                               :evaluation-order :operator-then-arguments :result-policy :call-result}
-                         edge {:ordinal (count @calls) :call-core-node-id fid :caller-function-syntax-id owner
-                               :caller-function-core-node-id owner :callee-binding-id callee
-                               :callee-definition-syntax-id (:definition-syntax-id binding)
-                               :callee-function-syntax-id (when local? fn-form) :callee-function-core-node-id (when local? fn-form)
-                               :argument-core-node-ids (:argument-node-ids call) :ordered-evaluation-node-ids children
-                               :evaluation-order :operator-then-arguments :classification (if local? :local-function :nonlocal-or-nonfunction)}]
-                     (swap! calls conj call) (swap! edges conj edge))) fid))
-        _ (emit fn-form nil false) _ (emit entry-form nil false)
-        record {:function-syntax-id fn-form :function-core-node-id fn-form :function-form-id fn-form
-                :body-core-node-id (nth fn-children 2) :definition-kind :named-top-level :definition-name 'bounded
-                :fixed-arity 1 :parameter-binding-ids [parameter-id] :signature nil}
-        core {:artifact-id (id 56000) :module {:namespace 'example.gis3 :profile :meta :target :jvm :safety :safe
-                                             :effects [] :capabilities [] :exports ['bounded]}
-              :nodes (vec (vals @nodes)) :calls @calls :call-edges @edges :function-records [record]
-              :mutations [] :recursion-components [] :recur-targets [] :recur-transfers []}
-        literal-types (into {} (for [[nid node] @nodes :when (= :literal (:core-form node))]
-                                  [nid (invoke-c7 'sh08-primitive-type-from-literal-kind [(get-in node [:attributes :literal-kind])])]))
-        entry (last @calls) entry-edge (last @edges)
-        functions {fn-form {:function-id fn-form :fixed-arity 1 :parameters [{:binding-id parameter-id :type :gravity.type/unknown}]
-                            :return :gravity.type/unknown :latent-effects [] :capabilities []}}
-        unified (invoke-c7 'sh08-ft-call-constraints-with-context
-                           [[entry] [entry-edge] @nodes literal-types {} functions
-                            {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
-                             :loop-work-left 65536}])
-        types (reduce (fn [out [nid node]]
-                        (if (= parameter-id (get-in node [:attributes :binding-id]))
-                          (assoc out nid (get-in unified [:binding-types parameter-id])) out)) literal-types @nodes)
-        target (:core-node-id (first (filter #(= '- (:name (bindings (:operator-binding-id %)))) @calls)))]
-    {:core core :bindings (vec (vals bindings)) :forms (vec (vals @forms)) :types types :target target
-     :unified unified :parameter-id parameter-id :nodes @nodes}))
 
-(defn- gis3-original-coordinate-readsets [{:keys [core bindings forms types target]}]
-  ;; Independent audit model. Coordinates are original table ordinals and
-  ;; original Map-entry ordinals, never object identity or value equality.
-  (let [tables {:nodes (:nodes core) :calls (:calls core) :edges (:call-edges core)
-                :records (:function-records core) :bindings bindings :forms forms :module [(:module core)]}
-        id-key {:nodes :node-id :calls :core-node-id :edges :call-core-node-id
-                :records :function-syntax-id :bindings :binding-id :forms :form-id}
-        positions (into {} (for [[table rows] tables]
-                             [table (if (= :module table) {:module 0}
-                                      (into {} (map-indexed (fn [n row] [(get row (id-key table)) n]) rows)))]))
-        row (fn [table id] (get (tables table) (get (positions table) id)))
-        original (fn [table id] {:origin [table (get (positions table) id)] :value (row table id)})
-        constant #(hash-map :value %)
-        vector-unit #(hash-map :container :vector :children (vec %))
-        field-path (fn [table id keys]
-                     (loop [value (row table id) origin [table (get (positions table) id)] remaining keys]
-                       (if (empty? remaining) {:origin origin :value value}
-                         (let [key (first remaining)
-                               entry (first (keep-indexed (fn [i [k _]] (when (and (keyword? k) (= k key)) i)) value))]
-                           (if (some? entry) (recur (get value key) (conj origin :value entry) (rest remaining)) (constant nil))))))
-        field (fn [table id key] (field-path table id [key]))
-        projection (fn [table id fields]
-                     {:container :map :children (vec (mapcat #(vector (constant %) (field table id %)) fields))})
-        source-fields [:form-id :syntax-id :kind :parent-form-id :child-form-ids :source-span :origin-chain :generated-origin]
-        prefix (fn [form-id value?] (projection :forms form-id (cond-> source-fields value? (conj :value))))
-        node (row :nodes target) owner (get-in node [:evaluation :owner-function-syntax-id])
-        record (row :records owner)
-        outer (first (filter #(and (= :if (:core-form %)) (= target (get (:children %) 1))) (:nodes core)))
-        inner (row :nodes (first (:children outer)))
-        low (row :nodes (first (:children inner))) high (row :nodes (second (:children inner)))
-        false-node (row :nodes (nth (:children inner) 2)) fallback (row :nodes (nth (:children outer) 2))
-        function (row :nodes (:function-core-node-id record))
-        function-form (row :forms (:function-form-id record))
-        params (row :forms (get-in function [:attributes :parameter-form-id]))
-        name (row :forms (first (:child-form-ids params)))
-        packet (fn [n]
-                 (let [id (:node-id n) call (row :calls id) args (:argument-node-ids call)]
-                   (vector-unit [(original :nodes id) (original :calls id) (original :edges id)
-                                 (original :nodes (:operator-node-id call)) (original :bindings (:operator-binding-id call))
-                                 (original :nodes (first args)) (original :nodes (second args))
-                                 (projection :records (get-in n [:evaluation :owner-function-syntax-id])
-                                             [:function-syntax-id :function-core-node-id])])) )
-        packets (mapv packet [node low high])
-        control-children (vec (mapcat #(map (fn [id] (row :nodes id)) (:children %)) [outer inner]))
-        selected (vec (concat [outer inner false-node fallback function] control-children
-                              (mapcat (fn [n] (let [call (row :calls (:node-id n))]
-                                               (map #(row :nodes %) (into [(:node-id n) (:operator-node-id call)]
-                                                                          (:argument-node-ids call))))) [node low high])))
-        current-type (fn [id]
-                       (let [ordinal (first (keep-indexed (fn [i [k _]] (when (= id k) i)) types))]
-                         {:origin [:types :value ordinal] :value (get types id)}))
-        stages (vector-unit
-                 (for [n [node low high outer inner]]
-                   (let [fid (get-in n [:source :form-id]) offset (if (= :if (:core-form n)) 1 0)]
-                     (vector-unit
-                       (for [i (range 3)]
-                         (let [child (row :nodes (get (:children n) i))
-                               node-ordinal (get-in positions [:nodes (:node-id child)])
-                               source-entry (first (keep-indexed (fn [j [k _]] (when (= :source k) j)) child))
-                               source (:source child) form-entry (first (keep-indexed (fn [j [k _]] (when (= :form-id k) j)) source))
-                               parent (field :forms fid :child-form-ids)]
-                           (vector-unit [{:origin [:nodes node-ordinal :value source-entry :value form-entry]
-                                          :value (:form-id source)}
-                                         {:origin (conj (:origin parent) :element (+ offset i))
-                                          :value (get (:value parent) (+ offset i))}])))))))]
-    {:tables tables :positions positions :selected-form-ids (mapv #(get-in % [:source :form-id]) selected)
-     :readsets (vec (concat packets
-                    [(vector-unit (concat (map #(original :nodes (:node-id %)) [outer inner false-node fallback])
-                                          [(vector-unit (map #(original :nodes (:node-id %)) control-children))]))
-                     (vector-unit [(original :records owner) (original :nodes (:node-id function))
-                                   (original :bindings (get-in (row :nodes (first (:argument-node-ids (row :calls target)))) [:attributes :binding-id]))
-                                   (original :forms (:form-id params)) (original :forms (:form-id name))
-                                   (prefix (:form-id function-form) false)
-                                   (field-path :nodes (:body-core-node-id record) [:source :form-id])])
-                     (vector-unit (map #(prefix (get-in % [:source :form-id]) (contains? #{:literal :reference} (:core-form %))) selected))
-                     (vector-unit (map #(let [f (row :forms (get-in % [:source :form-id]))]
-                                         (projection :forms (first (:child-form-ids f)) [:kind :value :parent-form-id])) [outer inner function]))
-                     (projection :module :module [:profile :target :safety])
-                     (vector-unit (mapcat (fn [n] (map current-type (:argument-node-ids (row :calls (:node-id n))))) [node low high]))
-                     (vector-unit [stages (vector-unit [(field :records owner :function-form-id)
-                                                       (field-path :nodes (:node-id function) [:source :form-id])])])]))}))
 
-(defn- gis3-coordinate-unit-value [unit]
-  (if-let [container (:container unit)]
-    (let [values (mapv gis3-coordinate-unit-value (:children unit))]
-      (if (= :map container) (into {} (map vec (partition 2 values))) values))
-    (:value unit)))
 
-(defn- gis3-coordinate-fee-audit [units]
-  ;; Pure audit, not runtime acceptance: retaining all W and created wrapper
-  ;; costs while separating repeated ORIGINAL-coordinate canonical visits.
-  (let [coverage (atom {}) counters (atom {:lookups 0 :lookup-path-elements 0 :writes 0 :write-path-elements 0 :reuses 0})
-        audit (fn audit [unit depth]
-                (let [origin (:origin unit) prior (when origin (get @coverage origin))]
-                  (when origin (swap! counters #(-> % (update :lookups inc) (update :lookup-path-elements + (count origin)))))
-                  (if prior
-                    (do (when (> (+ depth (:height prior)) 128) (throw (ex-info "Audit depth refused" {:reason :depth})))
-                        (swap! counters update :reuses inc)
-                        (assoc prior :paid-B 0 :paid-V 0 :paid-T 0))
-                    (let [value (:value unit) kind (or (:container unit)
-                                                    (cond (map? value) :map (vector? value) :vector
-                                                          (set? value) :set (list? value) :list :else :scalar))
-                          _ (when (> depth 128) (throw (ex-info "Audit depth refused" {:reason :depth})))
-                          children (or (:children unit)
-                                       (when (not= :scalar kind)
-                                         (if (= :map kind)
-                                           (vec (mapcat (fn [i [k v]]
-                                                          [{:origin (when origin (conj origin :key i)) :value k}
-                                                           {:origin (when origin (conj origin :value i)) :value v}]) (range) value))
-                                           (mapv (fn [i v] {:origin (when origin (conj origin :element i)) :value v}) (range) value))))
-                          size (if (= :map kind) (quot (count children) 2) (count children))
-                          _ (when (> size 1024) (throw (ex-info "Audit width refused" {:reason :width})))
-                          _ (when (and (= :scalar kind)
-                                       (not (or (nil? value) (boolean? value) (keyword? value) (symbol? value)
-                                                (string? value) (number? value) (char? value))))
-                              (throw (ex-info "Audit canonical leaf refused" {:reason :domain})))
-                          scalar (+ 2 (if (or (string? value) (symbol? value)) (count (str value)) 0))
-                          V (if (= :scalar kind) scalar (if (= :map kind) (+ 3 (* 12 size)) (+ 2 (* 5 size))))
-                          T (if (= :scalar kind) 8 14)
-                          W (if (= :scalar kind) scalar (+ 1 (if (contains? #{:map :set} kind)
-                                                                             (+ (* size size) (if (= :map kind) (* 2 size) size)) size)))
-                          results (mapv #(audit % (inc depth)) children)
-                          result {:natural-V (+ V (reduce + 0 (map :natural-V results)))
-                                  :natural-T (+ T (reduce + 0 (map :natural-T results)))
-                                  :paid-V (+ V (reduce + 0 (map :paid-V results)))
-                                  :paid-T (+ T (reduce + 0 (map :paid-T results)))
-                                  :natural-B (+ V T (reduce + 0 (map :natural-B results)))
-                                  :paid-B (+ V T (reduce + 0 (map :paid-B results)))
-                                  :W (+ W (reduce + 0 (map :W results)))
-                                  :height (if (seq results) (inc (apply max (map :height results))) 0)}]
-                      (when origin
-                        (swap! coverage assoc origin (dissoc result :paid-B :paid-V :paid-T))
-                        (swap! counters #(-> % (update :writes inc) (update :write-path-elements + (count origin)))))
-                      result))))
-        results (mapv #(audit % 0) units)]
-    {:readsets results :coverage-count (count @coverage) :bookkeeping-counts @counters
-     :natural-V (reduce + 0 (map :natural-V results))
-     :natural-T (+ (* 8 (count units)) (reduce + 0 (map :natural-T results)))
-     :paid-V (reduce + 0 (map :paid-V results))
-     :paid-T (+ (* 8 (count units)) (reduce + 0 (map :paid-T results)))
-     :natural-B (+ (* 8 (count units)) (reduce + 0 (map :natural-B results)))
-     :paid-original-and-wrapper-B (+ (* 8 (count units)) (reduce + 0 (map :paid-B results)))
-     :single-comparison-W-sum (reduce + 0 (map :W results))}))
 
-(defn- gis3-coordinate-plan-footprint [units]
-  (let [all (mapcat #(tree-seq (fn [u] (seq (:children u))) :children %) units)
-        original-roots (vec (keep :origin all)) unique-roots (set original-roots)
-        recipes (for [u all :when (= :map (:container u))]
-                  {:size (quot (count (:children u)) 2)
-                   :recipe (mapv (fn [[k v]] [(:value k) (or (:origin v) :constant-nil)])
-                                 (partition 2 (:children u)))})
-        repeated (filter #(> (count %) 1) (vals (group-by :recipe recipes)))]
-    {:original-unit-references (count original-roots) :distinct-original-unit-roots (count unique-roots)
-     :reference-coordinate-elements (reduce + 0 (map count original-roots))
-     :distinct-coordinate-elements (reduce + 0 (map count unique-roots))
-     :created-projection-maps (count recipes)
-     :duplicate-projection-recipes (count repeated)
-     :avoidable-projection-maps (reduce + 0 (map #(dec (count %)) repeated))
-     :avoidable-projection-field-reads (reduce + 0 (map #(* (dec (count %)) (:size (first %))) repeated))
-     :avoidable-private-map-shell-B (reduce + 0 (map #(* (dec (count %)) (+ 17 (* 22 (:size (first %))))) repeated))}))
 
-(defn- gis3-independent-physical-data-fee [value]
-  (let [container? #(or (map? %) (vector? %) (set? %) (list? %))
-        physical (tree-seq container? #(if (map? %) (mapcat identity %) (seq %)) value)
-        containers (filter container? physical) atoms (remove container? physical)
-        scalar #(reduce + 0 (map (fn [x] (+ 2 (if (or (string? x) (symbol? x)) (count (str x)) 0))) %))
-        V (+ (scalar atoms) (reduce + 0 (map #(if (map? %) (+ 3 (* 12 (count %))) (+ 2 (* 5 (count %)))) containers)))
-        T (+ 8 (* 8 (count atoms)) (* 14 (count containers)))
-        W (+ (scalar atoms) (reduce + 0 (map #(let [n (count %)]
-                                              (+ 1 (if (or (map? %) (set? %))
-                                                     (+ (* n n) (if (map? %) (* 2 n) n)) n))) containers)))]
-    {:V V :T T :B (+ V T) :W W :atoms (count atoms) :containers (count containers)}))
 
-(deftest sh08-gis3-coordinate-coverage-decomposition-development-kernel
-  (let [input (gis3-original-row-input 0 0)
-        model (gis3-original-coordinate-readsets input)
-        audit (gis3-coordinate-fee-audit (:readsets model))
-        footprint (gis3-coordinate-plan-footprint (:readsets model))
-        values (mapv gis3-coordinate-unit-value (:readsets model))
-        fees (mapv gis3-independent-physical-data-fee values)]
-    (is (= 10 (count (:readsets model))))
-    (is (= [8 8 8] (mapv #(count (:children %)) (take 3 (:readsets model)))))
-    (is (= 23 (count (:selected-form-ids model))))
-    (is (= 17 (count (set (:selected-form-ids model)))))
-    (is (= (select-keys (:module (:core input)) [:profile :target :safety]) (get values 7)))
-    (is (and (string? (last (get values 4))) (= 71 (count (last (get values 4))))))
-    (is (every? (fn [[a b]] (= a b)) (mapcat identity (first (get values 9)))))
-    (is (= (mapv :B fees) (mapv #(+ 8 (:natural-B %)) (:readsets audit))))
-    (is (= (mapv :W fees) (mapv :W (:readsets audit))))
-    (is (= (reduce + (map :W fees)) (:single-comparison-W-sum audit)))
-    (let [original-nodes (into {} (map (juxt :node-id identity) (get-in input [:core :nodes])))
-          original-bindings (into {} (map (juxt :binding-id identity) (:bindings input)))]
-      (doseq [packet (take 3 values)]
-        (doseq [i [0 3 5 6]]
-          (is (= (original-nodes (:node-id (get packet i))) (get packet i)))
-          (is (contains? (get packet i) :binding-context)))
-        (is (= (original-bindings (:binding-id (get packet 4))) (get packet 4)))))
-    (is (every? #(every? (set (keys %)) [:form-id :syntax-id :kind :parent-form-id :child-form-ids
-                                       :source-span :origin-chain :generated-origin]) (get values 5)))
-    (is (< (:paid-original-and-wrapper-B audit) (:natural-B audit)))
-    (is (pos? (get-in audit [:bookkeeping-counts :reuses])))
-    (let [twice {:container :vector :children [{:origin [:test 0] :value :same} {:origin [:test 0] :value :same}]}
-          distinct {:container :vector :children [{:origin [:test 0] :value :same} {:origin [:test 1] :value :same}]}
-          repeated (gis3-coordinate-fee-audit [twice]) separate (gis3-coordinate-fee-audit [distinct])]
-      (is (= (:natural-B repeated) (:natural-B separate)))
-      (is (= 1 (get-in repeated [:bookkeeping-counts :reuses])))
-      (is (= 0 (get-in separate [:bookkeeping-counts :reuses])))
-      (is (= (:natural-B separate) (:paid-original-and-wrapper-B separate)))
-      (is (= (:single-comparison-W-sum repeated) (:single-comparison-W-sum separate))))
-    (let [deep (nth (iterate vector :leaf) 127)
-          first-view {:origin [:depth 0] :value deep}
-          later {:container :vector :children [{:container :vector :children [first-view]}]}]
-      (is (= :depth (try (gis3-coordinate-fee-audit [first-view later]) nil
-                         (catch clojure.lang.ExceptionInfo error (:reason (ex-data error)))))))
-    (let [callbacks (atom 0)
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Coverage opaque hash")))
-                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "Coverage opaque equality")))
-                   (toString [] (swap! callbacks inc) (throw (AssertionError. "Coverage opaque print"))))
-          poisoned {:origin [:nodes 0] :value {:binding-context {:unread opaque}}}]
-      (is (= :domain (try (gis3-coordinate-fee-audit [poisoned]) nil
-                          (catch clojure.lang.ExceptionInfo error (:reason (ex-data error))))))
-      (is (zero? @callbacks)))
-    (let [callbacks (atom 0)
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Input unread hash")))
-                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "Input unread equality")))
-                   (toString [] (swap! callbacks inc) (throw (AssertionError. "Input unread rendering"))))
-          poisoned (update-in input [:core :nodes]
-                              #(mapv (fn [n] (if (= (:target input) (:node-id n))
-                                              (assoc n :binding-context {:unread opaque}) n)) %))]
-      (is (= :domain (try (gis3-coordinate-fee-audit (:readsets (gis3-original-coordinate-readsets poisoned))) nil
-                          (catch clojure.lang.ExceptionInfo error (:reason (ex-data error))))))
-      (is (zero? @callbacks)))
-    (prn {:gis3-independent-coordinate-decomposition audit :unfactored-readset-fees fees
-          :sparse-plan-footprint footprint
-          :production-source-payment-executed false :bookkeeping-fees-not-yet-assigned true
-          :semantic-comparison-multiplicities-not-yet-assigned true
-          :numeric-proof-established false})))
 
-(defn- gis3-source-view-work-model
-  ([] (gis3-source-view-work-model 'sh08-gis3-original-readsets))
-  ([target]
-  ;; Independent source model: nonnegative polynomials in original node count.
-  ;; All paths are bounded; if chooses a componentwise upper bound, and loops
-  ;; include a terminating visit. Rest pays a complete remaining-cell copy.
-  (let [source (slurp (str (System/getProperty "user.dir") "/bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"))
-        definitions (with-open [reader (java.io.PushbackReader. (java.io.StringReader. source))]
-                      (binding [*read-eval* false]
-                        (loop [out {}]
-                          (let [form (read {:eof ::end} reader)]
-                            (if (= ::end form) out
-                              (recur (if (and (seq? form) (= 'defn (first form)))
-                                       (assoc out (second form) form) out)))))))
-        owned '#{sh08-gis3-original-readsets sh08-gis3-view-get sh08-gis3-view-project
-                 sh08-gis3-pick sh08-gis3-form-prefix sh08-pc-id? sh08-sse-ids? sh08-lsi-first-append
-                 sh08-gis3-index sh08-gis3-source-payment sh08-gis3-complete-source-payment sh08-gis3-view-control-work
-                 sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes
-                 sh08-gis3-cold-entry sh08-gis3-entry-semantic-work
-                 sh08-gis3-numeric-source sh08-gis3-numeric-semantic-work
-                 sh08-gis3-produce-product sh08-gis3-product-semantic-work sh08-gis3-output-reservation
-                 sh08-gis3-consume-product sh08-gis3-candidate-semantic-work sh08-gis3-kind-comparison-work sh08-gis3-products-equal?}
-        separately-paid '#{sh08-gis3-index sh08-gis3-original-readsets sh08-gis3-data-tallies
-                          sh08-gis3-complete-data-tallies sh08-gis3-entry-complete-data
-                          sh08-gis3-entry-original-data sh08-gis3-entry-indexes sh08-gis3-entry-unify sh08-gis3-numeric-match
-                          sh08-gis3-reconstruct-product sh08-gis3-complete-source-payment sh08-gis3-produce-product
-                          sh08-gis3-candidate-valid? sh08-gis3-same-data-kinds?}
-        metrics [:steps :field-gets :equalities :cells :map-writes :set-tests]
-        zero (zipmap metrics (repeat [0 0 0])) cache (atom {}) result-assocs (atom [])]
-    (letfn [(plus [a b] (mapv + a b))
-            (times [a b]
-              (let [terms (reduce (fn [out [i j]] (update out (+ i j) + (* (get a i) (get b j))))
-                                  [0 0 0 0 0] (for [i (range 3) j (range 3)] [i j]))]
-                (when (some pos? (drop 3 terms)) (throw (ex-info "Unbounded model degree" {:a a :b b})))
-                (subvec terms 0 3)))
-            (add [& costs] (reduce #(merge-with plus %1 %2) zero costs))
-            (sum [costs] (apply add costs))
-            (unit [metric value] (assoc zero metric (if (vector? value) value [value 0 0])))
-            (scale [factor cost] (into {} (map (fn [[k v]] [k (times factor v)]) cost)))
-            (upper [a b] (merge-with #(mapv max %1 %2) a b))
-            (loop-bound [owner bindings]
-              (let [init (second bindings)]
-                (cond (= 'sh08-gis3-index owner) [0 1 0]
-                      (contains? '#{sh08-gis3-source-payment sh08-gis3-complete-source-payment} owner) [(if (= 'parts (first bindings)) 10 6) 0 0]
-                      (contains? '#{sh08-gis3-entry-original-data sh08-gis3-entry-complete-data} owner) [17 0 0]
-                      (= 'sh08-gis3-entry-indexes owner) [15 0 0]
-                      (contains? '#{sh08-gis3-cold-entry sh08-gis3-numeric-source sh08-gis3-produce-product} owner) [17 0 0]
-                      (= 'sh08-gis3-view-project owner) [9 0 0]
-                      (= 'sh08-sse-ids? owner) [2 0 0]
-                      (= 'sh08-lsi-first-append owner) [6 0 0]
-                      (= 'i (first bindings)) [3 0 0]
-                      (vector? init) [(count init) 0 0]
-                      (= 'packets init) [3 0 0]
-                      (= 'selected init) [23 0 0]
-                      (= '(sh08-gis3-view-get core :nodes) init) [0 1 0]
-                      :else (throw (ex-info "Unassigned source loop" {:owner owner :bindings bindings})))))
-            (function-cost [name]
-              (or (get @cache name)
-                  (let [[_ _ params & body] (get definitions name)
-                        result (add (unit :steps (+ 8 (* 4 (count params))))
-                                    (unit :cells (* 2 (count params)))
-                                    (sum (map #(cost name % [0 0 0]) body)))]
-                    (swap! cache assoc name result) result)))
-            (cost [owner form remaining]
-              (cond
-                (map? form) (add (unit :steps 1) (unit :cells (* 2 (count form)))
-                                 (unit :map-writes (count form)) (sum (map #(cost owner % remaining) (mapcat identity form))))
-                (vector? form) (add (unit :steps 1) (unit :cells (count form)) (sum (map #(cost owner % remaining) form)))
-                (set? form) (add (unit :steps 1) (unit :cells (count form)) (unit :set-tests (count form))
-                                 (sum (map #(cost owner % remaining) form)))
-                (not (seq? form)) (unit :steps 1)
-                :else
-                (let [[op & args] form]
-                  (case op
-                    if (add (unit :steps 1) (cost owner (first args) remaining)
-                            (upper (cost owner (second args) remaining) (cost owner (nth args 2) remaining)))
-                    let (let [[bindings & body] args n (quot (count bindings) 2)]
-                          (add (unit :steps (inc n)) (unit :cells n)
-                               (sum (map #(cost owner % remaining) (take-nth 2 (rest bindings))))
-                               (sum (map #(cost owner % remaining) body))))
-                    loop (let [[bindings & body] args n (quot (count bindings) 2) bound (loop-bound owner bindings)]
-                           (add (unit :steps (inc n)) (unit :cells n)
-                                (sum (map #(cost owner % remaining) (take-nth 2 (rest bindings))))
-                                (scale (plus bound [1 0 0])
-                                       (add (unit :steps (* 2 n)) (unit :cells (* 2 n))
-                                            (sum (map #(cost owner % bound) body))))))
-                    recur (add (unit :steps (inc (count args))) (unit :cells (* 2 (count args)))
-                               (sum (map #(cost owner % remaining) args)))
-                    (let [base (add (unit :steps 1) (unit :cells (count args))
-                                    (sum (map #(cost owner % remaining) args)))]
-                      (if (and (contains? '#{sh08-gis3-source-payment sh08-gis3-complete-source-payment sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-cold-entry sh08-gis3-numeric-source sh08-gis3-produce-product sh08-gis3-consume-product} owner)
-                               (contains? separately-paid op))
-                        (add base (unit :steps (+ 8 (* 4 (count args)))) (unit :cells (* 2 (count args))))
-                      (if (contains? owned op) (add base (function-cost op))
-                        (do (when (contains? definitions op)
-                              (throw (ex-info "Unmodeled source helper" {:owner owner :callee op})))
-                            (add base
-                                 (case op
-                                   get (unit :field-gets 1)
-                                   = (unit :equalities 1)
-                                   assoc (let [pairs (quot (dec (count args)) 2)
-                                               result? (and (= 'result (first args))
-                                                            (contains? '#{sh08-gis3-cold-entry sh08-gis3-numeric-source} owner))]
-                                           (when-not (= (count args) (inc (* 2 pairs)))
-                                             (throw (ex-info "Malformed source assoc" {:owner owner :form form})))
-                                           (when result?
-                                             (let [child (if (= owner 'sh08-gis3-cold-entry)
-                                                           'sh08-gis3-entry-unify 'sh08-gis3-numeric-match)
-                                                   width (apply max 0 (map count (filter map? (tree-seq coll? seq (get definitions child)))))]
-                                               (when-not (and (every? keyword? (take-nth 2 (rest args))) (<= (+ width pairs) 32))
-                                                 (throw (ex-info "Unbounded private result assoc" {:owner owner :pairs pairs :prior-width width})))
-                                               (swap! result-assocs conj {:owner owner :pairs pairs :prior-literal-width width
-                                                                         :Keyword-key-bound 32 :copy-cells-per-pair 65})))
-                                           (add (unit :map-writes pairs) (unit :cells (dec (count args)))
-                                                (if result? (add (unit :steps (* 32 pairs)) (unit :cells (* 65 pairs))) zero)))
-                                   conj (unit :cells (+ (dec (count args)) (if (= 'ledger (first args)) 11 0)))
-                                   contains? (unit :set-tests 1)
-                                   rest (unit :cells remaining)
-                                   zero))))))))))]
-      (let [model (function-cost target)
-            weights {:steps 1 :cells 1 :field-gets 2051 :equalities 73 :map-writes 33 :set-tests 7}
-            fee (reduce plus [0 0 0] (map (fn [[metric weight]] (mapv #(* weight %) (get model metric))) weights))]
-        {:metrics model :weights weights :fee-polynomial fee :helper-models @cache
-         :private-result-assocs @result-assocs
-         :literal-Maps (vec (for [name (keys @cache)
-                                 form (tree-seq coll? seq (get definitions name)) :when (map? form)]
-                             {:owner name :width (count form) :native-keywords (every? keyword? (keys form))}))})))))
 
-(defn- gis3-semantic-census-work-model [target]
-  ;; Independent source model in N (maximum original family width) and D
-  ;; (two complete original comparison bounds plus 64 wrapper units).
-  ;; Comparison Maps have recursively checked Keyword keys; active source
-  ;; Sets reject. Source/data/index children keep separate ledgers.
-  (let [definitions (with-open [reader (java.io.PushbackReader. (io/reader (path c7-source-relative-path)))]
-                      (binding [*read-eval* false]
-                        (loop [out {}]
-                          (let [form (read {:eof ::end} reader)]
-                            (if (= ::end form) out
-                              (recur (if (and (seq? form) (= 'defn (first form))) (assoc out (second form) form) out)))))))
-        owned '#{sh08-gis3-keyword-record? sh08-gis3-ids? sh08-gis3-allowed-keyword?
-                 sh08-gis3-comparison-data? sh08-gis3-source-span? sh08-gis3-source-match?
-                 sh08-gis3-entry-header sh08-gis3-entry-exclusions? sh08-gis3-entry-families?
-                 sh08-gis3-entry-collections sh08-gis3-evaluation-order? sh08-gis3-entry-call?
-                 sh08-gis3-entry-parameter-reference? sh08-gis3-entry-census sh08-gis3-entry-unify
-                 sh08-gis3-binary-call-source? sh08-gis3-if-source? sh08-gis3-owned-ancestry
-                 sh08-gis3-integer-literal sh08-gis3-numeric-resolution-orders? sh08-gis3-numeric-match
-                 sh08-gis3-v3-product sh08-gis3-reconstruct-product
-                 sh08-gis3-witness-shape? sh08-gis3-application-shape? sh08-gis3-product-shape? sh08-gis3-candidate-valid?
-                 sh08-gis3-pick sh08-gis3-view-get sh08-pc-id? sh08-sse-ids? sh08-ma-form-source
-                 sh08-ix-literal? sh08-pe-select sh08-ft-call-valid? sh08-ft-call-edge-valid?
-                 sh08-ft-caller-edge-valid? sh08-ft-local-callee-edge-valid? sh08-ft-nonlocal-callee-edge-valid?
-                 sh08-ft-definition-by-binding-id sh08-ft-definition-names-local-function? sh08-ft-record-shape?
-                 sh08-ft-all-true? sh08-ft-function-type-skeleton sh08-ft-function-type-skeleton-base
-                 sh08-ft-apply-declarations sh08-primitive-type-from-literal-kind
-                 sh08-ft-ordinary-parameter-choice sh08-ft-known? sh08-ft-unknown?
-                 sh08-ni-valid-view? sh08-ni-tagged? sh08-ni-type? sh08-ni-atomic?}
-        scalar-comparisons '#{sh08-gis3-keyword-record? sh08-gis3-ids? sh08-gis3-allowed-keyword?
-                              sh08-gis3-comparison-data? sh08-gis3-source-span? sh08-gis3-entry-families?
-                              sh08-gis3-evaluation-order? sh08-pc-id? sh08-sse-ids? sh08-ft-all-true?}
-        metrics [:steps :cells :field-gets :private-gets :deep-equalities :id-equalities :map-writes :set-tests :characters]
-        zero (zipmap metrics (repeat {})) cache (atom {}) active (atom #{}) opaque (atom #{})
-        cursor-audits (atom {})]
-    (letfn [(p [value] (case value :n {[1 0] 1} :d {[0 1] 1} (if (zero? value) {} {[0 0] value})))
-            (plus [a b] (merge-with +' a b))
-            (times [a b]
-              (reduce (fn [out [[i j] x [k l] y]]
-                        (when (> (+ i j k l) 6) (throw (ex-info "Semantic model degree exceeded" {})))
-                        (update out [(+ i k) (+ j l)] (fnil +' 0) (*' x y)))
-                      {} (for [[a x] a [b y] b] [a x b y])))
-            (upper [a b] (merge-with max a b))
-            (add [& values] (reduce #(merge-with plus %1 %2) zero values))
-            (sum [values] (apply add values))
-            (unit [metric value] (assoc zero metric (if (map? value) value (p value))))
-            (scale [factor value] (into {} (map (fn [[k v]] [k (times factor v)]) value)))
-            (loop-bound [owner bindings]
-              (let [name (first bindings) init (second bindings)]
-                (cond (vector? init) (p (count init))
-                      (and (= owner 'sh08-gis3-comparison-data?) (= name 'pending)) (p :d)
-                      (contains? '#{sh08-gis3-keyword-record? sh08-gis3-ids? sh08-gis3-allowed-keyword?
-                                    sh08-gis3-comparison-data? sh08-gis3-evaluation-order?} owner) (p 1024)
-                      (= owner 'sh08-sse-ids?) (p 6)
-                      (and (= name 'i) (contains? '#{sh08-gis3-binary-call-source? sh08-gis3-if-source?} owner)) (p 3)
-                      (= owner 'sh08-gis3-numeric-resolution-orders?) (p 1024)
-                      (and (= name 'i) (= owner 'sh08-gis3-owned-ancestry)) (p 1024)
-                      (and (= owner 'sh08-gis3-entry-families?) (= name 'remaining) (= init 'families)) (p 7)
-                      (and (= owner 'sh08-gis3-entry-families?) (= name 'j)) (p 5)
-                      (and (= name 'i) (contains? '#{sh08-gis3-entry-collections sh08-gis3-entry-exclusions?} owner)) (p 1024)
-                      (and (= name 'i) (= owner 'sh08-gis3-entry-families?) (not= init 0)) (p 1024)
-                      (and (= name 'i) (= owner 'sh08-gis3-entry-families?)) (p 1024)
-                      (contains? owned owner) (p :n)
-                      :else (throw (ex-info "Unassigned semantic source loop" {:owner owner :bindings bindings})))))
-            (function-cost [name width]
-              (let [key [name width]]
-                (or (get @cache key)
-                    (do
-                      (when (contains? @active key) (throw (ex-info "Unbounded semantic helper recursion" {:callee name})))
-                      (swap! active conj key)
-                      (let [[_ _ params & body] (get definitions name)
-                            raw (if (= name 'sh08-gis3-comparison-data?)
-                                  (let [audit ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test
-                                                          'gis3-complete-data-control-work-model) name)
-                                        [constant edge] (:dispatch-control-polynomial audit)]
-                                    (when-not (and (<= 0 constant) (<= 0 edge) (<= (+ constant edge) 4096))
-                                      (throw (ex-info "Comparison cursor source exceeds reservation" {:audit audit})))
-                                    (swap! cursor-audits assoc name audit)
-                                    ;; Full source dispatch per visit, with all child
-                                    ;; materializations summed over the fresh tree.
-                                    ;; Both visit and edge counts are <= D. The
-                                    ;; extra 4096 covers entry and terminal control.
-                                    (unit :steps (plus (p 4096) (times (p 4096) (p :d)))))
-                                  (add (unit :steps (+ 8 (* 4 (count params)))) (unit :cells (* 2 (count params)))
-                                       (sum (map #(cost name % (p (or width 1024))) body))))
-                            result (if width (scale (p (inc width)) raw) raw)]
-                        (swap! active disj key) (swap! cache assoc key result) result)))))
-            (cost [owner form remaining]
-              (cond
-                (map? form) (add (unit :steps 1) (unit :cells (* 2 (count form))) (unit :map-writes (count form))
-                                 (sum (map #(cost owner % remaining) (mapcat identity form))))
-                (vector? form) (add (unit :steps 1) (unit :cells (count form)) (sum (map #(cost owner % remaining) form)))
-                (set? form) (add (unit :steps 1) (unit :cells (count form)) (unit :set-tests (count form))
-                                 (sum (map #(cost owner % remaining) form)))
-                (not (seq? form)) (unit :steps 1)
-                :else
-                (let [[op & args] form]
-                  (case op
-                    if (add (unit :steps 1) (cost owner (first args) remaining)
-                            (merge-with upper (cost owner (second args) remaining) (cost owner (nth args 2) remaining)))
-                    let (let [[bindings & body] args n (quot (count bindings) 2)]
-                          (add (unit :steps (inc n)) (unit :cells n)
-                               (sum (map #(cost owner % remaining) (take-nth 2 (rest bindings))))
-                               (sum (map #(cost owner % remaining) body))))
-                    loop (let [[bindings & body] args n (quot (count bindings) 2) bound (loop-bound owner bindings)]
-                           (add (unit :steps (inc n)) (unit :cells n)
-                                (sum (map #(cost owner % remaining) (take-nth 2 (rest bindings))))
-                                (scale (plus bound (p 1))
-                                       (add (unit :steps (* 2 n)) (unit :cells (* 2 n))
-                                            (sum (map #(cost owner % bound) body))))))
-                    recur (add (unit :steps (inc (count args))) (unit :cells (* 2 (count args)))
-                               (sum (map #(cost owner % remaining) args)))
-                    (let [base (add (unit :steps 1) (unit :cells (count args)) (sum (map #(cost owner % remaining) args)))]
-                      (cond
-                        (and (= owner 'sh08-ft-all-true?) (= op owner))
-                        (add base (unit :steps 12) (unit :cells 2))
-                        (= op 'sh08-ft-all-true?)
-                        (if (vector? (first args)) (add base (function-cost op (count (first args))))
-                          (throw (ex-info "Unbounded all-true input" {:owner owner :form form})))
-                        (contains? owned op) (add base (function-cost op nil))
-                        (= op 'sh08-ft-call-constraints)
-                        (do (swap! opaque conj op) (add base (unit :steps 32) (unit :cells 12)))
-                        (contains? definitions op) (throw (ex-info "Unmodeled semantic helper" {:owner owner :callee op}))
-                        :else
-                        (add base
-                          (case op
-                            get (unit (if (= owner 'sh08-gis3-comparison-data?) :private-gets :field-gets) 1)
-                            = (unit (if (contains? scalar-comparisons owner) :id-equalities :deep-equalities) 1)
-                            assoc (add (unit :map-writes (quot (dec (count args)) 2)) (unit :cells (dec (count args))))
-                            contains? (unit :set-tests 1)
-                            conj (if (= owner 'sh08-gis3-comparison-data?) (unit :cells 1)
-                                   (add (unit :cells 1024) (unit :set-tests 1)))
-                            rest (unit :cells remaining)
-                            keys (add (unit :steps 1024) (unit :cells 1024))
-                            vec (add (unit :steps 1024) (unit :cells 1024))
-                            set (add (unit :steps 1024) (unit :cells 1024) (unit :set-tests 1024))
-                            str (unit :characters 1)
-                            zero))))))))]
-      (let [model (function-cost target nil)
-            weights {:steps (p 1) :cells (p 1) :field-gets (p 74826) :private-gets (p 1)
-                     :deep-equalities (p :d) :id-equalities (p 74826) :map-writes (p 74826)
-                     :set-tests (p 74826) :characters (times (p 3) (p :d))}
-            fee (reduce plus {} (for [[metric weight] weights] (times weight (get model metric))))]
-        {:metrics model :weights weights :fee-polynomial (into (sorted-map) fee)
-         :helper-count (count @cache) :separately-paid-legacy-children @opaque
-         :native-cursor-source-audits @cursor-audits
-         :legacy-child-new-construction-payment-established (empty? @opaque)}))))
 
-(deftest sh08-gis3-source-view-work-model-development-kernel
-  (let [model (gis3-source-view-work-model)
-        index-model (gis3-source-view-work-model 'sh08-gis3-index)
-        entry-model (gis3-source-view-work-model 'sh08-gis3-source-payment)
-        entry-data-model (gis3-source-view-work-model 'sh08-gis3-entry-original-data)
-        entry-index-model (gis3-source-view-work-model 'sh08-gis3-entry-indexes)
-        evaluate (fn [poly n] (reduce + (map * poly [1 n (* n n)])))
-        fixture-fee (evaluate (:fee-polynomial model) 20)]
-    (is (= 6 (count (:metrics model))))
-    (is (= 8 (count (:helper-models model))))
-    (is (every? #(and (= 3 (count %)) (every? (fn [n] (and (integer? n) (<= 0 n))) %))
-                (vals (:metrics model))))
-    (is (pos? fixture-fee))
-    (is (<= 655 (evaluate (get-in model [:metrics :field-gets]) 20)))
-    (is (every? #(and (:native-keywords %) (<= (:width %) 15))
-                (mapcat :literal-Maps [model index-model entry-model entry-data-model entry-index-model])))
-    (is (= [2011065 9385 1] (:fee-polynomial model)))
-    (is (= [2697 2615 1] (:fee-polynomial index-model)))
-    (is (= [783575 0 0] (:fee-polynomial entry-model)))
-    (is (= [80903 0 0] (:fee-polynomial entry-data-model)))
-    (is (= [270910 0 0] (:fee-polynomial entry-index-model)))
-    (prn {:gis3-source-view-work-model model :fixture-nodes 20 :fixture-control-fee fixture-fee
-          :index-model index-model :entry-model entry-model
-          :production-control-reservation-wired true :full-fee-closure-established false
-          :Symbol-render-prepayment-closed true})))
 
-(defn- gis3-input-payment-worksheet [{:keys [core bindings forms types] :as input}]
-  (let [evaluate (fn [poly n] (reduce + (map * poly [1 n (* n n)])))
-        entry-model (gis3-source-view-work-model 'sh08-gis3-source-payment)
-        index-model (gis3-source-view-work-model 'sh08-gis3-index)
-        view-model (gis3-source-view-work-model)
-        rows [(:nodes core) (:calls core) (:call-edges core) (:function-records core) bindings forms]
-        keys [:node-id :core-node-id :call-core-node-id :function-syntax-id :binding-id :form-id]
-        index-fees (mapv (fn [rs key]
-                          (+ (evaluate (:fee-polynomial index-model) (count rs)) (* 73 (count rs) (count rs))
-                             (reduce + (map (fn [row]
-                                              (let [id (get row key)] (* 2 (+ 2 (if (string? id) (count id) 0))))) rs)))) rows keys)
-        view-control (evaluate (:fee-polynomial view-model) (count (:nodes core)))
-        maximum-index-size (apply max (count types) (map count rows))
-        ID-lookups (* 97 (+ 1 73 (* 73 maximum-index-size)))
-        data-B (reduce + (map #(get (gis3-independent-physical-data-fee (gis3-coordinate-unit-value %)) :B)
-                             (:readsets (gis3-original-coordinate-readsets input))))
-        entry-control (evaluate (:fee-polynomial entry-model) 0)
-        total (+ 512 entry-control (reduce + index-fees) view-control ID-lookups data-B)]
-    {:entry-control entry-control :index-control-polynomial (:fee-polynomial index-model)
-     :view-control-polynomial (:fee-polynomial view-model) :index-fees index-fees
-     :prefix-and-index (+ 512 entry-control (reduce + index-fees))
-     :view-control view-control :ID-lookups ID-lookups :DATA-B data-B :total total}))
 
-(defn- gis3-observe-original-view-work [operation]
-  ;; Passive observations, scoped to this thread and original collector only.
-  ;; Every original invocation is delegated exactly once without alteration.
-  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
-        instruction (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-instruction-scoped)
-        original-scoped @scoped original-get @getter original-instruction @instruction
-        owner (Thread/currentThread) depth (atom 0)
-        counters (atom {:instructions {} :gets 0 :String-ID-map-gets 0 :String-ID-key-characters 0})
-        active? #(and (identical? owner (Thread/currentThread)) (pos? @depth))
-        value (with-redefs-fn
-                {scoped (fn [runtime plan callee args scope]
-                          (if (and (identical? owner (Thread/currentThread))
-                                   (= :gravity-sh08-function-call-type-leaf (:engine runtime))
-                                   (= 'sh08-gis3-original-readsets callee))
-                            (do (swap! depth inc)
-                                (try (original-scoped runtime plan callee args scope)
-                                     (finally (swap! depth dec))))
-                            (original-scoped runtime plan callee args scope)))
-                 getter (fn [plan collection key]
-                          (when (active?)
-                            (swap! counters update :gets inc)
-                            (when (and (map? collection) (string? key) (= 71 (count key)))
-                              (swap! counters #(-> % (update :String-ID-map-gets inc)
-                                                   (update :String-ID-key-characters + (count key))))))
-                          (original-get plan collection key))
-                 instruction (fn [runtime plan env form scope]
-                               (when (active?)
-                                 (swap! counters update-in [:instructions (:op form)] (fnil inc 0)))
-                               (original-instruction runtime plan env form scope))}
-                operation)]
-    {:value value :observations @counters}))
 
-(deftest sh08-gis3-original-view-fee-audit-development-kernel
-  (let [{:keys [core bindings forms types target] :as input} (gis3-original-row-input 0 0)
-        indexes {:nodes (into {} (map (juxt :node-id identity) (:nodes core)))
-                 :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
-                 :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
-                 :records (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
-                 :bindings (into {} (map (juxt :binding-id identity) bindings))
-                 :forms (into {} (map (juxt :form-id identity) forms)) :types types}
-        observed (gis3-observe-original-view-work
-                   #(invoke-c7 'sh08-gis3-original-readsets [core indexes target]))
-        expected (mapv gis3-coordinate-unit-value (:readsets (gis3-original-coordinate-readsets input)))
-        counters (:observations observed)]
-    (is (= :selected-original-data (get-in observed [:value :status])))
-    (is (= expected (get-in observed [:value :readsets])))
-    (is (= [8 8 8] (mapv count (take 3 expected))))
-    (is (= 10 (count expected)))
-    (is (pos? (:gets counters)))
-    (is (pos? (:String-ID-map-gets counters)))
-    (is (= (* 71 (:String-ID-map-gets counters)) (:String-ID-key-characters counters)))
-    (prn {:gis3-original-view-physical-observations counters
-          :declared-view-reservation 3472 :unweighted-instruction-visits (reduce + (vals (:instructions counters)))
-          :physical-DATA-payment-executed false :numeric-proof-established false
-          :bookkeeping-fee-policy-established false})))
 
-(deftest sh08-gis3-bounded-field-development-kernel
-  (let [callbacks (atom 0) row-gets (atom 0)
-        opaque (proxy [Object] []
-                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 field opaque hash")))
-                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 field opaque equality")))
-                 (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 field opaque print"))))
-        lazy-value (lazy-seq (swap! callbacks inc) (throw (AssertionError. "GIS3 field lazy realization")))
-        row (assoc (into {} (map #(vector % opaque) (range 1023))) :target 42)
-        wide (assoc row :extra opaque)
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original @getter
-        run (fn [value key]
-              (with-redefs-fn
-                {getter (fn [plan current k]
-                          (when (or (identical? current row) (identical? current wide)) (swap! row-gets inc))
-                          (original plan current k))}
-                #(invoke-c7 'sh08-gis3-view-get [value key])))]
-    (is (= 42 (run row :target)))
-    (is (= 1 @row-gets))
-    (is (nil? (run wide :target)))
-    (is (= 1 @row-gets))
-    (doseq [key [opaque lazy-value (symbol "untyped-key") -1 1025]]
-      (is (nil? (run row key)))
-      (is (= 1 @row-gets)))
-    (doseq [value [opaque lazy-value (java.util.ArrayList.)]]
-      (is (nil? (run value :target))))
-    (is (nil? (invoke-c7 'sh08-gis3-view-project [row [:target opaque]])))
-    (is (zero? @callbacks))))
 
-(deftest sh08-gis3-entry-reservation-development-kernel
-  ;; Passive existing runtime seams delegate exactly once, with no result or
-  ;; argument substitution. Exact64 is the positive observer control.
-  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
-        original-scoped @scoped original-get @getter
-        core {:nodes [] :calls [] :call-edges [] :function-records []}
-        observe (fn [budget]
-                  (let [counts (atom {:Core-gets 0 :index-entry 0 :view-entry 0})
-                        result (with-redefs-fn
-                                 {getter (fn [plan value key]
-                                           (when (identical? value core) (swap! counts update :Core-gets inc))
-                                           (original-get plan value key))
-                                  scoped (fn [runtime plan callee args scope]
-                                           (when (= :gravity-sh08-function-call-type-leaf (:engine runtime))
-                                             (cond (= 'sh08-gis3-index callee) (swap! counts update :index-entry inc)
-                                                   (= 'sh08-gis3-original-readsets callee) (swap! counts update :view-entry inc)))
-                                           (original-scoped runtime plan callee args scope))}
-                                 #(invoke-c7 'sh08-gis3-source-payment [core [] [] {} :target budget]))]
-                    {:result result :observations @counts}))]
-    (doseq [budget [0 63 511]]
-      (let [{:keys [result observations]} (observe budget)]
-        (is (= :rejected (:status result)))
-        (is (= :compact-gis-work-limit (:reason result)))
-        (is (= [512 0] [(:work-count result) (:completed-work-count result)]))
-        (is (= {:Core-gets 0 :index-entry 0 :view-entry 0} observations))))
-    (let [{:keys [result observations]} (observe 512)]
-      (is (= :rejected (:status result)))
-      (is (= :compact-gis-entry-control-work-limit (:reason result)))
-      (is (= [:original-entry-control 784087 512]
-             [(:stage result) (:work-count result) (:completed-work-count result)]))
-      (is (= {:Core-gets 0 :index-entry 0 :view-entry 0} observations)))
-    (let [{:keys [result observations]} (observe 784087)]
-      (is (= :rejected (:status result)))
-      (is (= :compact-gis-index-work-limit (:reason result)))
-      (is (= [:original-index :nodes 786784 784087]
-             [(:stage result) (:table result) (:work-count result) (:completed-work-count result)]))
-      (is (= {:Core-gets 4 :index-entry 1 :view-entry 0} observations)))))
 
-(deftest sh08-gis3-type-table-width-development-kernel
-  (let [core {:nodes [] :calls [] :call-edges [] :function-records []}
-        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        original @scoped callbacks (atom 0)
-        opaque (proxy [Object] []
-                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 type width hash")))
-                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 type width equality")))
-                 (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 type width print"))))
-        run (fn [size]
-              (let [entries (atom []) types (into {} (map #(vector % opaque) (range size)))
-                    result (with-redefs-fn
-                             {scoped (fn [runtime plan callee args scope]
-                                       (when (and (= :gravity-sh08-function-call-type-leaf (:engine runtime))
-                                                  (contains? '#{sh08-gis3-index sh08-gis3-original-readsets sh08-gis3-data-tallies} callee))
-                                         (swap! entries conj callee))
-                                       (original runtime plan callee args scope))}
-                             #(invoke-c7 'sh08-gis3-source-payment [core [] [] types :target 784087]))]
-                {:result result :entries @entries}))
-        exact (run 1024) above (run 1025)]
-    (is (= {:status :rejected :reason :compact-gis-source-input-required
-            :work-count 512 :completed-work-count 512} (:result above)))
-    (is (= [] (:entries above)))
-    (is (= [:rejected :compact-gis-index-work-limit :original-index :nodes 786784 784087]
-           ((juxt :status :reason :stage :table :work-count :completed-work-count) (:result exact))))
-    (is (= '[sh08-gis3-index] (:entries exact)))
-    (is (zero? @callbacks))))
 
-(deftest sh08-gis3-data-domain-controls-development-kernel
-  ;; Direct fee-worker controls, not source or Integer-proof acceptance.
-  (let [run #(invoke-c7 'sh08-gis3-data-tallies [%1 %2])
-        width-value (vec (repeat 1024 :leaf))
-        exact-fee (+ 8 14 2 (* 5 1024) (* 1024 (+ 2 8)))
-        exact (run width-value exact-fee) below (run width-value (dec exact-fee))
-        deep (nth (iterate vector :leaf) 128)
-        depth-fee (+ 8 (* 128 (+ 7 14)) 2 8)
-        depth-exact (run deep depth-fee) depth-above (run [deep] 65536)
-        shared {:unread ["physical" :value]}
-        repeated [shared shared] repeated-fee (:B (gis3-independent-physical-data-fee repeated))]
-    (is (= 15384 exact-fee))
-    (is (= [:accepted exact-fee exact-fee 3073]
-           ((juxt :status :work-count :completed-work-count :comparison-bound-work) exact)))
-    (is (= [:rejected :compact-gis-work-limit exact-fee (- exact-fee 10)]
-           ((juxt :status :reason :work-count :completed-work-count) below)))
-    (is (= 2706 depth-fee))
-    (is (= [:accepted depth-fee 258]
-           ((juxt :status :work-count :comparison-bound-work) depth-exact)))
-    (is (= [:rejected :compact-gis-canonical-domain]
-           ((juxt :status :reason) depth-above)))
-    (is (= repeated-fee (:work-count (run repeated repeated-fee))))
-    (is (= :rejected (:status (run repeated (dec repeated-fee)))))
-    (let [callbacks (atom 0)
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 DATA opaque hash")))
-                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 DATA opaque equality")))
-                   (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 DATA opaque print"))))
-          lazy-value (lazy-seq (swap! callbacks inc) (throw (AssertionError. "GIS3 DATA lazy realization")))
-          cycle (java.util.ArrayList.)]
-      (.add cycle cycle)
-      (doseq [value [opaque lazy-value cycle {:unread opaque} [lazy-value]]]
-        (is (= [:rejected :compact-gis-canonical-domain]
-               ((juxt :status :reason) (run value 65536))))
-        (is (zero? @callbacks)))
-      (doseq [budget [0 7 8]]
-        (is (= [:rejected :compact-gis-work-limit (if (< budget 8) 0 8)]
-               ((juxt :status :reason :completed-work-count) (run opaque budget))))
-        (is (zero? @callbacks)))
-      (is (= [:rejected :compact-gis-canonical-domain 13 8]
-             ((juxt :status :reason :work-count :completed-work-count)
-              (run (vec (repeat 1025 opaque)) 65536))))
-      (is (zero? @callbacks)))))
 
-(deftest sh08-gis3-DATA-cursor-conservation-development-kernel
-  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        rest-var (ns-resolve 'gravity.bootstrap 'p15-s23-seed-readable-normalized-rest)
-        builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
-        original-scoped @scoped original-rest @rest-var original-builtin @builtin original-get @getter
-        owner (Thread/currentThread) active (atom false)
-        counts (atom {:non-List-rests 0 :List-rests 0 :subvec 0}) callbacks (atom 0) order (atom [])
-        opaque (fn [label]
-                 (proxy [Object] []
-                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. (str label " hash"))))
-                   (equals [_] (swap! callbacks inc) (throw (AssertionError. (str label " equality"))))
-                   (toString [] (swap! callbacks inc) (throw (AssertionError. (str label " print"))))))
-        left (opaque "left") right (opaque "right")
-        selected? #(and (identical? owner (Thread/currentThread)) @active)
-        run (fn [value budget]
-              (with-redefs-fn
-                {scoped (fn [runtime plan callee args scope]
-                          (if (and (identical? owner (Thread/currentThread))
-                                   (= :gravity-sh08-function-call-type-leaf (:engine runtime))
-                                   (= 'sh08-gis3-data-tallies callee))
-                            (do (reset! active true)
-                                (try (original-scoped runtime plan callee args scope)
-                                     (finally (reset! active false))))
-                            (original-scoped runtime plan callee args scope)))
-                 rest-var (fn [value]
-                            (when (selected?) (swap! counts update (if (list? value) :List-rests :non-List-rests) inc))
-                            (original-rest value))
-                 builtin (fn [& args]
-                           (when (and (selected?) (= 'subvec (nth args (- (count args) 2))))
-                             (swap! counts update :subvec inc))
-                           (apply original-builtin args))
-                 getter (fn [plan value key]
-                          (when (and (selected?) (= 0 key) (vector? value) (= 2 (count value))
-                                     (integer? (get value 1)))
-                            (cond (identical? left (get value 0)) (swap! order conj :left)
-                                  (identical? right (get value 0)) (swap! order conj :right)))
-                          (original-get plan value key))}
-                #(invoke-c7 'sh08-gis3-data-tallies [value budget])))
-        shared {:payload ["physical" :leaf (list 1 2)]}
-        values [[shared shared] {:left [1 2] :right (list :a #{:x :y})} (vec (repeat 32 [nil true \x]))]]
-    (doseq [value values]
-      (let [{:keys [B V T W]} (gis3-independent-physical-data-fee value) result (run value B)]
-        (is (= :accepted (:status result)))
-        (is (= [B B V T W] ((juxt :work-count :completed-work-count :visit-work :accounting-work :comparison-bound-work) result)))))
-    (is (= [:rejected :compact-gis-canonical-domain]
-           ((juxt :status :reason) (run [left right] 65536))))
-    (is (= [:right] @order))
-    (is (zero? @callbacks))
-    (is (pos? (:List-rests @counts)))
-    (is (= 0 (:non-List-rests @counts) (:subvec @counts)))))
 
-(deftest sh08-gis3-Symbol-prepayment-consumer-development-kernel
-  ;; Actual C7 compiler-artifact plan, never a fabricated helper context.
-  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        render (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-str)
-        observer (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-bootstrap-symbol-utf16-unit-count)
-        original-scoped @scoped original-render @render original-observer @observer owner (Thread/currentThread)
-        active (atom false)
-        run (fn [budget]
-              (let [value (with-meta (symbol "ns" (apply str (repeat 4096 "x"))) {:unread :metadata})
-                    counts (atom {:observer 0 :render 0})
-                    result (with-redefs-fn
-                             {scoped (fn [runtime plan callee args scope]
-                                       (if (and (identical? owner (Thread/currentThread))
-                                                (= :gravity-sh08-function-call-type-leaf (:engine runtime))
-                                                (= 'sh08-gis3-data-tallies callee))
-                                         (do (reset! active true)
-                                             (try (original-scoped runtime plan callee args scope)
-                                                  (finally (reset! active false))))
-                                         (original-scoped runtime plan callee args scope)))
-                              observer (fn [plan current]
-                                         (when (and (identical? owner (Thread/currentThread)) @active (identical? value current))
-                                           (swap! counts update :observer inc))
-                                         (original-observer plan current))
-                              render (fn [args]
-                                       (when (and (identical? owner (Thread/currentThread)) @active
-                                                  (identical? value (first args)))
-                                         (swap! counts update :render inc))
-                                       (original-render args))}
-                             #(invoke-c7 'sh08-gis3-data-tallies [value budget]))]
-                {:result result :counts @counts}))
-        before (run 11) tiny (run 13) below (run 4116) exact (run 4117)]
-    (is (= [:rejected :compact-gis-work-limit 12 8]
-           ((juxt :status :reason :work-count :completed-work-count) (:result before))))
-    (is (= {:observer 0 :render 0} (:counts before)))
-    (doseq [value [tiny below]]
-      (is (= [:rejected :compact-gis-work-limit 4117 8]
-             ((juxt :status :reason :work-count :completed-work-count) (:result value))))
-      (is (= {:observer 1 :render 0} (:counts value))))
-    (is (= [:accepted 4117 4117 4101]
-           ((juxt :status :work-count :completed-work-count :comparison-bound-work) (:result exact))))
-    (is (= {:observer 1 :render 0} (:counts exact)))
-    (prn {:Symbol-render-eliminated true :tiny-allowance 13 :exact 4117 :one-short 4116 :W 4101
-          :actual-consumer-observations (mapv :counts [before tiny below exact])
-          :bootstrap-dependency "e95995ddd3652f5544f57b170b9ca6f62bb82cda"
-          :all-DATA-control-fees-closed false :numeric-proof-established false :source-composition-executed false})))
 
-(deftest sh08-gis3-index-comparison-fee-development-kernel
-  ;; Native 71-character collision DATA, not authenticated Core identities.
-  (let [prefix (str "sha256:" (apply str (repeat 62 "a")))
-        left (str prefix "Aa") right (str prefix "BB")
-        callbacks (atom 0) row-gets (atom 0)
-        opaque (proxy [Object] []
-                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 index opaque hash")))
-                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 index opaque equality")))
-                 (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 index opaque print"))))
-        rows [{:node-id left :unread opaque} {:node-id right :unread opaque}]
-        bound (:comparison-bound-work (invoke-c7 'sh08-gis3-data-tallies [left 65536]))
-        base (let [[a b c] (:fee-polynomial (gis3-source-view-work-model 'sh08-gis3-index))]
-               (+ a (* b 2) (* (+ c bound) 2 2)))
-        total (+ base (* 2 2 bound))
-        run #(invoke-c7 'sh08-gis3-index [%1 :node-id %2])
-        accepted (run rows total) below (run rows (dec total))
-        duplicate (run [(first rows) (first rows)] total)
-        invalid (run [(first rows) {:node-id opaque}] total)
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original @getter
-        early (with-redefs-fn
-                {getter (fn [plan value key]
-                          (when (some #(identical? % value) rows) (swap! row-gets inc))
-                          (original plan value key))}
-                #(run rows (dec base)))]
-    (is (= [71 71] (mapv count [left right])))
-    (is (= (.hashCode ^String left) (.hashCode ^String right)))
-    (is (not= left right))
-    (is (= [73 8223 8515] [bound base total]))
-    (is (= [:accepted total total] ((juxt :status :work-count :completed-work-count) accepted)))
-    (is (identical? (first rows) (get (:index accepted) left)))
-    (is (identical? (second rows) (get (:index accepted) right)))
-    (is (= [:rejected :compact-gis-index-work-limit total (- total (* 2 bound))]
-           ((juxt :status :reason :work-count :completed-work-count) below)))
-    (is (= [:rejected :compact-gis-duplicate-id total total]
-           ((juxt :status :reason :work-count :completed-work-count) duplicate)))
-    (is (= [:rejected :compact-gis-source-id-required (- total (* 2 bound))]
-           ((juxt :status :reason :work-count) invalid)))
-    (is (= [:rejected :compact-gis-index-work-limit base 0]
-           ((juxt :status :reason :work-count :completed-work-count) early)))
-    (is (zero? @row-gets))
-    (is (zero? @callbacks))))
 
-(deftest sh08-gis3-view-ID-lookup-reservation-development-kernel
-  (let [{:keys [core bindings forms types target]} (gis3-original-row-input 0 0)
-        prefix-and-index 1043310
-        maximum-index-size 25
-        lookup-work (* (+ 13 21 6 23 6 20 1 1 6)
-                       (+ 1 (+ 2 71) (* maximum-index-size (+ 2 71))))
-        view-control 2199165
-        view-reservation (+ view-control lookup-work) required (+ prefix-and-index view-reservation)
-        run (fn [budget current-types]
-              (gis3-observe-original-view-work
-                #(invoke-c7 'sh08-gis3-source-payment [core bindings forms current-types target budget])))
-        below (run (dec required) types) exact (run required types)
-        wide-types (into types (map #(vector (keyword (str "extra-type-" %)) :gravity.type/integer)
-                                   (range (- 1024 (count types)))))
-        wide (run 1048576 wide-types)]
-    (is (= [184203 2383368 3426678] [lookup-work view-reservation required]))
-    (is (= [:rejected :compact-gis-view-construction-work-limit :original-view-construction required prefix-and-index]
-           ((juxt :status :reason :stage :work-count :completed-work-count) (:value below))))
-    (is (= 0 (get-in below [:observations :gets]) (get-in below [:observations :String-ID-map-gets])))
-    (is (= [:rejected :compact-gis-work-limit :original-readset 0 (+ required 8) required]
-           ((juxt :status :reason :stage :readset-ordinal :work-count :completed-work-count) (:value exact))))
-    (is (= 97 (get-in exact [:observations :String-ID-map-gets])))
-    (is (= 6887 (get-in exact [:observations :String-ID-key-characters])))
-    (is (= 1024 (count wide-types)))
-    (is (= [:rejected :compact-gis-view-construction-work-limit :original-view-construction
-            (+ prefix-and-index view-control (* 97 (+ 1 73 (* 73 1024)))) prefix-and-index]
-           ((juxt :status :reason :stage :work-count :completed-work-count) (:value wide))))
-    (is (= 0 (get-in wide [:observations :gets]) (get-in wide [:observations :String-ID-map-gets])))))
 
-(deftest sh08-gis3-original-row-first-payment-development-kernel
-  (let [{:keys [core bindings forms types target unified parameter-id]} (gis3-original-row-input 0 0)
-        result (invoke-c7 'sh08-gis3-source-payment [core bindings forms types target 65536])]
-    (is (= [] (:diagnostics unified)))
-    (is (= :gravity.type/integer (get-in unified [:binding-types parameter-id])))
-    (is (every? #(= 71 (count %)) (concat (map :node-id (:nodes core)) (map :binding-id bindings) (map :form-id forms))))
-    (is (contains? #{:rejected :original-data-payment-complete} (:status result)))
-    (is (not (true? (:numeric-proof-established result))))
-    (prn {:gis3-first-original-row-payment (dissoc result :selected :indexes)
-          :original-node-count (count (:nodes core)) :original-form-count (count forms)
-          :original-bindings (count bindings) :current-parameter-type (get-in unified [:binding-types parameter-id])
-          :source-or-numeric-proof-established false})))
 
 (defn- atomic-equality-input [argument-types]
   (let [input (integral-ordering-input '= argument-types)]
@@ -21393,92 +20371,7 @@
         (is (= [65536 65536] ((juxt :budget :allowance) (first (:inference default)))))
         (is (= 1 (count (:inference high)) (count (:inference exact))))))))
 
-(deftest sh08-gis3-invalid-remaining-allowance-development-kernel
-  (let [callbacks (atom 0) touches (atom 0)
-        opaque (proxy [Object] []
-                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 allowance hash")))
-                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 allowance equality")))
-                 (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 allowance print"))))
-        lazy-value (lazy-seq (swap! callbacks inc) (throw (AssertionError. "GIS3 allowance lazy")))
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original @getter
-        invalid [nil -1 -100000000000000000000N 1.0 1/2 true "1048576" :allowance
-                 Double/NaN Double/POSITIVE_INFINITY opaque lazy-value []
-                 {:type-inference-work-allowance 1048576}]]
-    (with-redefs-fn
-      {getter (fn [plan value key]
-                (when (identical? opaque value) (swap! touches inc))
-                (original plan value key))}
-      #(doseq [budget invalid]
-         (let [result (invoke-c7 'sh08-gis3-source-payment [opaque opaque opaque opaque opaque budget])]
-           (is (= {:status :rejected :reason :compact-gis-invalid-work-allowance
-                   :work-count 0 :completed-work-count 0} result))
-           (is (zero? @touches))
-           (is (zero? @callbacks)))))))
 
-(deftest sh08-gis3-trusted-remaining-development-kernel
-  ;; Existing trusted options and actual charged ordinary inference supply the
-  ;; private budget. GIS3 has no production dispatch hook in this increment.
-  (let [{:keys [core bindings forms types target] :as input} (gis3-original-row-input 0 0)
-        worksheet (gis3-input-payment-worksheet input)
-        charged-total (:total worksheet)
-        allowance (invoke-c7 'sh08-ft-work-allowance [{:type-inference-work-allowance (+ 220 (* 2 charged-total))}])
-        lookup (map-present-get-input :file)
-        context {:ordering-core (:core lookup) :lookup-nodes (:nodes lookup)
-                 :lookup-forms (vec (vals (:forms lookup))) :lookup-bindings (vec (vals (:bindings lookup)))
-                 :shape-call-products (:products lookup) :loop-work-left allowance
-                 :type-inference-work-allowance allowance}
-        observed (observe-function-work-policy
-                   #(invoke-c7 'sh08-ft-infer-acyclic-with-context
-                               [(get-in lookup [:core :nodes]) (:nodes lookup) [] []
-                                (get-in lookup [:core :calls]) (get-in lookup [:core :call-edges])
-                                {} (:binding-types lookup) 10 context]))
-        inference (:value observed) remaining (:type-join-work-left inference)
-        run (fn [budget & [candidate-core]]
-              (invoke-c7 'sh08-gis3-source-payment [(or candidate-core core) bindings forms types target budget]))
-        paid (run remaining)
-        implicit (run (invoke-c7 'sh08-ft-work-allowance [{}]))
-        explicit (run (invoke-c7 'sh08-ft-work-allowance [{:type-inference-work-allowance 65536}]))
-        forged (run 65536 (assoc core :type-inference-work-allowance 1048576
-                                     :loop-work-left 1048576 :effective-work-policy {:type-inference-work-allowance 1048576}))
-        repeated (run (- remaining (:work-count paid)))
-        exhausted (run (- remaining (:work-count paid) (:work-count repeated)))
-        one-short (run (dec charged-total))
-        physical (mapv gis3-coordinate-unit-value (:readsets (gis3-original-coordinate-readsets input)))
-        physical-B (reduce + (map #(get (gis3-independent-physical-data-fee %) :B) physical))
-        index-B (reduce + (:index-fees worksheet))
-        declared-view-reservation (+ (:view-control worksheet) (:ID-lookups worksheet))]
-    (is (= :converged (:convergence-status inference)))
-    (is (= [] (:diagnostics inference)))
-    (is (< 65536 remaining allowance))
-    (is (every? (fn [[a b]] (<= (:budget b) (- (:budget a) (:work a)))) (partition 2 1 (:passes observed))))
-    (is (= remaining (:remaining (first (:inference observed)))))
-    (is (= :original-data-payment-complete (:status paid) (:status repeated)))
-    (is (= [68675 259223 3495353] [physical-B index-B charged-total]))
-    (is (= charged-total (:work-count paid) (:completed-work-count paid)
-                             (:work-count repeated) (:completed-work-count repeated)))
-    (is (= physical (get-in paid [:selected :readsets]) (get-in repeated [:selected :readsets])))
-    (is (= [8 8 8] (mapv count (take 3 (get-in paid [:selected :readsets])))))
-    (is (= 10 (count (get-in paid [:selected :readsets]))))
-    (is (= false (:numeric-proof-established paid) (:numeric-proof-established repeated)))
-    (is (= 220 (- allowance remaining)))
-    (is (= 0 (- remaining (:work-count paid) (:work-count repeated))))
-    (is (= [:rejected :compact-gis-work-limit 512 0]
-           ((juxt :status :reason :work-count :completed-work-count) exhausted)))
-    (is (= [:rejected :compact-gis-work-limit charged-total]
-           ((juxt :status :reason :work-count) one-short)))
-    (is (< (:completed-work-count one-short) charged-total))
-    (is (= implicit explicit forged))
-    (is (= [:rejected :compact-gis-entry-control-work-limit :original-entry-control 512 784087]
-           ((juxt :status :reason :stage :completed-work-count :work-count) implicit)))
-    (prn {:gis3-trusted-remaining {:allowance allowance :ordinary-used (- allowance remaining)
-                                 :remaining-before-first remaining :charged-component-work charged-total
-                                 :remaining-before-second (- remaining (:work-count paid))
-                                 :remaining-after-second (- remaining (:work-count paid) (:work-count repeated))}
-          :physical-DATA-B physical-B :declared-view-reservation declared-view-reservation
-          :source-control-model worksheet :all-view-bookkeeping-independently-reviewed false
-          :Symbol-render-prepayment-closed true :DATA-temporary-copy-mechanism-removed true
-          :all-DATA-control-fees-closed false :numeric-proof-established false
-          :public-GIS-dispatch-present false})))
 
 (deftest sh08-function-work-policy-neighbour-fuel-development-kernel
   ;; Dispatch-only DATA: a real unresolved ordering prefix spends2 before
@@ -21551,10 +20444,12 @@
          request (stage :c7-request (fn [] (function-request core)))]
      {:resolved resolved :core core :request request})))
 
-(defn- gis3-current-source-Core-products [stage]
+(defn- gis3-current-source-Core-products
+  ([stage] (gis3-current-source-Core-products "compact-source-proof-interval" stage))
+  ([basename stage]
   ;; Real source transport, stopping before the independent B47/coordinator
   ;; request constructor. These rows alone confer no C7 proof authority.
-  (let [source-path (fixture-path "accepted" "compact-source-proof-interval" ".gravity")
+  (let [source-path (fixture-path "accepted" basename ".gravity")
         text (slurp source-path)
         resolved (function-work-policy-current-resolution source-path text
                    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)
@@ -21563,7 +20458,7 @@
     {:source-path source-path :source-text text :resolved resolved :core-wrapper artifact
      :core (:canonical-core-artifact boundary)
      :forms (get-in boundary [:authenticated-core-request :forms])
-     :bindings (get-in boundary [:authenticated-core-request :binding-table])}))
+     :bindings (get-in boundary [:authenticated-core-request :binding-table])})))
 
 (deftest sh08-gis3-current-source-Core-development-kernel
   ;; This checks the actual source/Core contract, not GIS construction, B47
@@ -21629,8 +20524,7 @@
         call (first entries) edge (first (filter #(= (:core-node-id call) (:call-core-node-id %)) (:call-edges core)))
         literals (into {} (for [node (:nodes core) :when (= :literal (:core-form node))]
                             [(:node-id node) (invoke-c7 'sh08-ft-infer-node [node {} {} {} []])]))
-        context {:ordering-core core :ordering-bindings by-binding :lookup-bindings bindings
-                 :association-forms by-form :loop-work-left 1048576 :type-inference-work-allowance 1048576}
+        context {:ordering-core core :ordering-bindings by-binding :lookup-bindings bindings :association-forms by-form}
         unify #(invoke-c7 'sh08-ft-call-constraints-with-context [%1 %2 nodes literals {} functions context])
         joined (unify entries [edge]) parameter-id (first (:parameter-binding-ids record))
         argument (nodes (first (:argument-node-ids call)))
@@ -21661,153 +20555,14 @@
           :complete-entry-census-implemented false :new-physical-and-header-fees-closed false
           :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
 
-(deftest sh08-gis3-entry-original-data-development-kernel
-  ;; Payment for whole original census families, before any semantic census.
-  ;; No parameter/type premise or numeric proof is accepted here.
-  (let [{:keys [core bindings forms]} (gis3-current-source-Core-products (fn [_ operation] (operation)))
-        fields [:module :preserved-resolution :nodes :calls :call-edges :function-records :definitions
-                :reference-uses :var-references :mutations :recur-targets :recur-transfers
-                :recursion-components :lexical-bindings :control-flow]
-        rows (conj (mapv core fields) bindings forms)
-        independent (gis3-independent-physical-data-fee rows)
-        model (gis3-source-view-work-model 'sh08-gis3-entry-original-data)
-        control (first (:fee-polynomial model)) reserved (+ 512 control)
-        exact (+ reserved (:B independent))
-        extra-copy (+ 5 (- (:B (gis3-independent-physical-data-fee (first forms))) 8))
-        pay (fn [c b f budget] (invoke-c7 'sh08-gis3-entry-original-data [c b f budget]))
-        accepted (pay core bindings forms exact)
-        short (pay core bindings forms (dec exact))
-        repeated (pay core bindings (conj forms (first forms)) (+ exact extra-copy))
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
-        original-get @getter touches (atom 0)]
-    (is (= [80903 0 0] (:fee-polynomial model)))
-    (is (= :entry-original-data-payment-complete (:status accepted)))
-    (is (= exact (:work-count accepted) (:completed-work-count accepted)))
-    (is (= (:W independent) (:comparison-bound-work accepted)))
-    (is (= rows (:rows accepted)))
-    (is (false? (:numeric-proof-established accepted)))
-    (is (= [:rejected :compact-gis-work-limit :entry-original-data]
-           ((juxt :status :reason :stage) short)))
-    (is (< (:completed-work-count short) (:work-count short)))
-    (is (= :entry-original-data-payment-complete (:status repeated)))
-    (is (= (+ exact extra-copy) (:work-count repeated)))
-    (with-redefs-fn {getter (fn [plan value key]
-                             (when (identical? core value) (swap! touches inc))
-                             (original-get plan value key))}
-      #(doseq [budget [0 511 (dec reserved)]]
-         (is (= :compact-gis-entry-work-limit (:reason (pay core bindings forms budget))))
-         (is (zero? @touches))))
-    (is (= :compact-gis-entry-families-required (:reason (pay (dissoc core :reference-uses) bindings forms exact))))
-    (is (= :compact-gis-entry-families-required
-           (:reason (pay (assoc core :reference-uses (vec (repeat 1025 nil))) bindings forms exact))))
-    (let [callbacks (atom [])
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "entry metadata hash")))
-                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "entry metadata equality")))
-                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "entry metadata rendering"))))
-          poisoned (assoc-in core [:nodes 0 :binding-context] {:unread opaque})]
-      (is (= :compact-gis-canonical-domain (:reason (pay poisoned bindings forms exact))))
-      (is (empty? @callbacks)))
-    (prn {:gis3-entry-original-data :checked :control-work control :physical-DATA independent
-          :total-declared-work exact :all-DATA-control-fees-closed false
-          :complete-entry-census-implemented false :parameter-proof-established false
-          :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
 
-(deftest sh08-gis3-entry-indexes-development-kernel
-  ;; Index price is separate from full original DATA payment and semantics.
-  (let [{:keys [core bindings forms]} (gis3-current-source-Core-products (fn [_ operation] (operation)))
-        fields [:module :preserved-resolution :nodes :calls :call-edges :function-records :definitions
-                :reference-uses :var-references :mutations :recur-targets :recur-transfers
-                :recursion-components :lexical-bindings :control-flow]
-        rows (conj (mapv core fields) bindings forms)
-        tables [[:nodes (:nodes core) :node-id] [:calls (:calls core) :core-node-id]
-                [:edges (:call-edges core) :call-core-node-id] [:records (:function-records core) :function-syntax-id]
-                [:definitions (:definitions core) :binding-id] [:uses (:reference-uses core) :core-node-id]
-                [:bindings bindings :binding-id] [:forms forms :form-id]
-                [:resolutions (get-in core [:preserved-resolution :resolution-table]) :reference-syntax-id]
-                [:controls (:control-flow core) :core-node-id] [:recur-targets (:recur-targets core) :target-id]
-                [:var-references (:var-references core) :core-node-id] [:mutations (:mutations core) :core-node-id]
-                [:recur-transfers (:recur-transfers core) :recur-core-node-id] [:lexicals (:lexical-bindings core) :binding-id]]
-        index-fee (fn [[_ values key]]
-                    (let [n (count values)]
-                      (+ 2697 (* 2615 n) (* 74 n n)
-                         (reduce + 0 (map #(let [id (get % key)] (* 2 (+ 2 (if (string? id) (count id) 0)))) values)))))
-        model (gis3-source-view-work-model 'sh08-gis3-entry-indexes)
-        reserved (+ 512 (first (:fee-polynomial model))) exact (+ reserved (reduce + (map index-fee tables)))
-        build #(invoke-c7 'sh08-gis3-entry-indexes [%1 %2])
-        accepted (build rows exact) short (build rows (dec exact))
-        node (first (:nodes core)) duplicate (build (assoc rows 2 [node node]) exact)
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original-get @getter
-        row-touches (atom 0) input-touches (atom 0)]
-    (is (= [270910 0 0] (:fee-polynomial model)))
-    (is (= :entry-indexes-complete (:status accepted)))
-    (is (= exact (:work-count accepted) (:completed-work-count accepted)))
-    (is (= 15 (count (:indexes accepted))))
-    (is (false? (:numeric-proof-established accepted)))
-    (doseq [[name values key] tables]
-      (is (= (into {} (map (juxt key identity) values)) (get-in accepted [:indexes name]))))
-    (is (= [:rejected :entry-original-index :lexicals exact]
-           ((juxt :status :stage :table :work-count) short)))
-    (is (< (:completed-work-count short) (:work-count short)))
-    (is (= [:compact-gis-duplicate-id :nodes] ((juxt :reason :table) duplicate)))
-    (is (= :compact-gis-entry-rows-required (:reason (build [] exact))))
-    (with-redefs-fn {getter (fn [plan value key]
-                             (when (identical? rows value) (swap! input-touches inc))
-                             (when (identical? node value) (swap! row-touches inc))
-                             (original-get plan value key))}
-      #(do
-         (doseq [budget [0 511 (dec reserved)]]
-           (is (= :compact-gis-entry-work-limit (:reason (build rows budget))))
-           (is (zero? @input-touches)))
-         (is (= :entry-indexes-complete (:status (build rows exact))))
-         (is (= :entry-indexes-complete (:status (build rows exact))))
-         (is (= 2 @row-touches))))
-    (let [callbacks (atom [])
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "entry id hash")))
-                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "entry id equality")))
-                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "entry id rendering"))))
-          poisoned (assoc rows 2 [(assoc node :node-id opaque)])]
-      (is (= [:compact-gis-source-id-required :nodes] ((juxt :reason :table) (build poisoned exact))))
-      (is (empty? @callbacks)))
-    (prn {:gis3-entry-indexes :checked :surrounding-control-work (- reserved 512)
-          :index-fees (mapv (fn [[name _ _ :as table]] [name (index-fee table)]) tables)
-          :total-declared-work exact :full-original-DATA-paid-in-this-test false
-          :complete-entry-census-implemented false :B47-verification-complete false
-          :public-GIS-routing false :numeric-proof-established false})))
 
-(defn- gis3-unpriced-semantic-inspection [{:keys [core bindings forms target]}]
-  ;; Development inspection only. Existing DATA/index components are fully
-  ;; paid; new semantic/control/comparison payment is not established here.
-  (let [fields [:module :preserved-resolution :nodes :calls :call-edges :function-records :definitions
-                :reference-uses :var-references :mutations :recur-targets :recur-transfers
-                :recursion-components :lexical-bindings :control-flow]
-        rows (conj (mapv core fields) bindings forms)
-        data-budget (+ 512 80903 (:B (gis3-independent-physical-data-fee rows)))
-        data (invoke-c7 'sh08-gis3-entry-original-data [core bindings forms data-budget])]
-    (if (= :entry-original-data-payment-complete (:status data))
-      (let [tables [[(:nodes core) :node-id] [(:calls core) :core-node-id] [(:call-edges core) :call-core-node-id]
-                    [(:function-records core) :function-syntax-id] [(:definitions core) :binding-id]
-                    [(:reference-uses core) :core-node-id] [bindings :binding-id] [forms :form-id]
-                    [(get-in core [:preserved-resolution :resolution-table]) :reference-syntax-id]
-                    [(:control-flow core) :core-node-id] [(:recur-targets core) :target-id]
-                    [(:var-references core) :core-node-id] [(:mutations core) :core-node-id]
-                    [(:recur-transfers core) :recur-core-node-id] [(:lexical-bindings core) :binding-id]]
-            index-budget (+ 512 270910
-                            (reduce + (for [[values key] tables :let [n (count values)]]
-                                        (+ 2697 (* 2615 n) (* 74 n n)
-                                           (reduce + 0 (map #(let [id (get % key)] (* 2 (+ 2 (if (string? id) (count id) 0)))) values))))))
-            indexed (invoke-c7 'sh08-gis3-entry-indexes [(:rows data) index-budget])]
-        (if (= :entry-indexes-complete (:status indexed))
-          {:stage :unpriced-semantic-inspection
-           :result (invoke-c7 'sh08-gis3-entry-unify [core (:indexes indexed) target])
-           :original-DATA-work (:work-count data) :fresh-index-work (:work-count indexed)}
-          {:stage :original-index :result indexed}))
-      {:stage :original-DATA :result data})))
+(defn- gis3-semantic-inspection [{:keys [core bindings forms target]}]
+  {:result (invoke-c7 'sh08-gis3-cold-entry [core bindings forms target])})
 
 (deftest sh08-gis3-cold-entry-semantic-development-kernel
   ;; Actual original rows plus explicitly normalized hostile mutations. These
-  ;; checks do not establish a paid census, B47, or public numeric acceptance.
+  ;; checks do not establish B47 authentication or public numeric acceptance.
   (let [{:keys [core bindings forms] :as original}
         (gis3-current-source-Core-products (fn [_ operation] (operation)))
         by-binding (into {} (map (juxt :binding-id identity) bindings))
@@ -21821,7 +20576,7 @@
         node (first (filter #(= entry-id (:node-id %)) (:nodes core)))
         argument (first (filter #(= argument-id (:node-id %)) (:nodes core)))
         entry-form-id (get-in node [:source :form-id]) argument-form-id (get-in argument [:source :form-id])
-        run gis3-unpriced-semantic-inspection
+        run gis3-semantic-inspection
         accepted (run input)
         change-row (fn [rows key id operation] (mapv #(if (= id (get % key)) (operation %) %) rows))
         caller-value (fn [value]
@@ -21861,8 +20616,6 @@
     (is (= pid (get-in accepted [:result :parameter-binding-id])))
     (is (= :gravity.type/integer (get-in accepted [:result :parameter-type])))
     (is (= [] (get-in accepted [:result :ordinary-argument-unification :diagnostics])))
-    (is (= 875194 (:original-DATA-work accepted)))
-    (is (= 6644013 (:fresh-index-work accepted)))
     (is (false? (get-in accepted [:result :numeric-proof-established])))
     ;; Integer caller facts are not restricted to the guard's ASCII interval.
     (is (= :original-entry-Integer-derived (get-in outside [:result :status])))
@@ -21888,340 +20641,16 @@
         (is (= :rejected (get-in rejected [:result :status])) (str label))
         (is (= reason (get-in rejected [:result :reason])) (str label))))
     (prn {:gis3-cold-entry-semantic-inspection :checked
-          :new-semantic-control-and-comparison-payment-closed false :paid-owning-wrapper-implemented false
           :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
 
-(defn- gis3-complete-data-control-work-model
-  ([] (gis3-complete-data-control-work-model 'sh08-gis3-complete-data-tallies))
-  ([target]
-  ;; One complete source dispatch, including entry/terminal/failure Maps.
-  ;; The pending loop is a single dispatch; each inner cursor executes at
-  ;; most width+1 times. Native List rest/conj and frame/entry Vector get
-  ;; are constant cursors. Native vec pays eight units per expanded child.
-  ;; No source helper or unassigned primitive is an opaque paid child.
-  (let [definition (with-open [reader (java.io.PushbackReader. (io/reader (path c7-source-relative-path)))]
-                     (binding [*read-eval* false]
-                       (loop []
-                         (let [form (read {:eof ::end} reader)]
-                           (cond (= ::end form) (throw (ex-info "Missing complete DATA source" {}))
-                                 (and (seq? form) (= 'defn (first form))
-                                      (= target (second form))) form
-                                 :else (recur))))))
-        primitives '#{integer? >= > + - * = count first rest get map? vector? set? list?
-                      boolean? keyword? symbol? string? number? char? list conj vec
-                      bootstrap-symbol-utf16-unit-count contains?}]
-    (letfn [(add [& values] (reduce #(mapv + %1 %2) [0 0] values))
-            (sum [values] (apply add values))
-            (scale-width [[a b]]
-              (when-not (zero? b) (throw (ex-info "Nested DATA edge loops" {}))) [a a])
-            (cost [form]
-              (cond
-                (map? form) (do (when-not (every? keyword? (keys form))
-                                 (throw (ex-info "Non-Keyword DATA result key" {})))
-                               (add [(+ 1 (* 2 (count form)) (* (count form) (inc (* 2 (count form))))) 0]
-                                    (sum (map cost (mapcat identity form)))))
-                (vector? form) (add [(inc (count form)) 0] (sum (map cost form)))
-                (not (seq? form)) [1 0]
-                :else
-                (let [[op & args] form base (add [(inc (count args)) 0] (sum (map cost args)))]
-                  (case op
-                    if (add [1 0] (cost (first args))
-                            (mapv max (cost (second args)) (cost (nth args 2))))
-                    let (let [[bindings & body] args n (quot (count bindings) 2)]
-                          (add [(inc (* 2 n)) 0] (sum (map cost (take-nth 2 (rest bindings)))) (sum (map cost body))))
-                    loop (let [[bindings & body] args n (quot (count bindings) 2)
-                               iteration (add [(* 4 n) 0] (sum (map cost body)))]
-                           (add [(inc (* 2 n)) 0] (sum (map cost (take-nth 2 (rest bindings))))
-                                (if (= 'pending (first bindings)) iteration (scale-width iteration))))
-                    recur (add [(inc (* 2 (count args))) 0] (sum (map cost args)))
-                    (do (when-not (contains? primitives op)
-                          (throw (ex-info "Unassigned complete DATA operation" {:op op})))
-                        (add base (case op vec [8 8] bootstrap-symbol-utf16-unit-count [64 0]
-                                        = [2 0] conj [1 0] rest [1 0]
-                                        get [(if (= target 'sh08-gis3-same-data-kinds?) 2051 1) 0]
-                                        contains? [2051 0] list [(count args) 0] [1 0])))))))]
-      {:dispatch-control-polynomial (add [(+ 8 (* 6 (count (nth definition 2)))) 0]
-                                         (sum (map cost (drop 3 definition))))
-       :source-function target
-       :reserved-control-polynomial (if (= target 'sh08-gis3-same-data-kinds?) [65536 65536] [4096 256])
-       :opaque-children #{}}))))
 
-(deftest sh08-gis3-comparison-cursor-control-development-kernel
-  (let [audit (gis3-complete-data-control-work-model 'sh08-gis3-comparison-data?)
-        [constant edge] (:dispatch-control-polynomial audit)
-        model (gis3-semantic-census-work-model 'sh08-gis3-comparison-data?)
-        run #(invoke-c7 'sh08-gis3-comparison-data? [%])]
-    (is (<= (+ constant edge) 4096))
-    (is (= #{} (:opaque-children audit)))
-    (is (= {[0 0] 4096 [0 1] 4096} (:fee-polynomial model)))
-    (is (= audit (get-in model [:native-cursor-source-audits 'sh08-gis3-comparison-data?])))
-    (doseq [value [nil :atom 'symbol [1 "text"] {:span {:begin 1 :end 2} :origin (list :a :b)}]]
-      (is (true? (run value))))
-    (is (false? (run {:active-set #{:a}})))
-    (is (false? (run {'symbol-key :value})))
-    (let [callbacks (atom [])
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "cursor hash")))
-                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "cursor equality")))
-                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "cursor render"))))]
-      (is (false? (run {:unread opaque})))
-      (is (empty? @callbacks)))
-    (prn {:gis3-comparison-cursor-control :checked :source-audit audit
-          :reservation-polynomial (:fee-polynomial model)
-          :original-comparison-W-retained true :numeric-proof-established false})))
 
-(defn- gis3-complete-data-payment [value]
-  (let [physical (gis3-independent-physical-data-fee value)
-        nodes (+ (:atoms physical) (:containers physical))
-        control (+ (* 4096 (inc nodes)) (* 256 (dec nodes)))]
-    {:physical physical :control control :total (+ (:B physical) control)}))
 
-(deftest sh08-gis3-complete-data-control-development-kernel
-  (let [model (gis3-complete-data-control-work-model)
-        run #(invoke-c7 'sh08-gis3-complete-data-tallies [%1 %2])
-        samples [nil true :keyword 'plain 'qualified/name (symbol "" "")
-                 "data" 12 3/2 1.5 \a [] '() #{} {} [nil :a "b"]
-                 {:left ['nested 7] :right #{:x :y}}]
-        builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin)
-        original @builtin owner (Thread/currentThread) materialized (atom 0) value [nil]
-        no-vec (fn [budget]
-                 (reset! materialized 0)
-                 (let [out (with-redefs-fn
-                             {builtin (fn [& args]
-                                        (let [[callee input] (take-last 2 args)]
-                                          (when (and (identical? owner (Thread/currentThread))
-                                                     (= 'vec callee) (identical? value input))
-                                            (swap! materialized inc)))
-                                        (apply original args))}
-                             #(run value budget))]
-                   [out @materialized]))]
-    (is (every? true? (map <= (:dispatch-control-polynomial model) (:reserved-control-polynomial model))))
-    (is (= #{} (:opaque-children model)))
-    (doseq [value samples :let [{:keys [physical control total]} (gis3-complete-data-payment value)
-                               out (run value total) short (run value (dec total))]]
-      (is (= [:accepted total total (:V physical) (:T physical) (:W physical) (:B physical) control]
-             ((juxt :status :work-count :completed-work-count :visit-work :accounting-work
-                    :comparison-bound-work :physical-work-count :control-work-count) out)))
-      (is (= [:rejected :compact-gis-work-limit total]
-             ((juxt :status :reason :work-count) short)))
-      (is (< (:completed-work-count short) (:work-count short))))
-    ;; The root Vector requires 8477 before its first vec materialization.
-    (doseq [budget [0 4103 8199 8476]]
-      (let [[out calls] (no-vec budget)]
-        (is (= :compact-gis-work-limit (:reason out))) (is (zero? calls))))
-    (let [[out calls] (no-vec (:total (gis3-complete-data-payment value)))]
-      (is (= :accepted (:status out))) (is (= 1 calls)))
-    (is (= :compact-gis-invalid-work-allowance (:reason (run nil -1))))
-    (is (= :compact-gis-canonical-domain (:reason (run (vec (repeat 1025 nil)) 100000000))))
-    (is (= :compact-gis-canonical-domain (:reason (run (nth (iterate vector nil) 129) 100000000))))
-    (let [callbacks (atom [])
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "complete DATA hash")))
-                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "complete DATA equality")))
-                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "complete DATA render"))))]
-      (is (= :compact-gis-canonical-domain (:reason (run {:unread opaque} 100000000))))
-      (is (empty? @callbacks)))
-    (prn {:gis3-complete-DATA-control :checked :source-model model
-          :logical-control-only true :CPU-or-whole-domain-claim false
-          :entry-wrapper-uses-complete-DATA false :numeric-proof-established false})))
 
-(defn- gis3-cold-entry-payment-worksheet [{:keys [core bindings forms]}]
-  (let [fields [:module :preserved-resolution :nodes :calls :call-edges :function-records :definitions
-                :reference-uses :var-references :mutations :recur-targets :recur-transfers
-                :recursion-components :lexical-bindings :control-flow]
-        rows (conj (mapv core fields) bindings forms)
-        physical (gis3-independent-physical-data-fee rows)
-        n (apply max 1 (map count rows)) d (+ 64 (* 2 (:W physical)))
-        semantic-model (gis3-semantic-census-work-model 'sh08-gis3-entry-unify)
-        semantic (reduce +' 0 (for [[[a b] coefficient] (:fee-polynomial semantic-model)]
-                               (*' coefficient (reduce *' 1 (repeat a n)) (reduce *' 1 (repeat b d)))))
-        surrounding-model (gis3-source-view-work-model 'sh08-gis3-cold-entry)
-        surrounding (+ 512 62000)
-        _ (assert (every? true? (map <= (:fee-polynomial surrounding-model) [62000 0 0])))
-        ;; Independent family order and prices also exercised by the index
-        ;; kernel; this is an audit calculation, not an accepted index token.
-        tables [[(:nodes core) :node-id] [(:calls core) :core-node-id] [(:call-edges core) :call-core-node-id]
-                [(:function-records core) :function-syntax-id] [(:definitions core) :binding-id]
-                [(:reference-uses core) :core-node-id] [bindings :binding-id] [forms :form-id]
-                [(get-in core [:preserved-resolution :resolution-table]) :reference-syntax-id]
-                [(:control-flow core) :core-node-id] [(:recur-targets core) :target-id]
-                [(:var-references core) :core-node-id] [(:mutations core) :core-node-id]
-                [(:recur-transfers core) :recur-core-node-id] [(:lexical-bindings core) :binding-id]]
-        index (+ 512 270910
-                 (reduce + (for [[values key] tables :let [size (count values)]]
-                             (+ 2697 (* 2615 size) (* 74 size size)
-                                (reduce + 0 (map #(let [id (get % key)] (* 2 (+ 2 (if (string? id) (count id) 0)))) values))))))
-        complete-DATA (gis3-complete-data-payment rows)
-        DATA-entry-model (gis3-source-view-work-model 'sh08-gis3-entry-complete-data)
-        data (+ 512 (first (:fee-polynomial DATA-entry-model)) (:total complete-DATA))]
-    {:n n :d d :physical physical :semantic-model semantic-model :surrounding-model surrounding-model
-     :surrounding surrounding :data data :complete-DATA complete-DATA :DATA-entry-model DATA-entry-model
-     :index index :semantic semantic
-     :total (+ surrounding data index semantic)}))
 
-(deftest sh08-gis3-entry-complete-data-development-kernel
-  (let [{:keys [core bindings forms] :as input}
-        (gis3-current-source-Core-products (fn [_ operation] (operation)))
-        worksheet (gis3-cold-entry-payment-worksheet input) exact (:data worksheet)
-        expected (:complete-DATA worksheet)
-        run #(invoke-c7 'sh08-gis3-entry-complete-data [%1 bindings forms %2])
-        accepted (run core exact) short (run core (dec exact))
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
-        original @getter touches (atom 0)]
-    (is (= [83069 0 0] (get-in worksheet [:DATA-entry-model :fee-polynomial])))
-    (is (= [:entry-original-data-payment-complete exact exact]
-           ((juxt :status :work-count :completed-work-count) accepted)))
-    (is (= (get-in expected [:physical :B]) (:physical-DATA-work accepted)))
-    (is (= (:control expected) (:DATA-control-work accepted)))
-    (is (= (get-in expected [:physical :W]) (:comparison-bound-work accepted)))
-    (is (true? (:all-DATA-control-fees-closed accepted)))
-    (is (= [:rejected :compact-gis-work-limit :entry-original-data exact]
-           ((juxt :status :reason :stage :work-count) short)))
-    (is (< (:completed-work-count short) (:work-count short)))
-    (with-redefs-fn {getter (fn [plan value key]
-                             (when (identical? core value) (swap! touches inc))
-                             (original plan value key))}
-      #(doseq [budget [0 511 (+ 512 83068)]]
-         (is (= :compact-gis-entry-work-limit (:reason (run core budget))))
-         (is (zero? @touches))))
-    (let [callbacks (atom [])
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "entry complete hash")))
-                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "entry complete equality")))
-                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "entry complete render"))))]
-      (is (= :compact-gis-canonical-domain
-             (:reason (run (assoc-in core [:nodes 0 :binding-context] {:unread opaque}) exact))))
-      (is (empty? @callbacks)))
-    (prn {:gis3-entry-complete-DATA :checked :full-original-physical (:physical expected)
-          :control-work (:control expected) :declared-total exact :source-construction-replayed false
-          :numeric-proof-established false})))
 
-(deftest sh08-gis3-paid-cold-entry-development-kernel
-  (let [{:keys [core bindings forms] :as input}
-        (gis3-current-source-Core-products (fn [_ operation] (operation)))
-        by-binding (into {} (map (juxt :binding-id identity) bindings))
-        target (:core-node-id (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core))))
-        worksheet (gis3-cold-entry-payment-worksheet input) exact (:total worksheet)
-        run #(invoke-c7 'sh08-gis3-cold-entry [core bindings forms target %])
-        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        original @scoped owner (Thread/currentThread) seen (atom {})
-        selected '#{sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-entry-unify}
-        observed (fn [budget]
-                   (reset! seen {})
-                   (let [value (with-redefs-fn
-                                 {scoped (fn [runtime plan callee args scope]
-                                           (when (and (identical? owner (Thread/currentThread))
-                                                      (= :gravity-sh08-function-call-type-leaf (:engine runtime))
-                                                      (contains? selected callee))
-                                             (swap! seen update callee (fnil inc 0)))
-                                           (original runtime plan callee args scope))}
-                                 #(run budget))]
-                     {:value value :calls @seen}))
-        accepted (observed exact) repeated (observed exact) short (observed (dec exact))
-        reserved (:surrounding worksheet)]
-    (is (every? true? (map <= (get-in worksheet [:surrounding-model :fee-polynomial]) [62000 0 0])))
-    (is (= [8] (mapv :pairs (get-in worksheet [:surrounding-model :private-result-assocs]))))
-    (is (= [83069 0 0] (get-in worksheet [:DATA-entry-model :fee-polynomial])))
-    (is (every? true? (map <= (:dispatch-control-polynomial (gis3-complete-data-control-work-model)) [4096 256])))
-    (is (true? (get-in worksheet [:semantic-model :legacy-child-new-construction-payment-established])))
-    (is (= #{} (get-in worksheet [:semantic-model :separately-paid-legacy-children])))
-    (is (= (:semantic worksheet) (invoke-c7 'sh08-gis3-entry-semantic-work [(:n worksheet) (:d worksheet)])))
-    (doseq [out [accepted repeated]]
-      (is (= :original-entry-Integer-derived (get-in out [:value :status])))
-      (is (= :gravity.type/integer (get-in out [:value :parameter-type])))
-      (is (= exact (get-in out [:value :work-count]) (get-in out [:value :completed-work-count])))
-      (is (= (zipmap selected (repeat 1)) (:calls out))))
-    (is (= (:value accepted) (:value repeated)))
-    (is (= [:rejected :compact-gis-entry-work-limit :entry-semantic exact]
-           ((juxt :status :reason :stage :work-count) (:value short))))
-    (is (= (+ (:surrounding worksheet) (:data worksheet) (:index worksheet))
-           (get-in short [:value :completed-work-count])))
-    (is (= {'sh08-gis3-entry-complete-data 1 'sh08-gis3-entry-indexes 1} (:calls short)))
-    (doseq [budget [0 511 (dec reserved)]]
-      (let [out (observed budget)]
-        (is (= :compact-gis-entry-work-limit (get-in out [:value :reason])))
-        (is (= {} (:calls out)))))
-    (is (false? (get-in accepted [:value :numeric-proof-established])))
-    (is (true? (get-in accepted [:value :all-DATA-control-fees-closed])))
-    (prn {:gis3-paid-cold-entry :checked :declared-total exact :n (:n worksheet) :d (:d worksheet)
-          :surrounding-work (:surrounding worksheet) :original-DATA-work (:data worksheet)
-          :fresh-index-work (:index worksheet) :semantic-construction-work (:semantic worksheet)
-          :all-DATA-control-fees-closed true :complete-DATA (:complete-DATA worksheet) :B47-verification-complete false
-          :public-GIS-routing false :numeric-proof-established false})))
 
-(defn- gis3-numeric-source-payment-worksheet [input]
-  (let [entry (gis3-cold-entry-payment-worksheet input) n (:n entry) d (:d entry)
-        semantic-model (gis3-semantic-census-work-model 'sh08-gis3-numeric-match)
-        semantic (reduce +' 0 (for [[[a b] c] (:fee-polynomial semantic-model)]
-                               (*' c (reduce *' 1 (repeat a n)) (reduce *' 1 (repeat b d)))))
-        source-model (gis3-source-view-work-model 'sh08-gis3-numeric-source)
-        surrounding (+ 512 62000)
-        _ (assert (every? true? (map <= (:fee-polynomial source-model) [62000 0 0])))]
-    (assoc entry :semantic-model semantic-model :semantic semantic :surrounding-model source-model
-           :surrounding surrounding :total (+ surrounding (:data entry) (:index entry) semantic))))
 
-(deftest sh08-gis3-paid-numeric-source-development-kernel
-  (let [{:keys [core bindings forms] :as input}
-        (gis3-current-source-Core-products (fn [_ operation] (operation)))
-        by-binding (into {} (map (juxt :binding-id identity) bindings))
-        target (:core-node-id (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core))))
-        worksheet (gis3-numeric-source-payment-worksheet input) exact (:total worksheet)
-        run #(invoke-c7 'sh08-gis3-numeric-source [core bindings forms target %])
-        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        original @scoped owner (Thread/currentThread) seen (atom {})
-        selected '#{sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-numeric-match}
-        observed (fn [budget]
-                   (reset! seen {})
-                   (let [out (with-redefs-fn
-                               {scoped (fn [runtime plan callee args scope]
-                                         (when (and (identical? owner (Thread/currentThread))
-                                                    (= :gravity-sh08-function-call-type-leaf (:engine runtime))
-                                                    (contains? selected callee))
-                                           (swap! seen update callee (fnil inc 0)))
-                                         (original runtime plan callee args scope))}
-                               #(run budget))]
-                     {:value out :calls @seen}))
-        accepted (observed exact) repeated (observed exact) short (observed (dec exact))]
-    (is (every? true? (map <= (get-in worksheet [:surrounding-model :fee-polynomial]) [62000 0 0])))
-    (is (= [8] (mapv :pairs (get-in worksheet [:surrounding-model :private-result-assocs]))))
-    (is (= #{} (get-in worksheet [:semantic-model :separately-paid-legacy-children])))
-    (is (= (:semantic worksheet) (invoke-c7 'sh08-gis3-numeric-semantic-work [(:n worksheet) (:d worksheet)])))
-    (doseq [out [accepted repeated]]
-      (is (= :original-numeric-source-matched (get-in out [:value :status])))
-      (is (= [32 126] (get-in out [:value :input-range])))
-      (is (= [0 94] (get-in out [:value :result-range])))
-      (is (= :gravity.type/integer (get-in out [:value :parameter-type])))
-      (is (= (:artifact-id core) (get-in out [:value :core-input])))
-      (is (= target (get-in out [:value :call-core-node-id])))
-      (is (= exact (get-in out [:value :work-count]) (get-in out [:value :completed-work-count])))
-      (is (= (zipmap selected (repeat 1)) (:calls out))))
-    (is (= (:value accepted) (:value repeated)))
-    (is (= [:rejected :compact-gis-entry-work-limit :entry-semantic exact]
-           ((juxt :status :reason :stage :work-count) (:value short))))
-    (is (= (+ (:surrounding worksheet) (:data worksheet) (:index worksheet))
-           (get-in short [:value :completed-work-count])))
-    (is (= {'sh08-gis3-entry-complete-data 1 'sh08-gis3-entry-indexes 1} (:calls short)))
-    (doseq [budget [0 511 (dec (:surrounding worksheet))]]
-      (let [out (observed budget)]
-        (is (= :compact-gis-entry-work-limit (get-in out [:value :reason]))) (is (= {} (:calls out)))))
-    (is (false? (get-in accepted [:value :numeric-proof-established])))
-    (when-not (= :original-numeric-source-matched (get-in accepted [:value :status]))
-      (let [indexes (get-in accepted [:value :fresh-indexes])
-            header (invoke-c7 'sh08-gis3-entry-header [core indexes target])
-            record (:record header)]
-        (prn {:unpriced-failure-diagnosis true
-              :calls (mapv (fn [call]
-                             (let [operation (:name (by-binding (:operator-binding-id call)))]
-                               [operation (when (contains? '#{- >= <=} operation)
-                                            (invoke-c7 'sh08-gis3-binary-call-source? [core indexes header call operation]))]))
-                           (:calls core))
-              :ifs (mapv #(invoke-c7 'sh08-gis3-if-source? [indexes % (:function-syntax-id record)])
-                         (filter #(= :if (:core-form %)) (:nodes core)))})))
-    (prn {:gis3-paid-numeric-source :checked :declared-total exact :n (:n worksheet) :d (:d worksheet)
-          :semantic-work (:semantic worksheet) :source-construction-replayed false
-          :original-rows-current-literal-and-caller-Integer true
-          :B47-verification-complete false :v3-product-constructed false :fresh-product-consumer false
-          :public-GIS-routing false :numeric-proof-established false})))
 
 (deftest sh08-gis3-numeric-source-negative-development-kernel
   ;; Normalized hostile original-row changes, not fresh C3/B47 source receipts.
@@ -22241,9 +20670,8 @@
                                (update :forms change-row :form-id (get-in node [:source :form-id]) #(assoc % :value value)))))
         bad-control (update-in input [:core :nodes] change-row :node-id (:node-id outer)
                                #(assoc-in % [:attributes :then-child-index] 1.0))
-        run (fn [{:keys [core bindings forms] :as changed}]
-              (let [budget (:total (gis3-numeric-source-payment-worksheet changed))]
-                (invoke-c7 'sh08-gis3-numeric-source [core bindings forms target budget])))]
+        run (fn [{:keys [core bindings forms]}]
+              (invoke-c7 'sh08-gis3-numeric-source [core bindings forms target]))]
     (doseq [[label changed reason]
             [[:floating-control bad-control :compact-gis-original-control-or-call-required]
              [:different-subtrahend (literal-change sub-id 33) :compact-gis-original-range-required]
@@ -22295,119 +20723,91 @@
                       :source-span (:semantic-span source) :syntax-id (:syntax-id source)
                       :origin-chain (:origin-chain source) :generated-origin (:generated-origin source)}}))
 
-(defn- gis3-v3-output-reservation-audit [input target]
-  (let [product (gis3-expanded-v3-product-reference input target)
-        fixed (-> product (assoc-in [:constraint :origin] [])
-                  (assoc-in [:call-type-fact :origin-chain] [])
-                  (assoc-in [:call-type-fact :generated-origin] []))
-        physical (gis3-independent-physical-data-fee product)
-        fixed-physical (gis3-independent-physical-data-fee fixed)
-        source (first (filter #(= target (:node-id %)) (get-in input [:core :nodes])))
-        origins (get-in source [:source :origin-chain]) generated (get-in source [:source :generated-origin])
-        dynamic (+ (* 2 (:W (gis3-independent-physical-data-fee origins)))
-                   (:W (gis3-independent-physical-data-fee generated)))
-        applications (filter #(and (map? %) (= :gravity.type/applied-guarded-integer-subtraction (:kind %)))
-                             (tree-seq coll? #(if (map? %) (mapcat identity %) (seq %)) product))]
-    {:physical physical :fixed-physical fixed-physical :dynamic-original-W dynamic
-     :expanded-application-copies (count applications) :closed-fixed-W-bound 8192
-     :full-output-W-bound (+ (:W fixed-physical) dynamic)
-     :complete-DATA-and-storage-bound (+ (* 4370 (:W physical)) 4104)
-     :product product}))
 
-(defn- gis3-product-payment-worksheet [{:keys [core bindings] :as input} target]
-  (let [entry (gis3-cold-entry-payment-worksheet input) n (:n entry) d (:d entry)
-        by-binding (into {} (map (juxt :binding-id identity) bindings))
-        packets (filter #(contains? '#{- >= <=} (:name (by-binding (:operator-binding-id %)))) (:calls core))
-        types (into {} (for [call packets id (:argument-node-ids call)] [id :gravity.type/integer]))
-        source-input (assoc input :target target :types types)
-        source-model (gis3-source-view-work-model 'sh08-gis3-complete-source-payment)
-        _ (assert (every? true? (map <= (:fee-polynomial source-model) [2097152 0 0])))
-        coordinates (gis3-original-coordinate-readsets source-input)
-        readsets (mapv gis3-coordinate-unit-value (:readsets coordinates))
-        readset-payments (mapv gis3-complete-data-payment readsets)
-        legacy (gis3-input-payment-worksheet source-input)
-        packet-fee (+ (- (:total legacy) (:entry-control legacy) (:DATA-B legacy))
-                      2097152 (reduce + (map :total readset-payments)))
-        semantic-model (gis3-semantic-census-work-model 'sh08-gis3-reconstruct-product)
-        semantic (reduce +' 0 (for [[[a b] c] (:fee-polynomial semantic-model)]
-                               (*' c (reduce *' 1 (repeat a n)) (reduce *' 1 (repeat b d)))))
-        surrounding-model (gis3-source-view-work-model 'sh08-gis3-produce-product)
-        _ (assert (every? true? (map <= (:fee-polynomial surrounding-model) [4194304 0 0])))
-        output-audit (gis3-v3-output-reservation-audit input target)
-        output-reserved (+ 67108864 (* 32768 d))
-        _ (assert (= 5 (:expanded-application-copies output-audit)))
-        _ (assert (<= (get-in output-audit [:fixed-physical :W]) 8192))
-        _ (assert (<= (:complete-DATA-and-storage-bound output-audit) output-reserved))
-        surrounding (+ 512 4194304)]
-    {:n n :d d :entry entry :source-model source-model :semantic-model semantic-model :surrounding-model surrounding-model
-     :surrounding surrounding :semantic semantic :source-readsets packet-fee
-     :readsets readsets :readset-payments readset-payments :output-audit output-audit :output-reserved output-reserved
-     :total (+ surrounding (:data entry) (:index entry) semantic packet-fee output-reserved)}))
 
-(deftest sh08-gis3-v3-product-development-kernel
-  (let [{:keys [core bindings forms] :as input}
-        (gis3-current-source-Core-products (fn [_ operation] (operation)))
-        by-binding (into {} (map (juxt :binding-id identity) bindings))
-        target (:core-node-id (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core))))
-        worksheet (gis3-product-payment-worksheet input target) exact (:total worksheet)
-        _ (assert (= (:semantic worksheet) (invoke-c7 'sh08-gis3-product-semantic-work [(:n worksheet) (:d worksheet)])))
-        run #(invoke-c7 'sh08-gis3-produce-product [core bindings forms target %])
-        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        original @scoped owner (Thread/currentThread) seen (atom {})
-        selected '#{sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-reconstruct-product
-                    sh08-gis3-complete-source-payment sh08-gis3-complete-data-tallies sh08-gis3-index}
-        observed (fn [budget]
-                   (reset! seen {})
-                   (let [out (with-redefs-fn
-                               {scoped (fn [runtime plan callee args scope]
-                                         (when (and (identical? owner (Thread/currentThread))
-                                                    (= :gravity-sh08-function-call-type-leaf (:engine runtime))
-                                                    (contains? selected callee))
-                                           (swap! seen update callee (fnil inc 0)))
-                                         (original runtime plan callee args scope))}
-                               #(run budget))]
-                     {:value out :calls @seen}))
-        accepted (observed exact) repeated (observed exact) short (observed (dec exact))
-        expected (get-in worksheet [:output-audit :product])
-        expected-ledger (mapv (fn [ordinal payment]
-                               [ordinal (get-in payment [:physical :B]) (:control payment)
-                                (get-in payment [:physical :W]) (:total payment)])
-                             (range 10) (:readset-payments worksheet))]
-    (doseq [out [accepted repeated]]
-      (is (= :constructed (get-in out [:value :status])))
-      (is (= :gravity.type/integer (get-in out [:value :type])))
-      (is (= expected (get-in out [:value :product])))
-      (is (= expected-ledger (get-in out [:value :readset-fees])))
-      (is (= exact (get-in out [:value :work-count]) (get-in out [:value :completed-work-count])))
-      (is (= 21 (get-in out [:calls 'sh08-gis3-index])))
-      (is (= 12 (get-in out [:calls 'sh08-gis3-complete-data-tallies])))
-      (is (= 1 (get-in out [:calls 'sh08-gis3-reconstruct-product])
-             (get-in out [:calls 'sh08-gis3-complete-source-payment]))))
-    (is (= (:value accepted) (:value repeated)))
-    (is (= [8 8 8] (mapv count (take 3 (:readsets worksheet)))))
-    (is (= 10 (count (:readsets worksheet))))
-    (is (= [:rejected :compact-gis-work-limit :original-readsets exact]
-           ((juxt :status :reason :stage :work-count) (:value short))))
-    (is (< (get-in short [:value :completed-work-count]) exact))
-    (is (nil? (get-in short [:value :product])))
-    (is (= 11 (get-in short [:calls 'sh08-gis3-complete-data-tallies])))
-    (doseq [budget [0 65536 (dec (:surrounding worksheet))]]
-      (let [out (observed budget)]
-        (is (= :compact-gis-entry-work-limit (get-in out [:value :reason])))
-        (is (= {} (:calls out)))))
-    (let [payment (gis3-complete-data-payment expected)
-          actual-output-work (+ (:total payment) (get-in payment [:physical :W]))]
-      (is (= (:total payment) (get-in accepted [:value :fees :output-DATA])))
-      (is (= (get-in payment [:physical :W]) (get-in accepted [:value :fees :output-storage])))
-      (is (<= actual-output-work (:output-reserved worksheet))))
-    (is (false? (get-in accepted [:value :numeric-proof-established])))
-    (prn {:gis3-v3-product :checked :declared-total exact :semantic-work (:semantic worksheet)
-          :original-DATA-work (get-in worksheet [:entry :data]) :source-readset-work (:source-readsets worksheet)
-          :all-ten-readset-fees expected-ledger :expanded-application-copies 5
-          :output-reservation (:output-reserved worksheet)
-          :output-physical (get-in worksheet [:output-audit :physical])
-          :B47-verification-complete false :fresh-product-consumer false
-          :public-C7-result false :numeric-proof-established false})))
+
+(deftest sh08-gis3-unmetered-data-and-index-development-kernel
+  ;; DATA/index success conveys no source typing or authentication authority.
+  (let [sha #(str "sha256:" (format "%064x" %))
+        fields [:nodes :calls :call-edges :function-records :definitions :reference-uses
+                :var-references :mutations :recur-targets :recur-transfers :recursion-components
+                :lexical-bindings :control-flow]
+        shared {:value [:shared]}
+        core (assoc (zipmap fields (repeat [])) :module {}
+                    :preserved-resolution {:resolution-table []}
+                    :unread [(vec (repeat 70000 :value)) shared shared])
+        data #(invoke-c7 'sh08-gis3-entry-data [% [] []])
+        indexed #(invoke-c7 'sh08-gis3-index [% :node-id])
+        rows (mapv #(hash-map :node-id (sha %) :unread shared) (range 1025))
+        result (data core)
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "GIS data hashing")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "GIS data rendering"))))
+        backing (object-array [:self nil]) cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 1 cyclic)
+    (is (= :entry-original-data-complete (:status result)))
+    (is (= 17 (count (:rows result))))
+    (is (false? (:numeric-proof-established result)))
+    (is (= :entry-indexes-complete (:status (invoke-c7 'sh08-gis3-entry-indexes [(:rows result)]))))
+    (let [out (indexed rows)]
+      (is (= :accepted (:status out)))
+      (is (= 1025 (count (:index out)))))
+    (is (= :compact-gis-duplicate-id (:reason (indexed (conj rows (first rows))))))
+    (is (= :compact-gis-source-id-required (:reason (indexed (assoc-in rows [1024 :node-id] "wrong")))))
+    (doseq [value [(assoc core :module (sorted-map "wrong" 7))
+                   (assoc core :unread {:unused opaque}) (assoc core :unread cyclic)
+                   (assoc core :unread (with-meta [] {:unused opaque}))]]
+      (is (= :rejected (:status (data value)))))
+    (is (= :rejected (:status (indexed [{:node-id (sha 1) :unread opaque}]))))
+    (is (empty? @callbacks))))
+
+(deftest sh08-gis3-unmetered-current-source-product-development-kernel
+  ;; Real Source-to-Core transport, then independent private reconstruction.
+  ;; B47/coordinator authentication and public C7 routing remain separate.
+  (doseq [basename ["compact-source-proof-minimum" "compact-source-proof-interval"]]
+    (let [stage (fn [name operation]
+                  (prn {:gis3-source basename :stage name :event :start}) (flush)
+                  (let [result (operation)]
+                    (prn {:gis3-source basename :stage name :event :complete}) (flush) result))
+          {:keys [core bindings forms] :as input} (gis3-current-source-Core-products basename stage)
+          by-binding (into {} (map (juxt :binding-id identity) bindings))
+          call (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+          target (:core-node-id call)
+          produce #(invoke-c7 'sh08-gis3-produce-product [core bindings forms target])
+          consume #(invoke-c7 'sh08-gis3-consume-product [core bindings forms target %])
+          expected (gis3-expanded-v3-product-reference input target)
+          built (produce) product (:product built)
+          accepted (consume product)
+          coherent-core-transplant
+          (walk/postwalk (fn [value]
+                           (if (and (map? value) (= :sh08-guarded-integer-subtraction-v3 (:version value)))
+                             (assoc value :core-input (str "sha256:" (apply str (repeat 64 "f")))) value)) product)
+          coherent-range-transplant
+          (walk/postwalk (fn [value]
+                           (if (and (map? value) (= :gravity/sh08-gis-source-witness-v3 (:domain value)))
+                             (update value :input-range #(assoc % 1 (inc (second %)))) value)) product)
+          changed-source (update core :mutations conj {:core-node-id :mutation :target-binding-id :unknown})
+          callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "GIS candidate hashing")))
+                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "GIS candidate rendering"))))]
+      (is (= :constructed (:status built)) (pr-str (select-keys built [:status :reason :stage])))
+      (is (= :gravity.type/integer (:type built)))
+      (is (= expected product))
+      (is (false? (:numeric-proof-established built)))
+      (is (= :accepted (:status accepted)) (pr-str accepted))
+      (is (true? (:fresh-original-reconstruction accepted)))
+      (is (false? (:numeric-proof-established accepted)))
+      (doseq [candidate [(assoc-in product [:application :numeric-mode] :unchecked)
+                         coherent-core-transplant coherent-range-transplant
+                         (assoc product :supplied-validation {:status :accepted})]]
+        (is (= :rejected (:status (consume candidate)))))
+      (is (= :rejected (:status (invoke-c7 'sh08-gis3-consume-product [changed-source bindings forms target product]))))
+      (is (= :candidate-DATA (:stage (consume (assoc product :unused opaque)))))
+      (is (empty? @callbacks))
+      (prn {:gis3-source basename :private-product :checked :fresh-consumer :checked
+            :B47-verification-complete false :public-C7-routing false :numeric-proof-established false}))))
 
 (def ^:private function-work-policy-current-c8-plan
   ;; Same real Effects dependency and C8 module-bundle construction as the
