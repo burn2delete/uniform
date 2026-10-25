@@ -36,7 +36,8 @@
         forms (:parsed-semantic-values c2-artifact)
         overrides (c3-syntax-overrides-from-forms forms)
         _ (c3-syntax-validate-overrides! source-path overrides)
-        sh04-products (sh04-syntax-resolved-result! source-path c2-artifact)
+        sh04-products (sh04-syntax-build-from-fresh-c2!
+                       source-path c2-artifact integrity-report)
         syntax-stream (:rich-syntax sh04-products)
         sh04-result (:resolved-result sh04-products)
         gravity-boundary

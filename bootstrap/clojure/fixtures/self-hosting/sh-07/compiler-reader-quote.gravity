@@ -1,0 +1,12 @@
+(ns self-hosting.sh07.current-reader-quote
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [read-source-form-records])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn read-source-form-records [source-bytes]
+  (quote {:status :stage1-source-owned
+          :input source-bytes
+          :emits [:forms :source-spans :reader-diagnostics]}))

@@ -60,6 +60,86 @@ TCB bytes: changes invalidate affected retained fingerprints and require fresh
 evidence for any later migration claim. Existing pins are not renewed by this
 development implementation or its conformance tests.
 
+## Native carrier header ABI
+
+Unary `bootstrap-native-carrier-header` uses the same compiler-artifact
+`:meta`/`:jvm` plan restriction. It returns exactly
+`[kind metadata-present? extent metric child0 child1]`. The default is
+`[:unsupported nil nil nil nil nil]`, obtained without operand methods.
+Unknown metrics are nil, never zero. This fixed observation is neither
+validated DATA, language legality, an admission token, nor source provenance.
+Wrong arity reports `L2-BUILTIN-ARITY`; wrong plan context reports
+`L2-BUILTIN-ERROR` without rendering the operand.
+
+Every operand and nested native method receiver must pass an exact class
+check first. The current contour covers nil, Boolean, Character, Byte, Short,
+Integer, Long, String, Symbol, Keyword, native persistent array/hash/tree maps, hash
+sets, vectors, List nodes/empty Lists and Cons/SubVector observations. It also
+describes native BigInt, BigInteger, Ratio, BigDecimal, Float and Double;
+other numeric classes remain unsupported observations, not language exclusions.
+Metadata is only a presence Boolean after a native class check. It is not
+walked, returned, or implicitly rejected. String/Symbol/Keyword metrics count
+native UTF16 spelling units without rendering; Keyword's native Symbol
+receiver is checked separately. Integer metrics are absolute-magnitude bits.
+BigInt reads its native compact long or checks its exact native BigInteger
+backing before observing magnitude; it does not coerce through Number methods.
+Ratio supplies separate numerator/denominator bits, requiring exact native
+BigInteger fields before numeric observation. No GCD, printing, precision,
+normalization or numeric equality is performed. Positive-magnitude bitLength
+avoids the negative bitLength scan; its bounded temporary native headers must
+be included in the caller's explicit accounting.
+
+Byte and Short use kinds `:integer8` and `:integer16` with the same magnitude-bit
+metric as Integer/Long. Float and Double use `:float32` and `:float64`, with
+fixed carrier-width metrics 32 and 64 and nil child slots. These require no
+operand methods and describe finite values, signed zero, NaN and infinities
+alike; they grant no exceptional-value, equality or conversion policy.
+BigDecimal uses `[:big-decimal false nil unscaled-bits signed-scale nil]`.
+Its exact native receiver's `unscaledValue` result must pass the existing exact
+BigInteger guard before magnitude observation. Scale is a signed, widened
+native field observation, including both int extrema, not precision or a
+normalization request. Unknown nested backing yields unsupported.
+
+On the audited OpenJDK 26 path, compact BigDecimal unscaled observation may
+allocate one native BigInteger and an at-most-two-word magnitude array; negative
+absolute magnitude may add one native BigInteger sharing the array. A
+conservative logical inventory reserves two seven-cell BigInteger headers,
+three array cells, one magnitude metric and two scale-read/widen cells: 20
+branch temporaries. Byte/Short reserve at most five numeric observation cells,
+and Float/Double one width cell. Together with seven returned cells and the
+30 common plan-check path/cursor cells, 57 is a conservative bound for these
+new numeric branches. This is not a heap-byte or interpreter-work estimate.
+No cached-box or constant-folding discount applies; callers must separately
+reserve the applicable fee before invocation and validate before comparison.
+
+Container extents are native cached counts, not content validation. TreeMap
+reports only default-versus-foreign comparator identity in child0 and never
+invokes it. List nodes return raw head/tail references, without forcing Cons
+tails or counting their spines. SubVector returns its raw backing in child0,
+start in child1 and the long end-minus-start extent; no backing method is
+called. Consumers must close these references, bounds and comparator policy
+before traversal, hashing or equality.
+
+HashSet count delegates into a hidden map. The seed therefore resolves only
+the fixed `clojure.lang.APersistentSet.impl` field, using ordinary JVM access
+checks once. No caller-selected class/field, module opening, Unsafe operation,
+access-denial retry or security-manager bypass is allowed. Unavailable access
+or an unrecognized backing class yields unsupported, without delegated count.
+An admitted native backing is returned in child0 and checked before its count.
+This is a new explicit bootstrap TCB field-access boundary, not general
+reflection authority or a proof that stored members are safe.
+
+Each selected result branch constructs only its returned header, with no
+unconditional fallback tuple. One Vector and six slots cost seven logical
+output cells regardless of any actual compiler constant folding. Callers
+must reserve its construction and all bounded temporary observations before
+invocation, separately from every subsequent DATA visit and native comparison.
+Native metrics do not waive full child validation or existing schema/profile
+checks. Conservative fee changes require an explicit owning accounting change.
+The operation stays outside ordinary Core/C5 catalogs and authenticated-source
+admission. Its helper and load-order entry invalidate affected seed fingerprints;
+development tests do not renew migration, self-hosting or release evidence.
+
 ## Requirements
 
 - The seed compiler MUST declare implemented and excluded documents.

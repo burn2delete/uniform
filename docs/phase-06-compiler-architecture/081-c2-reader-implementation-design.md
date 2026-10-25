@@ -179,6 +179,156 @@ numeric record owned by later numeric and safety analysis. Duplicate-set
 equality is required at read time only when equality is decidable within the
 declared reader bounds.
 
+Reader resource policy is an implementation contract, separate from a Gravity
+language profile. A named resource policy must state its source-byte,
+character, scanner-token, form, construction and result-carrier limits together.
+Scanner-token limits include trivia even when trivia is omitted from the
+returned product. A source-byte vector retained in a digest request remains a
+container occurrence and must fit the result-carrier width limit.
+
+The implementation selects resource policy through authenticated reader code;
+source records, returned products and replay candidates cannot grant capacity.
+Changing the policy invalidates the reader implementation binding and affected
+verification context. A verifier reconstructs under its own authenticated
+policy and compares the complete declared bounds. Successful source identity
+continues to follow the source-unit identity rule above.
+
+Independent source, token and form maxima do not establish that every
+combination fits the result carrier. Construction must reserve a conservative
+count of the physical output before allocating its projected product tables,
+source maps and digest preimages. Count repeated occurrences in each output
+and preimage separately, including shared host references. Refusal must precede
+the refused construction and report the applicable maximum, required work or
+nodes, construction phase and uncommitted-result status. Complete result
+validation and fresh replay remain independent checks after construction.
+
+The bootstrap's `:gravity/sh03-compiler-source-v1` resource policy declares
+4,194,304 source bytes and characters, 524,288 scanner tokens, 262,144 forms,
+result-carrier width 4,194,304, and 536,870,912 aggregate canonical scalar bytes
+per digest preimage. These dimensions accommodate the byte,
+token and form populations of the required compiler sources observed during
+policy design; they are not a universal capacity or heap guarantee. The
+independent 268,435,456-node result bound, depth, scalar-byte, container-width,
+numeric-work and semantic-work limits still apply. Its conservative maximum
+envelope formula is 537,985,024 nodes; that envelope is not an admitted node
+allowance. The prospective construction guard must reject a concrete projected
+product that exceeds its admitted bound before allocating that product.
+Its pool includes the final physical product and newly retained token/value
+indexes and filtered-token projections. The already constructed decode,
+scanner and parser tables remain governed by their separate pre-growth bounds.
+Per-input construction counts stay private. The host validates the exact static
+policy and independently checks the actual final carrier; fresh pinned-reader
+replay independently re-executes the construction guard. No returned flag or
+count grants construction or replay authority.
+
+The initial capacity selection uses the required compiler-input inventory at
+`a14d0485302edb22f94e65ef84cfc3316cd21ef4`: Effects is 1,677,424 bytes, C7 is
+2,016,051 bytes, and the emitter is 1,670,330 bytes. A planning census estimated
+at most 472,738 trivia-inclusive tokens and 236,101 form nodes among these
+inputs. Tokens and forms round upward to the next power of two. The 4 MiB byte
+class adds headroom above the 2 MiB boundary, which is only 81,101 bytes above
+the largest observed source; characters and carrier width follow that byte
+class. The census is not governed-reader acceptance. Real input
+construction, complete validation and fresh replay must demonstrate fit under
+the independent construction, canonical-byte and result bounds.
+
+The construction/final class is selected from complete count-only observations
+of the required inputs, counting every physical occurrence rather than host
+object identity. Effects has prospective counts of 157,409,065 final and
+167,775,979 final-plus-scratch units; C7 has 178,823,081 and 190,771,531
+respectively. These conservative counts include a fixed envelope reserve. The old
+167,772,160-unit class refused Effects before construction and could not admit
+even C7's final carrier. The successor 268,435,456-unit binary class covers both
+observed populations with approximately 40.7 percent construction headroom above
+C7. It bounds deterministic traversal and projected construction work, not heap
+bytes. The separately enforced child heap, scheduling and execution deadlines
+continue to protect actual machine resources. These counts establish required
+logical capacity only; actual accepted construction, full canonical validation
+and fresh replay are separate evidence obligations. Canonical scalar accounting
+is revised coherently: retained token key names alone require at least
+247 bytes per token, exceeding the old 64 MiB aggregate scalar class for both
+required inputs even before values and identifiers are counted. The 512 MiB
+successor scalar class follows a per-preimage schema bound: a 1 MiB header
+reserve plus 640 bytes per retained token bounds the token-stream request;
+the reserve plus 2,000 bytes per form bounds the contextual form-tree request,
+including its semantic-value table, child edges and root identifiers. At the
+declared maxima these are 336,592,896 and 525,336,576 bytes, both below
+536,870,912. Numeric byte/codepoint vectors contribute carrier nodes but no
+string scalar bytes under this canonical accounting. This aggregate limit is
+neither encoded output length nor allocated heap. The individual 1 MiB scalar
+bound remains unchanged; every physical scalar occurrence is validated freshly.
+
+These capacities are a versioned implementation choice, not permanent language
+limits. A larger required input must produce a structured refusal under this
+policy. A successor policy requires a concrete input inventory, conservative
+pre-construction accounting, coupled byte/character/token/form/carrier bounds,
+accepted and adversarial real-input evidence, independent review and renewed
+reader binding. Alternatively, a separately reviewed streaming or explicitly
+threaded trusted-policy intake may replace this finite policy. Neither source
+splitting nor automatic capacity growth is an established fallback. Existing
+entrypoint arities use the authenticated named policy; no environment variable,
+mutable global, candidate field or retry selects a larger allowance.
+The private decoder stores compact scalar rows and reconstructs character/span
+views on demand. It must preserve exact UTF-8 bytes, Unicode-scalar and UTF-16
+positions, CRLF handling, diagnostics and complete reader products. This storage
+choice reduces retained intermediate structure without changing source identity,
+resource authority, pre-growth checks or fresh replay obligations.
+The private phase loop replaces its interpreter environment between decoding,
+scanning, parsing and accepted construction. Character storage is cleared after
+scanning, so it is no longer retained by an enclosing decoded-result binding
+during parsing or construction. Existing bounded token and parse tables remain
+available where required; no aggregate carrier or alias discount is introduced.
+Verification still retains the submitted result and reconstructs independently
+from every original source byte. This lifetime change does not establish a heap
+bound; representative construction, validation and replay must demonstrate fit
+under the separately controlled host resource class.
+
+Reader digest requests use a private validating stream for the existing
+`gravity-canonical-edn-v1` encoding. A complete validation pass preserves the
+canonical domain, physical occurrence counts, bounds, metadata rejection and
+original failure order before opening the digest writer. Emission preserves
+the exact existing bytes, type tags, numeric spellings, escaping, list/vector
+distinction and hexadecimal UTF-8 canonical key ordering. Both passes apply the
+same per-preimage limits and must report identical final statistics. Their
+private statistics grant no candidate or replay authority.
+
+The validation-only common scalar path applies the original scalar guards and
+updates the same occurrence statistics without constructing discarded tagged
+forms or integer decimal strings. Each private pass owns six mutable numeric
+counters and publishes the same six-field statistics map; counters are never
+shared between validation, emission or separate invocations. Common keys use
+the same fresh scalar guards and exact canonical tags. Uncommon scalar and
+compound fallbacks use the existing normalizer with a fresh counter snapshot;
+all partial counter updates are copied back even when normalization rejects.
+Guard order, physical occurrence accounting and failure priority are preserved.
+Emission writes common scalar tags directly after their complete guards, using
+the existing numeric spellings and String escape table while writing ordinary
+String runs in bulk. Final native Long, Integer, Short and Byte wrappers use
+equivalent primitive bit counts and decimal spellings; other integer classes
+retain the original BigInteger conversion and callback behavior. Name checks
+and UTF-8 length checks avoid temporary sequences and encoded byte arrays while
+preserving code-unit semantics, Unicode refusal order and numeric counter types.
+Freshly validated keyword
+keys use the same fixed encoding and UTF-8 hexadecimal sort order; no key,
+validation result or identity is cached across occurrences. Emission uses
+one fixed 8,192-character writer buffer to batch UTF-8 encoder calls; closing
+the writer flushes its final partial buffer before digest completion. This
+bounded temporary buffer changes neither canonical bytes nor input capacity,
+and establishes no whole-input time or heap guarantee.
+Reader-private typed writer calls and character-array stores avoid reflective
+method discovery while retaining the exact existing lowercase hexadecimal
+encoding. The generic canonical implementation remains an independent oracle
+and the fallback for uncommon keys and values.
+
+The stream retains normalized keys and ordering data for the current map,
+rather than normalized values for the entire token vector. Compound keys and
+sets may still use the existing bounded normalizer; this is not a universal
+constant-memory or heap-fit guarantee. Digest-reference resolution, collision
+checks, the generic canonical identity API, raw-byte hashing and complete fresh
+reader reconstruction remain separate obligations. No encoding version,
+identity domain, declared input capacity or validation result is changed or
+reused to authorize a later invocation.
+
 ## Reader Extensions
 
 Reader extensions are declared in project or package policy:

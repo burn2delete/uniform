@@ -1,0 +1,21 @@
+(ns gravity.self-hosting.sh22.symbol-carrier.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-symbol-carrier-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-symbol-carrier-request []
+  {:artifact :gravity/sh22-library-request
+   :request-id :coordinator/symbol-carrier
+   :profile :meta
+   :experimental-opt-in true
+   :operation :vector-append
+   :arguments [[] 'compiler/entry]
+   :effects #{:memory/allocate}
+   :capabilities #{}
+   :allocation-policy :bounded-by-result
+   :source-span {:source-id :coordinator/symbol-carrier :start 0 :end 64}
+   :origin-chain [{:kind :source :source-id :coordinator/symbol-carrier}]
+   :actual-source-path "fixtures/coordinator-symbol-carrier.gravity"})

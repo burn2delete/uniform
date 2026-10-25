@@ -20113,6 +20113,22 @@ true
          (* 4 (count (get facts :function-type-table))) (* 4 (count (get core :definitions)))
          (* 4 (count (get core :lexical-bindings))) slots parameters)) 0))
 
+(defn body-effect-module-ledger-work []
+  ; At most 17 source reports and six graph reports: fresh report Vectors cost
+  ; 18 and seven; eight field/arithmetic/control slots per report dominate the
+  ; ordered ledger walk. Reserve both bounded bookkeeping paths up front.
+  (+ 18 7 (* 8 17) (* 8 6)))
+
+(defn body-effect-reported-stage-work [reports]
+  ; Reports come from the owning workers, never from candidate work claims.
+  ; Later let bindings may forward the same failed report. Stop at its first
+  ; position so its debit is paid once and no skipped child acquires a debit.
+  (loop [index 0 used 0]
+    (if (= index (count reports)) used
+      (let [report (get reports index) total (+ used (get report :work-count 0))]
+        (if (= :accepted (get report :status))
+          (recur (+ index 1) total) total)))))
+
 (defn body-analyze-module [request facts foreign budget]
   (let [core (get request :canonical-core-artifact)
         ; Three independent proof reconstructions plus the capture census use
@@ -20120,16 +20136,20 @@ true
         ; into this module's existing cumulative allowance.
         declared-work (body-ds-prefix-work core facts)
         budget (- budget declared-work)]
-    (if (< budget 0) (body-failure :body-deferred-work-limit)
+    (if (< budget 0) (assoc (body-failure :body-deferred-work-limit) :work-count declared-work)
     (if (body-shape-valid? core facts)
     (let [bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)
         private (body-is-context core facts bindings (body-path request [:b47-context :authenticated-core-request :forms]) budget)
         core (assoc core :sh08-private-self-parameter-premise
                (if (= :accepted (get private :status)) (get private :parameter-value-premise) nil))
         request (assoc request :canonical-core-artifact core)
-        declared-work (+ declared-work (get private :work-count 0))
-        budget (- budget (get private :work-count 0))
-        associations (if (= :accepted (get private :status)) (body-ma-context request facts bindings budget) private)
+        ledger-work (if (= :accepted (get private :status)) (body-effect-module-ledger-work) 0)
+        declared-work (+ declared-work (get private :work-count 0) ledger-work)
+        budget (- budget (get private :work-count 0) ledger-work)
+        associations (if (= :accepted (get private :status))
+                       (if (< budget 0)
+                         {:status :rejected :reason :body-deferred-work-limit :work-count 0}
+                         (body-ma-context request facts bindings budget)) private)
         appends (if (= :accepted (get associations :status))
                   (body-va-context request facts bindings (- budget (get associations :work-count 0))) associations)
         equalities (if (= :accepted (get appends :status))
@@ -20225,10 +20245,15 @@ true
                        (if (= :accepted (get returns :status)) (get joins :work-count 0) 0))
         quotients (if (= :accepted (get joins :status))
                     (body-nq-context request facts bindings (- budget source-work)) joins)
-        source-work (+ source-work (if (= :accepted (get joins :status)) (get quotients :work-count 0) 0))
+        source-work (if (if (= :accepted (get private :status)) (>= budget 0) false)
+                      (body-effect-reported-stage-work
+                        [associations appends equalities negations memberships lookups concatenations
+                         lists queries parameters counts selections successors removals returns joins quotients]) 0)
         facts (assoc facts :quotient-context (get quotients :context) :removal-context (get removals :context) :if-join-context (get joins :context) :return-context (get returns :context) :association-context (get associations :context) :count-context (get counts :context) :append-context (get appends :context) :equality-context (get equalities :context)
                            :list-parameter-context (get parameters :context) :list-query-context (get queries :context) :list-construction-context (get lists :context) :string-concat-context (get concatenations :context) :map-get-context (get lookups :context) :map-contains-context (get memberships :context) :not-context (get negations :context) :vector-predicate-context (get negations :vector-predicate-context) :integer-predicate-context (get negations :integer-predicate-context) :string-predicate-context (get negations :string-predicate-context) :keyword-predicate-context (get negations :keyword-predicate-context) :map-predicate-context (get negations :map-predicate-context) :list-predicate-context (get negations :list-predicate-context) :set-predicate-context (get negations :set-predicate-context) :symbol-predicate-context (get negations :symbol-predicate-context) :boolean-predicate-context (get negations :boolean-predicate-context) :nil-predicate-context (get negations :nil-predicate-context) :character-predicate-context (get negations :character-predicate-context) :atomic-inequality-context (get negations :atomic-inequality-context) :set-conversion-context (get negations :set-conversion-context) :vector-nth-context (get selections :context) :successor-context (get successors :context)) budget (- budget source-work)]
     (if (= :accepted (get quotients :status))
+      (if (< budget 0)
+        (assoc (body-failure :body-deferred-work-limit) :work-count (+ declared-work source-work))
       (if (if (if (contains? facts :higher-order-proof) (body-ho-proof-valid? core facts bindings) true)
             (if (body-function-joins-valid? core facts bindings)
             (if (body-call-joins-with-foreign-valid? core facts bindings foreign)
@@ -20275,23 +20300,56 @@ true
                                         (get handler-check :work-count) (get propagated :work-count))) propagated)]
               (if (= :accepted (get allowed :status))
                 {:status :accepted :graph graph :work-count (+ declared-work source-work (get handlers :work-count) (get handler-check :work-count) (get throws :work-count) (get derived :work-count)
-                                                             (get propagated :work-count) (get allowed :work-count))} allowed)) derived))
-        (body-failure :incoherent-function-or-call-body-type-origin-join))
-      (if (= :accepted (get returns :status))
-        (assoc quotients :work-count source-work)
-        (if (= :accepted (get successors :status))
-          (assoc returns :work-count (+ prior-source-work (get returns :work-count 0))) returns))))
-      (body-failure :incomplete-canonical-core-coverage)))))
+                                                             (get propagated :work-count) (get allowed :work-count))}
+                (assoc allowed :work-count (+ declared-work source-work
+                  (body-effect-reported-stage-work [handlers throws derived handler-check propagated allowed])))))
+            (assoc derived :work-count (+ declared-work source-work
+              (body-effect-reported-stage-work [handlers throws derived])))))
+        (assoc (body-failure :incoherent-function-or-call-body-type-origin-join)
+          :work-count (+ declared-work source-work))))
+      (assoc quotients :work-count (+ declared-work source-work))))
+      (assoc (body-failure :incomplete-canonical-core-coverage) :work-count declared-work)))))
+
+(defn body-effect-native-map-construction-work [size]
+  (+ 1 (* size size) (* 2 size)))
+
+(defn body-analyze-producers-work [entries budget]
+  ; Entries are the owning producer census's fresh records. One caller pool
+  ; pays every module, repeated key observation and fresh bank publication.
+  ; Initial empty bank plus the at-most-four-field terminal/closed guard.
+  ; A resource report retains a key only after its complete DATA check.
+  (let [base (+ 1 (body-effect-native-map-construction-work 4))]
+    (if (> base budget) {:status :rejected :reason :body-deferred-work-limit :work-count base}
+      (loop [index 0 bank {} work base]
+        (if (= index (count entries)) {:status :accepted :bank bank :work-count work}
+          ; Eight field/control slots and this module's empty foreign Map.
+          (let [prefix (+ work 9)]
+            (if (> prefix budget) {:status :rejected :reason :body-deferred-work-limit :work-count prefix}
+              (let [entry (get entries index) key (get entry :module-key)
+                    key-work (body-lsi-first-data-work key (- budget prefix))
+                    keyed (+ prefix (get key-work :work-count))]
+                (if (= :accepted (get key-work :status))
+                  (let [analyzed (body-analyze-module (get entry :request) (get entry :facts) {} (- budget keyed))
+                        total (+ keyed (get analyzed :work-count 0))]
+                    (if (> total budget)
+                      {:status :rejected :reason :body-deferred-work-limit :work-count total :producer-module key}
+                      (if (= :accepted (get analyzed :status))
+                        (let [publication (+ (body-effect-native-map-construction-work (+ 1 (count entry)))
+                                             (body-effect-native-map-construction-work (+ 1 (count bank))))
+                              published (+ total publication)]
+                          (if (> published budget)
+                            {:status :rejected :reason :body-deferred-work-limit :work-count published :producer-module key}
+                            (recur (+ index 1) (assoc bank key (assoc entry :graph (get analyzed :graph))) published)))
+                        (let [published (+ total (body-effect-native-map-construction-work (+ 2 (count analyzed))))]
+                          (if (> published budget)
+                            {:status :rejected :reason :body-deferred-work-limit :work-count published :producer-module key}
+                            (assoc analyzed :work-count published :producer-module key :producer-facts (get entry :facts)))))))
+                  {:status :rejected :reason (if (= :loop-type-work-limit (get key-work :reason))
+                                               :body-deferred-work-limit :untrusted-or-transitive-body-producer)
+                   :work-count keyed})))))))))
 
 (defn body-analyze-producers [entries]
-  (loop [remaining entries bank {} work 0]
-    (if (= 0 (count remaining)) {:status :accepted :bank bank :work-count work}
-      (let [entry (first remaining)
-            analyzed (body-analyze-module (get entry :request) (get entry :facts) {} (- 65536 work))]
-        (if (= :accepted (get analyzed :status))
-          (recur (rest remaining) (assoc bank (get entry :module-key) (assoc entry :graph (get analyzed :graph)))
-                 (+ work (get analyzed :work-count)))
-          (assoc analyzed :producer-module (get entry :module-key) :producer-facts (get entry :facts)))))))
+  (body-analyze-producers-work entries 65536))
 
 (defn body-foreign-bindings [request facts bank]
   (let [bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)]

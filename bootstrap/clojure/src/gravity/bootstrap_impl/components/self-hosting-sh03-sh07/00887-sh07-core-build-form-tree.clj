@@ -94,6 +94,7 @@
                                   (when-not (and (= (count children) (count values) (count (set matched)))
                                                  (not-any? #{::missing} matched))
                                     (fail :map-source-set-bijection source))
+                                  (swap! orders assoc path (when-not inert? matched))
                                   (doseq [[child index] (map vector children matched)]
                                     (walk child (get values index) (conj path index) inert?)))
                                 (= :abbreviation kind)
@@ -120,7 +121,7 @@
                       (doseq [index (range 2 (count children))]
                         (walk (get children index) (nth fn-value (dec index)) [2 (dec index)] false)))
                     (walk source value [] false))))
-              [(:sh07/root-syntax-id syntax) {:sources @occurrences :map-orders @orders}]))
+              [(:sh07/root-syntax-id syntax) {:sources @occurrences :collection-orders @orders}]))
           syntaxes)))))
 
 (defn sh07-core-build-form-tree
@@ -182,8 +183,8 @@
 
 (defn sh07-core-source-map-order
   [resolution-artifact syntaxes trees]
-  ;; Existing host-path identities stay fixed. C2 owns evaluated pair order;
-  ;; inert quoted maps retain their materialized duplicate-key behavior.
+  ;; Existing host-path identities stay fixed. C2 owns evaluated collection order;
+  ;; inert quoted containers retain their materialized value behavior.
   (let [contexts (sh07-core-source-occurrence-context resolution-artifact syntaxes)
         records (vec (mapcat :records trees)) projected (into {} (map (juxt :form-id identity)) records)
         reordered (atom {})
@@ -206,11 +207,12 @@
                       (when-not (and (= :character (:kind target)) (= [] children) (= (:value source) (:value target)))
                         (fail :character-c2-occurrence-mismatch target)))
                     (when-let [reason (sh07-core-projected-source-mismatch source target)] (fail reason target))
-                    (when (= :map (:kind target))
-                      (when-not (= :map (:kind source)) (fail :map-source-value-or-kind target))
-                      (when-let [order (get (:map-orders context) path)]
-                        (when-not (= (count children) (* 2 (count order))) (fail :map-source-entry-bijection target))
-                        (swap! reordered assoc id (vec (mapcat #(subvec children (* 2 %) (+ 2 (* 2 %))) order)))))
+                    (when (contains? #{:map :set} (:kind target))
+                      (when-not (= (:kind target) (:kind source)) (fail :map-source-value-or-kind target))
+                      (when-let [order (get (:collection-orders context) path)]
+                        (let [width (if (= :map (:kind target)) 2 1)]
+                          (when-not (= (count children) (* width (count order))) (fail :map-source-entry-bijection target))
+                          (swap! reordered assoc id (vec (mapcat #(subvec children (* width %) (+ width (* width %))) order))))))
                     (doseq [[index child] (map-indexed vector children)]
                       (walk child (conj path index) (conj seen id)))))]
           (walk (get-in tree [:root :form-id]) [] #{}))))

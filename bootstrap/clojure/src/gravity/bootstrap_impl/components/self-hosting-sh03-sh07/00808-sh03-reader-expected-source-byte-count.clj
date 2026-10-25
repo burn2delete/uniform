@@ -4,7 +4,7 @@
 ;; values are filled after the leaf source and its independent review freeze.
 ;; Keeping these separate from the builder makes the source/plan tripwire
 ;; explicit and prevents a rebuild from silently authorizing changed code.
-(def sh03-reader-expected-source-byte-count 257161)
+(def sh03-reader-expected-source-byte-count 270363)
 (def sh03-reader-uncredited-source-model-entrypoints
   ['stage1-read-source-formal-release-governance-seed-retirement
    'stage1-read-source-release-attestation-seed-retirement
@@ -16,18 +16,18 @@
    'stage1-read-source-core-bootstrap
    'stage1-read-source-self-hosted-runtime])
 (def sh03-reader-expected-source-content-hash
-  "sha256:bd262c746ad88d9213e4b3160943fecde948c5ceee12a65dfe67ffb29d4e5b77")
+  "sha256:8a12082681ee6ea5eec6da14a43ed1a295eda521c47e8f70b99d40c3893a41f4")
 (def sh03-reader-expected-plan-semantic-hash
-  "sha256:c6ef36bdf9616b97ff92ded8786b21eab1f2f94075a87aa96f59b8e7d710b3f2")
+  "sha256:cce236c5e748b0db690aa16b6eebfe78a7e296e9b3847d8daabe97deb2c5d71b")
 (def sh03-reader-expected-functions-semantic-hash
-  "sha256:2e7bd1504df9cac0451d391f4f20cd5fac524e4f289289d136ac43f279f759cb")
-(def sh03-reader-expected-function-count 231)
+  "sha256:a38ec7deeba6a9f192c8a48b130d0cf9ec224326275ef2114db1032015cad88f")
+(def sh03-reader-expected-function-count 249)
 (def sh03-reader-expected-function-names-hash
-  "sha256:27c0e98eec6e92acdf9d4c5a9db966374136f1c8084f7e9f13bea1610d6bf868")
+  "sha256:2395e5cd24b54103cf90518a53b953ec9210ef3a382cd06d153e81296ce71e97")
 (def sh03-reader-expected-function-shapes-hash
-  "sha256:af3f655c92eb88945c6a46cdc8f0dcc157c92a8e7f9cd80cc2595129bd088e07")
+  "sha256:c04cb1ae449240205e82757857cf6c294c1548b7edec98a12938d24c91e4601e")
 (def sh03-reader-expected-entrypoint-semantic-hash
-  "sha256:9ea6a927c2f25fa80b123af18d3a6824bd9e2863e8c55fbc9f02839d882eb0cc")
+  "sha256:6dddc9a5a656148c1edd3dde8eb4d31c8962ba5327ba0d60285acc8d40f4bea3")
 (def sh03-reader-expected-verifier-semantic-hash
   "sha256:625bbeccf94f75fedbd6232e4a54b1a44435f06bf07352b8d19b1a35196038a7")
 (def sh03-reader-expected-builtin-functions-hash
@@ -44,9 +44,9 @@
 (def sh03-reader-plan-maximum-nodes 524288)
 (def sh03-reader-plan-maximum-depth 512)
 (def sh03-reader-plan-maximum-width 131072)
-(def sh03-reader-result-maximum-nodes 167772160)
+(def sh03-reader-result-maximum-nodes 268435456)
 (def sh03-reader-result-maximum-depth 2048)
-(def sh03-reader-result-maximum-width 1048576)
+(def sh03-reader-result-maximum-width 4194304)
 (def sh03-reader-input-maximum-identity-utf8-bytes 4096)
 (def sh03-reader-input-maximum-identity-code-units 1024)
 

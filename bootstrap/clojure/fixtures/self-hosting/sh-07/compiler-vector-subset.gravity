@@ -1,0 +1,21 @@
+; Verbatim helpers from checked_core.gravity; this is a separate source subject.
+(ns self-hosting.sh07.compiler-vector-subset
+  (:profile :meta) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports []))
+
+(defn sh07-vector-contains? [values value]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      false
+      (if (= (first remaining) value)
+        true
+        (recur (rest remaining))))))
+
+(defn sh07-vector-subset? [values candidates]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      true
+      (if (sh07-vector-contains? candidates (first remaining))
+        (recur (rest remaining))
+        false))))
