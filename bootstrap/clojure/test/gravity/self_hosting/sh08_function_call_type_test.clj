@@ -22518,6 +22518,12 @@
         key-index (- (count (:nodes core)) 4)]
     (is (= :accepted (get-in normal [:result :status])))
     (is (= normal selected))
+    (doseq [allowance [0 1 (dec (:ordinary-work-count normal))
+                      (:ordinary-work-count normal) (inc (:ordinary-work-count normal))]]
+      (is (= (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
+               [core bindings forms {} allowance])
+             (invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger
+               [core bindings forms {} allowance]))))
     (is (= :converged (get-in selected [:result :convergence :status])))
     (is (< 1 (get-in selected [:result :convergence :round-count])))
     (is (= :gravity.type/keyword
@@ -22537,6 +22543,19 @@
                      [core bindings altered {} 1048576])]
       (is (= :rejected (get-in rejected [:result :status])))
       (is (= ordinary rejected)))
+    (let [call-index (- (count (:nodes core)) 3)
+          changed (assoc-in core [:nodes call-index :source :syntax-id]
+                    (str "sha256:" (apply str (repeat 64 "0"))))
+          projection (invoke-c7 'sh08-ft-semantic-projection-id [(:identity-preimage changed)])
+          changed (assoc-in changed [:identity-preimage :nodes]
+                    (invoke-c7 'sh08-ft-semantic-nodes [projection (:nodes changed)]))
+          ordinary (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
+                     [changed bindings forms {} 1048576])
+          rejected (run changed)]
+      (is (true? (invoke-c7 'sh08-vf-map-get-recipe? [changed bindings forms])))
+      (is (= :rejected (get-in ordinary [:result :status])))
+      (is (= ordinary rejected))
+      (is (some #(= :map-get-source-mismatch (:reason %)) (get-in rejected [:result :diagnostics]))))
     (prn {:selected-reconstruction :complete-canonical-equivalence
           :normal-producer-unchanged true :source-construction-replayed false
           :private-route-only true :whole-paid-public-verifier false})))

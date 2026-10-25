@@ -27236,7 +27236,8 @@
                     header (bootstrap-native-carrier-header item) kind (get header 0)
                     next-nodes (+ nodes 1)]
                 (if (if (> next-nodes 1048576) true (if (> depth 128) true (> list-width 65536)))
-                  (sh08-vf-data-failure :verification-data-bound required required)
+                  (assoc (sh08-vf-data-failure :verification-data-bound required required)
+                    :observed-nodes next-nodes :observed-depth depth :observed-list-width list-width)
                   (if (get header 1) (sh08-vf-data-failure :verification-carrier-metadata required required)
                     (if (if (= kind :symbol) (= false (= true (get header 4))) false)
                       (sh08-vf-data-failure :verification-native-symbol-name required required)
