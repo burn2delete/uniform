@@ -1,0 +1,17 @@
+(ns gravity.self-hosting.sh22.meta-metadata.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-meta-metadata-nil-request sh22-meta-metadata-vector-request
+             sh22-meta-metadata-key-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-meta-metadata-nil-request [request]
+  (assoc request :arguments [(assoc (get (get request :arguments) 0) :metadata nil)]))
+
+(defn sh22-meta-metadata-vector-request [request]
+  (assoc request :arguments [(assoc (get (get request :arguments) 0) :metadata [])]))
+
+(defn sh22-meta-metadata-key-request [request]
+  (assoc request :arguments [(assoc (get (get request :arguments) 0) :metadata {"doc" "invalid key"})]))

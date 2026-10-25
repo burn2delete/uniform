@@ -1,0 +1,15 @@
+(ns gravity.self-hosting.sh15.result-carrier.accepted
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-result-carrier-request])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Original C12 rejects this incomplete request before authentication.
+(defn coordinator-result-carrier-request [anchor]
+  {:profile :safe :target :portable :semantic-anchor {:anchor-id anchor}
+   :layout-request
+   {:value-id :authenticated-fixed-slots :kind :tuple
+    :source-span {:source-id :fixture :actual-source-path "/source.gravity"
+                  :start {:byte 0 :line 1 :column 1}
+                  :end {:byte 1 :line 1 :column 2}}
+    :origin-chain [{:kind :source :source-id :fixture
+                    :actual-source-path "/source.gravity"}]}})
