@@ -1,0 +1,10 @@
+(ns gravity.self-hosting.sh15.located-span.rejected
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-located-span-invalid])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Explicit malformed-input mutations; these are not claimed C12 outputs.
+(defn coordinator-located-span-invalid [span]
+  [(assoc span :start (assoc (get span :start) :line 2))
+   (assoc span :start (assoc (get span :start) :column 3))
+   (assoc span :actual-source-path "")])

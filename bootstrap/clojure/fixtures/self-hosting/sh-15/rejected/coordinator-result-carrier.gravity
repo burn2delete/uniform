@@ -1,0 +1,9 @@
+(ns gravity.self-hosting.sh15.result-carrier.rejected
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-result-carrier-forged-summary])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn coordinator-result-carrier-forged-summary [candidate]
+  (assoc candidate :diagnostic-stream
+         (assoc (get candidate :diagnostic-stream) :summary-counts
+                {:error 0 :warning 0 :info 0 :hint 0 :internal-error 0})))

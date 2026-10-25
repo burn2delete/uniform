@@ -1,0 +1,19 @@
+(ns gravity.self-hosting.sh15.published-identity.rejected
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-published-diagnostic-identity-forged-id
+             coordinator-published-diagnostic-identity-path-id
+             coordinator-published-diagnostic-identity-invalid-row])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn coordinator-published-diagnostic-identity-forged-id [diagnostic]
+  (assoc diagnostic :diagnostic-id [:coordinator-digest-required :forged]))
+
+; A formerly emitted path-bearing ID must not pass fresh candidate verification.
+(defn coordinator-published-diagnostic-identity-path-id [diagnostic]
+  (assoc diagnostic :diagnostic-id
+         [:coordinator-digest-required (get diagnostic :rule)
+          (get diagnostic :primary) (get diagnostic :stage)
+          (get diagnostic :facts)]))
+
+(defn coordinator-published-diagnostic-identity-invalid-row [row]
+  (assoc row :source-span {}))

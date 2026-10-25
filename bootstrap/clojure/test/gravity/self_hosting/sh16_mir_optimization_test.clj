@@ -1032,22 +1032,28 @@
           (is (= proof-ids (get-in result [:decision-log 3 :proofs-used])))
           (is (= proof-ids (get-in result [:translation-validation :proofs])))
           (is (= [] (get-in result [:decision-log 2 :proofs-used])))
-          (is (= [proof-ids proof-ids proof-ids []]
+          (is (= [[] [] [] []]
                  (mapv :proofs-invalidated (:invalidation-ledger result))))
-          (is (= (vec (distinct proof-ids)) (get-in result [:post-pass-verifier :invalidated-proofs])))
+          (is (= [] (get-in result [:post-pass-verifier :invalidated-proofs])))
           (is (= :passed (:status (invoke-engine 'sh16-verify [input result]))))
+          (doseq [mutant [(assoc-in result [:invalidation-ledger 0 :proofs-invalidated] proof-ids)
+                          (assoc-in result [:post-pass-verifier :invalidated-proofs] [:proof/stale])]]
+            (is (= :rejected (:status (invoke-engine 'sh16-verify [input mutant])))))
           ;; DCE invalidates analysis needed for later runtime-check elision;
           ;; retained runtime proofs must not be reported as used or as dead IDs.
           (is (= :accepted (:status combined-result)))
           (is (= [:proof/dead] (get-in combined-result [:decision-log 2 :proofs-used])))
           (is (= [] (get-in combined-result [:decision-log 3 :proofs-used])))
           (is (= [:proof/dead] (get-in combined-result [:translation-validation :proofs])))
-          (is (= [proof-ids proof-ids proof-ids []]
+          (is (= [[] [] proof-ids []]
                  (mapv :proofs-invalidated (:invalidation-ledger combined-result))))
           (is (= (vec (distinct proof-ids)) (get-in combined-result [:post-pass-verifier :invalidated-proofs])))
           (is (= [:check/b :check/a]
                  (get-in combined-result [:residual-check-report :retained-runtime-checks])))
-          (is (= :passed (:status (invoke-engine 'sh16-verify [combined combined-result]))))))
+          (is (= :passed (:status (invoke-engine 'sh16-verify [combined combined-result]))))
+          (doseq [mutant [(assoc-in combined-result [:invalidation-ledger 2 :proofs-invalidated] [])
+                          (assoc-in combined-result [:post-pass-verifier :invalidated-proofs] [])]]
+            (is (= :rejected (:status (invoke-engine 'sh16-verify [combined mutant])))))))
       (let [result (optimize base) operation (dead :op/dead :proof/dead)
             input (update base :operations #(into [operation] %))]
         (is (= [[] [] [] []] (mapv :proofs-used (:decision-log result))))

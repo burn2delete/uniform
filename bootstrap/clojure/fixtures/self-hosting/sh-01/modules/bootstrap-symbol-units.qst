@@ -1,0 +1,21 @@
+(ns gravity.bootstrap.symbol-units-fixture
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:exports [observe observe-once observe-zero observe-two observe-wrong]))
+
+(defn observe [value]
+  (bootstrap-symbol-utf16-unit-count value))
+
+(defn observe-once [value]
+  (bootstrap-symbol-utf16-unit-count (do (println "once") value)))
+
+(defn observe-zero []
+  (bootstrap-symbol-utf16-unit-count))
+
+(defn observe-two [value]
+  (bootstrap-symbol-utf16-unit-count value value))
+
+(defn observe-wrong []
+  (bootstrap-symbol-utf16-unit-count :not-a-symbol))

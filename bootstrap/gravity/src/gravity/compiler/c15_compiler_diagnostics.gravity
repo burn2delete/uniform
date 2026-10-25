@@ -478,16 +478,26 @@
       false)
     false))
 
+(defn sh15-span-order-valid? [start end]
+  (if (<= (get start :byte) (get end :byte))
+    (if (<= (get start :line) (get end :line))
+      (if (= (get start :line) (get end :line))
+        (<= (get start :column) (get end :column))
+        true)
+      false)
+    false))
+
 (defn sh15-source-span-valid? [span]
   (if (sh15-exact-keys?
        span #{:source-id :actual-source-path :start :end})
     (if (keyword? (get span :source-id))
       (if (string? (get span :actual-source-path))
-        (if (<= (count (get span :actual-source-path)) 512)
+        (if (if (<= 1 (count (get span :actual-source-path)))
+              (<= (count (get span :actual-source-path)) 512)
+              false)
           (if (sh15-point-valid? (get span :start))
             (if (sh15-point-valid? (get span :end))
-              (<= (get (get span :start) :byte)
-                  (get (get span :end) :byte))
+              (sh15-span-order-valid? (get span :start) (get span :end))
               false)
             false)
           false)
@@ -501,7 +511,9 @@
     (if (keyword? (get origin :kind))
       (if (keyword? (get origin :source-id))
         (if (string? (get origin :actual-source-path))
-          (<= (count (get origin :actual-source-path)) 512)
+          (if (<= 1 (count (get origin :actual-source-path)))
+            (<= (count (get origin :actual-source-path)) 512)
+            false)
           false)
         false)
       false)
@@ -519,6 +531,11 @@
     (<= (count value) maximum-units)
     false))
 
+(defn sh15-upstream-code-valid? [value]
+  (if (sh15-bounded-string? value 128)
+    (<= 1 (count value))
+    false))
+
 (defn sh15-optional-sha256-shape? [value]
   (if (= nil value)
     true
@@ -532,15 +549,18 @@
 (defn sh15-upstream-source-span-valid? [diagnostic]
   (let [span (get diagnostic :source-span)]
     (if (= nil span)
-      ; Original C12 early schema rejection can have no available location.
+      ; Original C12 pre-C11 request-envelope rejection can lack location.
       ; The enclosing exact row schema still requires :source-span PRESENT;
       ; producer/verifier, profile/target and all other gates remain below.
-      (= ["S7-LAYOUT" "S7-LAYOUT" :request-schema-mismatch
+      (= ["S7-LAYOUT" "S7-LAYOUT" true
           :logical-data-layout :authenticated-layout-contract
           :domain-ir-layout :compiler-data-layout
           :supply-exact-authenticated-four-fact-fixed-slot-layout]
          [(get diagnostic :diagnostic-id) (get diagnostic :rule)
-          (get diagnostic :reason) (get diagnostic :family)
+          (sh15-member? [:request-schema-mismatch :request-member-carrier-rejected
+                         :artifact-mismatch :schema-version-mismatch]
+                        (get diagnostic :reason))
+          (get diagnostic :family)
           (get diagnostic :missing-fact) (get diagnostic :stage)
           (get diagnostic :domain) (get diagnostic :remediation)])
       (sh15-source-span-valid? span))))
@@ -549,8 +569,8 @@
   (if (sh15-exact-keys? diagnostic (sh15-upstream-diagnostic-keys))
     (= [true true true true true true true true true true true true true true
         true true true true true true]
-       [(sh15-bounded-string? (get diagnostic :diagnostic-id) 128)
-        (sh15-bounded-string? (get diagnostic :rule) 128)
+       [(sh15-upstream-code-valid? (get diagnostic :diagnostic-id))
+        (sh15-upstream-code-valid? (get diagnostic :rule))
         (keyword? (get diagnostic :family))
         (keyword? (get diagnostic :reason))
         (keyword? (get diagnostic :missing-fact))
@@ -652,7 +672,16 @@
 (defn sh15-preflighted-request-error [request]
   (let [preflight (sh15-carrier-preflight request)]
     (if (= :accepted (get preflight :status))
-      (sh15-request-semantics-error request)
+      (let [error (sh15-request-semantics-error request)]
+        (if (= nil error)
+          ; Stream and identity records repeat input data. Keep the existing
+          ; carrier budget closed over construction, not only over intake.
+          (if (= :accepted
+                 (get (sh15-carrier-preflight
+                       (sh15-construct-result request)) :status))
+            nil
+            :result-carrier-rejected)
+          error))
       :request-carrier-rejected)))
 
 (defn sh15-request-error [request]
@@ -685,10 +714,12 @@
 (defn sh15-preserve-diagnostic [diagnostic]
   (let [facts (sh15-preserved-facts diagnostic)
         primary {:span (get diagnostic :source-span)
-                 :artifact (get diagnostic :artifact-id)}]
+                 :artifact (get diagnostic :artifact-id)}
+        identity-primary
+        (assoc primary :span (sh15-identity-span (get primary :span)))]
     {:artifact :gravity/sh15-partial-diagnostic
      :diagnostic-id [:coordinator-digest-required
-                     (get diagnostic :rule) primary
+                     (get diagnostic :rule) identity-primary
                      (get diagnostic :stage) facts]
      :upstream-diagnostic-id (get diagnostic :diagnostic-id)
      :rule (get diagnostic :rule) :severity :error :lifecycle :active
@@ -765,6 +796,11 @@
    :identity-binding-status :unbound
    :pending (sh15-pending) :nonclaims (sh15-nonclaims)})
 
+(defn sh15-bounded-keyword [value]
+  (if (keyword? value)
+    (if (sh15-scalar-valid? value) value nil)
+    nil))
+
 (defn sh15-owned-diagnostic [request reason]
   {:diagnostic-id [:coordinator-digest-required "C15-SCHEMA" reason
                    :external-reference-diagnostic-boundary]
@@ -772,8 +808,8 @@
    :stage :compiler-diagnostics :message-key :diagnostic-boundary-invalid
    :primary {:span nil :syntax-id nil :artifact nil}
    :related [] :origin-chain []
-   :profile (if (keyword? (get request :profile)) (get request :profile) nil)
-   :target (if (keyword? (get request :target)) (get request :target) nil)
+   :profile (sh15-bounded-keyword (get request :profile))
+   :target (sh15-bounded-keyword (get request :target))
    :facts {:reason reason :schema-field :external-reference-boundary}
    :remediation [:supply-exact-bounded-external-reference-request]
    :redactions [:upstream-carrier-omitted]})
@@ -783,10 +819,8 @@
    :status :rejected :diagnostics [(sh15-owned-diagnostic request reason)]
    :pending [:valid-external-reference-request]})
 
-(defn sh15-build-diagnostic-boundary [request]
-  (let [error (sh15-request-error request)]
-    (if (= nil error)
-      (let [diagnostics
+(defn sh15-construct-result [request]
+  (let [diagnostics
             (sh15-preserve-diagnostics-from
              (get request :upstream-diagnostics) 0 [])]
         {:artifact :gravity/sh15-diagnostic-boundary :schema-version 1
@@ -807,7 +841,12 @@
          :diagnostic-input-status :external-unverified-preservation-input
          :identity-input (sh15-identity-input request diagnostics)
          :provenance (get request :provenance) :diagnostics []
-         :pending (sh15-pending) :nonclaims (sh15-nonclaims)})
+         :pending (sh15-pending) :nonclaims (sh15-nonclaims)}))
+
+(defn sh15-build-diagnostic-boundary [request]
+  (let [error (sh15-request-error request)]
+    (if (= nil error)
+      (sh15-construct-result request)
       (sh15-rejection request error))))
 
 (defn sh15-verify-diagnostic-boundary [request candidate]

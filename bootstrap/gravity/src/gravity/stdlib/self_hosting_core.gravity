@@ -79,7 +79,9 @@
    :effects effects
    :capabilities capabilities
    :allocation allocation
-   :errors errors
+   :errors (if (contains? (set errors) "STD10003")
+             errors
+             (conj errors "STD10003"))
    :profiles profiles})
 
 (defn sh22-module-manifest []
@@ -488,13 +490,30 @@
    :remediation :use-bounded-checked-capability-explicit-library-operation})
 
 (defn sh22-rejected [request rule reason]
-  {:artifact :gravity/sh22-library-result
-   :schema-version 1
-   :status :rejected
-   :request-id (get request :request-id)
-   :operation (get request :operation)
-   :diagnostics [(sh22-diagnostic request rule reason)]
-   :pending (get (sh22-library-policy) :pending)})
+  (let [candidate
+        {:artifact :gravity/sh22-library-result
+         :schema-version 1
+         :status :rejected
+         :request-id (get request :request-id)
+         :operation (get request :operation)
+         :diagnostics [(sh22-diagnostic request rule reason)]
+         :pending (get (sh22-library-policy) :pending)}]
+    (if (= :accepted (get (sh22-carrier-preflight candidate) :status))
+      candidate
+      ; A redacted refusal carries no request-identity proof. Retain provenance
+      ; when it fits; otherwise report an explicitly unbound fixed diagnostic.
+      (let [redacted
+            (assoc candidate :request-id nil
+                   :diagnostics
+                   [(sh22-diagnostic
+                     (assoc request :request-id nil)
+                     "STD10003" :request-identity-carrier-bound-exceeded)])]
+        (if (= :accepted (get (sh22-carrier-preflight redacted) :status))
+          redacted
+          (assoc candidate :request-id nil :operation nil
+                 :diagnostics
+                 [(sh22-diagnostic
+                   {} "STD10003" :diagnostic-carrier-bound-exceeded)]))))))
 
 (defn sh22-identity-input [request]
   {:artifact (get request :artifact)
@@ -509,20 +528,26 @@
    :origin-chain (get request :origin-chain)})
 
 (defn sh22-accepted [request value facts]
-  {:artifact :gravity/sh22-library-result
-   :schema-version 1
-   :status :accepted
-   :request-id (get request :request-id)
-   :operation (get request :operation)
-   :value value
-   :facts facts
-   :identity-input (sh22-identity-input request)
-   :provenance
-   {:actual-source-path (get request :actual-source-path)
-    :source-span (get request :source-span)
-    :origin-chain (get request :origin-chain)}
-   :diagnostics []
-   :pending (get (sh22-library-policy) :pending)})
+  ; Identity wrapping can outgrow an input-valid carrier. Check the complete
+  ; envelope before publishing acceptance; this is not allocation preflight.
+  (let [candidate
+        {:artifact :gravity/sh22-library-result
+         :schema-version 1
+         :status :accepted
+         :request-id (get request :request-id)
+         :operation (get request :operation)
+         :value value
+         :facts facts
+         :identity-input (sh22-identity-input request)
+         :provenance
+         {:actual-source-path (get request :actual-source-path)
+          :source-span (get request :source-span)
+          :origin-chain (get request :origin-chain)}
+         :diagnostics []
+         :pending (get (sh22-library-policy) :pending)}]
+    (if (= :accepted (get (sh22-carrier-preflight candidate) :status))
+      candidate
+      (sh22-rejected request "STD10003" :result-carrier-bound-exceeded))))
 
 (defn sh22-index-valid? [values index]
   (if (integer? index)
@@ -1331,15 +1356,37 @@
         (sh22-rejected request "STD10003" :expected-artifact-map))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
+(defn sh22-syntax-metadata-valid? [metadata]
+  ; C3 bounds syntax metadata to 64 Keyword/Symbol keys. Values remain inert
+  ; DATA under the existing complete request-carrier bounds.
+  (if (map? metadata)
+    (if (<= (count metadata) 64)
+      (loop [remaining (keys metadata)]
+        (if (= 0 (count remaining))
+          true
+          (if (if (keyword? (first remaining)) true (symbol? (first remaining)))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
 (defn sh22-meta-view [request]
   (let [arguments (get request :arguments)
         syntax (get arguments 0)]
     (if (= 1 (count arguments))
       (if (map? syntax)
-        (if (sh22-exact-keys?
-             syntax
-             #{:syntax-id :value :source-span :hygiene-marks
-               :namespace-context :phase :origin-chain})
+        (if (if (sh22-exact-keys?
+                 syntax
+                 #{:syntax-id :value :source-span :hygiene-marks
+                   :namespace-context :phase :origin-chain})
+              true
+              (sh22-exact-keys?
+               syntax
+               #{:syntax-id :value :source-span :hygiene-marks
+                 :namespace-context :phase :origin-chain :metadata}))
+          (if (if (contains? syntax :metadata)
+                (sh22-syntax-metadata-valid? (get syntax :metadata))
+                true)
           (if (sh22-present? (get syntax :syntax-id))
           (if (sh22-source-span-valid? (get syntax :source-span))
             (if (sh22-keyword-vector?
@@ -1352,15 +1399,17 @@
                        (get syntax :origin-chain))
                     (sh22-accepted
                      request
-                     {:artifact :gravity/stable-syntax-view
-                      :syntax-id (get syntax :syntax-id)
-                      :value (get syntax :value)
-                      :source-span (get syntax :source-span)
-                      :hygiene-marks (get syntax :hygiene-marks)
-                      :namespace-context
-                      (get syntax :namespace-context)
-                      :phase (get syntax :phase)
-                      :origin-chain (get syntax :origin-chain)}
+                     (let [view {:artifact :gravity/stable-syntax-view
+                                 :syntax-id (get syntax :syntax-id)
+                                 :value (get syntax :value)
+                                 :source-span (get syntax :source-span)
+                                 :hygiene-marks (get syntax :hygiene-marks)
+                                 :namespace-context (get syntax :namespace-context)
+                                 :phase (get syntax :phase)
+                                 :origin-chain (get syntax :origin-chain)}]
+                       (if (contains? syntax :metadata)
+                         (assoc view :metadata (get syntax :metadata))
+                         view))
                      {:public-ir-view :stable
                       :compiler-state-mutation false
                       :ordinary-recheck-required true})
@@ -1373,6 +1422,7 @@
                request "STD15001" :hygiene-marks-required))
             (sh22-rejected request "STD15001" :source-span-required))
             (sh22-rejected request "STD15001" :syntax-identity-required))
+          (sh22-rejected request "STD15001" :invalid-metadata))
           (sh22-rejected request "STD15001" :syntax-fields-invalid))
         (sh22-rejected request "STD15001" :expected-syntax-map))
       (sh22-rejected request "STD1001" :invalid-arity))))

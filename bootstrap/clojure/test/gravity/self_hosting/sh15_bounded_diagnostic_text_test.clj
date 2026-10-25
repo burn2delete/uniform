@@ -100,7 +100,9 @@
                   (assoc-in [:primary :span :actual-source-path]
                             (apply str (repeat 512 \u0000)))
                   (assoc-in [:primary :span :start :line] 2147483647)
-                  (assoc-in [:primary :span :start :column] 2147483647))
+                  (assoc-in [:primary :span :start :column] 2147483647)
+                  (assoc-in [:primary :span :end :line] 2147483647)
+                  (assoc-in [:primary :span :end :column] 2147483647))
         result (render input)]
     (is (= :accepted (:status result)))
     (is (<= (count (:text result)) 4096))
