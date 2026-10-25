@@ -60,7 +60,9 @@
               (big-integer? (.-bipart ^clojure.lang.BigInt value)))
           (identical? clojure.lang.Ratio kind)
           (and (big-integer? (.-numerator ^clojure.lang.Ratio value))
-               (big-integer? (.-denominator ^clojure.lang.Ratio value)))
+               (big-integer? (.-denominator ^clojure.lang.Ratio value))
+               (not (zero? (.signum ^java.math.BigInteger
+                                    (.-denominator ^clojure.lang.Ratio value)))))
           (identical? java.math.BigDecimal kind)
           (big-integer? (.unscaledValue ^java.math.BigDecimal value))
           (identical? clojure.lang.Keyword kind)

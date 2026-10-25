@@ -222,3 +222,109 @@
         (is (= {:status :passed}
                (b/p15-s23-c6c10-validate-builder-result-canonical-carrier!
                 path {:digest-requests []})))))))
+
+(defn- cross-fallback-parent [kind]
+  (let [array (object-array [:placeholder :placeholder])
+        backing (clojure.lang.PersistentArrayMap. array)
+        parent (if (= :map kind) backing
+                   (let [constructor (.getDeclaredConstructor clojure.lang.PersistentHashSet
+                                       (into-array Class [clojure.lang.IPersistentMap clojure.lang.IPersistentMap]))]
+                     (.setAccessible constructor true)
+                     (.newInstance constructor (object-array [nil backing]))))
+        compound [parent]]
+    (aset array 0 compound)
+    (aset array 1 compound)
+    [parent compound]))
+
+(deftest native-canonical-fallback-rejects-external-ancestor-cycles
+  (doseq [kind [:map :set]]
+    (let [[parent compound] (cross-fallback-parent kind)
+          active (java.util.IdentityHashMap.)
+          marker (Object.)]
+      (.put active parent marker)
+      (binding [b/p15-s23-c6c10-canonical-ancestors active]
+        (is (= :cyclic-canonical-carrier
+               (failure #(b/p15-s23-c6c10-canonical-form* path compound)))))
+      (is (identical? marker (.get active parent)))
+      (is (false? (.containsKey active compound)))))
+  ;; Diagnostic hashing must not mistake its new empty maps for this ancestor.
+  (let [active (java.util.IdentityHashMap.) value {} marker (Object.)]
+    (.put active value marker)
+    (binding [b/p15-s23-c6c10-canonical-ancestors active]
+      (is (= :cyclic-canonical-carrier
+             (failure #(b/p15-s23-c6c10-canonical-form* path value)))))
+    (is (identical? marker (.get active value)))))
+
+(deftest native-canonical-fallback-cleans-only-its-own-markers
+  (let [active (java.util.IdentityHashMap.) caller (Object.) marker (Object.)
+        shared {:a [1 2]} aliases [shared shared] malformed [shared (Object.)]]
+    (.put active caller marker)
+    (binding [b/p15-s23-c6c10-canonical-ancestors active]
+      (is (= (b/p15-s23-c6c10-canonical-form* path [shared {:a [1 2]}])
+             (b/p15-s23-c6c10-canonical-form* path aliases)))
+      (is (= :canonical-value-domain
+             (failure #(b/p15-s23-c6c10-canonical-form* path malformed))))
+      (with-redefs [b/p15-s23-c6c10-canonical-sort-key
+                    (fn [_] (throw (AssertionError. "output failure")))]
+        (is (thrown? AssertionError (b/p15-s23-c6c10-canonical-form* path shared)))))
+    (is (identical? marker (.get active caller)))
+    (doseq [value [shared aliases malformed]]
+      (is (false? (.containsKey active value)))))
+  (is (nil? b/p15-s23-c6c10-canonical-ancestors)))
+
+(deftest native-canonical-fallback-retains-malformed-carrier-priority
+  (let [calls (atom 0) deny (fn [] (swap! calls inc) (throw (AssertionError. "foreign callback")))
+        foreign (foreign-map deny)
+        metadata (with-meta {} {:present true})
+        comparator (sorted-map-by (fn [_ _] (deny)))
+        active (java.util.IdentityHashMap.) marker (Object.)]
+    (doseq [[value expected] [[foreign :exact-persistent-map-class]
+                             [metadata :metadata-free-canonical-value]
+                             [comparator :default-native-comparator]]]
+      (.put active value marker)
+      (binding [b/p15-s23-c6c10-canonical-ancestors active]
+        (is (= expected (failure #(b/p15-s23-c6c10-canonical-form* path value)))))
+      (is (identical? marker (.get active value))))
+    (is (zero? @calls))))
+
+(deftest native-canonical-independent-passes-have-no-shared-state
+  (let [array (object-array [:a 1]) value (clojure.lang.PersistentArrayMap. array)
+        validation (java.util.IdentityHashMap.) encoding (java.util.IdentityHashMap.)
+        first-form (binding [b/p15-s23-c6c10-canonical-ancestors validation]
+                     (b/p15-s23-c6c10-canonical-form* path value))]
+    (aset array 1 2)
+    (let [second-form (binding [b/p15-s23-c6c10-canonical-ancestors encoding]
+                        (b/p15-s23-c6c10-canonical-form* path value))]
+      (is (not= first-form second-form)))
+    (is (.isEmpty validation))
+    (is (.isEmpty encoding))
+    (.put validation value :caller)
+    (let [expected (b/p15-s23-c6c10-canonical-digest path value)]
+      (binding [b/p15-s23-c6c10-canonical-ancestors validation]
+        (is (= expected (b/p15-s23-c6c10-canonical-digest path value)))))
+    (is (= :caller (.get validation value))))
+  (is (nil? b/p15-s23-c6c10-canonical-ancestors)))
+
+(deftest native-ratio-denominators-must-be-nonzero-with-exact-native-receivers
+  (doseq [denominator [BigInteger/ONE (.negate BigInteger/ONE) (.shiftLeft BigInteger/ONE 4096)]]
+    (let [value (clojure.lang.Ratio. BigInteger/ONE denominator)]
+      (is (= {:status :passed} (check value)))
+      (is (= {:status :passed} (input value)))
+      (is (= [:ratio "1" (.toString denominator)] (:form (record value))))))
+  (let [value (clojure.lang.Ratio. BigInteger/ONE BigInteger/ZERO)
+        active (java.util.IdentityHashMap.)]
+    (.put active value :caller)
+    (is (= :untrusted-scalar-class (:reason (check value))))
+    (is (= :input-carrier-value-domain (failure #(input value))))
+    (binding [b/p15-s23-c6c10-canonical-ancestors active]
+      (is (= :canonical-value-domain (failure #(record value)))))
+    (is (= :caller (.get active value))))
+  (let [calls (atom 0) deny (fn [] (swap! calls inc) (throw (AssertionError. "foreign ratio callback")))
+        foreign (proxy [BigInteger] ["0"]
+                  (signum [] (deny)) (toString [] (deny)) (bitLength [] (deny)) (abs [] (deny)))]
+    (doseq [value [(clojure.lang.Ratio. BigInteger/ONE foreign)
+                   (clojure.lang.Ratio. foreign BigInteger/ONE)]]
+      (is (= :untrusted-scalar-class (:reason (check value))))
+      (is (= :input-carrier-value-domain (failure #(input value))))
+      (is (= :canonical-value-domain (failure #(record value)))))
+    (is (zero? @calls))))

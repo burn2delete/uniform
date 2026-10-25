@@ -82,30 +82,43 @@
       [:set (mapv :item (sort-by :sort-key items))])
     [kind children]))
 
+(def ^:dynamic p15-s23-c6c10-canonical-ancestors
+  "Invocation-local identity ancestors shared only within one canonical pass."
+  nil)
+
 (defn p15-s23-c6c10-canonical-form*
   [source-path value]
-  (let [active (java.util.IdentityHashMap.)]
-    (loop [stack [[:visit value]] results []]
-      (let [[action item kind size] (peek stack) stack (pop stack)]
-        (if (= :finish action)
-          (let [offset (- (count results) size)
-                children (into [] (subvec results offset))
-                form (p15-s23-c6c10-canonical-collection-form source-path kind children)]
-            (.remove active item)
-            (if (empty? stack) form
-                (recur stack (conj (subvec results 0 offset) form))))
-          (let [{:keys [kind children]} (p15-s23-c6c10-canonical-carrier source-path item)]
-            (if children
-              (do
-                (when (.containsKey active item)
-                  (p15-s23-c6c10-host-fail!
-                   "C6-VERIFY" source-path :cyclic-canonical-carrier {}))
-                (.put active item true)
-                (recur (into (conj stack [:finish item kind (count children)])
-                             (map #(vector :visit %) (rseq children)))
-                       results))
-              (let [form (p15-s23-c6c10-canonical-scalar-form source-path item)]
-                (if (empty? stack) form (recur stack (conj results form)))))))))))
+  (let [active (or p15-s23-c6c10-canonical-ancestors (java.util.IdentityHashMap.))
+        entered (java.util.IdentityHashMap.)]
+    (binding [p15-s23-c6c10-canonical-ancestors active]
+      (try
+        (loop [stack [[:visit value]] results []]
+          (let [[action item kind size] (peek stack) stack (pop stack)]
+            (if (= :finish action)
+              (let [offset (- (count results) size)
+                    children (into [] (subvec results offset))
+                    form (p15-s23-c6c10-canonical-collection-form source-path kind children)]
+                (.remove active item)
+                (.remove entered item)
+                (if (empty? stack) form
+                    (recur stack (conj (subvec results 0 offset) form))))
+              ;; Semantic class/metadata/comparator checks precede cycle checks.
+              (let [{:keys [kind children]} (p15-s23-c6c10-canonical-carrier source-path item)]
+                (if children
+                  (do
+                    (when (.containsKey active item)
+                      (p15-s23-c6c10-host-fail!
+                       "C6-VERIFY" source-path :cyclic-canonical-carrier {}))
+                    (.put entered item true)
+                    (.put active item true)
+                    (recur (into (conj stack [:finish item kind (count children)])
+                                 (map #(vector :visit %) (rseq children)))
+                           results))
+                  (let [form (p15-s23-c6c10-canonical-scalar-form source-path item)]
+                    (if (empty? stack) form (recur stack (conj results form)))))))))
+        (finally
+          ;; Preserve markers owned by the caller, including on failed fallback.
+          (doseq [item (.keySet entered)] (.remove active item)))))))
 
 (defn p15-s23-c6c10-canonical-record
   ([value]
@@ -147,8 +160,11 @@
   ([value]
    (p15-s23-c6c10-canonical-digest "<c6-c10-canonical>" value))
   ([source-path value]
-   (p15-s23-c6c10-digest-validated-form
-     (p15-s23-c6c10-canonical-form* source-path value))))
+   ;; Hashing a newly constructed diagnostic is an independent pass, even when
+   ;; its caller is rejecting a cycle under a shared ancestor binding.
+   (binding [p15-s23-c6c10-canonical-ancestors nil]
+     (p15-s23-c6c10-digest-validated-form
+       (p15-s23-c6c10-canonical-form* source-path value)))))
 
 (defn p15-s23-c6c10-class-supported-carrier?
   [value]
