@@ -1088,7 +1088,7 @@
 ; Only rule, severity and an explicitly cleared primary location are rendered.
 ; Other fields (including facts, messages, origins and private outputs) are inert.
 ; Inputs: String/Keyword rule <=128 ASCII units, five C15 severities, optional
-; existing SH15 span (path <=512 ASCII units), redactions nil/:not-evaluated or
+; existing SH15 or physical reader span (path <=512 ASCII units), redactions nil/:not-evaluated or
 ; Vector <=64. Only [] clears location disclosure; lifecycle :redacted overrides.
 ; Output: one ASCII line <=4096 bytes; absent and redacted locations are explicit.
 ; No truncation, diagnostic identity, provenance or redaction authority is added.
@@ -1154,6 +1154,13 @@
       state
       (if (= :redacted (get diagnostic :lifecycle)) :recorded state))))
 
+(defn sh15-text-source-path [span]
+  (if (sh15-source-span-valid? span)
+    (get span :actual-source-path)
+    (if (c15-reader-span-valid? span true)
+      (if (<= (count (get span :source)) 512) (get span :source) nil)
+      nil)))
+
 (defn sh15-text-location [diagnostic redaction-state]
   (if (= :clear redaction-state)
     (let [primary (get diagnostic :primary)]
@@ -1163,14 +1170,15 @@
           (let [span (get primary :span)]
             (if (= nil span)
               "<absent>"
-              (if (sh15-source-span-valid? span)
-                (let [path (sh15-text-escape (get span :actual-source-path))
-                      start (get span :start)]
-                  (if (= nil path)
-                    nil
-                    (str "\"" path "\":" (get start :line)
-                         ":" (get start :column))))
-                nil)))
+              (let [source-path (sh15-text-source-path span)]
+                (if (= nil source-path)
+                  nil
+                  (let [path (sh15-text-escape source-path)
+                        start (get span :start)]
+                    (if (= nil path)
+                      nil
+                      (str "\"" path "\":" (get start :line)
+                           ":" (get start :column))))))))
           nil)))
     "<redacted>"))
 
