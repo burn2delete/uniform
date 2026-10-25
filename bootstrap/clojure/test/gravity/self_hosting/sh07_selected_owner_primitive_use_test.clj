@@ -92,6 +92,21 @@
                (conj positions [op source-path plan-path (b/form-kind form)])
                (update summary op (fnil inc 0)))))))
 
+(defn- validate-source-leaves! [definition function literals]
+  (loop [pending (mapv (fn [i form node] [form node [i] [:instructions i]])
+                      (range) (:body definition) (:instructions function)) counts {}]
+    (if (empty? pending) counts
+      (let [[form instruction source-path plan-path] (peek pending) op (:op instruction)]
+        (case op
+          :local (require! (and (symbol? form) (= form (:name instruction))) :local-name)
+          :literal (let [constant? (symbol? form)]
+                     (when constant? (require! (contains? literals form) :literal-definition))
+                     (require! (= (if constant? (get literals form) form) (:value instruction)) :literal-value))
+          :quote (require! (and (= 2 (count form)) (= (second form) (:value instruction))) :quote)
+          nil)
+        (recur (into (pop pending) (children form instruction source-path plan-path))
+               (if (contains? #{:literal :local :quote} op) (update counts op (fnil inc 0)) counts))))))
+
 (defn- build-plan [relative text emitter]
   (let [source (path relative)]
     (case relative
@@ -113,6 +128,7 @@
         records (b/read-source-form-records (path relative) text)
         macro (b/macro-source-artifact-from-records (path relative) text records)
         definitions (b/stage0-function-table (assoc (:module macro) :forms (:expanded-forms macro)))
+        literals (b/p15-s23-stage2-module-literals (:expanded-forms macro))
         plan (build-plan relative text emitter)
         spans (into {} (keep (fn [record]
                               (let [form (:form record)]
@@ -126,7 +142,17 @@
                         (:functions plan))]
     (require! (= input (file-id relative)) :source-drift)
     (require! (= (:sha256 input) (get-in plan [:source :sha256])) :source-plan-hash)
-    {:input input :plan plan :definitions definitions :spans spans
+    {:input input :plan plan :definitions definitions :spans spans :literals literals
+     :source-declarations
+     {:namespace {:form-hash (hash-value (:form (first records))) :span (:span (first records))
+                  :normalized-module (:module plan)}
+      :data (mapv (fn [record]
+                    (let [form (:form record) name (second form)]
+                      (require! (and (= 3 (count form)) (contains? literals name)) :data-declaration)
+                      {:name name :definition-span (:span record)
+                       :initializer-kind (b/form-kind (nth form 2))
+                       :initializer-hash (hash-value (nth form 2)) :value-hash (hash-value (get literals name))}))
+                  (filter #(and (seq? (:form %)) (= 'def (first (:form %)))) records))}
      :row {:input input :module (:module plan) :plan-id (:plan-id plan) :compiler (:compiler plan)
            :plan-construction (if (= relative (first owner-paths)) :sh02-raw-before-byte-count-binding :owning-builder)
            :functions functions :instruction-summary (:instruction-summary plan)
@@ -134,7 +160,7 @@
                                                    :reason :outside-sh03-prefix-closure})
                                        (sort (remove (set (keys (:functions plan))) (keys definitions))))}}))
 
-(defn- validate-owner! [{:keys [input plan row definitions spans]}]
+(defn- validate-owner! [{:keys [input plan row definitions spans literals]}]
   (require! (= input (:input row) (file-id (:path input))) :changed-source)
   (require! (= (:sha256 input) (get-in plan [:source :sha256])) :source-plan-hash)
   (require! (= (:plan-id plan) (:plan-id row)
@@ -150,6 +176,7 @@
     (require! (= (:function-plan-hash function) (hash-value (get-in plan [:functions (:function function)]))) :function-identity)
     (require! (= (select-keys function [:uses :instruction-occurrences :instructions])
                  (occurrence-map (get definitions (:function function)) (get-in plan [:functions (:function function)]))) :source-occurrence)
+    (validate-source-leaves! (get definitions (:function function)) (get-in plan [:functions (:function function)]) literals)
     (doseq [use (:uses function)]
       (let [node (get-in (get-in plan [:functions (:function function)]) (:plan-path use))]
         (require! (= [(:op use) (:callee use) (:arity use)] [(:op node) (:function node) (count (:args node))]) :instruction-use)
@@ -253,6 +280,14 @@
                           (reset! stopped-frontier {:source relative :diagnostic (select-keys (ex-data error)
                               [:id :operator :function :reason :missing-fields :source-span])})
                           (throw error)))) owner-paths))))
+
+(defn source-declaration-and-leaf-map [owners]
+  (mapv (fn [owner]
+          {:input (:input owner) :source-declarations (:source-declarations owner)
+           :leaf-checks (apply merge-with +
+                              (map (fn [[name function]]
+                                     (validate-source-leaves! (get (:definitions owner) name) function (:literals owner)))
+                                   (get-in owner [:plan :functions])))}) owners))
 
 (defn selected-owner-use-map
   ([] (selected-owner-use-map @current-owners))
@@ -376,6 +411,44 @@
     (is (not-any? #(= [0 1 0] (nth % 2)) rows))
     (doseq [form '[(quote) (quote x y) (let [x] x) (let [[x] []] x) (fn [x] x) ((factory) 1)]]
       (is (thrown-with-msg? clojure.lang.ExceptionInfo #"C01 source/plan join rejected" (body-source-map [form]))))))
+
+(deftest all-source-data-declarations-and-selected-leaves-are-joined
+  (let [owners @current-owners rows (source-declaration-and-leaf-map owners)]
+    (is (= owner-paths (mapv #(get-in % [:input :path]) rows)))
+    (is (= 37 (reduce + (map #(count (get-in % [:source-declarations :data])) rows))))
+    (is (= {:literal 21902 :local 14750 :quote 78} (apply merge-with + (map :leaf-checks rows))))
+    (doseq [[owner row] (map vector owners rows)]
+      (is (= (get-in owner [:plan :module]) (get-in row [:source-declarations :namespace :normalized-module])))
+      (is (get-in row [:source-declarations :namespace :span]))
+      (is (= (set (keys (:literals owner))) (set (map :name (get-in row [:source-declarations :data]))))))))
+
+(deftest coherently-resealed-real-source-leaf-substitutions-are-rejected
+  (let [owner (first @current-owners)
+        options (for [[i function] (map-indexed vector (get-in owner [:row :functions]))
+                      [op _ plan-path _] (:instruction-occurrences function)
+                      :let [node (get-in (:plan owner) (into [:functions (:function function)] plan-path))]
+                      :when (or (and (= :literal op) (boolean? (:value node)))
+                                (and (= :local op) (some #{(:name node)} (:parameters function))
+                                     (< 1 (count (:parameters function)))))]
+                  {:index i :function (:function function) :op op :path plan-path
+                   :field (if (= :local op) :name :value)
+                   :replacement (if (= :local op) (first (remove #{(:name node)} (:parameters function))) (not (:value node)))})]
+    (is (validate-owner! owner))
+    (doseq [[op reason] [[:literal :literal-value] [:local :local-name]]]
+      (let [case (first (filter #(= op (:op %)) options))
+            _ (require! case :actual-leaf-case-absent)
+            plan (assoc-in (:plan owner) (into [:functions (:function case)] (conj (:path case) (:field case))) (:replacement case))
+            plan (assoc plan :plan-id (hash-value (dissoc plan :plan-id)))
+            changed (-> owner (assoc :plan plan) (assoc-in [:row :plan-id] (:plan-id plan))
+                        (assoc-in [:row :functions (:index case) :function-plan-hash] (hash-value (get-in plan [:functions (:function case)]))))
+            rejection (try (validate-owner! changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (not= (:plan-id (:plan owner)) (:plan-id plan)))
+        (is (= (:input owner) (:input changed)))
+        (is (= (get-in owner [:row :functions (:index case) :definition-hash])
+               (get-in changed [:row :functions (:index case) :definition-hash])))
+        (is (= (get-in owner [:row :functions (:index case) :instruction-occurrences])
+               (get-in changed [:row :functions (:index case) :instruction-occurrences])))
+        (is (= ["SH07-C01-JOIN" reason] ((juxt :id :reason) rejection)))))))
 
 (deftest selected-owner-observed-arity-runtime-cases
   ;; The reviewed map supplies actual required arities, not runtime authority.
