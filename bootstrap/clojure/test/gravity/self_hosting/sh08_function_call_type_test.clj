@@ -21298,6 +21298,70 @@
          request (stage :c7-request (fn [] (function-request core)))]
      {:resolved resolved :core core :request request})))
 
+(defn- gis3-current-source-Core-products [stage]
+  ;; Real source transport, stopping before the independent B47/coordinator
+  ;; request constructor. These rows alone confer no C7 proof authority.
+  (let [source-path (fixture-path "accepted" "compact-source-proof-interval" ".gravity")
+        text (slurp source-path)
+        resolved (function-work-policy-current-resolution source-path text
+                   {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)
+        artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
+        boundary (:gravity-core-boundary artifact)]
+    {:source-path source-path :source-text text :resolved resolved :core-wrapper artifact
+     :core (:canonical-core-artifact boundary)
+     :forms (get-in boundary [:authenticated-core-request :forms])
+     :bindings (get-in boundary [:authenticated-core-request :binding-table])}))
+
+(deftest sh08-gis3-current-source-Core-development-kernel
+  ;; This checks the actual source/Core contract, not GIS construction, B47
+  ;; verification, a preseeded type map, or a second typed .qst pass.
+  (let [{:keys [source-path source-text resolved core-wrapper core forms bindings]}
+        (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        by-form (into {} (map (juxt :form-id identity) forms))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        records (filter #(= 'bounded (:definition-name %)) (:function-records core))
+        record (first records) function (nodes (:function-core-node-id record))
+        parameter-id (first (:parameter-binding-ids record)) parameter (by-binding parameter-id)
+        parameter-form (by-form (get-in function [:attributes :parameter-form-id]))
+        outer (nodes (:body-core-node-id record)) inner (nodes (first (:children outer)))
+        subtraction (nodes (get (:children outer) 1))
+        selected (filter #(= (:node-id subtraction) (:core-node-id %)) (:calls core))
+        call (first selected)
+        definition (first (filter #(= (:definition-binding-id record) (:binding-id %)) (:definitions core)))
+        references (filter #(= parameter-id (get-in % [:attributes :binding-id])) (:nodes core))]
+    (is (= source-text (slurp (fixture-path "accepted" "compact-source-proof-interval" ".qst"))))
+    (is (= :accepted (:status resolved) (:status core-wrapper)))
+    (is (= 'self-hosting.sh08.compact-source-proof-interval (get-in core [:module :namespace])))
+    (is (= 1 (count records) (count selected)))
+    (is (= :named-top-level (:definition-kind record)))
+    (is (= 1 (:fixed-arity record) (count (:parameter-binding-ids record))))
+    (is (= :fn (:core-form function)))
+    (is (not (contains? record :signature)))
+    (is (not (contains? (:attributes function) :signature)))
+    (is (= [:vector ['x]] ((juxt :kind :value) parameter-form)))
+    (is (= [:lexical :local 'x] ((juxt :binding-class :kind :name) parameter)))
+    ;; C5 does not currently emit a mutability field for ordinary parameters.
+    ;; Default-immutable source and the complete mutation/reentry census must
+    ;; establish this premise; a missing field alone is never proof.
+    (is (contains? #{nil :immutable} (:mutability parameter)))
+    (is (= (:function-core-node-id record) (:value-node-id definition)))
+    (is (= (:definition-core-node-id record) (:core-node-id definition)))
+    (is (= [:if :if :call] (mapv :core-form [outer inner subtraction])))
+    (is (= '- (:name (by-binding (:operator-binding-id call)))))
+    (is (= 3 (count references)))
+    (is (every? #(and (= [] (:children %)) (= [parameter-id] (:resolved-binding-ids %))
+                      (= (:function-syntax-id record) (get-in % [:evaluation :owner-function-syntax-id]))) references))
+    (is (= 4 (count (:calls core)) (count (:call-edges core))))
+    (is (= 1 (count (filter #(= :local-function (:classification %)) (:call-edges core)))))
+    (is (= [] (:mutations core) (:recursion-components core) (:recur-transfers core)))
+    (is (every? #(and (map? (:source %)) (contains? by-form (get-in % [:source :form-id]))) (:nodes core)))
+    (prn {:gis3-real-source-Core :checked :source-path source-path
+          :canonical-core-id (:artifact-id core) :source-forms (count forms)
+          :nodes (count (:nodes core)) :binding-rows (count bindings)
+          :B47-verification-complete false :C7-inference-complete false
+          :numeric-proof-established false :paired-source-bytes-only true})))
+
 (def ^:private function-work-policy-current-c8-plan
   ;; Same real Effects dependency and C8 module-bundle construction as the
   ;; existing C8 test helper, with only explicit current-reader transport.
