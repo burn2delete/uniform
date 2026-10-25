@@ -4,7 +4,7 @@
 ;; values are filled after the leaf source and its independent review freeze.
 ;; Keeping these separate from the builder makes the source/plan tripwire
 ;; explicit and prevents a rebuild from silently authorizing changed code.
-(def sh03-reader-expected-source-byte-count 267155)
+(def sh03-reader-expected-source-byte-count 267612)
 (def sh03-reader-uncredited-source-model-entrypoints
   ['stage1-read-source-formal-release-governance-seed-retirement
    'stage1-read-source-release-attestation-seed-retirement
@@ -16,16 +16,16 @@
    'stage1-read-source-core-bootstrap
    'stage1-read-source-self-hosted-runtime])
 (def sh03-reader-expected-source-content-hash
-  "sha256:b7f2d8f48494c53a467ae1e990fcae89a5641b3bb99e4788d2def505440a1626")
+  "sha256:116317111e56ae28248258ef00e5978b97d0560ebc84248f9be9e0d12580f7e7")
 (def sh03-reader-expected-plan-semantic-hash
-  "sha256:b06807c77e2e08ab90fcc9744d2c7d89dceb64255d581ebdf5ed444fa33eff1c")
+  "sha256:b32173248360ebc3b8404ad890c0a48bf947677945c7f729149ac4e7db2ff488")
 (def sh03-reader-expected-functions-semantic-hash
-  "sha256:1593b49f9b2741041e975fa818d640aee0bf8eec30f2447444782ea4a20e24d1")
-(def sh03-reader-expected-function-count 243)
+  "sha256:9834fbc7c89f2e47b583d4b4f29ca42c86bd98626457c614ccb2d40e9dd78cca")
+(def sh03-reader-expected-function-count 244)
 (def sh03-reader-expected-function-names-hash
-  "sha256:c9e5a90a181f1a126fefb20c92a6fddac910a2141f2813dc2c6082ae3f241e19")
+  "sha256:86ddeb3a308fd4c1877d9bda3400df30190b11dd7d99af4fcb583322a2e8612a")
 (def sh03-reader-expected-function-shapes-hash
-  "sha256:34b95bb6a6e75487cc057730a51718cd33926270cf3f972d69e8561686222598")
+  "sha256:536fda0f605364508cb73fabb166f9efbf8dd2bea7736d6c1ebecf1edb55ae45")
 (def sh03-reader-expected-entrypoint-semantic-hash
   "sha256:e65ccbe5e5fd806dbc41fe9230a0fcbfa7d62359d6620584e082bd68e1ef9d15")
 (def sh03-reader-expected-verifier-semantic-hash

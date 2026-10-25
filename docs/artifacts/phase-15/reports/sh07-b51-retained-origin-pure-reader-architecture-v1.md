@@ -930,6 +930,13 @@ registries. It returns original form records with provenance; it grants no
 source-semantic or full H6 acceptance. The original held implementation must
 reconcile this boundary explicitly rather than importing its frozen patch as
 authority.
+The existing `c-backend-stage2-plan-emitter-source-rule!` consumer also uses the
+same fresh-record preflight after its unchanged fixed compiler-byte/hash gate.
+That gate authenticates its own compiler input; this adaptation synthesizes no
+Git descriptor or proof from text. Namespace validation, module parsing,
+emitter extraction and rule identity retain their owning behavior. This
+production join does not replace the held H6 origin consumer's expected-admission
+or complete object-proof joins.
 
 Every other origin limit remains: 50,331,648 raw bytes and 67,108,864 nodes per
 origin, 100,663,296 raw bytes and 134,217,728 nodes per pair, depth 64,

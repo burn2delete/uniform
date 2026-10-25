@@ -239,6 +239,11 @@ threaded trusted-policy intake may replace this finite policy. Neither source
 splitting nor automatic capacity growth is an established fallback. Existing
 entrypoint arities use the authenticated named policy; no environment variable,
 mutable global, candidate field or retry selects a larger allowance.
+The private decoder stores compact scalar rows and reconstructs character/span
+views on demand. It must preserve exact UTF-8 bytes, Unicode-scalar and UTF-16
+positions, CRLF handling, diagnostics and complete reader products. This storage
+choice reduces retained intermediate structure without changing source identity,
+resource authority, pre-growth checks or fresh replay obligations.
 
 ## Reader Extensions
 

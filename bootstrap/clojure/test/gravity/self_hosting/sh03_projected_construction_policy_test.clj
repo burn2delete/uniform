@@ -191,6 +191,28 @@
     (is (= [] (:token-stream result) (:form-tree result)))
     (is (false? (get-in result [:diagnostics 0 :facts :result-committed?])))))
 
+(defn- with-reader-phase-observer [operation]
+  (let [call-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-call-scoped)
+        original @call-var
+        phases '#{sh03-decode-source-bytes sh03-scan-tokens sh03-parse-tokens
+                  sh03-projected-construction-node-count sh03-semantic-value-table
+                  sh03-compact-token-records sh03-compact-form-records
+                  sh03-source-map-record sh03-digest-requests}]
+    (with-redefs-fn
+      {call-var
+       (fn [runtime plan env instruction scope]
+         (let [function (:function instruction)]
+           (if (contains? phases function)
+             (let [started (System/nanoTime)]
+               (println (pr-str {:reader-phase function :event :begin}))
+               (let [result (original runtime plan env instruction scope)]
+                 (println (pr-str {:reader-phase function :event :end
+                                   :elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))
+                                   :status (when (map? result) (:status result))}))
+                 result))
+             (original runtime plan env instruction scope))))}
+      operation)))
+
 (deftest authenticated-reader-accepts-real-effects-compiler-input
   ;; Real authenticated intake and fresh reconstruction, with the stock trivia
   ;; mode. This is reader evidence, not C8/C9 or module-migration acceptance.
@@ -207,9 +229,10 @@
                           (swap! target-calls inc)
                           (throw (ex-info "Target source reached host reader" {})))
                         (original source text))]
-          (bootstrap/sh03-reader-resolved-result!
-           path bytes (bootstrap/reader-project-context-for-source path)
-           bootstrap/standard-reader-options))
+          (with-reader-phase-observer
+            #(bootstrap/sh03-reader-resolved-result!
+              path bytes (bootstrap/reader-project-context-for-source path)
+              bootstrap/standard-reader-options)))
         raw (:raw-result resolved)
         report (:verification-report resolved)]
     (println (pr-str {:real-reader-input :effects

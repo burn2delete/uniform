@@ -140,17 +140,20 @@
                            (reject :max-plan-nodes 524288 (+ nodes (count stack) 1)))
                          (recur (next xs) width (conj stack [(first xs) (inc depth)]))))) nodes)))))))
 
+(defn- p15-s23-h6-fresh-source-form-records! [path text]
+  (let [_ (p15-s23-h6-seed-text-preflight! text)
+        records (binding [*authenticated-source-form-records* nil *read-eval* false
+                          *data-readers* {} *default-data-reader-fn* nil]
+                  (read-source-form-records path text))
+        forms (mapv :form records)]
+    (p15-s23-h6-source-forms-preflight! forms)
+    {:source-text text :records records :forms forms}))
+
 (defn- p15-s23-h6-retained-source-form-records!
   "Fresh finite-subset seed parsing; origin proof and aggregate admission remain external."
   [path descriptor proof claimed-text]
-  (let [source (p15-s23-h6-origin-source! path descriptor proof claimed-text)
-        _ (p15-s23-h6-seed-text-preflight! (:source-text source))
-        records (binding [*authenticated-source-form-records* nil *read-eval* false
-                          *data-readers* {} *default-data-reader-fn* nil]
-                  (read-source-form-records path (:source-text source)))
-        forms (mapv :form records)]
-    (p15-s23-h6-source-forms-preflight! forms)
-    (assoc source :records records :forms forms)))
+  (let [source (p15-s23-h6-origin-source! path descriptor proof claimed-text)]
+    (merge source (p15-s23-h6-fresh-source-form-records! path (:source-text source)))))
 
 (defn c-backend-stage2-plan-emitter-source-rule!
   "Load and validate the Gravity-authored P15-S23 stage2 plan-emitter rule.
@@ -176,8 +179,11 @@
            p15-s23-stage2-plan-emitter-fail!)
           source-data
           (try
-            (p15-s23-compiler-source-form-record-from-text
-             compiler-source (:source-text pinned-source))
+            ;; The existing fixed compiler byte/hash pin authenticates this route.
+            (let [data (p15-s23-h6-fresh-source-form-records!
+                        compiler-source (:source-text pinned-source))]
+              (validate-ns-syntax! compiler-source (:forms data))
+              (assoc data :module (parse-module compiler-source (:forms data))))
             (catch clojure.lang.ExceptionInfo ex
               (throw ex))
             (catch Exception ex

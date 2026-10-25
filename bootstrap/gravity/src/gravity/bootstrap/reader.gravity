@@ -1829,7 +1829,7 @@
    :byte-end (get span :byte-end)})
 
 (defn sh03-byte-at [source-bytes position]
-  (first (subvec source-bytes position (+ position 1))))
+  (get source-bytes position))
 
 (defn sh03-continuation-byte? [value]
   (if (integer? value)
@@ -1988,20 +1988,22 @@
 
 (defn sh03-decode-source-bytes [source-unit source-bytes]
   (if (sh03-source-byte-vector-valid? source-unit source-bytes)
+    (let [maximum-characters
+          (get (sh03-bounds-record) :maximum-characters)
+          source-byte-count (count source-bytes)]
     (loop [position 0
            scalar-index 0
            utf16-index 0
            line 1
            column 1
            characters []]
-      (if (= position (count source-bytes))
+      (if (= position source-byte-count)
         {:status :accepted
          :characters characters
          :character-count scalar-index
          :utf16-unit-count utf16-index
          :source-byte-count position}
-        (if (>= scalar-index
-                (get (sh03-bounds-record) :maximum-characters))
+        (if (>= scalar-index maximum-characters)
           {:status :rejected
            :reason :character-count-limit
            :byte-position position
@@ -2018,7 +2020,7 @@
                   char-end (+ utf16-index (if (> codepoint 65535) 2 1))
                   crlf?
                   (if (= codepoint 13)
-                    (if (< byte-end (count source-bytes))
+                    (if (< byte-end source-byte-count)
                       (= (sh03-byte-at source-bytes byte-end) 10)
                       false)
                     false)
@@ -2034,13 +2036,13 @@
                     (if (= codepoint 13)
                       (if crlf? (+ column 1) 1)
                       (+ column 1)))
+                  ; Private positional storage has no retained span/position
+                  ; maps. The scalar's endpoints are reconstructed on demand.
+                  ; Slots: codepoint, raw bytes, byte start, UTF-16 start,
+                  ; scalar line, scalar column, CR-followed-by-LF flag.
                   character
-                  {:index scalar-index
-                   :codepoint codepoint
-                   :raw-bytes (get decoded :raw-bytes)
-                   :span (sh03-scalar-span
-                          position byte-end utf16-index char-end
-                          line column line-end column-end)}]
+                  [codepoint (get decoded :raw-bytes) position utf16-index
+                   line column crlf?]]
                 (recur byte-end
                        (+ scalar-index 1)
                        char-end
@@ -2053,15 +2055,41 @@
                  (assoc decoded :line line)
                  :column column)
                 :char-position utf16-index)
-               :scalar-index scalar-index))))))
+               :scalar-index scalar-index)))))))
     (sh03-utf8-rejection
      :source-byte-vector-contract 0 source-bytes)))
 
+(defn sh03-character-span [character]
+  (if (vector? character)
+    (let [codepoint (get character 0)
+          raw-bytes (get character 1)
+          byte-start (get character 2)
+          char-start (get character 3)
+          line (get character 4)
+          column (get character 5)
+          crlf? (get character 6)]
+      (sh03-scalar-span
+       byte-start (+ byte-start (count raw-bytes))
+       char-start (+ char-start (if (> codepoint 65535) 2 1))
+       line column
+       (if (= codepoint 10) (+ line 1)
+         (if (= codepoint 13) (if crlf? line (+ line 1)) line))
+       (if (= codepoint 10) 1
+         (if (= codepoint 13) (if crlf? (+ column 1) 1) (+ column 1)))))
+    (get character :span)))
+
 (defn sh03-character-at [characters position]
-  (first (subvec characters position (+ position 1))))
+  (let [character (get characters position)]
+    (if (vector? character)
+      {:index position
+       :codepoint (get character 0)
+       :raw-bytes (get character 1)
+       :span (sh03-character-span character)}
+      character)))
 
 (defn sh03-codepoint-at [characters position]
-  (get (sh03-character-at characters position) :codepoint))
+  (let [character (get characters position)]
+    (if (vector? character) (get character 0) (get character :codepoint))))
 
 (defn sh03-ascii-whitespace? [codepoint]
   (contains? #{9 10 13 32 44} codepoint))
@@ -2120,10 +2148,11 @@
   (loop [position start result []]
     (if (= position end)
       result
-      (recur (+ position 1)
-             (sh03-append
-              result
-              (get (sh03-character-at characters position) :raw-bytes))))))
+      (let [character (get characters position)]
+        (recur (+ position 1)
+               (sh03-append result
+                            (if (vector? character) (get character 1)
+                              (get character :raw-bytes))))))))
 
 (defn sh03-range-raw-spelling [characters start end]
   {:encoding :utf-8
@@ -2131,10 +2160,8 @@
    :unicode-scalars (sh03-character-range-codepoints characters start end)})
 
 (defn sh03-span-between-characters [characters start end]
-  (let [first-character (sh03-character-at characters start)
-        last-character (sh03-character-at characters (- end 1))
-        first-span (get first-character :span)
-        last-span (get last-character :span)]
+  (let [first-span (sh03-character-span (get characters start))
+        last-span (sh03-character-span (get characters (- end 1)))]
     {:start (get first-span :start)
      :end (get last-span :end)
      :byte-start (get first-span :byte-start)
@@ -2967,15 +2994,18 @@
    :related []})
 
 (defn sh03-scan-tokens [characters]
+  (let [bounds (sh03-bounds-record)
+        maximum-tokens (get bounds :maximum-tokens)
+        maximum-numeric-scalars (get bounds :maximum-numeric-semantic-scalars)]
   (loop [position 0 token-index 0 tokens []]
     (if (= position (count characters))
       {:status :accepted :tokens tokens}
-      (if (>= token-index (get (sh03-bounds-record) :maximum-tokens))
+      (if (>= token-index maximum-tokens)
         (sh03-lexical-rejection
          "C2-HASH" "STAGE1READER006" :token-count-limit
          (get (sh03-character-at characters position) :span)
          nil
-         {:maximum-tokens (get (sh03-bounds-record) :maximum-tokens)}
+         {:maximum-tokens maximum-tokens}
          (sh03-token-id token-index))
         (let [codepoint (sh03-codepoint-at characters position)]
           (if (sh03-ascii-whitespace? codepoint)
@@ -3158,9 +3188,7 @@
                                    characters position end)
                               base-classification
                               (if (sh03-numeric-looking? codepoints)
-                                (if (> (count codepoints)
-                                       (get (sh03-bounds-record)
-                                            :maximum-numeric-semantic-scalars))
+                                (if (> (count codepoints) maximum-numeric-scalars)
                                   (sh03-classify-bounded-deferred-numeric
                                    codepoints raw)
                                   (sh03-classify-atom codepoints raw))
@@ -3170,9 +3198,7 @@
                                      :accepted)
                                 (if (contains? #{:integer :ratio :decimal}
                                                (get base-classification :kind))
-                                  (if (> (count codepoints)
-                                         (get (sh03-bounds-record)
-                                              :maximum-numeric-semantic-scalars))
+                                  (if (> (count codepoints) maximum-numeric-scalars)
                                     (sh03-defer-numeric-classification
                                      base-classification codepoints)
                                     base-classification)
@@ -3207,7 +3233,7 @@
                                     :raw-spelling raw}
                                    {}))
                                (get classified :facts))
-                             (sh03-token-id token-index))))))))))))))))
+                             (sh03-token-id token-index)))))))))))))))))
 
 (defn sh03-token-trivia? [token]
   (= (get token :trivia?) true))
@@ -3223,7 +3249,7 @@
           (recur (rest remaining) (conj result (first remaining))))))))
 
 (defn sh03-token-at [tokens position]
-  (first (subvec tokens position (+ position 1))))
+  (get tokens position))
 
 (defn sh03-skip-trivia [tokens position]
   (loop [cursor position]
@@ -3897,7 +3923,7 @@
       (= (get value :artifact) :gravity/deferred-ratio-literal))))
 
 (defn sh03-codepoint-position [codepoints position]
-  (first (subvec codepoints position (+ position 1))))
+  (get codepoints position))
 
 (defn sh03-two-decimal-digits-value [codepoints position]
   (+ (* 10 (sh03-digit-value
@@ -4525,6 +4551,10 @@
     :form-id form-id}))
 
 (defn sh03-parse-tokens [tokens reader-policy]
+  (let [bounds (sh03-bounds-record)
+        maximum-forms (get bounds :maximum-forms)
+        maximum-depth (get bounds :maximum-delimiter-depth)
+        maximum-semantic-work (get bounds :maximum-semantic-work-units)]
   (loop [position 0
          next-form-index 0
          frames (list)
@@ -4567,27 +4597,24 @@
              {:open-form-id (get frame :form-id)
               :form-id (get frame :form-id)
               :token-id (get frame :open-token)})))
-        (if (>= next-form-index
-                (get (sh03-bounds-record) :maximum-forms))
+        (if (>= next-form-index maximum-forms)
           (sh03-frame-rejection
            "C2-HASH" "STAGE1READER006" :form-count-limit
            (get (sh03-token-at tokens cursor) :span)
            (get (sh03-token-at tokens cursor) :raw)
-           {:maximum-forms (get (sh03-bounds-record) :maximum-forms)
+           {:maximum-forms maximum-forms
             :token-id (get (sh03-token-at tokens cursor) :token-id)
             :form-id (sh03-form-id next-form-index)})
           (let [token (sh03-token-at tokens cursor)
                 kind (get token :kind)
                 parent-id (sh03-current-parent-id frames)]
             (if (contains? #{:list-open :vector-open :map-open :set-open} kind)
-              (if (>= (count frames)
-                      (get (sh03-bounds-record) :maximum-delimiter-depth))
+              (if (>= (count frames) maximum-depth)
                 (sh03-frame-rejection
                  "C2-HASH" "STAGE1READER006" :delimiter-depth-limit
                  (get token :span) (get token :raw)
                  {:observed-depth (+ (count frames) 1)
-                  :maximum-delimiter-depth
-                  (get (sh03-bounds-record) :maximum-delimiter-depth)
+                  :maximum-delimiter-depth maximum-depth
                   :token-id (get token :token-id)
                   :form-id (sh03-form-id next-form-index)})
                 (recur (+ cursor 1)
@@ -4599,15 +4626,13 @@
               (if (= kind :abbreviation)
                 (if (sh03-abbreviation-placement-valid?
                      frames (get token :abbreviation))
-                  (if (>= (count frames)
-                          (get (sh03-bounds-record) :maximum-delimiter-depth))
+                  (if (>= (count frames) maximum-depth)
                     (sh03-frame-rejection
                      "C2-HASH" "STAGE1READER006"
                      :reader-frame-depth-limit
                      (get token :span) (get token :raw)
                      {:observed-depth (+ (count frames) 1)
-                      :maximum-delimiter-depth
-                      (get (sh03-bounds-record) :maximum-delimiter-depth)
+                      :maximum-delimiter-depth maximum-depth
                       :token-id (get token :token-id)
                       :form-id (sh03-form-id next-form-index)})
                     (recur (+ cursor 1)
@@ -4626,17 +4651,13 @@
                   (if (sh03-vector-contains?
                        (get reader-policy :enabled-reader-tags)
                        (get token :tag-codepoints))
-                    (if (>= (count frames)
-                            (get (sh03-bounds-record)
-                                 :maximum-delimiter-depth))
+                    (if (>= (count frames) maximum-depth)
                       (sh03-frame-rejection
                        "C2-HASH" "STAGE1READER006"
                        :reader-frame-depth-limit
                        (get token :span) (get token :raw)
                        {:observed-depth (+ (count frames) 1)
-                        :maximum-delimiter-depth
-                        (get (sh03-bounds-record)
-                             :maximum-delimiter-depth)
+                        :maximum-delimiter-depth maximum-depth
                         :token-id (get token :token-id)
                         :form-id (sh03-form-id next-form-index)})
                       (recur (+ cursor 1)
@@ -4674,9 +4695,7 @@
                                        (* 2
                                           (sh03-frame-subtree-form-count
                                            frame)))]
-                                (if (> next-semantic-work
-                                       (get (sh03-bounds-record)
-                                            :maximum-semantic-work-units))
+                                (if (> next-semantic-work maximum-semantic-work)
                                   (sh03-semantic-work-rejection
                                    token (get frame :form-id)
                                    next-semantic-work)
@@ -4741,9 +4760,7 @@
                             :token-id (get token :token-id)}))))
                     (let [next-semantic-work
                           (+ semantic-work 2)]
-                      (if (> next-semantic-work
-                             (get (sh03-bounds-record)
-                                  :maximum-semantic-work-units))
+                      (if (> next-semantic-work maximum-semantic-work)
                         (sh03-semantic-work-rejection
                          token (sh03-form-id next-form-index)
                          next-semantic-work)
@@ -4764,7 +4781,7 @@
                                    (get attached :roots)
                                    (get attached :root-values)
                                    (get attached :semantic-work-units))
-                            attached))))))))))))))
+                            attached)))))))))))))))
 
 (defn sh03-namespace-clause-category [key-codepoints]
   (if (contains? #{[112 114 111 102 105 108 101]

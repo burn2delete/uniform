@@ -217,3 +217,84 @@
     (is (= expected (:records first-result) (:records second-result)))
     (is (= (mapv :form expected) (:forms first-result) (:forms second-result)))
     (is (not (identical? (:records first-result) (:records second-result))))))
+
+(defn- trace-actual-operations [events operations]
+  (into {}
+        (map (fn [[sym event]]
+               (let [variable (private-var sym) original (var-get variable)]
+                 [variable (fn [& args]
+                             (let [result (apply original args)]
+                               (swap! events conj event)
+                               result))])))
+        operations))
+
+(deftest production-emitter-rule-joins-authentication-preflight-and-fresh-parsing
+  (let [path (bootstrap/c-backend-resolve-p15-s23-compiler-source-path)
+        pinned (bootstrap/p15-s23-stage2-compiler-pinned-source!
+                path "<h6-production-control>" :jvm "P15S23Q001"
+                bootstrap/p15-s23-stage2-plan-emitter-fail!)
+        old-data (binding [bootstrap/*authenticated-source-form-records* nil]
+                   (bootstrap/p15-s23-compiler-source-form-record-from-text
+                    path (:source-text pinned)))
+        emitter (bootstrap/p15-s23-compiler-def-value
+                 path (:forms old-data) 'p15-s23-stage2-plan-emitter)
+        expected {:emitter emitter :source-path path
+                  :rule-record (bootstrap/p15-s23-stage2-plan-emitter-rule-record emitter)
+                  :source-rule-hash
+                  (str "sha256:" (bootstrap/sha256-hex
+                                   (pr-str (bootstrap/c-backend-canonical-value emitter))))}
+        events (atom [])
+        operations (trace-actual-operations
+                    events [['p15-s23-stage2-compiler-pinned-source! :authenticated]
+                            ['p15-s23-h6-seed-text-preflight! :lexical]
+                            ['read-source-form-records :raw-read]
+                            ['p15-s23-h6-source-forms-preflight! :parsed]])
+        raw-reader (get operations (private-var 'read-source-form-records))
+        operations (assoc operations (private-var 'read-source-form-records)
+                          (fn [& args]
+                            (is (nil? bootstrap/*authenticated-source-form-records*))
+                            (is (false? *read-eval*))
+                            (is (= {} *data-readers*))
+                            (is (nil? *default-data-reader-fn*))
+                            (apply raw-reader args)))
+        fabricated {:source-path path :source-text (:source-text pinned)
+                    :records [{:form :fabricated-ambient-record}]}]
+    (is (= 128447 (:source-byte-count pinned)))
+    (is (= "sha256:be4ba46088d413322ba5cf86156bb22bb79aeb7bec1fcf3899d8b081019ef854"
+           (:source-content-hash pinned)))
+    (binding [bootstrap/*authenticated-source-form-records* fabricated]
+      (with-redefs-fn operations
+        #(is (= expected (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+                          "<h6-production-control>" :jvm)))))
+    (is (= [:authenticated :lexical :raw-read :parsed] @events))))
+
+(deftest production-compiler-tamper-fails-real-pinned-hash-before-parsing
+  (let [source (bootstrap/c-backend-resolve-p15-s23-compiler-source-path)
+        raw (java.nio.file.Files/readAllBytes (.toPath (java.io.File. source)))
+        changed (aclone raw)
+        _ (aset-byte changed 0 (unchecked-byte (bit-xor 1 (bit-and 255 (aget raw 0)))))
+        path (java.nio.file.Files/createTempFile
+              "h6-pinned-compiler-" ".gravity"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        events (atom [])
+        actual-pinned (var-get (private-var 'p15-s23-stage2-compiler-pinned-source!))
+        operations
+        {(private-var 'c-backend-resolve-p15-s23-compiler-source-path) (fn [] (str path))
+         (private-var 'p15-s23-stage2-compiler-pinned-source!)
+         (fn [& args] (swap! events conj :authentication-started) (apply actual-pinned args))
+         (private-var 'p15-s23-h6-seed-text-preflight!)
+         (fn [& _] (swap! events conj :lexical) (throw (ex-info "preflight reached" {})))
+         (private-var 'read-source-form-records)
+         (fn [& _] (swap! events conj :raw-read) (throw (ex-info "reader reached" {})))
+         (private-var 'p15-s23-h6-source-forms-preflight!)
+         (fn [& _] (swap! events conj :parsed) (throw (ex-info "postcheck reached" {})))}]
+    (try
+      (java.nio.file.Files/write path changed (make-array java.nio.file.OpenOption 0))
+      (with-redefs-fn operations
+        #(let [error (failure (fn [] (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+                                     "<h6-tamper-control>" :jvm)))]
+           (is (= "P15S23Q001" (:id error)))
+           (is (= :stage2-compiler-source-content-hash (:missing-fact error)))
+           (is (= 128447 (alength changed)))))
+      (is (= [:authentication-started] @events))
+      (finally (java.nio.file.Files/deleteIfExists path)))))
