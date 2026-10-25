@@ -449,6 +449,31 @@
               (runner/select-tests ["--namespace" (str namespace)])))
           namespace))))
 
+(deftest semantic-standalone-catalog-entries-keep-exact-owners-and-freshness
+  ;; Catalog and dispatch only: discovering/selecting an authenticated test
+  ;; does not execute its provider or establish its semantic acceptance.
+  (doseq [stem ["stage2_module_lexical_call" "stage2_module_literal_map_key"
+                "stage2_module_loop_call" "stage2_module_map_call"
+                "stage2_module_map_order" "stage2_module_transitive_call"
+                "stage2_module_vector_call" "pass_execution_canonical_sort"
+                "source_fragment_binding"]]
+    (let [relative (str "bootstrap/clojure/test/gravity/self_hosting/" stem "_test.clj")
+          namespace (symbol (str "gravity.self-hosting." (str/replace stem "_" "-") "-test"))
+          slice (if (= stem "source_fragment_binding") "SH-07" "SH-01")
+          plan (planner/build-plan {:changed-paths [relative] :expand-dependants? true})
+          namespace-plan (planner/build-namespace-plan [namespace])
+          shard (first (:shards plan))]
+      (is (= [namespace] (:namespaces plan)) relative)
+      (is (= [namespace] (:namespaces namespace-plan)) relative)
+      (is (= [slice] (:direct-slices plan)) relative)
+      (is (= :exact-test-path
+             (get-in plan [:classifications 0 :development-selection])) relative)
+      (is (= (not= stem "pass_execution_canonical_sort")
+             (get-in shard [:test-policy :freshness-required?])) relative)
+      (is (false? (get-in shard [:test-policy :proof?])) relative)
+      (is (nil? (:cache-closure shard)) relative)
+      (is (false? (:authoritative? plan)) relative))))
+
 (deftest deleted-reviewed-test-conservatively-selects-component-dependencies
   (let [exists-var
         (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
