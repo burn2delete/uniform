@@ -1188,12 +1188,16 @@
     (is (nil? (:unexpected-host-error data)))))
 
 (deftest sh03-digest-resolution-reuses-only-its-fresh-canonical-form
-  (let [form-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-form-and-stats)
+  (let [validation-var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-validation!)
+        write-var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-write!)
         hash-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-digest-validated-form)
         phase-var (ns-resolve 'gravity.bootstrap 'sh03-reader-resolve-digest-request-sequence!)
-        original-form (var-get form-var) hash-form (var-get hash-var)
+        original-validation (var-get validation-var) original-write (var-get write-var)
+        hash-form (var-get hash-var)
         original-phase (var-get phase-var)
         original-resolve bootstrap/p15-s23-c6c10-resolve-digest-references!]
+    (is (true? (:private (meta validation-var))))
+    (is (true? (:private (meta write-var))))
     (is (true? (:private (meta hash-var))))
     (is (true? (:private (meta phase-var))))
     (is (not (contains? (ns-publics 'gravity.bootstrap) 'sh03-reader-resolve-digest-request-sequence!)))
@@ -1203,13 +1207,18 @@
       (let [source (fixture-path disposition basename ".gravity") bytes (source-bytes source)
             execution (sh03-result source) raw (:raw-result execution)
             requests (:resolved-requests execution) nonraw (vec (rest requests))
-            calls (atom {}) completions (atom []) phase-returns (atom []) phase-complete? (atom false)
+            calls (atom {}) emissions (atom {}) completions (atom [])
+            phase-returns (atom []) phase-complete? (atom false)
             resolve-once (fn []
                            (with-redefs-fn
-                             {form-var (fn [request-source value]
+                             {validation-var (fn [request-source value]
                                          (doseq [request nonraw :when (= value (:preimage request))]
                                            (swap! calls update (:key request) (fnil inc 0)))
-                                         (original-form request-source value))
+                                         (original-validation request-source value))
+                              write-var (fn [request-source value validated-stats writer]
+                                          (doseq [request nonraw :when (= value (:preimage request))]
+                                            (swap! emissions update (:key request) (fnil inc 0)))
+                                          (original-write request-source value validated-stats writer))
                               phase-var (fn [request-source input input-bytes]
                                           (let [result (original-phase request-source input input-bytes)]
                                             (swap! phase-returns conj result)
@@ -1231,6 +1240,7 @@
         (is (= (select-keys execution [:resolved-requests :resolved-digests :reader-result-id])
                (select-keys first-result [:resolved-requests :resolved-digests :reader-result-id])))
         (is (= (zipmap (map :key nonraw) (repeat 1)) @calls))
+        (is (= (zipmap (map :key nonraw) (repeat 1)) @emissions))
         (is (= [(assoc raw :digest-requests [])] @completions))
         (is (= [(select-keys first-result [:resolved-digests :resolved-requests])] @phase-returns))
         (let [legacy-result (original-resolve source raw (count requests) nil (:resolved-digests first-result))
@@ -1245,11 +1255,13 @@
                    (bootstrap/sh03-reader-canonical-digest source (:preimage request))
                    (hash-form identity)))))
         (reset! calls {})
+        (reset! emissions {})
         (reset! completions [])
         (reset! phase-returns [])
         (reset! phase-complete? false)
         (is (= first-result (resolve-once)))
         (is (= (zipmap (map :key nonraw) (repeat 1)) @calls))
+        (is (= (zipmap (map :key nonraw) (repeat 1)) @emissions))
         (is (= [(assoc raw :digest-requests [])] @completions))
         (is (= [(select-keys first-result [:resolved-digests :resolved-requests])] @phase-returns))))))
 
@@ -1272,12 +1284,12 @@
       (let [data (thrown-data #(bootstrap/sh03-reader-resolve-digest-requests! source candidate bytes))]
         (is (= "C2-HASH" (:id data)))
         (is (some #{missing} (:missing-fields data)))))
-    (let [hash-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-digest-validated-form)
+    (let [hash-var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-digest)
           original (var-get hash-var) calls (atom 0) previous (atom nil)
           boundary (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-boundary-fail!))
           data (with-redefs-fn
-                 {hash-var (fn [form]
-                             (let [result (original form)]
+                 {hash-var (fn [request-source value]
+                             (let [result (original request-source value)]
                                (if (= 2 (swap! calls inc)) @previous
                                  (do (reset! previous result) result))))}
                  #(thrown-data (fn [] (bootstrap/sh03-reader-resolve-digest-requests! source raw bytes))))]
