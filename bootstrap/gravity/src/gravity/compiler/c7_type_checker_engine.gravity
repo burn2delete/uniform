@@ -3664,8 +3664,8 @@
   ; Source-derived, nonnegative reservation for entry-unify and all of its
   ; semantic/construction helpers. N bounds every original row family; D
   ; covers two full original comparison trees plus fixed wrappers.
-  (+ 1447890550853 (* 461000422 d) (* 6 d d)
-     (* 165939723363 n) (* 307336352 n d) (* 4 n d d)
+  (+ 1447429583309 (* 32992 d)
+     (* 165632411667 n) (* 24732 n d)
      (* 299401 n n) (* 4 n n d) (* 2 n n n)))
 
 (defn sh08-gis3-cold-entry [core binding-rows form-rows target budget]

@@ -10204,7 +10204,8 @@
                               sh08-gis3-comparison-data? sh08-gis3-source-span? sh08-gis3-entry-families?
                               sh08-gis3-evaluation-order? sh08-pc-id? sh08-sse-ids? sh08-ft-all-true?}
         metrics [:steps :cells :field-gets :private-gets :deep-equalities :id-equalities :map-writes :set-tests :characters]
-        zero (zipmap metrics (repeat {})) cache (atom {}) active (atom #{}) opaque (atom #{})]
+        zero (zipmap metrics (repeat {})) cache (atom {}) active (atom #{}) opaque (atom #{})
+        cursor-audits (atom {})]
     (letfn [(p [value] (case value :n {[1 0] 1} :d {[0 1] 1} (if (zero? value) {} {[0 0] value})))
             (plus [a b] (merge-with +' a b))
             (times [a b]
@@ -10238,8 +10239,20 @@
                       (when (contains? @active key) (throw (ex-info "Unbounded semantic helper recursion" {:callee name})))
                       (swap! active conj key)
                       (let [[_ _ params & body] (get definitions name)
-                            raw (add (unit :steps (+ 8 (* 4 (count params)))) (unit :cells (* 2 (count params)))
-                                     (sum (map #(cost name % (p (or width 1024))) body)))
+                            raw (if (= name 'sh08-gis3-comparison-data?)
+                                  (let [audit ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test
+                                                          'gis3-complete-data-control-work-model) name)
+                                        [constant edge] (:dispatch-control-polynomial audit)]
+                                    (when-not (and (<= 0 constant) (<= 0 edge) (<= (+ constant edge) 4096))
+                                      (throw (ex-info "Comparison cursor source exceeds reservation" {:audit audit})))
+                                    (swap! cursor-audits assoc name audit)
+                                    ;; Full source dispatch per visit, with all child
+                                    ;; materializations summed over the fresh tree.
+                                    ;; Both visit and edge counts are <= D. The
+                                    ;; extra 4096 covers entry and terminal control.
+                                    (unit :steps (plus (p 4096) (times (p 4096) (p :d)))))
+                                  (add (unit :steps (+ 8 (* 4 (count params)))) (unit :cells (* 2 (count params)))
+                                       (sum (map #(cost name % (p (or width 1024))) body))))
                             result (if width (scale (p (inc width)) raw) raw)]
                         (swap! active disj key) (swap! cache assoc key result) result)))))
             (cost [owner form remaining]
@@ -10300,6 +10313,7 @@
             fee (reduce plus {} (for [[metric weight] weights] (times weight (get model metric))))]
         {:metrics model :weights weights :fee-polynomial (into (sorted-map) fee)
          :helper-count (count @cache) :separately-paid-legacy-children @opaque
+         :native-cursor-source-audits @cursor-audits
          :legacy-child-new-construction-payment-established (empty? @opaque)}))))
 
 (deftest sh08-gis3-source-view-work-model-development-kernel
@@ -21776,7 +21790,9 @@
           :new-semantic-control-and-comparison-payment-closed false :paid-owning-wrapper-implemented false
           :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
 
-(defn- gis3-complete-data-control-work-model []
+(defn- gis3-complete-data-control-work-model
+  ([] (gis3-complete-data-control-work-model 'sh08-gis3-complete-data-tallies))
+  ([target]
   ;; One complete source dispatch, including entry/terminal/failure Maps.
   ;; The pending loop is a single dispatch; each inner cursor executes at
   ;; most width+1 times. Native List rest/conj and frame/entry Vector get
@@ -21788,7 +21804,7 @@
                          (let [form (read {:eof ::end} reader)]
                            (cond (= ::end form) (throw (ex-info "Missing complete DATA source" {}))
                                  (and (seq? form) (= 'defn (first form))
-                                      (= 'sh08-gis3-complete-data-tallies (second form))) form
+                                      (= target (second form))) form
                                  :else (recur))))))
         primitives '#{integer? >= > + - * = count first rest get map? vector? set? list?
                       boolean? keyword? symbol? string? number? char? list conj vec
@@ -21823,7 +21839,31 @@
                                         = [2 0] conj [1 0] rest [1 0] get [1 0] list [(count args) 0] [1 0])))))))]
       {:dispatch-control-polynomial (add [(+ 8 (* 6 (count (nth definition 2)))) 0]
                                          (sum (map cost (drop 3 definition))))
-       :reserved-control-polynomial [4096 256] :opaque-children #{}})))
+       :source-function target :reserved-control-polynomial [4096 256] :opaque-children #{}}))))
+
+(deftest sh08-gis3-comparison-cursor-control-development-kernel
+  (let [audit (gis3-complete-data-control-work-model 'sh08-gis3-comparison-data?)
+        [constant edge] (:dispatch-control-polynomial audit)
+        model (gis3-semantic-census-work-model 'sh08-gis3-comparison-data?)
+        run #(invoke-c7 'sh08-gis3-comparison-data? [%])]
+    (is (<= (+ constant edge) 4096))
+    (is (= #{} (:opaque-children audit)))
+    (is (= {[0 0] 4096 [0 1] 4096} (:fee-polynomial model)))
+    (is (= audit (get-in model [:native-cursor-source-audits 'sh08-gis3-comparison-data?])))
+    (doseq [value [nil :atom 'symbol [1 "text"] {:span {:begin 1 :end 2} :origin (list :a :b)}]]
+      (is (true? (run value))))
+    (is (false? (run {:active-set #{:a}})))
+    (is (false? (run {'symbol-key :value})))
+    (let [callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "cursor hash")))
+                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "cursor equality")))
+                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "cursor render"))))]
+      (is (false? (run {:unread opaque})))
+      (is (empty? @callbacks)))
+    (prn {:gis3-comparison-cursor-control :checked :source-audit audit
+          :reservation-polynomial (:fee-polynomial model)
+          :original-comparison-W-retained true :numeric-proof-established false})))
 
 (defn- gis3-complete-data-payment [value]
   (let [physical (gis3-independent-physical-data-fee value)
