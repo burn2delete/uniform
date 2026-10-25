@@ -3708,6 +3708,215 @@
             {:status :rejected :reason :compact-gis-source-id-required :work-count reserved :completed-work-count reserved}))))
     {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
+(defn sh08-gis3-binary-call-source? [core indexes header call operation]
+  ; Original binary core calls only. Parameter type/range is checked by the
+  ; owning numeric matcher, independently of this complete source join.
+  (let [nodes (get indexes :nodes) forms (get indexes :forms) bindings (get indexes :bindings)
+        record (get header :record) id (get call :core-node-id) node (sh08-gis3-pick nodes id)
+        edge (sh08-gis3-pick (get indexes :edges) id) children (get node :children)
+        args (get call :argument-node-ids) attrs (get node :attributes)
+        operator (sh08-gis3-pick nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
+        binding (sh08-gis3-pick bindings bid) op-attrs (get operator :attributes)
+        source (get operator :source) form (sh08-gis3-pick forms (get source :form-id))
+        owner (sh08-gis3-pick forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        use (sh08-gis3-pick (get indexes :uses) (get operator :node-id))
+        resolution (sh08-gis3-pick (get indexes :resolutions) (get source :syntax-id))]
+    (if (sh08-ft-all-true?
+          [(symbol? operation) (symbol? (get binding :name)) (symbol? (get op-attrs :symbol))
+           (symbol? (get form :value)) (sh08-gis3-keyword-record? call)
+           (sh08-gis3-keyword-record? node) (sh08-gis3-keyword-record? edge)
+           (sh08-gis3-keyword-record? attrs) (sh08-gis3-keyword-record? binding)
+           (sh08-gis3-keyword-record? operator) (sh08-gis3-keyword-record? op-attrs)
+           (sh08-gis3-keyword-record? use) (sh08-gis3-keyword-record? resolution)
+           (sh08-sse-ids? args 2) (sh08-sse-ids? children 3) (sh08-sse-ids? ids 3)
+           (sh08-pc-id? (get binding :definition-syntax-id))
+           (sh08-pc-id? (get binding :upstream-binding-id))
+           (integer? (get edge :ordinal)) (integer? (get attrs :operator-child-index))
+           (integer? (get attrs :argument-count))
+           (if (vector? (get attrs :argument-child-indexes))
+             (if (= 2 (count (get attrs :argument-child-indexes)))
+               (if (integer? (get (get attrs :argument-child-indexes) 0))
+                 (integer? (get (get attrs :argument-child-indexes) 1)) false) false) false)])
+      (if (sh08-ft-all-true?
+            [(sh08-ft-call-valid? call nodes bindings)
+             (sh08-ft-call-edge-valid? edge call (get indexes :records) (get core :definitions) nodes)
+             (sh08-ft-caller-edge-valid? edge (get indexes :records) node)
+             (= (get record :function-syntax-id) (get edge :caller-function-syntax-id)
+                (get (get node :evaluation) :owner-function-syntax-id))
+             (= :nonlocal-or-nonfunction (get edge :classification))
+             (= [operation :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+                [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+                 (get binding :package) (get binding :type-ref) (get binding :safety)])
+             (= [] (get binding :effects) (get binding :capabilities))
+             (sh08-gis3-allowed-keyword? (get binding :profile-set) (get (get core :module) :profile) false)
+             (sh08-gis3-allowed-keyword? (get binding :target-set) (get (get core :module) :target) true)
+             (= :reference (get operator :core-form)) (= [] (get operator :children))
+             (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+             (= {:symbol (get form :value) :position :operator :binding-id bid :binding-class :core
+                 :definition-syntax-id (get binding :definition-syntax-id)} op-attrs)
+             (= :symbol (get form :kind))
+             (if (= operation (get form :value))
+               (= :profile-allowed-core-binding (get resolution :resolution-order))
+               (if (= (str "gravity.core/" operation) (str (get form :value)))
+                 (= :fully-qualified-namespace-binding (get resolution :resolution-order)) false))
+             (= {:core-node-id (get operator :node-id) :form-id (get source :form-id) :syntax-id (get source :syntax-id)
+                 :symbol (get form :value) :position :operator :binding-id bid :binding-class :core
+                 :definition-syntax-id (get binding :definition-syntax-id)} use)
+             (= {:reference-syntax-id (get source :syntax-id) :symbol (get form :value) :position :operator
+                 :binding-id bid :upstream-binding-id (get binding :upstream-binding-id)
+                 :resolution-order (get resolution :resolution-order) :source-span (get form :source-span)} resolution)
+             (= :list (get owner :kind)) (sh08-gis3-source-match? node owner)
+             (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} attrs)
+             (= :operator-then-arguments (get (get node :evaluation) :kind))
+             (sh08-gis3-evaluation-order? (get (get node :evaluation) :order) children)])
+        (loop [i 0]
+          (if (= i 3) true
+            (let [child (sh08-gis3-pick nodes (get children i)) child-form (sh08-gis3-pick forms (get ids i))]
+              (if (if (= (get owner :form-id) (get child-form :parent-form-id))
+                    (sh08-gis3-source-match? child child-form) false)
+                (recur (+ i 1)) false)))) false) false)))
+
+(defn sh08-gis3-if-source? [indexes node owner]
+  (let [nodes (get indexes :nodes) forms (get indexes :forms) attrs (get node :attributes)
+        children (get node :children) form (sh08-gis3-pick forms (get (get node :source) :form-id))
+        ids (get form :child-form-ids) head (sh08-gis3-pick forms (get ids 0))
+        control (sh08-gis3-pick (get indexes :controls) (get node :node-id))
+        branches (get control :branches)]
+    (if (sh08-ft-all-true?
+          [(sh08-sse-ids? children 3) (sh08-sse-ids? ids 4)
+           (sh08-gis3-keyword-record? attrs) (sh08-gis3-keyword-record? control)
+           (integer? (get attrs :condition-child-index)) (integer? (get attrs :then-child-index))
+           (integer? (get attrs :else-child-index)) (symbol? (get head :value))
+           (sh08-pc-id? (get control :condition-node-id))
+           (if (vector? branches) (if (= 2 (count branches))
+             (if (sh08-gis3-keyword-record? (get branches 0))
+               (if (sh08-gis3-keyword-record? (get branches 1))
+                 (if (sh08-pc-id? (get (get branches 0) :core-node-id))
+                   (sh08-pc-id? (get (get branches 1) :core-node-id)) false) false) false) false) false)])
+      (if (sh08-ft-all-true?
+            [(= :if (get node :core-form)) (= :list (get form :kind))
+             (= [:symbol 'if] [(get head :kind) (get head :value)])
+             (= (get form :form-id) (get head :parent-form-id))
+             (sh08-gis3-source-match? node form)
+             (= {:condition-child-index 0 :then-child-index 1 :else-child-index 2 :condition-evaluation :always-first
+                 :branch-evaluation :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}} attrs)
+             (= owner (get (get node :evaluation) :owner-function-syntax-id))
+             (= :condition-then-exclusive-branch (get (get node :evaluation) :kind))
+             (sh08-gis3-evaluation-order? (get (get node :evaluation) :order) [(get children 0)])
+             (= {:core-node-id (get node :node-id) :kind :if :condition-node-id (get children 0)
+                 :branches [{:role :then :predicate :truthy :core-node-id (get children 1)}
+                            {:role :else :predicate :falsey :core-node-id (get children 2)}]
+                 :branch-exclusivity :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}
+                 :result-policy :selected-branch} control)])
+        (loop [i 0]
+          (if (= i 3) true
+            (let [child (sh08-gis3-pick nodes (get children i)) child-form (sh08-gis3-pick forms (get ids (+ i 1)))]
+              (if (if (= (get form :form-id) (get child-form :parent-form-id))
+                    (sh08-gis3-source-match? child child-form) false)
+                (recur (+ i 1)) false)))) false) false)))
+
+(defn sh08-gis3-owned-ancestry [indexes outer record]
+  (let [forms (get indexes :forms) endpoint (get record :function-form-id)]
+    (loop [id (get (get outer :source) :form-id) depth 0 seen #{} out []]
+      (if (if (sh08-pc-id? id) (if (<= depth 128) (= false (contains? seen id)) false) false)
+        (let [form (sh08-gis3-pick forms id) parent-id (get form :parent-form-id)
+              parent (sh08-gis3-pick forms parent-id) children (get parent :child-form-ids)]
+          (if (if (sh08-gis3-keyword-record? form)
+                (if (sh08-pc-id? (get form :syntax-id))
+                  (if (keyword? (get form :kind))
+                    (if (vector? (get form :origin-chain))
+                      (if (vector? (get form :generated-origin))
+                        (sh08-gis3-source-span? (get form :source-span)) false) false) false) false) false)
+            (let [next (conj out [id (get form :syntax-id)])]
+              (if (= id endpoint) next
+                (if (sh08-gis3-ids? children)
+                  (if (= 1 (loop [i 0 matches 0]
+                             (if (= i (count children)) matches
+                               (recur (+ i 1) (if (= id (get children i)) (+ matches 1) matches)))))
+                    (recur parent-id (+ depth 1) (conj seen id) next) nil) nil))) nil)) nil))))
+
+(defn sh08-gis3-integer-literal [indexes node]
+  (let [attrs (get node :attributes) value (get attrs :value)
+        form (sh08-gis3-pick (get indexes :forms) (get (get node :source) :form-id))]
+    (if (if (integer? value) (integer? (get form :value)) false)
+      (if (sh08-ft-all-true?
+            [(sh08-gis3-source-match? node form) (= [] (get node :resolved-binding-ids))
+             (sh08-ix-literal? node :integer value (get indexes :forms))
+             (= :gravity.type/integer (sh08-primitive-type-from-literal-kind (get attrs :literal-kind)))])
+        {:core-node-id (get node :node-id) :value value :type :gravity.type/integer} nil) nil)))
+
+(defn sh08-gis3-numeric-resolution-orders? [core header]
+  (let [pid (get (get header :parameter) :binding-id) bid (get (get header :binding) :binding-id)]
+    (loop [rows (get (get core :preserved-resolution) :resolution-table)]
+      (if (= 0 (count rows)) true
+        (let [row (first rows) id (get row :binding-id)]
+          (if (if (= id pid) (= :local-lexical-binding (get row :resolution-order))
+                (if (= id bid) (= :current-namespace-binding (get row :resolution-order)) true))
+            (recur (rest rows)) false))))))
+
+(defn sh08-gis3-numeric-match [core indexes target]
+  ; Internal source reconstruction. The eventual owning producer pays this
+  ; entire graph and output separately. This returns no public proof value.
+  (let [entry (sh08-gis3-entry-unify core indexes target)]
+    (if (= :original-entry-Integer-derived (get entry :status))
+      (let [header (sh08-gis3-entry-header core indexes target) record (get header :record)
+            owner (get record :function-syntax-id) nodes (get indexes :nodes)
+            selected (loop [rows (get core :nodes) found nil]
+                       (if (= 0 (count rows)) found
+                         (let [node (first rows) children (get node :children)]
+                           (if (if (= :if (get node :core-form))
+                                 (if (sh08-sse-ids? children 3) (= target (get children 1)) false) false)
+                             (if (= nil found) (recur (rest rows) node) nil)
+                             (recur (rest rows) found)))))
+            outer selected inner (sh08-gis3-pick nodes (get (get outer :children) 0))
+            low (sh08-gis3-pick nodes (get (get inner :children) 0))
+            high (sh08-gis3-pick nodes (get (get inner :children) 1))
+            no (sh08-gis3-pick nodes (get (get inner :children) 2))
+            call (sh08-gis3-pick (get indexes :calls) target)
+            low-call (sh08-gis3-pick (get indexes :calls) (get low :node-id))
+            high-call (sh08-gis3-pick (get indexes :calls) (get high :node-id))]
+        (if (sh08-ft-all-true?
+              [(= [:meta :jvm :safe] [(get (get core :module) :profile) (get (get core :module) :target) (get (get core :module) :safety)])
+               (sh08-pc-id? (get core :artifact-id))
+               (sh08-gis3-numeric-resolution-orders? core header)
+               (sh08-gis3-if-source? indexes outer owner) (sh08-gis3-if-source? indexes inner owner)
+               (sh08-gis3-binary-call-source? core indexes header call '-)
+               (sh08-gis3-binary-call-source? core indexes header low-call '>=)
+               (sh08-gis3-binary-call-source? core indexes header high-call '<=)])
+          (let [lower (sh08-gis3-integer-literal indexes (sh08-gis3-pick nodes (get (get low-call :argument-node-ids) 1)))
+                upper (sh08-gis3-integer-literal indexes (sh08-gis3-pick nodes (get (get high-call :argument-node-ids) 1)))
+                sub (sh08-gis3-integer-literal indexes (sh08-gis3-pick nodes (get (get call :argument-node-ids) 1)))
+                ancestry (sh08-gis3-owned-ancestry indexes outer record)
+                false-form (sh08-gis3-pick (get indexes :forms) (get (get no :source) :form-id))]
+            (if (if (map? lower) (if (map? upper) (if (map? sub) (vector? ancestry) false) false) false)
+              (if (sh08-ft-all-true?
+                    [(<= 0 (get lower :value) (get upper :value) 127) (= (get lower :value) (get sub :value))
+                     (< 0 (count ancestry))
+                     (loop [calls [call low-call high-call]]
+                       (if (= 0 (count calls)) true
+                         (if (sh08-gis3-entry-parameter-reference? indexes header
+                               (sh08-gis3-pick nodes (get (get (first calls) :argument-node-ids) 0)))
+                           (recur (rest calls)) false)))
+                     (= :literal (get no :core-form)) (= [] (get no :children) (get no :resolved-binding-ids))
+                     (= {:literal-kind :boolean :value false} (get no :attributes))
+                     (= :boolean (get false-form :kind)) (boolean? (get false-form :value)) (= false (get false-form :value))
+                     (sh08-gis3-source-match? no false-form)
+                     (loop [rows [outer inner low high no
+                                  (sh08-gis3-pick nodes (get (get call :argument-node-ids) 1))
+                                  (sh08-gis3-pick nodes (get (get low-call :argument-node-ids) 1))
+                                  (sh08-gis3-pick nodes (get (get high-call :argument-node-ids) 1))]]
+                       (if (= 0 (count rows)) true
+                         (if (= owner (get (get (first rows) :evaluation) :owner-function-syntax-id))
+                           (recur (rest rows)) false)))])
+                {:status :original-numeric-source-matched :input-range [(get lower :value) (get upper :value)]
+                 :result-range [0 (- (get upper :value) (get lower :value))] :source-ancestry ancestry
+                 :parameter-type (get entry :parameter-type) :parameter-binding-id (get entry :parameter-binding-id)
+                 :core-input (get core :artifact-id) :call-core-node-id target :numeric-proof-established false}
+                {:status :rejected :reason :compact-gis-original-range-required})
+              {:status :rejected :reason :compact-gis-original-literals-or-ancestry-required}))
+          {:status :rejected :reason :compact-gis-original-control-or-call-required})) entry)))
+
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.
   (if (vector? ids) (<= (count ids) 1024) false))

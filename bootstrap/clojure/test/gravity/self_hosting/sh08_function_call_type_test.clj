@@ -10192,6 +10192,8 @@
                  sh08-gis3-entry-header sh08-gis3-entry-exclusions? sh08-gis3-entry-families?
                  sh08-gis3-entry-collections sh08-gis3-evaluation-order? sh08-gis3-entry-call?
                  sh08-gis3-entry-parameter-reference? sh08-gis3-entry-census sh08-gis3-entry-unify
+                 sh08-gis3-binary-call-source? sh08-gis3-if-source? sh08-gis3-owned-ancestry
+                 sh08-gis3-integer-literal sh08-gis3-numeric-resolution-orders? sh08-gis3-numeric-match
                  sh08-gis3-pick sh08-gis3-view-get sh08-pc-id? sh08-sse-ids? sh08-ma-form-source
                  sh08-ix-literal? sh08-pe-select sh08-ft-call-valid? sh08-ft-call-edge-valid?
                  sh08-ft-caller-edge-valid? sh08-ft-local-callee-edge-valid? sh08-ft-nonlocal-callee-edge-valid?
@@ -10225,6 +10227,9 @@
                       (contains? '#{sh08-gis3-keyword-record? sh08-gis3-ids? sh08-gis3-allowed-keyword?
                                     sh08-gis3-comparison-data? sh08-gis3-evaluation-order?} owner) (p 1024)
                       (= owner 'sh08-sse-ids?) (p 6)
+                      (and (= name 'i) (contains? '#{sh08-gis3-binary-call-source? sh08-gis3-if-source?} owner)) (p 3)
+                      (= owner 'sh08-gis3-numeric-resolution-orders?) (p 1024)
+                      (and (= name 'i) (= owner 'sh08-gis3-owned-ancestry)) (p 1024)
                       (and (= owner 'sh08-gis3-entry-families?) (= name 'remaining) (= init 'families)) (p 7)
                       (and (= owner 'sh08-gis3-entry-families?) (= name 'j)) (p 5)
                       (and (= name 'i) (contains? '#{sh08-gis3-entry-collections sh08-gis3-entry-exclusions?} owner)) (p 1024)
