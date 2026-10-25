@@ -157,9 +157,12 @@
      (if (= {} options)
        (sh07-core-source-artifact source-path text)
        (let [reader-path (sh03-reader-resolve-source-path)
+             invocation {:reader-source-path reader-path
+                         :authenticated-envelope-options {:source :development-current}}
              resolved (compiler-c5-resolution-source-artifact source-path text
-                        {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader-path)]
-         (sh07-core-from-resolution-artifact resolved))))))
+                        {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                        reader-path invocation)]
+         (sh07-core-from-resolution-artifact resolved invocation))))))
 
 (defn sh07-core-artifact-identity-input
   [artifact]

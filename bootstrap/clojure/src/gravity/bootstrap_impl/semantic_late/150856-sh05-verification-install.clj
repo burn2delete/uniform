@@ -12,10 +12,12 @@
   semantic-late-sh05-macro-artifact-verification*-proof]
  (defn
   sh05-macro-artifact-verification*
-  [artifact allow-missing-proof?]
+  ([artifact allow-missing-proof?]
+   (sh05-macro-artifact-verification* artifact allow-missing-proof? nil))
+  ([artifact allow-missing-proof? invocation]
   (clojure.core/let
    [state-0
-    {:artifact artifact, :allow-missing-proof? allow-missing-proof?}
+    {:artifact artifact, :allow-missing-proof? allow-missing-proof?, :invocation invocation}
     state-1
     (semantic-late-sh05-macro-artifact-verification*-carrier state-0)
     state-2
@@ -80,4 +82,4 @@
      :status (if (empty? failed-checks) :passed :failed),
      :checks checks,
      :failed-checks failed-checks,
-     :gravity-verifiers gravity-verifiers}))))
+     :gravity-verifiers gravity-verifiers})))))

@@ -11,6 +11,10 @@
 (defn- thrown [f]
   (try (f) nil (catch Throwable error error)))
 
+(def ^:private invocation
+  {:reader-source-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+   :authenticated-envelope-options {:source :development-current}})
+
 (def ^:private resolution
   (delay
     (let [path "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-reader-quote.gravity"]
@@ -36,10 +40,10 @@
         names '[sh06-resolution-artifact-verification sh07-core-request-from-verified-upstream
                 sh06-resolution-artifact-verification-contained
                 sh06-resolution-artifact-verification-bounded* sh06-resolution-run-request!]
-        first-run (observe names #(b/sh07-core-from-resolution-artifact input))
+        first-run (observe names #(b/sh07-core-from-resolution-artifact input invocation))
         artifact (:result first-run)
         request (get-in artifact [:gravity-core-boundary :authenticated-core-request])
-        second-run (observe names #(b/sh07-core-from-authenticated-request input request))]
+        second-run (observe names #(b/sh07-core-from-authenticated-request input request invocation))]
     (is (= :accepted (:status input) (:status artifact)))
     (is (= :complete (get-in artifact [:capability-based-proof :status])))
     (is (= input (:sh06-resolution-artifact artifact)))
@@ -50,7 +54,7 @@
               :preimage (b/sh07-core-artifact-identity-input artifact)})))
     (is (= artifact (:result second-run)))
     (doseq [run [first-run second-run]]
-      (is (= 1 (get-in run [:calls 'sh06-resolution-artifact-verification])))
+      (is (= 1 (get-in run [:arities ['sh06-resolution-artifact-verification 3]])))
       (is (= 1 (get-in run [:calls 'sh07-core-request-from-verified-upstream])))
       (is (= 1 (get-in run [:arities ['sh06-resolution-artifact-verification-contained 3]])))
       (is (= 1 (get-in run [:arities ['sh06-resolution-artifact-verification-bounded* 3]])))
@@ -62,14 +66,14 @@
 
 (deftest standalone-public-boundaries-and-independent-audit-remain-fresh
   (let [input @resolution names '[sh06-resolution-artifact-verification]
-        requests (observe names #(vector (b/sh07-core-authenticated-request input)
-                                        (b/sh07-core-authenticated-request input)))
+        requests (observe names #(vector (b/sh07-core-authenticated-request input :gravity.bootstrap/legacy invocation)
+                                        (b/sh07-core-authenticated-request input :gravity.bootstrap/legacy invocation)))
         request (first (:result requests))
-        _ (is (= 2 (get-in requests [:calls 'sh06-resolution-artifact-verification])))
+        _ (is (= 2 (get-in requests [:arities ['sh06-resolution-artifact-verification 3]])))
         _ (is (apply = (:result requests)))
-        run (observe names #(b/sh07-core-run-request-for-test input request))
-        artifact (b/sh07-core-from-resolution-artifact input)
-        audit (observe names #(b/sh07-core-artifact-verification artifact))
+        run (observe names #(b/sh07-core-run-request-for-test input request invocation))
+        artifact (b/sh07-core-from-resolution-artifact input invocation)
+        audit (observe names #(b/sh07-core-artifact-verification artifact invocation))
         altered (assoc-in artifact [:gravity-core-boundary :canonical-core-artifact
                                      :fragment-coverage :form-count] 999999)]
     (is (= :passed (get-in run [:result :template-verification :status])))
@@ -77,7 +81,7 @@
     (is (= :passed (get-in audit [:result :status])))
     ;; Independent audit performs its own work; its total is not a producer count.
     (is (pos? (get-in audit [:calls 'sh06-resolution-artifact-verification])))
-    (is (= :failed (:status (b/sh07-core-artifact-verification altered))))
+    (is (= :failed (:status (b/sh07-core-artifact-verification altered invocation))))
     (is (every? :restored? [requests run audit]))))
 
 (deftest coherent-identifier-tampering-and-request-mismatch-remain-rejected
@@ -86,11 +90,11 @@
         parent (assoc parent :artifact-id (b/sh05-macro-artifact-id parent))
         changed (assoc input :sh05-macro-artifact parent)
         changed (assoc changed :artifact-id (b/sh06-resolution-artifact-id changed))
-        report (b/sh06-resolution-artifact-verification changed)
-        error (thrown #(b/sh07-core-from-resolution-artifact changed))
-        request (b/sh07-core-authenticated-request input)
+        report (b/sh06-resolution-artifact-verification changed :gravity.bootstrap/legacy invocation)
+        error (thrown #(b/sh07-core-from-resolution-artifact changed invocation))
+        request (b/sh07-core-authenticated-request input :gravity.bootstrap/legacy invocation)
         mismatch (thrown #(b/sh07-core-from-authenticated-request input
-                           (assoc request :projection-binding "changed")))
+                           (assoc request :projection-binding "changed") invocation))
         nil-context (thrown #(b/sh07-core-authenticated-request input nil))]
     (is (= (:artifact-id parent) (b/sh05-macro-artifact-id parent)))
     (is (= (:artifact-id changed) (b/sh06-resolution-artifact-id changed)))
@@ -107,7 +111,7 @@
   (let [input @resolution
         context-var (implementation '*sh07-proof-transaction-context*)
         context (atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
-                       :phase :construction :epoch 0 :maximum-receipts 64
+                       :phase :construction :epoch 0
                        :receipts [] :check-catalogs {} :executions {} :reuses {}
                        :failed-report-executions 0})
         verifier (implementation 'sh06-resolution-artifact-verification-contained)
@@ -119,7 +123,7 @@
                       (when (= 3 (count args)) (swap! events conj (:phase @context)))
                       (apply original args))}
           (fn []
-            (let [artifact (b/sh07-core-from-resolution-artifact input)
+            (let [artifact (b/sh07-core-from-resolution-artifact input invocation)
                   construction @context]
               (is (= :complete (get-in artifact [:capability-based-proof :status])))
               (is (= 1 (get-in construction [:executions :sh06])))
@@ -129,7 +133,7 @@
               (swap! context assoc :phase :independent-audit :epoch 1
                      :receipts [] :executions {} :reuses {} :check-catalogs {})
               (is (empty? (:receipts @context)))
-              (let [report (b/sh07-core-artifact-verification artifact)]
+              (let [report (b/sh07-core-artifact-verification artifact invocation)]
                 (is (= :passed (:status report)))
                 (is (= 1 (get-in @context [:executions :sh06])))
                 (is (= 1 (get-in @context [:executions :sh07])))
@@ -147,7 +151,7 @@
         reader (implementation 'sh03-reader-verifier)
         context (when (= :catalog kind)
                   (atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
-                         :phase :construction :epoch 0 :maximum-receipts 64
+                         :phase :construction :epoch 0
                          :receipts [] :check-catalogs {} :executions {} :reuses {}}))
         original-verifier (var-get verifier) original-current (var-get current)
         original-execute (var-get execute)
@@ -156,20 +160,21 @@
                 {reader (var-get reader)
                  verifier (fn [& args]
                             (let [report (apply original-verifier args)]
-                              (swap! reports conj (:status report))
-                              (when (= :catalog kind)
+                              (when (= 3 (count args))
+                               (swap! reports conj (:status report))
+                               (when (= :catalog kind)
                                 (swap! context assoc-in [:check-catalogs [:sh06 :final]]
                                        {:check-catalog #{} :check-catalog-hash "changed"}))
                               (when (= :reader kind)
                                 (alter-var-root reader (constantly (var-get (implementation 'sh03-reader-entrypoint)))))
-                              (reset! verified? true) report))
+                               (reset! verified? true)) report))
                  current (fn [& args]
                            (let [binding (apply original-current args)]
                              (if (and (= :binding kind) @verified?)
                                (assoc-in binding [:plan :functions 'test-replaced] {:arity 0})
                                binding)))
                  execute (fn [& args] (swap! core-calls inc) (apply original-execute args))}
-                #(thrown (fn [] (b/sh07-core-from-resolution-artifact input)))))]
+                #(thrown (fn [] (b/sh07-core-from-resolution-artifact input invocation)))))]
     {:reports @reports :error (ex-data error) :core-calls @core-calls}))
 
 (deftest actual-upstream-dependency-replacements-after-verification-are-rejected
@@ -186,7 +191,7 @@
   (let [state (atom {:dependencies :stable :bindings :stable :phase nil})
         overrides {'sh07-core-construction-carrier! (constantly :trusted)
                    'sh07-core-source-path-from-resolution (constantly "guard.gravity")
-                   'sh07-core-construction-dependencies (fn [_] (:dependencies @state))
+                   'sh07-core-construction-dependencies (fn [& _] (:dependencies @state))
                    'sh07-core-construction-bindings (fn [_] (:bindings @state))
                    'sh07-core-construction-phase (fn [] (:phase @state))
                    'sh07-core-construction-reader (constantly :selected-reader)

@@ -156,7 +156,6 @@
                             'coordinator-absent-layout-location-rejected-rows [row])
         mutations (concat fixture-rows
                           [(dissoc row :source-span) (assoc row :extra :forbidden)
-                           (assoc row :diagnostic-id (apply str (repeat 129 "X")))
                            (assoc row :generated-origin-chain (vec (repeat 65 {})))])]
     (doseq [mutation mutations]
       (let [request (boundary-request mutation)
@@ -166,11 +165,6 @@
         (is (= "C15-SCHEMA" (get-in result [:diagnostics 0 :rule])))
         (is (= :upstream-diagnostic-schema
                (get-in result [:diagnostics 0 :facts :reason])))))
-    (let [request (assoc (boundary-request row) :upstream-diagnostics
-                         (vec (repeat 257 row)))
-          result (c15 'sh15-build-diagnostic-boundary [request])]
-      (is (= :rejected (:status result)))
-      (is (= :diagnostic-count-bound (get-in result [:diagnostics 0 :facts :reason]))))
     (is (= row (original-row)))))
 
 (deftest sh15-located-diagnostic-control-retains-existing-domain-and-identity

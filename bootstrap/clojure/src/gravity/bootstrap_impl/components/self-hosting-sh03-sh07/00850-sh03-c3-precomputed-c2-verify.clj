@@ -1,13 +1,16 @@
 
 
 (defn- sh03-c3-precomputed-c2-verify!
-  [candidate source-path c2-artifact]
-  (let [boundary (:gravity-reader-boundary c2-artifact)
+  ([candidate source-path c2-artifact]
+   (sh03-c3-precomputed-c2-verify! candidate source-path c2-artifact nil))
+  ([candidate source-path c2-artifact invocation]
+  (let [context (sh03-reader-verification-invocation! source-path invocation)
+        boundary (:gravity-reader-boundary c2-artifact)
         envelope (:authenticated-envelope boundary)
         envelope-descriptor
         (:authenticated-envelope-descriptor boundary)
         expected-binding
-        (dissoc (sh03-reader-current-binding! source-path) :plan)]
+        (dissoc (:binding context) :plan)]
     (when-not
      (and (identical? candidate sh03-reader-internal-product-authority)
           (= :gravity/stage0-c2-reader-document-artifact
@@ -24,16 +27,17 @@
              (get-in envelope [:sealed-artifact :artifact-kind]))
           (map? envelope-descriptor)
           (= :passed
-             (p15-s23-stage2-sh02-descriptor-envelope-verify!
-              envelope :c2-reader :gravity/sh03-reader-products
-              envelope-descriptor source-path)))
+             (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+                    (cond-> [envelope :c2-reader :gravity/sh03-reader-products
+                             envelope-descriptor source-path]
+                      (:envelope-options context) (conj (:envelope-options context))))))
       (c2-reader-fail!
        "C2-HASH" source-path
        {:stage :read-source
         :source-span (source-span source-path 0)
         :reader-options standard-reader-options}
        {:missing-fields [:authenticated-sh03-c3-precomputed-c2]}))
-    c2-artifact))
+    c2-artifact)))
 
 ;; SH-04 executes the pinned Gravity syntax leaf and adapts only its verified
 ;; products into the compatibility-rich C3 artifact below.  Clojure remains the

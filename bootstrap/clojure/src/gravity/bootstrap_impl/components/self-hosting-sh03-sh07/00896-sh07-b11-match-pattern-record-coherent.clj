@@ -35,7 +35,7 @@
      (= (:local-ordinal record)
         (- (:ordinal record) (:root-ordinal record)))
      (integer? (:depth record))
-     (<= 0 (:depth record) 64)
+     (not (neg? (:depth record)))
      (vector? (:path record))
      (= (:depth record) (count (:path record)))
      (every? #(and (integer? %) (not (neg? %))) (:path record))
@@ -53,12 +53,12 @@
        :vector
        (and (nil? (:pattern-value record))
             (integer? (:vector-width record))
-            (<= 0 (:vector-width record) 256)
+            (not (neg? (:vector-width record)))
             (nil? (:pattern-binding-id record))
             (nil? (:pattern-binding-scope-id record)))
 
        :map
-       (and (map? (:pattern-value record)) (<= (count (:pattern-value record)) 256)
+       (and (map? (:pattern-value record))
             (every? keyword? (keys (:pattern-value record)))
             (= (contains? record :guard) (contains? (:pattern-value record) :when))
             (if (contains? record :guard)

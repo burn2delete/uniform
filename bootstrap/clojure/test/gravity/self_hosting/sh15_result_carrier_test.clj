@@ -36,22 +36,20 @@
           (first diagnostics)) :upstream-diagnostics diagnostics))
 (defn- reason [result] (get-in result [:diagnostics 0 :facts :reason]))
 
-(deftest sh15-rejects-a-request-whose-expanded-result-exceeds-the-carrier
+(deftest sh15-preserves-expanded-results-without-carrier-accounting
   (let [diagnostics (rows 64) input (request diagnostics)
         before (pr-str input)
         result (c15 'sh15-build-diagnostic-boundary [input])]
     (is (= :accepted (:status (c15 'sh15-carrier-preflight [input]))))
     (is (= 64 (count (distinct (map :semantic-anchor diagnostics)))))
-    (is (false? (c15 'sh15-diagnostic-input-valid? [input])))
-    (is (= :rejected (:status result)))
-    (is (= :result-carrier-rejected (reason result)))
-    (is (not (contains? result :diagnostic-stream)))
+    (is (true? (c15 'sh15-diagnostic-input-valid? [input])))
+    (is (= :accepted (:status result)))
+    (is (= 64 (count (get-in result [:diagnostic-stream :diagnostics]))))
     (is (= :accepted (:status (c15 'sh15-carrier-preflight [result]))))
-    (is (= :result-carrier-rejected
-           (reason (c15 'sh15-verify-diagnostic-boundary [input result]))))
+    (is (= :passed (:status (c15 'sh15-verify-diagnostic-boundary [input result]))))
     (is (= before (pr-str input)))))
 
-(deftest sh15-small-original-stream-remains-bounded-and-verifiable
+(deftest sh15-original-stream-remains-preserved-and-verifiable
   (let [diagnostics (rows 4) input (request diagnostics)
         result (c15 'sh15-build-diagnostic-boundary [input])
         preserved (get-in result [:diagnostic-stream :diagnostics])
@@ -82,18 +80,14 @@
       (is (= (invoke (compile-plan g) function arguments)
              (invoke (compile-plan q) function arguments))))))
 
-(deftest sh15-owned-rejection-does-not-copy-oversized-profile-or-target
-  (let [oversized (keyword (apply str (repeat 512 "X")))
-        bounded (keyword (apply str (repeat 511 "X")))]
+(deftest sh15-owned-rejection-preserves-keyword-context
+  (let [context (keyword (apply str (repeat 700 "X")))]
     (doseq [field [:profile :target]]
-      (let [input {field oversized}
+      (let [input {field context}
             result (c15 'sh15-build-diagnostic-boundary [input])
             verification (c15 'sh15-verify-diagnostic-boundary [input result])]
         (is (= :rejected (:status result)))
         (is (= :request-schema-mismatch (reason result)))
-        (is (nil? (get-in result [:diagnostics 0 field])))
+        (is (= context (get-in result [:diagnostics 0 field])))
         (is (= :accepted (:status (c15 'sh15-carrier-preflight [result]))))
-        (is (= result (assoc verification :artifact :gravity/sh15-diagnostic-boundary))))
-      (is (= bounded
-             (get-in (c15 'sh15-build-diagnostic-boundary [{field bounded}])
-                     [:diagnostics 0 field]))))))
+        (is (= result (assoc verification :artifact :gravity/sh15-diagnostic-boundary)))))))

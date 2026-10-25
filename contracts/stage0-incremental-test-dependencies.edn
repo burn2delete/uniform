@@ -23,6 +23,12 @@
       :inputs
       [{:path "bootstrap/clojure/src/gravity/c11_mir.clj"
         :role :production}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/artifact.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/operations.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/policy.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/projection.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/records.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/validation.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/digest.clj"
         :role :production}
        {:path "bootstrap/clojure/test/gravity/c11_mir_test.clj"
@@ -159,6 +165,21 @@
       :inputs
       [{:path "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
         :role :production}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/artifact.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/contracts.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostic_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/failures.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/incremental.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/incremental_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/pipeline_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/plugin_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/plugins.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/proof.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/suite.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/support.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/verification.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/verification_validation.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/diagnostics.clj"
         :role :production}
        {:path "bootstrap/clojure/src/gravity/digest.clj"
@@ -292,7 +313,79 @@
    :test-policy {:deterministic? true
                  :performance? false
                  :proof? false
-                 :freshness-required? false}}]
+                 :freshness-required? false}}
+  {:test-id "stage2-module-lexical-call"
+   :path "bootstrap/clojure/test/gravity/self_hosting/stage2_module_lexical_call_test.clj"
+   :namespace gravity.self-hosting.stage2-module-lexical-call-test
+   :jvm-group "stage2-module-lexical-call"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "stage2-module-literal-map-key"
+   :path "bootstrap/clojure/test/gravity/self_hosting/stage2_module_literal_map_key_test.clj"
+   :namespace gravity.self-hosting.stage2-module-literal-map-key-test
+   :jvm-group "stage2-module-literal-map-key"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "stage2-module-loop-call"
+   :path "bootstrap/clojure/test/gravity/self_hosting/stage2_module_loop_call_test.clj"
+   :namespace gravity.self-hosting.stage2-module-loop-call-test
+   :jvm-group "stage2-module-loop-call"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "stage2-module-map-call"
+   :path "bootstrap/clojure/test/gravity/self_hosting/stage2_module_map_call_test.clj"
+   :namespace gravity.self-hosting.stage2-module-map-call-test
+   :jvm-group "stage2-module-map-call"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "stage2-module-map-order"
+   :path "bootstrap/clojure/test/gravity/self_hosting/stage2_module_map_order_test.clj"
+   :namespace gravity.self-hosting.stage2-module-map-order-test
+   :jvm-group "stage2-module-map-order"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "stage2-module-transitive-call"
+   :path "bootstrap/clojure/test/gravity/self_hosting/stage2_module_transitive_call_test.clj"
+   :namespace gravity.self-hosting.stage2-module-transitive-call-test
+   :jvm-group "stage2-module-transitive-call"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "stage2-module-vector-call"
+   :path "bootstrap/clojure/test/gravity/self_hosting/stage2_module_vector_call_test.clj"
+   :namespace gravity.self-hosting.stage2-module-vector-call-test
+   :jvm-group "stage2-module-vector-call"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "pass-execution-canonical-sort"
+   :path "bootstrap/clojure/test/gravity/self_hosting/pass_execution_canonical_sort_test.clj"
+   :namespace gravity.self-hosting.pass-execution-canonical-sort-test
+   :jvm-group "pass-execution-canonical-sort"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? false}}
+  {:test-id "source-fragment-binding"
+   :path "bootstrap/clojure/test/gravity/self_hosting/source_fragment_binding_test.clj"
+   :namespace gravity.self-hosting.source-fragment-binding-test
+   :jvm-group "source-fragment-binding"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}]
  :nonclaims
  ["This development dependency map does not replace slice ownership."
   "Selected tests are non-authoritative development feedback."

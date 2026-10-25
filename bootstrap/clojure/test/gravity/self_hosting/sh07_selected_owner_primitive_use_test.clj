@@ -80,7 +80,6 @@
   (loop [pending (mapv (fn [i form node] [form node [i] [:instructions i]])
                       (range) (:body definition) (:instructions function))
          rows [] positions [] summary {}]
-    (require! (<= (+ (count pending) (reduce + 0 (vals summary))) 262144) :walk-bound)
     (if (empty? pending) {:uses rows :instruction-occurrences positions :instructions summary}
       (let [[form instruction source-path plan-path] (peek pending)
             op (:op instruction) callee (:function instruction)
@@ -366,6 +365,30 @@
     (is (= {:quote 1} (:instructions quoted)))
     (is (= [[:literal [0] [:instructions 0] :symbol]] (:instruction-occurrences constant)))
     (is (= [] (:uses constant)))))
+
+(deftest occurrence-walker-retains-positions-without-a-project-quota
+  ;; C01 tooling records over explicit forms/plans, not a reader invocation,
+  ;; source authentication, compiler acceptance or migration result.
+  (let [width 262144
+        body (apply list 'do (repeat width false))
+        instruction {:op :do :body (vec (repeat width {:op :literal :value false}))}
+        mapped (occurrence-map {:params [] :body [body]}
+                               {:params [] :instructions [instruction]})
+        positions (:instruction-occurrences mapped)]
+    (is (= {:do 1 :literal width} (:instructions mapped)))
+    (is (= (inc width) (count positions)))
+    (is (= [] (:uses mapped)))
+    (is (= [:do [0] [:instructions 0] :list] (first positions)))
+    (is (= [:literal [0 width] [:instructions 0 :body (dec width)] :boolean]
+           (second positions)))
+    (is (= [:literal [0 1] [:instructions 0 :body 0] :boolean] (last positions))))
+  (doseq [[form instruction reason] [['(do false) {:op :do :body []} :child-count]
+                                     ['(unknown) {:op :unknown} :unsupported-instruction]
+                                     ['(f false) {:op :function-call :function 'g :args []} :callee]]]
+    (let [failure (try (occurrence-map {:params [] :body [form]}
+                                     {:params [] :instructions [instruction]})
+                       nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+      (is (= ["SH07-C01-JOIN" reason] ((juxt :id :reason) failure))))))
 
 (deftest local-call-signatures-join-real-seed-declarations
   ;; This checks C01 records against seed plans, not B48 compiler legality.

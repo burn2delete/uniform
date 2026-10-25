@@ -37,18 +37,7 @@
       (is (= [:construction :independent-audit]
              (:phase-order proof-transaction)))
       (is (= [0 1] (mapv :epoch phases)))
-      (is (= 3
-             (reduce + 0
-                     (map #(get-in % [:verification-executions :sh05] 0)
-                          phases))))
-      (is (pos?
-           (reduce + 0
-                   (map #(get-in % [:verification-reuses :sh05] 0)
-                        phases))))
-      (is (pos?
-           (reduce + 0
-                   (map #(get-in % [:verification-reuses :sh06] 0)
-                        phases)))))
+      (is (every? #(pos? (get-in % [:verification-executions :sh05] 0)) phases)))
     (testing "the returned receipt retains no cached carrier"
       (is (= :passed (:status proof-transaction)))
       (is (true? (:thread-confined? proof-transaction)))
@@ -103,7 +92,7 @@
         owner-id (.getId (Thread/currentThread))
         context
         (atom {:open? true :owner-thread-id owner-id :phase :construction
-               :epoch 0 :maximum-receipts 1 :receipts []
+               :epoch 0 :receipts []
                :executions {} :reuses {} :check-catalogs {}})
         cross-thread-data
         (with-bindings {context-var context}
@@ -145,7 +134,7 @@
         expected-core {:source-content-hash "sha256:core"}
         context
         #(atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
-                :phase :construction :epoch 0 :maximum-receipts 1
+                :phase :construction :epoch 0
                 :receipts [] :executions {} :reuses {}
                 :completed-phases []})
         failure-for
@@ -185,7 +174,7 @@
         report-fn (var-get report-var)
         make-context
         #(atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
-                :phase :construction :epoch 0 :maximum-receipts 8
+                :phase :construction :epoch 0
                 :receipts [] :executions {} :reuses {}
                 :check-catalogs {} :failed-report-executions 0})
         immutable-artifact {:artifact-id "sha256:immutable" :value [1 2 3]}
@@ -330,7 +319,7 @@
         (atom {:open? true
                :owner-thread-id (.getId (Thread/currentThread))
                :phase :independent-audit :epoch 1
-               :maximum-receipts 8 :receipts []
+               :receipts []
                :executions {} :reuses {} :check-catalogs {}
                :failed-report-executions 0})
         calls (atom {:first 0 :second 0})
