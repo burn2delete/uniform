@@ -30,7 +30,12 @@
    (when invocation
      (sh03-reader-authenticated-envelope-options source-path invocation))
    (when (and invocation (nil? precomputed-products)
-              (not= reader-source-path (:reader-source-path invocation)))
+              (not (and (string? reader-source-path)
+                        (try
+                          (= (.getCanonicalPath (java.io.File. reader-source-path))
+                             (.getCanonicalPath
+                              (java.io.File. (:reader-source-path invocation))))
+                          (catch Exception _ false)))))
      (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
                      {:missing-fields [:matching-host-reader-invocation]}))
    (when (and (some? reader-source-path) (or (some? precomputed-products) (some? candidate)))
