@@ -18,7 +18,7 @@ Published implementation: `4dda5cb31b45f1f94c76fe192c99f5b56ef988a0`, tree
 `c6f280d5ae8a8e2f1218c55cca8d4624d071e5fe`, in
 [draft PR386](https://github.com/burn2delete/uniform/pull/386).
 The published tree matches the locally executed tree byte-for-byte. Later
-evidence/task updates change documentation only, not the tested source or tests.
+work-artifact updates change documentation only, not the tested source or tests.
 
 All commands below use Clojure 1.12.6 with `-J-Xmx512m` from the repository root.
 
@@ -60,4 +60,47 @@ GitHub reported no workflow runs or status checks for the published implementati
 head. The full compiler suite and authoritative migration checks were not run.
 No historical receipt or source pin is rewritten. These development observations
 do not grant self-hosting, release, performance or seed-retirement status.
-Independent review and coordinator integration remain pending.
+
+## Affected-test planning
+
+The actual affected-test planner was exercised on both pristine base and exact
+candidate `ab77968ec97a0d9032ea32b5f049c3ad52f2aab6`: old helper path, new
+helper path, rename pair, facade, test and complete source/test transaction,
+each with downstream expansion disabled and enabled. All 12 structured records
+match byte-for-byte. The old and new helper paths both fail closed with
+`SH01-IMPACT-UNOWNED`; actual Git change discovery returns both rename paths
+and the same rejection. Facade/test-only requests identify the component in
+metadata but select the same 283 dedicated namespaces rather than its owning
+leaf on both revisions. This is an unchanged conservative limitation, not a
+planner success or an automatic substitute for the explicit leaf-test runs.
+No whole-slice execution, runner change or broadened path acceptance occurred.
+The [PR check record](https://github.com/burn2delete/uniform/pull/386#issuecomment-6403883878)
+preserves the detailed disposition.
+
+## Independent review and remaining integration
+
+On 2026-10-25, the integration coordinator reported independent peer approval of
+the finite implementation at exact commit
+`ab77968ec97a0d9032ea32b5f049c3ad52f2aab6`, tree
+`e7ca3f457d53e3adc01cd7cc88accbf4ab853a55`. Review verified helper code-byte
+conservation, all three callers, the binding-restoration regression, retained
+execution logs and all 12 identical planner records. The reproduced composition
+failure and unchanged planner limitations remain explicit accepted limitations
+of this naming-only increment, not repaired compiler or planner behavior.
+
+The reviewer inspected the saved evidence rather than independently replaying
+the Clojure checks; the review shell lacked a Clojure executable. This record
+does not attribute the implementation owner's test execution to that reviewer.
+
+This documentation-only successor separates completed implementation review from
+the pending coordinator final-base preflight and pending merge. Source and tests
+remain byte-identical to the accepted implementation. Only documentation/link
+and whitespace checks are appropriate for this note update; no compiler replay
+or integration completion is asserted. The coordinator must verify the final
+published head and current-main compatibility before changing PR readiness or
+merging.
+
+Documentation successor checks passed: the canonical document validator checked
+240 documents and 19 phase indexes; the focused work-artifact scan checked four
+ASCII Markdown files and 11 local links; `git diff --check` passed. Comparing
+`bootstrap/` against the independently accepted commit produced no difference.

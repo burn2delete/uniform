@@ -1,7 +1,8 @@
 # Semantic incremental operation names
 
 Owner: semantic-name migration. Input: `16ff1f59471a7fedd7d2a4552c4bde1edf0b3d9e`.
-Planning reference: C16. Status: implementation candidate, not accepted.
+Planning reference: C16. Status: implementation independently accepted at
+`ab77968ec97a0d9032ea32b5f049c3ad52f2aab6`; final-base preflight and merge pending.
 
 ## Outcome and contracts
 
@@ -23,4 +24,6 @@ and [development workflow](../../docs/development-verification.md) remain canoni
 - No compiler semantics, real cache, self-hosting or release completion is claimed.
 
 Implementation owns the change and [evidence](evidence.md). Independent review
-and coordinator integration are separate, still pending.
+accepted the finite implementation, retaining the documented baseline failures
+and planner limitations. Coordinator verification of the documentation-only
+successor against final main and integration remain separate, pending steps.

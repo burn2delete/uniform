@@ -9,7 +9,13 @@ Spec: [spec.md](spec.md). Plan: [plan.md](plan.md). Evidence: [evidence.md](evid
   the unchanged public facade.
 - [x] Run affected leaf/composition and repository-policy checks; record passing
   checks and the pristine-base-reproduced composition failure separately.
-- [ ] Independently review the exact candidate and integrate through coordinator.
+- [x] Independent implementation review accepted exact commit
+  `ab77968ec97a0d9032ea32b5f049c3ad52f2aab6`, tree
+  `e7ca3f457d53e3adc01cd7cc88accbf4ab853a55`, with the documented baseline
+  composition failure and planner limitations retained.
+- [ ] Coordinator verifies the documentation-only successor's exact head,
+  unchanged implementation and final-main compatibility before integration.
+- [ ] Coordinator merges the accepted finite change to main.
 
 Only the declared internal namespace is migrated. The facade and other legacy
 submodules remain explicit future debt; this is not a second component roadmap.
