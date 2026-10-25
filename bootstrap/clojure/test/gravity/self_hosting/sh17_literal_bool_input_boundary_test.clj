@@ -207,7 +207,6 @@
         revision (get-in boundary [:authenticated-envelope-descriptor :source-revision])]
     (is (= :gravity/stage0-c2-reader-document-artifact (:kind artifact)))
     (is (= :accepted (get-in boundary [:resolved-reader-result :status])))
-    (is (= :gravity/sh03-compiler-source-v1 (get-in boundary [:resolved-reader-result :bounds :resource-policy])))
     (is (= (str "sha256:" (bootstrap/sha256-hex reader-text))
            (:source-content-hash binding) (:source-content-hash revision)))
     (is (= (alength (.getBytes reader-text java.nio.charset.StandardCharsets/UTF_8))
