@@ -1450,7 +1450,7 @@
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00852-sh04-syntax-resolve-template.clj", :reader-line 148752, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-resolve-template!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00853-sh04-syntax-reader-binding.clj", :reader-line 148881, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-reader-binding"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00854-sh04-syntax-rich-object.clj", :reader-line 149113, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-rich-object"}
- {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00855-sh04-syntax-resolved-result.clj", :reader-line 149268, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-resolved-result!"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00855-sh04-syntax-resolved-result.clj", :reader-line 149268, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-build-from-fresh-c2!"}
  {:resource "gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj", :reader-line 149479, :owner :compiler, :first-form "compiler-c3-syntax-source-artifact"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj", :reader-line 149628, :owner :self-hosting-sh03-sh07, :first-form "sh05-macro-source-relative-path"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00858-sh05-macro-execute.clj", :reader-line 149846, :owner :self-hosting-sh03-sh07, :first-form "sh05-macro-execute!"}
