@@ -12,11 +12,14 @@
 (def ^:private originals
   (delay
     (into {}
-          (for [extension ["gravity" "qst"]]
+          (for [extension ["gravity" "qst" "other"]]
             [extension
              (try
                (bootstrap/compiler-c5-resolution-source-artifact
-                (path "rejected" extension) (slurp (path "rejected" extension)))
+                (if (= "other" extension)
+                  "bootstrap/clojure/fixtures/self-hosting/sh-15/rejected/other-c5-generated-origin.gravity"
+                  (path "rejected" extension))
+                (slurp (path "rejected" (if (= "other" extension) "gravity" extension))))
                (throw (ex-info "Expected actual C5 rejection" {}))
                (catch clojure.lang.ExceptionInfo error (ex-data error)))]))))
 (defn- fields [original] (c15 'sh15-c5-unresolved-fields [original]))
@@ -105,9 +108,11 @@
         wording (assoc original :message "Other explanation" :remediation "Other guidance")
         reworded (resolved wording)
         semantic (resolved (assoc-in original [:facts :control] :changed))
-        other (resolved (get @originals "qst"))]
+        alias (resolved (get @originals "qst"))
+        other (resolved (get @originals "other"))]
     (is (= (:diagnostic-id candidate) (get-in reworded [:candidate :diagnostic-id])))
     (is (not= (:diagnostic-id candidate) (get-in semantic [:candidate :diagnostic-id])))
+    (is (= (:diagnostic-id candidate) (get-in alias [:candidate :diagnostic-id])))
     (is (not= (:diagnostic-id candidate) (get-in other [:candidate :diagnostic-id])))
     (is (= :passed (:status (verify source-path (fields wording)
                                     (:candidate reworded) (:request reworded)))))
@@ -116,6 +121,6 @@
     (doseq [changed [(assoc candidate :redactions [])
                      (assoc-in candidate [:origin-chain 1 :reason] :other-reason)
                      (assoc-in candidate [:primary :span :source] "other.gravity")
-                     (:candidate reworded) (:candidate semantic) (:candidate other)]]
+                     (:candidate reworded) (:candidate semantic) (:candidate alias) (:candidate other)]]
       (rejected (verify source-path arguments changed (:diagnostic-id-request changed)) "C15-ID"))
     (rejected (verify source-path arguments (:candidate semantic) (:request semantic)) "C15-ID")))
