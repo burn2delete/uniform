@@ -9129,7 +9129,7 @@
              :seedless-runtime-execution]})
 
 (defn sh13-member? [values value]
-  (= (get values value) value))
+  (contains? values value))
 
 (defn sh13-source-span-valid? [source-span]
   (if (map? source-span)

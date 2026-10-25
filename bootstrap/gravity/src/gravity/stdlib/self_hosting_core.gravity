@@ -206,7 +206,7 @@
    :self-hosting-slice "SH-22"})
 
 (defn sh22-member? [values value]
-  (= (get values value) value))
+  (contains? values value))
 
 (defn sh22-present? [value]
   (if (= nil value) false true))
