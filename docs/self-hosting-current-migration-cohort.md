@@ -677,3 +677,35 @@ Raw scripts/logs are `/private/tmp/gravity-c16-pr318-u2N7il-run.{clj,log}` and
 log SHA256 is `405a212203637f59c6d04f63df44db6d6a84f989909c77e624e0ca2eba00e1b2`;
 the successful comparison log SHA256 is
 `64bd8ba3f09c471899bccb9bfceab430289e398fc94353e2c33262e504e90724`.
+
+### Subsequent PR319 source-intake change
+
+[PR319](https://github.com/burn2delete/uniform/pull/319) subsequently merged as
+`f2bb3a35e6da25d66be99efbfa82a8aee4cfe28e`, tree
+`635d2ab27ed45bbb7c2c2fa9c2abd48d363afd61`. Its only changed seed resource is
+`backends/00644`,
+blob `01108694951422173fd0c904d0f91bc8d8a19f6e`; the complete seed source tree
+is now `4fda9727f1ca84cb8e3ad36f09865da94135ed6c`. The PR318 canonical resource
+fingerprint and six-plan execution above remain bound to `c4faaccb`, not this
+successor. No new six-plan run or canonical resource-manifest recomputation is
+claimed here.
+
+This changes the actual rule-DATA intake used by the selected builders. The
+unchanged compiler byte/hash pin now precedes lexical preflight, fresh seed
+reading with ambient shortcuts disabled, and parsed-carrier checks. Namespace
+validation, module parsing, emitter extraction and the rule digest remain.
+The owning `production-emitter-rule-joins-authentication-preflight-and-fresh-parsing`
+test compares the whole result with independently extracted expected DATA and
+checks that operation order; its compiler-tamper companion checks rejection
+before lexical/reader/parsed work. The accepted producer reports 14 tests/128
+assertions, not a batch rerun by this C16 comparison.
+
+All six selected sources, compiler/emitter bytes and `deps.edn` remain identical
+to `c4faaccb`. The accepted exact rule-DATA result therefore justifies retaining
+the prior selected-plan semantic result with that dependency explanation, not
+calling it a fresh execution under the new TCB. Expanded source-entry intake
+and its finite private seed subset do not alter the ordinary Gravity reader
+grammar or facade policy. Full H6 origin authenticity, aggregate limits,
+context joins and replay remain separate. No new selected stale/coherent
+rejection gap was demonstrated beyond the owning tamper/ambient/bound checks;
+no additional validator, admission contract or unchanged proof replay follows.
