@@ -14,6 +14,7 @@
             [gravity.self-hosting.sh01-development-test-cache :as cache]
             [gravity.self-hosting.sh01-host-resource-broker :as broker])
   (:import [java.io ByteArrayOutputStream]
+           [java.lang.management ManagementFactory]
            [java.nio ByteBuffer]
            [java.nio.charset CharacterCodingException CodingErrorAction
             StandardCharsets]
@@ -639,6 +640,10 @@
 
 (declare semantic-command)
 
+(defn- jvm-input-arguments
+  []
+  (vec (.getInputArguments (ManagementFactory/getRuntimeMXBean))))
+
 (defn- base-runtime-identities
   [^Path repository-root options]
   (let [command (semantic-command options)
@@ -656,6 +661,7 @@
          :java-runtime-version (System/getProperty "java.runtime.version")
          :java-vm-name (System/getProperty "java.vm.name")
          :java-vm-version (System/getProperty "java.vm.version")
+         :jvm-input-arguments (jvm-input-arguments)
          :os-name (System/getProperty "os.name")
          :os-arch (System/getProperty "os.arch"))))}
      {:id :java-executable
@@ -812,6 +818,7 @@
         :java-runtime-version (System/getProperty "java.runtime.version")
         :java-vm-name (System/getProperty "java.vm.name")
         :java-vm-version (System/getProperty "java.vm.version")
+        :jvm-input-arguments (jvm-input-arguments)
         :os-name (System/getProperty "os.name")
         :os-arch (System/getProperty "os.arch"))))}]
     (:development-operation-identity options)

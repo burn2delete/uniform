@@ -1035,6 +1035,34 @@
           (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE" (:id failure)))
           (is (= :runtime-tool (:input-kind failure))))))))
 
+(deftest runtime-identities-and-cache-requests-bind-jvm-configuration
+  (with-coordination-root [base]
+    (let [resolve-wiring #(ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring %)
+          observed-arguments (atom ["-Xss256k" "-Dfixture.private=not-for-receipts"])
+          selected-context (context base)
+          job (first (:shards (impact-plan 'gravity.self-hosting.sh01-jvm-config-test)))
+          plan (impact-plan (:namespace job))
+          root (.normalize (.toAbsolutePath (.toPath (java.io.File. "."))))]
+      (with-redefs-fn
+        {(resolve-wiring 'jvm-input-arguments) (fn [] @observed-arguments)}
+        (fn []
+          (let [first-runtime ((resolve-wiring 'base-runtime-identities) root {})
+                first-fallback ((resolve-wiring 'runtime-identities) {})
+                first-request (wiring/cache-request selected-context plan job {})]
+            (reset! observed-arguments ["-Xss16m" "-Dfixture.private=not-for-receipts"])
+            (let [second-runtime ((resolve-wiring 'base-runtime-identities) root {})
+                  second-fallback ((resolve-wiring 'runtime-identities) {})
+                  second-request (wiring/cache-request selected-context plan job {})]
+              (is (not= first-runtime second-runtime))
+              (is (not= first-fallback second-fallback))
+              (is (not= (cache/cache-key first-request) (cache/cache-key second-request)))
+              (is (not (str/includes? (pr-str [first-runtime second-runtime
+                                              first-request second-request])
+                                     "not-for-receipts")))
+              (is (= first-runtime
+                     (do (reset! observed-arguments ["-Xss256k" "-Dfixture.private=not-for-receipts"])
+                         ((resolve-wiring 'base-runtime-identities) root {})))))))))))
+
 (deftest injected-context-must-match-current-root-and-command
   (with-coordination-root [base]
     (let [selected-context (context base)
