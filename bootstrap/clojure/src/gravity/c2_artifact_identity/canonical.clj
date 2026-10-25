@@ -5,16 +5,16 @@
     (map? value)
     (let [decorated (mapv (fn [[key item]]
                             (let [entry [(canonical-value key) (canonical-value item)]]
-                              [(pr-str entry) entry]))
+                              (clojure.lang.MapEntry/create (pr-str entry) entry)))
                           value)]
-      [:map (->> decorated (sort-by first) (mapv second))])
+      [:map (->> decorated (sort-by key) (mapv val))])
 
     (set? value)
     (let [decorated (mapv (fn [item]
                             (let [entry (canonical-value item)]
-                              [(pr-str entry) entry]))
+                              (clojure.lang.MapEntry/create (pr-str entry) entry)))
                           value)]
-      [:set (mapv second (sort-by first decorated))])
+      [:set (mapv val (sort-by key decorated))])
 
     (vector? value) [:vector (mapv canonical-value value)]
     (seq? value) [:list (mapv canonical-value value)]
