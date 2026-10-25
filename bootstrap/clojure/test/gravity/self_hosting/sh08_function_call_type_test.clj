@@ -22354,56 +22354,75 @@
     {:engine :gravity-sh09-c7-effect-adapter-test :compiler-artifact-plan? true}
     @function-work-policy-current-c8-plan function arguments))
 
-(defn- verifier-native-control-audit [target]
-  ;; A source dispatch audit, independent of runtime results and receipts.
-  ;; Only the indexed expansion loop scales with width. Native scalar/header
-  ;; logical work is recorded separately; this is not a host CPU/heap bound.
-  (let [definitions (with-open [reader (java.io.PushbackReader. (io/reader (path c7-source-relative-path)))]
-                      (binding [*read-eval* false]
-                        (loop [out {}]
-                          (let [form (read {:eof ::end} reader)]
-                            (if (= ::end form) out
-                              (recur (if (and (seq? form) (= 'defn (first form)))
-                                       (assoc out (second form) form) out)))))))
-        primitives '#{integer? >= > < <= + - * quot = count first rest get assoc contains? list conj vec
-                      bootstrap-native-carrier-header}
-        helpers '#{sh08-vf-data-failure sh08-vf-scalar-kind sh08-vf-scalar-work sh08-vf-expand-indexed
-                   sh08-vf-original-expand-indexed sh08-vf-original-domain-failure
-                   sh08-vf-original-width sh08-vf-original-frontier sh08-vf-original-edge-work}]
-    (letfn [(add [& ps] (reduce #(mapv + %1 %2) [0 0] ps))
-            (sum [ps] (apply add ps))
-            (cost [form]
-              (cond
-                (map? form) (add [(+ 1 (* 128 (count form))) 0] (sum (map cost (mapcat identity form))))
-                (vector? form) (add [(inc (count form)) 0] (sum (map cost form)))
-                (set? form) [(+ 1 (* 64 (count form))) 0]
-                (not (seq? form)) [1 0]
-                :else
-                (let [[op & args] form base (delay (add [(inc (count args)) 0] (sum (map cost args))))]
-                  (case op
-                    if (add [1 0] (cost (first args))
-                            (mapv max (cost (second args)) (cost (nth args 2))))
-                    let (let [[bindings & body] args n (quot (count bindings) 2)]
-                          (add [(inc (* 2 n)) 0] (sum (map cost (take-nth 2 (rest bindings)))) (sum (map cost body))))
-                    loop (let [[bindings & body] args n (quot (count bindings) 2)
-                               dispatch (add [(* 4 n) 0] (sum (map cost body)))]
-                           (when (and (not= 'pending (first bindings)) (not (zero? (second dispatch))))
-                             (throw (ex-info "Nested verifier width loop" {:target target})))
-                           (add [(inc (* 2 n)) 0] (sum (map cost (take-nth 2 (rest bindings))))
-                                (if (= 'pending (first bindings)) dispatch [(first dispatch) (first dispatch)])))
-                    recur (add [(inc (* 2 (count args))) 0] (sum (map cost args)))
-                    (cond
-                      (contains? helpers op) (add @base (function-cost op))
-                      (contains? primitives op)
-                      (add @base (case op get [33 0] assoc [35 0] contains? [64 0]
-                                      conj [33 0] vec [8 8] bootstrap-native-carrier-header [75 0]
-                                      = [2 0] list [(count args) 0] [1 0]))
-                      :else (throw (ex-info "Unassigned verifier source operation" {:op op :target target})))))))
-            (function-cost [name]
-              (let [definition (get definitions name)]
-                (when-not definition (throw (ex-info "Missing verifier source helper" {:name name})))
-                (add [(+ 8 (* 6 (count (nth definition 2)))) 0] (sum (map cost (drop 3 definition))))))]
-      {:source-function target :control-polynomial (function-cost target) :opaque-children #{}})))
+
+(deftest sh08-verifier-unmetered-native-data
+  (let [data #(invoke-c7 'sh08-vf-data [%])
+        original #(invoke-c7 'sh08-vf-original-data [%])
+        large-integer (.shiftLeft java.math.BigInteger/ONE 128)
+        deep (reduce (fn [value _] [value]) :leaf (range 192))
+        shared [{:key :value}]
+        samples [nil true 1 1N large-integer 1.0M 3/2 0.0 -0.0 Double/NaN
+                 :key 'symbol "text" [] {} #{} (list :first :second)
+                 {:nested [shared shared]} deep (vec (repeat 70000 :element))]]
+    (doseq [value samples]
+      (let [result (data value)]
+        (is (= :accepted (:status result)))
+        (is (= #{:status :arena} (set (keys result)))))
+      (is (= {:status :accepted} (original value))))
+    (let [zero-denominator (clojure.lang.Ratio. java.math.BigInteger/ONE java.math.BigInteger/ZERO)]
+      (is (= [:rejected :verification-ratio-denominator-zero]
+             ((juxt :status :reason) (data zero-denominator)))))))
+
+(deftest sh08-verifier-unmetered-native-comparison
+  (let [compare-data #(invoke-c7 'sh08-vf-compare-data [%1 %2])]
+    (doseq [[left right]
+            [[{:key 1} (sorted-map :key 1)]
+             [(array-map :a 1 :b 2) (array-map :b 2 :a 1)]
+             [{[1] {:nested #{:a :b}}} {[1] {:nested #{:b :a}}}]
+             [(list :a :b) (list :a :b)]
+             [[1 2 3] [1N 2N 3N]]]]
+      (is (= {:status :accepted :equal? true} (compare-data left right))))
+    (doseq [[left right]
+            [[{:key 1} (sorted-map "key" 1)]
+             [{:a 1} {:a 2}]
+             [{[1] :value} {(list 1) :value}]
+             [[1] (list 1)]
+             [#{:one} #{:two}]]]
+      (is (= {:status :accepted :equal? false} (compare-data left right))))
+    (let [duplicate (clojure.lang.PersistentArrayMap. (object-array [:key 1 :key 1]))]
+      (is (= {:status :accepted :equal? false} (compare-data {:key 1} duplicate))))))
+
+(deftest sh08-verifier-unmetered-cycle-and-callback-safety
+  (let [data #(invoke-c7 'sh08-vf-data [%])
+        original #(invoke-c7 'sh08-vf-original-data [%])
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "candidate hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "candidate equality")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "candidate rendering"))))
+        foreign (proxy [clojure.lang.APersistentMap] []
+                  (count [] (swap! callbacks conj :count) (throw (AssertionError. "candidate count")))
+                  (seq [] (swap! callbacks conj :seq) (throw (AssertionError. "candidate seq"))))
+        lazy-tail (lazy-seq (swap! callbacks conj :forced) (list :value))
+        invalid-symbol (clojure.lang.Symbol/intern nil nil)
+        odd-map (clojure.lang.PersistentArrayMap. (object-array [:odd]))
+        nil-map (clojure.lang.PersistentArrayMap. nil)
+        backing (object-array [:self nil])
+        cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 1 cyclic)
+    (doseq [value [opaque foreign {:unused opaque} [opaque] (list opaque)
+                  (clojure.lang.Cons. :head lazy-tail)
+                  (with-meta [] {:unused opaque})
+                  invalid-symbol (list invalid-symbol)
+                  (clojure.lang.PersistentArrayMap. (object-array [invalid-symbol :value]))
+                  odd-map nil-map]]
+      (is (= :rejected (:status (data value))))
+      (is (= :rejected (:status (original value)))))
+    (is (= {:status :rejected :reason :verification-native-cycle} (data cyclic)))
+    (is (= {:status :rejected :reason :verification-native-cycle} (original cyclic)))
+    (doseq [[namespace name] [[nil ""] ["" ""] ["qualified" ""] [nil "valid"]]]
+      (is (= :accepted (:status (data (clojure.lang.Symbol/intern namespace name))))))
+    (is (empty? @callbacks))))
 
 (defn- verifier-current-core-products [stage]
   ;; A separate source fixture exercises the changed ledger. This stops before
@@ -22419,409 +22438,17 @@
      :forms (get-in boundary [:authenticated-core-request :forms])
      :bindings (get-in boundary [:authenticated-core-request :binding-table])}))
 
-(deftest sh08-verifier-private-ordinary-ledger-current-source
-  (let [stage (fn [name operation]
-                (let [start (System/nanoTime) out (operation)]
-                  (prn {:verifier-ledger-source-stage name :elapsed-ms (quot (- (System/nanoTime) start) 1000000)})
-                  (flush) out))
-        {:keys [source-path source-text resolved core-wrapper core forms bindings]} (verifier-current-core-products stage)
-        run (fn [allowance]
-              (observe-function-work-policy
-                #(invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
-                   [core bindings forms {} allowance])))
-        observed (run 1048576) ledger (:value observed) result (:result ledger)
-        spent (:ordinary-work-count ledger) inference (first (:inference observed))]
-    (is (= :accepted (:status resolved) (:status core-wrapper)))
-    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
-    (is (= [{:definition-name 'tone :return :gravity.type/keyword}]
-           (mapv #(select-keys % [:definition-name :return]) (:function-type-table result))))
-    (is (= 1 (count (:inference observed))))
-    (is (= spent (- (:budget inference) (:remaining inference))))
-    (is (< 0 spent 1048576))
-    (is (not (contains? result :ordinary-work-count)))
-    (is (not (contains? (:identity-input result) :ordinary-work-count)))
-    (when (and (= :accepted (:status result)) (pos? spent))
-      (let [exact (:value (run spent)) short (:value (run (dec spent)))]
-        (is (= result (:result exact)))
-        (is (= spent (:ordinary-work-count exact)))
-        (is (= :rejected (get-in short [:result :status])))
-        (is (> (:ordinary-work-count short) (dec spent)))
-        (is (some #(and (= "C7-GENERIC" (:rule %))
-                        (str/includes? (name (:reason %)) "work-limit"))
-                  (get-in short [:result :diagnostics])))))
-    (is (= source-text (slurp (fixture-path "accepted" "function-verifier-work-ledger" ".qst"))))
-    (prn {:private-ordinary-ledger-source :checked :source-path source-path
-          :core-id (:artifact-id core) :ordinary-work-count spent :declared-allowance 1048576
-          :actual-independent-inference inference :public-verifier-established false
-          :B47-verification-complete false :source-construction-replayed false})))
 
-(deftest sh08-verifier-private-ordinary-ledger-boundary
-  ;; This private ledger records the existing ordinary inference domain. It
-  ;; does not pretend that validation, proof discovery or throw analysis is
-  ;; free, and is not yet the complete public verifier reconstruction ledger.
-  (doseq [core [nil {} {:module {}}]]
-    (let [args [core [] [] {} 65536]
-          ledger (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger args)
-          result (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-allowance args)]
-      (is (= #{:result :ordinary-work-count} (set (keys ledger))))
-      (is (= 0 (:ordinary-work-count ledger)))
-      (is (= result (:result ledger)))
-      (is (= :rejected (:status result)))
-      (is (not (contains? result :ordinary-work-count)))))
-  (prn {:private-ordinary-ledger :checked :canonical-output-work-receipt false
-        :whole-reconstruction-accounting false :public-wrapper-changed false}))
 
-(deftest sh08-verifier-authentication-duplicate-catalog-control
-  (let [catalog (invoke-c7 'sh08-ft-b47-check-catalog [])
-        pairs (mapcat #(vector % true) catalog)
-        repeated (clojure.lang.PersistentArrayMap. (object-array (concat pairs pairs)))
-        stream (invoke-c7 'sh08-vf-original-data [repeated 100000000])]
-    (is (= 37 (count catalog) (count (set (keys repeated)))))
-    (is (= 74 (count (keys repeated)) (count repeated)))
-    (is (= :accepted (:status stream)))
-    (is (true? (invoke-c7 'sh08-ft-all-checks-true? [repeated])))
-    (prn {:duplicate-native-catalog-control :checked :catalog-members 37
-          :physical-keys 74 :full-authentication-established false
-          :fixed37-loop-bound-established false})))
 
-(deftest sh08-verifier-prospective-work-products
-  (let [product #(invoke-c7 'sh08-vf-work-product [%1 %2])
-        total #(invoke-c7 'sh08-vf-work-sum-products [%1 %2])
-        large 1000000000000000000000000000000N]
-    (is (= 0 (product 0 [0])))
-    (is (= 1 (product 1 [])))
-    (is (nil? (product 0 [])))
-    (is (= 1 (product Long/MAX_VALUE [1 1 1 1])))
-    (is (= Long/MAX_VALUE (product Long/MAX_VALUE [Long/MAX_VALUE])))
-    (is (nil? (product Long/MAX_VALUE [Long/MAX_VALUE 2])))
-    (is (= large (product large [1000000000000000000 1000000000000])))
-    (is (nil? (product (dec large) [1000000000000000000 1000000000000])))
-    (is (= 42 (total 42 [[6 7]])))
-    (is (nil? (total 41 [[6 7]])))
-    (is (= Long/MAX_VALUE (total Long/MAX_VALUE [[(dec Long/MAX_VALUE)] [1]])))
-    (is (nil? (total Long/MAX_VALUE [[Long/MAX_VALUE] [1]])))
-    (is (= large (total large [[(dec large)] [1]])))
-    (is (nil? (total (dec large) [[(dec large)] [1]])))
-    (doseq [factors [[-1] [1.0] [1 1 1 1 1]]]
-      (is (nil? (product large factors))))
-    (is (nil? (total large [[1] [1] [1] [1] [1]])))
-    (prn {:prospective-products :checked :overflow-before-rejection false
-          :caller-N-preserved true :public-wrapper-changed false})))
 
-(deftest sh08-verifier-original-stream-development-kernel
-  (let [run #(invoke-c7 'sh08-vf-original-data [%1 %2])
-        eligible [nil true 1N :key 'symbol "text" [] {} #{}
-                  {:nested [(list :one :two) {:key :value}]}]
-        callbacks (atom [])
-        opaque (proxy [Object] []
-                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "original hash")))
-                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "original equality")))
-                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "original rendering"))))]
-    (doseq [value eligible]
-      (let [stream (run value 100000000)
-            arena (invoke-c7 'sh08-vf-data [value 100000000])
-            fields [:status :work-count :completed-work-count :nodes :storage-work
-                    :maximum-width :scalar-work-sum :maximum-scalar-work]]
-        (is (= (select-keys arena fields) stream))
-        (is (not (contains? stream :arena)))
-        (is (= stream (run value (:work-count stream))))
-        (is (= :verification-work-limit (:reason (run value (dec (:work-count stream))))))))
-    (doseq [value [1.5M 3/2 0.0 -0.0 Double/NaN {[1] :value} #{[1]} (sorted-map :key 1)]]
-      (let [stream (run value 100000000)
-            data (invoke-c7 'sh08-vf-data [value 100000000])]
-        (is (= :incomplete (:status stream)))
-        (is (= (:work-count data) (:work-count stream)))))
-    (let [bad (clojure.lang.PersistentArrayMap. (object-array [:odd]))
-          delayed (lazy-seq (swap! callbacks conj :forced) (list :value))]
-      (doseq [later [opaque bad delayed (with-meta [] {:inactive opaque})]
-              value [(array-map :later later [1] :early)
-                     (list later 1.5M) (sorted-map :earlier 1.5M :later later)]]
-        (let [stream (run value 100000000) data (invoke-c7 'sh08-vf-data [value 100000000])]
-          (is (= :rejected (:status stream)))
-          (is (= (:reason data) (:reason stream)))
-          (is (= (:completed-work-count data) (:completed-work-count stream))))))
-    (doseq [value [opaque {:inactive opaque} [opaque] (list opaque)
-                  (with-meta [] {:inactive opaque}) (clojure.lang.Symbol/intern nil nil)]]
-      (is (= :rejected (:status (run value 100000000)))))
-    (is (empty? @callbacks))
-    (let [width #(invoke-c7 'sh08-vf-original-width [%1 %2])
-          frontier #(invoke-c7 'sh08-vf-original-frontier [%1 %2 %3])
-          edges #(invoke-c7 'sh08-vf-original-edge-work [%1 %2 %3])
-          fee (+ 32 (* 8 65537) (* 512 65537))]
-      (is (= 65536 (width :map 32768) (width :vector 65536)))
-      (doseq [size [-1 Long/MAX_VALUE 32769]] (is (nil? (width :map size))))
-      (is (= 2147483647 (frontier 2147483647 1 0)))
-      (doseq [[pending width extra] [[0 1 0] [Long/MAX_VALUE 1 0] [2147483647 2 0]
-                                   [1 -1 0] [1 65537 0] [1 1 2]]]
-        (is (nil? (frontier pending width extra))))
-      (is (= fee (edges 65536 1 fee)))
-      (is (nil? (edges 65536 1 (dec fee))))
-      (is (nil? (edges 65536 1 31))))
-    (let [audit (verifier-native-control-audit 'sh08-vf-original-data)]
-      (is (<= (first (:control-polynomial audit)) 4096))
-      (is (<= (second (:control-polynomial audit)) 512))
-      (prn {:original-stream-source-control audit :candidate-arena-cap-unchanged true
-            :physical-aliases-deduplicated false :whole-paid-public-verifier false}))))
 
-(deftest sh08-verifier-first-order-domain-eligibility
-  (let [data #(invoke-c7 'sh08-vf-data [% 10000000])
-        scalar-domain #(invoke-c7 'sh08-vf-first-order-scalar-domain? [(:arena (data %))])
-        operation-domain #(invoke-c7 'sh08-vf-first-order-operation-domain? [(:arena (data %))])
-        eligible {:metadata ['valid 1N nil true] :body {:warm :amber}}]
-    (is (true? (scalar-domain eligible))) (is (true? (operation-domain eligible)))
-    (doseq [value [1.25M 3/2 0.0 -0.0 Double/NaN (.shiftLeft java.math.BigInteger/ONE 80)]]
-      (doseq [sample [value {:unused value} [value] (list value)]]
-        (is (= :accepted (:status (data sample))))
-        (is (false? (scalar-domain sample)))
-        (is (false? (operation-domain sample)))))
-    ;; TreeMaps and compound keys remain supported generic comparison DATA.
-    ;; The narrower reconstruction operation fence does not replace that rule.
-    (doseq [value [(sorted-map :key 1) {[1] :value} #{[1]}]]
-      (is (true? (scalar-domain value))) (is (false? (operation-domain value))))
-    (prn {:first-order-eligibility :checked :wider-native-DATA-preserved true
-          :out-of-domain-disposition :incomplete :semantic-rejection false
-          :full-paid-public-boundary false})))
 
-(deftest sh08-verifier-map-get-recipe-current-source
-  (let [{:keys [core bindings forms]} (verifier-current-core-products (fn [_ operation] (operation)))
-        run #(invoke-c7 'sh08-vf-map-get-recipe? [% bindings forms])
-        call-index (- (count (:nodes core)) 3) key-index (- (count (:nodes core)) 4)
-        negatives [(assoc core :recursion-components [{}]) (assoc core :mutations [{}])
-                   (assoc core :control-flow [{}]) (assoc core :error-handlers [{}])
-                   (assoc core :loop-bindings [{}]) (assoc core :lexical-bindings [{}])
-                   (assoc core :nodes (pop (:nodes core)))
-                   (assoc-in core [:function-records 0 :fixed-arity] 1)
-                   (assoc-in core [:function-records 0 :signature :return :type-id] :gravity.type/string)
-                   (assoc-in core [:nodes key-index :attributes :value] :absent-key)
-                   (assoc-in core [:nodes call-index :attributes :argument-count] 3)
-                   (assoc-in core [:module :target] :native)]]
-    (is (true? (run core)))
-    (doseq [changed negatives] (is (false? (run changed))))
-    (is (false? (invoke-c7 'sh08-vf-map-get-recipe? [core (conj (vec (repeat 300 {})) {}) forms])))
-    (is (false? (invoke-c7 'sh08-vf-map-get-recipe? [core bindings (vec (repeat 33 {}))])))
-    (let [function-index (- (count (:nodes core)) 2)
-          malformed [(assoc core :definitions :uncountable)
-                     (assoc core :recur-targets :uncountable)
-                     (assoc-in core [:nodes function-index :attributes :signature] :uncountable)
-                     (assoc-in core [:nodes function-index :attributes :signature :return] :uncountable)
-                     (assoc-in core [:nodes 0 :attributes :symbol] {:not :a-symbol})
-                     (assoc-in core [:nodes function-index :attributes :signature :return :type-binding-id] [])
-                     (assoc-in core [:function-records 0 :function-syntax-id] {:not :an-id})
-                     (assoc-in core [:definitions 0 :core-node-id] [:not-an-id])]]
-      (doseq [changed malformed] (is (false? (run changed)))))
-    (is (false? (invoke-c7 'sh08-vf-map-get-recipe?
-                  [core (assoc-in bindings [0 :binding-id] [:not-an-id]) forms])))
-    (is (false? (invoke-c7 'sh08-vf-map-get-recipe?
-                  [core bindings (assoc-in forms [0 :form-id] {:not :an-id})])))
-    (prn {:first-order-map-get-recipe :checked :semantic-proof false
-          :whole-reconstruction-accounting false :B47-verification-complete false :public-wrapper-changed false})))
 
-(deftest sh08-verifier-map-get-selected-reconstruction
-  (let [{:keys [core bindings forms]} (verifier-current-core-products (fn [_ operation] (operation)))
-        normal (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
-                 [core bindings forms {} 1048576])
-        selected (invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger
-                   [core bindings forms {} 1048576])
-        run #(invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger [% bindings forms {} 1048576])
-        key-index (- (count (:nodes core)) 4)]
-    (is (= :accepted (get-in normal [:result :status])))
-    (is (= normal selected))
-    (doseq [allowance [0 1 (dec (:ordinary-work-count normal))
-                      (:ordinary-work-count normal) (inc (:ordinary-work-count normal))]]
-      (is (= (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
-               [core bindings forms {} allowance])
-             (invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger
-               [core bindings forms {} allowance]))))
-    (is (= :converged (get-in selected [:result :convergence :status])))
-    (is (< 1 (get-in selected [:result :convergence :round-count])))
-    (is (= :gravity.type/keyword
-           (get-in selected [:result :function-type-table 0 :return])))
-    (doseq [changed [(assoc-in core [:function-records 0 :signature :return :type-id] :gravity.type/string)
-                     (assoc-in core [:nodes key-index :attributes :value] :missing)
-                     (assoc-in core [:function-records 0 :body-core-node-id] (:node-id (first (:nodes core))))
-                     (assoc core :recursion-components [{}])
-                     (assoc core :error-handlers [{}])]]
-      (is (nil? (run changed))))
-    (let [call (nth (:nodes core) (- (count (:nodes core)) 3))
-          form-index (first (keep-indexed #(when (= (:form-id %2) (get-in call [:source :form-id])) %1) forms))
-          altered (assoc-in forms [form-index :child-form-ids] [])
-          rejected (invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger
-                     [core bindings altered {} 1048576])
-          ordinary (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
-                     [core bindings altered {} 1048576])]
-      (is (= :rejected (get-in rejected [:result :status])))
-      (is (= ordinary rejected)))
-    (let [call-index (- (count (:nodes core)) 3)
-          changed (assoc-in core [:nodes call-index :source :syntax-id]
-                    (str "sha256:" (apply str (repeat 64 "0"))))
-          projection (invoke-c7 'sh08-ft-semantic-projection-id [(:identity-preimage changed)])
-          changed (assoc-in changed [:identity-preimage :nodes]
-                    (invoke-c7 'sh08-ft-semantic-nodes [projection (:nodes changed)]))
-          ordinary (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
-                     [changed bindings forms {} 1048576])
-          rejected (run changed)]
-      (is (true? (invoke-c7 'sh08-vf-map-get-recipe? [changed bindings forms])))
-      (is (= :rejected (get-in ordinary [:result :status])))
-      (is (= ordinary rejected))
-      (is (some #(= :map-get-source-mismatch (:reason %)) (get-in rejected [:result :diagnostics]))))
-    (let [call-index (- (count (:nodes core)) 3)
-          edge (assoc-in core [:call-edges 0 :evaluation-order] :arguments-first)
-          edge (assoc-in edge [:identity-preimage :call-edges] (:call-edges edge))
-          call-form-id (get-in core [:nodes call-index :source :form-id])
-          form-index (first (keep-indexed #(when (= call-form-id (:form-id %2)) %1) forms))
-          replacement (str "sha256:" (apply str (repeat 64 "1")))
-          owner (assoc-in core [:nodes call-index :source :form-id] replacement)
-          projection (invoke-c7 'sh08-ft-semantic-projection-id [(:identity-preimage owner)])
-          owner (assoc-in owner [:identity-preimage :nodes]
-                  (invoke-c7 'sh08-ft-semantic-nodes [projection (:nodes owner)]))
-          owner-forms (assoc-in forms [form-index :form-id] replacement)]
-      (doseq [[changed originals] [[edge forms] [owner owner-forms]]]
-        (let [ordinary (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
-                         [changed bindings originals {} 1048576])
-              selected (invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger
-                         [changed bindings originals {} 1048576])]
-          (is (true? (invoke-c7 'sh08-vf-map-get-recipe? [changed bindings originals])))
-          (is (= :rejected (get-in ordinary [:result :status])))
-          (is (= ordinary selected)))))
-    (prn {:selected-reconstruction :complete-canonical-equivalence
-          :normal-producer-unchanged true :source-construction-replayed false
-          :private-route-only true :whole-paid-public-verifier false})))
 
-(deftest sh08-verifier-native-arraymap-storage-domain
-  (let [bad (clojure.lang.PersistentArrayMap. (object-array [:odd]))
-        nil-backing (clojure.lang.PersistentArrayMap. nil)
-        data #(invoke-c7 'sh08-vf-data [% 1000000])]
-    (doseq [value [bad nil-backing {:inactive bad} [nil-backing] (list bad) {:inactive nil-backing}]]
-      (let [result (data value)]
-        (is (= [:rejected :verification-native-carrier] ((juxt :status :reason) result)))
-        (is (not (contains? result :arena)))))
-    (is (nil? (invoke-c7 'sh08-vf-work-allowance [bad])))
-    (is (nil? (invoke-c7 'sh08-vf-work-allowance [nil-backing])))
-    (prn {:native-arraymap-storage :checked :dependency-commit "2b1371aaa60e5bd10734f3962741585f9b52c884"
-          :unknown-observation-work 75 :public-wrapper-changed false})))
 
-(deftest sh08-verifier-native-option-domain
-  (let [run #(invoke-c7 'sh08-vf-work-allowance [%])
-        callbacks (atom [])
-        foreign-map (proxy [clojure.lang.APersistentMap] []
-                      (count [] (swap! callbacks conj :count) (throw (AssertionError. "option count")))
-                      (seq [] (swap! callbacks conj :seq) (throw (AssertionError. "option seq"))))
-        foreign-integer (proxy [java.math.BigInteger] ["1"]
-                          (abs [] (swap! callbacks conj :abs) (throw (AssertionError. "option abs")))
-                          (longValue [] (swap! callbacks conj :long) (throw (AssertionError. "option long"))))
-        opaque (proxy [Object] []
-                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "option hash")))
-                 (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "option equality")))
-                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "option render"))))]
-    (doseq [options [{} (sorted-map)]] (is (= 65536 (run options))))
-    (doseq [n [1 65536 1048576 999999999999999999999999999999N]]
-      (is (= n (run {:type-inference-work-allowance n}))))
-    (doseq [options [nil [] opaque foreign-map
-                     (with-meta {} {:inactive opaque})
-                     (array-map opaque 1)
-                     {:type-inference-work-allowance opaque}
-                     {:type-inference-work-allowance foreign-integer}
-                     {:type-inference-work-allowance 0}
-                     {:type-inference-work-allowance -1}
-                     {:type-inference-work-allowance 1.0}
-                     {:type-inference-work-allowance 3/2}
-                     {:type-inference-work-allowance 1 :extra true}
-                     {"type-inference-work-allowance" 1}]]
-      (is (nil? (run options))))
-    (is (empty? @callbacks))
-    (let [audit (verifier-native-control-audit 'sh08-vf-work-allowance)]
-      ;; vec is reached only after the native extent is exactly one.
-      (is (<= (reduce + (:control-polynomial audit)) 8192))
-      (is (= 8 (second (:control-polynomial audit))))
-      (prn {:verifier-option-source-control audit :public-wrapper-changed false}))))
 
-(deftest sh08-verifier-native-symbol-operation-domain
-  (let [run #(invoke-c7 'sh08-vf-compare-data [%1 %2 10000000])
-        data #(invoke-c7 'sh08-vf-data [% 10000000])
-        a (clojure.lang.Symbol/intern nil nil)
-        b (clojure.lang.Symbol/intern nil nil)
-        qualified (clojure.lang.Symbol/intern "qualified" nil)]
-    (is (not (identical? a b)))
-    (is (thrown? NullPointerException (.equals a b)))
-    (doseq [bad [a b qualified]
-            value [bad {:inactive bad} [bad] (list bad) (array-map bad :value)]]
-      (let [out (data value)
-            exact (invoke-c7 'sh08-vf-data [value (:work-count out)])
-            short (invoke-c7 'sh08-vf-data [value (dec (:work-count out))])]
-        (is (= [:rejected :verification-native-symbol-name] ((juxt :status :reason) out)))
-        (is (= out exact))
-        (is (= :verification-work-limit (:reason short)))
-        (is (not (contains? out :arena)))))
-    (doseq [[left right] [[a b] [a 'valid] ['valid b] [{:x a} {:x b}]
-                          [[a] [b]] [(list a) (list b)]]]
-      (let [out (run left right)]
-        (is (= [:rejected :verification-native-symbol-name] ((juxt :status :reason) out)))))
-    (doseq [[namespace name] [[nil ""] ["" ""] ["qualified" ""] [nil "valid"] ["qualified" "valid"]]]
-      (let [left (clojure.lang.Symbol/intern namespace name)
-            right (clojure.lang.Symbol/intern namespace name)
-            out (run left right)]
-        (is (= [:accepted true] ((juxt :status :equal?) out)))))
-    (prn {:native-symbol-operation-domain :checked :distinct-null-name-rejected true
-          :root-and-nested true :valid-empty-name-preserved true :native-header-observation-work 75
-          :public-wrapper-changed false})))
 
-(deftest sh08-verifier-native-total-comparison-development-kernel
-  (let [run #(invoke-c7 'sh08-vf-compare-data [%1 %2 %3])
-        data #(invoke-c7 'sh08-vf-data [%1 %2])
-        allowance 100000000
-        left (array-map :key 1)
-        right (sorted-map "key" 1)
-        metadata (with-meta [:ordinary] {:inactive (Object.)})
-        samples [[nil nil true] [[1 2] (list 1 2) false] [(list 1 2) (cons 1 (list 2)) true]
-                 [{:a [1 2] :b #{:x :y}} (array-map :b #{:y :x} :a [1 2]) true]
-                 [left right false] [right left false]
-                 [(sorted-map :key 1) (array-map :key 1) true]
-                 [(array-map "key" 1) (sorted-map "key" 1) true]
-                 [{[1 :x] {:a 2}} {(list 1 :x) {:a 2}} false]
-                 [{#{:x :y} :value} {#{:y :x} :value} true]
-                 [(hash-set [1] (list 2)) (hash-set [1] (list 2)) true]
-                 [{:a 1} {:a 2} false] [1 1N true] [1 1.0 false]
-                 [3/2 3/2 true] [1.25M 1.25M true] [Double/NaN Double/NaN false]]]
-    ;; Raw host equality can throw for individually native Map values.
-    (is (thrown? ClassCastException (= left right)))
-    (doseq [[a b equal?] samples]
-      (let [result (run a b allowance) exact (:work-count result)
-            repeated (run a b exact) short (run a b (dec exact))]
-        (is (= [:accepted equal?] ((juxt :status :equal?) result)) (pr-str (dissoc result :arena)))
-        (is (= result repeated))
-        (is (= [:rejected :verification-work-limit] ((juxt :status :reason) short)))
-        (is (< (:completed-work-count short) (:work-count short)))))
-    (is (= :verification-carrier-metadata (:reason (data metadata allowance))))
-    (is (= :verification-native-carrier (:reason (data (subvec [1 2 3] 1) allowance))))
-    (is (= :verification-data-bound (:reason (data (nth (iterate vector nil) 129) allowance))))
-    ;; Independent small-value arithmetic, including the private arena fee.
-    (doseq [[value fee storage] [[nil 8208 16] [1 8209 17] [{} 8224 32]
-                                 [[1] 12857 57] [{:x 1} 17491 83] [(list 1) 16977 81]]]
-      (let [result (data value fee)]
-        (is (= [:accepted fee storage] ((juxt :status :work-count :storage-work) result)))
-        (is (= :verification-work-limit (:reason (data value (dec fee)))))))
-    (let [leaf {:unchanged [1 "physical"]} repeated [leaf leaf]
-          independent [(into {} leaf) (into {} leaf)]]
-      (is (= (data repeated allowance) (data independent allowance)))
-      (is (> (:storage-work (data repeated allowance)) (* 2 (:storage-work (data leaf allowance))))))
-    (let [callbacks (atom [])
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "verifier hash")))
-                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "verifier equality")))
-                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "verifier render"))))
-          cmp (reify java.util.Comparator
-                (compare [_ _ _] (swap! callbacks conj :compare) (throw (AssertionError. "verifier comparator"))))]
-      (doseq [value [opaque {:inactive opaque} (list opaque) (cons :head (lazy-seq (swap! callbacks conj :tail) nil))
-                     (sorted-map-by cmp) (with-meta 'symbol {:inactive opaque})]]
-        (is (= :rejected (:status (data value allowance)))))
-      (is (empty? @callbacks)))
-    (doseq [target '[sh08-vf-data sh08-vf-compare-arenas]]
-      (let [audit (verifier-native-control-audit target) [constant edge] (:control-polynomial audit)]
-        (is (<= constant 4096)) (is (<= edge 512))
-        (is (= #{} (:opaque-children audit)))
-        (prn {:verifier-native-control audit})))
-    (prn {:verifier-native-kernel :checked :public-wrapper-changed false
-          :host-map-lookup false :physical-alias-deduplication false})))
 
 (deftest sh08-function-work-policy-public-composition
   ;; Existing authenticated function-local-call fixture and request constructor.
