@@ -5,7 +5,7 @@
  semantic-late-sh05-macro-artifact-verification*-carrier
  [state]
  (clojure.core/let
-  [{:keys [artifact allow-missing-proof?]}
+  [{:keys [artifact allow-missing-proof? invocation]}
    state
    source-path
    (get-in artifact [:provenance :source-path])
@@ -15,6 +15,8 @@
    (:authenticated-sh04-artifact boundary)
    c3-boundary
    (:gravity-syntax-boundary c3-artifact)
+   ae-options
+   (when invocation (sh03-reader-authenticated-envelope-options source-path invocation))
    gravity-verifiers
    (try
     (sh05-macro-gravity-verifier-report source-path boundary)
@@ -28,12 +30,11 @@
    (try
     (=
      :passed
-     (p15-s23-stage2-sh02-descriptor-envelope-verify!
-      (:authenticated-envelope boundary)
-      sh05-macro-envelope-stage
-      sh05-macro-sealed-artifact-kind
-      (:authenticated-envelope-descriptor boundary)
-      source-path))
+     (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+      (cond-> [(:authenticated-envelope boundary)
+               sh05-macro-envelope-stage sh05-macro-sealed-artifact-kind
+               (:authenticated-envelope-descriptor boundary) source-path]
+        ae-options (conj ae-options))))
     (catch
      InterruptedException
      interrupted
@@ -61,7 +62,7 @@
      (c3-syntax-stream-reader-products-authentic?
       (:syntax-object-stream c3-artifact)
       (:c2-reader-artifact c3-artifact)
-      c3-boundary))
+      c3-boundary invocation))
     (catch
      InterruptedException
      interrupted
@@ -72,7 +73,7 @@
    (try
     (and
      (= (:artifact-id c3-artifact) (c3-artifact-id c3-artifact))
-     (= :complete (:status (c3-syntax-capability-proof c3-artifact))))
+     (= :complete (:status (c3-syntax-capability-proof c3-artifact invocation))))
     (catch
      InterruptedException
      interrupted

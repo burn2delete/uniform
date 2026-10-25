@@ -103,22 +103,58 @@
      (catch LinkageError _ false)
      (catch Exception _ false))))
 
+(defn- p15-s23-sh02-current-source-binding-inputs!
+  [candidate request-source]
+  (let [{:keys [repository-root source-path]}
+        (p15-s23-sh02-source-location! candidate request-source)
+        before (p15-s23-sh02-component-safe-source-path! request-source repository-root source-path)
+        buffer (java.nio.ByteBuffer/allocate (Math/toIntExact (.size before)))]
+    (with-open [channel (java.nio.channels.FileChannel/open
+                         source-path (into-array java.nio.file.OpenOption
+                                                 [java.nio.file.StandardOpenOption/READ
+                                                  java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+      (let [size (.size channel)]
+        (loop []
+          (when (.hasRemaining buffer)
+            (when (neg? (.read channel buffer))
+              (p15-s23-sh02-fail! request-source {} :stable-current-sh02-source-snapshot {}))
+            (recur)))
+        (let [after (p15-s23-sh02-component-safe-source-path! request-source repository-root source-path)]
+          (when-not (and (= size (.size channel) (.size before) (.size after) (.position buffer))
+                         (= (.fileKey before) (.fileKey after))
+                         (= (.lastModifiedTime before) (.lastModifiedTime after)))
+            (p15-s23-sh02-fail! request-source {} :stable-current-sh02-source-snapshot {}))
+          (let [bytes (.array buffer)
+                emitter (c-backend-stage2-plan-emitter-source-rule! request-source :jvm)]
+            {:development-current? true :emitter-rule emitter
+             :source-text (p15-s23-sh02-strict-source-text! request-source source-path bytes)
+             :inputs {:source-path (str source-path) :source-byte-count (alength bytes)
+                      :source-content-hash (str "sha256:" (sha256-bytes-hex bytes))
+                      :emitter-target :jvm :emitter-source-rule-hash (:source-rule-hash emitter)}}))))))
+
 (defn p15-s23-stage2-sh02-descriptor-envelope
-  "Build one reusable SH-02 envelope directly from a bounded stage descriptor.
+  "Build one reusable SH-02 envelope from a schema-2 stage descriptor.
 
   This is the narrow reuse seam for later bootstrap slices.  The caller may
   choose the stage label and artifact kind, but never supplies executable
   Gravity code, a compiled plan, a digest resolver, or construction authority.
-  The pinned SH-02 source is reloaded and reauthenticated on every call."
-  [stage artifact-kind descriptor source-path]
+  Default source pins fail closed. {:source :development-current} explicitly
+  executes a stable current snapshot and records development-unadmitted status."
+  ([stage artifact-kind descriptor source-path]
+   (p15-s23-stage2-sh02-descriptor-envelope stage artifact-kind descriptor source-path {}))
+  ([stage artifact-kind descriptor source-path options]
   (try
+    (p15-s23-sh02-require-carrier! source-path :source-options options)
+    (when-not (or (= {} options) (= {:source :development-current} options))
+      (p15-s23-sh02-fail! source-path {} :sh02-source-options {}))
     (when-not (and (keyword? stage) (keyword? artifact-kind))
       (p15-s23-sh02-fail!
        source-path descriptor :sh02-descriptor-envelope-stage-contract
        {:stage stage :artifact-kind artifact-kind}))
     (let [binding
           (p15-s23-sh02-source-binding!
-           p15-s23-c13-c14-b1-authority-token source-path)
+           p15-s23-c13-c14-b1-authority-token source-path
+           (= {:source :development-current} options))
           packet {stage {:artifact artifact-kind}}]
       (p15-s23-sh02-build-stage-envelope!
        p15-s23-c13-c14-b1-authority-token
@@ -140,14 +176,16 @@
        source-path :contained-sh02-descriptor-envelope-diagnostic exception))
     (catch Exception exception
       (p15-s23-b3-llvm-contain-exception!
-       source-path :contained-sh02-descriptor-envelope-host-failure exception))))
+       source-path :contained-sh02-descriptor-envelope-host-failure exception)))))
 
 (defn p15-s23-stage2-sh02-descriptor-envelope-verify!
-  "Reconstruct a descriptor envelope from current pinned source and inputs."
-  [artifact stage artifact-kind descriptor source-path]
+  "Reconstruct from the selected source snapshot and complete current inputs."
+  ([artifact stage artifact-kind descriptor source-path]
+   (p15-s23-stage2-sh02-descriptor-envelope-verify! artifact stage artifact-kind descriptor source-path {}))
+  ([artifact stage artifact-kind descriptor source-path options]
   (let [expected
         (p15-s23-stage2-sh02-descriptor-envelope
-         stage artifact-kind descriptor source-path)]
+         stage artifact-kind descriptor source-path options)]
     (p15-s23-c11-mir-require-strict-structure!
      source-path expected artifact
      :fresh-sh02-descriptor-envelope-reconstruction)
@@ -155,7 +193,7 @@
       (p15-s23-sh02-fail!
        source-path artifact :fresh-sh02-descriptor-envelope-equality
        {:stage stage :artifact-kind artifact-kind}))
-    :passed))
+    :passed)))
 
 (def p15-s23-c-backend-diagnostic-rules
   (into

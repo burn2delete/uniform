@@ -10,7 +10,7 @@
         generated-origin-chain
         (let [origin (or (:generated-origin-chain subject)
                          (:generated-origin subject))]
-          (if (and (vector? origin) (<= (count origin) 64)) origin []))
+          (if (vector? origin) origin []))
         semantic-identities
         (into {}
               (keep (fn [key]
@@ -75,40 +75,12 @@
           (<= 0xDC00 code 0xDFFF) false
           :else (recur (inc index)))))))
 
-(defn p15-s23-c6c10-bounded-string-bytes!
-  [source-path stats value]
-  (when (> (.length ^String value) p15-s23-c6c10-max-scalar-bytes)
-    (p15-s23-c6c10-host-fail!
-     "C6-VERIFY" source-path :maximum-scalar-characters
-     {:observed-scalar-characters (.length ^String value)
-      :maximum-scalar-characters p15-s23-c6c10-max-scalar-bytes}))
+(defn- p15-s23-c6c10-require-unicode-string!
+  [source-path value]
   (when-not (p15-s23-c6c10-valid-unicode-string? value)
     (p15-s23-c6c10-host-fail!
      "C6-VERIFY" source-path :well-formed-unicode-scalar-string
-     {:value-kind :string}))
-  (let [byte-count (utf8-byte-count value)]
-    (when (> byte-count p15-s23-c6c10-max-scalar-bytes)
-      (p15-s23-c6c10-host-fail!
-       "C6-VERIFY" source-path :maximum-scalar-bytes
-       {:observed-scalar-bytes byte-count
-        :maximum-scalar-bytes p15-s23-c6c10-max-scalar-bytes}))
-    (swap! stats update :scalar-bytes + byte-count)
-    (swap! stats update :maximum-scalar-bytes max byte-count)
-    (when (> (:scalar-bytes @stats)
-             p15-s23-c6c10-max-total-scalar-bytes)
-      (p15-s23-c6c10-host-fail!
-       "C6-VERIFY" source-path :maximum-total-scalar-bytes
-       {:observed-total-scalar-bytes (:scalar-bytes @stats)}))))
-
-(defn p15-s23-c6c10-bounded-integer!
-  [source-path stats value]
-  (let [bits (.bitLength (.abs (biginteger value)))]
-    (swap! stats update :maximum-integer-bits max bits)
-    (when (> bits p15-s23-c6c10-max-integer-bits)
-      (p15-s23-c6c10-host-fail!
-       "C6-VERIFY" source-path :maximum-integer-bits
-       {:observed-integer-bits bits
-        :maximum-integer-bits p15-s23-c6c10-max-integer-bits}))))
+     {:value-kind :string})))
 
 (declare p15-s23-c6c10-canonical-form*)
 
@@ -156,8 +128,79 @@
                       (= \/ %))
                  value)))
 
-(defn p15-s23-c6c10-canonical-sequence
-  [source-path stats depth values]
-  (mapv #(p15-s23-c6c10-canonical-form*
-          source-path stats (inc depth) %)
-        values))
+(defn- p15-s23-c6c10-native-vector-backing?
+  [value]
+  (let [seen (java.util.IdentityHashMap.)]
+    (loop [value value]
+      (cond
+        (identical? clojure.lang.PersistentVector (class value)) true
+        (not (identical? clojure.lang.APersistentVector$SubVector (class value))) false
+        (.containsKey seen value) false
+        :else
+        (let [^clojure.lang.APersistentVector$SubVector view value
+              backing (.-v view)]
+          (.put seen value true)
+          (and (<= 0 (.-start view) (.-end view))
+               (or (identical? clojure.lang.PersistentVector (class backing))
+                   (identical? clojure.lang.APersistentVector$SubVector (class backing)))
+               (<= (.-end view) (.count ^clojure.lang.Counted backing))
+               (recur backing)))))))
+
+(defn- p15-s23-c6c10-canonical-list-items
+  [source-path value]
+  (let [seen (java.util.IdentityHashMap.)]
+    (loop [cursor value items []]
+      (let [kind (class cursor) class-name (some-> kind .getName)]
+        (cond
+          (or (nil? cursor) (identical? clojure.lang.PersistentList$EmptyList kind)) items
+          (not (and (contains? p15-s23-c6c10-canonical-list-classes class-name)
+                    (or (identical? clojure.lang.PersistentList kind)
+                        (identical? clojure.lang.Cons kind))))
+          (p15-s23-c6c10-host-fail!
+           "C6-VERIFY" source-path :exact-persistent-list-class {:class class-name})
+          (some? (.meta ^clojure.lang.IObj cursor))
+          (p15-s23-c6c10-host-fail!
+           "C6-VERIFY" source-path :metadata-free-canonical-value {:value-kind class-name})
+          (.containsKey seen cursor)
+          (p15-s23-c6c10-host-fail!
+           "C6-VERIFY" source-path :cyclic-canonical-carrier {})
+          :else
+          (do (.put seen cursor true)
+              (recur (if (identical? clojure.lang.Cons kind)
+                       (.more ^clojure.lang.Cons cursor)
+                       (.next ^clojure.lang.PersistentList cursor))
+                     (conj items (.first ^clojure.lang.ISeq cursor)))))))))
+
+(defn- p15-s23-c6c10-canonical-carrier
+  [source-path value]
+  (let [class-name (some-> value class .getName)
+        [native-kind metadata? comparator] (p15-s23-host-carrier-header value)
+        [kind allowed? missing]
+        (cond
+          (record? value) [nil false :record-free-canonical-value]
+          (vector? value) [:vector (and (contains? p15-s23-c6c10-canonical-vector-classes class-name)
+                                       (p15-s23-c6c10-native-vector-backing? value))
+                           :exact-persistent-vector-class]
+          (map? value) [:map (contains? p15-s23-c6c10-canonical-map-classes class-name)
+                       :exact-persistent-map-class]
+          (set? value) [:set (contains? p15-s23-c6c10-canonical-set-classes class-name)
+                       :exact-persistent-set-class]
+          (list? value) [:list (contains? p15-s23-c6c10-canonical-list-classes class-name)
+                        :exact-persistent-list-class]
+          :else [nil true :canonical-value-domain])]
+    (when (or (not allowed?) (= :unsupported native-kind))
+      (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path missing {:class class-name}))
+    (when metadata?
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :metadata-free-canonical-value {:value-kind class-name}))
+    (when (and (contains? #{:tree-map :tree-set} native-kind)
+               (not= :default-comparator comparator))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :default-native-comparator {:class class-name}))
+    {:kind kind
+     :children (case kind
+                 :map (reduce-kv (fn [items key child] (conj items key child)) [] value)
+                 :vector (into [] value)
+                 :set (into [] value)
+                 :list (p15-s23-c6c10-canonical-list-items source-path value)
+                 nil)}))

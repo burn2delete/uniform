@@ -275,8 +275,8 @@
                          (into-array OpenOption
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
-          snapshot-a (cache/bounded-source-snapshot! source-a)
-          snapshot-b (cache/bounded-source-snapshot! source-b)
+          snapshot-a (cache/source-snapshot! source-a)
+          snapshot-b (cache/source-snapshot! source-b)
           request-a (key-request snapshot-a)
           request-b (assoc (key-request snapshot-b)
                            :source-unit (:source-unit request-a)
@@ -288,7 +288,25 @@
       (is (= (:semantic-key-id key-a) (:semantic-key-id key-b)))
       (is (not= (:storage-key-id key-a) (:storage-key-id key-b))))))
 
-(deftest bounded-source-snapshot-rejects-size-links-and-traversal
+(deftest source-snapshot-and-key-accept-more-than-the-former-source-quota
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "large-source.gravity")
+          bytes (byte-array 1048577)]
+      (Files/write source bytes (into-array OpenOption
+                                           [StandardOpenOption/CREATE_NEW StandardOpenOption/WRITE]))
+      (let [snapshot (cache/source-snapshot! source)
+            key (cache/cache-key (key-request snapshot))]
+        (is (= :gravity/source-snapshot (:artifact snapshot)))
+        (is (= (alength bytes) (:byte-count snapshot)))
+        (is (java.util.Arrays/equals bytes (:bytes snapshot)))
+        (is (not (contains? snapshot :maximum-source-bytes)))
+        (is (= {:bytes-hash (:bytes-hash snapshot)
+                :byte-count (alength bytes)}
+               (get-in key [:semantic-preimage :source-snapshot])))
+        (is (= (:semantic-key-id key)
+               (cache/canonical-content-id (:semantic-preimage key))))))))
+
+(deftest source-snapshot-preserves-links-and-owner-security
   (with-temporary-directory [directory]
     (let [source (.resolve directory "source.gravity")
           link (.resolve directory "source-link.gravity")
@@ -297,25 +315,23 @@
                    (into-array OpenOption
                                [StandardOpenOption/CREATE_NEW
                                 StandardOpenOption/WRITE]))
-      (is (= "C16-KEY"
-             (:id (ex-data
-                   (try
-                     (cache/bounded-source-snapshot! source 4)
-                     nil
-                     (catch clojure.lang.ExceptionInfo error error))))))
+      (is (= 5 (:byte-count (cache/source-snapshot! source))))
+      ;; Existing callers may pass an obsolete size argument during migration;
+      ;; it is not an intake policy and cannot reject valid bytes.
+      (is (= 5 (:byte-count (cache/bounded-source-snapshot! source 4))))
       (Files/createSymbolicLink link source
                                 (make-array java.nio.file.attribute.FileAttribute 0))
       (is (= "C16-KEY"
              (:id (ex-data
                    (try
-                     (cache/bounded-source-snapshot! link)
+                     (cache/source-snapshot! link)
                      nil
                      (catch clojure.lang.ExceptionInfo error error))))))
       (Files/createLink hard-link source)
       (is (= "C16-KEY"
              (:id (ex-data
                    (try
-                     (cache/bounded-source-snapshot! source)
+                     (cache/source-snapshot! source)
                      nil
                      (catch clojure.lang.ExceptionInfo error error))))))
       (Files/delete hard-link)
@@ -333,7 +349,7 @@
                      (if (= 2 (swap! calls inc))
                        (update attributes :posix with-different-owner)
                        attributes)))}
-                #(cache/bounded-source-snapshot! source))
+                #(cache/source-snapshot! source))
               nil
               (catch clojure.lang.ExceptionInfo error error))]
         (is (= "C16-KEY" (:id (ex-data owner-change)))))
@@ -357,7 +373,7 @@
                          (into-array OpenOption
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
-          snapshot (cache/bounded-source-snapshot! source)
+          snapshot (cache/source-snapshot! source)
           key (cache/cache-key (key-request snapshot))
           calls (atom 0)
           artifact (accepted-artifact :first-run)
@@ -445,7 +461,7 @@
                          (into-array OpenOption
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
-          snapshot (cache/bounded-source-snapshot! source)
+          snapshot (cache/source-snapshot! source)
           key (cache/cache-key (key-request snapshot))
           store (cache/open-local-store directory)
           rejection (try
@@ -513,7 +529,7 @@
                          (into-array OpenOption
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
-          snapshot (cache/bounded-source-snapshot! source)
+          snapshot (cache/source-snapshot! source)
           key (cache/cache-key (key-request snapshot))
           store-a (cache/open-local-store directory)
           store-b (cache/open-local-store directory)
@@ -558,9 +574,9 @@
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
           key-a (cache/cache-key
-                 (key-request (cache/bounded-source-snapshot! source-a)))
+                 (key-request (cache/source-snapshot! source-a)))
           key-b (cache/cache-key
-                 (key-request (cache/bounded-source-snapshot! source-b)))
+                 (key-request (cache/source-snapshot! source-b)))
           store-a (cache/open-local-store directory)
           store-b (cache/open-local-store directory)
           started-a (promise)
@@ -607,7 +623,7 @@
                          (into-array OpenOption
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
-          snapshot (cache/bounded-source-snapshot! source)
+          snapshot (cache/source-snapshot! source)
           key (cache/cache-key (key-request snapshot))
           store (cache/open-local-store directory)
           artifact (accepted-artifact :adversarial)
@@ -716,7 +732,7 @@
                            (into-array OpenOption
                                        [StandardOpenOption/CREATE_NEW
                                         StandardOpenOption/WRITE]))
-            snapshot (cache/bounded-source-snapshot! source)
+            snapshot (cache/source-snapshot! source)
             key (cache/cache-key (key-request snapshot))
             error (try
                     (cache/lookup! store key
@@ -769,7 +785,7 @@
                            (into-array OpenOption
                                        [StandardOpenOption/CREATE_NEW
                                         StandardOpenOption/WRITE]))
-            snapshot (cache/bounded-source-snapshot! source)
+            snapshot (cache/source-snapshot! source)
             key (cache/cache-key (key-request snapshot))
             path-file-key
             (fn [path]
@@ -812,7 +828,7 @@
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
           key (cache/cache-key
-               (key-request (cache/bounded-source-snapshot! source)))
+               (key-request (cache/source-snapshot! source)))
           store (cache/open-local-store directory)
           move-var (ns-resolve 'gravity.c2-pass-cache
                                'secure-publish-move!)
@@ -856,7 +872,7 @@
               second-key
               (cache/cache-key
                (key-request
-                (cache/bounded-source-snapshot! second-source)))]
+                (cache/source-snapshot! second-source)))]
           (is (= :miss
                  (get-in (cache/lookup!
                           store second-key
@@ -876,7 +892,7 @@
                          (into-array OpenOption
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
-          snapshot (cache/bounded-source-snapshot! source)
+          snapshot (cache/source-snapshot! source)
           key (cache/cache-key (key-request snapshot))
           store (cache/open-local-store directory)
           artifact (accepted-artifact :fatal-tripwire)
@@ -904,7 +920,7 @@
                          (into-array OpenOption
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
-          snapshot (cache/bounded-source-snapshot! source)
+          snapshot (cache/source-snapshot! source)
           key (cache/cache-key (key-request snapshot))
           artifact (accepted-artifact :adapter)
           calls (atom 0)
@@ -952,7 +968,7 @@
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
           key (cache/cache-key
-               (key-request (cache/bounded-source-snapshot! source)))
+               (key-request (cache/source-snapshot! source)))
           artifact-a (accepted-artifact :binding-a)
           artifact-b (accepted-artifact :binding-b)
           calls (atom [])
@@ -988,7 +1004,7 @@
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
           key (cache/cache-key
-               (key-request (cache/bounded-source-snapshot! source)))
+               (key-request (cache/source-snapshot! source)))
           artifact (accepted-artifact :corrupt)
           calls (atom 0)
           ops (validation-ops #(do (swap! calls inc) artifact))
@@ -1022,7 +1038,7 @@
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
           key (cache/cache-key
-               (key-request (cache/bounded-source-snapshot! source)))
+               (key-request (cache/source-snapshot! source)))
           artifact (accepted-artifact :direct-store)
           ops (validation-ops (constantly artifact))
           store (cache/open-local-store directory)
@@ -1048,7 +1064,7 @@
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
           key (cache/cache-key
-               (key-request (cache/bounded-source-snapshot! source)))
+               (key-request (cache/source-snapshot! source)))
           artifact (accepted-artifact :concurrent)
           calls (atom 0)
           validations (atom [])
@@ -1109,7 +1125,7 @@
                          (into-array OpenOption
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
-          snapshot-a (cache/bounded-source-snapshot! source-a)
+          snapshot-a (cache/source-snapshot! source-a)
           request-a (key-request snapshot-a)
           key-a (cache/cache-key request-a)
           key-b (cache/cache-key
@@ -1252,7 +1268,7 @@
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
           key (cache/cache-key
-               (key-request (cache/bounded-source-snapshot! source)))
+               (key-request (cache/source-snapshot! source)))
           retained (accepted-artifact :retained-identity)
           fresh (accepted-artifact :fresh-after-rejected-hit)
           store (cache/open-local-store directory)
@@ -1372,10 +1388,10 @@
                                       StandardOpenOption/WRITE]))
           large-key
           (cache/cache-key
-           (key-request (cache/bounded-source-snapshot! large-source)))
+           (key-request (cache/source-snapshot! large-source)))
           deep-key
           (cache/cache-key
-           (key-request (cache/bounded-source-snapshot! deep-source)))
+           (key-request (cache/source-snapshot! deep-source)))
           large-payload (byte-array (* 10 1024 1024) (byte 37))
           deep-payload (nth (iterate #(list %) :leaf) 120)
           large-artifact (accepted-artifact large-payload)
@@ -1426,7 +1442,7 @@
                                          [StandardOpenOption/CREATE_NEW
                                           StandardOpenOption/WRITE]))
               key (cache/cache-key
-                   (key-request (cache/bounded-source-snapshot! source)))
+                   (key-request (cache/source-snapshot! source)))
               exact-root (.resolve directory "exact")
               over-root (.resolve directory "over")
               _ (Files/createDirectory
@@ -1492,7 +1508,7 @@
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
           key (cache/cache-key
-               (key-request (cache/bounded-source-snapshot! source)))
+               (key-request (cache/source-snapshot! source)))
           retained (accepted-artifact :retained)
           fresh (accepted-artifact (vec (range 1000)))
           limit (:nodes (canonical-census fresh))
@@ -1565,7 +1581,7 @@
                                      [StandardOpenOption/CREATE_NEW
                                       StandardOpenOption/WRITE]))
           key (cache/cache-key
-               (key-request (cache/bounded-source-snapshot! source)))
+               (key-request (cache/source-snapshot! source)))
           store (cache/open-local-store directory)
           artifact (accepted-artifact :propagation)
           validator-error (ex-info "validator" {:id "C2-VALIDATOR"})

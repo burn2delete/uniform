@@ -1,21 +1,18 @@
-(defn- sh03-reader-canonical-stream-stats []
-  (object-array [0 0 0 0 0 0]))
-
-;; Reader-only encoding of the existing canonical EDN v1, not a new format.
-;; V validates in original entry order before any digest output. E streams in
-;; canonical order. Each complete pass has the original capacity and statistics;
-;; a second finite pass grants no input capacity and no object-alias discount.
-;; Compound keys and sets retain the old bounded normalizer as a fallback.
 (defn- sh03-reader-canonical-stream-header!
-  [source-path stats depth value classes class-reason]
-  (sh03-reader-canonical-visit! source-path stats depth value)
-  (when-not (contains? classes (.getName (class value)))
-    (p15-s23-c6c10-host-fail!
-     "C6-VERIFY" source-path class-reason {:class (.getName (class value))}))
-  (when (> (count value) p15-s23-c6c10-max-container-width)
-    (p15-s23-c6c10-host-fail!
-     "C6-VERIFY" source-path :maximum-container-width {:observed-width (count value)}))
-  (aset ^objects stats 2 (#'clojure.core/max (aget ^objects stats 2) (count value))))
+  [source-path value]
+  (sh03-reader-canonical-metadata! source-path value)
+  (when (.containsKey ^java.util.IdentityHashMap p15-s23-c6c10-canonical-ancestors value)
+    (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :cyclic-canonical-carrier {}))
+  (.put ^java.util.IdentityHashMap p15-s23-c6c10-canonical-ancestors value true))
+
+(defn- sh03-reader-canonical-stream-leave! [value]
+  (.remove ^java.util.IdentityHashMap p15-s23-c6c10-canonical-ancestors value))
+
+;; Reader-only encoding of existing canonical EDN v1. V validates in original
+;; entry order before output opens; E validates independently in canonical
+;; order. Compound keys and sets retain the generic semantic normalizer.
+;; Each pass owns fresh identity ancestors shared with that normalizer. Only
+;; successfully entered containers are removed; aliases are visited anew.
 
 (defn- ^String sh03-reader-canonical-named-text [^String value]
   ;; Only freshly validated Named components reach this function: no control,
@@ -51,55 +48,58 @@
     (p15-s23-c6c10-host-fail!
      "C6-VERIFY" source-path :unique-canonical-map-keys {})))
 
-(defn- sh03-reader-canonical-stream-validate-value! [source-path stats depth value]
+(defn- sh03-reader-canonical-stream-validate-value! [source-path value]
   (cond
     ;; Original 00703 rejects records before its map branch.
     (record? value)
-    (do (sh03-reader-canonical-fallback-form! source-path stats depth value) nil)
+    (do (sh03-reader-canonical-fallback-form! source-path value) nil)
 
     (vector? value)
     (do
       (sh03-reader-canonical-stream-header!
-       source-path stats depth value p15-s23-c6c10-canonical-vector-classes
-       :exact-persistent-vector-class)
-      (doseq [child value]
-        (sh03-reader-canonical-stream-validate-value! source-path stats (inc depth) child)))
+       source-path value)
+      (try
+        (doseq [child value]
+          (sh03-reader-canonical-stream-validate-value! source-path child))
+        (finally (sh03-reader-canonical-stream-leave! value))))
 
     (map? value)
     (do
       (sh03-reader-canonical-stream-header!
-       source-path stats depth value p15-s23-c6c10-canonical-map-classes
-       :exact-persistent-map-class)
-      (let [sort-keys
+       source-path value)
+      (try
+       (let [sort-keys
             (mapv (fn [[key child]]
                     (let [encoded-key (sh03-reader-canonical-key-form!
-                                       source-path stats (inc depth) key)
+                                       source-path key)
                           key-sort (sh03-reader-canonical-stream-sort-key encoded-key)]
                       ;; Preserve key -> sort key -> child, including failures.
                       (sh03-reader-canonical-stream-validate-value!
-                       source-path stats (inc depth) child)
+                       source-path child)
                       key-sort))
                   value)]
         ;; All original-order children precede the original duplicate check.
-        (sh03-reader-canonical-stream-unique-keys! source-path sort-keys)))
+        (sh03-reader-canonical-stream-unique-keys! source-path sort-keys))
+       (finally (sh03-reader-canonical-stream-leave! value))))
 
     (list? value)
     (do
       (sh03-reader-canonical-stream-header!
-       source-path stats depth value p15-s23-c6c10-canonical-list-classes
-       :exact-persistent-list-class)
-      (doseq [child value]
-        (sh03-reader-canonical-stream-validate-value! source-path stats (inc depth) child)))
+       source-path value)
+      (try
+        (doseq [child value]
+          (sh03-reader-canonical-stream-validate-value! source-path child))
+        (finally (sh03-reader-canonical-stream-leave! value))))
 
     :else
     ;; Common scalar values validate without allocating discarded forms.
     ;; Sets, uncommon scalars and unsupported domains retain original fallback.
-    (sh03-reader-canonical-validate-scalar! source-path stats depth value)))
+    (sh03-reader-canonical-validate-scalar! source-path value)))
 
 (defn- sh03-reader-canonical-stream-validation! [source-path value]
-  (let [stats (sh03-reader-canonical-stream-stats)]
-    (sh03-reader-canonical-stream-validate-value! source-path stats 0 value)
-    (sh03-reader-canonical-stats-map stats)))
+  (binding [p15-s23-c6c10-canonical-ancestors (java.util.IdentityHashMap.)]
+    (sh03-reader-canonical-stream-validate-value! source-path value))
+  {:status :passed})
 
 (declare ^:private sh03-reader-canonical-stream-emit-value!)
 
@@ -118,19 +118,19 @@
   (.write writer "\""))
 
 (defn- sh03-reader-canonical-stream-sequence!
-  [source-path stats depth values ^java.io.Writer writer ^String tag]
+  [source-path values ^java.io.Writer writer ^String tag]
   (.write writer tag)
   (loop [remaining (seq values) first? true]
     (when remaining
       (when-not first? (.write writer " "))
       (sh03-reader-canonical-stream-emit-value!
-       source-path stats (inc depth) (first remaining) writer)
+       source-path (first remaining) writer)
       (recur (next remaining) false)))
   (.write writer "]]"))
 
 (defn- sh03-reader-canonical-stream-scalar!
-  [source-path stats depth value ^java.io.Writer writer]
-  (sh03-reader-canonical-validate-scalar! source-path stats depth value)
+  [source-path value ^java.io.Writer writer]
+  (sh03-reader-canonical-validate-scalar! source-path value)
   (cond
     (nil? value) (.write writer "[:nil]")
     (boolean? value) (.write writer ^String (if value "[:boolean true]" "[:boolean false]"))
@@ -146,27 +146,27 @@
                          (if (keyword? value) "[:keyword " "[:symbol ")
                          (namespace value) (name value)))))
 
-(defn- sh03-reader-canonical-stream-emit-value! [source-path stats depth value ^java.io.Writer writer]
+(defn- sh03-reader-canonical-stream-emit-value! [source-path value ^java.io.Writer writer]
   (cond
     (record? value)
-    (pr (sh03-reader-canonical-fallback-form! source-path stats depth value))
+    (pr (sh03-reader-canonical-fallback-form! source-path value))
 
     (vector? value)
     (do
       (sh03-reader-canonical-stream-header!
-       source-path stats depth value p15-s23-c6c10-canonical-vector-classes
-       :exact-persistent-vector-class)
-      (sh03-reader-canonical-stream-sequence! source-path stats depth value writer "[:vector ["))
+       source-path value)
+      (try (sh03-reader-canonical-stream-sequence! source-path value writer "[:vector [")
+           (finally (sh03-reader-canonical-stream-leave! value))))
 
     (map? value)
     (do
       (sh03-reader-canonical-stream-header!
-       source-path stats depth value p15-s23-c6c10-canonical-map-classes
-       :exact-persistent-map-class)
-      (let [entries
+       source-path value)
+      (try
+       (let [entries
             (mapv (fn [[key child]]
                     (let [encoded-key (sh03-reader-canonical-key-form!
-                                       source-path stats (inc depth) key)]
+                                       source-path key)]
                       [(sh03-reader-canonical-stream-sort-key encoded-key) encoded-key child])) value)]
         (sh03-reader-canonical-stream-unique-keys! source-path (mapv first entries))
         (.write writer "[:map [")
@@ -180,42 +180,39 @@
                                 "[:keyword " (get encoded-key 1) (get encoded-key 2)))
                 (pr encoded-key))
               (.write writer " ")
-              (sh03-reader-canonical-stream-emit-value! source-path stats (inc depth) child writer)
+              (sh03-reader-canonical-stream-emit-value! source-path child writer)
               (.write writer "]"))
             (recur (next remaining) false)))
-        (.write writer "]]")))
+        (.write writer "]]"))
+       (finally (sh03-reader-canonical-stream-leave! value))))
 
     (list? value)
     (do
       (sh03-reader-canonical-stream-header!
-       source-path stats depth value p15-s23-c6c10-canonical-list-classes
-       :exact-persistent-list-class)
-      (sh03-reader-canonical-stream-sequence! source-path stats depth value writer "[:list ["))
+       source-path value)
+      (try (sh03-reader-canonical-stream-sequence! source-path value writer "[:list [")
+           (finally (sh03-reader-canonical-stream-leave! value))))
 
     (sh03-reader-canonical-stream-scalar-value? value)
-    (sh03-reader-canonical-stream-scalar! source-path stats depth value writer)
+    (sh03-reader-canonical-stream-scalar! source-path value writer)
 
-    :else (pr (sh03-reader-canonical-fallback-form! source-path stats depth value))))
+    :else (pr (sh03-reader-canonical-fallback-form! source-path value))))
 
 (defn- sh03-reader-canonical-stream-write!
-  [source-path value validated-stats ^java.io.Writer writer]
-  (let [stats (sh03-reader-canonical-stream-stats)]
-    (binding [*out* writer *print-length* nil *print-level* nil *print-meta* false
-              *print-dup* false *print-readably* true *print-namespace-maps* false]
-      (.write writer "[:gravity/canonical-edn-v1 ")
-      (sh03-reader-canonical-stream-emit-value! source-path stats 0 value writer)
-      (.write writer "]"))
-    (when-not (= validated-stats (sh03-reader-canonical-stats-map stats))
-      (p15-s23-c6c10-host-fail!
-       "C6-VERIFY" source-path :sh03-canonical-stream-statistics-coherence
-       {:validation validated-stats :emission (sh03-reader-canonical-stats-map stats)}))
-    (sh03-reader-canonical-stats-map stats)))
+  [source-path value ^java.io.Writer writer]
+  (binding [p15-s23-c6c10-canonical-ancestors (java.util.IdentityHashMap.)
+            *out* writer *print-length* nil *print-level* nil *print-meta* false
+            *print-dup* false *print-readably* true *print-namespace-maps* false]
+    (.write writer "[:gravity/canonical-edn-v1 ")
+    (sh03-reader-canonical-stream-emit-value! source-path value writer)
+    (.write writer "]"))
+  {:status :passed})
 
 (defn- sh03-reader-canonical-stream-digest [source-path value]
   ;; Validation completes before opening the private hashing stream. No
   ;; normalized map values or whole sequence of normalized children survives.
-  (let [validated-stats (sh03-reader-canonical-stream-validation! source-path value)]
-    (str "sha256:"
+  (sh03-reader-canonical-stream-validation! source-path value)
+  (str "sha256:"
          (digest/sha256-output-hex
           (fn [^java.io.OutputStream output]
             (let [writer (java.io.BufferedWriter.
@@ -223,11 +220,11 @@
                            output java.nio.charset.StandardCharsets/UTF_8)
                           8192)]
               (try
-                (sh03-reader-canonical-stream-write! source-path value validated-stats writer)
+                (sh03-reader-canonical-stream-write! source-path value writer)
                 (catch Throwable primary
                   (try (.close writer)
                        (catch Throwable secondary
                          (when-not (identical? primary secondary)
                            (try (.addSuppressed primary secondary) (catch Throwable _ nil)))))
                   (throw primary)))
-              (.close writer)))))))
+              (.close writer))))))

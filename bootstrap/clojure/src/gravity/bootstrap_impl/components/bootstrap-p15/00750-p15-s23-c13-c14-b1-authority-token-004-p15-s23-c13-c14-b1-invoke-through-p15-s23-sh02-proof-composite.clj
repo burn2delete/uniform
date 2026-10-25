@@ -42,23 +42,6 @@
     (p15-s23-c11-mir-path-neutral-value value))
    :entry-count (if (coll? value) (count value) 1)})
 
-(def p15-s23-sh02-authenticated-envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (def p15-s23-sh02-fact-families
   [[:type :type-table]
    [:effect :effect-table]
