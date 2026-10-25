@@ -63,6 +63,12 @@
       (nil? value) [:nil false nil nil nil nil]
       (identical? Boolean kind) [:boolean false nil nil nil nil]
       (identical? Character kind) [:character false nil nil nil nil]
+      (identical? Byte kind)
+      [:integer8 false nil
+       (p15-s23-stage2-native-integer-magnitude-bits (.longValue ^Byte value)) nil nil]
+      (identical? Short kind)
+      [:integer16 false nil
+       (p15-s23-stage2-native-integer-magnitude-bits (.longValue ^Short value)) nil nil]
       (identical? Integer kind)
       [:integer32 false nil
        (p15-s23-stage2-native-integer-magnitude-bits (.longValue ^Integer value)) nil nil]
@@ -86,6 +92,14 @@
         (if (and (some? numerator) (some? denominator))
           [:ratio false nil numerator denominator nil]
           (p15-s23-stage2-native-unsupported-header)))
+      (identical? java.math.BigDecimal kind)
+      (let [bits (p15-s23-stage2-native-big-integer-magnitude-bits
+                   (.unscaledValue ^java.math.BigDecimal value))]
+        (if (some? bits)
+          [:big-decimal false nil bits (long (.scale ^java.math.BigDecimal value)) nil]
+          (p15-s23-stage2-native-unsupported-header)))
+      (identical? Float kind) [:float32 false nil 32 nil nil]
+      (identical? Double kind) [:float64 false nil 64 nil nil]
       (identical? String kind) [:string false nil (.length ^String value) nil nil]
       (identical? clojure.lang.Symbol kind)
       [:symbol (p15-s23-stage2-native-meta-present? value) nil

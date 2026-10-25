@@ -72,10 +72,10 @@ Wrong arity reports `L2-BUILTIN-ARITY`; wrong plan context reports
 `L2-BUILTIN-ERROR` without rendering the operand.
 
 Every operand and nested native method receiver must pass an exact class
-check first. The current contour covers nil, Boolean, Character, Integer,
-Long, String, Symbol, Keyword, native persistent array/hash/tree maps, hash
+check first. The current contour covers nil, Boolean, Character, Byte, Short,
+Integer, Long, String, Symbol, Keyword, native persistent array/hash/tree maps, hash
 sets, vectors, List nodes/empty Lists and Cons/SubVector observations. It also
-describes native BigInt, BigInteger and Ratio for the retained numeric DATA domain;
+describes native BigInt, BigInteger, Ratio, BigDecimal, Float and Double;
 other numeric classes remain unsupported observations, not language exclusions.
 Metadata is only a presence Boolean after a native class check. It is not
 walked, returned, or implicitly rejected. String/Symbol/Keyword metrics count
@@ -88,6 +88,29 @@ BigInteger fields before numeric observation. No GCD, printing, precision,
 normalization or numeric equality is performed. Positive-magnitude bitLength
 avoids the negative bitLength scan; its bounded temporary native headers must
 be included in the caller's explicit accounting.
+
+Byte and Short use kinds `:integer8` and `:integer16` with the same magnitude-bit
+metric as Integer/Long. Float and Double use `:float32` and `:float64`, with
+fixed carrier-width metrics 32 and 64 and nil child slots. These require no
+operand methods and describe finite values, signed zero, NaN and infinities
+alike; they grant no exceptional-value, equality or conversion policy.
+BigDecimal uses `[:big-decimal false nil unscaled-bits signed-scale nil]`.
+Its exact native receiver's `unscaledValue` result must pass the existing exact
+BigInteger guard before magnitude observation. Scale is a signed, widened
+native field observation, including both int extrema, not precision or a
+normalization request. Unknown nested backing yields unsupported.
+
+On the audited OpenJDK 26 path, compact BigDecimal unscaled observation may
+allocate one native BigInteger and an at-most-two-word magnitude array; negative
+absolute magnitude may add one native BigInteger sharing the array. A
+conservative logical inventory reserves two seven-cell BigInteger headers,
+three array cells, one magnitude metric and two scale-read/widen cells: 20
+branch temporaries. Byte/Short reserve at most five numeric observation cells,
+and Float/Double one width cell. Together with seven returned cells and the
+30 common plan-check path/cursor cells, 57 is a conservative bound for these
+new numeric branches. This is not a heap-byte or interpreter-work estimate.
+No cached-box or constant-folding discount applies; callers must separately
+reserve the applicable fee before invocation and validate before comparison.
 
 Container extents are native cached counts, not content validation. TreeMap
 reports only default-versus-foreign comparator identity in child0 and never
