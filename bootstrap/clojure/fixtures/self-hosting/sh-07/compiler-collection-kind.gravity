@@ -1,0 +1,20 @@
+(ns self-hosting.sh07.current-set-order
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+; Derived conformance cases; only the final helper is copied from the owner.
+(defn set-call-order []
+  #{(get {:kind :vector} :kind)
+    (get {:kind :map} :kind)
+    (get {:kind :set} :kind)})
+
+(defn nested-set-order []
+  {:set #{:vector :map :set}
+   :vector [#{:z :a} {:inner #{:b :a}}]
+   :quoted (quote #{:z :a})})
+
+(defn sh07-collection-kind? [kind]
+  (contains? #{:vector :map :set} kind))
