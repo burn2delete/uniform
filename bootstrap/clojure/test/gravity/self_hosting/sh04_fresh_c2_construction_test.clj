@@ -54,9 +54,9 @@
                                   (with-redefs-fn {worker-var worker}
                                     #(bootstrap/sh04-syntax-resolved-result! source c2)))}
                     #(construct "1"))
-        [validation entry] (take 2 @events)
+        [validation entry] @events
         proof (bootstrap/c3-syntax-capability-proof actual)]
-    (is (= [:validation :worker] (mapv :kind (take 2 @events))))
+    (is (= [:validation :worker] (mapv :kind @events)))
     (is (identical? (:c2 validation) (:c2 entry)))
     (is (identical? (:report validation) (:report entry)))
     (is (true? (get (meta worker-var) :private)))
