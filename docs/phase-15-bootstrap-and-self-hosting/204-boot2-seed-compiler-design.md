@@ -123,7 +123,17 @@ new numeric branches. This is not a heap-byte or interpreter-work estimate.
 No cached-box or constant-folding discount applies; callers must separately
 reserve the applicable fee before invocation and validate before comparison.
 
-Container extents are native cached counts, not content validation. TreeMap
+Container extents are native cached counts or checked physical lengths, not
+content validation. For exactly native PersistentArrayMap, the seed resolves
+only the fixed `clojure.lang.PersistentArrayMap.array` field through the same
+ordinary, read-only, sticky-denial access boundary described below. A null
+array, odd physical length or unavailable access yields the six-slot
+unsupported header before metadata or count observation. A non-null even
+array supplies length divided by two, without count, entry materialization,
+element reads, hashing, equality or duplicate-key validation. This check also
+precedes extent observation for an ArrayMap backing a native HashSet; a
+dangling tail is never skipped. Empty and other even arrays remain supported.
+The array reference is neither returned nor copied. TreeMap
 reports only default-versus-foreign comparator identity in child0 and never
 invokes it. List nodes return raw head/tail references, without forcing Cons
 tails or counting their spines. SubVector returns its raw backing in child0,
@@ -136,9 +146,27 @@ the fixed `clojure.lang.APersistentSet.impl` field, using ordinary JVM access
 checks once. No caller-selected class/field, module opening, Unsafe operation,
 access-denial retry or security-manager bypass is allowed. Unavailable access
 or an unrecognized backing class yields unsupported, without delegated count.
-An admitted native backing is returned in child0 and checked before its count.
-This is a new explicit bootstrap TCB field-access boundary, not general
-reflection authority or a proof that stored members are safe.
+An admitted native backing is returned in child0 after its extent guard.
+Together with the fixed ArrayMap field, these are explicit bootstrap TCB
+field-access boundaries, not general reflection authority or a proof that
+stored members are safe. Their one-time Delay/Atom/Field access state caches
+only fixed JVM infrastructure, including denial, never DATA or DATA validity.
+Cold field resolution and first-access JVM accessor initialization are part of
+that audited host mechanism, not a heap-byte or interpreter-work bound.
+
+The ArrayMap path reserves 16 logical temporary cells: three access-state and
+Field references; the array reference and null result; length, parity and
+quotient observations with three numeric widening/result cells; the native
+class, extent-presence and extent-forwarding observations; and metadata
+reference and presence. A HashSet path adds eight cells for its access-state,
+Field and backing references, backing class, extent guard and forwarding.
+Thus these container paths fit seven returned cells plus 30 common plan-check
+cells plus 24 branch cells, or 61 logical cells. This is below the existing
+75-cell unknown-kind bound set by Symbol; 75 remains required before an
+unknown-kind call. These observations are charged even when JVM boxes, fixed
+access state or results are cached. Fixed host reflection infrastructure is
+not a fresh DATA carrier; this logical inventory grants no bound on its JVM
+heap allocation, initialization latency or runtime work.
 
 Each selected result branch constructs only its returned header, with no
 unconditional fallback tuple. One Vector and six slots cost seven logical
