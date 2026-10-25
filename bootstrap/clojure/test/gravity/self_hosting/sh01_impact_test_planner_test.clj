@@ -613,6 +613,26 @@
                        ['gravity.bootstrap-compatibility.c11-test
                         :cache-closure-authorized?])))))
 
+(deftest nested-cache-inputs-retain-exact-component-ownership
+  (let [owned? (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                           'closure-owned?)
+        ownership (:ownership (planner/planning-context))
+        input {:role :transitive
+               :path "bootstrap/clojure/src/gravity/c11_mir/artifact.clj"}
+        closure {:inputs [input]}]
+    (is (true? (owned? ownership "c11-mir" closure)))
+    (is (false? (owned? ownership "compiler-pass-manifest" closure)))
+    (is (false? (owned? ownership "unknown-component" closure)))
+    (is (false? (owned? (update ownership :module-owners dissoc
+                                "bootstrap/clojure/src/gravity/c11_mir.clj")
+                       "c11-mir" closure)))
+    (is (false? (owned? ownership "c11-mir"
+                       {:inputs [(assoc input :role :production)]})))
+    (is (= :unowned
+           (:classification
+            (planner/classify-path ownership
+                                   "bootstrap/clojure/src/gravity/c11_mir/unreviewed.clj"))))))
+
 (deftest stage0-c2-module-maps-to-reader-slice-and-downstream-closure
   (let [source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"
         plan

@@ -949,11 +949,26 @@
        vec))
 
 (defn- closure-owned?
-  [ownership closure]
-  (every?
-   #(contains? #{:coordinator :dedicated :module}
-               (:classification (classify-path ownership (:path %))))
-   (:inputs closure)))
+  [ownership component-id closure]
+  (let [stem (get {"c11-mir" "c11_mir"
+                   "compiler-pass-manifest" "compiler_pass_manifest"}
+                  component-id)
+        source (when stem (str "bootstrap/clojure/src/gravity/" stem ".clj"))
+        prefix (when stem (str "bootstrap/clojure/src/gravity/" stem "/"))
+        parent (when source
+                 (stage0-component-metadata ownership source
+                                            (get-in ownership [:module-owners source])))]
+    (every?
+     (fn [{:keys [path role]}]
+       (or (contains? #{:coordinator :dedicated :module}
+                      (:classification (classify-path ownership path)))
+           ;; Explicitly reviewed transitive files keep their existing paired
+           ;; component owner. This does not classify arbitrary nested changes
+           ;; as owned or invent a component from an unreviewed path.
+           (and parent (= :transitive role)
+                (str/starts-with? path prefix)
+                (re-matches #"[^/]+\.clj" (subs path (count prefix))))))
+     (:inputs closure))))
 
 (defn- exact-development-job-metadata
   [ownership classified]
@@ -972,7 +987,8 @@
                         (:jvm-group test-entry))
         :test-policy (:test-policy test-entry)}
         (and (:cache-closure-valid? test-entry)
-             (closure-owned? ownership (:cache-closure test-entry)))
+             (closure-owned? ownership (:development-component-id entry)
+                             (:cache-closure test-entry)))
         (assoc :cache-closure (:cache-closure test-entry)
                :cache-closure-authorized? true))])))
 
