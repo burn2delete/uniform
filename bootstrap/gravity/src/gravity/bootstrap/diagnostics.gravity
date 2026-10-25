@@ -35,8 +35,8 @@
                               "stage1-bootstrap-incomplete-source-set.gravity"]}}}))
 
 (defn diagnostic-record [code span remediation]
-  (quote {:status :stage1-source-owned
+  {:status :stage1-source-owned
           :code code
           :span span
           :remediation remediation
-          :preserves [:diagnostic-codes :source-spans]}))
+          :preserves [:diagnostic-codes :source-spans]})
