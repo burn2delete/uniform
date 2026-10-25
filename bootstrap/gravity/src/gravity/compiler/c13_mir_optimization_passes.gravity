@@ -1343,6 +1343,147 @@
             {:artifact :gravity/c13-bounded-identity-optimized-mir :schema-version 1 :status :rejected
              :diagnostic "C13-VERIFY" :missing-fact :fresh-c11-verifier-and-fact-closure :diagnostics ["C13-VERIFY"]}))) base))))
 
+; Private SH-16 development kernel. This is not exported or admitted to the
+; public optimizer/lowerer. Original C11 reconstruction remains input evidence;
+; a shared fresh post-pass verifier and proof replay are still required.
+(defn sh16-c13-branch-operation-valid? [mir operation]
+  (if (map? operation)
+    (let [facts (get operation :facts) source (get operation :source)
+          type (get (get mir :type-table) (get facts :type-fact-id))
+          value (get (get (get mir :data-flow-graph) :values) (get operation :result))]
+      (c13-equality-all?
+        [(= :gravity/mir-operation (get operation :artifact))
+         (= :pending (get operation :verifier-status))
+         (= :hosted (get operation :profile)) (= #{} (get operation :effects))
+         (= #{} (get operation :capabilities)) (= :none (get operation :ordering))
+         (= nil (get operation :domain-anchor)) (map? source)
+         (= source (get (get mir :source-map) (get operation :op-id)))
+         (= (get source :origin-id) (get facts :source-origin-id))
+         (= (get operation :op-id) (get type :core-node-id))
+         (= (get operation :type) (get type :type))
+         (= #{} (get (get (get mir :effect-table) (get facts :effect-fact-id)) :direct))
+         (= :proven-safe (get (get (get mir :safety-table) (get facts :safety-outcome-id)) :outcome))
+         (= (get operation :type) (get value :type))
+         (= (get operation :constant-payload) (get value :constant-payload))
+         (= {:value-id (get operation :result) :operation-id (get operation :op-id)
+             :block-id (get operation :block-id)}
+            (get (get (get mir :data-flow-graph) :definitions) (get operation :result)))])) false))
+
+(defn sh16-c13-branch-operations-valid? [mir operations]
+  (loop [index 0]
+    (if (= index (count operations)) true
+      (if (sh16-c13-branch-operation-valid? mir (get operations index))
+        (recur (+ index 1)) false))))
+
+(defn sh16-c13-branch-bool-literal? [operation]
+  (let [payload (get operation :constant-payload) value (get payload :value)]
+    (c13-equality-all?
+      [(= :constant (get operation :opcode)) (= :literal (get operation :source-operation))
+       (= :gravity/bool (get operation :type)) (= [] (get operation :operands))
+       (= {:present? true :value value} payload)
+       (if (= true value) true (= false value))])))
+
+(defn sh16-c13-literal-bool-branch-selection [mir evidence]
+  (if (c13-reconstruction-input-valid? mir evidence)
+    (let [function-id (first (keys (get mir :functions)))
+          function (get (get mir :functions) function-id) blocks (get function :blocks)
+          base (get mir :source-core) entry (str base ":mir:entry")
+          then-id (str base ":mir:then") else-id (str base ":mir:else") join (str base ":mir:join")
+          e (get blocks entry) t (get blocks then-id) f (get blocks else-id) j (get blocks join)
+          literal (get (get e :instructions) 0) truthy (get (get e :instructions) 1)
+          left (get (get t :instructions) 0) right (get (get f :instructions) 0)
+          phi (get (get j :instructions) 0) boundary (get (get j :instructions) 1)
+          operations [literal truthy left right phi boundary] terminator (get e :terminator)
+          condition (get truthy :result) term-id (get terminator :terminator-id)
+          term-use {:value-id condition :consumer-kind :terminator :consumer-id term-id
+                    :consumer-block entry :operand-index 0 :edge-kind :condition}
+          value-use {:use-kind :terminator :consumer-kind :terminator :consumer-id term-id
+                     :consumer-block entry :operand-index 0 :edge-kind :condition}
+          term-row (c13-equality-occurrence (get (get mir :data-flow-graph) :terminator-uses) term-use)
+          value-row (c13-equality-occurrence
+                      (get (get (get (get mir :data-flow-graph) :values) condition) :uses) value-use)]
+      (if (c13-equality-all?
+            [(= [] (get function :params)) (= :gravity/bool (get function :returns))
+             (= #{} (get function :latent-effects)) (= #{} (get function :capabilities))
+             (= {} (get mir :runtime-check-table)) (= {} (get mir :domain-anchors))
+             (= [2 1 1 2] [(count (get e :instructions)) (count (get t :instructions))
+                             (count (get f :instructions)) (count (get j :instructions))])
+             (sh16-c13-branch-operations-valid? mir operations)
+             (sh16-c13-branch-bool-literal? literal) (sh16-c13-branch-bool-literal? left)
+             (sh16-c13-branch-bool-literal? right)
+             (= [:truthiness :conditional-join :function-boundary]
+                [(get truthy :opcode) (get phi :opcode) (get boundary :opcode)])
+             (= :gravity/bool (get truthy :type)) (= :gravity/bool (get phi :type))
+             (= [(get literal :result)] (get truthy :operands))
+             (= [condition (get left :result) (get right :result)] (get phi :operands))
+             (= [(get phi :result)] (get boundary :operands))
+             (= :conditional-branch (get terminator :kind)) (= [condition] (get terminator :operands))
+             (= [then-id else-id] (get terminator :successors))
+             (= {:condition condition :join join} (get terminator :facts))
+             (= #{} (get terminator :effects)) (= :none (get terminator :ordering))
+             (= [{:from entry :to then-id :kind :true} {:from entry :to else-id :kind :false}
+                 {:from then-id :to join :kind :join} {:from else-id :to join :kind :join}]
+                (get (get mir :control-flow-graph) :edges))
+             (map? term-row) (map? value-row)])
+        {:function-id function-id :entry entry :then then-id :else else-id :join join
+         :condition condition :value (get (get literal :constant-payload) :value)
+         :term-index (get term-row :index) :value-index (get value-row :index)
+         :terminator-id term-id :operations operations} nil)) nil))
+
+(defn sh16-c13-rewrite-literal-bool-branch [mir evidence]
+  (let [selected (sh16-c13-literal-bool-branch-selection mir evidence)]
+    (if (= nil selected)
+      {:status :rejected :diagnostics ["C13-VERIFY"] :missing-fact :private-literal-bool-branch-input}
+      (let [function-id (get selected :function-id) function (get (get mir :functions) function-id)
+            blocks (get function :blocks) entry (get selected :entry) then-id (get selected :then)
+            else-id (get selected :else) join (get selected :join) condition (get selected :condition)
+            choice (if (= true (get selected :value)) then-id else-id)
+            other (if (= true (get selected :value)) else-id then-id)
+            dominance {entry [entry] choice [entry choice] other [other] join [entry choice join]}
+            terminator (assoc (assoc (assoc (assoc (get (get blocks entry) :terminator)
+                          :kind :branch) :operands []) :successors [choice]) :facts {})
+            next-blocks (loop [ids [entry then-id else-id join] result blocks]
+                          (if (= 0 (count ids)) result
+                            (let [id (first ids) block (get result id)
+                                  updated (assoc block :dominators (get dominance id))
+                                  updated (if (= id entry)
+                                            (assoc (assoc updated :terminator terminator) :successors [choice])
+                                            (if (= id other) (assoc updated :predecessors []) updated))]
+                              (recur (rest ids) (assoc result id updated)))))
+            graph (get mir :control-flow-graph)
+            graph (assoc (assoc graph :dominance dominance)
+                    :edges [(get (get graph :edges) (if (= true (get selected :value)) 0 1))
+                            (get (get graph :edges) 2) (get (get graph :edges) 3)])
+            data (get mir :data-flow-graph) values (get data :values) value (get values condition)
+            data (assoc (assoc data :terminator-uses
+                          (c13-equality-remove-indices (get data :terminator-uses) #{(get selected :term-index)}))
+                   :values (assoc values condition (assoc value :uses
+                     (c13-equality-remove-indices (get value :uses) #{(get selected :value-index)}))))
+            output (assoc (assoc (assoc mir :functions (assoc (get mir :functions) function-id
+                             (assoc function :blocks next-blocks))) :control-flow-graph graph) :data-flow-graph data)
+            proofs (loop [operations (get selected :operations) result [] certificates []]
+                     (if (= 0 (count operations)) {:proofs result :certificates certificates}
+                       (let [facts (get (first operations) :facts) id (get facts :safety-proof-id)]
+                         (recur (rest operations)
+                           (if (= id :not-applicable) result (sh16-append-unique result [id]))
+                           (sh16-append-unique certificates (get facts :proof-certificate-ids))))))]
+        {:status :constructed-unverified :verification-status :pending :admission-status :not-admitted
+         :candidate-mir output :selected-block choice :condition-value (get selected :value)
+         :decision-record {:pass-id :sh16-private-literal-bool-branch :version 1
+                           :changed? true :changed-operations []
+                           :changed-terminators [(get selected :terminator-id)]
+                           :reason :literal-bool-condition :verifier-result :pending}
+         :invalidation-ledger {:analysis-invalidated [:control-flow-graph :dominator-tree :data-flow-cache]
+                               :facts-invalidated [:control-flow-facts :dominance-facts :terminator-use-facts]
+                               :facts-regenerated [:control-flow-facts :dominance-facts :terminator-use-facts]
+                               :proofs-invalidated (get proofs :proofs)
+                               :certificates-invalidated (get proofs :certificates)
+                               :runtime-checks-restored [] :caches-cleared [:analysis-cache]}
+         :pending [:shared-post-pass-verifier :proof-dominance-replay :c18-translation-validation]
+         :diagnostics []
+         :nonclaims [:public-admission :independent-acceptance :fresh-output-verification
+                     :lowering :native-execution :migration :self-hosted?]}))))
+
 ; SH-16 bounded executable optimization leaf. Authenticated SH-15 input and
 ; complete C11 MIR adaptation remain pending. This engine accepts normalized,
 ; already-verified target-independent MIR operation descriptors.
