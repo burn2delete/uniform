@@ -1,0 +1,10 @@
+(ns gravity.self-hosting.sh22.symbol-carrier.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-symbol-carrier-wide-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-symbol-carrier-wide-request [request value]
+  (assoc request :arguments [[] value]))
