@@ -1,33 +1,40 @@
 (declare ^:private p15-s23-c6c10-digest-validated-form)
-(declare sh03-reader-maximum-source-bytes)
 
-(defn sh03-reader-canonical-identity
-  [source-path value]
-  (binding [p15-s23-c6c10-max-carrier-nodes
-            sh03-reader-canonical-maximum-nodes
-            p15-s23-c6c10-max-carrier-depth
-            sh03-reader-canonical-maximum-depth
-            p15-s23-c6c10-max-container-width
-            sh03-reader-canonical-maximum-width
-            p15-s23-c6c10-max-scalar-bytes
-            sh03-reader-canonical-maximum-scalar-bytes
-            p15-s23-c6c10-max-total-scalar-bytes
-            sh03-reader-canonical-maximum-total-scalar-bytes]
-    (p15-s23-c6c10-canonical-identity source-path value)))
+(defn- sh03-reader-authenticated-envelope-options
+  ([source-path invocation] (sh03-reader-authenticated-envelope-options source-path invocation nil))
+  ([source-path invocation expected-binding]
+  (when (some? invocation)
+    (when-not
+     (and (= :passed (:status (p15-s23-trusted-carrier-validation invocation :default-only)))
+          (= #{:reader-source-path :authenticated-envelope-options} (set (keys invocation)))
+          (string? (:reader-source-path invocation))
+          (= {:source :development-current} (:authenticated-envelope-options invocation)))
+      (sh03-reader-boundary-fail!
+       source-path :explicit-sh03-reader-invocation-source-selection nil {}))
+    (sh03-reader-invocation-source! source-path (:reader-source-path invocation) expected-binding)
+    (:authenticated-envelope-options invocation))))
 
-(defn sh03-reader-canonical-digest
-  [source-path value]
-  (binding [p15-s23-c6c10-max-carrier-nodes
-            sh03-reader-canonical-maximum-nodes
-            p15-s23-c6c10-max-carrier-depth
-            sh03-reader-canonical-maximum-depth
-            p15-s23-c6c10-max-container-width
-            sh03-reader-canonical-maximum-width
-            p15-s23-c6c10-max-scalar-bytes
-            sh03-reader-canonical-maximum-scalar-bytes
-            p15-s23-c6c10-max-total-scalar-bytes
-            sh03-reader-canonical-maximum-total-scalar-bytes]
-    (sh03-reader-canonical-stream-digest source-path value)))
+(defn- sh03-reader-validate-envelope-options! [source-path options]
+  (when (some? options)
+    (when-not (and (= :passed (:status (p15-s23-trusted-carrier-validation options :default-only)))
+                   (= {:source :development-current} options))
+      (sh03-reader-boundary-fail!
+       source-path :explicit-sh03-authenticated-envelope-selection nil {})))
+  options)
+
+(defn- sh03-reader-verification-invocation! [source-path invocation]
+  (if (nil? invocation)
+    {:binding (sh03-reader-current-binding! source-path) :envelope-options nil}
+    (do
+      (sh03-reader-authenticated-envelope-options source-path invocation)
+      {:binding (sh03-reader-current-binding! source-path (:reader-source-path invocation))
+       :envelope-options (:authenticated-envelope-options invocation)})))
+
+(defn sh03-reader-canonical-identity [source-path value]
+  (p15-s23-c6c10-canonical-identity source-path value))
+
+(defn sh03-reader-canonical-digest [source-path value]
+  (sh03-reader-canonical-stream-digest source-path value))
 
 (defn- sh03-reader-resolve-digest-request-sequence!
   [source-path raw-result source-bytes]
@@ -153,10 +160,6 @@
       (source-path-policy-fail! source-path source-bytes)
       (catch clojure.lang.ExceptionInfo ex
         (c2-reader-remap-exception! source-path ex))))
-  (when (> (alength source-bytes) sh03-reader-maximum-source-bytes)
-    (sh03-reader-boundary-fail!
-     source-path :bounded-sh03-reader-source-bytes
-     (alength source-bytes) {:maximum-source-bytes sh03-reader-maximum-source-bytes}))
   (let [binding (if (nil? reader-source-path) (sh03-reader-current-binding! source-path)
                  (sh03-reader-current-binding! source-path reader-source-path))
         plan (:plan binding)
@@ -188,6 +191,10 @@
            :result result
            :raw-result raw-result
            :verification-report verifier-result
+           :invocation-context
+           (when (some? reader-source-path)
+             {:reader-source-path sh03-reader-source-relative-path
+              :authenticated-envelope-options {:source :development-current}})
            :plan-binding (dissoc binding :plan)))))
 
 (defn sh03-reader-decode-raw-bytes!

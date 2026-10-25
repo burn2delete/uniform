@@ -3,7 +3,6 @@
   (:profile :meta)
   (:target :jvm)
   (:exports [sh06-resolution-contract
-             sh06-resolution-bounds
              sh06-resolution-diagnostic-catalog
              sh06-build-resolution-template
              sh06-verify-resolution-template
@@ -72,22 +71,6 @@
    :whole-language? false
    :clojure-seed-boundary? true})
 
-(def sh06-resolution-bounds
-  {:maximum-definitions 2048
-   :maximum-imports 256
-   :maximum-exports 2048
-   :maximum-scopes 4096
-   :maximum-bindings-per-scope 256
-   :maximum-references 65536
-   :maximum-scope-chain 64
-   :maximum-dependency-nodes 512
-   :maximum-dependency-edges 2048
-   :maximum-effects 128
-   :maximum-capabilities 128
-   :maximum-candidates 32
-   :maximum-authoritative-bindings 8191
-   :maximum-digest-requests 8192})
-
 (def sh06-resolution-diagnostic-catalog
   {:diagnostics ["C5-UNRESOLVED" "C5-AMBIGUOUS" "C5-PRIVATE"
                  "C5-ALIAS" "C5-SHADOW" "C5-CYCLE"
@@ -99,22 +82,6 @@
                    :remediation]
    :stops [:name-resolution :type-checking :effect-checking
            :core-lowering :target-lowering]})
-
-(defn sh06-bounds-value []
-  {:maximum-definitions 2048
-   :maximum-imports 256
-   :maximum-exports 2048
-   :maximum-scopes 4096
-   :maximum-bindings-per-scope 256
-   :maximum-references 65536
-   :maximum-scope-chain 64
-   :maximum-dependency-nodes 512
-   :maximum-dependency-edges 2048
-   :maximum-effects 128
-   :maximum-capabilities 128
-   :maximum-candidates 32
-   :maximum-authoritative-bindings 8191
-   :maximum-digest-requests 8192})
 
 (defn sh06-exact-keys? [value expected]
   (if (map? value)
@@ -147,14 +114,6 @@
         false
         (recur (rest remaining) (conj observed (first remaining)))))))
 
-(defn sh06-prefix [values maximum]
-  (loop [remaining values kept []]
-    (if (= (count remaining) 0)
-      kept
-      (if (= (count kept) maximum)
-        kept
-        (recur (rest remaining) (conj kept (first remaining)))))))
-
 (defn sh06-lowercase-hex? [characters]
   (loop [remaining characters]
     (if (= (count remaining) 0)
@@ -179,9 +138,6 @@
     (= (get value :digest-ref) ordinal)
     false))
 
-(defn sh06-bounded-vector? [value maximum]
-  (if (vector? value) (<= (count value) maximum) false))
-
 (defn sh06-path-get [value path]
   (loop [current value remaining path]
     (if (= (count remaining) 0)
@@ -195,15 +151,9 @@
          :capabilities :exports :source-revision-id :c4-artifact-id})
     (if (sh06-sha256-id? (get module :source-revision-id))
       (if (sh06-sha256-id? (get module :c4-artifact-id))
-        (if (sh06-bounded-vector?
-             (get module :effects)
-             (get (sh06-bounds-value) :maximum-effects))
-          (if (sh06-bounded-vector?
-               (get module :capabilities)
-               (get (sh06-bounds-value) :maximum-capabilities))
-            (sh06-bounded-vector?
-             (get module :exports)
-             (get (sh06-bounds-value) :maximum-exports))
+        (if (vector? (get module :effects))
+          (if (vector? (get module :capabilities))
+            (vector? (get module :exports))
             false)
           false)
         false)
@@ -237,8 +187,8 @@
     (sh06-sha256-id? (get binding :binding-syntax-id))
     false))
 
-(defn sh06-sha256-id-vector? [values maximum]
-  (if (sh06-bounded-vector? values maximum)
+(defn sh06-sha256-id-vector? [values]
+  (if (vector? values)
     (loop [remaining values]
       (if (= (count remaining) 0)
         true
@@ -256,9 +206,7 @@
         (if (if (= (get scope :parent-scope-id) nil)
               true
               (sh06-sha256-id? (get scope :parent-scope-id)))
-          (if (sh06-bounded-vector?
-               (get scope :bindings)
-               (get (sh06-bounds-value) :maximum-bindings-per-scope))
+          (if (vector? (get scope :bindings))
             (loop [remaining (get scope :bindings)]
               (if (= (count remaining) 0)
                 true
@@ -277,9 +225,9 @@
        #{:syntax-id :symbol :qualifier :name :position
          :scope-chain :semantic-span :source-span})
     (if (sh06-sha256-id? (get reference :syntax-id))
-      (sh06-sha256-id-vector?
-       (get reference :scope-chain)
-       (get (sh06-bounds-value) :maximum-scope-chain))
+      (if (sh06-sha256-id-vector? (get reference :scope-chain))
+        (sh06-all-unique? (get reference :scope-chain))
+        false)
       false)
     false))
 
@@ -298,24 +246,12 @@
            :gravity/sh06-authenticated-c4-resolution-request)
       (if (= (get request :schema-version) 1)
         (if (sh06-module-shape? (get request :module))
-          (if (sh06-bounded-vector?
-               (get request :definitions)
-               (get (sh06-bounds-value) :maximum-definitions))
-            (if (sh06-bounded-vector?
-                 (get request :imports)
-                 (get (sh06-bounds-value) :maximum-imports))
-              (if (sh06-bounded-vector?
-                   (get request :import-bindings)
-                   (get (sh06-bounds-value) :maximum-definitions))
-                (if (sh06-bounded-vector?
-                     (get request :lexical-scopes)
-                     (get (sh06-bounds-value) :maximum-scopes))
-                  (if (sh06-bounded-vector?
-                       (get request :references)
-                       (get (sh06-bounds-value) :maximum-references))
-                    (if (sh06-bounded-vector?
-                         (get request :dependency-edges)
-                         (get (sh06-bounds-value) :maximum-dependency-edges))
+          (if (vector? (get request :definitions))
+            (if (vector? (get request :imports))
+              (if (vector? (get request :import-bindings))
+                (if (vector? (get request :lexical-scopes))
+                  (if (vector? (get request :references))
+                    (if (vector? (get request :dependency-edges))
                       (if (sh06-exact-keys?
                            (get request :macro-expansion-binding)
                            #{:artifact :schema-version :c4-artifact-id
@@ -386,8 +322,7 @@
           (if (= (count remaining) 0)
             ids
             (recur (rest remaining)
-                   (conj ids (get (first remaining) :scope-id)))))
-        dependency-nodes (sh06-edge-nodes (get request :dependency-edges))]
+                   (conj ids (get (first remaining) :scope-id)))))]
     (if (= (get module :source-revision-id)
            (get macro-binding :source-revision-id))
       (if (= (get module :c4-artifact-id)
@@ -396,25 +331,8 @@
           (if (sh06-sha256-id?
                (get macro-binding :authenticated-envelope-id))
             (if (sh06-all-unique? scope-ids)
-              (if (<= (count dependency-nodes)
-                      (get (sh06-bounds-value)
-                           :maximum-dependency-nodes))
-                (let [locals
-                      (sh06-flatten-locals
-                       module (get request :lexical-scopes))
-                      binding-count
-                      (+ (count (get request :definitions))
-                         (count (get request :core-bindings))
-                         (count (get request :import-bindings))
-                         (count locals))]
-                  (if (<= binding-count
-                          (get (sh06-bounds-value)
-                               :maximum-authoritative-bindings))
-                    (<= (+ binding-count 1)
-                        (get (sh06-bounds-value)
-                             :maximum-digest-requests))
-                    false))
-                false)
+              (sh06-scope-graph-valid? (get request :lexical-scopes)
+                                       (get request :references))
               false)
             false)
           false)
@@ -486,6 +404,43 @@
       (if (= (get (first remaining) :scope-id) scope-id)
         (first remaining)
         (recur (rest remaining))))))
+
+(defn sh06-scope-ancestry-valid? [scopes scope-id]
+  (loop [current scope-id visited []]
+    (if (= current nil)
+      true
+      (if (sh06-vector-contains? visited current)
+        false
+        (let [scope (sh06-find-scope scopes current)]
+          (if (= scope nil)
+            false
+            (recur (get scope :parent-scope-id) (conj visited current))))))))
+
+(defn sh06-scope-chain-valid? [scopes chain]
+  (loop [remaining chain]
+    (if (= (count remaining) 0)
+      true
+      (let [scope (sh06-find-scope scopes (first remaining))]
+        (if (= scope nil)
+          false
+          (if (= (get scope :parent-scope-id) (first (rest remaining)))
+            (recur (rest remaining))
+            false))))))
+
+(defn sh06-scope-graph-valid? [scopes references]
+  (if (loop [remaining scopes]
+        (if (= (count remaining) 0)
+          true
+          (if (sh06-scope-ancestry-valid? scopes (get (first remaining) :scope-id))
+            (recur (rest remaining))
+            false)))
+    (loop [remaining references]
+      (if (= (count remaining) 0)
+        true
+        (if (sh06-scope-chain-valid? scopes (get (first remaining) :scope-chain))
+          (recur (rest remaining))
+          false)))
+    false))
 
 (defn sh06-find-lexical-candidates [scopes scope-chain name]
   (loop [remaining scope-chain]
@@ -894,8 +849,7 @@
                          :semantic-span (get local :semantic-span)
                          :source-span (get local :source-span)}
              :candidate-bindings
-             (sh06-prefix shadows
-                          (get (sh06-bounds-value) :maximum-candidates))
+             shadows
              :dependency-edge nil
              :facts {:reason :illegal-lexical-shadow
                      :scope-id (get current-scope :scope-id)
@@ -1058,8 +1012,7 @@
       {:rule rule
        :reference reference
        :candidate-bindings
-       (sh06-prefix candidates
-                    (get (sh06-bounds-value) :maximum-candidates))
+       candidates
        :dependency-edge nil
        :facts (let [facts {:reason
                (if (= rule "C5-AMBIGUOUS")
@@ -1118,9 +1071,7 @@
                          :semantic-span (get dependency :semantic-span)
                          :source-span (get dependency :source-span)}
              :candidate-bindings
-             (sh06-prefix
-              (sh06-find-import-by-alias imports alias)
-              (get (sh06-bounds-value) :maximum-candidates))
+             (sh06-find-import-by-alias imports alias)
              :dependency-edge dependency
              :facts {:reason :duplicate-namespace-alias
                      :alias alias}}
@@ -1252,7 +1203,6 @@
                         :purpose :sh06-resolution-diagnostic-id
                         :preimage preimage}]
      :diagnostics [diagnostic]
-     :bounds (sh06-bounds-value)
      :containment {:downstream-artifacts-forbidden true
                    :host-exception-contained true}
      :execution-boundary
@@ -1477,7 +1427,6 @@
       :diagnostics []}
      :digest-requests digest-requests
      :diagnostics []
-     :bounds (sh06-bounds-value)
      :containment {:downstream-artifacts-forbidden false
                    :host-exception-contained true}
      :execution-boundary
@@ -1554,7 +1503,7 @@
             (if (= (get analysis :profile) (get module :profile))
               (if (= (get analysis :target) (get module :target))
                 (if (= (get analysis :exports) (get module :exports))
-                  (if (sh06-bounded-vector? (get premise :definitions) (get (sh06-bounds-value) :maximum-definitions))
+                  (if (vector? (get premise :definitions))
                     (loop [remaining (get premise :definitions)]
                       (if (= (count remaining) 0)
                         (= (count (get premise :definitions))
@@ -1618,7 +1567,7 @@
                    :artifact :gravity/sh06-authenticated-c4-resolution-request :schema-version 1)
         premises (get request :module-premises)]
     (if (if (sh06-request-shape? base)
-          (sh06-bounded-vector? premises (get (sh06-bounds-value) :maximum-imports)) false)
+          (vector? premises) false)
       (let [source (get request :namespace-source)
             own-check (if (if (sh06-exact-keys? source #{:semantic-span :source-span})
                               (sh06-sha256-id? (get (get source :semantic-span) :namespace-syntax-id)) false)
@@ -1637,9 +1586,6 @@
         (if (= own-check nil)
           (if (= premise-check nil)
             (loop [remaining (get base :imports) imports [] bindings [] edges [] consumed []]
-              (if (if (> (count bindings) (get (sh06-bounds-value) :maximum-definitions)) true
-                    (> (count edges) (get (sh06-bounds-value) :maximum-dependency-edges)))
-                {:check (sh06-module-check "C5-UNRESOLVED" :module-composition-limit {} [])}
               (if (= (count remaining) 0)
                 (if (= (count consumed) (count premises))
                   {:request (assoc base :imports imports :import-bindings bindings :dependency-edges edges)}
@@ -1687,7 +1633,7 @@
                                                       :boundary (get actual :boundary) :semantic-span (get actual :semantic-span) :source-span (get actual :source-span)})]
                                 (if (= (count rows) 0) out (recur (rest rows) (conj out (first rows)))))
                               (if (sh06-vector-contains? consumed (get dependency :namespace)) consumed (conj consumed (get dependency :namespace))))
-                            {:check (if (= referred-check nil) compatibility referred-check)})))))))))
+                            {:check (if (= referred-check nil) compatibility referred-check)}))))))))
             {:check premise-check}) {:check own-check}))
       {:check (sh06-module-check "C5-UNRESOLVED" :malformed-module-request {} [])})))
 
@@ -1740,16 +1686,14 @@
   (if (sh06-exact-keys?
        result
        #{:artifact :schema-version :status :namespace-analysis-template
-         :digest-requests :diagnostics :bounds :containment
+         :digest-requests :diagnostics :containment
          :execution-boundary})
     (if (= (get result :artifact)
            :gravity/sh06-resolution-template-result)
       (if (= (get result :schema-version) 1)
-        (if (= (get result :bounds) (sh06-bounds-value))
-          (if (= (get result :status) :accepted)
-            (map? (get result :namespace-analysis-template))
-            (= (get result :namespace-analysis-template) nil))
-          false)
+        (if (= (get result :status) :accepted)
+          (map? (get result :namespace-analysis-template))
+          (= (get result :namespace-analysis-template) nil))
         false)
       false)
     false))

@@ -576,9 +576,6 @@
                    (:schema-version proof-transaction))
                 (= (:phase-order proof-transaction-contract)
                    (:phase-order proof-transaction))
-                (= (:maximum-receipts-per-phase
-                    proof-transaction-contract)
-                   (:maximum-receipts proof-transaction))
                 (true?
                  (:exact-verifier-root-identity-required
                   proof-transaction-contract))
@@ -631,19 +628,6 @@
                                [:verification-executions stage]
                                0)))
                  (:minimum-independent-audit-executions
-                  proof-transaction-contract))
-                (every?
-                 #(<= (:receipt-count %)
-                      (:maximum-receipts-per-phase
-                       proof-transaction-contract))
-                 (:phases proof-transaction))
-                (<=
-                 (reduce + 0
-                         (map #(get-in %
-                                       [:verification-executions :sh05]
-                                       0)
-                              (:phases proof-transaction)))
-                 (:maximum-sh05-full-verifications
                   proof-transaction-contract)))}
           failed-contract-checks
           (vec
@@ -777,7 +761,7 @@
 (def ^:private proof-transaction-result-keys
   #{:artifact :schema-version :status :thread-confined? :owner-thread-id
     :phase-order :phases :source-snapshot :checked-core-revision
-    :check-catalog-bindings :maximum-receipts :artifact-id
+    :check-catalog-bindings :artifact-id
     :verification-report-id :construction-receipts-cleared?
     :final-snapshot-rechecked? :cross-epoch-reuse-count
     :cross-epoch-reuse? :failed-report-executions
@@ -887,9 +871,7 @@
                                (vals (:verification-executions %)))
                        (every? nonnegative-integer?
                                (vals (:verification-reuses %)))
-                       (nonnegative-integer? (:receipt-count %))
-                       (<= (:receipt-count %)
-                           (:maximum-receipts-per-phase proof-contract)))
+                       (nonnegative-integer? (:receipt-count %)))
                  phases)
          (every? (fn [[stage minimum]]
                    (<= minimum
@@ -907,8 +889,6 @@
               [:sh06 :final] [:sh07 :final]}
             (set (keys (:check-catalog-bindings proof))))
          (every? sha256-id? (vals (:check-catalog-bindings proof)))
-         (= (:maximum-receipts-per-phase proof-contract)
-            (:maximum-receipts proof))
          (= (:artifact-id module-result) (:artifact-id proof))
          (sha256-id? (:verification-report-id proof))
          (true? (:construction-receipts-cleared? proof))

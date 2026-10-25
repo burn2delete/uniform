@@ -1,13 +1,16 @@
 
 
 (defn- sh07-core-artifact-verification*
-  [artifact]
+  ([artifact] (sh07-core-artifact-verification* artifact nil))
+  ([artifact invocation]
   (let [source-path (or (get-in artifact [:provenance :source-path])
                         "<sh07-core-verification>")
         upstream (:sh06-resolution-artifact artifact)
         upstream-verification
         (try
-          (sh06-resolution-artifact-verification upstream)
+          (if invocation
+            (sh06-resolution-artifact-verification upstream ::legacy invocation)
+            (sh06-resolution-artifact-verification upstream))
           (catch InterruptedException interrupted
             (.interrupt (Thread/currentThread))
             (throw interrupted))
@@ -16,38 +19,44 @@
              :status :failed :failed-checks [:contained-failure]}))
         expected
         (try
-          (sh07-core-from-resolution-artifact upstream)
+          (sh07-core-from-resolution-artifact upstream invocation)
           (catch InterruptedException interrupted
             (.interrupt (Thread/currentThread))
             (throw interrupted))
           (catch Throwable _ nil))]
     (sh07-core-verification-report
-     artifact expected upstream-verification)))
+     artifact expected upstream-verification))))
 
 (defn sh07-core-artifact-verification
-  [artifact]
+  ([artifact] (sh07-core-artifact-verification artifact nil))
+  ([artifact invocation]
+  (when invocation
+    (sh03-reader-authenticated-envelope-options
+     (get-in artifact [:provenance :source-path]) invocation))
   (let [binding @sh07-core-cached-binding]
    (sh07-proof-transaction-report
    :sh07 :final
    {:verifier-root
     (var-get #'sh07-core-artifact-verification*)
     :report-schema-version 1
+    :invocation invocation
     :check-catalog-domain :gravity/sh07-final-verification-checks
     :source-content-hash (:source-content-hash binding)
     :plan-semantic-hash (:plan-semantic-hash binding)
     :functions-semantic-hash
     (:functions-semantic-hash binding)}
    artifact
-   #(sh07-core-artifact-verification* artifact))))
+   #(sh07-core-artifact-verification* artifact invocation)))))
 
 (defn sh07-core-capability-based-proof
-  [artifact]
-  (let [report (sh07-core-artifact-verification artifact)]
+  ([artifact] (sh07-core-capability-based-proof artifact nil))
+  ([artifact invocation]
+  (let [report (sh07-core-artifact-verification artifact invocation)]
     (assoc (:checks report)
            :artifact :gravity/sh07-core-capability-proof
            :status (if (= :passed (:status report))
                      :complete :failed)
-           :failed-checks (:failed-checks report))))
+           :failed-checks (:failed-checks report)))))
 
 (defn- sh07-core-proof-from-verification-report
   [report]
@@ -220,7 +229,6 @@
            (map (fn [[key catalog]]
                   [key (:check-catalog-hash catalog)]))
            (:check-catalogs closed))
-     :maximum-receipts (:maximum-receipts closed)
      :artifact-id (:audited-artifact-id closed)
      :verification-report-id (:verification-report-id closed)
      :construction-receipts-cleared?

@@ -28,7 +28,6 @@
           :owner-thread-id (sh07-proof-transaction-thread-id)
           :phase :construction
           :epoch 0
-          :maximum-receipts 64
           :source-snapshot source-snapshot
           :checked-core-revision core-snapshot
           :receipts []

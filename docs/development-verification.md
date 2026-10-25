@@ -8250,45 +8250,56 @@ uncached. Authoritative,
 freshness-required, performance, proof, and nondeterministic policies always
 execute and are never stored.
 
-The contract may additionally opt a reviewed deterministic test into an
-explicit cache closure. Such a closure lists every production, transitive,
-test, fixture, runner, contract, and internal-classpath input directly; the
-runner never infers Clojure `require` edges. The content key sorts and hashes
-the declared repository-relative paths, roles, executable modes, and bytes,
-and also binds the dependency-contract schema, runner, semantic command,
-policy, external classpath, and runtime/tool identities. Internal classpath
-order, alternate `.cljc` and compiled-class shadows, data-reader resources,
-unexpected internal class files, and the self-hosting test-catalog path set are
-also bound; inventories are compared before and after closure reads. Absolute
-worktree paths are excluded, so identical declared inputs may reuse a result
-across Git worktrees. Missing, malformed, unknown, unowned, or undeclared
-closures retain the complete-repository identity. A detected read or inventory
-race fails closed rather than falling back. The initial and post-operation
-repository snapshot checks remain complete but incrementally observed. Reports
-record the snapshot engine and exact numbers of paths and bytes rehashed, in
-addition to complete path observations. The reviewed set covers
-`gravity.c11-mir-test`, `gravity.compiler-pass-manifest-test`,
-`gravity.bootstrap-compatibility.c11-test`, and
-`gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test`. The two
-compatibility closures enumerate `gravity.bootstrap`'s complete internal eager
-namespace load set and the exact fixture used by each test. Mixed batches and
-authoritative, freshness-required, performance, proof, or nondeterministic
-work retain the complete-repository identity and remain uncached.
+Production parent probes deliberately remain ineligible: the parent JVM's
+arguments do not identify a Clojure child's effective configuration. The
+incremental runner instead passes an optional `--development-cache` request
+to the existing `:test` child. The child JVM always launches, and the parent
+holds its ordinary broker lease. Only the actual child can reuse its complete
+selected test batch; it acquires no nested broker lease. Reusing a complete
+batch preserves the fresh batch's namespace loading and fixture context.
 
-An immutable parent probe removes an existing valid hit before executor
-submission, so that hit acquires no broker lease and launches no child JVM. A
-miss is rechecked by the cross-process per-key singleflight at execution time;
-concurrent identical checks can therefore race at the probe without producing
-duplicate child work. Only a successful, deterministic, non-authoritative
-result whose repository snapshot still matches after child completion is
-reusable. A parent hit is likewise revalidated before it is admitted. Failures,
-timeouts, corrupt entries, incomplete requests, and excluded policies run
-again. Reports retain deterministic cache receipts,
-the original producer's deterministic broker receipts, planned JVM count,
-post-cache planned JVM count, and successful launcher-return count. A launcher
-that throws before returning is not counted as a launch; its deterministic
-broker admission/release receipts and the parent cache-miss receipt remain in
-the failed report.
+The child binds its initial/current Clojure basis, configuration source bytes,
+actual ordered classpath, JVM arguments, runtime/tool identities, environment
+and system properties. Receipts contain hashes, not raw configuration values.
+The supported JVM options are the CLI's default stack-trace option and
+`-Xms`, `-Xmx`, `-Xss`, plus the identified Clojure basis file. Agent,
+file-loading and other unknown JVM options, native loader environment changes,
+unknown basis/main entrypoints and external classpath directories execute
+fresh without storage. This is a precise supported-launch subset, not a claim
+to identify arbitrary launcher or native-runtime configuration.
+
+The parent supplies its complete prelaunch repository identity. A child with
+different startup inputs fails with `SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE`;
+already-loaded runner code cannot silently be attributed to a newer snapshot.
+That admission identity and the runner-owned cache/report destinations are
+not semantic cache keys. Selection, fail-fast behavior and timeout remain
+keyed. Effective configuration and consumed inputs are revalidated before
+execution, after execution and before admitting a hit.
+
+Only `gravity.c11-mir-test` and `gravity.compiler-pass-manifest-test` currently
+use re-audited explicit production closures, including their six and fifteen
+nested implementation files respectively. The runner never infers `require`
+edges. Declared paths, roles, modes and bytes, runner/contracts, both supported
+classpath orders, alternate `.cljc`/compiled shadows, data-reader resources,
+internal class-file inventories and the test-catalog path set are bound.
+Unrelated repository changes may reuse a result only when all those consumed
+inputs and the effective runtime are unchanged. Runtime/configuration paths
+remain bound, so cross-worktree production reuse is not claimed.
+
+Historical bootstrap-compatibility closure declarations predate the component
+loader and are not used for narrower production reuse. Those and other
+reviewed deterministic selections retain the complete-repository key.
+Undeclared, authoritative, freshness-required, performance, proof and
+nondeterministic work remains fresh. Failures and timeouts are never stored;
+corrupt entries are preserved and rejected. Existing cross-process per-key
+singleflight applies inside the child, not in place of launching it.
+
+Reports distinguish `:child-cache-hit?`, `:tests-executed?`, the original
+`:test-producer-provenance` and current `:test-applying-revision` and repository
+snapshot. These survive parent batch expansion independently of the parent's
+execution/cache receipts. A hit does not claim a saved JVM launch, newly run
+assertions or fresh authority. A launcher that throws before returning is
+still not counted as a successful launch.
 
 The shared cache and broker roots are private mode-`0700` directories under
 the repository's Git common directory at

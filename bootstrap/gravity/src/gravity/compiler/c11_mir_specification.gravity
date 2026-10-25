@@ -4514,7 +4514,7 @@
           :proof-records :typed-core :typed-core-key :effect-graph :effect-graph-key
           :capability-proof-records :pure-capability-closure :pure-capability-closure-key
           :ownership-analysis :ownership-analysis-key :pass-history :authenticated-input
-          :bounds :semantic-provenance :diagnostics :mir-derived? :whole-language?
+          :input-carrier-validation :semantic-provenance :diagnostics :mir-derived? :whole-language?
           :clojure-seed-boundary? :self-hosted? :artifact-id
           :target-request-metadata :physical-provenance}]
   (if (sh12-c6p-keys? core (if (sh12-c6p-zero-arity-bool? core) fields (conj fields :resolved-parameter)))
@@ -4524,7 +4524,8 @@
                    :profile-facts :proof-records :source-origin-table :origin-closure :typed-core
                    :effect-graph :ownership-analysis :pure-capability-closure]]
       (if (= (count fields) 0)
-        (sh12-c6p-all? [(vector? (get core :root-node-ids))
+        (sh12-c6p-all? [(= (get core :input-carrier-validation) {:status :passed})
+                       (vector? (get core :root-node-ids))
                        (vector? (get core :lexical-binding-records))
                        (= (get core :capability-proof-records) [])
                        (sh12-c6p-keys? (get core :physical-provenance)
