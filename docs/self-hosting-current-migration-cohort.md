@@ -4,6 +4,27 @@ Status: read-only build-graph assessment and proposed first module cohort.
 Not a stable-revision selection, admission, execution authorization, milestone
 completion, target change, or release decision.
 
+## Current requirements: no project quotas or cost accounting
+
+The 2026-10-25 direction supersedes cost and capacity requirements in the
+historical assessments below. C16 does not require project work budgets,
+cost proofs, debits, reservations or arbitrary source-byte, token, form, node,
+depth, width or scalar quotas. Otherwise semantically valid input is not
+rejected merely for exceeding such a project quota; these requirements must
+not return under another name.
+
+Authentication, source/plan binding, semantic validity, tamper detection and
+conflict-free ownership remain required. Intrinsic Unicode/UTF-8, type-range,
+index/arity and target-format constraints remain distinct from project quotas.
+Actual broker, heap, process-watchdog, capture and platform controls remain
+machine safeguards. OOM or timeout is a resource failure, not a semantic
+rejection or successful validation.
+
+Historical policy counts, measurements, receipts and failed or incomplete
+results below retain only their original revision and scope. They are not
+active accounting prerequisites. Removing C16's policy oracles does not claim
+that the separately owned reader or other production quotas have been removed.
+
 Assessment revision: `e1c05842181c1b3002ccbd013cc8b1148472badf`.
 This document does not include subsequent working-tree compiler changes.
 
@@ -258,7 +279,7 @@ authenticates the retained reader revision and brackets construction/final
 verification with actual selected-source checks. Default arities still enforce
 historical reader pins. The existing SH06 frontend-subject helper uses that
 default file route; it is not already a current-reader six-subject invocation.
-The current-intake tests and limits are recorded in the
+The current-intake checks are recorded in the
 [development workflow](development-verification.md#default-sh-07-workflow-three-boundaries).
 
 ### Evidence reuse and C16 disposition
@@ -275,7 +296,7 @@ later 41/42 source-proof steps are not that denominator. Resolver status stays
 | E02-E06 and the five frontend subject results in the audit | Original accepted/rejected semantics, source/origin/binding preservation and reviewed failures at their exact cohorts. | Reader/host/plan/context and emitter-freshness changes require an actual dependency comparison before reuse for a selected stable revision. Do not replay unchanged expensive subjects by count or relabel them current. |
 | SH05 `defn` census and original Stage0 expansion comparisons | The retained five-owner and checked-Core censuses distinguish executable macro positions from quote/catalog DATA; no new required macro was demonstrated by the bounded review. | They do not execute every body, establish general user macros, or close a new complete current cohort. C16 remains open, not a demand for marginal macro fixtures. |
 | SH06 genuine imports/private/unresolved, cycles, referred ambiguity, alias, lexical, profile/capability and authenticated-consumer checks | Their exact selectors and original outcomes are mapped in the audit; current source4/from-parent transport has separate development evidence. | Default-pinned historical selectors are not explicit current-reader compositions. Cross-target source imports remain fenced before C5 by the JVM frontdoor. No newly required small resolution behavior was demonstrated. |
-| Interrupted checked-Core source analysis | Preserve the exit-143 log and the observed `:c5-after` / `:hosted-c6-before` boundaries. | No completed hosted-C6 result, final counters or receipt exists. C12 must separate construction and verification cost before another bounded question; no unchanged hour-long retry is selected. |
+| Interrupted checked-Core source analysis | Preserve the exit-143 log and the observed `:c5-after` / `:hosted-c6-before` boundaries. | No completed hosted-C6 result, final counters or receipt exists. Actual source analysis remains open; a cost proof is not a prerequisite. No unchanged hour-long retry is selected. |
 | Actual Gravity Core kernels and later ordinary source compositions | Existing owning tests exercise canonical construction and rejection, separately from hosted C6 source analysis. | Select the exact required variants and actual candidate-bound results through C11-C15; normalized DATA is not a full-source analysis pass. |
 
 C01 therefore remains OPEN: the six source subjects and repository dependency
@@ -372,7 +393,7 @@ not extend any historical acceptance to this toolchain.
 | --- | --- | --- | --- |
 | `compiler/authenticated_envelope.gravity` | Private bounded descriptor -> semantic/provenance template and verifier; SH05/SH06 and later owners consume bound envelopes. [Owner:50](../bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity); [00750 source binding:2](../bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-003-p15-s23-sh02-compile-source-binding-through-p15-s23-c13-c14-b1-wasm-source-bindings.clj). | E02 retains genuine two-stage C13/B1 reuse, path-neutral semantic identity, separate physical provenance and bounded/rejected graphs. Full-source frontend composition at `96aa2973`: 1 test/19 assertions, 72 expansions, 2146 references, hosted C6; [audit:617](self-hosting-sh00-sh06-evidence-audit.md). | Reuse only within original descriptor/schema/checker/compiler/primitive assumptions. Changed digest/codec, reference closure, policy or stage context affects consumers. Full source analysis is not execution of all 72 bodies. Current selected Core consumer must join its own descriptor and actual output; fresh stable-stage comparison/provenance/review remains missing. |
 | `bootstrap/reader.gravity` | Selected `sh03-read-source-unit`/verifier closure consumes explicit bytes/options -> forms, spans, occurrences and diagnostics; C3 consumes authenticated products. | E03 retains original paired accepted/rejected reader subset and review. Whole reader source frontend composition at `2a4ea770fa97892ae7ba7620655f2129a428d039`: 1/19, 275 expansions, 7868 references, hosted C6; [audit:955](self-hosting-sh00-sh06-evidence-audit.md). | Encoding/options/reader primitive or plan changes invalidate affected forms and every downstream source/syntax join. Full reader source analysis does not execute every reader path. Preserve its 231-function execution boundary, co-canonical provenance and applicable unchanged E03 results; bind the selected current toolchain and complete required Core-source composition before broader migration credit. |
-| `bootstrap/syntax.gravity` | Authenticated reader occurrences -> syntax/stream templates, scopes/marks, origins, serialization and validation; macro owner consumes them. [Owner:54](../bootstrap/gravity/src/gravity/bootstrap/syntax.gravity); [00851:3](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00851-sh04-syntax-build-binding.clj). | E04 retains original hygiene/origin/roundtrip/bounds cases. Full-source composition at `e61b4fd9`: 1/19, 102 expansions, 2846 references, hosted C6; [audit:757](self-hosting-sh00-sh06-evidence-audit.md). | Reader occurrence/literal projection, scopes/marks, origin schema or canonical identity changes invalidate syntax and macro/binding/source maps. Retain existing malformed/cyclic/bounds cases; current Core composition must preserve these facts, not reconstruct them in a host oracle. Stable-revision stage/context evidence remains missing. |
+| `bootstrap/syntax.gravity` | Authenticated reader occurrences -> syntax/stream templates, scopes/marks, origins, serialization and validation; macro owner consumes them. [Owner:54](../bootstrap/gravity/src/gravity/bootstrap/syntax.gravity); [00851:3](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00851-sh04-syntax-build-binding.clj). | E04 retains original hygiene/origin/roundtrip/bounds cases. Full-source composition at `e61b4fd9`: 1/19, 102 expansions, 2846 references, hosted C6; [audit:757](self-hosting-sh00-sh06-evidence-audit.md). | Reader occurrence/literal projection, scopes/marks, origin schema or canonical identity changes invalidate syntax and macro/binding/source maps. Retain malformed/cyclic/reference-integrity checks, not arbitrary graph quotas; current Core composition must preserve these facts, not reconstruct them in a host oracle. Stable-revision stage/context evidence remains missing. |
 | `macro.gravity` | Authenticated C3 syntax plus version/environment/build policy -> `def`/`fn` expanded syntax, hygiene/origin trace and diagnostics; C5 then Core consume output. [Owner:48](../bootstrap/gravity/src/gravity/macro.gravity); [00857:153](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj). | E05 retains original 36-source/1276-definition `defn` corpus and separate final shards. Later macro-source composition associated with `baf3f2467616e480ee700afd0383d7ee535bf8da`: 1/19, 46 expansions, 1552 references, hosted C6; [audit:539](self-hosting-sh00-sh06-evidence-audit.md). Coherent outer-origin ingress rejection is retained at [audit:893](self-hosting-sh00-sh06-evidence-audit.md). | Recheck required macro positions when subject population changes; do not manufacture support from historical `defn` success. Recipe, environment, policy, literal or origin changes invalidate expansion and downstream bindings/Core. Current checked-Core subject's complete expansion/downstream result is missing. Prior-stage form parity is not full generated-Core semantic equivalence or general `defmacro` execution. SH-05.1/.6 stay OPEN. |
 | `resolution.gravity` | Authenticated expanded syntax + real module artifacts/catalog -> binding/alias/import/export/scope graph, exact occurrences and diagnostics -> authenticated Core request. [Owner:49](../bootstrap/gravity/src/gravity/resolution.gravity); [00874:3](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00874-sh06-resolution-build-binding.clj). | E06's original 37-source shards retain their original scope. Later resolver-source composition at `4db0dc57`: 1/19, 111 expansions, 4349 references, hosted C6; [audit:785](self-hosting-sh00-sh06-evidence-audit.md). Actual import/privacy/cycle/alias/ambiguity/profile/capability and hostile-binding consumer checks are retained in that audit. | The current 97032-byte resolver differs from the historically accepted 77209-byte revision; current source compilation is expressly development-unadmitted. Catalog/import/export/source/profile/grant/phase changes invalidate bindings and consumers. Finish the selected full Core-source composition and real Gravity-Core downstream join. JVM source target fence prevents a cross-target C5 source claim; normalized policy tests do not remove that limitation. SH-06.6 stays OPEN. |
 | `checked_core.gravity` | Verified C5 carrier -> authenticated Core request -> Gravity template construction/replay/resolved verification/source map; source spans, origins, selected bindings and evaluation order survive. [Owner:1](../bootstrap/gravity/src/gravity/checked_core.gravity), [00894:140](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00894-sh07-core-template-carrier-census.clj), [00898:3](../bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00898-sh07-core-from-authenticated-request.clj). | Existing SH07 accepted/rejected/mutation and current-development checks are relevant bounded behavior evidence. E39/E41 are older SH07 source-proof endpoints with frozen upstream identities, not present migration. Current full source census is 401 `defn` plus three `def`; [audit:1031](self-hosting-sh00-sh06-evidence-audit.md). | The current source differs from the 498219-byte historical pin in 00885; its current binding also says development-unadmitted. Required whole-source frontend composition at `b99989e3` was interrupted before hosted C6 returned, exit 143: [audit:1056](self-hosting-sh00-sh06-evidence-audit.md). No completed result may be credited. Missing work is that specific source question plus complete required Core-form variants and actual Gravity-Core accepted/rejected composition at the eventual selected revision, followed by fresh migration evidence. A host-produced Core result or normalized-only kernel cannot close both. |
@@ -498,10 +519,12 @@ The bounded work needed to make that decision real is:
    evidence, not authority refresh. At explicit stable selection, capture the
    actual source/compiler/dependency/fixture/toolchain/environment identities,
    exact supported operations, input/output schemas, reader/macro policy,
-   grants and resource bounds. Compare against the per-input evidence map;
+   grants and actual machine safeguards. Compare against the per-input evidence
+   map;
    retain compatible historical evidence instead of rerunning it by count.
 2. Select the current Gravity **source-analysis/replay/provenance** transaction
-   through its existing authenticated owner, with exact subject/resource fit.
+   through its existing authenticated owner, with the exact subject and actual
+   execution outcome recorded.
    Preserve the legacy exit-143 attempt as INCOMPLETE; its printed `:c5-after`
    is not a completed result. No legacy hosted-product redesign is prerequisite.
    Keep the original verifiers; no unchanged large retry, cache, verifier skip, required
@@ -709,3 +732,90 @@ grammar or facade policy. Full H6 origin authenticity, aggregate limits,
 context joins and replay remain separate. No new selected stale/coherent
 rejection gap was demonstrated beyond the owning tamper/ambient/bound checks;
 no additional validator, admission contract or unchanged proof replay follows.
+
+## PR339: actual compiler-source reader adoption
+
+This section is historical evidence at the revision below, including its
+then-executed capacity-policy assertions. Those assertions and facade-only
+execution are removed from the current C16 check; their original results are
+not rewritten or promoted to current requirements.
+
+This incremental adoption binds main
+`a86cd015a27d648ba83de6450da5ee08224f2d92`, tree
+`b268def3753fa74bdc33a8afbd3091ba89d7b9b6`. The reviewed reader, facade, host
+binding and canonical-stream implementation actually landed together in PR339;
+they are no longer prospective policy inputs. The reader is 270363 bytes,
+SHA256 `8a12082681ee6ea5eec6da14a43ed1a295eda521c47e8f70b99d40c3893a41f4`,
+with 249 selected functions, versus the earlier 257183-byte/231-function
+development input. The PR304 reader input/plan row remains historical; it is
+not a current source-use map for these changed functions. The other five owner
+sources, compiler/emitter bytes and `deps.edn` are unchanged since the PR318
+comparison, but that alone does not renew their reader/transport-dependent
+evidence. The complete loaded host source tree is now
+`4f4df904849db4797d0fcd993b9cc6a8f1c0933f`.
+
+The new dedicated `sh06_current_cohort_reconciliation_test.clj` constructs one
+original small `sh-03/accepted/newline-lf.gravity` subject through explicit
+current-reader C2 -> C3. Fresh syntax verification and the real C3 retained
+reader-product authenticity check pass. The original reader executes its
+bounds function; the original facade executes its own bounds function, and
+their complete returned records match. The reader plan semantic hash is
+`sha256:cce236c5e748b0db690aa16b6eebfe78a7e296e9b3847d8daabe97deb2c5d71b`;
+the facade is 37071 bytes, source hash
+`sha256:7e2f39689ea1d78dfd1170a37369e96344cc7dc97c0e677b2891ae1bdb580162`,
+with raw plan ID
+`sha256:b68e6a0bf2d2ec5405ae249b043f8da6eaae73587cc34621975c323d2f88457d`.
+
+The executed policy is `:gravity/sh03-compiler-source-v1`: 4194304 source bytes
+and characters, 524288 scanner tokens and 262144 forms. Its admitted carrier
+ceiling is 268435456 nodes, with prospective physical-node construction
+accounting, separate scratch/lifetime obligations, and unchanged host execution
+controls. The conservative derived population 537985024 is not itself an
+admission or heap-fit claim. The fresh canonical stream validates before
+writing, preserves the existing canonical encoding and domain, and retains
+independent replay; private counters or equal digests grant no later authority.
+
+The small composition rejects the earlier reader hash when the C2 retained
+revision, outer C3 revision and descriptor revision are changed together while
+the genuine authenticated envelope is retained. Omission of the current
+revision also rejects. These are real consumer checks over an actually
+constructed product, not a new supplied-record validator or a completely
+re-authenticated forgery claim. The test compares the actual source/plan with
+the newly admitted binding; it does not rely on the old assumption that current
+reader bytes must differ from the historical pin. Repair of that obsolete
+expectation in the owning SH03 test is separate work.
+
+The normal-broker 512MiB/120-second child passed 12 tests/36 assertions:
+the new focused check 1/13, language boundary 6/11 and LOC controls 5/12.
+Captured output was complete, natural exit was 0 and cleanup reported no
+survivors. The raw result/readback is
+`/private/tmp/gravity-c16-pr339-adoption-v1.log`. This is current small-source
+transport and policy-binding evidence, not a rerun of the full compiler source
+subjects, Effects or C7 fit proofs. Earlier long-run outcomes and the combined
+timeout retain their original revisions and dispositions. Their accepted
+dependency reuse is not current-WIP fit or a universal 4MiB guarantee.
+
+Full SOURCE producer-to-fresh-consumer/source-origin/authentication/semantic closure,
+Effects independent-verifier/caller/variant/authentication/C8 composition, and
+the full current-cohort SH-05.1/SH-05.6/SH-06.6 obligations remain separate OPEN
+work. C16 is not a global development gate, and no C17, milestone, self-hosting,
+seed-retirement or release completion follows from this adoption.
+
+## C16 capacity-oracle removal at `89cb1bc8`
+
+The successor check `current-reader-reaches-original-small-c3-consumer` removes
+the three capacity-policy assertions, both policy-only function executions and
+the otherwise unused facade plan/readback. It keeps all ten syntax,
+source/plan-binding and actual consumer tamper assertions: genuine C2 -> C3,
+coherent old-revision substitution with the genuine envelope retained, and
+missing-revision rejection. The 249-function assertion identifies the selected
+reader binding; it is not an admission quota.
+
+On base `89cb1bc836ec04a767c3c3e7750949549eef46ae`, the changed check passed
+1 test/10 assertions; boundary 6/11 and LOC 5/12 also passed, totaling 12/33.
+Raw output is `/private/tmp/gravity-c16-no-quota-focused.log`, with natural
+exit 0, complete capture, no timeout and no surviving child processes.
+The broker, 512MiB heap and 120-second child watchdog are machine controls,
+not semantic input limits or cost-proof obligations. No production behavior,
+reader quota removal, full-source composition, migration or milestone closure
+is claimed by this test-only change.

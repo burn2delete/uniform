@@ -34,12 +34,36 @@
              (catch IllegalAccessException _ (reset! access nil) nil)
              (catch SecurityException _ (reset! access nil) nil))))))
 
+(defn- p15-s23-stage2-native-arraymap-field
+  []
+  (try
+    (let [^java.lang.reflect.Field field (.getDeclaredField clojure.lang.PersistentArrayMap "array")]
+      (when (.trySetAccessible field) field))
+    (catch java.lang.ReflectiveOperationException _ nil)
+    (catch SecurityException _ nil)))
+
+(def ^:private p15-s23-stage2-native-arraymap-field-once
+  ;; The second fixed field shares the read-only, sticky-denial access boundary.
+  (delay (atom (p15-s23-stage2-native-arraymap-field))))
+
+(defn- p15-s23-stage2-native-arraymap-extent
+  [value]
+  (let [access @p15-s23-stage2-native-arraymap-field-once]
+    (when-let [^java.lang.reflect.Field field @access]
+      (try
+        (let [^objects backing (.get field value)]
+          (when (some? backing)
+            (let [length (alength backing)]
+              (when (even? length) (quot length 2)))))
+        (catch IllegalAccessException _ (reset! access nil) nil)
+        (catch SecurityException _ (reset! access nil) nil)))))
+
 (defn- p15-s23-stage2-native-map-extent
   [value]
   (let [kind (class value)]
     (cond
       (identical? clojure.lang.PersistentArrayMap kind)
-      (.count ^clojure.lang.PersistentArrayMap value)
+      (p15-s23-stage2-native-arraymap-extent value)
       (identical? clojure.lang.PersistentHashMap kind)
       (.count ^clojure.lang.PersistentHashMap value)
       (identical? clojure.lang.PersistentTreeMap kind)
@@ -103,7 +127,8 @@
       (identical? String kind) [:string false nil (.length ^String value) nil nil]
       (identical? clojure.lang.Symbol kind)
       [:symbol (p15-s23-stage2-native-meta-present? value) nil
-       (p15-s23-stage2-bootstrap-symbol-utf16-unit-count plan value) nil nil]
+       (p15-s23-stage2-bootstrap-symbol-utf16-unit-count plan value)
+       (if (nil? (.getName ^clojure.lang.Symbol value)) false true) nil]
       (identical? clojure.lang.Keyword kind)
       (let [^clojure.lang.Symbol spelling (.-sym ^clojure.lang.Keyword value)]
         (if (identical? clojure.lang.Symbol (class spelling))
@@ -114,8 +139,9 @@
           (p15-s23-stage2-native-unsupported-header)))
       (or (identical? clojure.lang.PersistentArrayMap kind)
           (identical? clojure.lang.PersistentHashMap kind))
-      [:map (p15-s23-stage2-native-meta-present? value)
-       (p15-s23-stage2-native-map-extent value) nil nil nil]
+      (if-some [extent (p15-s23-stage2-native-map-extent value)]
+        [:map (p15-s23-stage2-native-meta-present? value) extent nil nil nil]
+        (p15-s23-stage2-native-unsupported-header))
       (identical? clojure.lang.PersistentTreeMap kind)
       [:tree-map (p15-s23-stage2-native-meta-present? value)
        (p15-s23-stage2-native-map-extent value) nil
@@ -124,11 +150,13 @@
          :default-comparator :foreign-comparator) nil]
       (identical? clojure.lang.PersistentHashSet kind)
       (let [backing (p15-s23-stage2-native-hashset-backing value)
-            backing-kind (class backing)]
-        (if (or (identical? clojure.lang.PersistentArrayMap backing-kind)
-                (identical? clojure.lang.PersistentHashMap backing-kind))
+            backing-kind (class backing)
+            extent (when (or (identical? clojure.lang.PersistentArrayMap backing-kind)
+                             (identical? clojure.lang.PersistentHashMap backing-kind))
+                     (p15-s23-stage2-native-map-extent backing))]
+        (if (some? extent)
           [:set (p15-s23-stage2-native-meta-present? value)
-           (p15-s23-stage2-native-map-extent backing) nil backing nil]
+           extent nil backing nil]
           (p15-s23-stage2-native-unsupported-header)))
       (identical? clojure.lang.PersistentVector kind)
       [:vector (p15-s23-stage2-native-meta-present? value)

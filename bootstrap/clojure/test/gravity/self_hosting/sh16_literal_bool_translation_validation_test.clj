@@ -54,6 +54,32 @@
 (deftest sh16-validates-original-true-bool-branch-specialization (check-original "true"))
 (deftest sh16-validates-original-false-bool-branch-specialization (check-original "false"))
 
+(deftest sh16-literal-bool-report-requires-ordered-semantic-checks
+  (let [{:keys [mir report after output-report]} @(get cases "true")
+        checks (:checks output-report)]
+    (is (= [:input-carrier-kinds :fresh-original-mir-verification
+            :original-zero-arity-hosted-jvm-bool-diamond
+            :literal-selected-edge :cfg-and-dominance-reconstruction
+            :terminator-and-value-use-reconstruction
+            :complete-after-equality :type-effect-safety-origin-preservation
+            :unchanged-instructions-joins-fact-check-and-proof-tables]
+           checks))
+    (is (= :passed (:translation-validation-status
+                     (consume mir report after output-report))))
+    (doseq [candidate (concat
+                      (map (fn [index]
+                             (into (subvec checks 0 index) (subvec checks (inc index))))
+                           (range (count checks)))
+                      (map #(assoc checks % :unknown-semantic-check) (range (count checks)))
+                      (map #(assoc checks % (get checks (mod (inc %) (count checks))))
+                           (range (count checks)))
+                      [(vec (reverse checks))
+                       (conj checks :unknown-semantic-check)
+                       (assoc checks 0 :bounded-input-carriers)])]
+      (let [result (consume mir report after (assoc output-report :checks candidate))]
+        (is (= :rejected (:status result)))
+        (is (= ["C13-VERIFY"] (:diagnostics result)))))))
+
 (deftest sh16-literal-bool-validation-rejects-substituted-source-tuples
   (let [true-case @(get cases "true") false-case @(get cases "false")
         {:keys [core mir report after output-report]} true-case]

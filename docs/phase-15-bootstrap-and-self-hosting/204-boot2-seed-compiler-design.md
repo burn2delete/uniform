@@ -33,6 +33,25 @@ Exclusions are explicit, such as full AI runtime, GPU lowering, advanced
 macro facilities, formal proofs, full package registry support, and optional
 optimization passes.
 
+## Native identity ABI
+
+Binary `bootstrap-native-identical?` is internal to compiler-artifact
+`:meta`/`:jvm` plans and requires the compiler-artifact plan kind and flag.
+It returns a Boolean indicating whether its operands are the same native JVM
+reference, including two null references. It performs no operand methods,
+equality, hashing, metadata inspection, rendering or traversal. It exposes no
+address or stable identity token and grants no DATA or comparison legality.
+
+This observation lets compiler implementations distinguish an ancestor cycle
+from a repeated shared value without structural equality or a numeric quota.
+It is not language value equality; in particular, host interning or boxing
+does not establish a language identity contract. Ordinary operand evaluation
+occurs once before the ABI checks. Wrong arity reports `L2-BUILTIN-ARITY`;
+wrong plan context reports `L2-BUILTIN-ERROR` without operand rendering.
+The operation is absent from ordinary Core/C5 catalogs and source admissions.
+Its allowlist and runtime implementation are seed TCB bytes; development
+conformance does not renew migration, self-hosting or release evidence.
+
 ## Native Symbol spelling-unit ABI
 
 The temporary JVM seed exposes unary `bootstrap-symbol-utf16-unit-count`
@@ -80,14 +99,18 @@ other numeric classes remain unsupported observations, not language exclusions.
 Metadata is only a presence Boolean after a native class check. It is not
 walked, returned, or implicitly rejected. String/Symbol/Keyword metrics count
 native UTF16 spelling units without rendering; Keyword's native Symbol
-receiver is checked separately. Integer metrics are absolute-magnitude bits.
+receiver is checked separately. Symbol child0 is a fresh native name-present
+Boolean: false for a null name, true for an empty or other non-null name.
+Child1 remains nil. This fixed native getter and null test expose no name or
+namespace String, reject no Symbol DATA, and grant no comparison legality;
+the existing UTF16 metric and metadata observation are unchanged.
+Integer metrics are absolute-magnitude bits.
 BigInt reads its native compact long or checks its exact native BigInteger
 backing before observing magnitude; it does not coerce through Number methods.
 Ratio supplies separate numerator/denominator bits, requiring exact native
 BigInteger fields before numeric observation. No GCD, printing, precision,
 normalization or numeric equality is performed. Positive-magnitude bitLength
-avoids the negative bitLength scan; its bounded temporary native headers must
-be included in the caller's explicit accounting.
+avoids the negative bitLength scan.
 
 Byte and Short use kinds `:integer8` and `:integer16` with the same magnitude-bit
 metric as Integer/Long. Float and Double use `:float32` and `:float64`, with
@@ -100,19 +123,17 @@ BigInteger guard before magnitude observation. Scale is a signed, widened
 native field observation, including both int extrema, not precision or a
 normalization request. Unknown nested backing yields unsupported.
 
-On the audited OpenJDK 26 path, compact BigDecimal unscaled observation may
-allocate one native BigInteger and an at-most-two-word magnitude array; negative
-absolute magnitude may add one native BigInteger sharing the array. A
-conservative logical inventory reserves two seven-cell BigInteger headers,
-three array cells, one magnitude metric and two scale-read/widen cells: 20
-branch temporaries. Byte/Short reserve at most five numeric observation cells,
-and Float/Double one width cell. Together with seven returned cells and the
-30 common plan-check path/cursor cells, 57 is a conservative bound for these
-new numeric branches. This is not a heap-byte or interpreter-work estimate.
-No cached-box or constant-folding discount applies; callers must separately
-reserve the applicable fee before invocation and validate before comparison.
-
-Container extents are native cached counts, not content validation. TreeMap
+Container extents are native cached counts or checked physical lengths, not
+content validation. For exactly native PersistentArrayMap, the seed resolves
+only the fixed `clojure.lang.PersistentArrayMap.array` field through the same
+ordinary, read-only, sticky-denial access boundary described below. A null
+array, odd physical length or unavailable access yields the six-slot
+unsupported header before metadata or count observation. A non-null even
+array supplies length divided by two, without count, entry materialization,
+element reads, hashing, equality or duplicate-key validation. This check also
+precedes extent observation for an ArrayMap backing a native HashSet; a
+dangling tail is never skipped. Empty and other even arrays remain supported.
+The array reference is neither returned nor copied. TreeMap
 reports only default-versus-foreign comparator identity in child0 and never
 invokes it. List nodes return raw head/tail references, without forcing Cons
 tails or counting their spines. SubVector returns its raw backing in child0,
@@ -125,17 +146,18 @@ the fixed `clojure.lang.APersistentSet.impl` field, using ordinary JVM access
 checks once. No caller-selected class/field, module opening, Unsafe operation,
 access-denial retry or security-manager bypass is allowed. Unavailable access
 or an unrecognized backing class yields unsupported, without delegated count.
-An admitted native backing is returned in child0 and checked before its count.
-This is a new explicit bootstrap TCB field-access boundary, not general
-reflection authority or a proof that stored members are safe.
+An admitted native backing is returned in child0 after its extent guard.
+Together with the fixed ArrayMap field, these are explicit bootstrap TCB
+field-access boundaries, not general reflection authority or a proof that
+stored members are safe. Their one-time Delay/Atom/Field access state caches
+only fixed JVM infrastructure, including denial, never DATA or DATA validity.
+Cold field resolution and first-access JVM accessor initialization remain part
+of that audited host mechanism.
 
 Each selected result branch constructs only its returned header, with no
-unconditional fallback tuple. One Vector and six slots cost seven logical
-output cells regardless of any actual compiler constant folding. Callers
-must reserve its construction and all bounded temporary observations before
-invocation, separately from every subsequent DATA visit and native comparison.
+unconditional fallback tuple.
 Native metrics do not waive full child validation or existing schema/profile
-checks. Conservative fee changes require an explicit owning accounting change.
+checks.
 The operation stays outside ordinary Core/C5 catalogs and authenticated-source
 admission. Its helper and load-order entry invalidate affected seed fingerprints;
 development tests do not renew migration, self-hosting or release evidence.

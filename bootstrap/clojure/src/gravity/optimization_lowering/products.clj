@@ -51,16 +51,6 @@
            :status :accepted})
         decisions))
 
-(def residual-cost-report
-  {:artifact :gravity/residual-cost-report
-   :status :complete
-   :entries [{:pass :bounds-check-elide
-              :claim :check-erased
-              :residual-cost :none}
-             {:pass :target-layout-prepare
-              :claim :layout-prepared
-              :residual-cost :manifest-only}]})
-
 (def check-elision-record
   {:artifact :gravity/check-elision-record
    :pass :bounds-check-elide

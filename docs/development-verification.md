@@ -6,6 +6,47 @@ Repository verification uses the Clojure runners directly.
 
 Run commands from the repository root.
 
+## Remove project cost and budget mechanisms
+
+The current implementation objective removes project cost models, logical work
+units, caller/producer allowances, completed-work counters, debit/reservation
+plumbing, cost proofs and budget-exhaustion refusals. Remove their enforcing
+code, contract requirements and budget-only test assertions. Do not replace
+them with larger constants, a new policy option, an unbounded sentinel, renamed
+generic bounds or a requirement to finish accounting before implementation.
+
+Capacity-oracle node, depth, width, scalar, source-byte, token and form maxima
+that merely refuse otherwise well-formed inputs are included. A numeric check
+remains only for an independently meaningful semantic or representability
+condition, such as legal indices, arities, integer modes or target formats.
+Host broker, heap, process-watchdog, capture and platform restrictions are
+separate; paid account and external billing limits are not project changes.
+
+Preserve complete semantic validation, authentication, source provenance,
+native class/callback/metadata rules, fresh reconstruction, equality and tamper
+detection independently of accounting. Effect and capability permission sets
+are semantic authority, not work allowances; removing compiler fuel does not
+make an undeclared effect or missing capability legal. Replace budget-only
+assertions with applicable accepted/rejected semantic regressions, without
+requiring a new cost certificate or claiming correctness from a deleted guard.
+
+| Delete | Preserve independently | Owner |
+| --- | --- | --- |
+| C7 inference fuel, work-policy options, fee worksheets, prospective reservations, budget refusal and accounting-only fixtures | Type inference, legal effects, source/owner relationships, fresh verification and coherent tamper rejection | SOURCE |
+| Effects/C8 producer/caller pools, debit propagation and cost-only refusal | Body-effect legality, authentic inputs and fresh result verification | Existing technical owners; C12-restricted work remains inaccessible |
+| Reader/H6 capacity-oracle quotas and cost/fit prerequisites | Strict decoding, actual source identity, native carrier legality and authentication | Existing Reader/H6 limits owner |
+| Runtime/library/optimizer cost counters, reservations and budget-only tests | Value semantics, MIR/fact consistency, profile/target legality and substitution rejection | Existing runtime, library and pass owners |
+| Candidate/task/failure quotas and ordinary per-attempt/preparation permission stages | Conflicting-writer coordination, actual failures, independent acceptance and coordinator integration | Process/tooling owner and coordinator |
+
+Historical metered methods, totals, limits, exact/one-short observations and
+failed runs below retain their original scope. They are not current work
+requirements or evidence that an unmetered successor passed. Old accounting
+selectors and budget-only fixtures are retired requirements; choose the
+semantic replacement checks from the owning removal, not a fuel boundary.
+Do not rewrite a historical failure, retry or transfer C12's restricted action,
+or route around the denied reader-oracle commit. Report any unreachable
+removal by its exact mechanism and restriction.
+
 ## Default SH-07 workflow: three boundaries
 
 The practical unit of progress is an executable semantic change, not another
@@ -28,8 +69,8 @@ Reservations, candidate tuples, admission reviews, receipt schemas and terminal
 publication come from supplemental admission contracts. Generated test catalogs
 and historical attempt-specific grants are tooling/coordination policies, not
 language semantics or prerequisites for explicit local test selection. The
-repository language boundary, source LOC limit and host resource limits remain
-implementation constraints, separate from proof authority.
+repository language boundary and actual host/platform protections remain
+separate from proof authority. Project accounting and attempt quotas do not.
 
 Keep paired source fixtures first-class. For extension-independent behavior
 with unchanged reader, canonical identity and source-path projection, one real
@@ -92,12 +133,12 @@ manifest authority entry; unknown namespaces and unmatched selectors fail.
 Use a fresh JVM after compiler source changes to avoid stale process-local plans.
 
 Ordinary `compiler-c2-reader-file-artifact` construction executes the existing
-bounded, authenticated reader directly. It does not require persistent cache
-publication or a free cache-store budget. Call the existing explicit
+authenticated reader directly. It does not require persistent cache
+publication or a cache-store budget. Call the existing explicit
 `compiler-c2-reader-file-artifact-cached` API when testing incremental reuse;
-its current-input revalidation, secure admission and capacity limits still
-apply. A cache policy rejection is not permission to clear shared state,
-increase limits or suppress unrelated compiler failures.
+its current-input revalidation and authentication remain required. Cache
+accounting cannot become an input-admission prerequisite. Do not clear shared
+state or suppress unrelated compiler failures while removing accounting.
 
 For explicit current-reader development, the source constructors' final
 `reader-source-path` argument selects the actual repository reader source and
@@ -234,46 +275,25 @@ runner. Include the structural-match, nonconvergence, monotone-return and
 List-if inference controls when changing fixed-point preparation.
 
 The four immutable lookup indexes are prepared once per admitted inference
-invocation, after existing early round/work rejection guards. Standalone calls
+invocation. Standalone calls
 and verifier invocations prepare independently. Preserve original index inputs,
-duplicate-last behavior, Map passthrough, every round-varying fact and logical
-work charge. No caller-supplied prepared flag, cross-invocation acceptance cache
-or budget increase is justified by this optimization. The focused comparison
-checks complete outputs and rejection budgets; it is not a source migration
+duplicate-last behavior, Map passthrough and every round-varying fact.
+No caller-supplied prepared flag or cross-invocation acceptance cache is
+justified by this optimization. The focused comparison checks complete outputs
+and semantic rejections; it is not a source migration
 proof or a wall-time benchmark.
 
-### Caller-selected function-inference work allowance
+### Function inference without a work allowance
 
-The C7 development entrypoints
-`sh08-function-type-core-artifact-with-work-policy` and
-`sh08-verify-function-type-result-with-work-policy` accept trusted invocation
-options: `{}` keeps the default 65536 allowance; the only other accepted shape
-is `{:type-inference-work-allowance N}` for a positive integer `N`. Malformed
-options reject with `C7-GENERIC/:invalid-type-inference-work-policy` before
-inspecting the request or candidate. The original entrypoints keep their
-default behavior and unwrapped result shape.
-
-The reported `:effective-work-policy` envelope is outside the canonical
-schema-3 result and its identity. It is not source, candidate or proof
-authority. Each ordinary module inference invocation receives its own
-cumulative pool, including imported producers. Fresh verification reconstructs
-with its caller's options, never an allowance supplied by the candidate.
-There is no round reset, automatic growth, retry or acceptance cache. Existing
-local ceilings and unrelated depth, round and throw-analysis limits remain.
-This allowance is not a whole-import-graph budget, CPU/RSS bound or hard
-preemption guarantee.
-
-In `gravity.self-hosting.sh08-function-call-type-test`, select the four
-`sh08-function-work-policy-*-development-kernel` vars for options, chain,
-inference and neighbour-fuel checks. Include the existing map-keys, list-set
-and bare-keyword-anchor `*-cold-and-budget-development-kernel` controls when
-changing their remaining-fuel consumers. Select the public, charged-public
-and imported `sh08-function-work-policy-*-composition` vars individually for
-the costlier current-reader source joins and fresh public verification.
-The charged test uses the small `function-work-policy-minimal-map-get` fixture;
-its QST pair has byte parity, not a fresh paired typed-execution claim.
-These checks do not establish that every larger input fits, that a successful
-input consumed more than 65536 units, or that migration/self-hosting passed.
+Remove the caller-selected work-policy API, its default and local fuel
+ceilings, effective-policy envelope, shared-pool plumbing and accounting-only
+refusals/tests. The old `*-work-policy-*` and `*-cold-and-budget-*` accounting
+selectors are not current acceptance gates. Keep any independently useful
+type, import, call, effect, source-identity and fresh-verification cases in
+ordinary semantic tests. Neither a caller nor a candidate supplies accounting
+authority; inference and verification validate the actual semantic products.
+Retain historical metered outcomes as history, with no migration or
+self-hosting claim inferred from their accounting totals.
 
 ### Ordered-Map stored false/Nil: producer-consumer coverage
 
@@ -292,7 +312,7 @@ not a production repair, new semantics, compiled C6 client or admission claim.
 ### Bounded Keyword-key Map removal
 
 STD2/STD3 govern `:ordered-map-dissoc-keyword` in the existing SH-22 request
-API. At most 256 entries, complete indexed pair/Keyword-key census and an actual
+API. Complete indexed pair/Keyword-key census and an actual
 Keyword needle precede user-key equality; full uniqueness precedes removal.
 Preserve remaining order, all stored values and the original Map. Empty or
 missing keys produce a value-equivalent Map; false/Nil do not mean absence.
@@ -416,8 +436,8 @@ provider execution or migration evidence.
 ### Keyword membership in bounded ordered Sets
 
 STD2/STD3 govern `:ordered-set-contains-keyword` in the same SH-22 leaf. It
-accepts the existing ordered-set carrier with at most 256 actual Keyword members
-and an actual Keyword needle. The bound and full family census precede member
+accepts the ordered-set carrier with actual Keyword members and an actual
+Keyword needle. The full family census precedes member
 equality; full uniqueness validation precedes a query hit. Qualified Keyword
 value equality determines Bool membership independently of insertion order.
 The query preserves its input and neither invokes payloads nor grants authority
@@ -478,11 +498,11 @@ pins are unchanged and do not authenticate this changed source revision.
 ### Symbol membership after bounded ordered-Set insertion
 
 STD2/STD3 govern `:ordered-set-contains-symbol` in the same SH-22 leaf. The
-existing ordered carrier admits at most 256 actual Symbols and a Symbol needle.
-The bound and complete member/needle family checks precede equality, and full
+ordered carrier admits actual Symbols and a Symbol needle. Complete
+member/needle family checks precede equality, and full
 uniqueness validation precedes a hit. Qualified Symbol value equality determines
 Bool membership independently of insertion order, without spelling coercion or
-execution authority. `STD3001` retains bounds failures, `STD10003` rejects
+execution authority. Remove capacity-only `STD3001` refusals; `STD10003` rejects
 malformed/duplicate/family inputs and `STD1001` rejects wrong arity.
 
 ```bash
@@ -509,12 +529,13 @@ SH07 pins remain unchanged and do not authenticate this revised source.
 ### Integer membership after bounded ordered-Set insertion
 
 STD2/STD3/STD5 govern `:ordered-set-contains-integer` in the existing SH-22
-request API. Admit at most 256 actual Integer members and an Integer needle;
-this is family classification, not signed-i64 narrowing or arithmetic. Bounds
-precede the complete indexed Vector census, member/needle checks precede any
+request API. Admit actual Integer members and an Integer needle;
+this is family classification, not signed-i64 narrowing or arithmetic. The
+complete indexed Vector census and member/needle checks precede any
 equality, and complete uniqueness validation precedes the membership query.
 Late invalid members or duplicates cannot hide behind an early hit. Preserve
-the Set and existing `STD3001`/`STD10003`/`STD1001` diagnostic boundaries.
+the Set and actual malformed-input/arity diagnostic boundaries, without a
+capacity-only refusal.
 
 Run `sh22-integer-set-membership-consumes-real-insertion-results` in
 `gravity.self-hosting.sh22-standard-library-test`; the affected whole namespace
@@ -533,8 +554,8 @@ general mixed-family Sets, native allocation, migration or SH-22 completion.
 STD2/STD3 govern `:ordered-set-equal-keyword` in the same experimental SH-22
 leaf, with checked signature
 `(OrderedSet Keyword) (OrderedSet Keyword) -> (Result Bool CollectionError)`.
-Both existing ordered carriers must contain at most 256 actual Keywords.
-Both bounds and complete Keyword-family checks precede member equality; both
+Both ordered carriers must contain actual Keywords. Complete Keyword-family
+checks precede member equality; both
 uniqueness validations precede a count mismatch or apparent matching prefix.
 Equal valid Sets have equal counts and no unmatched member, independently of
 stored order. The query preserves both inputs and does not invoke payloads.
@@ -658,9 +679,8 @@ Both arms validate before execution. Two `<=` comparisons also compose in
 nine-row `[3,3,1]` or `[3,1,3]` diamonds. Mixed Eq/Lt comparisons or truthiness
 combined with a `<=` arm, and two computed `<=` arms, remain rejected; Eq/Lt arm support
 is unchanged. Original source/fact, CFG/DFG, origin, type, effect and recomputation
-checks remain. Entry comparison leaves fuel 505; a selected/skipped comparison
-arm leaves 505/507 under depth 32 and fuel 512. No public keys or arities change.
-Double-`<=` composition leaves fuel 503/505 when its computed arm is selected/skipped.
+checks remain. Remove depth/fuel quotas and their accounting assertions.
+No public semantic keys or arities change.
 
 Run `sh13-executes-integer-less-than-or-equal-entry-conditions` and
 `sh13-executes-integer-less-than-or-equal-only-in-the-selected-arm` in
@@ -681,8 +701,8 @@ Future stable consumers must account for the additive opcode/projection domain;
 this development merge does not renew historical admission evidence.
 
 The selected-arm increment at `2b4406e8` reuses the existing opcode and role,
-without changing public keys, arities or bounds. Selected/skipped arms leave
-fuel 505/507. Four passing invocations cover the new arm, retained bridge,
+without changing public semantic keys or arities. Four historical passing
+invocations cover the new arm, retained bridge,
 normalized signature/Nil/bounds/overflow and boundary checks: 28 tests / 9,356
 assertions. LOC separately passes 2,022 files, zero exceptions, maximum 250.
 Retain `/tmp/d-sh13-lte-arm-*-v1-20261021`. The separate test-only RED contains
@@ -715,9 +735,8 @@ role and original source, facts, CFG/DFG, incoming values and operation IDs.
 It supports seven-row entry comparisons with scalar literal arms, seven-row
 literal-Bool entries with one GT arm, and nine-row GT-entry/GT-arm diamonds.
 Both arms validate before execution. Mixed GT/Eq/Lt/LTE, truthiness, DO/let and
-both-computed-arm GT layouts remain excluded. Existing depth/fuel bounds stay;
-fuel is 505 for an entry or selected arm, 507 for a skipped arm, and 503/505
-for selected/skipped nine-row computation. This adds an opcode/projection
+both-computed-arm GT layouts remain excluded. Remove depth/fuel quotas.
+This adds an opcode/projection
 domain, not public keys or arities; future migration must account for it.
 
 At `342610b9`, four passing invocations cover new bridge 1/2,160, retained
@@ -774,18 +793,16 @@ verification alone does not establish that primitive signature.
 Validate both arms before execution, including the unselected arm. Preserve
 original CFG incoming values, IDs, fact references and source records; transfer
 the selected arm value explicitly into the join. Only that arm executes.
-Frame fuel is not a count of original MIR instructions. The result's input IDs
+The result's input IDs
 and projection are dependency views, not complete content-hash authentication.
 The computed cases explicitly extend the projection domain with seven or nine rows
 and an `:integer-equality` or `:integer-less-than` role; existing keys and public
 arities are unchanged. Keyword arms add only the projection runtime-type value
 `:keyword`, not a new role or grammar. Conditions and computed-arm results
 remain Bool-only. Other ordering comparisons and arithmetic are excluded.
-Five-node results remain unchanged. The same 512-unit frame fuel leaves 507
-for literal-only execution, 505 when one comparison executes and 503 when both
-entry and selected arm comparisons execute, not a larger budget.
-An unselected comparison arm consumes no execution fuel: its complete
-original source/fact projection and pre-execution validation still remain.
+Five-node results remain unchanged. Remove frame fuel and its accounting
+assertions. An unselected arm does not execute; its complete original
+source/fact projection and pre-execution validation still remain.
 
 Include the existing SH-12 diamond and normalized SH-13 branch, recursion and
 loop/indirect-call controls when changing this handoff. Calls, loops, effectful
@@ -800,7 +817,7 @@ actual Symbol names, resolved binding ID, one non-shadowing binding, plural
 `:bindings` paths, operand order and source/fact records in both arms before
 execution. The initializer executes once when selected; three forwarding
 operations preserve the value, with scope forwarding its local-result operand.
-Fuel is 504 selected or 507 skipped under the same 512-step bound. This adds
+Remove the execution-fuel requirement. This adds
 three projection roles (`:lexical-binding`, `:local-reference`, `:lexical-scope`)
 and an eight-row domain, not new public keys/arities. It excludes combined
 entry comparisons, two lexical arms, parameters, captures and collections.
@@ -822,7 +839,7 @@ remain unsupported here, not redefined as truthy.
 The original producer bridge adds exactly the six-node `[2,1,1]` layout:
 literal input and truthiness in entry, then two literal arms. Its new
 `:truthiness` projection role retains original IDs, source/fact rows, full CFG
-and selected trace, with 506 fuel remaining under 512. The SH-12 source-path
+and selected trace. The SH-12 source-path
 gate preserves the existing `if-path + :condition` prefix and additionally
 accepts only source-op `:truthy` at the exact `if-path + :truthy` path. Bridge
 input must be at `if-path + :test`; retained metadata must have fixed
@@ -866,12 +883,11 @@ Both selected literals execute exactly once left-to-right, then the existing
 SSA-forwarding interpreter returns the second value under the original sequence
 ID. The new projection role is `:sequence-result`, not a new interpreter or
 normalized opcode. Literal conditions use seven-row `[1,3,1]` or mirrored
-layouts, with fuel 505 selected or 507 skipped. Truthiness conditions use
-eight-row `[2,3,1]` or mirrored layouts, with fuel 504 selected or 506 skipped.
+layouts. Truthiness conditions use eight-row `[2,3,1]` or mirrored layouts.
 The latter require the three-operation arm to end in `:sequence`, not a
 comparison. Computed Eq/Lt entry plus `do` remains unsupported; existing
-nine-row comparison layouts remain supported. Limits remain depth 32 and
-fuel 512. Retain scalar/Nil/lexical, old layout, original verifier and result
+nine-row comparison layouts remain supported. Remove depth/fuel quotas.
+Retain scalar/Nil/lexical, old layout, original verifier and result
 substitution regressions. Empty/nested/effectful bodies, calls and fresh C6
 adaptation are outside this slice.
 
@@ -927,8 +943,8 @@ stops new propagation, including otherwise resolvable suffix ADDs, except for
 the closed pure-compute reset below; successful prefix folds remain. Existing
 immediate-literal ADD folding elsewhere is
 unchanged and does not automatically supply a new chain producer. The existing
-128-operation limit permits at most 128 result-count rows plus 128 forward
-rows, not a fixed point or a CPU-time claim. Original request references/flags,
+operation-count quota is removed, as are its count/forward-row ceilings.
+This is not a fixed point or a CPU-time claim. Original request references/flags,
 source/origin/result identity, decision order, invalidation and fresh
 recomputation remain intact; the same normalized-DATA evidence limits apply.
 
@@ -941,8 +957,8 @@ supply facts: neither pre-compute facts nor the compute result authorize a
 fold. Effectful, unsafe or dead compute and all other existing barriers still
 stop propagation. Preserve global result uniqueness, overflow checks, original
 input/source/result identity, ordered decisions, post-fold DCE and fresh
-verification. The scan still has at most 128 count rows plus 128 forward rows;
-local DCE preparation and independent replay remain additional bounded work.
+verification. Remove count/forward-row quotas; local DCE preparation and
+independent replay still perform their semantic work.
 This does not evaluate or remove compute, add a pass/fixed point, or establish
 general CFG/SSA propagation, global CSE, native execution or a speed claim.
 
@@ -993,9 +1009,8 @@ cleanup contributes no fabricated or nil proof ID. Ordered changed operations
 and the existing `:direct-no-use-dead-rule` bounded replay record the local
 evidence. Preserve runtime-proof invalidation, source/original-input identity,
 fresh pipeline reconstruction and result-substitution rejection. Preparation
-uses up to ten bounded operation traversals, at most 2,048 current operand
-positions and two original-operand kind checks per selected ADD under the
-existing 128-operation/16-operand limits. Independent pipeline/verifier replay
+performs its operation traversals and original-operand kind checks without
+operation/operand-position quotas. Independent pipeline/verifier replay
 is additional; these are not two walks, a linear-CPU bound or a performance
 claim.
 
@@ -1104,8 +1119,8 @@ the complete original input and independently rederive the output. C14 also
 restores and rederives the selected translation. Original C11 reports/pass and
 preflight records describe ONLY the original input; never rewrite their counts
 to validate output. The separate output hash excludes its own C13 record,
-evidence and seal. Bounds remain 256 operations and existing carrier limits;
-bounded scans, copying, reconstruction and hashing are real work, not a speed
+evidence and seal. Remove operation-count and capacity-only carrier quotas;
+scans, copying, reconstruction and hashing still execute, not a speed
 or free-sharing claim.
 
 Retain direct identity/fallback, original-report, malformed-carrier, source/fact,
@@ -1294,10 +1309,10 @@ interface, using `-J-Xmx2g`:
 - `current-gravity-list-equality-consumer-development-kernel` in `gravity.self-hosting.sh09-body-effect-test`.
 - `current-gravity-list-equality-lowering-development-kernel` and `current-gravity-list-equality-runtime-development-kernel` in `gravity.self-hosting.sh01-stage2-runtime-iteration-test`.
 
-Include the owning ID, transfer, budget and old equality-family controls when
+Include the owning ID, transfer and old equality-family controls when
 those paths change. Both complete domains and all corresponding pairs must
-be checked before returning even false; one cumulative budget covers validation
-and comparison. Existing atomic, Vector and Set helpers keep their domains.
+be checked before returning even false. Existing atomic, Vector and Set helpers
+keep their independently justified semantic domains; remove work quotas.
 The current runtime inventory is 56 functions; historical 55-function evidence
 is not rewritten or treated as current.
 
@@ -1316,7 +1331,7 @@ STD2's binary complement law extends to the supported STD3 List equality
 domain above. `not=` preserves the same accepted/rejected frontier, ordinary
 left-to-right operand evaluation and non-tail transfer rules. C7, C8 and typed
 lowering use their existing ANE owners; each selected List-domain classification
-consumes its existing List equality validator once with the remaining budget. There is
+uses its existing List equality validator. There is
 no runtime change: lowering emits an owned conditional around one builtin `=`,
 with false/true branches. It does not emit a runtime builtin `not=`.
 
@@ -1327,12 +1342,12 @@ the namespace/`--exact`/`--fail-fast` interface:
 - `current-gravity-list-inequality-consumer-development-kernel` in `gravity.self-hosting.sh09-body-effect-test`.
 - `current-gravity-list-inequality-lowering-runtime-development-kernel` and `current-gravity-list-inequality-transfer-fence-development-kernel` in `gravity.self-hosting.sh01-stage2-runtime-iteration-test`.
 
-Include the paid-domain, ID, throw-consumer and old inequality-family selectors
-when their owning paths change. C8's ANE context prepares paid type checks and
+Include the domain, ID, throw-consumer and old inequality-family selectors
+when their owning paths change. C8's ANE context prepares type checks and
 indexes; `body-ane-call-valid?` consumes the guarded source joins afterward.
 Test rejection at that actual consumer rather than adding a repeated source
-walk to preparation. Preserve existing missing-child-work accounting instead
-of inventing a default work unit. Callback observations apply to the selected
+walk to preparation. Remove child-work accounting and work-unit defaults.
+Callback observations apply to the selected
 malformed fixtures, not arbitrary hostile DATA or provider CPU bounds.
 
 For affected source composition, select
@@ -1606,9 +1621,9 @@ proofs, or establish imported-call typing, execution or self-hosting support.
 The existing owning pass is
 `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`.
 Its internal `sh08-ft-loop-type-step` consumes canonical C6 nodes, bindings,
-targets and transfers plus current type/binding tables and the remaining
-record-visit budget. Its DATA result contains bindings, constraints, issues and
-work counts. `sh08-ft-normal-return-type` joins ordered child types with a
+targets and transfers plus current type/binding tables. Its semantic DATA
+contains bindings, constraints and issues; remove visit fuel and work counts.
+`sh08-ft-normal-return-type` joins ordered child types with a
 nominal type. C7 retains input authentication, inference orchestration and
 diagnostic rendering; calling an internal kernel does not grant acceptance.
 The optional `gravity.types` extraction is deferred, not a prerequisite for
@@ -1643,8 +1658,8 @@ an annotation requirement, not malformed C6 by themselves.
 `gravity.effects` owns the corresponding C8 body-effect equations. A recur
 backedge returns to the target's body, not its initializers. Its focused check
 joins the retained C7 slot/transfer premises to C6 control records, starts effect
-summaries at bottom and checks the final equations within the existing logical
-work budget. This is development feedback, not a termination or runtime-cost
+summaries at bottom and checks the final equations without a logical work
+budget. This is development feedback, not a termination or runtime-cost
 proof.
 
 After changing C7 inference or its namespace boundary, validate the affected
@@ -2096,7 +2111,7 @@ vectors, mixed represented values, typed parameters, quoted DATA elements,
 immutable let forwarding and direct local calls use this path.
 
 The runtime checks the closed `{:op :vector-literal :items [...]}` descriptor,
-including a vector of at most 65,536 immediate instruction maps, before item
+including the actual vector of instruction maps, before item
 execution. This is shallow descriptor validation, not a whole nested-IR proof.
 Items run once from left to right with operand recur targets cleared. Normal
 values accumulate into a vector; the first thrown or rejected result keeps its
@@ -2115,10 +2130,8 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-evaluated-vector-authenticated-composition
 ```
 
-The lowerer reserves `12 + 10 * element-count` logical join units before its
-per-element checks, then passes the remaining budget through child lowering.
-The existing cumulative cap is unchanged. This is not a bound on every VM
-operation, total heap use or program execution. Missing/unknown types and
+Remove join-unit reservations and remaining-budget plumbing from lowering.
+Missing/unknown types and
 incoherent Never, source, order or count facts reject with `P15S23Q002`.
 Malformed runtime descriptors reject with `P15S23X002`. Evaluated sets retain
 `:unsupported-typed-lowering-operation`; maps have the separate bounded
@@ -2209,10 +2222,8 @@ increments.
 The producer records source, ordered operands, reconstructed shape, selected
 coordinate and presence in a solved constraint. Fresh public C7 verification
 owns recursive reconstruction; lowering joins that verified row rather than
-adding another recursive checker. Lookup outer joins and extracted-evidence
-logical charges share the existing inference counter with loops across rounds
-and failures. Those charges are not recursive helper-visit or CPU counts;
-existing shape depth, size and alternative caps remain separate.
+adding another recursive checker. Remove lookup/extracted-evidence logical
+charges, inference counters and capacity-only depth/size/alternative quotas.
 
 Runtime validates the closed two-argument instruction, evaluates the literal
 key and whole map operand once in order, then performs checked lookup. A
@@ -2260,9 +2271,8 @@ clojure -J-Xmx2g -M:dev-test \
 
 Current facts take precedence over prior-round facts within the same fresh
 inference invocation, permitting caller-before-callee source order without a
-cache. New call-index/join and retained-evidence logical charges use the
-existing inference budget; existing seed/reconstruction shape caps are
-separate, not an aggregate CPU-visit proof. Avoid constructing unused call-shape
+cache. Remove call-index/join and retained-evidence accounting, inference fuel
+and capacity-only seed/reconstruction quotas. Avoid constructing unused call-shape
 indexes for unrelated type-only modules. Imported and recursive return shapes,
 unknown map parameters and unresolved alternative return shapes remain
 explicit implementation boundaries.
@@ -2289,7 +2299,7 @@ These normalized checks exercise the emitter and its evidence joins, not a
 complete source pipeline. Select C7 rows by their match identity and clause
 ordinal: their `lhs` identifies a branch body, not the match. Preserve source
 order, narrowed binder scope, original failure diagnostics and branch tail
-targets. Use the existing lowering budget, including binder-use traversal.
+targets. Preserve binder-use traversal without a lowering work allowance.
 
 Throwing local calls through a match also use C7's existing call-error graph and
 the independent verifier in `gravity/effects.gravity`. Their supported-form
@@ -2469,8 +2479,8 @@ The scrutinee executes once without an outer recur target. Only the selected
 body executes, retaining its original tail target. Failed partial bindings
 must not leak into later clauses; throws, rejected control and fatal errors
 retain their original payload and output. Validate the whole closed descriptor
-before evaluating its scrutinee. Existing descriptor depth/work ceilings are
-local shape bounds, not an aggregate evaluator CPU or termination proof.
+before evaluating its scrutinee. Remove descriptor depth/work quotas; complete
+descriptor validity is required without a capacity-oracle refusal.
 
 These normalized checks are development feedback, not source composition or
 authoritative migration. A changed projection or runtime instruction also
@@ -2697,10 +2707,10 @@ input is an already established Map shape; acceptance by this private copying
 helper does not establish member-type validity or authenticate source input.
 The source kernel separately joins the real owning shape reconstruction to
 the actual argument type and checks original forms, resolved call/binding
-records, allocation policy and source/work-limit rejection. These kernels alone
+records, allocation legality and actual source rejection. These kernels alone
 do not establish a compiler-supported source call. The inference kernel checks cold normal and
 Never cases, ordered constraints, descriptor mutations and Unknown deferral
-with exact/one-below budgets. Fresh public C7 reconstruction, independent C8
+without a work allowance. Fresh public C7 reconstruction, independent C8
 reconstruction, lowering/runtime behavior and affected real
 source composition are checked separately below. The
 generic STD3 Map rule is broader than the first literal-Keyword/known-shape
@@ -2750,7 +2760,7 @@ clojure -J-Xmx2g -M:dev-test \
 
 It builds the accepted Gravity/QST pair and one quoted-Map missing-allocation
 rejection, reusing accepted products for all consumers and mutations. Genuine
-non-returning calls, surviving-source provenance, whole-C8 budgets and ordered
+non-returning calls, surviving-source provenance and ordered
 row census belong here, not to the normalized kernels' claims. Other rejected
 fixture pairs are not fresh source-proof results merely because their headers
 pass. No W5 execution, general Map parameters, arbitrary source keys, target
@@ -2928,11 +2938,11 @@ clojure -J-Xmx2g -M:dev-test \
 
 An established vector's complete ordered element types are followed by the
 appended value type, including heterogeneous values. Normal results retain the
-existing 1024-element bound. Operator and operands evaluate once, left-to-right;
+actual ordered element types. Operator and operands evaluate once, left-to-right;
 the original vector and prefix values are preserved. A Never operand prevents
 the append's own allocation without excusing invalid source or operand types.
-Operand effects and error transfer remain visible. C8 must retain append work
-in both the module's remaining budget and its returned cumulative work total.
+Operand effects and error transfer remain visible. Remove append debits,
+module work pools and returned cumulative accounting totals.
 
 `count` consumes the established result type. Literal `nth` projection retains
 an explicit append application/source link: an appended coordinate selects the
@@ -3127,8 +3137,8 @@ clojure -J-Xmx2g -M:dev-test \
 
 The new rule preserves a matching homogeneous member type, prepends to finite
 positional types, and leaves a bare List bare. Unknown values do not invent
-membership. Operand/result validation, finite width/depth and construction
-work remain bounded; an aborted invocation adds no prepend allocation.
+membership. Preserve operand/result validity without width/depth/work quotas;
+an aborted invocation adds no prepend allocation.
 These focused checks include normalized downstream and runtime kernels, not
 fresh source composition or authoritative migration. When the source-to-typed
 interface or affected composition changes, use the existing
@@ -3166,17 +3176,16 @@ clojure -J-Xmx2g -M:dev-test \
 
 Check complete String domains and value-class uniqueness before hit/miss or
 construction, including equal-but-distinct Strings, Unicode distinctions,
-exact/short budgets, original-value preservation and unsupported families.
-Content and construction steps consume the existing remaining allowance;
-logical work and helper-call counts are not provider CPU, peak-memory or
-physical-allocation measurements. Normal invocation declares possible
+original-value preservation and semantically unsupported families.
+Remove content/construction allowances and budget-only refusals. Invocation
+declares possible
 allocation and storage retention even when the member is already present.
 Ordinary once-only operand evaluation and transfers remain observable.
 
 Compiler checks retain source, binding, producer and type joins. Validate
 closed scalar IDs before lookups and avoid hashing composite type records
-before their paid validation. C8's collection-family census is closed; emitter
-failures retain owner, completed-prefix and failed-child work. Current private
+before their semantic validation. C8's collection-family census is closed; emitter
+failures retain owner, completed-prefix and failed-child identity. Current private
 helper inventory is a code/closure fact, not an authority-admission prerequisite.
 
 Use the paired fixture selector
@@ -3228,12 +3237,12 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 Include existing String insertion, List prepend, Vector append and Keyword
-membership regressions when editing shared dispatch or budget handling. Preserve
+membership regressions when editing shared dispatch. Preserve
 the old empty-Set/Never String route and pure wrong-family diagnostics. An
 unsupported mixed Set has no promised enumeration order: its public rejection
 may name the selected String or Keyword domain; direct String-helper rejection
 remains exact. Check full member validity and uniqueness before hit/miss,
-remaining membership plus trusted-rebuild work, opaque-ID fences, original
+membership and fresh reconstruction, opaque-ID fences, original
 source/fact/ledger joins, once-only operands and both transfer positions.
 
 For changed source-to-runtime composition, select only
@@ -3274,10 +3283,9 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 Retain Keyword/String insertion, List/Vector updates and Symbol membership
-regressions for shared dispatch changes. Guard IDs and paid family discovery,
+regressions for shared dispatch changes. Guard IDs and validate family discovery,
 independently reconstruct selected policy/source/ledger/allocation joins and
-validate the complete actual domain, coherence, uniqueness and remaining work
-before hit or miss. Normal invocation declares possible allocation even on a
+validate the complete actual domain, coherence and uniqueness before hit or miss. Normal invocation declares possible allocation even on a
 hit. Preserve the scoped Never routes; selected callback checks do not promise
 universally unchanged provider reads or arbitrary provider CPU containment.
 
@@ -3311,9 +3319,8 @@ Use the existing development runner and namespaces above with these exact vars:
 `current-gravity-symbol-set-carrier-development-kernel` and
 `current-gravity-symbol-set-carrier-fixtures-development-kernel`. Retain affected
 insertion, count, List, predicate, String/private and declared-self regressions.
-The existing LC walker charges both carrier and Symbol child: direct work 2,
-nested literal List work 3. Preserve exact/one-below work, depth 128, width 1024,
-size 65536, Never and malformed/opaque-value rejection. V1 bare-Set records
+Remove LC work charges, exact/one-below accounting and depth/width/size quotas.
+Preserve Never and malformed/opaque-value rejection. V1 bare-Set records
 must not stand in for v2 carrier facts.
 
 When this composition changes, separately select the existing SH01 namespace's
@@ -3332,9 +3339,9 @@ Binary `contains?` consumes the exact carrier above and a Symbol, yielding Bool
 without an extent, presence/refinement fact, cardinality or loop-join proof.
 Original namespace/name equality applies. Change the existing C7, effects and
 typed emitter membership owners; runtime and private/signature predicates stay
-unchanged. Carrier domain work is 3, with a one-short boundary at 2; finite
-literal inputs retain full member validation and work `2 + member-count`.
-Preserve validated Never transfers, paid prefix ordering and legacy-family
+unchanged. Remove carrier work formulas and one-short allowance tests; finite
+literal inputs retain full member validation.
+Preserve validated Never transfers, operand-prefix ordering and legacy-family
 dispatch. Reject non-three-key receiver maps before walking keys or accessing
 fields; keep malformed three-key/opaque and zero-callback controls too.
 
@@ -3451,13 +3458,10 @@ the affected private-entry/first/map checks and original loop/backedge controls.
 the original annotation renderer and actual arity-mismatch control.
 
 Reached source projections retain all consumed fields; unused C6 metadata is
-not a premise. The complete warm descriptor is paid and compared at the final
-boundary. New LSI first-order traversal uses two scalar visits. The shared C8
-Map/Vector evidence walker retains its existing one scalar visit, depth and
-pending-child reservation, String/Symbol text work and doubled row/equality
-charge, while eliminating actual discarded Keyword formatting. Long Keyword
-names can therefore gain logical-budget acceptance across its existing callers.
-The ceiling remains 65,536; these are not host CPU, heap or provider bounds.
+not a premise. Compare the complete warm descriptor at the final boundary.
+Preserve the useful removal of discarded Keyword formatting. Delete the C8
+Map/Vector walk's scalar, depth, pending-child, text and row/equality accounting
+and its work ceiling rather than using it to refuse semantically valid DATA.
 
 The separate genuine SH01 selector is
 `current-gravity-vector-first-symbol-loop-witness-authenticated-composition`.
@@ -3483,11 +3487,11 @@ It introduces no `(Set String)` annotation or declared-recursion expansion.
 Keep C7, C8 and typed lowering's inference-only validators consistent. Normal
 private entries must independently establish the complete parameter vector;
 every use, escape, self-call and return witness retains its existing source,
-visibility, cold-inference and work checks. A String argument or expected Bool
+visibility and cold-inference checks. A String argument or expected Bool
 return cannot specialize an otherwise untyped empty Set. Do not widen the
 declared-self predicates or the List-only parameter evidence used by Vector
 append. Runtime membership and insertion still check complete actual domains
-under their existing size and work limits; the carrier is no static size proof.
+without size/work quotas; the carrier is not a substitute for semantic validation.
 
 Start with the existing three owner kernels and paired parser check:
 
@@ -3507,8 +3511,8 @@ the existing private entry/witness/proof/census, declared-self, List and Vector
 regressions. Richer result information must not break previously accepted
 predicates or List construction. The bounded generic type walker validates the
 exact carrier and visits its String leaf; it does not admit arbitrary homogeneous
-collection schemas. Check exact and one-short allowances and malformed opaque
-records before relying on downstream descriptor equality.
+collection schemas. Remove exact/one-short allowance checks; reject malformed
+opaque records before relying on downstream descriptor equality.
 
 On a stable candidate, separately test one real private self-call whose caller
 seeds its Set using independently typed insertion, then queries membership.
@@ -3536,13 +3540,13 @@ or a fully checked finite all-String Set, including empty. Never retains its
 ordinary non-invocation behavior; it does not excuse an invalid normal operand.
 Bare, unknown, mixed-member and malformed types remain unsupported.
 
-Change the existing C7, C8 and typed emitter owners. The separate paid carrier
+Change the existing C7, C8 and typed emitter owners. The separate carrier
 rule retains unknown cardinality and extent, distinct carrier comparison
 identities, complete source/fact/constraint joins and original `not=` ownership.
 It never invents operand counts. Existing finite Set and Vector domain helpers
 remain unchanged; this does not enable String-Set leaves in Vector comparison.
 The existing runtime String-Set helper still validates complete actual member
-domains, uniqueness and worst-case work; no runtime helper is added.
+domains and uniqueness; remove worst-case work accounting.
 
 ```bash
 clojure -J-Xmx2g -M:dev-test \
@@ -3599,8 +3603,8 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 These direct original-helper/renderer checks use normalized source-bearing
-inputs. Preserve first failing normal-entry selection, Never exclusions, exact
-work allowances, reasons and legacy source-less formatting. Diagnostic identity
+inputs. Preserve first failing normal-entry selection, Never exclusions,
+semantic reasons and legacy source-less formatting. Diagnostic identity
 changes when its previously missing source fields become populated. Historical
 nil-location results remain historical; this focused repair does not renew
 their C5/C6 provenance or require an unchanged source composition to run again.
@@ -3642,8 +3646,8 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 The return rule retains the declared outward type separately from the actual
-body type. It must debit member/type work across functions and inference
-rounds, and reject changed source/binding premises. Passing these kernels does
+body type. Remove member/type debits across functions and inference rounds;
+reject changed source/binding premises. Passing these kernels does
 not replace independent C8 reconstruction, typed lowering or source composition.
 
 For C8 or lowering return-context changes, use the matching existing kernels:
@@ -3701,8 +3705,8 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 These normalized checks exercise independent element evidence, actual branch
-types, source/binding correspondence, compatibility rows and inference work
-limits. They cover both branch orders and preserve ordinary `if` truthiness,
+types, source/binding correspondence and compatibility rows without inference
+fuel. They cover both branch orders and preserve ordinary `if` truthiness,
 distinct from Bool-only match guards. Passing them does not establish public
 C7 artifact integration, independent C8 reconstruction, typed lowering or
 source execution. Those checks are separate integration coverage; an existing
@@ -3720,7 +3724,7 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 These check ordered compatibility-row census, source-bound reconstruction,
-exact/one-below budgets, failure-work carry and the existing `if` instruction
+original failure behavior and the existing `if` instruction
 with type-consistent guest values. They do not replace affected original-source
 composition or establish module migration. Only rerun the relevant kernels
 when their owning behavior changes.
@@ -3766,7 +3770,7 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 These normalized checks cover closed type validation, source-bound premises,
-ordered mixed List/nil join rows, budgets, lowering and runtime value equality.
+ordered mixed List/nil join rows, lowering and runtime value equality.
 They are not cold source inference or authoritative migration. The separate
 `current-gravity-nil-if-join-fixtures-development-kernel` checks that the paired
 fixture preserves W5's actual unannotated `w5-se-canonical-form` helper.
@@ -3967,11 +3971,11 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-list-construction-runtime-development-kernel
 ```
 
-The finite call boundary accepts zero through 1,023 established, lowerable
-first-order operands; the existing 1,024-child limit includes the operator.
+The call boundary accepts established, lowerable first-order operands without
+the child-count quota.
 Known bare collection types need no invented member information. Supplied
-positional type records are validated within the existing depth/width/work
-limits, including visited work on rejection. The result records operand types
+positional type records are validated without depth/width/work quotas.
+The result records operand types
 in order, with evaluated-construction ancestry rather than quoted-data IDs.
 
 Operands evaluate once, left-to-right. A transfer prevents construction and
@@ -4207,9 +4211,9 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-private-entry-vector-get-development-kernel --fail-fast
 ```
 
-These check recursive validation before comparison, failed-work accounting,
-the actual owning consumer's exact/short budget and invocation-local reuse,
-coherent forgeries and existing Map/Vector lookup routes. Internal paid context
+These check recursive validation before comparison, original failure behavior
+and invocation-local reuse,
+coherent forgeries and existing Map/Vector lookup routes. Internal semantic context
 is freshly derived by the public C8 build and verification path, not an input
 authority or persisted success cache. A private-leaf test must preserve that
 precondition when mutating public facts.
@@ -4266,10 +4270,9 @@ checked parent references can be reused, but original parent source/type/census
 checks, the demanded C6/C2 source spine and downstream carriers remain checked.
 Quoted Map selection follows authenticated keys, not host enumeration order.
 The new dependency projection is not a copy of the whole old parent artifact.
-Bounded work counts include representation nodes and scalar characters; they
-are not elapsed time or heap measurements. Removing repeated walks or temporary
-wrappers must remove the actual work, not merely discount its charge. The
-65,536-unit ceiling is unchanged. Source provenance retains C6's bounded
+Remove representation-node/scalar work counts and their ceiling. Useful
+performance fixes may remove repeated walks or discarded wrappers without
+retaining an accounting charge. Source provenance retains C6's actual
 generated-origin Vector, including an empty Vector for ordinary forms; it is
 not erased or converted to a different representation. This is development
 validation, not migration.
@@ -4278,9 +4281,8 @@ C7 may reuse constructed source DATA between rounds of one fresh inference
 invocation. This is not reusable acceptance: the table starts empty, is not a
 caller input or returned artifact, and does not cross builder or verifier calls.
 Fresh parent derivation and checks of the current semantic type dependencies
-still run and charge their work. Public verification reconstructs its expected
-result independently. Fixed parent-reference field names are prepaid before
-reads; every dynamic value is recursively walked, and each of eight carriers
+still run. Public verification reconstructs its expected result independently.
+Every dynamic value is recursively walked, and each of eight carriers
 is independently checked. A cheap diagnostic over retained development inputs can
 identify repeated construction before another source run, but reconstructed
 tables and isolated constructor success do not establish source convergence.
@@ -4290,7 +4292,7 @@ remain dependencies, including nonselected and noninvoked arguments. The private
 reuse carrier need not also duplicate those same type trees in its entry-ID
 rows. Likewise, removing C7's discarded temporary ancestry view does not remove
 the demanded source projection. Neither correction establishes the larger
-unchanged C17 helper's budget fit; its pending composition is tracked separately
+unchanged C17 helper's semantic composition; that work is tracked separately
 in the backlog, not used as an ordinary-edit admission gate.
 
 ### Module-local literal initialization and reads
@@ -4306,8 +4308,8 @@ Direct root Set initializers additionally support distinct homogeneous literal
 Keywords or Strings, including an empty Set. The existing emitter closure and runtime census/type
 join own this extension; nested evaluated Sets, mixed or computed members and other
 member families remain outside it. Preflight validates exact IR, the full homogeneous
-domain and uniqueness without constructing the guest Set. Its logical
-reservation includes the later bounded type-member check. All initializers and
+domain and uniqueness without constructing the guest Set. Remove logical
+reservations while retaining the type-member check. All initializers and
 function namespace reads must validate before any initialization occurs. Only
 the existing evaluator then constructs each binding once into the instance
 pool; repeated reads do not reconstruct it.
@@ -4367,9 +4369,9 @@ clojure -J-Xmx2g -M:dev-test \
 Constructor-function call tracing and validated constructor occurrences are
 not physical allocation-event measurements. Q remains parser-only; this does
 not establish whole-W5 legality, other targets or authoritative migration.
-The String extension uses native String representation units without formatting
-or normalization, under the same aggregate initializer allowance. The finite
-type join consumes prepaid member-type reads after validating shape and
+The String extension preserves values without formatting or normalization.
+Remove the aggregate initializer allowance and prepaid member-type reads.
+The type join validates shape and
 cardinality; it relies on the census having validated the same immutable IR,
 not on an independently authenticated caller-supplied type predicate.
 
@@ -4447,7 +4449,7 @@ Characters are truthy. Their existing unsupported source or lowering boundaries
 remain separate from `not`; they are not new truthiness prohibitions.
 
 Keep the exact binding, unary call/source/order, operand type and Bool/Never
-result joins, fresh type/effect reconstruction and cumulative work limits.
+result joins and fresh type/effect reconstruction, without cumulative work limits.
 These kernels are normalized development feedback. Real source composition,
 including Bool match guards and rejected non-tail recur, remains a separate
 integration check before accepting the executable slice:
@@ -4545,7 +4547,7 @@ The supported source relation is a zero-initialized immutable Integer counter,
 a dominating strict `<` comparison against runtime `count` of the same
 immutable vector, and a unit successor on every incoming backedge. C7 checks
 the original target, slot, source, guard, count and complete transfer census.
-The established vector extent `N` is bounded by the existing 1024-child limit.
+The vector extent `N` is its actual established count, not an admission quota.
 The invariant `0 <= i <= N` and true-edge fact `i < N` prove the successor
 remains within the finite range. A zero-length vector has an unsatisfiable
 increment edge and a normal zero-iteration exit; this does not manufacture a
@@ -4688,8 +4690,8 @@ proof does lowering use the existing checked `nth` development instruction,
 with Vector-then-index evaluation. Runtime guards remain; there is no check
 elision or new runtime path. C8 checks the complete ordered `nth`/Vector-`get`
 ledger census, including missing, duplicate and orphan rows. The local binary
-lowering path retains its own logical reservation and completed operand prefix
-on failure; an outer zero-budget rejection does not enter that helper.
+lowering path preserves the original operand prefix and semantic failure.
+Remove its logical reservation and outer zero-budget rejection.
 
 Map lookup, explicit defaults and the prior Never/Unknown routing remain
 separate. This subset does not grant general Vector `get`, literal-only access
@@ -4735,7 +4737,7 @@ clojure -J-Xmx2g -M:dev-test \
 Use `sh08-bounded-unit-addition-cold-two-loop-development-kernel` for the cold
 mixed-step/get/lexical-type dependency, and
 `sh08-bounded-unit-access-current-lexical-development-kernel` for exact immutable
-initializer propagation and budget guards. Neither substitutes for source
+initializer propagation. Budget guards are retired requirements. Neither substitutes for source
 composition. The cold source-prefix selector is a more expensive diagnostic
 tool when real frontend shape matters; it is not the default inner loop.
 
@@ -4838,10 +4840,9 @@ once, left-to-right in the caller environment, then bind values in a fresh
 callee environment. A thrown or rejected argument prevents later arguments and
 invocation. Callee output and control return unchanged to the caller.
 
-An active call path rejects cycles before argument evaluation. The current
-256-entry path ceiling is a bounded consumer limitation, not a new language
-legality rule or proof of host-stack fit, termination, total runtime cost or
-memory use. Shallow target-body shape checks are not whole-plan validation.
+An active call path rejects semantically unsupported cycles before argument
+evaluation. Remove the 256-entry path quota; this does not prove host-stack fit,
+termination or memory use. Shallow target-body checks are not whole-plan validation.
 Do not add host lookup, ambient callbacks or host exception translation to
 implement these guest calls. Existing cross-plan continuation machinery is
 separate and unchanged. Imports, callable parameters, closures, variadics and
@@ -5369,8 +5370,8 @@ dependency records both producer artifact IDs, the caller's imported binding,
 the producer's projected definition binding, function and body. The original
 C5 export identity remains in the validated origin join. Whole producer graphs enter the effect
 identity; caller node coverage still covers only the caller. The existing
-aggregate node/function limits apply across this invocation. The deferred-work
-budget counts node-analysis attempts, not all VM operations or a CPU guarantee.
+node/function counts must describe the actual graph; arbitrary aggregate
+capacity quotas and deferred-work budgets are removed.
 Legality and thrown-error facts remain pending. C7's original type-only facts
 and pending labels are preserved as upstream evidence, not rewritten as if C7
 performed effect analysis. The older compiler-read request validator continues
@@ -5437,11 +5438,11 @@ clojure -J-Xmx2g -M:dev-test \
 The runtime retains target, arity and activation-path checks before argument
 evaluation, once-only left-to-right operands and fresh activation locals. It
 allows the current function's contiguous self-activation suffix, not an
-indirect cycle through another function. The existing path limit remains;
-cheap supplied-path controls do not prove host-stack safety at that depth.
+indirect cycle through another function. Remove the arbitrary path-count quota;
+supplied-path controls do not prove host-stack safety.
 An acyclic caller may use its existing explicit function recur while calling
 the self-recursive function. That combination uses one effect/error and loop
-summary fixed point under the unchanged cumulative work budget.
+summary fixed point without a cumulative work budget.
 
 The paired source selector exercises String List traversal with transformed
 `rest` and `str` arguments, empty/one/two-element results, a deeper String throw,
@@ -5665,13 +5666,9 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 The runtime validates every actual String member before hashing or insertion.
-Its existing 65,536-unit component allowance reserves logical content work
-`1 + 2*n + n*C + n*(n-1)/2`, with at most 1,024 input members and `C` the total
-JVM UTF-16 representation length. Products are checked against the allowance
-before multiplication. This is not a public String-count policy, normalization
-rule, host-provider CPU bound or native/realtime claim. Supported values can
-still exceed the explicit work allowance; that rejection is not a new language
-ban on larger Sets.
+Remove the component allowance, member-count quota, content-work formula and
+budget-only rejection. Preserve String value semantics and semantic duplicate
+checks; unmetered correctness is not a native/realtime performance claim.
 
 When changing the public typed/effected/lowered composition, exercise the
 affected accepted and rejected source fixtures as well as these kernels.
@@ -5703,15 +5700,14 @@ clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-t
 clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-keyword-vector-set-conversion-lowering-development-kernel --exact current-gravity-keyword-vector-set-conversion-id-guards-development-kernel --exact current-gravity-keyword-vector-set-conversion-runtime-development-kernel
 ```
 
-The complete actual Keyword Vector is validated and frozen before printing,
-comparison, hashing or insertion. Reserve `1 + 2n + n(n-1)/2 + (n+1)U` within
-the existing 65,536 logical allowance and 1,024-member limit, with U the total
-printed JVM UTF-16 units used for cost only. Gravity Keyword equality chooses
+The complete actual Keyword Vector is validated before printing, comparison,
+hashing or insertion. Remove logical allowances, member-count quotas and
+printed-representation cost units. Gravity Keyword equality chooses
 representatives; spelling is not equality and provider Set storage is not the
 semantic deduplication proof. Preserve duplicate collapse, namespace/name
-distinctions, original input, precharged work, dominant source/producer ID
-guards, complete C8 ledger and normal/Never allocation. This quota does not
-establish provider CPU or realtime bounds.
+distinctions, original input, dominant source/producer ID guards, complete C8
+semantic rows and normal/Never allocation. This is not a provider CPU or
+realtime guarantee.
 
 For the affected composition:
 
@@ -5903,8 +5899,8 @@ Both complete type domains are validated before an early value mismatch.
 Supported recursive members are Vector, Nil, Bool, Character, String, Symbol,
 Keyword and the five existing closed nullable nonnumeric atomic types. Empty
 and differently shaped/length Vectors compare normally; static type equality
-is not required. Width 1,024, depth 128 and work 65,536 remain the existing
-finite limits. The legacy version excludes numeric members; the flat Generic
+is not required. Remove width, depth and work quotas. The legacy version
+excludes numeric members; the flat Generic
 Integer and finite Keyword-Set leaf extensions below are separate.
 Unknown/bare Vector types, other collection domains,
 whole nullable Vectors and nested Never remain unsupported. Top-level Never
@@ -5928,11 +5924,9 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-vector-inequality-transfer-fence-development-kernel --fail-fast
 ```
 
-Direct domain/derivation checks retain the Vector-specific work-limit reason.
-The containing C7 verifier reports its existing atomic-inequality work-limit
-reason and charged work. The private inferred-call check retains the
-underlying subtype reason and exact work.
-Neither boundary may discard failed-child work or assume the scalar ceiling.
+Remove Vector/atomic-inequality work-limit reasons and charged-work fields.
+The private inferred-call check retains actual semantic subtype reasons.
+Preserve original child failures without accounting or a scalar quota.
 
 For changed producer/consumer facts or lowering, separately select the paired
 fixture check and one affected source composition:
@@ -5962,11 +5956,10 @@ scalar Integer equality; do not add conversion, widening or arithmetic.
 When either Vector contains an Integer, both must be flat. Every overlapping
 Integer position must pair with Integer. Validate both complete domains and
 all overlapping compatibility before returning a length/value mismatch. Keep
-the legacy recursive nonnumeric version and its identities/work unchanged.
+the legacy recursive nonnumeric value semantics and identity checks.
 Nested numeric Vectors, fixed-width numeric leaves, Float/Decimal/ratio,
-Nil-or-Integer and Unknown remain outside this increment. Existing finite
-limits are unchanged; logical visit units do not bound Integer digit size,
-provider CPU time or peak memory.
+Nil-or-Integer and Unknown remain outside this increment. Remove capacity
+quotas and logical visit units; this is not a provider CPU or heap guarantee.
 
 Start with the existing direct focused tests, selecting the equality and
 inequality transfer-fence checks when operand control flow changes:
@@ -6019,12 +6012,9 @@ policy. Preserve recursive nonnumeric and flat Integer no-Set versions and work.
 At runtime, before any Vector length/value mismatch, validate all Set leaves on both sides
 using full owned Set self-equality, including duplicate value classes. The
 subsequent corresponding Set comparison invokes owned equality again. Each
-call gets only the current remaining aggregate Vector allowance; charge each
-reported reservation once, including failed-attempt lower bounds. Do not reset
-the allowance per leaf or treat reservations as executed-step/CPU bounds.
-At the nested/domain boundary, quota failures use the Vector resource category,
-retaining the leaf reason; the containing C7 `not=` verifier keeps its existing
-atomic-inequality resource category. The new Set-leaf variant retains the
+call validates the actual values without an aggregate or per-leaf allowance.
+Remove accounting-only nested quota failures; preserve actual malformed-domain
+diagnostics and the containing C7 `not=` semantic checks. The Set-leaf variant retains the
 existing Set equality JVM restriction.
 
 Use the existing direct focused tests, with both transfer-fence kernels when
@@ -6075,8 +6065,8 @@ source `=` fact. Runtime, seed, public interfaces and type grammar do not change
 
 Both complete domains are checked before cardinality or value comparison.
 Empty, differently sized and reordered Sets compare normally; matching static
-types are not required. The existing limits are 1,024 members per side and
-65,536 work units. Bare/homogeneous/Unknown or malformed Sets, whole nullable
+types are not required. Remove member-count and work-unit quotas.
+Bare/homogeneous/Unknown or malformed Sets, whole nullable
 Sets, non-Keyword members, nested collections and nested Never remain outside
 this slice. A top-level Never preserves transfer when the other operand
 establishes the supported Set domain; Never/Never keeps the atomic rule.
@@ -6098,10 +6088,10 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-keyword-set-inequality-transfer-fence-development-kernel --fail-fast
 ```
 
-Preserve failed-child work and the containing atomic-inequality diagnostic;
+Preserve original child failures and the containing atomic-inequality diagnostic;
 the private inferred-call check retains the Set-specific underlying reason.
 Existing runtime equality validates both actual domains, member uniqueness
-and the complete worst-case comparison reservation before an early result.
+before an early result, without a comparison reservation.
 This is not authority to rely on host Set storage or claim a provider CPU bound.
 
 For changed producer/consumer facts or lowering, select the paired fixture
@@ -6139,7 +6129,7 @@ clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtim
 ```
 
 Keep the classification/source/type joins, independent C8 reconstruction and
-complete ledger, exact/short budgets, failed-child work, original throw and
+complete semantic rows, original child failures, original throw and
 non-tail recur fences. The synthetic nullable equality is typed lowering,
 not a fabricated source equality call. No generated local, source rewrite or
 raw runtime `nil?` builtin is introduced. This type-directed route is supported
@@ -6180,8 +6170,8 @@ true without dropping or repeating operand effects. String/Keyword spelling,
 nil, represented numbers and collections do not become Bool values. A wrapper
 Map is not unwrapped. Runtime classification is shallow, with no payload
 traversal, hashing, equality, mutation or collection construction. Retain
-dominant unary/ID guards, independent complete C8 analyzer/ledger and exact
-budget checks, failed-child work, transfers/original failures and proportionate
+dominant unary/ID guards, independent complete C8 semantic analysis,
+transfers/original failures and proportionate
 Keyword/Symbol-predicate regressions. These are component development checks,
 not source integration or authoritative migration evidence.
 
@@ -6222,7 +6212,7 @@ hashing, equality, mutation or collection construction. Qualified and
 metadata-bearing Symbols remain values. A String or Keyword with similar
 spelling stays non-Symbol; a syntax-wrapper Map is not unwrapped. Classification
 grants no binding, call, macro or capability authority. Keep complete C8
-context/ledger and exact/one-less budget checks, dominating unary shape/ID
+semantic context and dominating unary shape/ID
 guards, and proportionate Keyword/Set-predicate regressions. Focused tests are
 component feedback, not source integration, frontend-module or migration proof.
 
@@ -6259,7 +6249,8 @@ clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtim
 ```
 
 These exercise the owning passes, including the complete C8 analyzer's
-context debit, exact/one-less budget and missing/duplicate/orphan ledger rows.
+semantic context and missing/duplicate/orphan semantic rows, without a debit
+or exact/one-less work test.
 Malformed unary call shape must reject before any ID traversal. Runtime
 classification itself is shallow: it does not count, sequence, hash, compare,
 mutate or validate Set payloads. A throwing-provider control checks zero such
@@ -6304,12 +6295,12 @@ clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-t
 clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-keyword-set-contains-lowering-development-kernel --exact current-gravity-keyword-set-contains-runtime-development-kernel
 ```
 
-These check independent source/type/descriptor joins, budget-first rejection,
-failed-child work, complete producer rows, once-only operand evaluation,
+These check independent source/type/descriptor joins, actual child failures,
+complete producer rows, once-only operand evaluation,
 transfers and original failures. Runtime membership validates all actual Set
-members and their semantic uniqueness before either hit or miss. Width remains
-1,024 and the logical work allowance 65,536. Keyword representation units
-measure prepaid work; membership uses actual Gravity Keyword equality, not
+members and their semantic uniqueness before either hit or miss. Remove width
+quotas, logical allowances and prepaid representation work. Membership uses
+actual Gravity Keyword equality, not
 printed identity, host Set lookup or hashing. This is not a provider CPU bound.
 The query preserves original values and does not execute stored payloads.
 
@@ -6346,8 +6337,8 @@ clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtim
 
 Check independently reconstructed source/type/descriptor joins, complete
 producer rows, Never transfers, malformed carriers, semantic duplicates and
-exact/short budgets. The runtime validates every member and the needle,
-reserves the complete comparison budget, then checks semantic uniqueness
+actual value semantics. The runtime validates every member and the needle,
+then checks semantic uniqueness
 before returning either hit or miss. Host Set lookup, hashing and printing
 are not membership authority. Existing Keyword membership remains unchanged.
 The Character representation premise is the existing atomic Character IR;
@@ -6404,12 +6395,11 @@ Every normally evaluated operand must retain its domain evidence even when the
 other operand transfers. Bare, unknown or mixed Set types and wrong needle
 families are unsupported, not ordinary false results.
 
-Runtime validates all members and the needle, reserves content/comparison work
-and rejects duplicate value classes before searching. String equality is exact
+Runtime validates all members and the needle and rejects duplicate value
+classes before searching. String equality is exact
 and case-sensitive, with no normalization or host hash/lookup authority.
-Reservation is `2 + 2*n + n*(n-1)/2 + (n+1)*U`, where `U` includes all member
-and needle JVM UTF-16 representation units. Width 1,024 and work 65,536 remain
-separate bounds; units are not language String cardinality or provider CPU time.
+Remove the content/comparison reservation, representation-unit charges and
+width/work quotas.
 
 This runtime path assumes authenticated typing and type-conforming immutable,
 finite Set providers whose cardinality and enumeration agree. Detectable
@@ -6479,9 +6469,8 @@ fresh C6. Retain the full source prefix
 source evidence solely for a stamp. Its postflight records two polling gaps
 above the planned 30s (35.42s/37.38s), not plan-perfect operational monitoring.
 
-Integer runtime units count validated leaves and reserved comparisons without
-formatting; no precision/CPU/heap bound follows. Complete reservation can reject
-before result under the fixed work cap. The slice adds no carrier, Integer Set
+Remove Integer runtime work units, comparison reservations and fixed work-cap
+rejections. The slice adds no carrier, Integer Set
 `conj`/equality, reader boundary or String/foreign admission. Whole helpers,
 public fresh C6, native, migration, self-hosting and release remain separate.
 
@@ -6571,7 +6560,7 @@ general persistent Vector law separately from this implementation subset.
 Aliases, parameters and arbitrary Vector receivers are not established.
 
 C7, C8 and typed lowering reconstruct the parent and nested child evidence,
-pay the actual child proof work again, and require unique original calls,
+remove child-proof work accounting, and require unique original calls,
 edges, call facts and producer rows. Physical IDs, Symbols and nonnegative
 Integer ordinals precede selected lookups/comparisons. Every normal operand
 still proves itself when another is Never; Never suppresses cross-operand
@@ -6658,11 +6647,11 @@ not classify every unsupported String as invalid Unicode.
 
 Authenticate the original String occurrence, resolved `vec` binding, ordered
 call/edge, nonnegative Integer edge ordinal, source IDs, types, unique ledger
-and call facts. Reserve width-dependent work before comparisons and walks;
+and call facts. Remove width-dependent work reservations;
 validate every physical Character against the fixed 128-value domain before
 constructing positional Character types or the result. The proof uses the
 existing bootstrap first/rest interface, not an unproved `vec` call or new host
-scalar primitive. Logical Character work is not a provider CPU or heap guarantee.
+scalar primitive. This is not a provider CPU or heap guarantee.
 
 Normal invocation, including empty conversion, retains possible Vector
 allocation and storage/provider/ownership obligations. Never preserves the
@@ -6720,8 +6709,7 @@ and possible Integer-result storage. Normal direct/latent effects include
 record no normal result bound or direct result allocation, and preserve the
 original transfer. No alias/parameter range, commuted route, general product,
 fixed-width conversion, negative rounding or whole-helper support follows.
-Integer work units are logical leaves, without precision/provider CPU/heap
-bounds. C8 shares the existing numeric source context and independently joins
+Remove Integer work-unit accounting. C8 shares the numeric source context and independently joins
 both quotient and count facts/ledgers; it adds no acceptance flag or context key.
 
 Use the four `sh08-count-quotient-scaling-*-development-kernel` selectors,
@@ -6780,12 +6768,12 @@ the new Symbol receiver probe. Ordinary producerless local-call rows are unselec
 policy, not invalid; a selected malformed Symbol row still rejects.
 
 Runtime checks the complete actual Symbol domain, coherent cardinality and
-enumeration, uniqueness and worst-case work before hit or miss. Original
-Symbol equality answers the query; UTF-16 display units only account work.
+enumeration and uniqueness before hit or miss. Original Symbol equality
+answers the query; remove UTF-16 display-unit accounting.
 No Set lookup/hash authority, coercion or new builtin is needed. Operands run
 once left-to-right and non-tail. Query nodes are pure; allocation in an operand
-or enclosing result remains visible. Finite-provider assumptions and the
-existing 65,536-work limit remain unchanged, not a hostile-provider CPU bound.
+or enclosing result remains visible. Preserve actual provider semantics and
+remove the work allowance; this does not establish hostile-provider CPU safety.
 
 For changed composition, separately select
 `current-gravity-symbol-set-contains-fixtures-development-kernel` and
@@ -6815,12 +6803,12 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 Check source/child/type joins, malformed IDs before structural equality,
-own-plus-prefix-plus-failed-child work, complete Keyword domains and duplicate
+original child failures, complete Keyword domains and duplicate
 rejection before host insertion. Set items must participate in instruction
 width and module-read traversal. L1's duplicate-literal rejection remains in
 force; this is not Vector-to-Set conversion's deduplication behavior.
-The current component limits are width 1,024 and work allowance 65,536;
-fitting the width does not imply that comparison/content work fits.
+Remove the component width quota, work allowance and comparison/content
+budget-fit requirement.
 
 Quoted Sets remain inert. Direct evaluated Keyword/String-Set module initializers
 use the separate [module initialization boundary](#module-local-literal-initialization-and-reads).
@@ -6870,11 +6858,9 @@ non-tail, and retain failed-child work. The instruction remains the existing
 literal-only `:set-literal`/`:items` shape. Mixed families, arbitrary expression
 children and evaluated Character-Set module initializers remain unsupported here.
 
-Validate all Character values and reserve full logical work before comparing
-or inserting any member. Runtime reservation is
-`1 + 2*n + n*(n-1)/2 + (n+1)*U`, with `U` the sum of existing Character
-representation units (one for boxed Characters, two for supplementary
-carriers). Width 1,024 and work 65,536 remain separate bounds. Compare
+Validate all Character values before comparing or inserting any member.
+Remove runtime reservation formulas, representation-unit charges and width/work
+quotas. Compare
 semantic Character classes when rejecting duplicates: distinct carrier Maps
 can have the same codepoint. Do not silently deduplicate a Set literal,
 substitute host Map equality or add a new Unicode decoder. Source validity
@@ -6920,14 +6906,12 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-literal-character-set-runtime-development-kernel --fail-fast
 ```
 
-Validate the complete String domain before comparisons. Lowering reserves the
-actual source and attribute String content before checking their equality or
-member distinctness, preserving all source/child/type/evaluation joins. Runtime
-reserves `1 + 2*n + n*(n-1)/2 + (n+1)*U`, with `U` the sum of selected JVM
-UTF-16 representation units, then checks Gravity String uniqueness before any
-host Set insertion. The 1,024-member and 65,536-work limits are unchanged;
-representation units are not language String cardinality or a provider CPU
-bound. Equal-content distinct objects are duplicate literal values, while
+Validate the complete String domain before comparisons. Lowering checks the
+actual source and attribute Strings for equality or member distinctness,
+preserving all source/child/type/evaluation joins. Runtime checks Gravity
+String uniqueness before host Set insertion. Remove source/content comparison
+reservations, representation-unit charges and member/work quotas.
+Equal-content distinct objects are duplicate literal values, while
 same-hash distinct Strings remain distinct. Do not reuse Vector-to-Set
 conversion's deduplication semantics.
 
@@ -6988,11 +6972,8 @@ The implementation must validate both complete typed and actual domains,
 including distinct Keyword value classes within each actual operand, before
 returning a cardinality or member mismatch. Runtime member matching uses the
 existing guarded Keyword value-equality leaf, not host Set equality, hashing
-or printed-spelling identity. Worst-case within-operand and cross-operand
-pairwise/content work is prepaid within the existing component allowance;
-actual comparisons and logical
-reservation are distinct. JVM representation units used for accounting do not
-define semantic equality or establish a provider CPU bound.
+or printed-spelling identity. Remove pairwise/content prepayment and component
+allowances. JVM representation units do not define semantic equality.
 
 Check paired fixture bytes/parser interpretation cheaply. When the
 typed/effected/lowered composition changes, run the affected source selector
@@ -7046,9 +7027,9 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 Validate both full member domains and within-operand value distinctness before
-cardinality or membership mismatch, reserving full worst-case content and pair
-work within the remaining allowance. Native String representation units are
-accounting, not Unicode-scalar counts or a provider CPU/heap guarantee. Host
+cardinality or membership mismatch. Remove content/pair reservations and
+remaining-allowance accounting. Native String representation units do not
+define semantic equality or guarantee provider CPU/heap safety. Host
 Set equality, lookup and hashing do not decide the result. The hosting path
 must itself support every operation used by these owning functions.
 
@@ -7293,16 +7274,16 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 The solver starts function summaries at the empty effect set, then derives a
-least fixed point within the existing shared node-attempt budget. Only the
+least fixed point without a shared node-attempt budget. Only the
 authenticated self-body dependency is cut internally while a round is solved.
 The final graph retains that dependency, including a recursive branch under a
 literal false condition, and its equations are checked against the complete
 graph. Equation equality alone is insufficient: fresh candidate verification
 reconstructs from bottom so an inflated, nonleast fixed point cannot pass.
-Classification, iteration, final reconstruction and equation visits share the
-invocation's existing work budget across caller and producers.
+Remove caller/producer work pools from classification, iteration, reconstruction
+and equation checks; retain the actual least-fixed-point validation.
 
-For test-only reconstruction counters on the unchanged tiny recursive input:
+Historical test-only reconstruction counters on the unchanged tiny recursive input:
 
 ```bash
 clojure -J-Xmx512m -M:dev-test \
@@ -7314,10 +7295,12 @@ Its original-delegating observer records two passes, each rebuilding two edge
 rows and one function row, with 11 readiness attempts and zero false results.
 Each pass repeats 13 invocation predicates, 11 support checks and 11 order checks;
 general/import call validators are unvisited. Full observed/unobserved results
-agree at generous, exact 44 and rejecting 43 budgets. These counters do not
-attribute large-source cost or establish speedup. Any bounded production
-proposal belongs to `effects.gravity` and must queue behind its current source
-writer; this measurement selects no implementation.
+agreed at generous, exact 44 and rejecting 43 budgets in the historical metered
+implementation. Remove those allowance assertions from the operative test; retain
+full least-fixed-point and tamper checks. These old counters establish no
+unmetered correctness or speedup. Production changes belong to the actual
+`effects.gravity` owner and remain subject to its current platform restriction;
+this historical measurement selects no implementation or alternate writer.
 
 The affected real-source composition is separate from these normalized kernels:
 
@@ -7418,8 +7401,8 @@ reconstruction, reject. Full-DATA
 deduplication is not accepted-result caching: every unique module still enters
 the original fresh source verifier, whose own dependency replay remains.
 Per-module routes preserve lexical identity when different modules use the
-same function name and callsite path. Existing limits remain 257 modules,
-256 nonroot plans, 65536 aggregate routes and the per-plan instruction bound.
+same function name and callsite path. Remove module, nonroot-plan, aggregate
+route and per-plan instruction capacity quotas.
 Cycles still reject in ordinary C5. This does not add imported DATA reads,
 general module initialization or checked user-call effects.
 
@@ -7573,9 +7556,8 @@ The module subset supports distinct literal String or Keyword keys, including
 mixed Maps, in evaluated function-body Maps. Computed, numeric, Symbol and
 collection keys remain unsupported here, not forbidden by L2. This supersedes
 the initial Keyword-only module restriction; it does not widen the separate
-canonical typed-Gravity Map subset. Quoted Maps remain inert. The traversal's
-depth-64 and 65,536-visit guards are local
-constructor bounds, not language limits. Raw three-argument/B51 behavior and
+canonical typed-Gravity Map subset. Quoted Maps remain inert. Remove the
+traversal depth and visit quotas. Raw three-argument/B51 behavior and
 public bundle interfaces remain unchanged. This Map-order-only correction did
 not enable imports inside Maps; the subsequent Map-value increment is below.
 Neither increment establishes checked effects or Effects token-bound fit.
@@ -7646,10 +7628,9 @@ check against verified forms; retain original syntax/reference authority.
 Derive C2-to-seed slots from that actual seed definition, rather than relaxing
 the strict host-key join or assuming value equality fixes entry coordinates.
 
-Full reference projection and traversal share a local 65,536-unit allowance
-and depth-64 guard; unsupported expansion/header shapes reject rather than invent C5
-references. These are bounded development frontiers, not new language limits
-or preservation of every previously accepted module capacity. Raw3/B51,
+Full reference projection and traversal validate actual expansion/header
+shapes rather than inventing C5 references. Remove the local work allowance
+and arbitrary depth quota. Raw3/B51,
 runtime and public interfaces are unchanged. No new C5 resolver, admission
 lane or proof cache is introduced; use one changed composition, not an
 unchanged source matrix, when this producer/consumer boundary changes.
