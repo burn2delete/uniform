@@ -103,3 +103,28 @@
         (is (= :rejected (:status result)))
         (is (= ["C13-VERIFY"] (:diagnostics result)))
         (is (nil? (:candidate-mir result)))))))
+
+(defn- check-qst-original [condition]
+  (let [pair ((var-get (ns-resolve 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test 'original-pair))
+              condition "qst")
+        {:keys [raw upstream core mir]} pair
+        report (invoke 'sh12-verify-branch-join-mir core mir)
+        after (:candidate-mir (rewrite mir report))
+        output-report (verify-specialization core mir after)
+        result (consume mir report after output-report)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream) (:status report) (:status output-report)))
+    (is (= [:hosted :jvm] ((juxt :profile :target-request) mir)))
+    (is (= [] (get-in mir [:functions 'main :params])))
+    (is (= :gravity/bool (get-in mir [:functions 'main :returns])))
+    (is (= :passed (:translation-validation-status result)))
+    (is (= [:pending :not-admitted] ((juxt :verification-status :admission-status) result)))
+    (is (= after (:candidate-mir result)))
+    (is (= (:artifact-id core) (:source-core mir) (:source-core after)
+           (get-in output-report [:input-bindings :checked-core-artifact-id])))
+    (is (= output-report (:post-pass-report result)))
+    (is (false? (call :c14 'c14-c13-envelope-valid? [result])))
+    (is (false? (call :c14 'c14-bounded-optimized-input-valid? [result {}])))))
+
+(deftest sh16-validates-original-true-bool-branch-specialization-qst (check-qst-original "true"))
+(deftest sh16-validates-original-false-bool-branch-specialization-qst (check-qst-original "false"))
