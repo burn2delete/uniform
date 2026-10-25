@@ -33,6 +33,25 @@ Exclusions are explicit, such as full AI runtime, GPU lowering, advanced
 macro facilities, formal proofs, full package registry support, and optional
 optimization passes.
 
+## Native identity ABI
+
+Binary `bootstrap-native-identical?` is internal to compiler-artifact
+`:meta`/`:jvm` plans and requires the compiler-artifact plan kind and flag.
+It returns a Boolean indicating whether its operands are the same native JVM
+reference, including two null references. It performs no operand methods,
+equality, hashing, metadata inspection, rendering or traversal. It exposes no
+address or stable identity token and grants no DATA or comparison legality.
+
+This observation lets compiler implementations distinguish an ancestor cycle
+from a repeated shared value without structural equality or a numeric quota.
+It is not language value equality; in particular, host interning or boxing
+does not establish a language identity contract. Ordinary operand evaluation
+occurs once before the ABI checks. Wrong arity reports `L2-BUILTIN-ARITY`;
+wrong plan context reports `L2-BUILTIN-ERROR` without operand rendering.
+The operation is absent from ordinary Core/C5 catalogs and source admissions.
+Its allowlist and runtime implementation are seed TCB bytes; development
+conformance does not renew migration, self-hosting or release evidence.
+
 ## Native Symbol spelling-unit ABI
 
 The temporary JVM seed exposes unary `bootstrap-symbol-utf16-unit-count`
