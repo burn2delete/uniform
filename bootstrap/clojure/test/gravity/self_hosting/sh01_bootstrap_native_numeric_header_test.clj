@@ -90,16 +90,21 @@
     (is (zero? @calls))))
 
 (deftest native-numeric-header-decimal-nested-guard-and-constructor-sanitization
-  (let [calls (atom 0) armed (atom false) deny (forbidden calls)
+  (let [calls (atom 0) setup-calls (atom 0) armed (atom false) deny (forbidden calls)
         foreign (proxy [BigInteger] ["18446744073709551617"]
-                  (toByteArray [] (if @armed (deny) (proxy-super toByteArray)))
-                  (abs [] (deny)) (bitLength [] (deny)) (longValue [] (deny)) (toString [] (deny)))
+                  (toByteArray [] (if @armed (deny)
+                                    (do (swap! setup-calls inc) (proxy-super toByteArray))))
+                  (bitLength [] (if @armed (deny) (proxy-super bitLength)))
+                  (abs [] (if @armed (deny) (proxy-super abs)))
+                  (longValue [] (if @armed (deny) (proxy-super longValue)))
+                  (toString [] (if @armed (deny) (proxy-super toString))))
         ;; Actual OpenJDK public construction sanitizes the subclass before
         ;; observation. No opens, reflection or Unsafe forges a java.math field.
         value (BigDecimal. foreign 17)
         backing (.unscaledValue value)
         metric-var (private-var 'p15-s23-stage2-native-big-integer-magnitude-bits)]
     (is (identical? BigInteger (class backing)))
+    (is (pos? @setup-calls))
     (reset! armed true)
     (is (= [:big-decimal false nil 65 17 nil] (observe value)))
     (is (= (observe value) (interpreted plan [value])))
