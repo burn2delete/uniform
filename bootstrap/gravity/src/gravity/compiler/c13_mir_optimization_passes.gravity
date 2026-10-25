@@ -1216,8 +1216,8 @@
     false))
 
 (defn c13-reconstruction-bounded? [value]
-  ; Reuse the existing 32768-node/256-depth closed-carrier fence, then bound
-  ; scalar payloads before any complete equality or report-field lookup.
+  ; Validate every closed-carrier component, then enforce scalar kinds and
+  ; i64 representability before complete equality or report-field lookup.
   (if (= :accepted (get (sh16-c13-evidence-preflight value) :status))
     (loop [frontier [value]]
       (if (= 0 (count frontier)) true

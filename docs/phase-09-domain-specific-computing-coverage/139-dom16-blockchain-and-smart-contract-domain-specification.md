@@ -18,6 +18,15 @@ wallet/client bindings, invariant tests, and upgrade/migration artifacts.
 
 ## Requirements
 
+Gas/resource behavior and reports in this document mean the selected chain's
+protocol semantics or actual external platform constraints. The slice must
+name that protocol/profile and demonstrate its real execution and rejection
+behavior. These requirements do not impose project work budgets, compiler
+fees, debit/reservation accounting or arbitrary capacity-only admission gates.
+No project accounting requirement may return as chain conformance. Actual
+protocol gas, transaction fee and paymaster rules remain explicit where the
+selected protocol requires them; they are not development task allowances.
+
 - Contract execution must use deterministic profiles and reject unrecorded
   clock, randomness, network, filesystem, model, tool, process, or host effects.
 - Contract state, messages, events, and ABI boundaries must have schemas and
@@ -252,7 +261,8 @@ Blockchain diagnostics use `DOM16` identifiers:
 - `DOM16-DETERMINISM` for forbidden nondeterministic effects.
 - `DOM16-SCHEMA` for missing ABI, state, event, or transaction schemas.
 - `DOM16-NUMERIC` for unchecked overflow or invalid resource arithmetic.
-- `DOM16-GAS` for missing gas/resource accounting.
+- `DOM16-GAS` for missing gas/resource behavior or reports required by the
+  selected chain protocol or actual external platform constraints.
 - `DOM16-AUTH` for unauthorized state mutation.
 - `DOM16-ACCOUNT-VALIDATION` for programmable accounts without declared
   validation logic or authorization policy.
@@ -333,7 +343,8 @@ A conforming blockchain slice must demonstrate:
 
 - token, escrow, or governance contract examples,
 - deterministic contract artifacts and ABI schemas,
-- checked arithmetic and gas/resource reports,
+- checked arithmetic and the gas/resource behavior and reports required by the
+  selected protocol or actual external platform constraints,
 - account-abstraction reports for programmable-account entrypoints,
 - named Ethereum account-abstraction profiles for ERC-4337, EIP-7702, and
   ERC-7579 where selected,

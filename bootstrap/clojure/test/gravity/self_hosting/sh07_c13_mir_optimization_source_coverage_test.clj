@@ -30,9 +30,9 @@
 (def ^:private accepted-fixture-relative-path
   "bootstrap/clojure/fixtures/self-hosting/sh-16/accepted/mir-optimizations.gravity")
 (def ^:private expected-source-byte-count
-  173179)
+  173178)
 (def ^:private expected-source-revision-id
-  "sha256:428b21a53d2600e51e523adb3afeae501dc95570338435c17d6c3881d3f62966")
+  "sha256:1a6c45e7e56f4fc0a3094db61a1ebed54546fbb30ec5084bd025f0d9a0a33aec")
 ;; Full-artifact projection/census pins remain historical until a fresh artifact
 ;; run renews them. Static source-pin refresh does not confer artifact coverage.
 (def ^:private expected-sh06-semantic-projection-id

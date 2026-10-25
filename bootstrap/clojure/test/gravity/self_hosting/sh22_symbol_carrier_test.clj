@@ -1,12 +1,11 @@
-(ns gravity.self-hosting.sh22-symbol-carrier-charge-test
+(ns gravity.self-hosting.sh22-symbol-carrier-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]))
 
-;; BOOT2/D8/D9: native Symbol unit admission precedes any spelling render.
-;; Other scalar families and opaque host objects gain no new safety claim.
+;; Carrier validation does not render Symbols or account for their spelling size.
 (def ^:private root
-  (delay (loop [file (io/file (.toURI (io/resource "gravity/self_hosting/sh22_symbol_carrier_charge_test.clj")))]
+  (delay (loop [file (io/file (.toURI (io/resource "gravity/self_hosting/sh22_symbol_carrier_test.clj")))]
            (if (.isFile (io/file file "deps.edn")) file (recur (.getParentFile file))))))
 (defn- path [relative] (str (io/file @root relative)))
 (defn- compile-plan [relative]
@@ -41,29 +40,19 @@
                  thunk)]
     [result @observations]))
 
-(deftest sh22-native-symbol-unit-census-does-not-render
+(deftest sh22-native-symbol-validation-does-not-render-or-count-spelling
   (doseq [value ['compiler/entry (symbol "unicode" "\ud83d\ude00")
                  (with-meta 'compiler/entry {:inert '(unresolved/call)})]]
-    (let [expected (count (str value)) [result observed] (observe value #(census value))]
-      (is (= {:status :accepted :nodes 1 :scalar-units expected} result))
-      (is (= {:render 0 :units 1} observed)))))
+    (let [[result observed] (observe value #(census value))]
+      (is (= {:status :accepted} result))
+      (is (= {:render 0 :units 0} observed)))))
 
-(deftest sh22-symbol-unit-census-retains-inclusive-and-cumulative-limits
-  (is (= 65536 (:maximum-scalar-units (call 'sh22-library-policy []))))
-  (doseq [[size expected] [[65536 :accepted] [65537 :rejected]]]
+(deftest sh22-symbol-validation-has-no-size-or-shared-occurrence-quota
+  (doseq [size [65536 65537]]
     (let [value (symbol (apply str (repeat size "s")))
-          [result observed] (observe value #(census value))]
-      (is (= expected (:status result)))
-      (if (= :accepted expected)
-        (is (= size (:scalar-units result)))
-        (is (= :carrier-scalar-bound (:reason result))))
-      (is (= {:render 0 :units 1} observed))))
-  (let [shared (symbol (apply str (repeat 32768 "s")))
-        [result observed] (observe shared #(census [shared shared]))
-        overflow (census [shared (symbol (apply str (repeat 32769 "s")))])]
-    (is (= {:status :accepted :nodes 3 :scalar-units 65536} result))
-    (is (= {:render 0 :units 2} observed))
-    (is (= {:status :rejected :reason :carrier-scalar-bound} overflow))))
+          [result observed] (observe value #(census [value value]))]
+      (is (= {:status :accepted} result))
+      (is (= {:render 0 :units 0} observed)))))
 
 (deftest sh22-symbol-producers-compose-through-persistent-library-results
   (doseq [family ["accepted" "rejected"]]
@@ -80,26 +69,19 @@
       (is (= :accepted (:status result) (:status selected)))
       (is (= [value] (:value result)))
       (is (= value (:value selected)))
-      (is (= 0 (:render observed)))
-      (is (pos? (:units observed)))
+      (is (= {:render 0 :units 0} observed))
       (is (verified? input result))
       (is (verified? nth-input selected)))))
 
-(deftest sh22-symbol-request-and-result-refusals-stay-bounded
-  (doseq [extension ["gravity" "qst"]
-          [size rule reason valid-input?]
-          [[35000 "STD10003" :result-carrier-bound-exceeded true]
-           [65537 "STD1001" :malformed-library-request false]]]
+(deftest sh22-symbol-requests-and-results-have-no-scalar-quota
+  (doseq [extension ["gravity" "qst"] size [35000 65537]]
     (let [base (invoke (get @fixtures ["accepted" extension]) 'sh22-symbol-carrier-request [])
           value (symbol (apply str (repeat size "s")))
           input (invoke (get @fixtures ["rejected" extension]) 'sh22-symbol-carrier-wide-request [base value])
           [result observed] (observe value #(handle input))]
-      (is (= valid-input? (call 'sh22-request-common-valid? [input])))
-      (is (= :rejected (:status result)))
-      (is (= rule (get-in result [:diagnostics 0 :rule])))
-      (is (= reason (get-in result [:diagnostics 0 :reason])))
-      (is (= 0 (:render observed)))
-      (is (pos? (:units observed)))
-      (is (= :accepted (:status (census result))))
-      (is (true? (verified? input result)))
-      (is (true? (not (verified? input (assoc result :status :accepted))))))))
+      (is (true? (call 'sh22-request-common-valid? [input])))
+      (is (= :accepted (:status result)))
+      (is (= [value] (:value result)))
+      (is (= {:render 0 :units 0} observed))
+      (is (verified? input result))
+      (is (not (verified? input (assoc result :value [:forged])))))))

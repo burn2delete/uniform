@@ -565,47 +565,20 @@
             (get functions 'sh22-verify-authenticated-vector-result)
             [:arity :params])))))
 
-(deftest sh22-authenticated-bridge-carrier-bounds-cover-genuine-request
+(deftest sh22-authenticated-bridge-validation-has-no-project-quotas
   (let [products (upstream-products)
-        descriptor
-        (descriptor products "/checkout-a/sh22-bridge.gravity")
+        descriptor (descriptor products "/checkout-a/sh22-bridge.gravity")
         authenticated (authenticated-envelope descriptor)
-        request
-        (bridge-request
-         products descriptor authenticated
-         "/checkout-a/library-call.gravity")
-        genuine-census
-        (invoke
-         bridge-plan
-         'sh22-bridge-carrier-preflight
-         [request])
-        scalar-chunk (apply str (repeat 2048 "a"))
-        inclusive-carrier (vec (repeat 64 scalar-chunk))
-        over-limit-carrier
-        (assoc inclusive-carrier 0 (str scalar-chunk "a"))
-        inclusive
-        (invoke
-         bridge-plan
-         'sh22-bridge-carrier-preflight
-         [inclusive-carrier])
-        over-limit
-        (invoke
-         bridge-plan
-         'sh22-bridge-carrier-preflight
-         [over-limit-carrier])]
-    (is (= {:maximum-depth 15
-            :maximum-width 36
-            :nodes 10592
-            :scalar-units 103173
-            :status :accepted}
-           genuine-census))
-    (is (= :accepted (:status inclusive)))
-    (is (= 65 (:nodes inclusive)))
-    (is (= 1 (:maximum-depth inclusive)))
-    (is (= 64 (:maximum-width inclusive)))
-    (is (= 131072 (:scalar-units inclusive)))
-    (is (= :rejected (:status over-limit)))
-    (is (= :carrier-scalar-bound (:reason over-limit)))))
+        request (bridge-request products descriptor authenticated "/checkout-a/library-call.gravity")
+        text (apply str (repeat 131073 "a"))]
+    (doseq [value [request text (vec (repeat 65 :value)) (nth (iterate vector :value) 33)]]
+      (is (= {:status :accepted}
+             (invoke bridge-plan 'sh22-bridge-carrier-preflight [value]))))
+    (let [physical (object-array [:self nil])
+          cycle (clojure.lang.PersistentArrayMap. physical)]
+      (aset physical 1 cycle)
+      (is (= {:status :rejected :reason :cyclic-carrier}
+             (invoke bridge-plan 'sh22-bridge-carrier-preflight [cycle]))))))
 
 (deftest sh22-executes-one-authenticated-pure-vector-operation
   (let [products (upstream-products)
@@ -779,7 +752,7 @@
             :gravity/sh22-authenticated-vector-bridge-request
             :schema-version 1
             :unexpected true}
-           (nth (iterate vector :over-bound) 70)]]
+           (nth (iterate vector :nested) 70)]]
     (let [result
           (invoke
            bridge-plan

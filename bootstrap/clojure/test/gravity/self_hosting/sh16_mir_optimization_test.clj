@@ -1790,6 +1790,16 @@
       (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))))
 
 (deftest sh16-validates-evidence-and-operation-identities-without-quotas
+  ;; The evidence boundary formerly capped depth at 256. Both an accepted
+  ;; leaf and an invalid leaf beyond that point must actually be visited.
+  (let [deep (nested-vector 300 :leaf)
+        opaque (nested-vector 300 (Object.))]
+    (is (= {:status :accepted}
+           (invoke-engine 'sh16-c13-evidence-preflight [deep])))
+    (is (true? (invoke-engine 'c13-reconstruction-bounded? [deep])))
+    (is (= {:status :rejected :reason :carrier-scalar}
+           (invoke-engine 'sh16-c13-evidence-preflight [opaque])))
+    (is (false? (invoke-engine 'c13-reconstruction-bounded? [opaque]))))
   (let [carrier (vec (repeat 65 (vec (range 512))))]
     (is (= {:status :accepted}
            (invoke-engine 'sh16-c13-evidence-preflight [carrier])))

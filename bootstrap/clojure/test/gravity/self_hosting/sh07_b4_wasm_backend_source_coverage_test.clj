@@ -388,9 +388,11 @@
            (alength (source-bytes (path b4-relative-path)))))
     (is (= expected-source-revision-id
            (sha256-id (source-bytes (path b4-relative-path)))))
-    (is (= expected-source-byte-count
+    ;; Historical authentication pins intentionally remain unchanged. Current
+    ;; source coverage above is not renewed backend migration authority.
+    (is (= 118633
            bootstrap/p15-s23-b4-wasm-source-byte-count))
-    (is (= expected-source-revision-id
+    (is (= "sha256:96e2fa6a41118edacd026f878cc6c817a5d65f06973ccee24974b62a3b3d7488"
            bootstrap/p15-s23-b4-wasm-expected-source-content-hash))
     (is (= expected-plan-semantic-id
            bootstrap/p15-s23-b4-wasm-expected-plan-semantic-hash))

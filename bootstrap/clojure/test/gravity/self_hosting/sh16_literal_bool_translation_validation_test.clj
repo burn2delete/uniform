@@ -57,13 +57,21 @@
 (deftest sh16-literal-bool-report-requires-ordered-semantic-checks
   (let [{:keys [mir report after output-report]} @(get cases "true")
         checks (:checks output-report)]
-    (is (= :input-carrier-kinds (first checks)))
-    (is (= 9 (count checks)))
+    (is (= [:input-carrier-kinds :fresh-original-mir-verification
+            :original-zero-arity-hosted-jvm-bool-diamond
+            :literal-selected-edge :cfg-and-dominance-reconstruction
+            :terminator-and-value-use-reconstruction
+            :complete-after-equality :type-effect-safety-origin-preservation
+            :unchanged-instructions-joins-fact-check-and-proof-tables]
+           checks))
     (is (= :passed (:translation-validation-status
                      (consume mir report after output-report))))
     (doseq [candidate (concat
                       (map (fn [index]
                              (into (subvec checks 0 index) (subvec checks (inc index))))
+                           (range (count checks)))
+                      (map #(assoc checks % :unknown-semantic-check) (range (count checks)))
+                      (map #(assoc checks % (get checks (mod (inc %) (count checks))))
                            (range (count checks)))
                       [(vec (reverse checks))
                        (conj checks :unknown-semantic-check)
