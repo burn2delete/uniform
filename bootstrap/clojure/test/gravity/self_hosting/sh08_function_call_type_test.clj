@@ -10086,10 +10086,11 @@
                  sh08-gis3-pick sh08-gis3-form-prefix sh08-pc-id? sh08-sse-ids? sh08-lsi-first-append
                  sh08-gis3-index sh08-gis3-source-payment sh08-gis3-view-control-work
                  sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes
-                 sh08-gis3-cold-entry sh08-gis3-entry-semantic-work}
+                 sh08-gis3-cold-entry sh08-gis3-entry-semantic-work
+                 sh08-gis3-numeric-source sh08-gis3-numeric-semantic-work}
         separately-paid '#{sh08-gis3-index sh08-gis3-original-readsets sh08-gis3-data-tallies
                           sh08-gis3-complete-data-tallies sh08-gis3-entry-complete-data
-                          sh08-gis3-entry-original-data sh08-gis3-entry-indexes sh08-gis3-entry-unify}
+                          sh08-gis3-entry-original-data sh08-gis3-entry-indexes sh08-gis3-entry-unify sh08-gis3-numeric-match}
         metrics [:steps :field-gets :equalities :cells :map-writes :set-tests]
         zero (zipmap metrics (repeat [0 0 0])) cache (atom {})]
     (letfn [(plus [a b] (mapv + a b))
@@ -10109,7 +10110,7 @@
                       (= 'sh08-gis3-source-payment owner) [(if (= 'parts (first bindings)) 10 6) 0 0]
                       (contains? '#{sh08-gis3-entry-original-data sh08-gis3-entry-complete-data} owner) [17 0 0]
                       (= 'sh08-gis3-entry-indexes owner) [15 0 0]
-                      (= 'sh08-gis3-cold-entry owner) [17 0 0]
+                      (contains? '#{sh08-gis3-cold-entry sh08-gis3-numeric-source} owner) [17 0 0]
                       (= 'sh08-gis3-view-project owner) [9 0 0]
                       (= 'sh08-sse-ids? owner) [2 0 0]
                       (= 'sh08-lsi-first-append owner) [6 0 0]
@@ -10153,7 +10154,7 @@
                                (sum (map #(cost owner % remaining) args)))
                     (let [base (add (unit :steps 1) (unit :cells (count args))
                                     (sum (map #(cost owner % remaining) args)))]
-                      (if (and (contains? '#{sh08-gis3-source-payment sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-cold-entry} owner)
+                      (if (and (contains? '#{sh08-gis3-source-payment sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-cold-entry sh08-gis3-numeric-source} owner)
                                (contains? separately-paid op))
                         (add base (unit :steps (+ 8 (* 4 (count args)))) (unit :cells (* 2 (count args))))
                       (if (contains? owned op) (add base (function-cost op))
@@ -22046,6 +22047,109 @@
           :fresh-index-work (:index worksheet) :semantic-construction-work (:semantic worksheet)
           :all-DATA-control-fees-closed true :complete-DATA (:complete-DATA worksheet) :B47-verification-complete false
           :public-GIS-routing false :numeric-proof-established false})))
+
+(defn- gis3-numeric-source-payment-worksheet [input]
+  (let [entry (gis3-cold-entry-payment-worksheet input) n (:n entry) d (:d entry)
+        semantic-model (gis3-semantic-census-work-model 'sh08-gis3-numeric-match)
+        semantic (reduce +' 0 (for [[[a b] c] (:fee-polynomial semantic-model)]
+                               (*' c (reduce *' 1 (repeat a n)) (reduce *' 1 (repeat b d)))))
+        source-model (gis3-source-view-work-model 'sh08-gis3-numeric-source)
+        surrounding (+ 512 (first (:fee-polynomial source-model)))]
+    (assoc entry :semantic-model semantic-model :semantic semantic :surrounding-model source-model
+           :surrounding surrounding :total (+ surrounding (:data entry) (:index entry) semantic))))
+
+(deftest sh08-gis3-paid-numeric-source-development-kernel
+  (let [{:keys [core bindings forms] :as input}
+        (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        target (:core-node-id (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core))))
+        worksheet (gis3-numeric-source-payment-worksheet input) exact (:total worksheet)
+        run #(invoke-c7 'sh08-gis3-numeric-source [core bindings forms target %])
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped owner (Thread/currentThread) seen (atom {})
+        selected '#{sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-numeric-match}
+        observed (fn [budget]
+                   (reset! seen {})
+                   (let [out (with-redefs-fn
+                               {scoped (fn [runtime plan callee args scope]
+                                         (when (and (identical? owner (Thread/currentThread))
+                                                    (= :gravity-sh08-function-call-type-leaf (:engine runtime))
+                                                    (contains? selected callee))
+                                           (swap! seen update callee (fnil inc 0)))
+                                         (original runtime plan callee args scope))}
+                               #(run budget))]
+                     {:value out :calls @seen}))
+        accepted (observed exact) repeated (observed exact) short (observed (dec exact))]
+    (is (= [60355 0 0] (get-in worksheet [:surrounding-model :fee-polynomial])))
+    (is (= #{} (get-in worksheet [:semantic-model :separately-paid-legacy-children])))
+    (is (= (:semantic worksheet) (invoke-c7 'sh08-gis3-numeric-semantic-work [(:n worksheet) (:d worksheet)])))
+    (doseq [out [accepted repeated]]
+      (is (= :original-numeric-source-matched (get-in out [:value :status])))
+      (is (= [32 126] (get-in out [:value :input-range])))
+      (is (= [0 94] (get-in out [:value :result-range])))
+      (is (= :gravity.type/integer (get-in out [:value :parameter-type])))
+      (is (= (:artifact-id core) (get-in out [:value :core-input])))
+      (is (= target (get-in out [:value :call-core-node-id])))
+      (is (= exact (get-in out [:value :work-count]) (get-in out [:value :completed-work-count])))
+      (is (= (zipmap selected (repeat 1)) (:calls out))))
+    (is (= (:value accepted) (:value repeated)))
+    (is (= [:rejected :compact-gis-entry-work-limit :entry-semantic exact]
+           ((juxt :status :reason :stage :work-count) (:value short))))
+    (is (= (+ (:surrounding worksheet) (:data worksheet) (:index worksheet))
+           (get-in short [:value :completed-work-count])))
+    (is (= {'sh08-gis3-entry-complete-data 1 'sh08-gis3-entry-indexes 1} (:calls short)))
+    (doseq [budget [0 511 (dec (:surrounding worksheet))]]
+      (let [out (observed budget)]
+        (is (= :compact-gis-entry-work-limit (get-in out [:value :reason]))) (is (= {} (:calls out)))))
+    (is (false? (get-in accepted [:value :numeric-proof-established])))
+    (when-not (= :original-numeric-source-matched (get-in accepted [:value :status]))
+      (let [indexes (get-in accepted [:value :fresh-indexes])
+            header (invoke-c7 'sh08-gis3-entry-header [core indexes target])
+            record (:record header)]
+        (prn {:unpriced-failure-diagnosis true
+              :calls (mapv (fn [call]
+                             (let [operation (:name (by-binding (:operator-binding-id call)))]
+                               [operation (when (contains? '#{- >= <=} operation)
+                                            (invoke-c7 'sh08-gis3-binary-call-source? [core indexes header call operation]))]))
+                           (:calls core))
+              :ifs (mapv #(invoke-c7 'sh08-gis3-if-source? [indexes % (:function-syntax-id record)])
+                         (filter #(= :if (:core-form %)) (:nodes core)))})))
+    (prn {:gis3-paid-numeric-source :checked :declared-total exact :n (:n worksheet) :d (:d worksheet)
+          :semantic-work (:semantic worksheet) :source-construction-replayed false
+          :original-rows-current-literal-and-caller-Integer true
+          :B47-verification-complete false :v3-product-constructed false :fresh-product-consumer false
+          :public-GIS-routing false :numeric-proof-established false})))
+
+(deftest sh08-gis3-numeric-source-negative-development-kernel
+  ;; Normalized hostile original-row changes, not fresh C3/B47 source receipts.
+  (let [{:keys [core bindings] :as input}
+        (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        target-call (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+        target (:core-node-id target-call) sub-id (second (:argument-node-ids target-call))
+        high-call (first (filter #(= '<= (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+        upper-id (second (:argument-node-ids high-call))
+        outer (first (filter #(= target (second (:children %))) (filter #(= :if (:core-form %)) (:nodes core))))
+        change-row (fn [rows key id operation] (mapv #(if (= id (get % key)) (operation %) %) rows))
+        literal-change (fn [id value]
+                         (let [node (first (filter #(= id (:node-id %)) (:nodes core)))]
+                           (-> input
+                               (update-in [:core :nodes] change-row :node-id id #(assoc-in % [:attributes :value] value))
+                               (update :forms change-row :form-id (get-in node [:source :form-id]) #(assoc % :value value)))))
+        bad-control (update-in input [:core :nodes] change-row :node-id (:node-id outer)
+                               #(assoc-in % [:attributes :then-child-index] 1.0))
+        run (fn [{:keys [core bindings forms] :as changed}]
+              (let [budget (:total (gis3-numeric-source-payment-worksheet changed))]
+                (invoke-c7 'sh08-gis3-numeric-source [core bindings forms target budget])))]
+    (doseq [[label changed reason]
+            [[:floating-control bad-control :compact-gis-original-control-or-call-required]
+             [:different-subtrahend (literal-change sub-id 33) :compact-gis-original-range-required]
+             [:floating-upper (literal-change upper-id 126.0) :compact-gis-original-literals-or-ancestry-required]]]
+      (let [out (run changed)]
+        (is (= :rejected (:status out)) (str label))
+        (is (= reason (:reason out)) (str label))))
+    (prn {:gis3-numeric-source-hostile-original-rows :checked :normalization-only true
+          :v3-product-constructed false :numeric-proof-established false})))
 
 (def ^:private function-work-policy-current-c8-plan
   ;; Same real Effects dependency and C8 module-bundle construction as the
