@@ -84,3 +84,11 @@ owned by [D1](../phase-00-foundation-and-thesis/002-d1-system-architecture-overv
 and [D2](../phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md).
 Existing self-hosting milestones are evidence/traceability references, not this
 project's identity and not authority to run restricted migration actions.
+
+## Wider artifact families
+
+The selected LLVM artifact outcome is not all-backend completion. Named
+[backend projects](backends.md#release-outcome) own their real target output,
+linking/packaging and conformance evidence; Emit supplies the common identity,
+provenance and source-map handoff. Only families actually required by the
+selected compiler recipe are prerequisites for that compiler release.

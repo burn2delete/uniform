@@ -84,3 +84,10 @@ owned by [D1](../phase-00-foundation-and-thesis/002-d1-system-architecture-overv
 and [D2](../phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md).
 Existing self-hosting milestones are evidence/traceability references, not this
 project's identity and not authority to run restricted migration actions.
+
+## Wider backend families
+
+This page's selected Linux LLVM outcome does not discharge the other target
+families. Their actual target adapters, ABI/layout and legality behavior are
+owned by the named projects in [Backends](backends.md#release-outcome), which
+consume this lowering interface without becoming blanket bootstrap prerequisites.

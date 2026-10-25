@@ -40,6 +40,7 @@ one project per file, numbered contract, test, or historical task.
 
 | Working name / semantic key | Purpose and boundary | Canonical outcome |
 | --- | --- | --- |
+| Compiler API / `compiler-api` | Public compiler artifacts, pass pipeline and scoped plugin execution | [Compiler API outcomes](compiler-api.md#release-outcome) |
 | Reader / `reader` | Bytes, lexical products, source identity and syntax seeds | [Reader outcome](reader.md#release-outcome) |
 | Syntax / `syntax` | Syntax objects, context, hygiene/origin representation | [Syntax outcome](syntax.md#release-outcome) |
 | Expand / `expand` | Macro expansion under declared compile-time authority | [Expand outcome](expand.md#release-outcome) |
@@ -53,6 +54,7 @@ one project per file, numbered contract, test, or historical task.
 | Opt / `opt` | Proof-preserving required transformations | [Opt outcome](opt.md#release-outcome) |
 | Lower / `lower` | Target/ABI/runtime-service lowering | [Lower outcome](lower.md#release-outcome) |
 | Emit / `emit` | Target bytes and provenance-bearing artifacts | [Emit outcome](emit.md#release-outcome) |
+| Backends / `backends` | Independently verified target-family adapters and artifacts | [Backend family outcomes](backends.md#release-outcome) |
 | Runtime / `runtime` | Declared native/managed execution services | [Runtime outcome](runtime.md#release-outcome) |
 | Standard Library / `stdlib` | Profile/effect-declared user and compiler library | [Standard Library outcome](stdlib.md#release-outcome) |
 | Build / `build` | Package resolution, incremental/hermetic build graph | [Build outcome](build.md#release-outcome) |
@@ -81,7 +83,7 @@ an exact receipt, not merely all individual pages having checkmarks.
 | Source-to-Core | Source-to-syntax plus [Expand](expand.md#release-outcome), [Resolve](resolve.md#release-outcome), [Core](core.md#release-outcome) | Actual required source population reaches fresh verified canonical Core with preserved provenance and illegal-form rejection. A six-file first endpoint is not the whole SH-07 population. |
 | Checked compiler IR | Source-to-Core plus [Types](types.md#release-outcome), [Effects](effects.md#release-outcome), [Legality](legality.md#release-outcome), [Auth](auth.md#release-outcome), [MIR](mir.md#release-outcome) | Legal source produces verified MIR carrying all required facts; illegal type/effect/profile/capability/ownership/safety cases reject before lowering. |
 | Runnable selected target | Checked IR plus [Opt](opt.md#release-outcome), [Lower](lower.md#release-outcome), [Emit](emit.md#release-outcome), [selected compiler runtime services](runtime.md#selected-compiler-runtime-outcome), [compiler-support library](stdlib.md#compiler-support-outcome) | Selected-target artifacts actually execute accepted programs; unchecked IR and undeclared runtime service use reject. Target and residual host boundary are explicit. |
-| Reproducible compiler product | Runnable target plus [Build](build.md#release-outcome), [CLI](cli.md#release-outcome), [Diagnostics](diag.md#release-outcome), [Release](release.md#release-outcome) | Complete compiler source closure, actual next-stage rebuild/equivalence, hermetic package/provenance and public seedless release satisfy existing gates. |
+| Reproducible compiler product | Runnable target plus [Build](build.md#release-outcome), [selected compiler commands](cli.md#selected-compiler-cli-outcome), [Diagnostics](diag.md#release-outcome), [Release](release.md#release-outcome) | Complete compiler source closure, actual next-stage rebuild/equivalence, hermetic package/provenance and public seedless release satisfy existing gates. |
 | Wider language/platform | Relevant [domain outcomes](domains.md#release-outcome) and separately decided [Platform](platform.md#release-outcome) | Each declared domain/profile/target demonstrates its own executable accepted/rejected surface. The product does not inherit universal hardware/OS support from the compiler release. |
 
 ## Dependency and parallel-interface view
@@ -128,8 +130,9 @@ and real host safeguards are not renamed or removed by this statement.
 | SH-08 through SH-11; C7 through C10 | Types, Effects, Auth, Legality |
 | SH-12 through SH-14; C11 | MIR, Core, Lower and Runtime semantic/layout interfaces |
 | SH-15 through SH-20; C13 through C15, backend/runtime contracts | Diagnostics, Opt, Lower, Emit, Runtime |
-| SH-21 through SH-24; C16 through C18, package/tooling/library contracts | Legality, Build, CLI, Standard Library and Release verification |
+| SH-21 through SH-24; C16 through C18, package/tooling/library contracts | [Compiler API pipeline/plugin/evidence](compiler-api.md#release-outcome), Legality, Build, CLI, Standard Library and Release verification |
 | SH-25 through SH-29; bootstrap and phase-18 release contracts | Release composes all required compiler components, not a frontend-only census |
+| B1 through B14; phase-07 backend inventory | [Named backend-family and interface/conformance outcomes](backends.md#release-outcome), with selected Linux LLVM consumed by Lower/Emit |
 | Domain, schema, math, AI and platform contracts | Domains' individual projects and separate Platform extension |
 
 Implementation filenames, namespaces and new APIs use real semantic subsystem
@@ -176,3 +179,28 @@ service outcomes; a selected compiler release consumes only services actually
 required by its declared public surface. Completion of every editor/profiler
 service is not an added prerequisite for basic compiler development.
 See [validation scope and results](validation.md) for this documentation change.
+
+### Compiler execution and target-family integration
+
+[Compiler API](compiler-api.md#release-outcome) owns actual pass registration,
+compiler invocation, compatibility and isolated extension execution; Auth's
+grants and Build's graph/cache records do not implement those operations.
+The selected compiler consumes its built-in pipeline outcome and any extension
+it actually requires; optional plugin families remain separate outcomes.
+
+[Backends](backends.md#release-outcome) owns named target-family outcomes beyond
+the selected Linux LLVM path. Lower/Emit describe that selected compiler path
+and common lowering/emission handoffs; they do not claim all backend families.
+Wider C, Wasm, JVM, JavaScript/TypeScript, MLIR, GPU, HDL, Workflow, AI artifacts, Mobile
+and Query/Relational outcomes are independently owned and evidenced. Their
+completion is not an
+added prerequisite for the preserved selected bootstrap target.
+
+Source-to-Core, checked-IR and runnable-target rollups each require the
+[actual built-in compiler pipeline](compiler-api.md#built-in-compiler-pipeline-outcome)
+for their stated endpoint, with [Pass Evidence](compiler-api.md#pass-evidence-finite-remaining-tasks)
+for the passes claimed. This is real invocation/registration/verifier work,
+not a metadata-only orchestration record. Only extension code actually loaded
+by that closure adds [Plugin Host](compiler-api.md#plugin-host-finite-remaining-tasks)
+as a selected-release prerequisite; full plugin support remains a separate
+wider-language outcome.

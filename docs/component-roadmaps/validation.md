@@ -35,3 +35,21 @@ and scope. Every proposed implementation outcome remains open.
 Publication/review status belongs in the draft PR and coordinator disposition,
 not an invented component completion receipt. A local commit, remote branch or
 clean documentation check cannot grant implementation or release acceptance.
+
+## Corrective review successor
+
+Independent review of draft PR380 at remote
+`5f0713d221e82b332a187b3067d8f98c937a40b1` identified three documentation gaps:
+selected compiler composition still depended on the entire CLI portfolio;
+compiler public API/pass/plugin execution had no concrete outcome owner; and
+wider backend families were not independently named beyond selected LLVM.
+The successor corrects these in the same directory without changing the source
+baseline, Reader implementation claims, protocol identifiers or selected target.
+The CLI slice follows actual phase-18 commands and the real release recipe;
+Compiler API owns executable pipeline/plugin/verifier work; Backends owns
+separate family outcomes. Wider portfolios do not become blanket prerequisites
+for the selected compiler. All remain proposed/open implementation outcomes.
+
+The same safe checks and local navigation/text scan are rerun for the successor
+before publication. Their results remain documentation/policy evidence only;
+no compiler, plugin, target execution or restricted migration is asserted.

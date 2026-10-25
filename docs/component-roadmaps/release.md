@@ -67,3 +67,9 @@ source/service/export closure. Full runtime-family, general library and platform
 outcomes remain wider-language/product releases, not prerequisites silently
 added to compiler seed retirement. Domain outcomes are required only where the
 declared compiler/release surface actually consumes them.
+
+The CLI prerequisite is [selected compiler commands](cli.md#selected-compiler-cli-outcome),
+not the wider CLI portfolio. It includes the actual public compiler, build,
+package, test, audit, verification and explanation operations required by the
+release recipe. Unrelated editor/AI/registry services remain wider outcomes;
+commands actually invoked by the compiler recipe cannot be waived by slicing.
