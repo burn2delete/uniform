@@ -4,7 +4,7 @@
 ;; values are filled after the leaf source and its independent review freeze.
 ;; Keeping these separate from the builder makes the source/plan tripwire
 ;; explicit and prevents a rebuild from silently authorizing changed code.
-(def sh03-reader-expected-source-byte-count 257161)
+(def sh03-reader-expected-source-byte-count 267155)
 (def sh03-reader-uncredited-source-model-entrypoints
   ['stage1-read-source-formal-release-governance-seed-retirement
    'stage1-read-source-release-attestation-seed-retirement
@@ -16,18 +16,18 @@
    'stage1-read-source-core-bootstrap
    'stage1-read-source-self-hosted-runtime])
 (def sh03-reader-expected-source-content-hash
-  "sha256:bd262c746ad88d9213e4b3160943fecde948c5ceee12a65dfe67ffb29d4e5b77")
+  "sha256:b7f2d8f48494c53a467ae1e990fcae89a5641b3bb99e4788d2def505440a1626")
 (def sh03-reader-expected-plan-semantic-hash
-  "sha256:c6ef36bdf9616b97ff92ded8786b21eab1f2f94075a87aa96f59b8e7d710b3f2")
+  "sha256:b06807c77e2e08ab90fcc9744d2c7d89dceb64255d581ebdf5ed444fa33eff1c")
 (def sh03-reader-expected-functions-semantic-hash
-  "sha256:2e7bd1504df9cac0451d391f4f20cd5fac524e4f289289d136ac43f279f759cb")
-(def sh03-reader-expected-function-count 231)
+  "sha256:1593b49f9b2741041e975fa818d640aee0bf8eec30f2447444782ea4a20e24d1")
+(def sh03-reader-expected-function-count 243)
 (def sh03-reader-expected-function-names-hash
-  "sha256:27c0e98eec6e92acdf9d4c5a9db966374136f1c8084f7e9f13bea1610d6bf868")
+  "sha256:c9e5a90a181f1a126fefb20c92a6fddac910a2141f2813dc2c6082ae3f241e19")
 (def sh03-reader-expected-function-shapes-hash
-  "sha256:af3f655c92eb88945c6a46cdc8f0dcc157c92a8e7f9cd80cc2595129bd088e07")
+  "sha256:34b95bb6a6e75487cc057730a51718cd33926270cf3f972d69e8561686222598")
 (def sh03-reader-expected-entrypoint-semantic-hash
-  "sha256:9ea6a927c2f25fa80b123af18d3a6824bd9e2863e8c55fbc9f02839d882eb0cc")
+  "sha256:e65ccbe5e5fd806dbc41fe9230a0fcbfa7d62359d6620584e082bd68e1ef9d15")
 (def sh03-reader-expected-verifier-semantic-hash
   "sha256:625bbeccf94f75fedbd6232e4a54b1a44435f06bf07352b8d19b1a35196038a7")
 (def sh03-reader-expected-builtin-functions-hash

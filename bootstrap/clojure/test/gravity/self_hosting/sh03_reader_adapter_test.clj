@@ -467,13 +467,13 @@
 (def ^:private sh03-facade-source-relative-path
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity")
 
-(def ^:private sh03-facade-source-byte-count 36920)
+(def ^:private sh03-facade-source-byte-count 37069)
 (def ^:private sh03-facade-source-content-hash
-  "sha256:cb416baa7330fd7db5507fcd5fc1d78d5c9e848feb9020552d4c21b9e1c17fe0")
+  "sha256:45794ae227f2a33f47fd69350de4e839e5de91e914a88ffcb59aee4f6710aeef")
 (def ^:private sh03-facade-plan-semantic-hash
-  "sha256:1012a51721cd2c29e260a6f7bc3bc0b2ced5aefe1222cbbd95a155fc44f8977f")
+  "sha256:320a65effdce6bba6f6f6b53c7e1b19d1b1df4b92494a85f0fd9dc8c5595c161")
 (def ^:private sh03-facade-functions-semantic-hash
-  "sha256:1ac79857179b3729eb47c3ce364f990333799ffec49f5047e700be7e7a827123")
+  "sha256:892f6ad1099370d50c7d53b42849a4f7211cf3c2a1abc0febb4412becb4c0700")
 
 (def ^:private sh03-facade-plan
   (delay
@@ -1395,11 +1395,12 @@
            [token-count form-count]))]
     (is (true? (within? 65537 32769)))
     (is (true? (within? 131072 65536)))
-    (is (false? (within? 131073 65536)))
-    (is (false? (within? 131072 65537)))
+    (is (true? (within? 524288 262144)))
+    (is (false? (within? 524289 262144)))
+    (is (false? (within? 524288 262145)))
     (is (false? (within? -1 0)))
     (is (false? (within? 0 -1)))
-    (is (false? (within? "131072" 65536)))))
+    (is (false? (within? "524288" 262144)))))
 
 (deftest sh03-gravity-facade-package-boundary-fails-closed
   (let [accepted-path

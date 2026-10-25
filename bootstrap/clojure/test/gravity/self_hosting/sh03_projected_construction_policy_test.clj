@@ -190,3 +190,41 @@
            (get-in result [:diagnostics 0 :facts :construction-phase])))
     (is (= [] (:token-stream result) (:form-tree result)))
     (is (false? (get-in result [:diagnostics 0 :facts :result-committed?])))))
+
+(deftest authenticated-reader-accepts-real-effects-compiler-input
+  ;; Real authenticated intake and fresh reconstruction, with the stock trivia
+  ;; mode. This is reader evidence, not C8/C9 or module-migration acceptance.
+  (let [file (io/file @root "bootstrap/gravity/src/gravity/effects.gravity")
+        path (.getPath file)
+        bytes (bootstrap/sh03-reader-read-target-source-bytes! path)
+        target-calls (atom 0)
+        original bootstrap/read-source-form-records
+        resolved
+        (with-redefs [bootstrap/read-source-form-records
+                      (fn [source text]
+                        (when (= (.getCanonicalPath (io/file source))
+                                 (.getCanonicalPath file))
+                          (swap! target-calls inc)
+                          (throw (ex-info "Target source reached host reader" {})))
+                        (original source text))]
+          (bootstrap/sh03-reader-resolved-result!
+           path bytes (bootstrap/reader-project-context-for-source path)
+           bootstrap/standard-reader-options))
+        raw (:raw-result resolved)
+        report (:verification-report resolved)]
+    (println (pr-str {:real-reader-input :effects
+                      :source-byte-count (alength bytes)
+                      :source-content-hash (str "sha256:" (bootstrap/sha256-bytes-hex bytes))
+                      :status (:status raw) :tokens (count (:token-stream raw))
+                      :forms (count (:form-tree raw))
+                      :fresh-replay (:verified? report)
+                      :diagnostics (mapv #(select-keys % [:id :reader-state :facts])
+                                         (:diagnostics raw))}))
+    (is (= 1677424 (alength bytes)))
+    (is (> (alength bytes) 1048576))
+    (is (= :accepted (:status raw) (:status (:result resolved))))
+    (is (true? (:verified? report)))
+    (is (> (count (:token-stream raw)) 131072))
+    (is (> (count (:form-tree raw)) 65536))
+    (is (= :gravity/sh03-compiler-source-v1 (get-in raw [:bounds :resource-policy])))
+    (is (zero? @target-calls))))
