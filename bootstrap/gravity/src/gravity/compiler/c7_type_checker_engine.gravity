@@ -3587,10 +3587,15 @@
       (if (= i (count ids)) true
         (let [row (get order i)]
           (if (if (map? row) (= 2 (count row)) false)
-          (if (sh08-gis3-keyword-record? row)
-            (if (integer? (get row :index))
-              (if (sh08-pc-id? (get row :core-node-id))
-                (if (= {:index i :core-node-id (get ids i)} row) (recur (+ i 1)) false) false) false) false)))) false))
+            (if (sh08-gis3-keyword-record? row)
+              (if (integer? (get row :index))
+                (if (sh08-pc-id? (get row :core-node-id))
+                  (if (= {:index i :core-node-id (get ids i)} row) (recur (+ i 1)) false)
+                  false)
+                false)
+              false)
+            false))))
+    false))
 
 (defn sh08-gis3-entry-call? [core indexes header census call]
   (let [nodes (get indexes :nodes) bindings (get indexes :bindings) forms (get indexes :forms)
