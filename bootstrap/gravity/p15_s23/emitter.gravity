@@ -6241,7 +6241,7 @@
     (if (> base budget) {:status :rejected :reason :list-set-conversion-work-limit :work-count base}
       (loop [index 0 items [] seen #{} descriptors {} used base]
         (if (= index (count ledger)) {:status :accepted :items items :descriptors descriptors :work-count used}
-          (let [row (get ledger index) producer (if (map? row) (get row :producer-rule) nil)]
+          (let [row (get ledger index) producer (if (map? row) (get row :producer-rule :ordinary-local-function-call) nil)]
             (if (keyword? producer)
               (if (= :sh08-list-set-conversion-v1 producer)
                 (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)]
@@ -6271,7 +6271,7 @@
             {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work})
           (let [entry (first remaining) fact (if (map? facts) (if (p15-s23-sse-ids? [entry] 1) (get facts entry) nil) entry)
                 id (if (map? fact) (get fact :call-core-node-id) nil)
-                dispatch (if (map? fact) (get fact :dispatch) nil)]
+                dispatch (if (map? fact) (get fact :dispatch :ordinary-local-function-call) nil)]
             (if (if (p15-s23-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
               (if (keyword? dispatch)
                 (if (= :direct-list-set-conversion dispatch)
@@ -6564,7 +6564,7 @@
     (if (> base budget) {:status :rejected :reason :map-keys-work-limit :work-count base}
       (loop [index 0 items [] seen #{} descriptors {} used base]
         (if (= index (count ledger)) {:status :accepted :items items :descriptors descriptors :work-count used}
-          (let [row (get ledger index) producer (if (map? row) (get row :producer-rule) nil)]
+          (let [row (get ledger index) producer (if (map? row) (get row :producer-rule :ordinary-local-function-call) nil)]
             (if (keyword? producer)
               (if (= :sh08-map-keys-v1 producer)
                 (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)]
@@ -6594,7 +6594,7 @@
             {:status :rejected :reason :map-keys-source-mismatch :work-count work})
           (let [entry (first remaining) fact (if (map? facts) (if (p15-s23-sse-ids? [entry] 1) (get facts entry) nil) entry)
                 id (if (map? fact) (get fact :call-core-node-id) nil)
-                dispatch (if (map? fact) (get fact :dispatch) nil)]
+                dispatch (if (map? fact) (get fact :dispatch :ordinary-local-function-call) nil)]
             (if (if (p15-s23-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
               (if (keyword? dispatch)
                 (if (= :direct-map-keys dispatch)
@@ -14659,7 +14659,7 @@
         (if (= index (count ledger))
           {:status :accepted :items items :descriptors descriptors :work-count used}
           (let [row (get ledger index)
-                producer (if (map? row) (get row :producer-rule) nil)
+                producer (if (map? row) (get row :producer-rule :ordinary-local-function-call) nil)
                 shallow (+ used 4)]
             (if (> shallow budget)
               {:status :rejected :reason :loop-type-work-limit :work-count shallow}
@@ -14749,7 +14749,7 @@
                :work-count total}))
           (let [entry (first remaining) fact (if (map? facts) (if (p15-s23-sse-ids? [entry] 1) (get facts entry) nil) entry)
                 id (if (map? fact) (get fact :call-core-node-id) nil)
-                dispatch (if (map? fact) (get fact :dispatch) nil) shallow (+ used 3)]
+                dispatch (if (map? fact) (get fact :dispatch :ordinary-local-function-call) nil) shallow (+ used 3)]
             (if (> shallow budget) {:status :rejected :reason :loop-type-work-limit :work-count shallow}
               (if (if (p15-s23-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
               (if (keyword? dispatch)
