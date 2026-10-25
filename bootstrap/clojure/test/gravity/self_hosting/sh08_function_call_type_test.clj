@@ -10213,6 +10213,7 @@
                  sh08-gis3-binary-call-source? sh08-gis3-if-source? sh08-gis3-owned-ancestry
                  sh08-gis3-integer-literal sh08-gis3-numeric-resolution-orders? sh08-gis3-numeric-match
                  sh08-gis3-v3-product sh08-gis3-reconstruct-product
+                 sh08-gis3-witness-shape? sh08-gis3-application-shape? sh08-gis3-product-shape? sh08-gis3-candidate-valid?
                  sh08-gis3-pick sh08-gis3-view-get sh08-pc-id? sh08-sse-ids? sh08-ma-form-source
                  sh08-ix-literal? sh08-pe-select sh08-ft-call-valid? sh08-ft-call-edge-valid?
                  sh08-ft-caller-edge-valid? sh08-ft-local-callee-edge-valid? sh08-ft-nonlocal-callee-edge-valid?

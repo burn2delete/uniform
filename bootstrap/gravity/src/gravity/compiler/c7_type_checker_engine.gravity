@@ -4157,6 +4157,70 @@
           {:status :rejected :reason :compact-gis-source-id-required :work-count reserved :completed-work-count reserved})))
     {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
+(defn sh08-gis3-witness-shape? [value]
+  (if (if (map? value) (if (= 2 (count value))
+        (if (contains? value :domain) (contains? value :input-range) false) false) false)
+    (let [range (get value :input-range)]
+      (if (if (vector? range) (= 2 (count range)) false)
+        (if (if (integer? (get range 0)) (integer? (get range 1)) false)
+          (if (keyword? (get value :domain))
+            (if (= :gravity/sh08-gis-source-witness-v3 (get value :domain))
+              (<= 0 (get range 0) (get range 1) 127) false) false) false) false)) false))
+
+(defn sh08-gis3-application-shape? [value]
+  ; Owning consumption first validates complete candidate DATA and Keyword
+  ; comparison trees. No candidate shape result is a semantic proof token.
+  (if (if (map? value) (= 26 (count value)) false)
+    (if (loop [fields [:kind :version :operation :semantic-owner :layer0-owner :intrinsic :resolution
+                      :core-input :call-core-node-id :argument-types :parameter-types :return :result-type
+                      :numeric-mode :safety :range-proof :application :operand-evaluation :conversion
+                      :latent-effects :direct-effects :capabilities :thrown-error-effects :profile :target :invalidation]]
+          (if (= 0 (count fields)) true
+            (if (contains? value (first fields)) (recur (rest fields)) false)))
+      (if (loop [fields [:kind :version :intrinsic :resolution :return :result-type :numeric-mode :safety
+                        :application :operand-evaluation :conversion :profile :target]]
+            (if (= 0 (count fields)) true
+              (if (keyword? (get value (first fields))) (recur (rest fields)) false)))
+        (sh08-ft-all-true?
+          [(= :gravity.type/applied-guarded-integer-subtraction (get value :kind))
+           (= :sh08-guarded-integer-subtraction-v3 (get value :version))
+           (symbol? (get value :operation)) (symbol? (get value :semantic-owner)) (symbol? (get value :layer0-owner))
+           (sh08-pc-id? (get value :core-input)) (sh08-pc-id? (get value :call-core-node-id))
+           (sh08-gis3-witness-shape? (get value :range-proof))]) false) false) false))
+
+(defn sh08-gis3-product-shape? [value]
+  (if (if (map? value) (if (= 3 (count value))
+        (if (contains? value :application) (if (contains? value :constraint) (contains? value :call-type-fact) false) false) false) false)
+    (let [constraint (get value :constraint) fact (get value :call-type-fact)
+          identity (get constraint :constraint-id-request) fact-identity (get fact :fact-id-request)
+          solution (get constraint :solution) span (get fact :source-span)]
+      (if (sh08-ft-all-true?
+            [(map? constraint) (map? fact) (map? identity) (map? fact-identity) (map? solution)
+             (if (map? span) (= 8 (count span)) false)])
+        (if (loop [applications [(get value :application) (get identity :application) (get constraint :dependencies)
+                                 (get fact-identity :application) (get fact :applied-guarded-integer-subtraction)]]
+              (if (= 0 (count applications)) true
+                (if (sh08-gis3-application-shape? (first applications)) (recur (rest applications)) false)))
+          (sh08-ft-all-true?
+            [(keyword? (get constraint :producer-rule))
+             (= :sh08-guarded-integer-subtraction-v3 (get constraint :producer-rule))
+             (keyword? (get identity :domain)) (keyword? (get fact-identity :domain))
+             (= :gravity/sh08-guarded-integer-subtraction-constraint-v3 (get identity :domain))
+             (= :gravity/sh08-guarded-integer-subtraction-call-type-fact-v3 (get fact-identity :domain))
+             (sh08-gis3-witness-shape? (get solution :range-proof))
+             (sh08-pc-id? (get (get constraint :lhs) :core-node-id))
+             (sh08-pc-id? (get fact :call-core-node-id)) (sh08-pc-id? (get fact :caller-function-syntax-id))
+             (sh08-pc-id? (get fact :syntax-id)) (= nil (get fact :callee-function-syntax-id))
+             (sh08-gis3-source-span? span)
+             (vector? (get constraint :origin)) (vector? (get fact :origin-chain)) (vector? (get fact :generated-origin))]) false) false)) false))
+
+(defn sh08-gis3-candidate-valid? [candidate]
+  (if (sh08-gis3-comparison-data? candidate) (sh08-gis3-product-shape? candidate) false))
+
+(defn sh08-gis3-products-equal? [expected candidate]
+  ; The owning consumer prepays max(W(expected),W(candidate)) before this call.
+  (= expected candidate))
+
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.
   (if (vector? ids) (<= (count ids) 1024) false))
