@@ -2827,7 +2827,7 @@
                                  (+ visits local) (+ accounting 14) (+ comparison bound))))))
                   (if (if (= nil item) true (if (boolean? item) true (if (keyword? item) true
                         (if (symbol? item) true (if (string? item) true (if (number? item) true (char? item)))))))
-                    (let [local (+ 2 (if (string? item) (count item) (if (symbol? item) (count (str item)) 0)))
+                    (let [local (+ 2 (if (string? item) (count item) (if (symbol? item) (bootstrap-symbol-utf16-unit-count item) 0)))
                           work (+ common local 4)]
                       (if (> work budget)
                         {:status :rejected :reason :compact-gis-work-limit :work-count work :completed-work-count paid}

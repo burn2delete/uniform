@@ -10188,7 +10188,7 @@
     (prn {:gis3-source-view-work-model model :fixture-nodes 20 :fixture-control-fee fixture-fee
           :index-model index-model :entry-model entry-model
           :production-control-reservation-wired true :full-fee-closure-established false
-          :Symbol-render-prepayment-closed false})))
+          :Symbol-render-prepayment-closed true})))
 
 (defn- gis3-input-payment-worksheet [{:keys [core bindings forms types] :as input}]
   (let [evaluate (fn [poly n] (reduce + (map * poly [1 n (* n n)])))
@@ -10460,14 +10460,16 @@
     (is (pos? (:List-rests @counts)))
     (is (= 0 (:non-List-rests @counts) (:subvec @counts)))))
 
-(deftest sh08-gis3-Symbol-prepayment-gap-development-kernel
-  ;; Characterize the open gap, not acceptance of a safe fee implementation.
+(deftest sh08-gis3-Symbol-prepayment-consumer-development-kernel
+  ;; Actual C7 compiler-artifact plan, never a fabricated helper context.
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         render (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-str)
-        original-scoped @scoped original-render @render owner (Thread/currentThread)
-        active (atom false) rendering (atom 0)
+        observer (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-bootstrap-symbol-utf16-unit-count)
+        original-scoped @scoped original-render @render original-observer @observer owner (Thread/currentThread)
+        active (atom false)
         run (fn [budget]
-              (let [value (symbol "ns" (apply str (repeat 4096 "x")))
+              (let [value (with-meta (symbol "ns" (apply str (repeat 4096 "x"))) {:unread :metadata})
+                    counts (atom {:observer 0 :render 0})
                     result (with-redefs-fn
                              {scoped (fn [runtime plan callee args scope]
                                        (if (and (identical? owner (Thread/currentThread))
@@ -10477,24 +10479,32 @@
                                              (try (original-scoped runtime plan callee args scope)
                                                   (finally (reset! active false))))
                                          (original-scoped runtime plan callee args scope)))
+                              observer (fn [plan current]
+                                         (when (and (identical? owner (Thread/currentThread)) @active (identical? value current))
+                                           (swap! counts update :observer inc))
+                                         (original-observer plan current))
                               render (fn [args]
                                        (when (and (identical? owner (Thread/currentThread)) @active
                                                   (identical? value (first args)))
-                                         (swap! rendering inc))
+                                         (swap! counts update :render inc))
                                        (original-render args))}
                              #(invoke-c7 'sh08-gis3-data-tallies [value budget]))]
-                result))
-        before (run 11) before-calls @rendering
-        after (run 13) after-calls @rendering]
+                {:result result :counts @counts}))
+        before (run 11) tiny (run 13) below (run 4116) exact (run 4117)]
     (is (= [:rejected :compact-gis-work-limit 12 8]
-           ((juxt :status :reason :work-count :completed-work-count) before)))
-    (is (= 0 before-calls))
-    (is (= [:rejected :compact-gis-work-limit 4117 8]
-           ((juxt :status :reason :work-count :completed-work-count) after)))
-    (is (= 1 after-calls))
-    (prn {:Symbol-prepayment-gap-demonstrated true :allowance 13 :required 4117 :completed 8
-          :render-dispatch-before-length-reservation after-calls :safe-fee-implementation-established false
-          :numeric-proof-established false :source-composition-executed false})))
+           ((juxt :status :reason :work-count :completed-work-count) (:result before))))
+    (is (= {:observer 0 :render 0} (:counts before)))
+    (doseq [value [tiny below]]
+      (is (= [:rejected :compact-gis-work-limit 4117 8]
+             ((juxt :status :reason :work-count :completed-work-count) (:result value))))
+      (is (= {:observer 1 :render 0} (:counts value))))
+    (is (= [:accepted 4117 4117 4101]
+           ((juxt :status :work-count :completed-work-count :comparison-bound-work) (:result exact))))
+    (is (= {:observer 1 :render 0} (:counts exact)))
+    (prn {:Symbol-render-eliminated true :tiny-allowance 13 :exact 4117 :one-short 4116 :W 4101
+          :actual-consumer-observations (mapv :counts [before tiny below exact])
+          :bootstrap-dependency "e95995ddd3652f5544f57b170b9ca6f62bb82cda"
+          :all-DATA-control-fees-closed false :numeric-proof-established false :source-composition-executed false})))
 
 (deftest sh08-gis3-index-comparison-fee-development-kernel
   ;; Native 71-character collision DATA, not authenticated Core identities.
@@ -21213,7 +21223,8 @@
                                  :remaining-after-second (- remaining (:work-count paid) (:work-count repeated))}
           :physical-DATA-B physical-B :declared-view-reservation declared-view-reservation
           :source-control-model worksheet :all-view-bookkeeping-independently-reviewed false
-          :Symbol-render-prepayment-closed false :DATA-temporary-copy-fees-closed false :numeric-proof-established false
+          :Symbol-render-prepayment-closed true :DATA-temporary-copy-mechanism-removed true
+          :all-DATA-control-fees-closed false :numeric-proof-established false
           :public-GIS-dispatch-present false})))
 
 (deftest sh08-function-work-policy-neighbour-fuel-development-kernel
