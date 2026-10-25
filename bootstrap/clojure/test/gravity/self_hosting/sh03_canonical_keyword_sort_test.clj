@@ -26,11 +26,10 @@
 
 (defn- normalized [value]
   ((operation 'p15-s23-c6c10-canonical-form*)
-   path (atom {:nodes 0 :maximum-depth 0 :maximum-width 0 :scalar-bytes 0
-               :maximum-scalar-bytes 0 :maximum-integer-bits 0}) 0 value))
+   path value))
 
 (deftest keyword-sort-prototype-exact-encoding-and-fallback
-  ((fixture-operation 'with-reader-limits)
+  ((fixture-operation 'run-canonical-check)
    #(let [original (operation 'p15-s23-c6c10-canonical-sort-key)]
       (doseq [value [:field :ns/field (keyword "quoted\"name") (keyword "back\\slash")
                      (keyword "ns\"\\" "field\"\\") (keyword "λ" "🙂")
@@ -58,7 +57,7 @@
       (with-redefs-fn
         {variable (if prototype? #(prototype-sort-key original %) original)}
         #(let [record (bootstrap/p15-s23-c6c10-canonical-record path value)]
-           {:text (:text record) :stats (:stats record)}))
+           {:text (:text record)}))
       (catch clojure.lang.ExceptionInfo error {:error (ex-data error)}))))
 
 (deftest keyword-sort-malformed-components-and-failure-priority
@@ -110,13 +109,13 @@
       #(let [validated ((operation 'sh03-reader-canonical-stream-validation!) path value)
              after-v (System/nanoTime)
              writer (java.io.StringWriter.)
-             emitted ((operation 'sh03-reader-canonical-stream-write!) path value validated writer)
+             emitted ((operation 'sh03-reader-canonical-stream-write!) path value writer)
              after-e (System/nanoTime)]
          {:text (.toString writer) :validation validated :emission emitted :counts @counts
           :v-ns (- after-v started) :e-ns (- after-e after-v)}))))
 
-(deftest keyword-sort-real-reader-micro-bytes-hash-statistics-and-call-count
-  ((fixture-operation 'with-reader-limits)
+(deftest keyword-sort-real-reader-micro-bytes-hash-and-call-count
+  ((fixture-operation 'run-canonical-check)
    #(let [reader-delay (fixture-operation 'actual-reader-result)
           result (:result @reader-delay)
           value {:token-stream (vec (take 1024 (cycle (:token-stream result))))}
@@ -144,7 +143,7 @@
        (fn [& _] (throw (ex-info "Common scalar reached old tagged-form normalizer" {})))}
       #(let [actual ((fixture-operation 'stream-record) value)]
          (is (= (:text reference) (:text actual)))
-         (is (= (:stats reference) (:validation-stats actual) (:stats actual)))))))
+         (is (= {:status :passed} (:validation actual) (:emission actual)))))))
 
 (deftest combined-engine-malformed-original-keys-stop-before-private-formatting
   (doseq [key [(keyword "") (keyword "" "field") (keyword "bad/ns" "field")
@@ -163,15 +162,6 @@
       (is (= reference actual))
       (is (zero? @calls)))))
 
-(deftest combined-engine-statistics-retain-original-numeric-classes
-  (let [types (fn [stats] (into {} (map (fn [[key value]] [key (class value)]) stats)))]
-    (doseq [value [[] {} (list) [nil true 123 "value" :ns/name 'ns/name]
-                   {:outer [{:inner "λ🙂"} (list 42)]} #{2/3 1.00M}]]
-      (let [reference ((fixture-operation 'old-record) value)
-            actual ((fixture-operation 'stream-record) value)]
-        (is (= (:stats reference) (:validation-stats actual) (:stats actual)))
-        (is (= (types (:stats reference)) (types (:validation-stats actual))
-               (types (:stats actual))))))))
 
 (defn- quoted-text [text]
   (let [writer (java.io.StringWriter.)]
@@ -200,13 +190,12 @@
                 *print-dup* true *print-readably* false *print-namespace-maps* true]
         (is (= expected (quoted-text text)))))))
 
-(deftest combined-integer-writer-retains-custom-big-integer-spelling-fallback
-  (doseq [text ["123" "not\"numeric\\\n\t" "λ🙂" (String. (char-array [(char 0xD800)]))]]
-    (let [value (proxy [java.math.BigInteger] ["123"] (toString [] text))
-          reference ((fixture-operation 'old-record) value)
-          actual ((fixture-operation 'stream-record) value)]
-      (is (= (:text reference) (:text actual)))
-      (is (= (:stats reference) (:validation-stats actual) (:stats actual)))
-      (is (= (digest/sha256-hex (:text reference))
-             ((fn [hash] (subs hash (count "sha256:")))
-              ((operation 'sh03-reader-canonical-stream-digest) path value)))))))
+(deftest combined-engine-rejects-foreign-integer-callbacks
+  (let [calls (atom 0)
+        value (proxy [java.math.BigInteger] ["123"]
+                (toString [] (swap! calls inc) "forged"))
+        reference (outcome value false)
+        actual (outcome value true)]
+    (is (some? (:error reference)))
+    (is (= reference actual))
+    (is (zero? @calls))))

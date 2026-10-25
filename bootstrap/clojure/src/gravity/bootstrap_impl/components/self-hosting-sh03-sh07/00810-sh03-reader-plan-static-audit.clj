@@ -20,10 +20,6 @@
            summary {}
            builtins #{}
            maximum-depth 0]
-      (when (> observed sh03-reader-plan-maximum-nodes)
-        (sh03-reader-boundary-fail!
-         source-path :bounded-static-sh03-reader-plan
-         observed {:maximum-nodes sh03-reader-plan-maximum-nodes}))
       (if (empty? pending)
         {:instruction-summary summary
          :builtin-functions builtins
@@ -35,10 +31,9 @@
               expected-keys (get sh03-reader-instruction-keysets op)]
           (when-not (and (map? instruction)
                          (contains? sh03-reader-allowed-opcodes op)
-                         (= expected-keys (set (keys instruction)))
-                         (<= depth sh03-reader-plan-maximum-depth))
+                         (= expected-keys (set (keys instruction))))
             (sh03-reader-boundary-fail!
-             source-path :exact-bounded-sh03-reader-instruction
+             source-path :exact-sh03-reader-instruction
              instruction {:opcode op :depth depth}))
           (let [tasks
                 (case op

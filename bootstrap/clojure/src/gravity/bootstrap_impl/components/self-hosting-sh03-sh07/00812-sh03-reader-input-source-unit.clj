@@ -13,19 +13,11 @@
             (when (string? value)
               (alength (.getBytes ^String value
                                  java.nio.charset.StandardCharsets/UTF_8)))]
-        (when-not (and (string? value)
-                       (<= (.length ^String value)
-                           sh03-reader-input-maximum-identity-code-units)
-                       (<= utf8-byte-count
-                           sh03-reader-input-maximum-identity-utf8-bytes))
+        (when-not (string? value)
           (sh03-reader-boundary-fail!
-           "<sh03-source-identity>" :bounded-sh03-reader-source-identity
+           "<sh03-source-identity>" :string-sh03-reader-source-identity
            {:field field}
-           {:maximum-code-units
-            sh03-reader-input-maximum-identity-code-units
-            :maximum-utf8-bytes
-            sh03-reader-input-maximum-identity-utf8-bytes
-            :observed-code-units
+           {:observed-code-units
             (when (string? value) (.length ^String value))
             :observed-utf8-bytes utf8-byte-count}))))
     {:artifact :gravity/sh03-source-unit
@@ -54,16 +46,13 @@
   [source-path carrier value]
   (let [validation
         (p15-s23-trusted-carrier-validation
-         value :default-only sh03-reader-result-maximum-nodes
-         sh03-reader-result-maximum-depth sh03-reader-result-maximum-width)]
+         value :default-only)]
     (when-not (= :passed (:status validation))
       (sh03-reader-boundary-fail!
-       source-path :trusted-bounded-sh03-reader-result
+       source-path :trusted-sh03-reader-result
        {} (merge {:carrier carrier}
                  (select-keys validation
-                              [:reason :observed-nodes :observed-depth
-                               :maximum-nodes :maximum-depth
-                               :maximum-width]))))
+                              [:reason]))))
     validation))
 
 (defn sh03-reader-result-preflight!
@@ -101,61 +90,11 @@
           (vector? (:reader-extension-invocation-records result))
           (vector? (:digest-requests result))
           (vector? (:diagnostics result))
-          (map? bounds)
-          (= sh03-reader-result-maximum-nodes
-             (:maximum-result-carrier-nodes bounds))
-          (= sh03-reader-result-maximum-depth
-             (:maximum-result-carrier-depth bounds))
-          (= sh03-reader-result-maximum-width
-             (:maximum-result-carrier-width bounds))
-          (= sh03-reader-canonical-maximum-scalar-bytes
-             (:maximum-canonical-scalar-bytes bounds))
-          (= sh03-reader-canonical-maximum-total-scalar-bytes
-             (:maximum-canonical-total-scalar-bytes bounds))
-          (= sh03-reader-input-maximum-identity-utf8-bytes
-             (:maximum-source-identity-utf8-bytes bounds))
-          (map? carrier-responsibility)
-          (= sh03-reader-result-maximum-nodes
-             (:maximum-nodes carrier-responsibility))
-          (= sh03-reader-result-maximum-depth
-             (:maximum-depth carrier-responsibility))
-          (= sh03-reader-result-maximum-width
-             (:maximum-width carrier-responsibility))
-          (= sh03-reader-canonical-maximum-scalar-bytes
-             (:maximum-canonical-scalar-bytes carrier-responsibility))
-          (= sh03-reader-canonical-maximum-total-scalar-bytes
-             (:maximum-canonical-total-scalar-bytes
-              carrier-responsibility))
-          (map? input-responsibility)
-          (= sh03-reader-input-maximum-identity-utf8-bytes
-             (:maximum-source-identity-utf8-bytes
-              input-responsibility))
-          (= sh03-reader-input-maximum-identity-code-units
-             (:maximum-logical-source-id-code-units
-              input-responsibility))
-          (= sh03-reader-input-maximum-identity-code-units
-             (:maximum-actual-path-code-units input-responsibility))
-          (= (:maximum-source-bytes bounds)
-             (:maximum-source-bytes input-responsibility))
-          (= :bounded-summary
-             (:invalid-input-carrier-policy input-responsibility))
-          (integer? (:maximum-tokens bounds))
-          (integer? (:maximum-forms bounds))
-          (pos-int? (:maximum-semantic-work-units bounds))
-          (pos-int? (:maximum-numeric-semantic-scalars bounds))
-          (pos-int? (:maximum-numeric-semantic-work-units bounds))
-          (= :gravity/sh03-compiler-source-v1 (:resource-policy bounds))
-          (= [4194304 4194304 524288 262144]
-             (mapv bounds [:maximum-source-bytes :maximum-characters
-                           :maximum-tokens :maximum-forms]))
-          (= {:fixed-nodes 1048576 :nodes-per-source-byte 24
-              :nodes-per-token 320 :nodes-per-form 1024 :nodes-per-reader-tag 2048
-              :derived-maximum-nodes 537985024
-              :construction-guard :prospective-physical-node-count
-              :admitted-maximum-nodes sh03-reader-result-maximum-nodes}
-             (:result-carrier-node-budget bounds))
-          (<= (count (:token-stream result)) (:maximum-tokens bounds))
-          (<= (count (:form-tree result)) (:maximum-forms bounds))
+          (= {} bounds)
+          (= {:responsibility :result-carrier-validation
+              :failure-rule "C2-HASH" :result-committed? false}
+             carrier-responsibility)
+          (= {:invalid-input-carrier-policy :summary} input-responsibility)
           (<= (count (:digest-requests result)) 6)
           (if accepted?
             (and (empty? (:diagnostics result))
@@ -214,10 +153,6 @@
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))
-    (catch StackOverflowError error
-      (sh03-reader-boundary-fail!
-       source-path :bounded-sh03-reader-host-stack
-       function {:contained-host-error (.getName (class error))}))
     (catch AssertionError error
       (sh03-reader-boundary-fail!
        source-path :contained-sh03-reader-assertion
@@ -236,9 +171,3 @@
        source-path :contained-sh03-reader-host-failure
        function {:contained-host-error (.getName (class error))
                  :cause-message (.getMessage error)}))))
-
-(def sh03-reader-canonical-maximum-nodes 268435456)
-(def sh03-reader-canonical-maximum-depth 2048)
-(def sh03-reader-canonical-maximum-width 4194304)
-(def sh03-reader-canonical-maximum-scalar-bytes 1048576)
-(def sh03-reader-canonical-maximum-total-scalar-bytes 536870912)

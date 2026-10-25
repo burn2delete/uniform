@@ -4,14 +4,11 @@
   [source-path plan historical-count]
   (let [carrier
         (p15-s23-trusted-carrier-validation
-         plan :default-only sh03-reader-plan-maximum-nodes
-         sh03-reader-plan-maximum-depth sh03-reader-plan-maximum-width)]
+         plan :default-only)]
     (when-not (= :passed (:status carrier))
       (sh03-reader-boundary-fail!
-       source-path :trusted-bounded-sh03-reader-plan
-       plan (select-keys carrier [:reason :observed-nodes :observed-depth
-                                  :maximum-nodes :maximum-depth
-                                  :maximum-width])))
+       source-path :trusted-sh03-reader-plan
+       plan (select-keys carrier [:reason])))
     (let [functions (:functions plan)]
       (when-not
        (and (map? plan)
@@ -36,7 +33,7 @@
             (false? (get-in plan [:compiler :self-hosted?]))
             (map? functions)
             (if (nil? historical-count)
-              (<= 1 (count functions) sh03-reader-plan-maximum-width)
+              (pos? (count functions))
               (= historical-count (count functions)))
             (contains? functions sh03-reader-entrypoint)
             (contains? functions sh03-reader-verifier)
