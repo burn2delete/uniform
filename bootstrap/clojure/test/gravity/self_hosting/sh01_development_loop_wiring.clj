@@ -704,6 +704,14 @@
      :cache-directory cache-directory
      :broker-root broker-root
      :timeout-ms timeout-ms
+     :revision
+     (let [commit (str/trim (strict-utf8
+                            (run-git-bytes! working-directory
+                                            ["rev-parse" "--verify" "HEAD"])))]
+       {:commit commit
+        :tree (str/trim (strict-utf8
+                        (run-git-bytes! working-directory
+                                        ["rev-parse" "--verify" (str commit "^{tree}")])))} )
      :snapshot snapshot
      :snapshot-telemetry snapshot-telemetry
      :revalidate-snapshot? true
@@ -1206,6 +1214,49 @@
                     {:input-kind :runtime-tool}))))))
    nil))
 
+(defn- explicit-request?
+  [context job]
+  (let [request (:development-cache-request job)
+        policy (:test-policy request)]
+    (and (not= (:repository-identity request)
+               (get-in context [:snapshot :repository-identity]))
+         (= :non-authoritative (:authority policy))
+         (:deterministic? policy)
+         (not-any? policy [:performance? :proof? :freshness-required?])
+         (reviewed-job-cache-closure job))))
+
+(defn- verify-inputs!
+  "Revalidate consumed closures; incomplete or fresh work keeps the tree guard.
+
+  A matching cache key is never sufficient: reread every reviewed input,
+  inventory, shadow path and classpath entry before admitting a hit or a
+  producer result. Runtime executables and environment identity remain fresh."
+  [context phase jobs]
+  (when (:revalidate-snapshot? context)
+    (if (and (seq jobs) (every? #(explicit-request? context %) jobs))
+      (do
+        (doseq [job jobs]
+          (let [expected (:development-cache-request job)
+                actual (explicit-closure-material context job)]
+            (when-not
+             (and actual
+                  (= (:repository-identity expected)
+                     (:repository-identity actual))
+                  (= (dissoc (:dependencies expected) :runtime-tool-inputs)
+                     (dissoc (:dependencies actual) :runtime-tool-inputs)))
+              (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                     "Consumed development inputs changed after request computation"
+                     {:input-kind :explicit-closure :phase phase}))))
+        (when (:revalidate-external-inputs? context)
+          (let [root (.normalize (.toAbsolutePath
+                                 (.toPath (io/file (:working-directory context)))))
+                current (base-runtime-identities root (:identity-options context))]
+            (when-not (= (:runtime-tool-inputs context) current)
+              (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                     "Runtime or command inputs changed after request computation"
+                     {:input-kind :runtime-tool :phase phase})))))
+      (verify-snapshot! context phase))))
+
 (defn- probe*
   [context job verify-hit?]
   (let [outcome (cache/lookup! (:development-cache-request job))
@@ -1214,7 +1265,7 @@
     (if (= :hit (:decision receipt))
       (do
         (when verify-hit?
-          (verify-snapshot! context :standalone-parent-hit))
+          (verify-inputs! context :standalone-parent-hit [job]))
         {:job job
          :hit-result
          (assoc (:result outcome)
@@ -1234,7 +1285,8 @@
   [context jobs]
   (let [outcomes (mapv #(probe* context % false) jobs)]
     (when (some :hit-result outcomes)
-      (verify-snapshot! context :parent-probe-batch))
+      (verify-inputs! context :parent-probe-batch
+                      (mapv :job (filter :hit-result outcomes))))
     outcomes))
 
 (defn record-launch!
@@ -1310,8 +1362,13 @@
             (fn []
               (let [result (operation)]
                 (try
-                  (verify-snapshot! context :producer-post-operation)
-                  result
+                  (verify-inputs! context :producer-post-operation [job])
+                  (cond-> result
+                    (and (map? result) (:revision context))
+                    (assoc :execution-provenance
+                           {:revision (:revision context)
+                            :repository-snapshot (:snapshot context)
+                            :consumed-input-identity (:repository-identity request)}))
                   (catch clojure.lang.ExceptionInfo exception
                     (throw
                      (ex-info
@@ -1323,7 +1380,7 @@
            (:test-policy request)))
         receipt (:receipt outcome)]
     (when (= :hit (:decision receipt))
-      (verify-snapshot! context :secondary-singleflight-hit))
+      (verify-inputs! context :secondary-singleflight-hit [job]))
     (record-cache-receipt! context :execution job receipt)
     (assoc (:result outcome)
            :cache-receipt receipt
@@ -1337,6 +1394,7 @@
   "Return deterministic cache receipts plus the exact launch count."
   [context]
   {:launched-jvms @(:launch-count context)
+   :revision (:revision context)
    :snapshot-telemetry
    (when-let [telemetry (:snapshot-telemetry context)] @telemetry)
    :cache-receipts
