@@ -846,6 +846,58 @@ inspection; it was not this execution's checkout. Every prior report field
 remains conserved. Namespace/top-level initialization and source-to-Core
 acceptance remain unproven.
 
+### C02 quoted reader helper at `8ee78280`
+
+The exported original `read-source-form-records` helper in
+`bootstrap/gravity/src/gravity/bootstrap/reader.gravity` now has a genuine
+current-reader C5 -> owning Gravity Core composition. Its complete declaration
+is copied verbatim into the paired 356-byte `sh-07/compiler-reader-quote`
+fixtures, with the selected original export retained. The fixture namespace
+and physical path are the authenticated subject. This does not authenticate
+the complete reader module or expand the raw SH03 prefix plan; this function
+remains one of the 44 definitions outside that selected seed plan.
+
+`sh07_current_reader_quote_test.clj` verifies the public definition, original
+parameter binding, source/macro origins and three actual Core nodes: `def`,
+`fn` and `quote`. The quoted map retains its `source-bytes` Symbol and ordered
+vector as data. The quote has no executable children, records
+`:no-evaluation`, and creates no Core expression references or calls. The
+owning Gravity template verifier rejects a same-kind quoted Symbol change and
+a quoted vector-order substitution with `C6-VERIFY` / `:template-replay`.
+Both changed templates retain matching identity-preimage node fields.
+
+The batch passed 12 tests/73 assertions: focused 1/50 and boundary/LOC 11/23,
+with natural exit 0 under the normal broker, 2GiB heap and unchanged 120s
+execution watchdog. Execution took 69683.117167 ms. G traversed the actual
+compiler stages; Q received fixture-text parity only. C7-C10 remain pending.
+Other quoted occurrences and outside-plan functions, complete source coverage,
+full-reader compilation, migration, self-hosting and C-task completion remain
+OPEN.
+
+The execution used exact base
+`8ee78280272622c870a9d336cd777114ede447b5` and host source subtree
+`ba78956df0df88f90fddd71fbed3bd14058985d8`, including the new native carrier
+header observation TCB. This is a distinct context from earlier `4fda9727`
+and `26a8283e` products. The result records unchanged before/after source,
+fixture and test pins. Raw evidence is under
+`/tmp/sh07-current-reader-quote-8ee78280-`: `attempt1.log`, `result.edn` and
+the 715635-byte `products.edn` inspection projection, whose SHA256 is
+`f32d424de0a38d7532eeea5ce8e39634da11683173ddc6bd6ad3721fba24797a`.
+The projection records actual Core, authenticated request, reader identity and
+negative products; it does not replace an admission artifact.
+
+The consumed C3 construction implementation subsequently changed. After
+reconciliation onto exact `5b80b77feb1a3d12c12b28f1061da9a7fe68deae`, a fresh
+affected source composition and both owning verifier rejections passed again:
+12 tests/73 assertions, focused 1/50, natural exit 0 in 74824.111667 ms under
+the same normal-broker 2GiB/120s limits. All test/fixture bytes were retained;
+the new execution records host subtree
+`eb5eef6acb730dbba3317139b3769b83ad2e3ea8`. Its evidence prefix is
+`/tmp/sh07-current-reader-quote-5b80b77f-`. The inspection projection is
+byte-identical to the earlier projection, with the same SHA256 above. This
+observed output equality does not equate the TCBs, relabel the earlier run,
+renew migration authority or establish a performance improvement.
+
 ### C01 source declarations and leaf equivalence at `c7d31338`
 
 The next source audit found 37 top-level DATA definitions and six namespace
