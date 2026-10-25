@@ -533,7 +533,9 @@
     (if
      (= :gravity/private-authenticated-envelope-descriptor
         (get descriptor :artifact))
-      (if (= 1 (get descriptor :schema-version))
+      (if (if (= 2 (get descriptor :schema-version))
+            (= false (contains? descriptor :bounds))
+            false)
         (if (= :sh22-authenticated-vector-bridge
                (get descriptor :stage))
           (if
@@ -551,8 +553,12 @@
                         (sh22-bridge-projection-value
                          projections :sh14-layout))
                       (if (map? envelope)
-                        (if (= :gravity/authenticated-envelope
-                               (get envelope :artifact))
+                        (if (if (= :gravity/authenticated-envelope
+                                   (get envelope :artifact))
+                              (if (= 2 (get envelope :schema-version))
+                                (= false (contains? envelope :bounds))
+                                false)
+                              false)
                           (if
                            (= :sh22-authenticated-vector-bridge
                               (get envelope :stage))
