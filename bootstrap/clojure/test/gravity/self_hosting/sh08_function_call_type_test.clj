@@ -10158,6 +10158,33 @@
              [(:stage result) (:table result) (:work-count result) (:completed-work-count result)]))
       (is (= {:Core-gets 4 :index-entry 1 :view-entry 0} observations)))))
 
+(deftest sh08-gis3-type-table-width-development-kernel
+  (let [core {:nodes [] :calls [] :call-edges [] :function-records []}
+        scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 type width hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 type width equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 type width print"))))
+        run (fn [size]
+              (let [entries (atom []) types (into {} (map #(vector % opaque) (range size)))
+                    result (with-redefs-fn
+                             {scoped (fn [runtime plan callee args scope]
+                                       (when (and (= :gravity-sh08-function-call-type-leaf (:engine runtime))
+                                                  (contains? '#{sh08-gis3-index sh08-gis3-original-readsets sh08-gis3-data-tallies} callee))
+                                         (swap! entries conj callee))
+                                       (original runtime plan callee args scope))}
+                             #(invoke-c7 'sh08-gis3-source-payment [core [] [] types :target 64]))]
+                {:result result :entries @entries}))
+        exact (run 1024) above (run 1025)]
+    (is (= {:status :rejected :reason :compact-gis-source-input-required
+            :work-count 64 :completed-work-count 64} (:result above)))
+    (is (= [] (:entries above)))
+    (is (= [:rejected :compact-gis-index-work-limit :original-index :nodes 72 64]
+           ((juxt :status :reason :stage :table :work-count :completed-work-count) (:result exact))))
+    (is (= '[sh08-gis3-index] (:entries exact)))
+    (is (zero? @callbacks))))
+
 (deftest sh08-gis3-original-row-first-payment-development-kernel
   (let [{:keys [core bindings forms types target unified parameter-id]} (gis3-original-row-input 0 0)
         result (invoke-c7 'sh08-gis3-source-payment [core bindings forms types target 65536])]

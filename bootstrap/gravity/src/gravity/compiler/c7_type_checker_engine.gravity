@@ -2956,7 +2956,7 @@
                     [:edges (get core :call-edges) :call-core-node-id]
                     [:records (get core :function-records) :function-syntax-id]
                     [:bindings binding-rows :binding-id] [:forms form-rows :form-id]]]
-      (if (if (map? core) (if (map? types) (sh08-pc-id? target) false) false)
+      (if (if (map? core) (if (map? types) (if (<= (count types) 1024) (sh08-pc-id? target) false) false) false)
         (loop [remaining tables indexes {:types types} used prefix]
           (if (= 0 (count remaining))
             ; Prepay fixed view groups separately: scalar selection64,
