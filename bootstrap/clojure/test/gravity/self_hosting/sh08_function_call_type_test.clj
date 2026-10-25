@@ -6265,9 +6265,18 @@
               result (invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms 65536])]
           (is (= :accepted (:status result)))
           (is (= relation (get-in result [:premise :relation])))))
+      (let [actual (positional (vec (repeat 1025 s)))
+            {:keys [core record function nodes types bindings forms]}
+            (homogeneous-list-return-input actual s 0)
+            result (invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms 65536])]
+        (is (= :accepted (:status result)))
+        (is (= :all-positional-elements-match (get-in result [:premise :relation])))
+        (is (= actual (get-in result [:premise :actual-body-type])))
+        (is (= 1025 (get-in result [:premise :checked-element-count]))))
       (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/string :gravity.type/unknown
                      (positional [s :gravity.type/keyword]) (positional [:gravity.type/never]) (positional [:gravity.type/nil])
-                     (positional [:gravity.type/unknown]) (positional [type]) (positional (vec (repeat 1025 s)))]]
+                     (positional [:gravity.type/unknown]) (positional [type])
+                     (positional (assoc (vec (repeat 1025 s)) 1024 :gravity.type/keyword))]]
         (is (= :rejected (:status (invoke-c7 'sh08-lr-type-work [type actual 65536]))) (pr-str actual)))
       (let [{:keys [core record function nodes types bindings forms declaration signature] :as input} (homogeneous-list-return-input (positional [s]) s 0)]
         (doseq [mutate [#(assoc-in % [:record :signature :return :element-binding-id] "forged")
