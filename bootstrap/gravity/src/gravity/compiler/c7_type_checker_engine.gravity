@@ -27286,17 +27286,38 @@
                         (sh08-vf-data-failure :verification-native-list-tail required required))))))))))))
     (sh08-vf-data-failure :invalid-verification-work-allowance 0 0)))
 
+(defn sh08-vf-original-width [kind size]
+  (if (if (integer? size) (if (>= size 0) (<= size 65536) false) false)
+    (if (contains? #{:map :tree-map} kind)
+      (if (<= size 32768) (* 2 size) nil) size) nil))
+
+(defn sh08-vf-original-frontier [pending width extra]
+  (if (if (integer? pending) (if (> pending 0) (<= pending 2147483647) false) false)
+    (if (if (integer? width) (if (>= width 0) (<= width 65536) false) false)
+      (if (contains? #{0 1} extra)
+        (let [next (+ (- pending 1) width extra)]
+          (if (<= next 2147483647) next nil)) nil) nil) nil))
+
+(defn sh08-vf-original-edge-work [width extra remaining]
+  ; Width and extra have already passed their extent/frontier guards.
+  ; Test the remaining pool before each potentially input-sized product.
+  (let [base (+ 32 (* 8 extra))]
+    (if (> base remaining) nil
+      (if (> width (quot (- remaining base) 8)) nil
+        (let [local (+ base (* 8 width)) edges (+ width extra)]
+          (if (> edges (quot (- remaining local) 512)) nil
+            (+ local (* 512 edges))))))))
+
 (defn sh08-vf-original-expand-indexed [value kind size depth pending]
-  ; Called only after the native header and the full edge reservation.
-  ; Original Map keys and Set members must be scalars before any later lookup.
+  ; Same physical LIFO order as comparison DATA, including Map key/value roles.
   (let [items (vec value)]
     (loop [i 0 out pending]
       (if (= i size) out
-        (if (= kind :map)
+        (if (contains? #{:map :tree-map} kind)
           (let [entry (get items i)]
             (recur (+ i 1)
               (conj (conj out [(get entry 0) (+ depth 1) 0 :scalar])
-                             [(get entry 1) (+ depth 1) 0 :value]))))
+                             [(get entry 1) (+ depth 1) 0 :value])))
           (recur (+ i 1)
             (conj out [(get items i) (+ depth 1) 0 (if (= kind :set) :scalar :value)])))))))
 
@@ -27305,74 +27326,80 @@
    :work-count used :completed-work-count used})
 
 (defn sh08-vf-original-data [value budget]
-  ; Original authentication needs a complete paid walk, not comparison rows.
-  ; The candidate arena limit is unchanged. This stream has a separate signed
-  ; counter ceiling; every visit is first admitted by the same invocation N.
-  ; Depth/width limit the live DFS frontier; aliases are always revisited.
-  (if (if (integer? budget) (>= budget 0) false)
-    (if (< budget 4096) (sh08-vf-data-failure :verification-work-limit 4096 0)
-      (loop [pending (list [value 0 0 :value]) used 4096 nodes 0 storage 0
-             maximum-width 0 scalar-sum 0 maximum-scalar 0]
-        (if (= 0 (count pending))
-          {:status :accepted :work-count used :completed-work-count used
-           :nodes nodes :storage-work storage :maximum-width maximum-width
-           :scalar-work-sum scalar-sum :maximum-scalar-work maximum-scalar}
-          (let [required (+ used 4096)]
-            (if (> required budget) (sh08-vf-data-failure :verification-work-limit required used)
-              (let [frame (first pending) item (get frame 0) depth (get frame 1)
-                    list-width (get frame 2) role (get frame 3) tail (rest pending)
-                    header (bootstrap-native-carrier-header item) kind (get header 0)
-                    normalized (sh08-vf-scalar-kind kind) next-nodes (+ nodes 1)]
-                (if (if (> next-nodes 2147483647) true
-                      (if (> depth 128) true (> list-width 65536)))
-                  (sh08-vf-data-failure :verification-data-bound required required)
-                  (if (get header 1)
-                    (sh08-vf-data-failure :verification-carrier-metadata required required)
-                    (if (if (= kind :symbol) (= false (= true (get header 4))) false)
-                      (sh08-vf-data-failure :verification-native-symbol-name required required)
-                      (if (if (= kind :unsupported) true
-                            (if (= kind :subvector) true
-                              (if (= kind :tree-map) (= :foreign-comparator (get header 4)) false)))
-                        (sh08-vf-data-failure :verification-native-carrier required required)
-                        (if (if (> list-width 0) (contains? #{:list-node :empty-list :nil} kind) true)
-                          (if (= kind :tree-map) (sh08-vf-original-domain-failure required)
-                            (if (if (= role :scalar)
-                                  (= false (contains? #{:nil :boolean :integer :keyword :symbol :string} normalized)) false)
-                              (sh08-vf-original-domain-failure required)
-                              (if (contains? #{:map :vector :set} kind)
-                                (let [size (get header 2) width (if (= kind :map) (* 2 size) size)
-                                      extra (if (= kind :set) 1 0) local (+ 32 (* 8 width) (* 8 extra))
-                                      complete (+ required local (* 512 (+ width extra)))]
-                                  (if (> width 65536)
-                                    (sh08-vf-data-failure :verification-data-bound required required)
-                                    (if (> complete budget)
-                                      (sh08-vf-data-failure :verification-work-limit complete required)
-                                      (let [expanded (sh08-vf-original-expand-indexed item kind size depth tail)]
-                                        (recur (if (= kind :set)
-                                                 (conj expanded [(get header 4) depth 0 :value]) expanded)
-                                          complete next-nodes (+ storage local)
-                                          (if (> width maximum-width) width maximum-width) scalar-sum maximum-scalar)))))
-                                (if (= kind :list-node)
-                                  (let [complete (+ required 560)]
-                                    (if (> complete budget)
-                                      (sh08-vf-data-failure :verification-work-limit complete required)
-                                      (recur (conj (conj tail [(get header 4) (+ depth 1) 0 :value])
-                                                          [(get header 5) depth (+ list-width 1) :value])
-                                        complete next-nodes (+ storage 48)
-                                        (if (> 2 maximum-width) 2 maximum-width) scalar-sum maximum-scalar)))
-                                  (let [scalar-work (sh08-vf-scalar-work header) complete (+ required scalar-work)]
-                                    (if (> scalar-work 16777216)
-                                      (sh08-vf-data-failure :verification-scalar-bound required required)
-                                      (if (if (contains? #{:nil :boolean :integer :keyword :symbol :string :empty-list} normalized)
-                                            (if (= normalized :integer) (> scalar-work 80) false) true)
-                                        (sh08-vf-original-domain-failure required)
-                                        (if (> complete budget)
-                                          (sh08-vf-data-failure :verification-work-limit complete required)
-                                          (recur tail complete next-nodes (+ storage scalar-work) maximum-width
-                                            (+ scalar-sum scalar-work)
-                                            (if (> scalar-work maximum-scalar) scalar-work maximum-scalar)))))))))
-                          (sh08-vf-data-failure :verification-native-list-tail required required))))))))))))
-    (sh08-vf-data-failure :invalid-verification-work-allowance 0 0)))
+  ; Full DATA has priority over remembered operation-domain ineligibility.
+  ; Candidate/expected arenas and semantic/Core bounds are unchanged.
+  ; The explicit signed counters/frontier cap are separate from caller N.
+  ; At most (2^31-1) visits, each <=4096+560+16777216+
+  ; 32+8*65537+512*65537, keep work/storage counters below 2^57.
+  ; Every repeated alias, Set backing and List spine/tail is visited.
+(if (if (integer? budget) (>= budget 0) false)
+(if (< budget 4096)
+(sh08-vf-data-failure :verification-work-limit 4096 0)
+(loop [pending (list [value 0 0 :value]) pending-size 1 used 4096 nodes 0 storage 0
+ maximum-width 0 scalar-sum 0 maximum-scalar 0 domain? true]
+(if (= pending-size 0)
+(if domain?
+{:status :accepted :work-count used :completed-work-count used
+ :nodes nodes :storage-work storage :maximum-width maximum-width
+ :scalar-work-sum scalar-sum :maximum-scalar-work maximum-scalar}
+(sh08-vf-original-domain-failure used))
+(if (< (- budget used) 4096)
+(sh08-vf-data-failure :verification-work-limit used used)
+(let [required (+ used 4096)]
+(let [frame (first pending) item (get frame 0) depth (get frame 1)
+list-width (get frame 2) role (get frame 3) tail (rest pending)
+header (bootstrap-native-carrier-header item) kind (get header 0)
+normalized (sh08-vf-scalar-kind kind) next-nodes (+ nodes 1)]
+(if (if (> next-nodes 2147483647) true (if (> depth 128) true (> list-width 65536)))
+(sh08-vf-data-failure :verification-data-bound required required)
+(if (get header 1)
+(sh08-vf-data-failure :verification-carrier-metadata required required)
+(if (if (= kind :symbol) (= false (= true (get header 4))) false)
+(sh08-vf-data-failure :verification-native-symbol-name required required)
+(if (if (= kind :unsupported) true (if (= kind :subvector) true (if (= kind :tree-map) (= :foreign-comparator (get header 4)) false)))
+(sh08-vf-data-failure :verification-native-carrier required required)
+(if (if (> list-width 0) (contains? #{:list-node :empty-list :nil} kind) true)
+(let [next-domain? (if domain?
+  (if (= kind :tree-map) false
+    (if (= role :scalar) (contains? #{:nil :boolean :integer :keyword :symbol :string} normalized) true)) false)]
+(if (contains? #{:map :tree-map :vector :set} kind)
+(let [size (get header 2) width (sh08-vf-original-width kind size) extra (if (= kind :set) 1 0)]
+(if (= nil width)
+(sh08-vf-data-failure :verification-data-bound required required)
+(let [frontier (sh08-vf-original-frontier pending-size width extra)]
+(if (= nil frontier)
+(sh08-vf-data-failure :verification-frontier-bound required required)
+(let [edge-work (sh08-vf-original-edge-work width extra (- budget required))]
+(if (= nil edge-work)
+(sh08-vf-data-failure :verification-work-limit required required)
+(let [expanded (sh08-vf-original-expand-indexed item kind size depth tail)
+complete (+ required edge-work) local (+ 32 (* 8 width) (* 8 extra))]
+(recur (if (= kind :set) (conj expanded [(get header 4) depth 0 :value]) expanded)
+  frontier complete next-nodes (+ storage local)
+  (if (> width maximum-width) width maximum-width) scalar-sum maximum-scalar next-domain?))))))))
+(if (= kind :list-node)
+(let [frontier (sh08-vf-original-frontier pending-size 2 0)]
+(if (= nil frontier)
+(sh08-vf-data-failure :verification-frontier-bound required required)
+(if (< (- budget required) 560)
+(sh08-vf-data-failure :verification-work-limit required required)
+(recur (conj (conj tail [(get header 4) (+ depth 1) 0 :value])
+                    [(get header 5) depth (+ list-width 1) :value])
+  frontier (+ required 560) next-nodes (+ storage 48)
+  (if (> 2 maximum-width) 2 maximum-width) scalar-sum maximum-scalar next-domain?))))
+(let [scalar-work (sh08-vf-scalar-work header)]
+(if (> scalar-work 16777216)
+(sh08-vf-data-failure :verification-scalar-bound required required)
+(if (> scalar-work (- budget required))
+(sh08-vf-data-failure :verification-work-limit required required)
+(let [complete (+ required scalar-work)
+atom-domain? (if (contains? #{:nil :boolean :integer :keyword :symbol :string :empty-list} normalized)
+               (if (= normalized :integer) (<= scalar-work 80) true) false)]
+(recur tail (- pending-size 1) complete next-nodes (+ storage scalar-work) maximum-width
+  (+ scalar-sum scalar-work) (if (> scalar-work maximum-scalar) scalar-work maximum-scalar)
+  (if next-domain? atom-domain? false)))))))))
+(sh08-vf-data-failure :verification-native-list-tail required required))))))))))))
+(sh08-vf-data-failure :invalid-verification-work-allowance 0 0)))
 
 (defn sh08-vf-first-order-scalar-domain? [arena]
   ; Eligibility for the selected provider's artifact relation, not language

@@ -22365,10 +22365,11 @@
                             (if (= ::end form) out
                               (recur (if (and (seq? form) (= 'defn (first form)))
                                        (assoc out (second form) form) out)))))))
-        primitives '#{integer? >= > < + - * = count first rest get assoc contains? list conj vec
+        primitives '#{integer? >= > < <= + - * quot = count first rest get assoc contains? list conj vec
                       bootstrap-native-carrier-header}
         helpers '#{sh08-vf-data-failure sh08-vf-scalar-kind sh08-vf-scalar-work sh08-vf-expand-indexed
-                   sh08-vf-original-expand-indexed sh08-vf-original-domain-failure}]
+                   sh08-vf-original-expand-indexed sh08-vf-original-domain-failure
+                   sh08-vf-original-width sh08-vf-original-frontier sh08-vf-original-edge-work}]
     (letfn [(add [& ps] (reduce #(mapv + %1 %2) [0 0] ps))
             (sum [ps] (apply add ps))
             (cost [form]
@@ -22489,11 +22490,36 @@
         (is (= stream (run value (:work-count stream))))
         (is (= :verification-work-limit (:reason (run value (dec (:work-count stream))))))))
     (doseq [value [1.5M 3/2 0.0 -0.0 Double/NaN {[1] :value} #{[1]} (sorted-map :key 1)]]
-      (is (= :incomplete (:status (run value 100000000)))))
+      (let [stream (run value 100000000)
+            data (invoke-c7 'sh08-vf-data [value 100000000])]
+        (is (= :incomplete (:status stream)))
+        (is (= (:work-count data) (:work-count stream)))))
+    (let [bad (clojure.lang.PersistentArrayMap. (object-array [:odd]))
+          delayed (lazy-seq (swap! callbacks conj :forced) (list :value))]
+      (doseq [later [opaque bad delayed (with-meta [] {:inactive opaque})]
+              value [(array-map :later later [1] :early)
+                     (list later 1.5M) (sorted-map :earlier 1.5M :later later)]]
+        (let [stream (run value 100000000) data (invoke-c7 'sh08-vf-data [value 100000000])]
+          (is (= :rejected (:status stream)))
+          (is (= (:reason data) (:reason stream)))
+          (is (= (:completed-work-count data) (:completed-work-count stream))))))
     (doseq [value [opaque {:inactive opaque} [opaque] (list opaque)
                   (with-meta [] {:inactive opaque}) (clojure.lang.Symbol/intern nil nil)]]
       (is (= :rejected (:status (run value 100000000)))))
     (is (empty? @callbacks))
+    (let [width #(invoke-c7 'sh08-vf-original-width [%1 %2])
+          frontier #(invoke-c7 'sh08-vf-original-frontier [%1 %2 %3])
+          edges #(invoke-c7 'sh08-vf-original-edge-work [%1 %2 %3])
+          fee (+ 32 (* 8 65537) (* 512 65537))]
+      (is (= 65536 (width :map 32768) (width :vector 65536)))
+      (doseq [size [-1 Long/MAX_VALUE 32769]] (is (nil? (width :map size))))
+      (is (= 2147483647 (frontier 2147483647 1 0)))
+      (doseq [[pending width extra] [[0 1 0] [Long/MAX_VALUE 1 0] [2147483647 2 0]
+                                   [1 -1 0] [1 65537 0] [1 1 2]]]
+        (is (nil? (frontier pending width extra))))
+      (is (= fee (edges 65536 1 fee)))
+      (is (nil? (edges 65536 1 (dec fee))))
+      (is (nil? (edges 65536 1 31))))
     (let [audit (verifier-native-control-audit 'sh08-vf-original-data)]
       (is (<= (first (:control-polynomial audit)) 4096))
       (is (<= (second (:control-polynomial audit)) 512))
