@@ -1,0 +1,6 @@
+(ns gravity.sh12.zero-arity-bool-true-source
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [] (if true true false))
