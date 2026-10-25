@@ -405,7 +405,7 @@
                           (recur
                            (rest frontier) next-nodes (+ scalar-units units)
                            next-observation-left))
-                        {:status :rejected :reason :carrier-invalid-textual-header})))))))))))
+                        {:status :rejected :reason :carrier-invalid-textual-header}))))))))))))
 
 (defn sh22-physical-path-key? [key value]
   (if
