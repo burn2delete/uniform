@@ -1,0 +1,56 @@
+# Uniform adoption constitution
+
+Version: 1.0.0 | Adopted: 2026-10-25 | Change authority: Deus (parent)
+
+This is a concise record of existing user decisions for Spec Kit planning.
+It does not replace [AGENTS.md](../../AGENTS.md), the
+[canonical inventory](../../docs/document-inventory.json), or the owning
+language contracts. Relative links here resolve from this file.
+
+## Semantics and correctness
+
+Follow D0, D1, D2, D3, D6, D8 and D9 in the
+[foundation phase](../../docs/phase-00-foundation-and-thesis/README.md).
+Preserve Gravity semantics, compiler-stage boundaries, source provenance,
+effects/capabilities and safety evidence. Host behavior is not a language
+contract. Use positive and negative fixtures when the owning contract requires
+them. A passing structural check is not semantic conformance.
+
+## Autonomy without project accounting quotas
+
+Do not introduce project cost, budget, token, accounting or work quotas,
+arbitrary admission limits, routine approval tickets or repeated permission
+ceremonies. Managers execute authorized work autonomously and coordinate exact
+file ownership. Real host safeguards and required language/runtime contracts
+remain distinct from project work quotas. Existing authorization and specific
+restrictions continue to apply; Spec Kit cannot bypass them.
+
+## Reviewable progress and completed main
+
+Open and maintain draft PRs early for meaningful partial or ongoing work.
+Partial work can remain visible in a draft; do not require all unrelated goals
+to finish before opening it. Main receives the completed declared change after
+its required validation and review. Do not claim completion from a draft,
+a task checkbox, a stale receipt or an exit code alone. Deus alone coordinates
+integration decisions; the former master is an execution/integration delegate.
+
+## Exact outcomes and evidence ownership
+
+Each change names its owner, exact paths, acceptance and rejection behavior,
+input revision/tree, commands, result/exit, artifact identities and limits.
+Distinguish locally observed evidence from another owner's reported evidence;
+name unrun checks and stale inputs. Implementation owners own their source and
+raw evidence; reviewers own review dispositions; Deus owns integration.
+Use the existing [development workflow](../../docs/development-verification-workflow.md)
+for proof, reuse and authority decisions. Spec Kit is a work-artifact layer,
+not a competing evidence authority or a second roadmap.
+
+## Scope and changes
+
+Canonical language changes go to their owning docs. Update this record only
+when an actual user decision changes. No bulk conversion, new scheduler,
+autonomous hooks, credentials or global Codex configuration is authorized.
+C12 cybersecurity, the denied oracle Git action and advisory reviewer wake
+remain restricted and cannot be retried, transferred or reframed here. The old
+coordinator hourly automation remains paused. This adoption PR is reviewed by
+Deus; it does not grant itself merge authority.
