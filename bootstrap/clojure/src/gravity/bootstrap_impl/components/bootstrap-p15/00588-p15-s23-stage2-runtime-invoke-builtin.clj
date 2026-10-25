@@ -1,5 +1,15 @@
 (declare ^:private p15-s23-stage2-native-carrier-header)
 
+(defn- p15-s23-stage2-bootstrap-native-identical?
+  [plan left right]
+  (when-not (and (true? (:compiler-artifact-plan? plan))
+                 (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+                 (= :meta (get-in plan [:module :profile]))
+                 (= :jvm (get-in plan [:module :target])))
+    (throw (IllegalArgumentException.
+            "bootstrap-native-identical? requires a compiler-artifact meta/JVM plan")))
+  (identical? left right))
+
 (defn- p15-s23-stage2-bootstrap-symbol-utf16-unit-count
   [plan value]
   (when-not (and (true? (:compiler-artifact-plan? plan))
@@ -25,6 +35,9 @@
   ([runtime plan callee args]
   (try
     (case callee
+      bootstrap-native-identical?
+      (do (p15-s23-stage2-runtime-assert-exact-arity! plan callee args 2)
+          (p15-s23-stage2-bootstrap-native-identical? plan (nth args 0) (nth args 1)))
       bootstrap-native-carrier-header
       (do (p15-s23-stage2-runtime-assert-exact-arity! plan callee args 1)
           (p15-s23-stage2-native-carrier-header plan (nth args 0)))
