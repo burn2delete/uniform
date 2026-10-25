@@ -10068,6 +10068,63 @@
           :semantic-comparison-multiplicities-not-yet-assigned true
           :numeric-proof-established false})))
 
+(defn- gis3-observe-original-view-work [operation]
+  ;; Passive observations, scoped to this thread and original collector only.
+  ;; Every original invocation is delegated exactly once without alteration.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
+        instruction (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-instruction-scoped)
+        original-scoped @scoped original-get @getter original-instruction @instruction
+        owner (Thread/currentThread) depth (atom 0)
+        counters (atom {:instructions {} :gets 0 :String-ID-map-gets 0 :String-ID-key-characters 0})
+        active? #(and (identical? owner (Thread/currentThread)) (pos? @depth))
+        value (with-redefs-fn
+                {scoped (fn [runtime plan callee args scope]
+                          (if (and (identical? owner (Thread/currentThread))
+                                   (= :gravity-sh08-function-call-type-leaf (:engine runtime))
+                                   (= 'sh08-gis3-original-readsets callee))
+                            (do (swap! depth inc)
+                                (try (original-scoped runtime plan callee args scope)
+                                     (finally (swap! depth dec))))
+                            (original-scoped runtime plan callee args scope)))
+                 getter (fn [plan collection key]
+                          (when (active?)
+                            (swap! counters update :gets inc)
+                            (when (and (map? collection) (string? key) (= 71 (count key)))
+                              (swap! counters #(-> % (update :String-ID-map-gets inc)
+                                                   (update :String-ID-key-characters + (count key))))))
+                          (original-get plan collection key))
+                 instruction (fn [runtime plan env form scope]
+                               (when (active?)
+                                 (swap! counters update-in [:instructions (:op form)] (fnil inc 0)))
+                               (original-instruction runtime plan env form scope))}
+                operation)]
+    {:value value :observations @counters}))
+
+(deftest sh08-gis3-original-view-fee-audit-development-kernel
+  (let [{:keys [core bindings forms types target] :as input} (gis3-original-row-input 0 0)
+        indexes {:nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+                 :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                 :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                 :records (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
+                 :bindings (into {} (map (juxt :binding-id identity) bindings))
+                 :forms (into {} (map (juxt :form-id identity) forms)) :types types}
+        observed (gis3-observe-original-view-work
+                   #(invoke-c7 'sh08-gis3-original-readsets [core indexes target]))
+        expected (mapv gis3-coordinate-unit-value (:readsets (gis3-original-coordinate-readsets input)))
+        counters (:observations observed)]
+    (is (= :selected-original-data (get-in observed [:value :status])))
+    (is (= expected (get-in observed [:value :readsets])))
+    (is (= [8 8 8] (mapv count (take 3 expected))))
+    (is (= 10 (count expected)))
+    (is (pos? (:gets counters)))
+    (is (pos? (:String-ID-map-gets counters)))
+    (is (= (* 71 (:String-ID-map-gets counters)) (:String-ID-key-characters counters)))
+    (prn {:gis3-original-view-physical-observations counters
+          :declared-view-reservation 3472 :unweighted-instruction-visits (reduce + (vals (:instructions counters)))
+          :physical-DATA-payment-executed false :numeric-proof-established false
+          :bookkeeping-fee-policy-established false})))
+
 (deftest sh08-gis3-entry-reservation-development-kernel
   ;; Passive existing runtime seams delegate exactly once, with no result or
   ;; argument substitution. Exact64 is the positive observer control.
