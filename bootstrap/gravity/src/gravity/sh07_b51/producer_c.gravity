@@ -5522,7 +5522,7 @@
              (if (= (get state :value) nil)
                result
                (conj result state))))))
-      (if (contains? #{:if-kind :do-kind :target-kind=:loop} token)
+      (if (contains? #{:if-kind :do-kind :target-kind-loop} token)
         (let [required-kind
               (if (= token :if-kind) :if
                 (if (= token :do-kind) :do :loop))]
@@ -5534,7 +5534,7 @@
                 (if (map? parent)
                   (recur
                    (rest remaining)
-                   (if (= (if (= token :target-kind=:loop)
+                   (if (= (if (= token :target-kind-loop)
                             (get parent :target-kind)
                             (get parent :kind))
                           required-kind)
@@ -5573,7 +5573,7 @@
                 next-token
                 (if (> (count remaining) 1)
                   (first (rest remaining)) nil)]
-            (if (if (= next-token :target-kind=:loop)
+            (if (if (= next-token :target-kind-loop)
                   true
                   (contains? #{:if-kind :do-kind} next-token))
               (let [required-kind
@@ -5588,7 +5588,7 @@
                           (if (map? value)
                             (recur
                              (rest states)
-                             (if (= (if (= next-token :target-kind=:loop)
+                             (if (= (if (= next-token :target-kind-loop)
                                       (get value :target-kind)
                                       (get value :kind))
                                     required-kind)
@@ -5929,7 +5929,7 @@
 (defn sh07-b51-rejected-category-reference-paths []
   [[:lexical-bindings :each :slot-id]
    [:loop-bindings :each :slot-id]
-   [:recur-targets :each :slot-ids :target-kind=:loop :each]])
+   [:recur-targets :each :slot-ids :target-kind-loop :each]])
 
 (defn sh07-b51-noncore-generated-reference-descriptors []
   (sh07-b51-vector-append
@@ -7827,21 +7827,21 @@
               {:status :accepted :value nil}
               (sh07-b51-resolve-controlled-path
                value remaining resolved-digests))
-            (if (contains? #{:if-kind :do-kind :target-kind=:loop} token)
+            (if (contains? #{:if-kind :do-kind :target-kind-loop} token)
               {:status :rejected :reason :path-kind-position}
               (if (map? value)
                 (let [next-token
                       (if (> (count remaining) 0)
                         (first remaining) nil)
                       conditional?
-                      (if (= next-token :target-kind=:loop)
+                      (if (= next-token :target-kind-loop)
                         true
                         (contains? #{:if-kind :do-kind} next-token))]
                   (if conditional?
                     (let [required-kind
                           (if (= next-token :if-kind) :if
                             (if (= next-token :do-kind) :do :loop))]
-                      (if (= (if (= next-token :target-kind=:loop)
+                      (if (= (if (= next-token :target-kind-loop)
                                (get value :target-kind)
                                (get value :kind))
                              required-kind)

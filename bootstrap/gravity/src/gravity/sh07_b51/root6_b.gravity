@@ -4345,12 +4345,12 @@
                 (sh07-b51-r6-materialize-registered-path
                  value parent tail resolved-prefix (+ depth 1)
                  (- remaining-work 1)))
-              (if (contains? #{:if-kind :do-kind :target-kind=:loop} token)
+              (if (contains? #{:if-kind :do-kind :target-kind-loop} token)
                 (let [expected
                       (if (= token :if-kind) :if
                         (if (= token :do-kind) :do :loop))
                       actual
-                      (if (= token :target-kind=:loop)
+                      (if (= token :target-kind-loop)
                         (get parent :target-kind) (get parent :kind))]
                   (if (= actual expected)
                     (sh07-b51-r6-materialize-registered-path

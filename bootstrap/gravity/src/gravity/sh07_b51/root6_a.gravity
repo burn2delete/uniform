@@ -322,7 +322,7 @@
          [:products]
          [[:lexical-bindings :each :slot-id]
           [:loop-bindings :each :slot-id]
-          [:recur-targets :each :slot-ids :target-kind=:loop :each]])))
+          [:recur-targets :each :slot-ids :target-kind-loop :each]])))
       (sh07-b51-r6-append
        (sh07-b51-r6-append
         with-core
@@ -821,7 +821,7 @@
                         (if (= (get (first remaining) :value) nil)
                           result (conj result (first remaining))))))}
                   (if (contains?
-                       #{:if-kind :do-kind :target-kind=:loop} token)
+                       #{:if-kind :do-kind :target-kind-loop} token)
                     {:status :accepted
                      :states
                      (loop [remaining states result []]
@@ -832,7 +832,7 @@
                                (if (= token :if-kind) :if
                                  (if (= token :do-kind) :do :loop))
                                actual
-                               (if (= token :target-kind=:loop)
+                               (if (= token :target-kind-loop)
                                  (get parent :target-kind)
                                  (get parent :kind))]
                            (recur
