@@ -9828,6 +9828,246 @@
     {:core core :bindings (vec (vals bindings)) :forms (vec (vals @forms)) :types types :target target
      :unified unified :parameter-id parameter-id :nodes @nodes}))
 
+(defn- gis3-original-coordinate-readsets [{:keys [core bindings forms types target]}]
+  ;; Independent audit model. Coordinates are original table ordinals and
+  ;; original Map-entry ordinals, never object identity or value equality.
+  (let [tables {:nodes (:nodes core) :calls (:calls core) :edges (:call-edges core)
+                :records (:function-records core) :bindings bindings :forms forms :module [(:module core)]}
+        id-key {:nodes :node-id :calls :core-node-id :edges :call-core-node-id
+                :records :function-syntax-id :bindings :binding-id :forms :form-id}
+        positions (into {} (for [[table rows] tables]
+                             [table (if (= :module table) {:module 0}
+                                      (into {} (map-indexed (fn [n row] [(get row (id-key table)) n]) rows)))]))
+        row (fn [table id] (get (tables table) (get (positions table) id)))
+        original (fn [table id] {:origin [table (get (positions table) id)] :value (row table id)})
+        constant #(hash-map :value %)
+        vector-unit #(hash-map :container :vector :children (vec %))
+        field-path (fn [table id keys]
+                     (loop [value (row table id) origin [table (get (positions table) id)] remaining keys]
+                       (if (empty? remaining) {:origin origin :value value}
+                         (let [key (first remaining)
+                               entry (first (keep-indexed (fn [i [k _]] (when (and (keyword? k) (= k key)) i)) value))]
+                           (if (some? entry) (recur (get value key) (conj origin :value entry) (rest remaining)) (constant nil))))))
+        field (fn [table id key] (field-path table id [key]))
+        projection (fn [table id fields]
+                     {:container :map :children (vec (mapcat #(vector (constant %) (field table id %)) fields))})
+        source-fields [:form-id :syntax-id :kind :parent-form-id :child-form-ids :source-span :origin-chain :generated-origin]
+        prefix (fn [form-id value?] (projection :forms form-id (cond-> source-fields value? (conj :value))))
+        node (row :nodes target) owner (get-in node [:evaluation :owner-function-syntax-id])
+        record (row :records owner)
+        outer (first (filter #(and (= :if (:core-form %)) (= target (get (:children %) 1))) (:nodes core)))
+        inner (row :nodes (first (:children outer)))
+        low (row :nodes (first (:children inner))) high (row :nodes (second (:children inner)))
+        false-node (row :nodes (nth (:children inner) 2)) fallback (row :nodes (nth (:children outer) 2))
+        function (row :nodes (:function-core-node-id record))
+        function-form (row :forms (:function-form-id record))
+        params (row :forms (get-in function [:attributes :parameter-form-id]))
+        name (row :forms (first (:child-form-ids params)))
+        packet (fn [n]
+                 (let [id (:node-id n) call (row :calls id) args (:argument-node-ids call)]
+                   (vector-unit [(original :nodes id) (original :calls id) (original :edges id)
+                                 (original :nodes (:operator-node-id call)) (original :bindings (:operator-binding-id call))
+                                 (original :nodes (first args)) (original :nodes (second args))
+                                 (projection :records (get-in n [:evaluation :owner-function-syntax-id])
+                                             [:function-syntax-id :function-core-node-id])])) )
+        packets (mapv packet [node low high])
+        control-children (vec (mapcat #(map (fn [id] (row :nodes id)) (:children %)) [outer inner]))
+        selected (vec (concat [outer inner false-node fallback function] control-children
+                              (mapcat (fn [n] (let [call (row :calls (:node-id n))]
+                                               (map #(row :nodes %) (into [(:node-id n) (:operator-node-id call)]
+                                                                          (:argument-node-ids call))))) [node low high])))
+        current-type (fn [id]
+                       (let [ordinal (first (keep-indexed (fn [i [k _]] (when (= id k) i)) types))]
+                         {:origin [:types :value ordinal] :value (get types id)}))
+        stages (vector-unit
+                 (for [n [node low high outer inner]]
+                   (let [fid (get-in n [:source :form-id]) offset (if (= :if (:core-form n)) 1 0)]
+                     (vector-unit
+                       (for [i (range 3)]
+                         (let [child (row :nodes (get (:children n) i))
+                               node-ordinal (get-in positions [:nodes (:node-id child)])
+                               source-entry (first (keep-indexed (fn [j [k _]] (when (= :source k) j)) child))
+                               source (:source child) form-entry (first (keep-indexed (fn [j [k _]] (when (= :form-id k) j)) source))
+                               parent (field :forms fid :child-form-ids)]
+                           (vector-unit [{:origin [:nodes node-ordinal :value source-entry :value form-entry]
+                                          :value (:form-id source)}
+                                         {:origin (conj (:origin parent) :element (+ offset i))
+                                          :value (get (:value parent) (+ offset i))}])))))))]
+    {:tables tables :positions positions :selected-form-ids (mapv #(get-in % [:source :form-id]) selected)
+     :readsets (vec (concat packets
+                    [(vector-unit (concat (map #(original :nodes (:node-id %)) [outer inner false-node fallback])
+                                          [(vector-unit (map #(original :nodes (:node-id %)) control-children))]))
+                     (vector-unit [(original :records owner) (original :nodes (:node-id function))
+                                   (original :bindings (get-in (row :nodes (first (:argument-node-ids (row :calls target)))) [:attributes :binding-id]))
+                                   (original :forms (:form-id params)) (original :forms (:form-id name))
+                                   (prefix (:form-id function-form) false)
+                                   (field-path :nodes (:body-core-node-id record) [:source :form-id])])
+                     (vector-unit (map #(prefix (get-in % [:source :form-id]) (contains? #{:literal :reference} (:core-form %))) selected))
+                     (vector-unit (map #(let [f (row :forms (get-in % [:source :form-id]))]
+                                         (projection :forms (first (:child-form-ids f)) [:kind :value :parent-form-id])) [outer inner function]))
+                     (projection :module :module [:profile :target :safety])
+                     (vector-unit (mapcat (fn [n] (map current-type (:argument-node-ids (row :calls (:node-id n))))) [node low high]))
+                     (vector-unit [stages (vector-unit [(field :records owner :function-form-id)
+                                                       (field-path :nodes (:node-id function) [:source :form-id])])])]))}))
+
+(defn- gis3-coordinate-unit-value [unit]
+  (if-let [container (:container unit)]
+    (let [values (mapv gis3-coordinate-unit-value (:children unit))]
+      (if (= :map container) (into {} (map vec (partition 2 values))) values))
+    (:value unit)))
+
+(defn- gis3-coordinate-fee-audit [units]
+  ;; Pure audit, not runtime acceptance: retaining all W and created wrapper
+  ;; costs while separating repeated ORIGINAL-coordinate canonical visits.
+  (let [coverage (atom {}) counters (atom {:lookups 0 :lookup-path-elements 0 :writes 0 :write-path-elements 0 :reuses 0})
+        audit (fn audit [unit depth]
+                (let [origin (:origin unit) prior (when origin (get @coverage origin))]
+                  (when origin (swap! counters #(-> % (update :lookups inc) (update :lookup-path-elements + (count origin)))))
+                  (if prior
+                    (do (when (> (+ depth (:height prior)) 128) (throw (ex-info "Audit depth refused" {:reason :depth})))
+                        (swap! counters update :reuses inc)
+                        (assoc prior :paid-B 0 :paid-V 0 :paid-T 0))
+                    (let [value (:value unit) kind (or (:container unit)
+                                                    (cond (map? value) :map (vector? value) :vector
+                                                          (set? value) :set (list? value) :list :else :scalar))
+                          _ (when (> depth 128) (throw (ex-info "Audit depth refused" {:reason :depth})))
+                          children (or (:children unit)
+                                       (when (not= :scalar kind)
+                                         (if (= :map kind)
+                                           (vec (mapcat (fn [i [k v]]
+                                                          [{:origin (when origin (conj origin :key i)) :value k}
+                                                           {:origin (when origin (conj origin :value i)) :value v}]) (range) value))
+                                           (mapv (fn [i v] {:origin (when origin (conj origin :element i)) :value v}) (range) value))))
+                          size (if (= :map kind) (quot (count children) 2) (count children))
+                          _ (when (> size 1024) (throw (ex-info "Audit width refused" {:reason :width})))
+                          _ (when (and (= :scalar kind)
+                                       (not (or (nil? value) (boolean? value) (keyword? value) (symbol? value)
+                                                (string? value) (number? value) (char? value))))
+                              (throw (ex-info "Audit canonical leaf refused" {:reason :domain})))
+                          scalar (+ 2 (if (or (string? value) (symbol? value)) (count (str value)) 0))
+                          V (if (= :scalar kind) scalar (if (= :map kind) (+ 3 (* 12 size)) (+ 2 (* 5 size))))
+                          T (if (= :scalar kind) 8 14)
+                          W (if (= :scalar kind) scalar (+ 1 (if (contains? #{:map :set} kind)
+                                                                             (+ (* size size) (if (= :map kind) (* 2 size) size)) size)))
+                          results (mapv #(audit % (inc depth)) children)
+                          result {:natural-V (+ V (reduce + 0 (map :natural-V results)))
+                                  :natural-T (+ T (reduce + 0 (map :natural-T results)))
+                                  :paid-V (+ V (reduce + 0 (map :paid-V results)))
+                                  :paid-T (+ T (reduce + 0 (map :paid-T results)))
+                                  :natural-B (+ V T (reduce + 0 (map :natural-B results)))
+                                  :paid-B (+ V T (reduce + 0 (map :paid-B results)))
+                                  :W (+ W (reduce + 0 (map :W results)))
+                                  :height (if (seq results) (inc (apply max (map :height results))) 0)}]
+                      (when origin
+                        (swap! coverage assoc origin (dissoc result :paid-B :paid-V :paid-T))
+                        (swap! counters #(-> % (update :writes inc) (update :write-path-elements + (count origin)))))
+                      result))))
+        results (mapv #(audit % 0) units)]
+    {:readsets results :coverage-count (count @coverage) :bookkeeping-counts @counters
+     :natural-V (reduce + 0 (map :natural-V results))
+     :natural-T (+ (* 8 (count units)) (reduce + 0 (map :natural-T results)))
+     :paid-V (reduce + 0 (map :paid-V results))
+     :paid-T (+ (* 8 (count units)) (reduce + 0 (map :paid-T results)))
+     :natural-B (+ (* 8 (count units)) (reduce + 0 (map :natural-B results)))
+     :paid-original-and-wrapper-B (+ (* 8 (count units)) (reduce + 0 (map :paid-B results)))
+     :single-comparison-W-sum (reduce + 0 (map :W results))}))
+
+(defn- gis3-coordinate-plan-footprint [units]
+  (let [all (mapcat #(tree-seq (fn [u] (seq (:children u))) :children %) units)
+        original-roots (vec (keep :origin all)) unique-roots (set original-roots)
+        recipes (for [u all :when (= :map (:container u))]
+                  {:size (quot (count (:children u)) 2)
+                   :recipe (mapv (fn [[k v]] [(:value k) (or (:origin v) :constant-nil)])
+                                 (partition 2 (:children u)))})
+        repeated (filter #(> (count %) 1) (vals (group-by :recipe recipes)))]
+    {:original-unit-references (count original-roots) :distinct-original-unit-roots (count unique-roots)
+     :reference-coordinate-elements (reduce + 0 (map count original-roots))
+     :distinct-coordinate-elements (reduce + 0 (map count unique-roots))
+     :created-projection-maps (count recipes)
+     :duplicate-projection-recipes (count repeated)
+     :avoidable-projection-maps (reduce + 0 (map #(dec (count %)) repeated))
+     :avoidable-projection-field-reads (reduce + 0 (map #(* (dec (count %)) (:size (first %))) repeated))
+     :avoidable-private-map-shell-B (reduce + 0 (map #(* (dec (count %)) (+ 17 (* 22 (:size (first %))))) repeated))}))
+
+(defn- gis3-independent-physical-data-fee [value]
+  (let [container? #(or (map? %) (vector? %) (set? %) (list? %))
+        physical (tree-seq container? #(if (map? %) (mapcat identity %) (seq %)) value)
+        containers (filter container? physical) atoms (remove container? physical)
+        scalar #(reduce + 0 (map (fn [x] (+ 2 (if (or (string? x) (symbol? x)) (count (str x)) 0))) %))
+        V (+ (scalar atoms) (reduce + 0 (map #(if (map? %) (+ 3 (* 12 (count %))) (+ 2 (* 5 (count %)))) containers)))
+        T (+ 8 (* 8 (count atoms)) (* 14 (count containers)))
+        W (+ (scalar atoms) (reduce + 0 (map #(let [n (count %)]
+                                              (+ 1 (if (or (map? %) (set? %))
+                                                     (+ (* n n) (if (map? %) (* 2 n) n)) n))) containers)))]
+    {:V V :T T :B (+ V T) :W W :atoms (count atoms) :containers (count containers)}))
+
+(deftest sh08-gis3-coordinate-coverage-decomposition-development-kernel
+  (let [input (gis3-original-row-input 0 0)
+        model (gis3-original-coordinate-readsets input)
+        audit (gis3-coordinate-fee-audit (:readsets model))
+        footprint (gis3-coordinate-plan-footprint (:readsets model))
+        values (mapv gis3-coordinate-unit-value (:readsets model))
+        fees (mapv gis3-independent-physical-data-fee values)]
+    (is (= 10 (count (:readsets model))))
+    (is (= [8 8 8] (mapv #(count (:children %)) (take 3 (:readsets model)))))
+    (is (= 23 (count (:selected-form-ids model))))
+    (is (= 17 (count (set (:selected-form-ids model)))))
+    (is (= (select-keys (:module (:core input)) [:profile :target :safety]) (get values 7)))
+    (is (and (string? (last (get values 4))) (= 71 (count (last (get values 4))))))
+    (is (every? (fn [[a b]] (= a b)) (mapcat identity (first (get values 9)))))
+    (is (= (mapv :B fees) (mapv #(+ 8 (:natural-B %)) (:readsets audit))))
+    (is (= (mapv :W fees) (mapv :W (:readsets audit))))
+    (is (= (reduce + (map :W fees)) (:single-comparison-W-sum audit)))
+    (let [original-nodes (into {} (map (juxt :node-id identity) (get-in input [:core :nodes])))
+          original-bindings (into {} (map (juxt :binding-id identity) (:bindings input)))]
+      (doseq [packet (take 3 values)]
+        (doseq [i [0 3 5 6]]
+          (is (= (original-nodes (:node-id (get packet i))) (get packet i)))
+          (is (contains? (get packet i) :binding-context)))
+        (is (= (original-bindings (:binding-id (get packet 4))) (get packet 4)))))
+    (is (every? #(every? (set (keys %)) [:form-id :syntax-id :kind :parent-form-id :child-form-ids
+                                       :source-span :origin-chain :generated-origin]) (get values 5)))
+    (is (< (:paid-original-and-wrapper-B audit) (:natural-B audit)))
+    (is (pos? (get-in audit [:bookkeeping-counts :reuses])))
+    (let [twice {:container :vector :children [{:origin [:test 0] :value :same} {:origin [:test 0] :value :same}]}
+          distinct {:container :vector :children [{:origin [:test 0] :value :same} {:origin [:test 1] :value :same}]}
+          repeated (gis3-coordinate-fee-audit [twice]) separate (gis3-coordinate-fee-audit [distinct])]
+      (is (= (:natural-B repeated) (:natural-B separate)))
+      (is (= 1 (get-in repeated [:bookkeeping-counts :reuses])))
+      (is (= 0 (get-in separate [:bookkeeping-counts :reuses])))
+      (is (= (:natural-B separate) (:paid-original-and-wrapper-B separate)))
+      (is (= (:single-comparison-W-sum repeated) (:single-comparison-W-sum separate))))
+    (let [deep (nth (iterate vector :leaf) 127)
+          first-view {:origin [:depth 0] :value deep}
+          later {:container :vector :children [{:container :vector :children [first-view]}]}]
+      (is (= :depth (try (gis3-coordinate-fee-audit [first-view later]) nil
+                         (catch clojure.lang.ExceptionInfo error (:reason (ex-data error)))))))
+    (let [callbacks (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Coverage opaque hash")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "Coverage opaque equality")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "Coverage opaque print"))))
+          poisoned {:origin [:nodes 0] :value {:binding-context {:unread opaque}}}]
+      (is (= :domain (try (gis3-coordinate-fee-audit [poisoned]) nil
+                          (catch clojure.lang.ExceptionInfo error (:reason (ex-data error))))))
+      (is (zero? @callbacks)))
+    (let [callbacks (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "Input unread hash")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "Input unread equality")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "Input unread rendering"))))
+          poisoned (update-in input [:core :nodes]
+                              #(mapv (fn [n] (if (= (:target input) (:node-id n))
+                                              (assoc n :binding-context {:unread opaque}) n)) %))]
+      (is (= :domain (try (gis3-coordinate-fee-audit (:readsets (gis3-original-coordinate-readsets poisoned))) nil
+                          (catch clojure.lang.ExceptionInfo error (:reason (ex-data error))))))
+      (is (zero? @callbacks)))
+    (prn {:gis3-independent-coordinate-decomposition audit :unfactored-readset-fees fees
+          :sparse-plan-footprint footprint
+          :production-source-payment-executed false :bookkeeping-fees-not-yet-assigned true
+          :semantic-comparison-multiplicities-not-yet-assigned true
+          :numeric-proof-established false})))
+
 (deftest sh08-gis3-entry-reservation-development-kernel
   ;; Passive existing runtime seams delegate exactly once, with no result or
   ;; argument substitution. Exact64 is the positive observer control.
