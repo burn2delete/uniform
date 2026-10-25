@@ -792,6 +792,9 @@
              (recur (rest remaining)
                     (conj result (get (first remaining) :value)))))}
         (let [token (first tokens)
+              conditional-slot?
+              (if (= token :slot-ids)
+                (= (first (rest tokens)) :target-kind-loop) false)
               stepped
               (if (= token :each)
                 (loop [remaining states result []]
@@ -844,14 +847,22 @@
                         {:status :accepted :states result}
                         (let [value (get (first remaining) :value)]
                           (if (map? value)
-                            (if (contains? value token)
-                              (recur
-                               (rest remaining)
-                               (conj result
-                                     {:value (get value token)
-                                      :parent value}))
-                              {:status :rejected
-                               :reason :registry-key-missing})
+                            (if (if conditional-slot?
+                                  (contains? #{:function :loop}
+                                             (get value :target-kind)) true)
+                              (if (if conditional-slot?
+                                    (= (get value :target-kind) :function) false)
+                                (recur (rest remaining)
+                                       (conj result {:value value :parent value}))
+                                (if (contains? value token)
+                                  (recur
+                                   (rest remaining)
+                                   (conj result
+                                         {:value (get value token)
+                                          :parent value}))
+                                  {:status :rejected
+                                   :reason :registry-key-missing}))
+                              {:status :rejected :reason :registry-key-missing})
                             {:status :rejected
                              :reason :registry-map-required})))))))]
           (if (= (get stepped :status) :accepted)

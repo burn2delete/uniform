@@ -104,6 +104,14 @@
 (def ^:private digest-zero (str "sha256:" (apply str (repeat 64 "0"))))
 (def ^:private digest-one (str "sha256:" (apply str (repeat 64 "1"))))
 
+(def ^:private function-target
+  ;; Attempt5 function schema and producer_d omit loop-only :slot-ids.
+  {:target-id digest-zero :target-kind :function
+   :owner-core-node-id digest-zero :owner-form-id digest-zero
+   :owner-syntax-id digest-zero :arity 0 :binding-ids []
+   :body-scope-id digest-zero :parent-target-id nil
+   :type-compatibility :pending-sh08})
+
 (deftest producer-selector-traversal-and-resolution-preserve-fields-and-order
   (with-source-helpers
     producer-helpers
@@ -160,8 +168,6 @@
             row (first (filter #(= (into [:products] loop-path) (:path %)) rows))
             reference-one (assoc reference-zero :ordinal 1)
             loop-target {:target-kind :loop :slot-ids [reference-one reference-zero]}
-            ;; Kernel input: the slot field exists before the selector is reached.
-            function-target {:target-kind :function :slot-ids [:leave-alone]}
             preimage {:products {:recur-targets [function-target loop-target]}}
             materialized (invoke 'sh07-b51-r6-materialize-registered-path
                                  preimage nil (:path row)
@@ -190,3 +196,105 @@
         (is (= :materialization-depth
                (:reason (invoke 'sh07-b51-r6-materialize-registered-path
                                 preimage nil (:path row) [digest-zero] 257 100))))))))
+
+(deftest loop-selector-skips-lawful-function-records-before-field-lookup
+  (with-source-helpers
+    (merge producer-helpers root-helpers)
+    (fn [invoke]
+      (let [one (assoc reference-zero :ordinal 1)
+            loop-target {:target-kind :loop :slot-ids [one reference-zero]}
+            resolved-loop (assoc loop-target :slot-ids [digest-one digest-zero])
+            cases [[[] [] [] 2]
+                   [[function-target] [] [function-target] 4]
+                   [[loop-target] [one reference-zero] [resolved-loop] 7]
+                   [[{:target-kind :loop :slot-ids [one one]}] [one one]
+                    [{:target-kind :loop :slot-ids [digest-one digest-one]}] 7]
+                   [[function-target loop-target] [one reference-zero]
+                    [function-target resolved-loop] 9]
+                   [[loop-target function-target] [one reference-zero]
+                    [resolved-loop function-target] 9]
+                   [[loop-target function-target loop-target]
+                    [one reference-zero one reference-zero]
+                    [resolved-loop function-target resolved-loop] 14]]]
+        (doseq [[targets selected resolved work] cases]
+          (testing (pr-str (mapv :target-kind targets))
+            (let [preimage {:recur-targets targets}
+                  expected {:recur-targets resolved}
+                  materialized (invoke 'sh07-b51-r6-materialize-registered-path
+                                       preimage nil loop-path
+                                       [digest-zero digest-one] 0 work)]
+              (is (= {:status :accepted :values selected}
+                     (invoke 'sh07-b51-r6-path-values preimage loop-path)
+                     (invoke 'sh07-b51-reference-path-values preimage loop-path)))
+              (is (= {:status :accepted :value expected :remaining-work 0}
+                     materialized))
+              (is (= {:status :accepted :value expected}
+                     (invoke 'sh07-b51-resolve-controlled-path
+                             preimage loop-path [digest-zero digest-one])))
+              (is (= :materialization-work
+                     (:reason (invoke 'sh07-b51-r6-materialize-registered-path
+                                      preimage nil loop-path
+                                      [digest-zero digest-one] 0 (dec work)))))
+              (is (= (pr-str (filterv #(= :function (:target-kind %)) targets))
+                     (pr-str (filterv #(= :function (:target-kind %))
+                                      (get-in materialized [:value :recur-targets]))))))))))))
+
+(deftest loop-selector-preserves-selected-errors-and-resource-priorities
+  (with-source-helpers
+    root-helpers
+    (fn [invoke]
+      (let [tokens [:slot-ids :target-kind-loop :each]
+            materialize (fn [value prefix depth work]
+                          (invoke 'sh07-b51-r6-materialize-registered-path
+                                  value nil tokens prefix depth work))]
+        (is (= {:status :accepted :value function-target :remaining-work 0}
+               (materialize function-target [] 255 2)))
+        (is (= :materialization-work
+               (:reason (materialize function-target [] 255 1))))
+        (is (= :materialization-depth
+               (:reason (materialize function-target [] 256 1))))
+        (doseq [value [{:target-kind :loop} []]]
+          (let [reason (if (map? value) :registry-key-missing :registry-map-required)]
+            ;; The current map/key error still precedes a child's exhausted bound.
+            (is (= reason (:reason (materialize value [] 256 1))))))
+        (doseq [value [{:target-kind :unknown} {}
+                      {:target-kind :unknown :slot-ids []} {:slot-ids []}]]
+          (is (= :registry-key-missing (:reason (materialize value [] 0 100))))
+          (is (= :registry-key-missing
+                 (:reason (invoke 'sh07-b51-r6-path-values value tokens)))))
+        (is (= :registry-vector-required
+               (:reason (invoke 'sh07-b51-r6-path-values
+                                {:target-kind :loop :slot-ids :wrong} tokens))))
+        (doseq [function ['sh07-b51-r6-path-values
+                          'sh07-b51-r6-materialize-registered-path]]
+          (let [arguments [function-target [:other :target-kind-loop :each]]
+                result (if (= function 'sh07-b51-r6-path-values)
+                         (apply invoke function arguments)
+                         (invoke function function-target nil
+                                 (second arguments) [] 0 100))]
+            (is (= :registry-key-missing (:reason result)))))
+        (doseq [[value reason]
+                [[{:target-kind :loop :slot-ids :wrong} :registry-vector-required]
+                 [{:target-kind :loop :slot-ids [:wrong]} :registered-reference-shape]
+                 [{:target-kind :loop :slot-ids [reference-zero]} :reference-prefix]]]
+          (is (= reason (:reason (materialize value [] 0 100)))))
+        (is (= :resolved-id-shape
+               (:reason (materialize {:target-kind :loop :slot-ids [reference-zero]}
+                                     [:wrong] 0 100))))
+        (is (= {:status :accepted :value {:target-kind :loop :slot-ids []}
+                :remaining-work 0}
+               (materialize {:target-kind :loop :slot-ids []} [] 254 3)))
+        (is (= :materialization-depth
+               (:reason (materialize {:target-kind :loop :slot-ids []} [] 255 3))))
+        (let [preimage {:recur-targets [function-target]}
+              path-at-limit (into (vec (repeat 251 :optional)) loop-path)]
+          (is (= {:status :accepted :values []}
+                 (invoke 'sh07-b51-r6-path-values preimage path-at-limit)))
+          (is (= :registry-path-depth
+                 (:reason (invoke 'sh07-b51-r6-path-values
+                                  preimage (into [:optional] path-at-limit)))))
+          (is (= :registry-key-missing
+                 (:reason (invoke 'sh07-b51-r6-path-values
+                                  {:recur-targets [{:target-kind :loop}]}
+                                  (into [:optional :optional :optional]
+                                        path-at-limit))))))))))
