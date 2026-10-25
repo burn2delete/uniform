@@ -30329,6 +30329,226 @@
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
 
+(deftest current-gravity-checked-dual-bare-set-equality-lowering-development-kernel
+  ;; Normalized typed DATA; actual source admission is checked separately.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [helper #(ns-resolve 'gravity.self-hosting.sh08-function-call-type-test %)
+        {:keys [core node nodes forms bindings types module call edge]}
+        ((helper 'atomic-equality-input) [:gravity.type/set :gravity.type/set])
+        c7 (helper 'invoke-c7)
+        derived (c7 'sh08-dse-derive [core node call edge nodes bindings types forms 65536])
+        descriptor (:descriptor derived)
+        context {:core core :nodes nodes :forms forms :bindings bindings
+                 :types (assoc types :operator descriptor :call (:type derived))
+                 :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                 :call-facts {:call (c7 'sh08-dse-call-fact [descriptor module])}
+                 :ledger [(c7 'sh08-dse-constraint [descriptor])]
+                 :locals {:arg0 'left :arg1 'right} :parameter-types types}
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        compile (fn [candidate budget]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan
+                    'p15-s23-typed-compile-node [candidate :call budget]))
+        result (compile context 65536)
+        coherent (fn [changed]
+                   (-> context (assoc-in [:types :operator] changed)
+                       (assoc :call-facts {:call (c7 'sh08-dse-call-fact [changed module])}
+                              :ledger [(c7 'sh08-dse-constraint [changed])])))]
+    (is (= :accepted (:status derived)))
+    (is (= :complete (:status result)) (pr-str result))
+    (is (= {:op :builtin-call :function '=
+            :args [{:op :local :name 'left} {:op :local :name 'right}]}
+           (:value result)))
+    (when (= :complete (:status result))
+      (is (= result (compile context (:work-count result))))
+      (is (= :typed-lowering-work-limit
+             (get-in (compile context (dec (:work-count result))) [:facts :reason]))))
+    (doseq [changed ((helper 'checked-dual-bare-set-forgeries) descriptor)]
+      (is (= :rejected (:status (compile (coherent changed) 65536)))))
+    (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                    #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                    #(assoc % :call-facts {})
+                    #(assoc-in % [:call-facts :call :dispatch] :direct-bare-keyword-anchor-set-equality)
+                    #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)
+                    #(assoc-in % [:types :arg0] :gravity.type/unknown)
+                    #(assoc-in % [:types :arg1] :gravity.type/string)
+                    #(assoc-in % [:nodes :call :evaluation :order] [])
+                    #(assoc-in % [:forms :arg0 :parent-form-id] :stale)
+                    #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                    #(update-in % [:core :calls] into (get-in % [:core :calls]))
+                    #(assoc-in % [:core :calls 0 :forged] true)
+                    #(assoc-in % [:core :call-edges 0 :forged] true)
+                    #(update-in % [:core :call-edges] into (get-in % [:core :call-edges]))]]
+      (is (= :rejected (:status (compile (mutate context) 65536)))))))
+
+(deftest current-gravity-checked-dual-bare-set-equality-authenticated-composition
+  ;; One minimal actual G program. Q receives byte-parity credit only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test
+           'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        effect-ns 'gravity.self-hosting.sh09-body-effect-test
+        helper #(ns-resolve upstream %)
+        source-path ((helper 'fixture-path) "accepted" "local-runtime-bare-set-equality" ".gravity")
+        stage (fn [name operation]
+                (println (pr-str {:checked-dual-bare-set-stage name :event :begin}))
+                (flush)
+                (let [result (operation)]
+                  (println (pr-str {:checked-dual-bare-set-stage name :event :end}))
+                  (flush)
+                  result))
+        {:keys [request]} ((helper 'function-work-policy-current-source)
+                          source-path (slurp source-path)
+                          {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)
+        c7 (helper 'invoke-c7)
+        typed (stage :c7 #(c7 'sh08-function-type-core-artifact [request]))
+        _ (is (= :accepted (:status typed)) (pr-str (:diagnostics typed)))
+        _ (when-not (= :accepted (:status typed))
+            (throw (ex-info "Checked dual bare Set source typing rejected" {:diagnostics (:diagnostics typed)})))
+        verification (stage :c7-verification #(c7 'sh08-verify-function-type-result [request typed]))
+        _ (is (= :passed (:status verification)))
+        _ (when-not (= :passed (:status verification))
+            (throw (ex-info "Checked dual bare Set fresh C7 verification rejected" {})))
+        products {:request request :typed typed :verification verification}
+        binding ((ns-resolve effect-ns 'seal-binding) request typed verification)
+        c8 (helper 'function-work-policy-invoke-current-c8)
+        effects (stage :public-c8 #(c8 'sh09-build-authenticated-body-effect-result [typed verification binding]))
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects))
+            (throw (ex-info "Checked dual bare Set public C8 rejected" {:diagnostics (:diagnostics effects)})))
+        effect-report (stage :public-c8-verification
+                             #(c8 'sh09-verify-authenticated-body-effect-result [typed verification binding effects]))
+        _ (is (= :passed (:status effect-report)))
+        artifact (get-in request [:b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        raw (assoc (bootstrap/parse-module source-path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw)
+        module (assoc raw :function-table definitions)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        assembled (stage :stock-typed-assembly
+                         #(bootstrap/p15-s23-stage2-assemble-plan-products
+                           emitter module (vec (sort-by key definitions)) products))
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        execution (stage :original-runtime
+                         #(bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+                            'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint 'main)]))
+        descriptor (first (keep :applied-checked-bare-set-equality (:call-type-facts typed)))
+        graph (:effect-graph effects)
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table typed)))
+        instructions (filter map? (tree-seq coll? seq (vals (:functions assembled))))]
+    (is (= :complete (:status execution)) (pr-str execution))
+    (is (= false (:entrypoint-result execution)))
+    (is (= "" (:stdout execution)))
+    (is (= :gravity.type/applied-checked-bare-set-equality (:kind descriptor)))
+    (is (= [:gravity.type/set :gravity.type/set] (:argument-types descriptor)))
+    (is (= :gravity.type/bool (get-in functions ['compare-sets :return])))
+    (is (= #{} (get-in graph [:nodes (:call-core-node-id descriptor) :direct])))
+    (is (= #{} (get-in graph [:functions (get-in functions ['compare-sets :function-id]) :inferred])))
+    (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions ['main :function-id]) :inferred])))
+    (is (= 1 (count (filter #(and (= :builtin-call (:op %)) (= '= (:function %))) instructions))))
+    (let [mutant ((ns-resolve effect-ns 'reseal-effect-graph) effects
+                  (assoc-in graph [:nodes (:call-core-node-id descriptor) :direct] #{:memory/allocate}))]
+      (is (= :rejected (:status (c8 'sh09-verify-authenticated-body-effect-result
+                                   [typed verification binding mutant])))))
+    (is (= (slurp source-path)
+           (slurp ((helper 'fixture-path) "accepted" "local-runtime-bare-set-equality" ".qst"))))
+    (doseq [changed ((helper 'checked-dual-bare-set-forgeries) descriptor)]
+      (let [mutant ((ns-resolve effect-ns 'coherent-typed-mutation) products
+                    #(clojure.walk/prewalk-replace {descriptor changed} %))
+            rejected (c8 'sh09-build-authenticated-body-effect-result
+                         [(:typed mutant) (:verification mutant) (:binding mutant)])]
+        (is (= :rejected (:status rejected)))))
+    (println (pr-str {:checked-dual-bare-set-source-products {:g 1 :q-typed-products 0}
+                      :c7 :ordinary-unseeded :c7-fresh-verifier :default-work-policy
+                      :c8 :public-wrappers :lowering :stock-fresh-verification
+                      :runtime :unchanged-original-provider :authority :non-authoritative}))))
+
+(deftest current-gravity-checked-dual-bare-set-equality-runtime-development-kernel
+  ;; Reuse the unchanged joint homogeneous Keyword-or-String provider directly.
+  ;; No compiler String producer or unrestricted Set-domain claim is made here.
+  ;; runtime.gravity requires immutable finite type-conforming coherent Sets.
+  ;; Retained run source-dse-runtime-20261024a.log had 170 assertions / 8 failures:
+  ;; (protected [opaque] 0) on either side was accepted as empty with no callbacks.
+  ;; Those count/sequence-incoherent carriers are outside that premise; this
+  ;; successor removes their required-rejection oracle, without changing runtime.
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        work #(invoke 'p15-s23-runtime-keyword-set-equality-work %1 %2 %3)
+        lit (fn [value] {:op :literal :value value})
+        equal (fn [a b] {:op :builtin-call :function '= :args [a b]})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        callbacks (atom [])
+        protected (fn [members declared]
+                    (reify clojure.lang.IPersistentSet
+                      (count [_] declared) (seq [_] (seq members))
+                      (cons [_ _] (throw (AssertionError. "construction")))
+                      (empty [_] (throw (AssertionError. "construction")))
+                      (equiv [_ _] (throw (AssertionError. "Set equality")))
+                      (contains [_ _] (throw (AssertionError. "lookup")))
+                      (get [_ _] (throw (AssertionError. "lookup")))
+                      (disjoin [_ _] (throw (AssertionError. "mutation")))
+                      Object
+                      (equals [_ _] (throw (AssertionError. "Set equality")))
+                      (hashCode [_] (throw (AssertionError. "Set hash")))))
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "member hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "member equals")))
+                 (toString [] (swap! callbacks conj :format) (throw (AssertionError. "member format"))))]
+    (doseq [[a b expected] [[#{} #{} true] [#{:a} #{} false] [#{} #{:a} false]
+                            [#{:a :b} #{:b :a} true] [#{:a :b} #{:a :c} false]
+                            [#{"a"} #{} false] [#{} #{"a"} false]
+                            [#{"a" "b"} #{"b" "a"} true] [#{"a"} #{"b"} false]
+                            [(protected [:b :a] 2) (protected [:a :b] 2) true]
+                            [(protected ["b" "a"] 2) (protected ["a" "b"] 2) true]]]
+      (let [result (work a b 65536)]
+        (is (= :accepted (:status result)))
+        (is (= expected (:value result)))
+        (is (= result (work a b (:work-count result))))
+        (let [limited (work a b (dec (:work-count result)))]
+          (is (= :rejected (:status limited)))
+          (is (= 0 (:comparison-attempts limited))))
+        (is (= [expected "" :normal] (evaluate (equal (lit a) (lit b)))))))
+    (doseq [[a b] [[nil #{}] [#{} []]
+                   [#{:a} #{"a" "b"}] [#{"a" "b"} #{:a}]
+                   [(protected [:a "b"] 2) #{}] [#{} (protected ["a" :b] 2)]
+                   [#{1} #{}] [#{} #{#{:nested}}]
+                   [(protected [:a opaque] 2) #{}] [#{} (protected [:a opaque] 2)]
+                   [(protected [:a :a] 2) #{:a}] [#{"a"} (protected ["a" "a"] 2)]
+                   [(protected [:a] 2) #{}] [#{} (protected [:a :b] 1)]]]
+      (let [result (work a b 65536)
+            execution (evaluate (equal (lit a) (lit b)))]
+        (is (= :rejected (:status result)))
+        (is (contains? #{:keyword-set-value-domain-required :string-set-value-domain-required} (:reason result)))
+        (is (= :rejected (last execution)))
+        (is (= "P15S23X002" (:diagnostic (first execution))))
+        (is (empty? @callbacks))))
+    (doseq [value [(keyword (apply str (repeat 400 "k"))) (apply str (repeat 400 "s"))]]
+      (let [result (work #{value} #{value} 65536)]
+        (is (= :accepted (:status result)))
+        (is (> (:work-count result) 1000))
+        (is (= result (work #{value} #{value} (:work-count result))))
+        (is (= 0 (:comparison-attempts (work #{value} #{value} (dec (:work-count result))))))))
+    (doseq [budget [0 1 2]]
+      (is (= :rejected (:status (work #{} #{} budget)))))
+    (let [wide #(into #{} (map (fn [n] (keyword (str "k" n))) (range %)))
+          limited (work (wide 1024) #{} 65536)]
+      (is (= :rejected (:status (work (wide 1025) #{} 65536))))
+      (is (= :accepted (:status (invoke 'p15-s23-runtime-keyword-set-domain [(wide 1024) #{}] 65536))))
+      (is (= :keyword-set-equality-work-limit (:reason limited)))
+      (is (= 0 (:comparison-attempts limited))))
+    (let [marked (fn [label expression]
+                   {:op :do :body [{:op :println :args [(lit label)]
+                                   :effect :io/write :capability :io/stdout} expression]})
+          escape {:op :throw :value (lit :stop)}]
+      (is (= [true "left\nright\n" :normal]
+             (evaluate (equal (marked "left" (lit #{})) (marked "right" (lit #{}))))))
+      (is (= [:stop "left\n" :thrown]
+             (evaluate (equal (marked "left" escape) (marked "right" (lit #{}))))))
+      (is (= [:stop "left\nright\n" :thrown]
+             (evaluate (equal (marked "left" (lit #{})) (marked "right" escape))))))))
+
 (deftest current-gravity-keyword-set-insertion-lowering-id-guard-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test

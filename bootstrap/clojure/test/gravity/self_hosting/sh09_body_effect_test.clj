@@ -9861,3 +9861,82 @@
         (is (= :rejected (:status (analyze (assoc-in facts [:type-table (:operator-node-id (first (:calls core))) :bounds-proof :selected-index] 1) 65536))))))
     (println (pr-str {:vector-first-symbol-loop-normalized-c8 (select-keys result [:status :reason :work-count])
                      :formats formats :source-credit false :authentication-credit false}))))
+
+(deftest body-checked-dual-bare-set-equality-development-kernel
+  ;; Normalized DATA checks independent Effects reconstruction, not authentication.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [base ((sh08-helper 'atomic-equality-input) [:gravity.type/set :gravity.type/set])
+        c7 (sh08-helper 'invoke-c7)
+        ids (zipmap (keys (:nodes base)) (map sha (range 1450 1460)))
+        convert (fn [node]
+                  (-> node (update :node-id ids) (update :children #(mapv ids %))
+                      (update-in [:evaluation :order]
+                                 #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+        node-list (mapv convert (get-in base [:core :nodes]))
+        nodes (into {} (map (juxt :node-id identity) node-list))
+        node (get nodes (ids :call))
+        call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                 (update :argument-node-ids #(mapv ids %))
+                 (update :ordered-evaluation-node-ids #(mapv ids %)))
+        edge (-> (:edge base) (update :call-core-node-id ids)
+                 (update :argument-core-node-ids #(mapv ids %))
+                 (update :ordered-evaluation-node-ids #(mapv ids %)))
+        core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+        types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+        derived (c7 'sh08-dse-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+        descriptor (:descriptor derived)
+        request {:canonical-core-artifact core
+                 :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+        initial {:module (:module base)
+                 :type-table (assoc types (ids :operator) descriptor (ids :call) (:type derived))
+                 :function-type-table []
+                 :call-type-facts [(c7 'sh08-dse-call-fact [descriptor (:module base)])]
+                 :constraint-ledger [(c7 'sh08-dse-constraint [descriptor])]}
+        prepare #(leaf 'body-ae-context request %1 (:bindings base) %2)
+        context (prepare initial 65536)
+        facts (assoc initial :equality-context (:context context))
+        valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+        graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+        record (get-in graph [:nodes (ids :call)])
+        coherent (fn [changed]
+                   (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                       (assoc :call-type-facts [(c7 'sh08-dse-call-fact [changed (:module base)])]
+                              :constraint-ledger [(c7 'sh08-dse-constraint [changed])])))]
+    (is (= :accepted (:status derived) (:status context) (:status graph)) (pr-str context))
+    (is (true? (valid facts)))
+    (is (= #{} (:direct record) (:transitive record)))
+    (is (nil? (:allocation record)))
+    (is (= (mapv ids [:operator :arg0 :arg1]) (:dependencies record) (:evaluated-children record)))
+    (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+    (doseq [changed [(assoc-in core [:calls 0 :forged] true)
+                     (assoc-in core [:call-edges 0 :forged] true)]]
+      (is (false? (leaf 'body-dse-call-valid? changed facts (:bindings base) node call edge nodes))))
+    (is (= context (prepare facts (:work-count context))))
+    (is (= :rejected (:status (prepare facts (dec (:work-count context))))))
+    (doseq [changed ((sh08-helper 'checked-dual-bare-set-forgeries) descriptor)]
+      (is (= :rejected (:status (prepare (coherent changed) 65536))))
+      (is (false? (valid (coherent changed)))))
+    (doseq [mutate [#(assoc % :constraint-ledger [])
+                    #(update % :constraint-ledger into (:constraint-ledger %))
+                    #(assoc % :call-type-facts [])
+                    #(update % :call-type-facts into (:call-type-facts %))
+                    #(assoc-in % [:call-type-facts 0 :dispatch] :direct-bare-keyword-anchor-set-equality)
+                    #(assoc-in % [:constraint-ledger 0 :producer-rule] :sh08-bare-keyword-anchor-set-equality-v1)
+                    #(assoc-in % [:type-table (ids :arg0)] :gravity.type/unknown)
+                    #(assoc-in % [:type-table (ids :arg1)] :gravity.type/string)]]
+      (is (= :rejected (:status (prepare (mutate facts) 65536))))
+      (is (false? (valid (mutate facts)))))
+    (doseq [changed [(assoc-in request [:canonical-core-artifact :calls 0 :argument-node-ids]
+                              (mapv ids [:arg1 :arg0]))
+                     (update-in request [:canonical-core-artifact :calls] into (:calls core))
+                     (update-in request [:canonical-core-artifact :call-edges] into (:call-edges core))
+                     (assoc-in request [:b47-context :authenticated-core-request :forms]
+                               (mapv #(if (= :arg0 (:form-id %)) (assoc % :parent-form-id :stale) %)
+                                     (vals (:forms base))))]]
+      (is (= :rejected (:status (leaf 'body-ae-context changed facts (:bindings base) 65536)))))
+    (let [seeded (assoc-in (:nodes graph) [(ids :arg0) :transitive] #{:memory/allocate :error/throw})
+          actual (leaf 'body-node-record node nil seeded :gravity.type/bool)]
+      (is (= #{} (:direct actual)))
+      (is (= #{:memory/allocate :error/throw} (:transitive actual))))
+    (is (false? (leaf 'body-graph-equations-valid? core facts {}
+                      (assoc-in (:nodes graph) [(ids :call) :direct] #{:memory/allocate}))))))

@@ -14295,6 +14295,606 @@
                                          (= (get form :value) (get (get child :attributes) :symbol)) false) true) false) false)
                   (recur (+ index 1)) false)))) false) false) false)))
 
+(defn p15-s23-dse-bare? [type]
+  (if (keyword? type) (= :gravity.type/set type) false))
+
+(defn p15-s23-dse-type? [arguments]
+  (if (if (vector? arguments) (= 2 (count arguments)) false)
+    (if (if (if (= :gravity.type/never (get arguments 0)) true (p15-s23-dse-bare? (get arguments 0)))
+          (if (= :gravity.type/never (get arguments 1)) true (p15-s23-dse-bare? (get arguments 1))) false)
+      true false) false))
+
+(defn p15-s23-dse-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+    (p15-s23-typed-all
+      [(= ['= :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+          [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+           (get binding :package) (get binding :type-ref) (get binding :safety)])
+       (= [] (get binding :effects) (get binding :capabilities)) (= :jvm (get module :target))
+       (contains? (set (get binding :profile-set)) (get module :profile))
+       (contains? (set (get binding :target-set)) :all)]) false))
+
+(defn p15-s23-dse-ids? [node call nodes bindings module]
+  (if (if (map? node) (map? call) false)
+    (if (p15-s23-typed-all [(map? nodes) (map? bindings) (map? module)
+                           (map? (get node :source)) (map? (get node :evaluation)) (map? (get node :attributes))])
+      (let [args (get call :argument-node-ids) children (get node :children)]
+        (if (if (vector? args)
+              (if (= 2 (count args))
+                (if (vector? children) (= 3 (count children)) false)
+                false)
+              false)
+          (if (p15-s23-sse-ids? args 2)
+            (if (p15-s23-sse-ids? children 3)
+              (if (p15-s23-sse-ids? [(get node :node-id) (get call :core-node-id) (get call :operator-node-id)
+                                     (get call :operator-binding-id) (get (get node :source) :form-id)
+                                     (get (get node :source) :syntax-id)] 6)
+                (let [operator (get nodes (get call :operator-node-id))
+                      binding (get bindings (get call :operator-binding-id))
+                      left (get nodes (first args))
+                      right (get nodes (get args 1))]
+                  (if (if (map? operator)
+                        (if (map? binding)
+                          (if (map? left) (map? right) false)
+                          false)
+                        false)
+                    (if (p15-s23-typed-all [(map? (get operator :source))
+                                             (map? (get operator :attributes))
+                                             (map? (get left :source))
+                                             (map? (get right :source))])
+                      (if (p15-s23-sse-ids? [(get operator :node-id) (get (get operator :source) :form-id)
+                                             (get (get operator :source) :syntax-id) (get binding :binding-id)
+                                             (get binding :definition-syntax-id)] 5)
+                        (if (p15-s23-sse-ids? [(get left :node-id) (get (get left :source) :form-id)
+                                               (get (get left :source) :syntax-id)] 3)
+                          (p15-s23-sse-ids? [(get right :node-id) (get (get right :source) :form-id)
+                                             (get (get right :source) :syntax-id)] 3)
+                          false)
+                        false)
+                      false)
+                    false))
+                false)
+              false)
+            false)
+          false))
+      false)
+    false))
+
+(defn p15-s23-dse-family-work [node call edge operator binding left right caller arguments module budget]
+  (p15-s23-lsi-first-data-work [node call edge operator binding left right caller arguments
+                                 {:profile (get module :profile) :target (get module :target)}] budget))
+
+(defn p15-s23-dse-source-match-work [expected-call call expected-edge edge budget]
+  (let [data (p15-s23-lsi-first-data-work [expected-call call expected-edge edge] budget)]
+    (if (= :accepted (get data :status))
+      (if (p15-s23-typed-all [(= expected-call call) (= expected-edge edge)])
+        data
+        {:status :rejected :reason :invalid-checked-bare-set-equality-source
+         :work-count (get data :work-count)})
+      data)))
+
+(defn p15-s23-dse-header [core node call edge nodes bindings types module budget]
+  (if (vector? (get core :function-records))
+    (let [limit (if (> budget 65536) 65536 budget)
+          ; The inherited 193-slot structural reservation covers the fixed node,
+          ; call, edge, source, binding, owner, and evaluation groups. Variable
+          ; record widths and artifact publication/storage are charged below.
+          fixed-structural-work 193
+          function-record-slot-work (count (get core :function-records))
+          base (+ fixed-structural-work function-record-slot-work)]
+      (if (> base limit)
+        {:status :rejected :reason :loop-type-work-limit :work-count base}
+        (if (p15-s23-dse-ids? node call nodes bindings module)
+          (let [args (get call :argument-node-ids)
+                children (get node :children)
+                operator (get nodes (get call :operator-node-id))
+                bid (get call :operator-binding-id)
+                binding (get bindings bid)
+                arguments [(get types (get args 0)) (get types (get args 1))]
+                profile-set (get binding :profile-set)
+                target-set (get binding :target-set)
+                profile-width (if (vector? profile-set) (count profile-set) 0)
+                target-width (if (vector? target-set) (count target-set) 0)
+                reserved (+ base (* 2 (+ profile-width target-width)))]
+            (if (> reserved limit)
+              {:status :rejected :reason :loop-type-work-limit :work-count reserved}
+              (let [operator (get nodes (get call :operator-node-id))
+                    left (get nodes (get args 0))
+                    right (get nodes (get args 1))
+                    records (get core :function-records)
+                    records-data (p15-s23-lsi-first-data-work
+                                   [records {:profile (get module :profile) :target (get module :target)}]
+                                   (- limit reserved))
+                    records-work (+ reserved (get records-data :work-count))
+                    owner-id (get (get node :evaluation) :owner-function-syntax-id)
+                    owner-valid? (p15-s23-bka-optional-id? owner-id)
+                    caller (if (if (= :accepted (get records-data :status)) owner-valid? false)
+                              (if (= nil owner-id)
+                                nil
+                                (loop [remaining (get core :function-records)]
+                                  (if (= 0 (count remaining))
+                                    :invalid-checked-bare-set-equality-owner
+                                    (let [record (first remaining)]
+                                      (if (if (map? record)
+                                            (p15-s23-sse-ids? [(get record :function-syntax-id)
+                                                            (get record :function-core-node-id)] 2)
+                                            false)
+                                        (if (= owner-id (get record :function-syntax-id))
+                                          record
+                                          (recur (rest remaining)))
+                                        :invalid-checked-bare-set-equality-owner)))))
+                              :invalid-checked-bare-set-equality-owner)
+                    family (if (= :accepted (get records-data :status))
+                              (p15-s23-dse-family-work node call edge operator binding left right caller
+                                                    arguments module (- limit records-work))
+                              {:status :rejected :reason (get records-data :reason) :work-count 0})
+                    family-work (+ records-work (get family :work-count))]
+                (if (= false (= :accepted (get family :status)))
+                  {:status :rejected
+                   :reason (if (= :loop-type-work-limit (get family :reason))
+                             :loop-type-work-limit
+                             :invalid-checked-bare-set-equality-source)
+                   :work-count family-work}
+                  (let [validation (p15-s23-lc-type-work arguments (- limit family-work))
+                        work (+ family-work (get validation :work-count))]
+                    (if (= false (= :accepted (get validation :status)))
+                      {:status :rejected
+                       :reason (if (= :work-limit (get validation :reason))
+                                 :loop-type-work-limit
+                                 :checked-bare-set-equality-operand-type-required)
+                       :work-count work}
+                      (if (p15-s23-dse-type? arguments)
+                        (let [operand-domain-work 5
+                              result-type-work 1
+                              ; Pay the concrete output map shape before
+                              ; publication: 46 descriptor fields, 12 nested
+                              ; descriptor policy/origin fields, 24 constraint
+                              ; fields, and 22 call-fact fields.
+                              descriptor-publication-work 46
+                              descriptor-storage-work 12
+                              constraint-storage-work 24
+                              call-fact-storage-work 22
+                              total (+ work operand-domain-work result-type-work descriptor-publication-work
+                                      descriptor-storage-work constraint-storage-work call-fact-storage-work)
+                              invoked? (if (= :gravity.type/never (get arguments 0)) false
+                                         (if (= :gravity.type/never (get arguments 1)) false true))]
+                          (if (> total limit)
+                            {:status :rejected :reason :loop-type-work-limit :work-count total}
+                            (let [expected-call {:core-node-id (get node :node-id)
+                                                 :operator-node-id (first children)
+                                                 :operator-binding-id bid
+                                                 :argument-node-ids (vec (rest children))
+                                                 :ordered-evaluation-node-ids children
+                                                 :evaluation-order :operator-then-arguments
+                                                 :result-policy :call-result}
+                                  expected-edge {:ordinal (get edge :ordinal)
+                                                 :call-core-node-id (get node :node-id)
+                                                 :caller-function-syntax-id (get caller :function-syntax-id)
+                                                 :caller-function-core-node-id (get caller :function-core-node-id)
+                                                 :callee-binding-id bid
+                                                 :callee-definition-syntax-id (get binding :definition-syntax-id)
+                                                 :callee-function-syntax-id nil
+                                                 :callee-function-core-node-id nil
+                                                 :argument-core-node-ids args
+                                                 :ordered-evaluation-node-ids children
+                                                 :evaluation-order :operator-then-arguments
+                                                 :classification :nonlocal-or-nonfunction}
+                                  source-match (p15-s23-dse-source-match-work expected-call call expected-edge edge
+                                                                         (- limit total))
+                                  matched-total (+ total (get source-match :work-count))]
+                              (if (= :accepted (get source-match :status))
+                                (if (p15-s23-typed-all
+                                    [(= false (= :invalid-checked-bare-set-equality-owner caller))
+                                     (= :call (get node :core-form))
+                                     (= :reference (get operator :core-form))
+                                     (= {:operator-child-index 0
+                                         :argument-count 2
+                                         :argument-child-indexes [1 2]
+                                         :evaluation-order :operator-then-arguments
+                                         :dispatch :resolved-symbol-call}
+                                        (get node :attributes))
+                                     (p15-s23-dse-binding? binding module)
+                                     (= '= (get binding :name))
+                                     (= [bid] (get node :resolved-binding-ids)
+                                                (get operator :resolved-binding-ids))
+                                     (= {:symbol (get (get operator :attributes) :symbol)
+                                         :position :operator
+                                         :binding-id bid
+                                         :binding-class :core
+                                         :definition-syntax-id (get binding :definition-syntax-id)}
+                                        (get operator :attributes))
+                                     (contains? '#{= gravity.core/=}
+                                                (get (get operator :attributes) :symbol))
+                                     (= :operator-then-arguments (get (get node :evaluation) :kind))
+                                     (= [{:index 0 :core-node-id (first children)}
+                                         {:index 1 :core-node-id (get children 1)}
+                                         {:index 2 :core-node-id (get children 2)}]
+                                        (get (get node :evaluation) :order))])
+                                (let [result-type (if invoked? :gravity.type/bool :gravity.type/never)]
+                                  {:status :accepted
+                                   :work-count matched-total
+                                   :descriptor {:kind :gravity.type/applied-checked-bare-set-equality
+                                                :version :sh08-checked-bare-set-equality-v1
+                                                :operation '= :semantic-owner 'gravity.collections
+                                                :intrinsic :gravity.collections/checked-bare-set-value-equality
+                                                :runtime-provider :p15-s23-runtime-keyword-set-equality-work
+                                                :resolution :gravity.core-compatibility
+                                                :operator-node-id (get operator :node-id)
+                                                :operator-binding-id bid
+                                                :call-core-node-id (get node :node-id)
+                                                :source (get node :source)
+                                                :operator-source (get operator :source)
+                                                :source-call call
+                                                :source-edge edge
+                                                :source-binding binding
+                                                :argument-types arguments
+                                                :parameter-types arguments
+                                                :equality-policy {:left-domain :not-refined
+                                                                  :right-domain :not-refined}
+                                                :value-origin {:kind :checked-bare-set-equality
+                                                               :operation '= :operand-node-ids args}
+                                                :operand-type-work (get validation :work-count)
+                                                :fixed-structural-work fixed-structural-work
+                                                :function-record-slot-work function-record-slot-work
+                                                :function-record-census-work (get records-data :work-count)
+                                                :family-data-work (get family :work-count)
+                                                :source-match-work (get source-match :work-count)
+                                                :descriptor-publication-work descriptor-publication-work
+                                                :descriptor-storage-work descriptor-storage-work
+                                                :constraint-storage-work constraint-storage-work
+                                                :call-fact-storage-work call-fact-storage-work
+                                                :profile-validation-work (- reserved base)
+                                                :operand-domain-work operand-domain-work
+                                                :result-type-work result-type-work
+                                                :operand-counts [nil nil]
+                                                :member-refinement nil
+                                                :anchor-operand-index nil
+                                                :runtime-policy {:guard :existing-complete-both-set-census
+                                                                 :input-premise :immutable-finite-type-conforming-coherent-sets
+                                                                 :member-domain :joint-homogeneous-keyword-or-string
+                                                                 :maximum-input-elements 1024
+                                                                 :logical-work-limit 65536
+                                                                 :certificate :not-established
+                                                                 :failure :development-rejection}
+                                                :application (if invoked? :normal :not-invoked)
+                                                :latent-effects []
+                                                :direct-effects []
+                                                :capabilities []
+                                                :thrown-error-effects []
+                                                :return result-type
+                                                :result-type result-type
+                                                :profile (get module :profile)
+                                                :target (get module :target)
+                                                :invalidation [:calls :call-edges :binding-table :source-forms :type-table
+                                                               :lexical-bindings :definitions :function-records :callee-body
+                                                               :operand-types :equality-policy :runtime-policy :value-origin
+                                                               :runtime-provider :function-record-census-work :family-data-work
+                                                               :operand-counts :operand-domain-work :result-type-work
+                                                               :source-match-work :descriptor-publication-work :descriptor-storage-work
+                                                               :constraint-storage-work :call-fact-storage-work :result-type :profile :target
+                                                               :evaluation-order]}})
+                                {:status :rejected
+                                 :reason :invalid-checked-bare-set-equality-source
+                                 :work-count matched-total})
+                            {:status :rejected
+                             :reason (if (= :loop-type-work-limit (get source-match :reason))
+                                       :loop-type-work-limit :invalid-checked-bare-set-equality-source)
+                             :work-count matched-total})
+                        ))
+                        )
+                        {:status :rejected
+                         :reason :checked-bare-set-equality-operand-type-required
+                         :work-count work})))))))
+      {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count base})
+    ))
+  {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count 193}))
+
+(defn p15-s23-dse-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-checked-bare-set-equality-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-checked-bare-set-equality-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :checked-bare-set-equality}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects) :operand-counts (get descriptor :operand-counts)
+              :equality-policy (get descriptor :equality-policy) :runtime-policy (get descriptor :runtime-policy)
+              :runtime-provider (get descriptor :runtime-provider)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn p15-s23-dse-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-checked-bare-set-equality-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects)
+     :capabilities [] :status :inferred :dispatch :direct-checked-bare-set-equality
+     :applied-checked-bare-set-equality descriptor :effect-facts-source :audited-checked-bare-set-value-equality}))
+
+(defn p15-s23-dse-entry? [node call nodes bindings types module]
+  (if (if (map? call) (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false) false)
+    (if (p15-s23-sse-ids? [(get call :operator-binding-id)] 1)
+      (let [binding (get bindings (get call :operator-binding-id))]
+        (if (if (map? binding)
+              (if (symbol? (get binding :name))
+                (if (= '= (get binding :name))
+                  (if (keyword? (get binding :binding-class))
+                    (if (contains? #{:lexical :namespace :import} (get binding :binding-class)) false true)
+                    true)
+                  false)
+                false)
+              false)
+          (if (p15-s23-dse-ids? node call nodes bindings module)
+            (let [args (get call :argument-node-ids)]
+              (let [arguments [(get types (get args 0)) (get types (get args 1))]]
+                (if (p15-s23-dse-type? arguments)
+                  (if (if (p15-s23-dse-bare? (get arguments 0))
+                        true
+                        (p15-s23-dse-bare? (get arguments 1)))
+                    true
+                    false)
+                  false)))
+            false)
+          false))
+      false)
+    false))
+
+(defn p15-s23-dse-originals [rows field target]
+  (if (vector? rows)
+    (loop [index 0 items [] table {}]
+      (if (= index (count rows)) {:status :accepted :items items :index table}
+        (let [row (get rows index) id (if (map? row) (get row field) nil)]
+          (if (p15-s23-sse-ids? [id] 1)
+            (if (contains? table id) {:status :rejected}
+              (recur (+ index 1) (if (= target id) (conj items row) items) (assoc table id row)))
+            {:status :rejected})))) {:status :rejected}))
+
+(defn p15-s23-dse-row-census [core ledger nodes bindings types calls edges target descriptor budget]
+  (let [counted (* 4 (count ledger))]
+    (if (> counted budget)
+      {:status :rejected :reason :loop-type-work-limit :work-count counted}
+      (loop [index 0 items [] seen #{} descriptors {} used counted]
+        (if (= index (count ledger))
+          {:status :accepted :items items :descriptors descriptors :work-count used}
+          (let [row (get ledger index)
+                producer (if (map? row) (get row :producer-rule) nil)
+                shallow (+ used 4)]
+            (if (> shallow budget)
+              {:status :rejected :reason :loop-type-work-limit :work-count shallow}
+              (if (keyword? producer)
+                (if (= :sh08-checked-bare-set-equality-v1 producer)
+                  (let [lhs (get row :lhs)
+                        id (if (map? lhs) (get lhs :core-node-id) nil)]
+                    ; The later typed and constraint pair traversals validate
+                    ; canonical/row carriers independently; the fixed four
+                    ; units above retain the ledger map/association slot.
+                    (if (p15-s23-sse-ids? [id] 1)
+                      (if (contains? seen id)
+                        {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count shallow}
+                        (let [source-call (get calls id)
+                              source-edge (get edges id)
+                              source-node (get nodes id)
+                              result (if (= target id)
+                                       {:status :accepted :descriptor descriptor :work-count 0}
+                                       (p15-s23-dse-header core source-node source-call source-edge nodes bindings types
+                                                           (get core :module) (- budget shallow)))
+                              total (+ shallow (get result :work-count))
+                              canonical (get result :descriptor)]
+                          (if (= :accepted (get result :status))
+                            (let [typed-compare (if (p15-s23-dse-ids? source-node source-call nodes bindings
+                                                                      (get core :module))
+                                                  (p15-s23-lsi-first-data-work
+                                                    [canonical (get types (get source-call :operator-node-id))]
+                                                    (- budget total))
+                                                  {:status :rejected :reason :invalid-checked-bare-set-equality-source
+                                                   :work-count 0})
+                                  typed-total (+ total (get typed-compare :work-count))
+                                  constraint-compare (if (= :accepted (get typed-compare :status))
+                                                       (p15-s23-lsi-first-data-work
+                                                         [(p15-s23-dse-constraint canonical) row]
+                                                         (- budget typed-total))
+                                                       {:status :rejected :reason (get typed-compare :reason)
+                                                        :work-count 0})
+                                  compare-total (+ typed-total (get constraint-compare :work-count))]
+                              (if (if (= :accepted (get typed-compare :status))
+                                    (if (= :accepted (get constraint-compare :status))
+                                      (if (= canonical (get types (get source-call :operator-node-id)))
+                                        (= (p15-s23-dse-constraint canonical) row)
+                                        false)
+                                      false)
+                                    false)
+                                (recur (+ index 1)
+                                       (if (= target id) (conj items row) items)
+                                       (conj seen id)
+                                       (assoc descriptors id canonical)
+                                       compare-total)
+                                {:status :rejected
+                                 :reason (if (= :loop-type-work-limit (get typed-compare :reason))
+                                           :loop-type-work-limit
+                                           (if (= :loop-type-work-limit (get constraint-compare :reason))
+                                             :loop-type-work-limit
+                                             :invalid-checked-bare-set-equality-source))
+                                 :work-count compare-total}))
+                            {:status :rejected :reason (get result :reason) :work-count total})))
+                      {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count shallow}))
+                (recur (+ index 1) items seen descriptors shallow))
+                {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count shallow}))))))))
+
+(defn p15-s23-dse-fact-census [facts module descriptors target budget]
+  (let [base (* 3 (count facts))]
+    (if (> base budget) {:status :rejected :reason :loop-type-work-limit :work-count base}
+      (loop [remaining (if (map? facts) (keys facts) facts) index 0 items [] seen #{} used base]
+        (if (= index (count facts))
+          (let [descriptor-ids (vec (keys descriptors)) seen-ids (vec seen)
+                ; Materialize both validated ID indexes, then prepay one
+                ; cardinality check and two operations per validated ID for
+                ; the explicit membership walk below.
+                index-membership-work (+ 1 (* 2 (count descriptor-ids)))
+                index-work (p15-s23-lsi-first-data-work [descriptor-ids seen-ids] (- budget used))
+                total (+ used (get index-work :work-count) index-membership-work)]
+            (if (= :accepted (get index-work :status))
+              (if (> total budget) {:status :rejected :reason :loop-type-work-limit :work-count total}
+                (if (= (count descriptor-ids) (count seen))
+                  (loop [remaining descriptor-ids]
+                    (if (= 0 (count remaining))
+                      {:status :accepted :items items :work-count total}
+                      (if (contains? seen (first remaining))
+                        (recur (rest remaining))
+                        {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count total})))
+                  {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count total}))
+              {:status :rejected :reason (if (= :loop-type-work-limit (get index-work :reason))
+                                           :loop-type-work-limit :invalid-checked-bare-set-equality-source)
+               :work-count total}))
+          (let [entry (first remaining) fact (if (map? facts) (if (p15-s23-sse-ids? [entry] 1) (get facts entry) nil) entry)
+                id (if (map? fact) (get fact :call-core-node-id) nil)
+                dispatch (if (map? fact) (get fact :dispatch) nil) shallow (+ used 3)]
+            (if (> shallow budget) {:status :rejected :reason :loop-type-work-limit :work-count shallow}
+              (if (if (p15-s23-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
+              (if (keyword? dispatch)
+                (if (= :direct-checked-bare-set-equality dispatch)
+                  (if (contains? seen id) {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count shallow}
+                    (let [canonical (get descriptors id)
+                          comparison (if (map? canonical)
+                                       (p15-s23-lsi-first-data-work
+                                         [(p15-s23-dse-call-fact canonical module) fact]
+                                         (- budget shallow))
+                                       {:status :rejected :reason :invalid-checked-bare-set-equality-source
+                                        :work-count 0})
+                          compared (+ shallow (get comparison :work-count))]
+                      (if (if (= :accepted (get comparison :status))
+                            (= (p15-s23-dse-call-fact canonical module) fact)
+                            false)
+                        (recur (rest remaining) (+ index 1) (if (= target id) (conj items fact) items) (conj seen id) compared)
+                        {:status :rejected :reason (if (= :loop-type-work-limit (get comparison :reason))
+                                                     :loop-type-work-limit :invalid-checked-bare-set-equality-source)
+                         :work-count compared})))
+                  (recur (rest remaining) (+ index 1) items seen shallow))
+                {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count shallow})
+                {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count shallow}))))))))
+
+(defn p15-s23-dse-evidence [core ledger facts node call edge nodes bindings types budget]
+  (if (if (vector? ledger) (if (if (vector? facts) true (map? facts))
+                          (if (vector? (get core :calls)) (vector? (get core :call-edges)) false) false) false)
+    (let [limit (if (> budget 65536) 65536 budget)
+          derived (p15-s23-dse-header core node call edge nodes bindings types (get core :module) limit)
+          base (+ (get derived :work-count) (* 2 (count (get core :calls))) (* 2 (count (get core :call-edges))))]
+      (if (= :accepted (get derived :status))
+        (if (> base limit) {:status :rejected :reason :loop-type-work-limit :work-count base}
+          (let [id (get node :node-id) descriptor (get derived :descriptor)
+                original-calls (p15-s23-dse-originals (get core :calls) :core-node-id id)
+                original-edges (p15-s23-dse-originals (get core :call-edges) :call-core-node-id id)
+                original-join (if (p15-s23-typed-all [(= :accepted (get original-calls :status))
+                                                      (= :accepted (get original-edges :status))
+                                                      (= 1 (count (get original-calls :items)))
+                                                      (= 1 (count (get original-edges :items)))])
+                                (p15-s23-lsi-first-data-work
+                                  [[call] (get original-calls :items) [edge] (get original-edges :items)]
+                                  (- limit base))
+                                {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count 0})
+                joined (+ base (get original-join :work-count))]
+            (if (= :accepted (get original-join :status))
+              (if (p15-s23-typed-all [(= [call] (get original-calls :items))
+                                      (= [edge] (get original-edges :items))])
+                (let [rows (p15-s23-dse-row-census core ledger nodes bindings types (get original-calls :index)
+                             (get original-edges :index) id descriptor (- limit joined))
+                      work (+ joined (get rows :work-count))]
+                  (if (= :accepted (get rows :status))
+                    (let [call-facts (p15-s23-dse-fact-census facts (get core :module) (get rows :descriptors) id (- limit work))
+                          total (+ work (get call-facts :work-count))]
+                      (if (if (= :accepted (get call-facts :status))
+                            (if (= 1 (count (get rows :items)))
+                              (if (= 1 (count (get call-facts :items)))
+                                (if (= id (get (get (first (get rows :items)) :lhs) :core-node-id))
+                                  (= id (get (first (get call-facts :items)) :call-core-node-id)) false)
+                                false)
+                              false) false)
+                        {:status :accepted :descriptor descriptor :work-count total}
+                        {:status :rejected :reason (if (= :loop-type-work-limit (get call-facts :reason))
+                                                     :loop-type-work-limit :invalid-checked-bare-set-equality-source)
+                         :work-count total}))
+                    {:status :rejected :reason (get rows :reason) :work-count work}))
+                {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count joined})
+              {:status :rejected
+               :reason (if (= :loop-type-work-limit (get original-join :reason))
+                         :loop-type-work-limit :invalid-checked-bare-set-equality-source)
+               :work-count joined})))
+        derived))
+    {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count 0}))
+
+(defn p15-s23-dse-forms? [node call nodes forms]
+  (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
+    (if (p15-s23-sse-ids? ids 3)
+      (if (= :list (get owner :kind))
+        (if (= (get node :source) (p15-s23-typed-source owner))
+          (loop [index 0]
+            (if (= index 3) true
+              (let [form (get forms (get ids index)) child (get nodes (get (get node :children) index))]
+                (if (if (= (get owner :form-id) (get form :parent-form-id))
+                      (if (= (get child :source) (p15-s23-typed-source form))
+                        (if (= index 0) (if (symbol? (get form :value))
+                                         (= (get form :value) (get (get child :attributes) :symbol)) false) true) false) false)
+                  (recur (+ index 1)) false)))) false) false) false)))
+
+(defn p15-s23-dse-forms-work [node nodes forms budget]
+  (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        children (get node :children)]
+    (if (p15-s23-sse-ids? ids 3)
+      (p15-s23-lsi-first-data-work
+        [node owner (get forms (get ids 0)) (get forms (get ids 1)) (get forms (get ids 2))
+         (get nodes (get children 0)) (get nodes (get children 1)) (get nodes (get children 2)) children]
+        budget)
+      {:status :rejected :reason :invalid-checked-bare-set-equality-source :work-count 0})))
+
+(defn p15-s23-typed-compile-checked-bare-set-equality [context node budget]
+  (if (if (map? context) (if (map? node) (p15-s23-sse-ids? [(get node :node-id)] 1) false) false)
+    (let [id (get node :node-id) core (get context :core) limit (if (> budget 65536) 65536 budget)]
+      (if (if (map? core)
+            (p15-s23-typed-all [(map? (get context :calls)) (map? (get context :edges)) (map? (get context :nodes))
+                               (map? (get context :bindings)) (map? (get context :types)) (map? (get context :forms))
+                               (map? (get context :call-order))
+                               (if (= nil (get context :current-function)) true (map? (get context :current-function)))]) false)
+        (let [call (get (get context :calls) id) edge (get (get context :edges) id)
+              result (p15-s23-dse-evidence core (get context :ledger) (get context :call-facts) node call edge
+                       (get context :nodes) (get context :bindings) (get context :types) limit)
+              charge (get result :work-count)]
+          (if (= :accepted (get result :status))
+            (let [consumer (p15-s23-lsi-first-data-work [(get (get context :types) (get call :operator-node-id))
+                                                         (get (get context :types) id)] (- limit charge))
+                  forms-work (if (= :accepted (get consumer :status))
+                               (p15-s23-dse-forms-work node (get context :nodes) (get context :forms)
+                                                       (- limit charge (get consumer :work-count)))
+                               {:status :rejected :reason (get consumer :reason) :work-count 0})
+                  total (+ charge (get consumer :work-count) (get forms-work :work-count))]
+              (if (if (= :accepted (get consumer :status))
+                    (= :accepted (get forms-work :status))
+                    false)
+                (if (p15-s23-typed-all
+                      [(= (get (get result :descriptor) :result-type) (get (get context :types) id))
+                       (if (integer? (get (get context :call-order) id))
+                         (= (get edge :ordinal) (get (get context :call-order) id)) false)
+                       (= (get edge :caller-function-syntax-id) (get (get context :current-function) :function-syntax-id))
+                       (p15-s23-dse-forms? node call (get context :nodes) (get context :forms))])
+                  (let [compiled (p15-s23-typed-compile-children (assoc context :tail? false) (get call :argument-node-ids)
+                                                                  (- limit total) [])]
+                    (if (p15-s23-compiler-complete? compiled)
+                      (assoc (p15-s23-compiler-result {:op :builtin-call :function '= :args (get compiled :value)})
+                        :work-count (+ total (get compiled :work-count)))
+                      (assoc compiled :work-count (+ total (get compiled :work-count 0)))))
+                  (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-checked-bare-set-equality node)
+                    :work-count total))
+                (assoc (p15-s23-typed-node-error (if (= :loop-type-work-limit (get forms-work :reason))
+                                                   :typed-lowering-work-limit
+                                                   :unsupported-or-mismatched-typed-checked-bare-set-equality) node)
+                  :work-count total)))
+            (assoc (p15-s23-typed-node-error (if (= :loop-type-work-limit (get result :reason))
+                                             :typed-lowering-work-limit
+                                             :unsupported-or-mismatched-typed-checked-bare-set-equality) node)
+              :work-count charge)))
+        (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-checked-bare-set-equality node) :work-count 0)))
+    (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-checked-bare-set-equality {}) :work-count 0)))
+
 (defn p15-s23-typed-compile-bare-keyword-anchor-set-equality [context node budget]
   (if (if (map? context) (if (map? node) (p15-s23-sse-ids? [(get node :node-id)] 1) false) false)
     (let [id (get node :node-id) core (get context :core)]
@@ -14330,6 +14930,15 @@
 
 (defn p15-s23-typed-compile-equality [context node budget]
   (if (if (if (map? context) (map? node) false)
+      (if (if (p15-s23-sse-ids? [(get node :node-id)] 1)
+            (p15-s23-typed-all [(map? (get context :calls)) (map? (get context :core))
+                               (map? (get context :types)) (map? (get context :bindings)) (map? (get context :nodes))]) false)
+        (p15-s23-dse-entry? node (get (get context :calls) (get node :node-id))
+          (get context :nodes) (get context :bindings) (get context :types) (get (get context :core) :module))
+        false)
+      false)
+    (p15-s23-typed-compile-checked-bare-set-equality context node budget)
+      (if (if (if (map? context) (map? node) false)
     (if (if (p15-s23-sse-ids? [(get node :node-id)] 1)
           (p15-s23-typed-all [(map? (get context :calls)) (map? (get context :core))
                              (map? (get context :types)) (map? (get context :bindings)) (map? (get context :nodes))]) false)
@@ -14377,8 +14986,7 @@
             (if (p15-s23-compiler-complete? compiled)
               (assoc (p15-s23-compiler-result {:op :builtin-call :function '= :args (get compiled :value)})
                 :work-count (+ charge (get compiled :work-count))) compiled))
-          (p15-s23-typed-node-error :unsupported-or-mismatched-typed-atomic-equality node)))))))
-
+          (p15-s23-typed-node-error :unsupported-or-mismatched-typed-atomic-equality node))))))))
 (defn p15-s23-kse-domain [arguments budget]
   ; Independent finite literal Set types establish one Keyword or String member family.
   (let [limit (if (< budget 65536) budget 65536)]
@@ -14616,6 +15224,15 @@
 
 (defn p15-s23-typed-compile-keyword-set-equality [context node budget]
   (if (if (if (map? context) (map? node) false)
+      (if (if (p15-s23-sse-ids? [(get node :node-id)] 1)
+            (p15-s23-typed-all [(map? (get context :calls)) (map? (get context :core))
+                               (map? (get context :types)) (map? (get context :bindings)) (map? (get context :nodes))]) false)
+        (p15-s23-dse-entry? node (get (get context :calls) (get node :node-id))
+          (get context :nodes) (get context :bindings) (get context :types) (get (get context :core) :module))
+        false)
+      false)
+    (p15-s23-typed-compile-checked-bare-set-equality context node budget)
+      (if (if (if (map? context) (map? node) false)
     (if (if (p15-s23-sse-ids? [(get node :node-id)] 1)
           (p15-s23-typed-all [(map? (get context :calls)) (map? (get context :core))
                              (map? (get context :types)) (map? (get context :bindings)) (map? (get context :nodes))]) false)
@@ -14694,8 +15311,7 @@
                     (recur (rest remaining) (conj values (get compiled :value)) total)
                     (assoc compiled :work-count total))))))
           (assoc (p15-s23-typed-node-error (if strings? :unsupported-or-mismatched-typed-string-set-equality :unsupported-or-mismatched-typed-keyword-set-equality) node) :work-count charge))))
-        (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-string-set-equality node) :work-count charge))))))
-
+        (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-string-set-equality node) :work-count charge)))))))
 (defn p15-s23-le-domain [arguments budget]
   (let [limit (if (< budget 65536) budget 65536)]
     (if (if (vector? arguments) (= 2 (count arguments)) false)
@@ -18627,6 +19243,62 @@
             (recur (rest pairs) (if map? true (= version :sh08-bare-map-parameter-v1))
                                (if homogeneous? true (= version :sh08-homogeneous-list-parameter-v1))))))) row))
 
+(defn p15-s23-typed-direct-call-compatibility [context call edge callee arguments types parameters budget]
+  (loop [i 0 out [] work 0]
+                              (if (= i (count parameters)) {:status :accepted :pairs out :work-count work}
+                                (let [actual (get types i) chosen (get (get parameters i) :type)
+                                      checked (p15-s23-lp-compatibility (get context :core) call edge callee i actual
+                                                (get context :nodes) (get context :bindings) (- budget 16 (count arguments) work))
+                                      pair {:parameter (get (get parameters i) :binding-id) :argument actual :chosen chosen}
+                                      total (+ work (get checked :work-count))]
+                                  (if (= :accepted (get checked :status))
+                                    (recur (+ i 1) (conj out (assoc pair :compatibility (get checked :premise))) total)
+                                    (if (= :not-applicable (get checked :status))
+                                      (recur (+ i 1) (conj out pair) total)
+                                      {:status :rejected :reason (get checked :reason) :work-count total})))))
+)
+
+(defn p15-s23-typed-direct-call-arguments [context arguments budget charge name]
+  (let [compiled (loop [remaining arguments used 0 values []]
+                   (if (= 0 (count remaining))
+                     (assoc (p15-s23-compiler-result values) :work-count used)
+                     (let [child (p15-s23-typed-compile-node (assoc context :tail? false) (first remaining) (- budget charge used))]
+                       (if (p15-s23-compiler-complete? child)
+                         (recur (rest remaining) (+ used (get child :work-count)) (conj values (get child :value)))
+                         (assoc child :work-count (+ used (get child :work-count 0)))))))]
+    (if (p15-s23-compiler-complete? compiled)
+      (assoc (p15-s23-compiler-result {:op :function-call :function name :args (get compiled :value)})
+        :work-count (+ charge (get compiled :work-count)))
+      (assoc compiled :work-count (+ charge (get compiled :work-count 0)))))
+)
+
+(defn p15-s23-checked-set-equality-route? [context node]
+  (if (if (map? context) (map? node) false)
+    (if (if (p15-s23-sse-ids? [(get node :node-id)] 1)
+          (p15-s23-typed-all [(map? (get context :calls)) (map? (get context :core))
+                             (map? (get context :types)) (map? (get context :bindings))
+                             (map? (get context :nodes))])
+          false)
+      (if (p15-s23-dse-entry? node (get (get context :calls) (get node :node-id))
+            (get context :nodes) (get context :bindings) (get context :types)
+            (get (get context :core) :module))
+        true
+        (if (p15-s23-bka-entry? node (get (get context :calls) (get node :node-id))
+              (get context :nodes) (get context :bindings) (get context :types)
+              (get (get context :core) :module))
+          true
+          (if (vector? (get node :children))
+            (if (p15-s23-sse-ids? [(first (get node :children))] 1)
+              (let [kind (get (get (get context :types)
+                                   (first (get node :children))) :kind)]
+                (if (keyword? kind)
+                  (= :gravity.type/applied-bare-keyword-anchor-set-equality kind)
+                  false))
+              false)
+            false)))
+        false)
+      false))
+
 (defn p15-s23-typed-compile-call [context node budget]
   (if (if (if (map? context) (map? node) false)
     (if (if (p15-s23-sse-ids? [(get node :node-id)] 1)
@@ -18639,17 +19311,12 @@
             (let [kind (get (get (get context :types) (first (get node :children))) :kind)]
               (if (keyword? kind) (= :gravity.type/applied-private-map-keys kind) false)) false) false)) false) false)
     (p15-s23-typed-compile-private-map-keys context node budget)
-    (if (if (if (map? context) (map? node) false)
-    (if (if (p15-s23-sse-ids? [(get node :node-id)] 1)
-          (p15-s23-typed-all [(map? (get context :calls)) (map? (get context :core))
-                             (map? (get context :types)) (map? (get context :bindings)) (map? (get context :nodes))]) false)
-      (if (p15-s23-bka-entry? node (get (get context :calls) (get node :node-id))
-            (get context :nodes) (get context :bindings) (get context :types) (get (get context :core) :module)) true
-        (if (vector? (get node :children))
-          (if (p15-s23-sse-ids? [(first (get node :children))] 1)
-            (let [kind (get (get (get context :types) (first (get node :children))) :kind)]
-              (if (keyword? kind) (= :gravity.type/applied-bare-keyword-anchor-set-equality kind) false)) false) false)) false) false)
-    (p15-s23-typed-compile-bare-keyword-anchor-set-equality context node budget)
+    (if (p15-s23-checked-set-equality-route? context node)
+      (if (p15-s23-dse-entry? node (get (get context :calls) (get node :node-id))
+            (get context :nodes) (get context :bindings) (get context :types)
+            (get (get context :core) :module))
+        (p15-s23-typed-compile-checked-bare-set-equality context node budget)
+        (p15-s23-typed-compile-bare-keyword-anchor-set-equality context node budget))
     (let [lset-descriptor-route? (if (if (map? context) (map? node) false)
                                   (if (if (map? (get context :types)) (vector? (get node :children)) false)
                                     (if (p15-s23-sse-ids? [(first (get node :children))] 1)
@@ -18807,18 +19474,7 @@
             result (loop [remaining types]
                      (if (= 0 (count remaining)) (get callee :return)
                        (if (= :gravity.type/never (first remaining)) :gravity.type/never (recur (rest remaining)))))
-            compatibility (loop [i 0 out [] work 0]
-                            (if (= i (count parameters)) {:status :accepted :pairs out :work-count work}
-                              (let [actual (get types i) chosen (get (get parameters i) :type)
-                                    checked (p15-s23-lp-compatibility (get context :core) call edge callee i actual
-                                              (get context :nodes) (get context :bindings) (- budget 16 (count arguments) work))
-                                    pair {:parameter (get (get parameters i) :binding-id) :argument actual :chosen chosen}
-                                    total (+ work (get checked :work-count))]
-                                (if (= :accepted (get checked :status))
-                                  (recur (+ i 1) (conj out (assoc pair :compatibility (get checked :premise))) total)
-                                  (if (= :not-applicable (get checked :status))
-                                    (recur (+ i 1) (conj out pair) total)
-                                    {:status :rejected :reason (get checked :reason) :work-count total})))))
+            compatibility (p15-s23-typed-direct-call-compatibility context call edge callee arguments types parameters budget)
             pairs (get compatibility :pairs) charge (+ 16 (count arguments) (get compatibility :work-count))
             expected-call {:core-node-id id :operator-node-id (first children) :operator-binding-id binding-id
                            :argument-node-ids arguments :ordered-evaluation-node-ids children
@@ -18873,17 +19529,7 @@
                            (if (contains? (get pairs i) :compatibility) true
                              (if (= type :gravity.type/never) true (= type (get (get parameters i) :type))))])
                        (recur (+ i 1)) false))))])
-          (let [compiled (loop [remaining arguments used 0 values []]
-                           (if (= 0 (count remaining))
-                             (assoc (p15-s23-compiler-result values) :work-count used)
-                             (let [child (p15-s23-typed-compile-node (assoc context :tail? false) (first remaining) (- budget charge used))]
-                               (if (p15-s23-compiler-complete? child)
-                                 (recur (rest remaining) (+ used (get child :work-count)) (conj values (get child :value)))
-                                 (assoc child :work-count (+ used (get child :work-count 0)))))))]
-            (if (p15-s23-compiler-complete? compiled)
-              (assoc (p15-s23-compiler-result {:op :function-call :function name :args (get compiled :value)})
-                :work-count (+ charge (get compiled :work-count)))
-              (assoc compiled :work-count (+ charge (get compiled :work-count 0)))))
+          (p15-s23-typed-direct-call-arguments context arguments budget charge name)
           (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-direct-call node) :work-count charge)))))
       (p15-s23-typed-node-error :malformed-typed-call-family node)))))))))))))))
     (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-string-set-equality node) :work-count 1))))))

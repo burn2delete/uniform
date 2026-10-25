@@ -20616,3 +20616,194 @@
     (is (string?
          (get-in gravity [:diagnostics 0 :parameter-binding-id])))
     (is (= (:diagnostics gravity) (:diagnostics qst)))))
+
+(defn- checked-dual-bare-set-forgeries [descriptor]
+  [(assoc descriptor :version :sh08-bare-keyword-anchor-set-equality-v1)
+   (assoc descriptor :kind :gravity.type/applied-atomic-equality)
+   (assoc descriptor :kind :gravity.type/applied-bare-keyword-anchor-set-equality)
+   (assoc descriptor :runtime-provider :unrestricted-host-set-equality)
+   (assoc descriptor :operand-counts [0 0])
+   (assoc descriptor :result-type :gravity.type/string)
+   (assoc-in descriptor [:runtime-policy :guard] :none)
+   (update descriptor :runtime-policy dissoc :input-premise)
+   (assoc-in descriptor [:runtime-policy :input-premise] :arbitrary-host-sets)
+   (assoc-in descriptor [:equality-policy :left-domain] :keyword-only)
+   (assoc descriptor :source-call (assoc (:source-call descriptor) :forged true))
+   (assoc descriptor :source-edge (assoc (:source-edge descriptor) :forged true))
+   (assoc descriptor :source-binding (assoc (:source-binding descriptor) :forged true))
+   (assoc descriptor :operator-node-id :forged-operator)
+   (assoc descriptor :operator-binding-id :forged-binding)])
+
+(deftest sh08-checked-dual-bare-set-equality-development-kernel
+  (let [pair [:gravity.type/set :gravity.type/set]
+        input (atomic-equality-input pair)
+        derive (fn [value budget]
+                 (let [{:keys [core node call edge nodes bindings types forms]} value]
+                   (invoke-c7 'sh08-dse-derive
+                              [core node call edge nodes bindings types forms budget])))
+        result (derive input 65536)
+        descriptor (:descriptor result)
+        established (assoc (:types input) :operator descriptor :call :gravity.type/bool)
+        check (fn [types budget]
+                (let [{:keys [core node call edge nodes bindings]} input]
+                  (invoke-c7 'sh08-dse-inferred-call
+                             [core node call edge nodes bindings types budget])))
+        checked (check established 65536)
+        context {:ordering-core (:core input) :lookup-nodes (:nodes input)
+                 :lookup-forms (vec (vals (:forms input)))
+                 :lookup-bindings (vec (vals (:bindings input)))
+                 :shape-call-products (:products input)}
+        inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                            [(:nodes (:core input)) (:nodes input) [] []
+                             (:calls (:core input)) (:call-edges (:core input)) {}
+                             (:binding-types input) 10 context])
+        row (invoke-c7 'sh08-dse-constraint [descriptor])
+        fact (invoke-c7 'sh08-dse-call-fact [descriptor (:module (:core input))])]
+    (is (= :accepted (:status result) (:status checked)) (pr-str result))
+    (is (= :gravity.type/applied-checked-bare-set-equality (:kind descriptor)))
+    (is (= :sh08-checked-bare-set-equality-v1 (:version descriptor)))
+    (is (= :gravity.type/bool (:type result) (:result-type descriptor)))
+    (is (= pair (:argument-types descriptor) (:parameter-types descriptor)))
+    (is (= [nil nil] (:operand-counts descriptor)))
+    (is (= {:guard :existing-complete-both-set-census
+            :input-premise :immutable-finite-type-conforming-coherent-sets
+            :member-domain :joint-homogeneous-keyword-or-string
+            :maximum-input-elements 1024
+            :logical-work-limit 65536
+            :certificate :not-established
+            :failure :development-rejection}
+           (:runtime-policy descriptor)))
+    (is (= {:left-domain :not-refined :right-domain :not-refined}
+           (:equality-policy descriptor)))
+    (is (= :normal (:application descriptor)))
+    (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)
+           (:capabilities descriptor) (:thrown-error-effects descriptor)))
+    (is (nil? (:member-refinement descriptor)))
+    (is (nil? (:anchor-operand-index descriptor)))
+    (is (= :converged (:convergence-status inferred)))
+    (is (= [] (:diagnostics inferred)))
+    (is (= descriptor (get-in inferred [:type-table :operator])))
+    (is (= :gravity.type/bool (get-in inferred [:type-table :call])))
+    (is (= [row] (:constraints inferred)))
+    (is (= :sh08-checked-bare-set-equality-v1 (:producer-rule row)))
+    (is (= :checked-bare-set-equality (get-in row [:lhs :projection])))
+    (is (= :direct-checked-bare-set-equality (:dispatch fact)))
+    (is (= [] (:effects fact)))
+    (is (= result (derive input (:work-count result))))
+    (is (= :rejected (:status (derive input (dec (:work-count result))))))
+    (is (= :loop-type-work-limit (:reason (derive input (dec (:work-count result))))))
+    (is (= checked (check established (:work-count checked))))
+    (is (= :rejected (:status (check established (dec (:work-count checked))))))
+    (is (= :loop-type-work-limit (:reason (check established (dec (:work-count checked))))))
+    (doseq [changed (checked-dual-bare-set-forgeries descriptor)]
+      (is (= :rejected (:status (check (assoc established :operator changed) 65536)))))
+    (let [source (get-in input [:node :source])
+          long-span {:source (apply str (repeat 400 "s")) :start-byte 0 :end-byte 1}
+          long-input (assoc-in (walk/prewalk-replace {source (assoc source :semantic-span long-span)} input)
+                               [:forms :call :source-span] long-span)
+          long-result (derive long-input 65536)]
+      (is (= :accepted (:status long-result)))
+      (is (> (:work-count long-result) (:work-count result)))
+      (is (= long-result (derive long-input (:work-count long-result))))
+      (is (= :rejected (:status (derive long-input (dec (:work-count long-result)))))))
+    (let [callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "DSE hash")))
+                   (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "DSE equality")))
+                   (toString [] (swap! callbacks conj :format) (throw (AssertionError. "DSE formatting"))))]
+      (doseq [changed [(assoc-in input [:node :source :origin-chain] [opaque])
+                       (assoc-in input [:call :unexpected] opaque)
+                       (assoc-in input [:edge :unexpected] opaque)
+                       (assoc-in input [:bindings :ordering-binding :profile-set] [opaque])
+                       (-> input
+                           (assoc-in [:core :function-records]
+                                     [{:function-syntax-id :owner :function-core-node-id :owner}])
+                           (assoc-in [:node :evaluation :owner-function-syntax-id] opaque))
+                       (assoc-in input [:forms :arg0 :origin-chain] [opaque])]]
+        (is (= :rejected (:status (derive changed 65536))))
+        (is (empty? @callbacks)))
+      (is (= :rejected
+             (:status (check (assoc established :operator (assoc descriptor :unexpected opaque)) 65536))))
+      (is (empty? @callbacks)))
+    (doseq [pair [[:gravity.type/unknown :gravity.type/set]
+                  [:gravity.type/set :gravity.type/unknown]
+                  [:gravity.type/string :gravity.type/set]
+                  [:gravity.type/set :gravity.type/integer]]]
+      (is (= :rejected (:status (derive (atomic-equality-input pair) 65536)))))
+    (doseq [pair [[:gravity.type/unknown :gravity.type/set]
+                  [:gravity.type/set :gravity.type/unknown]
+                  [:gravity.type/string :gravity.type/set]
+                  [:gravity.type/never :gravity.type/never]]]
+      (let [{:keys [core node call nodes bindings types]} (atomic-equality-input pair)]
+        (is (false? (invoke-c7 'sh08-dse-entry? [node call nodes bindings types (:module core)])))))
+    (doseq [pair [[:gravity.type/never :gravity.type/set]
+                  [:gravity.type/set :gravity.type/never]
+                  [:gravity.type/never :gravity.type/never]]]
+      (let [never (derive (atomic-equality-input pair) 65536)]
+        (is (= :accepted (:status never)))
+        (is (= :gravity.type/never (:type never)))
+        (is (= :not-invoked (get-in never [:descriptor :application])))))
+    (is (= :accepted
+           (:status (invoke-c7 'sh08-ae-derive
+                               (let [{:keys [core node call edge nodes bindings types forms]}
+                                     (atomic-equality-input [:gravity.type/string :gravity.type/string])]
+                                 [core node call edge nodes bindings types forms 65536])))))
+    (is (= :accepted
+           (:status (invoke-c7 'sh08-kse-derive
+                               (let [finite {:kind :gravity.type/set :shape :literal
+                                             :element-types [:gravity.type/keyword]}
+                                     {:keys [core node call edge nodes bindings types forms]}
+                                     (atomic-equality-input [finite finite])]
+                                 [core node call edge nodes bindings types forms 65536])))))))
+
+(deftest sh08-checked-dual-bare-set-equality-current-source-composition
+  ;; Genuine G input through the current reader, SH-07 Core, B47 and fresh C7 verification.
+  (let [source-path (fixture-path "accepted" "local-runtime-bare-set-equality" ".gravity")
+        {:keys [core request]} (function-work-policy-current-source source-path)
+        policy {:type-inference-work-allowance 1048576}
+        result (:result (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request policy]))]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when (= :accepted (:status result))
+      (let [core (:canonical-core-artifact request)
+            selected (filter #(= :gravity.type/applied-checked-bare-set-equality
+                                  (get-in result [:type-table (:operator-node-id %) :kind]))
+                             (:calls core))
+            call (first selected)
+            operator-id (:operator-node-id call)
+            id (:core-node-id call)
+            descriptor (get-in result [:type-table operator-id])
+            row (first (filter #(and (= :sh08-checked-bare-set-equality-v1 (:producer-rule %))
+                                     (= id (get-in % [:lhs :core-node-id])))
+                               (:constraint-ledger result)))
+            fact (first (filter #(= id (:call-core-node-id %)) (:call-type-facts result)))
+            report (:verification (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request result policy]))]
+        (is (= 1 (count selected)))
+        (is (= :passed (:status report)))
+        (is (= [:gravity.type/applied-checked-bare-set-equality
+                :sh08-checked-bare-set-equality-v1]
+               ((juxt :kind :version) descriptor)))
+        (is (= [:gravity.type/set :gravity.type/set]
+               (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= :gravity.type/bool (:result-type descriptor)
+               (get-in result [:type-table id])))
+        (is (= [nil nil] (:operand-counts descriptor)))
+        (is (= {:guard :existing-complete-both-set-census
+                :input-premise :immutable-finite-type-conforming-coherent-sets
+                :member-domain :joint-homogeneous-keyword-or-string
+                :maximum-input-elements 1024
+                :logical-work-limit 65536
+                :certificate :not-established
+                :failure :development-rejection}
+               (:runtime-policy descriptor)))
+        (is (= {:left-domain :not-refined :right-domain :not-refined}
+               (:equality-policy descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:effects fact)))
+        (is (= :sh08-checked-bare-set-equality-v1 (:producer-rule row)))
+        (is (= :checked-bare-set-equality (get-in row [:lhs :projection])))
+        (is (= :direct-checked-bare-set-equality (:dispatch fact)))
+        (doseq [changed (checked-dual-bare-set-forgeries descriptor)]
+          (let [mutant (walk/prewalk-replace {descriptor changed} result)
+                rejected (:verification (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request mutant policy]))]
+            (is (= :rejected (:status rejected)))))
+        (is (= (slurp source-path)
+               (slurp (fixture-path "accepted" "local-runtime-bare-set-equality" ".qst"))))))))
