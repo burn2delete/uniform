@@ -22,7 +22,6 @@
            :invalidated-fact-ledger
            :analysis-cache-records
            :proof-and-certificate-usage
-           :residual-cost-report
            :post-pass-verifier-reports
            :lowering-request
            :target-eligibility-report
@@ -84,7 +83,6 @@
          :analysis-cache-records
          (products/analysis-cache-records sha256-hex input-id decisions)
          :proof-and-certificate-usage (products/proof-usage decisions)
-         :residual-cost-report products/residual-cost-report
          :check-elision-record products/check-elision-record
          :effect-reordering-record products/effect-reordering-record
          :safety-outcome-refresh-report products/safety-outcome-refresh-report
