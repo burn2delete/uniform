@@ -27,9 +27,9 @@
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-source-byte-count
-  197102)
+  197074)
 (def ^:private expected-source-revision-id
-  "sha256:b6bfc5e13ff383c90f841a5566797a63f63740fed5fc5351f6b40141d12dd94b")
+  "sha256:6c5f4c52cde5777c9adfdac70bb98d53aa06d69243945fe999bcca9c46e786b4")
 ;; Full-artifact projection/census pins remain historical until a fresh artifact
 ;; run renews them. Static source-pin refresh does not confer artifact coverage.
 (def ^:private expected-sh06-semantic-projection-id
@@ -335,7 +335,7 @@
       (is (= expected-hash (value-sha256-id (nth (get by-name name) 2)))))
     (doseq [name target-builder-names]
       (is (= 2 (count (nth (get by-name name) 2))) (str name)))
-    (is (= 881 (count if-calls)))
+    (is (= 880 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path c14-relative-path)))))

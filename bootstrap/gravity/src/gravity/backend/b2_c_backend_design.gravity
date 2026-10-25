@@ -571,7 +571,6 @@
    :process-result :i32
    :process-result-range [0 255]
    :maximum-conditional-count 1
-   :maximum-data-flow-edge-count 256
    :runtime-helpers []
    :root-contextual-b1-verification-required? true
    :raw-structural-validator-is-seal-verifier? false
@@ -1274,8 +1273,7 @@
         (if (map? (get function :blocks))
           (if (contains? #{1 4} (count (get function :blocks)))
             (if (string? (get function :entry))
-              (if (<= (count (get function :entry)) 256)
-                (if (contains? (get function :blocks)
+              (if (contains? (get function :blocks)
                                (get function :entry))
                   (if (map? (get function :source))
                     (if (map? (get function :facts))
@@ -1283,7 +1281,6 @@
                       false)
                     false)
                   false)
-                false)
               false)
             false)
           false)
@@ -1614,8 +1611,7 @@
       (if (b2-sha256-id? (get source :origin-id))
         (if (b2-sha256-id? (get source :enclosing-syntax-origin-id))
           (if (vector? (get source :generated-origin))
-            (if (<= (count (get source :generated-origin)) 16)
-              (if (b2-generated-origins-valid?
+            (if (b2-generated-origins-valid?
                    (get source :generated-origin))
                 (if (= (get source :generated?) true)
                   (> (count (get source :generated-origin)) 0)
@@ -1623,7 +1619,6 @@
                     (= (get source :generated-origin) [])
                     false))
                 false)
-              false)
             false)
           false)
         false)
@@ -1646,8 +1641,7 @@
            [:gravity/mir-operation (get operation :op-id)
             #{} #{} :none :hosted nil :passed])
       (if (string? (get operation :op-id))
-        (if (<= (count (get operation :op-id)) 256)
-          (if (string? (get operation :block-id))
+        (if (string? (get operation :block-id))
             (if (vector? (get operation :operands))
               (if (b2-operation-source-record-valid?
                    (get operation :source))
@@ -1659,7 +1653,6 @@
                 false)
               false)
             false)
-          false)
         false)
       false)
     false))
@@ -1683,8 +1676,7 @@
            [:gravity/mir-block block-id []
             {:module-data-flow-graph-reference true}])
       (if (string? block-id)
-        (if (<= (count block-id) 256)
-          (if (vector? (get block :instructions))
+        (if (vector? (get block :instructions))
             (if (vector? (get block :predecessors))
               (if (vector? (get block :successors))
                 (if (vector? (get block :dominators))
@@ -1696,7 +1688,6 @@
                 false)
               false)
             false)
-          false)
         false)
       false)
     false))
@@ -2058,7 +2049,7 @@
     (= (count operands) 1)
     (if (= opcode :local-binding)
       (= (count operands) 1)
-      (if (> (count operands) 0) (<= (count operands) 128) false))))
+      (> (count operands) 0))))
 
 (defn b2-operation-reason
   [operation operations operation-index block-order]
@@ -2376,9 +2367,7 @@
               (if (b2-operations-envelope-valid? operations)
                 (if (b2-fact-table-closure-valid? mir operations)
                   (if (b2-cfg-valid? mir function block-order operations)
-                    (if (<= (count (get (get mir :data-flow-graph) :edges))
-                            256)
-                      (if (b2-data-flow-valid?
+                    (if (b2-data-flow-valid?
                            mir function block-order operations)
                         (if (b2-return-valid?
                              function block-order operations)
@@ -2389,8 +2378,6 @@
                            :reason :return-type-or-dominance-closure})
                         {:status :rejected :kind :input
                          :reason :data-flow-value-closure})
-                      {:status :rejected :kind :unsupported
-                       :reason :bounded-data-flow-edge-count})
                     {:status :rejected :kind :input
                      :reason :control-flow-closure})
                   {:status :rejected :kind :input

@@ -171,7 +171,6 @@
           (is (true? (invoke-c14-kernel 'c14-equality-translation-valid? [result policy])))
           (is (true? (invoke-c14-kernel 'c14-llvm-bounded-mir-surface-valid? [result policy])))
           (is (false? (invoke-c14-kernel 'c14-c-source-operation-valid? [:constant :integer-eq])))
-          (is (<= (count (tree-seq coll? seq delta)) 128))
           (when (= [left right repeated?] [2 2 false])
             (println "comparison delta carrier nodes (including map entries):" (count (tree-seq coll? seq delta))))
           (doseq [changed-delta [(assoc delta :unexpected true) (assoc delta :edges [])

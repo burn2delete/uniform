@@ -30,9 +30,9 @@
 (def ^:private accepted-fixture-relative-path
   "bootstrap/clojure/fixtures/self-hosting/sh-16/accepted/mir-optimizations.gravity")
 (def ^:private expected-source-byte-count
-  173667)
+  173179)
 (def ^:private expected-source-revision-id
-  "sha256:492482f362e3f4870e89bb403abc6b8a847939784b34a7533afd71a5c37d6e9a")
+  "sha256:428b21a53d2600e51e523adb3afeae501dc95570338435c17d6c3881d3f62966")
 ;; Full-artifact projection/census pins remain historical until a fresh artifact
 ;; run renews them. Static source-pin refresh does not confer artifact coverage.
 (def ^:private expected-sh06-semantic-projection-id
@@ -216,7 +216,6 @@
     sh16-c13-branch-bool-literal?
     sh16-keyword-vector-from?
     sh16-apply-pass
-    c13-semantic-report-checks
     c13-content-binding-valid?
     sh16-source-span-valid?
     sh16-include-local-dead-folds-from
@@ -495,7 +494,7 @@
                               :when (and (= 'defn (first form))
                                          (nil? (quoted-body form)))] name))
         if-calls (mapcat #(collect-calls 'if %) (vals definitions))]
-    (is (= 192 (count forms)))
+    (is (= 191 (count forms)))
     (is (= 'gravity.compiler.c13-mir-optimization-passes (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -512,18 +511,18 @@
                          :retirement-objective :ambient-authority-denied])))
     (is (= expected-definition-names (set (keys definitions))))
     (is (= 9 (count (filter #(= 'def (first %)) (vals definitions)))))
-    (is (= 182 (count (filter #(= 'defn (first %)) (vals definitions)))))
+    (is (= 181 (count (filter #(= 'defn (first %)) (vals definitions)))))
     (is (= quoted-definition-names
            (set (for [[name form] definitions :when (quoted-body form)] name))))
     (is (= executable-definition-names executable))
-    (is (= 177 (count executable)))
+    (is (= 176 (count executable)))
     (doseq [[name expected-hash] expected-contract-value-hashes]
       (is (= expected-hash (value-sha256-id (nth (get definitions name) 2)))))
     (is (= expected-diagnostic-catalog
            (nth (get definitions 'c13-optimization-diagnostic-catalog) 2)))
     (is (= expected-policy
            (nth (get definitions 'sh16-optimization-policy) 3)))
-    (is (= 692 (count if-calls)))
+    (is (= 688 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path c13-relative-path)))))

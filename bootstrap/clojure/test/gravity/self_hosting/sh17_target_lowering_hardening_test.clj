@@ -71,6 +71,34 @@
 (defn- digest [character]
   (str "sha256:" (apply str (repeat 64 character))))
 
+(deftest sh17-equality-delta-positions-follow-vector-bounds
+  (doseq [index [0 65536 1000000000]]
+    (is (true? (invoke 'c14-equality-index? [index]))))
+  (doseq [index [-1 0.5 nil "0"]]
+    (is (false? (invoke 'c14-equality-index? [index]))))
+  (let [rows (vec (repeat 65536 :existing))
+        restored (invoke 'c14-equality-restore-rows [rows [{:index 65536 :edge :inserted}] :edge])]
+    (is (= 65537 (count restored)))
+    (is (= :inserted (peek restored)))
+    (is (= rows (pop restored))))
+  (doseq [additions [[{:index 2 :edge :outside}]
+                     [{:index -1 :edge :negative}]
+                     [{:index 0 :edge :one} {:index 0 :edge :duplicate}]]]
+    (is (nil? (invoke 'c14-equality-restore-rows [[] additions :edge])))))
+
+(deftest sh17-host-and-gravity-target-policies-agree
+  (doseq [[function policy unsupported]
+          [['c14-policy-scope-valid? (bootstrap/p15-s23-c14-target-policy)
+            bootstrap/p15-s23-c14-llvm-unsupported-surface]
+           ['c14-c-policy-scope-valid? (bootstrap/p15-s23-c14-c-target-policy)
+            bootstrap/p15-s23-c14-c-unsupported-surface]]]
+    (let [input {:target-policy policy :unsupported-surface unsupported
+                 :proof-target-metadata {:entries [] :proofless-metadata-rejected? true}
+                 :request-id (digest "a")}]
+      (is (true? (invoke function [input])))
+      (is (false? (invoke function [(assoc-in input [:target-policy :unexpected] true)])))))
+  (is (not (contains? (bootstrap/p15-s23-c14-wasm-target-policy) :maximum-operation-count))))
+
 (defn- target [backend]
   (case backend
     :llvm {:backend :llvm

@@ -54,17 +54,21 @@
 (deftest sh16-validates-original-true-bool-branch-specialization (check-original "true"))
 (deftest sh16-validates-original-false-bool-branch-specialization (check-original "false"))
 
-(deftest sh16-literal-bool-report-does-not-require-retired-accounting-evidence
+(deftest sh16-literal-bool-report-requires-ordered-semantic-checks
   (let [{:keys [mir report after output-report]} @(get cases "true")
-        semantic-report (update output-report :checks
-                                #(vec (remove #{:bounded-input-carriers} %)))]
-    (doseq [candidate [output-report semantic-report]]
-      (is (= :passed (:translation-validation-status
-                       (consume mir report after candidate)))))
-    (doseq [checks [(vec (rest (:checks semantic-report)))
-                    (vec (reverse (:checks semantic-report)))
-                    (conj (:checks semantic-report) :unknown-semantic-check)]]
-      (let [result (consume mir report after (assoc semantic-report :checks checks))]
+        checks (:checks output-report)]
+    (is (= :input-carrier-kinds (first checks)))
+    (is (= 9 (count checks)))
+    (is (= :passed (:translation-validation-status
+                     (consume mir report after output-report))))
+    (doseq [candidate (concat
+                      (map (fn [index]
+                             (into (subvec checks 0 index) (subvec checks (inc index))))
+                           (range (count checks)))
+                      [(vec (reverse checks))
+                       (conj checks :unknown-semantic-check)
+                       (assoc checks 0 :bounded-input-carriers)])]
+      (let [result (consume mir report after (assoc output-report :checks candidate))]
         (is (= :rejected (:status result)))
         (is (= ["C13-VERIFY"] (:diagnostics result)))))))
 

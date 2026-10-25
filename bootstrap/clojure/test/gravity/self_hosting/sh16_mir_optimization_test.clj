@@ -1811,16 +1811,6 @@
            (invoke-engine 'sh16-request-error
                           [(update subject :operations conj (first constants))])))))
 
-(deftest sh16-keeps-semantic-report-checks-independent-of-retired-accounting-labels
-  (let [semantic [:fresh-original-mir-verification :complete-after-equality]
-        checks #(invoke-engine 'c13-semantic-report-checks [%])]
-    (is (= semantic (checks semantic)))
-    (is (= semantic (checks (into [:bounded-input-carriers] semantic))))
-    (is (= semantic (checks (conj semantic :bounded-c11-input-carriers))))
-    (is (not= semantic (checks (conj semantic :unknown-semantic-check))))
-    (is (not= semantic (checks (vec (reverse semantic)))))
-    (is (nil? (checks (apply list semantic))))))
-
 (deftest sh16-structural-preflight-rejects-opaque-map-components-without-callbacks
   ;; Built-in persistent maps only; custom Map iteration can run host callbacks.
   (doseq [[make-map class-name] [[array-map "clojure.lang.PersistentArrayMap"]

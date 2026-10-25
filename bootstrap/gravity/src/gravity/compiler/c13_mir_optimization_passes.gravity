@@ -1494,18 +1494,6 @@
          :nonclaims [:public-admission :independent-acceptance :fresh-output-verification
                      :lowering :native-execution :migration :self-hosted?]}))))
 
-(defn c13-semantic-report-checks [checks]
-  ; Retired accounting labels are not semantic evidence.
-  (if (vector? checks)
-    (loop [index 0 result []]
-      (if (= index (count checks)) result
-        (let [check (get checks index)]
-          (recur (+ index 1)
-                 (if (if (= :bounded-input-carriers check)
-                       true (= :bounded-c11-input-carriers check))
-                   result (conj result check))))))
-    nil))
-
 (defn sh16-c13-literal-bool-report-shape? [report]
   (if (c13-reconstruction-bounded? report)
     (if (sh16-c13-evidence-exact-keys? report
@@ -1518,13 +1506,13 @@
          (= :original-zero-arity-literal-bool-diamond (get report :scope))
          (sh16-c13-evidence-exact-keys? (get report :input-bindings)
            #{:checked-core-artifact-id :before-module-id :after-module-id :relation})
-         (= [:fresh-original-mir-verification
+         (= [:input-carrier-kinds :fresh-original-mir-verification
              :original-zero-arity-hosted-jvm-bool-diamond
              :literal-selected-edge :cfg-and-dominance-reconstruction
              :terminator-and-value-use-reconstruction
              :complete-after-equality :type-effect-safety-origin-preservation
              :unchanged-instructions-joins-fact-check-and-proof-tables]
-            (c13-semantic-report-checks (get report :checks)))
+            (get report :checks))
          (= [] (get report :diagnostics))
          (= [:generic-c11-verifier :generic-optimization-verifier
              :independent-acceptance :optimizer-credit :admission-credit :optimized-execution :c14-credit
@@ -3548,7 +3536,7 @@
         (if (= :passed (get verification :status))
           (if (= :proof-reference-shape-only (get verification :scope))
             (if (= (sh16-c13-c12-checks)
-                   (c13-semantic-report-checks (get verification :checks)))
+                   (get verification :checks))
               (if (= (sh16-c13-c12-nonclaims)
                      (get verification :nonclaims))
                 (if (= evidence (get verification :expected))

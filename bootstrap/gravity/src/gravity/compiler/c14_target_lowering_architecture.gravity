@@ -1154,7 +1154,7 @@
 
 
 (defn c14-equality-index? [value]
-  (if (integer? value) (if (>= value 0) (<= value 65535) false) false))
+  (if (integer? value) (>= value 0) false))
 
 (defn c14-equality-edge [operation index]
   {:from (get (get operation :operands) index) :consumer-kind :operation
