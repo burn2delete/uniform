@@ -68,8 +68,8 @@
                (catch Throwable _ false)))
         base-checks
         (cond->
-        {:bounded-artifact-carrier? true
-         :bounded-semantic-components? true
+        {:trusted-artifact-carrier? true
+         :trusted-semantic-components? true
          :exact-kind? (= :gravity/sh06-resolution-artifact (:kind artifact))
          :accepted-status? (= :accepted (:status artifact))
          :document-set-current?
@@ -174,14 +174,6 @@
          :execution-boundary-current?
          (= sh06-resolution-execution-boundary-contract
             (:execution-boundary artifact))
-         :component-transport-bounds-current?
-         (= sh06-resolution-transport-bounds
-            (get-in artifact
-                    [:execution-boundary :component-transport-bounds]))
-         :aggregate-artifact-bounds-current?
-         (= sh06-resolution-artifact-bounds
-            (get-in artifact
-                    [:execution-boundary :aggregate-artifact-bounds]))
          :provenance-current?
          (let [source-revision-id
                (get-in boundary

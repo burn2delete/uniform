@@ -73,12 +73,12 @@
    (let [legacy? (= ::legacy context)
          aggregate-validation
          (sh06-resolution-carrier-validation
-          artifact sh06-resolution-artifact-bounds)
+          artifact)
          carrier-ok? (= :passed (:status aggregate-validation))
          boundary (when (and carrier-ok? (map? artifact))
                     (:gravity-resolution-boundary artifact))
          shape-checks
-         {:bounded-artifact-carrier? carrier-ok?
+         {:trusted-artifact-carrier? carrier-ok?
           :top-level-artifact-map? (and carrier-ok? (map? artifact))
           :exact-artifact-shape?
           (and carrier-ok? (map? artifact)
@@ -100,21 +100,11 @@
                       (vals component-validations)))
          preflight-checks
          (assoc shape-checks
-                :bounded-semantic-components? (boolean components-ok?))
+                :trusted-semantic-components? (boolean components-ok?))
          preflight-failed
          (->> preflight-checks
               (keep (fn [[key passed?]] (when-not passed? key)))
-              vec)
-         preflight-observations
-         (when (and construction?
-                    (seq preflight-failed)
-                    (= :maximum-carrier-nodes
-                       (:reason aggregate-validation)))
-           (merge
-            {:normal-aggregate-bounds sh06-resolution-artifact-bounds
-             :diagnostic-measurement-bounds
-             sh06-resolution-diagnostic-measurement-bounds}
-            (sh06-resolution-candidate-measurements artifact)))]
+              vec)]
      (if (empty? preflight-failed)
        (if legacy?
          (sh06-resolution-artifact-verification-bounded*
@@ -127,7 +117,6 @@
         :failed-checks preflight-failed
         :source-path "<sh06-resolution-artifact>"
         :carrier-validation aggregate-validation
-        :preflight-observations preflight-observations
         :component-validations component-validations
         :gravity-verification nil
         :upstream-verification nil})))))

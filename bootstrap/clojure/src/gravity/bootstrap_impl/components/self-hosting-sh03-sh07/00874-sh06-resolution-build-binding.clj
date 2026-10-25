@@ -118,28 +118,6 @@
        function {:contained-host-error (.getName (class error))
                  :cause-message (.getMessage error)}))))
 
-(def sh06-resolution-transport-bounds
-  ;; Per-component request, replay, result, and upstream carrier limits.  These
-  ;; remain strict even though the aggregate artifact serializes several
-  ;; independently bounded products and projections together.
-  {:maximum-carrier-nodes 33554432
-   :maximum-carrier-depth 64
-   :maximum-container-width 131072})
-
-(def sh06-resolution-artifact-bounds
-  ;; The checked-core self-input exceeds the earlier reader-sized envelope.
-  ;; Keep a finite power-of-two aggregate ceiling while retaining independent
-  ;; component, depth, and width checks.
-  {:maximum-carrier-nodes 67108864
-   :maximum-carrier-depth 64
-   :maximum-container-width 131072
-   ;; The serialized ceiling is checked before EDN parsing.
-   :maximum-serialized-bytes 1073741824})
-
-(def sh06-resolution-diagnostic-measurement-bounds
-  ;; Failure-only measurement ceiling.  This never authorizes transport or
-  ;; artifact acceptance; it exists to replace blind resource-bound changes
-  ;; with an exact finite observation when the normal aggregate gate rejects.
-  {:maximum-carrier-nodes 134217728
-   :maximum-carrier-depth 64
-   :maximum-container-width 131072})
+;; Temporary value for external 00580/00897 two-argument callers. The SH06
+;; carrier validator ignores that obsolete argument; this is not a quota.
+(def sh06-resolution-artifact-bounds nil)

@@ -7,14 +7,13 @@
         facts (:facts diagnostic)
         details (:rule-specific facts)
         ordinal (get-in facts [:semantic-span :ordinal])
-        width (:maximum-container-width sh06-resolution-transport-bounds)
         reference-fields [:name :qualifier :position :scope-chain]]
     (when (and (= :c5-name-resolution (:diagnostic-family diagnostic))
                (= :name-resolution (:stage diagnostic))
                (not (contains? diagnostic :origin-chain))
                (map? facts) (map? details)
-               (vector? references) (<= (count references) width)
-               (vector? syntax-stream) (<= (count syntax-stream) width)
+               (vector? references)
+               (vector? syntax-stream)
                (integer? ordinal) (pos? ordinal) (<= ordinal (count references)))
       (let [reference (get references (dec ordinal))
             candidates (:candidate-bindings diagnostic)
@@ -164,8 +163,6 @@
            :digest-resolver :clojure-stage0
            :envelope-binder :clojure-stage0
            :compatibility-adapter :clojure-stage0
-           :component-transport-bounds sh06-resolution-transport-bounds
-           :aggregate-artifact-bounds sh06-resolution-artifact-bounds
            :self-hosted? false}
           :capability-based-proof nil
           :diagnostics []}
