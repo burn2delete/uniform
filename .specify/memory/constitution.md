@@ -1,6 +1,6 @@
 # Uniform adoption constitution
 
-Version: 1.0.0 | Adopted: 2026-10-25 | Change authority: Deus (parent)
+Version: 1.1.0 | Adopted: 2026-10-25 | Change authority: Deus (parent)
 
 This is a concise record of existing user decisions for Spec Kit planning.
 It does not replace [AGENTS.md](../../AGENTS.md), the
@@ -54,3 +54,16 @@ C12 cybersecurity, the denied oracle Git action and advisory reviewer wake
 remain restricted and cannot be retried, transferred or reframed here. The old
 coordinator hourly automation remains paused. This adoption PR is reviewed by
 Deus; it does not grant itself merge authority.
+
+## Semantic implementation names
+
+Matt's adopted naming rule: planning identifiers such as `SH07`, `C2` and `C16`
+belong in spec/task metadata and contract cross-references, not new implementation
+filenames, namespaces, application names or API names. Use short recognizable
+subsystem/behavior words from the actual architecture; see
+[semantic naming guidance](../semantic-names.md). No new numbered replacement
+codes or numeric naming-length quota is introduced. Existing names are explicit
+incremental migration debt, not a global development stop. Real protocol, schema,
+wire and diagnostic identifiers with compatibility meaning are distinct; preserve
+them unless their owning contract explicitly approves a versioned migration.
+Do not rename restricted work to evade a classifier or transfer its restrictions.
