@@ -20875,6 +20875,61 @@
         (is (= :rejected (:status result)))
         (is (= reason (:reason result)))))))
 
+(deftest sh08-union-branch-definition-unmetered-development-kernel
+  ;; Normalized Core DATA exercises branch-name admission and resolution only.
+  ;; This does not establish authenticated source or executable union behavior.
+  (let [names (mapv #(symbol (str "branch-" %)) (range 65))
+        last-name (peek names)
+        match {:union-type :union :scrutinee-definition 'constructed-union
+               :branch-definitions names}
+        program {:record-construction-definition 'constructed-record
+                 :record-access-definition 'accessed-record
+                 :union-construction-definition 'constructed-union
+                 :union-match-definition 'matched-union}
+        sources (concat [['program program]
+                         ['constructed-record {:type :record :fields []}]
+                         ['accessed-record {:record-definition 'constructed-record :field :value}]
+                         ['constructed-union {:type :union :variant :last :payload 7}]
+                         ['matched-union match]]
+                        (map-indexed (fn [index name]
+                                       [name {:variant (keyword (str "variant-" index))
+                                              :binding :value :pattern-payload-type :gravity.type/integer
+                                              :result index}]) names))
+        core {:definitions (mapv (fn [[name _]] {:name name :value-node-id name}) sources)
+              :nodes (mapv (fn [[name value]]
+                             {:node-id name :core-form :collection-literal
+                              :attributes {:literal-kind :map :source-value value}}) sources)}
+        valid-names? #(invoke-c7 'sh08-ram-symbol-vector? [%])
+        valid-match? #(invoke-c7 'sh08-ram-match-shape? [%])
+        resolve-program #(invoke-c7 'sh08-ram-resolve-program [% 'program])
+        resolved (resolve-program core)]
+    (is (true? (valid-names? names)))
+    (is (true? (valid-match? match)))
+    (is (= :accepted (:status resolved)))
+    (is (= names (mapv #(get-in % [:definition :name]) (:branch-sources resolved))))
+    (is (= 64 (get-in resolved [:branch-sources 64 :family :result])))
+    (doseq [invalid [[] (apply list names) (assoc names 64 (first names))
+                     (assoc names 64 :not-a-symbol)]]
+      (is (false? (valid-names? invalid)))
+      (is (false? (valid-match? (assoc match :branch-definitions invalid))))
+      (let [changed (assoc-in core [:nodes 4 :attributes :source-value :branch-definitions] invalid)
+            result (resolve-program changed)]
+        (is (= :rejected (:status result)))
+        (is (= :union-match-shape-invalid (:reason result)))))
+    (doseq [invalid [(assoc match :unexpected true)
+                     (dissoc match :scrutinee-definition)
+                     (assoc match :scrutinee-definition :not-a-symbol)
+                     (assoc match :union-type 'not-a-keyword)]]
+      (is (false? (valid-match? invalid))))
+    (doseq [changed [(update core :definitions pop)
+                     (update core :definitions conj (peek (:definitions core)))
+                     (assoc-in core [:nodes 69 :attributes :literal-kind] :vector)
+                     (assoc-in core [:nodes 69 :attributes :source-value] [])]]
+      (let [result (resolve-program changed)]
+        (is (= :rejected (:status result)))
+        (is (= :match-branch-definition-required (:reason result)))
+        (is (= last-name (:actual result)))))))
+
 (deftest sh08-verifier-unmetered-native-data
   (let [data #(invoke-c7 'sh08-vf-data [%])
         original #(invoke-c7 'sh08-vf-original-data [%])
