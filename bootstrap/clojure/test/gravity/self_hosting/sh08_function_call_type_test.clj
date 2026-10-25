@@ -10172,6 +10172,130 @@
                                  form (tree-seq coll? seq (get definitions name)) :when (map? form)]
                              {:owner name :width (count form) :native-keywords (every? keyword? (keys form))}))})))))
 
+(defn- gis3-semantic-census-work-model [target]
+  ;; Independent source model in N (maximum original family width) and D
+  ;; (two complete original comparison bounds plus 64 wrapper units).
+  ;; Comparison Maps have recursively checked Keyword keys; active source
+  ;; Sets reject. Source/data/index children keep separate ledgers.
+  (let [definitions (with-open [reader (java.io.PushbackReader. (io/reader (path c7-source-relative-path)))]
+                      (binding [*read-eval* false]
+                        (loop [out {}]
+                          (let [form (read {:eof ::end} reader)]
+                            (if (= ::end form) out
+                              (recur (if (and (seq? form) (= 'defn (first form))) (assoc out (second form) form) out)))))))
+        owned '#{sh08-gis3-keyword-record? sh08-gis3-ids? sh08-gis3-allowed-keyword?
+                 sh08-gis3-comparison-data? sh08-gis3-source-span? sh08-gis3-source-match?
+                 sh08-gis3-entry-header sh08-gis3-entry-exclusions? sh08-gis3-entry-families?
+                 sh08-gis3-entry-collections sh08-gis3-evaluation-order? sh08-gis3-entry-call?
+                 sh08-gis3-entry-parameter-reference? sh08-gis3-entry-census sh08-gis3-entry-unify
+                 sh08-gis3-pick sh08-gis3-view-get sh08-pc-id? sh08-sse-ids? sh08-ma-form-source
+                 sh08-ix-literal? sh08-pe-select sh08-ft-call-valid? sh08-ft-call-edge-valid?
+                 sh08-ft-caller-edge-valid? sh08-ft-local-callee-edge-valid? sh08-ft-nonlocal-callee-edge-valid?
+                 sh08-ft-definition-by-binding-id sh08-ft-definition-names-local-function? sh08-ft-record-shape?
+                 sh08-ft-all-true? sh08-ft-function-type-skeleton sh08-ft-function-type-skeleton-base
+                 sh08-ft-apply-declarations sh08-primitive-type-from-literal-kind}
+        scalar-comparisons '#{sh08-gis3-keyword-record? sh08-gis3-ids? sh08-gis3-allowed-keyword?
+                              sh08-gis3-comparison-data? sh08-gis3-source-span? sh08-gis3-entry-families?
+                              sh08-gis3-evaluation-order? sh08-pc-id? sh08-sse-ids? sh08-ft-all-true?}
+        metrics [:steps :cells :field-gets :private-gets :deep-equalities :id-equalities :map-writes :set-tests :characters]
+        zero (zipmap metrics (repeat {})) cache (atom {}) active (atom #{}) opaque (atom #{})]
+    (letfn [(p [value] (case value :n {[1 0] 1} :d {[0 1] 1} (if (zero? value) {} {[0 0] value})))
+            (plus [a b] (merge-with +' a b))
+            (times [a b]
+              (reduce (fn [out [[i j] x [k l] y]]
+                        (when (> (+ i j k l) 6) (throw (ex-info "Semantic model degree exceeded" {})))
+                        (update out [(+ i k) (+ j l)] (fnil +' 0) (*' x y)))
+                      {} (for [[a x] a [b y] b] [a x b y])))
+            (upper [a b] (merge-with max a b))
+            (add [& values] (reduce #(merge-with plus %1 %2) zero values))
+            (sum [values] (apply add values))
+            (unit [metric value] (assoc zero metric (if (map? value) value (p value))))
+            (scale [factor value] (into {} (map (fn [[k v]] [k (times factor v)]) value)))
+            (loop-bound [owner bindings]
+              (let [name (first bindings) init (second bindings)]
+                (cond (vector? init) (p (count init))
+                      (and (= owner 'sh08-gis3-comparison-data?) (= name 'pending)) (p :d)
+                      (contains? '#{sh08-gis3-keyword-record? sh08-gis3-ids? sh08-gis3-allowed-keyword?
+                                    sh08-gis3-comparison-data? sh08-gis3-evaluation-order?} owner) (p 1024)
+                      (= owner 'sh08-sse-ids?) (p 6)
+                      (and (= owner 'sh08-gis3-entry-families?) (= name 'remaining) (= init 'families)) (p 7)
+                      (and (= owner 'sh08-gis3-entry-families?) (= name 'j)) (p 5)
+                      (and (= name 'i) (contains? '#{sh08-gis3-entry-collections sh08-gis3-entry-exclusions?} owner)) (p 1024)
+                      (and (= name 'i) (= owner 'sh08-gis3-entry-families?) (not= init 0)) (p 1024)
+                      (and (= name 'i) (= owner 'sh08-gis3-entry-families?)) (p 1024)
+                      (contains? owned owner) (p :n)
+                      :else (throw (ex-info "Unassigned semantic source loop" {:owner owner :bindings bindings})))))
+            (function-cost [name width]
+              (let [key [name width]]
+                (or (get @cache key)
+                    (do
+                      (when (contains? @active key) (throw (ex-info "Unbounded semantic helper recursion" {:callee name})))
+                      (swap! active conj key)
+                      (let [[_ _ params & body] (get definitions name)
+                            raw (add (unit :steps (+ 8 (* 4 (count params)))) (unit :cells (* 2 (count params)))
+                                     (sum (map #(cost name % (p (or width 1024))) body)))
+                            result (if width (scale (p (inc width)) raw) raw)]
+                        (swap! active disj key) (swap! cache assoc key result) result)))))
+            (cost [owner form remaining]
+              (cond
+                (map? form) (add (unit :steps 1) (unit :cells (* 2 (count form))) (unit :map-writes (count form))
+                                 (sum (map #(cost owner % remaining) (mapcat identity form))))
+                (vector? form) (add (unit :steps 1) (unit :cells (count form)) (sum (map #(cost owner % remaining) form)))
+                (set? form) (add (unit :steps 1) (unit :cells (count form)) (unit :set-tests (count form))
+                                 (sum (map #(cost owner % remaining) form)))
+                (not (seq? form)) (unit :steps 1)
+                :else
+                (let [[op & args] form]
+                  (case op
+                    if (add (unit :steps 1) (cost owner (first args) remaining)
+                            (merge-with upper (cost owner (second args) remaining) (cost owner (nth args 2) remaining)))
+                    let (let [[bindings & body] args n (quot (count bindings) 2)]
+                          (add (unit :steps (inc n)) (unit :cells n)
+                               (sum (map #(cost owner % remaining) (take-nth 2 (rest bindings))))
+                               (sum (map #(cost owner % remaining) body))))
+                    loop (let [[bindings & body] args n (quot (count bindings) 2) bound (loop-bound owner bindings)]
+                           (add (unit :steps (inc n)) (unit :cells n)
+                                (sum (map #(cost owner % remaining) (take-nth 2 (rest bindings))))
+                                (scale (plus bound (p 1))
+                                       (add (unit :steps (* 2 n)) (unit :cells (* 2 n))
+                                            (sum (map #(cost owner % bound) body))))))
+                    recur (add (unit :steps (inc (count args))) (unit :cells (* 2 (count args)))
+                               (sum (map #(cost owner % remaining) args)))
+                    (let [base (add (unit :steps 1) (unit :cells (count args)) (sum (map #(cost owner % remaining) args)))]
+                      (cond
+                        (and (= owner 'sh08-ft-all-true?) (= op owner))
+                        (add base (unit :steps 12) (unit :cells 2))
+                        (= op 'sh08-ft-all-true?)
+                        (if (vector? (first args)) (add base (function-cost op (count (first args))))
+                          (throw (ex-info "Unbounded all-true input" {:owner owner :form form})))
+                        (contains? owned op) (add base (function-cost op nil))
+                        (= op 'sh08-ft-call-constraints)
+                        (do (swap! opaque conj op) (add base (unit :steps 32) (unit :cells 12)))
+                        (contains? definitions op) (throw (ex-info "Unmodeled semantic helper" {:owner owner :callee op}))
+                        :else
+                        (add base
+                          (case op
+                            get (unit (if (= owner 'sh08-gis3-comparison-data?) :private-gets :field-gets) 1)
+                            = (unit (if (contains? scalar-comparisons owner) :id-equalities :deep-equalities) 1)
+                            assoc (add (unit :map-writes 1) (unit :cells (dec (count args))))
+                            contains? (unit :set-tests 1)
+                            conj (if (= owner 'sh08-gis3-comparison-data?) (unit :cells 1)
+                                   (add (unit :cells 1024) (unit :set-tests 1)))
+                            rest (unit :cells remaining)
+                            keys (add (unit :steps 1024) (unit :cells 1024))
+                            vec (add (unit :steps 1024) (unit :cells 1024))
+                            set (add (unit :steps 1024) (unit :cells 1024) (unit :set-tests 1024))
+                            str (unit :characters 1)
+                            zero))))))))]
+      (let [model (function-cost target nil)
+            weights {:steps (p 1) :cells (p 1) :field-gets (p 74826) :private-gets (p 1)
+                     :deep-equalities (p :d) :id-equalities (p 74826) :map-writes (p 74826)
+                     :set-tests (p 74826) :characters (times (p 3) (p :d))}
+            fee (reduce plus {} (for [[metric weight] weights] (times weight (get model metric))))]
+        {:metrics model :weights weights :fee-polynomial (into (sorted-map) fee)
+         :helper-count (count @cache) :separately-paid-legacy-children @opaque
+         :legacy-child-new-construction-payment-established (empty? @opaque)}))))
+
 (deftest sh08-gis3-source-view-work-model-development-kernel
   (let [model (gis3-source-view-work-model)
         index-model (gis3-source-view-work-model 'sh08-gis3-index)
@@ -21530,6 +21654,121 @@
           :total-declared-work exact :full-original-DATA-paid-in-this-test false
           :complete-entry-census-implemented false :B47-verification-complete false
           :public-GIS-routing false :numeric-proof-established false})))
+
+(defn- gis3-unpriced-semantic-inspection [{:keys [core bindings forms target]}]
+  ;; Development inspection only. Existing DATA/index components are fully
+  ;; paid; new semantic/control/comparison payment is not established here.
+  (let [fields [:module :preserved-resolution :nodes :calls :call-edges :function-records :definitions
+                :reference-uses :var-references :mutations :recur-targets :recur-transfers
+                :recursion-components :lexical-bindings :control-flow]
+        rows (conj (mapv core fields) bindings forms)
+        data-budget (+ 512 80903 (:B (gis3-independent-physical-data-fee rows)))
+        data (invoke-c7 'sh08-gis3-entry-original-data [core bindings forms data-budget])]
+    (if (= :entry-original-data-payment-complete (:status data))
+      (let [tables [[(:nodes core) :node-id] [(:calls core) :core-node-id] [(:call-edges core) :call-core-node-id]
+                    [(:function-records core) :function-syntax-id] [(:definitions core) :binding-id]
+                    [(:reference-uses core) :core-node-id] [bindings :binding-id] [forms :form-id]
+                    [(get-in core [:preserved-resolution :resolution-table]) :reference-syntax-id]
+                    [(:control-flow core) :core-node-id] [(:recur-targets core) :target-id]
+                    [(:var-references core) :core-node-id] [(:mutations core) :core-node-id]
+                    [(:recur-transfers core) :recur-core-node-id] [(:lexical-bindings core) :binding-id]]
+            index-budget (+ 512 270910
+                            (reduce + (for [[values key] tables :let [n (count values)]]
+                                        (+ 2697 (* 2615 n) (* 74 n n)
+                                           (reduce + 0 (map #(let [id (get % key)] (* 2 (+ 2 (if (string? id) (count id) 0)))) values))))))
+            indexed (invoke-c7 'sh08-gis3-entry-indexes [(:rows data) index-budget])]
+        (if (= :entry-indexes-complete (:status indexed))
+          {:stage :unpriced-semantic-inspection
+           :result (invoke-c7 'sh08-gis3-entry-unify [core (:indexes indexed) target])
+           :original-DATA-work (:work-count data) :fresh-index-work (:work-count indexed)}
+          {:stage :original-index :result indexed}))
+      {:stage :original-DATA :result data})))
+
+(deftest sh08-gis3-cold-entry-semantic-development-kernel
+  ;; Actual original rows plus explicitly normalized hostile mutations. These
+  ;; checks do not establish a paid census, B47, or public numeric acceptance.
+  (let [{:keys [core bindings forms] :as original}
+        (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        target-call (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+        target (:core-node-id target-call)
+        input (assoc original :target target)
+        record (first (:function-records core)) pid (first (:parameter-binding-ids record))
+        bid (:definition-binding-id record) fid (:function-core-node-id record) owner (:function-syntax-id record)
+        entry (first (filter #(= bid (:operator-binding-id %)) (:calls core)))
+        entry-id (:core-node-id entry) argument-id (first (:argument-node-ids entry))
+        node (first (filter #(= entry-id (:node-id %)) (:nodes core)))
+        argument (first (filter #(= argument-id (:node-id %)) (:nodes core)))
+        entry-form-id (get-in node [:source :form-id]) argument-form-id (get-in argument [:source :form-id])
+        run gis3-unpriced-semantic-inspection
+        accepted (run input)
+        change-row (fn [rows key id operation] (mapv #(if (= id (get % key)) (operation %) %) rows))
+        caller-value (fn [value]
+                       (-> input
+                           (update-in [:core :nodes] change-row :node-id argument-id #(assoc-in % [:attributes :value] value))
+                           (update :forms change-row :form-id argument-form-id #(assoc % :value value))
+                           (update :forms change-row :form-id entry-form-id #(assoc % :value (list 'bounded value)))))
+        outside (run (caller-value 1000))
+        mutated (assoc-in input [:core :mutations] [{:core-node-id :mutation :target-binding-id pid}])
+        recursive (assoc-in input [:core :recursion-components]
+                            [{:ordinal 0 :kind :self-recursive :function-syntax-ids [owner]
+                              :function-core-node-ids [fid] :internal-call-edge-ordinals []}])
+        function-reentry (assoc-in input [:core :recur-transfers]
+                                   [{:recur-core-node-id :reentry :target-id owner}])
+        loop-reentry (-> input
+                         (update-in [:core :recur-targets] conj
+                                    {:target-id :loop-target :owner-core-node-id (:node-id argument) :binding-ids [pid]})
+                         (assoc-in [:core :recur-transfers] [{:recur-core-node-id :reentry :target-id :loop-target}]))
+        wrong-arity (update-in input [:core :calls] change-row :core-node-id entry-id #(assoc % :argument-node-ids []))
+        wrong-ordinal (update-in input [:core :call-edges] change-row :call-core-node-id entry-id #(assoc % :ordinal 0.0))
+        wrong-attribute (update-in input [:core :nodes] change-row :node-id entry-id #(assoc-in % [:attributes :argument-count] 1.0))
+        wrong-coordinate (update-in input [:core :nodes] change-row :node-id entry-id #(assoc-in % [:evaluation :order 0 :index] 0.0))
+        wrong-reference (update-in input [:core :nodes]
+                                  #(mapv (fn [n] (if (and (= pid (get-in n [:attributes :binding-id]))
+                                                                         (not= (:node-id n) (first (:argument-node-ids target-call))))
+                                                   (assoc n :resolved-binding-ids []) n)) %))
+        exported (assoc-in input [:core :module :exports] ['bounded])
+        qualified-export (assoc-in input [:core :module :exports]
+                                   [(symbol (str (get-in core [:module :namespace]) "/bounded"))])
+        annotated (update-in input [:core :function-records]
+                             #(mapv (fn [r] (assoc r :signature {:parameters [nil] :return nil})) %))
+        mutable (update input :bindings change-row :binding-id pid #(assoc % :mutability :mutable))
+        operator-id (:operator-binding-id (first (filter #(= target (:core-node-id %)) (:calls core))))
+        wrong-package (update input :bindings change-row :binding-id operator-id #(assoc-in % [:package :version] "forged"))
+        wrong-profile (update input :bindings change-row :binding-id operator-id #(assoc % :profile-set [:kernel]))]
+    (is (= :original-entry-Integer-derived (get-in accepted [:result :status])))
+    (is (= pid (get-in accepted [:result :parameter-binding-id])))
+    (is (= :gravity.type/integer (get-in accepted [:result :parameter-type])))
+    (is (= [] (get-in accepted [:result :ordinary-argument-unification :diagnostics])))
+    (is (= 875194 (:original-DATA-work accepted)))
+    (is (= 6644013 (:fresh-index-work accepted)))
+    (is (false? (get-in accepted [:result :numeric-proof-established])))
+    ;; Integer caller facts are not restricted to the guard's ASCII interval.
+    (is (= :original-entry-Integer-derived (get-in outside [:result :status])))
+    (doseq [[label changed reason]
+            [[:mutation mutated :compact-gis-entry-mutation-or-reentry]
+             [:recursion recursive :compact-gis-entry-mutation-or-reentry]
+             [:function-reentry function-reentry :compact-gis-entry-mutation-or-reentry]
+             [:parameter-loop-reentry loop-reentry :compact-gis-entry-mutation-or-reentry]
+             [:arity wrong-arity :compact-gis-entry-source-mismatch]
+             [:ordinal wrong-ordinal :compact-gis-entry-active-id-mismatch]
+             [:attribute-coordinate wrong-attribute :compact-gis-entry-source-mismatch]
+             [:evaluation-coordinate wrong-coordinate :compact-gis-entry-source-mismatch]
+             [:parameter-use wrong-reference :compact-gis-parameter-use-mismatch]
+             [:export exported :compact-gis-entry-mutation-or-reentry]
+             [:qualified-export qualified-export :compact-gis-entry-mutation-or-reentry]
+             [:annotation annotated :compact-gis-entry-header-mismatch]
+             [:mutable-parameter mutable :compact-gis-entry-header-mismatch]
+             [:package wrong-package :compact-gis-entry-header-mismatch]
+             [:profile wrong-profile :compact-gis-entry-header-mismatch]
+             [:fractional-caller (caller-value 1/2) :compact-gis-entry-source-mismatch]
+             [:floating-caller (caller-value 42.0) :compact-gis-entry-source-mismatch]]]
+      (let [rejected (run changed)]
+        (is (= :rejected (get-in rejected [:result :status])) (str label))
+        (is (= reason (get-in rejected [:result :reason])) (str label))))
+    (prn {:gis3-cold-entry-semantic-inspection :checked
+          :new-semantic-control-and-comparison-payment-closed false :paid-owning-wrapper-implemented false
+          :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
 
 (def ^:private function-work-policy-current-c8-plan
   ;; Same real Effects dependency and C8 module-bundle construction as the
