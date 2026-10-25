@@ -2792,15 +2792,15 @@
 ; not an Integer, source, cryptographic identity, or numeric-proof validator.
 (defn sh08-gis3-data-tallies [value budget]
   (if (< budget 8) {:status :rejected :reason :compact-gis-work-limit :work-count 8 :completed-work-count 0}
-    (loop [pending [[value 0]] visits 0 accounting 8 comparison 0]
+    (loop [pending (list [value 0]) visits 0 accounting 8 comparison 0]
       (if (= 0 (count pending))
         {:status :accepted :work-count (+ visits accounting) :completed-work-count (+ visits accounting)
          :visit-work visits :accounting-work accounting :comparison-bound-work comparison}
         (let [paid (+ visits accounting) common (+ paid 4)]
           (if (> common budget)
             {:status :rejected :reason :compact-gis-work-limit :work-count common :completed-work-count paid}
-            (let [frame (get pending (- (count pending) 1)) item (get frame 0) depth (get frame 1)
-                  tail (subvec pending 0 (- (count pending) 1))]
+            (let [frame (first pending) item (get frame 0) depth (get frame 1)
+                  tail (rest pending)]
               (if (> depth 128)
                 {:status :rejected :reason :compact-gis-canonical-domain :work-count (+ common 1) :completed-work-count paid}
                 (if (if (map? item) true (if (vector? item) true (if (set? item) true (list? item))))
@@ -2813,14 +2813,17 @@
                         {:status :rejected :reason :compact-gis-work-limit :work-count required :completed-work-count paid}
                         (let [bound (+ 1 (if (map? item) (+ (* size size) width)
                                           (if (set? item) (+ (* size size) width) width)))
-                              items (if (map? item)
-                                      (loop [entries (vec item) out []]
-                                        (if (= 0 (count entries)) out
-                                          (let [entry (first entries)]
-                                            (recur (rest entries) (conj (conj out (get entry 0)) (get entry 1)))))) (vec item))]
-                          (recur (loop [remaining items out tail]
-                                   (if (= 0 (count remaining)) out
-                                     (recur (rest remaining) (conj out [(first remaining) (+ depth 1)]))))
+                              next-pending (if (map? item)
+                                             (loop [entries (vec item) ordinal 0 out tail]
+                                               (if (= ordinal size) out
+                                                 (let [entry (get entries ordinal)]
+                                                   (recur entries (+ ordinal 1)
+                                                     (conj (conj out [(get entry 0) (+ depth 1)])
+                                                                    [(get entry 1) (+ depth 1)])))))
+                                             (loop [items (vec item) ordinal 0 out tail]
+                                               (if (= ordinal size) out
+                                                 (recur items (+ ordinal 1) (conj out [(get items ordinal) (+ depth 1)])))))]
+                          (recur next-pending
                                  (+ visits local) (+ accounting 14) (+ comparison bound))))))
                   (if (if (= nil item) true (if (boolean? item) true (if (keyword? item) true
                         (if (symbol? item) true (if (string? item) true (if (number? item) true (char? item)))))))

@@ -10408,6 +10408,58 @@
               (run (vec (repeat 1025 opaque)) 65536))))
       (is (zero? @callbacks)))))
 
+(deftest sh08-gis3-DATA-cursor-conservation-development-kernel
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        rest-var (ns-resolve 'gravity.bootstrap 'p15-s23-seed-readable-normalized-rest)
+        builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
+        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
+        original-scoped @scoped original-rest @rest-var original-builtin @builtin original-get @getter
+        owner (Thread/currentThread) active (atom false)
+        counts (atom {:non-List-rests 0 :List-rests 0 :subvec 0}) callbacks (atom 0) order (atom [])
+        opaque (fn [label]
+                 (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. (str label " hash"))))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. (str label " equality"))))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. (str label " print"))))))
+        left (opaque "left") right (opaque "right")
+        selected? #(and (identical? owner (Thread/currentThread)) @active)
+        run (fn [value budget]
+              (with-redefs-fn
+                {scoped (fn [runtime plan callee args scope]
+                          (if (and (identical? owner (Thread/currentThread))
+                                   (= :gravity-sh08-function-call-type-leaf (:engine runtime))
+                                   (= 'sh08-gis3-data-tallies callee))
+                            (do (reset! active true)
+                                (try (original-scoped runtime plan callee args scope)
+                                     (finally (reset! active false))))
+                            (original-scoped runtime plan callee args scope)))
+                 rest-var (fn [value]
+                            (when (selected?) (swap! counts update (if (list? value) :List-rests :non-List-rests) inc))
+                            (original-rest value))
+                 builtin (fn [& args]
+                           (when (and (selected?) (= 'subvec (nth args (- (count args) 2))))
+                             (swap! counts update :subvec inc))
+                           (apply original-builtin args))
+                 getter (fn [plan value key]
+                          (when (and (selected?) (= 0 key) (vector? value) (= 2 (count value))
+                                     (integer? (get value 1)))
+                            (cond (identical? left (get value 0)) (swap! order conj :left)
+                                  (identical? right (get value 0)) (swap! order conj :right)))
+                          (original-get plan value key))}
+                #(invoke-c7 'sh08-gis3-data-tallies [value budget])))
+        shared {:payload ["physical" :leaf (list 1 2)]}
+        values [[shared shared] {:left [1 2] :right (list :a #{:x :y})} (vec (repeat 32 [nil true \x]))]]
+    (doseq [value values]
+      (let [{:keys [B V T W]} (gis3-independent-physical-data-fee value) result (run value B)]
+        (is (= :accepted (:status result)))
+        (is (= [B B V T W] ((juxt :work-count :completed-work-count :visit-work :accounting-work :comparison-bound-work) result)))))
+    (is (= [:rejected :compact-gis-canonical-domain]
+           ((juxt :status :reason) (run [left right] 65536))))
+    (is (= [:right] @order))
+    (is (zero? @callbacks))
+    (is (pos? (:List-rests @counts)))
+    (is (= 0 (:non-List-rests @counts) (:subvec @counts)))))
+
 (deftest sh08-gis3-index-comparison-fee-development-kernel
   ;; Native 71-character collision DATA, not authenticated Core identities.
   (let [prefix (str "sha256:" (apply str (repeat 62 "a")))
