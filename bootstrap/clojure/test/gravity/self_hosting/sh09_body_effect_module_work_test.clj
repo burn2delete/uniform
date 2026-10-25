@@ -24,10 +24,11 @@
   ;; remaining-budget expressions, aliases and ledger helpers still execute.
   (effect 'body-effect-module-ledger-work [])
   (let [seam (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        original (var-get seam) calls (atom [])
+        original (var-get seam) calls (atom []) ledger-calls (atom 0)
         weights (zipmap module-ledger-stage-order (range 1 37))]
     (with-redefs-fn
       {seam (fn [runtime plan callee args scope]
+              (when (= 'body-effect-reported-stage-work callee) (swap! ledger-calls inc))
               (cond
                 (= 'body-ds-prefix-work callee) 7
                 (= 'body-shape-valid? callee) (not= failure :shape)
@@ -49,7 +50,7 @@
         {:result (effect 'body-analyze-module
                          [{:canonical-core-artifact {} :b47-context {:authenticated-core-request {}}}
                           {} {} allowance])
-         :calls @calls}))))
+         :calls @calls :ledger-calls @ledger-calls}))))
 
 (deftest owning-module-reports-each-invoked-child-once-through-every-failure
   ;; Ledger routing fixtures do not stand in for semantic producer acceptance.
@@ -60,12 +61,13 @@
     (is (= 209 ledger))
     (is (= :accepted (get-in complete [:result :status])))
     (is (= expected (mapv :callee (:calls complete))))
+    (is (= 1 (:ledger-calls complete)))
     (is (= (+ prefix (reduce + (range 1 37))) (get-in complete [:result :work-count])))
     (is (= (- allowance 7) (get-in complete [:calls 0 :allowance])))
     (doseq [[index call] (map-indexed vector (rest (:calls complete)))]
       (is (= (- allowance prefix (reduce + (range 1 (inc index)))) (:allowance call))))
     (doseq [failure expected resource? [false true]]
-      (let [{:keys [result calls]} (scripted-module-ledger failure resource? allowance)
+      (let [{:keys [result calls ledger-calls]} (scripted-module-ledger failure resource? allowance)
             invoked (inc (.indexOf expected failure))
             paid (+ 7 (if (= failure 'body-is-context) 0 ledger)
                     (reduce + (map :work-count calls)))]
@@ -73,17 +75,29 @@
         (is (= (if resource? :body-deferred-work-limit :selected-child-failure) (:reason result)))
         (is (= (subvec expected 0 invoked) (mapv :callee calls)))
         (is (= paid (:work-count result)))
+        (is (= (cond (= failure 'body-is-context) 0
+                     (> invoked 31) 2
+                     :else 1) ledger-calls))
         (when resource? (is (= (inc allowance) (:work-count result))))))
     (let [short (scripted-module-ledger nil false (dec prefix))]
       (is (= ['body-is-context] (mapv :callee (:calls short))))
       (is (= :body-deferred-work-limit (get-in short [:result :reason])))
-      (is (= prefix (get-in short [:result :work-count]))))
+      (is (= prefix (get-in short [:result :work-count])))
+      (is (zero? (:ledger-calls short))))
+    (let [funded (scripted-module-ledger 'body-ma-context true prefix)]
+      (is (= ['body-is-context 'body-ma-context] (mapv :callee (:calls funded))))
+      (is (= :body-deferred-work-limit (get-in funded [:result :reason])))
+      (is (= (inc prefix) (get-in funded [:result :work-count])))
+      (is (= 1 (:ledger-calls funded))))
     (let [shape (scripted-module-ledger :shape false allowance)
           prefix-limit (scripted-module-ledger nil false 6)
           join (scripted-module-ledger :join false allowance)]
       (is (= :incomplete-canonical-core-coverage (get-in shape [:result :reason])))
       (is (= 7 (get-in shape [:result :work-count]) (get-in prefix-limit [:result :work-count])))
       (is (= [] (:calls shape) (:calls prefix-limit)))
+      (is (zero? (:ledger-calls shape)))
+      (is (zero? (:ledger-calls prefix-limit)))
+      (is (= 1 (:ledger-calls join)))
       (is (= :incoherent-function-or-call-body-type-origin-join (get-in join [:result :reason])))
       (is (= (vec (cons 'body-is-context (take 30 module-ledger-stage-order)))
              (mapv :callee (:calls join))))

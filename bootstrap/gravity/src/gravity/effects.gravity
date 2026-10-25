@@ -19707,7 +19707,7 @@ true
                        (if (= :accepted (get returns :status)) (get joins :work-count 0) 0))
         quotients (if (= :accepted (get joins :status))
                     (body-nq-context request facts bindings (- budget source-work)) joins)
-        source-work (if (= :accepted (get private :status))
+        source-work (if (if (= :accepted (get private :status)) (>= budget 0) false)
                       (body-effect-reported-stage-work
                         [associations appends equalities negations memberships lookups concatenations
                          lists queries parameters counts selections successors removals returns joins quotients]) 0)
