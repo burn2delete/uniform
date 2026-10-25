@@ -107,7 +107,7 @@
   (let [input @resolution
         context-var (implementation '*sh07-proof-transaction-context*)
         context (atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
-                       :phase :construction :epoch 0 :maximum-receipts 64
+                       :phase :construction :epoch 0
                        :receipts [] :check-catalogs {} :executions {} :reuses {}
                        :failed-report-executions 0})
         verifier (implementation 'sh06-resolution-artifact-verification-contained)
@@ -147,7 +147,7 @@
         reader (implementation 'sh03-reader-verifier)
         context (when (= :catalog kind)
                   (atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
-                         :phase :construction :epoch 0 :maximum-receipts 64
+                         :phase :construction :epoch 0
                          :receipts [] :check-catalogs {} :executions {} :reuses {}}))
         original-verifier (var-get verifier) original-current (var-get current)
         original-execute (var-get execute)

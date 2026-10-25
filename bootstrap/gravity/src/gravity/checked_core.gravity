@@ -3,7 +3,6 @@
   (:profile :meta)
   (:target :jvm)
   (:exports [sh07-core-contract
-             sh07-core-bounds
              sh07-core-diagnostic-catalog
              sh07-build-core-template
              sh07-verify-core-template
@@ -46,8 +45,8 @@
                              :declared-alias-qualified-expression-and-operator-references
                              :symbol-headed-general-calls
                              :one-operand-keyword-map-lookup
-                             :bounded-function-records
-                             :bounded-call-edges
+                             :function-records
+                             :call-edges
                              :deterministic-recursion-components
                              :scalar-literals
                              :vector-map-set-literals
@@ -180,8 +179,8 @@
     :missing-key-policy :nil
     :result-policy :map-value-or-nil
     :target-type-legality :pending-sh08}
-   :carrier-bound-policy
-   :independent-component-caps-with-effective-aggregate-limit
+
+
    :host-authority
    [:authenticate-sh06-projection :resolve-digest-requests
     :bind-core-artifact]
@@ -190,79 +189,6 @@
    :target-support? false
    :clojure-seed-boundary? true})
 
-(def sh07-core-bounds
-  {:maximum-forms 65536
-   :maximum-fragment-forms 1024
-   :maximum-fragments 1024
-   :maximum-top-level-forms 1024
-   :maximum-form-children 1024
-   :maximum-form-depth 256
-   :maximum-bindings 2048
-   :maximum-module-bindings 2440
-   :maximum-alias-records 256
-   :maximum-resolutions 2048
-   :maximum-module-resolutions 65536
-   :maximum-origin-entries 256
-   :maximum-metadata-entries 256
-   :maximum-effects 128
-   :maximum-capabilities 128
-   :maximum-exports 1024
-   :maximum-core-nodes 1024
-   :maximum-control-flow-records 1024
-   :maximum-reference-use-records 1024
-   :maximum-var-reference-records 1024
-   :maximum-mutation-records 1024
-   :maximum-error-transfer-records 1024
-   :maximum-error-handler-records 1024
-   :maximum-match-branch-records 1024
-   :maximum-match-decision-skeletons 1024
-   :maximum-match-pattern-records 1024
-   :maximum-call-records 1024
-   :maximum-keyword-lookup-records 1024
-   :maximum-lexical-binding-records 1024
-   :maximum-loop-binding-records 1024
-   :maximum-combined-lexical-loop-records 65536
-   :maximum-recur-target-records 1024
-   :maximum-recur-transfer-records 1024
-   :maximum-module-core-nodes 65536
-   :maximum-module-control-flow-records 65536
-   :maximum-module-reference-use-records 65536
-   :maximum-module-var-reference-records 65536
-   :maximum-module-mutation-records 65536
-   :maximum-module-error-transfer-records 65536
-   :maximum-module-error-handler-records 65536
-   :maximum-module-match-branch-records 65536
-   :maximum-module-match-decision-skeletons 65536
-   :maximum-module-match-pattern-records 65536
-   :maximum-match-pattern-depth 64
-   :maximum-match-pattern-width 256
-   :maximum-module-call-records 65536
-   :maximum-module-keyword-lookup-records 65536
-   :maximum-module-lexical-binding-records 65536
-   :maximum-module-loop-binding-records 65536
-   :maximum-module-recur-target-records 65536
-   :maximum-module-recur-transfer-records 65536
-   :maximum-recur-target-depth 256
-   :maximum-carrier-nodes 8388608
-   :maximum-carrier-depth 256
-   :maximum-carrier-width 65536
-   :maximum-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 33554432
-   :maximum-template-carrier-depth 256
-   :maximum-template-carrier-width 65536
-   :maximum-template-scalar-bytes 1073741824
-   :maximum-resolved-core-carrier-nodes 16777216
-   :maximum-resolved-core-carrier-depth 256
-   :maximum-resolved-core-carrier-width 65536
-   :maximum-resolved-core-scalar-bytes 1073741824
-   :maximum-generated-digest-carrier-nodes 16777216
-   :maximum-generated-digest-carrier-depth 256
-   :maximum-generated-digest-carrier-width 65536
-   :maximum-generated-digest-scalar-bytes 1073741824
-   :maximum-digest-requests 65540
-   :aggregate-limit-policy
-   :effective-over-combined-carriers
-   :component-maxima-simultaneous? false})
 
 (def sh07-core-diagnostic-catalog
   {:diagnostics ["C6-CORE-SHAPE" "C6-LOWERING-GAP"
@@ -279,79 +205,6 @@
            :ownership-checking :safety-checking :mir-lowering
            :target-lowering]})
 
-(defn sh07-bounds-value []
-  {:maximum-forms 65536
-   :maximum-fragment-forms 1024
-   :maximum-fragments 1024
-   :maximum-top-level-forms 1024
-   :maximum-form-children 1024
-   :maximum-form-depth 256
-   :maximum-bindings 2048
-   :maximum-module-bindings 2440
-   :maximum-alias-records 256
-   :maximum-resolutions 2048
-   :maximum-module-resolutions 65536
-   :maximum-origin-entries 256
-   :maximum-metadata-entries 256
-   :maximum-effects 128
-   :maximum-capabilities 128
-   :maximum-exports 1024
-   :maximum-core-nodes 1024
-   :maximum-control-flow-records 1024
-   :maximum-reference-use-records 1024
-   :maximum-var-reference-records 1024
-   :maximum-mutation-records 1024
-   :maximum-error-transfer-records 1024
-   :maximum-error-handler-records 1024
-   :maximum-match-branch-records 1024
-   :maximum-match-decision-skeletons 1024
-   :maximum-match-pattern-records 1024
-   :maximum-call-records 1024
-   :maximum-keyword-lookup-records 1024
-   :maximum-lexical-binding-records 1024
-   :maximum-loop-binding-records 1024
-   :maximum-combined-lexical-loop-records 65536
-   :maximum-recur-target-records 1024
-   :maximum-recur-transfer-records 1024
-   :maximum-module-core-nodes 65536
-   :maximum-module-control-flow-records 65536
-   :maximum-module-reference-use-records 65536
-   :maximum-module-var-reference-records 65536
-   :maximum-module-mutation-records 65536
-   :maximum-module-error-transfer-records 65536
-   :maximum-module-error-handler-records 65536
-   :maximum-module-match-branch-records 65536
-   :maximum-module-match-decision-skeletons 65536
-   :maximum-module-match-pattern-records 65536
-   :maximum-match-pattern-depth 64
-   :maximum-match-pattern-width 256
-   :maximum-module-call-records 65536
-   :maximum-module-keyword-lookup-records 65536
-   :maximum-module-lexical-binding-records 65536
-   :maximum-module-loop-binding-records 65536
-   :maximum-module-recur-target-records 65536
-   :maximum-module-recur-transfer-records 65536
-   :maximum-recur-target-depth 256
-   :maximum-carrier-nodes 8388608
-   :maximum-carrier-depth 256
-   :maximum-carrier-width 65536
-   :maximum-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 33554432
-   :maximum-template-carrier-depth 256
-   :maximum-template-carrier-width 65536
-   :maximum-template-scalar-bytes 1073741824
-   :maximum-resolved-core-carrier-nodes 16777216
-   :maximum-resolved-core-carrier-depth 256
-   :maximum-resolved-core-carrier-width 65536
-   :maximum-resolved-core-scalar-bytes 1073741824
-   :maximum-generated-digest-carrier-nodes 16777216
-   :maximum-generated-digest-carrier-depth 256
-   :maximum-generated-digest-carrier-width 65536
-   :maximum-generated-digest-scalar-bytes 1073741824
-   :maximum-digest-requests 65540
-   :aggregate-limit-policy
-   :effective-over-combined-carriers
-   :component-maxima-simultaneous? false})
 
 (defn sh07-exact-keys? [value expected]
   (if (map? value)
@@ -403,182 +256,14 @@
       false)
     false))
 
-(defn sh07-bounded-vector? [value maximum]
-  (if (vector? value)
-    (<= (count value) maximum)
-    false))
+(defn sh07-binding-vector-preflight [bindings]
+  (if (vector? bindings)
+    {:status :accepted}
+    {:status :rejected :reason :binding-vector-required}))
 
-(defn sh07-binding-count-preflight [bindings]
-  (let [maximum
-        (get (sh07-bounds-value) :maximum-module-bindings)]
-    (if (vector? bindings)
-      (if (<= (count bindings) maximum)
-        {:status :accepted
-         :bound :maximum-module-bindings
-         :maximum maximum
-         :observed (count bindings)}
-        {:status :rejected
-         :reason :maximum-module-bindings
-         :bound :maximum-module-bindings
-         :maximum maximum
-         :observed (count bindings)})
-      {:status :rejected
-       :reason :binding-vector-required
-       :bound :maximum-module-bindings
-       :maximum maximum
-       :observed nil})))
 
-(defn sh07-utf8-byte-width [code]
-  (if (<= code 127)
-    1
-    (if (<= code 2047)
-      2
-      (if (if (>= code 55296) (<= code 56319) false)
-        4
-        3))))
-
-(defn sh07-utf8-byte-count [value]
-  ;; The generic stage2 subset has no host character-to-integer coercion.
-  ;; Four bytes per scalar carrier unit is a conservative UTF-8 upper bound:
-  ;; it can reject an over-large carrier early but can never admit one whose
-  ;; real UTF-8 byte count exceeds the declared safety limit.
-  (* 4 (count (str value))))
-
-(defn sh07-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh07-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh07-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) components []]
-      (if (= (count remaining) 0)
-        components
-        (recur
-         (rest remaining)
-         (conj
-          (conj components (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh07-max [left right]
-  (if (> left right) left right))
-
-(defn sh07-carrier-preflight-with-bounds
-  [value maximum-nodes maximum-depth maximum-width maximum-scalar-bytes]
-  (loop [frontier [[value 0]]
-         nodes 0
-         aggregate-nodes 0
-         component-nodes 0
-         scalar-bytes 0
-         observed-depth 0
-         observed-width 0]
-      (if (= (count frontier) 0)
-        {:status :accepted
-         :nodes nodes
-         :aggregate-nodes aggregate-nodes
-         :component-nodes component-nodes
-         :scalar-bytes scalar-bytes
-         :maximum-depth observed-depth
-         :maximum-width observed-width}
-        (let [entry (first frontier)
-              current (first entry)
-              depth (first (rest entry))
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes maximum-nodes)
-            {:status :rejected :reason :carrier-node-bound}
-            (if (> depth maximum-depth)
-              {:status :rejected :reason :carrier-depth-bound}
-              (if (sh07-aggregate? current)
-                (let [width (sh07-aggregate-width current)]
-                  (if (> width maximum-width)
-                    {:status :rejected :reason :carrier-width-bound}
-                    (if (> (+ next-nodes
-                              (count (rest frontier))
-                              width)
-                           maximum-nodes)
-                      {:status :rejected :reason :carrier-node-bound}
-                      (let [components
-                          (sh07-aggregate-components current)
-                          next-frontier
-                          (loop [remaining components
-                                 result (rest frontier)]
-                            (if (= (count remaining) 0)
-                              result
-                              (recur
-                               (rest remaining)
-                               (conj
-                                result
-                                [(first remaining) (+ depth 1)]))))]
-                      (recur
-                       next-frontier
-                       next-nodes
-                       (+ aggregate-nodes 1)
-                       (+ component-nodes width)
-                       scalar-bytes
-                       (sh07-max observed-depth depth)
-                       (sh07-max observed-width width))))))
-                (let [next-scalar-bytes
-                      (+ scalar-bytes
-                         (sh07-utf8-byte-count current))]
-                  (if (> next-scalar-bytes maximum-scalar-bytes)
-                    {:status :rejected :reason :carrier-scalar-byte-bound}
-                    (recur
-                     (rest frontier)
-                     next-nodes
-                     aggregate-nodes
-                     component-nodes
-                     next-scalar-bytes
-                     (sh07-max observed-depth depth)
-                     observed-width))))))))))
-
-(defn sh07-carrier-preflight [value]
-  (let [bounds (sh07-bounds-value)]
-    (sh07-carrier-preflight-with-bounds
-     value
-     (get bounds :maximum-carrier-nodes)
-     (get bounds :maximum-carrier-depth)
-     (get bounds :maximum-carrier-width)
-     (get bounds :maximum-scalar-bytes))))
-
-(defn sh07-template-carrier-preflight [value]
-  (let [bounds (sh07-bounds-value)]
-    (sh07-carrier-preflight-with-bounds
-     value
-     (get bounds :maximum-template-carrier-nodes)
-     (get bounds :maximum-template-carrier-depth)
-     (get bounds :maximum-template-carrier-width)
-     (get bounds :maximum-template-scalar-bytes))))
-
-(defn sh07-resolved-core-carrier-preflight [value]
-  (let [bounds (sh07-bounds-value)]
-    (sh07-carrier-preflight-with-bounds
-     value
-     (get bounds :maximum-resolved-core-carrier-nodes)
-     (get bounds :maximum-resolved-core-carrier-depth)
-     (get bounds :maximum-resolved-core-carrier-width)
-     (get bounds :maximum-resolved-core-scalar-bytes))))
-
-(defn sh07-generated-digest-carrier-preflight [value]
-  (let [bounds (sh07-bounds-value)]
-    (sh07-carrier-preflight-with-bounds
-     value
-     (get bounds :maximum-generated-digest-carrier-nodes)
-     (get bounds :maximum-generated-digest-carrier-depth)
-     (get bounds :maximum-generated-digest-carrier-width)
-     (get bounds :maximum-generated-digest-scalar-bytes))))
-
-(defn sh07-sha-vector? [values maximum]
-  (if (sh07-bounded-vector? values maximum)
+(defn sh07-sha-vector? [values]
+  (if (vector? values)
     (loop [remaining values]
       (if (= (count remaining) 0)
         true
@@ -588,9 +273,7 @@
     false))
 
 (defn sh07-binding-id-vector? [bindings]
-  (sh07-sha-vector?
-   bindings
-   (get (sh07-bounds-value) :maximum-bindings)))
+  (sh07-sha-vector? bindings))
 
 (defn sh07-lineage-shape? [lineage]
   (if (sh07-exact-keys?
@@ -616,15 +299,9 @@
          :capabilities :exports :source-revision-id})
     (if (= (get module :profile) :meta)
       (if (= (get module :target) :jvm)
-        (if (sh07-bounded-vector?
-             (get module :effects)
-             (get (sh07-bounds-value) :maximum-effects))
-          (if (sh07-bounded-vector?
-               (get module :capabilities)
-               (get (sh07-bounds-value) :maximum-capabilities))
-            (if (sh07-bounded-vector?
-                 (get module :exports)
-                 (get (sh07-bounds-value) :maximum-exports))
+        (if (vector? (get module :effects))
+          (if (vector? (get module :capabilities))
+            (if (vector? (get module :exports))
               (sh07-sha256-id?
                (get module :source-revision-id))
               false)
@@ -654,9 +331,7 @@
     false))
 
 (defn sh07-origins-shape? [origins]
-  (if (sh07-bounded-vector?
-       origins
-       (get (sh07-bounds-value) :maximum-origin-entries))
+  (if (vector? origins)
     (loop [remaining origins]
       (if (= (count remaining) 0)
         true
@@ -679,16 +354,12 @@
           (if (if (= (get form :scope-id) nil)
                 true
                 (sh07-sha256-id? (get form :scope-id)))
-            (if (sh07-sha-vector?
-                 (get form :child-form-ids)
-                 (get (sh07-bounds-value) :maximum-form-children))
+            (if (sh07-sha-vector? (get form :child-form-ids))
               (if (sh07-span-shape? (get form :source-span))
                 (if (sh07-origins-shape? (get form :origin-chain))
                   (if (sh07-origins-shape? (get form :generated-origin))
                     (if (map? (get form :metadata))
-                      (<= (count (get form :metadata))
-                          (get (sh07-bounds-value)
-                               :maximum-metadata-entries))
+                      true
                       false)
                     false)
                   false)
@@ -722,29 +393,15 @@
                                (get (get binding :package) :name))
                             (if (string?
                                  (get (get binding :package) :version))
-                              (<=
-                               (sh07-utf8-byte-count
-                                (get (get binding :package) :version))
-                               1024)
+                              true
                               false)
                             false)
                           false)
                       (if (keyword? (get binding :visibility))
-                        (if (sh07-bounded-vector?
-                             (get binding :profile-set)
-                             (get (sh07-bounds-value) :maximum-effects))
-                          (if (sh07-bounded-vector?
-                               (get binding :target-set)
-                               (get (sh07-bounds-value)
-                                    :maximum-effects))
-                            (if (sh07-bounded-vector?
-                                 (get binding :effects)
-                                 (get (sh07-bounds-value)
-                                      :maximum-effects))
-                              (if (sh07-bounded-vector?
-                                   (get binding :capabilities)
-                                   (get (sh07-bounds-value)
-                                        :maximum-capabilities))
+                        (if (vector? (get binding :profile-set))
+                          (if (vector? (get binding :target-set))
+                            (if (vector? (get binding :effects))
+                              (if (vector? (get binding :capabilities))
                                 (if (if (keyword?
                                          (get binding :type-ref))
                                       true
@@ -756,11 +413,7 @@
                                   (if (keyword? (get binding :safety))
                                     (if (if (map?
                                              (get binding :semantic-span))
-                                          (<=
-                                           (count
-                                            (get binding :semantic-span))
-                                           (get (sh07-bounds-value)
-                                                :maximum-metadata-entries))
+                                          true
                                           false)
                                       (if (= (get binding :binding-class)
                                              :lexical)
@@ -802,8 +455,8 @@
 
 (defn sh07-origin-expectation-shape? [request expectation]
   (let [lineage (get request :lineage)
-        maximum
-        (get (sh07-bounds-value) :maximum-top-level-forms)]
+
+        ]
     (if (sh07-exact-keys?
          expectation
          #{:source-revision-id :sh05-artifact-id
@@ -813,19 +466,11 @@
            :expected-introduced-fn-syntax-ids})
       (if (integer? (get expectation :expanded-defn-count))
         (if (>= (get expectation :expanded-defn-count) 0)
-          (if (<= (get expectation :expanded-defn-count)
-                  maximum)
-            (if (sh07-sha-vector?
-                 (get expectation :expected-input-syntax-ids)
-                 maximum)
-              (if (sh07-sha-vector?
-                   (get expectation
-                        :expected-output-def-syntax-ids)
-                   maximum)
-                (if (sh07-sha-vector?
-                     (get expectation
-                          :expected-introduced-fn-syntax-ids)
-                     maximum)
+          (if (sh07-sha-vector? (get expectation :expected-input-syntax-ids))
+              (if (sh07-sha-vector? (get expectation
+                        :expected-output-def-syntax-ids))
+                (if (sh07-sha-vector? (get expectation
+                          :expected-introduced-fn-syntax-ids))
                   (if (= (get expectation :expanded-defn-count)
                          (count
                           (get expectation
@@ -871,7 +516,6 @@
                   false)
                 false)
               false)
-            false)
           false)
         false)
       false)))
@@ -886,30 +530,17 @@
     (if (= (get fragment :ordinal) ordinal)
       (if (sh07-sha256-id? (get fragment :fragment-id))
         (if (sh07-sha256-id? (get fragment :content-id))
-          (if (sh07-sha-vector?
-               (get fragment :root-form-ids)
-               (get (sh07-bounds-value) :maximum-top-level-forms))
+          (if (sh07-sha-vector? (get fragment :root-form-ids))
             (if (> (count (get fragment :root-form-ids)) 0)
-              (if (sh07-sha-vector?
-                   (get fragment :form-ids)
-                   (get (sh07-bounds-value) :maximum-fragment-forms))
+              (if (sh07-sha-vector? (get fragment :form-ids))
                 (if (sh07-binding-id-vector?
                      (get fragment :local-binding-ids))
                   (if (sh07-binding-id-vector?
                        (get fragment :external-binding-ids))
-                    (if (sh07-sha-vector?
-                         (get fragment
-                              :resolution-reference-syntax-ids)
-                         (get (sh07-bounds-value)
-                              :maximum-resolutions))
-                      (if (sh07-bounded-vector?
-                           (get fragment :alias-names)
-                           (get (sh07-bounds-value)
-                                :maximum-alias-records))
-                        (if (sh07-sha-vector?
-                             (get fragment :root-node-ids)
-                             (get (sh07-bounds-value)
-                                  :maximum-top-level-forms))
+                    (if (sh07-sha-vector? (get fragment
+                              :resolution-reference-syntax-ids))
+                      (if (vector? (get fragment :alias-names))
+                        (if (sh07-sha-vector? (get fragment :root-node-ids))
                           (if (= (count
                                   (get fragment :root-form-ids))
                                  (count
@@ -1013,8 +644,7 @@
 
 (defn sh07-b13-fragment-manifest-shape? [request]
   (let [fragments (get request :fragment-manifest)]
-    (if (sh07-bounded-vector?
-         fragments (get (sh07-bounds-value) :maximum-fragments))
+    (if (vector? fragments)
       (if (> (count fragments) 0)
         (loop [remaining fragments ordinal 0]
           (if (= (count remaining) 0)
@@ -1138,10 +768,7 @@
            :gravity/sh07-authenticated-sh06-core-request)
       (if (= (get request :schema-version) 15)
         (if (contains? request :macro-origin-traces)
-          (if (sh07-bounded-vector?
-               (get request :macro-origin-traces)
-               (get (sh07-bounds-value)
-                    :maximum-top-level-forms))
+          (if (vector? (get request :macro-origin-traces))
             (if (contains? request :macro-origin-expectation)
               (if (sh07-origin-expectation-shape?
                    request
@@ -1150,7 +777,7 @@
                 {:reason
                  :malformed-or-substituted-macro-origin-expectation})
               {:reason :missing-macro-origin-expectation})
-            {:reason :malformed-or-over-bound-macro-origin-traces})
+            {:reason :malformed-macro-origin-traces})
           {:reason :missing-macro-origin-traces})
         nil)
       nil)
@@ -1174,34 +801,18 @@
             (if (sh07-module-shape? (get request :module))
               (if (sh07-b13-fragment-manifest-shape? request)
                 (if (sh07-b13-fragment-products-shape? request)
-              (if (sh07-bounded-vector?
-                   (get request :forms)
-                   (get (sh07-bounds-value) :maximum-forms))
-                (if (sh07-sha-vector?
-                     (get request :top-level-form-ids)
-                     (get (sh07-bounds-value)
-                          :maximum-top-level-forms))
+              (if (vector? (get request :forms))
+                (if (sh07-sha-vector? (get request :top-level-form-ids))
                   (if (= (get
-                          (sh07-binding-count-preflight
+                          (sh07-binding-vector-preflight
                            (get request :binding-table))
                           :status)
                          :accepted)
-                    (if (sh07-bounded-vector?
-                         (get request :alias-table)
-                         (get (sh07-bounds-value) :maximum-alias-records))
-                      (if (sh07-bounded-vector?
-                       (get request :resolution-table)
-                           (get (sh07-bounds-value)
-                                :maximum-module-resolutions))
+                    (if (vector? (get request :alias-table))
+                      (if (vector? (get request :resolution-table))
                         (if (vector? (get request :macro-expansion-trace))
-                        (if (sh07-bounded-vector?
-                             (get request :macro-expansion-trace)
-                             (get (sh07-bounds-value)
-                                  :maximum-forms))
-                          (if (sh07-bounded-vector?
-                               (get request :macro-origin-traces)
-                               (get (sh07-bounds-value)
-                                    :maximum-top-level-forms))
+                        (if (vector? (get request :macro-expansion-trace))
+                          (if (vector? (get request :macro-origin-traces))
                             (if (sh07-origin-expectation-shape?
                                  request
                                  (get request
@@ -1328,15 +939,15 @@
   (get (get (get indexes :bindings) :by-scope) scope-id []))
 
 (defn sh07-b13-form-root-id [indexes form]
-  (loop [current form depth 0]
-    (if (> depth (get (sh07-bounds-value) :maximum-form-depth))
-      nil
-      (let [parent-id (get current :parent-form-id)]
+  (loop [current form seen #{}]
+    (let [form-id (get current :form-id) parent-id (get current :parent-form-id)]
+      (if (contains? seen form-id)
+        nil
         (if (= parent-id nil)
-          (get current :form-id)
+          form-id
           (let [parent (sh07-find-form indexes parent-id)]
             (if (map? parent)
-              (recur parent (+ depth 1))
+              (recur parent (conj seen form-id))
               nil)))))))
 
 (defn sh07-b13-form-ids-belong-to-root?
@@ -1502,9 +1113,7 @@
       (if (symbol? (get alias-record :namespace))
         (if (= :namespace (get alias-record :kind))
           (if (keyword? (get alias-record :profile))
-            (if (sh07-bounded-vector?
-                 (get alias-record :targets)
-                 (get (sh07-bounds-value) :maximum-capabilities))
+            (if (vector? (get alias-record :targets))
               (if (sh07-all-unique? (get alias-record :targets))
                 (loop [remaining (get alias-record :targets)]
                   (if (= (count remaining) 0)
@@ -1657,35 +1266,17 @@
             (recur (rest remaining))
             false))))))
 
-(defn sh07-depth-valid? [request indexes]
-  (let [forms (get request :forms)
-        maximum (get (sh07-bounds-value) :maximum-form-depth)]
-    (loop [frontier
-           (loop [roots (get request :top-level-form-ids) values []]
-             (if (= (count roots) 0)
-               values
-               (recur (rest roots)
-                      (conj values [(first roots) 1]))))
-           visited #{}]
-      (if (= (count frontier) 0)
-        (= (count visited) (count forms))
-        (let [entry (first frontier)
-              form-id (first entry)
-              depth (first (rest entry))
-              form (sh07-find-form indexes form-id)]
-          (if (> depth maximum)
+(defn sh07-form-forest-valid? [request indexes]
+  (loop [frontier (get request :top-level-form-ids) visited #{}]
+    (if (= (count frontier) 0)
+      (= (count visited) (count (get request :forms)))
+      (let [form-id (first frontier) form (sh07-find-form indexes form-id)]
+        (if (map? form)
+          (if (contains? visited form-id)
             false
-            (if (contains? visited form-id)
-              false
-              (recur
-               (loop [children (get form :child-form-ids)
-                      values (rest frontier)]
-                 (if (= (count children) 0)
-                   values
-                   (recur (rest children)
-                          (conj values
-                                [(first children) (+ depth 1)]))))
-               (conj visited form-id)))))))))
+            (recur (sh07-append-vector (get form :child-form-ids) (vec (rest frontier)))
+                   (conj visited form-id)))
+          false)))))
 
 (defn sh07-origin-trace-shape? [request trace]
   (let [lineage (get request :lineage)]
@@ -1941,9 +1532,7 @@
        :observed (count traces)})))
 
 (defn sh07-input-check [request]
-  (let [preflight (sh07-carrier-preflight request)]
-    (if (= (get preflight :status) :accepted)
-      (let [slot-check (sh07-origin-slots-precheck request)]
+  (let [slot-check (sh07-origin-slots-precheck request)]
         (if (= slot-check nil)
           (if (sh07-request-shape? request)
             (let [indexes (sh07-index-request request)
@@ -1955,10 +1544,10 @@
                        request indexes)
                     (if (sh07-graph-references-valid?
                          request indexes)
-                      (if (sh07-depth-valid? request indexes)
+                      (if (sh07-form-forest-valid? request indexes)
                         {:status :accepted
                          :indexes indexes
-                         :carrier preflight}
+                          }
                         {:status :rejected
                          :reason :form-depth-or-cycle})
                       {:status :rejected
@@ -1975,8 +1564,7 @@
           {:status :rejected
            :rule "C6-ORIGIN"
            :form nil
-           :facts slot-check}))
-      preflight)))
+           :facts slot-check})))
 
 (defn sh07-remediation [rule facts]
   (let [reason (get facts :reason)]
@@ -1992,11 +1580,7 @@
           "Provide complete pattern/expression clause pairs after the scrutinee."
           (if (= reason :variable-width-vector-pattern-deferred)
             "Use a fixed-width vector pattern without rest markers in SH-07-B11."
-            (if (= reason :vector-pattern-depth-bound)
-              "Reduce recursive vector-pattern depth to the declared SH-07-B11 bound."
-              (if (= reason :vector-pattern-width-bound)
-                "Reduce vector-pattern width to the declared SH-07-B11 bound."
-                (if (= reason :duplicate-match-binding)
+            (if (= reason :duplicate-match-binding)
                   "Use each binding name only once within a match pattern; sibling clauses may bind the same name independently."
                   (if (= reason :unsupported-vector-pattern-leaf)
                     "Use only nested fixed-width vectors, wildcards, scalar literals, or unique symbol bindings in SH-07-B11."
@@ -2023,9 +1607,9 @@
                   (if (= reason :finally-clause-deferred)
                     "Omit finally in SH-07-B11; defer cleanup lowering to its owning slice."
                     (if (= rule "C6-CORE-SHAPE")
-                      "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."
+                      "Provide a delimiter-linked SH-06 form graph with exact core-form shape."
                       (if (= rule "C6-LOWERING-GAP")
-                        "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."
+                        "Use only the declared SH-07 core subset; defer unsupported lowering families to their owning slices."
                         (if (= rule "C6-EVAL-ORDER")
                           "Preserve child order and the required left-to-right evaluation sequence."
                           (if (= rule "C6-ORIGIN")
@@ -2036,7 +1620,7 @@
                               (if (= reason
                                      :var-top-level-namespace-binding-required)
                                 "Use var only with a same-namespace top-level var or function binding; lexical bindings are not var objects."
-                                "Replay the Gravity template and bind every digest ordinal exactly once."))))))))))))))))))))))))))))
+                                "Replay the Gravity template and bind every digest ordinal exactly once."))))))))))))))))))))))))))
 
 (defn sh07-diagnostic [request rule form facts]
   (let [module (if (map? (get request :module))
@@ -2109,7 +1693,7 @@
      :core-template nil
      :digest-requests [(get built :request)]
      :diagnostics [(get built :diagnostic)]
-     :bounds (sh07-bounds-value)
+
      :containment {:downstream-artifacts-forbidden true
                    :host-exception-contained true}
      :execution-boundary
@@ -2217,26 +1801,22 @@
 
 (defn sh07-source-core-consume-tree
   [request state root-id owner node-id reason subtree?]
-  (loop [frontier [root-id] current state visits 0]
+  (loop [frontier [root-id] current state seen #{}]
     (if (= (count frontier) 0)
       current
-      (if (>= visits (get (sh07-bounds-value) :maximum-forms))
-        (assoc current :form-disposition-error
-               {:reason :form-disposition-traversal-bound :form-id root-id})
-        (let [form (sh07-find-form (get request :internal-indexes)
-                                   (first frontier))
-              next-state
-              (sh07-source-core-record-state
-               current form :consumed reason owner node-id)]
+      (let [form-id (first frontier)
+            form (sh07-find-form (get request :internal-indexes) form-id)]
+        (if (contains? seen form-id)
+          (assoc current :form-disposition-error
+                 {:reason :cyclic-consumed-form :form-id form-id})
           (if (map? form)
-            (recur
-             (if subtree?
-               (sh07-append-vector (get form :child-form-ids)
-                                   (vec (rest frontier)))
-               (vec (rest frontier)))
-             next-state (+ visits 1))
+            (recur (if subtree?
+                     (sh07-append-vector (get form :child-form-ids) (vec (rest frontier)))
+                     (vec (rest frontier)))
+                   (sh07-source-core-record-state current form :consumed reason owner node-id)
+                   (conj seen form-id))
             (assoc current :form-disposition-error
-                   {:reason :missing-consumed-form :form-id (first frontier)})))))))
+                   {:reason :missing-consumed-form :form-id form-id})))))))
 
 (defn sh07-source-core-binding-events [request binding-id]
   (let [binding (sh07-find-form (get request :internal-indexes) binding-id)]
@@ -2469,30 +2049,22 @@
               [])))))))
 
 (defn sh07-source-core-intents [request]
-  (loop [frontier (sh07-source-core-expression-intents
-                  (get request :top-level-form-ids))
-         intents {} visits 0]
+  (loop [frontier (sh07-source-core-expression-intents (get request :top-level-form-ids))
+         intents {}]
     (if (= (count frontier) 0)
       {:status :accepted :intents intents}
-      (if (>= visits (get (sh07-bounds-value) :maximum-forms))
-        {:status :rejected :reason :source-intent-traversal-bound}
-        (let [entry (first frontier)
-              form-id (get entry 0)
-              reason (get entry 1)
-              owner-id (get entry 2)
-              form (sh07-find-form (get request :internal-indexes) form-id)]
-          (if (map? form)
-            (if (contains? intents form-id)
-              {:status :rejected :reason :duplicate-source-intent :form-id form-id}
-              (recur
-               (sh07-append-vector
-                (sh07-source-core-intent-children request form reason owner-id)
-                (vec (rest frontier)))
-               (assoc intents form-id
-                      {:reason reason :owner-form-id owner-id
-                       :disposition (if (= reason :core-node-source) :emitted :consumed)})
-               (+ visits 1)))
-            {:status :rejected :reason :missing-source-intent-form :form-id form-id}))))))
+      (let [entry (first frontier) form-id (get entry 0) reason (get entry 1)
+            owner-id (get entry 2)
+            form (sh07-find-form (get request :internal-indexes) form-id)]
+        (if (map? form)
+          (if (contains? intents form-id)
+            {:status :rejected :reason :duplicate-source-intent :form-id form-id}
+            (recur (sh07-append-vector (sh07-source-core-intent-children request form reason owner-id)
+                                       (vec (rest frontier)))
+                   (assoc intents form-id
+                          {:reason reason :owner-form-id owner-id
+                           :disposition (if (= reason :core-node-source) :emitted :consumed)})))
+          {:status :rejected :reason :missing-source-intent-form :form-id form-id})))))
 
 (defn sh07-source-core-ordered-records [request dispositions intents]
   (loop [remaining (get request :forms) ordinal 0 result []]
@@ -4490,8 +4062,8 @@
            [:sh07-atomic-function-signature-v1 :sh07-atomic-function-declaration-map-v1])
       (let [parameters (get signature :parameters) coordinates (get signature :parameter-source-child-indexes)
             result (get signature :return)]
-        (if (sh07-bounded-vector? parameters 1024)
-          (if (sh07-bounded-vector? coordinates 1024)
+        (if (vector? parameters)
+          (if (vector? coordinates)
             (if (= [(count parameters) (count coordinates)] [arity arity])
               (if (if (= result nil) (= (get signature :body-source-child-index) 2)
                     (if (sh07-return-type-declaration-valid? result)
@@ -4518,7 +4090,7 @@
 (defn sh07-function-node-signature-valid? [node]
   (if (= (get node :core-form) :fn)
     (let [attributes (get node :attributes) signature (get attributes :signature)]
-      (if (if (sh07-bounded-vector? (get attributes :parameters) 1024)
+      (if (if (vector? (get attributes :parameters))
             (if (= (count (get attributes :parameters)) (get attributes :fixed-arity))
               (sh07-exact-keys? attributes (sh07-signature-record-keys attributes
                 #{:parameters :parameter-form-id :parameter-syntax-id :fixed-arity :recur-target-id})) false) false)
@@ -4541,10 +4113,7 @@
   [state target core-node-id]
   (let [records (get state :recur-targets)
         next-count (+ (count records) 1)]
-    (if (<= next-count
-            (get (sh07-bounds-value)
-                 :maximum-module-recur-target-records))
-      {:status :accepted
+    {:status :accepted
        :state
        (assoc
         state :recur-targets
@@ -4559,12 +4128,7 @@
           :binding-ids (get target :binding-ids)
           :body-scope-id (get target :body-scope-id)
           :parent-target-id (get target :parent-target-id)
-          :type-compatibility :pending-sh08}))}
-      {:status :rejected
-       :rule "C6-VERIFY"
-       :form nil
-       :facts {:reason :recur-target-record-bound
-               :semantic-rule "L2-RECUR-TARGET"}})))
+          :type-compatibility :pending-sh08}))}))
 
 (defn sh07-lower-fn [request state form]
   (let [children (get form :child-form-ids)
@@ -4895,27 +4459,14 @@
                           next-count
                           (+ (count existing)
                              (count lexical-records))]
-                      (if (<=
-                           next-count
-                           (get (sh07-bounds-value)
-                                :maximum-module-lexical-binding-records))
-                        (assoc
+                      (assoc
                          added
                          :state
                          (assoc
                           (get added :state)
                           :lexical-bindings
                           (sh07-vector-append
-                           existing lexical-records)))
-                        {:status :rejected
-                         :rule "C6-VERIFY"
-                         :form form
-                         :facts
-                         {:reason :lexical-binding-record-bound
-                          :maximum
-                          (get (sh07-bounds-value)
-                               :maximum-module-lexical-binding-records)
-                          :observed next-count}}))
+                           existing lexical-records))))
                     body))
                     initializers))
                 descriptors))
@@ -5036,10 +4587,7 @@
                   (if (= (get initializers :status) :accepted)
                     (let [depth
                           (+ (count (get state :recur-target-stack)) 1)]
-                      (if (<= depth
-                              (get (sh07-bounds-value)
-                                   :maximum-recur-target-depth))
-                        (let [outer-stack
+                      (let [outer-stack
                               (get state :recur-target-stack)
                               outer-tail (get state :tail-target-id)
                               target
@@ -5123,16 +4671,7 @@
                                            :lexical-bindings))
                                      (+ (count existing)
                                         (count loop-records)))]
-                              (if (if (<= combined-count
-                                          (get
-                                           (sh07-bounds-value)
-                                           :maximum-combined-lexical-loop-records))
-                                    (<= (+ (count existing)
-                                           (count loop-records))
-                                        (get (sh07-bounds-value)
-                                             :maximum-module-loop-binding-records))
-                                    false)
-                                (let [with-bindings
+                              (let [with-bindings
                                       (assoc
                                        (get added :state)
                                        :loop-bindings
@@ -5147,21 +4686,8 @@
                                     (assoc
                                      added :state
                                      (get target-added :state))
-                                    target-added))
-                                {:status :rejected
-                                 :rule "C6-VERIFY"
-                                 :form form
-                                 :facts
-                                 {:reason
-                                  :combined-let-loop-binding-bound
-                                  :semantic-rule "L2-RECUR-TARGET"}}))
-                            body))
-                        {:status :rejected
-                         :rule "C6-VERIFY"
-                         :form form
-                         :facts {:reason :recur-target-depth-bound
-                                 :semantic-rule
-                                 "L2-RECUR-TARGET"}}))
+                                    target-added)))
+                            body)))
                     initializers))
                 descriptors))
             {:status :rejected
@@ -5210,10 +4736,7 @@
                        :arguments-left-to-right-then-transfer)
                       transfers
                       (get (get added :state) :recur-transfers)]
-                  (if (< (count transfers)
-                         (get (sh07-bounds-value)
-                              :maximum-module-recur-transfer-records))
-                    (assoc
+                  (assoc
                      added :state
                      (assoc
                       (get added :state)
@@ -5231,12 +4754,7 @@
                         :tail-position true
                         :evaluation-order :arguments-left-to-right
                         :transfer-policy :nearest-lexical-recur-target
-                        :type-compatibility :pending-sh08})))
-                    {:status :rejected
-                     :rule "C6-VERIFY"
-                     :form form
-                     :facts {:reason :recur-transfer-record-bound
-                             :semantic-rule "L2-RECUR-TARGET"}}))
+                        :type-compatibility :pending-sh08}))))
                 arguments))
             {:status :rejected
              :rule "C6-VERIFY"
@@ -5712,21 +5230,13 @@
   [request pattern depth seen]
   (let [kind (get pattern :kind)
         value (get pattern :value)
-        bounds (sh07-bounds-value)
-        maximum-depth (get bounds :maximum-match-pattern-depth)
-        maximum-width (get bounds :maximum-match-pattern-width)]
+
+
+         ]
     (if (if (> depth 0) (sh07-match-guard-pattern? pattern) false)
       {:status :rejected :rule "C6-LOWERING-GAP" :form pattern
        :facts {:reason :guard-pattern-deferred}}
-    (if (> depth maximum-depth)
-      {:status :rejected
-       :rule "C6-LOWERING-GAP"
-       :form pattern
-       :facts
-       {:reason :vector-pattern-depth-bound
-        :maximum maximum-depth
-        :observed depth}}
-      (if (= kind :symbol)
+    (if (= kind :symbol)
         (if (= value '&)
           {:status :rejected
            :rule "C6-LOWERING-GAP"
@@ -5745,23 +5255,15 @@
                   child-form-ids (get shape :children)
                   width (if (= kind :map) (if (map? value) (count value) 0) (count child-form-ids))]
               (if (= (get shape :status) :accepted)
-               (if (> width maximum-width)
-                {:status :rejected
-                 :rule "C6-LOWERING-GAP"
-                 :form pattern
-                 :facts
-                 {:reason :vector-pattern-width-bound
-                  :maximum maximum-width
-                  :observed width}}
-                (sh07-match-pattern-preflight-children
-                 request child-form-ids (+ depth 1) seen))
+               (sh07-match-pattern-preflight-children
+                 request child-form-ids (+ depth 1) seen)
                shape))
             {:status :rejected
              :rule "C6-LOWERING-GAP"
              :form pattern
              :facts
              {:reason :unsupported-vector-pattern-leaf
-              :pattern-kind kind}})))))))
+              :pattern-kind kind}}))))))
 
 (defn sh07-match-vector-child-descriptors
   [request child-form-ids clause-ordinal parent-local-ordinal
@@ -5802,17 +5304,9 @@
    depth path local-ordinal]
   (let [kind (get pattern :kind)
         value (get pattern :value)
-        maximum-depth
-        (get (sh07-bounds-value) :maximum-match-pattern-depth)]
-    (if (> depth maximum-depth)
-      {:status :rejected
-       :rule "C6-LOWERING-GAP"
-       :form pattern
-       :facts
-       {:reason :vector-pattern-depth-bound
-        :maximum maximum-depth
-        :observed depth}}
-      (if (= kind :symbol)
+
+        ]
+    (if (= kind :symbol)
         (if (= value '&)
           {:status :rejected
            :rule "C6-LOWERING-GAP"
@@ -5901,7 +5395,7 @@
                 (if (= parent-local-ordinal nil)
                   :composite-pattern-deferred
                   :unsupported-vector-pattern-leaf)
-                :pattern-kind kind}})))))))
+                :pattern-kind kind}}))))))
 
 (defn sh07-duplicate-match-binding [bindings]
   (loop [remaining bindings seen {}]
@@ -6206,13 +5700,7 @@
         observed-pattern-count
         (+ (count prior-pattern-records)
            (count (get branches :pattern-records)))]
-    (if (<= observed-count
-            (get (sh07-bounds-value)
-                 :maximum-module-match-branch-records))
-      (if (<= observed-pattern-count
-              (get (sh07-bounds-value)
-                   :maximum-module-match-pattern-records))
-        (let [branch-node-ids
+    (let [branch-node-ids
             (get branches :branch-node-ids)
             node-children
             (sh07-vector-append
@@ -6281,25 +5769,7 @@
               (get (get added :state)
                    :match-decision-skeletons)
               skeleton))]
-        (assoc added :state next-state))
-        {:status :rejected
-         :rule "C6-VERIFY"
-         :form form
-         :facts
-         {:reason :match-pattern-record-bound
-          :maximum
-          (get (sh07-bounds-value)
-               :maximum-module-match-pattern-records)
-          :observed observed-pattern-count}})
-      {:status :rejected
-       :rule "C6-VERIFY"
-       :form form
-       :facts
-       {:reason :match-branch-record-bound
-        :maximum
-        (get (sh07-bounds-value)
-             :maximum-module-match-branch-records)
-        :observed observed-count}})))
+        (assoc added :state next-state))))
 
 (defn sh07-lower-match [request state form]
   (let [children (get form :child-form-ids)
@@ -6325,10 +5795,7 @@
             (let [current-record-count
                   (count (get state :match-branch-records))
                   branch-count (/ (count branch-form-ids) 2)]
-              (if (<= (+ current-record-count branch-count)
-                      (get (sh07-bounds-value)
-                           :maximum-module-match-branch-records))
-                (let [scrutinee-form
+              (let [scrutinee-form
                       (sh07-find-form
                        (get request :internal-indexes)
                        (get children 1))
@@ -6354,16 +5821,7 @@
                         (sh07-complete-lowered-match
                          request form scrutinee branches branch-count)
                         branches))
-                    scrutinee))
-                {:status :rejected
-                 :rule "C6-VERIFY"
-                 :form form
-                 :facts
-                 {:reason :match-branch-record-bound
-                  :maximum
-                  (get (sh07-bounds-value)
-                       :maximum-module-match-branch-records)
-                  :observed (+ current-record-count branch-count)}}))))))))
+                    scrutinee)))))))))
 
 (defn sh07-lower-form [request state form]
   (if (map? form)
@@ -6918,154 +6376,25 @@
         edges (sh07-build-call-edges request state functions)
         components
         (sh07-build-recursion-components functions edges)]
-    (if (<= (count functions)
-            (get (sh07-bounds-value)
-                 :maximum-module-bindings))
-      (if (<= (count edges)
-              (get (sh07-bounds-value)
-                   :maximum-module-call-records))
-        (if (<= (count components)
-                (get (sh07-bounds-value)
-                     :maximum-module-bindings))
-          {:status :accepted
+    {:status :accepted
            :state
            (assoc
             (assoc
              (assoc state :function-records functions)
              :call-edges edges)
-            :recursion-components components)}
-          {:status :rejected :rule "C6-VERIFY" :form nil
-           :facts {:reason :recursion-component-bound}})
-        {:status :rejected :rule "C6-VERIFY" :form nil
-         :facts {:reason :call-edge-record-bound}})
-      {:status :rejected :rule "C6-VERIFY" :form nil
-       :facts {:reason :function-record-bound}})))
+            :recursion-components components)}))
 
 (defn sh07-finish-top-level [request state roots]
   (let [expected (sh07-resolution-syntax-ids request)
         observed (get state :used-reference-syntax-ids)]
     (if (= expected observed)
-      (if (<= (count (get state :reference-uses))
-              (get (sh07-bounds-value)
-                   :maximum-module-reference-use-records))
-        (if (<= (count (get state :var-references))
-                (get (sh07-bounds-value)
-                     :maximum-module-var-reference-records))
-          (if (<= (count (get state :mutations))
-                  (get (sh07-bounds-value)
-                       :maximum-module-mutation-records))
-            (if (<= (count (get state :error-transfers))
-                    (get (sh07-bounds-value)
-                         :maximum-module-error-transfer-records))
-              (if (<= (count (get state :error-handlers))
-                      (get (sh07-bounds-value)
-                           :maximum-module-error-handler-records))
-                (if (<= (count (get state :calls))
-                        (get (sh07-bounds-value)
-                             :maximum-module-call-records))
-                  (if (<= (count (get state :keyword-lookups))
-                          (get
-                           (sh07-bounds-value)
-                           :maximum-module-keyword-lookup-records))
-                    (if (if (<= (+ (count (get state :lexical-bindings))
-                                   (count (get state :loop-bindings)))
-                                (get
-                                 (sh07-bounds-value)
-                                 :maximum-combined-lexical-loop-records))
-                          (if (<= (count (get state :recur-targets))
-                                  (get (sh07-bounds-value)
-                                       :maximum-module-recur-target-records))
-                            (<= (count (get state :recur-transfers))
-                                (get (sh07-bounds-value)
-                                     :maximum-module-recur-transfer-records))
-                            false)
-                          false)
-                      (let [finalized
+      (let [finalized
                             (sh07-finalize-function-products request state)]
                         (if (= (get finalized :status) :accepted)
                           {:status :accepted
                            :state (get finalized :state)
                            :roots roots}
                           finalized))
-                      {:status :rejected
-                       :rule "C6-VERIFY"
-                       :form nil
-                       :facts
-                       {:reason :b8-product-record-bound
-                        :maximum
-                        (get (sh07-bounds-value)
-                             :maximum-combined-lexical-loop-records)
-                        :observed
-                        (+ (count (get state :lexical-bindings))
-                           (count (get state :loop-bindings)))}})
-                    {:status :rejected
-                     :rule "C6-VERIFY"
-                     :form nil
-                     :facts
-                     {:reason :keyword-lookup-record-bound
-                      :maximum
-                      (get
-                       (sh07-bounds-value)
-                       :maximum-module-keyword-lookup-records)
-                      :observed
-                      (count (get state :keyword-lookups))}})
-                {:status :rejected
-                 :rule "C6-VERIFY"
-                 :form nil
-                 :facts
-                 {:reason :call-record-bound
-                  :maximum
-                  (get (sh07-bounds-value)
-                       :maximum-module-call-records)
-                  :observed (count (get state :calls))}})
-                {:status :rejected
-                 :rule "C6-VERIFY"
-                 :form nil
-                 :facts
-                 {:reason :error-handler-record-bound
-                  :maximum
-                  (get (sh07-bounds-value)
-                       :maximum-module-error-handler-records)
-                  :observed
-                  (count (get state :error-handlers))}})
-              {:status :rejected
-               :rule "C6-VERIFY"
-               :form nil
-               :facts
-               {:reason :error-transfer-record-bound
-                :maximum
-                (get (sh07-bounds-value)
-                     :maximum-module-error-transfer-records)
-                :observed
-                (count (get state :error-transfers))}})
-            {:status :rejected
-             :rule "C6-VERIFY"
-             :form nil
-             :facts
-             {:reason :mutation-record-bound
-              :maximum
-              (get (sh07-bounds-value)
-                   :maximum-module-mutation-records)
-              :observed (count (get state :mutations))}})
-          {:status :rejected
-           :rule "C6-VERIFY"
-           :form nil
-           :facts
-           {:reason :var-reference-record-bound
-            :maximum
-            (get (sh07-bounds-value)
-                 :maximum-module-var-reference-records)
-            :observed (count (get state :var-references))}})
-        {:status :rejected
-         :rule "C6-VERIFY"
-         :form nil
-         :facts
-         {:reason :reference-use-record-bound
-          :maximum
-          (get (sh07-bounds-value)
-               :maximum-module-reference-use-records)
-          :observed
-          (count (get state :reference-uses))}})
       {:status :rejected
        :rule "C6-VERIFY"
        :form nil
@@ -7316,19 +6645,16 @@
          :diagnostics []}
         digest-requests
         (get (get mapping-added :state) :digest-requests)
-        template-carrier
-        (sh07-template-carrier-preflight template)
-        digest-carrier
-        (sh07-generated-digest-carrier-preflight digest-requests)]
-    (if (= (get template-carrier :status) :accepted)
-      (if (= (get digest-carrier :status) :accepted)
-        {:artifact :gravity/sh07-core-template-result
+
+
+        ]
+    {:artifact :gravity/sh07-core-template-result
          :schema-version 16
          :status :accepted
          :core-template template
          :digest-requests digest-requests
          :diagnostics []
-         :bounds (sh07-bounds-value)
+
          :containment {:downstream-artifacts-forbidden false
                        :host-exception-contained true}
          :execution-boundary
@@ -7338,35 +6664,7 @@
           :sh06-projection-authentication :clojure-stage0
           :digest-resolution :clojure-stage0
           :artifact-binding :clojure-stage0
-          :clojure-seed-boundary? true}}
-        (sh07-rejected-result
-         request
-         "C6-VERIFY"
-         nil
-         {:reason :generated-digest-output-carrier-bound
-          :carrier digest-carrier
-          :measurement
-          (sh07-carrier-preflight-with-bounds
-           digest-requests
-           33554432
-           (get (sh07-bounds-value)
-                :maximum-generated-digest-carrier-depth)
-           (get (sh07-bounds-value)
-                :maximum-generated-digest-carrier-width)
-           2147483648)}))
-      (sh07-rejected-result
-       request
-       "C6-VERIFY"
-       nil
-       {:reason :template-output-carrier-bound
-        :carrier template-carrier
-        :measurement
-        (sh07-carrier-preflight-with-bounds
-         template
-         (get (sh07-bounds-value) :maximum-template-carrier-nodes)
-         (get (sh07-bounds-value) :maximum-template-carrier-depth)
-         (get (sh07-bounds-value) :maximum-template-carrier-width)
-         2147483648)}))))
+          :clojure-seed-boundary? true}}))
 
 (defn sh07-build-core-template [request]
   (let [input-check (sh07-input-check request)]
@@ -7397,26 +6695,22 @@
   (if (sh07-exact-keys?
        result
        #{:artifact :schema-version :status :core-template
-         :digest-requests :diagnostics :bounds :containment
+         :digest-requests :diagnostics  :containment
          :execution-boundary})
     (if (= (get result :artifact)
            :gravity/sh07-core-template-result)
       (if (= (get result :schema-version) 16)
-        (if (= (get result :bounds) (sh07-bounds-value))
-          (if (= (get result :status) :accepted)
+        (if (= (get result :status) :accepted)
             (map? (get result :core-template))
             (if (= (get result :status) :rejected)
               (= (get result :core-template) nil)
               false))
-          false)
         false)
       false)
     false))
 
 (defn sh07-digest-request-sequence? [requests]
-  (if (sh07-bounded-vector?
-       requests
-       (get (sh07-bounds-value) :maximum-digest-requests))
+  (if (vector? requests)
     (loop [remaining requests ordinal 0]
       (if (= (count remaining) 0)
         true
@@ -7429,12 +6723,7 @@
     false))
 
 (defn sh07-verify-core-template [request template digest-requests]
-  (let [template-carrier (sh07-template-carrier-preflight template)
-        requests-carrier
-        (sh07-generated-digest-carrier-preflight digest-requests)]
-    (if (= (get template-carrier :status) :accepted)
-      (if (= (get requests-carrier :status) :accepted)
-        (let [rebuilt (sh07-build-core-template request)]
+  (let [rebuilt (sh07-build-core-template request)]
           (if (= (get rebuilt :status) :accepted)
             (if (sh07-template-result-shape? rebuilt)
               (if (sh07-digest-request-sequence? digest-requests)
@@ -7468,17 +6757,7 @@
              :rule "C6-VERIFY"
              :reason :rebuilt-result-status
              :details {:status (get rebuilt :status)
-                       :rule (get rebuilt :rule)}}))
-        {:artifact :gravity/sh07-core-template-verification
-         :schema-version 16 :status :rejected
-         :rule "C6-VERIFY"
-         :reason :digest-request-carrier
-         :details requests-carrier})
-      {:artifact :gravity/sh07-core-template-verification
-       :schema-version 16 :status :rejected
-       :rule "C6-VERIFY"
-       :reason :template-carrier
-       :details template-carrier})))
+                       :rule (get rebuilt :rule)}})))
 
 (defn sh07-digest-reference? [value]
   (if (sh07-exact-keys?
@@ -7503,21 +6782,7 @@
   {:status :accepted :value value})
 
 (defn sh07-resolved-core-success [value]
-  (let [carrier (sh07-resolved-core-carrier-preflight value)]
-    (if (= (get carrier :status) :accepted)
-      (sh07-resolution-success value)
-      {:status :rejected
-       :reason :resolved-core-output-carrier-bound
-       :carrier carrier
-       :measurement
-       (sh07-carrier-preflight-with-bounds
-        value
-        33554432
-        (get (sh07-bounds-value)
-             :maximum-resolved-core-carrier-depth)
-        (get (sh07-bounds-value)
-             :maximum-resolved-core-carrier-width)
-        2147483648)})))
+  (sh07-resolution-success value))
 
 (defn sh07-resolve-controlled-reference [value resolved-digests]
   (if (sh07-digest-reference? value)
@@ -7574,8 +6839,8 @@
                          :quoted-data :var-target :mutation-target :catch-clause
                          :catch-operator :catch-type :catch-binding :match-pattern}
                        (get row :reason))
-            (if (sh07-bounded-vector? (get row :emitted-node-ids) 65536)
-              (sh07-bounded-vector? (get row :anchor-node-ids) 65536) false)])
+            (if (vector? (get row :emitted-node-ids))
+              (vector? (get row :anchor-node-ids)) false)])
         false))
     false))
 
@@ -7602,8 +6867,7 @@
           (sh07-resolution-failure :source-core-map-row-shape))))))
 
 (defn sh07-resolve-source-core-map-preimage [preimage resolved-digests]
-  (if (= (get (sh07-generated-digest-carrier-preflight preimage) :status) :accepted)
-    (if (sh07-exact-keys?
+  (if (sh07-exact-keys?
          preimage #{:artifact :schema-version :rule-version :domain :module :lineage
                     :projection-binding :fragment-manifest :fragment-coverage
                     :module-assembly-manifest :root-form-ids :core-artifact-id :records})
@@ -7612,7 +6876,7 @@
               (= (get preimage :schema-version) 1)
               (= (get preimage :rule-version) :sh07-source-core-map-v1)
               (= (get preimage :domain) :gravity/sh07-source-core-map-v1)
-              (sh07-bounded-vector? (get preimage :records) 65536)
+              (vector? (get preimage :records))
               (vector? resolved-digests)])
         (let [core (sh07-resolve-controlled-reference
                     (get preimage :core-artifact-id) resolved-digests)
@@ -7626,8 +6890,7 @@
               rows)
             core))
         (sh07-resolution-failure :source-core-map-schema))
-      (sh07-resolution-failure :source-core-map-shape))
-    (sh07-resolution-failure :source-core-map-carrier-bound)))
+      (sh07-resolution-failure :source-core-map-shape)))
 
 (defn sh07-resolve-node-order [order resolved-digests]
   (if (vector? order)
@@ -8230,10 +7493,7 @@
                     false)
                   false)
                 false)
-            (if (sh07-sha-vector?
-                 (get clause :pattern-binding-ids)
-                 (get (sh07-bounds-value)
-                      :maximum-module-reference-use-records))
+            (if (sh07-sha-vector? (get clause :pattern-binding-ids))
               (if (= (get clause :pattern-kind) :binding)
                 (if (sh07-sha256-id?
                      (get clause :pattern-binding-id))
@@ -8300,7 +7560,7 @@
              :selection-policy :result-type-join :exhaustiveness
              :authenticated-sh06-artifact-id
              :sh06-semantic-projection-id}))
-        (if (if (sh07-bounded-vector? clauses (get (sh07-bounds-value) :maximum-module-match-branch-records))
+        (if (if (vector? clauses)
               (if (integer? branch-count) (> branch-count 0) false) false)
           (if (if (= (count children) (+ branch-count 1 (count guards)))
                 (if guarded?
@@ -8735,9 +7995,7 @@
      :control-flow-record-required)))
 
 (defn sh07-resolve-control-flow-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value) :maximum-module-control-flow-records))
+  (if (vector? records)
     (loop [remaining records result []]
       (if (= (count remaining) 0)
         (sh07-resolution-success result)
@@ -8790,10 +8048,7 @@
      :reference-use-shape)))
 
 (defn sh07-resolve-reference-use-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value)
-            :maximum-module-reference-use-records))
+  (if (vector? records)
     (loop [remaining records result []]
       (if (= (count remaining) 0)
         (sh07-resolution-success result)
@@ -8893,10 +8148,7 @@
     (sh07-resolution-failure :var-reference-shape)))
 
 (defn sh07-resolve-var-reference-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value)
-            :maximum-module-var-reference-records))
+  (if (vector? records)
     (loop [remaining records ordinal 0 values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -9156,9 +8408,7 @@
      :mutation-record-shape)))
 
 (defn sh07-resolve-mutation-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value) :maximum-module-mutation-records))
+  (if (vector? records)
     (loop [remaining records ordinal 0 values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -9304,10 +8554,7 @@
      :error-transfer-record-shape)))
 
 (defn sh07-resolve-error-transfer-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value)
-            :maximum-module-error-transfer-records))
+  (if (vector? records)
     (loop [remaining records ordinal 0 values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -9346,10 +8593,7 @@
 
 (defn sh07-resolve-error-handler-candidates
   [candidates resolved-digests]
-  (if (sh07-bounded-vector?
-       candidates
-       (get (sh07-bounds-value)
-            :maximum-module-error-transfer-records))
+  (if (vector? candidates)
     (loop [remaining candidates prior-ordinal -1 values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -9440,10 +8684,7 @@
                 false)
               false)
             false)
-        (if (if (sh07-bounded-vector?
-                 (get record :catch-binding-use-syntax-ids)
-                 (get (sh07-bounds-value)
-                      :maximum-module-reference-use-records))
+        (if (if (vector? (get record :catch-binding-use-syntax-ids))
               (sh07-sha256-id-vector?
                (get record :catch-binding-use-syntax-ids))
               false)
@@ -9574,10 +8815,7 @@
 
 (defn sh07-resolve-error-handler-vector
   [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value)
-            :maximum-module-error-handler-records))
+  (if (vector? records)
     (loop [remaining records ordinal 0 values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -9601,10 +8839,7 @@
     (if (sh07-sha256-id? (get record :pattern-binding-id))
       (if (sh07-sha256-id?
            (get record :pattern-binding-scope-id))
-        (if (sh07-bounded-vector?
-             (get record :pattern-binding-use-syntax-ids)
-             (get (sh07-bounds-value)
-                  :maximum-reference-use-records))
+        (if (vector? (get record :pattern-binding-use-syntax-ids))
           (sh07-sha256-id-vector?
            (get record :pattern-binding-use-syntax-ids))
           false)
@@ -9617,10 +8852,7 @@
       false)))
 
 (defn sh07-match-aggregate-binding-fields-valid? [record]
-  (if (sh07-sha-vector?
-       (get record :pattern-binding-ids)
-       (get (sh07-bounds-value)
-            :maximum-reference-use-records))
+  (if (sh07-sha-vector? (get record :pattern-binding-ids))
     (if (= (get record :pattern-kind) :binding)
       (= (get record :pattern-binding-ids)
          [(get record :pattern-binding-id)])
@@ -9648,12 +8880,10 @@
 
 (defn sh07-match-map-value-valid? [value]
   (if (map? value)
-    (if (<= (count value) (get (sh07-bounds-value) :maximum-match-pattern-width))
-      (loop [remaining (keys value)]
+    (loop [remaining (keys value)]
         (if (= (count remaining) 0) true
           (if (keyword? (first remaining))
             (recur (rest remaining)) false)))
-      false)
     false))
 
 (defn sh07-match-pattern-child-coordinate-valid? [parent coordinate]
@@ -9821,10 +9051,9 @@
     (sh07-resolution-failure
      :match-branch-record-shape)))
 
-(defn sh07-resolve-match-branch-vector-bounded
-  [records resolved-digests maximum]
-  (if (sh07-bounded-vector?
-       records maximum)
+(defn sh07-resolve-match-branch-vector-checked
+  [records resolved-digests]
+  (if (vector? records)
     (loop [remaining records ordinal 0 values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -9845,17 +9074,11 @@
 
 (defn sh07-resolve-match-branch-vector
   [records resolved-digests]
-  (sh07-resolve-match-branch-vector-bounded
-   records resolved-digests
-   (get (sh07-bounds-value)
-        :maximum-match-branch-records)))
+  (sh07-resolve-match-branch-vector-checked records resolved-digests))
 
 (defn sh07-resolve-module-match-branch-vector
   [records resolved-digests]
-  (sh07-resolve-match-branch-vector-bounded
-   records resolved-digests
-   (get (sh07-bounds-value)
-        :maximum-module-match-branch-records)))
+  (sh07-resolve-match-branch-vector-checked records resolved-digests))
 
 (defn sh07-resolve-match-decision-skeleton
   [record resolved-digests]
@@ -9919,10 +9142,9 @@
     (sh07-resolution-failure
      :match-decision-skeleton-shape)))
 
-(defn sh07-resolve-match-decision-skeleton-vector-bounded
-  [records resolved-digests maximum]
-  (if (sh07-bounded-vector?
-       records maximum)
+(defn sh07-resolve-match-decision-skeleton-vector-checked
+  [records resolved-digests]
+  (if (vector? records)
     (loop [remaining records values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -9939,22 +9161,14 @@
 
 (defn sh07-resolve-match-decision-skeleton-vector
   [records resolved-digests]
-  (sh07-resolve-match-decision-skeleton-vector-bounded
-   records resolved-digests
-   (get (sh07-bounds-value)
-        :maximum-match-decision-skeletons)))
+  (sh07-resolve-match-decision-skeleton-vector-checked records resolved-digests))
 
 (defn sh07-resolve-module-match-decision-skeleton-vector
   [records resolved-digests]
-  (sh07-resolve-match-decision-skeleton-vector-bounded
-   records resolved-digests
-   (get (sh07-bounds-value)
-        :maximum-module-match-decision-skeletons)))
+  (sh07-resolve-match-decision-skeleton-vector-checked records resolved-digests))
 
 (defn sh07-match-pattern-path-valid? [path depth]
-  (if (sh07-bounded-vector?
-       path
-       (get (sh07-bounds-value) :maximum-match-pattern-depth))
+  (if (vector? path)
     (if (= (count path) depth)
       (loop [remaining path]
         (if (= (count remaining) 0)
@@ -9972,9 +9186,7 @@
     (if (= (get record :pattern-value) nil)
       (if (integer? (get record :vector-width))
         (if (>= (get record :vector-width) 0)
-          (<= (get record :vector-width)
-              (get (sh07-bounds-value)
-                   :maximum-match-pattern-width))
+          true
           false)
         false)
       false)
@@ -10012,9 +9224,7 @@
               (if (>= (get record :root-ordinal) 0)
                 (if (integer? (get record :depth))
                   (if (>= (get record :depth) 0)
-                    (<= (get record :depth)
-                        (get (sh07-bounds-value)
-                             :maximum-match-pattern-depth))
+                    true
                     false)
                   false)
                 false)
@@ -10162,10 +9372,9 @@
              (if root? (conj root-groups root-group) root-groups))
             false))))))
 
-(defn sh07-resolve-match-pattern-vector-bounded
-  [records resolved-digests maximum]
-  (if (sh07-bounded-vector?
-       records maximum)
+(defn sh07-resolve-match-pattern-vector-checked
+  [records resolved-digests]
+  (if (vector? records)
     (loop [remaining records ordinal 0 values []]
       (if (= (count remaining) 0)
         (if (sh07-match-pattern-graph-complete? values)
@@ -10198,17 +9407,11 @@
 
 (defn sh07-resolve-match-pattern-vector
   [records resolved-digests]
-  (sh07-resolve-match-pattern-vector-bounded
-   records resolved-digests
-   (get (sh07-bounds-value)
-        :maximum-match-pattern-records)))
+  (sh07-resolve-match-pattern-vector-checked records resolved-digests))
 
 (defn sh07-resolve-module-match-pattern-vector
   [records resolved-digests]
-  (sh07-resolve-match-pattern-vector-bounded
-   records resolved-digests
-   (get (sh07-bounds-value)
-        :maximum-module-match-pattern-records)))
+  (sh07-resolve-match-pattern-vector-checked records resolved-digests))
 
 (defn sh07-resolve-call-record [record resolved-digests]
   (if (sh07-exact-keys?
@@ -10220,14 +9423,8 @@
       (if (= (get record :evaluation-order)
              :operator-then-arguments)
         (if (= (get record :result-policy) :call-result)
-          (if (sh07-bounded-vector?
-               (get record :argument-node-ids)
-               (get (sh07-bounds-value)
-                    :maximum-form-children))
-            (if (sh07-bounded-vector?
-                 (get record :ordered-evaluation-node-ids)
-                 (get (sh07-bounds-value)
-                      :maximum-form-children))
+          (if (vector? (get record :argument-node-ids))
+            (if (vector? (get record :ordered-evaluation-node-ids))
               (let [core-node-id
                     (sh07-resolve-controlled-reference
                      (get record :core-node-id)
@@ -10281,18 +9478,16 @@
                     operator-node-id)
                   core-node-id))
               (sh07-resolution-failure
-               :call-ordered-evaluation-bound))
+               :call-ordered-evaluation-vector-required))
             (sh07-resolution-failure
-             :call-argument-bound))
+             :call-argument-vector-required))
           (sh07-resolution-failure :call-result-policy))
         (sh07-resolution-failure :call-evaluation-order))
       (sh07-resolution-failure :call-operator-binding-id))
     (sh07-resolution-failure :call-record-shape)))
 
 (defn sh07-resolve-call-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value) :maximum-module-call-records))
+  (if (vector? records)
     (loop [remaining records result []]
       (if (= (count remaining) 0)
         (sh07-resolution-success result)
@@ -10381,9 +9576,7 @@
     (sh07-resolution-failure :function-record-shape)))
 
 (defn sh07-resolve-function-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value) :maximum-module-bindings))
+  (if (vector? records)
     (loop [remaining records ordinal 0 values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -10494,9 +9687,7 @@
     (sh07-resolution-failure :call-edge-shape)))
 
 (defn sh07-resolve-call-edge-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value) :maximum-module-call-records))
+  (if (vector? records)
     (loop [remaining records ordinal 0 values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -10537,10 +9728,7 @@
                    (get record :function-syntax-ids))
                 (if (sh07-all-unique?
                      (get record :function-syntax-ids))
-                  (sh07-bounded-vector?
-                   (get record :internal-call-edge-ordinals)
-                   (get (sh07-bounds-value)
-                        :maximum-module-call-records))
+                  (vector? (get record :internal-call-edge-ordinals))
                   false)
                 false)
               false)
@@ -10580,10 +9768,7 @@
 
 (defn sh07-resolve-recursion-component-vector
   [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value)
-            :maximum-module-bindings))
+  (if (vector? records)
     (loop [remaining records ordinal 0 values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -10666,10 +9851,7 @@
 
 (defn sh07-resolve-keyword-lookup-vector
   [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value)
-            :maximum-module-keyword-lookup-records))
+  (if (vector? records)
     (loop [remaining records result []]
       (if (= (count remaining) 0)
         (sh07-resolution-success result)
@@ -10766,10 +9948,7 @@
 
 (defn sh07-resolve-lexical-binding-vector
   [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value)
-            :maximum-module-lexical-binding-records))
+  (if (vector? records)
     (loop [remaining records result [] binding-ids #{}]
       (if (= (count remaining) 0)
         (sh07-resolution-success result)
@@ -10822,9 +10001,7 @@
     (sh07-resolution-failure :loop-binding-record-shape)))
 
 (defn sh07-resolve-loop-binding-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value) :maximum-module-loop-binding-records))
+  (if (vector? records)
     (loop [remaining records values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -10873,9 +10050,7 @@
     (sh07-resolution-failure :recur-target-record-shape)))
 
 (defn sh07-resolve-recur-target-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value) :maximum-module-recur-target-records))
+  (if (vector? records)
     (loop [remaining records values [] target-ids #{}]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -10935,9 +10110,7 @@
     (sh07-resolution-failure :recur-transfer-record-shape)))
 
 (defn sh07-resolve-recur-transfer-vector [records resolved-digests]
-  (if (sh07-bounded-vector?
-       records
-       (get (sh07-bounds-value) :maximum-module-recur-transfer-records))
+  (if (vector? records)
     (loop [remaining records values []]
       (if (= (count remaining) 0)
         (sh07-resolution-success values)
@@ -11563,15 +10736,7 @@
 
 (defn sh07-verify-core-resolved
   [request resolved-core digest-requests resolved-digests]
-  (let [resolved-carrier
-        (sh07-resolved-core-carrier-preflight resolved-core)
-        requests-carrier
-        (sh07-generated-digest-carrier-preflight digest-requests)
-        digests-carrier (sh07-carrier-preflight resolved-digests)]
-    (if (= (get resolved-carrier :status) :accepted)
-      (if (= (get requests-carrier :status) :accepted)
-        (if (= (get digests-carrier :status) :accepted)
-          (let [rebuilt (sh07-build-core-template request)]
+  (let [rebuilt (sh07-build-core-template request)]
             (if (= (get rebuilt :status) :accepted)
       (if (= digest-requests (get rebuilt :digest-requests))
         (if (sh07-digest-request-sequence? digest-requests)
@@ -11591,12 +10756,6 @@
                  :schema-version 16 :status :rejected :rule "C6-VERIFY"}))
             {:artifact :gravity/sh07-core-resolved-verification
              :schema-version 16 :status :rejected :rule "C6-VERIFY"})
-          {:artifact :gravity/sh07-core-resolved-verification
-           :schema-version 16 :status :rejected :rule "C6-VERIFY"})
-        {:artifact :gravity/sh07-core-resolved-verification
-         :schema-version 16 :status :rejected :rule "C6-VERIFY"})
-      {:artifact :gravity/sh07-core-resolved-verification
-       :schema-version 16 :status :rejected :rule "C6-VERIFY"}))
           {:artifact :gravity/sh07-core-resolved-verification
            :schema-version 16 :status :rejected :rule "C6-VERIFY"})
         {:artifact :gravity/sh07-core-resolved-verification
@@ -12140,11 +11299,7 @@
 ; Semantic :passed alone is not admission. The adapter must independently
 ; recompute all D/Z SHA values before using this pure transcript/role verdict.
 (defn sh07-verify-source-core-map [request resolved-core digest-requests resolved-digests]
-  (if (= [true true true]
-         [(= (get (sh07-resolved-core-carrier-preflight resolved-core) :status) :accepted)
-          (= (get (sh07-generated-digest-carrier-preflight digest-requests) :status) :accepted)
-          (= (get (sh07-carrier-preflight resolved-digests) :status) :accepted)])
-    (if (sh07-source-core-map-transcript? resolved-core digest-requests)
+  (if (sh07-source-core-map-transcript? resolved-core digest-requests)
       (if (if (<= (count digest-requests) (+ (count (get request :forms)) 4))
             (<= (+ (count (get request :forms)) 4) 65540) false)
         (let [rebuilt (sh07-build-core-template request)]
@@ -12190,5 +11345,4 @@
               (sh07-source-core-map-verdict :source-core-map-producer-replay))
             (sh07-source-core-map-verdict :source-core-map-producer-rejected)))
         (sh07-source-core-map-verdict :source-core-map-digest-bound))
-      (sh07-source-core-map-verdict :source-core-map-transcript))
-    (sh07-source-core-map-verdict :source-core-map-carrier-bound)))
+      (sh07-source-core-map-verdict :source-core-map-transcript)))

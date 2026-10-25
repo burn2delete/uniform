@@ -14,13 +14,17 @@
                    :reason reason})))
 
 (defn- sh07-core-construction-carrier! [artifact]
-  (let [aggregate (sh06-resolution-carrier-validation artifact sh06-resolution-artifact-bounds)]
+  (let [aggregate (p15-s23-trusted-carrier-validation artifact :default-only)]
     (when-not (= :passed (:status aggregate))
-      (sh07-core-construction-fail! "<sh07-core-input>" :bounded-artifact-carrier))
+      (sh07-core-construction-fail! "<sh07-core-input>" :trusted-artifact-carrier))
     ;; The aggregate trusted-carrier guard dominates every component lookup.
-    (let [components (sh06-resolution-component-validations artifact)]
+    (let [components (into (sorted-map)
+                      (map (fn [[component path]]
+                             [component (p15-s23-trusted-carrier-validation
+                                         (get-in artifact path) :default-only)]))
+                      sh06-resolution-component-paths)]
       (when-not (every? #(= :passed (:status %)) (vals components))
-        (sh07-core-construction-fail! "<sh07-core-input>" :bounded-semantic-components))
+        (sh07-core-construction-fail! "<sh07-core-input>" :trusted-semantic-components))
       {:aggregate aggregate :components components})))
 
 (defn- sh07-core-construction-envelope-source [source-path]

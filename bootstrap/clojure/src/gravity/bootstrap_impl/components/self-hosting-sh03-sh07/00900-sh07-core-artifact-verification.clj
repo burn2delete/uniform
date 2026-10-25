@@ -220,7 +220,6 @@
            (map (fn [[key catalog]]
                   [key (:check-catalog-hash catalog)]))
            (:check-catalogs closed))
-     :maximum-receipts (:maximum-receipts closed)
      :artifact-id (:audited-artifact-id closed)
      :verification-report-id (:verification-report-id closed)
      :construction-receipts-cleared?

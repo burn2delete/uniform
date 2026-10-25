@@ -142,77 +142,6 @@
     (catch clojure.lang.ExceptionInfo exception
       (ex-data exception))))
 
-(deftest sh07-b16-aggregate-binding-bound-is-isolated
-  (let [bounds (invoke 'sh07-bounds-value [])]
-    (is (= 2048 (:maximum-bindings bounds)))
-    (is (= 2440 (:maximum-module-bindings bounds)))
-    (is (= 1024 (:maximum-lexical-binding-records bounds)))
-    (is (= 1024 (:maximum-loop-binding-records bounds)))
-    (is (= 65536 (:maximum-combined-lexical-loop-records bounds)))
-    (is (= 8388608 (:maximum-carrier-nodes bounds)))
-    (is (= 268435456 (:maximum-scalar-bytes bounds)))
-    (is (= 33554432 (:maximum-template-carrier-nodes bounds)))
-    (is (= 256 (:maximum-template-carrier-depth bounds)))
-    (is (= 65536 (:maximum-template-carrier-width bounds)))
-    (is (= 1073741824 (:maximum-template-scalar-bytes bounds)))
-    (is (< 875437492 (:maximum-template-scalar-bytes bounds)))
-    (is (= 2147483648
-           (* 2 (:maximum-template-scalar-bytes bounds))))
-    (is (= 16777216 (:maximum-resolved-core-carrier-nodes bounds)))
-    (is (= 256 (:maximum-resolved-core-carrier-depth bounds)))
-    (is (= 65536 (:maximum-resolved-core-carrier-width bounds)))
-    (is (= 1073741824
-           (:maximum-resolved-core-scalar-bytes bounds)))
-    (is (< 810611392
-           (:maximum-resolved-core-scalar-bytes bounds)))
-    (is (= 16777216
-           (:maximum-generated-digest-carrier-nodes bounds)))
-    (is (< 10901467
-           (:maximum-generated-digest-carrier-nodes bounds)))
-    (is (= 256 (:maximum-generated-digest-carrier-depth bounds)))
-    (is (= 65536 (:maximum-generated-digest-carrier-width bounds)))
-    (is (= 1073741824
-           (:maximum-generated-digest-scalar-bytes bounds)))
-    (is (< 623328452
-           (:maximum-generated-digest-scalar-bytes bounds)))))
-
-(deftest sh07-b16-binding-preflight-is-inclusive-and-fails-closed
-  (let [at-bound (vec (repeat 2440 nil))
-        over-bound (conj at-bound nil)
-        accepted (invoke 'sh07-binding-count-preflight [at-bound])
-        rejected (invoke 'sh07-binding-count-preflight [over-bound])
-        malformed (invoke 'sh07-binding-count-preflight [:not-a-vector])]
-    (testing "the module binding table accepts its exact aggregate ceiling"
-      (is (= {:status :accepted
-              :bound :maximum-module-bindings
-              :maximum 2440
-              :observed 2440}
-             accepted)))
-    (testing "boundary plus one is a structured fail-closed rejection"
-      (is (= {:status :rejected
-              :reason :maximum-module-bindings
-              :bound :maximum-module-bindings
-              :maximum 2440
-              :observed 2441}
-             rejected)))
-    (testing "malformed ingress is rejected without host traversal failure"
-      (is (= {:status :rejected
-              :reason :binding-vector-required
-              :bound :maximum-module-bindings
-              :maximum 2440
-              :observed nil}
-             malformed)))))
-
-(deftest sh07-b16-fragment-binding-id-bound-remains-independent
-  (let [at-bound (mapv ordinal-sha (range 2048))
-        over-bound (conj at-bound (ordinal-sha 2048))
-        bounds (invoke 'sh07-bounds-value [])]
-    (is (= 2048 (:maximum-bindings bounds)))
-    (is (true? (invoke 'sh07-binding-id-vector? [at-bound])))
-    (is (false? (invoke 'sh07-binding-id-vector? [over-bound])))
-    (is (= 2049 (count over-bound)))
-    (is (false? (invoke 'sh07-binding-id-vector? [[:not-a-sha]])))))
-
 (deftest sh07-b16-authentic-module-binding-decomposition-is-exact
   (let [{:keys [module definitions core-bindings lexical-bindings binding-ids]}
         (checked-core-binding-decomposition)]
@@ -227,69 +156,6 @@
     (is (= (count binding-ids) (count (distinct binding-ids))))
     (is (every? #(re-matches #"sha256:[0-9a-f]{64}" %)
                 binding-ids))))
-
-(deftest sh07-b16-coordinator-and-gravity-module-bounds-are-equal
-  (let [at-bound (vec (repeat 2440 nil))
-        over-bound (conj at-bound nil)
-        coordinator-accepted
-        (bootstrap/sh07-core-request-preflight!
-         (coordinator-request at-bound))
-        coordinator-rejected
-        (contained-coordinator-diagnostic
-         #(bootstrap/sh07-core-request-preflight!
-           (coordinator-request over-bound)))
-        gravity-accepted
-        (invoke 'sh07-binding-count-preflight [at-bound])
-        gravity-rejected
-        (invoke 'sh07-binding-count-preflight [over-bound])]
-    (is (= :passed coordinator-accepted))
-    (is (= :accepted (:status gravity-accepted)))
-    (is (= 2440 (:maximum gravity-accepted)))
-    (is (= :maximum-module-bindings
-           (get-in coordinator-rejected
-                   [:facts :rule-specific :bound])
-           (:reason gravity-rejected)
-           (:bound gravity-rejected)))
-    (is (= 2440
-           (get-in coordinator-rejected
-                   [:facts :rule-specific :maximum])
-           (:maximum gravity-rejected)))
-    (is (= 2441
-           (get-in coordinator-rejected
-                   [:facts :rule-specific :observed])
-           (:observed gravity-rejected)))
-    (is (true? (get-in coordinator-rejected [:facts :fail-closed])))))
-
-(deftest sh07-b16-over-bound-and-malformed-requests-prevent-lowering
-  (let [lowering-called? (atom false)
-        at-bound (vec (repeat 2440 nil))
-        over-bound (conj at-bound nil)
-        over-request (coordinator-request over-bound)
-        malformed-request (assoc (coordinator-request at-bound)
-                                 :binding-table :not-a-vector)
-        run
-        (fn [request]
-          (with-redefs [bootstrap/sh07-core-execute!
-                        (fn [& _]
-                          (reset! lowering-called? true)
-                          {:status :unexpected-lowering})]
-            (contained-coordinator-diagnostic
-             #(bootstrap/sh07-core-run-structural-request-for-test
-               request))))
-        over-diagnostic (run over-request)
-        malformed-diagnostic (run malformed-request)]
-    (is (false? @lowering-called?))
-    (is (= :gravity/sh07-core-diagnostic (:artifact over-diagnostic)))
-    (is (= :maximum-module-bindings
-           (get-in over-diagnostic [:facts :rule-specific :bound])))
-    (is (= 2441
-           (get-in over-diagnostic [:facts :rule-specific :observed])))
-    (is (not (contains? over-diagnostic :canonical-core-artifact)))
-    (is (= :request-binding-table-vector-required
-           (get-in malformed-diagnostic
-                   [:facts :rule-specific :reason])))
-    (is (true? (get-in malformed-diagnostic [:facts :fail-closed])))
-    (is (not (contains? malformed-diagnostic :raw-template-result)))))
 
 (deftest sh07-source-local-bindings-follow-authenticated-definition-syntax
   (let [local-a (ordinal-sha 1)
@@ -321,40 +187,6 @@
               [(update request :binding-table
                        #(vec [(second %) (first %) (nth % 2)]))]))))))
 
-(deftest sh07-template-carrier-limits-are-separate-and-inclusive
-  (let [preflight
-        #(invoke
-          'sh07-carrier-preflight-with-bounds
-          [%1 %2 %3 %4 %5])]
-    (is (= :accepted (:status (preflight [:a] 2 1 1 8))))
-    (is (= :carrier-node-bound
-           (:reason (preflight [:a] 1 1 1 8))))
-    (is (= :carrier-depth-bound
-           (:reason (preflight [:a] 2 0 1 8))))
-    (is (= :carrier-width-bound
-           (:reason (preflight [:a] 2 1 0 8))))
-    (is (= :carrier-scalar-byte-bound
-           (:reason (preflight [:a] 2 1 1 7))))))
-
-(deftest sh07-template-and-resolved-output-preflights-are-explicit
-  (let [value [:a]
-        template (invoke 'sh07-template-carrier-preflight [value])
-        resolved (invoke 'sh07-resolved-core-carrier-preflight [value])
-        digest
-        (invoke 'sh07-generated-digest-carrier-preflight [value])]
-    (is (= :accepted (:status template)))
-    (is (= :accepted (:status resolved)))
-    (is (= :accepted (:status digest)))
-    (is (= (select-keys template
-                        [:nodes :aggregate-nodes :component-nodes
-                         :scalar-bytes :maximum-depth :maximum-width])
-           (select-keys resolved
-                        [:nodes :aggregate-nodes :component-nodes
-                         :scalar-bytes :maximum-depth :maximum-width])
-           (select-keys digest
-                        [:nodes :aggregate-nodes :component-nodes
-                         :scalar-bytes :maximum-depth :maximum-width])))))
-
 (deftest sh07-b16-public-export-shapes-remain-stable
   (is (= :gravity/stage2-compiler-artifact-plan
          (:kind @checked-core-plan)))
@@ -367,3 +199,51 @@
     (let [compiled (get-in @checked-core-plan [:functions function])]
       (is (map? compiled) function)
       (is (= parameters (:params compiled)) function))))
+
+(deftest binding-vector-shape-has-no-count-admission-quota
+  (doseq [size [2440 2441 65537]]
+    (is (= {:status :accepted}
+           (invoke 'sh07-binding-vector-preflight [(vec (repeat size nil))]))))
+  (is (= {:status :rejected :reason :binding-vector-required}
+         (invoke 'sh07-binding-vector-preflight [:not-a-vector]))))
+
+(deftest binding-id-validation-retains-digest-shape-without-count-quota
+  (let [ids (mapv ordinal-sha (range 2049))]
+    (is (true? (invoke 'sh07-binding-id-vector? [ids])))
+    (is (false? (invoke 'sh07-binding-id-vector? [(conj ids :not-a-sha)])))))
+
+(deftest request-preflight-retains-shapes-and-authenticated-projection
+  (let [request (coordinator-request (vec (repeat 2441 nil)))]
+    (is (= :passed (bootstrap/sh07-core-request-preflight! request)))
+    (is (= :request-binding-table-vector-required
+           (get-in (contained-coordinator-diagnostic
+                    #(bootstrap/sh07-core-request-preflight! (assoc request :binding-table :malformed)))
+                   [:facts :rule-specific :reason])))
+    (is (= :request-projection-binding-mismatch
+           (get-in (contained-coordinator-diagnostic
+                    #(bootstrap/sh07-core-request-preflight! (assoc request :projection-binding "changed")))
+                   [:facts :rule-specific :reason])))))
+
+(defn- form-index [forms]
+  {:forms {:by-id (into {} (map (juxt :form-id identity)) forms)}})
+
+(deftest form-forest-retains-cycle-coverage-and-parent-invariants
+  (let [forms (mapv (fn [id]
+                      {:form-id id :parent-form-id (when (pos? id) (dec id))
+                       :child-form-ids (if (= id 599) [] [(inc id)])})
+                    (range 600))
+        request {:forms forms :top-level-form-ids [0]}
+        indexes (form-index forms)]
+    (is (true? (invoke 'sh07-form-forest-valid? [request indexes])))
+    (is (= 0 (invoke 'sh07-b13-form-root-id [indexes (peek forms)])))
+    (is (false? (invoke 'sh07-form-forest-valid?
+                         [(assoc request :top-level-form-ids [0 0]) indexes])))
+    (is (false? (invoke 'sh07-form-forest-valid?
+                         [(assoc request :top-level-form-ids [600]) indexes])))
+    (is (false? (invoke 'sh07-form-forest-valid?
+                         [(assoc request :top-level-form-ids [1]) indexes])))
+    (let [cycle [{:form-id 0 :parent-form-id 0 :child-form-ids [0]}]
+          cycle-index (form-index cycle)]
+      (is (false? (invoke 'sh07-form-forest-valid?
+                           [{:forms cycle :top-level-form-ids [0]} cycle-index])))
+      (is (nil? (invoke 'sh07-b13-form-root-id [cycle-index (first cycle)]))))))
