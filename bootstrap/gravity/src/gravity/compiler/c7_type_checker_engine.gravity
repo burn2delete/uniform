@@ -3093,6 +3093,72 @@
         {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix})))
     {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
+(defn sh08-gis3-complete-source-payment [core binding-rows form-rows types target budget]
+  ; First construction gate only. Complete original DATA payment precedes
+  ; semantic matching and v3 output construction; success grants no proof.
+  ; The private caller supplies its remaining trusted inference allowance.
+  ; Validate before touching source inputs; zero is an exhausted valid pool.
+  (if (if (integer? budget) (>= budget 0) false)
+  (let [limit budget prefix 512]
+    (if (> prefix limit) {:status :rejected :reason :compact-gis-work-limit :work-count prefix :completed-work-count 0}
+      (if (if (map? core) (if (<= (count core) 1024)
+            (if (map? types) (if (<= (count types) 1024) (sh08-pc-id? target) false) false) false) false)
+        (let [entry-control 2097152 reserved-entry (+ prefix entry-control)]
+          (if (> reserved-entry limit)
+            {:status :rejected :reason :compact-gis-entry-control-work-limit :stage :original-entry-control
+             :work-count reserved-entry :completed-work-count prefix}
+            (let [tables [[:nodes (sh08-gis3-view-get core :nodes) :node-id] [:calls (sh08-gis3-view-get core :calls) :core-node-id]
+                          [:edges (sh08-gis3-view-get core :call-edges) :call-core-node-id]
+                          [:records (sh08-gis3-view-get core :function-records) :function-syntax-id]
+                          [:bindings binding-rows :binding-id] [:forms form-rows :form-id]]]
+        (loop [remaining tables indexes {:types types} used reserved-entry maximum-index-size (count types)]
+          (if (= 0 (count remaining))
+            ; The source-derived control bound prepays bounded field reads,
+            ; loop/frame visits, constructor cells and private Map/Set work.
+            ; Complete original values still pay independent DATA B below.
+            ; At most 97 Native ID map lookups: initial13, packets21,
+            ; control6, sources23, heads6, stages20, parameter1, body1,
+            ; and types6. Each pays dispatch1, String hash W73 and at
+            ; most M canonical W73 collision comparisons. M includes types.
+            (let [id-lookup-work (* 97 (+ 1 73 (* 73 maximum-index-size)))
+                  selection-work (+ (sh08-gis3-view-control-work (count (sh08-gis3-view-get core :nodes))) id-lookup-work)
+                  reserved (+ used selection-work)]
+              (if (> reserved limit)
+                {:status :rejected :reason :compact-gis-view-construction-work-limit
+                 :work-count reserved :completed-work-count used :stage :original-view-construction}
+                (let [selected (sh08-gis3-original-readsets core indexes target)]
+                  (if (= :selected-original-data (sh08-gis3-view-get selected :status))
+                    (loop [parts (sh08-gis3-view-get selected :readsets) ordinal 0 work reserved comparison 0 ledger []]
+                      (if (= 0 (count parts))
+                        {:status :original-data-payment-complete :work-count work :completed-work-count work
+                         :numeric-proof-established false :selected selected :indexes indexes
+                         :comparison-bound-work comparison :readset-fees ledger :complete-original-readset-control true}
+                        (let [checked (sh08-gis3-complete-data-tallies (first parts) (- limit work))
+                              total (+ work (sh08-gis3-view-get checked :work-count))]
+                          (if (= :accepted (sh08-gis3-view-get checked :status))
+                            (recur (rest parts) (+ ordinal 1) total
+                              (+ comparison (sh08-gis3-view-get checked :comparison-bound-work))
+                              (conj ledger [ordinal (sh08-gis3-view-get checked :physical-work-count)
+                                            (sh08-gis3-view-get checked :control-work-count)
+                                            (sh08-gis3-view-get checked :comparison-bound-work)
+                                            (sh08-gis3-view-get checked :work-count)]))
+                            {:status :rejected :reason (sh08-gis3-view-get checked :reason) :stage :original-readset
+                             :readset-ordinal ordinal :work-count total
+                             :completed-work-count (+ work (sh08-gis3-view-get checked :completed-work-count))
+                             :completed-readsets ordinal :numeric-proof-established false
+                             :comparison-work 0 :storage-work 0}))))
+                    {:status :rejected :reason (sh08-gis3-view-get selected :reason) :work-count reserved :completed-work-count reserved}))))
+            (let [part (first remaining) result (sh08-gis3-index (sh08-gis3-view-get part 1) (sh08-gis3-view-get part 2) (- limit used))
+                  work (+ used (sh08-gis3-view-get result :work-count))]
+              (if (= :accepted (sh08-gis3-view-get result :status))
+                (recur (rest remaining) (assoc indexes (sh08-gis3-view-get part 0) (sh08-gis3-view-get result :index)) work
+                       (if (> (count (sh08-gis3-view-get result :index)) maximum-index-size) (count (sh08-gis3-view-get result :index)) maximum-index-size))
+                {:status :rejected :reason (sh08-gis3-view-get result :reason) :stage :original-index
+                 :table (sh08-gis3-view-get part 0) :work-count work :completed-work-count (+ used (sh08-gis3-view-get result :completed-work-count))}))))
+        )))
+        {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix})))
+    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
 (defn sh08-gis3-entry-original-data [core binding-rows form-rows budget]
   ; Fee-only preparation for the complete original entry census. The vector
   ; retains whole original row families, including unread metadata. Payment
@@ -3842,6 +3908,7 @@
     (if (if (integer? value) (integer? (get form :value)) false)
       (if (sh08-ft-all-true?
             [(sh08-gis3-source-match? node form) (= [] (get node :resolved-binding-ids))
+             (= :value (get (get node :evaluation) :kind)) (= [] (get (get node :evaluation) :order))
              (sh08-ix-literal? node :integer value (get indexes :forms))
              (= :gravity.type/integer (sh08-primitive-type-from-literal-kind (get attrs :literal-kind)))])
         {:core-node-id (get node :node-id) :value value :type :gravity.type/integer} nil) nil)))
@@ -3901,6 +3968,8 @@
                      (= :literal (get no :core-form)) (= [] (get no :children) (get no :resolved-binding-ids))
                      (= {:literal-kind :boolean :value false} (get no :attributes))
                      (= :boolean (get false-form :kind)) (boolean? (get false-form :value)) (= false (get false-form :value))
+                     (= [] (get false-form :child-form-ids) (get (get no :evaluation) :order))
+                     (= :value (get (get no :evaluation) :kind))
                      (sh08-gis3-source-match? no false-form)
                      (loop [rows [outer inner low high no
                                   (sh08-gis3-pick nodes (get (get call :argument-node-ids) 1))
@@ -3912,7 +3981,14 @@
                 {:status :original-numeric-source-matched :input-range [(get lower :value) (get upper :value)]
                  :result-range [0 (- (get upper :value) (get lower :value))] :source-ancestry ancestry
                  :parameter-type (get entry :parameter-type) :parameter-binding-id (get entry :parameter-binding-id)
-                 :core-input (get core :artifact-id) :call-core-node-id target :numeric-proof-established false}
+                 :core-input (get core :artifact-id) :call-core-node-id target
+                 :packet-call-ids [target (get low :node-id) (get high :node-id)]
+                 :operand-types (loop [calls [call low-call high-call] out {}]
+                                  (if (= 0 (count calls)) out
+                                    (let [args (get (first calls) :argument-node-ids)]
+                                      (recur (rest calls)
+                                        (assoc out (get args 0) :gravity.type/integer (get args 1) :gravity.type/integer)))))
+                 :numeric-proof-established false}
                 {:status :rejected :reason :compact-gis-original-range-required})
               {:status :rejected :reason :compact-gis-original-literals-or-ancestry-required}))
           {:status :rejected :reason :compact-gis-original-control-or-call-required})) entry)))
@@ -3962,6 +4038,59 @@
                  :work-count data-work :completed-work-count (+ reserved (get data :completed-work-count))}))
             {:status :rejected :reason :compact-gis-source-id-required :work-count reserved :completed-work-count reserved}))))
     {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
+(defn sh08-gis3-v3-product [core indexes matched]
+  ; Internal construction from this invocation's fresh numeric matcher only.
+  ; The public/private owning entry accepts original rows, never matched data.
+  (let [target (get matched :call-core-node-id) node (sh08-gis3-pick (get indexes :nodes) target)
+        source (get node :source) module (get core :module)
+        witness {:domain :gravity/sh08-gis-source-witness-v3 :input-range (get matched :input-range)}
+        application {:kind :gravity.type/applied-guarded-integer-subtraction :version :sh08-guarded-integer-subtraction-v3
+                     :operation '- :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core
+                     :intrinsic :gravity.math.core/guarded-integer-subtraction :resolution :gravity.core-compatibility
+                     :core-input (get core :artifact-id) :call-core-node-id target
+                     :argument-types [:gravity.type/integer :gravity.type/integer]
+                     :parameter-types [:gravity.type/integer :gravity.type/integer]
+                     :return :gravity.type/integer :result-type :gravity.type/integer
+                     :numeric-mode :proof-required :safety :proven-safe :range-proof witness :application :normal
+                     :operand-evaluation :left-then-right-once :conversion :none
+                     :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+                     :profile (get module :profile) :target (get module :target)
+                     :invalidation [:calls :call-edges :binding-table :source-forms :type-table :function-records :mutations
+                                    :recur-targets :recur-transfers :recursion-components :control-flow :operand-position
+                                    :profile :target :safety :evaluation-order]}
+        constraint {:constraint-id-request {:domain :gravity/sh08-guarded-integer-subtraction-constraint-v3 :application application}
+                    :kind :numeric-mode :producer-rule :sh08-guarded-integer-subtraction-v3
+                    :lhs {:core-node-id target :projection :guarded-integer-subtraction}
+                    :rhs :gravity.type/integer :dependencies application :origin (get source :origin-chain)
+                    :solution {:result-type :gravity.type/integer :numeric-mode :proof-required :safety :proven-safe
+                               :range-proof witness :direct-effects []}
+                    :invalidation (get application :invalidation) :profile (get module :profile) :target (get module :target)
+                    :status :solved :diagnostics []}
+        fact {:artifact :gravity/c7-call-type-fact
+              :fact-id-request {:domain :gravity/sh08-guarded-integer-subtraction-call-type-fact-v3 :application application}
+              :call-core-node-id target :caller-function-syntax-id (get (get node :evaluation) :owner-function-syntax-id)
+              :callee-function-syntax-id nil :argument-types [:gravity.type/integer :gravity.type/integer] :result-type :gravity.type/integer
+              :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+              :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+              :profile (get module :profile) :target (get module :target) :effects [] :capabilities [] :status :inferred
+              :dispatch :direct-guarded-integer-subtraction :applied-guarded-integer-subtraction application
+              :effect-facts-source :audited-numeric-intrinsic}]
+    {:application application :constraint constraint :call-type-fact fact}))
+
+(defn sh08-gis3-reconstruct-product [core indexes target]
+  (let [matched (sh08-gis3-numeric-match core indexes target)]
+    (if (= :original-numeric-source-matched (get matched :status))
+      {:status :reconstructed :product (sh08-gis3-v3-product core indexes matched)
+       :operand-types (get matched :operand-types) :input-range (get matched :input-range)
+       :result-range (get matched :result-range)} matched)))
+
+(defn sh08-gis3-output-reservation [d]
+  ; Five application copies, a separate solution witness, and three original
+  ; origin/generated-origin occurrences. Fixed expanded W <=8192; remaining
+  ; W <=3*original-W. Complete DATA costs <=4369*W+4104; storage pays W again.
+  ; This bound is prepaid before product construction, not inferred afterward.
+  (+ 67108864 (* 32768 d)))
 
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.

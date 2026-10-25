@@ -10084,7 +10084,7 @@
                                        (assoc out (second form) form) out)))))))
         owned '#{sh08-gis3-original-readsets sh08-gis3-view-get sh08-gis3-view-project
                  sh08-gis3-pick sh08-gis3-form-prefix sh08-pc-id? sh08-sse-ids? sh08-lsi-first-append
-                 sh08-gis3-index sh08-gis3-source-payment sh08-gis3-view-control-work
+                 sh08-gis3-index sh08-gis3-source-payment sh08-gis3-complete-source-payment sh08-gis3-view-control-work
                  sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes
                  sh08-gis3-cold-entry sh08-gis3-entry-semantic-work
                  sh08-gis3-numeric-source sh08-gis3-numeric-semantic-work}
@@ -10107,7 +10107,7 @@
             (loop-bound [owner bindings]
               (let [init (second bindings)]
                 (cond (= 'sh08-gis3-index owner) [0 1 0]
-                      (= 'sh08-gis3-source-payment owner) [(if (= 'parts (first bindings)) 10 6) 0 0]
+                      (contains? '#{sh08-gis3-source-payment sh08-gis3-complete-source-payment} owner) [(if (= 'parts (first bindings)) 10 6) 0 0]
                       (contains? '#{sh08-gis3-entry-original-data sh08-gis3-entry-complete-data} owner) [17 0 0]
                       (= 'sh08-gis3-entry-indexes owner) [15 0 0]
                       (contains? '#{sh08-gis3-cold-entry sh08-gis3-numeric-source} owner) [17 0 0]
@@ -10154,7 +10154,7 @@
                                (sum (map #(cost owner % remaining) args)))
                     (let [base (add (unit :steps 1) (unit :cells (count args))
                                     (sum (map #(cost owner % remaining) args)))]
-                      (if (and (contains? '#{sh08-gis3-source-payment sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-cold-entry sh08-gis3-numeric-source} owner)
+                      (if (and (contains? '#{sh08-gis3-source-payment sh08-gis3-complete-source-payment sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-cold-entry sh08-gis3-numeric-source} owner)
                                (contains? separately-paid op))
                         (add base (unit :steps (+ 8 (* 4 (count args)))) (unit :cells (* 2 (count args))))
                       (if (contains? owned op) (add base (function-cost op))
@@ -10179,7 +10179,7 @@
                                                                          :Keyword-key-bound 32 :copy-cells-per-pair 65})))
                                            (add (unit :map-writes pairs) (unit :cells (dec (count args)))
                                                 (if result? (add (unit :steps (* 32 pairs)) (unit :cells (* 65 pairs))) zero)))
-                                   conj (unit :cells (dec (count args)))
+                                   conj (unit :cells (+ (dec (count args)) (if (= 'ledger (first args)) 11 0)))
                                    contains? (unit :set-tests 1)
                                    rest (unit :cells remaining)
                                    zero))))))))))]
@@ -10210,6 +10210,7 @@
                  sh08-gis3-entry-parameter-reference? sh08-gis3-entry-census sh08-gis3-entry-unify
                  sh08-gis3-binary-call-source? sh08-gis3-if-source? sh08-gis3-owned-ancestry
                  sh08-gis3-integer-literal sh08-gis3-numeric-resolution-orders? sh08-gis3-numeric-match
+                 sh08-gis3-v3-product sh08-gis3-reconstruct-product
                  sh08-gis3-pick sh08-gis3-view-get sh08-pc-id? sh08-sse-ids? sh08-ma-form-source
                  sh08-ix-literal? sh08-pe-select sh08-ft-call-valid? sh08-ft-call-edge-valid?
                  sh08-ft-caller-edge-valid? sh08-ft-local-callee-edge-valid? sh08-ft-nonlocal-callee-edge-valid?
@@ -22169,6 +22170,66 @@
         (is (= reason (:reason out)) (str label))))
     (prn {:gis3-numeric-source-hostile-original-rows :checked :normalization-only true
           :v3-product-constructed false :numeric-proof-established false})))
+
+(defn- gis3-expanded-v3-product-reference [{:keys [core bindings]} target]
+  ;; Independent expanded reference, authored from the closed v3 layout.
+  ;; It reads original literal occurrences; no generated descriptor is input.
+  (let [nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        calls (into {} (map (fn [call] [(:name (by-binding (:operator-binding-id call))) call]) (:calls core)))
+        value #(get-in nodes [(second (:argument-node-ids (calls %))) :attributes :value])
+        lower (value '>=) upper (value '<=)
+        source (:source (nodes target)) owner (get-in nodes [target :evaluation :owner-function-syntax-id])
+        profile (get-in core [:module :profile]) target-platform (get-in core [:module :target])
+        witness {:input-range [lower upper] :domain :gravity/sh08-gis-source-witness-v3}
+        invalidation [:calls :call-edges :binding-table :source-forms :type-table :function-records :mutations
+                      :recur-targets :recur-transfers :recursion-components :control-flow :operand-position
+                      :profile :target :safety :evaluation-order]
+        app {:version :sh08-guarded-integer-subtraction-v3 :kind :gravity.type/applied-guarded-integer-subtraction
+             :core-input (:artifact-id core) :call-core-node-id target :operation '-
+             :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core :resolution :gravity.core-compatibility
+             :intrinsic :gravity.math.core/guarded-integer-subtraction
+             :argument-types [:gravity.type/integer :gravity.type/integer]
+             :parameter-types [:gravity.type/integer :gravity.type/integer]
+             :return :gravity.type/integer :result-type :gravity.type/integer :numeric-mode :proof-required
+             :safety :proven-safe :range-proof witness :application :normal :operand-evaluation :left-then-right-once
+             :conversion :none :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+             :profile profile :target target-platform :invalidation invalidation}]
+    {:application app
+     :constraint {:kind :numeric-mode :producer-rule :sh08-guarded-integer-subtraction-v3
+                  :constraint-id-request {:domain :gravity/sh08-guarded-integer-subtraction-constraint-v3 :application app}
+                  :lhs {:core-node-id target :projection :guarded-integer-subtraction} :rhs :gravity.type/integer
+                  :dependencies app :origin (:origin-chain source)
+                  :solution {:numeric-mode :proof-required :safety :proven-safe :result-type :gravity.type/integer
+                             :direct-effects [] :range-proof witness}
+                  :profile profile :target target-platform :invalidation invalidation :status :solved :diagnostics []}
+     :call-type-fact {:artifact :gravity/c7-call-type-fact :status :inferred :dispatch :direct-guarded-integer-subtraction
+                      :fact-id-request {:domain :gravity/sh08-guarded-integer-subtraction-call-type-fact-v3 :application app}
+                      :applied-guarded-integer-subtraction app :effect-facts-source :audited-numeric-intrinsic
+                      :call-core-node-id target :caller-function-syntax-id owner :callee-function-syntax-id nil
+                      :argument-types [:gravity.type/integer :gravity.type/integer] :result-type :gravity.type/integer
+                      :evaluation-order :operator-then-arguments :profile profile :target target-platform :effects [] :capabilities []
+                      :source-span (:semantic-span source) :syntax-id (:syntax-id source)
+                      :origin-chain (:origin-chain source) :generated-origin (:generated-origin source)}}))
+
+(defn- gis3-v3-output-reservation-audit [input target]
+  (let [product (gis3-expanded-v3-product-reference input target)
+        fixed (-> product (assoc-in [:constraint :origin] [])
+                  (assoc-in [:call-type-fact :origin-chain] [])
+                  (assoc-in [:call-type-fact :generated-origin] []))
+        physical (gis3-independent-physical-data-fee product)
+        fixed-physical (gis3-independent-physical-data-fee fixed)
+        source (first (filter #(= target (:node-id %)) (get-in input [:core :nodes])))
+        origins (get-in source [:source :origin-chain]) generated (get-in source [:source :generated-origin])
+        dynamic (+ (* 2 (:W (gis3-independent-physical-data-fee origins)))
+                   (:W (gis3-independent-physical-data-fee generated)))
+        applications (filter #(and (map? %) (= :gravity.type/applied-guarded-integer-subtraction (:kind %)))
+                             (tree-seq coll? #(if (map? %) (mapcat identity %) (seq %)) product))]
+    {:physical physical :fixed-physical fixed-physical :dynamic-original-W dynamic
+     :expanded-application-copies (count applications) :closed-fixed-W-bound 8192
+     :full-output-W-bound (+ (:W fixed-physical) dynamic)
+     :complete-DATA-and-storage-bound (+ (* 4370 (:W physical)) 4104)
+     :product product}))
 
 (def ^:private function-work-policy-current-c8-plan
   ;; Same real Effects dependency and C8 module-bundle construction as the
