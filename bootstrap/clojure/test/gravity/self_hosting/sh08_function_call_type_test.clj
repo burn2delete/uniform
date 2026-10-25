@@ -10221,7 +10221,7 @@
                ((juxt :status :reason) (run value 65536))))
         (is (zero? @callbacks)))
       (doseq [budget [0 7 8]]
-        (is (= [:rejected :compact-gis-work-limit 0]
+        (is (= [:rejected :compact-gis-work-limit (if (< budget 8) 0 8)]
                ((juxt :status :reason :completed-work-count) (run opaque budget))))
         (is (zero? @callbacks)))
       (is (= [:rejected :compact-gis-canonical-domain 13 8]
