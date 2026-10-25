@@ -1521,6 +1521,7 @@
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00895-sh07-core-descendant-node-ids.clj", :reader-line 156064, :owner :self-hosting-sh03-sh07, :first-form "sh07-core-descendant-node-ids"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00896-sh07-b11-match-pattern-record-coherent.clj", :reader-line 156230, :owner :self-hosting-sh03-sh07, :first-form "sh07-b11-match-pattern-record-coherent?"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00897-sh07-core-match-products-coherent.clj", :reader-line 156455, :owner :self-hosting-sh03-sh07, :first-form "sh07-core-match-products-coherent?"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00897-sh07-core-construction-upstream-guard.clj", :reader-line 156683, :owner :self-hosting-sh03-sh07, :first-form "sh07-core-construction-binding-view"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00898-sh07-core-from-authenticated-request.clj", :reader-line 156683, :owner :self-hosting-sh03-sh07, :first-form "sh07-core-from-authenticated-request"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00899-sh07-core-verification-session.clj", :reader-line 156892, :owner :self-hosting-sh03-sh07, :first-form "sh07-core-verification-session"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00900-sh07-core-artifact-verification.clj", :reader-line 157108, :owner :self-hosting-sh03-sh07, :first-form "sh07-core-artifact-verification*"}

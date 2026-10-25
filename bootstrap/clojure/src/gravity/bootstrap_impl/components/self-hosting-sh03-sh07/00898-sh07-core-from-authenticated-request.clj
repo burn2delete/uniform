@@ -2,6 +2,11 @@
 
 (defn sh07-core-from-authenticated-request
   [resolution-artifact authenticated-request]
+  (sh07-core-with-fresh-construction resolution-artifact
+    #(sh07-core-build-verified-artifact resolution-artifact authenticated-request %)))
+
+(defn- sh07-core-build-verified-artifact
+  [resolution-artifact authenticated-request construction]
   (let [input-key (sh07-core-current-source-key)
         captured @sh07-core-cached-binding
         _ (when-not (= (second (:source input-key)) (:source-content-hash captured))
@@ -10,8 +15,8 @@
                              :reason :checked-core-operation-revision-drift})))
         artifact
         (binding [*sh07-core-execution-binding* captured]
-  (let [run (sh07-core-run-request-for-test
-             resolution-artifact authenticated-request)
+  (let [run (sh07-core-run-with-construction
+             resolution-artifact authenticated-request construction)
           core (:canonical-core-artifact run)
           source-path
           (sh07-core-source-path-from-resolution resolution-artifact)
@@ -145,7 +150,8 @@
            :capability-based-proof nil
            :diagnostics []}
           upstream-verification
-          (sh06-resolution-artifact-verification resolution-artifact)
+          (do (sh07-core-construction-check! construction)
+              (:report construction))
           proof
           (sh07-core-proof-from-checks
            (sh07-core-verification-checks
@@ -159,9 +165,9 @@
 
 (defn sh07-core-from-resolution-artifact
   [resolution-artifact]
-  (sh07-core-from-authenticated-request
-   resolution-artifact
-   (sh07-core-authenticated-request resolution-artifact)))
+  (sh07-core-with-fresh-construction resolution-artifact
+    #(sh07-core-build-verified-artifact resolution-artifact
+       (or (:request %) (sh07-core-request-from-verified-upstream resolution-artifact (:report %))) %)))
 
 (def ^:private sh07-core-verification-session-schema-version 2)
 (def ^:private sh07-core-verification-session-kind
