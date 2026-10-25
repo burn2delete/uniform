@@ -39,7 +39,7 @@
   ([] (candidate "candidate" "test/family" "draft"))
   ([id family state]
    {"id" id
-    "title" "Bounded test candidate"
+    "title" "Test candidate"
     "invariant_family" family
     "owner" "test-owner"
     "author" "test-author"
@@ -110,9 +110,6 @@
         mutations [(assoc-in contract
                              ["admission_policy" "self_audit_confers_eligibility"]
                              true)
-                   (assoc-in contract
-                             ["admission_policy" "architecture_decision_after_failures"]
-                             3)
                    (assoc-in contract ["lifecycle" "transitions" "rejected"]
                              ["draft"])
                    (assoc-in contract ["diagnostics" "WG012"]
@@ -134,17 +131,11 @@
                    (clojure.string/starts-with? % "WG003 "))
               (governance/validate-ledger document)))))
 
-(deftest lifecycle-active-family-and-dependency-rules-fail-closed
+(deftest lifecycle-and-dependency-rules-fail-closed
   (testing "illegal lifecycle transition"
     (let [item (with-state (candidate) "accepted"
                            (transitions "draft" "accepted"))]
       (is (errors-have? (governance/validate-ledger (ledger item)) "WG004"))))
-  (testing "one active candidate per invariant family"
-    (let [first (candidate "first" "same/family" "draft")
-          second (with-state (candidate "second" "same/family" "frozen")
-                             "frozen" (transitions "draft" "frozen"))]
-      (is (errors-have? (governance/validate-ledger (ledger first second))
-                        "WG006"))))
   (testing "missing and under-floor dependencies"
     (let [missing (assoc (candidate) "dependencies" ["absent"])
           upstream (with-state (candidate "upstream" "upstream" "frozen")
@@ -165,18 +156,52 @@
       (is (errors-have? (governance/validate-ledger (ledger first second))
                         "WG007")))))
 
-(deftest two-rejections-require-an-architecture-decision
-  (let [failed-one (with-state (candidate "failed-one" "same/family" "rejected")
-                               "rejected" (transitions "draft" "rejected"))
-        failed-two (with-state (candidate "failed-two" "same/family" "rejected")
-                               "rejected" (transitions "draft" "rejected"))
-        fresh (candidate "fresh" "same/family" "draft")]
-    (is (errors-have? (governance/validate-ledger
-                       (ledger failed-one failed-two fresh)) "WG008"))
+(deftest candidate-count-and-rejection-history-do-not-limit-admission
+  (let [failed (mapv #(with-state (candidate (str "failed-" %) "same/family"
+                                             "rejected")
+                                 "rejected" (transitions "draft" "rejected"))
+                     (range 5))
+        active (mapv #(assoc (candidate (str "active-" %) "same/family" "draft")
+                             "author" (str "author-" %)
+                             "owned_paths" [(str "src/module-" %)])
+                     (range 5))]
     (is (empty? (governance/validate-ledger
-                 (ledger failed-one failed-two
-                         (assoc fresh "architecture_decision"
-                                "ADR-004 bounds expansion before execution.")))))))
+                 (apply ledger (concat failed active)))))
+    (is (every? #(= "" (get % "architecture_decision")) active))))
+
+(deftest active-path-ownership-is-independent-of-family-count
+  (let [first (assoc (candidate "first" "first/family" "draft")
+                     "owned_paths" ["src/compiler"])
+        second (assoc (candidate "second" "second/family" "draft")
+                      "author" "another-author")]
+    (testing "different authors cannot reserve the same or nested paths"
+      (doseq [path ["src/compiler" "src/compiler/pass.clj" "src"
+                    "./src//compiler/" "."]]
+        (is (errors-have? (governance/validate-ledger
+                           (ledger first (assoc second "owned_paths" [path])))
+                          "WG014") path)))
+    (testing "nonoverlapping paths, one writer, and closed history are legal"
+      (doseq [item [(assoc second "owned_paths" ["src/compiler-extra"])
+                    (assoc second "author" "test-author"
+                                  "owned_paths" ["src/compiler"])
+                    (-> second
+                        (assoc "owned_paths" ["src/compiler"])
+                        (with-state "rejected" (transitions "draft" "rejected")))]]
+        (is (empty? (governance/validate-ledger (ledger first item))))))))
+
+(deftest json-intake-has-no-project-byte-quota
+  (let [path (.toRealPath
+              (Files/createTempFile "gravity-governance-intake-" ".json"
+                                    (make-array java.nio.file.attribute.FileAttribute 0))
+              (make-array LinkOption 0))
+        value {"text" (apply str (repeat (inc (* 2 1024 1024)) "x"))}]
+    (try
+      (spit (str path) (governance/canonical-json value) :encoding "UTF-8")
+      (is (true? (= value (governance/load-json path))))
+      (let [result (#'governance/read-shard path "test-shard")]
+        (is (nil? (:error result)))
+        (is (true? (= value (:value result)))))
+      (finally (Files/deleteIfExists path)))))
 
 (deftest integration-admission-requires-exact-evidence-and-independent-review
   (is (empty? (governance/validate-ledger (ledger (eligible)))))
