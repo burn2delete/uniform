@@ -6,7 +6,8 @@
   cache singleflight and host broker at the process execution boundary. It
   grants no test, proof, benchmark, integration, release, self-hosting, or
   seed-retirement authority."
-  (:require [clojure.java.io :as io]
+  (:require [clojure.java.basis :as basis]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [gravity.digest :as digest]
             [gravity.self-hosting.sh01-component-test-dependencies
@@ -25,6 +26,7 @@
            [java.util Arrays]))
 
 (def ^:private default-timeout-ms (* 60 60 1000))
+(def ^:private child-runtime-token (Object.))
 (def ^:private maximum-path-count 100000)
 (def ^:private no-links (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
 (def ^:private no-file-attributes (make-array FileAttribute 0))
@@ -802,10 +804,12 @@
      :freshness-required?
      ;; The Clojure launcher can consume external deps, alias JVM options and
      ;; environment configuration not identified by the parent JVM snapshot.
-     ;; Production execution therefore cannot reuse results yet. The existing
-     ;; test-only context exercises injected unit producers, not child-launch
-     ;; admission; the production CLI has no override for this restriction.
-     (boolean (or (not (:test-only? context))
+     ;; A parent cannot identify the effective child configuration. Only the
+     ;; child-local entrypoint below can supply this process-local token after
+     ;; measuring its supported effective launch. A serialized marker cannot.
+     (boolean (or (not (or (:test-only? context)
+                           (identical? child-runtime-token
+                                       (:child-runtime-token context))))
                   (:freshness-required? reviewed-policy)
                   (:freshness-required? options)
                   (:fresh? options)
@@ -861,8 +865,9 @@
              (mapv #(str (.relativize repository-root ^Path %))))
         external-paths
         (remove #(.startsWith ^Path % repository-root) paths)]
-    (when (and (= ["bootstrap/clojure/src" "bootstrap/clojure/test"]
-                  internal-roots)
+    (when (and (= 2 (count internal-roots))
+               (= #{"bootstrap/clojure/src" "bootstrap/clojure/test"}
+                  (set internal-roots))
                (every? #(Files/isRegularFile ^Path % no-links)
                        external-paths))
       (mapv
@@ -1403,6 +1408,193 @@
            (boolean (and (:producer-executed? receipt)
                          (:child-jvm-launched? (:result outcome))))
            :broker-acquired-this-run? (:producer-executed? receipt))))
+
+(defn- supported-child-jvm-argument?
+  [argument]
+  ;; File-loading and agent options are deliberately unknown. Hashing their
+  ;; spelling would not identify the bytes they load outside the classpath.
+  (or (= "-XX:-OmitStackTraceInFastThrow" argument)
+      (boolean (re-matches #"-Xm[sx][0-9]+[kKmMgG]?" argument))
+      (boolean (re-matches #"-Xss[0-9]+[kKmMgG]?" argument))
+      (= argument (str "-Dclojure.basis="
+                       (System/getProperty "clojure.basis")))))
+
+(defn- child-config-source
+  [root value]
+  (cond
+    (or (nil? value) (map? value)) value
+    (string? value)
+    (let [candidate (.toPath (io/file value))
+          path (.normalize (if (.isAbsolute candidate)
+                             candidate (.resolve ^Path root candidate)))]
+      {:path (str path)
+       :sha256 (if (Files/exists path no-links)
+                 (regular-file-identity path)
+                 :absent)})
+    :else (throw (ex-info "Unknown child configuration source" {}))))
+
+(defn- child-semantic-arguments
+  [arguments]
+  ;; Only the runner-owned output destination is operational rather than a
+  ;; test input. Its spelling changes for every parent-created batch report.
+  (loop [remaining (seq arguments) result []]
+    (if-let [argument (first remaining)]
+      (if (contains? #{"--report-file" "--development-cache"} argument)
+        (recur (nnext remaining) result)
+        (recur (next remaining) (conj result argument)))
+      result)))
+
+(defn- effective-child-runtime
+  [working-directory arguments]
+  (try
+    (let [current (basis/current-basis)
+          config (:basis-config current)
+          root (.normalize (.toAbsolutePath (.toPath (io/file working-directory))))
+          jvm-arguments (jvm-input-arguments)
+          expected-command (str/join " "
+                                     (into ["clojure.main" "-m"
+                                            "gravity.self-hosting-test-runner"]
+                                           arguments))
+          properties (into (sorted-map) (System/getProperties))
+          environment (into (sorted-map) (System/getenv))
+          classpath (str/split (System/getProperty "java.class.path")
+                              (re-pattern (java.util.regex.Pattern/quote
+                                           (System/getProperty "path.separator"))))
+          classpath-paths (mapv #(.normalize (.toAbsolutePath (.toPath (io/file %))))
+                               classpath)
+          internal (filterv #(.startsWith ^Path % root) classpath-paths)
+          internal-relative (mapv #(str (.relativize root ^Path %)) internal)]
+      (when (and (map? current)
+                 (= current (basis/initial-basis))
+                 (map? config)
+                 (every? #{:root :user :project :extra :args :aliases} (keys config))
+                 (= ["-m" "gravity.self-hosting-test-runner"]
+                    (get-in current [:argmap :main-opts]))
+                 (= expected-command (get properties "sun.java.command"))
+                 (string? (get properties "clojure.basis"))
+                 (every? supported-child-jvm-argument? jvm-arguments)
+                 (not-any? #(seq (get environment %))
+                           ["LD_PRELOAD" "LD_AUDIT" "LD_LIBRARY_PATH"
+                            "DYLD_INSERT_LIBRARIES" "DYLD_LIBRARY_PATH"
+                            "DYLD_FRAMEWORK_PATH" "GRAVITY_FRESH_PROGRESS_FILE"])
+                 (= 2 (count internal-relative))
+                 (= #{"bootstrap/clojure/src" "bootstrap/clojure/test"}
+                    (set internal-relative))
+                 (every? #(or (.startsWith ^Path % root)
+                              (Files/isRegularFile ^Path % no-links))
+                         classpath-paths))
+        (let [material
+              {:basis current
+            :basis-file (child-config-source root (get properties "clojure.basis"))
+            :configuration-sources
+            (into (sorted-map)
+                  (for [key [:root :user :project :extra]]
+                    [key (child-config-source root (get config key))]))
+            :jvm-input-arguments jvm-arguments
+            :environment environment
+            :system-properties
+            (assoc properties "sun.java.command"
+                   (pr-str (child-semantic-arguments arguments)))}
+              fingerprints (into (sorted-map)
+                                 (map (fn [[key value]] [key (sha256-id (pr-str value))]))
+                                 material)]
+          {:id :actual-child-runtime-v1
+           :sha256 (sha256-id (pr-str fingerprints))
+           :fingerprints fingerprints})))
+    (catch Exception _
+      ;; Unknown launch inputs disable the optional optimization, not the test.
+      nil)))
+
+(defn run-child-unit!
+  "Optionally reuse a complete selection inside the actual existing test JVM.
+
+  The parent still launches and holds its broker lease. This entrypoint does
+  not inspect processes or acquire a nested lease. Unknown launches and test
+  policies execute fresh; no parent assertion can supply a child identity."
+  [namespaces {:keys [arguments fail-fast?] :as options} operation]
+  (let [index (component-dependencies/dependency-index)
+        by-namespace (into {} (map (juxt :namespace identity)
+                                  (vals (:by-test-path index))))
+        jobs (mapv (fn [namespace]
+                     (let [entry (get by-namespace namespace)
+                           closure (component-dependencies/reviewed-cache-closure
+                                    index namespace)]
+                       (assoc entry :namespace namespace
+                                    :cache-closure closure
+                                    ;; Compatibility declarations predate the
+                                    ;; bootstrap component loader. They retain
+                                    ;; the conservative complete-tree identity.
+                                    :cache-closure-authorized?
+                                    (and (some? closure)
+                                         (contains? '#{gravity.c11-mir-test
+                                                       gravity.compiler-pass-manifest-test}
+                                                    namespace)))))
+                   namespaces)
+        reviewed? (every? (fn [job]
+                            (let [policy (:test-policy job)]
+                              (and (:deterministic? policy)
+                                   (not-any? policy [:performance? :proof?
+                                                     :freshness-required?]))))
+                          jobs)
+        working-directory (System/getProperty "user.dir")
+        runtime (when reviewed?
+                  (effective-child-runtime working-directory arguments))]
+    (if-not runtime
+      (assoc (operation)
+             :child-jvm-launched? true
+             :tests-executed? true
+             :child-cache-hit? false
+             :child-cache-receipt
+             {:decision :fresh :cacheable? false :stored? false
+              :producer-executed? true
+              :reason (if reviewed? :unknown-child-configuration
+                          :unreviewed-or-fresh-test-policy)})
+      (let [context (assoc (prepare-context working-directory options)
+                           :child-runtime-token child-runtime-token)
+            _ (when-not (= (:repository-identity options)
+                           (get-in context [:snapshot :repository-identity]))
+                (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                       "Child inputs differ from the prelaunch repository snapshot"
+                       {:input-kind :child-startup}))
+            job {:batch-jobs jobs :resource-class :normal}
+            request (update-in
+                     (cache-request context {:authority :non-authoritative}
+                                    job {:fail-fast? fail-fast?})
+                     [:dependencies :runtime-tool-inputs] conj
+                     (select-keys runtime [:id :sha256]))
+            job (assoc job :development-cache-request request)
+            verify! (fn [phase]
+                      (verify-inputs! context phase [job])
+                      (when-not (= runtime (effective-child-runtime working-directory arguments))
+                        (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                               "Effective child configuration changed during reuse"
+                               {:input-kind :child-runtime :phase phase})))
+            outcome
+            (cache/lookup-or-run!
+             request
+             (fn []
+               (verify! :child-before-execution)
+               (let [result (operation)]
+                 (verify! :child-after-execution)
+                 (result-policy
+                  (assoc result :test-producer-provenance
+                         {:revision (:revision context)
+                          :repository-snapshot (:snapshot context)
+                          :consumed-input-identity (:repository-identity request)
+                          :classpath-identities
+                          (get-in request [:dependencies :classpath-inputs])
+                          :child-runtime-identity runtime})
+                  (:test-policy request)))))
+            receipt (:receipt outcome)]
+        (when (= :hit (:decision receipt))
+          (verify! :child-cache-hit))
+        (assoc (:result outcome)
+               :test-applying-revision (:revision context)
+               :test-applying-repository-snapshot (:snapshot context)
+               :child-jvm-launched? true
+               :tests-executed? (:producer-executed? receipt)
+               :child-cache-hit? (= :hit (:decision receipt))
+               :child-cache-receipt receipt)))))
 
 (defn report-facts
   "Return deterministic cache receipts plus the exact launch count."

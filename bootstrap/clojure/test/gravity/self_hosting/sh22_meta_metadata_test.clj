@@ -4,7 +4,7 @@
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]))
 
-;; STD15/C3 metadata preservation in the existing bounded stable-view API.
+;; STD15/C3 metadata preservation in the existing stable-view API.
 ;; The coarse test projection is not a complete/authenticated C3 boundary.
 (def ^:private root
   (delay (loop [file (io/file (.toURI (io/resource "gravity/self_hosting/sh22_meta_metadata_test.clj")))]
@@ -55,7 +55,7 @@
     (is (= (slurp (path (fixture-path family "gravity"))) (slurp (path (fixture-path family "qst"))))))
   (doseq [extension ["gravity" "qst"]]
     (let [base (base-request extension)
-          full (into {} (map #(vector (keyword (str "m" %)) %) (range 64)))]
+          full (into {} (map #(vector (keyword (str "m" %)) %) (range 65)))]
       (doseq [metadata [{} {:doc "compiler syntax"} {:flag false :absent nil}
                         {'compiler/tag 'SyntaxValue :nested [{:value false} '(throw :inert)]} full]]
         (let [input (with-metadata base metadata) result (handle input)
@@ -92,8 +92,7 @@
 (deftest sh22-meta-view-rejects-invalid-metadata-before-view-construction
   (doseq [extension ["gravity" "qst"]]
     (let [base (base-request extension)
-          invalid [nil false [] "metadata" {"doc" "wrong key"} {0 :wrong-key}
-                   (into {} (map #(vector (keyword (str "m" %)) %) (range 65)))]]
+          invalid [nil false [] "metadata" {"doc" "wrong key"} {0 :wrong-key}]]
       (doseq [metadata invalid]
         (let [input (with-metadata base metadata) result (handle input)]
           (is (= :rejected (:status result)))

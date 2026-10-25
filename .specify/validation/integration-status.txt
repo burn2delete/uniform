@@ -1,0 +1,15 @@
+Integration status: WARNING
+Default integration: codex
+Installed integrations: codex
+Multi-install safe: yes
+Shared templates target alignment: codex
+Modified managed files: 14
+Missing managed files: 0
+Invalid manifest paths: 0
+Unchecked manifests: 0
+
+Findings:
+- warning managed-files-modified (codex): 10 managed file(s) were modified for integration 'codex'.
+  Suggestion: Review the changes before running `specify integration upgrade --force`.
+- warning managed-files-modified (speckit): 4 managed file(s) were modified for shared Spec Kit infrastructure.
+  Suggestion: Review the changes before running `specify integration upgrade --force`.

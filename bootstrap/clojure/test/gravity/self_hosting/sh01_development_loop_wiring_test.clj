@@ -5,7 +5,8 @@
             [clojure.string :as str]
             [gravity.self-hosting.sh01-development-test-cache :as cache]
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
-            [gravity.self-hosting.sh01-parallel-test-runner :as runner])
+            [gravity.self-hosting.sh01-parallel-test-runner :as runner]
+            [gravity.self-hosting-test-runner :as child-runner])
   (:import [java.nio.file Files LinkOption Path StandardCopyOption]
            [java.nio.file.attribute FileAttribute PosixFilePermissions]
            [java.util.concurrent CountDownLatch TimeUnit]))
@@ -1062,6 +1063,122 @@
               (is (= first-runtime
                      (do (reset! observed-arguments ["-Xss256k" "-Dfixture.private=not-for-receipts"])
                          ((resolve-wiring 'base-runtime-identities) root {})))))))))))
+
+(deftest componentized-leaf-closures-bind-the-nested-implementation
+  (doseq [[namespace directory expected-count]
+          [['gravity.c11-mir-test "c11_mir" 6]
+           ['gravity.compiler-pass-manifest-test "compiler_pass_manifest" 15]]]
+    (with-coordination-root [base]
+      (let [root (.resolve base "repository")
+            coordination (.resolve base "coordination")
+            job (reviewed-closure-job namespace)
+            prefix (str "bootstrap/clojure/src/gravity/" directory "/")
+            inputs (filter #(str/starts-with? (:path %) prefix)
+                           (get-in job [:cache-closure :inputs]))]
+        (Files/createDirectories root no-file-attributes)
+        (copy-reviewed-closure! root job)
+        (is (= expected-count (count inputs)))
+        (is (every? #(= :transitive (:role %)) inputs))
+        (let [before (closure-cache-request coordination root job snapshot-id)]
+          (doseq [{:keys [path]} inputs]
+            (let [target (.resolve root path)
+                  original (Files/readAllBytes target)]
+              (try
+                (Files/write target (byte-array (concat original [(byte 10)]))
+                             (make-array java.nio.file.OpenOption 0))
+                (is (not= (cache/cache-key before)
+                          (cache/cache-key
+                           (closure-cache-request coordination root job snapshot-id)))
+                    path)
+                (finally
+                  (Files/write target original
+                               (make-array java.nio.file.OpenOption 0)))))))))))
+
+(deftest child-jvm-file-loading-and-unknown-options-stay-fresh
+  (let [supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                              'supported-child-jvm-argument?)]
+    (doseq [argument ["-Xmx512m" "-Xms64m" "-Xss2m"
+                      "-XX:-OmitStackTraceInFastThrow"]]
+      (is (true? (supported? argument)) argument))
+    (doseq [argument ["-javaagent:/tmp/agent.jar" "-agentpath:/tmp/native.so"
+                      "--patch-module=java.base=/tmp/patch"
+                      "-Djava.security.properties=/tmp/policy"
+                      "-Dfixture.unknown=private-value" "-Xbootclasspath/a:/tmp/classes"]]
+      (is (false? (supported? argument)) argument)))
+  (let [calls (atom 0)
+        operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+    (dotimes [_ 2]
+      (let [result (wiring/run-child-unit!
+                    ['gravity.compiler-pass-manifest-test]
+                    {:arguments ["not-the-actual-cli"]} operation)]
+        (is (true? (:tests-executed? result)))
+        (is (false? (:child-cache-hit? result)))
+        (is (= :unknown-child-configuration
+               (get-in result [:child-cache-receipt :reason])))
+        (is (false? (get-in result [:child-cache-receipt :stored?])))))
+    (is (= 2 @calls))))
+
+(deftest child-cache-cli-options-are-closed-and-explicit
+  (let [options {:cache-directory "/tmp/child-cache" :timeout-ms 1000
+                 :repository-identity snapshot-id}
+        selection ["--namespace" "gravity.compiler-pass-manifest-test"]
+        parsed (child-runner/select-tests
+                (into selection ["--development-cache" (pr-str options)]))]
+    (is (= options (:development-cache-options parsed)))
+    (is (= ['gravity.compiler-pass-manifest-test] (:namespaces parsed)))
+    (doseq [arguments [["--development-cache" (pr-str options)]
+                       ["--list" "--development-cache" (pr-str options)]
+                       (into selection ["--development-cache" "{}"])
+                       (into selection ["--development-cache" (str (pr-str options) " {}")])
+                       (into selection ["--development-cache"
+                                        (pr-str (assoc options :trusted? true))])
+                       (into selection ["--development-cache" (pr-str options)
+                                        "--development-cache" (pr-str options)])]]
+      (is (= "SH01-TEST-USAGE"
+             (:id (exception-data #(child-runner/select-tests arguments))))))))
+
+(deftest parent-launch-authority-and-expanded-child-provenance-remain-distinct
+  (with-coordination-root [base]
+    (let [namespace 'gravity.self-hosting.sh01-child-policy-test
+          plan (assoc-in (impact-plan namespace) [:shards 0 :resource-class] :normal)
+          launch-options (atom [])
+          test-producer {:revision {:commit "original-test-producer"}}
+          selected-context (assoc (context base) :test-only? false
+                                  :revision {:commit "current-parent"})]
+      (with-redefs [wiring/prepare-context (fn [& _] selected-context)
+                    runner/run-normal-batch-process
+                    (fn [jobs options]
+                      (swap! launch-options conj options)
+                      (-> (one-member-batch-result (first jobs))
+                          (assoc :child-jvm-launched? true)
+                          (assoc-in [:result :child-cache-hit?] true)
+                          (assoc-in [:result :tests-executed?] false)
+                          (assoc-in [:result :test-producer-provenance] test-producer)))]
+        (let [report (runner/execute-plan plan {:development-loop? true})
+              result (first (:results report))]
+          (is (= snapshot-id (get-in (first @launch-options)
+                                    [:child-development-cache :repository-identity])))
+          (is (false? (:cache-hit? result)))
+          (is (true? (:child-cache-hit? result)))
+          (is (false? (:tests-executed? result)))
+          (is (= test-producer (:test-producer-provenance result)))
+          (is (= {:commit "current-parent"}
+                 (get-in result [:execution-provenance :revision]))))
+        (doseq [[selected-plan options]
+                [[(assoc plan :authoritative? true) {}]
+                 [(assoc plan :authority :authoritative) {}]
+                 [plan {:fresh? true}]
+                 [plan {:proof? true}]
+                 [plan {:performance? true}]
+                 [plan {:nondeterministic? true}]
+                 [plan {:command ["custom-runner"]}]
+                 [(assoc-in plan [:shards 0 :freshness-required?] true) {}]
+                 [(assoc-in plan [:shards 0 :test-policy :proof?] true) {}]
+                 [(assoc-in plan [:shards 0 :test-policy :deterministic?] false) {}]
+                 [(assoc plan :authoritative? true)
+                  {:child-development-cache {:forged true}}]]]
+          (runner/execute-plan selected-plan (assoc options :development-loop? true))
+          (is (nil? (:child-development-cache (last @launch-options)))))))))
 
 (deftest unidentified-child-launch-never-reuses-production-results
   (with-coordination-root [base]

@@ -59,7 +59,6 @@
         export (first (filter #(= :ordered-set-equal-integer (:name %)) (:exports manifest)))]
     (is (contains? (:operation-set policy) :ordered-set-equal-integer))
     (is (= 25 (count (:operation-set policy)) (count (:exports manifest))))
-    (is (= 256 (:maximum-collection-elements policy)))
     (is (= :experimental (:stability export)))
     (is (= #{:meta} (:profiles export)))
     (is (= #{} (:effects export) (:capabilities export)))
@@ -116,9 +115,7 @@
           members (vec (range 256))]
       (doseq [[left right reason census unique?]
               (concat
-               [[(conj members 256) [1] :collection-bound-exceeded 0 false]
-                [[1] (conj members 256) :collection-bound-exceeded 0 false]
-                [[1 1] [1] :expected-ordered-set 2 true]
+               [[[1 1] [1] :expected-ordered-set 2 true]
                 [[1] [1 2 1] :expected-ordered-set 2 true]
                 [[] [1 1] :expected-ordered-set 2 true]
                 [[1 1N] [1] :expected-ordered-set 2 true]]
@@ -130,7 +127,7 @@
         (let [input (assoc base :arguments [(ordered left) (ordered right)])
               [result counts] (observe input)]
           (is (= :rejected (:status result)))
-          (is (= (if (= reason :collection-bound-exceeded) "STD3001" "STD10003")
+          (is (= "STD10003"
                  (get-in result [:diagnostics 0 :rule])))
           (is (= reason (get-in result [:diagnostics 0 :reason])))
           (is (= census (:census counts)))

@@ -4,7 +4,8 @@
   Dedicated self-hosting tests are discovered below gravity/self_hosting on
   the test classpath. Adding a leaf test therefore does not require an edit to
   gravity.bootstrap-test or to this runner."
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :as test]
             [gravity.self-hosting.sh01-component-test-dependencies
@@ -131,7 +132,7 @@
   []
   (into (vec base-test-namespaces) (dedicated-test-namespaces)))
 
-(defn select-tests
+(defn- select-tests-without-cache
   "Selects a deterministic test run or namespace listing from CLI arguments."
   [arguments]
   (let [arguments (vec arguments)
@@ -267,6 +268,45 @@
                 ["--namespace" "<owned-test-namespace>"]
                 ["--namespace" "<owned-test-namespace>" "--fail-fast"]
                 ["--report-file" "<contained-path>"]]}))))))))
+
+(defn select-tests
+  "Select tests, with optional actual-child reuse for an explicit selection."
+  [arguments]
+  (let [arguments (vec arguments)
+        positions (keep-indexed #(when (= "--development-cache" %2) %1) arguments)]
+    (if (empty? positions)
+      (select-tests-without-cache arguments)
+      (let [position (first positions)
+            value (get arguments (inc position))
+            invalid! #(throw (ex-info "Invalid child development-cache options"
+                                     {:id "SH01-TEST-USAGE"}))
+            _ (when (or (not= 1 (count positions)) (nil? value)) (invalid!))
+            options (try
+                      (with-open [reader (java.io.PushbackReader.
+                                          (java.io.StringReader. value))]
+                        (let [read-options {:readers {} :eof ::eof
+                                            :default (fn [& _] (invalid!))}
+                              result (edn/read read-options reader)]
+                          (when-not (= ::eof (edn/read read-options reader))
+                            (invalid!))
+                          result))
+                      (catch Exception _ (invalid!)))
+            _ (when-not (and (map? options)
+                             (= #{:cache-directory :timeout-ms :repository-identity}
+                                (set (keys options)))
+                             (string? (:cache-directory options))
+                             (string? (:repository-identity options))
+                             (re-matches #"sha256:[0-9a-f]{64}"
+                                         (:repository-identity options))
+                             (pos-int? (:timeout-ms options)))
+                (invalid!))
+            remaining (into (subvec arguments 0 position)
+                            (subvec arguments (+ position 2)))
+            selection (select-tests-without-cache remaining)]
+        (when-not (and (= :run (:mode selection))
+                       (some #{"--namespace"} remaining))
+          (invalid!))
+        (assoc selection :development-cache-options options)))))
 
 (defn- throwable-result
   [namespace throwable elapsed-ms]
@@ -745,7 +785,8 @@
   (println
    (str "Clojure validation "
         (if (= :passed (:status report)) "passed" "failed")
-        ": " (get-in report [:summary :test] 0) " tests, "
+        ": " (get-in report [:summary :test] 0)
+        (if (:child-cache-hit? report) " reused tests, " " tests, ")
         (get-in report [:summary :pass] 0) " assertions, "
         (count (:namespace-results report)) " attempted namespaces, "
         (count (:skipped-namespaces report)) " skipped namespaces")))
@@ -754,7 +795,8 @@
   [& arguments]
   (let [result
         (try
-          (let [{:keys [mode namespaces fail-fast? report-file] :as selection}
+          (let [{:keys [mode namespaces fail-fast? report-file
+                        development-cache-options] :as selection}
                 (select-tests arguments)]
             (case mode
               :list
@@ -762,11 +804,24 @@
                 (println namespace))
 
               :run
-              (let [report (run-namespaces {:namespaces namespaces
-                                            :fail-fast? fail-fast?
-                                            :visible? (nil? report-file)
-                                            :progress-file
-                                            (System/getenv progress-file-environment)})]
+              (let [run #(run-namespaces {:namespaces namespaces
+                                         :fail-fast? fail-fast?
+                                         :visible? (and (nil? report-file)
+                                                        (nil? development-cache-options))
+                                         :progress-file
+                                         (System/getenv progress-file-environment)})
+                    report (if development-cache-options
+                             ((requiring-resolve
+                               'gravity.self-hosting.sh01-development-loop-wiring/run-child-unit!)
+                              namespaces
+                              (assoc development-cache-options
+                                     :arguments (vec arguments)
+                                     :fail-fast? fail-fast?)
+                              run)
+                             (run))]
+                (when (and development-cache-options (nil? report-file))
+                  (doseq [result (:namespace-results report)]
+                    (emit-visible-output! result)))
                 (when report-file
                   (write-report! report-file report))
                 (print-run-summary report)

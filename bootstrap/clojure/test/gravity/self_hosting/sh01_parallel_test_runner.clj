@@ -833,6 +833,26 @@
                                (:authoritative? authority)
                                (:conflict? authority)
                                (:invalid? authority)))))
+         options
+         (cond-> (dissoc options :child-development-cache)
+           (and development-context
+                (not-any? development-options
+                          [:authoritative? :fresh? :freshness-required?
+                           :performance? :proof? :nondeterministic?
+                           :command :clojure-command :process-launcher
+                           :worker :normal-batch-worker])
+                (not-any?
+                 (fn [job]
+                   (or (false? (get-in job [:test-policy :deterministic?]))
+                       (some #(or (get job %) (get-in job [:test-policy %]))
+                             [:fresh? :freshness-required? :performance?
+                              :proof? :nondeterministic?])))
+                 (:shards plan)))
+           (assoc :child-development-cache
+                  {:cache-directory (str (:cache-directory development-context))
+                   :timeout-ms (:timeout-ms development-context)
+                   :repository-identity
+                   (get-in development-context [:snapshot :repository-identity])}))
          batch? (or (nil? (:worker options))
                     (some? (:normal-batch-worker options)))
          normal-jobs
@@ -1056,8 +1076,10 @@
   ([namespace]
    (namespace-command namespace {}))
   ([namespace options]
-   (into (vec (command-prefix options))
-         ["--namespace" (namespace-name namespace)])))
+   (cond-> (into (vec (command-prefix options))
+                 ["--namespace" (namespace-name namespace)])
+     (:child-development-cache options)
+     (into ["--development-cache" (pr-str (:child-development-cache options))]))))
 
 (defn normal-batch-command
   "Returns the exact argument vector for one bounded warm-JVM normal batch."
@@ -1070,6 +1092,8 @@
                     ["--namespace" (namespace-name (:namespace job))])
                   jobs))
      (:fail-fast? options) (conj "--fail-fast")
+     (:child-development-cache options)
+     (into ["--development-cache" (pr-str (:child-development-cache options))])
      true (into ["--report-file" (str report-file)]))))
 
 (defn- reported-batch-command

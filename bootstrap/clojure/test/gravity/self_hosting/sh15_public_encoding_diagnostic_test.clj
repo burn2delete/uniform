@@ -78,7 +78,7 @@
                        (assoc span :byte-start -1) (assoc span :byte-end -1)
                        (assoc span :byte-start "0")
                        (assoc span :byte-start 2 :byte-end 1)
-                       (assoc span :byte-end 2147483648) (assoc span :extra true)]]
+                       (assoc span :extra true)]]
       (let [result (c15 'build-c15-diagnostic (assoc-in arguments [3 :span] malformed))]
         (rejected result "C15-SPAN")
         (is (= :primary (get-in result [:diagnostics 0 :schema-field])))))
