@@ -31,7 +31,7 @@
   (doseq [[descriptor expected]
           [[nil :descriptor-shape] [{} :descriptor-shape]
            [(assoc @valid-descriptor :artifact :unexpected) :artifact]
-           [(assoc @valid-descriptor :schema-version 2) :schema-version]
+           [(update @valid-descriptor :schema-version inc) :schema-version]
            [(assoc @valid-descriptor :stage nil) :stage]
            [(assoc @valid-descriptor :artifact-kind nil) :artifact-kind]]]
     (let [original (build descriptor) before (pr-str original)
