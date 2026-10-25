@@ -82,6 +82,11 @@
     (is (= :gravity/target-artifact-manifest
            (get-in artifact [:target-artifact-manifest :artifact])))
     (is (= :complete (get-in artifact [:capability-based-proof :status])))
+    (is (not (contains? artifact :residual-cost-report)))
+    (is (not-any? #{:residual-cost-report} (get-in artifact [:pass :emits])))
+    (is (= :accepted (get-in artifact [:check-elision-record :status])))
+    (is (= :accepted (get-in artifact [:effect-reordering-record :status])))
+    (is (= :current (get-in artifact [:safety-outcome-refresh-report :status])))
     (is (= (set shared/optimization-lowering-diagnostic-ids)
            (set (get-in artifact
                         [:optimization-lowering-results
