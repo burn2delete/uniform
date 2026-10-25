@@ -163,20 +163,20 @@
       (assoc request :projection-binding binding))))
 
 (defn sh07-core-authenticated-request
-  ([resolution-artifact]
-   (sh07-core-authenticated-request resolution-artifact ::legacy))
-  ([resolution-artifact context]
+  ([resolution-artifact] (sh07-core-authenticated-request resolution-artifact ::legacy))
+  ([resolution-artifact context] (sh07-core-authenticated-request resolution-artifact context nil))
+  ([resolution-artifact context invocation]
    (let [contextual? (not= ::legacy context)
          source-path (sh07-core-source-path-from-resolution resolution-artifact)
+         _ (when invocation (sh03-reader-authenticated-envelope-options source-path invocation))
          _ (when (and contextual? (nil? context))
              (throw (ex-info "SH-07 requires lexical SH-06 authority"
                              {:id "C6-VERIFY" :stage :core-lowering
                               :source-path source-path :missing-fields [:sh06-context]})))
-         verification (if contextual?
-                        (sh06-resolution-artifact-verification resolution-artifact context)
-                        (sh06-resolution-artifact-verification resolution-artifact))]
+         verification (cond invocation (sh06-resolution-artifact-verification resolution-artifact context invocation)
+                        contextual? (sh06-resolution-artifact-verification resolution-artifact context)
+                        :else (sh06-resolution-artifact-verification resolution-artifact))]
      (sh07-core-request-from-verified-upstream resolution-artifact verification))))
-
 (defn sh07-core-digest-reference-ordinal
   [value]
   (when (and (map? value)

@@ -446,10 +446,7 @@
   [relative]
   (or
    (str/starts-with? relative "bootstrap/gravity/src/")
-   (boolean
-    (re-matches
-     #"bootstrap/clojure/src/gravity/[^/]+\.clj"
-     relative))
+   (str/starts-with? relative "bootstrap/clojure/src/gravity/")
    (boolean
     (re-matches
      #"bootstrap/clojure/test/gravity/[^/]+_test\.clj"
@@ -952,11 +949,26 @@
        vec))
 
 (defn- closure-owned?
-  [ownership closure]
-  (every?
-   #(contains? #{:coordinator :dedicated :module}
-               (:classification (classify-path ownership (:path %))))
-   (:inputs closure)))
+  [ownership component-id closure]
+  (let [stem (get {"c11-mir" "c11_mir"
+                   "compiler-pass-manifest" "compiler_pass_manifest"}
+                  component-id)
+        source (when stem (str "bootstrap/clojure/src/gravity/" stem ".clj"))
+        prefix (when stem (str "bootstrap/clojure/src/gravity/" stem "/"))
+        parent (when source
+                 (stage0-component-metadata ownership source
+                                            (get-in ownership [:module-owners source])))]
+    (every?
+     (fn [{:keys [path role]}]
+       (or (contains? #{:coordinator :dedicated :module}
+                      (:classification (classify-path ownership path)))
+           ;; Explicitly reviewed transitive files keep their existing paired
+           ;; component owner. This does not classify arbitrary nested changes
+           ;; as owned or invent a component from an unreviewed path.
+           (and parent (= :transitive role)
+                (str/starts-with? path prefix)
+                (re-matches #"[^/]+\.clj" (subs path (count prefix))))))
+     (:inputs closure))))
 
 (defn- exact-development-job-metadata
   [ownership classified]
@@ -975,7 +987,8 @@
                         (:jvm-group test-entry))
         :test-policy (:test-policy test-entry)}
         (and (:cache-closure-valid? test-entry)
-             (closure-owned? ownership (:cache-closure test-entry)))
+             (closure-owned? ownership (:development-component-id entry)
+                             (:cache-closure test-entry)))
         (assoc :cache-closure (:cache-closure test-entry)
                :cache-closure-authorized? true))])))
 
@@ -1694,7 +1707,8 @@
   With an explicit base ref, committed paths are read from
   merge-base(base, HEAD)..HEAD. Tracked and untracked working paths are always
   included. The three sources remain separate in the result and their union is
-  returned under `:changed-paths`."
+  returned under `:changed-paths`. Renames remain deletion/addition pairs so
+  both the removed dependency and its destination select their owning checks."
   ([]
    (change-discovery nil (path ".")))
   ([base-ref]
@@ -1743,10 +1757,10 @@
                  exception)))))
          committed-paths
          (if merge-base
-           (vec (run ["git" "diff" "--name-only" merge-base "HEAD"]))
+           (vec (run ["git" "diff" "--no-renames" "--name-only" merge-base "HEAD"]))
            [])
          tracked-working-paths
-         (vec (run ["git" "diff" "--name-only" "HEAD"]))
+         (vec (run ["git" "diff" "--no-renames" "--name-only" "HEAD"]))
          untracked-paths
          (vec (run ["git" "ls-files" "--others" "--exclude-standard"]))
          changed-paths

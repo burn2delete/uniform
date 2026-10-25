@@ -81,6 +81,10 @@
 (def observed-fresh-verification (atom nil))
 (def ^:dynamic *development-public-product* nil)
 
+(defn- current-invocation []
+  {:reader-source-path (b/sh03-reader-resolve-source-path)
+   :authenticated-envelope-options {:source :development-current}})
+
 (defn- current-public-product []
   ;; A bounded verifier run can supply a separately captured real CLI product.
   ;; The unchanged fresh verifier still reconstructs its expected Core artifact.
@@ -109,7 +113,7 @@
 
 (deftest development-public-product-passes-fresh-verification
   (let [artifact (current-public-product)
-        verified (b/sh07-core-artifact-verification artifact)]
+        verified (b/sh07-core-artifact-verification artifact (current-invocation))]
     (is (= :accepted (:status artifact)))
     (is (= #{:source-path} (set (keys (:provenance artifact)))))
     (is (= :complete (get-in artifact [:capability-based-proof :status])))
@@ -122,7 +126,7 @@
 (deftest development-public-product-rejects-rehashed-core
   (let [artifact (current-public-product)
         substituted (coherent-literal-substitution artifact)
-        rejected (b/sh07-core-artifact-verification substituted)]
+        rejected (b/sh07-core-artifact-verification substituted (current-invocation))]
     (is (not= (:artifact-id artifact) (:artifact-id substituted)))
     (is (= (:capability-based-proof artifact) (:capability-based-proof substituted)))
     (is (= :failed (:status rejected)))
@@ -176,3 +180,31 @@
                (get-in artifact [:execution-boundary :downstream-fact-statuses])))
         (reset! observed-snapshot-product artifact))
       (finally (delete! directory)))))
+
+(deftest c3-verification-callbacks-retain-the-host-invocation
+  ;; Routing units only. These spies confer no Reader, C3 or AE acceptance.
+  (let [operations (var-get (ns-resolve 'gravity.bootstrap 'c3-syntax-verification-ops))
+        current {:reader-source-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+                 :authenticated-envelope-options {:source :development-current}}
+        forged-artifact {:invocation-context current}
+        cases [['c3-syntax-stream-reader-products-authentic?
+                :c3-syntax-stream-reader-products-authentic? [::stream forged-artifact ::boundary]]
+               ['c3-syntax-verification-report
+                :c3-syntax-verification-report [::stream ::serialization forged-artifact ::boundary]]
+               ['c3-syntax-capability-proof :c3-syntax-capability-proof [forged-artifact]]
+               ['c3-syntax-validate! :c3-syntax-validate! ["source.gravity" forged-artifact]]]]
+    (doseq [invocation [nil current]]
+      (let [calls (atom [])
+            callbacks (operations invocation)
+            replacements
+            (into {} (map (fn [[name operation _]]
+                            [(ns-resolve 'gravity.bootstrap name)
+                             (fn [& arguments]
+                               (swap! calls conj [operation (vec arguments)])
+                               :routed)])) cases)]
+        (with-redefs-fn replacements
+          (fn []
+            (doseq [[_ operation arguments] cases]
+              (is (= :routed (apply (get callbacks operation) arguments))))))
+        (is (= (mapv (fn [[_ operation arguments]] [operation (conj arguments invocation)]) cases)
+               @calls))))))

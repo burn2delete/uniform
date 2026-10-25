@@ -954,3 +954,38 @@ malformed entry and pre-parser expansion controls, and exact structural
 boundaries. Entry-level results are distinct from the still-required complete
 origin producer/consumer, aggregate-bound and context-proof evidence. No full
 Gate H, SH07, self-hosting, seed-retirement or release claim follows.
+
+## V3 quota-free retained intake (2026-10-25)
+
+This amendment supersedes the operative cost and capacity requirements in V1
+and V2. Their text, failed attempts and original execution receipts remain
+historical evidence. No numerical source-entry, path, text, node, depth, width,
+origin-total, pair-total, proof-byte, classpath or JAR-byte quota governs current
+admission. No work allowance, prospective reservation, debit ledger or cost proof
+is required. Renaming those mechanisms as bounds does not retain them.
+
+Retained intake still validates exact native carrier classes before inspecting
+payloads; rejects metadata where the owning carrier contract forbids it; checks
+every byte's integer range; decodes strict UTF-8; and joins exact byte count,
+round-trip bytes, claimed text, path and SHA-256. Object provenance, expected
+admission, compiler/classpath identity and fresh independent replay remain
+separate mandatory correctness checks. Removing quotas supplies none of those
+facts and accepts no caller-provided validation flag.
+
+The lexical preflight now excludes only the existing ambient reader expansion
+and namespace/alias forms. It does not reserve nodes or estimate expansion cost.
+Fresh seed parsing still clears authenticated-record shortcuts and ambient reader
+registries. The actual parsed structure, including retained metadata, is checked
+for the admitted native carrier domain and true ancestor cycles. Repeated
+acyclic aliases remain valid; no object-identity cache substitutes for validation.
+
+Actual host heap, process deadlines, capture and broker concurrency controls
+remain operational safeguards. Exhaustion is a resource failure, not a fabricated
+semantic rejection or a successful proof. Intrinsic Unicode, grammar, index,
+arity and target-format representability constraints remain in force.
+
+Owning correctness regressions cover retained byte/text/hash/path joins, fresh
+parsing and production compiler-pin tampering, foreign callbacks, metadata,
+cycles, and accepted inputs beyond former project cutoffs. This amendment does
+not claim completion of the held full-origin implementation, private 12/22 joins,
+Gate H, SH07, self-hosting, seed retirement or release.

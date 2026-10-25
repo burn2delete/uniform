@@ -13,7 +13,7 @@
         source-unit (:source-unit-record c2-artifact)
         verification
         (try
-          (sh05-macro-artifact-verification sh05-artifact)
+          (sh06-resolution-verify-sh05 sh05-artifact)
           (catch InterruptedException interrupted
             (.interrupt (Thread/currentThread))
             (throw interrupted))
@@ -28,7 +28,7 @@
           (catch Exception _ nil))
         c3-verified?
         (try
-          (c3-syntax-validate! source-path c3-artifact)
+          (sh06-resolution-validate-c3! source-path c3-artifact)
           true
           (catch InterruptedException interrupted
             (.interrupt (Thread/currentThread))

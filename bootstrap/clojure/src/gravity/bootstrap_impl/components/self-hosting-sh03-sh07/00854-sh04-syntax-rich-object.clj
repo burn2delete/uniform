@@ -88,7 +88,7 @@
         (p15-s23-c6c10-canonical-digest
          source-path {:syntax-result (:syntax-result-id summary)})]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :c3-syntax
      :artifact-kind sh04-syntax-sealed-artifact-kind
      :source-revision
@@ -152,5 +152,4 @@
      :actual-path-provenance
      {:source-path source-path
       :workspace-root (System/getProperty "user.dir")
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))

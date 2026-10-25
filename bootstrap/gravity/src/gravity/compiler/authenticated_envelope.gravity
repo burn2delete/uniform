@@ -3,7 +3,6 @@
   (:profile :meta)
   (:target :jvm)
   (:exports [authenticated-envelope-contract
-             authenticated-envelope-bounds
              authenticated-envelope-build-template
              authenticated-envelope-verify-template])
   (:effects #{})
@@ -49,7 +48,7 @@
 
 (def authenticated-envelope-contract
   {:artifact :gravity/authenticated-envelope-contract
-   :schema-version 1
+   :schema-version 2
    :owner :gravity-source
    :input :gravity/private-authenticated-envelope-descriptor
    :output :gravity/authenticated-envelope-template
@@ -68,7 +67,7 @@
               :reference-closure]
    :reference-depth-metric :ordered-shortest-discovery-depth
    :semantic-identity-excludes [:actual-path-provenance]
-   :host-authority [:bound-carrier-validation
+   :host-authority [:canonical-carrier-validation
                     :compile-and-pin-gravity-module
                     :canonical-encode
                     :sha256
@@ -84,49 +83,13 @@
    :whole-language? false
    :clojure-seed-boundary? true})
 
-(def authenticated-envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
-; Stage2 compiles function bodies independently, so executable code uses this
-; literal-returning helper instead of resolving a top-level def through host
-; namespace state.
-(defn ae-bounds-record []
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (defn ae-vector-contains? [values value]
-  (if (= (count values) 0)
-    false
-    (if (= (first values) value)
-      true
-      (ae-vector-contains? (rest values) value))))
+  (loop [values values value value]
+    (if (= (count values) 0)
+      false
+      (if (= (first values) value)
+        true
+        (recur (rest values) value)))))
 
 (defn ae-conj-unique [values value]
   (if (ae-vector-contains? values value)
@@ -134,16 +97,18 @@
     (conj values value)))
 
 (defn ae-all-unique? [values observed]
-  (if (= (count values) 0)
-    true
-    (if (ae-vector-contains? observed (first values))
-      false
-      (ae-all-unique? (rest values) (conj observed (first values))))))
+  (loop [values values observed (set observed)]
+    (if (= (count values) 0)
+      true
+      (if (contains? observed (first values))
+        false
+        (recur (rest values) (conj observed (first values)))))))
 
 (defn ae-copy-vector [values result]
-  (if (= (count values) 0)
-    result
-    (ae-copy-vector (rest values) (conj result (first values)))))
+  (loop [values values result result]
+    (if (= (count values) 0)
+      result
+      (recur (rest values) (conj result (first values))))))
 
 (defn ae-append [left right]
   (ae-copy-vector right left))
@@ -173,20 +138,19 @@
     false))
 
 (defn ae-logical-path-characters-valid? [characters index]
-  (if (= (count characters) 0)
-    true
-    (let [character (first characters)]
-      (if (= character \\)
-        false
-        (if (= character \:)
+  (loop [characters characters index index]
+    (if (= (count characters) 0)
+      true
+      (let [character (first characters)]
+        (if (= character \\)
           false
-          (if (= index 0)
-            (if (= character \/)
-              false
-              (ae-logical-path-characters-valid?
-               (rest characters) (+ index 1)))
-            (ae-logical-path-characters-valid?
-             (rest characters) (+ index 1))))))))
+          (if (= character \:)
+            false
+            (if (= index 0)
+              (if (= character \/)
+                false
+                (recur (rest characters) (+ index 1)))
+              (recur (rest characters) (+ index 1)))))))))
 
 (defn ae-logical-path-segment-valid? [segment]
   (if (= (count segment) 0)
@@ -196,42 +160,37 @@
       (if (= segment [\. \.]) false true))))
 
 (defn ae-logical-path-segments-valid? [characters segment]
-  (if (= (count characters) 0)
-    (ae-logical-path-segment-valid? segment)
-    (let [character (first characters)]
-      (if (= character \/)
-        (if (ae-logical-path-segment-valid? segment)
-          (ae-logical-path-segments-valid? (rest characters) [])
-          false)
-        (ae-logical-path-segments-valid?
-         (rest characters) (conj segment character))))))
+  (loop [characters characters segment segment]
+    (if (= (count characters) 0)
+      (ae-logical-path-segment-valid? segment)
+      (let [character (first characters)]
+        (if (= character \/)
+          (if (ae-logical-path-segment-valid? segment)
+            (recur (rest characters) [])
+            false)
+          (recur (rest characters) (conj segment character)))))))
 
 (defn ae-logical-source-path? [value]
   (if (string? value)
     (if (> (count value) 0)
-      (if (<= (count value)
-              (get (ae-bounds-record)
-                   :maximum-logical-source-path-code-units))
-        (if (ae-logical-path-characters-valid? (vec value) 0)
+      (if (ae-logical-path-characters-valid? (vec value) 0)
           (ae-logical-path-segments-valid? (vec value) [])
           false)
-        false)
       false)
     false))
 
 (defn ae-reference-id-characters-valid? [characters index]
-  (if (= (count characters) 0)
-    true
-    (let [character (first characters)]
-      (if (= character \\)
-        false
-        (if (= index 0)
-          (if (= character \/)
-            false
-            (ae-reference-id-characters-valid?
-             (rest characters) (+ index 1)))
-          (ae-reference-id-characters-valid?
-           (rest characters) (+ index 1)))))))
+  (loop [characters characters index index]
+    (if (= (count characters) 0)
+      true
+      (let [character (first characters)]
+        (if (= character \\)
+          false
+          (if (= index 0)
+            (if (= character \/)
+              false
+              (recur (rest characters) (+ index 1)))
+            (recur (rest characters) (+ index 1))))))))
 
 (defn ae-drive-absolute-reference-id? [characters]
   (if (>= (count characters) 3)
@@ -243,15 +202,12 @@
 (defn ae-logical-reference-id? [value]
   (if (string? value)
     (if (> (count value) 0)
-      (if (<= (count value)
-              (get (ae-bounds-record) :maximum-reference-id-code-units))
-        (let [characters (vec value)]
+      (let [characters (vec value)]
           (if (ae-drive-absolute-reference-id? characters)
             false
             (if (ae-reference-id-characters-valid? characters 0)
               (ae-logical-path-segments-valid? characters [])
               false)))
-        false)
       false)
     false))
 
@@ -266,28 +222,24 @@
     false))
 
 (defn ae-keyword-vector? [values]
-  (if (vector? values)
-    (if (<= (count values)
-            (get (ae-bounds-record) :maximum-container-width))
+  (loop [values values]
+    (if (vector? values)
       (if (= (count values) 0)
-        true
-        (if (keyword? (first values))
-          (ae-keyword-vector? (vec (rest values)))
-          false))
-      false)
-    false))
+          true
+          (if (keyword? (first values))
+            (recur (vec (rest values)))
+            false))
+      false)))
 
 (defn ae-sha256-vector? [values]
-  (if (vector? values)
-    (if (<= (count values)
-            (get (ae-bounds-record) :maximum-container-width))
+  (loop [values values]
+    (if (vector? values)
       (if (= (count values) 0)
-        true
-        (if (ae-sha256-id? (first values))
-          (ae-sha256-vector? (vec (rest values)))
-          false))
-      false)
-    false))
+          true
+          (if (ae-sha256-id? (first values))
+            (recur (vec (rest values)))
+            false))
+      false)))
 
 (defn ae-scalar-identity? [value]
   (if (string? value)
@@ -330,19 +282,21 @@
      (ae-insert-ordinal result (first values) [] false))))
 
 (defn ae-collect-ref-sequence [values result]
-  (if (= (count values) 0)
-    result
-    (ae-collect-ref-sequence
-     (rest values)
-     (ae-collect-digest-refs (first values) result))))
+  (loop [values values result result]
+    (if (= (count values) 0)
+      result
+      (recur
+       (rest values)
+       (ae-collect-digest-refs (first values) result)))))
 
 (defn ae-collect-ref-map [map-keys value result]
-  (if (= (count map-keys) 0)
-    result
-    (let [map-key (first map-keys)
-          with-key (ae-collect-digest-refs map-key result)
-          with-value (ae-collect-digest-refs (get value map-key) with-key)]
-      (ae-collect-ref-map (rest map-keys) value with-value))))
+  (loop [map-keys map-keys value value result result]
+    (if (= (count map-keys) 0)
+      result
+      (let [map-key (first map-keys)
+            with-key (ae-collect-digest-refs map-key result)
+            with-value (ae-collect-digest-refs (get value map-key) with-key)]
+        (recur (rest map-keys) value with-value)))))
 
 (defn ae-collect-digest-refs [value result]
   (if (ae-exact-digest-ref? value)
@@ -361,22 +315,24 @@
   {:digest-ref ordinal})
 
 (defn ae-digest-intern-sequence [values result]
-  (if (= (count values) 0)
-    result
-    (ae-digest-intern-sequence
-     (rest values)
-     (conj result (ae-digest-intern-key (first values))))))
+  (loop [values values result result]
+    (if (= (count values) 0)
+      result
+      (recur
+       (rest values)
+       (conj result (ae-digest-intern-key (first values)))))))
 
 (defn ae-digest-intern-map-entries [map-keys value result]
-  (if (= (count map-keys) 0)
-    result
-    (let [map-key (first map-keys)]
-      (ae-digest-intern-map-entries
-       (rest map-keys) value
-       (conj result
-             [:entry
-              (ae-digest-intern-key map-key)
-              (ae-digest-intern-key (get value map-key))])))))
+  (loop [map-keys map-keys value value result result]
+    (if (= (count map-keys) 0)
+      result
+      (let [map-key (first map-keys)]
+        (recur
+         (rest map-keys) value
+         (conj result
+               [:entry
+                (ae-digest-intern-key map-key)
+                (ae-digest-intern-key (get value map-key))]))))))
 
 (defn ae-digest-intern-key [value]
   (if (= value nil)
@@ -409,13 +365,14 @@
                           [:unsupported-scalar value])))))))))))))
 
 (defn ae-request-key-for-preimage [requests preimage]
-  (let [intern-key (ae-digest-intern-key preimage)]
-    (if (= (count requests) 0)
-      nil
-      (if (= (ae-digest-intern-key (get (first requests) :preimage))
-             intern-key)
-        (get (first requests) :key)
-        (ae-request-key-for-preimage (rest requests) preimage)))))
+  (loop [requests requests preimage preimage]
+    (let [intern-key (ae-digest-intern-key preimage)]
+      (if (= (count requests) 0)
+        nil
+        (if (= (ae-digest-intern-key (get (first requests) :preimage))
+               intern-key)
+          (get (first requests) :key)
+          (recur (rest requests) preimage))))))
 
 (defn ae-add-digest-request [state preimage]
   (let [existing
@@ -472,24 +429,26 @@
           false)))))
 
 (defn ae-path-neutral-map? [map-keys value]
-  (if (= (count map-keys) 0)
-    true
-    (let [map-key (first map-keys)
-          map-value (get value map-key)]
-      (if (ae-physical-semantic-key? map-key map-value)
-        false
-        (if (ae-path-neutral-semantic-value? map-key)
-          (if (ae-path-neutral-semantic-value? map-value)
-            (ae-path-neutral-map? (rest map-keys) value)
-            false)
-          false)))))
+  (loop [map-keys map-keys value value]
+    (if (= (count map-keys) 0)
+      true
+      (let [map-key (first map-keys)
+            map-value (get value map-key)]
+        (if (ae-physical-semantic-key? map-key map-value)
+          false
+          (if (ae-path-neutral-semantic-value? map-key)
+            (if (ae-path-neutral-semantic-value? map-value)
+              (recur (rest map-keys) value)
+              false)
+            false))))))
 
 (defn ae-path-neutral-sequence? [values]
-  (if (= (count values) 0)
-    true
-    (if (ae-path-neutral-semantic-value? (first values))
-      (ae-path-neutral-sequence? (rest values))
-      false)))
+  (loop [values values]
+    (if (= (count values) 0)
+      true
+      (if (ae-path-neutral-semantic-value? (first values))
+        (recur (rest values))
+        false))))
 
 (defn ae-path-neutral-semantic-value? [value]
   (if (ae-exact-digest-ref? value)
@@ -527,12 +486,7 @@
                         (if (map? (get revision :function-shapes))
                           (if (> (count
                                   (get revision :function-shapes)) 0)
-                            (if (<= (count
-                                     (get revision :function-shapes))
-                                    (get (ae-bounds-record)
-                                         :maximum-container-width))
-                              (ae-path-neutral-semantic-value? revision)
-                              false)
+                            (ae-path-neutral-semantic-value? revision)
                             false)
                           false)
                         false)
@@ -595,16 +549,17 @@
     false))
 
 (defn ae-projections-valid? [projections names]
-  (if (= (count projections) 0)
-    {:valid? true :names names}
-    (let [projection (first projections)
-          name (get projection :name)]
-      (if (ae-projection-valid? projection)
-        (if (ae-vector-contains? names name)
-          {:valid? false :names names}
-          (ae-projections-valid?
-           (rest projections) (conj names name)))
-        {:valid? false :names names}))))
+  (loop [projections projections names names]
+    (if (= (count projections) 0)
+      {:valid? true :names names}
+      (let [projection (first projections)
+            name (get projection :name)]
+        (if (ae-projection-valid? projection)
+          (if (ae-vector-contains? names name)
+            {:valid? false :names names}
+            (recur
+             (rest projections) (conj names name)))
+          {:valid? false :names names})))))
 
 (defn ae-fact-disposition-valid? [fact]
   (let [disposition (get fact :disposition)
@@ -653,16 +608,17 @@
     false))
 
 (defn ae-fact-transitions-valid? [facts names]
-  (if (= (count facts) 0)
-    {:valid? true :names names}
-    (let [fact (first facts)
-          name (get fact :name)]
-      (if (ae-fact-transition-valid? fact)
-        (if (ae-vector-contains? names name)
-          {:valid? false :names names}
-          (ae-fact-transitions-valid?
-           (rest facts) (conj names name)))
-        {:valid? false :names names}))))
+  (loop [facts facts names names]
+    (if (= (count facts) 0)
+      {:valid? true :names names}
+      (let [fact (first facts)
+            name (get fact :name)]
+        (if (ae-fact-transition-valid? fact)
+          (if (ae-vector-contains? names name)
+            {:valid? false :names names}
+            (recur
+             (rest facts) (conj names name)))
+          {:valid? false :names names})))))
 
 (defn ae-effect-capability-relation-valid? [relation]
   (if (ae-exact-keys?
@@ -681,14 +637,15 @@
     false))
 
 (defn ae-names-for-disposition [facts disposition result]
-  (if (= (count facts) 0)
-    result
-    (let [fact (first facts)]
-      (ae-names-for-disposition
-       (rest facts) disposition
-       (if (= (get fact :disposition) disposition)
-         (conj result (get fact :name))
-         result)))))
+  (loop [facts facts disposition disposition result result]
+    (if (= (count facts) 0)
+      result
+      (let [fact (first facts)]
+        (recur
+         (rest facts) disposition
+         (if (= (get fact :disposition) disposition)
+           (conj result (get fact :name))
+           result))))))
 
 (defn ae-preservation-valid? [preservation facts fact-names]
   (if (ae-exact-keys?
@@ -730,16 +687,17 @@
     false))
 
 (defn ae-identity-subjects-valid? [subjects names]
-  (if (= (count subjects) 0)
-    {:valid? true :names names}
-    (let [subject (first subjects)
-          name (get subject :name)]
-      (if (ae-identity-subject-valid? subject)
-        (if (ae-vector-contains? names name)
-          {:valid? false :names names}
-          (ae-identity-subjects-valid?
-           (rest subjects) (conj names name)))
-        {:valid? false :names names}))))
+  (loop [subjects subjects names names]
+    (if (= (count subjects) 0)
+      {:valid? true :names names}
+      (let [subject (first subjects)
+            name (get subject :name)]
+        (if (ae-identity-subject-valid? subject)
+          (if (ae-vector-contains? names name)
+            {:valid? false :names names}
+            (recur
+             (rest subjects) (conj names name)))
+          {:valid? false :names names})))))
 
 (defn ae-lineage-record-valid? [record]
   (if (ae-exact-keys?
@@ -760,16 +718,17 @@
     false))
 
 (defn ae-lineage-valid? [lineage artifact-ids]
-  (if (= (count lineage) 0)
-    true
-    (let [record (first lineage)
-          artifact-id (get record :artifact-id)]
-      (if (ae-lineage-record-valid? record)
-        (if (ae-vector-contains? artifact-ids artifact-id)
-          false
-          (ae-lineage-valid?
-           (rest lineage) (conj artifact-ids artifact-id)))
-        false))))
+  (loop [lineage lineage artifact-ids artifact-ids]
+    (if (= (count lineage) 0)
+      true
+      (let [record (first lineage)
+            artifact-id (get record :artifact-id)]
+        (if (ae-lineage-record-valid? record)
+          (if (ae-vector-contains? artifact-ids artifact-id)
+            false
+            (recur
+             (rest lineage) (conj artifact-ids artifact-id)))
+          false)))))
 
 (defn ae-reference-edge-valid? [edge node-ids]
   (if (ae-exact-keys? edge #{:from :role :to})
@@ -785,77 +744,76 @@
     false))
 
 (defn ae-reference-edges-valid? [edges node-ids]
-  (if (= (count edges) 0)
-    true
-    (if (ae-reference-edge-valid? (first edges) node-ids)
-      (ae-reference-edges-valid? (rest edges) node-ids)
-      false)))
+  (loop [edges edges node-ids node-ids]
+    (if (= (count edges) 0)
+      true
+      (if (ae-reference-edge-valid? (first edges) node-ids)
+        (recur (rest edges) node-ids)
+        false))))
 
 (defn ae-scalar-identity-vector? [values]
-  (if (vector? values)
-    (if (<= (count values)
-            (get (ae-bounds-record) :maximum-container-width))
+  (loop [values values]
+    (if (vector? values)
       (if (= (count values) 0)
-        true
-        (if (ae-scalar-identity? (first values))
-          (ae-scalar-identity-vector? (vec (rest values)))
-          false))
-      false)
-    false))
+          true
+          (if (ae-scalar-identity? (first values))
+            (recur (vec (rest values)))
+            false))
+      false)))
 
 (defn ae-reference-neighbors [edges node-id result]
-  (if (= (count edges) 0)
-    result
-    (let [edge (first edges)]
-      (ae-reference-neighbors
-       (rest edges) node-id
-       (if (= (get edge :from) node-id)
-         (conj result (get edge :to))
-         result)))))
+  (loop [edges edges node-id node-id result result]
+    (if (= (count edges) 0)
+      result
+      (let [edge (first edges)]
+        (recur
+         (rest edges) node-id
+         (if (= (get edge :from) node-id)
+           (conj result (get edge :to))
+           result))))))
 
 (defn ae-reference-add-pending
   [neighbors depth pending]
-  (if (= (count neighbors) 0)
-    pending
-    (ae-reference-add-pending
-     (rest neighbors) depth
-     (conj pending
-           {:node-id (first neighbors)
-            :depth depth}))))
+  (loop [neighbors neighbors depth depth pending pending]
+    (if (= (count neighbors) 0)
+      pending
+      (recur
+       (rest neighbors) depth
+       (conj pending
+             {:node-id (first neighbors)
+              :depth depth})))))
 
 (defn ae-reference-graph-walk
   [pending edges reachable maximum-depth]
-  (if (= (count pending) 0)
-    {:valid? true
-     :reachable reachable
-     :maximum-depth maximum-depth}
-    (let [entry (first pending)
-          node-id (get entry :node-id)
-          depth (get entry :depth)
-          remaining (vec (rest pending))]
-      (if (ae-vector-contains? reachable node-id)
-        (ae-reference-graph-walk
-         remaining edges reachable maximum-depth)
-        (let [neighbors (ae-reference-neighbors edges node-id [])
-              next-pending
-              (ae-reference-add-pending
-               neighbors (+ depth 1) remaining)
-              next-maximum-depth
-              (if (> depth maximum-depth) depth maximum-depth)]
-          (ae-reference-graph-walk
-           next-pending edges
-           (conj reachable node-id)
-           next-maximum-depth))))))
+  (loop [pending pending edges edges reachable reachable maximum-depth maximum-depth]
+    (if (= (count pending) 0)
+      {:valid? true
+       :reachable reachable
+       :maximum-depth maximum-depth}
+      (let [entry (first pending)
+            node-id (get entry :node-id)
+            depth (get entry :depth)
+            remaining (vec (rest pending))]
+        (if (ae-vector-contains? reachable node-id)
+          (recur
+           remaining edges reachable maximum-depth)
+          (let [neighbors (ae-reference-neighbors edges node-id [])
+                next-pending
+                (ae-reference-add-pending
+                 neighbors (+ depth 1) remaining)
+                next-maximum-depth
+                (if (> depth maximum-depth) depth maximum-depth)]
+            (recur
+             next-pending edges
+             (conj reachable node-id)
+             next-maximum-depth)))))))
 
 (defn ae-reference-graph-validation [root-id edges]
   (ae-reference-graph-walk
    [{:node-id root-id :depth 0}]
    edges [] 0))
 
-(defn ae-bounded-vector? [values maximum]
-  (if (vector? values)
-    (<= (count values) maximum)
-    false))
+
 
 (defn ae-reference-closure-valid? [closure]
   (if (ae-exact-keys?
@@ -869,34 +827,20 @@
           edges (get closure :edges)
           node-count (get closure :observed-node-count)
           edge-count (get closure :observed-edge-count)
-          depth (get closure :observed-maximum-depth)
-          maximum-width
-          (get (ae-bounds-record) :maximum-container-width)]
-      (if (ae-bounded-vector?
-           node-ids
-           (get (ae-bounds-record) :maximum-reference-nodes))
+          depth (get closure :observed-maximum-depth)]
+      (if (vector? node-ids)
         (if (> (count node-ids) 0)
-          (if (ae-bounded-vector?
-               edges
-               (get (ae-bounds-record) :maximum-reference-edges))
-            (if (ae-bounded-vector?
-                 (get closure :fact-reference-ids) maximum-width)
-              (if (ae-bounded-vector?
-                   (get closure :origin-reference-ids) maximum-width)
-                (if (ae-bounded-vector?
-                     (get closure :proof-reference-ids) maximum-width)
-                  (if (ae-bounded-vector?
-                       (get closure :runtime-check-reference-ids)
-                       maximum-width)
+          (if (vector? edges)
+            (if (vector? (get closure :fact-reference-ids))
+              (if (vector? (get closure :origin-reference-ids))
+                (if (vector? (get closure :proof-reference-ids))
+                  (if (vector? (get closure :runtime-check-reference-ids))
                     (if (ae-nonnegative-integer? node-count)
                       (if (= node-count (count node-ids))
                         (if (ae-nonnegative-integer? edge-count)
                           (if (= edge-count (count edges))
                             (if (ae-nonnegative-integer? depth)
-                              (if (<= depth
-                                      (get (ae-bounds-record)
-                                           :maximum-reference-depth))
-                                (if (ae-scalar-identity?
+                              (if (ae-scalar-identity?
                                      (get closure :root-id))
                                   (if (ae-scalar-identity-vector? node-ids)
                                     (if (ae-all-unique? node-ids [])
@@ -943,7 +887,6 @@
                                       false)
                                     false)
                                   false)
-                                false)
                               false)
                             false)
                           false)
@@ -981,7 +924,7 @@
      :source-revision :projection-contract :semantic-projections
      :fact-transitions :effect-capability-relation :proof-composite
      :preservation :identity-subjects :lineage :reference-closure
-     :actual-path-provenance :bounds}))
+     :actual-path-provenance}))
 
 (defn ae-descriptor-validation [descriptor]
   (if (ae-descriptor-shape-valid? descriptor)
@@ -991,29 +934,20 @@
           identities (get descriptor :identity-subjects)
           lineage (get descriptor :lineage)
           projection-validation
-          (if (ae-bounded-vector?
-               projections
-               (get (ae-bounds-record)
-                    :maximum-semantic-projections))
+          (if (vector? projections)
             (ae-projections-valid? projections [])
             {:valid? false :names []})
           fact-validation
-          (if (ae-bounded-vector?
-               facts
-               (get (ae-bounds-record)
-                    :maximum-fact-transitions))
+          (if (vector? facts)
             (ae-fact-transitions-valid? facts [])
             {:valid? false :names []})
           identity-validation
-          (if (ae-bounded-vector?
-               identities
-               (get (ae-bounds-record)
-                    :maximum-identity-subjects))
+          (if (vector? identities)
             (ae-identity-subjects-valid? identities [])
             {:valid? false :names []})]
       (if (= (get descriptor :artifact)
              :gravity/private-authenticated-envelope-descriptor)
-        (if (= (get descriptor :schema-version) 1)
+        (if (= (get descriptor :schema-version) 2)
           (if (keyword? (get descriptor :stage))
             (if (keyword? (get descriptor :artifact-kind))
               (if (ae-source-revision-valid?
@@ -1021,18 +955,12 @@
                 (if (ae-projection-contract-valid? contract)
                   (if (get projection-validation :valid?)
                     (if (> (count projections) 0)
-                      (if (<= (count projections)
-                              (get (ae-bounds-record)
-                                   :maximum-semantic-projections))
-                        (if (= (get projection-validation :names)
+                      (if (= (get projection-validation :names)
                                (get contract
                                     :required-semantic-projections))
                           (if (get fact-validation :valid?)
                             (if (> (count facts) 0)
-                              (if (<= (count facts)
-                                      (get (ae-bounds-record)
-                                           :maximum-fact-transitions))
-                                (if (= (get fact-validation :names)
+                              (if (= (get fact-validation :names)
                                        (get contract
                                             :required-fact-families))
                                   (if (ae-effect-capability-relation-valid?
@@ -1046,24 +974,14 @@
                                            (get fact-validation :names))
                                         (if (get identity-validation :valid?)
                                           (if (> (count identities) 0)
-                                            (if (<=
-                                                 (count identities)
-                                                 (get
-                                                  (ae-bounds-record)
-                                                  :maximum-identity-subjects))
-                                              (if (=
+                                            (if (=
                                                    (get identity-validation
                                                         :names)
                                                    (get contract
                                                         :required-identity-subjects))
                                                 (if (vector? lineage)
                                                   (if (> (count lineage) 0)
-                                                    (if (<=
-                                                         (count lineage)
-                                                         (get
-                                                          (ae-bounds-record)
-                                                          :maximum-lineage-records))
-                                                      (if (ae-lineage-valid?
+                                                    (if (ae-lineage-valid?
                                                            lineage [])
                                                         (if (ae-reference-closure-valid?
                                                              (get descriptor
@@ -1071,14 +989,8 @@
                                                           (if (ae-actual-path-provenance-valid?
                                                                (get descriptor
                                                                     :actual-path-provenance))
-                                                            (if (=
-                                                                 (get descriptor
-                                                                      :bounds)
-                                                                 (ae-bounds-record))
-                                                              {:valid? true
-                                                               :reason :accepted}
-                                                              {:valid? false
-                                                               :reason :bounds})
+                                                            {:valid? true
+                                                             :reason :accepted}
                                                             {:valid? false
                                                              :reason
                                                              :actual-path-provenance})
@@ -1087,8 +999,6 @@
                                                            :reference-closure})
                                                         {:valid? false
                                                          :reason :lineage})
-                                                      {:valid? false
-                                                       :reason :lineage-bound})
                                                     {:valid? false
                                                      :reason :empty-lineage})
                                                   {:valid? false
@@ -1096,8 +1006,6 @@
                                                 {:valid? false
                                                  :reason
                                                  :identity-contract})
-                                              {:valid? false
-                                               :reason :identity-bound})
                                             {:valid? false
                                              :reason :empty-identities})
                                           {:valid? false
@@ -1109,11 +1017,9 @@
                                     {:valid? false
                                      :reason :effect-capability-relation})
                                   {:valid? false :reason :fact-contract})
-                                {:valid? false :reason :fact-bound})
                               {:valid? false :reason :empty-facts})
                             {:valid? false :reason :fact-transitions})
                           {:valid? false :reason :projection-contract})
-                        {:valid? false :reason :projection-bound})
                       {:valid? false :reason :empty-projections})
                     {:valid? false :reason :semantic-projections})
                   {:valid? false :reason :contract})
@@ -1153,117 +1059,120 @@
 
 (defn ae-build-projection-bindings
   [projections contract-id state result]
-  (if (= (count projections) 0)
-    {:state state :bindings result}
-    (let [projection (first projections)
-          content-request
-          (ae-add-digest-request
-           state
-           {:domain :gravity/authenticated-envelope-projection-content-v1
-            :projection-name (get projection :name)
-            :projection-role (get projection :role)
-            :semantic-value (get projection :value)})
-          content-id (get content-request :ref)
-          binding-request
-          (ae-add-digest-request
-           (get content-request :state)
-           {:domain :gravity/authenticated-envelope-projection-binding-v1
-            :contract-id contract-id
-            :projection-name (get projection :name)
-            :projection-role (get projection :role)
-            :entry-count (get projection :entry-count)
-            :content-id content-id})
-          binding-id (get binding-request :ref)
-          binding
-          {:name (get projection :name)
-           :role (get projection :role)
-           :entry-count (get projection :entry-count)
-           :content-id content-id
-           :binding-id binding-id}]
-      (ae-build-projection-bindings
-       (rest projections) contract-id
-       (get binding-request :state)
-       (conj result binding)))))
+  (loop [projections projections contract-id contract-id state state result result]
+    (if (= (count projections) 0)
+      {:state state :bindings result}
+      (let [projection (first projections)
+            content-request
+            (ae-add-digest-request
+             state
+             {:domain :gravity/authenticated-envelope-projection-content-v1
+              :projection-name (get projection :name)
+              :projection-role (get projection :role)
+              :semantic-value (get projection :value)})
+            content-id (get content-request :ref)
+            binding-request
+            (ae-add-digest-request
+             (get content-request :state)
+             {:domain :gravity/authenticated-envelope-projection-binding-v1
+              :contract-id contract-id
+              :projection-name (get projection :name)
+              :projection-role (get projection :role)
+              :entry-count (get projection :entry-count)
+              :content-id content-id})
+            binding-id (get binding-request :ref)
+            binding
+            {:name (get projection :name)
+             :role (get projection :role)
+             :entry-count (get projection :entry-count)
+             :content-id content-id
+             :binding-id binding-id}]
+        (recur
+         (rest projections) contract-id
+         (get binding-request :state)
+         (conj result binding))))))
 
 (defn ae-build-fact-transition-bindings
   [facts contract-id state result]
-  (if (= (count facts) 0)
-    {:state state :bindings result}
-    (let [fact (first facts)
-          input-request
-          (ae-add-digest-request
-           state
-           {:domain :gravity/authenticated-envelope-fact-input-v1
-            :fact-name (get fact :name)
-            :semantic-value (get fact :input)})
-          input-id (get input-request :ref)
-          output-request
-          (ae-add-digest-request
-           (get input-request :state)
-           {:domain :gravity/authenticated-envelope-fact-output-v1
-            :fact-name (get fact :name)
-            :semantic-value (get fact :output)})
-          output-id (get output-request :ref)
-          binding-request
-          (ae-add-digest-request
-           (get output-request :state)
-           {:domain :gravity/authenticated-envelope-fact-transition-v1
-            :contract-id contract-id
-            :fact-name (get fact :name)
-            :disposition (get fact :disposition)
-            :input-content-id input-id
-            :output-content-id output-id
-            :input-count (get fact :input-count)
-            :output-count (get fact :output-count)
-            :evidence-ids (get fact :evidence-ids)})
-          binding-id (get binding-request :ref)
-          binding
-          {:name (get fact :name)
-           :disposition (get fact :disposition)
-           :input-content-id input-id
-           :output-content-id output-id
-           :input-count (get fact :input-count)
-           :output-count (get fact :output-count)
-           :evidence-ids (get fact :evidence-ids)
-           :binding-id binding-id}]
-      (ae-build-fact-transition-bindings
-       (rest facts) contract-id
-       (get binding-request :state)
-       (conj result binding)))))
+  (loop [facts facts contract-id contract-id state state result result]
+    (if (= (count facts) 0)
+      {:state state :bindings result}
+      (let [fact (first facts)
+            input-request
+            (ae-add-digest-request
+             state
+             {:domain :gravity/authenticated-envelope-fact-input-v1
+              :fact-name (get fact :name)
+              :semantic-value (get fact :input)})
+            input-id (get input-request :ref)
+            output-request
+            (ae-add-digest-request
+             (get input-request :state)
+             {:domain :gravity/authenticated-envelope-fact-output-v1
+              :fact-name (get fact :name)
+              :semantic-value (get fact :output)})
+            output-id (get output-request :ref)
+            binding-request
+            (ae-add-digest-request
+             (get output-request :state)
+             {:domain :gravity/authenticated-envelope-fact-transition-v1
+              :contract-id contract-id
+              :fact-name (get fact :name)
+              :disposition (get fact :disposition)
+              :input-content-id input-id
+              :output-content-id output-id
+              :input-count (get fact :input-count)
+              :output-count (get fact :output-count)
+              :evidence-ids (get fact :evidence-ids)})
+            binding-id (get binding-request :ref)
+            binding
+            {:name (get fact :name)
+             :disposition (get fact :disposition)
+             :input-content-id input-id
+             :output-content-id output-id
+             :input-count (get fact :input-count)
+             :output-count (get fact :output-count)
+             :evidence-ids (get fact :evidence-ids)
+             :binding-id binding-id}]
+        (recur
+         (rest facts) contract-id
+         (get binding-request :state)
+         (conj result binding))))))
 
 (defn ae-build-identity-bindings [subjects state result checks]
-  (if (= (count subjects) 0)
-    {:state state :bindings result :checks checks}
-    (let [subject (first subjects)
-          identity-request
-          (ae-add-digest-request
-           state
-           {:domain (get subject :domain)
-            :semantic-input (get subject :preimage)})
-          computed-id (get identity-request :ref)
-          binding-request
-          (ae-add-digest-request
-           (get identity-request :state)
-           {:domain :gravity/authenticated-envelope-identity-binding-v1
-            :identity-name (get subject :name)
-            :identity-domain (get subject :domain)
-            :computed-id computed-id
-            :observed-id (get subject :observed-id)})
-          binding-id (get binding-request :ref)
-          binding {:name (get subject :name)
+  (loop [subjects subjects state state result result checks checks]
+    (if (= (count subjects) 0)
+      {:state state :bindings result :checks checks}
+      (let [subject (first subjects)
+            identity-request
+            (ae-add-digest-request
+             state
+             {:domain (get subject :domain)
+              :semantic-input (get subject :preimage)})
+            computed-id (get identity-request :ref)
+            binding-request
+            (ae-add-digest-request
+             (get identity-request :state)
+             {:domain :gravity/authenticated-envelope-identity-binding-v1
+              :identity-name (get subject :name)
+              :identity-domain (get subject :domain)
+              :computed-id computed-id
+              :observed-id (get subject :observed-id)})
+            binding-id (get binding-request :ref)
+            binding {:name (get subject :name)
+                     :domain (get subject :domain)
+                     :computed-id computed-id
+                     :observed-id (get subject :observed-id)
+                     :binding-id binding-id}
+            check {:name (get subject :name)
                    :domain (get subject :domain)
                    :computed-id computed-id
-                   :observed-id (get subject :observed-id)
-                   :binding-id binding-id}
-          check {:name (get subject :name)
-                 :domain (get subject :domain)
-                 :computed-id computed-id
-                 :observed-id (get subject :observed-id)}]
-      (ae-build-identity-bindings
-       (rest subjects)
-       (get binding-request :state)
-       (conj result binding)
-       (conj checks check)))))
+                   :observed-id (get subject :observed-id)}]
+        (recur
+         (rest subjects)
+         (get binding-request :state)
+         (conj result binding)
+         (conj checks check))))))
 
 (defn ae-build-accepted-template [descriptor]
   (let [initial-state {:next-ordinal 0 :requests []}
@@ -1355,7 +1264,7 @@
         (ae-add-digest-request
          (get reference-request :state)
          {:domain :gravity/authenticated-envelope-semantic-identity-v1
-          :schema-version 1
+          :schema-version 2
           :stage (get descriptor :stage)
           :artifact-kind (get descriptor :artifact-kind)
           :source-revision-id source-revision-id
@@ -1373,14 +1282,14 @@
         (ae-add-digest-request
          (get semantic-request :state)
          {:domain :gravity/authenticated-envelope-artifact-v1
-          :schema-version 1
+          :schema-version 2
           :stage (get descriptor :stage)
           :artifact-kind (get descriptor :artifact-kind)
           :semantic-id semantic-id})
         artifact-id (get artifact-request :ref)
         semantic-template-base
         {:artifact :gravity/authenticated-envelope
-         :schema-version 1
+         :schema-version 2
          :stage (get descriptor :stage)
          :artifact-kind (get descriptor :artifact-kind)
          :contract-id contract-id
@@ -1399,9 +1308,8 @@
          :reference-depth-metric :ordered-shortest-discovery-depth
          :semantic-id semantic-id
          :artifact-id artifact-id
-         :bounds (ae-bounds-record)
          :semantic-authority :gravity-source
-         :host-role :bounded-validation-hashing-and-instantiation
+         :host-role :validation-hashing-and-instantiation
          :claim-boundary [:content-and-context-consistency
                           :not-a-release-signature
                           :not-proof-of-verifier-correctness]
@@ -1431,10 +1339,7 @@
          :provenance-binding-id provenance-root)
         final-state (get provenance-request :state)
         requests (get final-state :requests)]
-    (if (<= (count requests)
-            (get (ae-bounds-record)
-                 :maximum-digest-requests))
-      {:status :accepted
+    {:status :accepted
        :artifact-template artifact-template
        :digest-requests requests
        :digest-graph-root semantic-root
@@ -1445,12 +1350,11 @@
        :diagnostics []
        :authority
        {:semantic-owner :gravity-source
-        :host-role :bounded-validation-hashing-and-instantiation
+        :host-role :validation-hashing-and-instantiation
         :scope :reusable-authenticated-envelope
         :semantic-root-path-neutral? true
         :physical-provenance-separate? true
-        :self-hosted? false}}
-      (ae-rejection descriptor :digest-request-bound :construction))))
+        :self-hosted? false}}))
 
 (defn authenticated-envelope-build-template [descriptor]
   (let [validation (ae-descriptor-validation descriptor)]

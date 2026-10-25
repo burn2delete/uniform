@@ -1,7 +1,7 @@
 ;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11/B12/B13/B15/B47 is the checked-core projection
 ;; owned by Gravity source.
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
-;; bounded literal/function/control-flow subset, resolves declared digest
+;; literal/function/control-flow subset, resolves declared digest
 ;; requests, and keeps physical paths out of semantic identity.
 (def sh07-core-source-relative-path "bootstrap/gravity/src/gravity/checked_core.gravity")
 
@@ -79,8 +79,7 @@
      (and (= source-hash (get-in plan [:source :sha256]))
           (= sh07-core-public-function-shapes
              (:public-function-shapes identities))
-          (= (set (concat '[sh07-core-contract sh07-core-bounds
-                            sh07-core-diagnostic-catalog]
+          (= (set (concat '[sh07-core-contract sh07-core-diagnostic-catalog]
                           (keys sh07-core-public-function-shapes)))
              (set (some #(when (= :exports (first %)) (second %))
                         (drop 2 (first (read-forms source-path source-text))))))
@@ -191,12 +190,14 @@
 
 (defn sh07-core-execute! [source-path function arguments]
   (try
-    (sh04-syntax-strip-host-metadata
-     (p15-s23-stage2-runtime-execute-function
-      {:engine :gravity-sh07-pinned-core-runner :compiler-artifact-plan? true}
-      (:plan (or *sh07-core-execution-binding* @sh07-core-cached-binding))
-      function
-      (sh04-syntax-strip-host-metadata arguments)))
+    (p15-s23-c6c10-carrier-validation source-path arguments)
+    (let [result
+          (p15-s23-stage2-runtime-execute-function
+           {:engine :gravity-sh07-pinned-core-runner :compiler-artifact-plan? true}
+           (:plan (or *sh07-core-execution-binding* @sh07-core-cached-binding))
+           function (sh04-syntax-strip-host-metadata arguments))]
+      (p15-s23-c6c10-carrier-validation source-path result)
+      (sh04-syntax-strip-host-metadata result))
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))

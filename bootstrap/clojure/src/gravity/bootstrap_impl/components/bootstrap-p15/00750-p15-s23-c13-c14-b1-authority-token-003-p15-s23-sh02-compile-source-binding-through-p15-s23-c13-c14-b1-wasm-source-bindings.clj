@@ -1,10 +1,10 @@
 (let [p15-s23-c13-c14-b1-authority-token (nth __gravity_bootstrap_lexical_values_126914 0)]
 (defn- p15-s23-sh02-compile-source-binding!
-  [source-path {:keys [source-text emitter-rule inputs]}]
-  (when-not
+  [source-path {:keys [source-text emitter-rule inputs development-current?]}]
+  (when-not (or development-current?
    (and (= p15-s23-sh02-source-byte-count (:source-byte-count inputs))
         (= p15-s23-sh02-expected-source-content-hash
-           (:source-content-hash inputs)))
+           (:source-content-hash inputs))))
     (p15-s23-b3-llvm-fail!
      "B1-INPUT" source-path {}
      {:missing-fact :pinned-sh02-source-identity
@@ -35,11 +35,16 @@
         (p15-s23-c11-mir-digest
          (get functions p15-s23-sh02-verifier-function))]
     (when-not
-     (and (= p15-s23-sh02-expected-function-count (count functions))
+     (and (or development-current?
+              (and (= p15-s23-sh02-expected-function-count (count functions))
           (= p15-s23-sh02-expected-plan-semantic-hash plan-hash)
           (= p15-s23-sh02-expected-functions-semantic-hash functions-hash)
           (= p15-s23-sh02-expected-builder-semantic-hash builder-hash)
-          (= p15-s23-sh02-expected-verifier-semantic-hash verifier-hash)
+                   (= p15-s23-sh02-expected-verifier-semantic-hash verifier-hash)))
+          (= [:gravity/stage2-compiler-artifact-plan :meta :jvm #{} #{} :safe]
+             [(:kind plan) (get-in plan [:module :profile]) (get-in plan [:module :target])
+              (get-in plan [:module :effects]) (get-in plan [:module :capabilities])
+              (get-in plan [:module :safety])])
           (= p15-s23-sh02-required-functions
              (select-keys complete-shapes
                           (keys p15-s23-sh02-required-functions))))
@@ -62,7 +67,7 @@
                        (pr-str
                         (c-backend-canonical-value
                          authenticated-plan-base)))))]
-      {:owner :gravity.compiler/authenticated-envelope
+      (cond-> {:owner :gravity.compiler/authenticated-envelope
        :source-path compilation-source-path
        :source-byte-count (:source-byte-count inputs)
        :source-content-hash (:source-content-hash inputs)
@@ -72,7 +77,8 @@
        :verifier-function p15-s23-sh02-verifier-function
        :verifier-semantic-hash verifier-hash
        :function-shapes complete-shapes
-       :plan authenticated-plan})))
+       :plan authenticated-plan}
+        development-current? (assoc :development-current? true)))))
 
 (defn- p15-s23-sh02-source-binding-cache-key
   [request]
@@ -80,6 +86,7 @@
    :owner :gravity/p15-s23-sh02-source-binding
    :source-relative-path p15-s23-sh02-source-relative-path
    :authenticated-inputs (:inputs request)
+   :development-current? (boolean (:development-current? request))
    :additional-bootstrap-targets *additional-bootstrap-targets*
    :expected-source-byte-count p15-s23-sh02-source-byte-count
    :expected-source-content-hash
@@ -112,16 +119,22 @@
             (swap! context assoc key binding)
             binding))))))
 
+(declare p15-s23-sh02-current-source-binding-inputs!)
+
 (defn- p15-s23-sh02-source-binding!
-  [candidate source-path]
+  ([candidate source-path]
+   (p15-s23-sh02-source-binding! candidate source-path false))
+  ([candidate source-path development-current?]
   (p15-s23-c13-c14-b1-require-authority!
    candidate source-path :load-pinned-sh02-source)
-  (let [request (p15-s23-sh02-source-binding-inputs! candidate source-path)]
+  (let [request (if development-current?
+                  (p15-s23-sh02-current-source-binding-inputs! candidate source-path)
+                  (p15-s23-sh02-source-binding-inputs! candidate source-path))]
     ;; Every authority-bearing call reopens and authenticates both source
     ;; inputs above.  Successful compilation may be shared only between exact
     ;; authenticated inputs and validation policy in the current plan-emission
     ;; request.
-    (p15-s23-sh02-cached-source-binding! source-path request)))
+    (p15-s23-sh02-cached-source-binding! source-path request))))
 
 (defn- p15-s23-c13-c14-b1-c-source-bindings!
   [candidate source-path]

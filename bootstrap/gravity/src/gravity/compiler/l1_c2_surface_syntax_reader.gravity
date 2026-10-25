@@ -138,12 +138,8 @@
       false)
     false))
 
-(defn l1-c2-bounded-nonempty-string? [value maximum]
-  (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) maximum)
-      false)
-    false))
+(defn l1-c2-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
 
 (defn l1-c2-digest-reference? [value ordinal]
   (if (l1-c2-exact-keys? value #{:digest-ref})
@@ -155,8 +151,7 @@
        provenance #{:path :extension :source-kind})
     (let [extension (get provenance :extension)
           source-kind (get provenance :source-kind)]
-      (if (l1-c2-bounded-nonempty-string?
-           (get provenance :path) 1024)
+      (if (l1-c2-nonempty-string? (get provenance :path))
         (if (= extension ".gravity")
           (= source-kind :gravity)
           (if (= extension ".qst")
@@ -174,20 +169,17 @@
     (if (= (get source-unit :artifact) :gravity/sh03-source-unit)
       (if (= (get source-unit :schema-version) 1)
         (if (l1-c2-sha256-id? (get source-unit :project-root-id))
-          (if (l1-c2-bounded-nonempty-string?
-               (get source-unit :logical-source-id) 1024)
+          (if (l1-c2-nonempty-string? (get source-unit :logical-source-id))
             (if (l1-c2-sha256-id?
                  (get source-unit :source-content-hash))
               (let [source-byte-count
                     (get source-unit :source-byte-count)]
                 (if (integer? source-byte-count)
                   (if (>= source-byte-count 0)
-                    (if (<= source-byte-count 4194304)
                       (if (= (get source-unit :encoding) :utf-8)
                         (l1-c2-actual-path-provenance-valid?
                          (get source-unit :actual-path-provenance))
                         false)
-                      false)
                     false)
                   false))
               false)
@@ -199,13 +191,7 @@
 
 (defn l1-c2-reader-tag-valid? [tag]
   (if (vector? tag)
-    (if (> (count tag) 0)
-      (if (<= (count tag) 4)
-        (if (= tag [105 110 115 116])
-          true
-          (= tag [117 117 105 100]))
-        false)
-      false)
+    (if (= tag [105 110 115 116]) true (= tag [117 117 105 100]))
     false))
 
 (defn l1-c2-reader-tags-valid? [tags observed]
@@ -228,46 +214,14 @@
         (if (boolean? (get reader-policy :retain-trivia))
           (let [tags (get reader-policy :enabled-reader-tags)]
             (if (vector? tags)
-              (if (<= (count tags) 32)
-                (l1-c2-reader-tags-valid? tags #{})
-                false)
+              (l1-c2-reader-tags-valid? tags #{})
               false))
           false)
         false)
       false)
     false))
 
-(defn l1-c2-reader-bounds-record []
-  {:resource-policy :gravity/sh03-compiler-source-v1
-   :maximum-source-bytes 4194304
-   :maximum-characters 4194304
-   :maximum-tokens 524288
-   :maximum-forms 262144
-   :maximum-delimiter-depth 512
-   :maximum-semantic-work-units 8437834
-   :maximum-container-width 65536
-   :maximum-token-scalars 262144
-   :maximum-numeric-semantic-scalars 256
-   :maximum-numeric-semantic-work-units 65536
-   :maximum-canonical-scalar-bytes 1048576
-   :maximum-canonical-total-scalar-bytes 536870912
-   :maximum-source-identity-utf8-bytes 4096
-   :maximum-logical-source-id-code-units 1024
-   :maximum-actual-path-code-units 1024
-   :maximum-reader-tags 32
-   :maximum-reader-tag-codepoints 4
-   :maximum-result-carrier-nodes 268435456
-   :maximum-result-carrier-depth 2048
-   :maximum-result-carrier-width 4194304
-   :result-carrier-node-budget
-   {:fixed-nodes 1048576
-    :nodes-per-source-byte 24
-    :nodes-per-token 320
-    :nodes-per-form 1024
-    :nodes-per-reader-tag 2048
-    :derived-maximum-nodes 537985024
-    :construction-guard :prospective-physical-node-count
-    :admitted-maximum-nodes 268435456}})
+(defn l1-c2-reader-bounds-record [] {})
 
 (defn l1-c2-reader-execution-boundary-record []
   {:artifact :gravity/sh03-reader-execution-boundary
@@ -287,25 +241,14 @@
                            :canonical-encoding
                            :sha256-resolution
                            :contextual-envelope-reconstruction
-                           :bounded-result-carrier-validation
+                           :result-carrier-validation
                            :stage2-instruction-runner]
    :clojure-boundary-responsibility
    {:responsibility :result-carrier-validation
-    :maximum-nodes 268435456
-    :maximum-depth 2048
-    :maximum-width 4194304
-    :maximum-canonical-scalar-bytes 1048576
-    :maximum-canonical-total-scalar-bytes 536870912
     :failure-rule "C2-HASH"
     :result-committed? false}
    :gravity-input-responsibility
-   {:maximum-source-identity-utf8-bytes 4096
-    :maximum-logical-source-id-code-units 1024
-    :maximum-actual-path-code-units 1024
-    :maximum-source-bytes 4194304
-    :maximum-reader-tags 32
-    :maximum-reader-tag-codepoints 4
-    :invalid-input-carrier-policy :bounded-summary}
+   {:invalid-input-carrier-policy :summary}
    :forbidden-reader-delegation
    [:read-source-form-records
     :read-source-form-records-host-oracle
@@ -512,64 +455,35 @@
 
 (defn l1-c2-accepted-semantic-template-valid?
   [template reader-result token-count form-count semantic-value-count]
-  (if (l1-c2-exact-keys?
-       template
-       #{:status :source-unit-id :token-stream-id :form-tree-id
-         :extension-invocation-set-id :token-count :form-count
-         :semantic-value-count :semantic-work-units :top-level-form-ids
-         :literal-form-ids :deferred-form-ids
-         :reader-extension-record-count})
+  (if (l1-c2-exact-keys? template #{:status :source-unit-id :token-stream-id :form-tree-id :extension-invocation-set-id :token-count :form-count :semantic-value-count :top-level-form-ids :literal-form-ids :deferred-form-ids :reader-extension-record-count})
     (if (= (get template :status) :accepted)
-      (if (l1-c2-digest-reference? (get template :source-unit-id) 1)
-        (if (l1-c2-digest-reference? (get template :token-stream-id) 2)
-          (if (l1-c2-digest-reference? (get template :form-tree-id) 3)
-            (if (l1-c2-digest-reference?
-                 (get template :extension-invocation-set-id) 4)
-              (if (= (get template :token-count) token-count)
-                (if (= (get template :form-count) form-count)
-                  (if (= (get template :semantic-value-count)
-                         semantic-value-count)
-                    (let [work (get template :semantic-work-units)]
-                      (if (integer? work)
-                        (if (>= work 0)
-                          (if (<= work 8437834)
-                            (if (= (get template :top-level-form-ids)
-                                   (get reader-result
-                                        :top-level-form-ids))
-                              (if (vector?
-                                   (get template :literal-form-ids))
-                                (if (<= (count
-                                         (get template
-                                              :literal-form-ids))
-                                        form-count)
-                                  (if (vector?
-                                       (get template
-                                            :deferred-form-ids))
-                                    (if (<= (count
-                                             (get template
-                                                  :deferred-form-ids))
-                                            form-count)
-                                      (= (get template
-                                              :reader-extension-record-count)
-                                         (count
-                                          (get reader-result
-                                               :reader-extension-invocation-records)))
-                                      false)
-                                    false)
-                                  false)
-                                false)
-                              false)
-                            false)
-                          false)
-                        false))
-                    false)
-                  false)
-                false)
-              false)
-            false)
-          false)
-        false)
-      false)
+    (if (l1-c2-digest-reference? (get template :source-unit-id) 1)
+    (if (l1-c2-digest-reference? (get template :token-stream-id) 2)
+    (if (l1-c2-digest-reference? (get template :form-tree-id) 3)
+    (if (l1-c2-digest-reference? (get template :extension-invocation-set-id) 4)
+    (if (= (get template :token-count) token-count)
+    (if (= (get template :form-count) form-count)
+    (if (= (get template :semantic-value-count) semantic-value-count)
+    (if (= (get template :top-level-form-ids) (get reader-result :top-level-form-ids))
+    (if (vector? (get template :literal-form-ids))
+    (if (<= (count (get template :literal-form-ids)) form-count)
+    (if (vector? (get template :deferred-form-ids))
+    (if (<= (count (get template :deferred-form-ids)) form-count)
+    (= (get template :reader-extension-record-count)
+       (count (get reader-result :reader-extension-invocation-records)))
+    false)
+    false)
+    false)
+    false)
+    false)
+    false)
+    false)
+    false)
+    false)
+    false)
+    false)
+    false)
+    false)
     false))
 
 (defn l1-c2-rejected-semantic-template-valid? [template]
@@ -588,19 +502,10 @@
       false)
     false))
 
-(defn l1-c2-reader-product-counts-within-bounds?
-  [token-count form-count]
+(defn l1-c2-reader-product-counts-valid? [token-count form-count]
   (if (integer? token-count)
     (if (integer? form-count)
-      (if (<= 0 token-count)
-        (if (<= 0 form-count)
-          (if (<= token-count
-                  (get (l1-c2-reader-bounds-record) :maximum-tokens))
-            (<= form-count
-                (get (l1-c2-reader-bounds-record) :maximum-forms))
-            false)
-          false)
-        false)
+      (if (<= 0 token-count) (<= 0 form-count) false)
       false)
     false))
 
@@ -618,7 +523,7 @@
         diagnostics (get reader-result :diagnostics)
         requests (get reader-result :digest-requests)]
     (if (vector? tokens)
-      (if (l1-c2-reader-product-counts-within-bounds?
+      (if (l1-c2-reader-product-counts-valid?
            (count tokens) (if (vector? forms) (count forms) -1))
         (if (vector? forms)
           (if (vector? semantic-values)

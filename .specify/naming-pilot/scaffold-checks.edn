@@ -1,0 +1,259 @@
+{:scope :spec-kit-scaffold-only,
+ :upstream-commit "5ea8b1cf0a38699340a38e00d02770308997d8c0",
+ :checks
+ [:pinned-release
+  :codex-with-events-disabled
+  :no-runtime-hooks-or-workflows
+  :no-new-non-lisp-executable-source
+  :ascii
+  :json-parse
+  [:installed-preset "commands/speckit.checklist.md"]
+  [:installed-preset "commands/speckit.plan.md"]
+  [:installed-preset "commands/speckit.converge.md"]
+  [:installed-preset "commands/speckit.analyze.md"]
+  [:installed-preset "commands/speckit.constitution.md"]
+  [:installed-preset "commands/speckit.clarify.md"]
+  [:installed-preset "commands/speckit.implement.md"]
+  [:installed-preset "commands/speckit.taskstoissues.md"]
+  [:installed-preset "commands/speckit.specify.md"]
+  [:installed-preset "commands/speckit.tasks.md"]
+  [:installed-preset "preset.yml"]
+  [:generated-skill "checklist"]
+  [:generated-skill "plan"]
+  [:generated-skill "converge"]
+  [:generated-skill "analyze"]
+  [:generated-skill "constitution"]
+  [:generated-skill "clarify"]
+  [:generated-skill "implement"]
+  [:generated-skill "taskstoissues"]
+  [:generated-skill "specify"]
+  [:generated-skill "tasks"]
+  [:local-link ".specify/README.md" "../docs/README.md"]
+  [:local-link
+   ".specify/README.md"
+   "../docs/development-verification.md"]
+  [:local-link ".specify/README.md" "upstream.json"]
+  [:local-link ".specify/README.md" "LICENSE.spec-kit"]
+  [:local-link ".specify/README.md" "validation/environment.txt"]
+  [:local-link
+   ".specify/README.md"
+   "../docs/tooling-language-migration.md"]
+  [:local-link
+   ".specify/README.md"
+   "../specs/001-paired-source-core/evidence.md#fresh-task-observation"]
+  [:local-link ".specify/README.md" "validation/environment.txt"]
+  [:local-link ".specify/README.md" "validation/results.edn"]
+  [:local-link
+   ".specify/README.md"
+   "../specs/001-paired-source-core/evidence.md"]
+  [:local-link
+   ".specify/README.md"
+   "validation/ascii-adaptations.json"]
+  [:local-link ".specify/README.md" "../.specify/README.md"]
+  [:local-link ".specify/README.md" "semantic-names.md"]
+  [:local-link ".specify/README.md" "naming-pilot/plan.md"]
+  [:local-link ".specify/memory/constitution.md" "../../AGENTS.md"]
+  [:local-link
+   ".specify/memory/constitution.md"
+   "../../docs/document-inventory.json"]
+  [:local-link
+   ".specify/memory/constitution.md"
+   "../../docs/phase-00-foundation-and-thesis/README.md"]
+  [:local-link
+   ".specify/memory/constitution.md"
+   "../../docs/development-verification-workflow.md"]
+  [:local-link
+   ".specify/memory/constitution.md"
+   "../semantic-names.md"]
+  [:local-link
+   "specs/001-paired-source-core/spec.md"
+   "../../docs/phase-01-core-language/012-l2-core-language-semantics.md"]
+  [:local-link
+   "specs/001-paired-source-core/spec.md"
+   "../../docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"]
+  [:local-link
+   "specs/001-paired-source-core/spec.md"
+   "../../docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
+  [:local-link
+   "specs/001-paired-source-core/spec.md"
+   "../../docs/self-hosting-sh07-completion-plan.md"]
+  [:local-link
+   "specs/001-paired-source-core/spec.md"
+   "../../docs/development-verification-workflow.md"]
+  [:local-link "specs/001-paired-source-core/spec.md" "evidence.md"]
+  [:local-link "specs/001-paired-source-core/plan.md" "spec.md"]
+  [:local-link "specs/001-paired-source-core/plan.md" "evidence.md"]
+  [:local-link "specs/001-paired-source-core/tasks.md" "spec.md"]
+  [:local-link "specs/001-paired-source-core/tasks.md" "plan.md"]
+  [:local-link "specs/001-paired-source-core/tasks.md" "evidence.md"]
+  [:local-link
+   "specs/001-paired-source-core/evidence.md"
+   "../../.specify/validation/results.edn"]
+  :cli-version
+  :cli-local-preset
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-checklist/SKILL.md"]
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-constitution/SKILL.md"]
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-implement/SKILL.md"]
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-converge/SKILL.md"]
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-taskstoissues/SKILL.md"]
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-clarify/SKILL.md"]
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-plan/SKILL.md"]
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-analyze/SKILL.md"]
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-specify/SKILL.md"]
+  [:official-cli-skill-generation
+   ".agents/skills/speckit-tasks/SKILL.md"]
+  :cli-no-workflows
+  :cli-no-extensions
+  [:official-preset-update ".agents/skills/speckit-checklist/SKILL.md"]
+  [:official-preset-update
+   ".agents/skills/speckit-constitution/SKILL.md"]
+  [:official-preset-update ".agents/skills/speckit-implement/SKILL.md"]
+  [:official-preset-update ".agents/skills/speckit-converge/SKILL.md"]
+  [:official-preset-update
+   ".agents/skills/speckit-taskstoissues/SKILL.md"]
+  [:official-preset-update ".agents/skills/speckit-clarify/SKILL.md"]
+  [:official-preset-update ".agents/skills/speckit-plan/SKILL.md"]
+  [:official-preset-update ".agents/skills/speckit-analyze/SKILL.md"]
+  [:official-preset-update ".agents/skills/speckit-specify/SKILL.md"]
+  [:official-preset-update ".agents/skills/speckit-tasks/SKILL.md"]],
+ :passed 82,
+ :input-sha256
+ {".agents/skills/speckit-analyze/SKILL.md"
+  "8c86aad979290e7a1682e0ae6bf1faf79b5fabd9d2bd1861869f9f2658e8add8",
+  ".agents/skills/speckit-checklist/SKILL.md"
+  "0c7c1cab9c45154dcee1fb0c820540fc47ae9e1f6f31b99e6cc168637080e9d4",
+  ".agents/skills/speckit-clarify/SKILL.md"
+  "92ed9cd6dc035d008a23883a441710cb9d142763b51cb13007f6934273786c1e",
+  ".agents/skills/speckit-constitution/SKILL.md"
+  "18f1f1281fb22932e28ce31fa1abfd947f29fe6cf40441838adae8acad8985b2",
+  ".agents/skills/speckit-converge/SKILL.md"
+  "7bdc0484afdccf8225ae4342f4d7394b0d00b1d20509dd3220be408fedbe0f29",
+  ".agents/skills/speckit-implement/SKILL.md"
+  "230af81e724dcd6031761699e135e145a6e8faf99dcd0a913351d38178d4379e",
+  ".agents/skills/speckit-plan/SKILL.md"
+  "74e199aca4f0154129eba4009ce5725c0dcb6855ff181f2f60a2d2a20a62cbd8",
+  ".agents/skills/speckit-specify/SKILL.md"
+  "9e693bb253fa01f8023e7f279cce7c2d3e5acb28de9eefe4b7d6ffd95f34f926",
+  ".agents/skills/speckit-tasks/SKILL.md"
+  "709d0ca9888dbcd91c7eceb39820fb26312eddd5e00137da5739a945190159ff",
+  ".agents/skills/speckit-taskstoissues/SKILL.md"
+  "adfe0f341ff80356bf4417afa13e08a36dfa49f853705acbec02b08ed2b41392",
+  ".specify/.gitignore"
+  "6d8ebbeed10de4794ac24efd400d8f35ccbbeadd7440dc712a0e83121765be67",
+  ".specify/LICENSE.spec-kit"
+  "2510b446bc1f0cf9702453075d20cd88631e20e5642658edb7325d9c1eb534f7",
+  ".specify/README.md"
+  "781b46166cdbfeb77b2a2d08953f2812a0efe4854310b88e1ffbf3360f3354b6",
+  ".specify/init-options.json"
+  "8f010bbae6e2fe895820934834503ae9c24a4584e5c749c3473b97baa2c6d93e",
+  ".specify/integration.json"
+  "d2d0e48910aa471e13f9975dcd832935cb48127cb7da4853dc419eedad2a5895",
+  ".specify/integrations/codex.manifest.json"
+  "f2ada6aac53df64004da6e38961259912429f147ac8deb8dbf4f21e6a8539e8c",
+  ".specify/integrations/speckit.manifest.json"
+  "a0939bef9c132abc4b6fd453d9ed92465d248d8531fa50256b6a6f4170906485",
+  ".specify/local-preset/commands/speckit.analyze.md"
+  "e1420825b93d99202efc780bff6aa045849e3eda81b4f9d54e28b98ff5e817ac",
+  ".specify/local-preset/commands/speckit.checklist.md"
+  "d22437b3cd17cd51c498b6c2a362c4fd1f97f23477c163143170ac83de030914",
+  ".specify/local-preset/commands/speckit.clarify.md"
+  "21d8e2cc35cc7a4e9a2ff93bd2fd2181307b542836019782c572592dd077c088",
+  ".specify/local-preset/commands/speckit.constitution.md"
+  "7da45935b288f79067314e698c5fae10980d3fa77f4e22d7da1cd1cc7fb49e57",
+  ".specify/local-preset/commands/speckit.converge.md"
+  "516579142888593f733e6a7c29c3e74c7064c3606d3528c035936ae09a4e4418",
+  ".specify/local-preset/commands/speckit.implement.md"
+  "e14b6b5a3d7ddebb8ec5ad30064a6da3e04c7b347adc51bfc902d85c546f0284",
+  ".specify/local-preset/commands/speckit.plan.md"
+  "c06527a65bd49388d150b928dd5bc67731ea12d4198c4adb5515b35724cac704",
+  ".specify/local-preset/commands/speckit.specify.md"
+  "b081dfadd8225178eb016bc400157035bc7c2c465c5c06b14d53c1eb2bb39f2f",
+  ".specify/local-preset/commands/speckit.tasks.md"
+  "2a3d67a34142f862e6f2a58b67a8c8dc83c1c9c4cf4b60aba532cc604270e87a",
+  ".specify/local-preset/commands/speckit.taskstoissues.md"
+  "f985c5d61661fdd4e668fcdde3ea8e6e80a3b3433ca03244ef6c63d287b7e322",
+  ".specify/local-preset/preset.yml"
+  "490d4c87af069831901a0970ab5fcb9e829a8dbcdc88c660d87fdc8f09e7a8ec",
+  ".specify/memory/.constitution-template.json"
+  "8fc4b39294bae0c10d59547ad7d415b6f0e890d656cbf7171dd567f4e9054711",
+  ".specify/memory/constitution.md"
+  "2ff58dcc3a2e8b5fcb02323f00328e5e5acdaff8a87bc6298b8701bcc8bfbdc0",
+  ".specify/naming-pilot/evidence.md"
+  "fa45e90cb394394abad1965c5d42f731dc5c9e1493bbdcf8a13132d4346d0999",
+  ".specify/naming-pilot/plan.md"
+  "5f83ed2599a58f1072a5a312d0e17697c9ba8dd60025aa97f200d610c293ca17",
+  ".specify/naming-pilot/spec.md"
+  "c8dc475c2e2de19757caa1c0bd85accb31b0450153743d40856c475df9987c0c",
+  ".specify/naming-pilot/tasks.md"
+  "27f07674d9b728691db62a1be713d92fd78d40ab32246ab585f372b27a5a08c8",
+  ".specify/presets/.registry"
+  "4a39046a3ed897149c82c1bbb95e05ac717bdff910200248531e2a8bc56d5456",
+  ".specify/presets/uniform/commands/speckit.analyze.md"
+  "e1420825b93d99202efc780bff6aa045849e3eda81b4f9d54e28b98ff5e817ac",
+  ".specify/presets/uniform/commands/speckit.checklist.md"
+  "d22437b3cd17cd51c498b6c2a362c4fd1f97f23477c163143170ac83de030914",
+  ".specify/presets/uniform/commands/speckit.clarify.md"
+  "21d8e2cc35cc7a4e9a2ff93bd2fd2181307b542836019782c572592dd077c088",
+  ".specify/presets/uniform/commands/speckit.constitution.md"
+  "7da45935b288f79067314e698c5fae10980d3fa77f4e22d7da1cd1cc7fb49e57",
+  ".specify/presets/uniform/commands/speckit.converge.md"
+  "516579142888593f733e6a7c29c3e74c7064c3606d3528c035936ae09a4e4418",
+  ".specify/presets/uniform/commands/speckit.implement.md"
+  "e14b6b5a3d7ddebb8ec5ad30064a6da3e04c7b347adc51bfc902d85c546f0284",
+  ".specify/presets/uniform/commands/speckit.plan.md"
+  "c06527a65bd49388d150b928dd5bc67731ea12d4198c4adb5515b35724cac704",
+  ".specify/presets/uniform/commands/speckit.specify.md"
+  "b081dfadd8225178eb016bc400157035bc7c2c465c5c06b14d53c1eb2bb39f2f",
+  ".specify/presets/uniform/commands/speckit.tasks.md"
+  "2a3d67a34142f862e6f2a58b67a8c8dc83c1c9c4cf4b60aba532cc604270e87a",
+  ".specify/presets/uniform/commands/speckit.taskstoissues.md"
+  "f985c5d61661fdd4e668fcdde3ea8e6e80a3b3433ca03244ef6c63d287b7e322",
+  ".specify/presets/uniform/preset.yml"
+  "490d4c87af069831901a0970ab5fcb9e829a8dbcdc88c660d87fdc8f09e7a8ec",
+  ".specify/semantic-names.md"
+  "46728efe6d6068e212324da51907ba8daadd9cbe32e66bf9cd24ae041db4931a",
+  ".specify/templates/checklist-template.md"
+  "70bbc48e884fab372ffb09e83e78ff983e28b69caebf8cd9964a02b6836683ac",
+  ".specify/templates/constitution-template.md"
+  "2933148fc32a52dc99aee6f17fb49b69dff2d6549e6c32b0751f97db2060c3fa",
+  ".specify/templates/overrides/plan-template.md"
+  "eae5e46d151bc7292a1238af38d6b74d990bd0d4a451d311fb60226c353e2955",
+  ".specify/templates/overrides/spec-template.md"
+  "c935a00928698e581d4ccf746a9301290063bf1be3337a2b0637d70d164294da",
+  ".specify/templates/overrides/tasks-template.md"
+  "9557152443f41f6658ffa9c7857a54d07fe85676ebd5f2aeb45d64e502588877",
+  ".specify/templates/plan-template.md"
+  "0ebefc87e7e8457e8bbabb68853fd5ede142c21ef45ed97412371b6e03c0ca5f",
+  ".specify/templates/spec-template.md"
+  "3945437fc35cd30a5b2bf7beea680337c3516826d3efa5a6b92c4a7eca1ba28e",
+  ".specify/templates/tasks-template.md"
+  "86430fa4dd13ea03dc54f6bea6ee460a61d941503ad03afd6e3984d291a2ddbe",
+  ".specify/upstream.json"
+  "a5f131020e41e72a4b4ee6a8d4de390ce5bb3651d7361f4bf42a3b772c95db69",
+  ".specify/validation/ascii-adaptations.json"
+  "6fa151eac348bfe5c86fc56ba477eca0e540a364184a30a8b7e7888c7b9bf677",
+  ".specify/validation/checks.txt"
+  "9543d805bd04e2a699032e6278f0f492e89d00abfb5bf12f833cff29a70a0f29",
+  ".specify/validation/environment.txt"
+  "d3f121fe03366a73ddc226578b9bcd15fe26e4e24f6a1137a71efe2bae910d4d",
+  ".specify/validation/integration-status.txt"
+  "0a8352bf6bc3d7bb0b34cd0551d87195791c266b214e8ab33ddcf8c92a77ec58",
+  ".specify/validation/verify.clj"
+  "814d7e9f973d8b384ad6d96350b027b966de1acf97f9006fa890a7ddaf754b7b",
+  ".specify/workflows/workflow-registry.json"
+  "030f6d28aa51b15a77022a773624e317e176c6b92d904bfee4450eb4237c51db"},
+ :unrun
+ [:codex-runtime-discovery-and-chat
+  :compiler-tests
+  :raw-PR356-log-authentication
+  :independent-adoption-review
+  :integration-merge]}

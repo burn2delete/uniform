@@ -86,6 +86,33 @@
              #(c16/compiler-c16-incremental-file-artifact
                "bootstrap/clojure/fixtures/accepted/compiler-c16-incremental.gravity"))))))
 
+(deftest operation-bindings-restore-parent-scope-after-failure
+  (let [cache-key #(c16/c16-stage-cache-key :reader "source" "dependency")
+        baseline (cache-key)
+        calls (atom 0)
+        interposed
+        (fn [stage source dependency]
+          (swap! calls inc)
+          (assoc (c16/c16-stage-cache-key stage source dependency)
+                 :interposed? true))]
+    (c16/with-operations
+      {:c16-stage-cache-key interposed}
+      (fn []
+        (is (= (assoc baseline :interposed? true) (cache-key)))
+        (is (thrown-with-msg?
+             clojure.lang.ExceptionInfo #"inner operation failed"
+             (c16/with-operations
+               {:c16-stage-cache-key
+                (fn [& _] (throw (ex-info "inner operation failed" {})))}
+               cache-key)))
+        (is (= (assoc baseline :interposed? true) (cache-key)))))
+    (is (= 2 @calls))
+    (is (= baseline (cache-key)))
+    (is (= (assoc baseline :interposed? true)
+           (c16/with-operations {:c16-stage-cache-key interposed} cache-key)))
+    (is (= 3 @calls))
+    (is (= baseline (cache-key)))))
+
 (deftest incremental-evidence-engine-emits-complete-products
   (let [artifact
         (c16/with-operations

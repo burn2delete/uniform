@@ -165,7 +165,11 @@
             *print-dup* false
             *print-readably* true
             *print-namespace-maps* false]
-    (let [raw-front-end
+    (let [;; Selection is host invocation context, never artifact authority.
+          invocation (when reader-source-path
+                       {:reader-source-path reader-source-path
+                        :authenticated-envelope-options {:source :development-current}})
+          raw-front-end
           (p15-s23-stage2-c2-c3-front-end-products
            source-path source-text
            (reader-project-context-for-source source-path)
@@ -173,9 +177,9 @@
           source-content-hash
           (get-in raw-front-end [:source-unit-record :bytes-hash])
           literal-authentication
-          (p15-s23-c6c10-literal-authentication source-path raw-front-end)
+          (p15-s23-c6c10-literal-authentication source-path raw-front-end invocation)
           front-end
-          (p15-s23-c6c10-project-front-end source-path raw-front-end)
+          (p15-s23-c6c10-project-front-end source-path raw-front-end invocation)
           _ (validate-ns-syntax! source-path (:forms raw-front-end))
           raw-module (parse-module source-path (:forms raw-front-end))
           parameter? (contains? #{1 2 3} (get-in (stage0-function-table raw-module) ['main :arity]))
