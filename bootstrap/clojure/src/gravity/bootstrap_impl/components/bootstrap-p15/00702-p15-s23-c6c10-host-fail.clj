@@ -150,10 +150,12 @@
   [source-path value]
   (let [seen (java.util.IdentityHashMap.)]
     (loop [cursor value items []]
-      (let [class-name (some-> cursor class .getName)]
+      (let [kind (class cursor) class-name (some-> kind .getName)]
         (cond
-          (or (nil? cursor) (= "clojure.lang.PersistentList$EmptyList" class-name)) items
-          (not (contains? p15-s23-c6c10-canonical-list-classes class-name))
+          (or (nil? cursor) (identical? clojure.lang.PersistentList$EmptyList kind)) items
+          (not (and (contains? p15-s23-c6c10-canonical-list-classes class-name)
+                    (or (identical? clojure.lang.PersistentList kind)
+                        (identical? clojure.lang.Cons kind))))
           (p15-s23-c6c10-host-fail!
            "C6-VERIFY" source-path :exact-persistent-list-class {:class class-name})
           (some? (.meta ^clojure.lang.IObj cursor))
@@ -164,7 +166,9 @@
            "C6-VERIFY" source-path :cyclic-canonical-carrier {})
           :else
           (do (.put seen cursor true)
-              (recur (.next ^clojure.lang.ISeq cursor)
+              (recur (if (identical? clojure.lang.Cons kind)
+                       (.more ^clojure.lang.Cons cursor)
+                       (.next ^clojure.lang.PersistentList cursor))
                      (conj items (.first ^clojure.lang.ISeq cursor)))))))))
 
 (defn- p15-s23-c6c10-canonical-carrier
