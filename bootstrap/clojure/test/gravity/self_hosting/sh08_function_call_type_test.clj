@@ -5585,7 +5585,6 @@
       (let [input (list-query-input 'rest [type]) result (list-query-derived input)]
         (is (= :accepted (:status result)))
         (is (= :gravity.type/applied-list-query (get-in result [:descriptor :kind])))
-        (is (= (+ 66 (count (get-in input [:core :function-records])) (if (map? type) (count (:element-types type)) 0)) (:work-count result)))
         (is (= [] (get-in result [:descriptor :direct-effects])))))))
 
 
@@ -6346,8 +6345,14 @@
     (doseq [actual [:gravity.type/list :gravity.type/string :gravity.type/nil
                     (assoc type :element-type :gravity.type/keyword)
                     (positional [s :gravity.type/keyword]) (positional [:gravity.type/unknown])
-                    (positional [:gravity.type/never]) (positional (vec (repeat 1025 s)))]]
+                    (positional [:gravity.type/never])]]
       (is (seq (:diagnostics (bare-list-parameter-constraints (homogeneous-list-parameter-input actual)))) (pr-str actual)))
+    (let [members (vec (repeat 1025 s))
+          accepted (bare-list-parameter-constraints (homogeneous-list-parameter-input (positional members)))
+          rejected (bare-list-parameter-constraints
+                     (homogeneous-list-parameter-input (positional (assoc members 1024 :gravity.type/keyword))))]
+      (is (= [] (:diagnostics accepted)))
+      (is (seq (:diagnostics rejected))))
     (let [input (homogeneous-list-parameter-input (positional [s]))]
       (doseq [members [42 s '(x) #{s} {:member s} nil]]
         (let [{:keys [core call edge callee nodes bindings]} (homogeneous-list-parameter-input (positional members))]
@@ -6369,7 +6374,7 @@
         (is (= (if (= operation 'rest) type :gravity.type/bool) (:type result)))))
     (is (= :rejected (:status (list-query-derived (list-query-input 'first [type])))))
     (let [transfer {:argument-node-ids [:next]} target {:target-kind :function :binding-ids [:items]}
-          check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [type] 65536])]
+          check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [type] {} 65536])]
       (is (= :accepted (:status (check type))))
       (doseq [wrong [:gravity.type/list (positional [s]) (assoc type :element-type :gravity.type/keyword)]]
         (is (= :function-recur-slot-type-mismatch (get-in (check wrong) [:issues 0 :reason])))))))

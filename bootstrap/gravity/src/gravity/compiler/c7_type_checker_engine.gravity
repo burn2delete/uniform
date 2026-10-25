@@ -12426,7 +12426,7 @@
                         construction-work (+ 1 result-count) total (+ work construction-work)]
                     (if (> total limit) {:status :rejected :reason :vector-rest-work-limit :work-count total}
                       (let [result-type {:kind :gravity.type/list :shape :literal
-                                         :element-types (if (= length 0) [] (subvec elements 1 length))}
+                                         :element-types (if (= length 0) [] (vec (rest elements)))}
                             work total]
                         (if (if (sh08-nq-ids? node call nodes bindings module)
                         (if (map? edge)
