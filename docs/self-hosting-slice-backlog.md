@@ -9601,21 +9601,24 @@ accepted/rejected checks, completion and stop conditions. Work states are
 `executing`, `resource-queued`, `dependency-blocked`, `awaiting-review`,
 `ready-for-integration` and `queue-empty`. A frozen reviewed candidate stays
 unchanged; another eligible item needs disjoint isolation and existing scope.
-An empty eligible queue yields. Refill only the useful lane after a concrete
-dependency event through the coordinator, without a join-all barrier or an
-invented feature to keep a manager busy.
+Managers derive useful in-scope successors and notify the coordinator; new
+cross-slice allocations still require its ownership decision. No join-all
+barrier or invented feature is justified to keep a manager busy.
 
 The standing finite-goal charters for all eight implementation managers make
-three the active-work limit, not a lifetime task limit. Within their exclusive
-families, managers notify ROOT of each confirmed gap/contract/path/interface,
-checks, dependencies and stop criteria before writing, then self-pull eligible
-work in the same active turn. An immutable review candidate does not block
-disjoint eligible work in safe isolation. Before yielding, send COMPLETED plus
-NEXT_EXECUTING, or NEED_REFILL with exhausted independent alternatives, exact
-as-of-main blockers and next triggers after one bounded readiness pass. ROOT
-retains shared allocation, independent acceptance and integration; no daemon,
-filler inventory or new cadence follows. Existing completion wakeups and the
-hourly all-eight fallback keep their schedule and preferences.
+three the active-work limit, not a lifetime task limit. Managers independently
+audit repository/contracts/evidence/tests, discover and prioritize confirmed
+dependency-ready work, and notify ROOT of its gap/contract/path/interface,
+checks, dependencies and stop criteria before writing. That notification is
+not a task-grant wait. Self-pull eligible work in the same active turn; one
+blocked leaf does not block the whole goal, and an immutable review candidate
+does not block disjoint work in safe isolation. Before yielding, send COMPLETED
+plus NEXT_EXECUTING. A drained queue does not justify default NEED_REFILL;
+truly exhausted goal-wide alternatives require an evidence-backed frontier to
+the existing reviewer through ROOT, naming the exact owner/action/wake event.
+ROOT retains shared allocation, independent acceptance and integration; no
+daemon, filler inventory or new cadence follows. Existing completion wakeups
+and the hourly all-eight fallback keep their schedule and preferences.
 
 At `0067e9418de992900a95cd47d016029af62ff99c`, Core completed the allocated
 actual API trace and self-pulled the selected-owner seed-plan map/test, then
@@ -9634,11 +9637,29 @@ One normal 2GiB/120s-watchdog batch passed 13 tests/40 assertions in
 changed source and forged identity/unknown-instruction record checks reject;
 they are not compiler source-rejection or build evidence. The parent namespace
 preflight failure remains failed in the plan's raw-evidence record. Core's
-four-path candidate is being frozen for independent review while its next
-confirmed in-goal item is assessed; no C01/C-task, native or migration credit,
-administrative-only PR or global gate follows. Earlier queue snapshots below
+four-path candidate was subsequently integrated in PR304; no C01/C-task, native
+or migration credit, administrative-only PR or global gate follows. Earlier queue snapshots below
 retain their original revision scope; they are not a current refresh of every
 manager's work.
+
+Core's next confirmed C01 task at `80881ba6` joined the actual used arities to
+existing runtime case tests. One exact selection passed 11 tests/294 assertions
+in 14632.794333 ms and left concrete positive-case gaps: binary `<=`/`>`/`>=`,
+`assoc` arities 7/9/19/21, binary `conj` and zero-argument `list`. Core self-pulled
+the owning selected-owner test for those observed rows. The separate changed
+batch passed 12 tests/98 assertions in 7903.280625 ms (new test 1/75,
+boundary/LOC 11/23). Both used normal 2GiB/120s checks and natural zero exits;
+the two executions must not be presented as a newly executed aggregate.
+The [primitive-case supplement](self-hosting-sh07-completion-plan.md#c01-primitive-runtime-cases-at-80881ba6)
+and existing EDN now link fully qualified case selectors, exact provenance,
+scoped accepted/rejected cases and remaining obligations for each used
+primitive. Every observed arity has a normal-value positive case, but source
+value domains, actual owner invocation, Core products and later legality
+remain OPEN. No new primitive/runtime implementation, shared interface,
+allowance, administrative-only PR or milestone credit follows. The prior
+two-slot helper candidate remains separately immutable for ROOT review;
+the new case-evidence candidate uses an isolated worktree while ROOT's
+integration checkout remains untouched.
 
 The current 2026-10-24 accounting base is inspected remote main
 `c4b1d19da11def44f835d552e44d06488d31fe46`, tree
