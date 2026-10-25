@@ -3070,6 +3070,38 @@
           {:status :rejected :reason :compact-gis-entry-input-required :work-count prefix :completed-work-count prefix})))
     {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
+(defn sh08-gis3-entry-indexes [rows budget]
+  ; Fresh indexes for the original census families. The caller separately
+  ; pays full original DATA; indexes confer no semantic or proof authority.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [prefix 512 control 270910 reserved (+ prefix control)]
+      (if (> prefix budget)
+        {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
+        (if (if (vector? rows) (= 17 (count rows)) false)
+          (if (> reserved budget)
+            {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count prefix}
+            (let [tables [[:nodes (get rows 2) :node-id] [:calls (get rows 3) :core-node-id]
+                          [:edges (get rows 4) :call-core-node-id] [:records (get rows 5) :function-syntax-id]
+                          [:definitions (get rows 6) :binding-id] [:uses (get rows 7) :core-node-id]
+                          [:bindings (get rows 15) :binding-id] [:forms (get rows 16) :form-id]
+                          [:resolutions (sh08-gis3-view-get (get rows 1) :resolution-table) :reference-syntax-id]
+                          [:controls (get rows 14) :core-node-id] [:recur-targets (get rows 10) :target-id]
+                          [:var-references (get rows 8) :core-node-id] [:mutations (get rows 9) :core-node-id]
+                          [:recur-transfers (get rows 11) :recur-core-node-id] [:lexicals (get rows 13) :binding-id]]]
+              (loop [remaining tables indexes {} used reserved]
+                (if (= 0 (count remaining))
+                  {:status :entry-indexes-complete :indexes indexes :work-count used :completed-work-count used
+                   :numeric-proof-established false}
+                  (let [part (first remaining) key (get part 0)
+                        indexed (sh08-gis3-index (get part 1) (get part 2) (- budget used))
+                        work (+ used (get indexed :work-count))]
+                    (if (= :accepted (get indexed :status))
+                      (recur (rest remaining) (assoc indexes key (get indexed :index)) work)
+                      {:status :rejected :reason (get indexed :reason) :stage :entry-original-index :table key
+                       :work-count work :completed-work-count (+ used (get indexed :completed-work-count))}))))))
+          {:status :rejected :reason :compact-gis-entry-rows-required :work-count prefix :completed-work-count prefix})))
+    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.
   (if (vector? ids) (<= (count ids) 1024) false))

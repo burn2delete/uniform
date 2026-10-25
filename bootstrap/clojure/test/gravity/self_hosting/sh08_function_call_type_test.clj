@@ -10085,7 +10085,7 @@
         owned '#{sh08-gis3-original-readsets sh08-gis3-view-get sh08-gis3-view-project
                  sh08-gis3-pick sh08-gis3-form-prefix sh08-pc-id? sh08-sse-ids? sh08-lsi-first-append
                  sh08-gis3-index sh08-gis3-source-payment sh08-gis3-view-control-work
-                 sh08-gis3-entry-original-data}
+                 sh08-gis3-entry-original-data sh08-gis3-entry-indexes}
         separately-paid '#{sh08-gis3-index sh08-gis3-original-readsets sh08-gis3-data-tallies}
         metrics [:steps :field-gets :equalities :cells :map-writes :set-tests]
         zero (zipmap metrics (repeat [0 0 0])) cache (atom {})]
@@ -10105,6 +10105,7 @@
                 (cond (= 'sh08-gis3-index owner) [0 1 0]
                       (= 'sh08-gis3-source-payment owner) [(if (= 'parts (first bindings)) 10 6) 0 0]
                       (= 'sh08-gis3-entry-original-data owner) [17 0 0]
+                      (= 'sh08-gis3-entry-indexes owner) [15 0 0]
                       (= 'sh08-gis3-view-project owner) [9 0 0]
                       (= 'sh08-sse-ids? owner) [2 0 0]
                       (= 'sh08-lsi-first-append owner) [6 0 0]
@@ -10148,7 +10149,7 @@
                                (sum (map #(cost owner % remaining) args)))
                     (let [base (add (unit :steps 1) (unit :cells (count args))
                                     (sum (map #(cost owner % remaining) args)))]
-                      (if (and (contains? '#{sh08-gis3-source-payment sh08-gis3-entry-original-data} owner)
+                      (if (and (contains? '#{sh08-gis3-source-payment sh08-gis3-entry-original-data sh08-gis3-entry-indexes} owner)
                                (contains? separately-paid op))
                         (add base (unit :steps (+ 8 (* 4 (count args)))) (unit :cells (* 2 (count args))))
                       (if (contains? owned op) (add base (function-cost op))
@@ -10176,6 +10177,7 @@
         index-model (gis3-source-view-work-model 'sh08-gis3-index)
         entry-model (gis3-source-view-work-model 'sh08-gis3-source-payment)
         entry-data-model (gis3-source-view-work-model 'sh08-gis3-entry-original-data)
+        entry-index-model (gis3-source-view-work-model 'sh08-gis3-entry-indexes)
         evaluate (fn [poly n] (reduce + (map * poly [1 n (* n n)])))
         fixture-fee (evaluate (:fee-polynomial model) 20)]
     (is (= 6 (count (:metrics model))))
@@ -10185,11 +10187,12 @@
     (is (pos? fixture-fee))
     (is (<= 655 (evaluate (get-in model [:metrics :field-gets]) 20)))
     (is (every? #(and (:native-keywords %) (<= (:width %) 15))
-                (mapcat :literal-Maps [model index-model entry-model entry-data-model])))
+                (mapcat :literal-Maps [model index-model entry-model entry-data-model entry-index-model])))
     (is (= [2011065 9385 1] (:fee-polynomial model)))
     (is (= [2697 2615 1] (:fee-polynomial index-model)))
     (is (= [783575 0 0] (:fee-polynomial entry-model)))
     (is (= [80903 0 0] (:fee-polynomial entry-data-model)))
+    (is (= [270910 0 0] (:fee-polynomial entry-index-model)))
     (prn {:gis3-source-view-work-model model :fixture-nodes 20 :fixture-control-fee fixture-fee
           :index-model index-model :entry-model entry-model
           :production-control-reservation-wired true :full-fee-closure-established false
@@ -21464,6 +21467,69 @@
           :total-declared-work exact :all-DATA-control-fees-closed false
           :complete-entry-census-implemented false :parameter-proof-established false
           :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
+
+(deftest sh08-gis3-entry-indexes-development-kernel
+  ;; Index price is separate from full original DATA payment and semantics.
+  (let [{:keys [core bindings forms]} (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        fields [:module :preserved-resolution :nodes :calls :call-edges :function-records :definitions
+                :reference-uses :var-references :mutations :recur-targets :recur-transfers
+                :recursion-components :lexical-bindings :control-flow]
+        rows (conj (mapv core fields) bindings forms)
+        tables [[:nodes (:nodes core) :node-id] [:calls (:calls core) :core-node-id]
+                [:edges (:call-edges core) :call-core-node-id] [:records (:function-records core) :function-syntax-id]
+                [:definitions (:definitions core) :binding-id] [:uses (:reference-uses core) :core-node-id]
+                [:bindings bindings :binding-id] [:forms forms :form-id]
+                [:resolutions (get-in core [:preserved-resolution :resolution-table]) :reference-syntax-id]
+                [:controls (:control-flow core) :core-node-id] [:recur-targets (:recur-targets core) :target-id]
+                [:var-references (:var-references core) :core-node-id] [:mutations (:mutations core) :core-node-id]
+                [:recur-transfers (:recur-transfers core) :recur-core-node-id] [:lexicals (:lexical-bindings core) :binding-id]]
+        index-fee (fn [[_ values key]]
+                    (let [n (count values)]
+                      (+ 2697 (* 2615 n) (* 74 n n)
+                         (reduce + 0 (map #(let [id (get % key)] (* 2 (+ 2 (if (string? id) (count id) 0)))) values)))))
+        model (gis3-source-view-work-model 'sh08-gis3-entry-indexes)
+        reserved (+ 512 (first (:fee-polynomial model))) exact (+ reserved (reduce + (map index-fee tables)))
+        build #(invoke-c7 'sh08-gis3-entry-indexes [%1 %2])
+        accepted (build rows exact) short (build rows (dec exact))
+        node (first (:nodes core)) duplicate (build (assoc rows 2 [node node]) exact)
+        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original-get @getter
+        row-touches (atom 0) input-touches (atom 0)]
+    (is (= [270910 0 0] (:fee-polynomial model)))
+    (is (= :entry-indexes-complete (:status accepted)))
+    (is (= exact (:work-count accepted) (:completed-work-count accepted)))
+    (is (= 15 (count (:indexes accepted))))
+    (is (false? (:numeric-proof-established accepted)))
+    (doseq [[name values key] tables]
+      (is (= (into {} (map (juxt key identity) values)) (get-in accepted [:indexes name]))))
+    (is (= [:rejected :entry-original-index :lexicals exact]
+           ((juxt :status :stage :table :work-count) short)))
+    (is (< (:completed-work-count short) (:work-count short)))
+    (is (= [:compact-gis-duplicate-id :nodes] ((juxt :reason :table) duplicate)))
+    (is (= :compact-gis-entry-rows-required (:reason (build [] exact))))
+    (with-redefs-fn {getter (fn [plan value key]
+                             (when (identical? rows value) (swap! input-touches inc))
+                             (when (identical? node value) (swap! row-touches inc))
+                             (original-get plan value key))}
+      #(do
+         (doseq [budget [0 511 (dec reserved)]]
+           (is (= :compact-gis-entry-work-limit (:reason (build rows budget))))
+           (is (zero? @input-touches)))
+         (is (= :entry-indexes-complete (:status (build rows exact))))
+         (is (= :entry-indexes-complete (:status (build rows exact))))
+         (is (= 2 @row-touches))))
+    (let [callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "entry id hash")))
+                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "entry id equality")))
+                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "entry id rendering"))))
+          poisoned (assoc rows 2 [(assoc node :node-id opaque)])]
+      (is (= [:compact-gis-source-id-required :nodes] ((juxt :reason :table) (build poisoned exact))))
+      (is (empty? @callbacks)))
+    (prn {:gis3-entry-indexes :checked :surrounding-control-work (- reserved 512)
+          :index-fees (mapv (fn [[name _ _ :as table]] [name (index-fee table)]) tables)
+          :total-declared-work exact :full-original-DATA-paid-in-this-test false
+          :complete-entry-census-implemented false :B47-verification-complete false
+          :public-GIS-routing false :numeric-proof-established false})))
 
 (def ^:private function-work-policy-current-c8-plan
   ;; Same real Effects dependency and C8 module-bundle construction as the
