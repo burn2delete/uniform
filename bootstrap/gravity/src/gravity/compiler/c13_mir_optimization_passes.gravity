@@ -1484,6 +1484,71 @@
          :nonclaims [:public-admission :independent-acceptance :fresh-output-verification
                      :lowering :native-execution :migration :self-hosted?]}))))
 
+(defn sh16-c13-literal-bool-report-shape? [report]
+  (if (c13-reconstruction-bounded? report)
+    (if (sh16-c13-evidence-exact-keys? report
+          #{:artifact :schema-version :scope :phase :status :input-bindings
+            :checks :diagnostics :nonclaims})
+      (c13-equality-all?
+        [(= :gravity/sh12-literal-bool-branch-specialization-report (get report :artifact))
+         (= 1 (get report :schema-version)) (= :passed (get report :status))
+         (= :verification (get report :phase))
+         (= :original-zero-arity-literal-bool-diamond (get report :scope))
+         (sh16-c13-evidence-exact-keys? (get report :input-bindings)
+           #{:checked-core-artifact-id :before-module-id :after-module-id :relation})
+         (= [:bounded-input-carriers :fresh-original-mir-verification
+             :original-zero-arity-hosted-jvm-bool-diamond
+             :literal-selected-edge :cfg-and-dominance-reconstruction
+             :terminator-and-value-use-reconstruction
+             :complete-after-equality :type-effect-safety-origin-preservation
+             :unchanged-instructions-joins-fact-check-and-proof-tables] (get report :checks))
+         (= [] (get report :diagnostics))
+         (= [:generic-c11-verifier :generic-optimization-verifier
+             :independent-acceptance :optimized-execution :c14-credit
+             :backend-credit :release-credit :self-hosted?] (get report :nonclaims))]) false) false))
+
+(defn sh16-c13-build-literal-bool-translation-validation [before original-evidence after report]
+  ; The caller obtains REPORT by invoking the independent C11 relation on the
+  ; actual Core/before/after tuple. This DATA consumer does not authenticate an
+  ; invocation or turn the scoped relation into generic MIR/target admission.
+  (let [rejected {:status :rejected :diagnostics ["C13-VERIFY"]
+                  :missing-fact :bound-literal-bool-specialization-report}]
+    (if (sh16-c13-literal-bool-report-shape? report)
+      (if (c13-reconstruction-bounded? before)
+        (if (c13-reconstruction-bounded? after)
+          (let [kernel (sh16-c13-rewrite-literal-bool-branch before original-evidence)]
+            (if (= :constructed-unverified (get kernel :status))
+              (if (= after (get kernel :candidate-mir))
+                (if (= {:checked-core-artifact-id (get before :source-core)
+                        :before-module-id (get before :module-id)
+                        :after-module-id (get after :module-id)
+                        :relation :fresh-original-c6-reconstruction}
+                       (get report :input-bindings))
+                  (assoc kernel
+                    :translation-validation-status :passed
+                    :translation-validation-scope :original-zero-arity-literal-bool-diamond
+                    :post-pass-report report
+                    :pass-contract
+                    {:pass-id :sh16-literal-bool-branch-specialization :family :branch-simplification :version 1
+                     :input-ir :gravity/mir :output-ir :gravity/mir
+                     :required-analyses [:original-c11-reconstruction :scoped-c11-specialization-relation]
+                     :preconditions [:original-zero-arity-hosted-jvm-literal-bool-diamond]
+                     :preserves [:instructions :types :effects :capabilities :ownership :safety-outcomes
+                                 :source-origins :runtime-checks :profile :target-request]
+                     :invalidates [:control-flow-graph :dominator-tree :data-flow-cache :proof-dominance]
+                     :regenerates [:control-flow-facts :dominance-facts :terminator-use-facts]
+                     :proof-obligations [:fresh-original-c11-input :fresh-scoped-specialization-output]
+                     :profiles [:hosted] :target-assumptions []
+                     :emits [:decision-record :invalidation-ledger :scoped-post-pass-report]}
+                    :decision-record (assoc (get kernel :decision-record)
+                                       :pass-id :sh16-literal-bool-branch-specialization
+                                       :verifier-result :passed :verifier-scope :literal-bool-branch-specialization)
+                    :pending [:public-mir-admission :proof-dominance-replay :target-lowering]
+                    :nonclaims [:authentication :freshness :public-admission :independent-acceptance
+                                :generic-c11-verification :generic-translation-validation
+                                :optimized-execution :target-lowering :native-execution
+                                :migration :release :self-hosted?]) rejected) rejected) rejected)) rejected) rejected) rejected)))
+
 ; SH-16 bounded executable optimization leaf. Authenticated SH-15 input and
 ; complete C11 MIR adaptation remain pending. This engine accepts normalized,
 ; already-verified target-independent MIR operation descriptors.

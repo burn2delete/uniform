@@ -94,4 +94,10 @@
       (let [result (consume mir report after bad-report)]
         (is (= :rejected (:status result)))
         (is (= ["C13-VERIFY"] (:diagnostics result)))
+        (is (nil? (:candidate-mir result)))))
+    (doseq [malformed [nil [] {} 0 false "not-mir"]
+            [before output] [[malformed after] [mir malformed]]]
+      (let [result (consume before report output output-report)]
+        (is (= :rejected (:status result)))
+        (is (= ["C13-VERIFY"] (:diagnostics result)))
         (is (nil? (:candidate-mir result)))))))
