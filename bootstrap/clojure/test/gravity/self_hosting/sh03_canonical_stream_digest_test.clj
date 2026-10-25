@@ -168,7 +168,8 @@
 (deftest canonical-stream-duplicate-key-check-remains-after-children
   (with-reader-limits
     #(with-redefs-fn
-       {(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-sort-key) (constantly "collision")}
+       {(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-sort-key) (constantly "collision")
+        (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-sort-key) (constantly "collision")}
        (fn []
          (doseq [[value missing] [[(array-map :a 1 :b 2) :unique-canonical-map-keys]
                                   [(array-map :a 1 :b (Object.)) :canonical-value-domain]

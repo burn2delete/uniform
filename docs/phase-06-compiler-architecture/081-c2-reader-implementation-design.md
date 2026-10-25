@@ -294,12 +294,31 @@ private statistics grant no candidate or replay authority.
 
 The validation-only common scalar path applies the original scalar guards and
 updates the same occurrence statistics without constructing discarded tagged
-forms or integer decimal strings. Map keys and uncommon scalar or compound
-fallbacks retain the existing normalizer and its failure order. Emission uses
+forms or integer decimal strings. Each private pass owns six mutable numeric
+counters and publishes the same six-field statistics map; counters are never
+shared between validation, emission or separate invocations. Common keys use
+the same fresh scalar guards and exact canonical tags. Uncommon scalar and
+compound fallbacks use the existing normalizer with a fresh counter snapshot;
+all partial counter updates are copied back even when normalization rejects.
+Guard order, physical occurrence accounting and failure priority are preserved.
+Emission writes common scalar tags directly after their complete guards, using
+the existing numeric spellings and String escape table while writing ordinary
+String runs in bulk. Final native Long, Integer, Short and Byte wrappers use
+equivalent primitive bit counts and decimal spellings; other integer classes
+retain the original BigInteger conversion and callback behavior. Name checks
+and UTF-8 length checks avoid temporary sequences and encoded byte arrays while
+preserving code-unit semantics, Unicode refusal order and numeric counter types.
+Freshly validated keyword
+keys use the same fixed encoding and UTF-8 hexadecimal sort order; no key,
+validation result or identity is cached across occurrences. Emission uses
 one fixed 8,192-character writer buffer to batch UTF-8 encoder calls; closing
 the writer flushes its final partial buffer before digest completion. This
 bounded temporary buffer changes neither canonical bytes nor input capacity,
 and establishes no whole-input time or heap guarantee.
+Reader-private typed writer calls and character-array stores avoid reflective
+method discovery while retaining the exact existing lowercase hexadecimal
+encoding. The generic canonical implementation remains an independent oracle
+and the fallback for uncommon keys and values.
 
 The stream retains normalized keys and ordering data for the current map,
 rather than normalized values for the entire token vector. Compound keys and
