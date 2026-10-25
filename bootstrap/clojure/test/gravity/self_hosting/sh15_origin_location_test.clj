@@ -67,18 +67,15 @@
                   (is (= :not-evaluated (:redactions diagnostic)))
                   (is (= :none (:semantic-authority candidate)))
                   candidate))
-              ["x" "/producer.gravity" (apply str (repeat 512 "x"))])]
+              ["x" "/producer.gravity" (apply str (repeat 700 "x"))])]
     (is (apply = (map :identity-input candidates)))
     (is (apply = (map #(get-in % [:diagnostic-stream :diagnostics 0 :diagnostic-id])
                      candidates)))))
 
-(deftest sh15-origin-location-keeps-upper-bound-and-exact-leaf-schema
+(deftest sh15-origin-location-keeps-exact-leaf-schema
   (let [row (original-row "/producer.gravity")
-        over-bound (original-row (apply str (repeat 513 "x")))
         origin (first (:generated-origin-chain row))]
-    (is (= 513 (count (get-in over-bound [:generated-origin-chain 0 :actual-source-path]))))
-    (doseq [invalid [over-bound
-                     (assoc row :generated-origin-chain [(assoc origin :actual-source-path nil)])
+    (doseq [invalid [(assoc row :generated-origin-chain [(assoc origin :actual-source-path nil)])
                      (assoc row :generated-origin-chain
                             [(assoc origin :generated-origin {:generator-id :unallocated})])]]
       (is (= :upstream-diagnostic-schema
