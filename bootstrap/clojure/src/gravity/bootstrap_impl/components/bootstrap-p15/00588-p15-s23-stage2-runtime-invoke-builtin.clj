@@ -1,3 +1,5 @@
+(declare ^:private p15-s23-stage2-native-carrier-header)
+
 (defn- p15-s23-stage2-bootstrap-symbol-utf16-unit-count
   [plan value]
   (when-not (and (true? (:compiler-artifact-plan? plan))
@@ -23,6 +25,9 @@
   ([runtime plan callee args]
   (try
     (case callee
+      bootstrap-native-carrier-header
+      (do (p15-s23-stage2-runtime-assert-exact-arity! plan callee args 1)
+          (p15-s23-stage2-native-carrier-header plan (nth args 0)))
       bootstrap-symbol-utf16-unit-count
       (do (p15-s23-stage2-runtime-assert-exact-arity! plan callee args 1)
           (p15-s23-stage2-bootstrap-symbol-utf16-unit-count plan (nth args 0)))
