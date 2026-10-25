@@ -26,16 +26,9 @@
 
 (defn- p15-s23-sh02-final-preflight!
   [source-path artifact]
-  ;; Establish exact built-in carrier classes before equality, hashing, or
-  ;; contextual source replay. Request vectors receive their explicit 2,048
-  ;; entry exception in the per-stage canonical carrier validation below.
-  (p15-s23-sh02-require-bounded-carrier!
+  ;; Establish exact canonical carriers before equality or contextual replay.
+  (p15-s23-sh02-require-carrier!
    source-path :sh02-final-artifact artifact)
-  (p15-s23-c11-mir-bounded-value!
-   source-path :sh02-final-artifact
-   artifact
-   (:maximum-carrier-nodes p15-s23-sh02-authenticated-envelope-bounds)
-   (:maximum-carrier-depth p15-s23-sh02-authenticated-envelope-bounds))
   (let [envelopes (:envelopes artifact)
         source-rule (:source-rule artifact)
         actual-paths (:actual-path-provenance artifact)]

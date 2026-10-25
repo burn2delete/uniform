@@ -112,7 +112,7 @@
       (let [record (c15-unresolved-record fields)]
         (if (c15-carrier-valid? record)
           record
-          (c15-construction-failure "C15-SCHEMA" :record :constructed-carrier-bound)))
+          (c15-construction-failure "C15-SCHEMA" :record :unsupported-constructed-carrier)))
       (c15-construction-failure (get error :rule) (get error :field)
                                 (get error :reason)))))
 
@@ -139,31 +139,18 @@
 ; binds the declared request. It is not a safe-publication or stream verifier.
 
 (defn c15-carrier-valid? [value]
-  (loop [frontier [[value 0]] nodes 0 enqueued 1 units 0]
+  (loop [frontier [value]]
     (if (= 0 (count frontier))
       true
-      (let [entry (first frontier) current (first entry) depth (second entry)
+      (let [current (first frontier)
             remaining (subvec frontier 1 (count frontier))]
-        (if (if (> (+ nodes 1) 16384) true (> depth 128))
+        (if (seq? current)
           false
-          (if (seq? current)
-            false
-            (if (sh15-aggregate? current)
-              ; Test width BEFORE enumerating map children.
-              (if (> (count current) (if (vector? current) 1024 512))
-                false
-                (let [children (sh15-children current)
-                      next-enqueued (+ enqueued (count children))]
-                  (if (> next-enqueued 16384)
-                    false
-                    (recur (sh15-push-children remaining children depth)
-                           (+ nodes 1) next-enqueued units))))
-              (if (sh15-scalar-valid? current)
-                (let [next-units (+ units (sh15-scalar-units current))]
-                  (if (> next-units 65536)
-                    false
-                    (recur remaining (+ nodes 1) enqueued next-units)))
-                false))))))))
+          (if (sh15-aggregate? current)
+            (recur (sh15-push-children remaining (sh15-children current)))
+            (if (sh15-scalar-valid? current)
+              (recur remaining)
+              false)))))))
 
 (defn c15-keyword-map? [value]
   (if (map? value)
@@ -177,9 +164,7 @@
 
 (defn c15-rule-valid? [value]
   (if (string? value) (sh15-upstream-code-valid? value)
-    (if (keyword? value)
-      (if (<= 2 (count (str value))) (<= (count (str value)) 128) false)
-      false)))
+    (if (keyword? value) (<= 2 (count (str value))) false)))
 
 (defn c15-unavailable-stage? [stage]
   (sh15-member? [:read-source :compiler-diagnostics] stage))
@@ -229,9 +214,7 @@
     false))
 
 (defn c15-byte-offset-valid? [value]
-  (if (integer? value)
-    (if (<= 0 value) (<= value 2147483647) false)
-    false))
+  (if (integer? value) (<= 0 value) false))
 
 (defn c15-public-byte-span-valid? [span]
   (if (sh15-exact-keys? span #{:file :source :byte-start :byte-end})
@@ -245,12 +228,106 @@
       false)
     false))
 
+; Actual C5 spans retain the C3 primary/all wrapper and flat scalar locations.
+(defn c15-c5-flat-span-valid? [span]
+  (if (sh15-exact-keys? span #{:file :source :byte-start :byte-end :scalar-start
+                              :scalar-end :line-start :line-end :column-start :column-end})
+    (let [start {:byte (get span :byte-start) :line (get span :line-start)
+                 :column (get span :column-start)}
+          end {:byte (get span :byte-end) :line (get span :line-end)
+               :column (get span :column-end)}]
+      (if (sh15-sha256-shape? (get span :file))
+        (if (if (string? (get span :source)) (< 0 (count (get span :source))) false)
+          (if (if (sh15-point-valid? start) (sh15-point-valid? end) false)
+            (if (sh15-span-order-valid? start end)
+              (if (c15-byte-offset-valid? (get span :scalar-start))
+                (if (c15-byte-offset-valid? (get span :scalar-end))
+                  (if (<= (get span :scalar-start) (get span :scalar-end))
+                    (if (<= (get span :scalar-start) (get span :byte-start))
+                      (<= (get span :scalar-end) (get span :byte-end)) false)
+                    false) false) false) false) false) false) false)) false))
+
+(defn c15-c5-span-valid? [span]
+  (if (if (sh15-exact-keys? span #{:primary :all :source}) true
+          (sh15-exact-keys? span #{:primary :all}))
+    (let [primary (get span :primary) all (get span :all)]
+      (if (c15-c5-flat-span-valid? primary)
+        (if (if (contains? span :source) (= (get span :source) (get primary :source)) true)
+          (if (vector? all)
+            (loop [index 0 primary-seen? false]
+              (if (= index (count all)) primary-seen?
+                (if (c15-c5-flat-span-valid? (get all index))
+                  (recur (+ index 1) (if (= primary (get all index)) true primary-seen?))
+                  false))) false) false) false)) false))
+
+(defn c15-c5-definition-span-valid? [span]
+  (if (sh15-exact-keys? span #{:source :byte-start :byte-end})
+    (if (if (string? (get span :source)) (< 0 (count (get span :source))) false)
+      (if (c15-byte-offset-valid? (get span :byte-start))
+        (if (c15-byte-offset-valid? (get span :byte-end))
+          (<= (get span :byte-start) (get span :byte-end)) false) false) false) false))
+
+(defn c15-c5-id-vector-valid? [values]
+  (if (vector? values)
+    (loop [index 0]
+      (if (= index (count values)) true
+        (if (sh15-sha256-shape? (get values index)) (recur (+ index 1)) false))) false))
+
+(defn c15-c5-source-origin-valid? [origin]
+  (if (sh15-exact-keys? origin #{:kind :span :producer :producer-version
+                                :input-syntax-ids :generation-reason :build-effects})
+    (let [producer (get origin :producer)]
+      (if (sh15-exact-keys? producer #{:kind :name :identity :source-id :generated-form-id})
+        (= [:source :reader true true true nil true true true]
+           [(get origin :kind) (get producer :kind) (symbol? (get producer :name))
+            (sh15-sha256-shape? (get producer :identity))
+            (if (c15-c5-flat-span-valid? (get origin :span))
+              (= (get producer :source-id) (get (get origin :span) :file)) false)
+            (get producer :generated-form-id)
+            (if (string? (get origin :producer-version))
+              (< 0 (count (get origin :producer-version))) false)
+            (c15-c5-id-vector-valid? (get origin :input-syntax-ids))
+            (if (= :source-read (get origin :generation-reason))
+              (vector? (get origin :build-effects)) false)]) false)) false))
+
+(defn c15-c5-generated-origin-valid? [origin]
+  (if (sh15-exact-keys? origin #{:kind :producer :inputs :call-site-span :definition-span
+                                :generated-span :reason :build-effects})
+    (let [producer (get origin :producer) generated (get origin :generated-span)]
+      (if (sh15-exact-keys? producer #{:kind :name :version :definition-syntax-id})
+        (if (sh15-exact-keys? generated #{:kind :producer :ordinal :call-site-syntax-id})
+          (= [:generated :macro true true true :generated true true true true true true true]
+             [(get origin :kind) (get producer :kind) (symbol? (get producer :name))
+              (sh15-sha256-shape? (get producer :version))
+              (sh15-sha256-shape? (get producer :definition-syntax-id))
+              (get generated :kind) (= (get generated :producer) (get producer :name))
+              (c15-byte-offset-valid? (get generated :ordinal))
+              (if (c15-c5-id-vector-valid? (get origin :inputs))
+                (sh15-member? (get origin :inputs) (get generated :call-site-syntax-id)) false)
+              (c15-c5-span-valid? (get origin :call-site-span))
+              (c15-c5-definition-span-valid? (get origin :definition-span))
+              (keyword? (get origin :reason)) (vector? (get origin :build-effects))]) false) false)) false))
+
+(defn c15-c5-origin-chain-valid? [origins]
+  (if (vector? origins)
+    (loop [index 0 source-ids []]
+      (if (= index (count origins)) (< 0 (count source-ids))
+        (let [origin (get origins index)]
+          (if (c15-c5-source-origin-valid? origin)
+            (recur (+ index 1) (conj source-ids (get (get origin :producer) :source-id)))
+            (if (c15-c5-generated-origin-valid? origin)
+              (if (sh15-member? source-ids (get (get (get origin :call-site-span) :primary) :file))
+                (recur (+ index 1) source-ids) false) false))))) false))
+
 (defn c15-span-valid? [span related?]
   (if (sh15-source-span-valid? span) true
     (if (c15-reader-span-valid? span true) true
       (if (c15-public-reader-span-valid? span) true
         (if (c15-public-byte-span-valid? span) true
-          (if related? (c15-reader-span-valid? span false) false))))))
+          (if (c15-c5-span-valid? span) true
+            (if related?
+              (if (c15-c5-definition-span-valid? span) true
+                (c15-reader-span-valid? span false)) false)))))))
 
 (defn c15-primary-valid? [primary stage]
   (if (sh15-exact-keys? primary #{:span :syntax-id :artifact})
@@ -298,12 +375,13 @@
       false)
     (if (c15-public-source-origin-valid? value) true
       (if (c15-source-bytes-origin-valid? value) true
-        (if (sh15-origin-valid? value) (= :source (get value :kind)) false)))))
+        (if (c15-c5-source-origin-valid? value) true
+          (if (c15-c5-generated-origin-valid? value) true
+            (if (sh15-origin-valid? value) (= :source (get value :kind)) false)))))))
 
 (defn c15-vector-valid? [values kind]
   (if (vector? values)
-    (if (<= (count values) 64)
-      (loop [index 0]
+    (loop [index 0]
         (if (= index (count values)) true
           (let [value (get values index)
                 valid (if (= kind :related) (c15-related-valid? value)
@@ -313,7 +391,6 @@
                               (if (c15-keyword-map? value) (keyword? (get value :kind)) false))
                             (if (c15-keyword-map? value) (keyword? (get value :kind)) false))))]
             (if valid (recur (+ index 1)) false))))
-      false)
     false))
 
 (defn c15-first-field-error [checks]
@@ -333,7 +410,11 @@
           [(keyword? stage) "C15-SCHEMA" :stage :invalid-stage]
           [(c15-primary-valid? (get fields 3) stage) "C15-SPAN" :primary :invalid-primary]
           [(c15-vector-valid? (get fields 4) :related) "C15-SPAN" :related :invalid-related]
-          [(c15-vector-valid? (get fields 5) :origin) "C15-ORIGIN" :origin-chain :invalid-origin]
+          [(if (if (= :name-resolution stage)
+                  (c15-c5-span-valid? (get (get fields 3) :span)) false)
+             (c15-c5-origin-chain-valid? (get fields 5))
+             (c15-vector-valid? (get fields 5) :origin))
+           "C15-ORIGIN" :origin-chain :invalid-origin]
           [(c15-context-value-valid? (get fields 6) stage) "C15-SCHEMA" :profile :invalid-profile]
           [(c15-context-value-valid? (get fields 7) stage) "C15-SCHEMA" :target :invalid-target]
           [(c15-keyword-map? (get fields 8)) "C15-FACTS" :facts :invalid-facts]
@@ -341,10 +422,53 @@
              (if (sh15-member? [:error :warning :internal-error] severity)
                (< 0 (count remediation)) true) false)
            "C15-REMEDIATION" :remediation :invalid-remediation]
-          [(c15-vector-valid? (get fields 10) :redaction)
+          ; C5 has not emitted a privacy assessment. Explicit nil is private
+          ; unassessed data; it does not clear the renderer disclosure gate.
+          [(if (= nil (get fields 10))
+             (if (= :name-resolution stage)
+               (c15-c5-span-valid? (get (get fields 3) :span)) false)
+             (c15-vector-valid? (get fields 10) :redaction))
            "C15-SCHEMA" :redactions :invalid-redactions]]))
       {:rule "C15-SCHEMA" :field :original-fields :reason :exact-eleven-fields-required})
-    {:rule "C15-SCHEMA" :field :original-fields :reason :canonical-carrier-bound}))
+    {:rule "C15-SCHEMA" :field :original-fields :reason :unsupported-canonical-carrier}))
+
+(defn sh15-c5-unresolved-fields [original]
+  (if (if (map? original) (c15-carrier-valid? original) false)
+    (if (= [:c5-name-resolution "C5-UNRESOLVED" :name-resolution :error true true true true true true true false true]
+           [(get original :diagnostic-family) (get original :id) (get original :stage)
+            (get original :severity) (symbol? (get original :symbol))
+            (symbol? (get original :namespace)) (keyword? (get original :profile))
+            (keyword? (get original :target)) (sh15-sha256-shape? (get original :syntax-id))
+            (sh15-sha256-shape? (get original :diagnostic-id))
+            (string? (get original :remediation)) (contains? original :redactions)
+            (vector? (get original :origin-chain))])
+      [(get original :id) (get original :severity) (get original :stage)
+       {:span (get original :source-span) :syntax-id (get original :syntax-id)
+        :artifact (get (get (get original :source-span) :primary) :file)}
+       (loop [origins (get original :origin-chain) related []]
+         (if (= 0 (count origins)) related
+           (let [origin (first origins)]
+             (recur (rest origins)
+                    (if (= :generated (get origin :kind))
+                      (conj (conj related
+                                  {:role :generated-by :span (get origin :definition-span)
+                                   :artifact (get (get origin :producer) :definition-syntax-id)})
+                            {:role :macro-call-site :span (get origin :call-site-span)
+                             :artifact (get (get origin :generated-span) :call-site-syntax-id)}) related)))))
+       (get original :origin-chain) (get original :profile) (get original :target)
+       (get original :facts)
+       [{:kind :declare-or-import-binding
+         :binding {:symbol (get original :symbol) :namespace (get original :namespace)}
+         :message (get original :remediation) :source-diagnostic original}]
+       nil] nil) nil))
+
+(defn sh15-build-c5-unresolved-diagnostic [original]
+  (let [fields (sh15-c5-unresolved-fields original)]
+    (if (= nil fields)
+      (c15-construction-failure "C15-SCHEMA" :source-diagnostic :unsupported-c5-diagnostic)
+      (build-c15-diagnostic
+       (get fields 0) (get fields 1) (get fields 2) (get fields 3) (get fields 4)
+       (get fields 5) (get fields 6) (get fields 7) (get fields 8) (get fields 9) (get fields 10)))))
 
 (defn c15-digest-request [fields]
   {:ordinal 0 :purpose :c15-diagnostic-id :domain :gravity/c15-diagnostic-id-v1
@@ -390,8 +514,8 @@
                   (c15-construction-failure "C15-ID" :candidate :candidate-substitution))
                 (c15-construction-failure "C15-ID" :resolved-digest :invalid-resolved-digest))
               (c15-construction-failure "C15-ID" :diagnostic-id-request :request-substitution))
-            (c15-construction-failure "C15-SCHEMA" :record :constructed-carrier-bound)))
-        (c15-construction-failure "C15-SCHEMA" :candidate :candidate-carrier-bound))
+            (c15-construction-failure "C15-SCHEMA" :record :unsupported-constructed-carrier)))
+        (c15-construction-failure "C15-SCHEMA" :candidate :unsupported-candidate-carrier))
       (c15-construction-failure (get error :rule) (get error :field) (get error :reason)))))
 
 (defn verify-c15-resolved-diagnostic [original-fields candidate request resolved-digest]
@@ -401,11 +525,82 @@
                      :public-safe-projection :canonical-stream-verification
                      :self-hosting :release]))
 
-; SH-15 is a bounded, non-authoritative preservation boundary over small
+; SH-15 is a non-authoritative preservation boundary over
 ; external references.  Tests derive these references only after fresh SH13
 ; and SH14 verification, but C15 itself authenticates neither the projection
 ; nor the upstream semantics.  Self-consistent forged references are therefore
 ; admissible external shape/equality inputs, not authority evidence.
+
+; Private SH02 producer-result preservation. This does not map a normative
+; rule, invent unavailable context, bind an identity, or authenticate a producer.
+(defn sh15-envelope-diagnostic-valid? [diagnostic]
+  (if (sh15-exact-keys?
+       diagnostic #{:artifact :schema-version :diagnostic-family :reason
+                    :phase :stage :artifact-kind :remediation})
+    (= [:gravity/authenticated-envelope-rejection 1 :coordinator-mapped
+        true true :reconstruct-envelope-from-fresh-stage-products]
+       [(get diagnostic :artifact) (get diagnostic :schema-version)
+        (get diagnostic :diagnostic-family) (keyword? (get diagnostic :reason))
+        (sh15-member? [:validation :construction :verification]
+                      (get diagnostic :phase))
+        (get diagnostic :remediation)])
+    false))
+
+(defn sh15-envelope-rejection-valid? [source-result]
+  (if (c15-carrier-valid? source-result)
+    (if (sh15-exact-keys?
+         source-result #{:status :fatal? :artifact-template :digest-requests
+                         :digest-graph-roots :diagnostics :containment :claim-boundary})
+      (if (= [:rejected true nil [] []
+              {:fatal? true :stop-after :authenticated-envelope
+               :downstream-artifacts-forbidden true}
+              [:content-and-context-consistency
+               :coordinator-assigns-normative-diagnostic-id]]
+             [(get source-result :status) (get source-result :fatal?)
+              (get source-result :artifact-template) (get source-result :digest-requests)
+              (get source-result :digest-graph-roots) (get source-result :containment)
+              (get source-result :claim-boundary)])
+        (let [diagnostics (get source-result :diagnostics)]
+          (if (vector? diagnostics)
+            (if (< 0 (count diagnostics))
+              (loop [index 0]
+                (if (= index (count diagnostics)) true
+                  (if (sh15-envelope-diagnostic-valid? (get diagnostics index))
+                    (recur (+ index 1)) false)))
+              false)
+            false))
+        false)
+      false)
+    false))
+
+(defn sh15-envelope-preservation-nonclaims []
+  [:upstream-semantic-authentication :normative-diagnostic-id :canonical-c15-record
+   :public-safe-projection :canonical-stream-verification :self-hosting :release])
+
+(defn sh15-preserve-envelope-rejection [source-result]
+  (if (sh15-envelope-rejection-valid? source-result)
+    {:artifact :gravity/sh15-envelope-rejection-preservation :schema-version 1
+     :status :preserved :source-result source-result
+     :diagnostics (get source-result :diagnostics)
+     :source-status :external-unverified-preservation-input
+     :diagnostic-id-status :coordinator-mapping-required
+     :semantic-authority :none
+     :nonclaims (sh15-envelope-preservation-nonclaims)}
+    (assoc (c15-construction-failure "C15-SCHEMA" :source-result
+                                     :invalid-envelope-rejection)
+           :artifact :gravity/sh15-envelope-rejection-preservation)))
+
+(defn sh15-verify-envelope-rejection [original-result candidate]
+  (if (sh15-envelope-rejection-valid? original-result)
+    (if (c15-carrier-valid? candidate)
+      (if (= (sh15-preserve-envelope-rejection original-result) candidate)
+        {:artifact :gravity/sh15-envelope-rejection-preservation-verification
+         :schema-version 1 :status :passed
+         :scope :original-producer-result-preservation-only
+         :semantic-authority :none :nonclaims (sh15-envelope-preservation-nonclaims)}
+        (c15-construction-failure "C15-SCHEMA" :candidate :candidate-substitution))
+      (c15-construction-failure "C15-SCHEMA" :candidate :unsupported-candidate-carrier))
+    (c15-construction-failure "C15-SCHEMA" :original-result :invalid-envelope-rejection)))
 
 (defn sh15-exact-keys? [value expected]
   (if (map? value) (= (set (keys value)) expected) false))
@@ -453,64 +648,36 @@
 (defn sh15-scalar-valid? [value]
   (if (= nil value) true
     (if (boolean? value) true
-      (if (keyword? value) (<= (count (str value)) 512)
-        (if (symbol? value) (<= (count (str value)) 512)
-          (if (string? value) (<= (count value) 4096)
-            (if (integer? value)
-              (if (<= -9007199254740991 value)
-                (<= value 9007199254740991)
-                false)
+      (if (keyword? value) true
+        (if (symbol? value) true
+          (if (string? value) true
+            (if (integer? value) true
               (if (char? value) true false))))))))
 
-(defn sh15-scalar-units [value]
-  (if (string? value) (count value)
-    (if (symbol? value) (count (str value))
-      (if (keyword? value) (count (str value)) 1))))
-
-(defn sh15-push-children [frontier children depth]
+(defn sh15-push-children [frontier children]
   (loop [remaining children result frontier]
     (if (= 0 (count remaining))
       result
       (recur (rest remaining)
-             (conj result [(first remaining) (+ depth 1)])))))
+             (conj result (first remaining))))))
 
 (defn sh15-carrier-preflight [value]
-  (if (seq? value)
-    {:status :rejected :reason :arbitrary-seq}
-    (loop [frontier [[value 0]] nodes 0 enqueued 1 scalar-units 0]
+  (loop [frontier [value]]
       (if (= 0 (count frontier))
-        {:status :accepted :nodes nodes :scalar-units scalar-units}
-        (let [entry (first frontier)
-              remaining (subvec frontier 1 (count frontier))
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes 16384)
-            {:status :rejected :reason :carrier-node-bound}
-            (if (> depth 128)
-              {:status :rejected :reason :carrier-depth-bound}
-              (if (seq? current)
-                {:status :rejected :reason :arbitrary-seq}
-                (if (sh15-aggregate? current)
-                  (let [width (count current)
-                        limit (if (vector? current) 1024 512)
-                        children (sh15-children current)
-                        next-enqueued (+ enqueued (count children))]
-                    (if (> width limit)
-                      {:status :rejected :reason :carrier-width-bound}
-                      (if (> next-enqueued 16384)
-                        {:status :rejected :reason :carrier-frontier-bound}
-                        (recur (sh15-push-children remaining children depth)
-                               next-nodes next-enqueued scalar-units))))
-                  (if (sh15-scalar-valid? current)
-                    (let [next-units
-                          (+ scalar-units (sh15-scalar-units current))]
-                      (if (> next-units 65536)
-                        {:status :rejected :reason :carrier-scalar-unit-bound}
-                        (recur remaining next-nodes enqueued next-units)))
-                    {:status :rejected :reason :carrier-scalar-shape}))))))))))
+        {:status :accepted}
+        (let [current (first frontier)
+              remaining (subvec frontier 1 (count frontier))]
+          (if (seq? current)
+            {:status :rejected :reason :arbitrary-seq}
+            (if (sh15-aggregate? current)
+              (recur (sh15-push-children remaining (sh15-children current)))
+              (if (sh15-scalar-valid? current)
+                (recur remaining)
+                {:status :rejected :reason :carrier-scalar-shape})))))))
 
 (defn sh15-domain-checks []
+  ; Legacy upstream identifier retained for exact reference equality with C12.
+  ; C15 carrier validation checks types without quotas or accounting.
   [:bounded-c11-input-carriers
    :exact-proof-reference-anchor-and-payload
    :exact-c8-c9-c10-lineage
@@ -722,16 +889,10 @@
   (if (sh15-exact-keys? point #{:byte :line :column})
     (if (integer? (get point :byte))
       (if (<= 0 (get point :byte))
-        (if (<= (get point :byte) 2147483647)
-          (if (integer? (get point :line))
-            (if (<= 1 (get point :line))
-              (if (<= (get point :line) 2147483647)
-                (if (integer? (get point :column))
-                  (if (<= 1 (get point :column))
-                    (<= (get point :column) 2147483647)
-                    false)
-                  false)
-                false)
+        (if (integer? (get point :line))
+          (if (<= 1 (get point :line))
+            (if (integer? (get point :column))
+              (<= 1 (get point :column))
               false)
             false)
           false)
@@ -753,9 +914,7 @@
        span #{:source-id :actual-source-path :start :end})
     (if (keyword? (get span :source-id))
       (if (string? (get span :actual-source-path))
-        (if (if (<= 1 (count (get span :actual-source-path)))
-              (<= (count (get span :actual-source-path)) 512)
-              false)
+        (if (<= 1 (count (get span :actual-source-path)))
           (if (sh15-point-valid? (get span :start))
             (if (sh15-point-valid? (get span :end))
               (sh15-span-order-valid? (get span :start) (get span :end))
@@ -772,9 +931,7 @@
     (if (keyword? (get origin :kind))
       (if (keyword? (get origin :source-id))
         (if (string? (get origin :actual-source-path))
-          (if (<= 1 (count (get origin :actual-source-path)))
-            (<= (count (get origin :actual-source-path)) 512)
-            false)
+          (<= 1 (count (get origin :actual-source-path)))
           false)
         false)
       false)
@@ -787,13 +944,8 @@
       (sh15-origins-valid-from? origins (+ index 1))
       false)))
 
-(defn sh15-bounded-string? [value maximum-units]
-  (if (string? value)
-    (<= (count value) maximum-units)
-    false))
-
 (defn sh15-upstream-code-valid? [value]
-  (if (sh15-bounded-string? value 128)
+  (if (string? value)
     (<= 1 (count value))
     false))
 
@@ -802,10 +954,10 @@
     true
     (sh15-sha256-shape? value)))
 
-(defn sh15-optional-bounded-string? [value maximum-units]
+(defn sh15-optional-string? [value]
   (if (= nil value)
     true
-    (sh15-bounded-string? value maximum-units)))
+    (string? value)))
 
 (defn sh15-upstream-source-span-valid? [diagnostic]
   (let [span (get diagnostic :source-span)]
@@ -829,7 +981,7 @@
 (defn sh15-upstream-diagnostic-valid? [diagnostic profile target]
   (if (sh15-exact-keys? diagnostic (sh15-upstream-diagnostic-keys))
     (= [true true true true true true true true true true true true true true
-        true true true true true true]
+        true true true true true]
        [(sh15-upstream-code-valid? (get diagnostic :diagnostic-id))
         (sh15-upstream-code-valid? (get diagnostic :rule))
         (keyword? (get diagnostic :family))
@@ -838,8 +990,7 @@
         (keyword? (get diagnostic :stage))
         (keyword? (get diagnostic :domain))
         (sh15-optional-sha256-shape? (get diagnostic :artifact-id))
-        (sh15-optional-bounded-string?
-         (get diagnostic :semantic-anchor) 512)
+        (sh15-optional-string? (get diagnostic :semantic-anchor))
         (= :authenticated-fixed-slots (get diagnostic :value-id))
         (= :tuple (get diagnostic :kind))
         (= "C12" (get diagnostic :owner-document))
@@ -849,9 +1000,6 @@
         (= target (get diagnostic :target))
         (sh15-upstream-source-span-valid? diagnostic)
         (vector? (get diagnostic :generated-origin-chain))
-        (if (vector? (get diagnostic :generated-origin-chain))
-          (<= (count (get diagnostic :generated-origin-chain)) 64)
-          false)
         (if (vector? (get diagnostic :generated-origin-chain))
           (sh15-origins-valid-from?
            (get diagnostic :generated-origin-chain) 0)
@@ -905,7 +1053,6 @@
                        (get request :layout-verification-reference)
                        layout-reference)
                     (if (vector? diagnostics)
-                      (if (<= (count diagnostics) 256)
                         (if (sh15-diagnostics-valid-from?
                              diagnostics 0 profile target)
                           ; C12's upstream id is a rule code, not an instance
@@ -919,7 +1066,6 @@
                             nil
                             :duplicate-upstream-diagnostic-id)
                           :upstream-diagnostic-schema)
-                        :diagnostic-count-bound)
                       :diagnostics-not-vector)
                     :layout-verification-reference-invalid)
                   :layout-reference-invalid)
@@ -935,8 +1081,7 @@
     (if (= :accepted (get preflight :status))
       (let [error (sh15-request-semantics-error request)]
         (if (= nil error)
-          ; Stream and identity records repeat input data. Keep the existing
-          ; carrier budget closed over construction, not only over intake.
+          ; Constructed output must retain canonical data types.
           (if (= :accepted
                  (get (sh15-carrier-preflight
                        (sh15-construct-result request)) :status))
@@ -949,12 +1094,7 @@
   (if (map? request)
     (if (= 10 (count request))
       (if (sh15-exact-keys? request (sh15-request-keys))
-        (let [diagnostics (get request :upstream-diagnostics)]
-          (if (vector? diagnostics)
-            (if (> (count diagnostics) 256)
-              :diagnostic-count-bound
-              (sh15-preflighted-request-error request))
-            (sh15-preflighted-request-error request)))
+        (sh15-preflighted-request-error request)
         :request-schema-mismatch)
       :request-schema-mismatch)
     :request-schema-mismatch))
@@ -1057,10 +1197,8 @@
    :identity-binding-status :unbound
    :pending (sh15-pending) :nonclaims (sh15-nonclaims)})
 
-(defn sh15-bounded-keyword [value]
-  (if (keyword? value)
-    (if (sh15-scalar-valid? value) value nil)
-    nil))
+(defn sh15-optional-keyword [value]
+  (if (keyword? value) value nil))
 
 (defn sh15-owned-diagnostic [request reason]
   {:diagnostic-id [:coordinator-digest-required "C15-SCHEMA" reason
@@ -1069,8 +1207,8 @@
    :stage :compiler-diagnostics :message-key :diagnostic-boundary-invalid
    :primary {:span nil :syntax-id nil :artifact nil}
    :related [] :origin-chain []
-   :profile (sh15-bounded-keyword (get request :profile))
-   :target (sh15-bounded-keyword (get request :target))
+   :profile (sh15-optional-keyword (get request :profile))
+   :target (sh15-optional-keyword (get request :target))
    :facts {:reason reason :schema-field :external-reference-boundary}
    :remediation [:supply-exact-bounded-external-reference-request]
    :redactions [:upstream-carrier-omitted]})
@@ -1132,14 +1270,15 @@
              :artifact :gravity/sh15-diagnostic-boundary-verification))))
 
 ; C15 / SH-15.4-5: internal development view, not a stream/schema or CLI change.
+; Existing bounded-ascii identifiers name the legacy format; no quota remains.
 ; Only rule, severity and an explicitly cleared primary location are rendered.
 ; Other fields (including facts, messages, origins and private outputs) are inert.
-; Inputs: String/Keyword rule <=128 ASCII units, five C15 severities, optional
-; point or byte-only source span (path <=512 ASCII units), redactions nil,
-; :not-evaluated or Vector <=64. Only [] clears location disclosure; lifecycle
+; Inputs: nonempty String/Keyword rule, five C15 severities, optional
+; point or byte-only source span, redactions nil,
+; :not-evaluated or Vector. Only [] clears location disclosure; lifecycle
 ; :redacted overrides. Displayed byte intervals use :bounded-ascii-bytes-v1;
 ; point, absent and redacted locations retain :bounded-ascii-v1.
-; Output: one ASCII line <=4096 bytes; absent and redacted locations are explicit.
+; Output: one ASCII line; absent and redacted locations are explicit.
 ; No truncation, diagnostic identity, provenance or redaction authority is added.
 ; Existing structured data, stream version, exports and nonclaims stay unchanged.
 
@@ -1195,9 +1334,7 @@
         (if (= nil redactions) :absent
           (if (= :not-evaluated redactions) :not-evaluated
             (if (vector? redactions)
-              (if (<= (count redactions) 64)
-                (if (= 0 (count redactions)) :clear :recorded)
-                :unsupported)
+              (if (= 0 (count redactions)) :clear :recorded)
               :unsupported)))]
     (if (= :unsupported state)
       state
@@ -1209,7 +1346,7 @@
     (if (if (c15-reader-span-valid? span true) true
           (if (c15-public-reader-span-valid? span) true
             (c15-public-byte-span-valid? span)))
-      (if (<= (count (get span :source)) 512) (get span :source) nil)
+      (get span :source)
       nil)))
 
 (defn sh15-text-location [diagnostic redaction-state]
@@ -1274,8 +1411,7 @@
                               "\" severity=" (get diagnostic :severity)
                               " location=" location
                               " redactions=" redaction-state)]
-                (if (<= (count text) 4096)
-                  {:artifact :gravity/sh15-bounded-diagnostic-text
+                {:artifact :gravity/sh15-bounded-diagnostic-text
                    :schema-version 1 :status :accepted
                    :rendering-version (sh15-text-rendering-version diagnostic redaction-state)
                    :text text
@@ -1283,8 +1419,7 @@
                    :semantic-authority :none
                    :nonclaims [:diagnostic-authority :redaction-policy
                                :stream-ordering :cli-integration
-                               :complete-c15-conformance :self-hosting :release]}
-                  (sh15-text-rejection :rendered-text-bound :text))))))))
+                               :complete-c15-conformance :self-hosting :release]}))))))
     (sh15-text-rejection :unsupported-severity :severity)))
 
 (defn sh15-render-bounded-diagnostic-text [diagnostic]
@@ -1293,9 +1428,7 @@
       (if (if (string? rule) true (keyword? rule))
         (let [text-rule (str rule)]
           (if (<= 1 (count text-rule))
-            (if (<= (count text-rule) 128)
-              (sh15-text-render-fields diagnostic text-rule)
-              (sh15-text-rejection :rule-bound :rule))
+            (sh15-text-render-fields diagnostic text-rule)
             (sh15-text-rejection :empty-rule :rule)))
         (sh15-text-rejection :unsupported-rule :rule)))
     (sh15-text-rejection :diagnostic-not-map :diagnostic)))

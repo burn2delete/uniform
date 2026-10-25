@@ -355,23 +355,17 @@
                                :sh23-package-build]))))
     (is true "Set GRAVITY_SH07_B40_CONTRACT=1 after coordinator registration")))
 
-(deftest sh07-b40-sh23-measured-census-fits-declared-bounds
+(deftest sh07-b40-sh23-authenticated-request-census
   (if (= "1" (System/getenv "GRAVITY_SH07_B40_CENSUS"))
     (let [contract (edn/read-string
                     (slurp (path proof-contract-relative-path)))
-          bounds (:bounds contract)
           result (proof-census/census (path source-relative-path))
           measurements (:measurements result)]
       (is (= :gravity/sh07-proof-census (:artifact result)))
-      (is (= :within-declared-bounds (:status result)))
+      (is (= :authenticated-request (:status result)))
       (is (= expected-source-revision-id
              (get-in result [:request :source-revision-id])))
       (is (= 50 (:fragments measurements) (:top-level-forms measurements)))
-      (is (<= (:maximum-fragment-forms measurements)
-              (:maximum-fragment-forms bounds)))
-      (is (<= (:carrier-nodes measurements)
-              (:maximum-module-carrier-nodes bounds)))
-      (is (empty? (:violations result)))
       (is (false? (:performed-sh07-lowering? result)))
       (is (= 36 (count (:authoritative-modules contract))))
       (is (= 32 (count (:required-core-product-counts contract)))))

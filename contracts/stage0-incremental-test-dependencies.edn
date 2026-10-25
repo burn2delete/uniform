@@ -23,6 +23,12 @@
       :inputs
       [{:path "bootstrap/clojure/src/gravity/c11_mir.clj"
         :role :production}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/artifact.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/operations.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/policy.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/projection.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/records.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/validation.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/digest.clj"
         :role :production}
        {:path "bootstrap/clojure/test/gravity/c11_mir_test.clj"
@@ -159,6 +165,21 @@
       :inputs
       [{:path "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
         :role :production}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/artifact.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/contracts.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostic_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/failures.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/incremental.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/incremental_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/pipeline_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/plugin_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/plugins.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/proof.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/suite.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/support.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/verification.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/verification_validation.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/diagnostics.clj"
         :role :production}
        {:path "bootstrap/clojure/src/gravity/digest.clj"

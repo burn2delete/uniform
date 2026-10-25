@@ -26,7 +26,6 @@
 
     {:artifact-id (:artifact-id artifact)}))
 
-(def ^:private sh07-proof-transaction-carrier-node-limit 67108864)
 (def ^:private sh07-proof-transaction-carrier-visiting
   (Object.))
 
@@ -66,42 +65,23 @@
       (instance? clojure.lang.IMapEntry value)))
 
 (defn- sh07-proof-transaction-immutable-carrier-analysis
-  [^java.util.IdentityHashMap completed value maximum-nodes]
+  [^java.util.IdentityHashMap completed value]
   (let [pending (java.util.ArrayDeque.)
         operations (java.util.ArrayDeque.)
-        exit-starts (java.util.ArrayDeque.)
         push-enter!
         (fn [entry]
-          ;; The old walker did not count nil roots, values, or metadata.
+          ;; Nil contains no mutable references.
           (when-not (nil? entry)
             (.push pending entry)
             (.push operations false)))]
     (push-enter! value)
-    (loop [logical-nodes 0
-           examined-nodes 0
-           reused-identities 0]
-      (cond
-        (> logical-nodes maximum-nodes)
-        {:immutable? false
-         :reason :carrier-node-bound
-         :logical-nodes logical-nodes
-         :examined-nodes examined-nodes
-         :reused-identities reused-identities}
-
-        (.isEmpty pending)
-        {:immutable? true
-         :reason nil
-         :logical-nodes logical-nodes
-         :examined-nodes examined-nodes
-         :reused-identities reused-identities}
-
-        :else
+    (loop []
+      (if (.isEmpty pending)
+        {:immutable? true :reason nil}
         (let [current (.pop pending)
               exit? (true? (.pop operations))]
           (if exit?
-            (let [start (long (.pop exit-starts))]
-              (.put completed current (long (- logical-nodes start)))
-              (recur logical-nodes examined-nodes reused-identities))
+            (do (.put completed current true) (recur))
             (let [kind (sh07-proof-transaction-carrier-kind current)
                   supported? (not (#{:lazy :invalid} kind))
                   track-identity?
@@ -111,37 +91,24 @@
                   prior (when track-identity? (.get completed current))]
               (cond
                 (= :lazy kind)
-                {:immutable? false :reason :lazy-carrier
-                 :logical-nodes logical-nodes
-                 :examined-nodes examined-nodes
-                 :reused-identities reused-identities}
+                {:immutable? false :reason :lazy-carrier}
 
                 (not supported?)
-                {:immutable? false :reason :mutable-or-unknown-carrier
-                 :logical-nodes logical-nodes
-                 :examined-nodes examined-nodes
-                 :reused-identities reused-identities}
+                {:immutable? false :reason :mutable-or-unknown-carrier}
 
                 (identical? sh07-proof-transaction-carrier-visiting prior)
-                {:immutable? false :reason :carrier-cycle
-                 :logical-nodes logical-nodes
-                 :examined-nodes examined-nodes
-                 :reused-identities reused-identities}
+                {:immutable? false :reason :carrier-cycle}
 
-                (number? prior)
-                (recur (+ logical-nodes (long prior))
-                       examined-nodes (inc reused-identities))
+                (true? prior) (recur)
 
                 :else
-                (let [next-logical (inc logical-nodes)
-                      metadata (when (instance? clojure.lang.IObj current)
+                (let [metadata (when (instance? clojure.lang.IObj current)
                                  (meta current))]
                   (when track-identity?
                     (.put completed current
                           sh07-proof-transaction-carrier-visiting)
                     (.push pending current)
-                    (.push operations true)
-                    (.push exit-starts (long logical-nodes)))
+                    (.push operations true))
                   (push-enter! metadata)
                   (case kind
                     :map
@@ -151,8 +118,7 @@
                     :collection
                     (doseq [entry current] (push-enter! entry))
                     nil)
-                  (recur next-logical (inc examined-nodes)
-                         reused-identities))))))))))
+                  (recur))))))))))
 
 (defn- sh07-proof-transaction-immutable-carrier?
   ([value]
@@ -162,7 +128,7 @@
    (true?
     (:immutable?
      (sh07-proof-transaction-immutable-carrier-analysis
-      completed value sh07-proof-transaction-carrier-node-limit)))))
+      completed value)))))
 
 (defn- sh07-proof-transaction-context!
   []

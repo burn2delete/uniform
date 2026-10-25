@@ -1,0 +1,44 @@
+(ns self-hosting.sh07.current-data-declaration
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [authenticated-envelope-contract])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def authenticated-envelope-contract
+  {:artifact :gravity/authenticated-envelope-contract
+   :schema-version 2
+   :owner :gravity-source
+   :input :gravity/private-authenticated-envelope-descriptor
+   :output :gravity/authenticated-envelope-template
+   :semantic-root-domain
+   :gravity/authenticated-envelope-semantic-root-v1
+   :provenance-root-domain
+   :gravity/authenticated-envelope-provenance-binding-v1
+   :identity [:source-revision
+              :semantic-projections
+              :fact-transitions
+              :effect-capability-relation
+              :proof-composite
+              :preservation-ledger
+              :identity-subjects
+              :artifact-lineage
+              :reference-closure]
+   :reference-depth-metric :ordered-shortest-discovery-depth
+   :semantic-identity-excludes [:actual-path-provenance]
+   :host-authority [:canonical-carrier-validation
+                    :compile-and-pin-gravity-module
+                    :canonical-encode
+                    :sha256
+                    :validate-prior-only-reachable-digest-dag
+                    :resolve-digest-references
+                    :enforce-identity-subjects
+                    :instantiate-template
+                    :fresh-replay]
+   :claim-boundary [:content-and-context-consistency
+                    :not-a-release-signature
+                    :not-proof-of-verifier-correctness]
+   :self-hosted? false
+   :whole-language? false
+   :clojure-seed-boundary? true})

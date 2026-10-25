@@ -16,16 +16,18 @@ Input: Reader `10a1abc59a33021572e220fee4bb5f74371155f6`
   source-drift, malformed-source and coherent Core-substitution rejection checks.
 - [x] T006 Inspect new semantic names, run affected language/structural checks,
   and publish the validated focused increment in successor draft #384.
-- [ ] T007 Obtain independent review of the immutable implementation/evidence;
+- [x] T007 Obtain independent review of the immutable implementation/evidence;
   record reviewer-owned findings and disposition without self-acceptance.
-- [ ] T008 Record integration disposition separately from implementation.
+- [x] T008 Record integration disposition separately from implementation.
+  Evidence: #388 merged at `001ab9ed`; exact receipt is in evidence.md.
 
 ## Dependencies and outcomes
 
 T001 is planning, not implementation acceptance. T003 records the demonstrated
 canonical-path routing correction, not a prediction that no later defect exists.
 T004/T005 establish actual composition; inherited counts do not complete them.
-T007 and T008 remain independent acceptance and integration decisions.
+T007 records independent review and final receipt readback; T008 records the
+separately verified integration decision for the finite selected outcome.
 No full component roadmap task or migration claim is completed by this checklist.
 
 ## New-name review

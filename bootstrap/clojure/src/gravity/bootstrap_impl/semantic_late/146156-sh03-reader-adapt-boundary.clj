@@ -40,19 +40,17 @@
     form-id-map)
    envelope-descriptor
    (sh03-reader-sh02-descriptor source-path project-context resolved descriptor)
+   envelope-options
+   (sh03-reader-authenticated-envelope-options
+    source-path (:invocation-context resolved) (:plan-binding resolved))
    envelope
-   (p15-s23-stage2-sh02-descriptor-envelope
-    :c2-reader
-    :gravity/sh03-reader-products
-    envelope-descriptor
-    source-path)
+   (apply p15-s23-stage2-sh02-descriptor-envelope
+          (cond-> [:c2-reader :gravity/sh03-reader-products envelope-descriptor source-path]
+            envelope-options (conj envelope-options)))
    _
-   (p15-s23-stage2-sh02-descriptor-envelope-verify!
-    envelope
-    :c2-reader
-    :gravity/sh03-reader-products
-    envelope-descriptor
-    source-path)]
+   (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+          (cond-> [envelope :c2-reader :gravity/sh03-reader-products envelope-descriptor source-path]
+            envelope-options (conj envelope-options)))]
   (clojure.core/assoc
    state
    :descriptor

@@ -112,9 +112,62 @@ phase watchdog. Raw CLI output is retained; a JVM performance-data warning on
 stdout was kept separately from the unique Core EDN record, without rerunning
 construction or changing any artifact value.
 
-Independent aggregate review and final affected-consumer closure remain open.
+The finite affected-consumer closure and independent review are recorded below.
 The full authenticated-envelope-owner C01 construction remains unestablished;
 the unchanged historical full-owner timeout was not replayed.
+
+## Minimal affected-consumer closure and final verification
+
+The final candidate tree `c3fe709394b414652dc8e19d8170af5eca312dac` extends
+Diagnostics draft #385 (`298c7bc7`) with exactly six files: the four-file explicit
+Native invocation delta published in #387 (`d1c56a4f`) and the newest two-file
+current-Core/C11 metadata correction published in #378 (`9b7e6094`). Their
+unfinished parent stacks are not imported. Historical arities remain fail-closed;
+the public Core API does not depend on the legacy Native ingress repair.
+
+- Actual original Core construction, fresh replay and three literal mutations:
+  1 test / 11 assertions passed, with the MIR plan never executed.
+- Actual original Core to Gravity C11 construction/fresh verification and eight
+  malformed metadata, lineage and type variants: 1 test / 31 assertions passed.
+  These two receipts precede addition of the Native test file; production code
+  is byte-identical to the final candidate.
+- Final-candidate real C2/C3 invocation, default and tamper regression: 4 tests /
+  16 assertions passed. Language boundary: 6 tests / 11 assertions passed. LOC
+  validation passed across 2,026 source files, zero exceptions, maximum 250
+  physical lines; whitespace validation passed.
+- In the original configured source root, 12 direct checks reconfirmed retained
+  product paths and bytes. Both public Core formats then passed fresh generic
+  verification and both coherently rehashed substitutions rejected: 4 tests /
+  26 assertions, zero failures/errors, natural exit 0, with matching clean
+  candidate-tree bookends. Constructors were not rerun.
+
+Independent read-only review found no blocking issue in the six-file closure,
+its explicit authority routing, retained C11 semantic checks, or exact final
+verification. Separate receipt readback accepted the final 4/26 result. This
+establishes the selected development-current invocation outcome, not Native C11
+verification, C12 specialization, full-owner census or whole-component closure.
+Integration of the exact reviewed tree is recorded separately below.
+
+## Verified integration receipt
+
+[PR #388](https://github.com/burn2delete/uniform/pull/388) merged to main on
+2026-10-25 at 23:07:25 UTC. The merge commit is
+`001ab9edbe84ca0132f3ebc7e6117792ec8d3e13`, with tree
+`b8104cef6aa946d309a0e43c338835f5b9a222ad` and parents
+`837ed8bc56c230574245988904f32773677584b1` and
+`ed1d8b5616a3c532d4f32a3e712f418f112c7c20`. Independent remote readback and
+Git object inspection confirmed the merged state, exact parents and expected
+conflict-free tree. The named integration checkout was clean afterward.
+
+The public PR head is byte-identical to tested tree `c3fe7093`. The merge also
+retains the separately reviewed semantic naming change from #386, which had
+zero changed-path overlap. Existing test receipts retain their original tree
+attribution; no unexecuted post-merge suite is claimed. No GitHub workflow or
+status checks were present, and no CI pass is inferred from their absence.
+
+The integrated finite outcome is current development source-to-Core invocation
+plus minimal existing-consumer compatibility. This is not full SH07/C01,
+whole-MIR, compiler-owner census, release, migration or self-hosting acceptance.
 
 ## Attributed prior results
 
@@ -132,7 +185,7 @@ results is relabeled as validation of the current joined tree.
 - `git diff --check` passed.
 - No compiler implementation or semantic test changed in this docs-only slice.
 
-## Pilot method and unfinished acceptance
+## Pilot method and finite completion
 
 The merged `speckit-specify`, `speckit-plan`, `speckit-tasks` and
 `speckit-analyze` instructions were read and followed manually for this selected
@@ -140,13 +193,14 @@ feature. No external Specify CLI, shell helper, automation, literal chat-command
 parsing or skill autodiscovery is claimed. Existing scaffold/adoption checks
 remain historical and separate.
 
-The spec -> plan -> tasks artifacts now track a real focused implementation.
-The next acceptance step is independent review of the complete evidence and
-final joined-tree verification after affected consumer closure. The end-to-end pilot remains
-incomplete until that evidence exists. Migration, component release, self-hosting,
-seed retirement and performance are not claimed.
+The spec -> plan -> tasks artifacts track a real focused implementation,
+independent review, final joined-tree verification and verified integration.
+The finite end-to-end pilot is complete at the recorded scope. This does not
+turn the earlier scaffold/adoption checks into implementation evidence.
+Migration, component release, self-hosting, seed retirement and performance are
+not claimed.
 
 At this update's preparation time, planning [draft #381](https://github.com/burn2delete/uniform/pull/381)
-and implementation draft #384 are confirmed published. This result update is
-prepared locally. No full acceptance is inferred from publication or locally
-prepared artifacts.
+is published and implementation #388 is verified merged. This documentation
+receipt is prepared for the same planning draft; it does not broaden the
+recorded implementation acceptance.

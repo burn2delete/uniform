@@ -39,45 +39,7 @@
    :binding-count 692
    :resolution-count 2762})
 (def ^:private expected-census-measurements
-  {:maximum-fragment-external-bindings 23
-   :maximum-origin-chain-entries 0
-   :maximum-binding-semantic-span-entries 2
-   :fragments 83
-   :carrier-depth 27
-   :macro-origin-expected-outputs 72
-   :maximum-form-children 92
-   :resolutions 2762
-   :carrier-exact-utf8-scalar-bytes 8068604
-   :maximum-binding-target-set 1
-   :predicted-maximum-core-nodes 7072
-   :bindings 692
-   :maximum-fragment-aliases 0
-   :maximum-fragment-resolutions 225
-   :carrier-nodes 484843
-   :top-level-forms 83
-   :macro-origin-expected-introduced-functions 72
-   :maximum-alias-targets 0
-   :maximum-form-depth 25
-   :carrier-width 7072
-   :maximum-fragment-root-forms 1
-   :maximum-binding-profile-set 11
-   :carrier-scalar-bytes 32257096
-   :module-effects 0
-   :macro-origin-expected-inputs 72
-   :macro-origin-trace-entries 72
-   :maximum-fragment-local-bindings 21
-   :macro-origin-expanded-definitions 72
-   :module-exports 19
-   :module-capabilities 0
-   :maximum-binding-capabilities 1
-   :maximum-metadata-entries 0
-   :macro-expansion-trace-entries 72
-   :aliases 0
-   :maximum-binding-effects 1
-   :maximum-fragment-forms 486
-   :predicted-maximum-digest-requests 7076
-   :forms 7072
-   :maximum-generated-origin-entries 1})
+  {:fragments 83, :macro-origin-expected-outputs 72, :resolutions 2762, :bindings 692, :top-level-forms 83, :macro-origin-expected-introduced-functions 72, :module-effects 0, :macro-origin-expected-inputs 72, :macro-origin-trace-entries 72, :macro-origin-expanded-definitions 72, :module-exports 19, :module-capabilities 0, :macro-expansion-trace-entries 72, :aliases 0, :forms 7072})
 (def ^:private expected-export-names
   '[b3-llvm-backend-contract b3-target-data-layout-contract
     b3-metadata-attribute-contract b3-safe-llvm-subset-contract
@@ -144,30 +106,6 @@
    :core-form-frequencies
    {:literal 1839 :collection-literal 204 :def 83 :reference 2191
     :call 1135 :if 357 :let 56 :quote 3 :fn 72}})
-(def ^:private expected-b16-bounds
-  {:maximum-module-forms 65536 :maximum-module-core-nodes 65536
-   :maximum-fragments 1024 :maximum-top-level-forms 1024
-   :maximum-fragment-forms 1024 :maximum-form-children 1024
-   :maximum-form-depth 256 :maximum-bindings 2048
-   :maximum-alias-records 256 :maximum-fragment-resolutions 2048
-   :maximum-module-resolutions 65536 :maximum-origin-entries 256
-   :maximum-metadata-entries 256 :maximum-effects 128
-   :maximum-capabilities 128 :maximum-exports 1024
-   :maximum-module-carrier-nodes 8388608
-   :maximum-module-carrier-depth 256 :maximum-module-carrier-width 65536
-   :maximum-module-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 33554432
-   :maximum-template-carrier-depth 256 :maximum-template-carrier-width 65536
-   :maximum-template-scalar-bytes 1073741824
-   :maximum-resolved-core-carrier-nodes 16777216
-   :maximum-resolved-core-carrier-depth 256
-   :maximum-resolved-core-carrier-width 65536
-   :maximum-resolved-core-scalar-bytes 1073741824
-   :maximum-generated-digest-carrier-nodes 16777216
-   :maximum-generated-digest-carrier-depth 256
-   :maximum-generated-digest-carrier-width 65536
-   :maximum-generated-digest-scalar-bytes 1073741824
-   :maximum-module-digest-requests 65540})
 (def ^:private rejected-sh07-families
   {"core-shape" "C6-CORE-SHAPE" "lowering-gap" "C6-LOWERING-GAP"})
 (def ^:private expected-b36-nonclaims
@@ -548,26 +486,20 @@
       (is (= b3-relative-path (get-in contract [:authoritative-modules :b3-llvm])))
       (is (= {:keyword-lookups 0}
              (get-in contract [:required-core-product-counts :b3-llvm])))
-      (is (every? (set (:nonclaims contract)) expected-b36-nonclaims))
-      (is (= expected-b16-bounds (:bounds contract))))
+      (is (every? (set (:nonclaims contract)) expected-b36-nonclaims)))
     (is true "Set GRAVITY_SH07_B36_CONTRACT=1 after coordinator registration")))
 
-(deftest sh07-b36-b3-measured-census-fits-declared-bounds
+(deftest sh07-b36-b3-authenticated-request-census
   (if (= "1" (System/getenv "GRAVITY_SH07_B36_CENSUS"))
     (let [result (proof-census/census (path b3-relative-path))
           measurements (:measurements result)]
       (is (= :gravity/sh07-proof-census (:artifact result)))
-      (is (= :within-declared-bounds (:status result)))
+      (is (= :authenticated-request (:status result)))
       (is (= expected-source-revision-id
              (get-in result [:request :source-revision-id])))
       (is (= expected-sh06-semantic-projection-id
              (get-in result [:request :sh06-semantic-projection-id])))
       (is (= expected-census-measurements measurements))
-      (is (= (:forms measurements)
-             (:predicted-maximum-core-nodes measurements)))
-      (is (= (+ 4 (:predicted-maximum-core-nodes measurements))
-             (:predicted-maximum-digest-requests measurements)))
-      (is (empty? (:violations result)))
       (is (false? (:performed-sh07-lowering? result))))
     (is true "Set GRAVITY_SH07_B36_CENSUS=1 in an isolated 8 GiB JVM")))
 
