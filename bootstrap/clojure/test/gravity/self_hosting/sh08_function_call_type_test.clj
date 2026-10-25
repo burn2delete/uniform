@@ -21836,15 +21836,15 @@
         samples [nil true :keyword 'plain 'qualified/name (symbol "" "")
                  "data" 12 3/2 1.5 \a [] '() #{} {} [nil :a "b"]
                  {:left ['nested 7] :right #{:x :y}}]
-        builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
+        builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin)
         original @builtin owner (Thread/currentThread) materialized (atom 0) value [nil]
         no-vec (fn [budget]
                  (reset! materialized 0)
                  (let [out (with-redefs-fn
                              {builtin (fn [& args]
-                                        (let [[callee values] (take-last 2 args)]
+                                        (let [[callee input] (take-last 2 args)]
                                           (when (and (identical? owner (Thread/currentThread))
-                                                     (= 'vec callee) (identical? value (first values)))
+                                                     (= 'vec callee) (identical? value input))
                                             (swap! materialized inc)))
                                         (apply original args))}
                              #(run value budget))]
