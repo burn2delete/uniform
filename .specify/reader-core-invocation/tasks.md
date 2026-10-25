@@ -10,9 +10,9 @@ Input: Reader `10a1abc59a33021572e220fee4bb5f74371155f6`
 - [x] T002 Verify and compose frozen published sources; record exact joined tree.
 - [x] T003 [US1] Correct demonstrated invocation-context and descriptor consumer
   mismatches in owned Reader/Core/Resolver adapters; preserve AE/Native producers.
-- [ ] T004 [US1] Execute paired real public development-current source-to-Core
+- [x] T004 [US1] Execute paired real public development-current source-to-Core
   products and fresh generic verification; record exact commands and outcomes.
-- [ ] T005 [US2] Execute unknown options, defaults, absent/wrong context,
+- [x] T005 [US2] Execute unknown options, defaults, absent/wrong context,
   source-drift, malformed-source and coherent Core-substitution rejection checks.
 - [x] T006 Inspect new semantic names, run affected language/structural checks,
   and publish the validated focused increment in successor draft #384.

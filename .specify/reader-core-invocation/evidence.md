@@ -1,6 +1,6 @@
 # Reader-to-Core invocation pilot evidence
 
-Status: planning and focused routing correction complete; public acceptance open.
+Status: finite pilot checks passed; independent aggregate acceptance remains open.
 Date: 2026-10-25.
 
 ## Public input revisions
@@ -22,6 +22,11 @@ The composed implementation tree is `fde2db9adc09877610910d8a5b5296e2fc106a17`.
 It is published as [draft #384](https://github.com/burn2delete/uniform/pull/384),
 head `a3305b00a4584ff83bb5a9a55a08684108993543`; fetch, remote head and exact
 tree comparison were independently checked.
+The draft subsequently reconciled accepted main `16ff1f59` normally at
+`3326a974a3b45e683391bfc7a99e0cc2965e8899`, tree
+`1c50652f57588d5bb715a0b7497845f24fa456cc`, without a new authored compiler
+delta. Execution receipts below remain bound to the earlier frozen tree;
+reconciled/cohort verification must be recorded separately.
 The new correction authenticates Reader invocation source bytes first, then
 compares canonical paths so equivalent relative/absolute paths do not reject.
 Missing, foreign and invalid paths still fail closed. The routing regression
@@ -39,6 +44,11 @@ test explicitly uses a mocked product boundary and claims no artifact acceptance
 - Fresh Resolver verification passed with no failed checks. Serialization read
   back exactly, and fresh deserialization returned the identical artifact.
   Serialized size was 2,471,634 characters.
+- The retained real Resolver product rejects binding-table mutation, absent or
+  historical invocation, foreign Reader selection, and invalid envelope options.
+  Mixed AE source hashes fail the fresh-envelope check. The omitted-options AE
+  verifier retains `B1-INPUT` / pinned-source rejection. Each rejection phase
+  exited successfully under the same 120-second host watchdog.
 - These were separate actual phases under the unchanged 120-second host
   watchdog and 2 GiB heap: construction 88.60 s, verification 23.24 s,
   serialization 25.80 s, deserialization 22.31 s, measured after namespace load.
@@ -55,7 +65,56 @@ boundary mode. Serialize/deserialize also received this context explicitly.
 ```
 
 No stored report or artifact field supplied authority to a later phase.
-Resolver rejection checks and paired public Core acceptance are still open.
+
+## Actual paired public Core results
+
+Both actual public CLI commands used the unchanged
+`sh-07/compiler-exact-keys.gravity` / `.qst` fixtures and the explicit
+`--development-current-reader` option. They exited 0 in 181.014 and 146.878
+seconds respectively and returned accepted Core products with complete proofs.
+Their shared artifact identity is
+`sha256:16ec6d50a8514188f3010880f3022e88f7f1054fe4058a5caa6b74367ee98f0e`.
+These fixture files are separate subjects, not full compiler-owner coverage.
+
+- Both genuine CLI products passed the unchanged fresh generic Core verifier.
+  Both coherently rehashed Bool substitutions were rejected while their
+  declared semantic identities still recomputed. The existing
+  `development-public-product-passes-fresh-verification` and
+  `development-public-product-rejects-rehashed-core` tests produced 4 tests /
+  26 assertions, no failures or errors, across the two products.
+- Seven existing Reader/public ingress tests passed 90 assertions. They cover
+  exact caller-owned options, historical routing, strict source decoding,
+  real Reader source-byte drift and restoration, and actual Core construction
+  after deleting the target file once Resolver returned. The checkout and
+  Reader bytes were clean afterward.
+- Direct retained-product inspection passed 166 checks: both 25-node products
+  conserve original forms, source-map lineage and spans, source bytes and path
+  provenance. Semantic preimages/IDs agree while file provenance differs.
+  This inspection supplements, never replaces, the fresh verifier results.
+- All three malformed public-source cases rejected at the owning Core stage
+  for both extensions: the existing paired test passed 1 test / 34 assertions
+  in 661.181 seconds. Actual default generic Core verification also rejected
+  the retained development product rather than inferring current authority.
+
+## Scoped Core quota-removal regression checks
+
+The independently identified structural coverage gap was checked without a
+full-owner construction replay: eight B16 shape/digest/forest/native/decimal
+tests, seven carrier-DAG and receipt tests, three actual Native report-join
+tests, and the changed keyword-map development kernel. Result: 19 tests /
+1,951 assertions, no failures or errors, 22.784 seconds wall time.
+These are real current source-function and native carrier checks on structural
+inputs, not authentication of an entire compiler-owner module.
+
+Public integration uses the existing documented 1,200-second host watchdog and
+2 GiB heap. It does not add a compiler quota or increase the separate Resolver
+phase watchdog. Raw CLI output is retained; a JVM performance-data warning on
+stdout was kept separately from the unique Core EDN record, without rerunning
+construction or changing any artifact value.
+
+Independent aggregate review and final affected-consumer closure remain open.
+The full authenticated-envelope-owner C01 construction remains unestablished;
+the unchanged historical full-owner timeout was not replayed.
 
 ## Attributed prior results
 
@@ -82,12 +141,12 @@ parsing or skill autodiscovery is claimed. Existing scaffold/adoption checks
 remain historical and separate.
 
 The spec -> plan -> tasks artifacts now track a real focused implementation.
-The next acceptance step is actual paired public accepted/rejected checks and
-independent review of their complete evidence. The end-to-end pilot remains
+The next acceptance step is independent review of the complete evidence and
+final joined-tree verification after affected consumer closure. The end-to-end pilot remains
 incomplete until that evidence exists. Migration, component release, self-hosting,
 seed retirement and performance are not claimed.
 
-At this update's preparation time, the initial four planning files and the
-implementation draft are published. This evidence update is prepared locally.
-The separate planning draft PR creation has no confirmed result. No full
-acceptance is inferred from publication or locally prepared artifacts.
+At this update's preparation time, planning [draft #381](https://github.com/burn2delete/uniform/pull/381)
+and implementation draft #384 are confirmed published. This result update is
+prepared locally. No full acceptance is inferred from publication or locally
+prepared artifacts.

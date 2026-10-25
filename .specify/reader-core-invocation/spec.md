@@ -1,6 +1,6 @@
 # Feature specification: Reader-to-Core current-source invocation
 
-Status: focused implementation verified; public integration pending
+Status: finite pilot checks passed; independent aggregate acceptance remains open
 Input: Reader `10a1abc59a33021572e220fee4bb5f74371155f6`, tree
 `830589cb02a1850bea6edf5c21870ee9ed150c83`.
 Existing draft: [Reader #369](https://github.com/burn2delete/uniform/pull/369).
@@ -59,7 +59,9 @@ implementation. See [evidence](evidence.md) for exact inputs and pending results
 
 ## Unresolved items
 
-Public full-chain compatibility is not yet established for the joined tree.
+Paired public accepted products, coherent substitutions and the declared
+negative controls are verified on the recorded frozen tree. Independent
+acceptance and affected-consumer closure on the final joined tree remain.
 The full authenticated-envelope owner source previously reached a Resolver
 watchdog timeout; diagnose repeated Macro verification before any replay.
 These are real integration checks, not routine permission gates.
