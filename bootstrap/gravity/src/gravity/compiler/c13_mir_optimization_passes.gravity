@@ -2767,7 +2767,8 @@
      :facts-invalidated facts
      :facts-regenerated (sh16-pass-facts-regenerated family changed)
      :proofs-invalidated
-     (if (= family :check-retention-or-elision) [] proof-ids)
+     (if (= 0 (count changed)) []
+       (if (= family :check-retention-or-elision) [] proof-ids))
      :runtime-checks-restored []
      :caches-cleared
      (if (> (count changed) 0) [:analysis-cache] [])
@@ -2821,7 +2822,8 @@
         facts-invalidated
         (sh16-pass-facts-invalidated family changed)
         proofs-invalidated
-        (if (= family :check-retention-or-elision) [] proof-ids)]
+        (if (= 0 (count changed)) []
+          (if (= family :check-retention-or-elision) [] proof-ids))]
     {:status
      (if (= :passed (get verifier :status))
        (get state :status)
