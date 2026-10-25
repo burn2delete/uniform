@@ -29,6 +29,49 @@
 (defn- deep-request [extension depth]
   (invoke (get @fixtures ["accepted" extension]) 'sh22-result-carrier-depth-request [depth]))
 
+(deftest sh22-export-errors-declare-complete-carrier-refusal
+  ;; STD1 requires errors on each export; the module catalog is not inheritance.
+  (let [previous {:vector-assoc ["STD3001" "STD3002"]
+                  :vector-append ["STD3001" "STD3002"]
+                  :vector-nth ["STD3001" "STD3002"]
+                  :vector-slice ["STD3001" "STD3002"]
+                  :ordered-map-assoc ["STD3001"] :ordered-map-get []
+                  :ordered-map-get-default-keyword ["STD3001" "STD10003"]
+                  :ordered-map-dissoc-keyword ["STD3001" "STD10003"]
+                  :ordered-set-conj ["STD3001"]
+                  :ordered-set-contains-keyword ["STD3001" "STD10003"]
+                  :ordered-set-contains-symbol ["STD3001" "STD10003"]
+                  :ordered-set-contains-integer ["STD3001" "STD10003"]
+                  :ordered-set-equal-keyword ["STD3001" "STD10003"]
+                  :ordered-set-equal-integer ["STD3001" "STD10003"]
+                  :utf8-validate ["STD4001"]
+                  :checked-add-i64 ["STD5001"] :checked-sub-i64 ["STD5001"]
+                  :checked-mul-i64 ["STD5001"]
+                  :checked-nonnegative-quot-i64 ["STD5001" "STD5002"]
+                  :error-context ["STD2004"] :io-file-read ["STD8001" "STD8003"]
+                  :io-stdout ["STD4001" "STD8001"] :artifact-data ["STD10003"]
+                  :meta-view ["STD15001"] :canonical-data ["STD10003"]}
+        manifest (call 'sh22-module-manifest [])
+        exports (:exports manifest)]
+    (is (= manifest (call 'sh22-module-manifest [])))
+    (is (= (set (keys previous)) (set (map :name exports))
+           (:operation-set (call 'sh22-library-policy []))))
+    (doseq [{:keys [name errors] :as export} exports]
+      (let [old (get previous name)]
+        (is (= #{:name :kind :family :type :stability :effects :capabilities
+                 :allocation :errors :profiles} (set (keys export))))
+        (is (= 1 (count (filter #{"STD10003"} errors))) name)
+        (is (= (if (some #{"STD10003"} old) old (conj old "STD10003")) errors) name)))
+    (doseq [extension ["gravity" "qst"]]
+      (let [input (deep-request extension 30) result (handle input)
+            export (first (filter #(= (:operation input) (:name %)) exports))
+            rule (get-in result [:diagnostics 0 :rule])]
+        (is (= :rejected (:status result)))
+        (is (= "STD10003" rule))
+        (is (some #{rule} (:errors export)))
+        (is (= result (handle input)))
+        (is (verified? input result))))))
+
 (deftest sh22-accepted-result-envelope-obeys-depth-bound
   (doseq [extension ["gravity" "qst"]]
     (let [good (deep-request extension 29)

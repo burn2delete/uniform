@@ -79,7 +79,9 @@
    :effects effects
    :capabilities capabilities
    :allocation allocation
-   :errors errors
+   :errors (if (contains? (set errors) "STD10003")
+             errors
+             (conj errors "STD10003"))
    :profiles profiles})
 
 (defn sh22-module-manifest []
