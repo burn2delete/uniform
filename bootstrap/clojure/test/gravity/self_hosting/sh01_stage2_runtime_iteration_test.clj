@@ -30401,11 +30401,14 @@
                           source-path (slurp source-path)
                           {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)
         c7 (helper 'invoke-c7)
-        typed (stage :c7 #(c7 'sh08-function-type-core-artifact [request]))
+        work-policy {:type-inference-work-allowance 1048576}
+        typed (:result (stage :c7 #(c7 'sh08-function-type-core-artifact-with-work-policy [request work-policy])))
         _ (is (= :accepted (:status typed)) (pr-str (:diagnostics typed)))
         _ (when-not (= :accepted (:status typed))
             (throw (ex-info "Checked dual bare Set source typing rejected" {:diagnostics (:diagnostics typed)})))
-        verification (stage :c7-verification #(c7 'sh08-verify-function-type-result [request typed]))
+        verification (:verification
+                       (stage :c7-verification
+                         #(c7 'sh08-verify-function-type-result-with-work-policy [request typed work-policy])))
         _ (is (= :passed (:status verification)))
         _ (when-not (= :passed (:status verification))
             (throw (ex-info "Checked dual bare Set fresh C7 verification rejected" {})))
@@ -30428,7 +30431,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         assembled (stage :stock-typed-assembly
                          #(bootstrap/p15-s23-stage2-assemble-plan-products
-                           emitter module (vec (sort-by key definitions)) products))
+                           emitter module (vec (sort-by key definitions)) products work-policy))
         runtime-plan (:plan (typed-catch-runtime-projection))
         execution (stage :original-runtime
                          #(bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
@@ -30460,8 +30463,9 @@
                          [(:typed mutant) (:verification mutant) (:binding mutant)])]
         (is (= :rejected (:status rejected)))))
     (println (pr-str {:checked-dual-bare-set-source-products {:g 1 :q-typed-products 0}
-                      :c7 :ordinary-unseeded :c7-fresh-verifier :default-work-policy
-                      :c8 :public-wrappers :lowering :stock-fresh-verification
+                      :c7 :ordinary-unseeded :c7-fresh-verifier :explicit-caller-work-policy
+                      :type-inference-work-allowance 1048576
+                      :c8 :public-wrappers :lowering :stock-fresh-verification-with-explicit-caller-work-policy
                       :runtime :unchanged-original-provider :authority :non-authoritative}))))
 
 (deftest current-gravity-checked-dual-bare-set-equality-runtime-development-kernel
