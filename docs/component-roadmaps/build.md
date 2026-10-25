@@ -1,0 +1,55 @@
+# Build
+
+Working name: **Build** (proposed). Semantic key: `build`.
+Owner role: build/package maintainer; current owner unassigned by this proposal.
+Baseline: `c21068a6d39259b7110845bbbcefaf9bf6901232`.
+
+## Purpose and scope
+
+Turn declared projects and dependencies into reproducible typed artifacts.
+Own project/lockfile normalization, dependency resolution, graph execution,
+incremental cache policy, package provenance and publication verification.
+Governed by [build/package contracts](../phase-12-build-package-and-artifact-system/README.md).
+Not a source semantics owner, authority grantor or implicit shell convention.
+
+## Release outcome
+
+A real clean and incremental build resolves a locked dependency graph, executes
+only declared effects, produces the selected target artifacts and their
+provenance/SBOM/signature records, and rejects incompatible dependencies,
+unauthorized effects and invalid cache hits. Outcome open.
+
+## Interfaces and dependencies
+
+Inputs: project manifest, lockfile, source graph, compiler identity, target
+matrix, policy, environment and explicit grants. Outputs: build graph/node logs,
+cache decisions, artifacts, package records and reproducibility evidence.
+Actual compiler invocation requires the relevant component outputs; manifest,
+resolver and graph work can proceed against recorded fixture interfaces.
+Existing seed/toolchain can build early components. A future self-hosted Build
+is not a prerequisite for Reader or any earlier component's development.
+
+## Remaining tasks and evidence
+
+| Task (all open) | Evidence baseline | Closing evidence |
+| --- | --- | --- |
+| Implement project/lock normalization and constraint resolution | [Package report](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00569-stage0-compiled-plan-package-report.clj) | Real dependency resolution with conflict, profile and capability rejection |
+| Execute typed graph under declared build effects | [Build architecture](../phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md) | Clean build node receipts and undeclared environment/network/shell rejection |
+| Implement dependency-aware caching and invalidation | [Pass cache](../../bootstrap/clojure/src/gravity/pass_cache.clj) | Reuse on equal inputs; rebuild on source, compiler, grant, policy or target changes |
+| Produce and verify package/provenance/signing records | [Artifact contract](../phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md) | Actual published package retrieval/verification fixtures; tamper and missing-record rejection |
+| Close reproducibility and target matrix | [Reproducibility contract](../phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md) | Repeated locked builds with matching identities and explicit failing-target diagnostics |
+
+The inspected package report labels its gate `:metadata-gate-only`; its nested
+complete statuses do not establish a functioning resolver/build/package system.
+Architecture decision owner: build maintainer. Recommendation: keep graph
+execution independent of package transport, with locked provider interfaces;
+record adopted transport/cache policy before package publication support.
+
+## Acceptance and integration
+
+Yes/no: do clean and incremental outputs agree? Are cache invalidations complete?
+Does every node have input/output/effect provenance? Are unauthorized effects
+rejected before execution? Are signatures verified against explicit policy?
+All must be yes. Integration: compiler artifact build, locked package build,
+then Release consumption. No cost model, project budget or input quota is an
+admission requirement.

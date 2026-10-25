@@ -9,7 +9,7 @@
   (:capabilities #{})
   (:safety :safe))
 
-; SH-22 bounded bootstrap standard-library leaf. Runtime provider execution,
+; SH-22 bootstrap standard-library leaf. Runtime provider execution,
 ; authenticated SH-13/SH-14/SH-19 inputs, and the complete standard library
 ; remain integration work.
 
@@ -18,16 +18,6 @@
    :version 1
    :stability :experimental
    :profile :meta
-   :maximum-collection-elements 256
-   :maximum-utf8-bytes 256
-   :maximum-carrier-depth 32
-   :maximum-canonical-depth 16
-   :maximum-container-width 256
-   :maximum-carrier-width 512
-   :maximum-carrier-nodes 65536
-   :maximum-scalar-units 65536
-   :maximum-origin-entries 32
-   :maximum-hygiene-marks 32
    :integer-minimum -9223372036854775808
    :integer-maximum 9223372036854775807
    :operation-set
@@ -58,7 +48,7 @@
     :canonical-data}
    :experimental-opt-in-required true
    :diagnostics
-   #{"STD1001" "STD1002" "STD1003" "STD2004" "STD3001" "STD3002"
+   #{"STD1001" "STD1002" "STD1003" "STD2004" "STD3002"
      "STD4001" "STD5001" "STD5002" "STD8001" "STD8003"
      "STD10003" "STD15001" "STD20001"}
    :pending
@@ -95,25 +85,25 @@
      :vector-assoc :collections
      "(Vector a) Int a -> (Result (Vector a) Error)"
      #{:memory/allocate} #{}
-     :bounded-by-result ["STD3001" "STD3002"] #{:meta})
+     :bounded-by-result ["STD3002"] #{:meta})
     (sh22-export
      :vector-append :collections
      "(Vector a) a -> (Result (Vector a) CollectionError)"
      #{:memory/allocate} #{}
-     :bounded-by-result ["STD3001" "STD3002"] #{:meta})
+     :bounded-by-result ["STD3002"] #{:meta})
     (sh22-export
      :vector-nth :collections
      "(Vector a) Int -> (Result a Error)" #{} #{}
-     :none ["STD3001" "STD3002"] #{:meta})
+     :none ["STD3002"] #{:meta})
     (sh22-export
      :vector-slice :collections
      "(Vector a) Integer Integer -> (Result (Vector a) CollectionError)"
-     #{:memory/allocate} #{} :bounded-by-result ["STD3001" "STD3002"] #{:meta})
+     #{:memory/allocate} #{} :bounded-by-result ["STD3002"] #{:meta})
     (sh22-export
      :ordered-map-assoc :collections
      "(OrderedMap k v) k v -> (Result (OrderedMap k v) Error)"
      #{:memory/allocate} #{}
-     :bounded-by-result ["STD3001"] #{:meta})
+     :bounded-by-result [] #{:meta})
     (sh22-export
      :ordered-map-get :collections
      "(OrderedMap k v) k -> (Option v)" #{} #{}
@@ -121,36 +111,36 @@
     (sh22-export
      :ordered-map-get-default-keyword :collections
      "(OrderedMap Keyword a) Keyword a -> (Result a CollectionError)"
-     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
+     #{} #{} :none ["STD10003"] #{:meta})
     (sh22-export
      :ordered-map-dissoc-keyword :collections
      "(OrderedMap Keyword a) Keyword -> (Result (OrderedMap Keyword a) CollectionError)"
-     #{:memory/allocate} #{} :bounded-by-result ["STD3001" "STD10003"] #{:meta})
+     #{:memory/allocate} #{} :bounded-by-result ["STD10003"] #{:meta})
     (sh22-export
      :ordered-set-conj :collections
      "(OrderedSet a) a -> (Result (OrderedSet a) Error)"
      #{:memory/allocate} #{}
-     :bounded-by-result ["STD3001"] #{:meta})
+     :bounded-by-result [] #{:meta})
     (sh22-export
      :ordered-set-contains-keyword :collections
      "(OrderedSet Keyword) Keyword -> (Result Bool CollectionError)"
-     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
+     #{} #{} :none ["STD10003"] #{:meta})
     (sh22-export
      :ordered-set-contains-symbol :collections
      "(OrderedSet Symbol) Symbol -> (Result Bool CollectionError)"
-     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
+     #{} #{} :none ["STD10003"] #{:meta})
     (sh22-export
      :ordered-set-contains-integer :collections
      "(OrderedSet Integer) Integer -> (Result Bool CollectionError)"
-     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
+     #{} #{} :none ["STD10003"] #{:meta})
     (sh22-export
      :ordered-set-equal-keyword :collections
      "(OrderedSet Keyword) (OrderedSet Keyword) -> (Result Bool CollectionError)"
-     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
+     #{} #{} :none ["STD10003"] #{:meta})
     (sh22-export
      :ordered-set-equal-integer :collections
      "(OrderedSet Integer) (OrderedSet Integer) -> (Result Bool CollectionError)"
-     #{} #{} :none ["STD3001" "STD10003"] #{:meta})
+     #{} #{} :none ["STD10003"] #{:meta})
     (sh22-export
      :utf8-validate :text
      "(Vector Byte) -> (Result ValidatedUtf8 TextError)"
@@ -260,57 +250,48 @@
 (defn sh22-origin-chain-valid? [origin-chain]
   (if (vector? origin-chain)
     (if (> (count origin-chain) 0)
-      (if (<= (count origin-chain)
-              (get (sh22-library-policy) :maximum-origin-entries))
-        (loop [remaining origin-chain]
-          (if (= 0 (count remaining))
-            true
-            (let [origin (first remaining)]
-              (if (sh22-exact-keys? origin #{:kind :source-id})
-                (if (keyword? (get origin :kind))
-                  (if (sh22-source-id-valid? (get origin :source-id))
-                    (recur (rest remaining))
-                    false)
+      (loop [remaining origin-chain]
+        (if (= 0 (count remaining))
+          true
+          (let [origin (first remaining)]
+            (if (sh22-exact-keys? origin #{:kind :source-id})
+              (if (keyword? (get origin :kind))
+                (if (sh22-source-id-valid? (get origin :source-id))
+                  (recur (rest remaining))
                   false)
-                false))))
-        false)
+                false)
+              false))))
       false)
     false))
 
-(defn sh22-keyword-vector? [values maximum]
+(defn sh22-keyword-vector? [values]
   (if (vector? values)
-    (if (<= (count values) maximum)
-      (loop [remaining values]
-        (if (= 0 (count remaining))
-          true
-          (if (keyword? (first remaining))
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining values]
+      (if (= 0 (count remaining))
+        true
+        (if (keyword? (first remaining))
+          (recur (rest remaining))
+          false)))
     false))
 
-(defn sh22-symbol-vector? [values maximum]
+(defn sh22-symbol-vector? [values]
   (if (vector? values)
-    (if (<= (count values) maximum)
-      (loop [remaining values]
-        (if (= 0 (count remaining))
-          true
-          (if (symbol? (first remaining))
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining values]
+      (if (= 0 (count remaining))
+        true
+        (if (symbol? (first remaining))
+          (recur (rest remaining))
+          false)))
     false))
 
-(defn sh22-integer-vector? [values maximum]
+(defn sh22-integer-vector? [values]
   (if (vector? values)
-    (if (<= (count values) maximum)
-      (loop [index 0]
-        (if (= index (count values))
-          true
-          (if (integer? (get values index))
-            (recur (+ index 1))
-            false)))
-      false)
+    (loop [index 0]
+      (if (= index (count values))
+        true
+        (if (integer? (get values index))
+          (recur (+ index 1))
+          false)))
     false))
 
 (defn sh22-aggregate? [value]
@@ -324,88 +305,93 @@
 
 (defn sh22-aggregate-components [value]
   (if (map? value)
-    (loop [remaining (keys value) result []]
+    (loop [remaining (vec value) result []]
       (if (= 0 (count remaining))
         result
         (recur
          (rest remaining)
          (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
+          (conj result (get (first remaining) 0))
+          (get (first remaining) 1)))))
     (vec value)))
 
+(defn sh22-native-ancestor? [value ancestors]
+  (loop [index 0]
+    (if (= index (count ancestors))
+      false
+      (if (bootstrap-native-identical? value (get ancestors index))
+        true
+        (recur (+ index 1))))))
+
+(defn sh22-native-vector-view-valid? [value]
+  (loop [current value ancestors []]
+    (if (sh22-native-ancestor? current ancestors)
+      false
+      (let [header (bootstrap-native-carrier-header current)
+            kind (get header 0)]
+        (if (= kind :vector)
+          true
+          (if (= kind :subvector)
+            (let [start (get header 5)
+                  extent (get header 2)
+                  backing (get header 4)
+                  backing-header (bootstrap-native-carrier-header backing)
+                  backing-kind (get backing-header 0)]
+              (if (if (= backing-kind :vector) true (= backing-kind :subvector))
+                (if (<= 0 start)
+                  (if (<= 0 extent)
+                    (if (<= (+ start extent) (get backing-header 2))
+                      (recur backing (conj ancestors current))
+                      false)
+                    false)
+                  false)
+                false))
+            false))))))
+
 (defn sh22-carrier-preflight [value]
-  (let [policy (sh22-library-policy)
-        maximum-nodes (get policy :maximum-carrier-nodes)
-        maximum-depth (get policy :maximum-carrier-depth)
-        maximum-width (get policy :maximum-carrier-width)
-        maximum-scalar-units (get policy :maximum-scalar-units)
-        ; Private logical observation fee, not a payload or heap-byte limit.
-        ; F = result Vector 7 + common plan temporaries 30 + max(1, 37).
-        ; Clojure 1.12.5 get-in/reduce1: each of two two-key paths reserves
-        ; Vector 3 + ChunkedSeq 8 (including inherited fields) + ArrayChunk 4.
-        ; String adds one length metric; Keyword repeats common 30 in its
-        ; Symbol observer plus seven length/cast/separator/sum/colon values.
-        ; No constant-folding or cached-box discount. The node guard below
-        ; bounds selected calls by maximum-nodes, so this pool adds no new
-        ; payload admission limit and does not meter the host interpreter.
-        header-fee (+ 7 30 37)]
-    (loop [frontier [[value 0]]
-           nodes 0
-           scalar-units 0
-           observation-left (* maximum-nodes header-fee)]
-      (if (= 0 (count frontier))
-        {:status :accepted
-         :nodes nodes
-         :scalar-units scalar-units}
-        (let [entry (first frontier)
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes maximum-nodes)
-            {:status :rejected :reason :carrier-node-bound}
-            (if (> depth maximum-depth)
-              {:status :rejected :reason :carrier-depth-bound}
-              (if (sh22-aggregate? current)
-                (if (> (count current) maximum-width)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (let [components (sh22-aggregate-components current)
-                        next-frontier
-                        (loop [remaining components
-                               result (rest frontier)]
-                          (if (= 0 (count remaining))
-                            result
-                            (recur
-                             (rest remaining)
-                             (conj
-                              result
-                              [(first remaining) (+ depth 1)]))))]
-                    (recur next-frontier next-nodes scalar-units observation-left)))
-                (let [textual? (if (string? current) true (keyword? current))
-                      next-observation-left
-                      (if textual? (- observation-left header-fee) observation-left)]
-                  (if (< next-observation-left 0)
-                    {:status :rejected :reason :carrier-header-observation-bound}
-                    (let [units
-                          (if textual?
-                            (let [header (bootstrap-native-carrier-header current)
-                                  metric (get header 3)]
-                              (if (= (if (string? current) :string :keyword)
-                                     (get header 0))
-                                (if (integer? metric)
-                                  (if (<= 0 metric) metric nil)
-                                  nil)
-                                nil))
-                            (if (symbol? current)
-                              (bootstrap-symbol-utf16-unit-count current)
-                              (count (vec (str current)))))]
-                      (if (integer? units)
-                        (if (> units (- maximum-scalar-units scalar-units))
-                          {:status :rejected :reason :carrier-scalar-bound}
-                          (recur
-                           (rest frontier) next-nodes (+ scalar-units units)
-                           next-observation-left))
-                        {:status :rejected :reason :carrier-invalid-textual-header}))))))))))))
+  (loop [frontier [[value []]]]
+    (if (= 0 (count frontier))
+      {:status :accepted}
+      (let [entry (first frontier)
+            current (get entry 0)
+            ancestors (get entry 1)]
+        (if (sh22-aggregate? current)
+          (if (sh22-native-ancestor? current ancestors)
+            {:status :rejected :reason :cyclic-carrier}
+            (let [header (bootstrap-native-carrier-header current)
+                  kind (get header 0)
+                  next-ancestors (conj ancestors current)
+                  components
+                  (if (= kind :list-node)
+                    [(get header 4) (get header 5)]
+                    (if (= kind :empty-list)
+                      []
+                      (if (if (= kind :vector) true (= kind :subvector))
+                        (if (sh22-native-vector-view-valid? current)
+                          (sh22-aggregate-components current)
+                          nil)
+                        (if (if (= kind :map) true (= kind :set))
+                          (sh22-aggregate-components current)
+                          (if (= kind :tree-map)
+                            (if (= :default-comparator (get header 4))
+                              (sh22-aggregate-components current)
+                              nil)
+                            nil)))))]
+              (if (= nil components)
+                {:status :rejected :reason :unsupported-native-carrier}
+                (let [next-frontier
+                      (loop [remaining components result (rest frontier)]
+                        (if (= 0 (count remaining))
+                          result
+                          (recur (rest remaining)
+                                 (conj result [(first remaining) next-ancestors]))))]
+                  (recur next-frontier)))))
+          (if (if (string? current) true (keyword? current))
+            (let [header (bootstrap-native-carrier-header current)]
+              (if (= (if (string? current) :string :keyword) (get header 0))
+                (recur (rest frontier))
+                {:status :rejected :reason :carrier-invalid-textual-header}))
+            (recur (rest frontier))))))))
 
 (defn sh22-physical-path-key? [key value]
   (if
@@ -481,13 +467,10 @@
                          (get request :origin-chain))
                       (if (string? (get request :actual-source-path))
                         (if (> (count (get request :actual-source-path)) 0)
-                          (if (<= (count (get request :actual-source-path))
-                                  4096)
-                            (if (sh22-path-neutral-value?
-                                 (get request :arguments))
-                              (sh22-path-neutral-value?
-                               (get request :origin-chain))
-                              false)
+                          (if (sh22-path-neutral-value?
+                               (get request :arguments))
+                            (sh22-path-neutral-value?
+                             (get request :origin-chain))
                             false)
                           false)
                         false)
@@ -517,7 +500,7 @@
    :source-span (get request :source-span)
    :origin-chain (get request :origin-chain)
    :severity :error
-   :remediation :use-bounded-checked-capability-explicit-library-operation})
+   :remediation :use-checked-capability-explicit-library-operation})
 
 (defn sh22-rejected [request rule reason]
   (let [candidate
@@ -537,13 +520,13 @@
                    :diagnostics
                    [(sh22-diagnostic
                      (assoc request :request-id nil)
-                     "STD10003" :request-identity-carrier-bound-exceeded)])]
+                     "STD10003" :invalid-request-identity-carrier)])]
         (if (= :accepted (get (sh22-carrier-preflight redacted) :status))
           redacted
           (assoc candidate :request-id nil :operation nil
                  :diagnostics
                  [(sh22-diagnostic
-                   {} "STD10003" :diagnostic-carrier-bound-exceeded)]))))))
+                   {} "STD10003" :invalid-diagnostic-carrier)]))))))
 
 (defn sh22-identity-input [request]
   {:artifact (get request :artifact)
@@ -577,7 +560,7 @@
          :pending (get (sh22-library-policy) :pending)}]
     (if (= :accepted (get (sh22-carrier-preflight candidate) :status))
       candidate
-      (sh22-rejected request "STD10003" :result-carrier-bound-exceeded))))
+      (sh22-rejected request "STD10003" :invalid-result-carrier))))
 
 (defn sh22-index-valid? [values index]
   (if (integer? index)
@@ -593,20 +576,15 @@
         value (get arguments 2)]
     (if (= 3 (count arguments))
       (if (vector? values)
-        (if (<= (count values)
-                (get (sh22-library-policy)
-                     :maximum-collection-elements))
-          (if (sh22-index-valid? values index)
-            (sh22-accepted
-             request (assoc values index value)
-             {:collection-kind :vector
-              :safety-outcome :proven-safe
-              :allocation :bounded-by-result
-              :persistent-value-semantics true})
-            (sh22-rejected
-             request "STD3002" :index-out-of-bounds))
+        (if (sh22-index-valid? values index)
+          (sh22-accepted
+           request (assoc values index value)
+           {:collection-kind :vector
+            :safety-outcome :proven-safe
+            :allocation :bounded-by-result
+            :persistent-value-semantics true})
           (sh22-rejected
-           request "STD3001" :collection-bound-exceeded))
+           request "STD3002" :index-out-of-bounds))
         (sh22-rejected request "STD3002" :expected-vector))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -624,12 +602,7 @@
         value (get arguments 1)]
     (if (= 2 (count arguments))
       (if (vector? values)
-        (if (< (count values)
-               (get (sh22-library-policy)
-                    :maximum-collection-elements))
-          (sh22-vector-append-result request values value)
-          (sh22-rejected
-           request "STD3001" :collection-bound-exceeded))
+        (sh22-vector-append-result request values value)
         (sh22-rejected request "STD3002" :expected-vector))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -639,19 +612,14 @@
         index (get arguments 1)]
     (if (= 2 (count arguments))
       (if (vector? values)
-        (if (<= (count values)
-                (get (sh22-library-policy)
-                     :maximum-collection-elements))
-          (if (sh22-index-valid? values index)
-            (sh22-accepted
-             request (get values index)
-             {:collection-kind :vector
-              :safety-outcome :proven-safe
-              :allocation :none})
-            (sh22-rejected
-             request "STD3002" :index-out-of-bounds))
+        (if (sh22-index-valid? values index)
+          (sh22-accepted
+           request (get values index)
+           {:collection-kind :vector
+            :safety-outcome :proven-safe
+            :allocation :none})
           (sh22-rejected
-           request "STD3001" :collection-bound-exceeded))
+           request "STD3002" :index-out-of-bounds))
         (sh22-rejected request "STD3002" :expected-vector))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -665,7 +633,7 @@
     false))
 
 (defn sh22-vector-slice-values [values start end]
-  ; STD3: bounded, checked indexes precede any copy. Build a fresh Vector
+  ; STD3: checked indexes precede any copy. Build a fresh Vector
   ; spine rather than retaining a subvec view of the input's backing storage.
   (loop [index start result []]
     (if (= index end)
@@ -679,17 +647,14 @@
         end (get arguments 2)]
     (if (= 3 (count arguments))
       (if (vector? values)
-        (if (<= (count values)
-                (get (sh22-library-policy) :maximum-collection-elements))
-          (if (sh22-vector-slice-bounds? values start end)
-            (sh22-accepted
-             request (sh22-vector-slice-values values start end)
-             {:collection-kind :vector :safety-outcome :proven-safe
-              :allocation :bounded-by-result :persistent-value-semantics true
-              :storage :copied-vector-spine :stored-values :shallow-shared
-              :lifetime :persistent :borrows-input-storage false})
-            (sh22-rejected request "STD3002" :slice-out-of-bounds))
-          (sh22-rejected request "STD3001" :collection-bound-exceeded))
+        (if (sh22-vector-slice-bounds? values start end)
+          (sh22-accepted
+           request (sh22-vector-slice-values values start end)
+           {:collection-kind :vector :safety-outcome :proven-safe
+            :allocation :bounded-by-result :persistent-value-semantics true
+            :storage :copied-vector-spine :stored-values :shallow-shared
+            :lifetime :persistent :borrows-input-storage false})
+          (sh22-rejected request "STD3002" :slice-out-of-bounds))
         (sh22-rejected request "STD3002" :expected-vector))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -724,11 +689,7 @@
 
 (defn sh22-ordered-map-valid? [value]
   (if (sh22-ordered-map-shape? value)
-    (if (<= (count (get value :entries))
-            (get (sh22-library-policy)
-                 :maximum-collection-elements))
-      (sh22-entries-well-formed? (get value :entries))
-      false)
+    (sh22-entries-well-formed? (get value :entries))
     false))
 
 (defn sh22-entry-index [entries key index]
@@ -745,36 +706,27 @@
         value (get arguments 2)]
     (if (= 3 (count arguments))
       (if (sh22-ordered-map-shape? ordered-map)
-        (let [entries (get ordered-map :entries)
-              maximum (get (sh22-library-policy)
-                           :maximum-collection-elements)]
-          (if (<= (count entries)
-                  maximum)
-            (if (sh22-entries-well-formed? entries)
-              (let [index (sh22-entry-index entries key 0)]
-                (if (= nil index)
-                  (if (< (count entries) maximum)
-                    (sh22-accepted
-                     request
-                     (assoc ordered-map :entries
-                            (conj entries [key value]))
-                     {:collection-kind :ordered-map
-                      :ordering :insertion-order
-                      :allocation :bounded-by-result
-                      :persistent-value-semantics true})
-                    (sh22-rejected
-                     request "STD3001" :collection-bound-exceeded))
-                  (sh22-accepted
-                   request
-                   (assoc ordered-map :entries
-                          (assoc entries index [key value]))
-                   {:collection-kind :ordered-map
-                    :ordering :insertion-order
-                    :allocation :bounded-by-result
-                    :persistent-value-semantics true})))
-              (sh22-rejected request "STD10003" :expected-ordered-map))
-            (sh22-rejected
-             request "STD3001" :collection-bound-exceeded)))
+        (let [entries (get ordered-map :entries)]
+          (if (sh22-entries-well-formed? entries)
+            (let [index (sh22-entry-index entries key 0)]
+              (if (= nil index)
+                (sh22-accepted
+                 request
+                 (assoc ordered-map :entries
+                        (conj entries [key value]))
+                 {:collection-kind :ordered-map
+                  :ordering :insertion-order
+                  :allocation :bounded-by-result
+                  :persistent-value-semantics true})
+                (sh22-accepted
+                 request
+                 (assoc ordered-map :entries
+                        (assoc entries index [key value]))
+                 {:collection-kind :ordered-map
+                  :ordering :insertion-order
+                  :allocation :bounded-by-result
+                  :persistent-value-semantics true})))
+            (sh22-rejected request "STD10003" :expected-ordered-map)))
         (sh22-rejected request "STD10003" :expected-ordered-map))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -784,30 +736,25 @@
         key (get arguments 1)]
     (if (= 2 (count arguments))
       (if (sh22-ordered-map-shape? ordered-map)
-        (let [entries (get ordered-map :entries)
-              maximum (get (sh22-library-policy)
-                           :maximum-collection-elements)]
-          (if (<= (count entries) maximum)
-            (if (sh22-entries-well-formed? entries)
-              (let [index (sh22-entry-index entries key 0)]
-                (if (= nil index)
-                  (sh22-accepted
-                   request {:artifact :gravity/option :variant :none}
-                   {:collection-kind :ordered-map :allocation :none})
-                  (sh22-accepted
-                   request
-                   {:artifact :gravity/option
-                    :variant :some
-                    :value (get (get entries index) 1)}
-                   {:collection-kind :ordered-map :allocation :none})))
-              (sh22-rejected request "STD10003" :expected-ordered-map))
-            (sh22-rejected
-             request "STD3001" :collection-bound-exceeded)))
+        (let [entries (get ordered-map :entries)]
+          (if (sh22-entries-well-formed? entries)
+            (let [index (sh22-entry-index entries key 0)]
+              (if (= nil index)
+                (sh22-accepted
+                 request {:artifact :gravity/option :variant :none}
+                 {:collection-kind :ordered-map :allocation :none})
+                (sh22-accepted
+                 request
+                 {:artifact :gravity/option
+                  :variant :some
+                  :value (get (get entries index) 1)}
+                 {:collection-kind :ordered-map :allocation :none})))
+            (sh22-rejected request "STD10003" :expected-ordered-map)))
         (sh22-rejected request "STD10003" :expected-ordered-map))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
 (defn sh22-keyword-map-entries? [entries]
-  ; The owning caller has established a Vector of at most 256 entries.
+  ; The owning caller has established a Vector of entries.
   (loop [index 0]
     (if (= index (count entries))
       true
@@ -825,26 +772,21 @@
         default (get arguments 2)]
     (if (= 3 (count arguments))
       (if (sh22-ordered-map-shape? ordered-map)
-        (let [entries (get ordered-map :entries)
-              maximum (get (sh22-library-policy) :maximum-collection-elements)]
-          (if (<= (count entries) maximum)
-            ; STD2/STD3: complete key/pair and needle domains precede equality;
-            ; uniqueness precedes lookup, and presence never uses truthiness.
-            (if (sh22-keyword-map-entries? entries)
-              (if (keyword? key)
-                (if (sh22-entries-well-formed? entries)
-                  (let [index (sh22-entry-index entries key 0)]
-                    (sh22-accepted
-                     request
-                     (if (= nil index) default (get (get entries index) 1))
-                     {:collection-kind :ordered-map :key-family :keyword
-                      :lookup :explicit-default :equality :keyword-value
-                      :safety-outcome :proven-safe :allocation :none
-                      :persistent-value-semantics true}))
-                  (sh22-rejected request "STD10003" :expected-ordered-map))
-                (sh22-rejected request "STD10003" :expected-keyword))
-              (sh22-rejected request "STD10003" :expected-keyword-ordered-map))
-            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+        (let [entries (get ordered-map :entries)]
+          (if (sh22-keyword-map-entries? entries)
+            (if (keyword? key)
+              (if (sh22-entries-well-formed? entries)
+                (let [index (sh22-entry-index entries key 0)]
+                  (sh22-accepted
+                   request
+                   (if (= nil index) default (get (get entries index) 1))
+                   {:collection-kind :ordered-map :key-family :keyword
+                    :lookup :explicit-default :equality :keyword-value
+                    :safety-outcome :proven-safe :allocation :none
+                    :persistent-value-semantics true}))
+                (sh22-rejected request "STD10003" :expected-ordered-map))
+              (sh22-rejected request "STD10003" :expected-keyword))
+            (sh22-rejected request "STD10003" :expected-keyword-ordered-map)))
         (sh22-rejected request "STD10003" :expected-ordered-map))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -863,25 +805,22 @@
         key (get arguments 1)]
     (if (= 2 (count arguments))
       (if (sh22-ordered-map-shape? ordered-map)
-        (let [entries (get ordered-map :entries)
-              maximum (get (sh22-library-policy) :maximum-collection-elements)]
-          (if (<= (count entries) maximum)
-            (if (sh22-keyword-map-entries? entries)
-              (if (keyword? key)
-                (if (sh22-entries-well-formed? entries)
-                  (let [index (sh22-entry-index entries key 0)]
-                    (sh22-accepted
-                     request
-                     (if (= nil index)
-                       ordered-map
-                       (assoc ordered-map :entries (sh22-remove-map-entry entries index)))
-                     {:collection-kind :ordered-map :key-family :keyword
-                      :ordering :insertion-order :persistent-value-semantics true
-                      :allocation (if (= nil index) :none :bounded-by-result)}))
-                  (sh22-rejected request "STD10003" :expected-ordered-map))
-                (sh22-rejected request "STD10003" :expected-keyword))
-              (sh22-rejected request "STD10003" :expected-keyword-ordered-map))
-            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+        (let [entries (get ordered-map :entries)]
+          (if (sh22-keyword-map-entries? entries)
+            (if (keyword? key)
+              (if (sh22-entries-well-formed? entries)
+                (let [index (sh22-entry-index entries key 0)]
+                  (sh22-accepted
+                   request
+                   (if (= nil index)
+                     ordered-map
+                     (assoc ordered-map :entries (sh22-remove-map-entry entries index)))
+                   {:collection-kind :ordered-map :key-family :keyword
+                    :ordering :insertion-order :persistent-value-semantics true
+                    :allocation (if (= nil index) :none :bounded-by-result)}))
+                (sh22-rejected request "STD10003" :expected-ordered-map))
+              (sh22-rejected request "STD10003" :expected-keyword))
+            (sh22-rejected request "STD10003" :expected-keyword-ordered-map)))
         (sh22-rejected request "STD10003" :expected-ordered-map))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -896,11 +835,7 @@
 
 (defn sh22-ordered-set-valid? [value]
   (if (sh22-ordered-set-shape? value)
-    (if (<= (count (get value :values))
-            (get (sh22-library-policy)
-                 :maximum-collection-elements))
-      (sh22-vector-unique? (get value :values) [])
-      false)
+    (sh22-vector-unique? (get value :values) [])
     false))
 
 (defn sh22-vector-contains? [values value index]
@@ -925,32 +860,22 @@
     (if (= 2 (count arguments))
       (if (sh22-ordered-set-shape? ordered-set)
         (let [values (get ordered-set :values)]
-          (if (<= (count values)
-                  (get (sh22-library-policy)
-                       :maximum-collection-elements))
-            (if (sh22-vector-unique? values [])
-              (if (sh22-vector-contains? values value 0)
-                (sh22-accepted
-                 request ordered-set
-                 {:collection-kind :ordered-set
-                  :ordering :insertion-order
-                  :allocation :none
-                  :persistent-value-semantics true})
-                (if (< (count values)
-                       (get (sh22-library-policy)
-                            :maximum-collection-elements))
-                  (sh22-accepted
-                   request
-                   (assoc ordered-set :values (conj values value))
-                   {:collection-kind :ordered-set
-                    :ordering :insertion-order
-                    :allocation :bounded-by-result
-                    :persistent-value-semantics true})
-                  (sh22-rejected
-                   request "STD3001" :collection-bound-exceeded)))
-              (sh22-rejected request "STD10003" :expected-ordered-set))
-            (sh22-rejected
-             request "STD3001" :collection-bound-exceeded)))
+          (if (sh22-vector-unique? values [])
+            (if (sh22-vector-contains? values value 0)
+              (sh22-accepted
+               request ordered-set
+               {:collection-kind :ordered-set
+                :ordering :insertion-order
+                :allocation :none
+                :persistent-value-semantics true})
+              (sh22-accepted
+               request
+               (assoc ordered-set :values (conj values value))
+               {:collection-kind :ordered-set
+                :ordering :insertion-order
+                :allocation :bounded-by-result
+                :persistent-value-semantics true}))
+            (sh22-rejected request "STD10003" :expected-ordered-set)))
         (sh22-rejected request "STD10003" :expected-ordered-set))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -960,23 +885,18 @@
         value (get arguments 1)]
     (if (= 2 (count arguments))
       (if (sh22-ordered-set-shape? ordered-set)
-        (let [values (get ordered-set :values)
-              maximum (get (sh22-library-policy) :maximum-collection-elements)]
-          (if (<= (count values) maximum)
-            ; STD2/STD3: admit the complete Keyword domain before any member
-            ; equality, then validate uniqueness before accepting a query hit.
-            (if (sh22-keyword-vector? values maximum)
-              (if (keyword? value)
-                (if (sh22-vector-unique? values [])
-                  (sh22-accepted
-                   request (sh22-vector-contains? values value 0)
-                   {:collection-kind :ordered-set :member-family :keyword
-                    :equality :keyword-value :safety-outcome :proven-safe
-                    :allocation :none :persistent-value-semantics true})
-                  (sh22-rejected request "STD10003" :expected-ordered-set))
-                (sh22-rejected request "STD10003" :expected-keyword))
-              (sh22-rejected request "STD10003" :expected-keyword-ordered-set))
-            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+        (let [values (get ordered-set :values)]
+          (if (sh22-keyword-vector? values)
+            (if (keyword? value)
+              (if (sh22-vector-unique? values [])
+                (sh22-accepted
+                 request (sh22-vector-contains? values value 0)
+                 {:collection-kind :ordered-set :member-family :keyword
+                  :equality :keyword-value :safety-outcome :proven-safe
+                  :allocation :none :persistent-value-semantics true})
+                (sh22-rejected request "STD10003" :expected-ordered-set))
+              (sh22-rejected request "STD10003" :expected-keyword))
+            (sh22-rejected request "STD10003" :expected-keyword-ordered-set)))
         (sh22-rejected request "STD10003" :expected-ordered-set))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -1059,22 +979,19 @@
         bytes (get arguments 0)]
     (if (= 1 (count arguments))
       (if (vector? bytes)
-        (if (<= (count bytes)
-                (get (sh22-library-policy) :maximum-utf8-bytes))
-          (let [scalar-count (sh22-utf8-scalar-count bytes 0 0)]
-            (if (= nil scalar-count)
-              (sh22-rejected request "STD4001" :invalid-utf8)
-              (sh22-accepted
-               request
-               {:artifact :gravity/validated-utf8
-                :bytes bytes
-                :byte-count (count bytes)
-                :scalar-count scalar-count
-                :encoding :utf-8}
-               {:text-kind :validated-utf8
-                :boundary-policy :unicode-scalar
-                :allocation :bounded-by-input})))
-          (sh22-rejected request "STD4001" :text-bound-exceeded))
+        (let [scalar-count (sh22-utf8-scalar-count bytes 0 0)]
+          (if (= nil scalar-count)
+            (sh22-rejected request "STD4001" :invalid-utf8)
+            (sh22-accepted
+             request
+             {:artifact :gravity/validated-utf8
+              :bytes bytes
+              :byte-count (count bytes)
+              :scalar-count scalar-count
+              :encoding :utf-8}
+             {:text-kind :validated-utf8
+              :boundary-policy :unicode-scalar
+              :allocation :bounded-by-input})))
         (sh22-rejected request "STD4001" :expected-byte-vector))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -1238,19 +1155,17 @@
     (if (= 3 (count arguments))
       (if (keyword? code)
         (if (map? data)
-          (if (<= (count data) 32)
-            (if (sh22-keyword-vector? context 32)
-              (sh22-accepted
-               request
-               {:artifact :gravity/error-value
-                :code code
-                :data data
-                :context context}
-               {:error-model :structured-data
-                :host-exception false
-                :allocation :bounded-by-result})
-              (sh22-rejected request "STD2004" :expected-context-vector))
-            (sh22-rejected request "STD2004" :error-data-bound-exceeded))
+          (if (sh22-keyword-vector? context)
+            (sh22-accepted
+             request
+             {:artifact :gravity/error-value
+              :code code
+              :data data
+              :context context}
+             {:error-model :structured-data
+              :host-exception false
+              :allocation :bounded-by-result})
+            (sh22-rejected request "STD2004" :expected-context-vector))
           (sh22-rejected request "STD2004" :expected-error-data-map))
         (sh22-rejected request "STD2004" :expected-error-code))
       (sh22-rejected request "STD1001" :invalid-arity))))
@@ -1261,6 +1176,8 @@
     false))
 
 (defn sh22-file-read [request]
+  ; The caller requests a positive integer byte count, with fewer allowed at EOF.
+  ; This leaf only emits the authorized descriptor; provider execution is pending.
   (let [arguments (get request :arguments)
         path-token (get arguments 0)
         encoding (get arguments 1)
@@ -1272,25 +1189,22 @@
           (if (= :utf-8 encoding)
             (if (integer? maximum-bytes)
               (if (> maximum-bytes 0)
-                (if (<= maximum-bytes 16777216)
-                  (sh22-accepted
-                   request
-                   {:artifact :gravity/runtime-service-request
-                    :operation :file-read
-                    :path-token path-token
-                    :encoding encoding
-                    :maximum-bytes maximum-bytes
-                    :effect :filesystem/read
-                    :capability :fs/read}
-                   {:provider-execution :required
-                    :ambient-authority false
-                    :allocation :provider-owned})
-                  (sh22-rejected
-                   request "STD8003" :file-read-bound-exceeded))
+                (sh22-accepted
+                 request
+                 {:artifact :gravity/runtime-service-request
+                  :operation :file-read
+                  :path-token path-token
+                  :encoding encoding
+                  :maximum-bytes maximum-bytes
+                  :effect :filesystem/read
+                  :capability :fs/read}
+                 {:provider-execution :required
+                  :ambient-authority false
+                  :allocation :provider-owned})
                 (sh22-rejected
-                 request "STD8003" :invalid-file-read-bound))
+                 request "STD8003" :invalid-file-read-size))
               (sh22-rejected
-               request "STD8003" :invalid-file-read-bound))
+               request "STD8003" :invalid-file-read-size))
             (sh22-rejected request "STD8003" :encoding-required))
           (sh22-rejected request "STD8001" :typed-path-required))
         (sh22-rejected request "STD8001" :missing-io-authority))
@@ -1309,35 +1223,30 @@
               (if (= :utf-8 (get utf8-value :encoding))
                 (let [bytes (get utf8-value :bytes)]
                   (if (vector? bytes)
-                    (if (<= (count bytes)
-                            (get (sh22-library-policy)
-                                 :maximum-utf8-bytes))
-                      (let [scalar-count
-                            (sh22-utf8-scalar-count bytes 0 0)]
-                        (if (if (integer? scalar-count)
-                              (= scalar-count (get utf8-value :scalar-count))
-                              false)
-                          (if (= (count bytes)
-                                 (get utf8-value :byte-count))
-                            (sh22-accepted
-                             request
-                             {:artifact :gravity/runtime-service-request
-                              :operation :stream-write
-                              :stream :stdout
-                              :payload utf8-value
-                              :effect :io/write
-                              :capability :io/stdout}
-                             {:provider-execution :required
-                              :ambient-authority false
-                              :allocation :provider-owned})
-                            (sh22-rejected
-                             request "STD4001"
-                             :validated-text-facts-mismatch))
+                    (let [scalar-count
+                          (sh22-utf8-scalar-count bytes 0 0)]
+                      (if (if (integer? scalar-count)
+                            (= scalar-count (get utf8-value :scalar-count))
+                            false)
+                        (if (= (count bytes)
+                               (get utf8-value :byte-count))
+                          (sh22-accepted
+                           request
+                           {:artifact :gravity/runtime-service-request
+                            :operation :stream-write
+                            :stream :stdout
+                            :payload utf8-value
+                            :effect :io/write
+                            :capability :io/stdout}
+                           {:provider-execution :required
+                            :ambient-authority false
+                            :allocation :provider-owned})
                           (sh22-rejected
                            request "STD4001"
-                           :validated-text-facts-mismatch)))
-                      (sh22-rejected
-                       request "STD4001" :text-bound-exceeded))
+                           :validated-text-facts-mismatch))
+                        (sh22-rejected
+                         request "STD4001"
+                         :validated-text-facts-mismatch)))
                     (sh22-rejected
                      request "STD4001" :validated-text-required)))
                 (sh22-rejected request "STD4001" :validated-text-required))
@@ -1360,21 +1269,18 @@
                      artifact
                      #{:artifact-id :kind :profile :target :provenance})
                   (if (vector? (get artifact :provenance))
-                    (if (<= (count (get artifact :provenance)) 32)
-                      (sh22-accepted
-                       request
-                       {:artifact :gravity/canonical-artifact-data
-                        :fields
-                        [[:artifact-id (get artifact :artifact-id)]
-                         [:kind (get artifact :kind)]
-                         [:profile (get artifact :profile)]
-                         [:target (get artifact :target)]
-                         [:provenance (get artifact :provenance)]]}
-                       {:canonical-order :fixed-schema-field-order
-                        :reflection false
-                        :allocation :bounded-by-result})
-                      (sh22-rejected
-                       request "STD10003" :provenance-bound-exceeded))
+                    (sh22-accepted
+                     request
+                     {:artifact :gravity/canonical-artifact-data
+                      :fields
+                      [[:artifact-id (get artifact :artifact-id)]
+                       [:kind (get artifact :kind)]
+                       [:profile (get artifact :profile)]
+                       [:target (get artifact :target)]
+                       [:provenance (get artifact :provenance)]]}
+                     {:canonical-order :fixed-schema-field-order
+                      :reflection false
+                      :allocation :bounded-by-result})
                     (sh22-rejected
                      request "STD10003" :provenance-required))
                   (sh22-rejected
@@ -1387,17 +1293,14 @@
       (sh22-rejected request "STD1001" :invalid-arity))))
 
 (defn sh22-syntax-metadata-valid? [metadata]
-  ; C3 bounds syntax metadata to 64 Keyword/Symbol keys. Values remain inert
-  ; DATA under the existing complete request-carrier bounds.
+  ; Syntax metadata has Keyword/Symbol keys; values remain inert DATA.
   (if (map? metadata)
-    (if (<= (count metadata) 64)
-      (loop [remaining (keys metadata)]
-        (if (= 0 (count remaining))
-          true
-          (if (if (keyword? (first remaining)) true (symbol? (first remaining)))
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining (keys metadata)]
+      (if (= 0 (count remaining))
+        true
+        (if (if (keyword? (first remaining)) true (symbol? (first remaining)))
+          (recur (rest remaining))
+          false)))
     false))
 
 (defn sh22-meta-view [request]
@@ -1420,9 +1323,7 @@
           (if (sh22-present? (get syntax :syntax-id))
           (if (sh22-source-span-valid? (get syntax :source-span))
             (if (sh22-keyword-vector?
-                 (get syntax :hygiene-marks)
-                 (get (sh22-library-policy)
-                      :maximum-hygiene-marks))
+                 (get syntax :hygiene-marks))
               (if (sh22-present? (get syntax :namespace-context))
                 (if (keyword? (get syntax :phase))
                   (if (sh22-origin-chain-valid?
@@ -1471,70 +1372,64 @@
             (symbol? value)))))))
 
 (defn sh22-canonical-value
-  [value depth]
-  (if (> depth (get (sh22-library-policy) :maximum-canonical-depth))
-    nil
-    (if (sh22-canonical-scalar? value)
-      [:scalar value]
-      (if (vector? value)
-        (if (<= (count value)
-                (get (sh22-library-policy)
-                     :maximum-container-width))
-          (sh22-canonical-vector value 0 (+ depth 1) [])
-          nil)
-        (if (sh22-ordered-map-valid? value)
-          (sh22-canonical-entries
-           (get value :entries) 0 (+ depth 1) [])
-          (if (sh22-ordered-set-valid? value)
-            (sh22-canonical-set-values
-             (get value :values) 0 (+ depth 1) [])
-            nil))))))
+  [value]
+  (if (sh22-canonical-scalar? value)
+    [:scalar value]
+    (if (vector? value)
+      (sh22-canonical-vector value 0 [])
+      (if (sh22-ordered-map-valid? value)
+        (sh22-canonical-entries
+         (get value :entries) 0 [])
+        (if (sh22-ordered-set-valid? value)
+          (sh22-canonical-set-values
+           (get value :values) 0 [])
+          nil)))))
 
-(defn sh22-canonical-vector [values index depth result]
+(defn sh22-canonical-vector [values index result]
   (if (= index (count values))
     [:vector result]
-    (let [encoded (sh22-canonical-value (get values index) depth)]
+    (let [encoded (sh22-canonical-value (get values index))]
       (if (= nil encoded)
         nil
         (sh22-canonical-vector
-         values (+ index 1) depth (conj result encoded))))))
+         values (+ index 1) (conj result encoded))))))
 
-(defn sh22-canonical-entries [entries index depth result]
+(defn sh22-canonical-entries [entries index result]
   (if (= index (count entries))
     [:ordered-map result]
     (let [entry (get entries index)]
       (if (vector? entry)
         (if (= 2 (count entry))
           (let [encoded-key
-                (sh22-canonical-value (get entry 0) depth)
+                (sh22-canonical-value (get entry 0))
                 encoded-value
-                (sh22-canonical-value (get entry 1) depth)]
+                (sh22-canonical-value (get entry 1))]
             (if (= nil encoded-key)
               nil
               (if (= nil encoded-value)
                 nil
                 (sh22-canonical-entries
-                 entries (+ index 1) depth
+                 entries (+ index 1)
                  (conj result [encoded-key encoded-value])))))
           nil)
         nil))))
 
-(defn sh22-canonical-set-values [values index depth result]
+(defn sh22-canonical-set-values [values index result]
   (if (= index (count values))
     [:ordered-set result]
-    (let [encoded (sh22-canonical-value (get values index) depth)]
+    (let [encoded (sh22-canonical-value (get values index))]
       (if (= nil encoded)
         nil
         (sh22-canonical-set-values
-         values (+ index 1) depth (conj result encoded))))))
+         values (+ index 1) (conj result encoded))))))
 
 (defn sh22-canonical-data [request]
   (let [arguments (get request :arguments)]
     (if (= 1 (count arguments))
-      (let [encoded (sh22-canonical-value (get arguments 0) 0)]
+      (let [encoded (sh22-canonical-value (get arguments 0))]
         (if (= nil encoded)
           (sh22-rejected
-           request "STD10003" :noncanonical-or-over-bound-value)
+           request "STD10003" :noncanonical-value)
           (sh22-accepted
            request encoded
            {:canonical-order :explicit-ordered-representation
@@ -1549,23 +1444,18 @@
         value (get arguments 1)]
     (if (= 2 (count arguments))
       (if (sh22-ordered-set-shape? ordered-set)
-        (let [values (get ordered-set :values)
-              maximum (get (sh22-library-policy) :maximum-collection-elements)]
-          (if (<= (count values) maximum)
-            ; STD2/STD3: the complete Symbol domain and uniqueness checks
-            ; precede a query hit; quoted names never grant execution authority.
-            (if (sh22-symbol-vector? values maximum)
-              (if (symbol? value)
-                (if (sh22-vector-unique? values [])
-                  (sh22-accepted
-                   request (sh22-vector-contains? values value 0)
-                   {:collection-kind :ordered-set :member-family :symbol
-                    :equality :symbol-value :safety-outcome :proven-safe
-                    :allocation :none :persistent-value-semantics true})
-                  (sh22-rejected request "STD10003" :expected-ordered-set))
-                (sh22-rejected request "STD10003" :expected-symbol))
-              (sh22-rejected request "STD10003" :expected-symbol-ordered-set))
-            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+        (let [values (get ordered-set :values)]
+          (if (sh22-symbol-vector? values)
+            (if (symbol? value)
+              (if (sh22-vector-unique? values [])
+                (sh22-accepted
+                 request (sh22-vector-contains? values value 0)
+                 {:collection-kind :ordered-set :member-family :symbol
+                  :equality :symbol-value :safety-outcome :proven-safe
+                  :allocation :none :persistent-value-semantics true})
+                (sh22-rejected request "STD10003" :expected-ordered-set))
+              (sh22-rejected request "STD10003" :expected-symbol))
+            (sh22-rejected request "STD10003" :expected-symbol-ordered-set)))
         (sh22-rejected request "STD10003" :expected-ordered-set))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -1575,28 +1465,23 @@
         value (get arguments 1)]
     (if (= 2 (count arguments))
       (if (sh22-ordered-set-shape? ordered-set)
-        (let [values (get ordered-set :values)
-              maximum (get (sh22-library-policy) :maximum-collection-elements)]
-          (if (<= (count values) maximum)
-            ; STD2/STD3/STD5: the entire Integer family precedes equality;
-            ; classification establishes no signed-width or arithmetic proof.
-            (if (sh22-integer-vector? values maximum)
-              (if (integer? value)
-                (if (sh22-vector-unique? values [])
-                  (sh22-accepted
-                   request (sh22-vector-contains? values value 0)
-                   {:collection-kind :ordered-set :member-family :integer
-                    :equality :integer-value :safety-outcome :proven-safe
-                    :allocation :none :persistent-value-semantics true})
-                  (sh22-rejected request "STD10003" :expected-ordered-set))
-                (sh22-rejected request "STD10003" :expected-integer))
-              (sh22-rejected request "STD10003" :expected-integer-ordered-set))
-            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+        (let [values (get ordered-set :values)]
+          (if (sh22-integer-vector? values)
+            (if (integer? value)
+              (if (sh22-vector-unique? values [])
+                (sh22-accepted
+                 request (sh22-vector-contains? values value 0)
+                 {:collection-kind :ordered-set :member-family :integer
+                  :equality :integer-value :safety-outcome :proven-safe
+                  :allocation :none :persistent-value-semantics true})
+                (sh22-rejected request "STD10003" :expected-ordered-set))
+              (sh22-rejected request "STD10003" :expected-integer))
+            (sh22-rejected request "STD10003" :expected-integer-ordered-set)))
         (sh22-rejected request "STD10003" :expected-ordered-set))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
 (defn sh22-keyword-set-equal-values? [left right]
-  ; Both vectors are bounded, homogeneous and unique before this comparison.
+  ; Both vectors are homogeneous and unique before this comparison.
   (if (= (count left) (count right))
     (loop [remaining left]
       (if (= 0 (count remaining))
@@ -1613,30 +1498,25 @@
     (if (= 2 (count arguments))
       (if (if (sh22-ordered-set-shape? left) (sh22-ordered-set-shape? right) false)
         (let [left-values (get left :values)
-              right-values (get right :values)
-              maximum (get (sh22-library-policy) :maximum-collection-elements)]
-          (if (if (<= (count left-values) maximum) (<= (count right-values) maximum) false)
-            ; STD2/STD3: validate both complete member domains and uniqueness
-            ; before count mismatch or an apparent matching prefix can decide.
-            (if (sh22-keyword-vector? left-values maximum)
-              (if (sh22-keyword-vector? right-values maximum)
-                (if (sh22-vector-unique? left-values [])
-                  (if (sh22-vector-unique? right-values [])
-                    (sh22-accepted
-                     request (sh22-keyword-set-equal-values? left-values right-values)
-                     {:collection-kind :ordered-set :member-family :keyword
-                      :equality :keyword-set-value :safety-outcome :proven-safe
-                      :allocation :none :persistent-value-semantics true})
-                    (sh22-rejected request "STD10003" :expected-ordered-set))
+              right-values (get right :values)]
+          (if (sh22-keyword-vector? left-values)
+            (if (sh22-keyword-vector? right-values)
+              (if (sh22-vector-unique? left-values [])
+                (if (sh22-vector-unique? right-values [])
+                  (sh22-accepted
+                   request (sh22-keyword-set-equal-values? left-values right-values)
+                   {:collection-kind :ordered-set :member-family :keyword
+                    :equality :keyword-set-value :safety-outcome :proven-safe
+                    :allocation :none :persistent-value-semantics true})
                   (sh22-rejected request "STD10003" :expected-ordered-set))
-                (sh22-rejected request "STD10003" :expected-keyword-ordered-set))
+                (sh22-rejected request "STD10003" :expected-ordered-set))
               (sh22-rejected request "STD10003" :expected-keyword-ordered-set))
-            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+            (sh22-rejected request "STD10003" :expected-keyword-ordered-set)))
         (sh22-rejected request "STD10003" :expected-ordered-set))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
 (defn sh22-integer-set-equal-values? [left right]
-  ; Both vectors are bounded, homogeneous and unique before this comparison.
+  ; Both vectors are homogeneous and unique before this comparison.
   (if (= (count left) (count right))
     (loop [remaining left]
       (if (= 0 (count remaining))
@@ -1653,25 +1533,20 @@
     (if (= 2 (count arguments))
       (if (if (sh22-ordered-set-shape? left) (sh22-ordered-set-shape? right) false)
         (let [left-values (get left :values)
-              right-values (get right :values)
-              maximum (get (sh22-library-policy) :maximum-collection-elements)]
-          (if (if (<= (count left-values) maximum) (<= (count right-values) maximum) false)
-            ; STD2/STD3/STD5: both complete Integer domains precede equality;
-            ; uniqueness precedes a count result, with no signed-width narrowing.
-            (if (sh22-integer-vector? left-values maximum)
-              (if (sh22-integer-vector? right-values maximum)
-                (if (sh22-vector-unique? left-values [])
-                  (if (sh22-vector-unique? right-values [])
-                    (sh22-accepted
-                     request (sh22-integer-set-equal-values? left-values right-values)
-                     {:collection-kind :ordered-set :member-family :integer
-                      :equality :integer-set-value :safety-outcome :proven-safe
-                      :allocation :none :persistent-value-semantics true})
-                    (sh22-rejected request "STD10003" :expected-ordered-set))
+              right-values (get right :values)]
+          (if (sh22-integer-vector? left-values)
+            (if (sh22-integer-vector? right-values)
+              (if (sh22-vector-unique? left-values [])
+                (if (sh22-vector-unique? right-values [])
+                  (sh22-accepted
+                   request (sh22-integer-set-equal-values? left-values right-values)
+                   {:collection-kind :ordered-set :member-family :integer
+                    :equality :integer-set-value :safety-outcome :proven-safe
+                    :allocation :none :persistent-value-semantics true})
                   (sh22-rejected request "STD10003" :expected-ordered-set))
-                (sh22-rejected request "STD10003" :expected-integer-ordered-set))
+                (sh22-rejected request "STD10003" :expected-ordered-set))
               (sh22-rejected request "STD10003" :expected-integer-ordered-set))
-            (sh22-rejected request "STD3001" :collection-bound-exceeded)))
+            (sh22-rejected request "STD10003" :expected-integer-ordered-set)))
         (sh22-rejected request "STD10003" :expected-ordered-set))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
@@ -1838,4 +1713,4 @@
      :request-id (get request :request-id)
      :diagnostics
      [(sh22-diagnostic
-       request "STD10003" :verification-candidate-over-bound)]}))
+       request "STD10003" :invalid-verification-candidate)]}))

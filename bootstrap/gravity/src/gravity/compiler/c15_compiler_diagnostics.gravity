@@ -199,10 +199,8 @@
       false)
     false))
 
-(defn c15-reader-span-valid? [span physical?]
-  (if (sh15-exact-keys? span (if physical? #{:source :start :end :byte-start :byte-end}
-                                         #{:start :end :byte-start :byte-end}))
-    (if (if physical?
+(defn c15-reader-span-fields-valid? [span physical?]
+  (if (if physical?
           (if (string? (get span :source)) (<= 1 (count (get span :source))) false)
           true)
       (let [start (get span :start) end (get span :end)]
@@ -215,13 +213,44 @@
               false)
             false)
           false))
+      false))
+
+(defn c15-reader-span-valid? [span physical?]
+  (if (sh15-exact-keys? span (if physical? #{:source :start :end :byte-start :byte-end}
+                                         #{:start :end :byte-start :byte-end}))
+    (c15-reader-span-fields-valid? span physical?)
+    false))
+
+(defn c15-public-reader-span-valid? [span]
+  (if (sh15-exact-keys? span #{:file :source :start :end :byte-start :byte-end})
+    (if (sh15-sha256-shape? (get span :file))
+      (c15-reader-span-fields-valid? span true)
+      false)
+    false))
+
+(defn c15-byte-offset-valid? [value]
+  (if (integer? value)
+    (if (<= 0 value) (<= value 2147483647) false)
+    false))
+
+(defn c15-public-byte-span-valid? [span]
+  (if (sh15-exact-keys? span #{:file :source :byte-start :byte-end})
+    (if (sh15-sha256-shape? (get span :file))
+      (if (if (string? (get span :source)) (<= 1 (count (get span :source))) false)
+        (if (c15-byte-offset-valid? (get span :byte-start))
+          (if (c15-byte-offset-valid? (get span :byte-end))
+            (<= (get span :byte-start) (get span :byte-end)) false)
+          false)
+        false)
       false)
     false))
 
 (defn c15-span-valid? [span related?]
   (if (sh15-source-span-valid? span) true
     (if (c15-reader-span-valid? span true) true
-      (if related? (c15-reader-span-valid? span false) false))))
+      (if (c15-public-reader-span-valid? span) true
+        (if (c15-public-byte-span-valid? span) true
+          (if related? (c15-reader-span-valid? span false) false))))))
 
 (defn c15-primary-valid? [primary stage]
   (if (sh15-exact-keys? primary #{:span :syntax-id :artifact})
@@ -243,6 +272,22 @@
       false)
     false))
 
+(defn c15-public-source-origin-valid? [value]
+  (if (sh15-exact-keys? value #{:kind :source-id :path})
+    (if (= :source (get value :kind))
+      (if (sh15-sha256-shape? (get value :source-id))
+        (if (string? (get value :path)) (<= 1 (count (get value :path))) false)
+        false)
+      false)
+    false))
+
+(defn c15-source-bytes-origin-valid? [value]
+  (if (sh15-exact-keys? value #{:kind :path})
+    (if (= :source-bytes (get value :kind))
+      (if (string? (get value :path)) (<= 1 (count (get value :path))) false)
+      false)
+    false))
+
 (defn c15-origin-valid? [value]
   (if (sh15-exact-keys? value #{:kind :logical-source-id :source-content-hash})
     (if (= :source (get value :kind))
@@ -251,7 +296,9 @@
           (sh15-sha256-shape? (get value :source-content-hash)) false)
         false)
       false)
-    (if (sh15-origin-valid? value) (= :source (get value :kind)) false)))
+    (if (c15-public-source-origin-valid? value) true
+      (if (c15-source-bytes-origin-valid? value) true
+        (if (sh15-origin-valid? value) (= :source (get value :kind)) false)))))
 
 (defn c15-vector-valid? [values kind]
   (if (vector? values)
@@ -1088,8 +1135,10 @@
 ; Only rule, severity and an explicitly cleared primary location are rendered.
 ; Other fields (including facts, messages, origins and private outputs) are inert.
 ; Inputs: String/Keyword rule <=128 ASCII units, five C15 severities, optional
-; existing SH15 or physical reader span (path <=512 ASCII units), redactions nil/:not-evaluated or
-; Vector <=64. Only [] clears location disclosure; lifecycle :redacted overrides.
+; point or byte-only source span (path <=512 ASCII units), redactions nil,
+; :not-evaluated or Vector <=64. Only [] clears location disclosure; lifecycle
+; :redacted overrides. Displayed byte intervals use :bounded-ascii-bytes-v1;
+; point, absent and redacted locations retain :bounded-ascii-v1.
 ; Output: one ASCII line <=4096 bytes; absent and redacted locations are explicit.
 ; No truncation, diagnostic identity, provenance or redaction authority is added.
 ; Existing structured data, stream version, exports and nonclaims stay unchanged.
@@ -1157,7 +1206,9 @@
 (defn sh15-text-source-path [span]
   (if (sh15-source-span-valid? span)
     (get span :actual-source-path)
-    (if (c15-reader-span-valid? span true)
+    (if (if (c15-reader-span-valid? span true) true
+          (if (c15-public-reader-span-valid? span) true
+            (c15-public-byte-span-valid? span)))
       (if (<= (count (get span :source)) 512) (get span :source) nil)
       nil)))
 
@@ -1173,14 +1224,27 @@
               (let [source-path (sh15-text-source-path span)]
                 (if (= nil source-path)
                   nil
-                  (let [path (sh15-text-escape source-path)
-                        start (get span :start)]
+                  (let [path (sh15-text-escape source-path)]
                     (if (= nil path)
                       nil
-                      (str "\"" path "\":" (get start :line)
-                           ":" (get start :column))))))))
+                      (if (c15-public-byte-span-valid? span)
+                        (str "\"" path "\":bytes[" (get span :byte-start)
+                             "," (get span :byte-end) ")")
+                        (let [start (get span :start)]
+                          (str "\"" path "\":" (get start :line)
+                               ":" (get start :column))))))))))
           nil)))
     "<redacted>"))
+
+(defn sh15-text-rendering-version [diagnostic redaction-state]
+  (if (= :clear redaction-state)
+    (let [primary (get diagnostic :primary)]
+      (if (map? primary)
+        (if (c15-public-byte-span-valid? (get primary :span))
+          :bounded-ascii-bytes-v1
+          :bounded-ascii-v1)
+        :bounded-ascii-v1))
+    :bounded-ascii-v1))
 
 (defn sh15-text-rejection [reason field]
   {:artifact :gravity/sh15-bounded-diagnostic-text :schema-version 1
@@ -1213,7 +1277,8 @@
                 (if (<= (count text) 4096)
                   {:artifact :gravity/sh15-bounded-diagnostic-text
                    :schema-version 1 :status :accepted
-                   :rendering-version :bounded-ascii-v1 :text text
+                   :rendering-version (sh15-text-rendering-version diagnostic redaction-state)
+                   :text text
                    :redaction-status redaction-state
                    :semantic-authority :none
                    :nonclaims [:diagnostic-authority :redaction-policy
