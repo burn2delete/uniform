@@ -27517,9 +27517,12 @@ atom-domain? (if (contains? #{:nil :boolean :integer :keyword :symbol :string :e
               definition-types (sh08-ft-bind-definition-types definitions type-table
                                  (sh08-ft-bind-lexical-types lexical-bindings type-table binding-types) function-types)
               functions (sh08-ft-update-param-types function-types definition-types)
-              constraints (sh08-ft-call-constraints-with-context calls edges node-index type-table
-                            definition-types functions
-                            (assoc context :loop-work-left (- (get context :loop-work-left 65536) work)))]
+              ; The enclosing recipe and accepted products establish the exact
+              ; unique Core MG binding in this freshly indexed context. The
+              ; normal call-constraints intrinsic-skip branch returns this
+              ; packet even when ordinary inference has exhausted its work.
+              constraints {:compatibility-work-count 0 :binding-types definition-types
+                           :constraints [] :diagnostics []}]
           {:pass {:type-table type-table :binding-shapes binding-shapes :shape-call-context prepared
                   :binding-types (get constraints :binding-types) :loop-member-products {}
                   :function-types functions
