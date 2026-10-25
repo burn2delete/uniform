@@ -30,6 +30,37 @@
       {:artifact :gravity/sh03-reader-policy :schema-version 1
        :retain-trivia true :enabled-reader-tags [[105 110 115 116] [117 117 105 100]]}])))
 
+(deftest envelope-selection-comes-from-the-host-invocation
+  (let [path "src/invocation-context.gravity"
+        bytes (.getBytes "[1]" java.nio.charset.StandardCharsets/UTF_8)
+        project (bootstrap/reader-project-context-for-source path)
+        relative bootstrap/sh03-reader-source-relative-path
+        explicit {:reader-source-path relative
+                  :authenticated-envelope-options {:source :development-current}}
+        selected (bootstrap/sh03-reader-resolved-result!
+                  path bytes project bootstrap/standard-reader-options relative)
+        default (bootstrap/sh03-reader-resolved-result!
+                 path bytes project bootstrap/standard-reader-options)
+        options (deref (ns-resolve 'gravity.bootstrap 'sh03-reader-authenticated-envelope-options))
+        failure (fn [context]
+                  (try (options path context) nil
+                       (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+    (is (= explicit (:invocation-context selected)))
+    (is (nil? (:invocation-context default)))
+    (is (= {:source :development-current} (options path explicit)))
+    (is (nil? (options path nil)))
+    (doseq [invalid [{:artifact :gravity/sh03-current-source-reader-plan-binding}
+                     (assoc explicit :extra true)
+                     (assoc explicit :reader-source-path "/other/reader.gravity")
+                     (assoc explicit :authenticated-envelope-options {})
+                     (assoc explicit :authenticated-envelope-options {:source :unknown})]]
+      (is (= "C2-HASH" (:id (failure invalid)))))
+    (let [calls (atom 0)
+          foreign (proxy [java.util.HashMap] []
+                    (entrySet [] (swap! calls inc) (throw (ex-info "foreign" {}))))]
+      (is (= "C2-HASH" (:id (failure foreign))))
+      (is (zero? @calls)))))
+
 (deftest unmetered-reader-preserves-products-and-fresh-tamper-rejection
   (let [arguments (input "; comment\n[1 :a \"\u00e9\ud83d\ude00\" 2/3] ^:private x")
         result (execute 'sh03-read-source-unit arguments)]

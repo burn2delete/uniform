@@ -1,12 +1,15 @@
 (declare ^:private p15-s23-c6c10-digest-validated-form)
 
-(defn- sh03-reader-authenticated-envelope-options [source-path plan-binding]
-  (case (:artifact plan-binding)
-    :gravity/sh03-pinned-reader-plan-binding nil
-    :gravity/sh03-current-source-reader-plan-binding {:source :development-current}
-    (sh03-reader-boundary-fail!
-     source-path :explicit-sh03-reader-invocation-source-selection
-     nil {:observed-binding-kind (:artifact plan-binding)})))
+(defn- sh03-reader-authenticated-envelope-options [source-path invocation]
+  (when (some? invocation)
+    (when-not
+     (and (= :passed (:status (p15-s23-trusted-carrier-validation invocation :default-only)))
+          (= #{:reader-source-path :authenticated-envelope-options} (set (keys invocation)))
+          (= sh03-reader-source-relative-path (:reader-source-path invocation))
+          (= {:source :development-current} (:authenticated-envelope-options invocation)))
+      (sh03-reader-boundary-fail!
+       source-path :explicit-sh03-reader-invocation-source-selection nil {}))
+    (:authenticated-envelope-options invocation)))
 
 (defn- sh03-reader-validate-envelope-options! [source-path options]
   (when (some? options)
@@ -20,13 +23,7 @@
   (if (nil? invocation)
     {:binding (sh03-reader-current-binding! source-path) :envelope-options nil}
     (do
-      (when-not
-       (and (= :passed (:status (p15-s23-trusted-carrier-validation invocation :default-only)))
-            (= #{:reader-source-path :authenticated-envelope-options} (set (keys invocation)))
-            (string? (:reader-source-path invocation))
-            (= {:source :development-current} (:authenticated-envelope-options invocation)))
-        (sh03-reader-boundary-fail!
-         source-path :explicit-sh03-reader-verification-invocation nil {}))
+      (sh03-reader-authenticated-envelope-options source-path invocation)
       {:binding (sh03-reader-current-binding! source-path (:reader-source-path invocation))
        :envelope-options (:authenticated-envelope-options invocation)})))
 
@@ -191,6 +188,10 @@
            :result result
            :raw-result raw-result
            :verification-report verifier-result
+           :invocation-context
+           (when (some? reader-source-path)
+             {:reader-source-path reader-source-path
+              :authenticated-envelope-options {:source :development-current}})
            :plan-binding (dissoc binding :plan)))))
 
 (defn sh03-reader-decode-raw-bytes!
