@@ -969,111 +969,44 @@
         (java.nio.file.Files/deleteIfExists tampered-source)
         (java.nio.file.Files/deleteIfExists temporary-root)))))
 
-(deftest sh02-descriptor-preflight-rejects-hostile-carriers-and-bounded-graphs
+(declare structured-diagnostic)
+
+(deftest sh02-preflight-retains-kind-validity-without-graph-quotas
   (let [fixture (fixture-case "accepted/envelope-comparison.gravity")
-        base (descriptor fixture)
-        source-path (:source-path fixture)
-        lazy-value
-        (lazy-seq
-         (throw (ex-info "SH-02 lazy descriptor value was realized"
-                         {:id "SH02-LAZY-REALIZED"})))
-        hostile
-        (assoc base :semantic-projections lazy-value)
+        base (descriptor fixture) calls (atom 0)
+        lazy-value (lazy-seq (swap! calls inc) (throw (ex-info "lazy realized" {})))
         hostile-result
-        (try
-          (bootstrap/p15-s23-stage2-sh02-descriptor-envelope
-           :sh02-fixture :gravity/sh02-fixture-plan hostile source-path)
-          nil
-          (catch clojure.lang.ExceptionInfo exception
-            (ex-data exception)))
-        oversized-edges
-        (mapv (fn [index]
-                {:from "root" :role :contains :to (str "node-" index)})
-              (range 129))
-        bounded-edge-state-var
-        (bootstrap-private-var
-         'p15-s23-sh02-bounded-reference-edge-state)
-        oversized-result
-        (try
-          ((deref bounded-edge-state-var) :sh02-fixture "root"
-           oversized-edges)
-          nil
-          (catch clojure.lang.ExceptionInfo exception
-            (ex-data exception)))
-        deep-edges
-        (mapv (fn [index]
-                {:from (str "node-" index)
-                 :role :next
-                 :to (str "node-" (inc index))})
-              (range 65))
-        deep-result
-        (try
-          ((deref bounded-edge-state-var) :sh02-fixture "node-0"
-           deep-edges)
-          nil
-          (catch clojure.lang.ExceptionInfo exception
-            (ex-data exception)))
-        lazy-instructions
-        (lazy-seq
-         (throw (ex-info "SH-02 lazy instructions were realized"
-                         {:id "SH02-LAZY-INSTRUCTIONS-REALIZED"})))
-        reference-packet
-        (fn [instructions]
-          {:sh02-fixture {:artifact-id "root"}
-           :optimized-mir
-           {:source-core "root"
-            :functions
-            {'main
-             {:blocks
-              {"root:mir:entry"
-               {:instructions instructions :successors []}}}}}})
+        (structured-diagnostic
+         #(bootstrap/p15-s23-stage2-sh02-descriptor-envelope
+           :sh02-fixture :gravity/sh02-fixture-plan
+           (assoc base :semantic-projections lazy-value) (:source-path fixture)
+           {:source :development-current}))
+        edges (mapv (fn [index] {:from "root" :role :contains :to (str "node-" index)})
+                    (range 180))
+        state ((deref (bootstrap-private-var 'p15-s23-sh02-reference-edge-state))
+               :sh02-fixture "root" edges)
+        deep-edges (mapv (fn [index] {:from (str "node-" index) :role :next
+                                    :to (str "node-" (inc index))}) (range 90))
+        packet (fn [instructions]
+                 {:sh02-fixture {:artifact-id "root"}
+                  :optimized-mir {:source-core "root"
+                                  :functions {'main {:blocks {"root:mir:entry"
+                                                              {:instructions instructions
+                                                               :successors []}}}}}})
         lazy-public-result
-        (try
-          (bootstrap/p15-s23-sh02-reference-closure
-           :sh02-fixture (reference-packet lazy-instructions))
-          nil
-          (catch clojure.lang.ExceptionInfo exception
-            (ex-data exception)))
-        oversized-instructions
-        (mapv (fn [index]
-                {:op-id (str "operation-" index) :operands []})
-              (range 129))
-        operation-sequence-var
-        (ns-resolve 'gravity.bootstrap
-                    'p15-s23-c11-mir-operation-sequence)
-        oversized-public-result
-        (with-redefs-fn
-          {operation-sequence-var
-           (fn [_]
-             (throw
-              (ex-info "SH-02 oversized MIR was materialized"
-                       {:id "SH02-OVERSIZED-MATERIALIZED"})))}
-          (fn []
-            (try
-              (bootstrap/p15-s23-sh02-reference-closure
-               :sh02-fixture
-               (reference-packet oversized-instructions))
-              nil
-              (catch clojure.lang.ExceptionInfo exception
-                (ex-data exception)))))]
+        (structured-diagnostic
+         #(bootstrap/p15-s23-sh02-reference-closure :sh02-fixture (packet lazy-value)))
+        instructions (mapv (fn [index] {:op-id (str "operation-" index) :operands []})
+                           (range 180))
+        closure (bootstrap/p15-s23-sh02-reference-closure :sh02-fixture (packet instructions))]
     (is (= "B1-METADATA" (:id hostile-result)))
-    (is (not= "SH02-LAZY-REALIZED"
-              (:id hostile-result)))
-    (is (= :bounded-sh02-reference-closure
-           (:missing-fact oversized-result)))
-    (is (= :bounded-sh02-reference-closure
-           (:missing-fact deep-result)))
-    (is (= 65
-           (bootstrap/p15-s23-sh02-reference-depth "node-0" deep-edges)))
-    (is (= :error (:severity deep-result)))
-    (is (= :trusted-bounded-sh02-carrier
-           (:missing-fact lazy-public-result)))
-    (is (not= "SH02-LAZY-INSTRUCTIONS-REALIZED"
-              (:id lazy-public-result)))
-    (is (= :bounded-sh02-reference-closure
-           (:missing-fact oversized-public-result)))
-    (is (not= "SH02-OVERSIZED-MATERIALIZED"
-              (:id oversized-public-result)))))
+    (is (= edges (:edges state)))
+    (is (= 181 (count (:node-ids state))))
+    (is (= 90 (bootstrap/p15-s23-sh02-reference-depth "node-0" deep-edges)))
+    (is (= :trusted-sh02-carrier (:missing-fact lazy-public-result)))
+    (is (= 182 (:observed-node-count closure)))
+    (is (= 181 (:observed-edge-count closure)))
+    (is (= 0 @calls))))
 
 (def ^:private coordinator-straight-line-source
   (str
