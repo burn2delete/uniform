@@ -1,12 +1,13 @@
-# SH-08 Compact Source-Proof Evidence: Draft Design Discussion v1
+# SH-08 Compact Source-Proof Evidence: Finalized Representation Proposal
 
 Status: draft discussion, proposal only, 2026-10-24.
 
-This document proposes a bounded experiment in representation. It implements
-nothing, admits no candidate, clears no failed invariant family, and is neither
-an accepted RFC nor proof authority. Publication and review of this discussion
-do not authorize implementation, GIS execution, a larger allowance, or another
-attempt. Every acceptance condition below is prospective unless explicitly
+This document specifies a proposed compact v2 witness and its bounded technical
+acceptance experiment. It implements nothing, admits no governed candidate,
+and is neither an accepted RFC nor proof authority. Ordinary semantic work
+within an allocated scope needs no new human permission or architecture token.
+This report-only allocation includes no GIS execution or replay of consumed
+grants. Every acceptance condition below is prospective unless explicitly
 identified as retained evidence.
 
 ## Purpose and authority boundary
@@ -20,16 +21,22 @@ land that rule or turn its development evidence into source admission.
 The only deliverable is this Markdown file. No compiler, test, fixture,
 interface, catalog, manifest, ledger, resource policy, or evidence record is
 changed. The proposal is not recorded as an `architecture_decision`, an
-integrated dependency, or prerequisite authority. It cannot satisfy WG008.
+integrated dependency, or prerequisite authority.
 
 [Workstream governance](../../../workstream-governance.md) separates ordinary
 development discussion from recorded candidate admission. Its closed
 `gravity-architecture-authority-v1` block governs authority-bearing architecture
-decisions. None is asserted here. Strict `validate_architecture_authority.clj
---report` without that block would report AA001; no pass or legacy exemption
-is claimed. A later governed decision needs real records, the closed block,
-normal review, and the applicable lifecycle. This note cannot substitute for
-them. The implementation hold remains in force.
+decisions. None is asserted here. ROOT's authenticated ledger inspection and
+independent planning review found no registered compact/GIS invariant family
+with two rejected admission candidates. JVM failures and review holds do not
+count as those records; the separate two-hop family and integrated B51
+transport/lifetime work confer no compact-proof authority. WG008 therefore
+creates no paper gate for this ordinary proposal revision. No new ledger entry,
+architecture-authority tuple, or legacy exemption is needed or asserted. If a
+later task deliberately seeks governed architecture authority, its actual
+records and closed tuple must satisfy that separate contract. Earlier
+permission-only implementation holds are superseded by ordinary autonomy;
+the concrete validation, compatibility and resource obligations below remain.
 
 ## Governing dependencies
 
@@ -67,10 +74,15 @@ The source language boundary and per-function physical LOC limit remain.
 
 ## Inspected revisions and retained evidence
 
-The source baseline is integrated commit
+The original discussion baseline was integrated commit
 `25cc478b7982c921614c0cdcf40f5f3933d12514`, tree
-`ae0108231f36444763802b7acb734fb1f06b9b35`, from PR 291. This discussion starts
-on `codex/c7-compact-source-proof-proposal`. The landed work-policy API is a
+`ae0108231f36444763802b7acb734fb1f06b9b35`, from PR 291, on
+`codex/c7-compact-source-proof-proposal`. This report revision is based on
+SOURCE commit `27dba3b201785118191074810b91fc95c2299d04`, tree
+`ed94c58988b0bb137410fe29a169dc4ebc164ffb`, incorporating current main
+`2d8a6ce96a2c2c75e32e9df9aa921e26cedfef0e`, tree
+`01853facc39243f6190f9432a4cd671b84544ef5`. PR 298's explicit caller-policy
+bridge preserves old arities and default/local limits. The work-policy API is a
 trusted invocation option, outside canonical schema-3 output and identity.
 Its per-module pool is cumulative across rounds; its verifier selects its own
 allowance. It grants no whole-graph, CPU, RSS, or arbitrary-carrier bound.
@@ -117,6 +129,13 @@ larger charged-map or six-variable source batches. No attempt is rerun here.
 The local `/tmp` logs are retained observations, not a newly published durable
 evidence bundle; later executable claims need their own complete retained inputs.
 
+The separate current bare-Set source producer accepted at caller N=1048576,
+with observed ordinary inference work 220380 and local DSE work at most 31728.
+Its earlier default whole-source attempt remains failed. Neither observation
+contains compact GIS output or establishes its fit, fees, compatibility or
+performance. The current Effects local-fit method likewise supplies no compact
+evidence merely by being prepared or independently reviewed.
+
 ## Actual shape and consumer inventory
 
 Line anchors for GIS below refer to the held revision, not main. Main C7 source
@@ -135,9 +154,14 @@ is `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`.
 Current `effects.gravity`, `c8_effect_checker_engine.gravity`, `emitter.gravity`
 and `runtime.gravity` contain no GIS rule. C9/C10/MIR must preserve or invalidate
 evidence according to their contracts; that is not evidence they understand a
-new GIS proof. The detached C8 function adapter currently receives typed output
-and a verification value, not the original C7 source request. That missing
-input context is a real compatibility boundary, not permission to trust ids.
+new GIS proof. The source-bearing three-argument C8 body route already receives
+an authenticated binding containing the complete original C7 request at
+`[:digest-resolution :preimage :request]`. `body-input-valid?` validates its
+typed/verification/binding tuple and original request envelope. Its full Core,
+B47/coordinator, import, forms and binding context can support fresh compact
+reconstruction without a new API or wrapper. The detached two-argument pure
+adapter receives typed output and verification without that request; it stays
+unsupported for v2 and needs an explicit version fence before v2 publication.
 
 ## Diagnosis: three different questions
 
@@ -155,9 +179,10 @@ fields, or moving the same expanded output behind a wrapper answers neither.
 
 Use one rule-specific compact range witness, not a general proof arena,
 certificate service or new pass. Keep the existing authenticated source/Core
-request as the source of actual records. Suggest
-`:sh08-guarded-integer-subtraction-v2` as the application/proof rule version;
-the name is a design suggestion, not a reserved or implemented interface.
+request as the source of actual records. This proposal fixes
+`:sh08-guarded-integer-subtraction-v2` as the application/proof rule version
+and `:gravity/sh08-gis-source-witness-v2` as the nested witness domain.
+These names are proposed contracts, not implemented interfaces.
 Keep schema-3 top-level keys and unrelated proof families unchanged if the
 consumer review confirms that nested versioning is sufficient.
 
@@ -178,6 +203,41 @@ Replace its expanded records with the following closed, typed roles:
 | Control | Outer-if, condition-if, lower/upper-call and false-node ids, with the required then-arm coordinate | Exact unique control topology, ownership, evaluation metadata and all current source/form links. |
 | Numeric claim | Lower/upper/subtrahend values and input/result intervals | Actual Integer literal occurrences and independent ordering operations; subtrahend equals lower bound, 0 <= lower <= upper <= 127, result interval [0, upper-lower]. |
 | Ancestry | Ordered form/syntax-id pairs up to the existing ancestry-depth bound | Every current parent step, kind, owning function and full origin evidence used by the rule. No detached ancestry assertion is trusted. |
+
+The proposed `:range-proof` is a closed map with exactly the keys in the
+following table. Every nested map also has exactly its listed keys; vectors
+have the stated order and size. Extra, absent or nil fields reject. `ID` means
+the held rule's already-checked native scalar domain: Keyword or 71-character
+String, matched to the exact current identity. Actual public source ids are
+71-character SHA-256 strings. This shape predicate alone authenticates nothing.
+The Core artifact id retains its existing authenticated artifact-id contract.
+
+| Exact witness key | Closed value/domain |
+| --- | --- |
+| `:kind` | `:gravity.safety/guarded-integer-subtraction` |
+| `:version` | `:sh08-guarded-integer-subtraction-v2` |
+| `:domain` | `:gravity/sh08-gis-source-witness-v2` |
+| `:rule` | String `"SAFE9-OVERFLOW"` |
+| `:outcome`, `:numeric-mode`, `:integer-type` | Respectively `:proven-safe`, `:proof-required`, `:gravity.type/integer` |
+| `:scope` | `:inline-ascii-interval-true-arm` |
+| `:runtime-guards`, `:check-elision` | Respectively `:retained`, `:not-authorized` |
+| `:input` | Map with `:core-artifact-id`, `:owner-function-syntax-id`, `:owner-function-core-node-id`; the latter two are IDs. |
+| `:operation` | Map with ID fields `:call-core-node-id`, `:operator-node-id`, `:operator-binding-id`, and `:operand-core-node-ids`, a two-ID vector in original left/right order. |
+| `:parameter` | Map with ID `:binding-id` and Integer `:index`; this first unary unannotated-parameter rule requires index 0. |
+| `:control` | Map with ID fields `:outer-if-node-id`, `:condition-if-node-id`, `:lower-call-core-node-id`, `:upper-call-core-node-id`, `:false-node-id`, and Integer `:selected-child-index` equal to 1, the outer then arm. |
+| `:literals` | Map with `:lower`, `:upper`, `:subtrahend`, each an exact `[literal-core-node-id Integer-value]` vector. Each occurrence is independently matched. |
+| `:source-ancestry` | Vector of exact `[form-id syntax-id]` ID pairs, outer-if source through owning function source inclusive. Length 1..129 preserves the existing depth 0..128 limit; repeats, missing parents, cycles and wrong endpoints reject. |
+| `:input-range` | Exact Integer vector `[lower upper]`, independently derived with `0 <= lower <= upper <= 127`. |
+| `:result-range` | Exact Integer vector `[0 upper-minus-lower]`, independently recomputed after subtrahend equals lower. |
+
+The application descriptor keeps its existing outer keys and semantic header;
+only its version and nested witness change. The constraint producer rule becomes
+`:sh08-guarded-integer-subtraction-v2`; constraint and call-fact identity domains
+become `:gravity/sh08-guarded-integer-subtraction-constraint-v2` and
+`:gravity/sh08-guarded-integer-subtraction-call-type-fact-v2`. The kind,
+dispatch, operation, effects and invalidation meanings remain unchanged.
+All copies must contain the same complete compact value, including these
+version/domain fields. No v1 identity is retained for altered v2 content.
 
 Ids and ordered coordinates distinguish occurrences with equal values. Equal
 content is not equal source occurrence. No full fn/if/call raw `:value` tree is
@@ -261,7 +321,47 @@ rounds and the existing call-consumer path. Fresh consumers use their own
 options. No automatic search for N, retry, growth or scheduling change belongs
 to this experiment.
 
-Publish a v2 fee derivation before implementing it. Distinguish complete
+The proposed first standalone v2 constructor and fresh consumer each have a
+fixed 65536-unit local ceiling, clamped to the remaining caller pool. A later
+cold composition uses the existing explicit caller N=1048576 independently in
+producer and verifier; it does not lift this local ceiling or any neighbour's
+limit. Exact/minus-one boundary cases vary available payment within that same
+ceiling, rather than searching for a larger successful allowance. Failure at
+either fixed bound remains failure.
+
+The following finite worksheet fixes the operations that a v2 fee derivation
+must count. For each actual canonical value x, B(x) denotes paid original-data
+visits, materialization and bookkeeping; W(x) is the separate conservative
+comparison/storage bound returned by the retained canonical walker. B and W
+are distinct quantities. A comparison of two independently validated values
+reserves at least the larger of their W bounds for each comparison; storing
+each physical output occurrence reserves its own W. Any other charge needs
+its own count of field reads, scalar comparisons, created cells and index work.
+No unimplemented numeric total is asserted by this worksheet.
+
+| Required fee row | Complete data and multiplicity | Reservation and refusal boundary |
+| --- | --- | --- |
+| Global identity/control scans | Every physical node, call, edge, function, mutation, recursion, recur-target and recur-transfer row read by the old scans, including duplicates. | Pay scan/domain and each lookup/index construction before selection; duplicate ids reject rather than deduplicate away cost. |
+| Subtraction packet | All eight original packet rows, including unread binding-context payloads. | Pay complete B before any comparison projection; charge projection reads/cells separately, then every retained comparison by W. |
+| Two ordering packets | Each complete eight-row lower/upper packet, module domains, operator spelling and binding/profile/target membership. | Separate B, projection, membership/index, comparison and temporary-storage charges for each occurrence; no reuse of subtraction payment. |
+| Control and parameter readsets | Original control nodes/children/fallback, function record/node, parameter binding/forms/name and function source prefix. | Complete original validation plus all owner, signature, immutability, mutation, reentry and topology comparisons. |
+| Source-prefix readset | Every original selected occurrence in old readset 5, including repeated selections and full source/origin metadata. | Validate the same complete data; replacing the former three broad comparisons requires a field-by-field replacement count, with no missing old predicate. |
+| Heads/module/types/stages | Old readsets 6..9: head values/parents, module policy, current operand types, child-form pairs and function-form link. | Recompute current-round facts; prepay all comparisons and projection cells independently. |
+| Ancestry | Each actual parent step through depth 128, complete original prefix and compact pair. | Charge original B, parent/kind/owner/source comparisons, pair construction and each stored occurrence; reject cycles and exhausted budget before the next unpaid step. |
+| Numeric proof and compact construction | Literal occurrence/value/type matches, orderings, bounds, arithmetic and every fixed map/vector cell in the closed witness. | Reserve construction and range-computation work before building output; input validation pays no output storage. |
+| Descriptor/constraint/call-fact publication | Every physical nested witness/application in operator type, constraint identity/dependencies/solution, call-fact identity/application, public result, identity-input and typed-core. | Enumerate actual output paths and charge each materialized copy; host sharing or equal ids do not reduce expanded canonical storage. |
+| Supplied-candidate consumption | Complete candidate validation, independent current-input reconstruction, and each fresh expected/candidate comparison. | Pay candidate B and reconstruction separately, then W for every comparison; producer receipts and prior matches pay nothing here. |
+| Public whole-result verification | All result/identity/typed-core copies and all existing unrelated checks, with the verifier's own N. | Preserve fresh complete reconstruction and full-result comparison; inner-rule payment is not payment for outer copies. |
+
+The executable fee worksheet must assign a concrete count to every row and
+physical output path before its local acceptance claim. Preserve the old
+eight-row packets and ten readsets as the comparison oracle. An omitted old
+predicate or original-data occurrence fails the experiment even if the compact
+candidate passes. The old 173-unit subtraction and 228-unit ordering
+projection reservations are historical measurements of those old algorithms;
+they cannot be relabeled as the new implementation's fees without derivation.
+
+Distinguish complete
 original-data visits/bookkeeping, scalar field matching, scans/index creation,
 projection/materialization, comparisons, hashing/rendering when required, and
 compact output storage. Prepay each operation before performing it. Do not
@@ -309,16 +409,24 @@ remain unchanged, including their versions, descriptors and exact interfaces.
 | Held GIS v1 fixture as comparison oracle | Development reference only; never describe it as a main/release capability. No silent v1-to-v2 relabeling. |
 | Implemented v2 producer plus v2-aware C7 fresh verifier | Fresh matching and expected-result reconstruction must pass; changed source or candidate must reject. |
 | v2 candidate plus old or unaware consumer | Reject explicitly before treating generic call-fact shape or empty effects as numeric legality. |
-| v2 C8/body-effect or lowering consumer with its own actual source context | Independently reconstruct accepted facts and compare; preserve effects, evaluation, guards, origins and identity projections. |
-| Detached C8 adapter without current source context | Reject v2, even with a self-consistent typed result and supplied verification map. Extending its original request contract needs separate review; this note does not add a wrapper. |
+| v2 three-argument C8 body consumer | Obtain the complete original request from validated binding preimage; independently reconstruct accepted facts and compare. Preserve effects, evaluation, guards, origins and identity projections. No new context API is needed. |
+| v2 development lowering | Use its existing source-bearing typed-input request and stock fresh-verification observation, independently matching the rule's original inputs. Preserve evaluation, guards and source/identity projections. |
+| Detached two-argument C8 pure adapter | Explicitly reject v2 before generic acceptance, even with a self-consistent typed result and supplied verification map. This proposal selects no adapter extension or wrapper. |
 | Missing input, wrong module/occurrence, mixed v1/v2, dangling or duplicate references, unknown/extra fields | Reject deterministically; do not expand, downgrade, ignore or treat as opaque proved data. |
 
-Review rule version and constraint/call-fact identity domains together. All
-application copies must agree; artifact identity must bind the compact content
-and version. Reusing a v1 identity for different v2 content is forbidden. Whether
-nested versions suffice for the public schema-3 consumer contract is an open
-compatibility decision; if not, stop for a separately authorized schema change.
-Do not add an output table, option key or public entrypoint speculatively.
+The selected compatibility design retains schema-3 top-level keys and existing
+identity/typed-core projections, while binding the new nested version and
+constraint/call-fact domains at every application copy. C7's finish/verifier,
+Effects' `body-caller-identity`/`body-caller-typed-core`, C8's schema-3 function
+projection, and emitter's typed-input/observation joins must all be inspected
+and exercised on the actual candidate. Each consumer needs a closed supported
+kind/version check before generic call-fact or effect acceptance. A consumer
+that cannot preserve the nested content and domains must explicitly reject it;
+it cannot silently strip it, accept by an empty-effect field, or reinterpret
+the old version. If any required projection cannot carry this design, record
+that concrete incompatibility and stop this experiment before proposing a
+separate schema change. No output table, option key or public entrypoint is
+part of this contract.
 
 ## Prospective owners, paths and acceptance matrix
 
@@ -327,8 +435,8 @@ No person or workstream is assigned by this note.
 
 | Owner boundary | Exact prospective source/test paths | Required work before a claim |
 | --- | --- | --- |
-| C7 rule and fresh verifier | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`; `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Reconcile a separately authorized minimal rule onto then-current main; close readsets, fee derivation, output copies, versions, diagnostics and full producer/consumer matching. Never merge the held branch wholesale. |
-| C8 body analysis and adapter | `bootstrap/gravity/src/gravity/effects.gravity`; `bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity`; `bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj`; `bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj` | Add explicit unsupported-version fences first; support only with independently checkable current source context and reviewed identity projection. |
+| C7 rule and fresh verifier | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`; `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | Reconcile a minimal rule in an allocated implementation slice onto then-current main; implement this closed witness, complete readsets/fees/output copies, diagnostics and full fresh matching. Never merge the held branch wholesale. |
+| C8 body analysis and adapter | `bootstrap/gravity/src/gravity/effects.gravity`; `bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity`; `bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj`; `bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj` | Fence unsupported versions before publication; independently reconstruct on the existing three-argument body route using the validated complete original request. Keep detached two-argument v2 rejection. |
 | Development lowering/runtime | `bootstrap/gravity/p15_s23/emitter.gravity`; `bootstrap/gravity/src/gravity/runtime.gravity`; `bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj` | Lowering rederives proof premises, records retained checks and rejects substitutions; original runtime path only after lowering acceptance. Runtime edits are justified only by an actual affected contract. |
 | Source fixtures | `bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-interval.gravity` and `.qst`; matching `rejected/compact-source-proof-interval-*` pairs | Proposed new paths only. Real inline guarded source with an unannotated parameter called with an Integer; no supplied type/proof annotations or fabricated B47 facts. Canonical files must survive the full reader/C5/Core/request lifetime. |
 | C6/provenance boundary | `bootstrap/gravity/src/gravity/checked_core.gravity`; `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00887-sh07-core-build-form-tree.clj`; `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00890-sh07-b13-module-assembly-manifest.clj` remain unchanged for the proposed first experiment | Reopen ownership only if real source-occurrence transport fails. A proof-format change is not permission to modify input provenance or the reader. |
@@ -363,7 +471,7 @@ it does not establish a cheaper complete invocation or a successful fixed N.
 
 ## First falsification question and stopping rules
 
-After separate authorization, ask one bounded question first: for the same
+In a future allocated implementation slice, ask one bounded question first: for the same
 minimal valid and hostile canonical source packets, can this one rule's compact
 witness reduce both retained output size and repeated input-comparison work
 while preserving complete fresh validation, all required matches and rejection
@@ -373,11 +481,12 @@ shape-only compact validator is not the fresh consumer.
 
 Start with the standalone constructor and independent consumer, exact/minus-one
 and hostile cases, at one predeclared allowance and existing host limits. Do not
-begin with a whole-inference replay. Only after that gate passes and a separate
-run is authorized should the cold normalized producer and then one minimal real
-source/public-verifier composition execute. Downstream execution is another
-affected boundary, not an automatic follow-up. No current log is permission to
-run these future steps.
+begin with a whole-inference replay. Only after that technical gate passes
+should the cold normalized producer and then one minimal real source/public
+verifier composition become eligible under the existing resource controls.
+Downstream execution is another affected boundary requiring its own scope and
+evidence. This report-only task runs none of those experiments and revives no
+consumed grant; it adds no human permission gate to ordinary eligible work.
 
 Stop if compact ids cannot bind all current inputs, complete canonical
 validation is omitted, output expansion recreates the same copies, unsupported
@@ -405,13 +514,17 @@ coverage. Do not raise limits or rewrite failed evidence to manufacture fit.
   question, but supplies neither compact output nor current input matching.
   Neither is part of this proposal.
 
-Open decisions for a later implementation review are the exact closed v2 field
-set and fee worksheet; whether nested versioning suffices for every public
-consumer; how each source-bearing downstream consumer obtains original context;
-and whether retaining the outer source/call/binding fields still gives useful
-output reduction. No size target, successful N, wall-time bound, allocation
+The proposed field set, identity domains, finite fee worksheet and existing
+three-argument body context route are fixed above for review. The remaining
+technical criteria are concrete implementation counts for each fee/output path,
+proof that every actual schema-3 consumer preserves or rejects this nested
+version, complete original-data/source matching, and useful whole-result
+reduction despite retained outer source/call/binding fields. No successful N,
+wall-time bound, allocation
 ratio, CPU/RSS guarantee, or general proof-family benefit is asserted before
-measurement. Any broader arena or context API requires a new scope decision.
+measurement. The strict nested and whole-result byte-reduction criterion above
+is a falsifiable target, not an achieved result. A broader arena or context API
+would be a different implementation scope.
 
 ## Discussion completion and explicit nonclaims
 
@@ -425,5 +538,7 @@ inference replay, runtime benchmark or new method was run to write this note.
 There is no new GIS capability, compact certificate implementation, safety or
 performance result, full compiler support, bootstrap stage advancement,
 self-hosting, seed retirement or release authority. Normal document integration
-publishes a discussion. Implementation and any later governed admission remain
-separate decisions under the existing hold and governance rules.
+publishes a proposal. Implementation must satisfy the technical criteria in its
+allocated scope; any later governed admission separately follows the actual
+ledger and lifecycle rules. No imagined rejection history or permission-only
+hold is created by this document.
