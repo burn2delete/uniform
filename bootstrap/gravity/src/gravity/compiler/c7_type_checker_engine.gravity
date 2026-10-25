@@ -3995,7 +3995,7 @@
 
 (defn sh08-gis3-numeric-semantic-work [n d]
   ; Independent whole-source model of numeric-match and every semantic child.
-  (+ 2280264653983 (* 182951 d)
+  (+ 2280268919977 (* 182963 d)
      (* 166330493394 n) (* 26805 n d)
      (* 299410 n n) (* 4 n n d) (* 2 n n n)))
 
@@ -4091,6 +4091,71 @@
   ; W <=3*original-W. Complete DATA costs <=4369*W+4104; storage pays W again.
   ; This bound is prepaid before product construction, not inferred afterward.
   (+ 67108864 (* 32768 d)))
+
+(defn sh08-gis3-product-semantic-work [n d]
+  (+ 2280276927070 (* 182964 d)
+     (* 166330493394 n) (* 26805 n d)
+     (* 299410 n n) (* 4 n n d) (* 2 n n n)))
+
+(defn sh08-gis3-produce-product [core binding-rows form-rows target budget]
+  ; Standalone private packet construction. Input, matching, all ten original
+  ; readsets, and every expanded packet output occurrence have separate fees.
+  ; There is no public C7/schema dispatch and no accepted producer token input.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [reserved (+ 512 4194304)]
+      (if (> reserved budget)
+        {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count 0}
+        (if (sh08-pc-id? target)
+          (let [data (sh08-gis3-entry-complete-data core binding-rows form-rows (- budget reserved))
+                data-work (+ reserved (get data :work-count))]
+            (if (= :entry-original-data-payment-complete (get data :status))
+              (let [rows (get data :rows) indexed (sh08-gis3-entry-indexes rows (- budget data-work))
+                    used (+ data-work (get indexed :work-count))]
+                (if (= :entry-indexes-complete (get indexed :status))
+                  (let [indexes (get indexed :indexes)
+                        n (loop [i 0 maximum 1]
+                            (if (= i 17) maximum
+                              (let [size (count (get rows i))]
+                                (recur (+ i 1) (if (> size maximum) size maximum)))))
+                        d (+ 64 (* 2 (get data :comparison-bound-work)))
+                        semantic (sh08-gis3-product-semantic-work n d)
+                        output-reserved (sh08-gis3-output-reservation d)
+                        phase-required (+ used semantic output-reserved)]
+                    (if (> phase-required budget)
+                      {:status :rejected :reason :compact-gis-product-work-limit :stage :product-construction
+                       :work-count phase-required :completed-work-count used}
+                      (let [reconstructed (sh08-gis3-reconstruct-product core indexes target)]
+                        (if (= :reconstructed (get reconstructed :status))
+                          (let [selected (sh08-gis3-complete-source-payment core binding-rows form-rows
+                                           (get reconstructed :operand-types) target (- budget phase-required))
+                                work (+ phase-required (get selected :work-count))]
+                            (if (= :original-data-payment-complete (get selected :status))
+                              (let [product (get reconstructed :product)
+                                    output (sh08-gis3-complete-data-tallies product output-reserved)
+                                    output-used (+ (get output :work-count) (get output :comparison-bound-work 0))]
+                                (if (if (= :accepted (get output :status)) (<= output-used output-reserved) false)
+                                  {:status :constructed :type :gravity.type/integer :product product
+                                   :work-count work :completed-work-count work
+                                   :fees {:surrounding reserved :original-DATA (get data :work-count)
+                                          :fresh-indexes (get indexed :work-count) :semantic semantic
+                                          :source-readsets (get selected :work-count) :output-reserved output-reserved
+                                          :output-DATA (get output :work-count) :output-storage (get output :comparison-bound-work)}
+                                   :readset-fees (get selected :readset-fees)
+                                   :output-physical {:V (get output :visit-work) :T (get output :accounting-work)
+                                                     :W (get output :comparison-bound-work)}
+                                   :numeric-proof-established false}
+                                  {:status :rejected :reason :compact-gis-output-reservation-exceeded :stage :output
+                                   :work-count (+ (- work output-reserved) output-used) :completed-work-count work}))
+                              {:status :rejected :reason (get selected :reason) :stage :original-readsets
+                               :work-count work :completed-work-count (+ phase-required (get selected :completed-work-count))}))
+                          {:status :rejected :reason (get reconstructed :reason) :stage :numeric-source
+                           :work-count phase-required :completed-work-count phase-required}))))
+                  {:status :rejected :reason (get indexed :reason) :stage :original-indexes
+                   :work-count used :completed-work-count (+ data-work (get indexed :completed-work-count))}))
+              {:status :rejected :reason (get data :reason) :stage :original-DATA
+               :work-count data-work :completed-work-count (+ reserved (get data :completed-work-count))}))
+          {:status :rejected :reason :compact-gis-source-id-required :work-count reserved :completed-work-count reserved})))
+    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.
