@@ -3184,8 +3184,8 @@ Ordinary once-only operand evaluation and transfers remain observable.
 
 Compiler checks retain source, binding, producer and type joins. Validate
 closed scalar IDs before lookups and avoid hashing composite type records
-before their paid validation. C8's collection-family census is closed; emitter
-failures retain owner, completed-prefix and failed-child work. Current private
+before their semantic validation. C8's collection-family census is closed; emitter
+failures retain owner, completed-prefix and failed-child identity. Current private
 helper inventory is a code/closure fact, not an authority-admission prerequisite.
 
 Use the paired fixture selector
@@ -3283,10 +3283,9 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 Retain Keyword/String insertion, List/Vector updates and Symbol membership
-regressions for shared dispatch changes. Guard IDs and paid family discovery,
+regressions for shared dispatch changes. Guard IDs and validate family discovery,
 independently reconstruct selected policy/source/ledger/allocation joins and
-validate the complete actual domain, coherence, uniqueness and remaining work
-before hit or miss. Normal invocation declares possible allocation even on a
+validate the complete actual domain, coherence and uniqueness before hit or miss. Normal invocation declares possible allocation even on a
 hit. Preserve the scoped Never routes; selected callback checks do not promise
 universally unchanged provider reads or arbitrary provider CPU containment.
 
@@ -3340,9 +3339,9 @@ Binary `contains?` consumes the exact carrier above and a Symbol, yielding Bool
 without an extent, presence/refinement fact, cardinality or loop-join proof.
 Original namespace/name equality applies. Change the existing C7, effects and
 typed emitter membership owners; runtime and private/signature predicates stay
-unchanged. Carrier domain work is 3, with a one-short boundary at 2; finite
-literal inputs retain full member validation and work `2 + member-count`.
-Preserve validated Never transfers, paid prefix ordering and legacy-family
+unchanged. Remove carrier work formulas and one-short allowance tests; finite
+literal inputs retain full member validation.
+Preserve validated Never transfers, operand-prefix ordering and legacy-family
 dispatch. Reject non-three-key receiver maps before walking keys or accessing
 fields; keep malformed three-key/opaque and zero-callback controls too.
 
@@ -3512,8 +3511,8 @@ the existing private entry/witness/proof/census, declared-self, List and Vector
 regressions. Richer result information must not break previously accepted
 predicates or List construction. The bounded generic type walker validates the
 exact carrier and visits its String leaf; it does not admit arbitrary homogeneous
-collection schemas. Check exact and one-short allowances and malformed opaque
-records before relying on downstream descriptor equality.
+collection schemas. Remove exact/one-short allowance checks; reject malformed
+opaque records before relying on downstream descriptor equality.
 
 On a stable candidate, separately test one real private self-call whose caller
 seeds its Set using independently typed insertion, then queries membership.
@@ -3541,13 +3540,13 @@ or a fully checked finite all-String Set, including empty. Never retains its
 ordinary non-invocation behavior; it does not excuse an invalid normal operand.
 Bare, unknown, mixed-member and malformed types remain unsupported.
 
-Change the existing C7, C8 and typed emitter owners. The separate paid carrier
+Change the existing C7, C8 and typed emitter owners. The separate carrier
 rule retains unknown cardinality and extent, distinct carrier comparison
 identities, complete source/fact/constraint joins and original `not=` ownership.
 It never invents operand counts. Existing finite Set and Vector domain helpers
 remain unchanged; this does not enable String-Set leaves in Vector comparison.
 The existing runtime String-Set helper still validates complete actual member
-domains, uniqueness and worst-case work; no runtime helper is added.
+domains and uniqueness; remove worst-case work accounting.
 
 ```bash
 clojure -J-Xmx2g -M:dev-test \
@@ -7284,7 +7283,7 @@ reconstructs from bottom so an inflated, nonleast fixed point cannot pass.
 Remove caller/producer work pools from classification, iteration, reconstruction
 and equation checks; retain the actual least-fixed-point validation.
 
-For test-only reconstruction counters on the unchanged tiny recursive input:
+Historical test-only reconstruction counters on the unchanged tiny recursive input:
 
 ```bash
 clojure -J-Xmx512m -M:dev-test \
@@ -7296,10 +7295,12 @@ Its original-delegating observer records two passes, each rebuilding two edge
 rows and one function row, with 11 readiness attempts and zero false results.
 Each pass repeats 13 invocation predicates, 11 support checks and 11 order checks;
 general/import call validators are unvisited. Full observed/unobserved results
-agree at generous, exact 44 and rejecting 43 budgets. These counters do not
-attribute large-source cost or establish speedup. Any bounded production
-proposal belongs to `effects.gravity` and must queue behind its current source
-writer; this measurement selects no implementation.
+agreed at generous, exact 44 and rejecting 43 budgets in the historical metered
+implementation. Remove those allowance assertions from the operative test; retain
+full least-fixed-point and tamper checks. These old counters establish no
+unmetered correctness or speedup. Production changes belong to the actual
+`effects.gravity` owner and remain subject to its current platform restriction;
+this historical measurement selects no implementation or alternate writer.
 
 The affected real-source composition is separate from these normalized kernels:
 
