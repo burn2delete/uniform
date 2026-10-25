@@ -56,7 +56,7 @@
         parsed (execute 'sh03-parse-tokens [tokens policy])
         result (execute 'sh03-read-source-unit arguments)
         carrier (bootstrap/p15-s23-trusted-carrier-validation
-                 result :default-only 167772160 2048 1048576)]
+                 result :default-only 268435456 2048 1048576)]
     (is (= :accepted (:status decoded)))
     (is (= :accepted (:status scanned)))
     (is (= :accepted (:status parsed)))
@@ -81,11 +81,11 @@
     (is (= 4194304 (get-in boundary [:gravity-input-responsibility :maximum-source-bytes])
            (get-in boundary [:clojure-boundary-responsibility :maximum-width])))
     (is (= 537985024 envelope (:derived-maximum-nodes budget)))
-    (is (= 167772160 (:admitted-maximum-nodes budget)
+    (is (= 268435456 (:admitted-maximum-nodes budget)
            (:maximum-result-carrier-nodes bounds)))
     (is (> envelope (:admitted-maximum-nodes budget)))
     (is (= :prospective-physical-node-count (:construction-guard budget)))
-    (is (= [512 65536 1048576 67108864 8437834]
+    (is (= [512 65536 1048576 536870912 8437834]
            (mapv bounds [:maximum-delimiter-depth :maximum-container-width
                          :maximum-canonical-scalar-bytes
                          :maximum-canonical-total-scalar-bytes
@@ -151,7 +151,7 @@
           scratch (cond-> [token-index form-index]
                     (not retain-trivia) (conj (filterv #(not (:trivia? %)) tokens)))
           physical #(-> (bootstrap/p15-s23-trusted-carrier-validation
-                         % :default-only 167772160 2048 4194304)
+                         % :default-only 268435456 2048 4194304)
                         :observed-nodes)
           final (execute 'sh03-projected-result-node-count [bytes policy tokens parsed])
           construction (execute 'sh03-projected-construction-node-count

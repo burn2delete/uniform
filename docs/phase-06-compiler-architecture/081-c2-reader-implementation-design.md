@@ -204,10 +204,11 @@ validation and fresh replay remain independent checks after construction.
 
 The bootstrap's `:gravity/sh03-compiler-source-v1` resource policy declares
 4,194,304 source bytes and characters, 524,288 scanner tokens, 262,144 forms,
-and result-carrier width 4,194,304. These dimensions accommodate the byte,
+result-carrier width 4,194,304, and 536,870,912 aggregate canonical scalar bytes
+per digest preimage. These dimensions accommodate the byte,
 token and form populations of the required compiler sources observed during
 policy design; they are not a universal capacity or heap guarantee. The
-independent 167,772,160-node result bound, depth, scalar-byte, container-width,
+independent 268,435,456-node result bound, depth, scalar-byte, container-width,
 numeric-work and semantic-work limits still apply. Its conservative maximum
 envelope formula is 537,985,024 nodes; that envelope is not an admitted node
 allowance. The prospective construction guard must reject a concrete projected
@@ -230,6 +231,32 @@ the largest observed source; characters and carrier width follow that byte
 class. The census is not governed-reader acceptance. Real input
 construction, complete validation and fresh replay must demonstrate fit under
 the independent construction, canonical-byte and result bounds.
+
+The construction/final class is selected from complete count-only observations
+of the required inputs, counting every physical occurrence rather than host
+object identity. Effects has prospective counts of 157,409,065 final and
+167,775,979 final-plus-scratch units; C7 has 178,823,081 and 190,771,531
+respectively. These conservative counts include a fixed envelope reserve. The old
+167,772,160-unit class refused Effects before construction and could not admit
+even C7's final carrier. The successor 268,435,456-unit binary class covers both
+observed populations with approximately 40.7 percent construction headroom above
+C7. It bounds deterministic traversal and projected construction work, not heap
+bytes. The separately enforced child heap, scheduling and execution deadlines
+continue to protect actual machine resources. These counts establish required
+logical capacity only; actual accepted construction, full canonical validation
+and fresh replay are separate evidence obligations. Canonical scalar accounting
+is revised coherently: retained token key names alone require at least
+247 bytes per token, exceeding the old 64 MiB aggregate scalar class for both
+required inputs even before values and identifiers are counted. The 512 MiB
+successor scalar class follows a per-preimage schema bound: a 1 MiB header
+reserve plus 640 bytes per retained token bounds the token-stream request;
+the reserve plus 2,000 bytes per form bounds the contextual form-tree request,
+including its semantic-value table, child edges and root identifiers. At the
+declared maxima these are 336,592,896 and 525,336,576 bytes, both below
+536,870,912. Numeric byte/codepoint vectors contribute carrier nodes but no
+string scalar bytes under this canonical accounting. This aggregate limit is
+neither encoded output length nor allocated heap. The individual 1 MiB scalar
+bound remains unchanged; every physical scalar occurrence is validated freshly.
 
 These capacities are a versioned implementation choice, not permanent language
 limits. A larger required input must produce a structured refusal under this

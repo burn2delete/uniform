@@ -467,13 +467,13 @@
 (def ^:private sh03-facade-source-relative-path
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity")
 
-(def ^:private sh03-facade-source-byte-count 37069)
+(def ^:private sh03-facade-source-byte-count 37071)
 (def ^:private sh03-facade-source-content-hash
-  "sha256:45794ae227f2a33f47fd69350de4e839e5de91e914a88ffcb59aee4f6710aeef")
+  "sha256:7e2f39689ea1d78dfd1170a37369e96344cc7dc97c0e677b2891ae1bdb580162")
 (def ^:private sh03-facade-plan-semantic-hash
-  "sha256:320a65effdce6bba6f6f6b53c7e1b19d1b1df4b92494a85f0fd9dc8c5595c161")
+  "sha256:fdc086661aaac33d6f3845bffc803cb7e17f3e522095c489de02f9ed82518dbc")
 (def ^:private sh03-facade-functions-semantic-hash
-  "sha256:892f6ad1099370d50c7d53b42849a4f7211cf3c2a1abc0febb4412becb4c0700")
+  "sha256:976e7786417b02103df99f38306711186164e91abbd8d4c780f3ec8afd9a1edf")
 
 (def ^:private sh03-facade-plan
   (delay

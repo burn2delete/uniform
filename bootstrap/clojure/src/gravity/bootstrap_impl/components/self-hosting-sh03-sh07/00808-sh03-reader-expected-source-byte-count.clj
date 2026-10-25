@@ -4,7 +4,7 @@
 ;; values are filled after the leaf source and its independent review freeze.
 ;; Keeping these separate from the builder makes the source/plan tripwire
 ;; explicit and prevents a rebuild from silently authorizing changed code.
-(def sh03-reader-expected-source-byte-count 267612)
+(def sh03-reader-expected-source-byte-count 269031)
 (def sh03-reader-uncredited-source-model-entrypoints
   ['stage1-read-source-formal-release-governance-seed-retirement
    'stage1-read-source-release-attestation-seed-retirement
@@ -16,16 +16,16 @@
    'stage1-read-source-core-bootstrap
    'stage1-read-source-self-hosted-runtime])
 (def sh03-reader-expected-source-content-hash
-  "sha256:116317111e56ae28248258ef00e5978b97d0560ebc84248f9be9e0d12580f7e7")
+  "sha256:1b66e5f5b44669901d56a592685633a647d828074e8b1833597e3ffdf853d443")
 (def sh03-reader-expected-plan-semantic-hash
-  "sha256:b32173248360ebc3b8404ad890c0a48bf947677945c7f729149ac4e7db2ff488")
+  "sha256:e8a87604e06805180e9a752b13187192ccfb8697188cf8db856a3f4179fe263b")
 (def sh03-reader-expected-functions-semantic-hash
-  "sha256:9834fbc7c89f2e47b583d4b4f29ca42c86bd98626457c614ccb2d40e9dd78cca")
-(def sh03-reader-expected-function-count 244)
+  "sha256:f7c491c0ab334167beff5a081749cf2f5123fc92681a5783faf1aeef480e247f")
+(def sh03-reader-expected-function-count 247)
 (def sh03-reader-expected-function-names-hash
-  "sha256:86ddeb3a308fd4c1877d9bda3400df30190b11dd7d99af4fcb583322a2e8612a")
+  "sha256:cb637759cb834de8ec04ca06a789d50caf2c1a0ffe2a009686a35e66a8973bc1")
 (def sh03-reader-expected-function-shapes-hash
-  "sha256:536fda0f605364508cb73fabb166f9efbf8dd2bea7736d6c1ebecf1edb55ae45")
+  "sha256:0950b331402f7665f12dfab5c1d42af2f61f819d4df911640dadeb20f442c0a0")
 (def sh03-reader-expected-entrypoint-semantic-hash
   "sha256:e65ccbe5e5fd806dbc41fe9230a0fcbfa7d62359d6620584e082bd68e1ef9d15")
 (def sh03-reader-expected-verifier-semantic-hash
@@ -44,7 +44,7 @@
 (def sh03-reader-plan-maximum-nodes 524288)
 (def sh03-reader-plan-maximum-depth 512)
 (def sh03-reader-plan-maximum-width 131072)
-(def sh03-reader-result-maximum-nodes 167772160)
+(def sh03-reader-result-maximum-nodes 268435456)
 (def sh03-reader-result-maximum-depth 2048)
 (def sh03-reader-result-maximum-width 4194304)
 (def sh03-reader-input-maximum-identity-utf8-bytes 4096)

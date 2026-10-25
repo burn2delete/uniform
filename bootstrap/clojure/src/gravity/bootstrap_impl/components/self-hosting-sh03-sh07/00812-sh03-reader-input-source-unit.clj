@@ -237,8 +237,8 @@
        function {:contained-host-error (.getName (class error))
                  :cause-message (.getMessage error)}))))
 
-(def sh03-reader-canonical-maximum-nodes 167772160)
+(def sh03-reader-canonical-maximum-nodes 268435456)
 (def sh03-reader-canonical-maximum-depth 2048)
 (def sh03-reader-canonical-maximum-width 4194304)
 (def sh03-reader-canonical-maximum-scalar-bytes 1048576)
-(def sh03-reader-canonical-maximum-total-scalar-bytes 67108864)
+(def sh03-reader-canonical-maximum-total-scalar-bytes 536870912)

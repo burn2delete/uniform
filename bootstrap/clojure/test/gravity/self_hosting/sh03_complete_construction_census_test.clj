@@ -80,7 +80,7 @@
 
 (defn- physical-nodes [value]
   (let [checked (bootstrap/p15-s23-trusted-carrier-validation
-                 value :default-only 167772160 2048 4194304)]
+                 value :default-only 268435456 2048 4194304)]
     (is (= :passed (:status checked)))
     (:observed-nodes checked)))
 
@@ -203,7 +203,7 @@
                                                     :source-maps 1 :root-ids 4
                                                     :temporary-token-index 1 :temporary-form-index 1}
                                   :census result
-                                  :production-maximum-construction-nodes 167772160
+                                  :production-maximum-construction-nodes 268435456
                                   :acceptance-claimed? false}))
                 (flush)
                 result))))]

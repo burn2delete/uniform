@@ -80,7 +80,7 @@
 
 (defn- physical-nodes [value]
   (let [checked (bootstrap/p15-s23-trusted-carrier-validation
-                 value :default-only 167772160 2048 4194304)]
+                 value :default-only 268435456 2048 4194304)]
     (is (= :passed (:status checked)))
     (:observed-nodes checked)))
 
