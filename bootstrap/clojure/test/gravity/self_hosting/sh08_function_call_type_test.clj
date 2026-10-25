@@ -22599,6 +22599,20 @@
     (doseq [changed negatives] (is (false? (run changed))))
     (is (false? (invoke-c7 'sh08-vf-map-get-recipe? [core (conj (vec (repeat 300 {})) {}) forms])))
     (is (false? (invoke-c7 'sh08-vf-map-get-recipe? [core bindings (vec (repeat 33 {}))])))
+    (let [function-index (- (count (:nodes core)) 2)
+          malformed [(assoc core :definitions :uncountable)
+                     (assoc core :recur-targets :uncountable)
+                     (assoc-in core [:nodes function-index :attributes :signature] :uncountable)
+                     (assoc-in core [:nodes function-index :attributes :signature :return] :uncountable)
+                     (assoc-in core [:nodes 0 :attributes :symbol] {:not :a-symbol})
+                     (assoc-in core [:nodes function-index :attributes :signature :return :type-binding-id] [])
+                     (assoc-in core [:function-records 0 :function-syntax-id] {:not :an-id})
+                     (assoc-in core [:definitions 0 :core-node-id] [:not-an-id])]]
+      (doseq [changed malformed] (is (false? (run changed)))))
+    (is (false? (invoke-c7 'sh08-vf-map-get-recipe?
+                  [core (assoc-in bindings [0 :binding-id] [:not-an-id]) forms])))
+    (is (false? (invoke-c7 'sh08-vf-map-get-recipe?
+                  [core bindings (assoc-in forms [0 :form-id] {:not :an-id})])))
     (prn {:first-order-map-get-recipe :checked :semantic-proof false
           :whole-reconstruction-accounting false :B47-verification-complete false :public-wrapper-changed false})))
 

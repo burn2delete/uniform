@@ -27099,6 +27099,21 @@
                      (= (get value-attrs :value) (get value (get key-attrs :value)))])
                 (recur (+ i 1)) false)))) false) false)))
 
+(defn sh08-vf-index-ids? [rows fields maximum]
+  ; Cost eligibility only. Normal validators still prove canonical hex IDs,
+  ; record legality, ownership and all source/product joins.
+  (if (if (vector? rows) (<= (count rows) maximum) false)
+    (loop [pending rows]
+      (if (= 0 (count pending)) true
+        (let [row (first pending)]
+          (if (map? row)
+            (if (loop [keys fields]
+                  (if (= 0 (count keys)) true
+                    (let [id (get row (first keys))]
+                      (if (if (string? id) (= 71 (count id)) false)
+                        (recur (rest keys)) false))))
+              (recur (rest pending)) false) false)))) false))
+
 (defn sh08-vf-map-get-recipe? [core bindings forms]
   ; A cost-family selector, not type evidence or source authentication. The
   ; caller first pays complete original DATA and admits the operation domain.
@@ -27107,14 +27122,18 @@
         edges (get core :call-edges) module (get core :module)]
     (if (if (vector? nodes) (contains? #{8 10} (count nodes)) false)
     (if (sh08-ft-all-true?
-          [(if (vector? bindings) (<= (count bindings) 300) false)
-           (if (vector? forms) (<= (count forms) 32) false)
+          [(sh08-vf-index-ids? bindings [:binding-id] 300)
+           (sh08-vf-index-ids? forms [:form-id] 32)
+           (sh08-vf-index-ids? records [:function-syntax-id :definition-binding-id] 1)
+           (sh08-vf-index-ids? (get core :definitions)
+             [:binding-id :core-node-id :value-node-id :syntax-id] 1)
            (= [:meta :jvm :safe] [(get module :profile) (get module :target) (get module :safety)])
            (= [] (get module :exports) (get module :capabilities))
            (if (vector? records) (= 1 (count records)) false)
            (if (vector? calls) (= 1 (count calls)) false)
            (if (vector? edges) (= 1 (count edges)) false)
-           (= 1 (count (get core :definitions)) (count (get core :recur-targets)))
+           (if (vector? (get core :definitions)) (= 1 (count (get core :definitions))) false)
+           (if (vector? (get core :recur-targets)) (= 1 (count (get core :recur-targets))) false)
            (loop [families [:recursion-components :lexical-bindings :declared-alias-table :mutations
                             :var-references :recur-transfers :loop-bindings :keyword-lookups :control-flow
                             :error-handlers :error-transfers :match-branch-records :match-pattern-records
@@ -27134,6 +27153,7 @@
             record (get records 0) call (get calls 0) edge (get edges 0)
             signature (get (get function :attributes) :signature)
             binding (sh08-ft-binding-by-id bindings (get call :operator-binding-id))]
+        (if (if (map? signature) (map? (get signature :return)) false)
         (if (sh08-ft-all-true?
               [(= [:reference :collection-literal :literal :call :fn :def]
                   [(get operator :core-form) (get collection :core-form) (get key-node :core-form)
@@ -27145,7 +27165,8 @@
                (= [] (get operator :children) (get key-node :children))
                (= 5 (count (get operator :attributes)))
                (= :core (get (get operator :attributes) :binding-class))
-               (contains? '#{get gravity.core/get} (get (get operator :attributes) :symbol))
+               (if (symbol? (get (get operator :attributes) :symbol))
+                 (contains? '#{get gravity.core/get} (get (get operator :attributes) :symbol)) false)
                (= 3 (count (get collection :attributes)))
                (= 2 (count (get key-node :attributes)))
                (= 5 (count (get call-node :attributes)))
@@ -27159,6 +27180,8 @@
                (= :sh07-atomic-function-declaration-map-v1 (get signature :mapping-rule-version))
                (= :gravity.type/keyword (get (get signature :return) :type-id))
                (= 'Keyword (get (get signature :return) :type-symbol))
+               (if (string? (get (get signature :return) :type-binding-id))
+                 (= 71 (count (get (get signature :return) :type-binding-id))) false)
                (= [] (get signature :parameters) (get signature :parameter-source-child-indexes)
                   (get record :parameter-binding-ids) (get (get function :attributes) :parameters))
                (= 0 (get record :fixed-arity) (get (get function :attributes) :fixed-arity))
@@ -27183,7 +27206,7 @@
           (if (sh08-mg-binding? binding module)
             (if (sh08-vf-map-literal-pairs? nodes collection members)
               (contains? (get (get collection :attributes) :source-value) (get (get key-node :attributes) :value)) false) false)
-          false)) false) false)))
+          false) false)) false) false)))
 
 (defn sh08-vf-data-failure [reason required completed]
   {:status :rejected :reason reason :work-count required :completed-work-count completed})
