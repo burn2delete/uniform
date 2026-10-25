@@ -1,6 +1,6 @@
 # Feature specification: Reader-to-Core current-source invocation
 
-Status: implementation pending | Owner: cloud frontend delegate
+Status: focused implementation verified; public integration pending
 Input: Reader `10a1abc59a33021572e220fee4bb5f74371155f6`, tree
 `830589cb02a1850bea6edf5c21870ee9ed150c83`.
 Existing draft: [Reader #369](https://github.com/burn2delete/uniform/pull/369).
@@ -43,27 +43,22 @@ silently reread after the authenticated upstream lifetime ends.
 
 ## Scope and compatibility
 
-Reader owns its existing descriptor and invocation forwarding adapters and
-tests. Core/Resolver ownership transfers only after their explicit local pause
-receipts. Native and AE producer commits are immutable dependencies, with their
-owners retaining producer implementation. Shared test runners/catalogs require
-parent coordination and are not edited by this slice.
+This slice covers Reader/Core/Resolver descriptor and invocation forwarding
+adapters and tests. Native and AE producer commits are immutable dependencies.
+Shared test runners and dependency catalogs are not edited by this slice.
 
-No C12, 00581, Effects, denied Reader-oracle Git, advisory reviewer wake,
-descendant-process inspection, migration admission, seed retirement, performance
-or whole-compiler completion is included. Existing protocol/schema/diagnostic
-identifiers retain their compatibility meaning.
+Migration admission, seed retirement, performance and whole-compiler completion
+are not included. Existing protocol/schema/diagnostic identifiers retain their
+compatibility meaning.
 
 ## Evidence and outcome ownership
 
-This delegate owns implementation and locally observed raw evidence. Reported
-local-thread tests are attributed, never relabeled as cloud observations.
-Deus routes independent review and owns final integration. See [evidence](evidence.md)
-for exact inputs and pending results.
+Newly observed validation is separated from attributed prior results.
+Independent review and integration disposition remain separate from authored
+implementation. See [evidence](evidence.md) for exact inputs and pending results.
 
 ## Unresolved items
 
-Core and Resolver ownership is transferred with explicit local pause receipts.
 Public full-chain compatibility is not yet established for the joined tree.
 The full authenticated-envelope owner source previously reached a Resolver
 watchdog timeout; diagnose repeated Macro verification before any replay.

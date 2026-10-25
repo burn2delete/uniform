@@ -1,6 +1,6 @@
 # Reader-to-Core invocation pilot evidence
 
-Status: planning complete; joined implementation and independent acceptance open.
+Status: planning and focused routing correction complete; public acceptance open.
 Date: 2026-10-25.
 
 ## Public input revisions
@@ -14,7 +14,48 @@ Date: 2026-10-25.
 
 Core already includes the published Reader, authenticated-envelope and Resolver
 histories. Those ancestry relationships do not establish joined acceptance.
-Native and current main still require proportionate composition validation.
+The joined tree includes Native and the recorded accepted main baseline.
+
+## Newly observed focused implementation and Resolver results
+
+The composed implementation tree is `fde2db9adc09877610910d8a5b5296e2fc106a17`.
+It is published as [draft #384](https://github.com/burn2delete/uniform/pull/384),
+head `a3305b00a4584ff83bb5a9a55a08684108993543`; fetch, remote head and exact
+tree comparison were independently checked.
+The new correction authenticates Reader invocation source bytes first, then
+compares canonical paths so equivalent relative/absolute paths do not reject.
+Missing, foreign and invalid paths still fail closed. The routing regression
+test explicitly uses a mocked product boundary and claims no artifact acceptance.
+
+- Focused invocation routing plus language boundary: 7 tests, 30 assertions,
+  no failures or errors. LOC validation passed: 2,026 source files, maximum 250
+  production Clojure lines, no exceptions. `git diff --check` passed.
+- Independent code review accepted the narrow two-file correction. This is not
+  independent acceptance of the remaining public pipeline.
+- Actual Resolver construction accepted the unchanged
+  `sh-06/current-cohort-unmetered.gravity` fixture, with complete embedded proof,
+  schema-2 descriptor and development-unadmitted AE source. Artifact identity:
+  `sha256:291746d8304a9e21a92e3fbd16fd269dae0bc607a11570e8feb0edece7837791`.
+- Fresh Resolver verification passed with no failed checks. Serialization read
+  back exactly, and fresh deserialization returned the identical artifact.
+  Serialized size was 2,471,634 characters.
+- These were separate actual phases under the unchanged 120-second host
+  watchdog and 2 GiB heap: construction 88.60 s, verification 23.24 s,
+  serialization 25.80 s, deserialization 22.31 s, measured after namespace load.
+  The earlier combined test timed out; it is not reported as an aggregate pass.
+
+The constructor used `compiler-c5-resolution-source-artifact` with actual source
+text, empty schema-1 module inputs, the canonical current Reader path, and the
+host-owned context below. Verification used the same context with the legacy
+boundary mode. Serialize/deserialize also received this context explicitly.
+
+```clojure
+{:reader-source-path b/sh03-reader-source-relative-path
+ :authenticated-envelope-options {:source :development-current}}
+```
+
+No stored report or artifact field supplied authority to a later phase.
+Resolver rejection checks and paired public Core acceptance are still open.
 
 ## Attributed prior results
 
@@ -40,12 +81,13 @@ feature. No external Specify CLI, shell helper, automation, literal chat-command
 parsing or skill autodiscovery is claimed. Existing scaffold/adoption checks
 remain historical and separate.
 
-The spec -> plan -> tasks artifacts name a real pending integration slice.
-The next acceptance step is an exact frozen frontend join, actual paired public
-accepted/rejected checks, and independent review. The end-to-end pilot remains
+The spec -> plan -> tasks artifacts now track a real focused implementation.
+The next acceptance step is actual paired public accepted/rejected checks and
+independent review of their complete evidence. The end-to-end pilot remains
 incomplete until that evidence exists. Migration, component release, self-hosting,
 seed retirement and performance are not claimed.
 
-At preparation time, publication is partial: spec.md, plan.md and tasks.md are on the feature branch.
-This evidence file and a draft PR have not yet been published. No publication or
-review completion is inferred from the local artifact set.
+At this update's preparation time, the initial four planning files and the
+implementation draft are published. This evidence update is prepared locally.
+The separate planning draft PR creation has no confirmed result. No full
+acceptance is inferred from publication or locally prepared artifacts.
