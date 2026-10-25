@@ -25,20 +25,40 @@
        request-source :contained-c11-source-binding-host-failure exception))))
 
 (defn p15-s23-c11-mir-bounded-value!
+  "Legacy entrypoint for semantic native-carrier validation, without quotas."
   ([source-path definition value]
-   (p15-s23-c11-mir-bounded-value!
-    source-path definition value
-    p15-s23-c11-mir-max-carrier-nodes
-    p15-s23-c11-mir-max-carrier-depth))
-  ([source-path definition value maximum-nodes maximum-depth]
   (try
-    (p15-s23-reference-runtime-bounded-value!
-     (p15-s23-c11-mir-safe-source-path source-path)
-     :target-neutral
-     definition
-     value
-     maximum-nodes
-     maximum-depth)
+    ;; Establish exact native classes, comparators, metadata and acyclicity
+    ;; before traversing. Numeric representations are checked by this helper;
+    ;; Float/Double remain legitimate carriers, not canonical digest values.
+    (let [validation (p15-s23-trusted-carrier-validation value :default-only)]
+      (when-not (= :passed (:status validation))
+        (p15-s23-c11-mir-fail!
+         "C11-VERIFY" source-path {}
+         {:missing-fact :valid-native-c11-carrier
+          :reason (:reason validation)
+          :runtime-contract-definition definition})))
+    (loop [pending [value]]
+      (when (seq pending)
+        (let [item (peek pending) pending (pop pending)
+              texts (cond (string? item) [item]
+                          (or (keyword? item) (symbol? item))
+                          (cond-> [(name item)] (namespace item) (conj (namespace item)))
+                          :else [])]
+          (when-not
+           (and (every? #(and (string? %)
+                              (p15-s23-c6c10-valid-unicode-string? %)) texts)
+                (not (and (char? item) (<= 0xD800 (int item) 0xDFFF))))
+            (p15-s23-c11-mir-fail!
+             "C11-VERIFY" source-path {}
+             {:missing-fact :well-formed-unicode-c11-carrier
+              :runtime-contract-definition definition}))
+          (recur (cond
+                   (map? item) (reduce-kv #(conj %1 %2 %3) pending item)
+                   (or (vector? item) (set? item) (seq? item))
+                   (reduce conj pending item)
+                   :else pending)))))
+    {:status :passed}
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))
@@ -52,43 +72,15 @@
       (p15-s23-c11-mir-contain-exception!
        source-path :contained-c11-carrier-linkage error))
     (catch clojure.lang.ExceptionInfo ex
-      (let [data (ex-data ex)
-            owned-bound?
-            (and (= "P15S23X002" (:id data))
-                 (= :p15-s23-stage2-runtime-executor (:stage data))
-                 (= :p15-s23-stage2-runtime-executor
-                    (:diagnostic-family data))
-                 (= :pinned-reference-runtime-contract (:boundary data))
-                 (= definition (:runtime-contract-definition data))
-                 (= :target-neutral (:target data))
-                 (false? (:result-committed? data))
-                 (false? (:output-committed? data))
-                 (contains?
-                  #{:runtime-contract-value-bounds
-                    :runtime-contract-collection-width
-                    :runtime-contract-total-scalar-bounds
-                    :runtime-contract-scalar-bounds
-                    :runtime-contract-unsupported-scalar
-                    :runtime-contract-unsupported-collection}
-                  (:missing-fact data)))]
-        (if owned-bound?
-          (p15-s23-c11-mir-fail!
-           "C11-VERIFY" source-path {}
-           (merge
-            {:missing-fact :bounded-c11-carrier
-             :bounded-reason (:missing-fact data)
-             :runtime-contract-definition definition}
-            (select-keys
-             data
-             [:observed-nodes :observed-depth :observed-width
-              :observed-total-scalar-bytes :maximum-nodes
-              :maximum-depth :maximum-width
-              :maximum-total-scalar-bytes])))
-          (p15-s23-c11-mir-contain-exception!
-           source-path :contained-c11-carrier-diagnostic ex))))
+      (p15-s23-c11-mir-contain-exception!
+       source-path :contained-c11-carrier-diagnostic ex))
     (catch Exception error
       (p15-s23-c11-mir-contain-exception!
-       source-path :contained-c11-carrier-host-failure error)))))
+       source-path :contained-c11-carrier-host-failure error))))
+  ;; Existing consumers can migrate independently; these arguments never admit
+  ;; or reject a carrier and no accounting measurements are returned.
+  ([source-path definition value _maximum-nodes _maximum-depth]
+   (p15-s23-c11-mir-bounded-value! source-path definition value)))
 
 (defn p15-s23-c11-mir-metadata-free?
   [value]
