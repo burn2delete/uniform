@@ -2947,13 +2947,12 @@
 (defn sh08-gis3-source-payment [core binding-rows form-rows types target budget]
   ; First construction gate only. Complete original DATA payment precedes
   ; semantic matching and v3 output construction; success grants no proof.
-  (let [limit (if (> budget 65536) 65536 budget)
-        tables [[:nodes (get core :nodes) :node-id] [:calls (get core :calls) :core-node-id]
-                [:edges (get core :call-edges) :call-core-node-id]
-                [:records (get core :function-records) :function-syntax-id]
-                [:bindings binding-rows :binding-id] [:forms form-rows :form-id]]
-        prefix 64]
+  (let [limit (if (> budget 65536) 65536 budget) prefix 64]
     (if (> prefix limit) {:status :rejected :reason :compact-gis-work-limit :work-count prefix :completed-work-count 0}
+      (let [tables [[:nodes (get core :nodes) :node-id] [:calls (get core :calls) :core-node-id]
+                    [:edges (get core :call-edges) :call-core-node-id]
+                    [:records (get core :function-records) :function-syntax-id]
+                    [:bindings binding-rows :binding-id] [:forms form-rows :form-id]]]
       (if (if (map? core) (if (map? types) (sh08-pc-id? target) false) false)
         (loop [remaining tables indexes {:types types} used prefix]
           (if (= 0 (count remaining))
@@ -2992,7 +2991,7 @@
                 (recur (rest remaining) (assoc indexes (get part 0) (get result :index)) work)
                 {:status :rejected :reason (get result :reason) :stage :original-index
                  :table (get part 0) :work-count work :completed-work-count (+ used (get result :completed-work-count))}))))
-        {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix}))))
+        {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix})))))
 
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.

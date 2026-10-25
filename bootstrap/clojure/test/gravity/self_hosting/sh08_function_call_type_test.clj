@@ -9828,6 +9828,39 @@
     {:core core :bindings (vec (vals bindings)) :forms (vec (vals @forms)) :types types :target target
      :unified unified :parameter-id parameter-id :nodes @nodes}))
 
+(deftest sh08-gis3-entry-reservation-development-kernel
+  ;; Passive existing runtime seams delegate exactly once, with no result or
+  ;; argument substitution. Exact64 is the positive observer control.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
+        original-scoped @scoped original-get @getter
+        core {:nodes [] :calls [] :call-edges [] :function-records []}
+        observe (fn [budget]
+                  (let [counts (atom {:Core-gets 0 :index-entry 0 :view-entry 0})
+                        result (with-redefs-fn
+                                 {getter (fn [plan value key]
+                                           (when (identical? value core) (swap! counts update :Core-gets inc))
+                                           (original-get plan value key))
+                                  scoped (fn [runtime plan callee args scope]
+                                           (when (= :gravity-sh08-function-call-type-leaf (:engine runtime))
+                                             (cond (= 'sh08-gis3-index callee) (swap! counts update :index-entry inc)
+                                                   (= 'sh08-gis3-original-readsets callee) (swap! counts update :view-entry inc)))
+                                           (original-scoped runtime plan callee args scope))}
+                                 #(invoke-c7 'sh08-gis3-source-payment [core [] [] {} :target budget]))]
+                    {:result result :observations @counts}))]
+    (doseq [budget [0 63]]
+      (let [{:keys [result observations]} (observe budget)]
+        (is (= :rejected (:status result)))
+        (is (= :compact-gis-work-limit (:reason result)))
+        (is (= [64 0] [(:work-count result) (:completed-work-count result)]))
+        (is (= {:Core-gets 0 :index-entry 0 :view-entry 0} observations))))
+    (let [{:keys [result observations]} (observe 64)]
+      (is (= :rejected (:status result)))
+      (is (= :compact-gis-index-work-limit (:reason result)))
+      (is (= [:original-index :nodes 72 64]
+             [(:stage result) (:table result) (:work-count result) (:completed-work-count result)]))
+      (is (= {:Core-gets 4 :index-entry 1 :view-entry 0} observations)))))
+
 (deftest sh08-gis3-original-row-first-payment-development-kernel
   (let [{:keys [core bindings forms types target unified parameter-id]} (gis3-original-row-input 0 0)
         result (invoke-c7 'sh08-gis3-source-payment [core bindings forms types target 65536])]
