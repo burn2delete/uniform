@@ -53,7 +53,9 @@
     (let [resolved (b/compiler-c5-resolution-source-artifact source-path source
                      {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader)
           _ (println {:data-declaration-phase :gravity-core})
-          artifact (b/sh07-core-from-resolution-artifact resolved)
+          artifact (b/sh07-core-from-resolution-artifact resolved
+                     {:reader-source-path reader
+                      :authenticated-envelope-options {:source :development-current}})
           boundary (:gravity-core-boundary artifact)
           core (:canonical-core-artifact boundary)
           request (:authenticated-core-request boundary)

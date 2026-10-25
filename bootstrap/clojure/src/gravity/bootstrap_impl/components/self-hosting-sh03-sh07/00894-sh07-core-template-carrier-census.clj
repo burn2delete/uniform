@@ -64,12 +64,20 @@
                        :reason :checked-core-operation-revision-drift})))
     run))
 
-(defn sh07-core-run-request-for-test [resolution-artifact authenticated-request]
-  (let [upstream-verification
-        (sh06-resolution-artifact-verification resolution-artifact)
+(defn sh07-core-run-request-for-test
+  ([resolution-artifact authenticated-request]
+   (sh07-core-run-request-for-test resolution-artifact authenticated-request nil))
+  ([resolution-artifact authenticated-request invocation]
+  (let [_ (when invocation
+            (sh03-reader-authenticated-envelope-options
+             (sh07-core-source-path-from-resolution resolution-artifact) invocation))
+        upstream-verification
+        (if invocation
+          (sh06-resolution-artifact-verification resolution-artifact ::legacy invocation)
+          (sh06-resolution-artifact-verification resolution-artifact))
         expected-request
         (when (= :passed (:status upstream-verification))
-          (sh07-core-authenticated-request resolution-artifact))]
+          (sh07-core-authenticated-request resolution-artifact ::legacy invocation))]
     (when-not (= :passed (:status upstream-verification))
       (sh07-core-request-diagnostic!
        authenticated-request
@@ -79,7 +87,7 @@
       (sh07-core-request-diagnostic!
        authenticated-request
        {:reason :authenticated-sh06-request-membership-mismatch}))
-    (sh07-core-run-structural-request-for-test authenticated-request)))
+    (sh07-core-run-structural-request-for-test authenticated-request))))
 
 (defn sh07-core-projection-diagnostic!
   [resolution-artifact reason]
