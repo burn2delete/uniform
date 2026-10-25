@@ -198,4 +198,3 @@
   (reject-original-nested "gravity"))
 (deftest sh12-literal-bool-specialization-rejects-original-nested-parameter-qst
   (reject-original-nested "qst"))
-
