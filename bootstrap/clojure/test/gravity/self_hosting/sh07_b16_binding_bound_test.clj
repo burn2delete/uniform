@@ -236,6 +236,9 @@
         indexes (form-index forms)]
     (is (true? (invoke 'sh07-form-forest-valid? [request indexes])))
     (is (= 0 (invoke 'sh07-b13-form-root-id [indexes (peek forms)])))
+    (is (= (second forms)
+           (invoke 'sh07-source-core-map-pattern-root
+                   [(assoc request :internal-indexes indexes) (peek forms) 0])))
     (is (false? (invoke 'sh07-form-forest-valid?
                          [(assoc request :top-level-form-ids [0 0]) indexes])))
     (is (false? (invoke 'sh07-form-forest-valid?
@@ -247,6 +250,19 @@
       (is (false? (invoke 'sh07-form-forest-valid?
                            [{:forms cycle :top-level-form-ids [0]} cycle-index])))
       (is (nil? (invoke 'sh07-b13-form-root-id [cycle-index (first cycle)]))))))
+
+(deftest source-pattern-root-rejects-cycles-and-missing-parent-forms
+  (let [cycle [{:form-id 1 :parent-form-id 2} {:form-id 2 :parent-form-id 1}]
+        request {:internal-indexes (form-index cycle)}]
+    (is (nil? (invoke 'sh07-source-core-map-pattern-root [request (first cycle) 0])))
+    (is (nil? (invoke 'sh07-source-core-map-pattern-root [request {:form-id 3 :parent-form-id 4} 0])))
+    (is (nil? (invoke 'sh07-source-core-map-pattern-root [request nil 0])))))
+
+(deftest source-core-map-digest-cardinality-follows-source-forms
+  (let [request {:forms (vec (repeat 65537 nil))}
+        requests (vec (repeat 65541 nil))]
+    (is (true? (invoke 'sh07-source-core-map-request-count? [request requests])))
+    (is (false? (invoke 'sh07-source-core-map-request-count? [request (conj requests nil)])))))
 
 (deftest core-native-boundary-validates-before-metadata-stripping-and-execution
   (let [source "<core-native-boundary>"
@@ -270,12 +286,20 @@
 
 (deftest decimal-descriptor-retains-exact-evidence-without-size-cap
   (doseq [value [(java.math.BigDecimal. java.math.BigInteger/ONE 65537)
+                 (java.math.BigDecimal. java.math.BigInteger/ONE -65537)
+                 (java.math.BigDecimal. java.math.BigInteger/ONE Integer/MIN_VALUE)
+                 (java.math.BigDecimal. java.math.BigInteger/ONE Integer/MAX_VALUE)
                  (java.math.BigDecimal. (.shiftLeft java.math.BigInteger/ONE 300) 0)]]
     (let [evidence {:kind :decimal :decoded value :literal-id (ordinal-sha 1)
                     :form-id (ordinal-sha 2) :token-id (ordinal-sha 3)}
           result (bootstrap/sh07-core-decimal-descriptor "decimal.gravity" value evidence (ordinal-sha 4))]
       (is (= (.scale value) (:scale result)))
       (is (= (.toString (.unscaledValue value)) (:unscaled-value result)))
+      (is (true? (invoke 'sh07-exact-decimal-descriptor? [result])))
+      (doseq [changed [(assoc result :scale "65537")
+                       (assoc result :unscaled-value "00")
+                       (dissoc result :literal-id)]]
+        (is (false? (invoke 'sh07-exact-decimal-descriptor? [changed]))))
       (is (= :exact-decimal-c2-evidence
              (:reason (contained-coordinator-diagnostic
                        #(bootstrap/sh07-core-decimal-descriptor

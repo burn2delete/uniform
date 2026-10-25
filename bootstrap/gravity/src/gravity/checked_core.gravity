@@ -2324,17 +2324,10 @@
       (if (sh07-canonical-signed-integer-string?
            (get value :unscaled-value))
         (if (integer? (get value :scale))
-          (if (<=
-               (if (< (get value :scale) 0)
-                 (- 0 (get value :scale))
-                 (get value :scale))
-               65536)
-            (if (sh07-sha256-id? (get value :literal-id))
-              (if (sh07-sha256-id? (get value :form-id))
-                (if (sh07-sha256-id? (get value :token-id))
-                  (sh07-sha256-id?
-                   (get value :projection-form-id))
-                  false)
+          (if (sh07-sha256-id? (get value :literal-id))
+            (if (sh07-sha256-id? (get value :form-id))
+              (if (sh07-sha256-id? (get value :token-id))
+                (sh07-sha256-id? (get value :projection-form-id))
                 false)
               false)
             false)
@@ -11176,12 +11169,15 @@
           (= (get record :handler-core-node-id) (get (get node :children) (+ ordinal 1))) false)])))
 
 (defn sh07-source-core-map-pattern-root [request form owner-id]
-  (loop [current form depth 0]
-    (if (= (get current :parent-form-id) owner-id) current
-      (if (>= depth 256) nil
-        (if (= (get current :parent-form-id) nil) nil
-          (recur (sh07-find-form (get request :internal-indexes) (get current :parent-form-id))
-                 (+ depth 1)))))))
+  (loop [current form visited #{}]
+    (if (map? current)
+      (let [form-id (get current :form-id) parent-id (get current :parent-form-id)]
+        (if (contains? visited form-id) nil
+          (if (= parent-id owner-id) current
+            (if (= parent-id nil) nil
+              (recur (sh07-find-form (get request :internal-indexes) parent-id)
+                     (conj visited form-id))))))
+      nil)))
 
 (defn sh07-source-core-map-pattern-join? [request form node indexes]
   (let [parent (sh07-find-form (get request :internal-indexes) (get form :parent-form-id))
@@ -11298,10 +11294,12 @@
 
 ; Semantic :passed alone is not admission. The adapter must independently
 ; recompute all D/Z SHA values before using this pure transcript/role verdict.
+(defn sh07-source-core-map-request-count? [request digest-requests]
+  (<= (count digest-requests) (+ (count (get request :forms)) 4)))
+
 (defn sh07-verify-source-core-map [request resolved-core digest-requests resolved-digests]
   (if (sh07-source-core-map-transcript? resolved-core digest-requests)
-      (if (if (<= (count digest-requests) (+ (count (get request :forms)) 4))
-            (<= (+ (count (get request :forms)) 4) 65540) false)
+      (if (sh07-source-core-map-request-count? request digest-requests)
         (let [rebuilt (sh07-build-core-template request)]
           (if (= (get rebuilt :status) :accepted)
             (if (= digest-requests (get rebuilt :digest-requests))
