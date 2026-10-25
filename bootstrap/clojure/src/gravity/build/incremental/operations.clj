@@ -1,5 +1,5 @@
-(ns gravity.c16-incremental.operations
-  "Dynamic operation interposition for the C16 compatibility leaf.")
+(ns gravity.build.incremental.operations
+  "Dynamic operation interposition for hosted incremental evidence.")
 
 (def ^:private ^:dynamic *operations* {})
 (def ^:private ^:dynamic *active-operation-keys* #{})

@@ -1,7 +1,7 @@
 (ns gravity.c16-incremental
   "Hosted Stage0 C16 incremental-compilation schema/evidence projection."
   (:require [gravity.c16-incremental.artifact :as artifact]
-            [gravity.c16-incremental.operations :as operations]
+            [gravity.build.incremental.operations :as operations]
             [gravity.c16-incremental.policy :as policy]
             [gravity.c16-incremental.projection :as projection]
             [gravity.c16-incremental.proof :as proof]
@@ -168,7 +168,7 @@
 
 (defn with-operations [operations thunk]
   (policy/validate-operations! operations)
-  (let [merged (merge (gravity.c16-incremental.operations/current-operations)
+  (let [merged (merge (gravity.build.incremental.operations/current-operations)
                       operations)]
     (binding [compiler-verification-diagnostic-messages
               (get merged :compiler-verification-diagnostic-messages compiler-verification-diagnostic-messages)
@@ -182,7 +182,7 @@
               (get merged :c16-cache-key-required-fields c16-cache-key-required-fields)
               c16-invalidation-causes
               (get merged :c16-invalidation-causes c16-invalidation-causes)]
-      (gravity.c16-incremental.operations/with-operations operations thunk))))
+      (gravity.build.incremental.operations/with-operations operations thunk))))
 
 (def public-api
   {'public-api {:kind :contract}
