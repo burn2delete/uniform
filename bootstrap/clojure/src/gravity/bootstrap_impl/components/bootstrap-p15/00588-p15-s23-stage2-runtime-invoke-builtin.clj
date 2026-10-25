@@ -1,4 +1,21 @@
-
+(defn- p15-s23-stage2-bootstrap-symbol-utf16-unit-count
+  [plan value]
+  (when-not (and (true? (:compiler-artifact-plan? plan))
+                 (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+                 (= :meta (get-in plan [:module :profile]))
+                 (= :jvm (get-in plan [:module :target])))
+    (throw (IllegalArgumentException.
+            "bootstrap-symbol-utf16-unit-count requires a compiler-artifact meta/JVM plan")))
+  (when-not (identical? clojure.lang.Symbol (class value))
+    (throw (IllegalArgumentException.
+            "bootstrap-symbol-utf16-unit-count requires a native Symbol")))
+  (let [^clojure.lang.Symbol value value
+        ^String name (.getName value)
+        ^String namespace (.getNamespace value)]
+    ;; Native null names render as nil unqualified, or four literal units when
+    ;; qualified. Long arithmetic keeps two maximal String lengths representable.
+    (+ (if (nil? name) (if (nil? namespace) 0 4) (long (.length name)))
+       (if (nil? namespace) 0 (inc (long (.length namespace)))))))
 
 (defn p15-s23-stage2-runtime-invoke-builtin
   ([plan callee args]
@@ -6,6 +23,9 @@
   ([runtime plan callee args]
   (try
     (case callee
+      bootstrap-symbol-utf16-unit-count
+      (do (p15-s23-stage2-runtime-assert-exact-arity! plan callee args 1)
+          (p15-s23-stage2-bootstrap-symbol-utf16-unit-count plan (nth args 0)))
       + (p15-s23-stage2-runtime-add args)
       - (do (p15-s23-stage2-runtime-assert-min-arity!
              plan callee args 1)
