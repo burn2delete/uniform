@@ -103,7 +103,8 @@
       (identical? String kind) [:string false nil (.length ^String value) nil nil]
       (identical? clojure.lang.Symbol kind)
       [:symbol (p15-s23-stage2-native-meta-present? value) nil
-       (p15-s23-stage2-bootstrap-symbol-utf16-unit-count plan value) nil nil]
+       (p15-s23-stage2-bootstrap-symbol-utf16-unit-count plan value)
+       (if (nil? (.getName ^clojure.lang.Symbol value)) false true) nil]
       (identical? clojure.lang.Keyword kind)
       (let [^clojure.lang.Symbol spelling (.-sym ^clojure.lang.Keyword value)]
         (if (identical? clojure.lang.Symbol (class spelling))
