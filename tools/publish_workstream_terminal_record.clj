@@ -21,7 +21,6 @@
 (load-file "tools/validate_workstream_governance.clj")
 (alias 'governance 'gravity.workstream-governance)
 
-(def ^:private maximum-json-bytes (* 2 1024 1024))
 (def ^:private terminal-states
   #{"integrated" "rejected" "superseded" "abandoned"})
 (def ^:private repository-root
@@ -65,9 +64,6 @@
   (when-not (Files/isRegularFile path (nofollow))
     (throw (ex-info "JSON path is not a regular file" {:path (str path)})))
   (let [bytes (Files/readAllBytes path)]
-    (when (> (alength bytes) maximum-json-bytes)
-      (throw (ex-info "JSON document exceeds byte limit"
-                      {:path (str path) :maximum maximum-json-bytes})))
     {:path path :bytes bytes
      :value (governance/read-strict-json (decode-utf8 bytes))}))
 

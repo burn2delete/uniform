@@ -14,9 +14,6 @@
 (def default-base-ref "origin/main")
 (def default-worktree-scan "candidate")
 (def worktree-scan-modes #{"candidate" "all"})
-(def max-worktree-inventory 256)
-(def max-output-exclusions 32)
-(def max-output-path-length 4096)
 (def ^:private oid-pattern (Pattern/compile "^[0-9a-fA-F]{40,64}$"))
 
 (defn- failure
@@ -145,11 +142,10 @@
 (defn- normalize-exclusion [value]
   (let [raw (str value)]
     (when (or (str/blank? raw)
-              (> (count raw) max-output-path-length)
               (str/includes? raw "\u0000")
               (some #(str/includes? raw %) ["*" "?" "[" "]"]))
       (throw (failure "WORKTREE-OUTPUT-EXCLUSION-INVALID"
-                      "output exclusion must be a non-empty bounded relative path"
+                      "output exclusion must be a non-empty relative path"
                       {:path raw})))
     (when (or (str/starts-with? raw "/")
               (re-find #"^[A-Za-z]:[\\/]" raw))
@@ -172,10 +168,6 @@
 
 (defn- normalize-exclusions [values]
   (let [values (vec (or values []))]
-    (when (> (count values) max-output-exclusions)
-      (throw (failure "WORKTREE-OUTPUT-EXCLUSION-INVALID"
-                      (str "at most " max-output-exclusions " output exclusions are allowed")
-                      {:count (count values)})))
     (->> values (map normalize-exclusion) distinct sort vec)))
 
 (defn- path-allowed? [path exclusions]
@@ -237,11 +229,6 @@
     (if-not (zero? (:exit result))
       (throw (git-failure result arguments))
       (let [records (parse-worktree-list (:stdout result))]
-        (when (> (count records) max-worktree-inventory)
-          (throw (failure "WORKTREE-INVENTORY-BOUND"
-                          (str "full worktree inventory exceeds the bounded limit of "
-                               max-worktree-inventory " records")
-                          {:count (count records) :limit max-worktree-inventory})))
         (->> records
            (map (fn [record]
                   (let [path (canonical-path (:path record))

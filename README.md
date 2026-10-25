@@ -30,10 +30,10 @@ for an ordinary semantic edit or focused test. Start with the development
 workflow above; do not maintain an admission receipt chain just to test a pass.
 
 Parallel work is governed by a closed lifecycle contract and a current
-workstream ledger. The guardrails allow only one active candidate per invariant
-family, require an architecture decision after two rejected attempts, and bind
-integration eligibility to exact Git identities, evidence, independent review,
-residual boundaries, and explicit nonclaims. See
+workstream ledger. Active candidates by different authors must have
+nonoverlapping owned paths; candidate counts and prior rejections do not limit
+admission. Integration eligibility remains bound to exact Git identities,
+evidence, independent review, residual boundaries, and explicit nonclaims. See
 [docs/workstream-governance.md](docs/workstream-governance.md).
 
 ```bash
