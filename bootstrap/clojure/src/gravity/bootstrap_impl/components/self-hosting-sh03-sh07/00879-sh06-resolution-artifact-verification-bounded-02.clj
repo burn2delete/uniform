@@ -63,7 +63,8 @@
                 (:authenticated-envelope boundary)
                 sh06-resolution-envelope-stage
                 sh06-resolution-sealed-artifact-kind
-                expected-descriptor source-path)
+                expected-descriptor source-path
+                (sh06-resolution-envelope-source-options binding))
                true
                (catch Throwable _ false)))
         base-checks

@@ -121,3 +121,8 @@
 ;; Temporary value for external 00580/00897 two-argument callers. The SH06
 ;; carrier validator ignores that obsolete argument; this is not a quota.
 (def sh06-resolution-artifact-bounds nil)
+
+(defn- sh06-resolution-envelope-source-options [binding]
+  (if (= :development-unadmitted (:revision-status binding))
+    {:source :development-current}
+    {}))

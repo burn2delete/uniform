@@ -179,10 +179,12 @@
         envelope
         (p15-s23-stage2-sh02-descriptor-envelope
          sh06-resolution-envelope-stage
-         sh06-resolution-sealed-artifact-kind descriptor source-path)
+         sh06-resolution-sealed-artifact-kind descriptor source-path
+         (sh06-resolution-envelope-source-options binding))
         _ (p15-s23-stage2-sh02-descriptor-envelope-verify!
            envelope sh06-resolution-envelope-stage
-           sh06-resolution-sealed-artifact-kind descriptor source-path)
+           sh06-resolution-sealed-artifact-kind descriptor source-path
+           (sh06-resolution-envelope-source-options binding))
         artifact-with-envelope
         (-> artifact-with-id
             (assoc-in [:gravity-resolution-boundary
