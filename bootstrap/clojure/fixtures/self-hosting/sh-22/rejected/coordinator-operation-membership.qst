@@ -1,0 +1,13 @@
+(ns gravity.self-hosting.sh22.operation-membership.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-nil-operation-request sh22-unknown-operation-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-nil-operation-request [request]
+  (assoc (assoc request :operation nil) :effects #{:memory/allocate}))
+
+(defn sh22-unknown-operation-request [request]
+  (assoc request :operation :undeclared-operation))
