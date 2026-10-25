@@ -328,3 +328,122 @@
       (is (= :input-carrier-value-domain (failure #(input value))))
       (is (= :canonical-value-domain (failure #(record value)))))
     (is (zero? @calls))))
+
+(defn- sealed-rejection-data [diagnostic]
+  (let [sealed {:sealed-diagnostics [diagnostic]}]
+    ;; The real sealer establishes canonical carrier validity before throwing.
+    (b/p15-s23-c6c10-validate-builder-result-canonical-carrier!
+     path (assoc sealed :digest-requests []))
+    (try (b/p15-s23-c6c10-throw-sealed-rejection! path sealed)
+         (catch clojure.lang.ExceptionInfo error (ex-data error)))))
+
+(deftest native-diagnostic-preserves-long-valid-semantic-ids
+  (let [name (str "id-" (apply str (repeat 600 "λ")))
+        identities {:syntax-id (keyword name) :core-node-id (symbol name)
+                    :operation-id name :origin-id (str name "-origin")}
+        data (try (b/p15-s23-c6c10-host-fail! "C6-VERIFY" path :semantic-failure identities)
+                  (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+    (doseq [[key value] identities]
+      (is (identical? value (b/p15-s23-c6c10-diagnostic-semantic-id value)))
+      (is (= value (get data key))))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:diagnostic-id data)))
+    (let [diagnostic {:id "C7-VERIFY" :rule "C7-VERIFY"
+                      :primary {:syntax-id (:syntax-id identities)
+                                :core-node-id (:core-node-id identities)
+                                :mir-operation-id (:operation-id identities)
+                                :origin-id (:origin-id identities)}
+                      :facts {:missing-fact :semantic-failure} :origin-chain []}
+          sealed (sealed-rejection-data diagnostic)]
+      (is (= identities (select-keys sealed (keys identities)))))))
+
+(deftest native-sealed-diagnostic-preserves-complete-origin-chain
+  (let [origin (mapv #(str "origin-" %) (range 129))
+        diagnostic {:id "C7-VERIFY" :rule "C7-VERIFY" :primary {:span {}}
+                    :facts {:missing-fact :semantic-failure} :origin-chain origin}
+        data (sealed-rejection-data diagnostic)]
+    (is (= origin (:generated-origin-chain data)))
+    (is (= origin (:origin-chain (:sealed-diagnostic data))))
+    (is (= (first origin) (:origin-id data)))
+    (is (= :semantic-failure (:missing-fact data)))
+    (is (= {:source path :file path} (:source-span data))))
+  (let [data (sealed-rejection-data
+              {:id "C7-VERIFY" :primary {} :facts {:missing-fact :semantic-failure}
+               :origin-chain nil})]
+    (is (= [] (:generated-origin-chain data)))
+    (is (nil? (:origin-id data)))))
+
+(deftest native-diagnostic-clamp-removal-keeps-canonical-and-callback-boundaries
+  (let [calls (atom 0) deny (fn [] (swap! calls inc) (throw (AssertionError. "foreign ID callback")))
+        foreign (proxy [Object clojure.lang.Named] []
+                  (getName [] (deny)) (getNamespace [] (deny))
+                  (toString [] (deny)) (hashCode [] (deny)) (equals [_] (deny)))
+        foreign-map-value (foreign-map deny)
+        cyclic (cycle-map)
+        diagnostic {:id "C7-VERIFY" :primary {} :facts {:missing-fact :semantic-failure}
+                    :origin-chain []}]
+    (doseq [candidate [foreign foreign-map-value cyclic nil 1 true []]]
+      (is (nil? (b/p15-s23-c6c10-diagnostic-semantic-id candidate))))
+    (doseq [[candidate expected] [[(str (char 0xd800)) :well-formed-unicode-scalar-string]
+                                 [(symbol "bad name") :canonical-symbol-components]
+                                 [(keyword "bad name") :canonical-keyword-components]
+                                 [foreign :canonical-value-domain]
+                                 [foreign-map-value :exact-persistent-map-class]
+                                 [cyclic :cyclic-canonical-carrier]]]
+      (is (= expected
+             (failure #(sealed-rejection-data (assoc-in diagnostic [:primary :syntax-id] candidate))))))
+    (doseq [[origin expected] [[[cyclic] :cyclic-canonical-carrier]
+                              [[foreign] :canonical-value-domain]
+                              [[(str (char 0xd800))] :well-formed-unicode-scalar-string]]]
+      (is (= expected
+             (failure #(sealed-rejection-data (assoc diagnostic :origin-chain origin))))))
+    (is (zero? @calls))))
+
+(defn- foreign-list-tail [deny]
+  (Proxy/newProxyInstance (.getClassLoader clojure.lang.ISeq)
+    (into-array Class [clojure.lang.ISeq clojure.lang.IPersistentList clojure.lang.IObj])
+    (reify InvocationHandler (invoke [_ _ _ _] (deny)))))
+
+(deftest native-canonical-list-domain-does-not-admit-cons-or-force-foreign-tails
+  (let [calls (atom 0) deny (fn [] (swap! calls inc) (throw (AssertionError. "list tail callback")))
+        lazy-tail (lazy-seq (deny) (list :unreachable))
+        foreign (foreign-list-tail deny)
+        finite-cons (clojure.lang.Cons. :head (list :tail))
+        lazy-cons (clojure.lang.Cons. :head lazy-tail)
+        foreign-cons (clojure.lang.Cons. :head foreign)
+        malformed-list (field! (list :head :tail) "_rest" foreign)]
+    (doseq [value [finite-cons lazy-cons foreign-cons]]
+      (is (false? (list? value)))
+      (is (= :canonical-value-domain (failure #(record value))))
+      (is (= :canonical-value-domain (failure #(input value)))))
+    (is (= {:status :passed} (check finite-cons)))
+    (doseq [value [lazy-cons foreign-cons]]
+      (is (= :untrusted-list-tail-class (:reason (check value)))))
+    (is (= :exact-persistent-list-class (failure #(record malformed-list))))
+    (is (= :exact-persistent-carrier-class (failure #(input malformed-list))))
+    (is (= [:list [[:keyword nil "head"] [:keyword nil "tail"]]]
+           (:form (record (list :head :tail)))))
+    (is (= {:status :passed} (input (list :head :tail))))
+    (is (zero? @calls))))
+
+(deftest native-private-list-cursor-uses-raw-cons-tail-after-exact-class-check
+  ;; Cons is not in the public canonical domain. This explicit private-helper
+  ;; domain override tests its advance operation without changing that policy.
+  (let [calls (atom 0) deny (fn [] (swap! calls inc) (throw (AssertionError. "raw tail callback")))
+        lazy-tail (lazy-seq (deny) (list :unreachable))
+        foreign (foreign-list-tail deny)
+        finite (clojure.lang.Cons. :head (list :tail))
+        cyclic (clojure.lang.Cons. :head nil)
+        classes (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-list-classes)
+        cursor (deref (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-list-items))]
+    (field! cyclic "_more" cyclic)
+    (with-redefs-fn {classes (conj @classes "clojure.lang.Cons" (.getName (class foreign)))}
+      (fn []
+        (is (= [:head :tail] (cursor path finite)))
+        (is (= [:head :tail] (cursor path (list :head :tail))))
+        (doseq [value [(clojure.lang.Cons. :head lazy-tail)
+                       (clojure.lang.Cons. :head foreign)]]
+          (is (= :exact-persistent-list-class (failure #(cursor path value)))))
+        (is (= :cyclic-canonical-carrier (failure #(cursor path cyclic))))
+        (is (= :metadata-free-canonical-value
+               (failure #(cursor path (with-meta (clojure.lang.Cons. :head lazy-tail) {:present true})))))))
+    (is (zero? @calls))))

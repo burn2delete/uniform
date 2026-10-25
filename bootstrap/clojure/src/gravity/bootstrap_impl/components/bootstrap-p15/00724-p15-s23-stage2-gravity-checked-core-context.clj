@@ -80,8 +80,7 @@
              :sealed-gravity-diagnostic-missing-fact
              {:source-span public-span}))
         origin-chain
-        (if (and (vector? (:origin-chain diagnostic))
-                 (<= (count (:origin-chain diagnostic)) 64))
+        (if (vector? (:origin-chain diagnostic))
           (:origin-chain diagnostic) [])
         syntax-id
         (p15-s23-c6c10-diagnostic-semantic-id
