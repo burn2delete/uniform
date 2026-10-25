@@ -61,6 +61,41 @@
       (is (= "C2-HASH" (:id (failure foreign))))
       (is (zero? @calls)))))
 
+(deftest public-current-reader-reaches-the-real-envelope-verifier
+  (let [path "src/public-current-context.gravity"
+        text "(ns reader.current (:profile :core) (:target :jvm) (:effects #{}) (:capabilities #{})) (defn value [] 1)"
+        reader bootstrap/sh03-reader-source-relative-path
+        before (slurp reader :encoding "UTF-8")
+        invocation {:reader-source-path reader
+                    :authenticated-envelope-options {:source :development-current}}
+        artifact (bootstrap/compiler-c2-reader-source-artifact path text nil nil nil reader)
+        envelope (get-in artifact [:gravity-reader-boundary :authenticated-envelope])
+        authority (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-internal-product-authority))
+        verifier (var-get (ns-resolve 'gravity.bootstrap 'sh03-c3-precomputed-c2-verify!))
+        failure (fn [f] (try (f) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+    (is (= :gravity/stage0-c2-reader-document-artifact (:kind artifact)))
+    (is (= 2 (get-in envelope [:sealed-artifact :schema-version])))
+    (is (= :development-unadmitted (get-in envelope [:source-rule :admission-status])))
+    (is (= artifact (verifier authority path artifact invocation)))
+    (is (map? (failure #(verifier authority path artifact))))
+    (is (map? (failure #(verifier authority path artifact
+                                 (assoc invocation :authenticated-envelope-options {})))))
+    (is (map? (failure #(verifier authority path artifact
+                                 (assoc invocation :reader-source-path "other/reader.gravity")))))
+    (is (map? (failure #(verifier authority path
+                                 (assoc-in artifact [:gravity-reader-boundary :authenticated-envelope
+                                                     :semantic-envelope-id] "sha256:changed")
+                                 invocation))))
+    (is (map? (failure #(bootstrap/compiler-c2-reader-source-artifact path text nil))))
+    ;; The selected source really changes between production and verification.
+    ;; This isolated-test worktree's original bytes are restored even on error.
+    (try
+      (spit reader (str before "\n; invocation source changed\n") :encoding "UTF-8")
+      (is (map? (failure #(verifier authority path artifact invocation))))
+      (finally (spit reader before :encoding "UTF-8")))
+    (is (= before (slurp reader :encoding "UTF-8")))
+    (is (= artifact (verifier authority path artifact invocation)))))
+
 (deftest unmetered-reader-preserves-products-and-fresh-tamper-rejection
   (let [arguments (input "; comment\n[1 :a \"\u00e9\ud83d\ude00\" 2/3] ^:private x")
         result (execute 'sh03-read-source-unit arguments)]
