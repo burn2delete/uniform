@@ -10460,6 +10460,42 @@
     (is (pos? (:List-rests @counts)))
     (is (= 0 (:non-List-rests @counts) (:subvec @counts)))))
 
+(deftest sh08-gis3-Symbol-prepayment-gap-development-kernel
+  ;; Characterize the open gap, not acceptance of a safe fee implementation.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        render (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-str)
+        original-scoped @scoped original-render @render owner (Thread/currentThread)
+        active (atom false) rendering (atom 0)
+        run (fn [budget]
+              (let [value (symbol "ns" (apply str (repeat 4096 "x")))
+                    result (with-redefs-fn
+                             {scoped (fn [runtime plan callee args scope]
+                                       (if (and (identical? owner (Thread/currentThread))
+                                                (= :gravity-sh08-function-call-type-leaf (:engine runtime))
+                                                (= 'sh08-gis3-data-tallies callee))
+                                         (do (reset! active true)
+                                             (try (original-scoped runtime plan callee args scope)
+                                                  (finally (reset! active false))))
+                                         (original-scoped runtime plan callee args scope)))
+                              render (fn [args]
+                                       (when (and (identical? owner (Thread/currentThread)) @active
+                                                  (identical? value (first args)))
+                                         (swap! rendering inc))
+                                       (original-render args))}
+                             #(invoke-c7 'sh08-gis3-data-tallies [value budget]))]
+                result))
+        before (run 11) before-calls @rendering
+        after (run 13) after-calls @rendering]
+    (is (= [:rejected :compact-gis-work-limit 12 8]
+           ((juxt :status :reason :work-count :completed-work-count) before)))
+    (is (= 0 before-calls))
+    (is (= [:rejected :compact-gis-work-limit 4117 8]
+           ((juxt :status :reason :work-count :completed-work-count) after)))
+    (is (= 1 after-calls))
+    (prn {:Symbol-prepayment-gap-demonstrated true :allowance 13 :required 4117 :completed 8
+          :render-dispatch-before-length-reservation after-calls :safe-fee-implementation-established false
+          :numeric-proof-established false :source-composition-executed false})))
+
 (deftest sh08-gis3-index-comparison-fee-development-kernel
   ;; Native 71-character collision DATA, not authenticated Core identities.
   (let [prefix (str "sha256:" (apply str (repeat 62 "a")))
