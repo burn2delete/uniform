@@ -157,6 +157,38 @@
         (recur (rest remaining))
         false))))
 
+(deftest sh03-current-source-intake-metadata-cannot-grant-capacity
+  ;; Metadata validation is a pre-construction guard, not source acceptance.
+  ;; The capacity comes from the executed reader, never the source record.
+  (let [bounds (current-sh03-seed-execute 'sh03-bounds-record [])
+        maximum (:maximum-source-bytes bounds)
+        unit {:artifact :gravity/sh03-source-unit
+              :schema-version 1
+              :project-root-id (str "sha256:" (apply str (repeat 64 "0")))
+              :logical-source-id "src/intake-policy.gravity"
+              :source-content-hash (str "sha256:" (apply str (repeat 64 "0")))
+              :source-byte-count maximum
+              :encoding :utf-8
+              :actual-path-provenance {:path "/declared/intake-policy.gravity"
+                                       :extension ".gravity"
+                                       :source-kind :gravity}}
+        valid? #(current-sh03-seed-execute 'sh03-source-unit-valid? [%])
+        policy {:artifact :gravity/sh03-reader-policy :schema-version 1
+                :retain-trivia false :enabled-reader-tags []}]
+    (is (true? (valid? (assoc unit :source-byte-count (dec maximum)))))
+    (is (true? (valid? unit)))
+    (is (false? (valid? (assoc unit :source-byte-count (inc maximum)))))
+    (doseq [count [nil -1 false "4194304" 1.5]]
+      (is (false? (valid? (assoc unit :source-byte-count count)))))
+    (is (false? (valid? (assoc unit :bounds
+                              {:maximum-source-bytes (* 2 maximum)}))))
+    (is (false? (current-sh03-seed-execute
+                 'sh03-reader-policy-valid?
+                 [(assoc policy :resource-policy
+                         {:maximum-source-bytes (* 2 maximum)})])))
+    (is (true? (current-sh03-seed-execute
+                'sh03-reader-policy-valid? [policy])))))
+
 (deftest sh03-current-source-hex-seed-binding
   (is (true? (current-sh03-seed-execute 'sh03-lowercase-hex? [[]])))
   (let [source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
@@ -435,13 +467,13 @@
 (def ^:private sh03-facade-source-relative-path
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity")
 
-(def ^:private sh03-facade-source-byte-count 36920)
+(def ^:private sh03-facade-source-byte-count 37071)
 (def ^:private sh03-facade-source-content-hash
-  "sha256:cb416baa7330fd7db5507fcd5fc1d78d5c9e848feb9020552d4c21b9e1c17fe0")
+  "sha256:7e2f39689ea1d78dfd1170a37369e96344cc7dc97c0e677b2891ae1bdb580162")
 (def ^:private sh03-facade-plan-semantic-hash
-  "sha256:1012a51721cd2c29e260a6f7bc3bc0b2ced5aefe1222cbbd95a155fc44f8977f")
+  "sha256:fdc086661aaac33d6f3845bffc803cb7e17f3e522095c489de02f9ed82518dbc")
 (def ^:private sh03-facade-functions-semantic-hash
-  "sha256:1ac79857179b3729eb47c3ce364f990333799ffec49f5047e700be7e7a827123")
+  "sha256:976e7786417b02103df99f38306711186164e91abbd8d4c780f3ec8afd9a1edf")
 
 (def ^:private sh03-facade-plan
   (delay
@@ -1156,12 +1188,16 @@
     (is (nil? (:unexpected-host-error data)))))
 
 (deftest sh03-digest-resolution-reuses-only-its-fresh-canonical-form
-  (let [form-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-form-and-stats)
+  (let [validation-var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-validation!)
+        write-var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-write!)
         hash-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-digest-validated-form)
         phase-var (ns-resolve 'gravity.bootstrap 'sh03-reader-resolve-digest-request-sequence!)
-        original-form (var-get form-var) hash-form (var-get hash-var)
+        original-validation (var-get validation-var) original-write (var-get write-var)
+        hash-form (var-get hash-var)
         original-phase (var-get phase-var)
         original-resolve bootstrap/p15-s23-c6c10-resolve-digest-references!]
+    (is (true? (:private (meta validation-var))))
+    (is (true? (:private (meta write-var))))
     (is (true? (:private (meta hash-var))))
     (is (true? (:private (meta phase-var))))
     (is (not (contains? (ns-publics 'gravity.bootstrap) 'sh03-reader-resolve-digest-request-sequence!)))
@@ -1171,13 +1207,18 @@
       (let [source (fixture-path disposition basename ".gravity") bytes (source-bytes source)
             execution (sh03-result source) raw (:raw-result execution)
             requests (:resolved-requests execution) nonraw (vec (rest requests))
-            calls (atom {}) completions (atom []) phase-returns (atom []) phase-complete? (atom false)
+            calls (atom {}) emissions (atom {}) completions (atom [])
+            phase-returns (atom []) phase-complete? (atom false)
             resolve-once (fn []
                            (with-redefs-fn
-                             {form-var (fn [request-source value]
+                             {validation-var (fn [request-source value]
                                          (doseq [request nonraw :when (= value (:preimage request))]
                                            (swap! calls update (:key request) (fnil inc 0)))
-                                         (original-form request-source value))
+                                         (original-validation request-source value))
+                              write-var (fn [request-source value validated-stats writer]
+                                          (doseq [request nonraw :when (= value (:preimage request))]
+                                            (swap! emissions update (:key request) (fnil inc 0)))
+                                          (original-write request-source value validated-stats writer))
                               phase-var (fn [request-source input input-bytes]
                                           (let [result (original-phase request-source input input-bytes)]
                                             (swap! phase-returns conj result)
@@ -1199,6 +1240,7 @@
         (is (= (select-keys execution [:resolved-requests :resolved-digests :reader-result-id])
                (select-keys first-result [:resolved-requests :resolved-digests :reader-result-id])))
         (is (= (zipmap (map :key nonraw) (repeat 1)) @calls))
+        (is (= (zipmap (map :key nonraw) (repeat 1)) @emissions))
         (is (= [(assoc raw :digest-requests [])] @completions))
         (is (= [(select-keys first-result [:resolved-digests :resolved-requests])] @phase-returns))
         (let [legacy-result (original-resolve source raw (count requests) nil (:resolved-digests first-result))
@@ -1213,11 +1255,13 @@
                    (bootstrap/sh03-reader-canonical-digest source (:preimage request))
                    (hash-form identity)))))
         (reset! calls {})
+        (reset! emissions {})
         (reset! completions [])
         (reset! phase-returns [])
         (reset! phase-complete? false)
         (is (= first-result (resolve-once)))
         (is (= (zipmap (map :key nonraw) (repeat 1)) @calls))
+        (is (= (zipmap (map :key nonraw) (repeat 1)) @emissions))
         (is (= [(assoc raw :digest-requests [])] @completions))
         (is (= [(select-keys first-result [:resolved-digests :resolved-requests])] @phase-returns))))))
 
@@ -1240,12 +1284,12 @@
       (let [data (thrown-data #(bootstrap/sh03-reader-resolve-digest-requests! source candidate bytes))]
         (is (= "C2-HASH" (:id data)))
         (is (some #{missing} (:missing-fields data)))))
-    (let [hash-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-digest-validated-form)
+    (let [hash-var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-digest)
           original (var-get hash-var) calls (atom 0) previous (atom nil)
           boundary (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-boundary-fail!))
           data (with-redefs-fn
-                 {hash-var (fn [form]
-                             (let [result (original form)]
+                 {hash-var (fn [request-source value]
+                             (let [result (original request-source value)]
                                (if (= 2 (swap! calls inc)) @previous
                                  (do (reset! previous result) result))))}
                  #(thrown-data (fn [] (bootstrap/sh03-reader-resolve-digest-requests! source raw bytes))))]
@@ -1363,11 +1407,12 @@
            [token-count form-count]))]
     (is (true? (within? 65537 32769)))
     (is (true? (within? 131072 65536)))
-    (is (false? (within? 131073 65536)))
-    (is (false? (within? 131072 65537)))
+    (is (true? (within? 524288 262144)))
+    (is (false? (within? 524289 262144)))
+    (is (false? (within? 524288 262145)))
     (is (false? (within? -1 0)))
     (is (false? (within? 0 -1)))
-    (is (false? (within? "131072" 65536)))))
+    (is (false? (within? "524288" 262144)))))
 
 (deftest sh03-gravity-facade-package-boundary-fails-closed
   (let [accepted-path

@@ -1,6 +1,6 @@
 
 
-(def sh03-reader-maximum-source-bytes 1048576)
+(def sh03-reader-maximum-source-bytes 4194304)
 
 (defn sh03-reader-read-target-source-bytes!
   [path]

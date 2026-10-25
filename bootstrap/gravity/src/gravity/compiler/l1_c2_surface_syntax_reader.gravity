@@ -182,7 +182,7 @@
                     (get source-unit :source-byte-count)]
                 (if (integer? source-byte-count)
                   (if (>= source-byte-count 0)
-                    (if (<= source-byte-count 1048576)
+                    (if (<= source-byte-count 4194304)
                       (if (= (get source-unit :encoding) :utf-8)
                         (l1-c2-actual-path-provenance-valid?
                          (get source-unit :actual-path-provenance))
@@ -238,10 +238,11 @@
     false))
 
 (defn l1-c2-reader-bounds-record []
-  {:maximum-source-bytes 1048576
-   :maximum-characters 1048576
-   :maximum-tokens 131072
-   :maximum-forms 65536
+  {:resource-policy :gravity/sh03-compiler-source-v1
+   :maximum-source-bytes 4194304
+   :maximum-characters 4194304
+   :maximum-tokens 524288
+   :maximum-forms 262144
    :maximum-delimiter-depth 512
    :maximum-semantic-work-units 8437834
    :maximum-container-width 65536
@@ -249,22 +250,24 @@
    :maximum-numeric-semantic-scalars 256
    :maximum-numeric-semantic-work-units 65536
    :maximum-canonical-scalar-bytes 1048576
-   :maximum-canonical-total-scalar-bytes 67108864
+   :maximum-canonical-total-scalar-bytes 536870912
    :maximum-source-identity-utf8-bytes 4096
    :maximum-logical-source-id-code-units 1024
    :maximum-actual-path-code-units 1024
    :maximum-reader-tags 32
    :maximum-reader-tag-codepoints 4
-   :maximum-result-carrier-nodes 167772160
+   :maximum-result-carrier-nodes 268435456
    :maximum-result-carrier-depth 2048
-   :maximum-result-carrier-width 1048576
+   :maximum-result-carrier-width 4194304
    :result-carrier-node-budget
    {:fixed-nodes 1048576
     :nodes-per-source-byte 24
     :nodes-per-token 320
     :nodes-per-form 1024
     :nodes-per-reader-tag 2048
-    :derived-maximum-nodes 135331840}})
+    :derived-maximum-nodes 537985024
+    :construction-guard :prospective-physical-node-count
+    :admitted-maximum-nodes 268435456}})
 
 (defn l1-c2-reader-execution-boundary-record []
   {:artifact :gravity/sh03-reader-execution-boundary
@@ -288,18 +291,18 @@
                            :stage2-instruction-runner]
    :clojure-boundary-responsibility
    {:responsibility :result-carrier-validation
-    :maximum-nodes 167772160
+    :maximum-nodes 268435456
     :maximum-depth 2048
-    :maximum-width 1048576
+    :maximum-width 4194304
     :maximum-canonical-scalar-bytes 1048576
-    :maximum-canonical-total-scalar-bytes 67108864
+    :maximum-canonical-total-scalar-bytes 536870912
     :failure-rule "C2-HASH"
     :result-committed? false}
    :gravity-input-responsibility
    {:maximum-source-identity-utf8-bytes 4096
     :maximum-logical-source-id-code-units 1024
     :maximum-actual-path-code-units 1024
-    :maximum-source-bytes 1048576
+    :maximum-source-bytes 4194304
     :maximum-reader-tags 32
     :maximum-reader-tag-codepoints 4
     :invalid-input-carrier-policy :bounded-summary}
