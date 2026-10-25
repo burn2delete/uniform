@@ -38,7 +38,8 @@ comment of the immutable PR356 test file; it selects the three paired tests and
 five ingress/snapshot controls through the existing runner and host broker.
 Use current coordinator/evidence rules for any future rerun. The historical
 watchdog and heap are host execution safeguards, not project work quotas.
-This adoption task runs no JVM and independently validates no compiler behavior.
+This adoption task runs lightweight Clojure/JVM repository checks. It does not
+run compiler semantic tests or independently validate compiler behavior.
 
 For adoption acceptance, verify actual feature creation, local override resolution,
 plan preservation, tasks prerequisites, negative missing-feature behavior,
