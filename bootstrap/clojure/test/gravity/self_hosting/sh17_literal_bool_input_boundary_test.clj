@@ -70,10 +70,13 @@
       (is (= :accepted (:status raw)))
       (is (= :passed (:status upstream) (:status report) (:status post)))
       (is (= :accepted (:status preflight)) (pr-str preflight))
-      (is (= :rejected
-             (:status ((existing 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test 'invoke)
-                       'sh12-authenticated-c10-mir-carrier-preflight
-                       (assoc context :callback (fn [] :untrusted))))))
+      (let [realized? (atom false)
+            sequence (lazy-seq (reset! realized? true) (list :untrusted))]
+        (is (= {:status :rejected :reason :c10-mir-carrier-seq-unsupported}
+               ((existing 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test 'invoke)
+                'sh12-authenticated-c10-mir-carrier-preflight
+                (assoc context :sequence sequence))))
+        (is (false? @realized?)))
       (prn {:development-context [condition extension] :carrier-preflight preflight}))))
 
 (defn- check-valid [condition extension]
