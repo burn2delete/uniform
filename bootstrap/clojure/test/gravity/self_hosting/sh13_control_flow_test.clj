@@ -223,7 +223,12 @@
       (is (= :returned (get-in result [:execution :status])))
       (is (= 2432902008176640000 (get-in result [:execution :value])))
       (is (= 21 (count (filter #(= :enter (:event %))
-                              (get-in result [:execution :trace]))))))))
+                              (get-in result [:execution :trace])))))
+      ;; Compiler quota fields are absent; this does not eliminate the
+      ;; temporary evaluator's host-stack boundary or prove arbitrary depth.
+      (is (not (contains? (invoke-engine 'sh13-control-flow-policy []) :maximum-call-depth)))
+      (is (every? #(not (contains? % :maximum-call-depth)) (:functions module)))
+      (is (every? #(not (contains? % :depth)) (get-in result [:execution :trace]))))))
 
 (deftest sh13-executes-loop-backedges-and-allowlisted-indirect-calls
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
