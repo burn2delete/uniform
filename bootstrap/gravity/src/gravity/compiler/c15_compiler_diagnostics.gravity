@@ -388,6 +388,77 @@
 ; nor the upstream semantics.  Self-consistent forged references are therefore
 ; admissible external shape/equality inputs, not authority evidence.
 
+; Private SH02 producer-result preservation. This does not map a normative
+; rule, invent unavailable context, bind an identity, or authenticate a producer.
+(defn sh15-envelope-diagnostic-valid? [diagnostic]
+  (if (sh15-exact-keys?
+       diagnostic #{:artifact :schema-version :diagnostic-family :reason
+                    :phase :stage :artifact-kind :remediation})
+    (= [:gravity/authenticated-envelope-rejection 1 :coordinator-mapped
+        true true :reconstruct-envelope-from-fresh-stage-products]
+       [(get diagnostic :artifact) (get diagnostic :schema-version)
+        (get diagnostic :diagnostic-family) (keyword? (get diagnostic :reason))
+        (sh15-member? [:validation :construction :verification]
+                      (get diagnostic :phase))
+        (get diagnostic :remediation)])
+    false))
+
+(defn sh15-envelope-rejection-valid? [source-result]
+  (if (c15-carrier-valid? source-result)
+    (if (sh15-exact-keys?
+         source-result #{:status :fatal? :artifact-template :digest-requests
+                         :digest-graph-roots :diagnostics :containment :claim-boundary})
+      (if (= [:rejected true nil [] []
+              {:fatal? true :stop-after :authenticated-envelope
+               :downstream-artifacts-forbidden true}
+              [:content-and-context-consistency
+               :coordinator-assigns-normative-diagnostic-id]]
+             [(get source-result :status) (get source-result :fatal?)
+              (get source-result :artifact-template) (get source-result :digest-requests)
+              (get source-result :digest-graph-roots) (get source-result :containment)
+              (get source-result :claim-boundary)])
+        (let [diagnostics (get source-result :diagnostics)]
+          (if (vector? diagnostics)
+            (if (< 0 (count diagnostics))
+              (loop [index 0]
+                (if (= index (count diagnostics)) true
+                  (if (sh15-envelope-diagnostic-valid? (get diagnostics index))
+                    (recur (+ index 1)) false)))
+              false)
+            false))
+        false)
+      false)
+    false))
+
+(defn sh15-envelope-preservation-nonclaims []
+  [:upstream-semantic-authentication :normative-diagnostic-id :canonical-c15-record
+   :public-safe-projection :canonical-stream-verification :self-hosting :release])
+
+(defn sh15-preserve-envelope-rejection [source-result]
+  (if (sh15-envelope-rejection-valid? source-result)
+    {:artifact :gravity/sh15-envelope-rejection-preservation :schema-version 1
+     :status :preserved :source-result source-result
+     :diagnostics (get source-result :diagnostics)
+     :source-status :external-unverified-preservation-input
+     :diagnostic-id-status :coordinator-mapping-required
+     :semantic-authority :none
+     :nonclaims (sh15-envelope-preservation-nonclaims)}
+    (assoc (c15-construction-failure "C15-SCHEMA" :source-result
+                                     :invalid-envelope-rejection)
+           :artifact :gravity/sh15-envelope-rejection-preservation)))
+
+(defn sh15-verify-envelope-rejection [original-result candidate]
+  (if (sh15-envelope-rejection-valid? original-result)
+    (if (c15-carrier-valid? candidate)
+      (if (= (sh15-preserve-envelope-rejection original-result) candidate)
+        {:artifact :gravity/sh15-envelope-rejection-preservation-verification
+         :schema-version 1 :status :passed
+         :scope :original-producer-result-preservation-only
+         :semantic-authority :none :nonclaims (sh15-envelope-preservation-nonclaims)}
+        (c15-construction-failure "C15-SCHEMA" :candidate :candidate-substitution))
+      (c15-construction-failure "C15-SCHEMA" :candidate :unsupported-candidate-carrier))
+    (c15-construction-failure "C15-SCHEMA" :original-result :invalid-envelope-rejection)))
+
 (defn sh15-exact-keys? [value expected]
   (if (map? value) (= (set (keys value)) expected) false))
 
