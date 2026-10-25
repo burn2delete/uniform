@@ -947,3 +947,26 @@
 
 (deftest sh13-normalized-greater-than-checks-i64-operands
   (check-normalized-order-comparison :gt >))
+
+(deftest sh13-missing-discriminators-reject-before-execution
+  ;; C11/SH13.6: normalized fixture evidence, not authenticated Core ingress.
+  (let [base (module accepted-gravity-plan 'sh13-branch-module)
+        return-path [:functions 0 :blocks 3 :terminator]
+        operation-path [:functions 1 :blocks 2 :operations 1]
+        call-path [:functions 4 :blocks 0 :operations 0]]
+    (doseq [[arguments expected] [[[true] 42] [[false] 7]]]
+      (let [result (run base arguments)]
+        (is (= :accepted (:status result)))
+        (is (= [:returned expected] ((juxt :status :value) (:execution result))))))
+    (doseq [[candidate error]
+            [[(assoc-in base (conj return-path :opcode) nil) :block]
+             [(update-in base return-path dissoc :opcode) :block]
+             [(assoc-in base (conj operation-path :opcode) nil) :origin]
+             [(assoc-in base (conj call-path :dispatch) nil) :verify]
+             [(assoc-in base [:functions 0 :recursive] nil) :module]]]
+      (let [result (run candidate [true])]
+        (is (= error (invoke-engine 'sh13-module-error [candidate])))
+        (is (= :rejected (:status result)))
+        (is (= [(invoke-engine 'sh13-diagnostic [candidate error])] (:diagnostics result)))
+        (is (nil? (:execution result)))
+        (is (= :passed (:status (invoke-engine 'sh13-verify-execution [candidate [true] result]))))))))
