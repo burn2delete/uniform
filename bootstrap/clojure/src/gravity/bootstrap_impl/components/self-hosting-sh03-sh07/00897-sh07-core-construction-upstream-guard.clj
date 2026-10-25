@@ -82,13 +82,19 @@
      :phase (select-keys @context [:owner-thread-id :open? :phase :epoch])}))
 
 (defn- sh07-core-construction-catalog [report]
-  {:schema-version 1 :domain :gravity/sh06-final-verification-checks
-   :checks (set (keys (:checks report)))})
+  (let [checks (set (keys (:checks report)))]
+    {:check-catalog checks
+     :check-catalog-hash
+     (reader-canonical-hash {:schema-version 1 :domain :gravity/sh06-final-verification-checks
+                            :checks (vec (sort checks))})}))
 
 (defn- sh07-core-construction-reader [artifact]
   ;; The existing C3 predicate authenticates this retained selected revision
   ;; and binding, not a newly loaded default reader or the target source.
   (let [c3 (get-in artifact [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact])]
+    (when-not (c3-current-reader-revision-authentic? (:c2-reader-artifact c3) (:gravity-syntax-boundary c3))
+      (sh07-core-construction-fail! (sh07-core-source-path-from-resolution artifact)
+                                   :construction-selected-reader-drift))
     {:revision (get-in c3 [:c2-reader-artifact :sh03-reader-authentication :reader-source-revision])
      :boundary (select-keys (:gravity-syntax-boundary c3)
                             [:reader-source-revision :reader-semantic-binding])}))
@@ -113,7 +119,7 @@
                    (= bindings (sh07-core-construction-bindings source-path)))
       (sh07-core-construction-fail! source-path :construction-dependency-drift))
     (when-let [context (:context phase)]
-      (when-not (= (:transaction-catalog facts)
+      (when-not (= catalog
                    (get-in @context [:check-catalogs [:sh06 :final]]))
         (sh07-core-construction-fail! source-path :construction-check-catalog-drift)))
     (sh07-core-construction-envelope! artifact source-path)))
@@ -123,6 +129,7 @@
    (let [carrier (sh07-core-construction-carrier! artifact)
         source-path (sh07-core-source-path-from-resolution artifact)
         dependencies (sh07-core-construction-dependencies source-path)
+        bindings (sh07-core-construction-bindings source-path)
         roots (sh07-core-construction-roots)
         phase (sh07-core-construction-phase)
         report (sh06-resolution-artifact-verification artifact)]
@@ -132,11 +139,9 @@
       (let [facts {:artifact artifact :report report :source-path source-path
                    :dependencies dependencies :roots roots :phase phase :carrier carrier
                    :reader (sh07-core-construction-reader artifact)
-                   :bindings (sh07-core-construction-bindings source-path)
+                   :bindings bindings
                    :catalog (sh07-core-construction-catalog report)
-                   :thread (.getId (Thread/currentThread))
-                   :transaction-catalog (when-let [context (:context phase)]
-                                          (get-in @context [:check-catalogs [:sh06 :final]]))}
+                   :thread (.getId (Thread/currentThread))}
             _ (sh07-core-construction-check! facts)
             request (sh07-core-request-from-verified-upstream artifact report)
             facts (assoc facts :request request)

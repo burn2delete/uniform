@@ -139,6 +139,48 @@
     (is (false? (:open? @context)))
     (is (empty? (:receipts @context)))))
 
+(defn- actual-upstream-change [kind]
+  (let [input @resolution verified? (atom false) reports (atom []) core-calls (atom 0)
+        verifier (implementation 'sh06-resolution-artifact-verification)
+        current (implementation 'sh06-resolution-current-binding!)
+        execute (implementation 'sh07-core-execute!)
+        reader (implementation 'sh03-reader-verifier)
+        context (when (= :catalog kind)
+                  (atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
+                         :phase :construction :epoch 0 :maximum-receipts 64
+                         :receipts [] :check-catalogs {} :executions {} :reuses {}}))
+        original-verifier (var-get verifier) original-current (var-get current)
+        original-execute (var-get execute)
+        error (with-bindings {(implementation '*sh07-proof-transaction-context*) context}
+                (with-redefs-fn
+                {reader (var-get reader)
+                 verifier (fn [& args]
+                            (let [report (apply original-verifier args)]
+                              (swap! reports conj (:status report))
+                              (when (= :catalog kind)
+                                (swap! context assoc-in [:check-catalogs [:sh06 :final]]
+                                       {:check-catalog #{} :check-catalog-hash "changed"}))
+                              (when (= :reader kind)
+                                (alter-var-root reader (constantly (var-get (implementation 'sh03-reader-entrypoint)))))
+                              (reset! verified? true) report))
+                 current (fn [& args]
+                           (let [binding (apply original-current args)]
+                             (if (and (= :binding kind) @verified?)
+                               (assoc-in binding [:plan :functions 'test-replaced] {:arity 0})
+                               binding)))
+                 execute (fn [& args] (swap! core-calls inc) (apply original-execute args))}
+                #(thrown (fn [] (b/sh07-core-from-resolution-artifact input)))))]
+    {:reports @reports :error (ex-data error) :core-calls @core-calls}))
+
+(deftest actual-upstream-dependency-replacements-after-verification-are-rejected
+  (doseq [[kind diagnostic] [[:binding ["C6-VERIFY" :construction-dependency-drift]]
+                            [:catalog ["C6-VERIFY" :construction-check-catalog-drift]]
+                            [:reader ["C2-HASH" nil]]]]
+    (let [{:keys [reports error core-calls]} (actual-upstream-change kind)]
+      (is (= [:passed] reports) (name kind))
+      (is (= diagnostic ((juxt :id :reason) error)) (name kind))
+      (is (zero? core-calls) (name kind)))))
+
 (defn- with-guard-model [f]
   ;; These are guard-unit models, not fabricated owner acceptance evidence.
   (let [state (atom {:dependencies :stable :bindings :stable :phase nil})
