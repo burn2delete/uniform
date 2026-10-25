@@ -247,3 +247,36 @@
       (is (false? (invoke 'sh07-form-forest-valid?
                            [{:forms cycle :top-level-form-ids [0]} cycle-index])))
       (is (nil? (invoke 'sh07-b13-form-root-id [cycle-index (first cycle)]))))))
+
+(deftest core-native-boundary-validates-before-metadata-stripping-and-execution
+  (let [source "<core-native-boundary>"
+        calls (atom 0)
+        lazy-value (lazy-seq (swap! calls inc) (throw (AssertionError. "forced")))
+        array (object-array [:self nil])
+        cycle (clojure.lang.PersistentArrayMap. array)]
+    (aset array 1 cycle)
+    (doseq [[value expected] [[(with-meta [] {:origin :hidden}) :metadata-free-input-carrier]
+                              [lazy-value :exact-persistent-carrier-class]
+                              [cycle :cyclic-input-carrier]
+                              [(str (char 0xd800)) :well-formed-unicode-scalar-string]]]
+      (let [failure (contained-coordinator-diagnostic
+                     #(bootstrap/sh07-core-execute! source 'sh07-binding-vector-preflight [value]))]
+        (is (= "C6-VERIFY" (:id failure)))
+        (is (= expected (:missing-fact failure)))))
+    (is (zero? @calls))
+    (is (= {:status :accepted}
+           (bootstrap/sh07-core-execute! source 'sh07-binding-vector-preflight
+                                         [(vec (repeat 65537 nil))])))))
+
+(deftest decimal-descriptor-retains-exact-evidence-without-size-cap
+  (doseq [value [(java.math.BigDecimal. java.math.BigInteger/ONE 65537)
+                 (java.math.BigDecimal. (.shiftLeft java.math.BigInteger/ONE 300) 0)]]
+    (let [evidence {:kind :decimal :decoded value :literal-id (ordinal-sha 1)
+                    :form-id (ordinal-sha 2) :token-id (ordinal-sha 3)}
+          result (bootstrap/sh07-core-decimal-descriptor "decimal.gravity" value evidence (ordinal-sha 4))]
+      (is (= (.scale value) (:scale result)))
+      (is (= (.toString (.unscaledValue value)) (:unscaled-value result)))
+      (is (= :exact-decimal-c2-evidence
+             (:reason (contained-coordinator-diagnostic
+                       #(bootstrap/sh07-core-decimal-descriptor
+                         "decimal.gravity" value (assoc evidence :decoded 0M) (ordinal-sha 4)))))))))

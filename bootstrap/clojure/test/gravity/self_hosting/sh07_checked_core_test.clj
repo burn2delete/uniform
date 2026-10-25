@@ -48,9 +48,9 @@
 
 (def ^:private diagnostic-remediation
   {"C6-LOWERING-GAP"
-   "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."
+   "Use only the declared SH-07 core subset; defer unsupported lowering families to their owning slices."
    "C6-CORE-SHAPE"
-   "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."
+   "Provide a delimiter-linked SH-06 form graph with exact core-form shape."
    "C6-ORIGIN"
    "Preserve exact syntax ids, semantic spans, and generated-origin chains."
    "C6-VERIFY"
@@ -554,44 +554,6 @@
   [ordinal]
   (str "sha256:" (format "%064x" (biginteger ordinal))))
 
-(defn- literal-boundary-request
-  [request form-count]
-  (let [template
-        (let [matches (filterv #(and (= :integer (:kind %))
-                                     (= 42 (:value %)))
-                               (:forms request))]
-          (when-not (= 1 (count matches))
-            (throw (ex-info "one integer form template is required"
-                            {:id "SH07-TEST-LITERAL-TEMPLATE"
-                             :match-count (count matches)})))
-          (first matches))
-        forms
-        (mapv
-         (fn [ordinal]
-           (assoc template
-                  :form-id (ordinal-sha (+ 100000 ordinal))
-                  :syntax-id (ordinal-sha (+ 200000 ordinal))
-                  :child-form-ids []
-                  :origin-chain []
-                  :generated-origin []
-                  :metadata {}
-                  :value ordinal))
-         (range form-count))]
-    (-> request
-        (assoc :forms forms
-               :top-level-form-ids (mapv :form-id forms)
-               :binding-table []
-               :resolution-table []
-               :macro-expansion-trace []
-               :macro-origin-traces [])
-        (assoc-in [:module :exports] [])
-        (assoc :macro-origin-expectation
-               (assoc (:macro-origin-expectation request)
-                      :expanded-defn-count 0
-                      :expected-input-syntax-ids []
-                      :expected-output-def-syntax-ids []
-                      :expected-introduced-fn-syntax-ids [])))))
-
 (defn- delete-tree!
   [root-path]
   (when (java.nio.file.Files/exists root-path
@@ -719,13 +681,10 @@
                            [:form-id (ordinal-sha 22)] [:token-id (ordinal-sha 23)] [:projection-form-id (ordinal-sha 24)]]]
       (is (false? (identity-valid? (assoc-in canonical [:nodes 0 :attributes :value field] value)))))
     (doseq [[value record] [[(:decoded evidence) nil]
-                            [(java.math.BigDecimal. "1.26") evidence]
-                            [(java.math.BigDecimal. java.math.BigInteger/ONE 65537)
-                             (assoc evidence :decoded (java.math.BigDecimal. java.math.BigInteger/ONE 65537))]]]
+                            [(java.math.BigDecimal. "1.26") evidence]]]
       (let [failure (try ((required-var 'sh07-core-decimal-descriptor) "normalized-decimal.gravity" value record (ordinal-sha 4))
                          (catch clojure.lang.ExceptionInfo error (ex-data error)))]
-        (is (= ["C6-ORIGIN" :exact-bounded-decimal-c2-evidence] ((juxt :id :reason) failure)))))
-    (is (= :rejected (:status (c7 'sh08-carrier-preflight [(assoc canonical :nodes (vec (repeat 65537 (first nodes))))]))))))
+        (is (= ["C6-ORIGIN" :exact-decimal-c2-evidence] ((juxt :id :reason) failure)))))))
 
 (deftest sh07-genuine-upstream-boundary-and-supported-core
   (doseq [extension [".gravity" ".qst"]]
@@ -1222,12 +1181,8 @@
           :missing-macro-origin-traces
           (dissoc request :macro-origin-traces)]
          ["traces scalar"
-          :malformed-or-over-bound-macro-origin-traces
+          :malformed-macro-origin-traces
           (assoc request :macro-origin-traces :bad)]
-         ["traces over bound"
-          :malformed-or-over-bound-macro-origin-traces
-          (assoc request :macro-origin-traces
-                 (vec (repeat 1025 first-trace)))]
          ["scalar trace element"
           :malformed-or-substituted-macro-origin-trace
           (assoc-in request [:macro-origin-traces 0] 42)]
@@ -1484,42 +1439,6 @@
         (assert-diagnostic
          (diagnostic-result #(sh07-from-request resolution mutation))
          "C6-VERIFY" source-path)))))
-
-(deftest sh07-bounds-and-malformed-projections-fail-closed
-  (let [source-path
-        (fixture-path "accepted" "macro-def-fn-literals" ".gravity")
-        resolution (sh06-file-artifact source-path)
-        request (sh07-request resolution)
-        too-wide
-        (assoc request :macro-expansion-trace
-               (vec (repeat 1025 {:event :opaque})))
-        too-deep
-        (assoc request :macro-expansion-trace
-               [{:opaque-depth
-                 (reduce (fn [value _] [value])
-                         :leaf (range 257))}])
-        width-diagnostic
-        (assert-diagnostic
-         (diagnostic-result #(sh07-run-request too-wide))
-         "C6-VERIFY" source-path)
-        depth-diagnostic
-        (assert-diagnostic
-         (diagnostic-result #(sh07-run-request too-deep))
-         "C6-VERIFY" source-path)]
-    (is (= :maximum-forms
-           (get-in width-diagnostic
-                   [:facts :rule-specific :bound])))
-    (is (= 1024 (get-in width-diagnostic
-                        [:facts :rule-specific :maximum])))
-    (is (= 1025 (get-in width-diagnostic
-                        [:facts :rule-specific :observed])))
-    (is (= :maximum-carrier-depth
-           (get-in depth-diagnostic
-                   [:facts :rule-specific :bound])))
-    (is (= 256 (get-in depth-diagnostic
-                       [:facts :rule-specific :maximum])))
-    (is (= 257 (get-in depth-diagnostic
-                       [:facts :rule-specific :observed])))))
 
 (deftest sh07-untrusted-request-carriers-fail-closed-before-traversal
   (let [source-path
@@ -1782,44 +1701,6 @@
             (when (= label "missing embedded capability proof")
               (is (some #{:stored-capability-proof-current?}
                         (:failed-checks public-verification))))))))))
-
-(deftest sh07-form-node-and-digest-boundaries-are-explicitly-opt-in
-  (if (= "1" (System/getenv "SH07_BOUNDARY_STRESS"))
-    (let [source-path
-          (fixture-path "accepted" "macro-def-fn-literals" ".gravity")
-          base
-          (sh07-request (sh06-file-artifact source-path))
-          maximum-request (literal-boundary-request base 1024)
-          over-request (literal-boundary-request base 1025)
-          maximum-run (sh07-run-request maximum-request)
-          over-diagnostic
-          (assert-diagnostic
-           (diagnostic-result #(sh07-run-request over-request))
-           "C6-VERIFY" source-path)]
-      (assert-request-run-schema maximum-run)
-      (is (= 1024 (count (:forms maximum-request))))
-      (is (= 1024
-             (count (get-in maximum-run
-                            [:canonical-core-artifact :nodes]))))
-      (is (= 1027 (count (:digest-requests maximum-run)))
-          "1024 core nodes plus artifact, provenance, and mapping digests")
-      (is (= :maximum-forms
-             (get-in over-diagnostic
-                     [:facts :rule-specific :bound])))
-      (is (= 1024 (get-in over-diagnostic
-                          [:facts :rule-specific :maximum])))
-      (is (= 1025 (get-in over-diagnostic
-                          [:facts :rule-specific :observed])))
-      (is (= 1025
-             (get-in over-diagnostic
-                     [:facts :rule-specific
-                      :projected-core-node-count])))
-      (is (= 1027
-             (get-in over-diagnostic
-                     [:facts :rule-specific
-                      :projected-digest-request-count]))))
-    (is true
-        "set SH07_BOUNDARY_STRESS=1 for the existing form/node bounds and mapping digest")))
 
 (deftest sh07-corpus-is-an-explicit-separate-gate
   (if (= "1" (System/getenv "SH07_COMPILER_CORPUS"))
