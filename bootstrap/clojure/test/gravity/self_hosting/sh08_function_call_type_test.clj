@@ -937,10 +937,10 @@
       (is (= {:kind :quoted-data :quote-core-node-id (:node-id node) :form-id payload
               :syntax-id payload :data-path [] :child-form-ids []} (:origin data)))))
   (doseq [[value kind] [['() :gravity.type/list] [[] :gravity.type/vector] [{} :gravity.type/map] [#{} :gravity.type/set]
-                        ['(throw unresolved-data-name) :gravity.type/list]
-                        ['(quote (throw unresolved-data-name)) :gravity.type/list]
-                        [[nil true 1 \a "s" :k 'symbol '(nested data) #{:a :b} {:k []}] :gravity.type/vector]
-                        [{'symbol [:value] :k '(item)} :gravity.type/map]]]
+                        [(list 'throw 'unresolved-data-name) :gravity.type/list]
+                        [(list 'quote (list 'throw 'unresolved-data-name)) :gravity.type/list]
+                        [[nil true 1 \a "s" :k 'symbol (list 'nested 'data) #{:a :b} {:k []}] :gravity.type/vector]
+                        [{'symbol [:value] :k (list 'item)} :gravity.type/map]]]
     (let [{:keys [node forms source-forms]} (quoted-data-input value)
           result (invoke-c7 'sh08-qd-node [node forms])
           products (invoke-c7 'sh08-qd-products [[node] source-forms {:profile :meta :target :jvm}])
@@ -952,7 +952,7 @@
       (is (= (:data result) (:quoted-data fact) (get-in fact [:dependencies :data])))
       (is (= :no-evaluation (get-in fact [:solution :evaluation])))
       (is (= (get-in result [:data :type]) (get (:type-table products) (:node-id node))))))
-  (let [{:keys [node forms]} (quoted-data-input '(quote (throw unresolved-data-name)))
+  (let [{:keys [node forms]} (quoted-data-input (list 'quote (list 'throw 'unresolved-data-name)))
         result (invoke-c7 'sh08-qd-node [node forms])]
     (is (= :gravity.type/symbol (get-in result [:data :children 0 :type])))
     (is (= :gravity.type/list (get-in result [:data :children 1 :type :kind])))
@@ -1607,7 +1607,7 @@
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
                              [(:nodes core) (:nodes group) (:lexical-bindings group) [] [] [] functions binding-types 50 {:boolean-matches [group]}])]
     (doseq [[value expected] [[false :false] [true :true] [nil :gravity.type/nil] ["wrong" :gravity.type/string]
-                             ['(throw unresolved) {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]]]
+                             [(list 'throw 'unresolved) {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]]]
       (let [quoted (quoted-data-input value)
             node (assoc (:node quoted) :node-id guard-id)
             qresult (invoke-c7 'sh08-qd-node [node (:forms quoted)])
