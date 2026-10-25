@@ -10068,6 +10068,151 @@
           :semantic-comparison-multiplicities-not-yet-assigned true
           :numeric-proof-established false})))
 
+(defn- gis3-source-view-work-model
+  ([] (gis3-source-view-work-model 'sh08-gis3-original-readsets))
+  ([target]
+  ;; Independent source model: nonnegative polynomials in original node count.
+  ;; All paths are bounded; if chooses a componentwise upper bound, and loops
+  ;; include a terminating visit. Rest pays a complete remaining-cell copy.
+  (let [source (slurp (str (System/getProperty "user.dir") "/bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"))
+        definitions (with-open [reader (java.io.PushbackReader. (java.io.StringReader. source))]
+                      (binding [*read-eval* false]
+                        (loop [out {}]
+                          (let [form (read {:eof ::end} reader)]
+                            (if (= ::end form) out
+                              (recur (if (and (seq? form) (= 'defn (first form)))
+                                       (assoc out (second form) form) out)))))))
+        owned '#{sh08-gis3-original-readsets sh08-gis3-view-get sh08-gis3-view-project
+                 sh08-gis3-pick sh08-gis3-form-prefix sh08-pc-id? sh08-sse-ids? sh08-lsi-first-append
+                 sh08-gis3-index sh08-gis3-source-payment sh08-gis3-view-control-work}
+        separately-paid '#{sh08-gis3-index sh08-gis3-original-readsets sh08-gis3-data-tallies}
+        metrics [:steps :field-gets :equalities :cells :map-writes :set-tests]
+        zero (zipmap metrics (repeat [0 0 0])) cache (atom {})]
+    (letfn [(plus [a b] (mapv + a b))
+            (times [a b]
+              (let [terms (reduce (fn [out [i j]] (update out (+ i j) + (* (get a i) (get b j))))
+                                  [0 0 0 0 0] (for [i (range 3) j (range 3)] [i j]))]
+                (when (some pos? (drop 3 terms)) (throw (ex-info "Unbounded model degree" {:a a :b b})))
+                (subvec terms 0 3)))
+            (add [& costs] (reduce #(merge-with plus %1 %2) zero costs))
+            (sum [costs] (apply add costs))
+            (unit [metric value] (assoc zero metric (if (vector? value) value [value 0 0])))
+            (scale [factor cost] (into {} (map (fn [[k v]] [k (times factor v)]) cost)))
+            (upper [a b] (merge-with #(mapv max %1 %2) a b))
+            (loop-bound [owner bindings]
+              (let [init (second bindings)]
+                (cond (= 'sh08-gis3-index owner) [0 1 0]
+                      (= 'sh08-gis3-source-payment owner) [(if (= 'parts (first bindings)) 10 6) 0 0]
+                      (= 'sh08-gis3-view-project owner) [9 0 0]
+                      (= 'sh08-sse-ids? owner) [2 0 0]
+                      (= 'sh08-lsi-first-append owner) [6 0 0]
+                      (= 'i (first bindings)) [3 0 0]
+                      (vector? init) [(count init) 0 0]
+                      (= 'packets init) [3 0 0]
+                      (= 'selected init) [23 0 0]
+                      (= '(sh08-gis3-view-get core :nodes) init) [0 1 0]
+                      :else (throw (ex-info "Unassigned source loop" {:owner owner :bindings bindings})))))
+            (function-cost [name]
+              (or (get @cache name)
+                  (let [[_ _ params & body] (get definitions name)
+                        result (add (unit :steps (+ 8 (* 4 (count params))))
+                                    (unit :cells (* 2 (count params)))
+                                    (sum (map #(cost name % [0 0 0]) body)))]
+                    (swap! cache assoc name result) result)))
+            (cost [owner form remaining]
+              (cond
+                (map? form) (add (unit :steps 1) (unit :cells (* 2 (count form)))
+                                 (unit :map-writes (count form)) (sum (map #(cost owner % remaining) (mapcat identity form))))
+                (vector? form) (add (unit :steps 1) (unit :cells (count form)) (sum (map #(cost owner % remaining) form)))
+                (set? form) (add (unit :steps 1) (unit :cells (count form)) (unit :set-tests (count form))
+                                 (sum (map #(cost owner % remaining) form)))
+                (not (seq? form)) (unit :steps 1)
+                :else
+                (let [[op & args] form]
+                  (case op
+                    if (add (unit :steps 1) (cost owner (first args) remaining)
+                            (upper (cost owner (second args) remaining) (cost owner (nth args 2) remaining)))
+                    let (let [[bindings & body] args n (quot (count bindings) 2)]
+                          (add (unit :steps (inc n)) (unit :cells n)
+                               (sum (map #(cost owner % remaining) (take-nth 2 (rest bindings))))
+                               (sum (map #(cost owner % remaining) body))))
+                    loop (let [[bindings & body] args n (quot (count bindings) 2) bound (loop-bound owner bindings)]
+                           (add (unit :steps (inc n)) (unit :cells n)
+                                (sum (map #(cost owner % remaining) (take-nth 2 (rest bindings))))
+                                (scale (plus bound [1 0 0])
+                                       (add (unit :steps (* 2 n)) (unit :cells (* 2 n))
+                                            (sum (map #(cost owner % bound) body))))))
+                    recur (add (unit :steps (inc (count args))) (unit :cells (* 2 (count args)))
+                               (sum (map #(cost owner % remaining) args)))
+                    (let [base (add (unit :steps 1) (unit :cells (count args))
+                                    (sum (map #(cost owner % remaining) args)))]
+                      (if (and (= 'sh08-gis3-source-payment owner) (contains? separately-paid op))
+                        (add base (unit :steps (+ 8 (* 4 (count args)))) (unit :cells (* 2 (count args))))
+                      (if (contains? owned op) (add base (function-cost op))
+                        (do (when (contains? definitions op)
+                              (throw (ex-info "Unmodeled source helper" {:owner owner :callee op})))
+                            (add base
+                                 (case op
+                                   get (unit :field-gets 1)
+                                   = (unit :equalities 1)
+                                   assoc (add (unit :map-writes 1) (unit :cells (dec (count args))))
+                                   conj (unit :cells (dec (count args)))
+                                   contains? (unit :set-tests 1)
+                                   rest (unit :cells remaining)
+                                   zero))))))))))]
+      (let [model (function-cost target)
+            weights {:steps 1 :cells 1 :field-gets 2051 :equalities 73 :map-writes 33 :set-tests 7}
+            fee (reduce plus [0 0 0] (map (fn [[metric weight]] (mapv #(* weight %) (get model metric))) weights))]
+        {:metrics model :weights weights :fee-polynomial fee :helper-models @cache
+         :literal-Maps (vec (for [name (keys @cache)
+                                 form (tree-seq coll? seq (get definitions name)) :when (map? form)]
+                             {:owner name :width (count form) :native-keywords (every? keyword? (keys form))}))})))))
+
+(deftest sh08-gis3-source-view-work-model-development-kernel
+  (let [model (gis3-source-view-work-model)
+        index-model (gis3-source-view-work-model 'sh08-gis3-index)
+        entry-model (gis3-source-view-work-model 'sh08-gis3-source-payment)
+        evaluate (fn [poly n] (reduce + (map * poly [1 n (* n n)])))
+        fixture-fee (evaluate (:fee-polynomial model) 20)]
+    (is (= 6 (count (:metrics model))))
+    (is (= 8 (count (:helper-models model))))
+    (is (every? #(and (= 3 (count %)) (every? (fn [n] (and (integer? n) (<= 0 n))) %))
+                (vals (:metrics model))))
+    (is (pos? fixture-fee))
+    (is (<= 655 (evaluate (get-in model [:metrics :field-gets]) 20)))
+    (is (every? #(and (:native-keywords %) (<= (:width %) 15))
+                (mapcat :literal-Maps [model index-model entry-model])))
+    (is (= [2011065 9385 1] (:fee-polynomial model)))
+    (is (= [2697 2615 1] (:fee-polynomial index-model)))
+    (is (= [783575 0 0] (:fee-polynomial entry-model)))
+    (prn {:gis3-source-view-work-model model :fixture-nodes 20 :fixture-control-fee fixture-fee
+          :index-model index-model :entry-model entry-model
+          :production-control-reservation-wired true :full-fee-closure-established false
+          :Symbol-render-prepayment-closed false})))
+
+(defn- gis3-input-payment-worksheet [{:keys [core bindings forms types] :as input}]
+  (let [evaluate (fn [poly n] (reduce + (map * poly [1 n (* n n)])))
+        entry-model (gis3-source-view-work-model 'sh08-gis3-source-payment)
+        index-model (gis3-source-view-work-model 'sh08-gis3-index)
+        view-model (gis3-source-view-work-model)
+        rows [(:nodes core) (:calls core) (:call-edges core) (:function-records core) bindings forms]
+        keys [:node-id :core-node-id :call-core-node-id :function-syntax-id :binding-id :form-id]
+        index-fees (mapv (fn [rs key]
+                          (+ (evaluate (:fee-polynomial index-model) (count rs)) (* 73 (count rs) (count rs))
+                             (reduce + (map (fn [row]
+                                              (let [id (get row key)] (* 2 (+ 2 (if (string? id) (count id) 0))))) rs)))) rows keys)
+        view-control (evaluate (:fee-polynomial view-model) (count (:nodes core)))
+        maximum-index-size (apply max (count types) (map count rows))
+        ID-lookups (* 97 (+ 1 73 (* 73 maximum-index-size)))
+        data-B (reduce + (map #(get (gis3-independent-physical-data-fee (gis3-coordinate-unit-value %)) :B)
+                             (:readsets (gis3-original-coordinate-readsets input))))
+        entry-control (evaluate (:fee-polynomial entry-model) 0)
+        total (+ 512 entry-control (reduce + index-fees) view-control ID-lookups data-B)]
+    {:entry-control entry-control :index-control-polynomial (:fee-polynomial index-model)
+     :view-control-polynomial (:fee-polynomial view-model) :index-fees index-fees
+     :prefix-and-index (+ 512 entry-control (reduce + index-fees))
+     :view-control view-control :ID-lookups ID-lookups :DATA-B data-B :total total}))
+
 (defn- gis3-observe-original-view-work [operation]
   ;; Passive observations, scoped to this thread and original collector only.
   ;; Every original invocation is delegated exactly once without alteration.
@@ -10125,6 +10270,34 @@
           :physical-DATA-payment-executed false :numeric-proof-established false
           :bookkeeping-fee-policy-established false})))
 
+(deftest sh08-gis3-bounded-field-development-kernel
+  (let [callbacks (atom 0) row-gets (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 field opaque hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 field opaque equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 field opaque print"))))
+        lazy-value (lazy-seq (swap! callbacks inc) (throw (AssertionError. "GIS3 field lazy realization")))
+        row (assoc (into {} (map #(vector % opaque) (range 1023))) :target 42)
+        wide (assoc row :extra opaque)
+        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original @getter
+        run (fn [value key]
+              (with-redefs-fn
+                {getter (fn [plan current k]
+                          (when (or (identical? current row) (identical? current wide)) (swap! row-gets inc))
+                          (original plan current k))}
+                #(invoke-c7 'sh08-gis3-view-get [value key])))]
+    (is (= 42 (run row :target)))
+    (is (= 1 @row-gets))
+    (is (nil? (run wide :target)))
+    (is (= 1 @row-gets))
+    (doseq [key [opaque lazy-value (symbol "untyped-key") -1 1025]]
+      (is (nil? (run row key)))
+      (is (= 1 @row-gets)))
+    (doseq [value [opaque lazy-value (java.util.ArrayList.)]]
+      (is (nil? (run value :target))))
+    (is (nil? (invoke-c7 'sh08-gis3-view-project [row [:target opaque]])))
+    (is (zero? @callbacks))))
+
 (deftest sh08-gis3-entry-reservation-development-kernel
   ;; Passive existing runtime seams delegate exactly once, with no result or
   ;; argument substitution. Exact64 is the positive observer control.
@@ -10145,16 +10318,22 @@
                                            (original-scoped runtime plan callee args scope))}
                                  #(invoke-c7 'sh08-gis3-source-payment [core [] [] {} :target budget]))]
                     {:result result :observations @counts}))]
-    (doseq [budget [0 63]]
+    (doseq [budget [0 63 511]]
       (let [{:keys [result observations]} (observe budget)]
         (is (= :rejected (:status result)))
         (is (= :compact-gis-work-limit (:reason result)))
-        (is (= [64 0] [(:work-count result) (:completed-work-count result)]))
+        (is (= [512 0] [(:work-count result) (:completed-work-count result)]))
         (is (= {:Core-gets 0 :index-entry 0 :view-entry 0} observations))))
-    (let [{:keys [result observations]} (observe 64)]
+    (let [{:keys [result observations]} (observe 512)]
+      (is (= :rejected (:status result)))
+      (is (= :compact-gis-entry-control-work-limit (:reason result)))
+      (is (= [:original-entry-control 784087 512]
+             [(:stage result) (:work-count result) (:completed-work-count result)]))
+      (is (= {:Core-gets 0 :index-entry 0 :view-entry 0} observations)))
+    (let [{:keys [result observations]} (observe 784087)]
       (is (= :rejected (:status result)))
       (is (= :compact-gis-index-work-limit (:reason result)))
-      (is (= [:original-index :nodes 72 64]
+      (is (= [:original-index :nodes 786784 784087]
              [(:stage result) (:table result) (:work-count result) (:completed-work-count result)]))
       (is (= {:Core-gets 4 :index-entry 1 :view-entry 0} observations)))))
 
@@ -10174,13 +10353,13 @@
                                                   (contains? '#{sh08-gis3-index sh08-gis3-original-readsets sh08-gis3-data-tallies} callee))
                                          (swap! entries conj callee))
                                        (original runtime plan callee args scope))}
-                             #(invoke-c7 'sh08-gis3-source-payment [core [] [] types :target 64]))]
+                             #(invoke-c7 'sh08-gis3-source-payment [core [] [] types :target 784087]))]
                 {:result result :entries @entries}))
         exact (run 1024) above (run 1025)]
     (is (= {:status :rejected :reason :compact-gis-source-input-required
-            :work-count 64 :completed-work-count 64} (:result above)))
+            :work-count 512 :completed-work-count 512} (:result above)))
     (is (= [] (:entries above)))
-    (is (= [:rejected :compact-gis-index-work-limit :original-index :nodes 72 64]
+    (is (= [:rejected :compact-gis-index-work-limit :original-index :nodes 786784 784087]
            ((juxt :status :reason :stage :table :work-count :completed-work-count) (:result exact))))
     (is (= '[sh08-gis3-index] (:entries exact)))
     (is (zero? @callbacks))))
@@ -10240,7 +10419,9 @@
                  (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 index opaque print"))))
         rows [{:node-id left :unread opaque} {:node-id right :unread opaque}]
         bound (:comparison-bound-work (invoke-c7 'sh08-gis3-data-tallies [left 65536]))
-        base (+ 8 (* 2 6) (* 2 2 bound)) total (+ base (* 2 2 71))
+        base (let [[a b c] (:fee-polynomial (gis3-source-view-work-model 'sh08-gis3-index))]
+               (+ a (* b 2) (* (+ c bound) 2 2)))
+        total (+ base (* 2 2 bound))
         run #(invoke-c7 'sh08-gis3-index [%1 :node-id %2])
         accepted (run rows total) below (run rows (dec total))
         duplicate (run [(first rows) (first rows)] total)
@@ -10254,15 +10435,15 @@
     (is (= [71 71] (mapv count [left right])))
     (is (= (.hashCode ^String left) (.hashCode ^String right)))
     (is (not= left right))
-    (is (= [73 312 596] [bound base total]))
+    (is (= [73 8223 8515] [bound base total]))
     (is (= [:accepted total total] ((juxt :status :work-count :completed-work-count) accepted)))
     (is (identical? (first rows) (get (:index accepted) left)))
     (is (identical? (second rows) (get (:index accepted) right)))
-    (is (= [:rejected :compact-gis-index-work-limit total (- total 142)]
+    (is (= [:rejected :compact-gis-index-work-limit total (- total (* 2 bound))]
            ((juxt :status :reason :work-count :completed-work-count) below)))
     (is (= [:rejected :compact-gis-duplicate-id total total]
            ((juxt :status :reason :work-count :completed-work-count) duplicate)))
-    (is (= [:rejected :compact-gis-source-id-required (- total 142)]
+    (is (= [:rejected :compact-gis-source-id-required (- total (* 2 bound))]
            ((juxt :status :reason :work-count) invalid)))
     (is (= [:rejected :compact-gis-index-work-limit base 0]
            ((juxt :status :reason :work-count :completed-work-count) early)))
@@ -10271,11 +10452,12 @@
 
 (deftest sh08-gis3-view-ID-lookup-reservation-development-kernel
   (let [{:keys [core bindings forms types target]} (gis3-original-row-input 0 0)
-        prefix-and-index 87903
+        prefix-and-index 1043310
         maximum-index-size 25
         lookup-work (* (+ 13 21 6 23 6 20 1 1 6)
                        (+ 1 (+ 2 71) (* maximum-index-size (+ 2 71))))
-        view-reservation (+ 3472 lookup-work) required (+ prefix-and-index view-reservation)
+        view-control 2199165
+        view-reservation (+ view-control lookup-work) required (+ prefix-and-index view-reservation)
         run (fn [budget current-types]
               (gis3-observe-original-view-work
                 #(invoke-c7 'sh08-gis3-source-payment [core bindings forms current-types target budget])))
@@ -10283,7 +10465,7 @@
         wide-types (into types (map #(vector (keyword (str "extra-type-" %)) :gravity.type/integer)
                                    (range (- 1024 (count types)))))
         wide (run 1048576 wide-types)]
-    (is (= [184203 187675 275578] [lookup-work view-reservation required]))
+    (is (= [184203 2383368 3426678] [lookup-work view-reservation required]))
     (is (= [:rejected :compact-gis-view-construction-work-limit :original-view-construction required prefix-and-index]
            ((juxt :status :reason :stage :work-count :completed-work-count) (:value below))))
     (is (= 0 (get-in below [:observations :gets]) (get-in below [:observations :String-ID-map-gets])))
@@ -10293,7 +10475,7 @@
     (is (= 6887 (get-in exact [:observations :String-ID-key-characters])))
     (is (= 1024 (count wide-types)))
     (is (= [:rejected :compact-gis-view-construction-work-limit :original-view-construction
-            (+ prefix-and-index 3472 (* 97 (+ 1 73 (* 73 1024)))) prefix-and-index]
+            (+ prefix-and-index view-control (* 97 (+ 1 73 (* 73 1024)))) prefix-and-index]
            ((juxt :status :reason :stage :work-count :completed-work-count) (:value wide))))
     (is (= 0 (get-in wide [:observations :gets]) (get-in wide [:observations :String-ID-map-gets])))))
 
@@ -20886,7 +21068,9 @@
   ;; Existing trusted options and actual charged ordinary inference supply the
   ;; private budget. GIS3 has no production dispatch hook in this increment.
   (let [{:keys [core bindings forms types target] :as input} (gis3-original-row-input 0 0)
-        allowance (invoke-c7 'sh08-ft-work-allowance [{:type-inference-work-allowance 1048576}])
+        worksheet (gis3-input-payment-worksheet input)
+        charged-total (:total worksheet)
+        allowance (invoke-c7 'sh08-ft-work-allowance [{:type-inference-work-allowance (+ 220 (* 2 charged-total))}])
         lookup (map-present-get-input :file)
         context {:ordering-core (:core lookup) :lookup-nodes (:nodes lookup)
                  :lookup-forms (vec (vals (:forms lookup))) :lookup-bindings (vec (vals (:bindings lookup)))
@@ -20906,38 +21090,42 @@
         forged (run 65536 (assoc core :type-inference-work-allowance 1048576
                                      :loop-work-left 1048576 :effective-work-policy {:type-inference-work-allowance 1048576}))
         repeated (run (- remaining (:work-count paid)))
+        exhausted (run (- remaining (:work-count paid) (:work-count repeated)))
+        one-short (run (dec charged-total))
         physical (mapv gis3-coordinate-unit-value (:readsets (gis3-original-coordinate-readsets input)))
         physical-B (reduce + (map #(get (gis3-independent-physical-data-fee %) :B) physical))
-        rows [(get core :nodes) (get core :calls) (get core :call-edges) (get core :function-records) bindings forms]
-        keys [:node-id :core-node-id :call-core-node-id :function-syntax-id :binding-id :form-id]
-        index-B (reduce + (map (fn [rs key]
-                                (+ 8 (* (+ 2 71) (count rs) (count rs)) (* 6 (count rs))
-                                   (reduce + (map #(* 2 (count (get % key))) rs)))) rows keys))
-        maximum-index-size (apply max (count types) (map count rows))
-        declared-view-reservation (+ 3472 (* 97 (+ 1 (+ 2 71) (* maximum-index-size (+ 2 71)))))
-        charged-total (+ 64 index-B declared-view-reservation physical-B)]
+        index-B (reduce + (:index-fees worksheet))
+        declared-view-reservation (+ (:view-control worksheet) (:ID-lookups worksheet))]
     (is (= :converged (:convergence-status inference)))
     (is (= [] (:diagnostics inference)))
     (is (< 65536 remaining allowance))
     (is (every? (fn [[a b]] (<= (:budget b) (- (:budget a) (:work a)))) (partition 2 1 (:passes observed))))
     (is (= remaining (:remaining (first (:inference observed)))))
     (is (= :original-data-payment-complete (:status paid) (:status repeated)))
-    (is (= [68675 87839 344253] [physical-B index-B charged-total]))
+    (is (= [68675 259223 3495353] [physical-B index-B charged-total]))
     (is (= charged-total (:work-count paid) (:completed-work-count paid)
                              (:work-count repeated) (:completed-work-count repeated)))
     (is (= physical (get-in paid [:selected :readsets]) (get-in repeated [:selected :readsets])))
     (is (= [8 8 8] (mapv count (take 3 (get-in paid [:selected :readsets])))))
     (is (= 10 (count (get-in paid [:selected :readsets]))))
     (is (= false (:numeric-proof-established paid) (:numeric-proof-established repeated)))
+    (is (= 220 (- allowance remaining)))
+    (is (= 0 (- remaining (:work-count paid) (:work-count repeated))))
+    (is (= [:rejected :compact-gis-work-limit 512 0]
+           ((juxt :status :reason :work-count :completed-work-count) exhausted)))
+    (is (= [:rejected :compact-gis-work-limit charged-total]
+           ((juxt :status :reason :work-count) one-short)))
+    (is (< (:completed-work-count one-short) charged-total))
     (is (= implicit explicit forged))
-    (is (= [:rejected :compact-gis-index-work-limit :original-index :forms 38570 84353]
-           ((juxt :status :reason :stage :table :completed-work-count :work-count) implicit)))
+    (is (= [:rejected :compact-gis-entry-control-work-limit :original-entry-control 512 784087]
+           ((juxt :status :reason :stage :completed-work-count :work-count) implicit)))
     (prn {:gis3-trusted-remaining {:allowance allowance :ordinary-used (- allowance remaining)
                                  :remaining-before-first remaining :charged-component-work charged-total
                                  :remaining-before-second (- remaining (:work-count paid))
                                  :remaining-after-second (- remaining (:work-count paid) (:work-count repeated))}
           :physical-DATA-B physical-B :declared-view-reservation declared-view-reservation
-          :all-view-bookkeeping-independently-closed false :numeric-proof-established false
+          :source-control-model worksheet :all-view-bookkeeping-independently-reviewed false
+          :Symbol-render-prepayment-closed false :DATA-temporary-copy-fees-closed false :numeric-proof-established false
           :public-GIS-dispatch-present false})))
 
 (deftest sh08-function-work-policy-neighbour-fuel-development-kernel

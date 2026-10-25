@@ -2833,18 +2833,34 @@
                      :work-count (+ common 1) :completed-work-count paid}))))))))))
 
 
+(defn sh08-gis3-view-get [value key]
+  ; The caller prepays bounded Native key lookup before this helper runs.
+  ; No untyped key is hashed and no lazy/foreign sequence is counted.
+  (if (if (keyword? key) true
+        (if (integer? key) (if (>= key 0) (<= key 1024) false) (sh08-pc-id? key)))
+    (if (map? value) (if (<= (count value) 1024) (get value key) nil)
+      (if (vector? value) (if (<= (count value) 1024) (get value key) nil) nil)) nil))
+
+(defn sh08-gis3-view-project [row fields]
+  (if (if (vector? fields) (<= (count fields) 9) false)
+    (loop [remaining fields result {}]
+      (if (= 0 (count remaining)) result
+        (let [key (first remaining)]
+          (if (keyword? key)
+            (recur (rest remaining) (assoc result key (sh08-gis3-view-get row key))) nil)))) nil))
+
 (defn sh08-gis3-index [rows key budget]
   ; Together, contains? and assoc compare at most n*n prior keys. Reserve
   ; the existing scalar W=2+71 for each Native ID comparison, including
   ; String hash collisions; Keyword W=2 is below this common bound.
-  (if (if (vector? rows) (<= (count rows) 1024) false)
-    (let [size (count rows) base (+ 8 (* 73 size size) (* 6 size))]
+  (if (if (keyword? key) (if (vector? rows) (<= (count rows) 1024) false) false)
+    (let [size (count rows) base (+ 2697 (* 2615 size) (* 74 size size))]
       (if (> base budget) {:status :rejected :reason :compact-gis-index-work-limit :work-count base :completed-work-count 0}
         (loop [remaining rows index {} used base]
           (if (= 0 (count remaining)) {:status :accepted :index index :work-count used :completed-work-count used}
-            (let [row (first remaining) id (if (map? row) (get row key) nil)]
+            (let [row (first remaining) id (sh08-gis3-view-get row key)]
               (if (sh08-pc-id? id)
-                (let [next (+ used (if (string? id) (* 2 (count id)) 0))]
+                (let [next (+ used (* 2 (+ 2 (if (string? id) (count id) 0))))]
                   (if (> next budget)
                     {:status :rejected :reason :compact-gis-index-work-limit :work-count next :completed-work-count used}
                     (if (contains? index id)
@@ -2854,98 +2870,101 @@
     {:status :rejected :reason :compact-gis-source-rows-required :work-count 0 :completed-work-count 0}))
 
 (defn sh08-gis3-pick [index id]
-  (if (sh08-pc-id? id) (get index id) nil))
+  (if (sh08-pc-id? id) (sh08-gis3-view-get index id) nil))
 
 (defn sh08-gis3-form-prefix [form value?]
-  (let [prefix (sh08-bm-project form [:form-id :syntax-id :kind :parent-form-id :child-form-ids
+  (let [prefix (sh08-gis3-view-project form [:form-id :syntax-id :kind :parent-form-id :child-form-ids
                                      :source-span :origin-chain :generated-origin])]
-    (if value? (assoc prefix :value (get form :value)) prefix)))
+    (if value? (assoc prefix :value (sh08-gis3-view-get form :value)) prefix)))
 
 (defn sh08-gis3-original-readsets [core indexes target]
   ; Internal collection only. Its caller prepays all fixed view construction
   ; and global selection work. Selection uses native typed IDs, never a proof.
-  (let [nodes (get indexes :nodes) calls (get indexes :calls) edges (get indexes :edges)
-        forms (get indexes :forms) bindings (get indexes :bindings) records (get indexes :records)
+  (let [nodes (sh08-gis3-view-get indexes :nodes) calls (sh08-gis3-view-get indexes :calls) edges (sh08-gis3-view-get indexes :edges)
+        forms (sh08-gis3-view-get indexes :forms) bindings (sh08-gis3-view-get indexes :bindings) records (sh08-gis3-view-get indexes :records)
         node (sh08-gis3-pick nodes target) call (sh08-gis3-pick calls target) edge (sh08-gis3-pick edges target)
-        owner (get (get node :evaluation) :owner-function-syntax-id)
+        owner (sh08-gis3-view-get (sh08-gis3-view-get node :evaluation) :owner-function-syntax-id)
         record (sh08-gis3-pick records owner)
-        outer (loop [remaining (get core :nodes) found nil]
+        outer (loop [remaining (sh08-gis3-view-get core :nodes) found nil]
                 (if (= 0 (count remaining)) found
-                  (let [row (first remaining) children (get row :children) kind (get row :core-form)]
+                  (let [row (first remaining) children (sh08-gis3-view-get row :children) kind (sh08-gis3-view-get row :core-form)]
                     (if (if (keyword? kind) (if (= :if kind)
                           (if (vector? children) (if (= 3 (count children))
-                            (if (sh08-pc-id? (get children 1)) (= target (get children 1)) false) false) false) false) false)
+                            (if (sh08-pc-id? (sh08-gis3-view-get children 1)) (= target (sh08-gis3-view-get children 1)) false) false) false) false) false)
                       (if (= nil found) (recur (rest remaining) row) nil)
                       (recur (rest remaining) found)))))
-        inner (sh08-gis3-pick nodes (get (get outer :children) 0))
-        low (sh08-gis3-pick nodes (get (get inner :children) 0))
-        high (sh08-gis3-pick nodes (get (get inner :children) 1))
-        no (sh08-gis3-pick nodes (get (get inner :children) 2))
-        fallback (sh08-gis3-pick nodes (get (get outer :children) 2))
-        function (sh08-gis3-pick nodes (get record :function-core-node-id))
-        fn-form (sh08-gis3-pick forms (get record :function-form-id))
-        params (sh08-gis3-pick forms (get (get function :attributes) :parameter-form-id))
-        name (sh08-gis3-pick forms (get (get params :child-form-ids) 0))
+        inner (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get outer :children) 0))
+        low (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get inner :children) 0))
+        high (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get inner :children) 1))
+        no (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get inner :children) 2))
+        fallback (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get outer :children) 2))
+        function (sh08-gis3-pick nodes (sh08-gis3-view-get record :function-core-node-id))
+        fn-form (sh08-gis3-pick forms (sh08-gis3-view-get record :function-form-id))
+        params (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get function :attributes) :parameter-form-id))
+        name (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get params :child-form-ids) 0))
         packets (loop [remaining [node low high] out []]
                   (if (= 0 (count remaining)) out
-                    (let [n (first remaining) id (get n :node-id) c (sh08-gis3-pick calls id)
-                          e (sh08-gis3-pick edges id) args (get c :argument-node-ids)
-                          caller (sh08-gis3-pick records (get (get n :evaluation) :owner-function-syntax-id))]
+                    (let [n (first remaining) id (sh08-gis3-view-get n :node-id) c (sh08-gis3-pick calls id)
+                          e (sh08-gis3-pick edges id) args (sh08-gis3-view-get c :argument-node-ids)
+                          caller (sh08-gis3-pick records (sh08-gis3-view-get (sh08-gis3-view-get n :evaluation) :owner-function-syntax-id))]
                       (if (if (map? n) (if (map? c) (if (map? e)
                             (if (sh08-sse-ids? args 2) (map? caller) false) false) false) false)
                         (recur (rest remaining)
-                          (conj out [n c e (sh08-gis3-pick nodes (get c :operator-node-id))
-                                     (sh08-gis3-pick bindings (get c :operator-binding-id))
-                                     (sh08-gis3-pick nodes (get args 0)) (sh08-gis3-pick nodes (get args 1))
-                                     (sh08-bm-project caller [:function-syntax-id :function-core-node-id])])) nil))))]
+                          (conj out [n c e (sh08-gis3-pick nodes (sh08-gis3-view-get c :operator-node-id))
+                                     (sh08-gis3-pick bindings (sh08-gis3-view-get c :operator-binding-id))
+                                     (sh08-gis3-pick nodes (sh08-gis3-view-get args 0)) (sh08-gis3-pick nodes (sh08-gis3-view-get args 1))
+                                     (sh08-gis3-view-project caller [:function-syntax-id :function-core-node-id])])) nil))))]
     (if (if (= 3 (count packets)) (if (map? outer) (if (map? inner) (if (map? record) (map? function) false) false) false) false)
       (let [control-children (loop [remaining [outer inner] out []]
                                (if (= 0 (count remaining)) out
                                  (let [n (first remaining)]
                                    (recur (rest remaining)
-                                     (conj out (sh08-gis3-pick nodes (get (get n :children) 0))
-                                               (sh08-gis3-pick nodes (get (get n :children) 1))
-                                               (sh08-gis3-pick nodes (get (get n :children) 2)))))))
+                                     (conj out (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get n :children) 0))
+                                               (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get n :children) 1))
+                                               (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get n :children) 2)))))))
             selected (loop [remaining packets out (sh08-lsi-first-append [outer inner no fallback function] control-children)]
                        (if (= 0 (count remaining)) out
                          (let [p (first remaining)]
-                           (recur (rest remaining) (conj out (get p 0) (get p 3) (get p 5) (get p 6))))))
+                           (recur (rest remaining) (conj out (sh08-gis3-view-get p 0) (sh08-gis3-view-get p 3) (sh08-gis3-view-get p 5) (sh08-gis3-view-get p 6))))))
             sources (loop [remaining selected out []]
                       (if (= 0 (count remaining)) out
-                        (let [n (first remaining) kind (get n :core-form)
-                              f (sh08-gis3-pick forms (get (get n :source) :form-id))]
+                        (let [n (first remaining) kind (sh08-gis3-view-get n :core-form)
+                              f (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get n :source) :form-id))]
                           (recur (rest remaining)
                             (conj out (sh08-gis3-form-prefix f
                                        (if (keyword? kind) (contains? #{:literal :reference} kind) false)))))))
             heads (loop [remaining [outer inner function] out []]
                     (if (= 0 (count remaining)) out
-                      (let [n (first remaining) f (sh08-gis3-pick forms (get (get n :source) :form-id))
-                            h (sh08-gis3-pick forms (get (get f :child-form-ids) 0))]
-                        (recur (rest remaining) (conj out (sh08-bm-project h [:kind :value :parent-form-id]))))))
+                      (let [n (first remaining) f (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get n :source) :form-id))
+                            h (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get f :child-form-ids) 0))]
+                        (recur (rest remaining) (conj out (sh08-gis3-view-project h [:kind :value :parent-form-id]))))))
             stages (loop [remaining [node low high outer inner] out []]
                      (if (= 0 (count remaining)) out
-                       (let [n (first remaining) f (sh08-gis3-pick forms (get (get n :source) :form-id))
-                             kind (get n :core-form) offset (if (if (keyword? kind) (= :if kind) false) 1 0)
+                       (let [n (first remaining) f (sh08-gis3-pick forms (sh08-gis3-view-get (sh08-gis3-view-get n :source) :form-id))
+                             kind (sh08-gis3-view-get n :core-form) offset (if (if (keyword? kind) (= :if kind) false) 1 0)
                              pairs (loop [i 0 values []]
                                      (if (= i 3) values
-                                       (let [child (sh08-gis3-pick nodes (get (get n :children) i))]
-                                         (recur (+ i 1) (conj values [(get (get child :source) :form-id)
-                                                                    (get (get f :child-form-ids) (+ i offset))])))))]
+                                       (let [child (sh08-gis3-pick nodes (sh08-gis3-view-get (sh08-gis3-view-get n :children) i))]
+                                         (recur (+ i 1) (conj values [(sh08-gis3-view-get (sh08-gis3-view-get child :source) :form-id)
+                                                                    (sh08-gis3-view-get (sh08-gis3-view-get f :child-form-ids) (+ i offset))])))))]
                          (recur (rest remaining) (conj out pairs)))))
-            parameter (sh08-gis3-pick bindings (get (get (get (get packets 0) 5) :attributes) :binding-id))]
+            parameter (sh08-gis3-pick bindings (sh08-gis3-view-get (sh08-gis3-view-get (sh08-gis3-view-get (sh08-gis3-view-get packets 0) 5) :attributes) :binding-id))]
         {:status :selected-original-data :outer outer :record record
-         :readsets [(get packets 0) (get packets 1) (get packets 2)
+         :readsets [(sh08-gis3-view-get packets 0) (sh08-gis3-view-get packets 1) (sh08-gis3-view-get packets 2)
                     [outer inner no fallback control-children]
                     [record function parameter params name (sh08-gis3-form-prefix fn-form false)
-                     (get (get (sh08-gis3-pick nodes (get record :body-core-node-id)) :source) :form-id)]
-                    sources heads (sh08-bm-project (get core :module) [:profile :target :safety])
+                     (sh08-gis3-view-get (sh08-gis3-view-get (sh08-gis3-pick nodes (sh08-gis3-view-get record :body-core-node-id)) :source) :form-id)]
+                    sources heads (sh08-gis3-view-project (sh08-gis3-view-get core :module) [:profile :target :safety])
                     (loop [remaining packets out []]
                       (if (= 0 (count remaining)) out
                         (let [p (first remaining)]
-                          (recur (rest remaining) (conj out (get (get indexes :types) (get (get p 5) :node-id))
-                                                            (get (get indexes :types) (get (get p 6) :node-id)))))))
-                    [stages [(get record :function-form-id) (get (get function :source) :form-id)]]]})
+                          (recur (rest remaining) (conj out (sh08-gis3-view-get (sh08-gis3-view-get indexes :types) (sh08-gis3-view-get (sh08-gis3-view-get p 5) :node-id))
+                                                            (sh08-gis3-view-get (sh08-gis3-view-get indexes :types) (sh08-gis3-view-get (sh08-gis3-view-get p 6) :node-id)))))))
+                    [stages [(sh08-gis3-view-get record :function-form-id) (sh08-gis3-view-get (sh08-gis3-view-get function :source) :form-id)]]]})
       {:status :rejected :reason :compact-gis-original-topology-required})))
+
+(defn sh08-gis3-view-control-work [node-count]
+  (+ 2011065 (* 9385 node-count) (* node-count node-count)))
 
 (defn sh08-gis3-source-payment [core binding-rows form-rows types target budget]
   ; First construction gate only. Complete original DATA payment precedes
@@ -2953,57 +2972,58 @@
   ; The private caller supplies its remaining trusted inference allowance.
   ; Validate before touching source inputs; zero is an exhausted valid pool.
   (if (if (integer? budget) (>= budget 0) false)
-  (let [limit budget prefix 64]
+  (let [limit budget prefix 512]
     (if (> prefix limit) {:status :rejected :reason :compact-gis-work-limit :work-count prefix :completed-work-count 0}
-      (let [tables [[:nodes (get core :nodes) :node-id] [:calls (get core :calls) :core-node-id]
-                    [:edges (get core :call-edges) :call-core-node-id]
-                    [:records (get core :function-records) :function-syntax-id]
-                    [:bindings binding-rows :binding-id] [:forms form-rows :form-id]]]
-      (if (if (map? core) (if (map? types) (if (<= (count types) 1024) (sh08-pc-id? target) false) false) false)
-        (loop [remaining tables indexes {:types types} used prefix maximum-index-size (count types)]
+      (if (if (map? core) (if (<= (count core) 1024)
+            (if (map? types) (if (<= (count types) 1024) (sh08-pc-id? target) false) false) false) false)
+        (let [entry-control 783575 reserved-entry (+ prefix entry-control)]
+          (if (> reserved-entry limit)
+            {:status :rejected :reason :compact-gis-entry-control-work-limit :stage :original-entry-control
+             :work-count reserved-entry :completed-work-count prefix}
+            (let [tables [[:nodes (sh08-gis3-view-get core :nodes) :node-id] [:calls (sh08-gis3-view-get core :calls) :core-node-id]
+                          [:edges (sh08-gis3-view-get core :call-edges) :call-core-node-id]
+                          [:records (sh08-gis3-view-get core :function-records) :function-syntax-id]
+                          [:bindings binding-rows :binding-id] [:forms form-rows :form-id]]]
+        (loop [remaining tables indexes {:types types} used reserved-entry maximum-index-size (count types)]
           (if (= 0 (count remaining))
-            ; Prepay fixed view groups separately: scalar selection64,
-            ; three eight-row packets96 each, two control-child groups32,
-            ; selected-row appends96, twenty-three source projections80,
-            ; three head projections48, five stage groups80, and final
-            ; parameter/module/type/readset assembly256. Each bound includes
-            ; its field reads, cell construction and loop bookkeeping. The
-            ; complete original values still pay independent DATA B below.
+            ; The source-derived control bound prepays bounded field reads,
+            ; loop/frame visits, constructor cells and private Map/Set work.
+            ; Complete original values still pay independent DATA B below.
             ; At most 97 Native ID map lookups: initial13, packets21,
             ; control6, sources23, heads6, stages20, parameter1, body1,
             ; and types6. Each pays dispatch1, String hash W73 and at
             ; most M canonical W73 collision comparisons. M includes types.
             (let [id-lookup-work (* 97 (+ 1 73 (* 73 maximum-index-size)))
-                  selection-work (+ 64 (* 3 96) (* 2 32) 96 (* 23 80) (* 3 48) (* 5 80) 256
-                                    (* 16 (count (get core :nodes))) id-lookup-work)
+                  selection-work (+ (sh08-gis3-view-control-work (count (sh08-gis3-view-get core :nodes))) id-lookup-work)
                   reserved (+ used selection-work)]
               (if (> reserved limit)
                 {:status :rejected :reason :compact-gis-view-construction-work-limit
                  :work-count reserved :completed-work-count used :stage :original-view-construction}
                 (let [selected (sh08-gis3-original-readsets core indexes target)]
-                  (if (= :selected-original-data (get selected :status))
-                    (loop [parts (get selected :readsets) ordinal 0 work reserved]
+                  (if (= :selected-original-data (sh08-gis3-view-get selected :status))
+                    (loop [parts (sh08-gis3-view-get selected :readsets) ordinal 0 work reserved]
                       (if (= 0 (count parts))
                         {:status :original-data-payment-complete :work-count work :completed-work-count work
                          :numeric-proof-established false :selected selected :indexes indexes}
                         (let [checked (sh08-gis3-data-tallies (first parts) (- limit work))
-                              total (+ work (get checked :work-count))]
-                          (if (= :accepted (get checked :status))
+                              total (+ work (sh08-gis3-view-get checked :work-count))]
+                          (if (= :accepted (sh08-gis3-view-get checked :status))
                             (recur (rest parts) (+ ordinal 1) total)
-                            {:status :rejected :reason (get checked :reason) :stage :original-readset
+                            {:status :rejected :reason (sh08-gis3-view-get checked :reason) :stage :original-readset
                              :readset-ordinal ordinal :work-count total
-                             :completed-work-count (+ work (get checked :completed-work-count))
+                             :completed-work-count (+ work (sh08-gis3-view-get checked :completed-work-count))
                              :completed-readsets ordinal :numeric-proof-established false
                              :comparison-work 0 :storage-work 0}))))
-                    {:status :rejected :reason (get selected :reason) :work-count reserved :completed-work-count reserved}))))
-            (let [part (first remaining) result (sh08-gis3-index (get part 1) (get part 2) (- limit used))
-                  work (+ used (get result :work-count))]
-              (if (= :accepted (get result :status))
-                (recur (rest remaining) (assoc indexes (get part 0) (get result :index)) work
-                       (if (> (count (get result :index)) maximum-index-size) (count (get result :index)) maximum-index-size))
-                {:status :rejected :reason (get result :reason) :stage :original-index
-                 :table (get part 0) :work-count work :completed-work-count (+ used (get result :completed-work-count))}))))
-        {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix}))))
+                    {:status :rejected :reason (sh08-gis3-view-get selected :reason) :work-count reserved :completed-work-count reserved}))))
+            (let [part (first remaining) result (sh08-gis3-index (sh08-gis3-view-get part 1) (sh08-gis3-view-get part 2) (- limit used))
+                  work (+ used (sh08-gis3-view-get result :work-count))]
+              (if (= :accepted (sh08-gis3-view-get result :status))
+                (recur (rest remaining) (assoc indexes (sh08-gis3-view-get part 0) (sh08-gis3-view-get result :index)) work
+                       (if (> (count (sh08-gis3-view-get result :index)) maximum-index-size) (count (sh08-gis3-view-get result :index)) maximum-index-size))
+                {:status :rejected :reason (sh08-gis3-view-get result :reason) :stage :original-index
+                 :table (sh08-gis3-view-get part 0) :work-count work :completed-work-count (+ used (sh08-gis3-view-get result :completed-work-count))}))))
+        )))
+        {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix})))
     {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
 (defn sh08-lsi-first-ids? [ids]
