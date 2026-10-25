@@ -709,3 +709,66 @@ grammar or facade policy. Full H6 origin authenticity, aggregate limits,
 context joins and replay remain separate. No new selected stale/coherent
 rejection gap was demonstrated beyond the owning tamper/ambient/bound checks;
 no additional validator, admission contract or unchanged proof replay follows.
+
+## PR339: actual compiler-source reader adoption
+
+This incremental adoption binds main
+`a86cd015a27d648ba83de6450da5ee08224f2d92`, tree
+`b268def3753fa74bdc33a8afbd3091ba89d7b9b6`. The reviewed reader, facade, host
+binding and canonical-stream implementation actually landed together in PR339;
+they are no longer prospective policy inputs. The reader is 270363 bytes,
+SHA256 `8a12082681ee6ea5eec6da14a43ed1a295eda521c47e8f70b99d40c3893a41f4`,
+with 249 selected functions, versus the earlier 257183-byte/231-function
+development input. The PR304 reader input/plan row remains historical; it is
+not a current source-use map for these changed functions. The other five owner
+sources, compiler/emitter bytes and `deps.edn` are unchanged since the PR318
+comparison, but that alone does not renew their reader/transport-dependent
+evidence. The complete loaded host source tree is now
+`4f4df904849db4797d0fcd993b9cc6a8f1c0933f`.
+
+The new dedicated `sh06_current_cohort_reconciliation_test.clj` constructs one
+original small `sh-03/accepted/newline-lf.gravity` subject through explicit
+current-reader C2 -> C3. Fresh syntax verification and the real C3 retained
+reader-product authenticity check pass. The original reader executes its
+bounds function; the original facade executes its own bounds function, and
+their complete returned records match. The reader plan semantic hash is
+`sha256:cce236c5e748b0db690aa16b6eebfe78a7e296e9b3847d8daabe97deb2c5d71b`;
+the facade is 37071 bytes, source hash
+`sha256:7e2f39689ea1d78dfd1170a37369e96344cc7dc97c0e677b2891ae1bdb580162`,
+with raw plan ID
+`sha256:b68e6a0bf2d2ec5405ae249b043f8da6eaae73587cc34621975c323d2f88457d`.
+
+The executed policy is `:gravity/sh03-compiler-source-v1`: 4194304 source bytes
+and characters, 524288 scanner tokens and 262144 forms. Its admitted carrier
+ceiling is 268435456 nodes, with prospective physical-node construction
+accounting, separate scratch/lifetime obligations, and unchanged host execution
+controls. The conservative derived population 537985024 is not itself an
+admission or heap-fit claim. The fresh canonical stream validates before
+writing, preserves the existing canonical encoding and domain, and retains
+independent replay; private counters or equal digests grant no later authority.
+
+The small composition rejects the earlier reader hash when the C2 retained
+revision, outer C3 revision and descriptor revision are changed together while
+the genuine authenticated envelope is retained. Omission of the current
+revision also rejects. These are real consumer checks over an actually
+constructed product, not a new supplied-record validator or a completely
+re-authenticated forgery claim. The test compares the actual source/plan with
+the newly admitted binding; it does not rely on the old assumption that current
+reader bytes must differ from the historical pin. Repair of that obsolete
+expectation in the owning SH03 test is separate work.
+
+The normal-broker 512MiB/120-second child passed 12 tests/36 assertions:
+the new focused check 1/13, language boundary 6/11 and LOC controls 5/12.
+Captured output was complete, natural exit was 0 and cleanup reported no
+survivors. The raw result/readback is
+`/private/tmp/gravity-c16-pr339-adoption-v1.log`. This is current small-source
+transport and policy-binding evidence, not a rerun of the full compiler source
+subjects, Effects or C7 fit proofs. Earlier long-run outcomes and the combined
+timeout retain their original revisions and dispositions. Their accepted
+dependency reuse is not current-WIP fit or a universal 4MiB guarantee.
+
+Full SOURCE producer-to-fresh-consumer/source-origin/authentication/fee closure,
+Effects independent-verifier/caller/variant/authentication/C8 composition, and
+the full current-cohort SH-05.1/SH-05.6/SH-06.6 obligations remain separate OPEN
+work. C16 is not a global development gate, and no C17, milestone, self-hosting,
+seed-retirement or release completion follows from this adoption.
