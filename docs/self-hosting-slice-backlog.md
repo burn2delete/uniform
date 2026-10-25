@@ -9667,6 +9667,57 @@ two-slot helper candidate remains separately immutable for ROOT review;
 the new case-evidence candidate uses an isolated worktree while ROOT's
 integration checkout remains untouched.
 
+The following self-derived C01 gap was non-call instruction positioning:
+61087 selected instructions had only 16071 positioned call rows. The existing
+walk now records all 61087 structural source/plan paths, including the 45016
+non-call instructions, with the existing hosted form kind. One actual changed
+batch passed 15 tests/132 assertions in a recorded 16887.307333 ms through test
+completion (six-owner joins 1/16, record negatives 1/13, quote/reference controls
+1/5, runtime arities 1/75, boundary/LOC 11/23), under normal 2GiB/120s checks.
+The [instruction-position record](self-hosting-sh07-completion-plan.md#c01-structural-instruction-positions-at-d42f23b2)
+preserves original plan/case evidence and separately binds the fresh local
+composition, input dependencies and physical paths. Quote payloads remain
+unvisited; symbol-to-literal projection does not acquire binding authority.
+Missing/duplicate/forged rows reject as record checks, not language rejection.
+These paths are neither C2 IDs nor canonical Core products; source domains,
+binding/definition links, actual invocation and later legality remain OPEN.
+This is substantive ordinary in-goal work, with no revived task-count,
+attempt-grant or preparation-only gate and no milestone credit.
+
+The next C01 audit found missing declaration signatures in the selected call
+map. All 964 selected functions now retain ordered parameters and fixed arity;
+all 3403 local calls match the actual source/plan declarations. The changed
+batch passed 16 tests/143 assertions under normal 2GiB/120s checks, including
+real seed-plan wrong-arity record rejection and forged declaration controls.
+The [declaration-join record](self-hosting-sh07-completion-plan.md#c01-selected-local-call-declaration-joins-at-af04fecc)
+and existing EDN preserve earlier rows/evidence, the first admission timeout
+before test execution, and explicit corrections for two successful-run
+metadata labels. This establishes C01 record joins, with B48 legality, C5
+binding authority, C7, execution, full Core products and migration still OPEN.
+
+The next C01 required-use audit covers all 1008 normalized function bodies,
+including the 44 reader definitions outside the selected seed plan. It finds
+61542 body positions: the existing 61087 selected positions plus 455 outside.
+The [full-body requirement matrix](self-hosting-sh07-completion-plan.md#c01-full-function-body-requirement-matrix-at-6585164c)
+records concrete control/literal/call families, source-only locators and
+verification-open product/rejection joins. It finds no executable mutation,
+error/handler, match or nested-function body form, without granting any
+broader SH07 support exemption. Qualified reader name membership is not C5
+authority. Top-level DATA/declarations and quoted interiors remain separate
+unclosed source regions; no full-source or migration credit follows.
+
+The following C01 declaration/leaf audit adds the six namespace headers and
+37 top-level DATA declarations to the source inventory. It also closes a
+demonstrated test-record gap: after plan/function rehashing, a Bool value change
+and redirect to another existing parameter had been accepted despite unchanged
+source. Direct literal/local source checks now reject both. The current-seed
+composition including `f2bb3a35` passed 20 tests/207 assertions; its host subtree
+matches main's new Symbol/reader-policy TCB. The
+[declaration and leaf record](self-hosting-sh07-completion-plan.md#c01-source-declarations-and-leaf-equivalence-at-c7d31338)
+keeps all prior fields, exact before-fix/timeout history and new dependency
+bookends. This is C01 source-to-seed validation, not public Core/C5 acceptance,
+runtime argument-domain proof, migration or C-task completion.
+
 The current 2026-10-24 accounting base is inspected remote main
 `c4b1d19da11def44f835d552e44d06488d31fe46`, tree
 `a4145adf64c5c7d4ebc558c605f07d27f784cac5`. Earlier `64aa890a` queue/adoption
