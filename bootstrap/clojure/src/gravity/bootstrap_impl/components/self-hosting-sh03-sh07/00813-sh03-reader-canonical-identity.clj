@@ -1,4 +1,5 @@
 (declare ^:private p15-s23-c6c10-digest-validated-form)
+(declare sh03-reader-maximum-source-bytes)
 
 (defn sh03-reader-canonical-identity
   [source-path value]
@@ -157,10 +158,10 @@
       (source-path-policy-fail! source-path source-bytes)
       (catch clojure.lang.ExceptionInfo ex
         (c2-reader-remap-exception! source-path ex))))
-  (when (> (alength source-bytes) 1048576)
+  (when (> (alength source-bytes) sh03-reader-maximum-source-bytes)
     (sh03-reader-boundary-fail!
      source-path :bounded-sh03-reader-source-bytes
-     (alength source-bytes) {:maximum-source-bytes 1048576}))
+     (alength source-bytes) {:maximum-source-bytes sh03-reader-maximum-source-bytes}))
   (let [binding (if (nil? reader-source-path) (sh03-reader-current-binding! source-path)
                  (sh03-reader-current-binding! source-path reader-source-path))
         plan (:plan binding)

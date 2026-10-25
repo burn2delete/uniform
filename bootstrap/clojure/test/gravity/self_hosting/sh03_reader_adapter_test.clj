@@ -157,6 +157,38 @@
         (recur (rest remaining))
         false))))
 
+(deftest sh03-current-source-intake-metadata-cannot-grant-capacity
+  ;; Metadata validation is a pre-construction guard, not source acceptance.
+  ;; The capacity comes from the executed reader, never the source record.
+  (let [bounds (current-sh03-seed-execute 'sh03-bounds-record [])
+        maximum (:maximum-source-bytes bounds)
+        unit {:artifact :gravity/sh03-source-unit
+              :schema-version 1
+              :project-root-id (str "sha256:" (apply str (repeat 64 "0")))
+              :logical-source-id "src/intake-policy.gravity"
+              :source-content-hash (str "sha256:" (apply str (repeat 64 "0")))
+              :source-byte-count maximum
+              :encoding :utf-8
+              :actual-path-provenance {:path "/declared/intake-policy.gravity"
+                                       :extension ".gravity"
+                                       :source-kind :gravity}}
+        valid? #(current-sh03-seed-execute 'sh03-source-unit-valid? [%])
+        policy {:artifact :gravity/sh03-reader-policy :schema-version 1
+                :retain-trivia false :enabled-reader-tags []}]
+    (is (true? (valid? (assoc unit :source-byte-count (dec maximum)))))
+    (is (true? (valid? unit)))
+    (is (false? (valid? (assoc unit :source-byte-count (inc maximum)))))
+    (doseq [count [nil -1 false "4194304" 1.5]]
+      (is (false? (valid? (assoc unit :source-byte-count count)))))
+    (is (false? (valid? (assoc unit :bounds
+                              {:maximum-source-bytes (* 2 maximum)}))))
+    (is (false? (current-sh03-seed-execute
+                 'sh03-reader-policy-valid?
+                 [(assoc policy :resource-policy
+                         {:maximum-source-bytes (* 2 maximum)})])))
+    (is (true? (current-sh03-seed-execute
+                'sh03-reader-policy-valid? [policy])))))
+
 (deftest sh03-current-source-hex-seed-binding
   (is (true? (current-sh03-seed-execute 'sh03-lowercase-hex? [[]])))
   (let [source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")

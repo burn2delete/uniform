@@ -882,3 +882,68 @@ No hostile-host proof, runtime/public certificate admission, performance,
 full-language, full I9, self-hosting, seed retirement, seedless or release
 authority follows. Progress remains7/30,6 executable,7 Clojure boundary,4
 blocked,prefixSH00-SH06; SH07 partial/recorded4-of8 and full-language0/240.
+
+## V2 source-intake resource amendment (2026-10-25)
+
+This additive amendment preserves the V1 text, authority block and historical
+execution evidence above. It replaces only the per-source-entry and seed-text
+intake assumptions identified here. It does not accept the held H6 candidate
+or reopen any historical execution grant.
+
+At the design base `a14d0485302edb22f94e65ef84cfc3316cd21ef4`, the required
+`bootstrap/gravity/p15_s23/emitter.gravity` input is 1,670,330 bytes. That input
+cannot satisfy the V1 1,048,576-byte per-entry requirement. A second, independent
+implementation restriction used the 524,288 plan-node bound as a source-text
+code-unit limit. Text length does not establish parsed plan-node population.
+
+The amended `max_source_entry_bytes` is 16,777,216, derived from the existing
+origin byte-vector `max_width`. It applies independently to every retained
+source and dependency entry. It is a resource policy, not a Gravity language
+profile, a proof allowance, or a grant from a supplied descriptor. Before
+array creation, decoding or hashing, the intake must validate native plain
+carrier classes, byte-vector length and every byte's integer range. Paths must
+remain within 4,096 UTF-8 bytes and round-trip exactly. Strict UTF-8 decoding,
+byte/text round-trip equality, descriptor byte count, source path, SHA-256 and
+claimed-text equality must all hold. These consistency checks do not establish
+Git origin authenticity; the owning object-proof and expected-admission checks
+remain mandatory.
+
+Source text has a separate 16,777,216-code-unit ceiling, following the admitted
+UTF-8 byte ceiling. Before invoking the seed parser, a lexical preflight must
+reserve bounded source structure, including abbreviation and discard work,
+with the existing 524,288-node, depth-512 and width-131,072 plan limits. Host
+reader constructs that could expand beyond those reservations must reject
+before parsing. The actual parsed structure, retained reader metadata, expanded
+forms, function table and emitted plan still require their owning structural
+checks; passing the lexical preflight cannot substitute for those checks.
+The new private seed-intake subset rejects syntax quote, auto-resolving keyword
+prefixes and dispatch forms other than sets, var quote and discard before host
+reading. This prevents host expansion or ambient namespace/alias resolution.
+It does not change the Gravity reader's L1 grammar or its accepted extensions.
+
+The minimal production boundary is
+`p15-s23-h6-retained-source-form-records!` in
+`backends/00644-c-backend-stage2-plan-emitter-source-rule.clj`: retained entry
+validation, lexical preflight, fresh seed parsing and actual parsed-structure
+validation. Each call clears authenticated-record shortcuts and ambient reader
+registries. It returns original form records with provenance; it grants no
+source-semantic or full H6 acceptance. The original held implementation must
+reconcile this boundary explicitly rather than importing its frozen patch as
+authority.
+
+Every other origin limit remains: 50,331,648 raw bytes and 67,108,864 nodes per
+origin, 100,663,296 raw bytes and 134,217,728 nodes per pair, depth 64,
+2,097,152 cumulative proof bytes, and the separate 16,777,216 cumulative
+classpath and JAR byte limits. Each physical occurrence and each logical
+origin copy counts independently. The complete origin validator must enforce
+these aggregate limits before accepting an origin; a standalone entry helper
+cannot establish them or override source provenance, compiler/classpath
+identity, private 12/22 joins or fresh independent replay.
+
+The owning tests are
+`sh07_h6_source_intake_policy_test.clj`. Acceptance requires actual retained
+emitter parsing with exact byte/text/hash/path joins, independent fresh calls,
+malformed entry and pre-parser expansion controls, and exact structural
+boundaries. Entry-level results are distinct from the still-required complete
+origin producer/consumer, aggregate-bound and context-proof evidence. No full
+Gate H, SH07, self-hosting, seed-retirement or release claim follows.

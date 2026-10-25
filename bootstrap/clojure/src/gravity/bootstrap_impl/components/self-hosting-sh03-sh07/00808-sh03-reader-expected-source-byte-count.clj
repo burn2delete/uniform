@@ -46,7 +46,7 @@
 (def sh03-reader-plan-maximum-width 131072)
 (def sh03-reader-result-maximum-nodes 167772160)
 (def sh03-reader-result-maximum-depth 2048)
-(def sh03-reader-result-maximum-width 1048576)
+(def sh03-reader-result-maximum-width 4194304)
 (def sh03-reader-input-maximum-identity-utf8-bytes 4096)
 (def sh03-reader-input-maximum-identity-code-units 1024)
 

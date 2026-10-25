@@ -144,10 +144,16 @@
           (pos-int? (:maximum-semantic-work-units bounds))
           (pos-int? (:maximum-numeric-semantic-scalars bounds))
           (pos-int? (:maximum-numeric-semantic-work-units bounds))
-          (map? (:result-carrier-node-budget bounds))
-          (<= (get-in bounds
-                      [:result-carrier-node-budget :derived-maximum-nodes])
-              (:maximum-result-carrier-nodes bounds))
+          (= :gravity/sh03-compiler-source-v1 (:resource-policy bounds))
+          (= [4194304 4194304 524288 262144]
+             (mapv bounds [:maximum-source-bytes :maximum-characters
+                           :maximum-tokens :maximum-forms]))
+          (= {:fixed-nodes 1048576 :nodes-per-source-byte 24
+              :nodes-per-token 320 :nodes-per-form 1024 :nodes-per-reader-tag 2048
+              :derived-maximum-nodes 537985024
+              :construction-guard :prospective-physical-node-count
+              :admitted-maximum-nodes sh03-reader-result-maximum-nodes}
+             (:result-carrier-node-budget bounds))
           (<= (count (:token-stream result)) (:maximum-tokens bounds))
           (<= (count (:form-tree result)) (:maximum-forms bounds))
           (<= (count (:digest-requests result)) 6)
@@ -233,6 +239,6 @@
 
 (def sh03-reader-canonical-maximum-nodes 167772160)
 (def sh03-reader-canonical-maximum-depth 2048)
-(def sh03-reader-canonical-maximum-width 1048576)
+(def sh03-reader-canonical-maximum-width 4194304)
 (def sh03-reader-canonical-maximum-scalar-bytes 1048576)
 (def sh03-reader-canonical-maximum-total-scalar-bytes 67108864)

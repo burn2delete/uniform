@@ -179,6 +179,67 @@ numeric record owned by later numeric and safety analysis. Duplicate-set
 equality is required at read time only when equality is decidable within the
 declared reader bounds.
 
+Reader resource policy is an implementation contract, separate from a Gravity
+language profile. A named resource policy must state its source-byte,
+character, scanner-token, form, construction and result-carrier limits together.
+Scanner-token limits include trivia even when trivia is omitted from the
+returned product. A source-byte vector retained in a digest request remains a
+container occurrence and must fit the result-carrier width limit.
+
+The implementation selects resource policy through authenticated reader code;
+source records, returned products and replay candidates cannot grant capacity.
+Changing the policy invalidates the reader implementation binding and affected
+verification context. A verifier reconstructs under its own authenticated
+policy and compares the complete declared bounds. Successful source identity
+continues to follow the source-unit identity rule above.
+
+Independent source, token and form maxima do not establish that every
+combination fits the result carrier. Construction must reserve a conservative
+count of the physical output before allocating its projected product tables,
+source maps and digest preimages. Count repeated occurrences in each output
+and preimage separately, including shared host references. Refusal must precede
+the refused construction and report the applicable maximum, required work or
+nodes, construction phase and uncommitted-result status. Complete result
+validation and fresh replay remain independent checks after construction.
+
+The bootstrap's `:gravity/sh03-compiler-source-v1` resource policy declares
+4,194,304 source bytes and characters, 524,288 scanner tokens, 262,144 forms,
+and result-carrier width 4,194,304. These dimensions accommodate the byte,
+token and form populations of the required compiler sources observed during
+policy design; they are not a universal capacity or heap guarantee. The
+independent 167,772,160-node result bound, depth, scalar-byte, container-width,
+numeric-work and semantic-work limits still apply. Its conservative maximum
+envelope formula is 537,985,024 nodes; that envelope is not an admitted node
+allowance. The prospective construction guard must reject a concrete projected
+product that exceeds its admitted bound before allocating that product.
+Its pool includes the final physical product and newly retained token/value
+indexes and filtered-token projections. The already constructed decode,
+scanner and parser tables remain governed by their separate pre-growth bounds.
+Per-input construction counts stay private. The host validates the exact static
+policy and independently checks the actual final carrier; fresh pinned-reader
+replay independently re-executes the construction guard. No returned flag or
+count grants construction or replay authority.
+
+The initial capacity selection uses the required compiler-input inventory at
+`a14d0485302edb22f94e65ef84cfc3316cd21ef4`: Effects is 1,677,424 bytes, C7 is
+2,016,051 bytes, and the emitter is 1,670,330 bytes. A planning census estimated
+at most 472,738 trivia-inclusive tokens and 236,101 form nodes among these
+inputs. Rounding each dimension upward to the next power of two selects the
+stated capacities; the census is not governed-reader acceptance. Real input
+construction, complete validation and fresh replay must demonstrate fit under
+the independent construction, canonical-byte and result bounds.
+
+These capacities are a versioned implementation choice, not permanent language
+limits. A larger required input must produce a structured refusal under this
+policy. A successor policy requires a concrete input inventory, conservative
+pre-construction accounting, coupled byte/character/token/form/carrier bounds,
+accepted and adversarial real-input evidence, independent review and renewed
+reader binding. Alternatively, a separately reviewed streaming or explicitly
+threaded trusted-policy intake may replace this finite policy. Neither source
+splitting nor automatic capacity growth is an established fallback. Existing
+entrypoint arities use the authenticated named policy; no environment variable,
+mutable global, candidate field or retry selects a larger allowance.
+
 ## Reader Extensions
 
 Reader extensions are declared in project or package policy:
