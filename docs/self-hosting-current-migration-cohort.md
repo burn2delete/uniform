@@ -605,3 +605,75 @@ the resolver remains
 `:development-unadmitted`. No historical row, pin, score or status is promoted.
 No QST, typed-bounds/C7, C8/effect, runtime, full-reader or migration claim is
 made; C7-C10 facts remain pending.
+
+## PR318: conserved selected plans, changed seed TCB
+
+This applicability check binds merged main
+`c4faaccb1467115b362c0f6ea9100e63a990a4f5`, tree
+`cf84af39ac3239bd18bc587ba2b03d8c6a8eb93b`. It does not refresh the historical
+cohorts above. [PR318](https://github.com/burn2delete/uniform/pull/318) changes
+two loaded seed resources: `00576-p15-s23-stage2-seed-compile-expr.clj` adds
+`bootstrap-symbol-utf16-unit-count` to compiler-artifact builtin augmentation;
+`00588-p15-s23-stage2-runtime-invoke-builtin.clj` adds its exact native Symbol,
+compiler-artifact `:meta/:jvm` runtime branch. BOOT2's new ABI declaration is
+not a public Core/library export or authenticated compiler authority. The
+ordinary catalog, authenticated `00944` route, pins and migration fingerprints
+are unchanged.
+
+The six selected owner sources, compiler rule DATA, emitter freshness bytes,
+and `deps.edn` are unchanged from `0067e941`. `00580` applies the augmented
+builtin set before function compilation, so a same-named executable call could
+change classification. SH03's allowed-builtin population also grows through
+the union in `00808:82-84`; it is not an unchanged admission predicate. The
+actual selected plans contain no call to the new ABI. Its own producer,
+arity/type/context and once-only operand checks belong to
+`sh01_bootstrap_symbol_utf16_unit_count_test.clj`; this comparison neither
+duplicates them nor claims completed C7/Effects consumers.
+
+An actual normal-broker 2GiB batch with a 120-second whole-JVM watchdog passed
+the current C01 tests and language boundary: 9 tests/103 assertions, zero
+failures/errors. Its subsequent whole-row comparison FAILED because physical
+definition paths retained the original worktree. The run exited 1; passing
+tests do not turn that comparison into a pass. The corrected comparison ran
+separately under the same limits and exited 0. It checked every historical
+definition path against its original root and every new path against its
+actual root, then compared rows with only that physical `:source` field
+removed. All source coordinates, source hashes, six plan IDs, definition and
+function-plan hashes, instruction summaries, call occurrences and outside-plan
+reader rows matched. Selected input fingerprints and the used-builtin
+population also matched. This is actual seed-plan construction, not invocation
+of every mapped function, full-source Gravity-Core composition or migration.
+
+SH03's structural auditor can now admit this builtin name; it is not source
+authentication. Historical admission additionally checks fixed plan/function
+identities, while current-reader admission constructs its plan internally from
+the selected source and checks source snapshots. No caller-supplied plan
+substitution boundary was found there. The existing unknown-builtin negative
+uses `unreviewed-current-builtin-test`, still outside the allowed set; changing
+it to the new permitted ABI and expecting structural rejection would test the
+wrong contract. The raw plan execution seam is not source admission.
+
+The complete 2146-resource seed identity did not match. The report's canonical
+content fingerprint changes from
+`sha256:e60449db42dcc6bdefb2009a05aded442b2b34c2d35e3fc47b492d4c4834e86b`
+to `sha256:97dc9781c7ea2e822350997cb2a752ed4be76c5a7764acde3dd6bab9c0b0f96c`;
+the Git source-tree identity changes from `6d09b4788df56c2a732f1bbbcdf867560cdabad6`
+to `b8c9b113a0e4138270d76cc18c0dc068d7c0df3f`. Unchanged plan IDs are not a
+complete-host-TCB identity. Existing `00874`/`00885` binding keys cover owner,
+compiler and emitter files, not every loaded seed byte; this check does not
+claim that they reject this host change. A new stale-seed rejection contract
+would require owning production work, not a fabricated C16 test validator.
+
+Retain the old report and semantic results with their original seed context.
+The actual comparison justifies narrower selected-plan conservation across
+PR318, not reuse of its old complete-seed fingerprint as current authority.
+SH-05.1, SH-05.6, SH-06.6 and C16 remain OPEN; the resolver remains
+development-unadmitted. No extra stale/coherent consumer case was demonstrated
+on this selected edge. Future reader policy/source changes and actual new ABI
+consumers need their affected checks; the failed full replay remains failed.
+
+Raw scripts/logs are `/private/tmp/gravity-c16-pr318-u2N7il-run.{clj,log}` and
+`/private/tmp/gravity-c16-pr318-u2N7il-compare-v2.{clj,log}`. The failed first
+log SHA256 is `405a212203637f59c6d04f63df44db6d6a84f989909c77e624e0ca2eba00e1b2`;
+the successful comparison log SHA256 is
+`64bd8ba3f09c471899bccb9bfceab430289e398fc94353e2c33262e504e90724`.
