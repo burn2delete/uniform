@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh01-development-loop-wiring-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is testing]]
             [clojure.java.shell :as shell]
             [clojure.string :as str]
             [gravity.self-hosting.sh01-development-test-cache :as cache]
@@ -1103,6 +1104,43 @@
       (is (= [namespace] (mapv :namespace (:results second-report))))
       (is (= 1 (:cache-hit-jvms second-report)))
       (is (zero? (:post-cache-planned-jvms second-report))))))
+
+(deftest emitted-runner-report-separates-producer-and-applying-revisions
+  (doseq [normal-batch? [false true]]
+    (with-coordination-root [base]
+      (let [namespace 'gravity.self-hosting.sh01-wiring-revision-test
+            plan (cond-> (impact-plan namespace)
+                   normal-batch?
+                   (assoc-in [:shards 0 :resource-class] :normal))
+            producer {:commit "producer-A" :tree "producer-tree-A"}
+            applying {:commit "applying-B" :tree "applying-tree-B"}
+            calls (atom 0)
+            launcher (fn [_ _]
+                       (swap! calls inc)
+                       {:status :passed :exit-code 0})
+            options (when normal-batch?
+                      {:normal-batch-worker
+                       (fn [jobs]
+                         (swap! calls inc)
+                         (one-member-batch-result (first jobs)))})
+            original (execute plan (assoc (context base) :revision producer)
+                              launcher options)
+            reused (execute plan (assoc (context base) :revision applying)
+                            launcher options)
+            ;; Exercise the serialized public report, not only report-facts.
+            emitted (edn/read-string (pr-str reused))]
+        (is (= 1 @calls))
+        (is (= :passed (:status original)))
+        (is (= :passed (:status emitted)))
+        (is (= producer (:revision original)))
+        (is (= applying (:revision emitted)))
+        (is (= producer (get-in emitted [:results 0 :execution-provenance :revision])))
+        (is (= (:snapshot (context base))
+               (get-in emitted [:results 0 :execution-provenance :repository-snapshot])))
+        (is (= 1 (:cache-hit-jvms emitted)))
+        (is (zero? (:launched-jvms emitted)))
+        (is (false? (get-in emitted [:results 0 :child-jvm-launched?])))
+        (is (false? (:authoritative? emitted)))))))
 
 (deftest all-miss-parent-probe-defers-verification-to-producer
   (with-coordination-root [base]

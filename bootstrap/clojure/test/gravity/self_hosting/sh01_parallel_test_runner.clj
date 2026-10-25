@@ -1002,6 +1002,7 @@
             (if development-context
               (:launched-jvms development-facts)
               nil)
+            :revision (:revision development-facts)
             :cache-hit-jvms
             (if development-context
               (cache-report-count
