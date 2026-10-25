@@ -8,7 +8,6 @@
         roots (:digest-graph-roots raw-result)
         request-count (when (vector? requests) (count requests))]
     (when-not (and (vector? requests)
-                   (<= request-count p15-s23-c6c10-max-digest-requests)
                    (vector? roots)
                    (if (= :accepted (:status raw-result))
                      (and (pos? request-count)
@@ -22,7 +21,7 @@
                             (= 1 (count roots))
                             (= 1 (count (:diagnostics raw-result)))))))
       (p15-s23-c6c10-host-fail!
-       "C6-VERIFY" source-path :bounded-rooted-digest-request-graph
+       "C6-VERIFY" source-path :rooted-digest-request-graph
        {:status (:status raw-result)
         :request-count request-count
         :root-count (when (vector? roots) (count roots))}))

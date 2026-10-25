@@ -18,143 +18,104 @@
     "clojure.lang.Keyword" "clojure.lang.Symbol"
     "java.lang.Boolean"})
 
+(defn- p15-s23-host-carrier-header
+  [value]
+  ;; Reuse the exact-class, callback-free host observation boundary.
+  (if (identical? clojure.lang.PersistentTreeSet (class value))
+    (let [access @p15-s23-stage2-native-hashset-field-once
+          backing (when-let [^java.lang.reflect.Field field @access]
+                    (try (.get field value)
+                         (catch IllegalAccessException _ (reset! access nil) nil)
+                         (catch SecurityException _ (reset! access nil) nil)))]
+      (if (identical? clojure.lang.PersistentTreeMap (class backing))
+        [:tree-set (some? (.meta ^clojure.lang.IObj value))
+         (.count ^clojure.lang.PersistentTreeMap backing) nil
+         (if (identical? (.comparator ^clojure.lang.Sorted backing)
+                         clojure.lang.RT/DEFAULT_COMPARATOR)
+           :default-comparator :foreign-comparator)]
+        [:unsupported nil nil nil nil nil]))
+    (p15-s23-stage2-native-carrier-header
+     {:kind :gravity/stage2-compiler-artifact-plan :compiler-artifact-plan? true
+      :module {:profile :meta :target :jvm}}
+     value)))
+
 (defn p15-s23-trusted-carrier-validation
-  "Iteratively validate exact host carrier classes without executing custom
-  comparators or descending into an untrusted collection implementation.
-  `sorted-policy` is either :reject or :default-only."
-  [value sorted-policy maximum-nodes maximum-depth maximum-width]
-  (loop [stack [[value 0]]
-         nodes 0
-         observed-depth 0
-         classes #{}]
-    (if (empty? stack)
-      {:status :passed
-       :observed-nodes nodes
-       :observed-depth observed-depth
-       :classes classes}
-      (let [[item depth] (peek stack)
-            stack (pop stack)
-            nodes (inc nodes)
-            observed-depth (max observed-depth depth)
-            class-name (when (some? item) (.getName (class item)))
-            classes (if class-name (conj classes class-name) classes)
-            reject
-            (fn [reason]
-              (cond->
-               {:status :rejected
-                :reason reason
-                :class (or class-name :nil)
-                :observed-nodes nodes
-                :observed-depth observed-depth}
-                (= :maximum-carrier-nodes reason)
-                (assoc :maximum-nodes maximum-nodes)
-                (= :maximum-carrier-depth reason)
-                (assoc :maximum-depth maximum-depth)
-                (= :maximum-carrier-width reason)
-                (assoc :maximum-width maximum-width)))]
-        (cond
-          (> nodes maximum-nodes) (reject :maximum-carrier-nodes)
-          (> depth maximum-depth) (reject :maximum-carrier-depth)
-          (nil? item)
-          (recur stack nodes observed-depth classes)
-
-          (map? item)
-          (let [tree? (= "clojure.lang.PersistentTreeMap" class-name)
-                allowed?
-                (or (contains? p15-s23-trusted-carrier-map-classes
-                               class-name)
-                    (and tree?
-                         (= :default-only sorted-policy)
-                         (identical?
-                          (.comparator ^clojure.lang.Sorted item)
-                          clojure.lang.RT/DEFAULT_COMPARATOR)))]
-            (cond
-              (not allowed?) (reject :untrusted-map-class-or-comparator)
-              (some? (meta item)) (reject :carrier-metadata)
-              (> (count item) maximum-width) (reject :maximum-carrier-width)
-              :else
-              (recur
-               (reduce-kv (fn [pending key child]
-                            (conj pending [key (inc depth)]
-                                  [child (inc depth)]))
-                          stack item)
-               nodes observed-depth classes)))
-
-          (vector? item)
-          (let [allowed? (= "clojure.lang.PersistentVector" class-name)]
-           (cond
-            (not allowed?)
-            (reject :untrusted-vector-class)
-            (some? (meta item)) (reject :carrier-metadata)
-            (> (count item) maximum-width) (reject :maximum-carrier-width)
-            :else
-            (recur (reduce #(conj %1 [%2 (inc depth)]) stack item)
-                   nodes observed-depth classes)))
-
-          (set? item)
-          (let [tree? (= "clojure.lang.PersistentTreeSet" class-name)
-                allowed?
-                (or (contains? p15-s23-trusted-carrier-set-classes class-name)
-                    (and tree?
-                         (= :default-only sorted-policy)
-                         (identical?
-                          (.comparator ^clojure.lang.Sorted item)
-                          clojure.lang.RT/DEFAULT_COMPARATOR)))]
-            (cond
-              (not allowed?) (reject :untrusted-set-class-or-comparator)
-              (some? (meta item)) (reject :carrier-metadata)
-              (> (count item) maximum-width) (reject :maximum-carrier-width)
-              :else
-              (recur (reduce #(conj %1 [%2 (inc depth)]) stack item)
-                     nodes observed-depth classes)))
-
-          (or (list? item) (= "clojure.lang.Cons" class-name))
-          (cond
-            (not (contains? p15-s23-trusted-carrier-list-classes class-name))
-            (reject :untrusted-list-class)
-            (some? (meta item)) (reject :carrier-metadata)
-            :else
-            (let [expanded
-                  (loop [cursor item
-                         width 0
-                         pending stack]
-                    (let [cursor-class
-                          (when (some? cursor) (.getName (class cursor)))]
-                      (cond
-                        (or (nil? cursor)
-                            (= "clojure.lang.PersistentList$EmptyList"
-                               cursor-class))
-                        {:status :passed :stack pending}
-
-                        (>= width maximum-width)
-                        {:status :rejected :reason :maximum-carrier-width}
-
-                        (not (contains?
-                              p15-s23-trusted-carrier-list-classes
-                              cursor-class))
-                        {:status :rejected
-                         :reason :untrusted-list-tail-class}
-
-                        (some? (meta cursor))
-                        {:status :rejected :reason :carrier-metadata}
-
-                        :else
-                        (let [pending
-                              (conj pending
-                                    [(.first ^clojure.lang.ISeq cursor)
-                                     (inc depth)])
-                              tail
-                              (if (= "clojure.lang.Cons" cursor-class)
-                                (.more ^clojure.lang.Cons cursor)
-                                (.next ^clojure.lang.ISeq cursor))]
-                          (recur tail (inc width) pending)))))]
-              (if (= :passed (:status expanded))
-                (recur (:stack expanded) nodes observed-depth classes)
-                (reject (:reason expanded)))))
-
-          (contains? p15-s23-trusted-carrier-scalar-classes class-name)
-          (if (and (instance? clojure.lang.IObj item) (some? (meta item)))
-            (reject :carrier-metadata)
-            (recur stack nodes observed-depth classes))
-
-          :else (reject :untrusted-scalar-class)))))))
+  "Validate exact native carriers iteratively without invoking foreign methods.
+  `sorted-policy` is either :reject or :default-only. Shared aliases are valid;
+  only an identity already on the current ancestor path is a cycle."
+  ([value sorted-policy]
+   (let [active (java.util.IdentityHashMap.)]
+    (loop [stack [[:visit value 0]] nodes 0 observed-depth 0 classes #{}]
+     (if (empty? stack)
+      {:status :passed :observed-nodes nodes
+       :observed-depth observed-depth :classes classes}
+      (let [[action item depth] (peek stack) stack (pop stack)]
+       (if (= :leave action)
+        (do (.remove active item) (recur stack nodes observed-depth classes))
+        (let [tail? (= :tail action)
+              nodes (if tail? nodes (inc nodes))
+              observed-depth (max observed-depth depth)
+              class-name (when (some? item) (.getName (class item)))
+              classes (if (and class-name (not tail?))
+                        (conj classes class-name) classes)
+              [kind metadata? _ _ comparator] (p15-s23-host-carrier-header item)
+              list-carrier? (contains? p15-s23-trusted-carrier-list-classes class-name)
+              container? (or (map? item) (vector? item) (set? item) list-carrier?)
+              reason
+              (cond
+               (and tail? (not (or (nil? item) list-carrier?))) :untrusted-list-tail-class
+               (map? item)
+               (when-not (and (not= :unsupported kind)
+                             (or (contains? p15-s23-trusted-carrier-map-classes class-name)
+                                 (and (= "clojure.lang.PersistentTreeMap" class-name)
+                                      (= :default-only sorted-policy)
+                                      (= :default-comparator comparator))))
+                 :untrusted-map-class-or-comparator)
+               (vector? item)
+               (when-not (= "clojure.lang.PersistentVector" class-name)
+                 :untrusted-vector-class)
+               (set? item)
+               (when-not (and (not= :unsupported kind)
+                             (or (contains? p15-s23-trusted-carrier-set-classes class-name)
+                                 (and (= "clojure.lang.PersistentTreeSet" class-name)
+                                      (= :default-only sorted-policy)
+                                      (identical? (.comparator ^clojure.lang.Sorted item)
+                                                  clojure.lang.RT/DEFAULT_COMPARATOR))))
+                 :untrusted-set-class-or-comparator)
+               (or (list? item) list-carrier?)
+               (when (= :unsupported kind) :untrusted-list-class)
+               (nil? item) nil
+               :else
+               (when (or (= :unsupported kind)
+                         (not (contains? p15-s23-trusted-carrier-scalar-classes class-name)))
+                 :untrusted-scalar-class))
+              reason (or reason
+                         (when metadata? :carrier-metadata)
+                         (when (and container? (.containsKey active item)) :cyclic-carrier))]
+         (if reason
+          {:status :rejected :reason reason :class (or class-name :nil)
+           :observed-nodes nodes :observed-depth observed-depth}
+          (let [pending (if container?
+                          (do (.put active item true) (conj stack [:leave item depth]))
+                          stack)
+                child-depth (inc depth)
+                pending
+                (cond
+                 (map? item)
+                 (reduce-kv (fn [pending key child]
+                              (conj pending [:visit key child-depth] [:visit child child-depth]))
+                            pending item)
+                 (or (vector? item) (set? item))
+                 (reduce #(conj %1 [:visit %2 child-depth]) pending item)
+                 (and list-carrier? (not= :empty-list kind))
+                 (let [head (.first ^clojure.lang.ISeq item)
+                       tail (if (= "clojure.lang.Cons" class-name)
+                              (.more ^clojure.lang.Cons item)
+                              (.next ^clojure.lang.ISeq item))]
+                   (conj pending [:tail tail depth] [:visit head child-depth]))
+                 :else pending)]
+           (recur pending nodes observed-depth classes))))))))))
+  ;; Transitional callers may still supply the removed limits. No argument
+  ;; controls admission; this delegates to the ordinary unmetered entrypoint.
+  ([value sorted-policy _maximum-nodes _maximum-depth _maximum-width]
+   (p15-s23-trusted-carrier-validation value sorted-policy))))

@@ -1,18 +1,5 @@
-
-
-(defn p15-s23-c6c10-canonical-form*
-  [source-path stats depth value]
-  (swap! stats update :nodes inc)
-  (swap! stats update :maximum-depth max depth)
-  (when (or (> (:nodes @stats) p15-s23-c6c10-max-carrier-nodes)
-            (> depth p15-s23-c6c10-max-carrier-depth))
-    (p15-s23-c6c10-host-fail!
-     "C6-VERIFY" source-path :bounded-canonical-carrier
-     (select-keys @stats [:nodes :maximum-depth])))
-  (when (and (instance? clojure.lang.IObj value) (some? (meta value)))
-    (p15-s23-c6c10-host-fail!
-     "C6-VERIFY" source-path :metadata-free-canonical-value
-     {:value-kind (some-> value class .getName)}))
+(defn- p15-s23-c6c10-canonical-scalar-form
+  [source-path stats value]
   (cond
     (nil? value) [:nil]
     (boolean? value) [:boolean value]
@@ -32,10 +19,6 @@
           unscaled (.unscaledValue decimal)
           scale (long (.scale decimal))]
       (p15-s23-c6c10-bounded-integer! source-path stats unscaled)
-      (when (> (Math/abs scale) 65536)
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :bounded-decimal-scale
-         {:scale scale :maximum-absolute-scale 65536}))
       [:decimal (.toString unscaled) scale])
     (string? value)
     (do (p15-s23-c6c10-bounded-string-bytes! source-path stats value)
@@ -74,103 +57,63 @@
         (p15-s23-c6c10-bounded-string-bytes! source-path stats namespace))
       (p15-s23-c6c10-bounded-string-bytes! source-path stats name)
       [:symbol namespace name])
-    (record? value)
-    (p15-s23-c6c10-host-fail!
-     "C6-VERIFY" source-path :record-free-canonical-value
-     {:class (.getName (class value))})
-    (vector? value)
-    (do
-      (when-not (contains? p15-s23-c6c10-canonical-vector-classes
-                           (.getName (class value)))
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :exact-persistent-vector-class
-         {:class (.getName (class value))}))
-      (when (> (count value) p15-s23-c6c10-max-container-width)
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :maximum-container-width
-         {:observed-width (count value)}))
-      (swap! stats update :maximum-width max (count value))
-      [:vector
-       (p15-s23-c6c10-canonical-sequence source-path stats depth value)])
-    (map? value)
-    (do
-      (when-not (contains? p15-s23-c6c10-canonical-map-classes
-                           (.getName (class value)))
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :exact-persistent-map-class
-         {:class (.getName (class value))}))
-      (when (> (count value) p15-s23-c6c10-max-container-width)
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :maximum-container-width
-         {:observed-width (count value)}))
-      (swap! stats update :maximum-width max (count value))
-      (let [entries
-            (mapv (fn [[key child]]
-                    (let [encoded-key
-                          (p15-s23-c6c10-canonical-form*
-                           source-path stats (inc depth) key)
-                          key-sort
-                          (p15-s23-c6c10-canonical-sort-key encoded-key)
-                          encoded-child
-                          (p15-s23-c6c10-canonical-form*
-                           source-path stats (inc depth) child)
-                          entry
-                          [:entry encoded-key encoded-child]]
-                      {:key encoded-key
-                       :key-sort key-sort
-                       :entry entry}))
-                  value)
-            key-sorts (mapv :key-sort entries)
-            ordered (mapv :entry
-                          (sort-by :key-sort entries))]
-        (when-not (= (count key-sorts) (count (distinct key-sorts)))
-          (p15-s23-c6c10-host-fail!
-           "C6-VERIFY" source-path :unique-canonical-map-keys {}))
-        [:map ordered]))
-    (set? value)
-    (do
-      (when-not (contains? p15-s23-c6c10-canonical-set-classes
-                           (.getName (class value)))
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :exact-persistent-set-class
-         {:class (.getName (class value))}))
-      (when (> (count value) p15-s23-c6c10-max-container-width)
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :maximum-container-width
-         {:observed-width (count value)}))
-      (swap! stats update :maximum-width max (count value))
-      (let [items (p15-s23-c6c10-canonical-sequence
-                   source-path stats depth value)
-            items-with-sorts
-            (mapv (fn [item]
-                    {:item item
-                     :sort-key
-                     (p15-s23-c6c10-canonical-sort-key item)})
-                  items)
-            sort-keys (mapv :sort-key items-with-sorts)
-            ordered (mapv :item (sort-by :sort-key items-with-sorts))]
-        (when-not (= (count sort-keys) (count (distinct sort-keys)))
-          (p15-s23-c6c10-host-fail!
-           "C6-VERIFY" source-path :unique-canonical-set-items {}))
-        [:set ordered]))
-    (list? value)
-    (do
-      (when-not (contains? p15-s23-c6c10-canonical-list-classes
-                           (.getName (class value)))
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :exact-persistent-list-class
-         {:class (.getName (class value))}))
-      (when (> (count value) p15-s23-c6c10-max-container-width)
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :maximum-container-width
-         {:observed-width (count value)}))
-      (swap! stats update :maximum-width max (count value))
-      [:list
-       (p15-s23-c6c10-canonical-sequence source-path stats depth value)])
     :else
     (p15-s23-c6c10-host-fail!
      "C6-VERIFY" source-path :canonical-value-domain
      {:class (some-> value class .getName)})))
+
+(defn- p15-s23-c6c10-canonical-collection-form
+  [source-path kind children]
+  (case kind
+    :map
+    (let [entries (mapv (fn [[key child]]
+                          {:sort-key (p15-s23-c6c10-canonical-sort-key key)
+                           :entry [:entry key child]})
+                        (partition 2 children))
+          sorts (mapv :sort-key entries)]
+      (when-not (= (count sorts) (count (distinct sorts)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :unique-canonical-map-keys {}))
+      [:map (mapv :entry (sort-by :sort-key entries))])
+    :set
+    (let [items (mapv (fn [item]
+                        {:sort-key (p15-s23-c6c10-canonical-sort-key item) :item item})
+                      children)
+          sorts (mapv :sort-key items)]
+      (when-not (= (count sorts) (count (distinct sorts)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :unique-canonical-set-items {}))
+      [:set (mapv :item (sort-by :sort-key items))])
+    [kind children]))
+
+(defn p15-s23-c6c10-canonical-form*
+  [source-path stats depth value]
+  (let [active (java.util.IdentityHashMap.)]
+    (loop [stack [[:visit value depth]] results []]
+      (let [[action item depth kind size] (peek stack) stack (pop stack)]
+        (if (= :finish action)
+          (let [offset (- (count results) size)
+                children (into [] (subvec results offset))
+                form (p15-s23-c6c10-canonical-collection-form source-path kind children)]
+            (.remove active item)
+            (if (empty? stack) form
+                (recur stack (conj (subvec results 0 offset) form))))
+          (let [{:keys [kind children]} (p15-s23-c6c10-canonical-carrier source-path item)]
+            (swap! stats update :nodes inc)
+            (swap! stats update :maximum-depth max depth)
+            (if children
+              (do
+                (when (.containsKey active item)
+                  (p15-s23-c6c10-host-fail!
+                   "C6-VERIFY" source-path :cyclic-canonical-carrier {}))
+                (.put active item true)
+                (swap! stats update :maximum-width max
+                       (if (= :map kind) (quot (count children) 2) (count children)))
+                (recur (into (conj stack [:finish item depth kind (count children)])
+                             (map #(vector :visit % (inc depth)) (rseq children)))
+                       results))
+              (let [form (p15-s23-c6c10-canonical-scalar-form source-path stats item)]
+                (if (empty? stack) form (recur stack (conj results form)))))))))))
 
 (defn- p15-s23-c6c10-canonical-form-and-stats
   [source-path value]

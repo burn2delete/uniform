@@ -2,55 +2,35 @@
 
 (defn p15-s23-stage2-gravity-checked-core-context
   [source-path source-text requested-target]
-  (let [path-count
-        (when (string? source-path)
-          (p15-s23-closed-core-bounded-utf8-count source-path 4096))
-        source-count
-        (when (string? source-text)
-          (p15-s23-closed-core-bounded-utf8-count
-           source-text p15-s23-c6c10-max-source-bytes))
-        safe-source-path
-        (if (and (= :valid (:status path-count))
-                 (qst-or-gravity-source? source-path))
-          source-path
-          "<gravity-checked-core>")]
-   (when (= :over-limit (:status path-count))
-     (p15-s23-c6c10-host-fail!
-      "C6-CORE-SHAPE"
-      safe-source-path
-      :maximum-scalar-characters
-      {:observed-scalar-characters (.length ^String source-path)
-       :maximum-scalar-characters 4096}))
-   (when (= :invalid-surrogate (:status path-count))
-     (p15-s23-c6c10-host-fail!
-      "C6-CORE-SHAPE"
-      safe-source-path
-      :well-formed-unicode-scalar-string
-      {:value-kind :string}))
-   (when-not (and (string? source-path)
-                 (= :valid (:status path-count))
-                 (qst-or-gravity-source? source-path)
-                 (string? source-text)
-                 (= :valid (:status source-count))
-                 (keyword? requested-target)
-                 (<= (count (str requested-target)) 256))
-    (p15-s23-c6c10-host-fail!
-     "C6-CORE-SHAPE"
-     safe-source-path
-     :bounded-co-canonical-source-context
-     {:source-path-valid? (= :valid (:status path-count))
-      :source-path-extension-valid?
-      (and (string? source-path) (qst-or-gravity-source? source-path))
-      :source-text? (string? source-text)
-      :source-text-status (or (:status source-count) :not-a-string)
-      :requested-target requested-target}))
-  (p15-s23-c6c10-canonical-record source-path source-path)
-  (p15-s23-c6c10-canonical-record source-path requested-target)
-  {:kind :gravity/p15-s23-stage2-gravity-checked-core-context
-   :source-path source-path
-   :source-text source-text
-   :source-content-hash (str "sha256:" (sha256-hex source-text))
-   :requested-target requested-target}))
+  (let [path-valid? (and (string? source-path)
+                         (p15-s23-c6c10-valid-unicode-string? source-path))
+        source-valid? (and (string? source-text)
+                           (p15-s23-c6c10-valid-unicode-string? source-text))
+        safe-source-path (if (and path-valid? (qst-or-gravity-source? source-path))
+                           source-path "<gravity-checked-core>")]
+    (when (and (string? source-path) (not path-valid?))
+      (p15-s23-c6c10-host-fail!
+       "C6-CORE-SHAPE" safe-source-path :well-formed-unicode-scalar-string
+       {:value-kind :string}))
+    (when-not (and path-valid? (qst-or-gravity-source? source-path)
+                   source-valid? (keyword? requested-target))
+      (p15-s23-c6c10-host-fail!
+       "C6-CORE-SHAPE" safe-source-path :co-canonical-source-context
+       {:source-path-valid? path-valid?
+        :source-path-extension-valid?
+        (and (string? source-path) (qst-or-gravity-source? source-path))
+        :source-text? (string? source-text)
+        :source-text-status (cond source-valid? :valid
+                                  (string? source-text) :invalid-surrogate
+                                  :else :not-a-string)
+        :requested-target requested-target}))
+    (p15-s23-c6c10-canonical-record source-path source-path)
+    (p15-s23-c6c10-canonical-record source-path requested-target)
+    {:kind :gravity/p15-s23-stage2-gravity-checked-core-context
+     :source-path source-path
+     :source-text source-text
+     :source-content-hash (str "sha256:" (sha256-hex source-text))
+     :requested-target requested-target}))
 
 (defn p15-s23-c6c10-validate-public-context!
   [context]
@@ -58,8 +38,7 @@
         (and (map? context)
              (contains? p15-s23-trusted-carrier-map-classes
                         (.getName (class context)))
-             (nil? (meta context))
-             (<= (count context) 5))]
+             (nil? (meta context)))]
     (when-not trusted-top-level?
       (p15-s23-c6c10-host-fail!
        "C6-VERIFY" "<gravity-checked-core>"

@@ -3,101 +3,67 @@
 (defn p15-s23-c6c10-carrier-validation
   [source-path value]
   (let [stats (atom {:nodes 0 :maximum-depth 0 :maximum-width 0
-                     :scalar-bytes 0 :maximum-scalar-bytes 0
-                     :maximum-integer-bits 0})]
-    (letfn [(visit [depth item]
+                    :scalar-bytes 0 :maximum-scalar-bytes 0
+                    :maximum-integer-bits 0})
+        active (java.util.IdentityHashMap.)]
+    (loop [stack [[:visit value 0]]]
+      (when (seq stack)
+        (let [[action item depth] (peek stack) stack (pop stack)]
+          (if (= :leave action)
+            (do (.remove active item) (recur stack))
+            (let [{:keys [kind children]}
+                  (try (p15-s23-c6c10-canonical-carrier source-path item)
+                       (catch clojure.lang.ExceptionInfo error
+                         (let [data (ex-data error)
+                               missing (:missing-fact data)
+                               input-missing
+                               (case missing
+                                 :metadata-free-canonical-value :metadata-free-input-carrier
+                                 :record-free-canonical-value :record-free-input-carrier
+                                 (:exact-persistent-vector-class :exact-persistent-map-class
+                                  :exact-persistent-set-class :exact-persistent-list-class)
+                                 :exact-persistent-carrier-class
+                                 :canonical-value-domain :input-carrier-value-domain
+                                 :cyclic-canonical-carrier :cyclic-input-carrier
+                                 missing)]
+                           (p15-s23-c6c10-host-fail!
+                            "C6-VERIFY" source-path input-missing (:subject data)))))]
               (swap! stats update :nodes inc)
               (swap! stats update :maximum-depth max depth)
-              (when (or (> (:nodes @stats)
-                           p15-s23-c6c10-max-carrier-nodes)
-                        (> depth p15-s23-c6c10-max-carrier-depth))
-                (p15-s23-c6c10-host-fail!
-                 "C6-VERIFY" source-path :bounded-input-carrier @stats))
-              (when (and (instance? clojure.lang.IObj item)
-                         (some? (meta item)))
-                (p15-s23-c6c10-host-fail!
-                 "C6-VERIFY" source-path :metadata-free-input-carrier
-                 {:class (.getName (class item))}))
-              (cond
-                (or (nil? item) (boolean? item)) nil
-                (integer? item)
-                (p15-s23-c6c10-bounded-integer! source-path stats item)
-                (ratio? item)
-                (do (p15-s23-c6c10-bounded-integer!
-                     source-path stats (numerator item))
-                    (p15-s23-c6c10-bounded-integer!
-                     source-path stats (denominator item)))
-                ;; Genuine C2 decimal literals currently retain the host
-                ;; reader's IEEE-754 value for C6/C7 source-plan lockstep.
-                ;; The strict digest encoder below still rejects raw doubles;
-                ;; only authenticated literal positions receive a lossless
-                ;; bit descriptor before hashing.
-                (instance? Double item) nil
-                (instance? java.math.BigDecimal item)
-                (let [scale (long (.scale ^java.math.BigDecimal item))]
-                  (p15-s23-c6c10-bounded-integer!
-                   source-path stats (.unscaledValue ^java.math.BigDecimal item))
-                    (when (> (Math/abs scale) 65536)
-                      (p15-s23-c6c10-host-fail!
-                       "C6-VERIFY" source-path :bounded-decimal-scale
-                       {:scale scale})))
-                (string? item)
-                (p15-s23-c6c10-bounded-string-bytes! source-path stats item)
-                (char? item)
-                (when (<= 0xD800 (int item) 0xDFFF)
-                  (p15-s23-c6c10-host-fail!
-                   "C6-VERIFY" source-path :unicode-scalar-character
-                   {:code (int item)}))
-                (keyword? item)
-                (do (when-let [namespace (namespace item)]
-                      (p15-s23-c6c10-bounded-string-bytes!
-                       source-path stats namespace))
-                    (p15-s23-c6c10-bounded-string-bytes!
-                     source-path stats (name item)))
-                (symbol? item)
-                (do (when-let [namespace (namespace item)]
-                      (p15-s23-c6c10-bounded-string-bytes!
-                       source-path stats namespace))
-                    (p15-s23-c6c10-bounded-string-bytes!
-                     source-path stats (name item)))
-                (record? item)
-                (p15-s23-c6c10-host-fail!
-                 "C6-VERIFY" source-path :record-free-input-carrier
-                 {:class (.getName (class item))})
-                (or (vector? item) (map? item) (set? item) (list? item))
+              (if children
                 (do
-                  (when-not (p15-s23-c6c10-class-supported-carrier? item)
+                  (when (.containsKey active item)
                     (p15-s23-c6c10-host-fail!
-                     "C6-VERIFY" source-path :exact-persistent-carrier-class
-                     {:class (.getName (class item))}))
-                  (when (> (count item)
-                           p15-s23-c6c10-max-container-width)
+                     "C6-VERIFY" source-path :cyclic-input-carrier {}))
+                  (.put active item true)
+                  (swap! stats update :maximum-width max
+                         (if (= :map kind) (quot (count children) 2) (count children)))
+                  (recur (into (conj stack [:leave item depth])
+                               (map #(vector :visit % (inc depth)) (rseq children)))))
+                (do
+                  (cond
+                    ;; Authenticated C2 decimal literals retain IEEE-754 values;
+                    ;; the strict canonical encoder continues to reject them.
+                    (instance? Double item) nil
+                    (instance? Float item)
                     (p15-s23-c6c10-host-fail!
-                     "C6-VERIFY" source-path :maximum-container-width
-                     {:observed-width (count item)}))
-                  (swap! stats update :maximum-width max (count item))
-                  (if (map? item)
-                    (doseq [[key child] item]
-                      (visit (inc depth) key)
-                      (visit (inc depth) child))
-                    (doseq [child item]
-                      (visit (inc depth) child))))
-                :else
-                (p15-s23-c6c10-host-fail!
-                 "C6-VERIFY" source-path :input-carrier-value-domain
-                 {:class (some-> item class .getName)})))]
-      (visit 0 value)
-      {:status :passed
-       :maximum-carrier-nodes p15-s23-c6c10-max-carrier-nodes
-       :maximum-carrier-depth p15-s23-c6c10-max-carrier-depth
-       :maximum-container-width p15-s23-c6c10-max-container-width
-       :maximum-scalar-bytes p15-s23-c6c10-max-scalar-bytes
-       :maximum-integer-bits p15-s23-c6c10-max-integer-bits
-       :observed-carrier-nodes (:nodes @stats)
-       :observed-carrier-depth (:maximum-depth @stats)
-       :observed-container-width (:maximum-width @stats)
-       :observed-scalar-bytes (:maximum-scalar-bytes @stats)
-       :observed-integer-bits (:maximum-integer-bits @stats)})))
+                     "C6-VERIFY" source-path :input-carrier-value-domain
+                     {:class (.getName (class item))})
+                    (or (keyword? item) (symbol? item))
+                    (do (when-let [namespace (namespace item)]
+                          (p15-s23-c6c10-bounded-string-bytes! source-path stats namespace))
+                        (if-let [name (name item)]
+                          (p15-s23-c6c10-bounded-string-bytes! source-path stats name)
+                          (p15-s23-c6c10-host-fail!
+                           "C6-VERIFY" source-path :input-carrier-value-domain {})))
+                    :else (p15-s23-c6c10-canonical-scalar-form source-path stats item))
+                  (recur stack))))))))
+    {:status :passed
+     :observed-carrier-nodes (:nodes @stats)
+     :observed-carrier-depth (:maximum-depth @stats)
+     :observed-container-width (:maximum-width @stats)
+     :observed-scalar-bytes (:maximum-scalar-bytes @stats)
+     :observed-integer-bits (:maximum-integer-bits @stats)}))
 
 (defn p15-s23-c6c10-path-neutral-value
   "Strip host IObj metadata without rewriting any semantic value.  Physical

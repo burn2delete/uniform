@@ -59,6 +59,8 @@
   #{"clojure.lang.PersistentList"
     "clojure.lang.PersistentList$EmptyList"})
 
+;; Obsolete helper limits retained while external callers migrate. The native
+;; carrier and canonical helpers do not consult these values for admission.
 (def ^:dynamic p15-s23-c6c10-max-carrier-nodes 65536)
 (def ^:dynamic p15-s23-c6c10-max-carrier-depth 64)
 (def ^:dynamic p15-s23-c6c10-max-container-width 128)
@@ -66,7 +68,6 @@
 (def ^:dynamic p15-s23-c6c10-max-total-scalar-bytes (* 8 1024 1024))
 (def p15-s23-c6c10-max-integer-bits 256)
 (def ^:dynamic p15-s23-c6c10-max-digest-requests 2048)
-(def p15-s23-c6c10-max-source-bytes (* 1024 1024))
 
 (declare p15-s23-c6c10-canonical-digest)
 
