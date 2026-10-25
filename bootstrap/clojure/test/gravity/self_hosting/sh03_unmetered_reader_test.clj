@@ -65,10 +65,11 @@
   (let [path "src/public-current-context.gravity"
         text "(ns reader.current (:profile :core) (:target :jvm) (:effects #{}) (:capabilities #{})) (defn value [] 1)"
         reader bootstrap/sh03-reader-source-relative-path
+        project (bootstrap/reader-project-context-for-source path)
         before (slurp reader :encoding "UTF-8")
         invocation {:reader-source-path reader
                     :authenticated-envelope-options {:source :development-current}}
-        artifact (bootstrap/compiler-c2-reader-source-artifact path text nil nil nil reader)
+        artifact (bootstrap/compiler-c2-reader-source-artifact path text project nil nil reader)
         envelope (get-in artifact [:gravity-reader-boundary :authenticated-envelope])
         authority (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-internal-product-authority))
         verifier (var-get (ns-resolve 'gravity.bootstrap 'sh03-c3-precomputed-c2-verify!))
@@ -86,7 +87,7 @@
                                  (assoc-in artifact [:gravity-reader-boundary :authenticated-envelope
                                                      :semantic-envelope-id] "sha256:changed")
                                  invocation))))
-    (is (map? (failure #(bootstrap/compiler-c2-reader-source-artifact path text nil))))
+    (is (map? (failure #(bootstrap/compiler-c2-reader-source-artifact path text project))))
     ;; The selected source really changes between production and verification.
     ;; This isolated-test worktree's original bytes are restored even on error.
     (try
