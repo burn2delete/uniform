@@ -7,6 +7,7 @@ Current accounting snapshot: 2026-10-24, inspected remote main
 Earlier `64aa890a` handoff observations below keep their historical scope.
 The C01 seed-plan supplement below is based on `0067e9418de992900a95cd47d016029af62ff99c`;
 it does not refresh unrelated queue or compiler evidence snapshots.
+Its primitive-case supplement is based on `80881ba6fdc9548d181bf358fa0d033ae4298a22`.
 This updates management of the existing work, not compiler support or admission.
 
 Historical assessment date: 2026-10-21.
@@ -80,14 +81,19 @@ they do not create competing schedulers or standalone worker threads.
 
 Matt authorizes routine in-scope best judgment on implementation details,
 local commits, proportionate tests, dependency/conflict fixes and queue
-priorities without discretionary escalation to Matt. Managers act inside
-their exact cap-three allocations; cross-slice/interface/ownership decisions
-go to ROOT, which alone routes independent acceptance and integrates main.
-Permission-only/proposal-only/await-human labels are superseded for ordinary
-authorized work; name actual technical, correctness, provenance, ownership,
-review or resource blockers. Do not blindly execute held attempts or replay
-consumed runs. Resource/control changes need evidence, the actual owner,
-validation and independent review, not blanket limit removal. Platform/tool
+priorities without discretionary escalation to Matt. Managers independently
+discover, prioritize and execute work inside their standing ownership.
+ROOT coordinates actual conflicting ownership, incompatible contracts and
+main integration, and routes independent acceptance. No fixed queue/task-count
+cap, one-attempt grant, method-preparation-only stage, stop-after-ticket rule
+or repeated discretionary pre-run approval applies to ordinary development.
+These process restrictions are removed, not renamed or replaced. Historical
+permission-only/proposal-only/await-human labels create no current ordinary
+work hold. Preserve failed/interrupted/skipped evidence without converting it
+to success or treating a never-launched attempt as a consumed proof.
+Machine/resource safeguards and semantic work bounds retain their actual
+contracts; changes require evidence and correctness validation, with
+independent acceptance before integration. Platform/tool
 restrictions, mandatory action-time approvals, destructive/security-sensitive
 actions, new external commitments and unrelated scope retain their limits;
 never approve an unknown pending action or bypass a restriction. Adoption
@@ -105,40 +111,47 @@ any implementation file:
 | SOURCE | `01a13b8d-509d-7771-b618-06a24933391b` | C14 affected C7 composition; existing C7/effects/emitter/tests and L5/STD3 reservations remain intact. Frozen candidate, diagnostic-method and compact-design work have distinct outcomes below. |
 | Cohort | `01a02f9c-2e5a-7d70-ba6d-d3519701b13f` | C16 current-cohort evidence/invalidation matrix. |
 
-Each manager queue has at most three concrete items. An item names the actual
+Managers curate concrete work without a fixed queue-size or task-count cap.
+An item names the actual
 gap, owning contracts, exact allocated paths/tests/fixtures, input/output,
 prerequisites, accepted/rejected checks, completion and stop conditions. Use
 `executing`, `resource-queued`, `dependency-blocked`, `awaiting-review`,
 `ready-for-integration` and `queue-empty`; these are work states, not C-task
 completion or migration credit. Freeze candidates during independent review.
-Only already allocated eligible disjoint work can proceed meanwhile. Refill
-through ROOT on a concrete dependency event; an empty eligible queue yields.
+Eligible disjoint work within the standing family can proceed meanwhile.
+Managers derive and notify ROOT of their in-scope successors; new cross-slice
+ownership still routes through ROOT.
 Do not invent a compiler feature to demonstrate management migration.
 
 ROOT's standing finite-goal charters apply to all eight implementation
-managers. Three limits active work, not the total number of tasks. Managers
-curate confirmed dependency-ready work inside their exclusive families and
-send ROOT the gap, contract, exact paths/interfaces, checks, dependencies and
-stop criteria before writing. They pull the next already eligible item in
-the same active turn, including during review of an isolated immutable
-candidate. Before yielding, report COMPLETED plus NEXT_EXECUTING, or NEED_REFILL
-with the exhausted alternatives, exact current-main blocker and next trigger.
-After one bounded readiness pass finds no independent work, yield; do not
-invent work or poll. ROOT retains shared allocation, independent acceptance
-and integration. Completion wakeups and the hourly all-eight fallback retain
+managers. Managers
+independently audit the repository, contracts, evidence and tests to discover,
+prioritize and execute dependency-ready work inside their exclusive families.
+Send ROOT the gap, contract, exact paths/interfaces, checks, dependencies and
+stop criteria before writing as ownership notification, not a task-grant wait.
+Pull the next eligible item in the same active turn, including during review
+of an isolated immutable candidate. One blocked task does not block the whole
+goal. Before yielding, report COMPLETED plus NEXT_EXECUTING; a drained leaf
+queue does not justify default NEED_REFILL. Truly exhausted alternatives need
+an evidence-backed goal-wide frontier routed through ROOT to the existing
+reviewer, with the exact owner, required action and wake event. Do not invent
+work or poll. ROOT retains shared allocation, independent acceptance and
+integration. Completion wakeups and the hourly all-eight fallback retain
 their existing cadence and preferences.
 
 The queue snapshot below reconciles allocated work at `c4b1d19d`; it is not
 proof of sustained throughput or a compiler completion score. All ten
 ordinary-autonomy recipients have adopted the instruction. Advisory adoption
 is complete; its later platform flag has no exposed operation details.
+Older queue/process observations retain historical scope; they cannot revive
+the removed caps, attempt grants or ordinary method/approval staging above.
 
 | Manager | Finite current queue / state | Dependency event or stop |
 | --- | --- | --- |
-| Core | Prior accounting was bundled with the substantive PR298 bridge. The C01 selected-owner plan/use map and focused tests have returned; its four-path candidate is being frozen for independent review. | Self-pull the allocated C01 evidence/queue update in the same turn, then inspect the remaining finite goal for a confirmed independent item. Frozen review does not block eligible disjoint work; no administrative-only PR/count credit. |
+| Core | PR304 integrated the selected-owner plan/use map. The next C01 candidate joins existing runtime cases and newly confirmed missing source-arity cases; the separate two-slot helper freeze remains with ROOT for review/integration. | Preserve isolated candidates and self-pull confirmed in-goal gaps. The new case joins do not close source value domains, reachability or Core products; no administrative-only PR/count credit. |
 | Construction | Frozen `1af5fd81`/`39ad9017`, `awaiting-integration`, with independent CODE and EVIDENCE acceptance: two existing `bootstrap-p15/00581` adapters plus new `sh01_typed_lowering_work_policy_test.clj`, based on `c4b1d19d`. | Preserve legacy fresh-verifier callee/two arguments for old arities; explicit-options arities alone use the policy-aware fresh callee/three arguments. Preserve exact evidence scopes below; no schema, wrapper, cache or local/default-cap change. |
 | Cohort | Six-owner invalidation matrix returned after two disjoint read-only inspections; `queue-empty`. | The planning deliverable is complete; C16 remains OPEN. Refill only for an actual selected cohort/evidence gap, not a new stamp. |
-| SOURCE | Frozen `f3073c24` has independently accepted focused code/evidence but failed whole-default composition. The allocated producer-only diagnostic returned accepted at N=1048576; compact architecture finalization continues. | Preserve the failed whole run and producer-only boundary. The next Effects local-fit method is preparation only, with no GO; no held GIS run. Original-request transport availability is not compact implementation/fit evidence. |
+| SOURCE | Frozen `f3073c24` has independently accepted focused code/evidence but failed whole-default composition. The allocated producer-only diagnostic returned accepted at N=1048576; compact architecture finalization continues. | Preserve the failed whole run and producer-only boundary. The historical unrun Effects-method proposal is not a current preparation-only or approval hold. Ordinary owned method implementation/checks proceed under actual machine safeguards; transport availability is not compact implementation/fit evidence. |
 | MIR producer `01a16a55-1b44-7551-b595-6caceceef034` | Inferred-Integer producer edge, `dependency-blocked`. | Actual reader `(- codepoint 48)` yields Integer; the existing I64 bridge does not establish its mode/range/source facts. Needs SOURCE's real boundary, not another arithmetic demonstration. |
 | Diagnostics `01a16a55-1b07-7202-b7ce-fd71fc0103c2` | Nested generated-origin edge, `dependency-blocked`. | Needs an explicit representation at the true producer edge; no current client is invented. |
 | Optimization `01a16a55-1b07-7202-b7ce-fda9f821c3ed` | `queue-empty`; no eligible implementation item. | No demonstrated defect in a new supported actual case. ROOT may refill only from a real required producer/consumer gap. |
@@ -148,16 +161,17 @@ is complete; its later platform flag has no exposed operation details.
 The later MIR, optimization and diagnostics managers own compiler C11, C13 and
 C15 work respectively; those document IDs are not SH07-C11, SH07-C13 or
 SH07-C15 task assignments. All existing source/test/interface reservations and
-held attempts survive this plan. Managers may use bounded disjoint
+historical attempt outcomes survive this plan. Managers may use bounded disjoint
 `gpt-6.1-sol` subagents at medium or higher effort within their allocations;
 they gain neither extra host capacity nor self-acceptance authority.
 
 Ordinary checks share two normal broker leases and one memory-heavy lease;
 exclusive checks hold all slots. Use the existing trusted broker coordination
 root and canonical heavy lock where applicable. Queue when capacity is
-unavailable rather than launching another JVM. Exact heavy/native/bootstrap/
-proof/performance controls and consumed grants remain applicable. Held GIS/H6
-execution is not resumed by this accounting. Compact representation,
+unavailable rather than launching another JVM. Actual heavy/native/bootstrap/
+proof/performance resource safeguards and scope boundaries remain applicable;
+historical grants are not ordinary-development attempt budgets. GIS/H6 claims
+retain their concrete technical/provenance requirements. Compact representation,
 validation, fees, identity/version fences and affected independent review
 remain technical obligations, not a discretionary human-approval label.
 Publication of a design discussion is not implementation/fit evidence.
@@ -281,8 +295,11 @@ and the frozen candidate remained clean. Raw evidence is at
 `6cb021a30b1a3f998cf838c483690696288e820f2b757327b982c188f7265697`.
 This supplies no separate fresh C7 verifier, C8, assembly or runtime result.
 The producer-only classification has independent acceptance; the earlier
-whole-default failure remains FAILED. SOURCE's next Effects 180s local-fit
-question is method preparation only, with no execution GO.
+whole-default failure remains FAILED. At that historical snapshot the next
+Effects 180s local-fit proposal had not executed. Its old preparation-only/
+no-GO process status is superseded: ordinary method implementation and checks
+need no per-run approval, while actual resource bounds, correctness and
+ownership still apply. This does not invent a later execution result.
 
 The existing three-argument body-effects route already carries the original
 request at `binding.digest-resolution.preimage.request`; the detached
@@ -484,7 +501,7 @@ selectors; its locators are not current passing results.
 
 | Task / status | Manager | Current code/evidence and next concrete closure obligation | Stop or rejection criterion |
 | --- | --- | --- | --- |
-| C01 OPEN | Core | The new selected-owner EDN map joins actual seed plans to 12668 builtin-call occurrences across the six sources, with the reader's 44 excluded functions explicit. Runtime case evidence, actual invocation reachability, generated/Core product joins and migration identities remain open. | Use exact source/plan/dependency identities and original body paths, not an allowlist or count. Do not infer execution of every retained function, whole-reader compilation or complete C01 closure. |
+| C01 OPEN | Core | The selected-owner EDN map joins actual seed plans to 12668 builtin-call occurrences across six sources, with 44 reader functions excluded explicitly. Runtime cases now cover finite normal values at every observed builtin arity; source value-domain joins, actual invocation reachability, generated/Core products and migration identities remain open. | Use exact source/plan/dependency identities and original body paths, not an allowlist or count. Matching an arity is not proof of an actual source argument's domain or execution of every retained function; C01 remains open. |
 | C02 OPEN | Core | Core literal/quote/collection lowerers and carrier/decimal/character/order tests exist. Join each selected subject's required literal and constructor variants to those real products/results. | Accept preserved kinds, inert quote and ordered constructors; reject malformed quote/constructor, unsupported executable payload and forged origin. Missing joins remain OPEN. |
 | C03 OPEN | Core; Cohort for C5 producer facts | Reference/def/var and qualified-name tests exist. Select actual executable local/namespace/import/var occurrences and their real resolver/callee artifacts. | Accept exact binding/source identity and shadowing; reject unresolved/private/substituted targets at the owning ingress. Do not fabricate a callee or host lookup. |
 | C04 OPEN | Core | `if`/`do`/`let` owner tests cover exclusive branches and sequential scope. Match selected empty/terminal/nested/transfer variants to actual Core and source order. | Accept false/nil truthiness and once-only ordered children; reject malformed arity/bindings and reorder/drop/duplicate mutations. No unselected destructuring feature is added. |
@@ -611,11 +628,56 @@ retains unknown symbols as inert DATA. Raw output is
 The earlier parent namespace preflight failed before test loading, source-plan
 construction or assertions; preserve `attempt1.log` beside it, SHA256
 `861d20b465985fdbeaeceff08633cce45bba070100999d035a627c8fee9bc90b`.
-The report SHA256 is
+The original PR304 report SHA256, before the primitive-case supplement, is
 `e2792e6582e1c328d977150ff0b44f9bdd5f46ff03494796b4d27ba40b3d964b`.
 No full source-to-Core, runtime primitive, native, migration or C01 completion
 credit follows. Subsequent required occurrence/product and accepted/rejected
 case joins must use this actual population rather than substituting an allowlist.
+
+### C01 primitive runtime cases at `80881ba6`
+
+The EDN's `:primitive-case-evidence` supplements the original construction
+record; its six owner rows, selected plan identities and original dependencies
+are unchanged. Source, compiler-rule, emitter, dependency-option and complete
+seed bytes were conserved from PR304. The seed Git tree is
+`6d09b4788df56c2a732f1bbbcdf867560cdabad6`. Existing runtime tests remained
+unchanged, SHA256
+`9433e4fd53c269eabb1203d024e761cc76faa91da1bae70655d2a985f12ba97d`.
+
+| Actual execution | Result | Scope |
+| --- | --- | --- |
+| Eleven existing exact SH01 runtime test vars | 11 tests/294 assertions; 14632.794333 ms | Generic/interpreted unary, lookup, equality, association and finite arithmetic cases, including their selected arity and host-error rejections. |
+| New `selected-owner-observed-arity-runtime-cases`, plus boundary/LOC | 12 tests/98 assertions; 7903.280625 ms | New test 1/75; boundary/LOC 11/23. These are distinct from the preceding execution, not a new aggregate of both runs. |
+
+The first execution supplied positive cases for 35 of the 36 used primitives.
+Joining actual used arities exposed specific uncovered rows: binary `<=`, `>`,
+`>=`; `assoc` arities 7, 9, 19 and 21; binary `conj`; and zero-argument `list`.
+The new owning C01 test checks those exact observed arities through both
+existing generic and interpreted runtime APIs. It checks true/false finite
+comparisons, normal persistent Map association, Vector/Set/List insertion and
+empty-list construction, with paired wrong-arity diagnostics and noncollection
+`conj` rejection where defined. No invalid arity is invented for variadic
+`list`. The test verifies that its arities occur in the reviewed use map and
+that all six owner byte identities still match.
+
+Each primitive row now links its fully qualified positive/rejection test vars,
+observed and tested arities, and explicit remaining domain/invocation/legality
+obligations. No observed arity lacks a normal-value positive case in these
+selections. This does not prove actual source value domains, all primitive
+inputs, dynamic owner reachability, Core products, C7/C8 legality or migration.
+The original runtime-case obligation stays OPEN for those stronger joins.
+
+Both commands used one normal broker lease, one 2GiB JVM and the existing
+120s watchdog, and exited naturally with no failures/errors. Raw files are
+`/tmp/sh07-c01-primitive-case-80881ba6-20261024-attempt1.log` (SHA256
+`65c8fd11ee14a565c41e40b3f21f174dc8d17dd7a273e000cedc65e17cd0a0dd`)
+and `/tmp/sh07-c01-observed-arities-80881ba6-20261024-attempt1.log` (SHA256
+`8be878b47bb72d634cdeea7d3511dcfba67e03261770c84f09c28c9e63b0dbd8`).
+The EDN retains per-var counts, domain limits, raw-result hashes, the new test
+hash and the post-run unchanged-worktree input-map snapshot. It does not
+mislabel that snapshot as a separately measured launch pin or these changed
+working-tree executions as clean frozen-commit runs. No source implementation,
+runtime provider, shared interface, allowance or milestone status changed.
 
 ### C01 and C16 stopping point
 

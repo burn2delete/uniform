@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh07-selected-owner-primitive-use-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]))
 
@@ -213,3 +214,41 @@
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"C01 source/plan join rejected"
                           (children '(unowned) {:op :unowned} [] [])))
     (is (= [] (children '(quote (not-a-primitive)) {:op :quote :value '(not-a-primitive)} [] [])))))
+
+(deftest selected-owner-observed-arity-runtime-cases
+  ;; The reviewed map supplies actual required arities, not runtime authority.
+  ;; Normal values below exercise those arities; source value domains stay open.
+  (let [report (edn/read-string (slurp (path "docs/artifacts/phase-15/reports/sh07-c01-selected-owner-use-map-v1.edn")))
+        uses (mapcat #(mapcat :uses (:functions %)) (:owners report))
+        required (set (map (juxt :callee :arity) (filter #(= :builtin-call (:op %)) uses)))
+        plan {:compiler-artifact-plan? true :kind :gravity/stage2-compiler-artifact-plan
+              :module {:profile :meta} :compiler {:stage :p15-s23-stage2-expression-lowering}
+              :source {:path "sh07-c01-observed-arities.gravity"}}
+        generic #(b/p15-s23-stage2-runtime-invoke-builtin plan %1 %2)
+        interpreted #(b/p15-s23-stage2-runtime-execute-instruction
+                       {:engine :sh07-c01-observed-arities} plan {}
+                       {:op :builtin-call :function %1 :args (mapv (fn [value] {:op :literal :value value}) %2)})
+        failure (fn [thunk] (try (thunk) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))
+        assoc-cases (mapv (fn [arity]
+                            (let [entries (mapv (fn [i] [(keyword (str "slot" i)) i]) (range (quot (dec arity) 2)))]
+                              ['assoc (into [{:retained :before}] (mapcat identity entries))
+                               (into {:retained :before} entries)])) [7 9 19 21])
+        cases (into [['<= [1 2] true] ['<= [2 1] false] ['> [2 1] true] ['> [1 2] false]
+                     ['>= [2 2] true] ['>= [1 2] false] ['conj [[] :new] [:new]]
+                     ['conj [#{:seen} :new] #{:seen :new}] ['conj ['() :new] '(:new)] ['list [] '()]] assoc-cases)]
+    (doseq [owner (:owners report)] (is (= (:input owner) (file-id (get-in owner [:input :path])))))
+    (is (= '#{[<= 2] [> 2] [>= 2] [assoc 7] [assoc 9] [assoc 19] [assoc 21] [conj 2] [list 0]}
+           (set (map (fn [[callee args]] [callee (count args)]) cases))))
+    (doseq [[callee args expected] cases]
+      (is (contains? required [callee (count args)]) [callee :not-an-observed-source-arity])
+      (is (= expected (generic callee args)) [callee args :generic])
+      (is (= expected (interpreted callee args)) [callee args :interpreted]))
+    (doseq [[callee args] (into [['<= [7]] ['> [7]] ['>= [7]] ['conj []]]
+                               (mapv (fn [[_ args]] ['assoc (conj args :dangling)]) assoc-cases))]
+      (let [direct (failure #(generic callee args)) lowered (failure #(interpreted callee args))]
+        (is (= "L2-BUILTIN-ARITY" (:id direct)) [callee args])
+        (is (= direct lowered) [callee :diagnostic-parity])
+        (is (= (count args) (:actual-arity direct)) [callee :actual-arity])))
+    (let [direct (failure #(generic 'conj [7 :new])) lowered (failure #(interpreted 'conj [7 :new]))]
+      (is (= "L2-BUILTIN-ERROR" (:id direct)))
+      (is (= direct lowered)))))
