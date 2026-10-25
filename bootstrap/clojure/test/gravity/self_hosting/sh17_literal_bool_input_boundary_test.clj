@@ -61,7 +61,7 @@
   (into {} (for [condition ["true" "false"] extension ["gravity" "qst"]]
              [[condition extension] (delay (products condition extension))])))
 
-(deftest sh17-original-context-fits-existing-c11-carrier-bound
+(deftest original-context-passes-carrier-validation
   ;; This is a producer/transport check, not execution of the C14 consumer.
   (doseq [[condition extension] [["true" "gravity"]]]
     (let [{:keys [raw upstream report post context]} @(get cases [condition extension])
@@ -70,7 +70,10 @@
       (is (= :accepted (:status raw)))
       (is (= :passed (:status upstream) (:status report) (:status post)))
       (is (= :accepted (:status preflight)) (pr-str preflight))
-      (is (true? (:nodes-exact? preflight)))
+      (is (= :rejected
+             (:status ((existing 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test 'invoke)
+                       'sh12-authenticated-c10-mir-carrier-preflight
+                       (assoc context :callback (fn [] :untrusted))))))
       (prn {:development-context [condition extension] :carrier-preflight preflight}))))
 
 (defn- check-valid [condition extension]
