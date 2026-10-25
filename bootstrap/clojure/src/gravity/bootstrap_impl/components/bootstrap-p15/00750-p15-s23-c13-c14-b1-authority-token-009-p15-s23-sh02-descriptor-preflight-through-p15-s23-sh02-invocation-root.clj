@@ -1,81 +1,42 @@
 (let [p15-s23-c13-c14-b1-authority-token (nth __gravity_bootstrap_lexical_values_126914 0)]
 (defn- p15-s23-sh02-descriptor-preflight!
   [source-path descriptor]
-  ;; Descriptor ingress is public and may be supplied by a later bootstrap
-  ;; stage. Establish exact, metadata-free host carriers before any `count`,
-  ;; `set`, `distinct`, tree walk, or reference-graph traversal.
-  (p15-s23-sh02-require-bounded-carrier!
-   source-path :sh02-descriptor descriptor)
-  (let [bounds p15-s23-sh02-authenticated-envelope-bounds
-        closure (:reference-closure descriptor)
-        node-ids (:node-ids closure)
-        edges (:edges closure)
-        reachable
-        (when (and (map? closure) (vector? edges))
-          (p15-s23-sh02-reference-reachable-ids
-           (:root-id closure) edges))
-        logical-path (get-in descriptor
-                             [:source-revision :logical-source-path])]
+  (p15-s23-sh02-require-carrier! source-path :sh02-descriptor descriptor)
+  (let [closure (:reference-closure descriptor)
+        node-ids (:node-ids closure) edges (:edges closure)
+        reachable (when (and (map? closure) (vector? edges))
+                    (p15-s23-sh02-reference-reachable-ids (:root-id closure) edges))]
     (when-not
-     (and (= bounds (:bounds descriptor))
+     (and (map? descriptor)
+          (= #{:artifact :schema-version :stage :artifact-kind :source-revision
+               :projection-contract :semantic-projections :fact-transitions
+               :effect-capability-relation :proof-composite :preservation
+               :identity-subjects :lineage :reference-closure :actual-path-provenance}
+             (set (keys descriptor)))
+          (= 2 (:schema-version descriptor))
           (vector? (:semantic-projections descriptor))
-          (<= (count (:semantic-projections descriptor))
-              (:maximum-semantic-projections bounds))
           (vector? (:fact-transitions descriptor))
-          (<= (count (:fact-transitions descriptor))
-              (:maximum-fact-transitions bounds))
           (vector? (:identity-subjects descriptor))
-          (<= (count (:identity-subjects descriptor))
-              (:maximum-identity-subjects bounds))
           (vector? (:lineage descriptor))
-          (<= (count (:lineage descriptor))
-              (:maximum-lineage-records bounds))
-          (string? logical-path)
-          (<= (count logical-path)
-              (:maximum-logical-source-path-code-units bounds))
-          (map? closure)
-          (vector? node-ids)
-          (vector? edges)
+          (string? (get-in descriptor [:source-revision :logical-source-path]))
+          (map? closure) (vector? node-ids) (vector? edges)
           (= (count node-ids) (:observed-node-count closure))
           (= (count edges) (:observed-edge-count closure))
           (= (count node-ids) (count (distinct node-ids)))
           (= (count edges) (count (distinct edges)))
           (= (set node-ids) reachable)
           (every? (fn [edge]
-                    (and (map? edge)
-                         (= #{:from :role :to} (set (keys edge)))
+                    (and (map? edge) (= #{:from :role :to} (set (keys edge)))
                          (contains? reachable (:from edge))
-                         (contains? reachable (:to edge))))
-                  edges)
-          (<= (count node-ids) (:maximum-reference-nodes bounds))
-          (<= (count edges) (:maximum-reference-edges bounds))
+                         (contains? reachable (:to edge)))) edges)
           (integer? (:observed-maximum-depth closure))
-          (<= 0 (:observed-maximum-depth closure)
-              (:maximum-reference-depth bounds))
+          (<= 0 (:observed-maximum-depth closure))
           (= (:observed-maximum-depth closure)
              (p15-s23-sh02-reference-depth (:root-id closure) edges))
           (not-any? p15-s23-c6c10-digest-ref-shape?
                     (p15-s23-sh02-contained-values descriptor)))
-      (p15-s23-sh02-fail!
-       source-path descriptor :bounded-sh02-descriptor-subset
-       {:stage (:stage descriptor)
-        :observed-semantic-projections
-        (when (vector? (:semantic-projections descriptor))
-          (count (:semantic-projections descriptor)))
-        :observed-fact-transitions
-        (when (vector? (:fact-transitions descriptor))
-          (count (:fact-transitions descriptor)))
-        :observed-identity-subjects
-        (when (vector? (:identity-subjects descriptor))
-          (count (:identity-subjects descriptor)))
-        :observed-reference-nodes
-        (when (vector? node-ids) (count node-ids))
-        :observed-reference-edges
-        (when (vector? edges) (count edges))
-        :observed-reference-depth (:observed-maximum-depth closure)
-        :maximum-reference-nodes (:maximum-reference-nodes bounds)
-        :maximum-reference-edges (:maximum-reference-edges bounds)
-        :maximum-reference-depth (:maximum-reference-depth bounds)}))
+      (p15-s23-sh02-fail! source-path {} :sh02-descriptor-subset
+                        {:stage (:stage descriptor)}))
     descriptor))
 
 (defn- p15-s23-sh02-build-stage-envelope!
