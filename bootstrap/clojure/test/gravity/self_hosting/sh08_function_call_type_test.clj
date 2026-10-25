@@ -22469,6 +22469,40 @@
   (prn {:private-ordinary-ledger :checked :canonical-output-work-receipt false
         :whole-reconstruction-accounting false :public-wrapper-changed false}))
 
+(deftest sh08-verifier-map-get-recipe-current-source
+  (let [{:keys [core bindings forms]} (verifier-current-core-products (fn [_ operation] (operation)))
+        run #(invoke-c7 'sh08-vf-map-get-recipe? [% bindings forms])
+        call-index (- (count (:nodes core)) 3) key-index (- (count (:nodes core)) 4)
+        negatives [(assoc core :recursion-components [{}]) (assoc core :mutations [{}])
+                   (assoc core :control-flow [{}]) (assoc core :error-handlers [{}])
+                   (assoc core :loop-bindings [{}]) (assoc core :lexical-bindings [{}])
+                   (assoc core :nodes (pop (:nodes core)))
+                   (assoc-in core [:function-records 0 :fixed-arity] 1)
+                   (assoc-in core [:function-records 0 :signature :return :type-id] :gravity.type/string)
+                   (assoc-in core [:nodes key-index :attributes :value] :absent-key)
+                   (assoc-in core [:nodes call-index :attributes :argument-count] 3)
+                   (assoc-in core [:module :target] :native)]]
+    (is (true? (run core)))
+    (doseq [changed negatives] (is (false? (run changed))))
+    (is (false? (invoke-c7 'sh08-vf-map-get-recipe? [core (conj (vec (repeat 300 {})) {}) forms])))
+    (is (false? (invoke-c7 'sh08-vf-map-get-recipe? [core bindings (vec (repeat 33 {}))])))
+    (prn {:first-order-map-get-recipe :checked :semantic-proof false
+          :whole-reconstruction-accounting false :B47-verification-complete false :public-wrapper-changed false})))
+
+(deftest sh08-verifier-native-arraymap-storage-domain
+  (let [bad (clojure.lang.PersistentArrayMap. (object-array [:odd]))
+        nil-backing (clojure.lang.PersistentArrayMap. nil)
+        bad-set (clojure.lang.PersistentHashSet. nil bad)
+        data #(invoke-c7 'sh08-vf-data [% 1000000])]
+    (doseq [value [bad nil-backing bad-set {:inactive bad} [nil-backing] (list bad-set)]]
+      (let [result (data value)]
+        (is (= [:rejected :verification-native-carrier] ((juxt :status :reason) result)))
+        (is (not (contains? result :arena)))))
+    (is (nil? (invoke-c7 'sh08-vf-work-allowance [bad])))
+    (is (nil? (invoke-c7 'sh08-vf-work-allowance [nil-backing])))
+    (prn {:native-arraymap-storage :checked :dependency-commit "2b1371aaa60e5bd10734f3962741585f9b52c884"
+          :unknown-observation-work 75 :public-wrapper-changed false})))
+
 (deftest sh08-verifier-native-option-domain
   (let [run #(invoke-c7 'sh08-vf-work-allowance [%])
         callbacks (atom [])

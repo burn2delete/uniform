@@ -27071,6 +27071,120 @@
                   (if (contains? #{:integer8 :integer16 :integer32 :integer64 :big-int :big-integer} (get value-header 0))
                     (if (> value 0) value nil) nil)) nil) nil)) nil)) nil)))
 
+(defn sh08-vf-flat-keyword-map? [value]
+  (if (map? value)
+    (if (contains? #{1 2} (count value))
+      (loop [entries (vec value) i 0]
+        (if (= i (count entries)) true
+          (let [entry (get entries i)]
+            (if (if (keyword? (get entry 0)) (keyword? (get entry 1)) false)
+              (recur entries (+ i 1)) false)))) false) false))
+
+(defn sh08-vf-map-literal-pairs? [nodes collection members]
+  (let [attrs (get collection :attributes) value (get attrs :source-value) children (get collection :children)]
+    (if (if (sh08-vf-flat-keyword-map? value) (= members (count value)) false)
+      (if (= (* 2 members) (count children))
+        (loop [i 0]
+          (if (= i members) true
+            (let [key-node (get nodes (+ 1 (* 2 i))) value-node (get nodes (+ 2 (* 2 i)))
+                  key-attrs (get key-node :attributes) value-attrs (get value-node :attributes)]
+              (if (sh08-ft-all-true?
+                    [(= :literal (get key-node :core-form) (get value-node :core-form))
+                     (= :keyword (get key-attrs :literal-kind) (get value-attrs :literal-kind))
+                     (= 2 (count key-attrs) (count value-attrs))
+                     (= [] (get key-node :children) (get value-node :children))
+                     (keyword? (get key-attrs :value)) (keyword? (get value-attrs :value))
+                     (= (get key-node :node-id) (get children (* 2 i)))
+                     (= (get value-node :node-id) (get children (+ 1 (* 2 i))))
+                     (= (get value-attrs :value) (get value (get key-attrs :value)))])
+                (recur (+ i 1)) false)))) false) false)))
+
+(defn sh08-vf-map-get-recipe? [core bindings forms]
+  ; A cost-family selector, not type evidence or source authentication. The
+  ; caller first pays complete original DATA and admits the operation domain.
+  ; Fresh ordinary C7 reconstruction must still validate every source join.
+  (let [nodes (get core :nodes) records (get core :function-records) calls (get core :calls)
+        edges (get core :call-edges) module (get core :module)]
+    (if (if (vector? nodes) (contains? #{8 10} (count nodes)) false)
+    (if (sh08-ft-all-true?
+          [(if (vector? bindings) (<= (count bindings) 300) false)
+           (if (vector? forms) (<= (count forms) 32) false)
+           (= [:meta :jvm :safe] [(get module :profile) (get module :target) (get module :safety)])
+           (= [] (get module :exports) (get module :capabilities))
+           (if (vector? records) (= 1 (count records)) false)
+           (if (vector? calls) (= 1 (count calls)) false)
+           (if (vector? edges) (= 1 (count edges)) false)
+           (= 1 (count (get core :definitions)) (count (get core :recur-targets)))
+           (loop [families [:recursion-components :lexical-bindings :declared-alias-table :mutations
+                            :var-references :recur-transfers :loop-bindings :keyword-lookups :control-flow
+                            :error-handlers :error-transfers :match-branch-records :match-pattern-records
+                            :match-decision-skeletons]]
+             (if (= 0 (count families)) true
+               (if (= [] (get core (first families))) (recur (rest families)) false)))
+           (loop [remaining nodes]
+             (if (= 0 (count remaining)) true
+               (let [node (first remaining) attrs (get node :attributes)]
+                 (if (if (map? node) (map? attrs) false)
+                   (if (if (string? (get node :node-id)) (= 71 (count (get node :node-id))) false)
+                     (if (if (vector? (get node :children)) (<= (count (get node :children)) 4) false)
+                       (recur (rest remaining)) false) false) false))))])
+      (let [members (if (= 8 (count nodes)) 1 2) c (+ 1 (* 2 members))
+            operator (get nodes 0) collection (get nodes c) key-node (get nodes (+ c 1))
+            call-node (get nodes (+ c 2)) function (get nodes (+ c 3)) definition (get nodes (+ c 4))
+            record (get records 0) call (get calls 0) edge (get edges 0)
+            signature (get (get function :attributes) :signature)
+            binding (sh08-ft-binding-by-id bindings (get call :operator-binding-id))]
+        (if (sh08-ft-all-true?
+              [(= [:reference :collection-literal :literal :call :fn :def]
+                  [(get operator :core-form) (get collection :core-form) (get key-node :core-form)
+                   (get call-node :core-form) (get function :core-form) (get definition :core-form)])
+               (= :map (get (get collection :attributes) :literal-kind))
+               (= (* 2 members) (get (get collection :attributes) :element-count))
+               (= :keyword (get (get key-node :attributes) :literal-kind))
+               (keyword? (get (get key-node :attributes) :value))
+               (= [] (get operator :children) (get key-node :children))
+               (= 5 (count (get operator :attributes)))
+               (= :core (get (get operator :attributes) :binding-class))
+               (contains? '#{get gravity.core/get} (get (get operator :attributes) :symbol))
+               (= 3 (count (get collection :attributes)))
+               (= 2 (count (get key-node :attributes)))
+               (= 5 (count (get call-node :attributes)))
+               (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                   :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+                  (get call-node :attributes))
+               (= 6 (count (get function :attributes)))
+               (= 4 (count (get definition :attributes)))
+               (= 6 (count signature)) (= 8 (count (get signature :return)))
+               (= :sh07-atomic-function-signature-v1 (get signature :rule-version))
+               (= :sh07-atomic-function-declaration-map-v1 (get signature :mapping-rule-version))
+               (= :gravity.type/keyword (get (get signature :return) :type-id))
+               (= 'Keyword (get (get signature :return) :type-symbol))
+               (= [] (get signature :parameters) (get signature :parameter-source-child-indexes)
+                  (get record :parameter-binding-ids) (get (get function :attributes) :parameters))
+               (= 0 (get record :fixed-arity) (get (get function :attributes) :fixed-arity))
+               (= :private (get (get definition :attributes) :visibility))
+               (symbol? (get (get definition :attributes) :name))
+               (= signature (get record :signature))
+               (= (get (get definition :attributes) :name) (get record :definition-name))
+               (= (get function :node-id) (get record :function-core-node-id))
+               (= (get definition :node-id) (get record :definition-core-node-id))
+               (= (get call-node :node-id) (get record :body-core-node-id) (get call :core-node-id) (get edge :call-core-node-id))
+               (= [(get call-node :node-id)] (get function :children))
+               (= [(get function :node-id)] (get definition :children))
+               (= [(get definition :node-id)] (get core :root-core-node-ids))
+               (= [(get operator :node-id) (get collection :node-id) (get key-node :node-id)] (get call-node :children))
+               (= [(get collection :node-id) (get key-node :node-id)] (get call :argument-node-ids))
+               (= (get operator :node-id) (get call :operator-node-id))
+               (= (get call :operator-binding-id) (get (get operator :attributes) :binding-id) (get edge :callee-binding-id))
+               (= :nonlocal-or-nonfunction (get edge :classification))
+               (= nil (get edge :callee-function-core-node-id) (get edge :callee-function-syntax-id))
+               (if (vector? (get binding :profile-set)) (<= (count (get binding :profile-set)) 16) false)
+               (if (vector? (get binding :target-set)) (<= (count (get binding :target-set)) 16) false)])
+          (if (sh08-mg-binding? binding module)
+            (if (sh08-vf-map-literal-pairs? nodes collection members)
+              (contains? (get (get collection :attributes) :source-value) (get (get key-node :attributes) :value)) false) false)
+          false)) false) false)))
+
 (defn sh08-vf-data-failure [reason required completed]
   {:status :rejected :reason reason :work-count required :completed-work-count completed})
 
