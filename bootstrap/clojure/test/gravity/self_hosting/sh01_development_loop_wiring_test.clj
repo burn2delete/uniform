@@ -1063,6 +1063,46 @@
                      (do (reset! observed-arguments ["-Xss256k" "-Dfixture.private=not-for-receipts"])
                          ((resolve-wiring 'base-runtime-identities) root {})))))))))))
 
+(deftest unidentified-child-launch-never-reuses-production-results
+  (with-coordination-root [base]
+    (let [external-deps (.resolve base "external-user-deps.edn")
+          options {:cache-directory (str (.resolve base "cache"))
+                   :broker-root (str (.resolve base "broker"))}
+          selected-context (wiring/prepare-context "." options)
+          plan (impact-plan 'gravity.self-hosting.sh01-unidentified-child-test)
+          job (first (:shards plan))
+          calls (atom 0)
+          operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+      (is (= "SH01-DEVELOPMENT-LOOP-CONTEXT"
+             (:id (exception-data
+                   #(wiring/validate-context!
+                     (assoc selected-context :test-only? true) "." {})))))
+      (spit (str external-deps) "{:aliases {:test {:jvm-opts [\"-Xss256k\"]}}}")
+      (let [first-request (wiring/cache-request selected-context plan job {})
+            first-result (wiring/run-unit!
+                          selected-context (assoc job :development-cache-request first-request)
+                          operation)]
+        ;; Neither a parent JVM identity nor a whole-repository snapshot binds
+        ;; this external child-launch input. Do not pretend that it does.
+        (spit (str external-deps) "{:aliases {:test {:jvm-opts [\"-Xss16m\"]}}}")
+        (let [second-request (wiring/cache-request selected-context plan job {})
+              second-result (wiring/run-unit!
+                             selected-context (assoc job :development-cache-request second-request)
+                             operation)]
+          (is (= first-request second-request))
+          (is (true? (get-in first-request [:test-policy :freshness-required?])))
+          (is (= 2 @calls))
+          (is (= "DEV-TEST-CACHE-INELIGIBLE"
+                 (:id (exception-data #(cache/cache-key second-request)))))
+          (doseq [result [first-result second-result]]
+            (is (= :passed (:status result)))
+            (is (false? (:cache-hit? result)))
+            (is (true? (get-in result [:cache-receipt :producer-executed?])))
+            (is (false? (get-in result [:cache-receipt :cacheable?])))
+            (is (false? (get-in result [:cache-receipt :stored?])))
+            (is (= :freshness-required-test (get-in result [:cache-receipt :reason]))))
+          (is (nil? (:result (cache/lookup! second-request)))))))))
+
 (deftest injected-context-must-match-current-root-and-command
   (with-coordination-root [base]
     (let [selected-context (context base)

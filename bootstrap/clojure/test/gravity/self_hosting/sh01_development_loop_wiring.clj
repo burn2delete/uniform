@@ -758,6 +758,7 @@
                    (:broker-root context)
                    (:launch-count context)
                    (:cache-receipts context)
+                   (or (not (:test-only? context)) custom-operation?)
                    (or (:revalidate-snapshot? context)
                        (and (:test-only? context) custom-operation?)))
       (fail! "SH01-DEVELOPMENT-LOOP-CONTEXT"
@@ -766,7 +767,7 @@
     context))
 
 (defn- policy-for-job
-  [plan job options timeout-ms]
+  [context plan job options timeout-ms]
   (let [jobs (or (:batch-jobs job) [job])
         policies (mapv :test-policy jobs)
         reviewed-policy
@@ -799,7 +800,13 @@
                           (:proof? options)
                           (some :proof? jobs)))
      :freshness-required?
-     (boolean (or (:freshness-required? reviewed-policy)
+     ;; The Clojure launcher can consume external deps, alias JVM options and
+     ;; environment configuration not identified by the parent JVM snapshot.
+     ;; Production execution therefore cannot reuse results yet. The existing
+     ;; test-only context exercises injected unit producers, not child-launch
+     ;; admission; the production CLI has no override for this restriction.
+     (boolean (or (not (:test-only? context))
+                  (:freshness-required? reviewed-policy)
                   (:freshness-required? options)
                   (:fresh? options)
                   (some :freshness-required? jobs)))
@@ -1087,7 +1094,7 @@
   (let [full-repository-identity
         (get-in context [:snapshot :repository-identity])
         timeout-ms (:timeout-ms context)
-        policy (policy-for-job plan job options timeout-ms)
+        policy (policy-for-job context plan job options timeout-ms)
         explicit-material
         (when (and (= :non-authoritative (:authority policy))
                    (:deterministic? policy)
