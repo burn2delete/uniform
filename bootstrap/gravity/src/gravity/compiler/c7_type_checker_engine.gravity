@@ -3139,7 +3139,7 @@
   ; retains whole original row families, including unread metadata. Payment
   ; does not establish a parameter type, source match, or numeric proof.
   (if (if (integer? budget) (>= budget 0) false)
-    (let [prefix 512 control 85124 reserved (+ prefix control)]
+    (let [prefix 512 control 83069 reserved (+ prefix control)]
       (if (> prefix budget)
         {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
         (if (if (map? core) (if (<= (count core) 1024)

@@ -21922,7 +21922,7 @@
         accepted (run core exact) short (run core (dec exact))
         getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
         original @getter touches (atom 0)]
-    (is (= [85124 0 0] (get-in worksheet [:DATA-entry-model :fee-polynomial])))
+    (is (= [83069 0 0] (get-in worksheet [:DATA-entry-model :fee-polynomial])))
     (is (= [:entry-original-data-payment-complete exact exact]
            ((juxt :status :work-count :completed-work-count) accepted)))
     (is (= (get-in expected [:physical :B]) (:physical-DATA-work accepted)))
@@ -21935,7 +21935,7 @@
     (with-redefs-fn {getter (fn [plan value key]
                              (when (identical? core value) (swap! touches inc))
                              (original plan value key))}
-      #(doseq [budget [0 511 (+ 512 85123)]]
+      #(doseq [budget [0 511 (+ 512 83068)]]
          (is (= :compact-gis-entry-work-limit (:reason (run core budget))))
          (is (zero? @touches))))
     (let [callbacks (atom [])
@@ -21974,7 +21974,7 @@
         accepted (observed exact) repeated (observed exact) short (observed (dec exact))
         reserved (:surrounding worksheet)]
     (is (= [60373 0 0] (get-in worksheet [:surrounding-model :fee-polynomial])))
-    (is (= [85124 0 0] (get-in worksheet [:DATA-entry-model :fee-polynomial])))
+    (is (= [83069 0 0] (get-in worksheet [:DATA-entry-model :fee-polynomial])))
     (is (every? true? (map <= (:dispatch-control-polynomial (gis3-complete-data-control-work-model)) [4096 256])))
     (is (true? (get-in worksheet [:semantic-model :legacy-child-new-construction-payment-established])))
     (is (= #{} (get-in worksheet [:semantic-model :separately-paid-legacy-children])))
