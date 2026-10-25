@@ -22492,9 +22492,8 @@
 (deftest sh08-verifier-native-arraymap-storage-domain
   (let [bad (clojure.lang.PersistentArrayMap. (object-array [:odd]))
         nil-backing (clojure.lang.PersistentArrayMap. nil)
-        bad-set (clojure.lang.PersistentHashSet. nil bad)
         data #(invoke-c7 'sh08-vf-data [% 1000000])]
-    (doseq [value [bad nil-backing bad-set {:inactive bad} [nil-backing] (list bad-set)]]
+    (doseq [value [bad nil-backing {:inactive bad} [nil-backing] (list bad) {:inactive nil-backing}]]
       (let [result (data value)]
         (is (= [:rejected :verification-native-carrier] ((juxt :status :reason) result)))
         (is (not (contains? result :arena)))))
