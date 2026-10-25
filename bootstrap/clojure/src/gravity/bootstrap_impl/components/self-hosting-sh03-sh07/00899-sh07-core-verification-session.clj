@@ -132,35 +132,34 @@
                  :reason :source-read-failed})}))))]
     (sh07-core-source-artifact source-path source-text)))
 
+(declare compiler-c5-resolution-source-artifact)
+
 (defn sh07-public-core-file-artifact
   "Builds the authenticated SH-07 core artifact through the strict public
   source boundary. The Clojure bootstrap still owns byte loading, UTF-8
-  decoding, plan execution, digest resolution, and final artifact assembly."
-  [source-path]
-  (sh07-core-source-artifact
-   source-path
-   (try
-     (read-gravity-source-text source-path)
-     (catch clojure.lang.ExceptionInfo ex
-       (throw ex))
-     (catch Exception _
-       (throw
-        (ex-info
-         "SH-07 could not read the requested public source"
-         {:artifact :gravity/sh07-core-diagnostic
-          :rule "C6-VERIFY"
-          :severity :error
-          :stage :core-lowering
-          :syntax-id nil
-          :form-id nil
-          :core-node-id nil
-          :source-span {:source source-path}
-          :generated-origin-chain []
-          :lowering-rule :sh07-b46-public-routing
-          :facts {:reason :source-read-failed
-                  :fail-closed true}
-          :remediation
-          "Provide a readable .gravity or .qst source file through the declared public source boundary."}))))))
+  decoding, plan execution, digest resolution, and final artifact assembly.
+  {:reader :development-current} selects the unadmitted current reader."
+  ([source-path] (sh07-public-core-file-artifact source-path {}))
+  ([source-path options]
+   (when-not (or (= {} options) (= {:reader :development-current} options))
+     (throw (ex-info "SH-07 source options must be {} or {:reader :development-current}"
+                     {:id "SH07-API-OPTIONS" :stage :read-source :severity :error})))
+   (let [text (try (read-gravity-source-text source-path)
+                  (catch clojure.lang.ExceptionInfo ex (throw ex))
+                  (catch Exception _
+                    (throw (ex-info "SH-07 could not read the requested public source"
+                            {:artifact :gravity/sh07-core-diagnostic :rule "C6-VERIFY" :severity :error
+                             :stage :core-lowering :syntax-id nil :form-id nil :core-node-id nil
+                             :source-span {:source source-path} :generated-origin-chain []
+                             :lowering-rule :sh07-b46-public-routing
+                             :facts {:reason :source-read-failed :fail-closed true}
+                             :remediation "Provide a readable .gravity or .qst source file through the declared public source boundary."}))))]
+     (if (= {} options)
+       (sh07-core-source-artifact source-path text)
+       (let [reader-path (sh03-reader-resolve-source-path)
+             resolved (compiler-c5-resolution-source-artifact source-path text
+                        {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader-path)]
+         (sh07-core-from-resolution-artifact resolved))))))
 
 (defn sh07-core-artifact-identity-input
   [artifact]

@@ -159,11 +159,10 @@
 
 (deftest sh07-b46-public-command-is-registered-and-current-source-owned
   (let [bootstrap-source
-        (slurp (path "bootstrap/clojure/src/gravity/bootstrap.clj"))
+        (slurp (path "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00942-print-diagnostic.clj"))
         launcher-source (slurp (path "bin/gravity"))]
     (is (str/includes? bootstrap-source
-                       (str "\"sh07-core\" (prn "
-                            "(sh07-public-core-file-artifact path))"))
+                       "(prn (sh07-public-core-file-artifact path options))")
         "The Clojure bootstrap CLI must expose the strict SH-07 route.")
     (is (str/includes? launcher-source
                        "gravity sh07-core <file.qst|file.gravity>")

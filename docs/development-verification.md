@@ -109,6 +109,48 @@ drift. This does not renew migration authority. Run the existing intake check:
 clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh03-reader-adapter-test --exact sh03-current-source-c3-intake-retains-the-original-reader-revision
 ```
 
+The public SH-07 command also exposes this explicit development selection:
+
+```bash
+bin/gravity sh07-core /absolute/canonical/path/module.gravity --development-current-reader
+bin/gravity sh07-core /absolute/canonical/path/module.qst --development-current-reader
+```
+
+The flag must follow the single target path. Unknown options, duplicate flags
+and extra paths fail with `SH07-CLI-ARGS` before target reading. The public
+`gravity.bootstrap/sh07-public-core-file-artifact` API accepts either its
+existing one-argument call or a second options map: exactly `{}` or
+`{:reader :development-current}`. Other options fail with `SH07-API-OPTIONS`
+before target reading. The development route resolves the repository reader
+internally; callers cannot supply a reader path or an admission override.
+Omitting the flag, or passing `{}`, retains the historical pinned route and
+its fail-closed drift diagnostics; there is no automatic fallback.
+
+Both modes retain strict extension and UTF-8 checks. The public decoder reads
+the target once. The current reader and macro boundaries still authenticate
+the target through their existing before/after freshness snapshots, including
+regular-file, ownership and path checks. Supply the canonical physical target
+path: a lexical symlink alias such as `/tmp` on macOS can fail the existing C4
+source-authentication comparison. After genuine authenticated C5 construction,
+C6 consumes its retained source without rereading the target. The focused test
+`development-public-api-retains-the-single-target-snapshot` removes its own
+target at that boundary and requires an accepted Core product.
+
+The explicit CLI flag or API option selects development mode. The result is
+the original Core artifact, with its stored proof and provenance unchanged.
+Inspect the actual reader revision already retained at
+`[:sh06-resolution-artifact :sh05-macro-artifact :gravity-macro-boundary
+:authenticated-sh04-artifact :c2-reader-artifact :sh03-reader-authentication
+:reader-source-revision]`. No extra provenance marker or wrapper is added.
+The unchanged fresh generic verifier must accept the genuine Core product and
+reject a coherently rehashed Core substitution. That verification does not
+renew reader migration authority. Core acceptance leaves C7-C10 pending and
+does not establish SH-07 completion, migration, native execution or self-hosting. Use the exact
+tests in `gravity.self-hosting.sh07-public-development-ingress-test` for the
+closed options, paired source-policy and retained-input boundaries. Changes to
+this public transport also require actual paired command products and rejected
+Core input checks; parser-only parity is insufficient.
+
 When debugging a shared parser or plan-loading error, the existing
 `--fail-fast` option stops after the first failed test var, avoiding the same
 load-error stack from every selected var. It does not stop within a test var,
