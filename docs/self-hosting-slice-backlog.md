@@ -9605,6 +9605,41 @@ An empty eligible queue yields. Refill only the useful lane after a concrete
 dependency event through the coordinator, without a join-all barrier or an
 invented feature to keep a manager busy.
 
+The standing finite-goal charters for all eight implementation managers make
+three the active-work limit, not a lifetime task limit. Within their exclusive
+families, managers notify ROOT of each confirmed gap/contract/path/interface,
+checks, dependencies and stop criteria before writing, then self-pull eligible
+work in the same active turn. An immutable review candidate does not block
+disjoint eligible work in safe isolation. Before yielding, send COMPLETED plus
+NEXT_EXECUTING, or NEED_REFILL with exhausted independent alternatives, exact
+as-of-main blockers and next triggers after one bounded readiness pass. ROOT
+retains shared allocation, independent acceptance and integration; no daemon,
+filler inventory or new cadence follows. Existing completion wakeups and the
+hourly all-eight fallback keep their schedule and preferences.
+
+At `0067e9418de992900a95cd47d016029af62ff99c`, Core completed the allocated
+actual API trace and self-pulled the selected-owner seed-plan map/test, then
+this corresponding C01 evidence/queue update in the same turn. The
+[C01 result and exact plan table](self-hosting-sh07-completion-plan.md#c01-selected-owner-seed-plan-use-map-at-0067e941)
+and [EDN map](artifacts/phase-15/reports/sh07-c01-selected-owner-use-map-v1.edn)
+join all six selected seed plans to 12668 emitted builtin-call occurrences,
+with original definition spans/body paths and actual plan/function identities.
+The reader's 231-function closure and 44 excluded functions remain explicit;
+potential compiled use does not mean every function was invoked. Rule DATA,
+emitter freshness and the complete 2146-resource seed content identity are
+bound separately. Runtime primitive accepted/rejected case joins, actual
+reachability, Core products and external migration identities remain open.
+One normal 2GiB/120s-watchdog batch passed 13 tests/40 assertions in
+11730.156792 ms (new 2/17, boundary 6/11, LOC 5/12). Missing/duplicate input,
+changed source and forged identity/unknown-instruction record checks reject;
+they are not compiler source-rejection or build evidence. The parent namespace
+preflight failure remains failed in the plan's raw-evidence record. Core's
+four-path candidate is being frozen for independent review while its next
+confirmed in-goal item is assessed; no C01/C-task, native or migration credit,
+administrative-only PR or global gate follows. Earlier queue snapshots below
+retain their original revision scope; they are not a current refresh of every
+manager's work.
+
 The current 2026-10-24 accounting base is inspected remote main
 `c4b1d19da11def44f835d552e44d06488d31fe46`, tree
 `a4145adf64c5c7d4ebc558c605f07d27f784cac5`. Earlier `64aa890a` queue/adoption
