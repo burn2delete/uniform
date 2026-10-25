@@ -1,12 +1,11 @@
 (ns gravity.self-hosting.sh07-c11-mir-source-preflight-test
-  "Bounded, source-only C11 MIR preflight.
+  "Source-only C11 MIR preflight without project input quotas.
 
-  The three fixed selectors share one authenticated source snapshot.  The
-  preflight deliberately stops at reader data: it does not invoke compiler,
-  artifact, or authority code.  A bounded lexical delimiter pass runs before
-  the host reader; subsequent structural walks are iterative and have
-  explicit limits.  This prevents stack growth in the supported lexical
-  cases, while the host reader remains a separate bounded parsing step."
+  Structural selectors share one source snapshot; historical admission pins
+  remain a separate binding check. The preflight stops at reader data and
+  does not invoke compiler or artifact code. Lexical delimiter validation
+  precedes the host reader, and structural walks are iterative. Host reader,
+  stack and heap limits remain implementation boundaries."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]))
