@@ -199,10 +199,8 @@
       false)
     false))
 
-(defn c15-reader-span-valid? [span physical?]
-  (if (sh15-exact-keys? span (if physical? #{:source :start :end :byte-start :byte-end}
-                                         #{:start :end :byte-start :byte-end}))
-    (if (if physical?
+(defn c15-reader-span-fields-valid? [span physical?]
+  (if (if physical?
           (if (string? (get span :source)) (<= 1 (count (get span :source))) false)
           true)
       (let [start (get span :start) end (get span :end)]
@@ -215,13 +213,26 @@
               false)
             false)
           false))
+      false))
+
+(defn c15-reader-span-valid? [span physical?]
+  (if (sh15-exact-keys? span (if physical? #{:source :start :end :byte-start :byte-end}
+                                         #{:start :end :byte-start :byte-end}))
+    (c15-reader-span-fields-valid? span physical?)
+    false))
+
+(defn c15-public-reader-span-valid? [span]
+  (if (sh15-exact-keys? span #{:file :source :start :end :byte-start :byte-end})
+    (if (sh15-sha256-shape? (get span :file))
+      (c15-reader-span-fields-valid? span true)
       false)
     false))
 
 (defn c15-span-valid? [span related?]
   (if (sh15-source-span-valid? span) true
     (if (c15-reader-span-valid? span true) true
-      (if related? (c15-reader-span-valid? span false) false))))
+      (if (c15-public-reader-span-valid? span) true
+        (if related? (c15-reader-span-valid? span false) false)))))
 
 (defn c15-primary-valid? [primary stage]
   (if (sh15-exact-keys? primary #{:span :syntax-id :artifact})
@@ -243,6 +254,15 @@
       false)
     false))
 
+(defn c15-public-source-origin-valid? [value]
+  (if (sh15-exact-keys? value #{:kind :source-id :path})
+    (if (= :source (get value :kind))
+      (if (sh15-sha256-shape? (get value :source-id))
+        (if (string? (get value :path)) (<= 1 (count (get value :path))) false)
+        false)
+      false)
+    false))
+
 (defn c15-origin-valid? [value]
   (if (sh15-exact-keys? value #{:kind :logical-source-id :source-content-hash})
     (if (= :source (get value :kind))
@@ -251,7 +271,8 @@
           (sh15-sha256-shape? (get value :source-content-hash)) false)
         false)
       false)
-    (if (sh15-origin-valid? value) (= :source (get value :kind)) false)))
+    (if (c15-public-source-origin-valid? value) true
+      (if (sh15-origin-valid? value) (= :source (get value :kind)) false))))
 
 (defn c15-vector-valid? [values kind]
   (if (vector? values)
