@@ -27263,7 +27263,7 @@
                                     (assoc next-rows id [(if map-kind? :map kind) (get expanded :children) 0 kind])
                                     complete next-nodes (+ storage local)
                                     (+ comparison 1 width (if (if map-kind? true (= kind :set)) (* size size) 0))
-                                    (if (> width maximum-width) width maximum-width) scalar-sum maximum-scalar))))))
+                                    (if (> width maximum-width) width maximum-width) scalar-sum maximum-scalar)))))
                           (if (= kind :list-node)
                             (let [complete (+ required 560) head-id (count arena) tail-id (+ head-id 1)]
                               (if (> complete budget) (sh08-vf-data-failure :verification-work-limit complete required)
@@ -27282,8 +27282,8 @@
                                     complete next-nodes (+ storage scalar-work) (+ comparison scalar-work)
                                     maximum-width (+ scalar-sum scalar-work)
                                     (if (> scalar-work maximum-scalar) scalar-work maximum-scalar)))))))
-                        (sh08-vf-data-failure :verification-native-list-tail required required)))))))))))
-    (sh08-vf-data-failure :invalid-verification-work-allowance 0 0))))
+                        (sh08-vf-data-failure :verification-native-list-tail required required))))))))))))
+    (sh08-vf-data-failure :invalid-verification-work-allowance 0 0)))
 
 (defn sh08-vf-first-order-scalar-domain? [arena]
   ; Eligibility for the selected provider's artifact relation, not language
