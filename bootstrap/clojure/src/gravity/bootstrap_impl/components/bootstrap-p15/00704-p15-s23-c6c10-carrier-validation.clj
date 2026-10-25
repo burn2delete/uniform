@@ -2,13 +2,10 @@
 
 (defn p15-s23-c6c10-carrier-validation
   [source-path value]
-  (let [stats (atom {:nodes 0 :maximum-depth 0 :maximum-width 0
-                    :scalar-bytes 0 :maximum-scalar-bytes 0
-                    :maximum-integer-bits 0})
-        active (java.util.IdentityHashMap.)]
-    (loop [stack [[:visit value 0]]]
+  (let [active (java.util.IdentityHashMap.)]
+    (loop [stack [[:visit value]]]
       (when (seq stack)
-        (let [[action item depth] (peek stack) stack (pop stack)]
+        (let [[action item] (peek stack) stack (pop stack)]
           (if (= :leave action)
             (do (.remove active item) (recur stack))
             (let [{:keys [kind children]}
@@ -28,42 +25,34 @@
                                  missing)]
                            (p15-s23-c6c10-host-fail!
                             "C6-VERIFY" source-path input-missing (:subject data)))))]
-              (swap! stats update :nodes inc)
-              (swap! stats update :maximum-depth max depth)
               (if children
                 (do
                   (when (.containsKey active item)
                     (p15-s23-c6c10-host-fail!
                      "C6-VERIFY" source-path :cyclic-input-carrier {}))
                   (.put active item true)
-                  (swap! stats update :maximum-width max
-                         (if (= :map kind) (quot (count children) 2) (count children)))
-                  (recur (into (conj stack [:leave item depth])
-                               (map #(vector :visit % (inc depth)) (rseq children)))))
+                  (recur (into (conj stack [:leave item])
+                               (map #(vector :visit %) (rseq children)))))
                 (do
                   (cond
                     ;; Authenticated C2 decimal literals retain IEEE-754 values;
                     ;; the strict canonical encoder continues to reject them.
-                    (instance? Double item) nil
+                    (or (nil? item) (boolean? item) (integer? item) (ratio? item)
+                        (instance? java.math.BigDecimal item) (instance? Double item)) nil
                     (instance? Float item)
                     (p15-s23-c6c10-host-fail!
                      "C6-VERIFY" source-path :input-carrier-value-domain
                      {:class (.getName (class item))})
                     (or (keyword? item) (symbol? item))
                     (do (when-let [namespace (namespace item)]
-                          (p15-s23-c6c10-bounded-string-bytes! source-path stats namespace))
+                          (p15-s23-c6c10-require-unicode-string! source-path namespace))
                         (if-let [name (name item)]
-                          (p15-s23-c6c10-bounded-string-bytes! source-path stats name)
+                          (p15-s23-c6c10-require-unicode-string! source-path name)
                           (p15-s23-c6c10-host-fail!
                            "C6-VERIFY" source-path :input-carrier-value-domain {})))
-                    :else (p15-s23-c6c10-canonical-scalar-form source-path stats item))
+                    :else (p15-s23-c6c10-canonical-scalar-form source-path item))
                   (recur stack))))))))
-    {:status :passed
-     :observed-carrier-nodes (:nodes @stats)
-     :observed-carrier-depth (:maximum-depth @stats)
-     :observed-container-width (:maximum-width @stats)
-     :observed-scalar-bytes (:maximum-scalar-bytes @stats)
-     :observed-integer-bits (:maximum-integer-bits @stats)}))
+    {:status :passed}))
 
 (defn p15-s23-c6c10-path-neutral-value
   "Strip host IObj metadata without rewriting any semantic value.  Physical

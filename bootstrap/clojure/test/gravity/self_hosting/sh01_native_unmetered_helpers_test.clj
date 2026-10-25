@@ -35,21 +35,17 @@
   (let [deep (nth (iterate vector nil) 10000)]
     (is (= :passed (:status (check deep))))
     (is (= :passed (:status (input deep))))
-    (let [stats (atom {:nodes 0 :maximum-depth 0 :maximum-width 0
-                       :scalar-bytes 0 :maximum-scalar-bytes 0 :maximum-integer-bits 0})]
-      ;; The traversal itself does not consume one host stack frame per child.
-      (is (= :vector (first (b/p15-s23-c6c10-canonical-form* path stats 0 deep))))
-      (is (= 10000 (:maximum-depth @stats)))))
+    ;; The traversal does not consume one host stack frame per child.
+    (is (= :vector (first (b/p15-s23-c6c10-canonical-form* path deep)))))
   (is (= (check [1 2 3])
          (b/p15-s23-trusted-carrier-validation [1 2 3] :default-only 0 0 0))))
 
-(deftest native-helpers-retain-canonical-identity-and-observations
+(deftest native-helpers-retain-canonical-identity
   (let [value {:a [1 2] :b #{3 4}} result (record value)]
     (is (= [:map [[:entry [:keyword nil "a"] [:vector [[:integer "1"] [:integer "2"]]]]
                   [:entry [:keyword nil "b"] [:set [[:integer "3"] [:integer "4"]]]]]]
            (:form result)))
-    (is (= {:nodes 9 :maximum-depth 2 :maximum-width 2 :scalar-bytes 2
-            :maximum-scalar-bytes 1 :maximum-integer-bits 3} (:stats result)))
+    (is (= #{:form :text} (set (keys result))))
     (is (= (str "sha256:" (digest/sha256-hex (:text result)))
            (b/p15-s23-c6c10-canonical-digest path value)))
     (is (= (:form result) (:form (record (into (sorted-map) value)))))
@@ -203,3 +199,26 @@
                                             {:generated-origin-chain origin})
                   (catch clojure.lang.ExceptionInfo error (ex-data error)))]
     (is (= origin (:generated-origin-chain data)))))
+
+(deftest native-helpers-return-semantic-results-without-accounting
+  (let [deny (fn [& _] (throw (AssertionError. "accounting operation requested")))
+        metric-vars (map #(ns-resolve 'gravity.bootstrap %)
+                        '[utf8-byte-count p15-s23-stage2-native-carrier-header
+                          p15-s23-stage2-native-integer-magnitude-bits
+                          p15-s23-stage2-native-big-integer-magnitude-bits])
+        value {:text "λ🙂" :integer (.shiftLeft BigInteger/ONE 4096)
+               :ratio 3/4 :decimal (BigDecimal. BigInteger/ONE 65537)}]
+    (with-redefs-fn (zipmap metric-vars (repeat deny))
+      (fn []
+        (is (= {:status :passed} (check value)))
+        (is (= {:status :passed} (input value)))
+        (is (= {:status :passed}
+               (b/p15-s23-trusted-carrier-validation value :default-only (Object.) nil :unused)))
+        (is (= #{:status :reason :class}
+               (set (keys (check (Object.))))))
+        (with-redefs [clojure.core/biginteger deny]
+          (is (= {:status :passed} (input value))))
+        (is (= #{:form :text} (set (keys (record value)))))
+        (is (= {:status :passed}
+               (b/p15-s23-c6c10-validate-builder-result-canonical-carrier!
+                path {:digest-requests []})))))))

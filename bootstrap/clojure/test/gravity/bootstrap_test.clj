@@ -32178,9 +32178,6 @@
         frozen
         [[unicode
           [:string unicode]
-          {:nodes 1 :maximum-depth 0 :maximum-width 0
-           :scalar-bytes 9 :maximum-scalar-bytes 9
-           :maximum-integer-bits 0}
           "sha256:917a032bfc2835056ef3f9716a2b1fb346a67a9cdda66d5775866b4755c0db01"]
          [nested-map
           [:map
@@ -32188,35 +32185,20 @@
              [:set [[:keyword nil "y"] [:keyword nil "z"]]]]
             [:entry [:keyword nil "b"]
              [:vector [[:integer "2"] [:integer "3"]]]]]]
-          {:nodes 9 :maximum-depth 2 :maximum-width 2
-           :scalar-bytes 4 :maximum-scalar-bytes 1
-           :maximum-integer-bits 2}
           "sha256:47d0870e8d6ea4c344f3654f55c7cfef711d8039bf68a66148e025a311b8568b"]
          [nested-set
           [:set
            [[:vector [[:keyword nil "a"] [:integer "1"]]]
             [:vector [[:keyword nil "b"] [:integer "2"]]]]]
-          {:nodes 7 :maximum-depth 2 :maximum-width 2
-           :scalar-bytes 2 :maximum-scalar-bytes 1
-           :maximum-integer-bits 2}
           "sha256:6c9fff304a6ee4cc0c09447bad2635be8ce935f7b40e6300ff6396f795e660cf"]
          [3/4
           [:ratio "3" "4"]
-          {:nodes 1 :maximum-depth 0 :maximum-width 0
-           :scalar-bytes 0 :maximum-scalar-bytes 0
-           :maximum-integer-bits 3}
           "sha256:136fca634515e46d4f471a02028fa6e2ac66f0e028a018a0d7cd1d3a1ddcba22"]
          [1.25M
           [:decimal "125" 2]
-          {:nodes 1 :maximum-depth 0 :maximum-width 0
-           :scalar-bytes 0 :maximum-scalar-bytes 0
-           :maximum-integer-bits 7}
           "sha256:fea0d759927adb8d7ad9233778c6e1ed396405fdf6852e5af998595d6d31a583"]
          [1.250M
           [:decimal "1250" 3]
-          {:nodes 1 :maximum-depth 0 :maximum-width 0
-           :scalar-bytes 0 :maximum-scalar-bytes 0
-           :maximum-integer-bits 11}
           "sha256:f5249bd4eb34a6e71c29e205411b32dee4e1dada0118f0468ed0b72ee5471c99"]]]
     (doseq [value values]
       (let [record
@@ -32225,11 +32207,10 @@
         (is (= (gravity-c6c10-legacy-canonical-sort-key form)
                (bootstrap/p15-s23-c6c10-canonical-sort-key form))
             value)))
-    (doseq [[value expected-form expected-stats expected-digest] frozen]
+    (doseq [[value expected-form expected-digest] frozen]
       (let [record
             (bootstrap/p15-s23-c6c10-canonical-record source-path value)]
         (is (= expected-form (:form record)) value)
-        (is (= expected-stats (:stats record)) value)
         (is (= expected-digest
                (bootstrap/p15-s23-c6c10-canonical-digest
                 source-path value))
@@ -32247,7 +32228,7 @@
           canonical
           #(select-keys
             (bootstrap/p15-s23-c6c10-canonical-record source-path %)
-            [:form :text :stats])]
+            [:form :text])]
       (is (= (canonical array-left)
              (canonical array-right)
              (canonical tree)))

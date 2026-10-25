@@ -53,7 +53,7 @@
 
 (defn p15-s23-c6c10-canonical-identity
   [source-path value]
-  (:form (p15-s23-c6c10-canonical-form-and-stats source-path value)))
+  (p15-s23-c6c10-canonical-form* source-path value))
 
 (defn p15-s23-c6c10-unique-resolved-values!
   [source-path missing-fact values]
@@ -142,17 +142,14 @@
 
 (defn p15-s23-c6c10-validate-builder-result-canonical-carrier!
   [source-path raw-result]
-  (let [stats (atom {:nodes 0 :maximum-depth 0 :maximum-width 0
-                    :scalar-bytes 0 :maximum-scalar-bytes 0
-                    :maximum-integer-bits 0})]
-    ;; Validate native classes and cycles before looking up any result fields.
-    (p15-s23-c6c10-canonical-form* source-path stats 0 raw-result)
-    (let [requests (when (map? raw-result) (:digest-requests raw-result))]
-      (when-not (and (map? raw-result) (vector? requests))
-        (p15-s23-c6c10-host-fail!
-         "C6-VERIFY" source-path :digest-request-vector
-         {:request-count (when (vector? requests) (count requests))})))
-    @stats))
+  ;; Validate native classes and cycles before looking up any result fields.
+  (p15-s23-c6c10-canonical-form* source-path raw-result)
+  (let [requests (when (map? raw-result) (:digest-requests raw-result))]
+    (when-not (and (map? raw-result) (vector? requests))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :digest-request-vector
+       {:request-count (when (vector? requests) (count requests))})))
+  {:status :passed})
 
 (defn p15-s23-c6c10-validate-builder-result-envelope!
   [source-path raw-result]

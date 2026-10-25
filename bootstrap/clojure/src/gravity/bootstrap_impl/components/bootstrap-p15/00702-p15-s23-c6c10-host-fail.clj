@@ -75,22 +75,12 @@
           (<= 0xDC00 code 0xDFFF) false
           :else (recur (inc index)))))))
 
-(defn p15-s23-c6c10-bounded-string-bytes!
-  "Compatibility name: validates Unicode and records observations, without limits."
-  [source-path stats value]
+(defn- p15-s23-c6c10-require-unicode-string!
+  [source-path value]
   (when-not (p15-s23-c6c10-valid-unicode-string? value)
     (p15-s23-c6c10-host-fail!
      "C6-VERIFY" source-path :well-formed-unicode-scalar-string
-     {:value-kind :string}))
-  (let [byte-count (utf8-byte-count value)]
-    (swap! stats update :scalar-bytes + byte-count)
-    (swap! stats update :maximum-scalar-bytes max byte-count)))
-
-(defn p15-s23-c6c10-bounded-integer!
-  "Compatibility name: records integer magnitude without an admission limit."
-  [_source-path stats value]
-  (let [bits (.bitLength (.abs (biginteger value)))]
-    (swap! stats update :maximum-integer-bits max bits)))
+     {:value-kind :string})))
 
 (declare p15-s23-c6c10-canonical-form*)
 
@@ -138,11 +128,6 @@
                       (= \/ %))
                  value)))
 
-(defn p15-s23-c6c10-canonical-sequence
-  [source-path stats depth values]
-  (mapv #(p15-s23-c6c10-canonical-form*
-          source-path stats (inc depth) %)
-        values))
 (defn- p15-s23-c6c10-native-vector-backing?
   [value]
   (let [seen (java.util.IdentityHashMap.)]
@@ -185,7 +170,7 @@
 (defn- p15-s23-c6c10-canonical-carrier
   [source-path value]
   (let [class-name (some-> value class .getName)
-        [native-kind metadata? _ _ comparator] (p15-s23-host-carrier-header value)
+        [native-kind metadata? comparator] (p15-s23-host-carrier-header value)
         [kind allowed? missing]
         (cond
           (record? value) [nil false :record-free-canonical-value]
