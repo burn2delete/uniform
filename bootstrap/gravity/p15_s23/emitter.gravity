@@ -14659,7 +14659,7 @@
         (if (= index (count ledger))
           {:status :accepted :items items :descriptors descriptors :work-count used}
           (let [row (get ledger index)
-                producer (if (map? row) (get row :producer-rule) nil)
+                producer (if (map? row) (get row :producer-rule :ordinary-local-function-call) nil)
                 shallow (+ used 4)]
             (if (> shallow budget)
               {:status :rejected :reason :loop-type-work-limit :work-count shallow}
@@ -14749,7 +14749,7 @@
                :work-count total}))
           (let [entry (first remaining) fact (if (map? facts) (if (p15-s23-sse-ids? [entry] 1) (get facts entry) nil) entry)
                 id (if (map? fact) (get fact :call-core-node-id) nil)
-                dispatch (if (map? fact) (get fact :dispatch) nil) shallow (+ used 3)]
+                dispatch (if (map? fact) (get fact :dispatch :ordinary-local-function-call) nil) shallow (+ used 3)]
             (if (> shallow budget) {:status :rejected :reason :loop-type-work-limit :work-count shallow}
               (if (if (p15-s23-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
               (if (keyword? dispatch)
