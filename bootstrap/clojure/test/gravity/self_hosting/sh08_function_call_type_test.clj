@@ -10269,6 +10269,34 @@
     (is (zero? @row-gets))
     (is (zero? @callbacks))))
 
+(deftest sh08-gis3-view-ID-lookup-reservation-development-kernel
+  (let [{:keys [core bindings forms types target]} (gis3-original-row-input 0 0)
+        prefix-and-index 87903
+        maximum-index-size 25
+        lookup-work (* (+ 13 21 6 23 6 20 1 1 6)
+                       (+ 1 (+ 2 71) (* maximum-index-size (+ 2 71))))
+        view-reservation (+ 3472 lookup-work) required (+ prefix-and-index view-reservation)
+        run (fn [budget current-types]
+              (gis3-observe-original-view-work
+                #(invoke-c7 'sh08-gis3-source-payment [core bindings forms current-types target budget])))
+        below (run (dec required) types) exact (run required types)
+        wide-types (into types (map #(vector (keyword (str "extra-type-" %)) :gravity.type/integer)
+                                   (range (- 1024 (count types)))))
+        wide (run 1048576 wide-types)]
+    (is (= [184203 187675 275578] [lookup-work view-reservation required]))
+    (is (= [:rejected :compact-gis-view-construction-work-limit :original-view-construction required prefix-and-index]
+           ((juxt :status :reason :stage :work-count :completed-work-count) (:value below))))
+    (is (= 0 (get-in below [:observations :gets]) (get-in below [:observations :String-ID-map-gets])))
+    (is (= [:rejected :compact-gis-work-limit :original-readset 0 (+ required 8) required]
+           ((juxt :status :reason :stage :readset-ordinal :work-count :completed-work-count) (:value exact))))
+    (is (= 97 (get-in exact [:observations :String-ID-map-gets])))
+    (is (= 6887 (get-in exact [:observations :String-ID-key-characters])))
+    (is (= 1024 (count wide-types)))
+    (is (= [:rejected :compact-gis-view-construction-work-limit :original-view-construction
+            (+ prefix-and-index 3472 (* 97 (+ 1 73 (* 73 1024)))) prefix-and-index]
+           ((juxt :status :reason :stage :work-count :completed-work-count) (:value wide))))
+    (is (= 0 (get-in wide [:observations :gets]) (get-in wide [:observations :String-ID-map-gets])))))
+
 (deftest sh08-gis3-original-row-first-payment-development-kernel
   (let [{:keys [core bindings forms types target unified parameter-id]} (gis3-original-row-input 0 0)
         result (invoke-c7 'sh08-gis3-source-payment [core bindings forms types target 65536])]
@@ -20885,14 +20913,16 @@
         index-B (reduce + (map (fn [rs key]
                                 (+ 8 (* (+ 2 71) (count rs) (count rs)) (* 6 (count rs))
                                    (reduce + (map #(* 2 (count (get % key))) rs)))) rows keys))
-        declared-view-reservation 3472 charged-total (+ 64 index-B declared-view-reservation physical-B)]
+        maximum-index-size (apply max (count types) (map count rows))
+        declared-view-reservation (+ 3472 (* 97 (+ 1 (+ 2 71) (* maximum-index-size (+ 2 71)))))
+        charged-total (+ 64 index-B declared-view-reservation physical-B)]
     (is (= :converged (:convergence-status inference)))
     (is (= [] (:diagnostics inference)))
     (is (< 65536 remaining allowance))
     (is (every? (fn [[a b]] (<= (:budget b) (- (:budget a) (:work a)))) (partition 2 1 (:passes observed))))
     (is (= remaining (:remaining (first (:inference observed)))))
     (is (= :original-data-payment-complete (:status paid) (:status repeated)))
-    (is (= [68675 87839 160050] [physical-B index-B charged-total]))
+    (is (= [68675 87839 344253] [physical-B index-B charged-total]))
     (is (= charged-total (:work-count paid) (:completed-work-count paid)
                              (:work-count repeated) (:completed-work-count repeated)))
     (is (= physical (get-in paid [:selected :readsets]) (get-in repeated [:selected :readsets])))

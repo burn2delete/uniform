@@ -2960,7 +2960,7 @@
                     [:records (get core :function-records) :function-syntax-id]
                     [:bindings binding-rows :binding-id] [:forms form-rows :form-id]]]
       (if (if (map? core) (if (map? types) (if (<= (count types) 1024) (sh08-pc-id? target) false) false) false)
-        (loop [remaining tables indexes {:types types} used prefix]
+        (loop [remaining tables indexes {:types types} used prefix maximum-index-size (count types)]
           (if (= 0 (count remaining))
             ; Prepay fixed view groups separately: scalar selection64,
             ; three eight-row packets96 each, two control-child groups32,
@@ -2969,8 +2969,13 @@
             ; parameter/module/type/readset assembly256. Each bound includes
             ; its field reads, cell construction and loop bookkeeping. The
             ; complete original values still pay independent DATA B below.
-            (let [selection-work (+ 64 (* 3 96) (* 2 32) 96 (* 23 80) (* 3 48) (* 5 80) 256
-                                    (* 16 (count (get core :nodes))))
+            ; At most 97 Native ID map lookups: initial13, packets21,
+            ; control6, sources23, heads6, stages20, parameter1, body1,
+            ; and types6. Each pays dispatch1, String hash W73 and at
+            ; most M canonical W73 collision comparisons. M includes types.
+            (let [id-lookup-work (* 97 (+ 1 73 (* 73 maximum-index-size)))
+                  selection-work (+ 64 (* 3 96) (* 2 32) 96 (* 23 80) (* 3 48) (* 5 80) 256
+                                    (* 16 (count (get core :nodes))) id-lookup-work)
                   reserved (+ used selection-work)]
               (if (> reserved limit)
                 {:status :rejected :reason :compact-gis-view-construction-work-limit
@@ -2994,7 +2999,8 @@
             (let [part (first remaining) result (sh08-gis3-index (get part 1) (get part 2) (- limit used))
                   work (+ used (get result :work-count))]
               (if (= :accepted (get result :status))
-                (recur (rest remaining) (assoc indexes (get part 0) (get result :index)) work)
+                (recur (rest remaining) (assoc indexes (get part 0) (get result :index)) work
+                       (if (> (count (get result :index)) maximum-index-size) (count (get result :index)) maximum-index-size))
                 {:status :rejected :reason (get result :reason) :stage :original-index
                  :table (get part 0) :work-count work :completed-work-count (+ used (get result :completed-work-count))}))))
         {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix}))))
