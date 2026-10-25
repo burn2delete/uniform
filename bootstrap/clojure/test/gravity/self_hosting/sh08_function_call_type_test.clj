@@ -441,6 +441,37 @@
       (is (= {:status :rejected :reason reason} (check value))))
     (is (empty? @callbacks))))
 
+(deftest sh08-verification-receipt-physical-checks-development-kernel
+  ;; This validates receipt DATA and its complete catalog, not B47 authority.
+  (let [catalog (invoke-c7 'sh08-ft-b47-check-catalog [])
+        checks (zipmap catalog (repeat true))
+        id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        receipt {:status :passed :checks checks :failed-checks []
+                 :receipt-context :gravity/sh07-b47-verification-v16
+                 :opaque-provenance-binding-id id :verification-digest id}
+        valid? #(invoke-c7 'sh08-ft-verification-receipt-valid? [(assoc receipt :checks %)])
+        all-true? #(invoke-c7 'sh08-ft-all-checks-true? [%])
+        entries (mapcat identity checks)
+        duplicate (clojure.lang.PersistentArrayMap. (object-array (concat entries entries)))
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "check rendering")))
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "check hashing"))))
+        foreign (proxy [clojure.lang.APersistentMap] []
+                  (count [] (swap! callbacks conj :count) (throw (AssertionError. "check count")))
+                  (seq [] (swap! callbacks conj :seq) (throw (AssertionError. "check seq"))))]
+    (doseq [value [checks (into (sorted-map) checks)]]
+      (is (true? (all-true? value)))
+      (is (true? (valid? value))))
+    (doseq [value ["checks" nil [] (list true) {} duplicate
+                   (assoc checks (first catalog) false)
+                   (dissoc checks (first catalog)) (assoc checks :forged true)
+                   (sorted-map "string-key" true) {:unused opaque} foreign
+                   (with-meta checks {:unused opaque})]]
+      (is (false? (valid? value))))
+    (is (false? (all-true? duplicate)))
+    (is (empty? @callbacks))))
+
 (deftest sh08-atomic-signature-inference-development-kernel
   ;; Execute the current Gravity inference algorithm with normalized records;
   ;; this does not substitute for authenticated B47/C7 composition.
