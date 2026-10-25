@@ -116,7 +116,7 @@
                   (throw error))))
         analysis (:resolved-analysis run)
         projections (sh06-resolution-product-projections analysis)
-        plan-binding (dissoc binding :plan :source-text :input-key)
+        plan-binding (dissoc binding :plan :source-text :input-key :reader-invocation)
         boundary-base
         (cond-> {:slice :SH-06
          :owner :gravity-source

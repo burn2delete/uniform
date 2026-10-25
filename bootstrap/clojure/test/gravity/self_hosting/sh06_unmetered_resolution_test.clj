@@ -182,11 +182,13 @@
         paired (.getCanonicalPath
                  (io/file "bootstrap/clojure/fixtures/self-hosting/sh-06/current-cohort-unmetered.qst"))
         reader (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        invocation {:reader-source-path b/sh03-reader-source-relative-path
+                    :authenticated-envelope-options {:source :development-current}}
         artifact (b/compiler-c5-resolution-source-artifact
                    fixture (slurp fixture :encoding "UTF-8")
-                   {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader)
-        report (b/sh06-resolution-artifact-verification artifact)
-        serialized (b/sh06-resolution-serialize artifact)
+                   {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader invocation)
+        report (b/sh06-resolution-artifact-verification artifact :gravity.bootstrap/legacy invocation)
+        serialized (b/sh06-resolution-serialize artifact invocation)
         changed (update-in artifact [:binding-table :bindings 0 :name] (constantly 'forged))]
     (is (= (slurp fixture :encoding "UTF-8") (slurp paired :encoding "UTF-8")))
     (is (= :accepted (:status artifact)))
@@ -202,8 +204,10 @@
     (is (= :development-unadmitted
            (get-in artifact [:gravity-resolution-boundary :authenticated-envelope :source-rule :admission-status])))
     (is (= 1 (get-in artifact [:gravity-resolution-boundary :authenticated-envelope :schema-version])))
-    (is (= artifact (b/sh06-resolution-deserialize serialized)))
-    (is (= :failed (:status (b/sh06-resolution-artifact-verification changed))))
+    (is (not (contains? (get-in artifact [:gravity-resolution-boundary :plan-binding]) :reader-invocation)))
+    (is (= artifact (b/sh06-resolution-deserialize serialized invocation)))
+    (is (= :failed (:status (b/sh06-resolution-artifact-verification changed :gravity.bootstrap/legacy invocation))))
+    (is (= :failed (:status (b/sh06-resolution-artifact-verification artifact))))
     (let [boundary (:gravity-resolution-boundary artifact)
           envelope (:authenticated-envelope boundary)
           default-failure
@@ -214,7 +218,7 @@
           old-hash b/p15-s23-sh02-expected-source-content-hash
           mixed (assoc-in artifact [:gravity-resolution-boundary :authenticated-envelope
                                     :source-rule :source-content-hash] old-hash)
-          mixed-report (b/sh06-resolution-artifact-verification mixed)]
+          mixed-report (b/sh06-resolution-artifact-verification mixed :gravity.bootstrap/legacy invocation)]
       (is (= "B1-INPUT" (:id default-failure)))
       (is (= :pinned-sh02-source-snapshot (:missing-fact default-failure)))
       (is (not= old-hash (get-in envelope [:source-rule :source-content-hash])))

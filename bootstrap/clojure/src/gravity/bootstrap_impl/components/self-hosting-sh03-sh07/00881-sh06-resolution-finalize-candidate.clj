@@ -103,7 +103,19 @@
               "C5-UNRESOLVED" source-path :selected-current-reader-parent
               (select-keys retained identity-keys) {:reason :current-reader-parent-revision-mismatch}))
            (sh06-resolution-binding-current! source-path plan-binding)
-           artifact))))))
+           artifact)))))
+  ([source-path sh05-artifact module-inputs reader-source-path invocation]
+   (sh06-resolution-with-reader-invocation
+    source-path invocation
+    (fn []
+      (when (and (some? invocation)
+                 (not (and (string? reader-source-path)
+                           (= (.getCanonicalPath (java.io.File. reader-source-path))
+                              (.getCanonicalPath (java.io.File. (:reader-source-path invocation)))))))
+        (sh06-resolution-boundary-fail! "C5-UNRESOLVED" source-path
+          :selected-current-reader-invocation {} {:reason :reader-invocation-source-mismatch}))
+      (sh06-resolution-artifact-from-sh05-artifact
+       source-path sh05-artifact module-inputs reader-source-path)))))
 
 (defn sh06-resolution-file-artifact
   ([source-path]
@@ -119,7 +131,7 @@
   (pr-str artifact))
 
 (defn sh06-resolution-serialize
-  [artifact]
+  ([artifact]
   (let [report (sh06-resolution-artifact-verification artifact)]
     (when-not (= :passed (:status report))
       (sh06-resolution-boundary-fail!
@@ -148,3 +160,7 @@
            :contained-resolution-serialization-resource
            {:contained-host-error (.getName (class error))}
            {:resource-failure? true}))))))
+  ([artifact invocation]
+   (sh06-resolution-with-reader-invocation
+    (or (get-in artifact [:provenance :source-path]) "<sh06-resolution-serialize>") invocation
+    #(sh06-resolution-serialize artifact))))

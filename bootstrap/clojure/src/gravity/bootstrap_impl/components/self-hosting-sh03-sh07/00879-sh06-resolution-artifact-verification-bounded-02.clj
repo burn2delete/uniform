@@ -13,7 +13,7 @@
         sh05-artifact (:sh05-macro-artifact artifact)
         sh05-report
         (try
-          (sh05-macro-artifact-verification sh05-artifact)
+          (sh06-resolution-verify-sh05 sh05-artifact)
           (catch Throwable _ {:status :failed}))
         binding
         (try
@@ -22,7 +22,7 @@
             (sh06-resolution-context-plan-binding! source-path context))
           (catch Throwable _ nil))
         expected-plan-binding
-        (when binding (dissoc binding :plan :source-text :input-key))
+        (when binding (dissoc binding :plan :source-text :input-key :reader-invocation))
         replay
         (when (and binding (= :passed (:status sh05-report)))
           (try

@@ -1,6 +1,6 @@
 
 (defn sh06-resolution-deserialize
-  [serialized]
+  ([serialized]
   (let [_
         (when-not (or (string? serialized)
                       (= (class serialized) (Class/forName "[B")))
@@ -38,6 +38,10 @@
        :verified-resolution-artifact-after-deserialization
        (:failed-checks report) {}))
     artifact))
+  ([serialized invocation]
+   (sh06-resolution-with-reader-invocation
+    "<sh06-resolution-deserialize>" invocation
+    #(sh06-resolution-deserialize serialized))))
 (defn sh06-resolution-module-input-views!
   [source-path inputs]
   (when-not (and (map? inputs) (= #{:artifact :schema-version :module-artifacts} (set (keys inputs)))

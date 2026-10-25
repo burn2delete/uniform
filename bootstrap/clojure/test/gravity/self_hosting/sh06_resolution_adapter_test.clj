@@ -226,8 +226,8 @@
         failure (fn [operation]
                   (try (operation) {:unexpected-success true}
                        (catch clojure.lang.ExceptionInfo error (ex-data error))))]
-    (is (= [2 3 4] (mapv count (:arglists (meta #'bootstrap/compiler-c5-resolution-source-artifact)))))
-    (is (= [1 2 3 4] (mapv count (:arglists (meta #'bootstrap/sh06-resolution-artifact-from-sh05-artifact)))))
+    (is (= [2 3 4 5] (mapv count (:arglists (meta #'bootstrap/compiler-c5-resolution-source-artifact)))))
+    (is (= [1 2 3 4 5] (mapv count (:arglists (meta #'bootstrap/sh06-resolution-artifact-from-sh05-artifact)))))
     ;; This current cohort differs from the historical default reader pin.
     (is (= "C2-HASH" (:id (failure #(bootstrap/compiler-c5-resolution-source-artifact
                                     source (slurp source))))))

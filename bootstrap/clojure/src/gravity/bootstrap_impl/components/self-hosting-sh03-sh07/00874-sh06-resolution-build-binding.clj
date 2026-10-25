@@ -62,7 +62,7 @@
 (defn- sh06-resolution-binding-current! [source-path binding]
   (when-not (= (:input-key binding) (sh06-resolution-current-source-key))
     (sh06-resolution-boundary-fail! "C5-UNRESOLVED" source-path
-      :resolution-source-or-toolchain-drift (dissoc binding :plan :source-text) {}))
+      :resolution-source-or-toolchain-drift (dissoc binding :plan :source-text :reader-invocation) {}))
   binding)
 
 (defn sh06-resolution-current-binding!
@@ -126,3 +126,25 @@
   (if (= :development-unadmitted (:revision-status binding))
     {:source :development-current}
     {}))
+
+(declare ^:private sh03-reader-authenticated-envelope-options)
+
+(defn- sh06-resolution-reader-invocation []
+  (:reader-invocation *sh06-resolution-operation-binding*))
+
+(defn- sh06-resolution-with-reader-invocation [source-path invocation operation]
+  (when (some? invocation)
+    (sh03-reader-authenticated-envelope-options source-path invocation))
+  (let [current (sh06-resolution-current-binding! source-path)]
+    (binding [*sh06-resolution-operation-binding* (assoc current :reader-invocation invocation)]
+      (operation))))
+
+(defn- sh06-resolution-verify-sh05 [artifact]
+  (if-let [invocation (sh06-resolution-reader-invocation)]
+    (sh05-macro-artifact-verification artifact invocation)
+    (sh05-macro-artifact-verification artifact)))
+
+(defn- sh06-resolution-validate-c3! [source-path artifact]
+  (if-let [invocation (sh06-resolution-reader-invocation)]
+    (c3-syntax-validate! source-path artifact invocation)
+    (c3-syntax-validate! source-path artifact)))

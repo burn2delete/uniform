@@ -170,7 +170,8 @@
      :source-content-hash (:source-content-hash plan-binding)
      :plan-semantic-hash (:plan-semantic-hash plan-binding)
      :functions-semantic-hash
-     (:functions-semantic-hash plan-binding)}
+     (:functions-semantic-hash plan-binding)
+     :reader-invocation (sh06-resolution-reader-invocation)}
     artifact
     #(sh06-resolution-artifact-verification-contained artifact false))]
       (sh06-resolution-binding-current! source-path plan-binding)
@@ -196,10 +197,19 @@
          :resolution-plan-authority-id
          (:resolution-plan-authority-id validation)
          :external-binding-authority-id
-         (:external-binding-authority-id validation)}
+         (:external-binding-authority-id validation)
+         :reader-invocation (sh06-resolution-reader-invocation)}
         artifact
         #(sh06-resolution-artifact-verification-contained
-          artifact false context))))))
+          artifact false context)))))
+  ([artifact context invocation]
+   (if (nil? context)
+     (sh06-resolution-artifact-verification artifact context)
+     (sh06-resolution-with-reader-invocation
+      (or (get-in artifact [:provenance :source-path]) "<sh06-verification>") invocation
+      #(if (= ::legacy context)
+         (sh06-resolution-artifact-verification artifact)
+         (sh06-resolution-artifact-verification artifact context))))))
 
 (defn- sh06-resolution-capability-based-proof-for-construction
   ([artifact]
