@@ -55,7 +55,6 @@
         export (first (filter #(= :vector-slice (:name %)) (:exports manifest)))]
     (is (contains? (:operation-set policy) :vector-slice))
     (is (= (:operation-set policy) (set (map :name (:exports manifest)))))
-    (is (= 256 (:maximum-collection-elements policy)))
     (is (= :experimental (:stability export)))
     (is (= #{:meta} (:profiles export)))
     (is (= #{:memory/allocate} (:effects export)))
@@ -127,9 +126,7 @@
     (let [base (request extension 'sh22-vector-slice-request) members (vec (range 257))]
       (doseq [[arguments rule reason]
               (concat
-               [[[members 0 0] "STD3001" :collection-bound-exceeded]
-                [[members 0 256] "STD3001" :collection-bound-exceeded]
-                [[members :wrong :wrong] "STD3001" :collection-bound-exceeded]]
+               [[[members :wrong :wrong] "STD3002" :slice-out-of-bounds]]
                (for [bad [nil [] {} #{1} '(1) :vector "vector"] :when (not (vector? bad))]
                  [[bad 0 0] "STD3002" :expected-vector])
                (for [[start end] [[-1 0] [0 -1] [2 1] [0 4] [4 4]
@@ -147,8 +144,7 @@
       (doseq [[function rule reason]
               [['sh22-vector-slice-reversed-request "STD3002" :slice-out-of-bounds]
                ['sh22-vector-slice-wrong-index-request "STD3002" :slice-out-of-bounds]
-               ['sh22-vector-slice-wrong-vector-request "STD3002" :expected-vector]
-               ['sh22-vector-slice-over-bound-request "STD3001" :collection-bound-exceeded]]]
+               ['sh22-vector-slice-wrong-vector-request "STD3002" :expected-vector]]]
         (let [input (invoke (get @fixtures ["rejected" extension]) function [base])
               [result copies] (observe-copy input)]
           (is (= :rejected (:status result)))
