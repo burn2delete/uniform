@@ -81,14 +81,19 @@ they do not create competing schedulers or standalone worker threads.
 
 Matt authorizes routine in-scope best judgment on implementation details,
 local commits, proportionate tests, dependency/conflict fixes and queue
-priorities without discretionary escalation to Matt. Managers act inside
-their exact cap-three allocations; cross-slice/interface/ownership decisions
-go to ROOT, which alone routes independent acceptance and integrates main.
-Permission-only/proposal-only/await-human labels are superseded for ordinary
-authorized work; name actual technical, correctness, provenance, ownership,
-review or resource blockers. Do not blindly execute held attempts or replay
-consumed runs. Resource/control changes need evidence, the actual owner,
-validation and independent review, not blanket limit removal. Platform/tool
+priorities without discretionary escalation to Matt. Managers independently
+discover, prioritize and execute work inside their standing ownership.
+ROOT coordinates actual conflicting ownership, incompatible contracts and
+main integration, and routes independent acceptance. No fixed queue/task-count
+cap, one-attempt grant, method-preparation-only stage, stop-after-ticket rule
+or repeated discretionary pre-run approval applies to ordinary development.
+These process restrictions are removed, not renamed or replaced. Historical
+permission-only/proposal-only/await-human labels create no current ordinary
+work hold. Preserve failed/interrupted/skipped evidence without converting it
+to success or treating a never-launched attempt as a consumed proof.
+Machine/resource safeguards and semantic work bounds retain their actual
+contracts; changes require evidence and correctness validation, with
+independent acceptance before integration. Platform/tool
 restrictions, mandatory action-time approvals, destructive/security-sensitive
 actions, new external commitments and unrelated scope retain their limits;
 never approve an unknown pending action or bypass a restriction. Adoption
@@ -106,7 +111,8 @@ any implementation file:
 | SOURCE | `01a13b8d-509d-7771-b618-06a24933391b` | C14 affected C7 composition; existing C7/effects/emitter/tests and L5/STD3 reservations remain intact. Frozen candidate, diagnostic-method and compact-design work have distinct outcomes below. |
 | Cohort | `01a02f9c-2e5a-7d70-ba6d-d3519701b13f` | C16 current-cohort evidence/invalidation matrix. |
 
-Each manager queue has at most three concrete items. An item names the actual
+Managers curate concrete work without a fixed queue-size or task-count cap.
+An item names the actual
 gap, owning contracts, exact allocated paths/tests/fixtures, input/output,
 prerequisites, accepted/rejected checks, completion and stop conditions. Use
 `executing`, `resource-queued`, `dependency-blocked`, `awaiting-review`,
@@ -118,7 +124,7 @@ ownership still routes through ROOT.
 Do not invent a compiler feature to demonstrate management migration.
 
 ROOT's standing finite-goal charters apply to all eight implementation
-managers. Three limits active work, not the total number of tasks. Managers
+managers. Managers
 independently audit the repository, contracts, evidence and tests to discover,
 prioritize and execute dependency-ready work inside their exclusive families.
 Send ROOT the gap, contract, exact paths/interfaces, checks, dependencies and
@@ -137,13 +143,15 @@ The queue snapshot below reconciles allocated work at `c4b1d19d`; it is not
 proof of sustained throughput or a compiler completion score. All ten
 ordinary-autonomy recipients have adopted the instruction. Advisory adoption
 is complete; its later platform flag has no exposed operation details.
+Older queue/process observations retain historical scope; they cannot revive
+the removed caps, attempt grants or ordinary method/approval staging above.
 
 | Manager | Finite current queue / state | Dependency event or stop |
 | --- | --- | --- |
 | Core | PR304 integrated the selected-owner plan/use map. The next C01 candidate joins existing runtime cases and newly confirmed missing source-arity cases; the separate two-slot helper freeze remains with ROOT for review/integration. | Preserve isolated candidates and self-pull confirmed in-goal gaps. The new case joins do not close source value domains, reachability or Core products; no administrative-only PR/count credit. |
 | Construction | Frozen `1af5fd81`/`39ad9017`, `awaiting-integration`, with independent CODE and EVIDENCE acceptance: two existing `bootstrap-p15/00581` adapters plus new `sh01_typed_lowering_work_policy_test.clj`, based on `c4b1d19d`. | Preserve legacy fresh-verifier callee/two arguments for old arities; explicit-options arities alone use the policy-aware fresh callee/three arguments. Preserve exact evidence scopes below; no schema, wrapper, cache or local/default-cap change. |
 | Cohort | Six-owner invalidation matrix returned after two disjoint read-only inspections; `queue-empty`. | The planning deliverable is complete; C16 remains OPEN. Refill only for an actual selected cohort/evidence gap, not a new stamp. |
-| SOURCE | Frozen `f3073c24` has independently accepted focused code/evidence but failed whole-default composition. The allocated producer-only diagnostic returned accepted at N=1048576; compact architecture finalization continues. | Preserve the failed whole run and producer-only boundary. The next Effects local-fit method is preparation only, with no GO; no held GIS run. Original-request transport availability is not compact implementation/fit evidence. |
+| SOURCE | Frozen `f3073c24` has independently accepted focused code/evidence but failed whole-default composition. The allocated producer-only diagnostic returned accepted at N=1048576; compact architecture finalization continues. | Preserve the failed whole run and producer-only boundary. The historical unrun Effects-method proposal is not a current preparation-only or approval hold. Ordinary owned method implementation/checks proceed under actual machine safeguards; transport availability is not compact implementation/fit evidence. |
 | MIR producer `01a16a55-1b44-7551-b595-6caceceef034` | Inferred-Integer producer edge, `dependency-blocked`. | Actual reader `(- codepoint 48)` yields Integer; the existing I64 bridge does not establish its mode/range/source facts. Needs SOURCE's real boundary, not another arithmetic demonstration. |
 | Diagnostics `01a16a55-1b07-7202-b7ce-fd71fc0103c2` | Nested generated-origin edge, `dependency-blocked`. | Needs an explicit representation at the true producer edge; no current client is invented. |
 | Optimization `01a16a55-1b07-7202-b7ce-fda9f821c3ed` | `queue-empty`; no eligible implementation item. | No demonstrated defect in a new supported actual case. ROOT may refill only from a real required producer/consumer gap. |
@@ -153,16 +161,17 @@ is complete; its later platform flag has no exposed operation details.
 The later MIR, optimization and diagnostics managers own compiler C11, C13 and
 C15 work respectively; those document IDs are not SH07-C11, SH07-C13 or
 SH07-C15 task assignments. All existing source/test/interface reservations and
-held attempts survive this plan. Managers may use bounded disjoint
+historical attempt outcomes survive this plan. Managers may use bounded disjoint
 `gpt-6.1-sol` subagents at medium or higher effort within their allocations;
 they gain neither extra host capacity nor self-acceptance authority.
 
 Ordinary checks share two normal broker leases and one memory-heavy lease;
 exclusive checks hold all slots. Use the existing trusted broker coordination
 root and canonical heavy lock where applicable. Queue when capacity is
-unavailable rather than launching another JVM. Exact heavy/native/bootstrap/
-proof/performance controls and consumed grants remain applicable. Held GIS/H6
-execution is not resumed by this accounting. Compact representation,
+unavailable rather than launching another JVM. Actual heavy/native/bootstrap/
+proof/performance resource safeguards and scope boundaries remain applicable;
+historical grants are not ordinary-development attempt budgets. GIS/H6 claims
+retain their concrete technical/provenance requirements. Compact representation,
 validation, fees, identity/version fences and affected independent review
 remain technical obligations, not a discretionary human-approval label.
 Publication of a design discussion is not implementation/fit evidence.
@@ -286,8 +295,11 @@ and the frozen candidate remained clean. Raw evidence is at
 `6cb021a30b1a3f998cf838c483690696288e820f2b757327b982c188f7265697`.
 This supplies no separate fresh C7 verifier, C8, assembly or runtime result.
 The producer-only classification has independent acceptance; the earlier
-whole-default failure remains FAILED. SOURCE's next Effects 180s local-fit
-question is method preparation only, with no execution GO.
+whole-default failure remains FAILED. At that historical snapshot the next
+Effects 180s local-fit proposal had not executed. Its old preparation-only/
+no-GO process status is superseded: ordinary method implementation and checks
+need no per-run approval, while actual resource bounds, correctness and
+ownership still apply. This does not invent a later execution result.
 
 The existing three-argument body-effects route already carries the original
 request at `binding.digest-resolution.preimage.request`; the detached
