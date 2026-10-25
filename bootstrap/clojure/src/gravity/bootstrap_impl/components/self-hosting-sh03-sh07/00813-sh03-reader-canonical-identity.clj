@@ -1,33 +1,10 @@
 (declare ^:private p15-s23-c6c10-digest-validated-form)
-(declare sh03-reader-maximum-source-bytes)
 
-(defn sh03-reader-canonical-identity
-  [source-path value]
-  (binding [p15-s23-c6c10-max-carrier-nodes
-            sh03-reader-canonical-maximum-nodes
-            p15-s23-c6c10-max-carrier-depth
-            sh03-reader-canonical-maximum-depth
-            p15-s23-c6c10-max-container-width
-            sh03-reader-canonical-maximum-width
-            p15-s23-c6c10-max-scalar-bytes
-            sh03-reader-canonical-maximum-scalar-bytes
-            p15-s23-c6c10-max-total-scalar-bytes
-            sh03-reader-canonical-maximum-total-scalar-bytes]
-    (p15-s23-c6c10-canonical-identity source-path value)))
+(defn sh03-reader-canonical-identity [source-path value]
+  (p15-s23-c6c10-canonical-identity source-path value))
 
-(defn sh03-reader-canonical-digest
-  [source-path value]
-  (binding [p15-s23-c6c10-max-carrier-nodes
-            sh03-reader-canonical-maximum-nodes
-            p15-s23-c6c10-max-carrier-depth
-            sh03-reader-canonical-maximum-depth
-            p15-s23-c6c10-max-container-width
-            sh03-reader-canonical-maximum-width
-            p15-s23-c6c10-max-scalar-bytes
-            sh03-reader-canonical-maximum-scalar-bytes
-            p15-s23-c6c10-max-total-scalar-bytes
-            sh03-reader-canonical-maximum-total-scalar-bytes]
-    (sh03-reader-canonical-stream-digest source-path value)))
+(defn sh03-reader-canonical-digest [source-path value]
+  (sh03-reader-canonical-stream-digest source-path value))
 
 (defn- sh03-reader-resolve-digest-request-sequence!
   [source-path raw-result source-bytes]
@@ -153,10 +130,6 @@
       (source-path-policy-fail! source-path source-bytes)
       (catch clojure.lang.ExceptionInfo ex
         (c2-reader-remap-exception! source-path ex))))
-  (when (> (alength source-bytes) sh03-reader-maximum-source-bytes)
-    (sh03-reader-boundary-fail!
-     source-path :bounded-sh03-reader-source-bytes
-     (alength source-bytes) {:maximum-source-bytes sh03-reader-maximum-source-bytes}))
   (let [binding (if (nil? reader-source-path) (sh03-reader-current-binding! source-path)
                  (sh03-reader-current-binding! source-path reader-source-path))
         plan (:plan binding)

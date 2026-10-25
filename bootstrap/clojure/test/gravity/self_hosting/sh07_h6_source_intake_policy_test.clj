@@ -55,7 +55,7 @@
         (let [error (failure #(source! changed))]
           (is (= "SH07-B51-00945-GOVERNED-READ" (:id error)))
           (is (= :origin-source-binding (:reason error)))
-          (is (= #{:ordinal :path :field :owner-id :limit} (set (keys (:details error)))))
+          (is (= #{:ordinal :path :field :owner-id} (set (keys (:details error)))))
           (is (nil? (get-in error [:details :path]))))))))
 
 (deftest retained-entry-rejects-nonplain-carriers-before-realization-or-hash
@@ -72,61 +72,37 @@
                                                (assoc-in [2 :blob-bytes 0] byte))))]
         (is (= :origin-shape-bound (:reason error)))
         (is (= [:blob-bytes] (get-in error [:details :field])))))
-    (let [hash-calls (atom 0) too-wide (vec (repeat 16777217 32))]
-      (with-redefs-fn {(private-var 'sha256-bytes-hex)
-                      (fn [_] (swap! hash-calls inc) (throw (ex-info "hash reached" {})))}
-        #(let [error (failure (fn [] (source! (-> args
-                                                                (assoc-in [1 :byte-count] 16777217)
-                                                                (assoc-in [2 :blob-bytes] too-wide)))))]
-           (is (= {:name :max-source-entry-bytes :maximum 16777216 :observed 16777217}
-                  (get-in error [:details :limit])))))
-      (is (zero? @hash-calls)))))
+))
 
-(deftest retained-path-byte-bound-and-proof-projection-only
+(deftest retained-long-path-and-proof-projection-only
   (let [path (apply str (repeat 2048 "\u00e9")) args (entry path "a")]
     (is (= path (:source-path (source! args))))
-    (is (= :origin-source-binding
-           (:reason (failure #(source! (entry (str path "x") "a")))))))
+    (is (= (str path "x") (:source-path (source! (entry (str path "x") "a"))))))
   ;; Tree-chain/schema/OID admission belongs to the complete owning H6 gate.
   (is (= "a" (:source-text (source! (assoc-in (entry "a") [2 :tree-chain] :unvalidated))))))
 
-(deftest retained-entry-exact-byte-cap-is-independent-of-plan-nodes
-  (let [text (String. (char-array 16777216 \space))
-        args (entry text) result (source! args)]
-    (is (= 16777216 (:source-byte-count result)))
-    (is (= text (:source-text result)))
-    (is (nil? (lexical! text)))))
 
 (defn- flat-source [n] (str "[" (apply str (repeat n "0 ")) "]"))
 (defn- nested-source [n middle]
   (str (apply str (repeat n "[")) middle (apply str (repeat n "]"))))
 
-(deftest lexical-exact-depth-width-and-cumulative-node-reservations
-  (is (nil? (lexical! (nested-source 512 ""))))
-  (is (nil? (lexical! (flat-source 131072))))
-  (let [exact (str "[" (flat-source 131071) (flat-source 131071)
-                   (flat-source 131070) (flat-source 131070) "]")]
-    (is (> (count exact) 524288))
-    (is (nil? (lexical! exact)))
-    (is (= :max-plan-nodes
-           (get-in (failure #(lexical! (str (subs exact 0 (dec (count exact))) " 0]")))
-                   [:details :limit :name])))))
+(deftest lexical-and-parsed-inputs-have-no-project-capacity-quota
+  (is (nil? (lexical! (nested-source 513 "0"))))
+  (is (nil? (lexical! (flat-source 131073))))
+  (is (nil? (forms! [(vec (repeat 131073 0))])))
+  (let [shared {:a [1 2]}]
+    (is (nil? (forms! [shared shared (with-meta 'x {:doc "retained"})]))))
+  (doseq [value [(Object.) (with-meta 'x {:bad (Object.)})]]
+    (is (= :origin-reader-contract (:reason (failure #(forms! [value])))))))
 
-(deftest lexical-bound-failures-precede-the-host-reader
-  (let [calls (atom 0)]
-    (with-redefs-fn {(private-var 'read-source-form-records)
-                    (fn [& _] (swap! calls inc) (throw (ex-info "host reader reached" {})))}
-      #(doseq [[limit text]
-                [[:max-plan-depth (nested-source 513 "")]
-                 [:max-plan-depth (nested-source 512 "0")]
-                 [:max-plan-depth (str (apply str (repeat 513 "'")) "x")]
-                 [:max-plan-width (flat-source 131073)]
-                 [:max-plan-nodes (str "[" (apply str (repeat 5 (flat-source 110000))) "]")]
-                 [:max-plan-nodes (str "[" (apply str (repeat 5 (str "[" (apply str (repeat 40000 "'x ")) "]"))) "]")]]]
-         (let [error (failure (fn [] (intake! (entry text))))]
-           (is (= :origin-reader-contract (:reason error)))
-           (is (= limit (get-in error [:details :limit :name]))))))
-    (is (zero? @calls))))
+(deftest parsed-native-cycle-is-rejected-without-an-alias-discount
+  (let [backing (object-array 2)
+        cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 0 :self)
+    (aset backing 1 cyclic)
+    (is (= :origin-reader-contract (:reason (failure #(forms! [cyclic])))))))
+
+
 
 (deftest seed-dispatch-rejections-precede-host-expansion
   (let [calls (atom 0)]
@@ -140,38 +116,8 @@
   (is (nil? (lexical! "#{1 2} #'name #_discarded 0")))
   (is (nil? (lexical! "[\"` ::x\" \\`]"))))
 
-(deftest parsed-carrier-exact-and-over-bound-controls
-  (let [wide (vec (repeat 131072 0))
-        exact [wide wide wide (vec (repeat 131067 0))]]
-    (is (nil? (forms! exact)))
-    (is (= :max-plan-nodes
-           (get-in (failure #(forms! (update exact 3 conj 0))) [:details :limit :name])))
-    (is (= :max-plan-width
-           (get-in (failure #(forms! [(conj wide 0)])) [:details :limit :name]))))
-  (let [nested (reduce (fn [v _] [v]) [] (range 511))]
-    (is (nil? (forms! [nested])))
-    (is (= :max-plan-depth
-           (get-in (failure #(forms! [[nested]])) [:details :limit :name]))))
-  (is (= :origin-reader-contract (:reason (failure #(forms! [(Object.)])))))
-  (is (= :origin-reader-contract
-         (:reason (failure #(forms! [(with-meta 'x {:untrusted (Object.)})]))))))
 
-(deftest parsed-expansion-check-runs-after-host-parsing
-  (let [calls (atom 0) args (entry "'x")]
-    (with-redefs-fn {(private-var 'read-source-form-records)
-                    (fn [& _] (swap! calls inc) [{:form (vec (repeat 131073 0))}])}
-      #(is (= :max-plan-width
-              (get-in (failure (fn [] (intake! args))) [:details :limit :name]))))
-    (is (= 1 @calls))))
 
-(deftest map-entry-width-agrees-with-owning-carrier-policy
-  (let [exact (into {} (map (fn [i] [i i]) (range 131072)))
-        over (assoc exact 131072 131072)]
-    (is (nil? (forms! [exact])))
-    (is (nil? (lexical! (pr-str exact))))
-    (doseq [operation [#(forms! [over]) #(lexical! (pr-str over))]]
-      (is (= {:name :max-plan-width :maximum 131072 :observed 131073}
-             (get-in (failure operation) [:details :limit]))))))
 
 (deftest fresh-intake-preserves-host-records-and-denies-ambient-readers
   (let [args (entry "; comment\n(def x '[a \"b\\\"c\" \\] #{1 2}])\n")

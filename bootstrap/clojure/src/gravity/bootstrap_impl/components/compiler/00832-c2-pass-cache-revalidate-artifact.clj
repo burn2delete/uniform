@@ -122,8 +122,7 @@
   hit/miss evidence.  A validated hit does not execute the target reader.  This
   local cache has no release, proof, equivalence, or self-hosting authority."
   [path cache-base]
-  (let [snapshot (c2-pass-cache/bounded-source-snapshot!
-                  path sh03-reader-maximum-source-bytes)
+  (let [snapshot (c2-pass-cache/source-snapshot! path)
         current-binding (c2-pass-cache-current-binding! path)
         {:keys [key source-text source-unit]}
         (c2-pass-cache-key-context! path snapshot current-binding)

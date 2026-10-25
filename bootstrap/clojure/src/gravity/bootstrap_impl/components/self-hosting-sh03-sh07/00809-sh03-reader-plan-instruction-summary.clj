@@ -11,10 +11,6 @@
          builtins #{}
          observed-nodes 0
          observed-depth 0]
-    (when (> observed-nodes sh03-reader-plan-maximum-nodes)
-      (sh03-reader-boundary-fail!
-       source-path :bounded-sh03-reader-plan-instructions
-       observed-nodes {:maximum-nodes sh03-reader-plan-maximum-nodes}))
     (if (empty? pending)
       {:instruction-summary summary
        :builtin-functions builtins

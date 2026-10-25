@@ -33,22 +33,13 @@
 (def sh03-reader-expected-builtin-functions-hash
   "sha256:03394c173b55bcb279070adc77d0494ee334c42505d814593f46109000dc1400")
 
-(declare sh03-reader-canonical-maximum-scalar-bytes
-         sh03-reader-canonical-maximum-total-scalar-bytes)
+(declare sh03-reader-read-target-source-bytes!)
 
 (def sh03-reader-source-relative-path
   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
 (def sh03-reader-entrypoint 'sh03-read-source-unit)
 (def sh03-reader-verifier 'sh03-verify-reader-result)
 (def sh03-reader-function-prefix "sh03-")
-(def sh03-reader-plan-maximum-nodes 524288)
-(def sh03-reader-plan-maximum-depth 512)
-(def sh03-reader-plan-maximum-width 131072)
-(def sh03-reader-result-maximum-nodes 268435456)
-(def sh03-reader-result-maximum-depth 2048)
-(def sh03-reader-result-maximum-width 4194304)
-(def sh03-reader-input-maximum-identity-utf8-bytes 4096)
-(def sh03-reader-input-maximum-identity-code-units 1024)
 
 (def sh03-reader-plan-keys
   #{:kind :compiler-artifact-plan? :entrypoint :source :compiler :module
@@ -186,8 +177,7 @@
        source-path {:cause-message (.getMessage error)}))))
 
 (defn- sh03-reader-read-selected-source-bytes! [request-source selected-path]
-  (when-not (and (string? selected-path)
-                 (<= (.length ^String selected-path) sh03-reader-input-maximum-identity-code-units))
+  (when-not (string? selected-path)
     (sh03-reader-boundary-fail! request-source :selected-current-sh03-reader-source
                                nil {:required-source sh03-reader-source-relative-path}))
   (try
@@ -195,7 +185,7 @@
                  (.getCanonicalPath (java.io.File. selected-path)))
       (sh03-reader-boundary-fail! request-source :selected-current-sh03-reader-source
                                  nil {:required-source sh03-reader-source-relative-path}))
-    (let [snapshot (c2-pass-cache/bounded-source-snapshot! selected-path 1048576)]
+    (let [snapshot (c2-pass-cache/source-snapshot! selected-path)]
       {:source-path (:canonical-path snapshot) :bytes (:bytes snapshot)
        :source-byte-count (:byte-count snapshot) :source-content-hash (:bytes-hash snapshot)})
     (catch clojure.lang.ExceptionInfo error
