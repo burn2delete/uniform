@@ -3558,6 +3558,54 @@
            :numeric-proof-established false}
           {:status :rejected :reason :compact-gis-entry-Integer-required})) established)))
 
+(defn sh08-gis3-entry-semantic-work [n d]
+  ; Source-derived, nonnegative reservation for entry-unify and all of its
+  ; semantic/construction helpers. N bounds every original row family; D
+  ; covers two full original comparison trees plus fixed wrappers.
+  (+ 1447890550853 (* 461000422 d) (* 6 d d)
+     (* 165939723363 n) (* 307336352 n d) (* 4 n d d)
+     (* 299401 n n) (* 4 n n d) (* 2 n n n)))
+
+(defn sh08-gis3-cold-entry [core binding-rows form-rows target budget]
+  ; Fresh owning payment path. No caller-supplied census/index/validation
+  ; object is accepted. The complete DATA walk, indexes and semantic work
+  ; are separate cumulative debits. This establishes no GIS numeric proof.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [prefix 512 control 60373 reserved (+ prefix control)]
+      (if (> prefix budget)
+        {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
+        (if (> reserved budget)
+          {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count prefix}
+          (if (sh08-pc-id? target)
+            (let [data (sh08-gis3-entry-original-data core binding-rows form-rows (- budget reserved))
+                  data-work (+ reserved (get data :work-count))]
+              (if (= :entry-original-data-payment-complete (get data :status))
+                (let [rows (get data :rows)
+                      indexed (sh08-gis3-entry-indexes rows (- budget data-work))
+                      used (+ data-work (get indexed :work-count))]
+                  (if (= :entry-indexes-complete (get indexed :status))
+                    (let [n (loop [i 0 maximum 1]
+                              (if (= i 17) maximum
+                                (let [size (count (get rows i))]
+                                  (recur (+ i 1) (if (> size maximum) size maximum)))))
+                          d (+ 64 (* 2 (get data :comparison-bound-work)))
+                          semantic (sh08-gis3-entry-semantic-work n d)
+                          required (+ used semantic)]
+                      (if (> required budget)
+                        {:status :rejected :reason :compact-gis-entry-work-limit :stage :entry-semantic
+                         :work-count required :completed-work-count used}
+                        (let [result (sh08-gis3-entry-unify core (get indexed :indexes) target)]
+                          (assoc result :work-count required :completed-work-count required
+                            :surrounding-work reserved :original-DATA-work (get data :work-count)
+                            :fresh-index-work (get indexed :work-count) :semantic-work semantic
+                            :fresh-indexes (get indexed :indexes) :all-DATA-control-fees-closed false))))
+                    {:status :rejected :reason (get indexed :reason) :stage :entry-original-index
+                     :work-count used :completed-work-count (+ data-work (get indexed :completed-work-count))}))
+                {:status :rejected :reason (get data :reason) :stage :entry-original-DATA
+                 :work-count data-work :completed-work-count (+ reserved (get data :completed-work-count))}))
+            {:status :rejected :reason :compact-gis-source-id-required :work-count reserved :completed-work-count reserved}))))
+    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.
   (if (vector? ids) (<= (count ids) 1024) false))
