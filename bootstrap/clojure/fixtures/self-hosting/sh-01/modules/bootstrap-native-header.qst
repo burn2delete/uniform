@@ -1,0 +1,16 @@
+(ns gravity.bootstrap.native-header-fixture
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [observe kind-of wrong-arity])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn observe [value]
+  (bootstrap-native-carrier-header value))
+
+(defn kind-of [value]
+  (get (bootstrap-native-carrier-header value) 0))
+
+(defn wrong-arity []
+  (bootstrap-native-carrier-header))

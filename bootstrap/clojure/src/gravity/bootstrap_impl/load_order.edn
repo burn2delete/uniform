@@ -886,6 +886,7 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00587-p15-s23-stage2-runtime-executor-rule-record.clj", :reader-line 87122, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-executor-rule-record"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00587-p15-s23-stage2-runtime-executor-rule-record-02.clj", :reader-line 87349, :owner :bootstrap-p15, :first-form "p15-s23-stage2-compiler-artifact-plan-context?"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00588-p15-s23-stage2-runtime-invoke-builtin.clj", :reader-line 87302, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-invoke-builtin"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00588-p15-s23-stage2-native-carrier-header.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-native-integer-magnitude-bits"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00944-p15-s23-sh07-runtime-internal-builtins.clj", :reader-line 87520, :owner :bootstrap-p15, :first-form "p15-s23-sh07-runtime-invoke-compiler-internal-builtin"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00944-p15-s23-sh07-runtime-internal-builtins-02.clj", :reader-line 87757, :owner :bootstrap-p15, :first-form "p15-s23-sh07-runtime-invoke-compiler-internal-builtin"}
  {:resource "gravity/bootstrap_impl/components/foundation/00589-p15s23stage2runtimerecursignal.clj", :reader-line 87522, :owner :foundation, :first-form "P15S23Stage2RuntimeRecurSignal"}
@@ -1451,7 +1452,7 @@
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00852-sh04-syntax-resolve-template.clj", :reader-line 148752, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-resolve-template!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00853-sh04-syntax-reader-binding.clj", :reader-line 148881, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-reader-binding"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00854-sh04-syntax-rich-object.clj", :reader-line 149113, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-rich-object"}
- {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00855-sh04-syntax-resolved-result.clj", :reader-line 149268, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-resolved-result!"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00855-sh04-syntax-resolved-result.clj", :reader-line 149268, :owner :self-hosting-sh03-sh07, :first-form "sh04-syntax-build-from-fresh-c2!"}
  {:resource "gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj", :reader-line 149479, :owner :compiler, :first-form "compiler-c3-syntax-source-artifact"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj", :reader-line 149628, :owner :self-hosting-sh03-sh07, :first-form "sh05-macro-source-relative-path"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00858-sh05-macro-execute.clj", :reader-line 149846, :owner :self-hosting-sh03-sh07, :first-form "sh05-macro-execute!"}

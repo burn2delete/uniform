@@ -1,0 +1,12 @@
+; Verbatim helper from checked_core.gravity; this fixture is a separate subject.
+(ns self-hosting.sh07.compiler-exact-keys
+  (:profile :meta) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports []))
+
+(defn sh07-exact-keys? [value expected]
+  (if (map? value)
+    (if (= (count value) (count expected))
+      (= (set (keys value)) expected)
+      false)
+    false))

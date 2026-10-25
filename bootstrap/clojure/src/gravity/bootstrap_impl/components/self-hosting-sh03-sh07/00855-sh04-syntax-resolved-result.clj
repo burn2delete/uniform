@@ -1,10 +1,8 @@
 
 
-(defn sh04-syntax-resolved-result!
-  [source-path c2-artifact]
-  (let [integrity-report
-        (c3-validate-c2-reader-artifact! source-path c2-artifact)
-        binding (sh04-syntax-current-binding! source-path)
+(defn- sh04-syntax-build-from-fresh-c2!
+  [source-path c2-artifact integrity-report]
+  (let [binding (sh04-syntax-current-binding! source-path)
         source-unit (:source-unit-record c2-artifact)
         semantic-source-id
         (sh04-syntax-semantic-source-id source-path source-unit)
@@ -210,3 +208,8 @@
      :reader-source-revision reader-source-revision
      :reader-authentication-provenance
      reader-authentication-provenance}))
+
+(defn sh04-syntax-resolved-result!
+  [source-path c2-artifact]
+  (let [integrity-report (c3-validate-c2-reader-artifact! source-path c2-artifact)]
+    (sh04-syntax-build-from-fresh-c2! source-path c2-artifact integrity-report)))

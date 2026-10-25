@@ -8,6 +8,9 @@ Earlier `64aa890a` handoff observations below keep their historical scope.
 The C01 seed-plan supplement below is based on `0067e9418de992900a95cd47d016029af62ff99c`;
 it does not refresh unrelated queue or compiler evidence snapshots.
 Its primitive-case supplement is based on `80881ba6fdc9548d181bf358fa0d033ae4298a22`.
+Its instruction-position supplement records execution on local composition
+`e4dd1a1505618ec032634e54a5d9a119b21070ff`, based on main `d42f23b2` plus
+the separately frozen case and process-removal changes.
 This updates management of the existing work, not compiler support or admission.
 
 Historical assessment date: 2026-10-21.
@@ -501,7 +504,7 @@ selectors; its locators are not current passing results.
 
 | Task / status | Manager | Current code/evidence and next concrete closure obligation | Stop or rejection criterion |
 | --- | --- | --- | --- |
-| C01 OPEN | Core | The selected-owner EDN map joins actual seed plans to 12668 builtin-call occurrences across six sources, with 44 reader functions excluded explicitly. Runtime cases now cover finite normal values at every observed builtin arity; source value-domain joins, actual invocation reachability, generated/Core products and migration identities remain open. | Use exact source/plan/dependency identities and original body paths, not an allowlist or count. Matching an arity is not proof of an actual source argument's domain or execution of every retained function; C01 remains open. |
+| C01 OPEN | Core | The EDN positions all 61087 selected seed instructions, including 12668 builtin calls, across six sources; 44 reader functions remain outside the selected plan. Finite normal runtime cases cover every observed builtin arity. Source value-domain, binding/definition, actual invocation, generated/Core-product and migration joins remain open. | Structural body/plan paths are not C2 identities or Core authority. Matching an arity does not prove an actual source argument's domain or execution of every retained function; C01 remains open. |
 | C02 OPEN | Core | Core literal/quote/collection lowerers and carrier/decimal/character/order tests exist. Join each selected subject's required literal and constructor variants to those real products/results. | Accept preserved kinds, inert quote and ordered constructors; reject malformed quote/constructor, unsupported executable payload and forged origin. Missing joins remain OPEN. |
 | C03 OPEN | Core; Cohort for C5 producer facts | Reference/def/var and qualified-name tests exist. Select actual executable local/namespace/import/var occurrences and their real resolver/callee artifacts. | Accept exact binding/source identity and shadowing; reject unresolved/private/substituted targets at the owning ingress. Do not fabricate a callee or host lookup. |
 | C04 OPEN | Core | `if`/`do`/`let` owner tests cover exclusive branches and sequential scope. Match selected empty/terminal/nested/transfer variants to actual Core and source order. | Accept false/nil truthiness and once-only ordered children; reject malformed arity/bindings and reorder/drop/duplicate mutations. No unselected destructuring feature is added. |
@@ -678,6 +681,322 @@ hash and the post-run unchanged-worktree input-map snapshot. It does not
 mislabel that snapshot as a separately measured launch pin or these changed
 working-tree executions as clean frozen-commit runs. No source implementation,
 runtime provider, shared interface, allowance or milestone status changed.
+
+### C01 structural instruction positions at `d42f23b2`
+
+The next audit found 61087 actual selected instructions but only 16071
+individually positioned calls. The remaining 45016 instructions had counts
+without source/plan positions. The existing C01 walk now emits a compact tuple
+for every visited instruction:
+`[opcode source-expression-path plan-path source-form-kind]`. Form kind uses
+the existing hosted reader classifier; these are structural function-body
+paths, not canonical C2 IDs, token spans or a new source-authority schema.
+Rows retain worklist visitation order, not evaluation order. Actual plan child
+indexes remain explicit in each path. A symbol source occurrence can emit a
+literal instruction; the row preserves that distinction without claiming its
+definition/binding legality. Quoted payloads remain leaves and produce no
+executable child rows.
+
+One actual normal-broker 2GiB/120s-watchdog batch passed 15 tests/132 assertions:
+actual six-owner construction/joins 1/16, forged-record cases 1/13,
+quote/reference-kind controls 1/5, observed-arity runtime cases 1/75 and
+boundary/LOC 11/23. The recorded test-completion interval was 16887.307333 ms;
+it is not a CPU, RSS or whole-release performance claim. All 61087 positions
+match their actual opcode summaries and have unique source/plan paths within
+each function. Missing, duplicate and forged opcode/source/plan-position rows
+reject through the test join. These record checks are not compiler source
+rejection or source-to-Core validation.
+
+The EDN preserves all original owner fields, plan/function identities, call
+rows and earlier case evidence. Fresh construction observed the same six plan
+identities and source coordinates; earlier physical span paths remain recorded
+with their original context, while fresh construction paths and dependencies
+are separate execution evidence. The measured tracked host inputs still match;
+PR308 changed Gravity C15 source outside this selected execution, so that match
+does not assert unchanged C15 bytes or consumer behavior. The generic report
+projection no longer stamps fresh output with the old hardcoded revision;
+the execution record supplies its actual local composition and main reference.
+
+Actual raw output is
+`/tmp/sh07-c01-instruction-positions-d42f23b2-attempt2.log`, SHA256
+`9cbcb2061b144dadb88fb175e203c6f6605614a7bdcf5a05d12d868e216a6d77`.
+The EDN pins its 2156-byte output, result, fresh projection, executed test,
+scratch method and unchanged input-map snapshot. The prior stdin-method EOF
+failure remains retained as a reader failure before lease/test-body execution,
+with zero assertions; it is not a consumed proof. Current construction emitted
+real seed instructions, not a compiler binary, canonical Core, type/effect
+legality, full-reader execution or migration evidence. All C-tasks remain OPEN.
+
+### C01 selected local-call declaration joins at `af04fecc`
+
+The next source audit joined all 3403 selected local-call occurrences to the
+actual normalized declarations behind the six byte-pinned sources. Every
+observed call has the declared fixed arity. C01 previously recorded only the
+callee name and argument count; it now records the ordered `:parameters` and
+`:fixed-arity` for all 964 selected functions. The existing owning test checks
+each declaration hash, source/plan signature equality and local-call arity.
+Earlier call rows, instruction positions, plan identities, span coordinates
+and case evidence remain conserved. The fresh physical paths and dependencies
+are separate execution observations.
+
+One actual normal-broker 2GiB/120s-watchdog batch passed 16 tests/143 assertions
+on the changed worktree based at `af04fecc709ce585938f555b3d972ab80d5f5b5d`.
+The five focused tests passed 120 assertions; boundary/LOC passed 11 tests/23
+assertions. The recorded test-completion interval was 13801.49925 ms. Real
+seed plans from one matching call and too-few/too-many source calls establish
+the C01 record check's acceptance and `SH07-C01-JOIN` / `:local-call-arity`
+rejection. These are not B48 compiler-legality results. Forged declaration
+hash, fixed arity and parameter rows also reject. No compiler implementation,
+public routing or source legality was changed.
+
+The existing EDN's `:local-call-signature-evidence` pins the executed test,
+method, raw result, projection and earlier source audit. Raw batch output is
+`/tmp/sh07-c01-local-call-signatures-af04fecc-attempt2.log`, SHA256
+`33e5828cea9dbec5d09fe478da299248273668cc946364584cea96d91be0ed0c`.
+The first controller timed out at broker admission before executing tests;
+its raw output and unexecuted selector typo remain historical. The successful
+runner's copied main-reference string and count label were metadata mistakes:
+the actual main ancestor is `d42f23b22f76cd89cc1f52cc687d3f5ab224ceb8`, verified
+as its exact merge base with the execution parent; the printed count 61087 is
+instruction positions, not function signatures. Raw files remain verbatim,
+with explicit corrections in the EDN. The test result and exact execution
+parent are unaffected.
+
+These are selected seed declaration/call joins. They do not establish C5
+binding authority, C7 compatibility, argument value domains, execution of all
+functions, canonical Core products, migration or C01/C06 completion. The 44
+reader definitions outside the selected plan remain explicit; all C-tasks
+remain OPEN.
+
+### C01 full function-body requirement matrix at `6585164c`
+
+The selected-plan map could not establish what the 44 uncompiled reader
+definitions require. A separate audit read all six byte-pinned sources,
+normalized their function headers/bodies through the existing seed APIs and
+walked every function body. It found 1008 functions and 61542 structural source
+positions. The 964 selected functions account for exactly the existing 61087
+positions; the remaining 44 reader functions add 455 positions. Quote payloads
+are DATA leaves; binding names are declarations, not evaluated initializer
+expressions. The source rows are structural paths, not C2 identities or Core
+products.
+
+| Source | All functions | Body positions | `if` | `let` | `loop` | `recur` | `quote` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| authenticated envelope | 72 | 3308 | 278 | 29 | 0 | 0 | 0 |
+| reader, including 44 outside the selected plan | 275 | 12283 | 767 | 168 | 79 | 105 | 24 |
+| syntax | 102 | 4913 | 303 | 43 | 32 | 36 | 4 |
+| macro | 46 | 3255 | 201 | 14 | 7 | 7 | 19 |
+| resolution | 111 | 6554 | 454 | 74 | 88 | 116 | 7 |
+| checked Core | 402 | 31229 | 2110 | 410 | 200 | 227 | 48 |
+| Total | 1008 | 61542 | 4113 | 738 | 406 | 491 | 102 |
+
+The existing EDN's full-body supplement records each source identity and
+separates selected/outside summaries. Selected source paths/kinds are joined
+to the existing instruction rows without duplicating all 61087 records.
+Outside definitions retain hashes, spans, ordered signatures, body positions
+and binding-pattern locations. All 2710 `let`/`loop` binding patterns are
+symbols. The extra 44 functions add no builtin-name calls and 35 calls matching
+their normalized source function table. This last classification is not C5
+binding authority: qualified `reader/...` declaration/call spellings still
+need their actual resolver/namespace disposition. None of these 44 functions
+has acquired a compiled plan, Core product or migration acceptance.
+
+This is a partial required-use matrix. Every row below remains
+verification-open for the complete requested scope. Existing selectors in the
+validation table are locators; their historical results are not new executions.
+
+| Task / contract | Required source-body family | Required product and remaining acceptance/rejection join |
+| --- | --- | --- |
+| C02 / L2, C6 | Actual nil, Bool, integer, character, string, keyword, vector/map/set positions and 102 quoted DATA leaves. No executable decimal/ratio body literal was observed outside quoted interiors. | Preserve kind/value, constructor child order and inert quote for each required occurrence. Join the existing literal/decimal/character/order owners and source negatives; broader declared literal support is not waived. |
+| C03 / L3, C5, C6 | Symbol references and 1008 source definitions, including qualified reader names in the 44 uncompiled definitions. | Actual C5 definition/reference/namespace identity and Core source maps remain required. Source-table name membership cannot supply resolver or imported-callee artifacts. Top-level `def` initializers are not covered by this body audit. |
+| C04 / L2, C6 | 4113 `if`, 738 `let`, symbol-only sequential binding patterns; no executable `do` body form observed. | Preserve truthiness, exclusive branches, initializer scope and source order. Join selected occurrences to actual control/let products and malformed/order/origin rejections. Absence of explicit `do` does not establish sequencing correctness. |
+| C05 / L2, C4, C6 | 1008 `defn` headers/bodies require generated function/definition products. No nested executable `fn` was observed. | Preserve macro origin, ordered parameters/body, visibility and captures where applicable. The complete definition-to-Core join remains open; the declared nested-function contract remains separate. |
+| C06 / L2, C6 | 12668 selected builtin-call positions, 3403 selected local calls and 35 additional source-table name matches. | Preserve actual operator/argument order and call edges, then obtain the selected consumer's arity/dispatch legality and negative results. A table match is not public B48 routing or call execution. |
+| C07 / L2, C6 | 406 `loop` and 491 `recur` positions. | Preserve nearest targets, simultaneous ordered operands and tail placement. Existing scoped helper products do not cover all positions; target/arity/tail/order rejection joins remain required. |
+| C08 / L2, C6 | No executable `set!` in these normalized function bodies. | Keep the broader declared location/RHS/order and rejection requirements open. Quoted dispatch tokens are not executable uses; this result is not an outside-subset exemption. |
+| C09 / L2, L9, C6 | No executable `try`, `throw`, handler or cleanup body form observed. | Keep the broader declared error/handler/order/origin and rejection requirements open. This census neither implements nor excludes cleanup support. |
+| C10 / L2, L7, C6 | No executable `match` in these normalized function bodies. | Keep the broader declared pattern/guard and rejection requirements open. Literal match-handler catalog DATA does not prove an executable pattern use or satisfy its conformance gate. |
+
+Namespace clauses, top-level DATA initializers and quoted interiors were not
+inventoried as executable function bodies. Their declaration/value/origin
+obligations remain with C02/C03/C05/C11 and require a separate source-region
+join. The body inventory cannot establish their absence, complete source
+coverage, Core acceptance, downstream legality, execution or any C-task's
+completion.
+
+The changed full-body batch passed 18 tests/175 assertions under the existing
+normal broker, 2GiB heap and 120s watchdog, with natural exit 0. The seven C01
+tests passed 152 assertions; boundary/LOC passed 11 tests/23 assertions. The
+recorded completion interval was 15293.026542 ms. The independent source walk
+joins every selected path/kind to the existing plan positions and retains all
+44 outside definitions. Negative controls distinguish binding declarations
+and quoted payloads from executable children, and reject malformed or newly
+unclassified inventory shapes. Those are C01 inventory failures, not compiler
+source-rejection results. The first controller timed out at broker admission
+before the test body and remains historical with zero assertions.
+
+Raw successful output is
+`/tmp/sh07-c01-full-body-families-6585164c-attempt2.log`, SHA256
+`6c779574203bd2ea81803abb99572a715a824c775a5b00f06dcd42b2dd4dbca5`.
+The EDN pins its exact dirty-worktree test source, method, raw result, fresh
+family rows and original audit, on parent
+`6585164c9f8a954d98d3c3e933456eb2463810e0`. Main reference
+`95c3a56e2492b7509a7c55acffb6cc5ca25af72d` had identical six source files at
+inspection; it was not this execution's checkout. Every prior report field
+remains conserved. Namespace/top-level initialization and source-to-Core
+acceptance remain unproven.
+
+### C02 quoted reader helper at `8ee78280`
+
+The exported original `read-source-form-records` helper in
+`bootstrap/gravity/src/gravity/bootstrap/reader.gravity` now has a genuine
+current-reader C5 -> owning Gravity Core composition. Its complete declaration
+is copied verbatim into the paired 356-byte `sh-07/compiler-reader-quote`
+fixtures, with the selected original export retained. The fixture namespace
+and physical path are the authenticated subject. This does not authenticate
+the complete reader module or expand the raw SH03 prefix plan; this function
+remains one of the 44 definitions outside that selected seed plan.
+
+`sh07_current_reader_quote_test.clj` verifies the public definition, original
+parameter binding, source/macro origins and three actual Core nodes: `def`,
+`fn` and `quote`. The quoted map retains its `source-bytes` Symbol and ordered
+vector as data. The quote has no executable children, records
+`:no-evaluation`, and creates no Core expression references or calls. The
+owning Gravity template verifier rejects a same-kind quoted Symbol change and
+a quoted vector-order substitution with `C6-VERIFY` / `:template-replay`.
+Both changed templates retain matching identity-preimage node fields.
+
+The batch passed 12 tests/73 assertions: focused 1/50 and boundary/LOC 11/23,
+with natural exit 0 under the normal broker, 2GiB heap and unchanged 120s
+execution watchdog. Execution took 69683.117167 ms. G traversed the actual
+compiler stages; Q received fixture-text parity only. C7-C10 remain pending.
+Other quoted occurrences and outside-plan functions, complete source coverage,
+full-reader compilation, migration, self-hosting and C-task completion remain
+OPEN.
+
+The execution used exact base
+`8ee78280272622c870a9d336cd777114ede447b5` and host source subtree
+`ba78956df0df88f90fddd71fbed3bd14058985d8`, including the new native carrier
+header observation TCB. This is a distinct context from earlier `4fda9727`
+and `26a8283e` products. The result records unchanged before/after source,
+fixture and test pins. Raw evidence is under
+`/tmp/sh07-current-reader-quote-8ee78280-`: `attempt1.log`, `result.edn` and
+the 715635-byte `products.edn` inspection projection, whose SHA256 is
+`f32d424de0a38d7532eeea5ce8e39634da11683173ddc6bd6ad3721fba24797a`.
+The projection records actual Core, authenticated request, reader identity and
+negative products; it does not replace an admission artifact.
+
+The consumed C3 construction implementation subsequently changed. After
+reconciliation onto exact `5b80b77feb1a3d12c12b28f1061da9a7fe68deae`, a fresh
+affected source composition and both owning verifier rejections passed again:
+12 tests/73 assertions, focused 1/50, natural exit 0 in 74824.111667 ms under
+the same normal-broker 2GiB/120s limits. All test/fixture bytes were retained;
+the new execution records host subtree
+`eb5eef6acb730dbba3317139b3769b83ad2e3ea8`. Its evidence prefix is
+`/tmp/sh07-current-reader-quote-5b80b77f-`. The inspection projection is
+byte-identical to the earlier projection, with the same SHA256 above. This
+observed output equality does not equate the TCBs, relabel the earlier run,
+renew migration authority or establish a performance improvement.
+
+### C01 source declarations and leaf equivalence at `c7d31338`
+
+The next source audit found 37 top-level DATA definitions and six namespace
+headers in addition to the 1008 function definitions. It compared all selected
+seed leaves with their source forms: 21902 literal values, 14750 local
+identifier spellings and 78 quoted payloads. All matched. There were zero
+selected-body references that inline a top-level DATA symbol, so no such use
+is invented. The earlier full-body supplement retains its historical
+body-only scope; this new declaration supplement records the additional
+namespace/initializer source regions.
+
+A concrete gap remained in the C01 test record validator. On frozen `b32f1c8a`,
+an actual envelope-owner probe changed a Bool literal and redirected a local
+reference from `state` to the existing parameter `preimage`. It recomputed the
+function hash and whole plan ID while preserving the source hash, definition
+hash and positions. The validator accepted both altered plans. This was a
+C01 source/plan record gap, not a public compiler or Gravity Core verifier
+vulnerability claim.
+
+The owning check now compares scalar literal values, local names and quoted
+payloads directly with source. It retains the existing seed literal-table
+boundary if a source symbol is inlined. The EDN's new declaration/leaf rows
+record namespace form hashes/spans, normalized module headers and each DATA
+definition's initializer kind/hash and normalized value hash. DATA normalization
+uses the declared temporary seed API; it is not an actual Core `def` product,
+profile/effect legality or execution of the initializer.
+
+Actual tests reject a same-kind Bool flip and a redirect to another existing
+parameter after both plan/function hashes are resealed. Stable record
+diagnostics are `SH07-C01-JOIN` / `:literal-value` and `:local-name`. The changed
+batch passed 20 tests/207 assertions (C01 9/184; boundary/LOC 11/23) under the
+normal broker, 2GiB heap and 120s watchdog, natural exit 0. Its recorded
+completion interval was 15933.343916 ms.
+
+The tested private composition is
+`c7d31338fb53e832ce63eefd408b3be19a10d14d`, including main
+`f2bb3a35e6da25d66be99efbfa82a8aee4cfe28e`, the accepted reconciliation and
+the dependent C01 work. Its loaded host source subtree
+`4fda9727f1ca84cb8e3ad36f09865da94135ed6c` exactly matches that main reference.
+The new Symbol ABI and reader intake policy changed the seed TCB; the new
+execution dependencies are recorded separately, with all prior artifact
+fields and their earlier contexts preserved. An earlier old-context test
+controller timed out before broker admission/test execution and contributes
+zero assertions.
+
+Raw successful output is
+`/tmp/sh07-c01-source-leaves-c7d31338-attempt1.log`, SHA256
+`972dce278389cd4259dc414e09ad602b828881bc1f6dbc2c63f3e2658f0a0d3c`.
+The existing EDN pins the source audit, before-fix accepted-mutant probe,
+failed admission, current test source/method/result and fresh declaration
+rows. C5 binding identities, runtime primitive argument domains, actual Core
+products, full-reader compilation, migration and C-task completion remain
+OPEN. The private composition is not a claim of testing an exact main checkout.
+
+### C02 original DATA declaration at `4688551f`
+
+The source-region gap now has one actual Core join for the original
+`authenticated-envelope-bounds` declaration in
+`bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity`.
+The paired 724-byte `sh-07/compiler-envelope-bounds` fixtures copy its complete
+15-entry initializer and retain the selected declaration's explicit export.
+The fixture namespace and physical path are their own; this does not
+authenticate the complete owning module or its original namespace artifact.
+
+`sh07_current_data_declaration_test.clj` checks the original text and export,
+then constructs genuine current-reader C5 and owning Gravity Core products.
+It joins the public definition binding to its once-only initializer, all 30
+keyword/integer children, exact constructor order, literal kind/value and
+source maps. The resulting Core has 32 nodes. The owning Gravity template
+verifier rejects a same-kind integer increment and a complete map-entry
+reordering with `C6-VERIFY` / `:template-replay`; the altered templates retain
+their corresponding identity-preimage node/order fields.
+
+The corrected batch passed 12 tests/338 assertions, including the focused
+1/315 and boundary/LOC 11/23, with natural exit 0. Execution took
+68805.182625 ms under the normal broker, 2GiB heap and unchanged 120s execution
+watchdog. G traversed the actual compiler stages; Q received fixture-text
+parity only. C7-C10 remain pending. The other 36 DATA declarations, complete
+source-region coverage, full-owner compilation, migration, self-hosting and
+every C-task's completion remain OPEN.
+
+This execution used exact base
+`4688551f053fcefbb9b2cabdd2b4f91bfd7558ca` and loaded host source subtree
+`4fda9727f1ca84cb8e3ad36f09865da94135ed6c`. Raw output is
+`/tmp/sh07-current-data-declaration-4688551f-attempt2.log`, SHA256
+`0bb88d1d7b833b387bf17af7a6235b69953a085ec3520f4d3548f6ba43fdc034`.
+The matching `-result.edn` records six unchanged source/test/fixture bookends;
+`-products.edn` is an 832446-byte inspection projection of actual Core,
+authenticated request, reader identity and negative products, SHA256
+`97f512ad77986762a3714b12a3bc370eed9daa28da3a43f478649b522bfe55bf`.
+It is not a replacement admission artifact.
+
+The first executed fixture omitted the original export and correctly produced
+private C5/Core bindings. Its public-visibility assertion failed; the raw log,
+test subject and products remain retained as attempt 1. Adding the original
+selected export corrected the fixture rather than changing compiler policy.
+An earlier stale-local-main controller was cancelled while awaiting broker
+admission and contributes no compiler result. None of these histories is
+relabelled as execution on a later main checkout.
 
 ### C01 and C16 stopping point
 
