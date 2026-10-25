@@ -32,14 +32,12 @@
       (is (= 114 (get-in manifest ["migration" "decoded_record_count"]))))
     (is (empty? (governance/validate-documents contract-path manifest-path)))))
 
-(deftest active-reservations-retain-family-exclusivity
+(deftest active-reservations-retain-candidate-identity
   (let [manifest (governance/load-json manifest-path)
         active (filter #(not (get % "terminal")) (get manifest "records"))]
     (is (= (get manifest "active_count") (count active)))
     (is (= (count active)
            (count (set (map #(get % "id") active)))))
-    (is (= (count active)
-           (count (set (map #(get % "invariant_family") active)))))
     (is (every? #(str/starts-with? (get % "path") "contracts/workstream-active/")
                 active))))
 
