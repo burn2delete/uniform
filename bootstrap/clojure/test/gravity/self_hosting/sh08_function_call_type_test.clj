@@ -22469,6 +22469,40 @@
   (prn {:private-ordinary-ledger :checked :canonical-output-work-receipt false
         :whole-reconstruction-accounting false :public-wrapper-changed false}))
 
+(deftest sh08-verifier-native-option-domain
+  (let [run #(invoke-c7 'sh08-vf-work-allowance [%])
+        callbacks (atom [])
+        foreign-map (proxy [clojure.lang.APersistentMap] []
+                      (count [] (swap! callbacks conj :count) (throw (AssertionError. "option count")))
+                      (seq [] (swap! callbacks conj :seq) (throw (AssertionError. "option seq"))))
+        foreign-integer (proxy [java.math.BigInteger] ["1"]
+                          (abs [] (swap! callbacks conj :abs) (throw (AssertionError. "option abs")))
+                          (longValue [] (swap! callbacks conj :long) (throw (AssertionError. "option long"))))
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "option hash")))
+                 (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "option equality")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "option render"))))]
+    (doseq [options [{} (sorted-map)]] (is (= 65536 (run options))))
+    (doseq [n [1 65536 1048576 999999999999999999999999999999N]]
+      (is (= n (run {:type-inference-work-allowance n}))))
+    (doseq [options [nil [] opaque foreign-map
+                     (with-meta {} {:inactive opaque})
+                     (array-map opaque 1)
+                     {:type-inference-work-allowance opaque}
+                     {:type-inference-work-allowance foreign-integer}
+                     {:type-inference-work-allowance 0}
+                     {:type-inference-work-allowance -1}
+                     {:type-inference-work-allowance 1.0}
+                     {:type-inference-work-allowance 3/2}
+                     {:type-inference-work-allowance 1 :extra true}
+                     {"type-inference-work-allowance" 1}]]
+      (is (nil? (run options))))
+    (is (empty? @callbacks))
+    (let [audit (verifier-native-control-audit 'sh08-vf-work-allowance)]
+      (is (<= (first (:control-polynomial audit)) 8192))
+      (is (= 0 (second (:control-polynomial audit))))
+      (prn {:verifier-option-source-control audit :public-wrapper-changed false}))))
+
 (deftest sh08-verifier-native-symbol-operation-domain
   (let [run #(invoke-c7 'sh08-vf-compare-data [%1 %2 10000000])
         data #(invoke-c7 'sh08-vf-data [% 10000000])
@@ -22479,8 +22513,12 @@
     (is (thrown? NullPointerException (.equals a b)))
     (doseq [bad [a b qualified]
             value [bad {:inactive bad} [bad] (list bad) (array-map bad :value)]]
-      (let [out (data value)]
+      (let [out (data value)
+            exact (invoke-c7 'sh08-vf-data [value (:work-count out)])
+            short (invoke-c7 'sh08-vf-data [value (dec (:work-count out))])]
         (is (= [:rejected :verification-native-symbol-name] ((juxt :status :reason) out)))
+        (is (= out exact))
+        (is (= :verification-work-limit (:reason short)))
         (is (not (contains? out :arena)))))
     (doseq [[left right] [[a b] [a 'valid] ['valid b] [{:x a} {:x b}]
                           [[a] [b]] [(list a) (list b)]]]

@@ -27053,6 +27053,24 @@
      :canonical-producer-and-import-order :source-syntax-origin-links-preserved :path-neutral-identity-input]
     (sh08-ft-local-verification-checks expected)))
 
+(defn sh08-vf-work-allowance [options]
+  ; This validator belongs to the full verifier policy. The existing ordinary
+  ; producer option parser retains its own contract. Exact native headers
+  ; precede count, enumeration, key equality and numeric comparison.
+  (let [header (bootstrap-native-carrier-header options) kind (get header 0)]
+    (if (if (contains? #{:map :tree-map} kind)
+          (if (= false (get header 1))
+            (if (= kind :tree-map) (= :default-comparator (get header 4)) true) false) false)
+      (if (= 0 (get header 2)) 65536
+        (if (= 1 (get header 2))
+          (let [entry (get (vec options) 0) key (get entry 0) value (get entry 1)
+                key-header (bootstrap-native-carrier-header key)]
+            (if (= :keyword (get key-header 0))
+              (if (= :type-inference-work-allowance key)
+                (let [value-header (bootstrap-native-carrier-header value)]
+                  (if (contains? #{:integer8 :integer16 :integer32 :integer64 :big-int :big-integer} (get value-header 0))
+                    (if (> value 0) value nil) nil)) nil) nil)) nil)) nil)))
+
 (defn sh08-vf-data-failure [reason required completed]
   {:status :rejected :reason reason :work-count required :completed-work-count completed})
 
