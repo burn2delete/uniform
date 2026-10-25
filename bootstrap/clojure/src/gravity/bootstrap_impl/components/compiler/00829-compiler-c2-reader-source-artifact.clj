@@ -1,4 +1,4 @@
-
+(declare ^:private sh03-reader-authenticated-envelope-options)
 
 (defn compiler-c2-reader-source-artifact
   ([source-path source-text]
@@ -22,6 +22,17 @@
    (compiler-c2-reader-source-artifact source-path source-text project-context
                                        precomputed-products candidate nil))
   ([source-path source-text project-context precomputed-products candidate reader-source-path]
+   (compiler-c2-reader-source-artifact source-path source-text project-context
+     precomputed-products candidate reader-source-path
+     (when reader-source-path {:reader-source-path reader-source-path
+                               :authenticated-envelope-options {:source :development-current}})))
+  ([source-path source-text project-context precomputed-products candidate reader-source-path invocation]
+   (when invocation
+     (sh03-reader-authenticated-envelope-options source-path invocation))
+   (when (and invocation (nil? precomputed-products)
+              (not= reader-source-path (:reader-source-path invocation)))
+     (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                     {:missing-fields [:matching-host-reader-invocation]}))
    (when (and (some? reader-source-path) (or (some? precomputed-products) (some? candidate)))
      (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
                       {:missing-fields [:direct-current-sh03-reader-construction]}))
@@ -29,9 +40,9 @@
     (let [reader-options standard-reader-options
           products
           (if precomputed-products
-            (sh03-reader-precomputed-products-verify!
-             candidate source-path source-text project-context
-             precomputed-products)
+            (apply sh03-reader-precomputed-products-verify!
+             (cond-> [candidate source-path source-text project-context precomputed-products]
+               invocation (conj invocation)))
             (c2-reader-products source-path source-text
                                 reader-options project-context reader-source-path))
           source-unit (:source-unit products)
@@ -112,7 +123,7 @@
                           :actual-path-provenance
                           :incremental-reader-hashes
                           :semantic-reader-template
-                          :bounds :execution-boundary])
+                          :execution-boundary])
             :adapter-contract (:sh03-reader-adapter-contract products)
             :uncredited-source-models
             {:status :not-executed

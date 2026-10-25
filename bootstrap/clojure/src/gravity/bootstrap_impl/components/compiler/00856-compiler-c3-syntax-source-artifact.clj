@@ -22,22 +22,27 @@
    (compiler-c3-syntax-source-artifact source-path source-text project-context
                                        precomputed-c2-artifact candidate nil))
   ([source-path source-text project-context precomputed-c2-artifact candidate reader-source-path]
+   (compiler-c3-syntax-source-artifact source-path source-text project-context
+    precomputed-c2-artifact candidate reader-source-path
+    (when reader-source-path {:reader-source-path reader-source-path
+                              :authenticated-envelope-options {:source :development-current}})))
+  ([source-path source-text project-context precomputed-c2-artifact candidate reader-source-path invocation]
   (when (and (some? reader-source-path) (or (some? precomputed-c2-artifact) (some? candidate)))
     (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
                      {:missing-fields [:direct-current-sh03-reader-construction]}))
   (let [c2-artifact
         (if precomputed-c2-artifact
-          (sh03-c3-precomputed-c2-verify!
-           candidate source-path precomputed-c2-artifact)
+          (apply sh03-c3-precomputed-c2-verify!
+           (cond-> [candidate source-path precomputed-c2-artifact] invocation (conj invocation)))
           (compiler-c2-reader-source-artifact
-           source-path source-text project-context nil nil reader-source-path))
+           source-path source-text project-context nil nil reader-source-path invocation))
         integrity-report
         (c3-validate-c2-reader-artifact! source-path c2-artifact)
         forms (:parsed-semantic-values c2-artifact)
         overrides (c3-syntax-overrides-from-forms forms)
         _ (c3-syntax-validate-overrides! source-path overrides)
         sh04-products (sh04-syntax-build-from-fresh-c2!
-                       source-path c2-artifact integrity-report)
+                       source-path c2-artifact integrity-report invocation)
         syntax-stream (:rich-syntax sh04-products)
         sh04-result (:resolved-result sh04-products)
         gravity-boundary
@@ -99,7 +104,7 @@
                        :source-overrides overrides
                        :gravity-syntax-boundary gravity-boundary
                        :c2-reader-artifact
-                       (c3-reader-artifact-view c2-artifact)
+                       (apply c3-reader-artifact-view (cond-> [c2-artifact] invocation (conj invocation)))
                        :syntax-object-schema (c3-syntax-schema)
                        :syntax-object-stream syntax-stream
                        :gravity-hygiene-context-map
@@ -125,11 +130,11 @@
                        (c3-syntax-verification-report syntax-stream
                                                       serialization
                                                       c2-artifact
-                                                      gravity-boundary)
+                                                      gravity-boundary invocation)
                        :rejected-design-coverage c3-syntax-rejected-designs
                        :diagnostics []}
-        _ (c3-syntax-validate! source-path artifact-base)
-        capability-proof (c3-syntax-capability-proof artifact-base)
+        _ (c3-syntax-validate! source-path artifact-base invocation)
+        capability-proof (c3-syntax-capability-proof artifact-base invocation)
         conformance {:documents ["C3"]
                      :task "P06-D082"
                      :required-diagnostic-ids c3-syntax-diagnostic-ids

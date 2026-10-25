@@ -176,3 +176,31 @@
                (get-in artifact [:execution-boundary :downstream-fact-statuses])))
         (reset! observed-snapshot-product artifact))
       (finally (delete! directory)))))
+
+(deftest c3-verification-callbacks-retain-the-host-invocation
+  ;; Routing units only. These spies confer no Reader, C3 or AE acceptance.
+  (let [operations (var-get (ns-resolve 'gravity.bootstrap 'c3-syntax-verification-ops))
+        current {:reader-source-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+                 :authenticated-envelope-options {:source :development-current}}
+        forged-artifact {:invocation-context current}
+        cases [['c3-syntax-stream-reader-products-authentic?
+                :c3-syntax-stream-reader-products-authentic? [::stream forged-artifact ::boundary]]
+               ['c3-syntax-verification-report
+                :c3-syntax-verification-report [::stream ::serialization forged-artifact ::boundary]]
+               ['c3-syntax-capability-proof :c3-syntax-capability-proof [forged-artifact]]
+               ['c3-syntax-validate! :c3-syntax-validate! ["source.gravity" forged-artifact]]]]
+    (doseq [invocation [nil current]]
+      (let [calls (atom [])
+            callbacks (operations invocation)
+            replacements
+            (into {} (map (fn [[name operation _]]
+                            [(ns-resolve 'gravity.bootstrap name)
+                             (fn [& arguments]
+                               (swap! calls conj [operation (vec arguments)])
+                               :routed)])) cases)]
+        (with-redefs-fn replacements
+          (fn []
+            (doseq [[_ operation arguments] cases]
+              (is (= :routed (apply (get callbacks operation) arguments))))))
+        (is (= (mapv (fn [[_ operation arguments]] [operation (conj arguments invocation)]) cases)
+               @calls))))))

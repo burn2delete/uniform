@@ -4,8 +4,13 @@
    (c3-syntax-stream-reader-products-authentic?
     syntax-stream c2-artifact nil))
   ([syntax-stream c2-artifact gravity-boundary]
+   (c3-syntax-stream-reader-products-authentic? syntax-stream c2-artifact gravity-boundary nil))
+  ([syntax-stream c2-artifact gravity-boundary invocation]
    (try
-     (if-not (c3-current-reader-revision-authentic? c2-artifact gravity-boundary) false
+    (let [ae-options (when invocation (sh03-reader-authenticated-envelope-options
+                                      (get-in c2-artifact [:source-unit-record :path]) invocation))]
+     (if-not (apply c3-current-reader-revision-authentic?
+                    (cond-> [c2-artifact gravity-boundary] invocation (conj invocation))) false
       (if (:registered-literal-projection c2-artifact)
        (if gravity-boundary
          (let [result (:resolved-syntax-result gravity-boundary)
@@ -79,10 +84,9 @@
                (sh04-syntax-descriptor-sh03-product-binding
                 actual-sh03-envelope-descriptor)
                actual-sh03-envelope-verification
-               (p15-s23-stage2-sh02-descriptor-envelope-verify!
-                actual-sh03-envelope :c2-reader
-                :gravity/sh03-reader-products
-                actual-sh03-envelope-descriptor source-path)
+               (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+                (cond-> [actual-sh03-envelope :c2-reader :gravity/sh03-reader-products
+                         actual-sh03-envelope-descriptor source-path] ae-options (conj ae-options)))
                binding (sh04-syntax-current-binding! source-path)
                requests (:stream-digest-requests gravity-boundary)
                digests (:stream-resolved-digests gravity-boundary)
@@ -140,13 +144,13 @@
                (sh04-syntax-sh02-descriptor source-path binding
                                             expected-summary)
                expected-envelope
-               (p15-s23-stage2-sh02-descriptor-envelope
-                :c3-syntax :gravity/sh04-syntax-products
-                expected-envelope-descriptor source-path)
+               (apply p15-s23-stage2-sh02-descriptor-envelope
+                (cond-> [:c3-syntax :gravity/sh04-syntax-products expected-envelope-descriptor source-path]
+                  ae-options (conj ae-options)))
                envelope-verification
-               (p15-s23-stage2-sh02-descriptor-envelope-verify!
-                envelope :c3-syntax :gravity/sh04-syntax-products
-                envelope-descriptor source-path)]
+               (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+                (cond-> [envelope :c3-syntax :gravity/sh04-syntax-products envelope-descriptor source-path]
+                  ae-options (conj ae-options)))]
            (and (:authentic? integrity-report)
                 (= :SH-04 (:slice gravity-boundary))
                 (= :gravity-source (:owner gravity-boundary))
@@ -217,7 +221,7 @@
                     (first expected-base)))
                expected-stream (conj expected-base expected-generated)]
            (and (:authentic? integrity-report)
-                (= expected-stream syntax-stream)))))))
+                (= expected-stream syntax-stream))))))))
      (catch StackOverflowError _ false)
      (catch Exception _ false))))
 
@@ -226,14 +230,15 @@
          c3-syntax-validate!)
 
 (defn- c3-syntax-verification-ops
-  []
+  [invocation]
   {:c3-syntax-schema c3-syntax-schema
    :c3-resolvable-span? c3-resolvable-span?
    :c3-syntax-serialization-fixture c3-syntax-serialization-fixture
    :c3-syntax-stream-reader-products-authentic?
-   c3-syntax-stream-reader-products-authentic?
-   :c3-syntax-verification-report c3-syntax-verification-report
-   :c3-syntax-capability-proof c3-syntax-capability-proof
-   :c3-syntax-validate! c3-syntax-validate!
+   (fn [stream c2 boundary] (c3-syntax-stream-reader-products-authentic? stream c2 boundary invocation))
+   :c3-syntax-verification-report
+   (fn [stream serialization c2 boundary] (c3-syntax-verification-report stream serialization c2 boundary invocation))
+   :c3-syntax-capability-proof (fn [artifact] (c3-syntax-capability-proof artifact invocation))
+   :c3-syntax-validate! (fn [path artifact] (c3-syntax-validate! path artifact invocation))
    :c3-syntax-fail! c3-syntax-fail!
    :c3-syntax-diagnostic-ids c3-syntax-diagnostic-ids})
