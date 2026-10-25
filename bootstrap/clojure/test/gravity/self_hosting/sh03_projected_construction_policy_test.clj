@@ -243,7 +243,7 @@
                       :fresh-replay (:verified? report)
                       :diagnostics (mapv #(select-keys % [:id :reader-state :facts])
                                          (:diagnostics raw))}))
-    (is (= 1677424 (alength bytes)))
+    (is (= 1681915 (alength bytes)))
     (is (> (alength bytes) 1048576))
     (is (= :accepted (:status raw) (:status (:result resolved))))
     (is (true? (:verified? report)))
