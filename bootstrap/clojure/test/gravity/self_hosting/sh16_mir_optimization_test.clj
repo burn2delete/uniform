@@ -1053,7 +1053,7 @@
           (is (= :passed (:status (invoke-engine 'sh16-verify [combined combined-result]))))
           (doseq [mutant [(assoc-in combined-result [:invalidation-ledger 2 :proofs-invalidated] [])
                           (assoc-in combined-result [:post-pass-verifier :invalidated-proofs] [])]]
-            (is (= :rejected (:status (invoke-engine 'sh16-verify [combined mutant])))))))))
+            (is (= :rejected (:status (invoke-engine 'sh16-verify [combined mutant])))))))
       (let [result (optimize base) operation (dead :op/dead :proof/dead)
             input (update base :operations #(into [operation] %))]
         (is (= [[] [] [] []] (mapv :proofs-used (:decision-log result))))
