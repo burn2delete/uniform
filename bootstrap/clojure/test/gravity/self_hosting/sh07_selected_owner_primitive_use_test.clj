@@ -65,9 +65,9 @@
   (require! (= (count (:body definition)) (count (:instructions function))) :body-count)
   (loop [pending (mapv (fn [i form node] [form node [i] [:instructions i]])
                       (range) (:body definition) (:instructions function))
-         rows [] summary {}]
+         rows [] positions [] summary {}]
     (require! (<= (+ (count pending) (reduce + 0 (vals summary))) 262144) :walk-bound)
-    (if (empty? pending) {:uses rows :instructions summary}
+    (if (empty? pending) {:uses rows :instruction-occurrences positions :instructions summary}
       (let [[form instruction source-path plan-path] (peek pending)
             op (:op instruction) callee (:function instruction)
             call? (contains? #{:builtin-call :function-call} op)]
@@ -75,6 +75,7 @@
         (recur (into (pop pending) (children form instruction source-path plan-path))
                (cond-> rows call? (conj {:op op :callee callee :arity (count (:args instruction))
                                         :source-expression-path source-path :plan-path plan-path}))
+               (conj positions [op source-path plan-path (b/form-kind form)])
                (update summary op (fnil inc 0)))))))
 
 (defn- build-plan [relative text emitter]
@@ -128,7 +129,7 @@
   (doseq [function (:functions row)]
     (require! (= (:definition-span function) (get spans (:function function))) :definition-span)
     (require! (= (:function-plan-hash function) (hash-value (get-in plan [:functions (:function function)]))) :function-identity)
-    (require! (= (select-keys function [:uses :instructions])
+    (require! (= (select-keys function [:uses :instruction-occurrences :instructions])
                  (occurrence-map (get definitions (:function function)) (get-in plan [:functions (:function function)]))) :source-occurrence)
     (doseq [use (:uses function)]
       (let [node (get-in (get-in plan [:functions (:function function)]) (:plan-path use))]
@@ -172,11 +173,14 @@
   ([owners]
   (let [owners owners
         uses (mapcat #(mapcat :uses (get-in % [:row :functions])) owners)]
-    {:base-revision "0067e9418de992900a95cd47d016029af62ff99c"
-     :status (if (= 6 (count owners)) :mapped-selected-plans :stopped-subset)
+    ;; An execution record supplies its actual revision. This projection must
+    ;; not stamp a new construction with the original map's historical base.
+    {:status (if (= 6 (count owners)) :mapped-selected-plans :stopped-subset)
      :stopped-frontier @stopped-frontier
      :scope :selected-seed-plan-potential-use :dependencies (dependency-map)
      :owners (mapv :row owners)
+     :instruction-occurrence-fields [:opcode :source-expression-path :plan-path :source-form-kind]
+     :instruction-occurrence-order :worklist-visitation-not-evaluation-order
      :builtin-occurrences (count (filter #(= :builtin-call (:op %)) uses))
      :used-builtins (vec (sort (set (map :callee (filter #(= :builtin-call (:op %)) uses)))))
      :primitive-obligations
@@ -198,10 +202,17 @@
   (let [owners @current-owners report (selected-owner-use-map)]
     (is (validate-population! owners))
     (is (= 6 (count (:owners report))))
+    (is (not (contains? report :base-revision)))
     (is (pos? (:builtin-occurrences report)))
     (doseq [owner owners]
       (is (= (:instruction-summary (:plan owner))
-             (apply merge-with + (map :instructions (get-in owner [:row :functions]))))))))
+             (apply merge-with + (map :instructions (get-in owner [:row :functions])))))
+      (let [functions (get-in owner [:row :functions]) rows (mapcat :instruction-occurrences functions)]
+        (is (= (:instruction-summary (:plan owner)) (frequencies (map first rows))))
+        (doseq [function functions]
+          (let [positions (:instruction-occurrences function)]
+            (require! (= (count positions) (count (set (map second positions)))
+                         (count (set (map #(nth % 2) positions)))) :instruction-position-bijection)))))))
 
 (deftest changed-missing-duplicate-and-forged-plan-joins-fail-closed
   (let [owners @current-owners owner (first owners)]
@@ -209,11 +220,28 @@
                      (assoc-in owners [0 :input :sha256] "sha256:changed")
                      (assoc-in owners [0 :plan :plan-id] "sha256:changed")
                      (assoc-in owners [0 :row :functions 0 :function-plan-hash] "sha256:changed")
-                     (update-in owners [0 :row :functions] #(conj % (first %)))]]
+                     (update-in owners [0 :row :functions] #(conj % (first %)))
+                     (update-in owners [0 :row :functions 0 :instruction-occurrences] pop)
+                     (update-in owners [0 :row :functions 0 :instruction-occurrences] #(conj % (first %)))
+                     (assoc-in owners [0 :row :functions 0 :instruction-occurrences 0 0] :unowned)
+                     (assoc-in owners [0 :row :functions 0 :instruction-occurrences 0 1] [:wrong-source-position])
+                     (assoc-in owners [0 :row :functions 0 :instruction-occurrences 0 2] [:instructions 999999])]]
       (is (thrown-with-msg? clojure.lang.ExceptionInfo #"C01 source/plan join rejected" (validate-population! changed))))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"C01 source/plan join rejected"
                           (children '(unowned) {:op :unowned} [] [])))
     (is (= [] (children '(quote (not-a-primitive)) {:op :quote :value '(not-a-primitive)} [] [])))))
+
+(deftest instruction-positions-stop-at-quoted-data-and-retain-reference-kind
+  (let [payload '(unresolved/call (throw unknown))
+        quoted (occurrence-map {:params [] :body [(list 'quote payload)]}
+                               {:params [] :instructions [{:op :quote :value payload}]})
+        constant (occurrence-map {:params [] :body ['catalog]}
+                                 {:params [] :instructions [{:op :literal :value payload}]})]
+    (is (= [] (:uses quoted)))
+    (is (= [[:quote [0] [:instructions 0] :list]] (:instruction-occurrences quoted)))
+    (is (= {:quote 1} (:instructions quoted)))
+    (is (= [[:literal [0] [:instructions 0] :symbol]] (:instruction-occurrences constant)))
+    (is (= [] (:uses constant)))))
 
 (deftest selected-owner-observed-arity-runtime-cases
   ;; The reviewed map supplies actual required arities, not runtime authority.

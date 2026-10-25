@@ -9667,6 +9667,23 @@ two-slot helper candidate remains separately immutable for ROOT review;
 the new case-evidence candidate uses an isolated worktree while ROOT's
 integration checkout remains untouched.
 
+The following self-derived C01 gap was non-call instruction positioning:
+61087 selected instructions had only 16071 positioned call rows. The existing
+walk now records all 61087 structural source/plan paths, including the 45016
+non-call instructions, with the existing hosted form kind. One actual changed
+batch passed 15 tests/132 assertions in a recorded 16887.307333 ms through test
+completion (six-owner joins 1/16, record negatives 1/13, quote/reference controls
+1/5, runtime arities 1/75, boundary/LOC 11/23), under normal 2GiB/120s checks.
+The [instruction-position record](self-hosting-sh07-completion-plan.md#c01-structural-instruction-positions-at-d42f23b2)
+preserves original plan/case evidence and separately binds the fresh local
+composition, input dependencies and physical paths. Quote payloads remain
+unvisited; symbol-to-literal projection does not acquire binding authority.
+Missing/duplicate/forged rows reject as record checks, not language rejection.
+These paths are neither C2 IDs nor canonical Core products; source domains,
+binding/definition links, actual invocation and later legality remain OPEN.
+This is substantive ordinary in-goal work, with no revived task-count,
+attempt-grant or preparation-only gate and no milestone credit.
+
 The current 2026-10-24 accounting base is inspected remote main
 `c4b1d19da11def44f835d552e44d06488d31fe46`, tree
 `a4145adf64c5c7d4ebc558c605f07d27f784cac5`. Earlier `64aa890a` queue/adoption

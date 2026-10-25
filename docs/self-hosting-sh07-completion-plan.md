@@ -8,6 +8,9 @@ Earlier `64aa890a` handoff observations below keep their historical scope.
 The C01 seed-plan supplement below is based on `0067e9418de992900a95cd47d016029af62ff99c`;
 it does not refresh unrelated queue or compiler evidence snapshots.
 Its primitive-case supplement is based on `80881ba6fdc9548d181bf358fa0d033ae4298a22`.
+Its instruction-position supplement records execution on local composition
+`e4dd1a1505618ec032634e54a5d9a119b21070ff`, based on main `d42f23b2` plus
+the separately frozen case and process-removal changes.
 This updates management of the existing work, not compiler support or admission.
 
 Historical assessment date: 2026-10-21.
@@ -501,7 +504,7 @@ selectors; its locators are not current passing results.
 
 | Task / status | Manager | Current code/evidence and next concrete closure obligation | Stop or rejection criterion |
 | --- | --- | --- | --- |
-| C01 OPEN | Core | The selected-owner EDN map joins actual seed plans to 12668 builtin-call occurrences across six sources, with 44 reader functions excluded explicitly. Runtime cases now cover finite normal values at every observed builtin arity; source value-domain joins, actual invocation reachability, generated/Core products and migration identities remain open. | Use exact source/plan/dependency identities and original body paths, not an allowlist or count. Matching an arity is not proof of an actual source argument's domain or execution of every retained function; C01 remains open. |
+| C01 OPEN | Core | The EDN positions all 61087 selected seed instructions, including 12668 builtin calls, across six sources; 44 reader functions remain outside the selected plan. Finite normal runtime cases cover every observed builtin arity. Source value-domain, binding/definition, actual invocation, generated/Core-product and migration joins remain open. | Structural body/plan paths are not C2 identities or Core authority. Matching an arity does not prove an actual source argument's domain or execution of every retained function; C01 remains open. |
 | C02 OPEN | Core | Core literal/quote/collection lowerers and carrier/decimal/character/order tests exist. Join each selected subject's required literal and constructor variants to those real products/results. | Accept preserved kinds, inert quote and ordered constructors; reject malformed quote/constructor, unsupported executable payload and forged origin. Missing joins remain OPEN. |
 | C03 OPEN | Core; Cohort for C5 producer facts | Reference/def/var and qualified-name tests exist. Select actual executable local/namespace/import/var occurrences and their real resolver/callee artifacts. | Accept exact binding/source identity and shadowing; reject unresolved/private/substituted targets at the owning ingress. Do not fabricate a callee or host lookup. |
 | C04 OPEN | Core | `if`/`do`/`let` owner tests cover exclusive branches and sequential scope. Match selected empty/terminal/nested/transfer variants to actual Core and source order. | Accept false/nil truthiness and once-only ordered children; reject malformed arity/bindings and reorder/drop/duplicate mutations. No unselected destructuring feature is added. |
@@ -678,6 +681,51 @@ hash and the post-run unchanged-worktree input-map snapshot. It does not
 mislabel that snapshot as a separately measured launch pin or these changed
 working-tree executions as clean frozen-commit runs. No source implementation,
 runtime provider, shared interface, allowance or milestone status changed.
+
+### C01 structural instruction positions at `d42f23b2`
+
+The next audit found 61087 actual selected instructions but only 16071
+individually positioned calls. The remaining 45016 instructions had counts
+without source/plan positions. The existing C01 walk now emits a compact tuple
+for every visited instruction:
+`[opcode source-expression-path plan-path source-form-kind]`. Form kind uses
+the existing hosted reader classifier; these are structural function-body
+paths, not canonical C2 IDs, token spans or a new source-authority schema.
+Rows retain worklist visitation order, not evaluation order. Actual plan child
+indexes remain explicit in each path. A symbol source occurrence can emit a
+literal instruction; the row preserves that distinction without claiming its
+definition/binding legality. Quoted payloads remain leaves and produce no
+executable child rows.
+
+One actual normal-broker 2GiB/120s-watchdog batch passed 15 tests/132 assertions:
+actual six-owner construction/joins 1/16, forged-record cases 1/13,
+quote/reference-kind controls 1/5, observed-arity runtime cases 1/75 and
+boundary/LOC 11/23. The recorded test-completion interval was 16887.307333 ms;
+it is not a CPU, RSS or whole-release performance claim. All 61087 positions
+match their actual opcode summaries and have unique source/plan paths within
+each function. Missing, duplicate and forged opcode/source/plan-position rows
+reject through the test join. These record checks are not compiler source
+rejection or source-to-Core validation.
+
+The EDN preserves all original owner fields, plan/function identities, call
+rows and earlier case evidence. Fresh construction observed the same six plan
+identities and source coordinates; earlier physical span paths remain recorded
+with their original context, while fresh construction paths and dependencies
+are separate execution evidence. The measured tracked host inputs still match;
+PR308 changed Gravity C15 source outside this selected execution, so that match
+does not assert unchanged C15 bytes or consumer behavior. The generic report
+projection no longer stamps fresh output with the old hardcoded revision;
+the execution record supplies its actual local composition and main reference.
+
+Actual raw output is
+`/tmp/sh07-c01-instruction-positions-d42f23b2-attempt2.log`, SHA256
+`9cbcb2061b144dadb88fb175e203c6f6605614a7bdcf5a05d12d868e216a6d77`.
+The EDN pins its 2156-byte output, result, fresh projection, executed test,
+scratch method and unchanged input-map snapshot. The prior stdin-method EOF
+failure remains retained as a reader failure before lease/test-body execution,
+with zero assertions; it is not a consumed proof. Current construction emitted
+real seed instructions, not a compiler binary, canonical Core, type/effect
+legality, full-reader execution or migration evidence. All C-tasks remain OPEN.
 
 ### C01 and C16 stopping point
 
