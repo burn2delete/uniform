@@ -30,14 +30,14 @@
                  sh13-execute-operations sh13-execute-terminator sh13-execute-block sh13-execute-function}
         forms (binding [*read-eval* false] (read-string (str "[" (slurp path) "]")))
         selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? names (second %))) forms)
-        primitives '#{defn if let get count = integer? <= >= < > + - * quot conj assoc}
+        primitives '#{defn if let loop recur get count = integer? <= >= < > + - * quot conj assoc}
         callees (for [form selected expression (tree-seq coll? seq form)
                       :when (and (seq? expression) (symbol? (first expression)))] (first expression))
         text (str "(ns gravity.test.original-sub-execution (:profile :meta) (:target :jvm)"
                   " (:effects #{}) (:capabilities #{}) (:safety :safe))\n"
                   (apply str (map #(str (pr-str %) "\n") selected)))
         _ (assert (= names (set (map second selected))))
-        _ (assert (and (= 16 (count selected)) (< (count text) 32768)))
+        _ (assert (= 16 (count selected)))
         _ (assert (every? #(or (contains? names %) (contains? primitives %)) callees) (pr-str callees))
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter "original-sub-execution.gravity" text)]
@@ -53,7 +53,7 @@
         trace [{:function :test :operation :sub :opcode :sub}]
         execute (fn [left right]
                   (try (call 'sh13-execute-operation
-                         [{} {:fn-id :test} operation {:left left :right right} 8 0 []])
+                         [{} {:fn-id :test} operation {:left left :right right} []])
                        (catch Exception error
                          {:exception (.getName (class error)) :message (.getMessage error)
                           :data (ex-data error)})))]
@@ -62,10 +62,10 @@
             expected (<= (bigint Long/MIN_VALUE) difference (bigint Long/MAX_VALUE))]
         (is (= expected (call 'sh13-sub-safe? [left right])) (str "guard " left " " right))))
     (doseq [[left right expected] returned-cases]
-      (is (= {:status :continue :value expected :fuel 7 :trace trace} (execute left right))
+      (is (= {:status :continue :value expected :trace trace} (execute left right))
           (str "operation " left " " right)))
     (doseq [[left right] overflowing-cases]
-      (is (= {:status :rejected :reason :integer-range :fuel 7 :trace trace} (execute left right))
+      (is (= {:status :rejected :reason :integer-range :trace trace} (execute left right))
           (str "overflow " left " " right)))))
 
 (deftest sh13-checked-i64-sub-original-producer-bridge

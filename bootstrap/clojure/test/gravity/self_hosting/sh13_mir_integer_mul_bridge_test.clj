@@ -96,13 +96,13 @@
       (let [product (*' (bigint left) (bigint right))
             safe? (<= (bigint Long/MIN_VALUE) product (bigint Long/MAX_VALUE))
             result (try (call 'sh13-execute-operation
-                          [{} {:fn-id :test} operation {:left left :right right} 8 0 []])
+                          [{} {:fn-id :test} operation {:left left :right right} []])
                         (catch Exception error
                           {:exception (.getName (class error)) :message (.getMessage error)
                            :data (ex-data error)}))]
         (is (= safe? (call 'sh13-mul-safe? [left right])) (str "guard " left " " right))
-        (is (= (if safe? {:status :continue :value product :fuel 7 :trace trace}
-                  {:status :rejected :reason :integer-range :fuel 7 :trace trace}) result)
+        (is (= (if safe? {:status :continue :value product :trace trace}
+                  {:status :rejected :reason :integer-range :trace trace}) result)
             (str "operation " left " " right))))))
 
 (deftest sh13-checked-i64-mul-original-producer-bridge
