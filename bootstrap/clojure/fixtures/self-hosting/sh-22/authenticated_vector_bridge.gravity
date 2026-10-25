@@ -14,11 +14,6 @@
    :schema-version 1
    :profile :meta
    :operation :vector-assoc
-   :maximum-vector-elements 256
-   :maximum-carrier-depth 32
-   :maximum-carrier-width 64
-   :maximum-carrier-nodes 16384
-   :maximum-scalar-units 131072
    :operation-spec
    {:operation :vector-assoc
     :vector-source :sh14-payload
@@ -28,7 +23,7 @@
    [:authenticated-sh13-control-flow
     :authenticated-sh14-vector-layout]
    :host-authority
-   [:bounded-source-snapshot
+   [:source-snapshot
     :compile-and-invoke-gravity-modules
     :canonical-encode
     :sha256
@@ -95,78 +90,93 @@
 
 (defn sh22-bridge-aggregate-components [value]
   (if (map? value)
-    (loop [remaining (keys value) result []]
+    (loop [remaining (vec value) result []]
       (if (= 0 (count remaining))
         result
         (recur
          (rest remaining)
          (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
+          (conj result (get (first remaining) 0))
+          (get (first remaining) 1)))))
     (vec value)))
 
+(defn sh22-bridge-native-ancestor? [value ancestors]
+  (loop [index 0]
+    (if (= index (count ancestors))
+      false
+      (if (bootstrap-native-identical? value (get ancestors index))
+        true
+        (recur (+ index 1))))))
+
+(defn sh22-bridge-native-vector-view-valid? [value]
+  (loop [current value ancestors []]
+    (if (sh22-bridge-native-ancestor? current ancestors)
+      false
+      (let [header (bootstrap-native-carrier-header current)
+            kind (get header 0)]
+        (if (= kind :vector)
+          true
+          (if (= kind :subvector)
+            (let [start (get header 5)
+                  extent (get header 2)
+                  backing (get header 4)
+                  backing-header (bootstrap-native-carrier-header backing)
+                  backing-kind (get backing-header 0)]
+              (if (if (= backing-kind :vector) true (= backing-kind :subvector))
+                (if (<= 0 start)
+                  (if (<= 0 extent)
+                    (if (<= (+ start extent) (get backing-header 2))
+                      (recur backing (conj ancestors current))
+                      false)
+                    false)
+                  false)
+                false))
+            false))))))
+
 (defn sh22-bridge-carrier-preflight [value]
-  (let [policy (sh22-authenticated-vector-bridge-policy)
-        maximum-nodes (get policy :maximum-carrier-nodes)
-        maximum-depth (get policy :maximum-carrier-depth)
-        maximum-width (get policy :maximum-carrier-width)
-        maximum-scalar-units (get policy :maximum-scalar-units)]
-    (loop [frontier [[value 0]]
-           nodes 0
-           scalar-units 0
-           maximum-observed-depth 0
-           maximum-observed-width 0]
-      (if (= 0 (count frontier))
-        {:status :accepted
-         :nodes nodes
-         :maximum-depth maximum-observed-depth
-         :maximum-width maximum-observed-width
-         :scalar-units scalar-units}
-        (let [entry (first frontier)
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes maximum-nodes)
-            {:status :rejected :reason :carrier-node-bound}
-            (if (> depth maximum-depth)
-              {:status :rejected :reason :carrier-depth-bound}
-              (if (sh22-bridge-aggregate? current)
-                (if (> (count current) maximum-width)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (let [components
-                        (sh22-bridge-aggregate-components current)
-                        next-frontier
-                        (loop [remaining components
-                               result (rest frontier)]
-                          (if (= 0 (count remaining))
-                            result
-                            (recur
-                             (rest remaining)
-                             (conj
-                              result
-                              [(first remaining) (+ depth 1)]))))]
-                    (recur
-                     next-frontier
-                     next-nodes
-                     scalar-units
-                     (if (> depth maximum-observed-depth)
-                       depth
-                       maximum-observed-depth)
-                     (if (> (count current) maximum-observed-width)
-                       (count current)
-                       maximum-observed-width))))
-                (let [next-scalar-units
-                      (+ scalar-units (count (vec (str current))))]
-                  (if (> next-scalar-units maximum-scalar-units)
-                    {:status :rejected :reason :carrier-scalar-bound}
-                    (recur
-                     (rest frontier)
-                     next-nodes
-                     next-scalar-units
-                     (if (> depth maximum-observed-depth)
-                       depth
-                       maximum-observed-depth)
-                     maximum-observed-width)))))))))))
+  (loop [frontier [[value []]]]
+    (if (= 0 (count frontier))
+      {:status :accepted}
+      (let [entry (first frontier)
+            current (get entry 0)
+            ancestors (get entry 1)]
+        (if (sh22-bridge-aggregate? current)
+          (if (sh22-bridge-native-ancestor? current ancestors)
+            {:status :rejected :reason :cyclic-carrier}
+            (let [header (bootstrap-native-carrier-header current)
+                  kind (get header 0)
+                  next-ancestors (conj ancestors current)
+                  components
+                  (if (= kind :list-node)
+                    [(get header 4) (get header 5)]
+                    (if (= kind :empty-list)
+                      []
+                      (if (if (= kind :vector) true (= kind :subvector))
+                        (if (sh22-bridge-native-vector-view-valid? current)
+                          (sh22-bridge-aggregate-components current)
+                          nil)
+                        (if (if (= kind :map) true (= kind :set))
+                          (sh22-bridge-aggregate-components current)
+                          (if (= kind :tree-map)
+                            (if (= :default-comparator (get header 4))
+                              (sh22-bridge-aggregate-components current)
+                              nil)
+                            nil)))))]
+              (if (= nil components)
+                {:status :rejected :reason :unsupported-native-carrier}
+                (let [next-frontier
+                      (loop [remaining components result (rest frontier)]
+                        (if (= 0 (count remaining))
+                          result
+                          (recur (rest remaining)
+                                 (conj result [(first remaining) next-ancestors]))))]
+                  (recur next-frontier)))))
+          (if (if (string? current) true (keyword? current))
+            (let [header (bootstrap-native-carrier-header current)]
+              (if (= (if (string? current) :string :keyword) (get header 0))
+                (recur (rest frontier))
+                {:status :rejected :reason :carrier-invalid-textual-header}))
+            (recur (rest frontier))))))))
 
 (defn sh22-bridge-source-span-valid? [span]
   (if
@@ -273,55 +283,48 @@
       (if (= :vector (get request :kind))
         (if (vector? (get request :payload))
           (if (> (count (get request :payload)) 0)
-            (if
-             (<=
-              (count (get request :payload))
-              (get
-               (sh22-authenticated-vector-bridge-policy)
-               :maximum-vector-elements))
-              (if (map? layout)
-                (if (= :gravity/sh14-data-layout (get layout :artifact))
-                  (if (= :accepted (get layout :status))
-                    (if (= :vector (get layout :kind))
-                      (if (= (get request :value-id)
-                             (get layout :value-id))
+            (if (map? layout)
+              (if (= :gravity/sh14-data-layout (get layout :artifact))
+                (if (= :accepted (get layout :status))
+                  (if (= :vector (get layout :kind))
+                    (if (= (get request :value-id)
+                           (get layout :value-id))
+                      (if
+                       (= (get request :capacity)
+                          (get (get layout :layout) :capacity))
                         (if
-                         (= (get request :capacity)
-                            (get (get layout :layout) :capacity))
+                         (= (get request :length)
+                            (get (get layout :layout) :length))
                           (if
-                           (= (get request :length)
+                           (= (count (get request :payload))
                               (get (get layout :layout) :length))
                             (if
-                             (= (count (get request :payload))
-                                (get (get layout :layout) :length))
+                             (= (get request :element-size)
+                                (get (get layout :layout) :element-size))
                               (if
-                               (= (get request :element-size)
-                                  (get (get layout :layout) :element-size))
+                               (= (get request :size-bytes)
+                                  (get (get layout :layout) :size-bytes))
                                 (if
-                                 (= (get request :size-bytes)
-                                    (get (get layout :layout) :size-bytes))
+                                 (= (get request :type-fact-id)
+                                    (get (get layout :facts)
+                                         :type-fact-id))
                                   (if
-                                   (= (get request :type-fact-id)
+                                   (= (get request :effect-fact-id)
                                       (get (get layout :facts)
-                                           :type-fact-id))
+                                           :effect-fact-id))
                                     (if
-                                     (= (get request :effect-fact-id)
+                                     (= (get request :ownership-fact-id)
                                         (get (get layout :facts)
-                                             :effect-fact-id))
+                                             :ownership-fact-id))
                                       (if
-                                       (= (get request :ownership-fact-id)
+                                       (= (get request :safety-fact-id)
                                           (get (get layout :facts)
-                                               :ownership-fact-id))
-                                        (if
-                                         (= (get request :safety-fact-id)
-                                            (get (get layout :facts)
-                                                 :safety-fact-id))
-                                          (sh22-bridge-verification-passed?
-                                           verification
-                                           :gravity/sh14-layout-verification
-                                           :value-id
-                                           (get request :value-id))
-                                          false)
+                                               :safety-fact-id))
+                                        (sh22-bridge-verification-passed?
+                                         verification
+                                         :gravity/sh14-layout-verification
+                                         :value-id
+                                         (get request :value-id))
                                         false)
                                       false)
                                     false)
@@ -647,7 +650,7 @@
    (= false
     (= :accepted
        (get (sh22-bridge-carrier-preflight request) :status)))
-    [:schema :request-carrier-bound]
+    [:schema :invalid-request-carrier]
     (if
      (= false
       (sh22-bridge-exact-keys?
@@ -728,13 +731,7 @@
                          (> (count
                              (get request :actual-source-path))
                             0)
-                          (if
-                           (<=
-                            (count
-                             (get request :actual-source-path))
-                            4096)
-                            nil
-                            [:schema :actual-path-bound])
+                          nil
                           [:schema :actual-path-required])))
                     [:schema :actual-path-required])))))))))))
 
@@ -956,4 +953,4 @@
      :operation :vector-assoc
      :diagnostics
      [(sh22-bridge-diagnostic
-       request :verify :verification-carrier-over-bound)]}))
+       request :verify :invalid-verification-carrier)]}))
