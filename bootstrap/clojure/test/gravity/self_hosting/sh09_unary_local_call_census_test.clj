@@ -184,4 +184,3 @@
       (is (false? (valid? stale))))
     (is (false? (leaf 'body-lq-call-valid? core checked
                  (assoc-in bindings [:ordering-binding :definition-syntax-id] :stale) node call edge nodes))))))
-
