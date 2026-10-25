@@ -101,6 +101,32 @@ records the second-pass review standard and phase status.
   certificates, diagnostics, benchmark reports, SBOMs, and bootstrap records
   need provenance when the governing document requires it.
 
+## Project Accounting Removal
+
+Project cost models, work-unit budgets, producer/caller debits, prospective
+reservations, cost proofs and budget-exhaustion refusals are removed as
+implementation and admission requirements. Delete their enforcing code,
+contracts and budget-only tests; do not raise their constants, rename them as
+generic bounds or require replacement accounting before useful work proceeds.
+Input node, depth, width, scalar, byte, token and form quotas whose only purpose
+is refusing otherwise well-formed input are part of this removal.
+
+Preserve independently meaningful semantics and validation: Unicode/UTF8,
+types, index and arity legality, target-format representability, profiles,
+effects, capabilities, authentic inputs, native class and callback rules,
+metadata, source provenance and tamper detection. A retained numeric condition
+must enforce one of those concrete requirements, not a work or cost allowance.
+Actual host broker, heap, process-watchdog, capture and platform restrictions
+are separate from compiler accounting. External billing and account limits are
+not changed by this project instruction.
+
+Managers independently discover and execute work toward their standing goals.
+No task-count, failed-attempt allowance, preparation-only stage or discretionary
+per-run permission is an ordinary-development prerequisite. Coordinate actual
+conflicting writers and incompatible interfaces; the coordinator alone routes
+independent acceptance and integrates main. Preserve historical attempts as
+history, and never retry, transfer or route around a denied/restricted action.
+
 ## Agent Guardrails: Preventing Over-Engineering
 
 1. **Deliver the Smallest Complete Solution:** Write only the minimum code
@@ -172,13 +198,12 @@ clojure -M tools/validate_workstream_governance.clj
 clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/main
 ```
 
-- Use one active candidate per invariant family. A competing attempt must wait
-  until the current candidate is integrated, held, rejected, superseded, or
-  abandoned.
-- After two rejected admission candidates in one invariant family, stop further
-  admission attempts, not ordinary semantic debugging or focused tests.
-  Record a nonempty architecture decision before another candidate becomes
-  active. Do not route downstream work around the failed invariant.
+- Prevent conflicting writers in the same files or invariant transaction.
+  An immutable candidate awaiting review does not impose an active-candidate
+  quota or prevent an isolated successor. Coordinate genuine ownership conflicts.
+- Rejected candidates remain rejected evidence. Their count does not create a
+  failure allowance, architecture-decision quota or stop on further development.
+  Correct actual invariant failures; do not route downstream work around them.
 - Move candidates through the recorded lifecycle. A self-audit may find
   defects, but it cannot confer acceptance or integration eligibility.
 - Integration eligibility is bound to the exact base commit, candidate commit,
