@@ -120,8 +120,8 @@ is complete; its later platform flag has no exposed operation details.
 
 | Manager | Finite current queue / state | Dependency event or stop |
 | --- | --- | --- |
-| Core | One two-document outcome/accounting reconciliation, frozen for `awaiting-review`; PR294 helper composition item is integrated and complete for its bounded scope. | ROOT reviews and bundles with the substantive bridge candidate. No administrative-only PR/count credit or new semantic feature; this accounting does not gate other writers. |
-| Construction | `executing`: two existing `bootstrap-p15/00581` adapter files plus new `sh01_typed_lowering_work_policy_test.clj`, on a disjoint branch from `c4b1d19d`. | Preserve legacy fresh-verifier callee/two arguments for old arities; explicit-options arities alone use the policy-aware fresh callee/three arguments. Require actual fresh verification separately from bridge units; no schema, wrapper, cache or local/default-cap change. |
+| Core | Two-document accounting `fc29cdd4` independently accepted; this bounded bridge-status successor is frozen for review and bundling. PR294 helper composition is integrated for its bounded scope. | ROOT bundles with the substantive bridge candidate. No administrative-only PR/count credit or new semantic feature; this accounting does not gate other writers. |
+| Construction | Frozen `1af5fd81`/`39ad9017`, `awaiting-integration`, with independent CODE and EVIDENCE acceptance: two existing `bootstrap-p15/00581` adapters plus new `sh01_typed_lowering_work_policy_test.clj`, based on `c4b1d19d`. | Preserve legacy fresh-verifier callee/two arguments for old arities; explicit-options arities alone use the policy-aware fresh callee/three arguments. Preserve exact evidence scopes below; no schema, wrapper, cache or local/default-cap change. |
 | Cohort | Six-owner invalidation matrix returned after two disjoint read-only inspections; `queue-empty`. | The planning deliverable is complete; C16 remains OPEN. Refill only for an actual selected cohort/evidence gap, not a new stamp. |
 | SOURCE | Frozen `f3073c24` has independently accepted focused code/evidence but failed whole-default composition. The allocated producer-only diagnostic returned accepted at N=1048576; compact architecture finalization continues. | Preserve the failed whole run and producer-only boundary. The next Effects local-fit method is preparation only, with no GO; no held GIS run. Original-request transport availability is not compact implementation/fit evidence. |
 | MIR producer `01a16a55-1b44-7551-b595-6caceceef034` | Inferred-Integer producer edge, `dependency-blocked`. | Actual reader `(- codepoint 48)` yields Integer; the existing I64 bridge does not establish its mode/range/source facts. Needs SOURCE's real boundary, not another arithmetic demonstration. |
@@ -242,10 +242,17 @@ no new schema, wrapper, cache or implicit allowance change.
 
 C12's prewrite 228-byte minimal-Map-get producer/fresh-policy-verifier probe
 passed naturally in 91.403380041 s under the normal 2GiB/120s bound. This is
-not DSE fit or completed bridge validation; bridge units and actual fresh
-verification remain distinct required evidence. Two actual C12 negative groups
-passed separately, 1 test/19 assertions and 1 test/17 assertions; the candidate
-is unfrozen and no passing current positive aggregate is claimed.
+not DSE fit; bridge units and actual fresh verification remain distinct evidence.
+C12 is now frozen at `1af5fd81fc81b66b80e7fbd7ccd36f27dd2a2f74`, tree
+`39ad9017f713b0242b6632b8bf50d9116606da2a`, awaiting integration after
+independent CODE and EVIDENCE acceptance. Separate actual groups passed
+1 test/19 assertions, 1 test/17 assertions and 15 tests/135 assertions:
+17 tests/171 assertions across three runs, not a newly executed aggregate.
+Original positive V1/V2 aggregates remain FAILED; the corrected current
+positive selector is UNRUN. Independent unchanged-production/dependency and
+passive-observer conservation supports reuse only of V2's actually completed
+stock operations and 16 passing assertions in their original scope. It does
+not infer a passing current positive aggregate or DSE fit.
 
 SOURCE's actual producer-only diagnostic accepted the genuine 317-byte source
 at existing trusted N=1048576, converging in five rounds within bound 34.
@@ -258,8 +265,9 @@ and the frozen candidate remained clean. Raw evidence is at
 `/private/tmp/source-dse-producer-f3073c24-20261024b`; `probe.edn` SHA256 is
 `6cb021a30b1a3f998cf838c483690696288e820f2b757327b982c188f7265697`.
 This supplies no separate fresh C7 verifier, C8, assembly or runtime result.
-The earlier whole-default failure remains FAILED. SOURCE's next Effects
-local-fit question is method preparation only, with no execution GO.
+The producer-only classification has independent acceptance; the earlier
+whole-default failure remains FAILED. SOURCE's next Effects 180s local-fit
+question is method preparation only, with no execution GO.
 
 The existing three-argument body-effects route already carries the original
 request at `binding.digest-resolution.preimage.request`; the detached
@@ -472,7 +480,7 @@ selectors; its locators are not current passing results.
 | C09 OPEN | Core | Throw/try/multiple-handler tests exist. Select actual protected/handler/transfer variants and cleanup requirements from the selected population. | Accept required ordered exits and handler scope; reject malformed handler, placement or lost transfer/origin. A required cleanup gap cannot be called optional; no held exception design resumes. |
 | C10 OPEN | Core | Scalar/quoted-symbol, Vector, Keyword-Map and root-map-guard products/tests exist. Required constructor/rest/nested-guard population still needs C01 disposition. | Accept scrutinee once, branch binding uniqueness and structural-failure skipping; reject duplicate/malformed/forged guard/constructor evidence. Bool/totality/effects remain later owners. |
 | C11 OPEN | Core | Canonical node/source maps, fragments and verifiers exist; header pending declarations are not a current support oracle. Reconcile all selected C02-C10 rows and retained declarations against actual products. | Accept complete L2/primitive/domain coverage and maps; reject residual unowned surface forms, malformed child/binding/source links and dropped metadata. No false checked downstream facts. |
-| C12 OPEN | Construction | PR295-297 integrated scoped spelling/selector repairs; full-source analysis and actual authenticated Gravity construction remain separate open claims. The exact disjoint stock work-policy bridge is executing; its minimal-Map-get prewrite probe is not DSE fit. | Preserve old-arity legacy fresh verification and new explicit-options policy-aware verification, original source/report joins and local/default ceilings. Held H6 resource/full-reconstruction gaps are not ordinary-work gates; no cap increase or unchanged H6 replay. |
+| C12 OPEN | Construction | PR295-297 integrated scoped spelling/selector repairs; full-source analysis and actual authenticated Gravity construction remain separate open claims. The independently accepted stock work-policy bridge is frozen at `1af5fd81`, awaiting integration; its minimal-Map-get prewrite probe is not DSE fit. | Preserve old-arity legacy fresh verification and new explicit-options policy-aware verification, original source/report joins and local/default ceilings. Held H6 resource/full-reconstruction gaps are not ordinary-work gates; no cap increase or unchanged H6 replay. |
 | C13 OPEN | Core | Existing source/file/public `sh07-core` routes and routing tests are locators. Select accepted/rejected co-canonical inputs with deterministic identity, actual-path provenance and extension/read policy. | Accept the exact spellings actually traversed; reject wrong extension/UTF-8, rereads, stale paths or forged identity. Byte/parser parity alone is not paired downstream composition. |
 | C14 OPEN | SOURCE | Unmerged `f3073c24` has independently accepted focused 13/678 code/evidence, but its 317-byte fixture whole-default composition failed C7 work limits; fresh verification/C8/assembly/runtime were unreached. The producer-only diagnostic accepted at existing N=1048576 with observed local DSE charges within unchanged limits. | Preserve the failed whole result and unknown first-internal/minimum frontier. Producer-only acceptance does not establish fresh verification/downstream fit or permit raised local limits. Original helper Map/key-domain and loop/head frontiers remain separate. |
 | C15 OPEN | Core; SOURCE frontier only if allocated by ROOT | Core diagnostics, conformance and graph mutation owners exist. Join each required subset-negative family to its real ingress, stable ID/span/profile/target and retained result, including affected producer failures. | Reject shape/order/origin/effect-drop/unsafe-drop/domain/verify forgeries and above-bound graphs; accept at-bound legal graphs. Missing cases or raw host exceptions prevent closure; no diagnostic weakening. |

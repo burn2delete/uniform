@@ -9618,18 +9618,24 @@ Their original failed pin/EOF/delimiter attempts remain failed. These scoped
 changes do not complete full B51/H6, current migration, native support or a
 C-task, and retained changed-worktree evidence is not a fresh merged-main run.
 
-Core owns one two-document accounting item, frozen for ROOT review and
-bundling with the next substantive bridge candidate. It creates no standalone
-administrative PR/count credit or global gate. Construction is executing the
-exact disjoint two-existing-`00581`-file/new-test options bridge: legacy public
+Core's two-document `fc29cdd4` accounting is independently accepted; this
+bounded status successor is frozen for review and substantive bridge bundling.
+It creates no standalone administrative PR/count credit or global gate.
+Construction's exact disjoint two-existing-`00581`-file/new-test options bridge
+is frozen at `1af5fd81`/`39ad9017`, awaiting integration after independent CODE
+and EVIDENCE acceptance (full tuple in the linked plan): legacy public
 arities retain the old fresh callee/two arguments, while explicit-options
 arities alone use the policy-aware fresh callee/three arguments. Keep original
 source/report validation, the exact typed-input shape and local/default
 ceilings; no new schema, wrapper or cache. Its 228-byte minimal-Map-get
 producer/fresh-policy-verifier prewrite probe passed within the normal bound;
-that is not DSE fit or completion of bridge integration. Actual negative
-groups passed separately at 1/19 and 1/17; the candidate is unfrozen and no
-passing current positive aggregate is claimed.
+that is not DSE fit or completion of bridge integration. Separate actual
+groups passed at 1/19, 1/17 and 15/135 (17/171 across three runs, not a new
+aggregate execution). Original positive V1/V2 aggregates remain FAILED and
+the corrected current positive selector is UNRUN. Independent unchanged
+production/dependency/passive-observer conservation supports only V2's
+actually completed stock operations and 16 passing assertions in their
+original scope; no current positive aggregate is inferred passing.
 
 SOURCE's frozen `f3073c24`/`d188d977` has independent focused CODE/EVIDENCE
 acceptance for 13/678, but the actual 317-byte fixture whole-default run FAILED:
@@ -9648,8 +9654,9 @@ local DSE charge 31728 within unchanged 65536, 22 rows/zero drops/no observer
 error. Parent/child exited zero in 119415 ms parent duration with cleanup
 complete; raw evidence is at `/private/tmp/source-dse-producer-f3073c24-20261024b`.
 This is not minimum N, full C7 total work or fresh-verifier/C8/assembly/runtime
-evidence; the whole-default failure remains FAILED. Compact architecture work
-continues; the next Effects local-fit method is preparation only, with no GO.
+evidence. The producer-only classification is independently accepted; the
+whole-default failure remains FAILED. Compact architecture work continues;
+the next Effects 180s local-fit method is preparation only, with no GO.
 No failed whole replay or held GIS execution follows. Original-request context already
 exists on the selected three-argument body-effects route; the detached
 two-argument route is unsupported for compact GIS, not a reason for a new API.
