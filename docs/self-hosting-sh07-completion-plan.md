@@ -7,6 +7,7 @@ Current accounting snapshot: 2026-10-24, inspected remote main
 Earlier `64aa890a` handoff observations below keep their historical scope.
 The C01 seed-plan supplement below is based on `0067e9418de992900a95cd47d016029af62ff99c`;
 it does not refresh unrelated queue or compiler evidence snapshots.
+Its primitive-case supplement is based on `80881ba6fdc9548d181bf358fa0d033ae4298a22`.
 This updates management of the existing work, not compiler support or admission.
 
 Historical assessment date: 2026-10-21.
@@ -111,21 +112,25 @@ prerequisites, accepted/rejected checks, completion and stop conditions. Use
 `executing`, `resource-queued`, `dependency-blocked`, `awaiting-review`,
 `ready-for-integration` and `queue-empty`; these are work states, not C-task
 completion or migration credit. Freeze candidates during independent review.
-Only already allocated eligible disjoint work can proceed meanwhile. Refill
-through ROOT on a concrete dependency event; an empty eligible queue yields.
+Eligible disjoint work within the standing family can proceed meanwhile.
+Managers derive and notify ROOT of their in-scope successors; new cross-slice
+ownership still routes through ROOT.
 Do not invent a compiler feature to demonstrate management migration.
 
 ROOT's standing finite-goal charters apply to all eight implementation
 managers. Three limits active work, not the total number of tasks. Managers
-curate confirmed dependency-ready work inside their exclusive families and
-send ROOT the gap, contract, exact paths/interfaces, checks, dependencies and
-stop criteria before writing. They pull the next already eligible item in
-the same active turn, including during review of an isolated immutable
-candidate. Before yielding, report COMPLETED plus NEXT_EXECUTING, or NEED_REFILL
-with the exhausted alternatives, exact current-main blocker and next trigger.
-After one bounded readiness pass finds no independent work, yield; do not
-invent work or poll. ROOT retains shared allocation, independent acceptance
-and integration. Completion wakeups and the hourly all-eight fallback retain
+independently audit the repository, contracts, evidence and tests to discover,
+prioritize and execute dependency-ready work inside their exclusive families.
+Send ROOT the gap, contract, exact paths/interfaces, checks, dependencies and
+stop criteria before writing as ownership notification, not a task-grant wait.
+Pull the next eligible item in the same active turn, including during review
+of an isolated immutable candidate. One blocked task does not block the whole
+goal. Before yielding, report COMPLETED plus NEXT_EXECUTING; a drained leaf
+queue does not justify default NEED_REFILL. Truly exhausted alternatives need
+an evidence-backed goal-wide frontier routed through ROOT to the existing
+reviewer, with the exact owner, required action and wake event. Do not invent
+work or poll. ROOT retains shared allocation, independent acceptance and
+integration. Completion wakeups and the hourly all-eight fallback retain
 their existing cadence and preferences.
 
 The queue snapshot below reconciles allocated work at `c4b1d19d`; it is not
@@ -135,7 +140,7 @@ is complete; its later platform flag has no exposed operation details.
 
 | Manager | Finite current queue / state | Dependency event or stop |
 | --- | --- | --- |
-| Core | Prior accounting was bundled with the substantive PR298 bridge. The C01 selected-owner plan/use map and focused tests have returned; its four-path candidate is being frozen for independent review. | Self-pull the allocated C01 evidence/queue update in the same turn, then inspect the remaining finite goal for a confirmed independent item. Frozen review does not block eligible disjoint work; no administrative-only PR/count credit. |
+| Core | PR304 integrated the selected-owner plan/use map. The next C01 candidate joins existing runtime cases and newly confirmed missing source-arity cases; the separate two-slot helper freeze remains with ROOT for review/integration. | Preserve isolated candidates and self-pull confirmed in-goal gaps. The new case joins do not close source value domains, reachability or Core products; no administrative-only PR/count credit. |
 | Construction | Frozen `1af5fd81`/`39ad9017`, `awaiting-integration`, with independent CODE and EVIDENCE acceptance: two existing `bootstrap-p15/00581` adapters plus new `sh01_typed_lowering_work_policy_test.clj`, based on `c4b1d19d`. | Preserve legacy fresh-verifier callee/two arguments for old arities; explicit-options arities alone use the policy-aware fresh callee/three arguments. Preserve exact evidence scopes below; no schema, wrapper, cache or local/default-cap change. |
 | Cohort | Six-owner invalidation matrix returned after two disjoint read-only inspections; `queue-empty`. | The planning deliverable is complete; C16 remains OPEN. Refill only for an actual selected cohort/evidence gap, not a new stamp. |
 | SOURCE | Frozen `f3073c24` has independently accepted focused code/evidence but failed whole-default composition. The allocated producer-only diagnostic returned accepted at N=1048576; compact architecture finalization continues. | Preserve the failed whole run and producer-only boundary. The next Effects local-fit method is preparation only, with no GO; no held GIS run. Original-request transport availability is not compact implementation/fit evidence. |
@@ -484,7 +489,7 @@ selectors; its locators are not current passing results.
 
 | Task / status | Manager | Current code/evidence and next concrete closure obligation | Stop or rejection criterion |
 | --- | --- | --- | --- |
-| C01 OPEN | Core | The new selected-owner EDN map joins actual seed plans to 12668 builtin-call occurrences across the six sources, with the reader's 44 excluded functions explicit. Runtime case evidence, actual invocation reachability, generated/Core product joins and migration identities remain open. | Use exact source/plan/dependency identities and original body paths, not an allowlist or count. Do not infer execution of every retained function, whole-reader compilation or complete C01 closure. |
+| C01 OPEN | Core | The selected-owner EDN map joins actual seed plans to 12668 builtin-call occurrences across six sources, with 44 reader functions excluded explicitly. Runtime cases now cover finite normal values at every observed builtin arity; source value-domain joins, actual invocation reachability, generated/Core products and migration identities remain open. | Use exact source/plan/dependency identities and original body paths, not an allowlist or count. Matching an arity is not proof of an actual source argument's domain or execution of every retained function; C01 remains open. |
 | C02 OPEN | Core | Core literal/quote/collection lowerers and carrier/decimal/character/order tests exist. Join each selected subject's required literal and constructor variants to those real products/results. | Accept preserved kinds, inert quote and ordered constructors; reject malformed quote/constructor, unsupported executable payload and forged origin. Missing joins remain OPEN. |
 | C03 OPEN | Core; Cohort for C5 producer facts | Reference/def/var and qualified-name tests exist. Select actual executable local/namespace/import/var occurrences and their real resolver/callee artifacts. | Accept exact binding/source identity and shadowing; reject unresolved/private/substituted targets at the owning ingress. Do not fabricate a callee or host lookup. |
 | C04 OPEN | Core | `if`/`do`/`let` owner tests cover exclusive branches and sequential scope. Match selected empty/terminal/nested/transfer variants to actual Core and source order. | Accept false/nil truthiness and once-only ordered children; reject malformed arity/bindings and reorder/drop/duplicate mutations. No unselected destructuring feature is added. |
@@ -611,11 +616,56 @@ retains unknown symbols as inert DATA. Raw output is
 The earlier parent namespace preflight failed before test loading, source-plan
 construction or assertions; preserve `attempt1.log` beside it, SHA256
 `861d20b465985fdbeaeceff08633cce45bba070100999d035a627c8fee9bc90b`.
-The report SHA256 is
+The original PR304 report SHA256, before the primitive-case supplement, is
 `e2792e6582e1c328d977150ff0b44f9bdd5f46ff03494796b4d27ba40b3d964b`.
 No full source-to-Core, runtime primitive, native, migration or C01 completion
 credit follows. Subsequent required occurrence/product and accepted/rejected
 case joins must use this actual population rather than substituting an allowlist.
+
+### C01 primitive runtime cases at `80881ba6`
+
+The EDN's `:primitive-case-evidence` supplements the original construction
+record; its six owner rows, selected plan identities and original dependencies
+are unchanged. Source, compiler-rule, emitter, dependency-option and complete
+seed bytes were conserved from PR304. The seed Git tree is
+`6d09b4788df56c2a732f1bbbcdf867560cdabad6`. Existing runtime tests remained
+unchanged, SHA256
+`9433e4fd53c269eabb1203d024e761cc76faa91da1bae70655d2a985f12ba97d`.
+
+| Actual execution | Result | Scope |
+| --- | --- | --- |
+| Eleven existing exact SH01 runtime test vars | 11 tests/294 assertions; 14632.794333 ms | Generic/interpreted unary, lookup, equality, association and finite arithmetic cases, including their selected arity and host-error rejections. |
+| New `selected-owner-observed-arity-runtime-cases`, plus boundary/LOC | 12 tests/98 assertions; 7903.280625 ms | New test 1/75; boundary/LOC 11/23. These are distinct from the preceding execution, not a new aggregate of both runs. |
+
+The first execution supplied positive cases for 35 of the 36 used primitives.
+Joining actual used arities exposed specific uncovered rows: binary `<=`, `>`,
+`>=`; `assoc` arities 7, 9, 19 and 21; binary `conj`; and zero-argument `list`.
+The new owning C01 test checks those exact observed arities through both
+existing generic and interpreted runtime APIs. It checks true/false finite
+comparisons, normal persistent Map association, Vector/Set/List insertion and
+empty-list construction, with paired wrong-arity diagnostics and noncollection
+`conj` rejection where defined. No invalid arity is invented for variadic
+`list`. The test verifies that its arities occur in the reviewed use map and
+that all six owner byte identities still match.
+
+Each primitive row now links its fully qualified positive/rejection test vars,
+observed and tested arities, and explicit remaining domain/invocation/legality
+obligations. No observed arity lacks a normal-value positive case in these
+selections. This does not prove actual source value domains, all primitive
+inputs, dynamic owner reachability, Core products, C7/C8 legality or migration.
+The original runtime-case obligation stays OPEN for those stronger joins.
+
+Both commands used one normal broker lease, one 2GiB JVM and the existing
+120s watchdog, and exited naturally with no failures/errors. Raw files are
+`/tmp/sh07-c01-primitive-case-80881ba6-20261024-attempt1.log` (SHA256
+`65c8fd11ee14a565c41e40b3f21f174dc8d17dd7a273e000cedc65e17cd0a0dd`)
+and `/tmp/sh07-c01-observed-arities-80881ba6-20261024-attempt1.log` (SHA256
+`8be878b47bb72d634cdeea7d3511dcfba67e03261770c84f09c28c9e63b0dbd8`).
+The EDN retains per-var counts, domain limits, raw-result hashes, the new test
+hash and the post-run unchanged-worktree input-map snapshot. It does not
+mislabel that snapshot as a separately measured launch pin or these changed
+working-tree executions as clean frozen-commit runs. No source implementation,
+runtime provider, shared interface, allowance or milestone status changed.
 
 ### C01 and C16 stopping point
 
