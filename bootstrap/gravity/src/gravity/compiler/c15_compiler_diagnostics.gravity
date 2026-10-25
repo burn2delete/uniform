@@ -228,11 +228,29 @@
       false)
     false))
 
+(defn c15-byte-offset-valid? [value]
+  (if (integer? value)
+    (if (<= 0 value) (<= value 2147483647) false)
+    false))
+
+(defn c15-public-byte-span-valid? [span]
+  (if (sh15-exact-keys? span #{:file :source :byte-start :byte-end})
+    (if (sh15-sha256-shape? (get span :file))
+      (if (if (string? (get span :source)) (<= 1 (count (get span :source))) false)
+        (if (c15-byte-offset-valid? (get span :byte-start))
+          (if (c15-byte-offset-valid? (get span :byte-end))
+            (<= (get span :byte-start) (get span :byte-end)) false)
+          false)
+        false)
+      false)
+    false))
+
 (defn c15-span-valid? [span related?]
   (if (sh15-source-span-valid? span) true
     (if (c15-reader-span-valid? span true) true
       (if (c15-public-reader-span-valid? span) true
-        (if related? (c15-reader-span-valid? span false) false)))))
+        (if (c15-public-byte-span-valid? span) true
+          (if related? (c15-reader-span-valid? span false) false))))))
 
 (defn c15-primary-valid? [primary stage]
   (if (sh15-exact-keys? primary #{:span :syntax-id :artifact})
@@ -263,6 +281,13 @@
       false)
     false))
 
+(defn c15-source-bytes-origin-valid? [value]
+  (if (sh15-exact-keys? value #{:kind :path})
+    (if (= :source-bytes (get value :kind))
+      (if (string? (get value :path)) (<= 1 (count (get value :path))) false)
+      false)
+    false))
+
 (defn c15-origin-valid? [value]
   (if (sh15-exact-keys? value #{:kind :logical-source-id :source-content-hash})
     (if (= :source (get value :kind))
@@ -272,7 +297,8 @@
         false)
       false)
     (if (c15-public-source-origin-valid? value) true
-      (if (sh15-origin-valid? value) (= :source (get value :kind)) false))))
+      (if (c15-source-bytes-origin-valid? value) true
+        (if (sh15-origin-valid? value) (= :source (get value :kind)) false)))))
 
 (defn c15-vector-valid? [values kind]
   (if (vector? values)
