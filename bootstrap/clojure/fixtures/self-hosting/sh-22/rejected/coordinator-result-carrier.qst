@@ -1,0 +1,12 @@
+(ns gravity.self-hosting.sh22.result-carrier.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-result-carrier-over-depth-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-result-carrier-over-depth-request [request]
+  (let [payload (loop [index 0 result :leaf]
+                  (if (= index 30) result (recur (+ index 1) [result])))]
+    (assoc request :arguments [[] payload])))

@@ -9465,6 +9465,26 @@
     (if (= :bool type) true
       (if (= :keyword type) true (= :nil type)))))
 
+(defn sh13-scalar-types-valid? [types index]
+  (if (= index (count types)) true
+    (if (sh13-forward-type-valid? (get types index))
+      (sh13-scalar-types-valid? types (+ index 1)) false)))
+
+(defn sh13-signature-types-valid? [function]
+  ; Called only after the existing bounded structural/CFG/type checks pass.
+  ; Unused parameters and a non-returning function still have signatures.
+  (if (if (sh13-forward-type-valid? (get function :return-type))
+        (sh13-scalar-types-valid? (get function :param-types) 0) false)
+    (loop [blocks (get function :blocks) index 0]
+      (if (= index (count blocks)) true
+        (if (sh13-scalar-types-valid? (get (get blocks index) :param-types) 0)
+          (recur blocks (+ index 1)) false))) false))
+
+(defn sh13-signature-types-error [functions index]
+  (if (= index (count functions)) nil
+    (if (sh13-signature-types-valid? (get functions index))
+      (sh13-signature-types-error functions (+ index 1)) :type)))
+
 (defn sh13-operation-type-error
   [module function operation types]
   (let [opcode (get operation :opcode)
@@ -9974,8 +9994,10 @@
                                 (if
                                  (sh13-origin-chain-valid?
                                   (get module :origin-chain))
-                                  (sh13-functions-error
-                                   module (get module :functions) 0)
+                                  (let [error (sh13-functions-error module (get module :functions) 0)]
+                                    (if (= nil error)
+                                      (sh13-signature-types-error (get module :functions) 0)
+                                      error))
                                   :origin)
                                 :origin)
                               :module)
