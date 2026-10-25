@@ -339,10 +339,21 @@
         maximum-nodes (get policy :maximum-carrier-nodes)
         maximum-depth (get policy :maximum-carrier-depth)
         maximum-width (get policy :maximum-carrier-width)
-        maximum-scalar-units (get policy :maximum-scalar-units)]
+        maximum-scalar-units (get policy :maximum-scalar-units)
+        ; Private logical observation fee, not a payload or heap-byte limit.
+        ; F = result Vector 7 + common plan temporaries 30 + max(1, 37).
+        ; Clojure 1.12.5 get-in/reduce1: each of two two-key paths reserves
+        ; Vector 3 + ChunkedSeq 8 (including inherited fields) + ArrayChunk 4.
+        ; String adds one length metric; Keyword repeats common 30 in its
+        ; Symbol observer plus seven length/cast/separator/sum/colon values.
+        ; No constant-folding or cached-box discount. The node guard below
+        ; bounds selected calls by maximum-nodes, so this pool adds no new
+        ; payload admission limit and does not meter the host interpreter.
+        header-fee (+ 7 30 37)]
     (loop [frontier [[value 0]]
            nodes 0
-           scalar-units 0]
+           scalar-units 0
+           observation-left (* maximum-nodes header-fee)]
       (if (= 0 (count frontier))
         {:status :accepted
          :nodes nodes
@@ -369,16 +380,32 @@
                              (conj
                               result
                               [(first remaining) (+ depth 1)]))))]
-                    (recur next-frontier next-nodes scalar-units)))
-                (let [next-scalar-units
-                      (+ scalar-units
-                         (if (symbol? current)
-                           (bootstrap-symbol-utf16-unit-count current)
-                           (count (vec (str current)))))]
-                  (if (> next-scalar-units maximum-scalar-units)
-                    {:status :rejected :reason :carrier-scalar-bound}
-                    (recur
-                     (rest frontier) next-nodes next-scalar-units)))))))))))
+                    (recur next-frontier next-nodes scalar-units observation-left)))
+                (let [textual? (if (string? current) true (keyword? current))
+                      next-observation-left
+                      (if textual? (- observation-left header-fee) observation-left)]
+                  (if (< next-observation-left 0)
+                    {:status :rejected :reason :carrier-header-observation-bound}
+                    (let [units
+                          (if textual?
+                            (let [header (bootstrap-native-carrier-header current)
+                                  metric (get header 3)]
+                              (if (= (if (string? current) :string :keyword)
+                                     (get header 0))
+                                (if (integer? metric)
+                                  (if (<= 0 metric) metric nil)
+                                  nil)
+                                nil))
+                            (if (symbol? current)
+                              (bootstrap-symbol-utf16-unit-count current)
+                              (count (vec (str current)))))]
+                      (if (integer? units)
+                        (if (> units (- maximum-scalar-units scalar-units))
+                          {:status :rejected :reason :carrier-scalar-bound}
+                          (recur
+                           (rest frontier) next-nodes (+ scalar-units units)
+                           next-observation-left))
+                        {:status :rejected :reason :carrier-invalid-textual-header})))))))))))
 
 (defn sh22-physical-path-key? [key value]
   (if
