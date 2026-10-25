@@ -22613,6 +22613,25 @@
       (is (= :rejected (get-in ordinary [:result :status])))
       (is (= ordinary rejected))
       (is (some #(= :map-get-source-mismatch (:reason %)) (get-in rejected [:result :diagnostics]))))
+    (let [call-index (- (count (:nodes core)) 3)
+          edge (assoc-in core [:call-edges 0 :evaluation-order] :arguments-first)
+          edge (assoc-in edge [:identity-preimage :call-edges] (:call-edges edge))
+          call-form-id (get-in core [:nodes call-index :source :form-id])
+          form-index (first (keep-indexed #(when (= call-form-id (:form-id %2)) %1) forms))
+          replacement (str "sha256:" (apply str (repeat 64 "1")))
+          owner (assoc-in core [:nodes call-index :source :form-id] replacement)
+          projection (invoke-c7 'sh08-ft-semantic-projection-id [(:identity-preimage owner)])
+          owner (assoc-in owner [:identity-preimage :nodes]
+                  (invoke-c7 'sh08-ft-semantic-nodes [projection (:nodes owner)]))
+          owner-forms (assoc-in forms [form-index :form-id] replacement)]
+      (doseq [[changed originals] [[edge forms] [owner owner-forms]]]
+        (let [ordinary (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
+                         [changed bindings originals {} 1048576])
+              selected (invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger
+                         [changed bindings originals {} 1048576])]
+          (is (true? (invoke-c7 'sh08-vf-map-get-recipe? [changed bindings originals])))
+          (is (= :rejected (get-in ordinary [:result :status])))
+          (is (= ordinary selected)))))
     (prn {:selected-reconstruction :complete-canonical-equivalence
           :normal-producer-unchanged true :source-construction-replayed false
           :private-route-only true :whole-paid-public-verifier false})))
