@@ -60,7 +60,10 @@ exact published head rather than the original PR371 branch. No running work or
 pending implementation mutation is handed off. The external scratch CLI is
 optional: committed instructions/templates work without it. Do not repeat setup
 or globally install tools just to read this handoff. The next independent reviewer
-can assess the rule, diff check and sample migration plan. After parent supplies
-the cloud component-registry path, link to it rather than authoring a second
-registry or Reader roadmap. Legacy implementation renames remain unperformed
-owner-coordinated follow-up work.
+can assess the rule, diff check and sample migration plan. Parent confirmed the
+cloud component-registry path as `docs/component-roadmaps/` in draft PR380. The
+plan and naming guidance now link its integrated index and `reader.md` at
+candidate `ecf53f906754e051a7ead8dd58f1dc54446e9b69`, whose paths were checked
+through the GitHub PR files API. These are proposed candidate links, not a claim
+that PR380 is merged. Do not author a second registry or Reader roadmap. Legacy
+implementation renames remain unperformed owner-coordinated follow-up work.

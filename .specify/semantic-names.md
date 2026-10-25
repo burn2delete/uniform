@@ -78,6 +78,15 @@ new legacy names throughout the implementation.
 
 ## Incremental legacy migration
 
+Component ownership and finite completion tasks belong in the proposed
+[component registry](https://github.com/burn2delete/uniform/blob/ecf53f906754e051a7ead8dd58f1dc54446e9b69/docs/component-roadmaps/README.md)
+and [Reader roadmap](https://github.com/burn2delete/uniform/blob/ecf53f906754e051a7ead8dd58f1dc54446e9b69/docs/component-roadmaps/reader.md)
+from [draft PR380](https://github.com/burn2delete/uniform/pull/380).
+The proposed repository path is `docs/component-roadmaps/`; these pinned links
+describe that candidate, not adoption into main. Reconcile with the accepted
+registry after parent integration; do not copy its task lists here. Component
+names are semantic working defaults, not new API prefixes or whimsical branding.
+
 See the [sample audit and handoff](naming-pilot/plan.md). Its suggestions are not
 reserved names or authorization to edit active owners' files. For each selected
 rename, coordinate one owner and update its import/require graph, callers, tests

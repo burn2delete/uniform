@@ -31,6 +31,13 @@ diff. Record actual results separately in evidence.md.
 
 ## Cloud handoff
 
+The separate proposed component registry is `docs/component-roadmaps/`, with
+[integrated index](https://github.com/burn2delete/uniform/blob/ecf53f906754e051a7ead8dd58f1dc54446e9b69/docs/component-roadmaps/README.md)
+and [Reader-first roadmap](https://github.com/burn2delete/uniform/blob/ecf53f906754e051a7ead8dd58f1dc54446e9b69/docs/component-roadmaps/reader.md)
+in [draft PR380](https://github.com/burn2delete/uniform/pull/380), candidate
+`ecf53f906754e051a7ead8dd58f1dc54446e9b69`. Use its ownership and rollup;
+this naming pilot contains no duplicate component completion checklist.
+
 The next owner reviews this draft and chooses one independent legacy transaction
 with the relevant implementation owner. Re-scan callers on the then-current base;
 check APIs, namespace aliases, manifests, source hashes, test selectors and docs.
