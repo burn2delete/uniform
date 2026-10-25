@@ -5756,19 +5756,11 @@
      :token-id nil :form-id nil :related []}
     nil))
 
-(defn sh03-read-source-unit [source-unit source-bytes reader-policy]
-  (if (sh03-source-unit-valid? source-unit)
-    (if (sh03-reader-policy-valid? reader-policy)
-      (if (sh03-source-byte-vector-valid? source-unit source-bytes)
-        (let [decoded (sh03-decode-source-bytes source-unit source-bytes)]
-          (if (= (get decoded :status) :accepted)
-            (let [characters (get decoded :characters)
-                  scanned (sh03-scan-tokens characters)]
-              (if (= (get scanned :status) :accepted)
-                (let [tokens (get scanned :tokens)
-                      parsed (sh03-parse-tokens tokens reader-policy)]
-                  (if (= (get parsed :status) :accepted)
-                    (let [construction-rejection
+; The construct phase retains only the source arguments, tokens and parsed
+; products. Its body and prepayment guard are unchanged by stage orchestration.
+(defn sh03-construct-parsed-source-unit
+  [source-unit source-bytes reader-policy tokens parsed]
+  (let [construction-rejection
                           (sh03-construction-rejection
                            (sh03-projected-construction-node-count
                             source-bytes reader-policy tokens parsed)
@@ -5853,12 +5845,11 @@
                        (sh03-execution-boundary-record)})
                         (sh03-rejected-result
                          source-unit source-bytes reader-policy
-                         construction-rejection)))
-                    (sh03-rejected-result
-                     source-unit source-bytes reader-policy parsed)))
-                (sh03-rejected-result
-                 source-unit source-bytes reader-policy scanned)))
-            (sh03-rejected-result
+                         construction-rejection))))
+
+(defn sh03-rejected-decoded-source-unit
+  [source-unit source-bytes reader-policy decoded]
+  (sh03-rejected-result
              source-unit source-bytes reader-policy
              {:rule (if (= (get decoded :reason) :character-count-limit)
                       "C2-HASH"
@@ -5891,7 +5882,40 @@
                  :scalar-index (get decoded :scalar-index)
                  :line (get decoded :line)
                  :column (get decoded :column)})
-              :token-id nil :form-id nil :related []})))
+              :token-id nil :form-id nil :related []}))
+
+; Recur replaces the interpreter loop environment with just its outer source
+; arguments plus the four loop locals. It does not retain a prior phase's let
+; locals. Explicit nils remove characters before parse and construction. These
+; locals refer to existing bounded phase input tables, without a new aggregate
+; data carrier. Interpreter environments/recur dispatch remain the existing
+; execution boundary; accepted products and indexes keep their full charges.
+(defn sh03-read-source-unit [source-unit source-bytes reader-policy]
+  (if (sh03-source-unit-valid? source-unit)
+    (if (sh03-reader-policy-valid? reader-policy)
+      (if (sh03-source-byte-vector-valid? source-unit source-bytes)
+        (loop [phase :decode characters nil tokens nil parsed nil]
+          (if (= phase :decode)
+            (let [decoded (sh03-decode-source-bytes source-unit source-bytes)]
+              (if (= (get decoded :status) :accepted)
+                (recur :scan (get decoded :characters) nil nil)
+                (sh03-rejected-decoded-source-unit
+                 source-unit source-bytes reader-policy decoded)))
+            (if (= phase :scan)
+              (let [scanned (sh03-scan-tokens characters)]
+                (if (= (get scanned :status) :accepted)
+                  (recur :parse nil (get scanned :tokens) nil)
+                  (sh03-rejected-result
+                   source-unit source-bytes reader-policy scanned)))
+              (if (= phase :parse)
+                (let [parsed-result (sh03-parse-tokens tokens reader-policy)]
+                  (if (= (get parsed-result :status) :accepted)
+                    (recur :construct nil tokens parsed-result)
+                    (sh03-rejected-result
+                     source-unit source-bytes reader-policy parsed-result)))
+                (sh03-construct-parsed-source-unit
+                 source-unit source-bytes reader-policy
+                 tokens parsed)))))
         (sh03-invalid-input-result
          source-unit source-bytes reader-policy
          "C2-HASH" :source-byte-vector-contract

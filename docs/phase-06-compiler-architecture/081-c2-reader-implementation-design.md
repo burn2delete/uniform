@@ -273,6 +273,15 @@ views on demand. It must preserve exact UTF-8 bytes, Unicode-scalar and UTF-16
 positions, CRLF handling, diagnostics and complete reader products. This storage
 choice reduces retained intermediate structure without changing source identity,
 resource authority, pre-growth checks or fresh replay obligations.
+The private phase loop replaces its interpreter environment between decoding,
+scanning, parsing and accepted construction. Character storage is cleared after
+scanning, so it is no longer retained by an enclosing decoded-result binding
+during parsing or construction. Existing bounded token and parse tables remain
+available where required; no aggregate carrier or alias discount is introduced.
+Verification still retains the submitted result and reconstructs independently
+from every original source byte. This lifetime change does not establish a heap
+bound; representative construction, validation and replay must demonstrate fit
+under the separately controlled host resource class.
 
 ## Reader Extensions
 
