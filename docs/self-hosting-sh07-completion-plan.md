@@ -41,12 +41,105 @@ accepted/rejected behavior, preserved facts, and independently accepted
 stable-module migration evidence. Lowering constructs and verifies control
 semantics; executing compiled application control through MIR is SH-13 work.
 
-The task count is fixed. The exact compiler-wide semantic population is still
-an open input to C01, because the actual complete compiler build recipe is not
-yet implemented. This plan does not invent that recipe or equate a directory
-inventory with its transitive closure. A bounded frontend module migration can
-finish before the complete compiler exists, under BOOT5's explicit support
-set; it must not be reported as complete compiler coverage.
+The task count is fixed. C01 must determine the actual required source and
+semantic population now from source/import/generated-form relationships,
+existing compiler inventories, pass manifests and the BOOT5 support matrix.
+Completion of the SH23-SH25 build recipe is not a prerequisite for this scope
+work or for SH07 acceptance. An unresolved required source edge remains a
+specific C01 gap with an owner; it is not a reason to await the later compiler
+build as a whole. A directory count, the existing six-owner sample or the
+current fixtures alone cannot stand in for that population. A scoped module
+migration may finish first, but cannot silently redefine the milestone.
+
+## One SH07 finish line
+
+The canonical milestone's six requirements define one endpoint: the declared
+bootstrap compiler's required source forms pass authentic source, expansion
+and resolution through the owning Gravity lowerer to freshly verified L2
+Core, with preserved source/generated origins, bindings, evaluation order,
+canonical graph links, declarations and diagnostics. Required malformed or
+forged inputs reject at the owning boundary. The selected stable revision
+also has applicable independently accepted scoped migration/conformance
+comparison evidence. All required C01-C17 obligations must be satisfied before
+C18 records SH07 complete. This is an acceptance conjunction, not a requirement
+to execute development tasks serially.
+
+C01 records the finite source/import/generated-form and primitive population,
+selected profile/target, semantic variants and temporary seed/host boundaries
+using the existing support map. It must distinguish a required source
+occurrence from quoted rule DATA, an unselected later component and a runtime
+path that has not executed. Required source forms cannot be removed to obtain
+a passing result. Conversely, SH07 does not require executing every instruction
+of the eventual compiled compiler or completing every later component merely
+to classify its Core constructs. Source association is scope evidence; real
+owning producer/consumer execution remains necessary for composition claims.
+
+The six-source endpoint below is existing partial evidence. It is not a second
+finish line that C18 may substitute for the canonical milestone. If C01 proves
+that it covers the complete required SH07 population, its evidence can support
+the milestone after the remaining requirements pass. If it does not, C01 names
+the missing required sources/variants and their tasks; C18 records only the
+actual narrow module credit. The final compiler build later consumes accepted
+revisions or accepted successors, as SH25 requires.
+
+SH07 stops before completed C7-C10 semantics, MIR execution, native/backend
+completion, the whole build/package/driver, self-hosting or seed retirement.
+C14 still checks the actual changed Core-to-C7 interface and any genuinely
+affected downstream consumer. Those checks neither require all downstream
+features nor grant checked facts to an unverified stage. SH08-SH29 owners may
+implement against existing interfaces while SH07 completion credit is pending.
+
+## Outcome ownership and evidence decisions
+
+A leaf implementation freeze does not finish its producer-to-consumer outcome.
+The accountable outcome manager tracks original input, producer, adapter,
+consumer, affected checks and independently accepted integration. Existing
+path writers keep their exclusive files; the outcome manager requests genuine
+cross-owner changes through ROOT, then verifies adoption. This ownership does
+not transfer a restricted operation or confer main integration authority.
+
+| Outcome | Accountable manager | Cooperating path owners and completion evidence |
+| --- | --- | --- |
+| C01 population, C02-C11 semantics and C13 public ingress | Core | Core owns the required source-to-Core and public-route outcome. Reader/envelope/native/adapter owners supply their actual changed boundaries. Close a row from applicable execution and source/product joins, not a structural census alone. |
+| C12 authentic source-to-Gravity-Core construction | Core for the permissible frontend outcome; ROOT for restricted dependency disposition | Existing Core and Reader/adapter writers retain their assigned files. The C12/Effects operation that is platform-restricted remains blocked with its existing owner; no new owner may retry or copy it. A hosted C6 product is not a substitute for Gravity lowerer execution. |
+| C14 Core-to-C7 compatibility and affected consumer adoption | SOURCE | Core supplies the actual canonical producer; SOURCE owns the real C7 consumption result and coordinates affected emitter/runtime adapters through ROOT. Freeze all required joined identities and retain explicit unchecked later facts. |
+| C15 stage-produced diagnostics and negative composition | Core for Core ingress; Diagnostics for C15 preservation joins | Preserve each actual producing stage's fields and authentic input/result relationship. Private preservation, canonical diagnostic export and authenticated/public publication are separate claims. Existing producer data can support owned preservation work without waiting for unrelated publication interfaces. |
+| C16 current-cohort applicability | Cohort | Core and actual macro/resolver owners supply full-source expansion, binding/origin comparison and real Gravity-Core consumer results. Cohort reconciles their exact consumed dependencies; it does not duplicate producer implementation or claim new execution from an unchanged-source list. |
+| C17 stable migration evidence and C18 milestone decision | ROOT | ROOT selects the actual candidate, routes independent acceptance and integrates main. Outcome managers supply accepted immutable joins and precise residuals; no manager self-certifies milestone closure. |
+
+At the 2026-10-25 reconciliation, the following are explicit dispositions, not
+new passing runs or a blanket requirement to rerun unchanged evidence. The
+historical detailed tables below remain locators with their original scope.
+
+| Task | Disposition and concrete next outcome |
+| --- | --- |
+| C01 | REMAINING: Core must settle required population from current source/import/manifests and map all six requirement groups. Remove the circular later-build prerequisite; retain unknown required edges explicitly. |
+| C02 | REMAINING: applicable authentic literal/quotation/constructor compositions already exist. Core reconciles their required population and consumed dependencies, then fills only demonstrated missing variants/joins. |
+| C03 | REMAINING: reconcile actual lexical, namespace/import, definition and var producer identities; implement only missing required binding/source joins. |
+| C04 | REMAINING: real control/binding compositions exist. Reconcile required truthiness, selected-branch, initializer order and source-occurrence variants rather than reconstructing another control path. |
+| C05 | REMAINING: settle actual required callable/capture/nested-function variants and join their real source/signature/body/capture products. |
+| C06 | REMAINING: reconcile direct/nonlocal/indirect/recursive and dispatch requirements against actual consumers; the separately scoped direct-call result is not the complete callable surface. |
+| C07 | REMAINING: authentic loop/recur composition and hostile replay exist. Reconcile actual required target/tail/arity/order population; copied-source fixture execution does not authenticate the full production module. |
+| C08 | REMAINING: reconcile required mutation locations and once-only RHS/order products, without asserting later effect/capability legality. |
+| C09 | REMAINING: reconcile required protected/handler/error/cleanup variants and actual source/control joins; preserve unsupported cases and later runtime boundaries honestly. |
+| C10 | REMAINING: classify required pattern/guard variants from real uses; preserve scrutinee/branch bindings/control and leave later guard typing/effects to their owners. |
+| C11 | REMAINING: close complete canonical graph/primitive/domain/source-map joins and reconcile stale support declarations from actual behavior. |
+| C12 | REMAINING plus exact platform-BLOCKED dependency: complete permissible authentic source-to-Gravity-Core joins through existing owners. The restricted C12 transaction remains inaccessible; do not transfer it or call a hosted product equivalent. |
+| C13 | APPLICABILITY RECONCILIATION: the backlog records a real executable public route gate. Core compares its actual loaded source/compiler/adapters/dependencies against the candidate; reuse valid results and run only affected cases. No new route or automatic task closure follows from the historical total. |
+| C14 | REMAINING: SOURCE tracks the complete authentic Core-to-C7 outcome and affected downstream adoption. Remove work accounting; preserve independent semantic reconstruction and actual consumer acceptance. |
+| C15 | REMAINING: reconcile Core negatives and real stage-produced rejection joins. The recovered C3 rejection-preservation work is permitted within Diagnostics ownership; canonical export/publication and restricted tests remain separate. |
+| C16 | REMAINING: actual full checked-Core macro expansion, expansion/origin/binding comparison and resolution-to-Gravity-Core consumer evidence remain required. Existing stale-reader/catalog/thread/consumer tests are not a reason to duplicate them. PR353's quota-oracle deletion does not close these rows. |
+| C17 | REMAINING: select the joined stable revision after its required evidence is available, reuse applicable unchanged comparisons and refresh genuinely affected ones through independent acceptance. |
+| C18 | REMAINING: decide the single canonical finish line from explicit C01-C17 dispositions; narrow module credit leaves the milestone partial. No task is closed by this document change. |
+
+A current evidence decision records its original result and tested boundary,
+actual source/compiler/loaded dependencies, candidate relationship and the
+reason for reuse, invalidation or a targeted refresh. Check missing original
+logs honestly; do not manufacture a receipt or report author-reported checks
+as a fresh run. Historical accounting failures remain historical; removing a
+cost mechanism neither preserves its refusal requirement nor proves the
+unmetered semantic successor correct. These decisions use existing records,
+not another proof system, task grant or cost-accounting gate.
 
 ## Governing contracts and dependencies
 
@@ -113,8 +206,8 @@ any implementation file:
 | Key | Accountable manager | SH07 responsibility |
 | --- | --- | --- |
 | ROOT | Coordinator `019f4993-78b9-7573-b154-139d87a127b5` | Cross-slice allocation, C17 admission/execution scheduling, C18 decision and all integration. |
-| Core | Scope/Core closure manager `01a16a54-eeb1-7941-ac35-7be30e47bdc7` | C01, C02-C11, C13 public ingress and C15 subset-negative closure. Allocated documents remain this plan, the selected-owner EDN map and backlog orchestration/dependency/progress sections. Contract-settled Core production/tests/fixtures follow ROOT's exclusive standing scope; foreign/shared interfaces stay outside it. |
-| Construction | `01a138f7-bfa4-7b90-8a22-5b3c417b2e11` | C12 retained construction/source-origin reconciliation and the exact disjoint stock typed-lowering options bridge allocated by ROOT. |
+| Core | Scope/Core closure manager `01a16a54-eeb1-7941-ac35-7be30e47bdc7` | C01, C02-C11, C13 public ingress and C15 subset-negative closure. The selected-owner EDN map remains Core-owned; shared process/roadmap guidance in this plan and the backlog is reserved to the existing process/docs writer through ROOT. Contract-settled Core production/tests/fixtures follow ROOT's exclusive standing scope; foreign/shared interfaces stay outside it. |
+| Construction | `01a138f7-bfa4-7b90-8a22-5b3c417b2e11` | Existing C12-restricted operation remains with its original owner and cannot be resumed or transferred without actual eligibility resolution. Core tracks the independently permissible frontend outcome as specified above. |
 | SOURCE | `01a13b8d-509d-7771-b618-06a24933391b` | C14 affected C7 composition; existing C7/effects/emitter/tests and L5/STD3 reservations remain intact. Frozen candidate, diagnostic-method and compact-design work have distinct outcomes below. |
 | Cohort | `01a02f9c-2e5a-7d70-ba6d-d3519701b13f` | C16 current-cohort evidence/invalidation matrix. |
 

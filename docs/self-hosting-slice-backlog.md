@@ -17,6 +17,37 @@ validation starting points, composition boundaries and stopping rules. This
 backlog remains the live status/evidence record; writing or validating the plan
 does not promote any milestone or renew migration evidence.
 
+## SH07 finish line and current outcome ownership
+
+SH07 has one canonical endpoint: required bootstrap source forms pass the
+owning source/expansion/resolution and Gravity lowering route to freshly
+verified canonical Core, with applicable negative composition, provenance,
+source/binding/order preservation and independently accepted scoped migration
+evidence. Its [completion plan](self-hosting-sh07-completion-plan.md#one-sh07-finish-line)
+records C01-C18 dispositions and accountable complete-outcome owners.
+
+C01 derives the required source/import/generated-form/primitive population
+from existing inventories, manifests and BOOT5 records now. It does not wait
+for SH23-SH25 implementation, silently equate six selected files with the full
+required population, or exclude a required construct to pass. Later compiler
+builds consume accepted frontend revisions; they are not a circular prerequisite
+for establishing those revisions. SH07 does not claim full C7-C10, MIR/runtime,
+backend, package/driver/build completion, self-hosting or seed retirement.
+
+Core owns the permissible authentic frontend/public-ingress outcome through
+its adapters; SOURCE owns actual Core-to-C7 consumption and affected adoption;
+Diagnostics owns stage-produced preservation joins; Cohort owns current
+applicability of the actual producer/consumer evidence. ROOT resolves genuine
+shared ownership, routes independent acceptance and integrates main. A leaf
+freeze does not leave its joins ownerless. Restricted C12 work and denied
+review/oracle actions remain with their exact restrictions, not reassigned.
+
+Milestone dependencies govern completion credit. Existing later managers
+continue useful work against available interfaces without waiting for global
+SH07 completion. No task-count, attempt, cost, budget or replacement accounting
+gate governs that initiative. Reuse applicable execution evidence; source
+association or a plan is not a fresh execution result.
+
 ## Master Coordinator Goal
 
 Iterate on Gravity through the 30 smallest independently provable vertical
