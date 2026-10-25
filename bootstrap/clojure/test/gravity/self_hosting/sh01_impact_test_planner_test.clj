@@ -731,6 +731,22 @@
       (is (= "SH01-IMPACT-UNOWNED" (:id (ex-data exception))) relative)
       (is (= [relative] (:paths (ex-data exception))) relative))))
 
+(deftest unknown-nested-production-input-is-never-treated-as-unrelated
+  (doseq [relative ["bootstrap/clojure/src/gravity/pass_execution/unregistered.clj"
+                    "bootstrap/clojure/src/gravity/tools/unregistered/body.clj"]]
+    (let [failure (try
+                    (planner/build-plan {:changed-paths [relative]})
+                    nil
+                    (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+      (is (= "SH01-IMPACT-UNOWNED" (:id failure)) relative)
+      (is (= [relative] (:paths failure)) relative)))
+  (let [context (planner/planning-context
+                 {:catalog [{:namespace 'gravity.self-hosting.sh01-ownership-test
+                             :slice "SH-01"}]})
+        plan (planner/build-plan {:context context :changed-paths ["README.md"]})]
+    (is (= ["README.md"] (:ignored-paths plan)))
+    (is (empty? (:namespaces plan)))))
+
 (deftest changed-path-plans-are-canonical
   (let [first-path
         "bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_test.clj"

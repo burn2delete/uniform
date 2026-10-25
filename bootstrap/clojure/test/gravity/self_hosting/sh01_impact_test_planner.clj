@@ -446,10 +446,7 @@
   [relative]
   (or
    (str/starts-with? relative "bootstrap/gravity/src/")
-   (boolean
-    (re-matches
-     #"bootstrap/clojure/src/gravity/[^/]+\.clj"
-     relative))
+   (str/starts-with? relative "bootstrap/clojure/src/gravity/")
    (boolean
     (re-matches
      #"bootstrap/clojure/test/gravity/[^/]+_test\.clj"
