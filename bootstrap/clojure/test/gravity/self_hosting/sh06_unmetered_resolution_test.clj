@@ -203,4 +203,20 @@
            (get-in artifact [:gravity-resolution-boundary :authenticated-envelope :source-rule :admission-status])))
     (is (= 1 (get-in artifact [:gravity-resolution-boundary :authenticated-envelope :schema-version])))
     (is (= artifact (b/sh06-resolution-deserialize serialized)))
-    (is (= :failed (:status (b/sh06-resolution-artifact-verification changed))))))
+    (is (= :failed (:status (b/sh06-resolution-artifact-verification changed))))
+    (let [boundary (:gravity-resolution-boundary artifact)
+          envelope (:authenticated-envelope boundary)
+          default-failure
+          (try (b/p15-s23-stage2-sh02-descriptor-envelope-verify!
+                 envelope b/sh06-resolution-envelope-stage b/sh06-resolution-sealed-artifact-kind
+                 (:authenticated-envelope-descriptor boundary) fixture)
+               nil (catch clojure.lang.ExceptionInfo error (ex-data error)))
+          old-hash b/p15-s23-sh02-expected-source-content-hash
+          mixed (assoc-in artifact [:gravity-resolution-boundary :authenticated-envelope
+                                    :source-rule :source-content-hash] old-hash)
+          mixed-report (b/sh06-resolution-artifact-verification mixed)]
+      (is (= "B1-INPUT" (:id default-failure)))
+      (is (= :pinned-sh02-source-snapshot (:missing-fact default-failure)))
+      (is (not= old-hash (get-in envelope [:source-rule :source-content-hash])))
+      (is (= :failed (:status mixed-report)))
+      (is (false? (get-in mixed-report [:checks :fresh-sh02-envelope-verified?]))))))
