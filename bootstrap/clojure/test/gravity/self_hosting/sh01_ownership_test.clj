@@ -513,8 +513,8 @@
     (is (= 8191 (count (:text output))))))
 
 (deftest duplicate-dedicated-namespace-mappings-are-rejected
-  (let [resource (io/resource "gravity/self_hosting")
-        test-root (io/file (.toURI resource))
+  (let [resource (io/resource "gravity/self_hosting/sh01_ownership_test.clj")
+        test-root (.getParentFile (io/file (.toURI resource)))
         directories-var
         (ns-resolve
          'gravity.self-hosting-test-runner
