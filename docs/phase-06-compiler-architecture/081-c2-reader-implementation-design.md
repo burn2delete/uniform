@@ -283,6 +283,24 @@ from every original source byte. This lifetime change does not establish a heap
 bound; representative construction, validation and replay must demonstrate fit
 under the separately controlled host resource class.
 
+Reader digest requests use a private validating stream for the existing
+`gravity-canonical-edn-v1` encoding. A complete validation pass preserves the
+canonical domain, physical occurrence counts, bounds, metadata rejection and
+original failure order before opening the digest writer. Emission preserves
+the exact existing bytes, type tags, numeric spellings, escaping, list/vector
+distinction and hexadecimal UTF-8 canonical key ordering. Both passes apply the
+same per-preimage limits and must report identical final statistics. Their
+private statistics grant no candidate or replay authority.
+
+The stream retains normalized keys and ordering data for the current map,
+rather than normalized values for the entire token vector. Compound keys and
+sets may still use the existing bounded normalizer; this is not a universal
+constant-memory or heap-fit guarantee. Digest-reference resolution, collision
+checks, the generic canonical identity API, raw-byte hashing and complete fresh
+reader reconstruction remain separate obligations. No encoding version,
+identity domain, declared input capacity or validation result is changed or
+reused to authorize a later invocation.
+
 ## Reader Extensions
 
 Reader extensions are declared in project or package policy:

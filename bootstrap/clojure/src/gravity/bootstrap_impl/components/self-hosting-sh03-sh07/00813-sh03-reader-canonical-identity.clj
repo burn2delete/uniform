@@ -27,7 +27,7 @@
             sh03-reader-canonical-maximum-scalar-bytes
             p15-s23-c6c10-max-total-scalar-bytes
             sh03-reader-canonical-maximum-total-scalar-bytes]
-    (p15-s23-c6c10-canonical-digest source-path value)))
+    (sh03-reader-canonical-stream-digest source-path value)))
 
 (defn- sh03-reader-resolve-digest-request-sequence!
   [source-path raw-result source-bytes]
@@ -91,19 +91,14 @@
                     (sh03-reader-boundary-fail!
                      source-path :source-bound-sh03-reader-digest-request
                      request {:ordinal ordinal}))
-                  resolved-identity
-                  (if raw-request?
-                    [:raw-byte-vector-v1 resolved-preimage]
-                    (sh03-reader-canonical-identity
-                     source-path resolved-preimage))
                   digest
                   (if raw-request?
                     (str "sha256:"
                          (sha256-bytes-hex
                           (sh03-reader-byte-array resolved-preimage)))
-                    ;; The identity immediately above is this request's fresh,
-                    ;; fully validated immutable canonical form.
-                    (p15-s23-c6c10-digest-validated-form resolved-identity))]
+                    ;; Validate the complete original-order preimage, then
+                    ;; stream the same canonical EDN v1 bytes for its digest.
+                    (sh03-reader-canonical-digest source-path resolved-preimage))]
               ;; Equal canonical forms have identical fixed encoding and digest.
               ;; Digest uniqueness therefore also rejects equal forms; this
               ;; implication does not require the hash to be injective.

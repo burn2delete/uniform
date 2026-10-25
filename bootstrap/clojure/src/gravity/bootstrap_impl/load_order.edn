@@ -1400,6 +1400,7 @@
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00810-sh03-reader-plan-static-audit.clj", :reader-line 144471, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-plan-static-audit!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00811-sh03-reader-plan-validate.clj", :reader-line 144639, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-plan-validate!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00812-sh03-reader-input-source-unit.clj", :reader-line 144850, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-input-source-unit"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-digest-stream.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-canonical-stream-stats"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-identity.clj", :reader-line 145087, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-canonical-identity"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00814-sh03-reader-source-slice-text.clj", :reader-line 145316, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-source-slice-text!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00815-sh03-reader-normalization-deferred.clj", :reader-line 145552, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-normalization-deferred?"}
