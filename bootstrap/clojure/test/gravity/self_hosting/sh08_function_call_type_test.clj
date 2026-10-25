@@ -21362,6 +21362,52 @@
           :B47-verification-complete false :C7-inference-complete false
           :numeric-proof-established false :paired-source-bytes-only true})))
 
+(deftest sh08-gis3-module-entry-unification-development-kernel
+  ;; This grounds one actual module entry through the existing C7 operations.
+  ;; It is not the complete paid GIS census or a public acceptance result.
+  (let [{:keys [core forms bindings]} (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        by-form (into {} (map (juxt :form-id identity) forms))
+        records (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
+        record (first (filter #(= 'bounded (:definition-name %)) (:function-records core)))
+        functions (invoke-c7 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
+        entries (filterv #(= (:definition-binding-id record) (:operator-binding-id %)) (:calls core))
+        call (first entries) edge (first (filter #(= (:core-node-id call) (:call-core-node-id %)) (:call-edges core)))
+        literals (into {} (for [node (:nodes core) :when (= :literal (:core-form node))]
+                            [(:node-id node) (invoke-c7 'sh08-ft-infer-node [node {} {} {} []])]))
+        context {:ordering-core core :ordering-bindings by-binding :lookup-bindings bindings
+                 :association-forms by-form :loop-work-left 1048576 :type-inference-work-allowance 1048576}
+        unify #(invoke-c7 'sh08-ft-call-constraints-with-context [%1 %2 nodes literals {} functions context])
+        joined (unify entries [edge]) parameter-id (first (:parameter-binding-ids record))
+        argument (nodes (first (:argument-node-ids call)))
+        bad (assoc call :argument-node-ids []) wrong-arity (unify [bad] [edge])
+        subtraction (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+        subtraction-edge (first (filter #(= (:core-node-id subtraction) (:call-core-node-id %)) (:call-edges core)))
+        unsupported (unify [subtraction call] [subtraction-edge edge])]
+    (is (= 1 (count entries)))
+    (is (= :gravity.type/unknown (get-in functions [(:function-syntax-id record) :parameters 0 :type])))
+    (is (= :gravity.type/unknown (get-in functions [(:function-syntax-id record) :return])))
+    (is (nil? (:caller-function-syntax-id edge)))
+    (is (true? (invoke-c7 'sh08-ft-call-valid? [call nodes by-binding])))
+    (is (true? (invoke-c7 'sh08-ft-call-edge-valid? [edge call records (:definitions core) nodes])))
+    (is (true? (invoke-c7 'sh08-ft-caller-edge-valid? [edge records (nodes (:core-node-id call))])))
+    (is (true? (invoke-c7 'sh08-ix-literal? [argument :integer 42 by-form])))
+    (is (= :gravity.type/integer (literals (:node-id argument))))
+    (is (= [] (:diagnostics joined)))
+    (is (= :gravity.type/integer (get-in joined [:binding-types parameter-id])))
+    (is (false? (invoke-c7 'sh08-ft-call-valid? [bad nodes by-binding])))
+    (is (= :call-arity-mismatch (get-in wrong-arity [:diagnostics 0 :reason])))
+    ;; Preserve the actual current frontier: unsupported subtraction still
+    ;; stops this scan before the later ordinary caller. No public deferral
+    ;; or supplied parameter fact is introduced by this development control.
+    (is (= :unsupported-nonlocal-call (get-in unsupported [:diagnostics 0 :reason])))
+    (is (not (contains? (:binding-types unsupported) parameter-id)))
+    (prn {:gis3-original-module-entry-unification :checked
+          :ordinary-scalar-compatibility-work (:compatibility-work-count joined)
+          :complete-entry-census-implemented false :new-physical-and-header-fees-closed false
+          :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
+
 (def ^:private function-work-policy-current-c8-plan
   ;; Same real Effects dependency and C8 module-bundle construction as the
   ;; existing C8 test helper, with only explicit current-reader transport.
