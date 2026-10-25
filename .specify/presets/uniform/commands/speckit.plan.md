@@ -17,9 +17,8 @@ selection is missing, ask only for that missing context. Do not change shared
 files owned by another worker. Keep partial work visible in an early draft PR.
 Do not add project quotas, repeated approval gates, hooks, services or schedules.
 
-Run `.specify/scripts/bash/setup-plan.sh --json` with the selected feature in
-the environment. Read `spec.md` and resolve `plan-template` through the official
-`.specify/scripts/bash/resolve-template.sh plan-template --json`. Write `plan.md`
+Read the selected `spec.md` and `.specify/templates/overrides/plan-template.md`.
+Create `plan.md` only if absent; preserve and reconcile an existing plan. Write it
 with existing architecture, exact files/owners, dependencies, relevant positive
 and negative checks, evidence ownership, unrun behavior and integration path.
 Reuse existing verification tools; do not create new admission or accounting

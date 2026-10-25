@@ -17,14 +17,14 @@ approval bureaucracy from entering the tooling workflow.
 1. Inspect immutable PR356 metadata and its test file with `git show`. Map the
    three `paired-` tests and ingress controls to R1-R5, retaining their actual
    scope. Do not cherry-pick, edit or recreate its implementation.
-2. Use the official helper to create `specs/001-paired-source-core/spec.md`, then
-   resolve the local plan/tasks templates. Fill this plan and dependency-ordered
+2. Use the generated prompt/artifact skill to create `specs/001-paired-source-core/spec.md`, then
+   read the supported local plan/tasks template overrides. Fill this plan and dependency-ordered
    `tasks.md` using the generated Uniform Codex skill instructions.
 3. Record observed source and externally reported validation separately in
    `evidence.md`. Preserve open review/integration items unchecked.
 4. Validate all new scaffold/config/skills/templates in a disposable copy using
-   `.specify/validation/verify.py`; run the existing document validator. Keep
-   reproducible observations in `.specify/validation/results.json`.
+   `.specify/validation/verify.clj`; run the existing document validator. Keep
+   reproducible observations in `.specify/validation/results.edn`.
 
 Dependencies: the existing PR356 test commit must remain available for historical
 inspection. Pilot files depend only on canonical contract links and that snapshot.
@@ -49,6 +49,6 @@ read-only CLI inventory. Report unsupported runtime dispatch accurately.
 
 Adoption draft [PR371](https://github.com/burn2delete/uniform/pull/371) is separate
 from implementation PR356. The source implementation is reported validated by
-its owner, while independent review/integration remain pending. No checkbox in
+its owner, and later merged separately; this pilot performed no independent review or integration. No checkbox in
 this pilot changes that disposition. Deus reviews this additive integration and
 decides merge; the process bridge may add one shared navigation link afterward.

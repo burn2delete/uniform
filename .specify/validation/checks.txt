@@ -1,0 +1,26 @@
+Baseline: origin/main 228da8a6f179399625c23b3b3770a65742bccc4e
+Scope: additive Spec Kit text/config/pilot integration; no compiler implementation
+
+Observed commands and outcomes:
+clojure -J-Xmx256m -M .specify/validation/verify.clj /tmp/uniform-spec-kit-venv/bin/specify
+  Exit 0; 78 checks. Actual external scratch init, Codex/events false, local
+  preset install/update and byte-identical generated skills. No model dispatch.
+clojure -J-Xmx256m -M tools/validate_gravity_docs.clj
+  Exit 0; 240 docs, 19 phase indexes, ASCII, no placeholders.
+clojure -J-Xmx256m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+  Exit 0; 6 tests, 11 assertions, 0 failures, 0 errors.
+/tmp/uniform-spec-kit-venv/bin/specify integration status
+  See integration-status.txt: WARNING for 14 deliberate local modifications;
+  zero missing paths, invalid paths and unchecked manifests.
+git diff --check
+  Exit 0.
+
+Runtime conditions:
+Python 3.12.2 external /tmp venv, official source v1.2.3 pinned commit
+5ea8b1cf0a38699340a38e00d02770308997d8c0; see environment.txt.
+No uv or codex executable was present. Dependencies were resolved during this
+local evaluation; the source commit alone is not a transitive dependency lock.
+
+Unrun: fresh Codex discovery/chat invocation, compiler/JVM semantic tests,
+PR356 raw log authentication, independent adoption acceptance, merge.
+No automatic workflow/hook/scheduler or external service was enabled.

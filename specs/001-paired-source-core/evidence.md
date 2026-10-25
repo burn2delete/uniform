@@ -18,10 +18,14 @@ completed by this pilot.
   `create-new-feature.sh` dry-run and creation used number 1, short name
   `paired-source-core`, `SPECIFY_FEATURE_NO_PERSIST=1`; `setup-plan.sh --json`
   selected the Uniform override. `setup-tasks.sh --json` was then run against
-  this directory. These commands do not dispatch a model or run compiler code.
+  this directory. These initial helper trials predate the current-main language
+  policy correction; executable helpers were subsequently removed from the
+  versioned integration. Final skills use direct artifact writes/read overrides,
+  following the upstream lean pattern. These commands did not dispatch a model
+  or run compiler code.
 - The artifact outputs are `spec.md`, `plan.md`, `tasks.md` and this evidence
   record. Reproducible scaffold observations are retained in
-  [results.json](../../.specify/validation/results.json).
+  [results.edn](../../.specify/validation/results.edn).
 
 ## Reported implementation evidence (PR356 owner)
 
@@ -38,8 +42,11 @@ and historical C13 4/72 result do not replace the final reported scope.
 
 No compiler/JVM tests, raw receipt authentication, fresh proof candidate, six-owner
 occurrence census, native execution, release/self-hosting checks or merge were
-performed here. PR356 review and Deus integration remain pending in this dated
-record. No reviewer wake was requested. A fresh Codex process must still confirm
+performed here. A later metadata read observed PR356 merged at 2026-10-25 18:40:11 UTC,
+merge `228da8a6f179399625c23b3b3770a65742bccc4e`, final head `c3fe9022`.
+The initial `700e2929` results above remain historical, not final-head evidence.
+This pilot did not perform that review or integration. Adoption PR371 still
+awaits Deus review/integration. No reviewer wake was requested. A fresh Codex process must still confirm
 local skill discovery and `$speckit-*` chat invocation; no `codex` executable is
 available in this execution environment, so only generated-file/helper behavior
 is observed. No autonomous `workflow run` was attempted.
@@ -50,3 +57,23 @@ This record owns only pilot artifact observations. Canonical contracts and the
 existing evidence workflow decide compiler and proof authority. Deus decides
 integration. Neither generated tasks nor passing helper checks can promote
 reported evidence to authentic current coverage or SH07 completion.
+
+## Final adoption checks
+
+On the corrected current-main baseline `228da8a6`, the Clojure scaffold verifier
+passed 78 checks using the pinned external CLI: configuration, ASCII, strict
+JSON, preset copies, local links, actual official scratch initialization,
+workflow removal, local preset installation, inventory checks and byte-identical
+skill regeneration before and after `preset update`. The observed command was
+`clojure -J-Xmx256m -M .specify/validation/verify.clj /tmp/uniform-spec-kit-venv/bin/specify`.
+The existing document validator passed: 240 docs, 19 indexes, ASCII, no
+placeholders. The language-boundary test passed 6 tests / 11 assertions with
+zero failures/errors. These are lightweight repository checks, not compiler
+behavior or historical proof authentication. The final configuration deliberately
+omits executable upstream helpers from version control.
+
+The first draft accidentally inherited the supplied divergent checkout's history.
+Its base was corrected to current main by rewriting only the adoption branch;
+subsequent corrections use forward commits. Final review must inspect the additive
+PR diff, not the original draft's inherited scope. Primary-checkout dirty files
+were never staged, reset or published by this work.

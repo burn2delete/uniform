@@ -3,9 +3,11 @@
 Status: reference pilot; implementation remains owned by PR356.
 Pilot artifact owner: Spec Kit adoption delegate. Integration coordinator: Deus.
 Implementation input: `700e2929c6d5aeb394f4fe342108a86dfb54f58e`.
-Adoption baseline: `33b91ba6`; this pilot does not alter implementation.
-Existing PR: [356](https://github.com/burn2delete/uniform/pull/356), observed open
-and draft on 2026-10-25. This is a dated workflow record, not new source authority.
+Adoption baseline: `228da8a6`; this pilot does not alter implementation.
+Existing PR: [356](https://github.com/burn2delete/uniform/pull/356), initially observed open
+and draft on 2026-10-25, later observed merged at 18:40:11 UTC into
+`228da8a6f179399625c23b3b3770a65742bccc4e`. The original `700e2929`
+validation snapshot is historical; final PR head was `c3fe9022`. This is a dated workflow record, not new source authority.
 
 ## Purpose and canonical contracts
 
@@ -62,6 +64,7 @@ dispositions; Deus owns integration and exact final outcome claims. See
 
 ## Unresolved items
 
-Independent PR356 review and integration disposition remain outside this pilot.
+PR356 review/integration occurred outside this pilot; its merge does not
+authenticate the original historical log or grant broader SH07 completion.
 The raw historical validation log was not collected or independently rerun here.
 Do not check off those outcomes from this documentation exercise.

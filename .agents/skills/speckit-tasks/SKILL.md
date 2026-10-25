@@ -24,8 +24,9 @@ selection is missing, ask only for that missing context. Do not change shared
 files owned by another worker. Keep partial work visible in an early draft PR.
 Do not add project quotas, repeated approval gates, hooks, services or schedules.
 
-Run `.specify/scripts/bash/setup-tasks.sh --json` for the selected feature.
-Read `spec.md`, `plan.md` and the resolved tasks template. Write dependency-ordered
+Read the selected `spec.md`, `plan.md` and
+`.specify/templates/overrides/tasks-template.md`. If spec or plan is absent,
+report that missing prerequisite rather than inventing it. Write dependency-ordered
 `tasks.md` using `- [ ] T001 [US1] Description with exact path` (story labels only
 where applicable). Track a reviewable declared increment. Check a task only when
 its named deliverable and evidence exist; externally reported validation is
