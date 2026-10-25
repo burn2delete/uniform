@@ -1,15 +1,18 @@
 (declare ^:private p15-s23-c6c10-digest-validated-form)
 
-(defn- sh03-reader-authenticated-envelope-options [source-path invocation]
+(defn- sh03-reader-authenticated-envelope-options
+  ([source-path invocation] (sh03-reader-authenticated-envelope-options source-path invocation nil))
+  ([source-path invocation expected-binding]
   (when (some? invocation)
     (when-not
      (and (= :passed (:status (p15-s23-trusted-carrier-validation invocation :default-only)))
           (= #{:reader-source-path :authenticated-envelope-options} (set (keys invocation)))
-          (= sh03-reader-source-relative-path (:reader-source-path invocation))
+          (string? (:reader-source-path invocation))
           (= {:source :development-current} (:authenticated-envelope-options invocation)))
       (sh03-reader-boundary-fail!
        source-path :explicit-sh03-reader-invocation-source-selection nil {}))
-    (:authenticated-envelope-options invocation)))
+    (sh03-reader-invocation-source! source-path (:reader-source-path invocation) expected-binding)
+    (:authenticated-envelope-options invocation))))
 
 (defn- sh03-reader-validate-envelope-options! [source-path options]
   (when (some? options)
@@ -190,7 +193,7 @@
            :verification-report verifier-result
            :invocation-context
            (when (some? reader-source-path)
-             {:reader-source-path reader-source-path
+             {:reader-source-path sh03-reader-source-relative-path
               :authenticated-envelope-options {:source :development-current}})
            :plan-binding (dissoc binding :plan)))))
 

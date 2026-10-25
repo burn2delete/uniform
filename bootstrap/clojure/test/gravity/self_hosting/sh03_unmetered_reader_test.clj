@@ -39,6 +39,9 @@
                   :authenticated-envelope-options {:source :development-current}}
         selected (bootstrap/sh03-reader-resolved-result!
                   path bytes project bootstrap/standard-reader-options relative)
+        absolute (.getCanonicalPath (java.io.File. relative))
+        selected-absolute (bootstrap/sh03-reader-resolved-result!
+                           path bytes project bootstrap/standard-reader-options absolute)
         default (bootstrap/sh03-reader-resolved-result!
                  path bytes project bootstrap/standard-reader-options)
         options (deref (ns-resolve 'gravity.bootstrap 'sh03-reader-authenticated-envelope-options))
@@ -46,6 +49,9 @@
                   (try (options path context) nil
                        (catch clojure.lang.ExceptionInfo error (ex-data error))))]
     (is (= explicit (:invocation-context selected)))
+    (is (= explicit (:invocation-context selected-absolute)))
+    (is (= {:source :development-current}
+           (options path (assoc explicit :reader-source-path absolute))))
     (is (nil? (:invocation-context default)))
     (is (= {:source :development-current} (options path explicit)))
     (is (nil? (options path nil)))
@@ -64,7 +70,7 @@
 (deftest public-current-reader-reaches-the-real-envelope-verifier
   (let [path "src/public-current-context.gravity"
         text "(ns reader.current (:profile :core) (:target :jvm) (:effects #{}) (:capabilities #{})) (defn value [] 1)"
-        reader bootstrap/sh03-reader-source-relative-path
+        reader (.getCanonicalPath (java.io.File. bootstrap/sh03-reader-source-relative-path))
         project (bootstrap/reader-project-context-for-source path)
         before (slurp reader :encoding "UTF-8")
         invocation {:reader-source-path reader

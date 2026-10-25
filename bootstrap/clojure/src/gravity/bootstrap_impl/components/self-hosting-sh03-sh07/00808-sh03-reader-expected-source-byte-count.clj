@@ -195,3 +195,14 @@
     (catch Exception error
       (sh03-reader-boundary-fail! request-source :stable-current-sh03-reader-source
                                  nil {:cause-class (.getName (class error))}))))
+
+(defn- sh03-reader-invocation-source! [source-path selected-path expected-binding]
+  (let [source (sh03-reader-read-selected-source-bytes! source-path selected-path)
+        identity-keys [:source-content-hash :source-byte-count]]
+    (when (and expected-binding
+               (not (and (= :gravity/sh03-current-source-reader-plan-binding (:artifact expected-binding))
+                         (= (select-keys source identity-keys)
+                            (select-keys expected-binding identity-keys)))))
+      (sh03-reader-boundary-fail!
+       source-path :fresh-sh03-reader-invocation-source-binding nil {}))
+    source))

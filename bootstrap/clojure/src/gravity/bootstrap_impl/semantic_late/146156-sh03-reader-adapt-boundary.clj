@@ -41,7 +41,8 @@
    envelope-descriptor
    (sh03-reader-sh02-descriptor source-path project-context resolved descriptor)
    envelope-options
-   (sh03-reader-authenticated-envelope-options source-path (:invocation-context resolved))
+   (sh03-reader-authenticated-envelope-options
+    source-path (:invocation-context resolved) (:plan-binding resolved))
    envelope
    (apply p15-s23-stage2-sh02-descriptor-envelope
           (cond-> [:c2-reader :gravity/sh03-reader-products envelope-descriptor source-path]
