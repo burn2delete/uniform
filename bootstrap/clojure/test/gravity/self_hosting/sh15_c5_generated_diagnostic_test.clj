@@ -1,11 +1,21 @@
 (ns gravity.self-hosting.sh15-c5-generated-diagnostic-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [clojure.java.io :as io]
+            [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh15-resolved-reader-diagnostic-test]))
 
-;; Actual C5 producer at this branch's pinned baseline; no authority-pin renewal.
+;; Actual current C5 producer with explicit reader/AE selection, not renewed pins.
 (def ^:private c15 #'gravity.self-hosting.sh15-resolved-reader-diagnostic-test/c15)
 (def ^:private verify #'gravity.self-hosting.sh15-resolved-reader-diagnostic-test/verify)
+(def ^:private invocation
+  {:reader-source-path bootstrap/sh03-reader-source-relative-path
+   :authenticated-envelope-options {:source :development-current}})
+(defn- current-resolution [source-path source]
+  (bootstrap/compiler-c5-resolution-source-artifact
+   (.getCanonicalPath (io/file source-path)) source
+   {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+   (.getCanonicalPath (io/file bootstrap/sh03-reader-source-relative-path))
+   invocation))
 (defn- path [family extension]
   (str "bootstrap/clojure/fixtures/self-hosting/sh-15/" family
        "/c5-generated-origin." extension))
@@ -15,11 +25,12 @@
           (for [extension ["gravity" "qst" "other"]]
             [extension
              (try
-               (bootstrap/compiler-c5-resolution-source-artifact
+               (current-resolution
                 (if (= "other" extension)
                   "bootstrap/clojure/fixtures/self-hosting/sh-15/rejected/other-c5-generated-origin.gravity"
                   (path "rejected" extension))
-                (slurp (path "rejected" (if (= "other" extension) "gravity" extension))))
+                (slurp (path "rejected" (if (= "other" extension) "gravity" extension))
+                       :encoding "UTF-8"))
                (throw (ex-info "Expected actual C5 rejection" {}))
                (catch clojure.lang.ExceptionInfo error (ex-data error)))]))))
 (defn- fields [original] (c15 'sh15-c5-unresolved-fields [original]))
@@ -36,13 +47,22 @@
 
 (deftest actual-c5-accepted-controls-and-generated-rejections-construct-private-c15
   (doseq [extension ["gravity" "qst"]]
-    (let [accepted (bootstrap/compiler-c5-resolution-source-artifact
-                    (path "accepted" extension) (slurp (path "accepted" extension)))
+    (let [accepted (current-resolution
+                    (path "accepted" extension)
+                    (slurp (path "accepted" extension) :encoding "UTF-8"))
           original (get @originals extension) before (pr-str original)
           arguments (fields original) {:keys [unresolved request candidate]} (resolved original)
           [source generated] (:origin-chain original)]
       (is (= :accepted (:status accepted)))
-      (is (= :passed (:status (bootstrap/sh06-resolution-artifact-verification accepted))))
+      (is (= :passed (:status (bootstrap/sh06-resolution-artifact-verification
+                              accepted :gravity.bootstrap/legacy invocation))))
+      (is (= 2 (get-in accepted [:gravity-resolution-boundary
+                                 :authenticated-envelope-descriptor :schema-version])))
+      (is (not (contains? (get-in accepted [:gravity-resolution-boundary
+                                           :authenticated-envelope-descriptor]) :bounds)))
+      (is (= :development-unadmitted
+             (get-in accepted [:gravity-resolution-boundary :authenticated-envelope
+                               :source-rule :admission-status])))
       (is (= "C5-UNRESOLVED" (:id original) (:rule candidate)))
       (is (= :gravity/diagnostic (:artifact candidate)))
       (is (= :passed (:status (verify (path "rejected" extension) arguments candidate request))))
