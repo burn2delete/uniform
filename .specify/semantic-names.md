@@ -51,9 +51,16 @@ legacy dependencies without blocking unrelated development on all old names.
 A lightweight review check uses the actual base revision of the candidate:
 
 ```bash
-git diff --name-status --diff-filter=ACR BASE -- bootstrap tools bin
-git diff --unified=0 BASE -- bootstrap tools bin
+git diff --name-status --find-renames --diff-filter=ACR BASE CANDIDATE --
+git diff --unified=0 BASE CANDIDATE --
 ```
+
+Substitute the exact base and candidate refs. Inspect the whole candidate diff:
+source examples and newly introduced source roots count too, not only today's
+`bootstrap`, `tools` and `bin` paths. Classify implementation changes separately
+from documentation and planning metadata. These commands review tracked candidate
+content; for unfinished work also inspect staged/unstaged changes and untracked
+files before claiming the review is complete.
 
 Review new/renamed filenames and introduced namespace/application/API declarations,
 including additions within existing files. Use search to locate SH/C-number tokens
@@ -67,6 +74,7 @@ CI job or full-tree admission check is added by this increment.
 | `core/source_map.clj`, `gravity.core.source-map` | Accept: subsystem and behavior |
 | `reader/diagnostics.clj`, `gravity.reader.diagnostics` | Accept: reader diagnostic responsibility |
 | `sh07_core_map.clj`, `gravity.c16-incremental` | Revise: planning identity leaked into an implementation name |
+| `examples/sh07_demo.gravity`, new `src/gravity/c16_incremental.clj` | Revise: source location does not exempt an implementation name |
 | Task metadata `planning-ref: SH07/C6` | Accept: traceability, not an implementation name |
 | Existing wire/schema/diagnostic ID | Preserve and inspect its owning compatibility contract |
 

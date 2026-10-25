@@ -67,3 +67,40 @@ candidate `ecf53f906754e051a7ead8dd58f1dc54446e9b69`, whose paths were checked
 through the GitHub PR files API. These are proposed candidate links, not a claim
 that PR380 is merged. Do not author a second registry or Reader roadmap. Legacy
 implementation renames remain unperformed owner-coordinated follow-up work.
+
+## Independent cloud review and prepared corrections
+
+Reviewed published PR379 head `2d9f77839673e16794712b7570b404e955faff81`,
+tree `d38842f072bf4ecda5e7bb729edc00d8f56e3377`, against base
+`c21068a6d39259b7110845bbbcefaf9bf6901232` on 2026-10-25. Remote branch,
+PR head and local tree matched. Work used an isolated cloud worktree, not the
+paused local owner's checkout. PR371 is confirmed merged; PR380 links still
+refer to its proposed candidate, not accepted component implementation.
+
+The review found that the original diff commands omitted source examples and
+new source roots. The prepared guidance now inspects the whole exact candidate,
+then classifies implementation names separately from metadata. A disposable Git
+fixture outside Uniform reproduced the omission for two new paths and one API
+declaration added within an existing example; the corrected commands exposed all
+three. This validates diff coverage, not an automated naming classifier. The
+adoption README also now distinguishes merged PR371 from successor draft PR379.
+
+Lightweight cloud validation of these text-only corrections:
+
+- Existing `.specify/validation/verify.clj`, without optional Specify CLI:
+  exit 0, 58 static scaffold checks. Only the result-file destination was
+  redirected outside the repository; assertions and input paths were unchanged.
+- `clojure -J-Xmx256m -M tools/validate_gravity_docs.clj`: exit 0, 240 docs,
+  19 phase indexes, ASCII, no placeholders.
+- `clojure -J-Xmx256m -M tools/validate_full_language_roadmap.clj`: exit 0.
+- `git diff --check`: passed. The complete candidate diff remains confined to
+  `.specify` and generated skills; no implementation or compatibility ID changed.
+
+The original initial-adoption results and the 82-check successor snapshot remain
+byte-identical. Those historical CLI regeneration observations were not rerun or
+upgraded to cover later link/correction edits. No source/tooling was added, so no
+compiler suite or language-boundary replay was performed. Literal command parsing,
+full model workflow and legacy-rename compatibility remain unrun. The original
+review requested the corrections above; their author does not confer independent
+acceptance on the corrected successor. Parent disposition and publication remain
+pending; no remote mutation or merge was performed by this cloud review.

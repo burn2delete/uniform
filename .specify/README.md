@@ -1,6 +1,7 @@
 # Spec Kit adoption in Uniform
 
-Status: initial adoption draft [PR371](https://github.com/burn2delete/uniform/pull/371).
+Status: initial adoption merged in [PR371](https://github.com/burn2delete/uniform/pull/371).
+Semantic naming is the successor draft [PR379](https://github.com/burn2delete/uniform/pull/379).
 Deus owns review routing and integration decisions.
 
 This is a work-artifact layer for bounded changes. The 240 contracts under

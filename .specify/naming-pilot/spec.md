@@ -14,6 +14,8 @@ Existing names are incremental migration debt rather than a global gate.
 - Propose `core/source_map.clj`, `gravity.core.source-map` and `source-map` for
   source-origin mapping; retain `planning-ref: SH07/C6` in the task record.
 - Revise a proposed `sh07_core_map.clj` or `gravity.c16-incremental` introduction.
+- Inspect examples and new source roots too: revise `examples/sh07_demo.gravity`
+  or a newly introduced `src/gravity/c16_incremental.clj`.
 - Preserve a compatibility-bearing schema ID until its own versioning decision.
 - Update constitution/templates and generated skills through the pinned local
   preset. Audit a sample of real leakage and map a future owned rename transaction.
