@@ -34,25 +34,31 @@ self-hosting claim therefore does not overclaim that every target is already
 implemented.
 
 Use three layers: one master coordinator, persistent standalone slice managers
-with finite allocated queues, and bounded disjoint subagents within a manager's
-allocation. Preserve the writer -> independent auditor -> next-slice planner
+with finite goals and self-curated work, and bounded disjoint subagents within
+a manager's ownership. Preserve the writer -> independent auditor -> next-slice planner
 pipeline without self-acceptance or a second scheduler. The coordinator alone
 allocates shared files, routes independent acceptance, reconciles current main
 and integrates every main PR. Managers freeze isolated local commits for that
-review and may prepare already allocated eligible disjoint work meanwhile.
-Expensive native or public proof remains separately authorized per stable
-candidate; a manager queue does not revive a consumed grant or held attempt.
+review and independently discover and execute eligible owned work meanwhile.
+Native/public-proof claims retain selected-candidate provenance and actual
+machine safeguards; old proof histories create no ordinary-development
+attempt budget or preparation-only gate.
 
 Matt authorizes routine in-scope best judgment on implementation details,
 local commits, proportionate tests, dependency/conflict fixes and priorities
-without discretionary Matt escalation. Managers stay within exact cap-three
-queues; cross-slice/interface/ownership decisions go to the coordinator, which
-alone routes independent acceptance and integrates main. Permission-only/
-proposal-only/await-human labels no longer block ordinary authorized work;
-identify actual technical, correctness, provenance, ownership, review and
-resource blockers. Held attempts and consumed runs are not blindly replayed.
-Resource/control changes require evidence, the actual owner, validation and
-independent review, not blanket limit removal. Platform/tool restrictions,
+without discretionary Matt escalation. Managers independently discover,
+prioritize and execute work inside their standing ownership. The coordinator
+handles actual conflicting ownership, incompatible contracts and main
+integration, and routes independent acceptance. Fixed queue/task-count caps,
+one-attempt grants, method-preparation-only staging, mandatory stop-after-ticket
+rules and repeated discretionary pre-run approval are removed for ordinary
+development, without a renamed replacement. Historical permission-only/
+proposal-only/await-human labels create no current ordinary-work hold. Failed,
+interrupted, skipped and never-launched attempts keep their actual status;
+none is relabelled success or a never-launched consumed proof. Machine/resource
+safeguards and semantic work bounds keep their actual contracts; changes need
+evidence and correctness validation, with independent acceptance before
+integration. Platform/tool restrictions,
 mandatory action-time approvals, destructive/security-sensitive actions,
 new external commitments and unrelated scope retain their limits; never
 approve an unknown action or bypass a restriction. Do not pause useful work
@@ -9595,7 +9601,7 @@ remain OPEN. C01-C11/Core variants, C12 construction, C13 public ingress, C14
 affected C7 composition, C15 subset negatives, C16 current upstream evidence,
 C17 authoritative migration and C18 completion are distinct responsibilities.
 
-Each manager has at most three concrete items, each with its demonstrated gap,
+Managers curate concrete items without a fixed queue/task-count cap, each with its demonstrated gap,
 contracts, exact allocated paths/tests/fixtures, input/output, prerequisites,
 accepted/rejected checks, completion and stop conditions. Work states are
 `executing`, `resource-queued`, `dependency-blocked`, `awaiting-review`,
@@ -9605,8 +9611,8 @@ Managers derive useful in-scope successors and notify the coordinator; new
 cross-slice allocations still require its ownership decision. No join-all
 barrier or invented feature is justified to keep a manager busy.
 
-The standing finite-goal charters for all eight implementation managers make
-three the active-work limit, not a lifetime task limit. Managers independently
+The standing finite-goal charters apply to all eight implementation managers.
+Managers independently
 audit repository/contracts/evidence/tests, discover and prioritize confirmed
 dependency-ready work, and notify ROOT of its gap/contract/path/interface,
 checks, dependencies and stop criteria before writing. That notification is
@@ -9712,8 +9718,11 @@ complete; raw evidence is at `/private/tmp/source-dse-producer-f3073c24-20261024
 This is not minimum N, full C7 total work or fresh-verifier/C8/assembly/runtime
 evidence. The producer-only classification is independently accepted; the
 whole-default failure remains FAILED. Compact architecture work continues;
-the next Effects 180s local-fit method is preparation only, with no GO.
-No failed whole replay or held GIS execution follows. Original-request context already
+at that historical snapshot the next Effects 180s local-fit proposal had not
+executed. Its preparation-only/no-GO process status is superseded; ordinary
+owned method implementation/checks need no per-run approval within actual
+machine/resource and correctness safeguards. This records no later run result.
+Original-request context already
 exists on the selected three-argument body-effects route; the detached
 two-argument route is unsupported for compact GIS, not a reason for a new API.
 
@@ -9731,8 +9740,9 @@ interface reservations remain with their existing writers. Two normal broker
 leases, one memory-heavy lease and exclusive checks holding all slots remain
 the host capacity. Use the existing coordination root and applicable canonical
 heavy lock; extra agents do not add slots. Heavy/native/bootstrap/proof/
-performance controls and consumed grants survive. Held GIS/H6 execution is
-not resumed; compact representation/validation/fees/identity/version and
+performance resource safeguards and scope boundaries survive; historical
+grants are not ordinary attempt budgets. GIS/H6 claims retain their actual
+technical/provenance requirements; compact representation/validation/fees/identity/version and
 independent consumer evidence remain technical obligations, not discretionary
 human-approval labels. Ordinary eligible work within the
 allocation does not require a new per-command approval loop.
