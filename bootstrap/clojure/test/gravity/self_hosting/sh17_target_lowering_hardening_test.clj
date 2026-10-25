@@ -467,34 +467,27 @@
                          :cross-reference-mismatch}
                        (reason result)))))))
 
-(deftest sh17-preflight-contains-hostile-depth-width-and-scalars
+(deftest sh17-validates-complete-carriers-without-quotas
   (let [base (request :llvm "/checkout-a")
-        deep (loop [remaining 10000 value base]
-               (if (zero? remaining) value (recur (dec remaining) [value])))
-        wide (into {} (map (fn [index] [(keyword (str "k" index)) index])
-                           (range 300)))
-        over-operands
-        (assoc-in base [:mir :functions 0 :blocks 0 :operations 0 :operands]
-                  (vec (repeat 17 :value/x)))
-        long-id (keyword (apply str (repeat 129 "x")))
-        over-id
-        (assoc-in base [:mir :functions 0 :blocks 0 :operations 0
-                        :operation-id] long-id)
-        over-i64
-        (assoc-in base [:source-map 0 :span :end-byte]
-                  9223372036854775808N)]
-    (is (= :structure-depth-bound
-           (:reason (invoke 'sh17-structural-preflight [deep]))))
-    (is (= :structure-width-bound
-           (:reason (invoke 'sh17-structural-preflight [wide]))))
-    (is (= :structure-sequence-carrier
-           (:reason
-            (invoke 'sh17-structural-preflight [(iterate inc 0)]))))
-    (doseq [hostile [over-operands over-id over-i64]]
-      (is (= :rejected (:status (build hostile))))
-      (is (contains? #{:invalid-normalized-request
-                       :structure-noncanonical-scalar}
-                       (reason (build hostile)))))))
+        deep (loop [n 120 value nil] (if (zero? n) value (recur (dec n) [value])))
+        many (vec (repeat 17 (vec (range 600))))
+        late-opaque (assoc-in many [16 599] (Object.))
+        old-id (get-in base [:mir :functions 0 :blocks 0 :operations 0 :operation-id])
+        long-id (keyword (apply str (repeat 300 "x")))
+        subject (walk/postwalk #(if (= old-id %) long-id %) base)
+        result (build subject)]
+    (doseq [carrier [deep (vec (range 1025)) many (apply str (repeat 65537 "x"))]]
+      (is (= {:status :accepted} (invoke 'sh17-structural-preflight [carrier]))))
+    (is (= :accepted (:status result)))
+    (is (= :passed (:status (verify subject result))))
+    (is (= {:status :rejected :reason :structure-noncanonical-scalar}
+           (invoke 'sh17-structural-preflight [late-opaque])))
+    (is (= {:status :rejected :reason :structure-sequence-carrier}
+           (invoke 'sh17-structural-preflight [(iterate inc 0)])))
+    (doseq [subject [(assoc-in base [:mir :functions 0 :blocks 0 :operations 0 :operands]
+                              (vec (repeat 17 :value/x)))
+                     (assoc-in base [:source-map 0 :span :end-byte] 9223372036854775808N)]]
+      (is (= :rejected (:status (build subject)))))))
 
 (deftest sh17-linux-llvm-target-contract-rejects-cross-target-substitution
   (let [base (request :llvm "/checkout-a")
@@ -542,7 +535,7 @@
     (is (= :passed (:status (verify input result))))
     (is (= :rejected (:status (verify input altered))))
     (is (= :result-substitution (reason (verify input altered))))
-    (is (= :candidate-structural-bound
+    (is (= :result-substitution
            (reason (verify input deep-candidate))))
     (is (= :candidate-structural-bound
            (reason (verify input sequence-candidate))))))

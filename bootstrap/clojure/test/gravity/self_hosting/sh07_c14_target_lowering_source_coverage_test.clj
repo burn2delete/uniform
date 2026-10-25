@@ -26,9 +26,12 @@
   "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 173349)
+(def ^:private expected-source-byte-count
+  197102)
 (def ^:private expected-source-revision-id
-  "sha256:18843bb01315cd5a55902fd8c9f38875d93aeba3c2b2fd1e3252afa2107114aa")
+  "sha256:b6bfc5e13ff383c90f841a5566797a63f63740fed5fc5351f6b40141d12dd94b")
+;; Full-artifact projection/census pins remain historical until a fresh artifact
+;; run renews them. Static source-pin refresh does not confer artifact coverage.
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:aee0b3c997a661ae9a08391a0468483b2459a2d814fe05e4f09a43ef90a1b70e")
 (def ^:private expected-coverage
@@ -85,22 +88,22 @@
      sh17-current-c11-revision sh17-structural-preflight
      sh17-build-target-lowering sh17-verify-target-lowering})
 (def ^:private expected-contract-value-hashes
-  {'c14-target-lowering-contract
-   "sha256:42f15447da1fa68a6609d1586cdfdeb5dee0be251e9c74b251c716c9bb2962ed"
-   'c14-lowering-request-contract
-   "sha256:ecdf044a1783722574535e04bb749b4556265700818a141d6bc646e44b7f6e8c"
-   'c14-target-eligibility-contract
-   "sha256:9f4740fe510034c962dbea4a78642e7c59565c826fdc9228f584bd589a1b9f14"
-   'c14-abi-layout-contract
-   "sha256:fb7cee8db30cb88c244799b533ec14bd8b0f109a1fbd0ee39525c9ceb6edfbf6"
-   'c14-runtime-provider-contract
-   "sha256:a167061ccb2ba0235eec98d8b894ddeff0cd4247912aeb4e6bb7300e3e75ee86"
-   'c14-proof-metadata-contract
-   "sha256:f08971bc7a939a0b6628042af668e07f90132ef689d9189801ebf7937b0f21fc"
-   'c14-emitted-artifact-contract
-   "sha256:74f36eef3c1ffe02441c66ef304539fe6b7bee59994bd1ccd6e6d3f980dc6004"
-   'c14-lowering-diagnostic-catalog
-   "sha256:890d79857481171987a9b377099fa2b9fead18206bade47fb3461ef0be30d285"})
+  '{c14-abi-layout-contract
+   "sha256:fb7cee8db30cb88c244799b533ec14bd8b0f109a1fbd0ee39525c9ceb6edfbf6",
+   c14-emitted-artifact-contract
+   "sha256:74f36eef3c1ffe02441c66ef304539fe6b7bee59994bd1ccd6e6d3f980dc6004",
+   c14-lowering-diagnostic-catalog
+   "sha256:890d79857481171987a9b377099fa2b9fead18206bade47fb3461ef0be30d285",
+   c14-lowering-request-contract
+   "sha256:ecdf044a1783722574535e04bb749b4556265700818a141d6bc646e44b7f6e8c",
+   c14-proof-metadata-contract
+   "sha256:f08971bc7a939a0b6628042af668e07f90132ef689d9189801ebf7937b0f21fc",
+   c14-runtime-provider-contract
+   "sha256:a167061ccb2ba0235eec98d8b894ddeff0cd4247912aeb4e6bb7300e3e75ee86",
+   c14-target-eligibility-contract
+   "sha256:9f4740fe510034c962dbea4a78642e7c59565c826fdc9228f584bd589a1b9f14",
+   c14-target-lowering-contract
+   "sha256:42f15447da1fa68a6609d1586cdfdeb5dee0be251e9c74b251c716c9bb2962ed"})
 (def ^:private expected-b16-bounds
   {:maximum-module-forms 65536 :maximum-module-core-nodes 65536
    :maximum-fragments 1024 :maximum-top-level-forms 1024
@@ -326,10 +329,10 @@
                                   (#{'def 'defn} (first %))) forms)
         by-name (into {} (map (juxt second identity)) definitions)
         if-calls (mapcat #(collect-calls 'if %) definitions)]
-    (is (= 147 (count forms)))
-    (is (= 146 (count definitions) (count by-name)))
+    (is (= 176 (count forms)))
+    (is (= 175 (count definitions) (count by-name)))
     (is (= 8 (count (filter #(= 'def (first %)) definitions))))
-    (is (= 138 (count (filter #(= 'defn (first %)) definitions))))
+    (is (= 167 (count (filter #(= 'defn (first %)) definitions))))
     (is (= 'gravity.compiler.c14-target-lowering-architecture (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -348,7 +351,7 @@
       (is (= expected-hash (value-sha256-id (nth (get by-name name) 2)))))
     (doseq [name target-builder-names]
       (is (= 2 (count (nth (get by-name name) 2))) (str name)))
-    (is (= 787 (count if-calls)))
+    (is (= 881 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path c14-relative-path)))))
@@ -399,7 +402,6 @@
   (let [policy (invoke 'sh17-target-lowering-policy [])]
     (is (= [:llvm :c :wasm] (:backends policy)))
     (is (= [:hosted] (:profiles policy)))
-    (is (= 8192 (get-in policy [:structural-bounds :maximum-nodes])))
     (doseq [[function expected-artifact]
             [['c14-build-bounded-llvm-lowering-record
               :gravity/c14-bounded-llvm-lowering-record]

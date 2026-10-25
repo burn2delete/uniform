@@ -121,13 +121,9 @@
 (deftest sh16-identity-comparison-bounds-and-coherent-data-nonclaims-development-kernel
   (let [[mir request] (supplied)
         nest (fn [n] (nth (iterate vector :payload) n))]
-    (let [frontier [[:existing 0]]]
-      (is (= [[:existing 0] [:left 5] [:right 5]]
-             (call :c13 'sh16-c13-evidence-push [frontier [:left :right] 4])))
-      (is (= frontier (call :c13 'sh16-c13-evidence-push [frontier [] 4]))))
     (let [width-control (vec (range 1024)) widened (assoc mir :width-control width-control)
           result (build widened (assoc request :reconstructed-mir widened))]
-      (is (= {:status :accepted :nodes 1025 :enqueued 1025}
+      (is (= {:status :accepted}
              (call :c13 'sh16-c13-evidence-preflight [width-control])))
       (is (= :constructed-unverified (:status result)))
       (is (= widened (:optimized-mir result))))
@@ -173,7 +169,7 @@
     (doseq [make-map [array-map hash-map]]
       (let [carrier (make-map :a 1 :b false)]
         (is (= (vec (mapcat identity carrier)) (call :c13 'sh16-c13-evidence-children [carrier])))
-        (is (= {:status :accepted :nodes 5 :enqueued 5}
+        (is (= {:status :accepted}
                (call :c13 'sh16-c13-evidence-preflight [carrier])))))
     ;; Coherent caller-forged records can match; the result claims no validation.
     (let [forged (assoc mir :opaque :coherently-forged) result (build forged (assoc request :reconstructed-mir forged))]

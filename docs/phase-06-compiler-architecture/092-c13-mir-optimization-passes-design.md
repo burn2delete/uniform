@@ -13,8 +13,7 @@ proof obligations. Optimization is a verified transformation pipeline, not a
 place where backend assumptions or undefined behavior enter the language.
 
 This document defines optimization pass contracts, decision records, pass
-ordering, invalidation, verifier gates, residual cost reporting, and proof
-requirements.
+ordering, invalidation, verifier gates, and proof requirements.
 
 ## Requirements
 
@@ -52,7 +51,6 @@ requirements.
 - Invalidated-fact ledger.
 - Analysis cache records.
 - Proof and certificate usage records.
-- Residual cost report.
 - Post-pass verifier reports.
 - Optimization diagnostics.
 
@@ -151,12 +149,6 @@ of:
 
 Optimization records name which evidence was used.
 
-## Residual Cost Reporting
-
-When a pass is expected to erase abstraction cost, it emits a residual cost
-report compatible with `PERF2`. Residual work can be acceptable, but it must be
-visible when a user or library claims zero-cost behavior.
-
 ## Determinism and Reproducibility
 
 Optimization pipelines record:
@@ -217,6 +209,5 @@ A conforming MIR optimizer must demonstrate:
 - invalidation and regeneration of analyses and proofs,
 - accepted and rejected check elision,
 - preservation of source and generated origins,
-- residual-cost reporting,
 - translation validation or proof for high-risk passes,
 - diagnostics for stale facts and illegal transformations.

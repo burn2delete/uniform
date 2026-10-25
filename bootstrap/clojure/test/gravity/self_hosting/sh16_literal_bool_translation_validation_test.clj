@@ -54,6 +54,20 @@
 (deftest sh16-validates-original-true-bool-branch-specialization (check-original "true"))
 (deftest sh16-validates-original-false-bool-branch-specialization (check-original "false"))
 
+(deftest sh16-literal-bool-report-does-not-require-retired-accounting-evidence
+  (let [{:keys [mir report after output-report]} @(get cases "true")
+        semantic-report (update output-report :checks
+                                #(vec (remove #{:bounded-input-carriers} %)))]
+    (doseq [candidate [output-report semantic-report]]
+      (is (= :passed (:translation-validation-status
+                       (consume mir report after candidate)))))
+    (doseq [checks [(vec (rest (:checks semantic-report)))
+                    (vec (reverse (:checks semantic-report)))
+                    (conj (:checks semantic-report) :unknown-semantic-check)]]
+      (let [result (consume mir report after (assoc semantic-report :checks checks))]
+        (is (= :rejected (:status result)))
+        (is (= ["C13-VERIFY"] (:diagnostics result)))))))
+
 (deftest sh16-literal-bool-validation-rejects-substituted-source-tuples
   (let [true-case @(get cases "true") false-case @(get cases "false")
         {:keys [core mir report after output-report]} true-case]

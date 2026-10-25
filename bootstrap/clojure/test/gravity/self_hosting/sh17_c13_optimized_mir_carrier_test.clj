@@ -830,7 +830,7 @@
   #{:pass-id :family :version :input-ir :output-ir :required-analyses
     :preconditions :preserves :invalidates :regenerates :proof-obligations
     :profile-constraints :target-assumptions :effect-ordering-policy
-    :safety-policy :domain-policy :maximum-operation-count :emits})
+    :safety-policy :domain-policy :emits})
 
 (def ^:private c13-decision-record-keys
   #{:artifact :pass-id :decision-id :input-mir :output-mir :decision
@@ -855,7 +855,7 @@
 (def ^:private c13-semantic-identity-keys
   #{:c11-input-mir-id :c11-output-mir-id :input-module-id
     :output-module-id :fact-bindings :operation-order :operation-count
-    :maximum-operation-count :effect-order-graph :unchanged?})
+    :effect-order-graph :unchanged?})
 
 (def ^:private c13-source-rule-keys
   #{:artifact :owner :source-content-hash :source-byte-count
@@ -1406,8 +1406,7 @@
                                    :gravity/attacker)]
            [:source-identity (assoc-in c13 [:source-rule :source-content-hash]
                                        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
-           [:pass-contract (assoc-in c13 [:pass-contract :maximum-operation-count]
-                                     1)]
+           [:pass-contract (assoc-in c13 [:pass-contract :family] :substituted)]
            [:artifact-id (assoc c13 :artifact-id
                                 "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
            [:c11-verifier (assoc-in c13 [:verifier-replay :c11-mir-id]

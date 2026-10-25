@@ -27,9 +27,10 @@
   "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 122488)
+(def ^:private expected-source-byte-count
+  122298)
 (def ^:private expected-source-revision-id
-  "sha256:63811e04d496ca3e0d49f6d4effac2ff892b7510c02708ff14a1ece014d53217")
+  "sha256:68f1017065ee8407787b2d7f2556b78fbd433ae8c65f5576ba7de1ddc9d037d0")
 (def ^:private expected-plan-semantic-id
   "sha256:2c0420eb7695ec26174a1a4f469e3c17412f76211ceb53f9ac8de796381c9886")
 (def ^:private expected-functions-semantic-id
@@ -58,24 +59,23 @@
      b2-proof-to-c-assumption-record b2-build-accepted-hosted-c17
      b2-build-bounded-hosted-c17})
 (def ^:private expected-contract-value-hashes
-  {'b2-c-backend-contract
-   "sha256:35e6263e91b47d58cccae0bd094111ab14bd58c0d799601ea2f04795b4cdc8e0"
-   'b2-dialect-contract
-   "sha256:570ce6798bfbdc0bd80338fbeafe5016e6fb54c056b059d6d8ac399cc0e98c9e"
-   'b2-safe-c-subset-contract
-   "sha256:e0b3e4ce9b6cc9209f28e658450c91c0c2a2fbc2c8334746df18f13f19d11d91"
-   'b2-abi-layout-contract
-   "sha256:4e8f342760f9fa2a11cac23c4671fa920ba9d1f0e50c83f7b2bfd1cd89026810"
-   'b2-pointer-memory-contract
-   "sha256:1df2c56879861183cc15b5bcfc26df8890eb25389ee466ded8394bca404e9e74"
-   'b2-numeric-lowering-contract
-   "sha256:51f38ab7af7ea71ff683cef57c8189df6185e97971cdc8306710ce2608c67a7f"
-   'b2-runtime-helper-contract
-   "sha256:a232c341f261d14db25b7fe40f139be038d87d1f6ffb7e18e9f254654a1f32dd"
-   'b2-artifact-manifest-contract
-   "sha256:287aba3278b164d74f0a4aff629fb299fdfd8d62d22130fb761f929063946c9d"
-   'b2-diagnostic-catalog
-   "sha256:0e472af4d19bb8b947c921019506f310599d5f1bc381364953f54ba36ec5f126"})
+  '{b2-abi-layout-contract
+   "sha256:4e8f342760f9fa2a11cac23c4671fa920ba9d1f0e50c83f7b2bfd1cd89026810",
+   b2-artifact-manifest-contract
+   "sha256:287aba3278b164d74f0a4aff629fb299fdfd8d62d22130fb761f929063946c9d",
+   b2-c-backend-contract
+   "sha256:35e6263e91b47d58cccae0bd094111ab14bd58c0d799601ea2f04795b4cdc8e0",
+   b2-diagnostic-catalog
+   "sha256:0e472af4d19bb8b947c921019506f310599d5f1bc381364953f54ba36ec5f126",
+   b2-dialect-contract "sha256:570ce6798bfbdc0bd80338fbeafe5016e6fb54c056b059d6d8ac399cc0e98c9e",
+   b2-numeric-lowering-contract
+   "sha256:51f38ab7af7ea71ff683cef57c8189df6185e97971cdc8306710ce2608c67a7f",
+   b2-pointer-memory-contract
+   "sha256:1df2c56879861183cc15b5bcfc26df8890eb25389ee466ded8394bca404e9e74",
+   b2-runtime-helper-contract
+   "sha256:a232c341f261d14db25b7fe40f139be038d87d1f6ffb7e18e9f254654a1f32dd",
+   b2-safe-c-subset-contract
+   "sha256:e0b3e4ce9b6cc9209f28e658450c91c0c2a2fbc2c8334746df18f13f19d11d91"})
 (def ^:private expected-diagnostic-ids
   ["B2-DIALECT" "B2-UB" "B2-ABI" "B2-POINTER" "B2-NUMERIC"
    "B2-RUNTIME" "B2-FFI" "B2-MMIO" "B2-MANIFEST"])
@@ -278,8 +278,8 @@
     (is (= expected-diagnostic-ids
            (mapv :id (get-in (nth (get by-name 'b2-diagnostic-catalog) 2)
                              [:diagnostics]))))
-    (is (= 441 (count if-calls)))
-    (is (= {4 441} (frequencies (map count if-calls))))
+    (is (= 439 (count if-calls)))
+    (is (= {4 439} (frequencies (map count if-calls))))
     (is (= expected-source-byte-count
            (alength (source-bytes (path b2-relative-path)))))
     (is (= expected-source-revision-id
