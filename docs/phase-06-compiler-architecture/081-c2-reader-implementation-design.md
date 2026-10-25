@@ -224,8 +224,10 @@ The initial capacity selection uses the required compiler-input inventory at
 `a14d0485302edb22f94e65ef84cfc3316cd21ef4`: Effects is 1,677,424 bytes, C7 is
 2,016,051 bytes, and the emitter is 1,670,330 bytes. A planning census estimated
 at most 472,738 trivia-inclusive tokens and 236,101 form nodes among these
-inputs. Rounding each dimension upward to the next power of two selects the
-stated capacities; the census is not governed-reader acceptance. Real input
+inputs. Tokens and forms round upward to the next power of two. The 4 MiB byte
+class adds headroom above the 2 MiB boundary, which is only 81,101 bytes above
+the largest observed source; characters and carrier width follow that byte
+class. The census is not governed-reader acceptance. Real input
 construction, complete validation and fresh replay must demonstrate fit under
 the independent construction, canonical-byte and result bounds.
 

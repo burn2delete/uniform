@@ -5639,9 +5639,9 @@
                  nodes))))
     0))
 
-(defn sh03-projected-result-node-count [source-bytes reader-policy tokens parsed]
-  (let [maximum (get (sh03-bounds-record) :maximum-result-carrier-nodes)
-        retain-trivia (get reader-policy :retain-trivia)
+(defn sh03-projected-result-node-count-with-limit
+  [source-bytes reader-policy tokens parsed maximum]
+  (let [retain-trivia (get reader-policy :retain-trivia)
         ; Fixed reserve covers all envelope/request/vector roots, source-unit,
         ; provenance, policies, bounds and execution-boundary records (<4096
         ; physical nodes at the declared identity/tag bounds). Each registered
@@ -5683,14 +5683,18 @@
                       (sh03-construction-tag-invocation-nodes
                        form reader-policy)))))))))
 
+(defn sh03-projected-result-node-count [source-bytes reader-policy tokens parsed]
+  (sh03-projected-result-node-count-with-limit
+   source-bytes reader-policy tokens parsed
+   (get (sh03-bounds-record) :maximum-result-carrier-nodes)))
+
 ; These are new, simultaneously retained accepted-product indexes/projections.
 ; Decode/scan/parse tables already exist and have their own pre-growth bounds.
 ; A filtered raw-token row retains its full raw spelling and descriptor; it is
 ; charged again even when it shares an immutable host object with the scanner.
-(defn sh03-projected-construction-node-count [source-bytes reader-policy tokens parsed]
-  (let [maximum (get (sh03-bounds-record) :maximum-result-carrier-nodes)
-        retain-trivia (get reader-policy :retain-trivia)
-        final-nodes (sh03-projected-result-node-count source-bytes reader-policy tokens parsed)
+(defn sh03-projected-construction-node-count-with-limit
+  [source-bytes reader-policy tokens parsed final-nodes maximum]
+  (let [retain-trivia (get reader-policy :retain-trivia)
         index-nodes
         (loop [remaining (get parsed :form-tree) nodes (+ final-nodes 2)]
           (if (> nodes maximum) nodes
@@ -5710,6 +5714,33 @@
               (recur (rest remaining)
                      (if (sh03-token-trivia? token) nodes
                        (+ nodes (sh03-construction-atomic-nodes token)))))))))))
+
+(defn sh03-projected-construction-node-count [source-bytes reader-policy tokens parsed]
+  (sh03-projected-construction-node-count-with-limit
+   source-bytes reader-policy tokens parsed
+   (sh03-projected-result-node-count source-bytes reader-policy tokens parsed)
+   (get (sh03-bounds-record) :maximum-result-carrier-nodes)))
+
+; Private count-only observation. The larger, already declared unguarded
+; envelope bounds counting work, never reader construction or admission.
+; Production uses the fixed-hard-limit wrappers above. A limit-crossing value
+; is only a refused prefix, explicitly marked incomplete here.
+(defn sh03-complete-construction-census [source-bytes reader-policy tokens parsed]
+  (let [bounds (sh03-bounds-record)
+        maximum (get (get bounds :result-carrier-node-budget)
+                     :derived-maximum-nodes)
+        final-nodes
+        (sh03-projected-result-node-count-with-limit
+         source-bytes reader-policy tokens parsed maximum)
+        construction-nodes
+        (sh03-projected-construction-node-count-with-limit
+         source-bytes reader-policy tokens parsed final-nodes maximum)]
+    {:projected-result-nodes final-nodes
+     :accepted-construction-nodes construction-nodes
+     :limit maximum
+     :complete? (if (<= final-nodes maximum)
+                  (<= construction-nodes maximum)
+                  false)}))
 
 (defn sh03-construction-rejection [projected maximum]
   (if (> projected maximum)
