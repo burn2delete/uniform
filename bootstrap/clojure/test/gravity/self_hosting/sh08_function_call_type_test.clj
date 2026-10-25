@@ -10092,7 +10092,7 @@
                           sh08-gis3-complete-data-tallies sh08-gis3-entry-complete-data
                           sh08-gis3-entry-original-data sh08-gis3-entry-indexes sh08-gis3-entry-unify sh08-gis3-numeric-match}
         metrics [:steps :field-gets :equalities :cells :map-writes :set-tests]
-        zero (zipmap metrics (repeat [0 0 0])) cache (atom {})]
+        zero (zipmap metrics (repeat [0 0 0])) cache (atom {}) result-assocs (atom [])]
     (letfn [(plus [a b] (mapv + a b))
             (times [a b]
               (let [terms (reduce (fn [out [i j]] (update out (+ i j) + (* (get a i) (get b j))))
@@ -10164,7 +10164,21 @@
                                  (case op
                                    get (unit :field-gets 1)
                                    = (unit :equalities 1)
-                                   assoc (add (unit :map-writes 1) (unit :cells (dec (count args))))
+                                   assoc (let [pairs (quot (dec (count args)) 2)
+                                               result? (and (= 'result (first args))
+                                                            (contains? '#{sh08-gis3-cold-entry sh08-gis3-numeric-source} owner))]
+                                           (when-not (= (count args) (inc (* 2 pairs)))
+                                             (throw (ex-info "Malformed source assoc" {:owner owner :form form})))
+                                           (when result?
+                                             (let [child (if (= owner 'sh08-gis3-cold-entry)
+                                                           'sh08-gis3-entry-unify 'sh08-gis3-numeric-match)
+                                                   width (apply max 0 (map count (filter map? (tree-seq coll? seq (get definitions child)))))]
+                                               (when-not (and (every? keyword? (take-nth 2 (rest args))) (<= (+ width pairs) 32))
+                                                 (throw (ex-info "Unbounded private result assoc" {:owner owner :pairs pairs :prior-width width})))
+                                               (swap! result-assocs conj {:owner owner :pairs pairs :prior-literal-width width
+                                                                         :Keyword-key-bound 32 :copy-cells-per-pair 65})))
+                                           (add (unit :map-writes pairs) (unit :cells (dec (count args)))
+                                                (if result? (add (unit :steps (* 32 pairs)) (unit :cells (* 65 pairs))) zero)))
                                    conj (unit :cells (dec (count args)))
                                    contains? (unit :set-tests 1)
                                    rest (unit :cells remaining)
@@ -10173,6 +10187,7 @@
             weights {:steps 1 :cells 1 :field-gets 2051 :equalities 73 :map-writes 33 :set-tests 7}
             fee (reduce plus [0 0 0] (map (fn [[metric weight]] (mapv #(* weight %) (get model metric))) weights))]
         {:metrics model :weights weights :fee-polynomial fee :helper-models @cache
+         :private-result-assocs @result-assocs
          :literal-Maps (vec (for [name (keys @cache)
                                  form (tree-seq coll? seq (get definitions name)) :when (map? form)]
                              {:owner name :width (count form) :native-keywords (every? keyword? (keys form))}))})))))
@@ -10302,7 +10317,7 @@
                           (case op
                             get (unit (if (= owner 'sh08-gis3-comparison-data?) :private-gets :field-gets) 1)
                             = (unit (if (contains? scalar-comparisons owner) :id-equalities :deep-equalities) 1)
-                            assoc (add (unit :map-writes 1) (unit :cells (dec (count args))))
+                            assoc (add (unit :map-writes (quot (dec (count args)) 2)) (unit :cells (dec (count args))))
                             contains? (unit :set-tests 1)
                             conj (if (= owner 'sh08-gis3-comparison-data?) (unit :cells 1)
                                    (add (unit :cells 1024) (unit :set-tests 1)))
@@ -21937,7 +21952,8 @@
         semantic (reduce +' 0 (for [[[a b] coefficient] (:fee-polynomial semantic-model)]
                                (*' coefficient (reduce *' 1 (repeat a n)) (reduce *' 1 (repeat b d)))))
         surrounding-model (gis3-source-view-work-model 'sh08-gis3-cold-entry)
-        surrounding (+ 512 (first (:fee-polynomial surrounding-model)))
+        surrounding (+ 512 62000)
+        _ (assert (every? true? (map <= (:fee-polynomial surrounding-model) [62000 0 0])))
         ;; Independent family order and prices also exercised by the index
         ;; kernel; this is an audit calculation, not an accepted index token.
         tables [[(:nodes core) :node-id] [(:calls core) :core-node-id] [(:call-edges core) :call-core-node-id]
@@ -22019,7 +22035,8 @@
                      {:value value :calls @seen}))
         accepted (observed exact) repeated (observed exact) short (observed (dec exact))
         reserved (:surrounding worksheet)]
-    (is (= [60355 0 0] (get-in worksheet [:surrounding-model :fee-polynomial])))
+    (is (every? true? (map <= (get-in worksheet [:surrounding-model :fee-polynomial]) [62000 0 0])))
+    (is (= [8] (mapv :pairs (get-in worksheet [:surrounding-model :private-result-assocs]))))
     (is (= [83069 0 0] (get-in worksheet [:DATA-entry-model :fee-polynomial])))
     (is (every? true? (map <= (:dispatch-control-polynomial (gis3-complete-data-control-work-model)) [4096 256])))
     (is (true? (get-in worksheet [:semantic-model :legacy-child-new-construction-payment-established])))
@@ -22054,7 +22071,8 @@
         semantic (reduce +' 0 (for [[[a b] c] (:fee-polynomial semantic-model)]
                                (*' c (reduce *' 1 (repeat a n)) (reduce *' 1 (repeat b d)))))
         source-model (gis3-source-view-work-model 'sh08-gis3-numeric-source)
-        surrounding (+ 512 (first (:fee-polynomial source-model)))]
+        surrounding (+ 512 62000)
+        _ (assert (every? true? (map <= (:fee-polynomial source-model) [62000 0 0])))]
     (assoc entry :semantic-model semantic-model :semantic semantic :surrounding-model source-model
            :surrounding surrounding :total (+ surrounding (:data entry) (:index entry) semantic))))
 
@@ -22080,7 +22098,8 @@
                                #(run budget))]
                      {:value out :calls @seen}))
         accepted (observed exact) repeated (observed exact) short (observed (dec exact))]
-    (is (= [60355 0 0] (get-in worksheet [:surrounding-model :fee-polynomial])))
+    (is (every? true? (map <= (get-in worksheet [:surrounding-model :fee-polynomial]) [62000 0 0])))
+    (is (= [8] (mapv :pairs (get-in worksheet [:surrounding-model :private-result-assocs]))))
     (is (= #{} (get-in worksheet [:semantic-model :separately-paid-legacy-children])))
     (is (= (:semantic worksheet) (invoke-c7 'sh08-gis3-numeric-semantic-work [(:n worksheet) (:d worksheet)])))
     (doseq [out [accepted repeated]]
