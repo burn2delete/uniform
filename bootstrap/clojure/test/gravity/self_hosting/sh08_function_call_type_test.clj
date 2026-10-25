@@ -22413,10 +22413,13 @@
         samples [[nil nil true] [[1 2] (list 1 2) false] [(list 1 2) (cons 1 (list 2)) true]
                  [{:a [1 2] :b #{:x :y}} (array-map :b #{:y :x} :a [1 2]) true]
                  [left right false] [right left false]
+                 [(sorted-map :key 1) (array-map :key 1) true]
+                 [(array-map "key" 1) (sorted-map "key" 1) true]
                  [{[1 :x] {:a 2}} {(list 1 :x) {:a 2}} false]
                  [{#{:x :y} :value} {#{:y :x} :value} true]
                  [(hash-set [1] (list 2)) (hash-set [1] (list 2)) true]
-                 [{:a 1} {:a 2} false] [1 1N true] [1 1.0 false]]]
+                 [{:a 1} {:a 2} false] [1 1N true] [1 1.0 false]
+                 [3/2 3/2 true] [1.25M 1.25M true] [Double/NaN Double/NaN false]]]
     ;; Raw host equality can throw for individually native Map values.
     (is (thrown? ClassCastException (= left right)))
     (doseq [[a b equal?] samples]
@@ -22431,7 +22434,7 @@
     (is (= :verification-data-bound (:reason (data (nth (iterate vector nil) 129) allowance))))
     ;; Independent small-value arithmetic, including the private arena fee.
     (doseq [[value fee storage] [[nil 8208 16] [1 8209 17] [{} 8224 32]
-                                 [[1] 12841 57] [{:x 1} 17491 83] [(list 1) 16977 81]]]
+                                 [[1] 12857 57] [{:x 1} 17491 83] [(list 1) 16977 81]]]
       (let [result (data value fee)]
         (is (= [:accepted fee storage] ((juxt :status :work-count :storage-work) result)))
         (is (= :verification-work-limit (:reason (data value (dec fee)))))))
