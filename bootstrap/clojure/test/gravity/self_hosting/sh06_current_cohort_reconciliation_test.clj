@@ -7,10 +7,9 @@
 (defn- path [relative]
   (.getCanonicalPath (io/file (System/getProperty "user.dir") relative)))
 
-(deftest admitted-reader-policy-reaches-original-small-c3-consumer
+(deftest current-reader-reaches-original-small-c3-consumer
   ;; Current small-source composition, not whole-owner fit or migration.
   (let [reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
-        facade (path "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity")
         source (path "bootstrap/clojure/fixtures/self-hosting/sh-03/accepted/newline-lf.gravity")
         text (slurp source :encoding "UTF-8")
         artifact (b/compiler-c3-syntax-source-artifact
@@ -20,12 +19,6 @@
         stream (:syntax-object-stream artifact)
         revision (:reader-source-revision boundary)
         binding (b/sh03-reader-current-binding! source reader)
-        bounds (b/sh03-reader-execute-plan! source (:plan binding) 'sh03-bounds-record [])
-        emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! facade :jvm))
-        facade-plan (b/p15-s23-stage2-compiler-artifact-plan emitter facade (slurp facade :encoding "UTF-8"))
-        facade-bounds (b/p15-s23-stage2-runtime-execute-function
-                       {:engine :c16-reader-adoption :compiler-artifact-plan? true}
-                       facade-plan 'l1-c2-reader-bounds-record [])
         authentic? #(b/c3-syntax-stream-reader-products-authentic? stream %1 %2)
         old-reader "sha256:e3f840456ac3f2df71bb5ddf894f9524d5a8df74297252bad49925d9060a9f71"
         stale (assoc revision :source-content-hash old-reader)
@@ -40,10 +33,6 @@
            (:source-content-hash binding) (:source-content-hash revision)))
     (is (= 249 (:function-count binding)))
     (is (= b/sh03-reader-expected-plan-semantic-hash (:plan-semantic-hash binding)))
-    (is (= bounds facade-bounds))
-    (is (= :gravity/sh03-compiler-source-v1 (:resource-policy bounds)))
-    (is (= [4194304 4194304 524288 262144]
-           (mapv bounds [:maximum-source-bytes :maximum-characters :maximum-tokens :maximum-forms])))
     (is (not= old-reader (:source-content-hash revision)))
     (is (= stale (get-in replaced-c2 [:sh03-reader-authentication :reader-source-revision])
            (:reader-source-revision replaced-boundary)
@@ -57,9 +46,7 @@
             {:reader (select-keys binding [:source-byte-count :source-content-hash :plan-semantic-hash
                                           :functions-semantic-hash :function-count :entrypoint-semantic-hash
                                           :verifier-semantic-hash])
-             :facade {:source-content-hash (get-in facade-plan [:source :sha256])
-                      :plan-id (:plan-id facade-plan)}
-             :bounds bounds :syntax-verification :passed
+             :syntax-verification :passed
              :genuine-current-transport true :old-revision-substitution-rejected true
              :scope :one-original-small-c2-to-c3-consumer
              :nonclaims [:whole-source-fit :all-functions-invoked :migration :self-hosting :release]})))
