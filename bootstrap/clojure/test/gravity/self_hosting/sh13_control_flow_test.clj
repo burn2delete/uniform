@@ -767,8 +767,8 @@
             truthy (make 'sh13-operation [:nil/truthy :truthy [:nil/value] :bool 1 2])]
         (check (single [constant eq] :bool :nil/equal) [] :returned true)
         (check (single [constant truthy] :bool :nil/truthy) [] :returned false)
-        (doseq [opcode [:add :sub :mul :lt :lte :gt]]
-          (let [op (assoc eq :opcode opcode :type (if (#{:lt :lte :gt} opcode) :bool :i64))]
+        (doseq [opcode [:add :sub :mul :lt :lte :gt :gte]]
+          (let [op (assoc eq :opcode opcode :type (if (#{:lt :lte :gt :gte} opcode) :bool :i64))]
             (reject (single [constant op] (:type op) :nil/equal) [] "C11-TYPE")))
         (let [number (make 'sh13-constant [:nil/number 0 :i64 1 2])]
           (reject (single [constant number (assoc eq :operands [:nil/value :nil/number])]
@@ -968,6 +968,9 @@
 
 (deftest sh13-normalized-greater-than-checks-i64-operands
   (check-normalized-order-comparison :gt >))
+
+(deftest sh13-normalized-greater-than-or-equal-checks-i64-operands
+  (check-normalized-order-comparison :gte >=))
 
 (deftest sh13-missing-discriminators-reject-before-execution
   ;; C11/SH13.6: normalized fixture evidence, not authenticated Core ingress.

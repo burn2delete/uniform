@@ -2760,8 +2760,7 @@
                       (assoc-in [:type-facts id :type] :gravity.type/bool)
                       (assoc-in [:type-facts id :type-id] :gravity.type/bool))
                   (assoc-in core [:core-nodes 2 :operands] [id right-id id])
-                  (assoc-in core [:core-nodes 0 :attributes :value] -9223372036854775809N)
-                  (integer-condition-core extension :integer-gte 0 1 :gravity.type/i64)]]
+                  (assoc-in core [:core-nodes 0 :attributes :value] -9223372036854775809N)]]
         (let [mir (build bad) result (run bad mir)]
           (is (= :passed (get-in result [:upstream-verification :status])))
           (is (= :rejected (:status result)))
@@ -2918,8 +2917,7 @@
                         (if (= placement :then) :else :then) :integer-lt 0 1)
                       :condition :integer-lt 0 1)
                     (with-integer-comparison extension core
-                      (if (= placement :then) :else :then) :integer-lt 0 1)
-                    (arm condition 0 1 :integer-gte)]]
+                      (if (= placement :then) :else :then) :integer-lt 0 1)]]
           (let [mir (build bad) rejection (run bad mir)]
             (is (= :passed (get-in rejection [:upstream-verification :status])))
             (is (= :rejected (:status rejection)))
@@ -3899,3 +3897,50 @@
             (is (= :rejected (:status result)))
             (is (= :bounded-execution-subset (get-in result [:diagnostics 0 :missing-fact])))
             (is (nil? (:execution result)))))))))
+
+(deftest sh13-executes-integer-greater-than-or-equal-with-original-facts
+  (check-integer-condition
+   :integer-gte :integer-greater-than-or-equal
+   [[0 0 :gravity.type/i64 true 11] [1 0 :gravity.type/i64 true 11]
+    [0 1 :gravity.type/i64 false 22] [-1 0 :gravity.type/i64 false 22]
+    [-9223372036854775808 9223372036854775807 :gravity.type/i64 false 22]
+    [9223372036854775807 -9223372036854775808 :gravity.type/i64 true 11]
+    [-9223372036854775808 -9223372036854775808 :gravity.type/bool true false]
+    [9223372036854775807 9223372036854775807 :gravity.type/bool true false]])
+  (check-selected-comparison-arm
+   :integer-gte :integer-greater-than-or-equal
+   [[0 0 true] [1 0 true] [0 1 false] [-1 0 false]
+    [-9223372036854775808 9223372036854775807 false]
+    [9223372036854775807 -9223372036854775808 true]
+    [-9223372036854775808 -9223372036854775808 true]]))
+
+(deftest sh13-gte-mir-matches-the-original-positive-subtraction-guard
+  ;; The actual C11 sh13-sub-safe? positive-right path is
+  ;; (>= left (+ -9223372036854775808 right)). These supplied, explicit-i64
+  ;; Core records test that subtree, not complete source ingress or lowering.
+  (doseq [extension [".gravity" ".qst"]
+          [left right] [[-9223372036854775808 1] [-9223372036854775807 1]
+                        [-9223372036854775806 2] [0 9223372036854775807]
+                        [-2 9223372036854775807] [-1 9223372036854775807]]]
+    (let [threshold (+ Long/MIN_VALUE right)
+          core (integer-condition-core extension :integer-gte left threshold :gravity.type/bool)
+          mir (build core) result (run core mir)
+          expected (invoke 'sh13-sub-safe? left right)]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :accepted (:status result)))
+      ;; integer-condition-core's Bool arms are false, then true.
+      (is (= (not expected) (get-in result [:execution :value])))
+      (is (= :integer-greater-than-or-equal (get-in result [:projection :operations 2 :role])))
+      (is (= :passed (:status (verify core mir result)))))))
+
+(deftest sh13-gte-keeps-the-existing-comparison-placement-boundary
+  (doseq [extension [".gravity" ".qst"] placement [:then :else]
+          arm-operation [:integer-eq :integer-lt :integer-lte :integer-gt :integer-gte]]
+    (let [base (scalar-core (checked extension) true :gravity.type/bool false true)
+          arm (with-integer-comparison extension base placement arm-operation 0 0)
+          core (with-integer-comparison extension arm :condition :integer-gte 0 0)
+          mir (build core) result (run core mir)]
+      (is (= :passed (get-in result [:upstream-verification :status])))
+      (is (= :rejected (:status result)))
+      (is (= :bounded-execution-subset (get-in result [:diagnostics 0 :missing-fact])))
+      (is (nil? (:execution result))))))
