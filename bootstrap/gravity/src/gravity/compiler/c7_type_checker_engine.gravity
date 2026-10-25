@@ -27223,10 +27223,12 @@
   ; default TreeMap is supported through enumeration, never guest lookup.
   (if (if (integer? budget) (>= budget 0) false)
     (if (< budget 4096) (sh08-vf-data-failure :verification-work-limit 4096 0)
-      (loop [pending (list [value 0 0 0]) arena [nil] used 4096 nodes 0 storage 0]
+      (loop [pending (list [value 0 0 0]) arena [nil] used 4096 nodes 0 storage 0
+             comparison 0 maximum-width 0 scalar-sum 0 maximum-scalar 0]
         (if (= 0 (count pending))
           {:status :accepted :arena arena :work-count used :completed-work-count used
-           :nodes nodes :storage-work storage}
+           :nodes nodes :storage-work storage :comparison-bound-work comparison
+           :maximum-width maximum-width :scalar-work-sum scalar-sum :maximum-scalar-work maximum-scalar}
           (let [required (+ used 4096)]
             (if (> required budget) (sh08-vf-data-failure :verification-work-limit required used)
               (let [frame (first pending) item (get frame 0) depth (get frame 1)
@@ -27258,15 +27260,18 @@
                                                      (conj (get expanded :pending) [(get header 4) depth backing-id 0])
                                                      (get expanded :pending))]
                                   (recur next-pending
-                                    (assoc next-rows id [(if map-kind? :map kind) (get expanded :children) 0])
-                                    complete next-nodes (+ storage local))))))
+                                    (assoc next-rows id [(if map-kind? :map kind) (get expanded :children) 0 kind])
+                                    complete next-nodes (+ storage local)
+                                    (+ comparison 1 width (if (if map-kind? true (= kind :set)) (* size size) 0))
+                                    (if (> width maximum-width) width maximum-width) scalar-sum maximum-scalar))))))
                           (if (= kind :list-node)
                             (let [complete (+ required 560) head-id (count arena) tail-id (+ head-id 1)]
                               (if (> complete budget) (sh08-vf-data-failure :verification-work-limit complete required)
                                 (recur (conj (conj tail [(get header 4) (+ depth 1) head-id 0])
                                                        [(get header 5) depth tail-id (+ list-width 1)])
                                   (assoc (conj (conj arena nil) nil) id [:list-node [head-id tail-id] 0])
-                                  complete next-nodes (+ storage 48))))
+                                  complete next-nodes (+ storage 48) (+ comparison 3)
+                                  (if (> 2 maximum-width) 2 maximum-width) scalar-sum maximum-scalar)))
                             (let [scalar-work (sh08-vf-scalar-work header) complete (+ required scalar-work)
                                   normalized (if (if (> list-width 0) (= kind :nil) false) :empty-list
                                                (sh08-vf-scalar-kind kind))]
@@ -27274,9 +27279,47 @@
                                 (sh08-vf-data-failure :verification-scalar-bound required required)
                                 (if (> complete budget) (sh08-vf-data-failure :verification-work-limit complete required)
                                   (recur tail (assoc arena id [normalized (if (= normalized :empty-list) nil item) scalar-work])
-                                    complete next-nodes (+ storage scalar-work)))))))
+                                    complete next-nodes (+ storage scalar-work) (+ comparison scalar-work)
+                                    maximum-width (+ scalar-sum scalar-work)
+                                    (if (> scalar-work maximum-scalar) scalar-work maximum-scalar)))))))
                         (sh08-vf-data-failure :verification-native-list-tail required required))))))))))))
     (sh08-vf-data-failure :invalid-verification-work-allowance 0 0)))
+
+(defn sh08-vf-first-order-scalar-domain? [arena]
+  ; Eligibility for the selected provider's artifact relation, not language
+  ; equality. In particular no NaN, signed-zero or Decimal-scale rule is
+  ; invented here. Unsupported scalar kinds leave that provider incomplete.
+  (let [kinds #{:map :entry :set :vector :list-node :empty-list :nil :boolean :integer :keyword :symbol :string}]
+    (loop [i 0]
+      (if (= i (count arena)) true
+        (let [row (get arena i) kind (get row 0)]
+          (if (contains? kinds kind)
+            (if (if (= kind :integer) (<= (get row 2) 80) true) (recur (+ i 1)) false) false))))))
+
+(defn sh08-vf-first-order-operation-domain? [arena]
+  ; Only the selected provider uses this eligibility fence. It does not
+  ; redefine Gravity numbers or the producer's canonical scalar ABI. Generic
+  ; candidate DATA remains wider. Both walks and this fence need fresh payment.
+  (let [kinds #{:map :entry :set :vector :list-node :empty-list :nil :boolean :integer :keyword :symbol :string}
+        key-kinds #{:nil :boolean :integer :keyword :symbol :string}]
+    (loop [i 0]
+      (if (= i (count arena)) true
+        (let [row (get arena i) kind (get row 0)]
+          (if (contains? kinds kind)
+            (if (if (= kind :integer) (<= (get row 2) 80) true)
+              (if (= kind :map)
+                (if (= :map (get row 3))
+                  (if (loop [entries (get row 1) j 0]
+                        (if (= j (count entries)) true
+                          (let [entry (get arena (get entries j)) key (get arena (get (get entry 1) 0))]
+                            (if (contains? key-kinds (get key 0)) (recur entries (+ j 1)) false))))
+                    (recur (+ i 1)) false) false)
+                (if (= kind :set)
+                  (if (loop [items (get row 1) j 0]
+                        (if (= j (count items)) true
+                          (if (contains? key-kinds (get (get arena (get items j)) 0)) (recur items (+ j 1)) false)))
+                    (recur (+ i 1)) false)
+                  (recur (+ i 1)))) false) false))))))
 
 (defn sh08-vf-compare-arenas [left right budget]
   ; This continuation machine only looks up private integer arena indexes.

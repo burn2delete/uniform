@@ -22469,6 +22469,25 @@
   (prn {:private-ordinary-ledger :checked :canonical-output-work-receipt false
         :whole-reconstruction-accounting false :public-wrapper-changed false}))
 
+(deftest sh08-verifier-first-order-domain-eligibility
+  (let [data #(invoke-c7 'sh08-vf-data [% 10000000])
+        scalar-domain #(invoke-c7 'sh08-vf-first-order-scalar-domain? [(:arena (data %))])
+        operation-domain #(invoke-c7 'sh08-vf-first-order-operation-domain? [(:arena (data %))])
+        eligible {:metadata ['valid 1N nil true] :body {:warm :amber}}]
+    (is (true? (scalar-domain eligible))) (is (true? (operation-domain eligible)))
+    (doseq [value [1.25M 3/2 0.0 -0.0 Double/NaN (.shiftLeft java.math.BigInteger/ONE 80)]]
+      (doseq [sample [value {:unused value} [value] (list value)]]
+        (is (= :accepted (:status (data sample))))
+        (is (false? (scalar-domain sample)))
+        (is (false? (operation-domain sample)))))
+    ;; TreeMaps and compound keys remain supported generic comparison DATA.
+    ;; The narrower reconstruction operation fence does not replace that rule.
+    (doseq [value [(sorted-map :key 1) {[1] :value} #{[1]}]]
+      (is (true? (scalar-domain value))) (is (false? (operation-domain value))))
+    (prn {:first-order-eligibility :checked :wider-native-DATA-preserved true
+          :out-of-domain-disposition :incomplete :semantic-rejection false
+          :full-paid-public-boundary false})))
+
 (deftest sh08-verifier-map-get-recipe-current-source
   (let [{:keys [core bindings forms]} (verifier-current-core-products (fn [_ operation] (operation)))
         run #(invoke-c7 'sh08-vf-map-get-recipe? [% bindings forms])
