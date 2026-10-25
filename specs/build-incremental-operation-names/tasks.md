@@ -7,7 +7,8 @@ Spec: [spec.md](spec.md). Plan: [plan.md](plan.md). Evidence: [evidence.md](evid
   its complete facade import/call graph without changing behavior or public names.
 - [x] Add nested-failure restoration and subsequent-call regressions through
   the unchanged public facade.
-- [ ] Run affected leaf/composition and repository-policy checks; record results.
+- [x] Run affected leaf/composition and repository-policy checks; record passing
+  checks and the pristine-base-reproduced composition failure separately.
 - [ ] Independently review the exact candidate and integrate through coordinator.
 
 Only the declared internal namespace is migrated. The facade and other legacy
