@@ -686,7 +686,7 @@ the successful comparison log SHA256 is
 `backends/00644`,
 blob `01108694951422173fd0c904d0f91bc8d8a19f6e`; the complete seed source tree
 is now `4fda9727f1ca84cb8e3ad36f09865da94135ed6c`. The PR318 canonical resource
-fingerprint and six-plan execution above remain bound to `c4faaccb`, not this
+fingerprint and six-plan construction/comparison result above remain bound to `c4faaccb`, not this
 successor. No new six-plan run or canonical resource-manifest recomputation is
 claimed here.
 
