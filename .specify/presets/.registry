@@ -2,9 +2,9 @@
   "schema_version": "1.0",
   "presets": {
     "uniform": {
-      "version": "0.1.0",
+      "version": "0.2.0",
       "source": "local",
-      "manifest_hash": "sha256:0c50ccbfc0990b73881890b4635293c777db18cc8b1dab4f18718d929232b3ff",
+      "manifest_hash": "sha256:490d4c87af069831901a0970ab5fcb9e829a8dbcdc88c660d87fdc8f09e7a8ec",
       "enabled": true,
       "priority": 10,
       "registered_commands": {
@@ -35,7 +35,7 @@
           "speckit-taskstoissues"
         ]
       },
-      "installed_at": "2026-10-25T18:44:09.880280+00:00"
+      "installed_at": "2026-10-25T19:43:37.140410+00:00"
     }
   }
 }

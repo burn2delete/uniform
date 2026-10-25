@@ -26,3 +26,8 @@ its named deliverable and evidence exist; externally reported validation is
 explicitly attributed. Keep implementation, review and integration separate.
 Do not mark inherited PR implementation complete merely because this planning
 exercise is complete. No mandatory all-feature completion gate for draft PRs.
+
+Apply `.specify/semantic-names.md` to newly introduced implementation filenames,
+namespaces and application/API names. Use short subsystem/behavior words; keep
+planning IDs in metadata/cross-references. Review new names in this change only,
+record legacy rename dependencies, and preserve compatibility-bearing IDs.

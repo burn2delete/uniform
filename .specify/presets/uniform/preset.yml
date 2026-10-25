@@ -2,7 +2,7 @@ schema_version: "1.0"
 preset:
   id: "uniform"
   name: "Uniform bounded change workflow"
-  version: "0.1.0"
+  version: "0.2.0"
   description: "Repository contracts, manager autonomy and exact evidence"
   author: "Uniform"
 requires:
