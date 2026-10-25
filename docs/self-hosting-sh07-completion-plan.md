@@ -768,6 +768,84 @@ functions, canonical Core products, migration or C01/C06 completion. The 44
 reader definitions outside the selected plan remain explicit; all C-tasks
 remain OPEN.
 
+### C01 full function-body requirement matrix at `6585164c`
+
+The selected-plan map could not establish what the 44 uncompiled reader
+definitions require. A separate audit read all six byte-pinned sources,
+normalized their function headers/bodies through the existing seed APIs and
+walked every function body. It found 1008 functions and 61542 structural source
+positions. The 964 selected functions account for exactly the existing 61087
+positions; the remaining 44 reader functions add 455 positions. Quote payloads
+are DATA leaves; binding names are declarations, not evaluated initializer
+expressions. The source rows are structural paths, not C2 identities or Core
+products.
+
+| Source | All functions | Body positions | `if` | `let` | `loop` | `recur` | `quote` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| authenticated envelope | 72 | 3308 | 278 | 29 | 0 | 0 | 0 |
+| reader, including 44 outside the selected plan | 275 | 12283 | 767 | 168 | 79 | 105 | 24 |
+| syntax | 102 | 4913 | 303 | 43 | 32 | 36 | 4 |
+| macro | 46 | 3255 | 201 | 14 | 7 | 7 | 19 |
+| resolution | 111 | 6554 | 454 | 74 | 88 | 116 | 7 |
+| checked Core | 402 | 31229 | 2110 | 410 | 200 | 227 | 48 |
+| Total | 1008 | 61542 | 4113 | 738 | 406 | 491 | 102 |
+
+The existing EDN's full-body supplement records each source identity and
+separates selected/outside summaries. Selected source paths/kinds are joined
+to the existing instruction rows without duplicating all 61087 records.
+Outside definitions retain hashes, spans, ordered signatures, body positions
+and binding-pattern locations. All 2710 `let`/`loop` binding patterns are
+symbols. The extra 44 functions add no builtin-name calls and 35 calls matching
+their normalized source function table. This last classification is not C5
+binding authority: qualified `reader/...` declaration/call spellings still
+need their actual resolver/namespace disposition. None of these 44 functions
+has acquired a compiled plan, Core product or migration acceptance.
+
+This is a partial required-use matrix. Every row below remains
+verification-open for the complete requested scope. Existing selectors in the
+validation table are locators; their historical results are not new executions.
+
+| Task / contract | Required source-body family | Required product and remaining acceptance/rejection join |
+| --- | --- | --- |
+| C02 / L2, C6 | Actual nil, Bool, integer, character, string, keyword, vector/map/set positions and 102 quoted DATA leaves. No executable decimal/ratio body literal was observed outside quoted interiors. | Preserve kind/value, constructor child order and inert quote for each required occurrence. Join the existing literal/decimal/character/order owners and source negatives; broader declared literal support is not waived. |
+| C03 / L3, C5, C6 | Symbol references and 1008 source definitions, including qualified reader names in the 44 uncompiled definitions. | Actual C5 definition/reference/namespace identity and Core source maps remain required. Source-table name membership cannot supply resolver or imported-callee artifacts. Top-level `def` initializers are not covered by this body audit. |
+| C04 / L2, C6 | 4113 `if`, 738 `let`, symbol-only sequential binding patterns; no executable `do` body form observed. | Preserve truthiness, exclusive branches, initializer scope and source order. Join selected occurrences to actual control/let products and malformed/order/origin rejections. Absence of explicit `do` does not establish sequencing correctness. |
+| C05 / L2, C4, C6 | 1008 `defn` headers/bodies require generated function/definition products. No nested executable `fn` was observed. | Preserve macro origin, ordered parameters/body, visibility and captures where applicable. The complete definition-to-Core join remains open; the declared nested-function contract remains separate. |
+| C06 / L2, C6 | 12668 selected builtin-call positions, 3403 selected local calls and 35 additional source-table name matches. | Preserve actual operator/argument order and call edges, then obtain the selected consumer's arity/dispatch legality and negative results. A table match is not public B48 routing or call execution. |
+| C07 / L2, C6 | 406 `loop` and 491 `recur` positions. | Preserve nearest targets, simultaneous ordered operands and tail placement. Existing scoped helper products do not cover all positions; target/arity/tail/order rejection joins remain required. |
+| C08 / L2, C6 | No executable `set!` in these normalized function bodies. | Keep the broader declared location/RHS/order and rejection requirements open. Quoted dispatch tokens are not executable uses; this result is not an outside-subset exemption. |
+| C09 / L2, L9, C6 | No executable `try`, `throw`, handler or cleanup body form observed. | Keep the broader declared error/handler/order/origin and rejection requirements open. This census neither implements nor excludes cleanup support. |
+| C10 / L2, L7, C6 | No executable `match` in these normalized function bodies. | Keep the broader declared pattern/guard and rejection requirements open. Literal match-handler catalog DATA does not prove an executable pattern use or satisfy its conformance gate. |
+
+Namespace clauses, top-level DATA initializers and quoted interiors were not
+inventoried as executable function bodies. Their declaration/value/origin
+obligations remain with C02/C03/C05/C11 and require a separate source-region
+join. The body inventory cannot establish their absence, complete source
+coverage, Core acceptance, downstream legality, execution or any C-task's
+completion.
+
+The changed full-body batch passed 18 tests/175 assertions under the existing
+normal broker, 2GiB heap and 120s watchdog, with natural exit 0. The seven C01
+tests passed 152 assertions; boundary/LOC passed 11 tests/23 assertions. The
+recorded completion interval was 15293.026542 ms. The independent source walk
+joins every selected path/kind to the existing plan positions and retains all
+44 outside definitions. Negative controls distinguish binding declarations
+and quoted payloads from executable children, and reject malformed or newly
+unclassified inventory shapes. Those are C01 inventory failures, not compiler
+source-rejection results. The first controller timed out at broker admission
+before the test body and remains historical with zero assertions.
+
+Raw successful output is
+`/tmp/sh07-c01-full-body-families-6585164c-attempt2.log`, SHA256
+`6c779574203bd2ea81803abb99572a715a824c775a5b00f06dcd42b2dd4dbca5`.
+The EDN pins its exact dirty-worktree test source, method, raw result, fresh
+family rows and original audit, on parent
+`6585164c9f8a954d98d3c3e933456eb2463810e0`. Main reference
+`95c3a56e2492b7509a7c55acffb6cc5ca25af72d` had identical six source files at
+inspection; it was not this execution's checkout. Every prior report field
+remains conserved. Namespace/top-level initialization and source-to-Core
+acceptance remain unproven.
+
 ### C01 and C16 stopping point
 
 The six full subjects, ordinary current-reader intake, repository load boundary

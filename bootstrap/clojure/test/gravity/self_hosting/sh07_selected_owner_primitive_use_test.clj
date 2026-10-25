@@ -177,6 +177,72 @@
      :java-vm (System/getProperty "java.vm.name") :classpath (System/getProperty "java.class.path")
      :jvm-arguments (vec (.getInputArguments (java.lang.management.ManagementFactory/getRuntimeMXBean)))}))
 
+(defn- body-source-map [body]
+  (loop [pending (mapv (fn [i value] [value [i]]) (range) body) rows [] bindings []]
+    (if (empty? pending) {:occurrences rows :binding-patterns bindings}
+      (let [[value source-path] (peek pending) list-form? (seq? value)
+            op (when list-form? (first value))
+            indexed (fn [values start]
+                      (mapv (fn [i v] [v (conj source-path i)]) (range start (+ start (count values))) values))
+            binding? (contains? '#{let loop} op) bound (when binding? (second value))
+            _ (when binding? (require! (and (vector? bound) (even? (count bound))
+                                            (every? symbol? (take-nth 2 bound))) :source-binding-pattern))
+            children
+            (cond
+              (and list-form? (= 'quote op)) (do (require! (= 2 (count value)) :source-quote) [])
+              (and list-form? (contains? '#{fn var set! try throw match catch finally} op))
+              (do (require! false :source-family-unclassified) [])
+              binding? (into (mapv (fn [i v] [v (conj source-path 1 i)])
+                                  (range 1 (count bound) 2) (take-nth 2 (rest bound)))
+                             (indexed (vec (drop 2 value)) 2))
+              list-form? (do (require! (symbol? op) :source-operator-unclassified) (indexed (vec (rest value)) 1))
+              (map? value) (vec (mapcat (fn [i [k v]] [[k (conj source-path :map-entry i :key)]
+                                                       [v (conj source-path :map-entry i :value)]])
+                                       (range) (sort-by (fn [[k v]] (pr-str [k v])) value)))
+              (set? value) (indexed (vec (sort-by pr-str value)) 0)
+              (vector? value) (indexed value 0)
+              :else [])]
+        (recur (into (pop pending) children) (conj rows [(b/form-kind value) op source-path])
+               (if binding? (into bindings (mapv (fn [i name] {:path (conj source-path 1 i) :kind (b/form-kind name)})
+                                                 (range 0 (count bound) 2) (take-nth 2 bound))) bindings))))))
+
+(defn full-body-family-map [owners]
+  ;; This is a source-body inventory. Unseen special forms fail the inventory,
+  ;; not the compiler; their bodies need a contract-specific traversal first.
+  (mapv
+   (fn [{:keys [input definitions spans row]}]
+     (let [selected (set (map :function (:functions row)))
+           names (set (keys definitions))
+           builtins (set (map :callee (filter #(= :builtin-call (:op %)) (mapcat :uses (:functions row)))))
+           special '#{quote if do let loop recur}
+           functions (mapv (fn [[name definition]]
+                             (merge {:function name :definition-hash (hash-value definition)
+                                     :parameters (:params definition) :fixed-arity (:arity definition)
+                                     :definition-span (get spans name) :selected-plan? (contains? selected name)}
+                                    (body-source-map (:body definition)))) (sort-by (comp str key) definitions))
+           summarize (fn [functions]
+                       (let [occurrences (mapcat :occurrences functions) operators (frequencies (keep second occurrences))]
+                         (require! (every? #(or (contains? names %) (contains? builtins %) (contains? special %))
+                                          (keys operators)) :source-call-unclassified)
+                         {:functions (count functions) :source-positions (count occurrences)
+                          :source-kinds (frequencies (map first occurrences))
+                          :core-operators (into (sorted-map) (filter #(contains? special (key %)) operators))
+                          :builtin-calls (reduce + 0 (map val (filter #(contains? builtins (key %)) operators)))
+                          :local-calls (reduce + 0 (map val (filter #(contains? names (key %)) operators)))
+                          :binding-pattern-kinds (frequencies (map :kind (mapcat :binding-patterns functions)))}))
+           selected-functions (filterv :selected-plan? functions)
+           outside-functions (filterv #(not (:selected-plan? %)) functions)
+           function-index (into {} (map (juxt :function identity)) functions)]
+       (doseq [function (:functions row)]
+         (let [walk (get function-index (:function function))]
+           (require! (= (count (:occurrences walk)) (count (:instruction-occurrences function))
+                        (count (set (map #(nth % 2) (:occurrences walk))))) :source-position-bijection)
+           (require! (= (into {} (map (fn [[kind _ source-path]] [source-path kind]) (:occurrences walk)))
+                        (into {} (map (fn [[_ source-path _ kind]] [source-path kind]) (:instruction-occurrences function))))
+                     :source-plan-position-kind)))
+       {:input input :selected (summarize selected-functions) :outside (summarize outside-functions)
+        :outside-functions outside-functions})) owners))
+
 (def observed-owners (atom []))
 (def stopped-frontier (atom nil))
 (def current-owners
@@ -284,6 +350,32 @@
         (is (= {:parameters '[left right] :fixed-arity 2} (function-signature (get definitions 'target) target)))
         (is (= expected (:reason failure)))
         (when expected (is (= "SH07-C01-JOIN" (:id failure))))))))
+
+(deftest full-source-body-families-retain-uncompiled-reader-definitions
+  (let [owners @current-owners families (full-body-family-map owners)]
+    (is (= owner-paths (mapv #(get-in % [:input :path]) families)))
+    (is (= [964 44 61087 455]
+           (mapv (fn [ks] (reduce + (map #(get-in % ks) families)))
+                 [[:selected :functions] [:outside :functions] [:selected :source-positions] [:outside :source-positions]])))
+    (doseq [[owner family] (map vector owners families)]
+      (is (= (reduce + (vals (:instruction-summary (:plan owner)))) (get-in family [:selected :source-positions])))
+      (is (= (set (map :function (get-in owner [:row :outside-selected-plan])))
+             (set (map :function (:outside-functions family)))))
+      (is (every? #(and (:definition-span %) (:definition-hash %)
+                       (= (:fixed-arity %) (count (:parameters %)))) (:outside-functions family))))
+    (is (= 0 (reduce + (map #(get-in % [:outside :builtin-calls]) families))))
+    (is (= 35 (reduce + (map #(get-in % [:outside :local-calls]) families))))))
+
+(deftest source-body-family-walk-distinguishes-bindings-and-quoted-data
+  (let [body '[(let [x (quote (try (set! x bad)))]
+                {:result x :data (quote (fn [x] (match x)))})]
+        walk (body-source-map body) rows (:occurrences walk)]
+    (is (= {'let 1 'quote 2} (frequencies (keep second rows))))
+    (is (= [{:path [0 1 0] :kind :symbol}] (:binding-patterns walk)))
+    (is (= 1 (count (filter #(= :symbol (first %)) rows))))
+    (is (not-any? #(= [0 1 0] (nth % 2)) rows))
+    (doseq [form '[(quote) (quote x y) (let [x] x) (let [[x] []] x) (fn [x] x) ((factory) 1)]]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo #"C01 source/plan join rejected" (body-source-map [form]))))))
 
 (deftest selected-owner-observed-arity-runtime-cases
   ;; The reviewed map supplies actual required arities, not runtime authority.

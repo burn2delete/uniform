@@ -9695,6 +9695,17 @@ before test execution, and explicit corrections for two successful-run
 metadata labels. This establishes C01 record joins, with B48 legality, C5
 binding authority, C7, execution, full Core products and migration still OPEN.
 
+The next C01 required-use audit covers all 1008 normalized function bodies,
+including the 44 reader definitions outside the selected seed plan. It finds
+61542 body positions: the existing 61087 selected positions plus 455 outside.
+The [full-body requirement matrix](self-hosting-sh07-completion-plan.md#c01-full-function-body-requirement-matrix-at-6585164c)
+records concrete control/literal/call families, source-only locators and
+verification-open product/rejection joins. It finds no executable mutation,
+error/handler, match or nested-function body form, without granting any
+broader SH07 support exemption. Qualified reader name membership is not C5
+authority. Top-level DATA/declarations and quoted interiors remain separate
+unclosed source regions; no full-source or migration credit follows.
+
 The current 2026-10-24 accounting base is inspected remote main
 `c4b1d19da11def44f835d552e44d06488d31fe46`, tree
 `a4145adf64c5c7d4ebc558c605f07d27f784cac5`. Earlier `64aa890a` queue/adoption
