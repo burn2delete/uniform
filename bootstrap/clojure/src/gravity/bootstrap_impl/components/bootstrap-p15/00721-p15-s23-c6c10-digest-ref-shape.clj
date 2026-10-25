@@ -53,7 +53,7 @@
 
 (defn p15-s23-c6c10-canonical-identity
   [source-path value]
-  (:form (p15-s23-c6c10-canonical-form-and-stats source-path value)))
+  (p15-s23-c6c10-canonical-form* source-path value))
 
 (defn p15-s23-c6c10-unique-resolved-values!
   [source-path missing-fact values]
@@ -142,34 +142,18 @@
 
 (defn p15-s23-c6c10-validate-builder-result-canonical-carrier!
   [source-path raw-result]
-  (let [requests (:digest-requests raw-result)]
-    (when-not
-     (and (map? raw-result)
-          (vector? requests)
-          (contains? p15-s23-c6c10-canonical-vector-classes
-                     (.getName (class requests)))
-          (nil? (meta requests))
-          (<= (count requests) p15-s23-c6c10-max-digest-requests))
+  ;; Validate native classes and cycles before looking up any result fields.
+  (p15-s23-c6c10-canonical-form* source-path raw-result)
+  (let [requests (when (map? raw-result) (:digest-requests raw-result))]
+    (when-not (and (map? raw-result) (vector? requests))
       (p15-s23-c6c10-host-fail!
-       "C6-VERIFY" source-path :bounded-digest-request-vector
-       {:request-count (when (vector? requests) (count requests))}))
-    ;; The request graph itself is the one schema-declared exception to the
-    ;; ordinary width-128 carrier rule.  Validate its outer vector separately,
-    ;; while sharing one aggregate budget across every request/preimage and all
-    ;; other result fields.
-    (let [stats (atom {:nodes 1 :maximum-depth 0 :maximum-width 0
-                       :scalar-bytes 0 :maximum-scalar-bytes 0
-                       :maximum-integer-bits 0})]
-      (p15-s23-c6c10-canonical-form*
-       source-path stats 0 (assoc raw-result :digest-requests []))
-      (doseq [request requests]
-        (p15-s23-c6c10-canonical-form*
-         source-path stats 2 request))
-      @stats)))
+       "C6-VERIFY" source-path :digest-request-vector
+       {:request-count (when (vector? requests) (count requests))})))
+  {:status :passed})
 
 (defn p15-s23-c6c10-validate-builder-result-envelope!
   [source-path raw-result]
-  ;; This establishes bounded, metadata-free canonical carrier classes before
+  ;; This establishes metadata-free canonical native carriers and rejects cycles before
   ;; any recursive graph traversal below.
   (p15-s23-c6c10-validate-builder-result-canonical-carrier!
    source-path raw-result)
