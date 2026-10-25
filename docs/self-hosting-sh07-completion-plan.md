@@ -727,6 +727,47 @@ with zero assertions; it is not a consumed proof. Current construction emitted
 real seed instructions, not a compiler binary, canonical Core, type/effect
 legality, full-reader execution or migration evidence. All C-tasks remain OPEN.
 
+### C01 selected local-call declaration joins at `af04fecc`
+
+The next source audit joined all 3403 selected local-call occurrences to the
+actual normalized declarations behind the six byte-pinned sources. Every
+observed call has the declared fixed arity. C01 previously recorded only the
+callee name and argument count; it now records the ordered `:parameters` and
+`:fixed-arity` for all 964 selected functions. The existing owning test checks
+each declaration hash, source/plan signature equality and local-call arity.
+Earlier call rows, instruction positions, plan identities, span coordinates
+and case evidence remain conserved. The fresh physical paths and dependencies
+are separate execution observations.
+
+One actual normal-broker 2GiB/120s-watchdog batch passed 16 tests/143 assertions
+on the changed worktree based at `af04fecc709ce585938f555b3d972ab80d5f5b5d`.
+The five focused tests passed 120 assertions; boundary/LOC passed 11 tests/23
+assertions. The recorded test-completion interval was 13801.49925 ms. Real
+seed plans from one matching call and too-few/too-many source calls establish
+the C01 record check's acceptance and `SH07-C01-JOIN` / `:local-call-arity`
+rejection. These are not B48 compiler-legality results. Forged declaration
+hash, fixed arity and parameter rows also reject. No compiler implementation,
+public routing or source legality was changed.
+
+The existing EDN's `:local-call-signature-evidence` pins the executed test,
+method, raw result, projection and earlier source audit. Raw batch output is
+`/tmp/sh07-c01-local-call-signatures-af04fecc-attempt2.log`, SHA256
+`33e5828cea9dbec5d09fe478da299248273668cc946364584cea96d91be0ed0c`.
+The first controller timed out at broker admission before executing tests;
+its raw output and unexecuted selector typo remain historical. The successful
+runner's copied main-reference string and count label were metadata mistakes:
+the actual main ancestor is `d42f23b22f76cd89cc1f52cc687d3f5ab224ceb8`, verified
+as its exact merge base with the execution parent; the printed count 61087 is
+instruction positions, not function signatures. Raw files remain verbatim,
+with explicit corrections in the EDN. The test result and exact execution
+parent are unaffected.
+
+These are selected seed declaration/call joins. They do not establish C5
+binding authority, C7 compatibility, argument value domains, execution of all
+functions, canonical Core products, migration or C01/C06 completion. The 44
+reader definitions outside the selected plan remain explicit; all C-tasks
+remain OPEN.
+
 ### C01 and C16 stopping point
 
 The six full subjects, ordinary current-reader intake, repository load boundary

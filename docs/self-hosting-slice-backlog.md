@@ -9684,6 +9684,17 @@ binding/definition links, actual invocation and later legality remain OPEN.
 This is substantive ordinary in-goal work, with no revived task-count,
 attempt-grant or preparation-only gate and no milestone credit.
 
+The next C01 audit found missing declaration signatures in the selected call
+map. All 964 selected functions now retain ordered parameters and fixed arity;
+all 3403 local calls match the actual source/plan declarations. The changed
+batch passed 16 tests/143 assertions under normal 2GiB/120s checks, including
+real seed-plan wrong-arity record rejection and forged declaration controls.
+The [declaration-join record](self-hosting-sh07-completion-plan.md#c01-selected-local-call-declaration-joins-at-af04fecc)
+and existing EDN preserve earlier rows/evidence, the first admission timeout
+before test execution, and explicit corrections for two successful-run
+metadata labels. This establishes C01 record joins, with B48 legality, C5
+binding authority, C7, execution, full Core products and migration still OPEN.
+
 The current 2026-10-24 accounting base is inspected remote main
 `c4b1d19da11def44f835d552e44d06488d31fe46`, tree
 `a4145adf64c5c7d4ebc558c605f07d27f784cac5`. Earlier `64aa890a` queue/adoption

@@ -28,6 +28,20 @@
 (defn- require! [condition reason]
   (when-not condition (throw (ex-info "C01 source/plan join rejected" {:id "SH07-C01-JOIN" :reason reason}))))
 
+(defn- function-signature [definition function]
+  (require! (and definition function
+                 (= (:params definition) (:params function))
+                 (= (:arity definition) (count (:params definition)))) :function-signature)
+  {:parameters (:params definition) :fixed-arity (:arity definition)})
+
+(defn- validate-local-calls! [uses plan definitions]
+  (doseq [use uses :when (= :function-call (:op use))]
+    (let [callee (:callee use) function (get-in plan [:functions callee])]
+      (require! function :missing-local-callee)
+      (require! (= (:arity use) (:fixed-arity (function-signature (get definitions callee) function)))
+                :local-call-arity)))
+  true)
+
 (defn- children [form instruction source-path plan-path]
   (let [pairs (fn [forms nodes source-slots plan-slots]
                 (require! (= (count forms) (count nodes) (count source-slots) (count plan-slots)) :child-count)
@@ -106,7 +120,8 @@
         functions (mapv (fn [[name function]]
                           (let [definition (get definitions name) joined (occurrence-map definition function)]
                             (require! (and definition (get spans name)) :original-definition)
-                            (merge {:function name :definition-span (get spans name)
+                            (merge (function-signature definition function)
+                                   {:function name :definition-span (get spans name)
                                     :definition-hash (hash-value definition) :function-plan-hash (hash-value function)} joined)))
                         (:functions plan))]
     (require! (= input (file-id relative)) :source-drift)
@@ -128,13 +143,18 @@
                  (= (set (keys (:functions plan))) (set (map :function (:functions row))))) :function-population)
   (doseq [function (:functions row)]
     (require! (= (:definition-span function) (get spans (:function function))) :definition-span)
+    (require! (= (:definition-hash function) (hash-value (get definitions (:function function)))) :definition-identity)
+    (require! (= (select-keys function [:parameters :fixed-arity])
+                 (function-signature (get definitions (:function function))
+                                     (get-in plan [:functions (:function function)]))) :function-signature)
     (require! (= (:function-plan-hash function) (hash-value (get-in plan [:functions (:function function)]))) :function-identity)
     (require! (= (select-keys function [:uses :instruction-occurrences :instructions])
                  (occurrence-map (get definitions (:function function)) (get-in plan [:functions (:function function)]))) :source-occurrence)
     (doseq [use (:uses function)]
       (let [node (get-in (get-in plan [:functions (:function function)]) (:plan-path use))]
         (require! (= [(:op use) (:callee use) (:arity use)] [(:op node) (:function node) (count (:args node))]) :instruction-use)
-        (when (= :function-call (:op use)) (require! (contains? (:functions plan) (:callee use)) :missing-local-callee)))))
+        (when (= :function-call (:op use)) (require! (contains? (:functions plan) (:callee use)) :missing-local-callee))))
+    (validate-local-calls! (:uses function) plan definitions))
   true)
 
 (defn- validate-population! [owners]
@@ -220,6 +240,9 @@
                      (assoc-in owners [0 :input :sha256] "sha256:changed")
                      (assoc-in owners [0 :plan :plan-id] "sha256:changed")
                      (assoc-in owners [0 :row :functions 0 :function-plan-hash] "sha256:changed")
+                     (assoc-in owners [0 :row :functions 0 :definition-hash] "sha256:changed")
+                     (update-in owners [0 :row :functions 0 :fixed-arity] inc)
+                     (update-in owners [0 :row :functions 0 :parameters] #(conj % 'forged))
                      (update-in owners [0 :row :functions] #(conj % (first %)))
                      (update-in owners [0 :row :functions 0 :instruction-occurrences] pop)
                      (update-in owners [0 :row :functions 0 :instruction-occurrences] #(conj % (first %)))
@@ -242,6 +265,25 @@
     (is (= {:quote 1} (:instructions quoted)))
     (is (= [[:literal [0] [:instructions 0] :symbol]] (:instruction-occurrences constant)))
     (is (= [] (:uses constant)))))
+
+(deftest local-call-signatures-join-real-seed-declarations
+  ;; This checks C01 records against seed plans, not B48 compiler legality.
+  (let [emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! (path (first owner-paths)) :jvm))]
+    (doseq [[arguments expected] [["1 2" nil] ["1" :local-call-arity] ["1 2 3" :local-call-arity]]]
+      (let [source "sh07-c01-signature-case.gravity"
+            text (str "(ns sh07.c01.signatures (:profile :meta) (:target :jvm) (:exports [target caller]))\n"
+                      "(defn target [left right] left)\n(defn caller [] (target " arguments "))\n")
+            records (b/read-source-form-records source text)
+            macro (b/macro-source-artifact-from-records source text records)
+            definitions (b/stage0-function-table (assoc (:module macro) :forms (:expanded-forms macro)))
+            plan (b/p15-s23-stage2-compiler-artifact-plan emitter source text)
+            target (get-in plan [:functions 'target])
+            uses (:uses (occurrence-map (get definitions 'caller) (get-in plan [:functions 'caller])))
+            failure (try (validate-local-calls! uses plan definitions) nil
+                         (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= {:parameters '[left right] :fixed-arity 2} (function-signature (get definitions 'target) target)))
+        (is (= expected (:reason failure)))
+        (when expected (is (= "SH07-C01-JOIN" (:id failure))))))))
 
 (deftest selected-owner-observed-arity-runtime-cases
   ;; The reviewed map supplies actual required arities, not runtime authority.
