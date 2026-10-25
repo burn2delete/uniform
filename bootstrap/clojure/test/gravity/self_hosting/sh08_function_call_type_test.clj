@@ -22471,6 +22471,19 @@
   (prn {:private-ordinary-ledger :checked :canonical-output-work-receipt false
         :whole-reconstruction-accounting false :public-wrapper-changed false}))
 
+(deftest sh08-verifier-authentication-duplicate-catalog-control
+  (let [catalog (invoke-c7 'sh08-ft-b47-check-catalog [])
+        pairs (mapcat #(vector % true) catalog)
+        repeated (clojure.lang.PersistentArrayMap. (object-array (concat pairs pairs)))
+        stream (invoke-c7 'sh08-vf-original-data [repeated 100000000])]
+    (is (= 37 (count catalog) (count (set (keys repeated)))))
+    (is (= 74 (count (keys repeated)) (count repeated)))
+    (is (= :accepted (:status stream)))
+    (is (true? (invoke-c7 'sh08-ft-all-checks-true? [repeated])))
+    (prn {:duplicate-native-catalog-control :checked :catalog-members 37
+          :physical-keys 74 :full-authentication-established false
+          :fixed37-loop-bound-established false})))
+
 (deftest sh08-verifier-prospective-work-products
   (let [product #(invoke-c7 'sh08-vf-work-product [%1 %2])
         total #(invoke-c7 'sh08-vf-work-sum-products [%1 %2])
