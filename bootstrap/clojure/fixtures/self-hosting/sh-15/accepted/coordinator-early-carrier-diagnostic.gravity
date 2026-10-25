@@ -1,0 +1,26 @@
+(ns gravity.self-hosting.sh15.early-carrier.accepted
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-early-carrier-diagnostic-request])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Exact outer keys; unsupported DATA is rejected before nil C11/SH13 inputs.
+(defn coordinator-early-carrier-diagnostic-request [member]
+  (let [request
+        {:artifact :gravity/sh14-authenticated-layout-request :schema-version 1
+         :c11-mir nil :c11-verification nil :domain-evidence nil
+         :layout-request {:value-id :authenticated-fixed-slots :kind :tuple}
+         :facts [] :semantic-anchor {:anchor-id "early-carrier"}
+         :profile :safe :target :portable :provenance {}}]
+    (if (= member :artifact)
+      (assoc request :artifact :unsupported-artifact)
+      (if (= member :version)
+        (assoc request :schema-version 2)
+        (if (= member :metadata)
+          (assoc request :artifact (list "PRIVATE-PAYLOAD"))
+          (if (= member :facts)
+            (assoc request :facts (list "PRIVATE-PAYLOAD"))
+            (if (= member :anchor)
+              (assoc request :semantic-anchor (list "PRIVATE-PAYLOAD"))
+              (if (= member :provenance)
+                (assoc request :provenance (list "PRIVATE-PAYLOAD"))
+                request))))))))
