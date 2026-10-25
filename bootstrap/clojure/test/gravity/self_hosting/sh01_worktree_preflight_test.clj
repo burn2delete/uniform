@@ -123,7 +123,7 @@
         (is (zero? inspect-code))
         (is (true? (get-in inspect-document [:repository :detached])))))))
 
-(deftest bounded-output-exclusions-do-not-hide-unrelated-changes
+(deftest output-exclusions-do-not-hide-unrelated-changes
   (with-repository
     (fn [{:keys [root base]}]
       (let [output (.resolve root "target/validation")]
@@ -143,6 +143,46 @@
           (is (= 1 exit-code))
           (is (= ["unrelated.txt"]
                  (mapv :path (get-in document [:working-tree :blocked-entries])))))))))
+
+(deftest output-exclusions-have-no-project-count-or-length-quota
+  (with-repository
+    (fn [{:keys [root base]}]
+      (let [long-path (str "target/" (apply str (repeat 4097 "x")))
+            paths (conj (mapv #(str "target/output-" %) (range 33)) long-path)
+            options (assoc (expected-options root "origin/main" base)
+                           :allow-output paths)
+            git-var (ns-resolve preflight-ns 'git-result)
+            real-git @git-var
+            status (str (apply str (map #(str "?? " % "\u0000") paths))
+                        " M tracked.txt\u0000")
+            [document code]
+            (with-redefs-fn
+              {git-var (fn [directory arguments]
+                         (if (= "status" (first arguments))
+                           {:exit 0 :stdout status :stderr ""}
+                           (real-git directory arguments)))}
+              #(run-preflight root options))]
+        (is (= 1 code))
+        (is (= (vec (sort paths)) (get-in document [:working-tree :exclusions])))
+        (is (= (set paths)
+               (set (map :path (get-in document [:working-tree :allowed-entries])))))
+        (is (= ["tracked.txt"]
+               (mapv :path (get-in document [:working-tree :blocked-entries]))))
+        (is (some #(= "WORKTREE-DIRTY" (:code %)) (:diagnostics document)))
+        (is (not-any? #(= "WORKTREE-OUTPUT-EXCLUSION-INVALID" (:code %))
+                      (:diagnostics document)))))))
+
+(deftest output-exclusions-still-reject-invalid-paths
+  (let [normalize (ns-resolve preflight-ns 'normalize-exclusion)]
+    (doseq [path ["" " " "/absolute" "C:\\absolute" "../outside" "a/../b"
+                  "a/./b" ".git" ".git/config" "target/*" "target/?"
+                  "target/[x]" "target/\u0000file"]]
+      (let [error (try (normalize path) nil
+                       (catch clojure.lang.ExceptionInfo value value))]
+        (is (= "WORKTREE-OUTPUT-EXCLUSION-INVALID" (-> error ex-data :code))
+            (pr-str path))))
+    (is (= "target/validation" (normalize "target//validation/")))
+    (is (= "target/validation" (normalize "target\\validation")))))
 
 (deftest tree-equivalent-squash-is-not-replayed
   (with-repository

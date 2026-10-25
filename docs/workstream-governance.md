@@ -146,6 +146,11 @@ Full inventory has no project record-count quota. Run it with the normal host
 watchdog and output-capture safeguards; host or Git resource failures remain
 inspection failures, not successful inventory evidence.
 
+Output exclusions classify inspection results without a project count or path
+length quota. They must still be valid repository-relative paths, cannot name
+Git metadata or traverse directories, and never make a dirty candidate eligible
+for integration. Actual host filesystem and process failures remain failures.
+
 The preflight is read-only. It does not fetch, prune, reset, check out, merge,
 or delete. It distinguishes ancestry from tree equivalence. An identical or
 tree-equivalent candidate produces a `no_remerge` recommendation; replaying

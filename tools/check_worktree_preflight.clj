@@ -14,8 +14,6 @@
 (def default-base-ref "origin/main")
 (def default-worktree-scan "candidate")
 (def worktree-scan-modes #{"candidate" "all"})
-(def max-output-exclusions 32)
-(def max-output-path-length 4096)
 (def ^:private oid-pattern (Pattern/compile "^[0-9a-fA-F]{40,64}$"))
 
 (defn- failure
@@ -144,11 +142,10 @@
 (defn- normalize-exclusion [value]
   (let [raw (str value)]
     (when (or (str/blank? raw)
-              (> (count raw) max-output-path-length)
               (str/includes? raw "\u0000")
               (some #(str/includes? raw %) ["*" "?" "[" "]"]))
       (throw (failure "WORKTREE-OUTPUT-EXCLUSION-INVALID"
-                      "output exclusion must be a non-empty bounded relative path"
+                      "output exclusion must be a non-empty relative path"
                       {:path raw})))
     (when (or (str/starts-with? raw "/")
               (re-find #"^[A-Za-z]:[\\/]" raw))
@@ -171,10 +168,6 @@
 
 (defn- normalize-exclusions [values]
   (let [values (vec (or values []))]
-    (when (> (count values) max-output-exclusions)
-      (throw (failure "WORKTREE-OUTPUT-EXCLUSION-INVALID"
-                      (str "at most " max-output-exclusions " output exclusions are allowed")
-                      {:count (count values)})))
     (->> values (map normalize-exclusion) distinct sort vec)))
 
 (defn- path-allowed? [path exclusions]
