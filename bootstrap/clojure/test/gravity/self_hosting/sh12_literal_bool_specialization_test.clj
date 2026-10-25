@@ -184,6 +184,33 @@
 (deftest sh12-literal-bool-specialization-true-qst (check-source true "qst" false))
 (deftest sh12-literal-bool-specialization-false-qst (check-source false "qst" false))
 
+(deftest original-checked-core-carrier-validation-preserves-mir-legality
+  (let [{:keys [raw upstream core before]} (source-pair "true" "gravity")
+        build #(invoke 'sh12-build-branch-join-mir %)
+        verify #(invoke 'sh12-verify-branch-join-mir % before)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream)))
+    (is (= 1 (:schema-version core)))
+    (is (= {:status :passed} (:input-carrier-validation core)))
+    (is (not (contains? core :bounds)))
+    (is (= :gravity/mir-module (:artifact before)))
+    (is (= :passed (:status (verify core))))
+    (doseq [malformed [(dissoc core :input-carrier-validation)
+                      (assoc core :input-carrier-validation nil)
+                      (assoc core :input-carrier-validation {:status :rejected})
+                      (assoc core :input-carrier-validation {:status :passed :extra true})
+                      (assoc core :bounds {})
+                      (assoc core :schema-version 2)
+                      (assoc-in core [:authenticated-input :source-content-hash]
+                                (str "sha256:" (apply str (repeat 64 "0"))))
+                      (assoc-in core [:core-nodes 0 :type] :gravity/i64)]]
+      (let [constructed (build malformed)
+            report (verify malformed)]
+        (is (= :rejected (:status constructed)))
+        (is (= :rejected (:status report)))
+        (is (some #{"C11-MODULE" "C11-TYPE" "C11-VERIFY"}
+                  (map :diagnostic-id (:diagnostics report))))))))
+
 (deftest sh12-literal-bool-specialization-rejects-valid-normalized-family
   (let [core ((existing 'checked-core) ".gravity")
         mir (invoke 'sh12-build-branch-join-mir core)]
