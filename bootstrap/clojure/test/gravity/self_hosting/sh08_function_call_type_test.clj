@@ -22367,7 +22367,8 @@
                                        (assoc out (second form) form) out)))))))
         primitives '#{integer? >= > < + - * = count first rest get assoc contains? list conj vec
                       bootstrap-native-carrier-header}
-        helpers '#{sh08-vf-data-failure sh08-vf-scalar-kind sh08-vf-scalar-work sh08-vf-expand-indexed}]
+        helpers '#{sh08-vf-data-failure sh08-vf-scalar-kind sh08-vf-scalar-work sh08-vf-expand-indexed
+                   sh08-vf-original-expand-indexed sh08-vf-original-domain-failure}]
     (letfn [(add [& ps] (reduce #(mapv + %1 %2) [0 0] ps))
             (sum [ps] (apply add ps))
             (cost [form]
@@ -22468,6 +22469,36 @@
       (is (not (contains? result :ordinary-work-count)))))
   (prn {:private-ordinary-ledger :checked :canonical-output-work-receipt false
         :whole-reconstruction-accounting false :public-wrapper-changed false}))
+
+(deftest sh08-verifier-original-stream-development-kernel
+  (let [run #(invoke-c7 'sh08-vf-original-data [%1 %2])
+        eligible [nil true 1N :key 'symbol "text" [] {} #{}
+                  {:nested [(list :one :two) {:key :value}]}]
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "original hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "original equality")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "original rendering"))))]
+    (doseq [value eligible]
+      (let [stream (run value 100000000)
+            arena (invoke-c7 'sh08-vf-data [value 100000000])
+            fields [:status :work-count :completed-work-count :nodes :storage-work
+                    :maximum-width :scalar-work-sum :maximum-scalar-work]]
+        (is (= (select-keys arena fields) stream))
+        (is (not (contains? stream :arena)))
+        (is (= stream (run value (:work-count stream))))
+        (is (= :verification-work-limit (:reason (run value (dec (:work-count stream))))))))
+    (doseq [value [1.5M 3/2 0.0 -0.0 Double/NaN {[1] :value} #{[1]} (sorted-map :key 1)]]
+      (is (= :incomplete (:status (run value 100000000)))))
+    (doseq [value [opaque {:inactive opaque} [opaque] (list opaque)
+                  (with-meta [] {:inactive opaque}) (clojure.lang.Symbol/intern nil nil)]]
+      (is (= :rejected (:status (run value 100000000)))))
+    (is (empty? @callbacks))
+    (let [audit (verifier-native-control-audit 'sh08-vf-original-data)]
+      (is (<= (first (:control-polynomial audit)) 4096))
+      (is (<= (second (:control-polynomial audit)) 512))
+      (prn {:original-stream-source-control audit :candidate-arena-cap-unchanged true
+            :physical-aliases-deduplicated false :whole-paid-public-verifier false}))))
 
 (deftest sh08-verifier-first-order-domain-eligibility
   (let [data #(invoke-c7 'sh08-vf-data [% 10000000])
