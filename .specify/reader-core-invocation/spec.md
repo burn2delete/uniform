@@ -1,9 +1,9 @@
 # Feature specification: Reader-to-Core current-source invocation
 
-Status: finite pilot checks passed; independent aggregate acceptance remains open
+Status: finite pilot independently reviewed and integrated through PR #388
 Input: Reader `10a1abc59a33021572e220fee4bb5f74371155f6`, tree
 `830589cb02a1850bea6edf5c21870ee9ed150c83`.
-Existing draft: [Reader #369](https://github.com/burn2delete/uniform/pull/369).
+Input draft: [Reader #369](https://github.com/burn2delete/uniform/pull/369).
 Planning references: SH-03, SH-04, SH-05, SH-06, SH-07; C2-C6.
 
 ## Purpose and canonical contracts
@@ -55,16 +55,17 @@ compatibility meaning.
 
 Newly observed validation is separated from attributed prior results.
 Independent review and integration disposition remain separate from authored
-implementation. See [evidence](evidence.md) for exact inputs and pending results.
+implementation. See [evidence](evidence.md) for exact inputs and reviewed results.
 
-## Unresolved items
+## Completed finite outcome and excluded follow-up
 
 Paired public accepted products, coherent substitutions and the declared
-negative controls are verified on the recorded frozen tree. Independent
-acceptance and affected-consumer closure on the final joined tree remain.
-The full authenticated-envelope owner source previously reached a Resolver
-watchdog timeout; diagnose repeated Macro verification before any replay.
-These are real integration checks, not routine permission gates.
+negative controls are verified on their recorded trees. Final joined-tree
+verification, independent acceptance and minimal affected-consumer closure are
+complete; PR #388 records verified integration of this finite outcome.
+The historical full authenticated-envelope-owner Resolver timeout remains
+outside this completed pilot. Diagnose repeated Macro verification before any
+future full-owner replay; no full-owner acceptance is claimed here.
 
 ## Implementation naming review
 

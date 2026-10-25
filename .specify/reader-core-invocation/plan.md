@@ -39,7 +39,8 @@ structural checks after source edits. Do not rerun unrelated compiler suites.
 
 Do not call an aggregate pass when a constituent test failed, threw, skipped or
 never ran. A real constructor success is not full-chain verification. No private
-filesystem path is published in draft evidence. No forced push or main merge.
+filesystem path is published in draft evidence. Do not force-push. Main
+integration follows independent acceptance and coordinator authorization.
 
 ## Delivery and remaining work
 

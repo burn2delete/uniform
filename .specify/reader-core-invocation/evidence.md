@@ -1,6 +1,6 @@
 # Reader-to-Core invocation pilot evidence
 
-Status: finite pilot checks passed; independent aggregate acceptance remains open.
+Status: finite pilot independently reviewed and integrated through PR #388.
 Date: 2026-10-25.
 
 ## Public input revisions
@@ -19,7 +19,7 @@ The joined tree includes Native and the recorded accepted main baseline.
 ## Newly observed focused implementation and Resolver results
 
 The composed implementation tree is `fde2db9adc09877610910d8a5b5296e2fc106a17`.
-It is published as [draft #384](https://github.com/burn2delete/uniform/pull/384),
+It was published as [draft #384](https://github.com/burn2delete/uniform/pull/384),
 head `a3305b00a4584ff83bb5a9a55a08684108993543`; fetch, remote head and exact
 tree comparison were independently checked.
 The draft subsequently reconciled accepted main `16ff1f59` normally at
