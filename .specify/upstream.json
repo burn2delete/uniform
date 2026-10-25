@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/github/spec-kit",
+  "release": "v1.2.3",
+  "tag_object": "8ac9e8103319d98099cfc274a2517bb2b621626c",
+  "commit": "5ea8b1cf0a38699340a38e00d02770308997d8c0",
+  "evaluated_on": "2026-10-25",
+  "uniform_baseline": "33b91ba6",
+  "integration": "codex",
+  "script": "sh",
+  "runtime_events": false,
+  "extensions": [],
+  "workflows": [],
+  "customization": "local Uniform preset and project-local template overrides"
+}
