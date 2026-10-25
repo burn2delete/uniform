@@ -5640,7 +5640,8 @@
         (is (= descriptor (get-in inferred [:type-table :operator])))
         (is (= expected (get-in inferred [:type-table :call])))
         (is (= [(invoke-c7 'sh08-lq-constraint [descriptor])] (:constraints inferred)))
-        (let [consumer (list-query-derived (list-query-input 'first [expected]))]
+        (is (= {:status :accepted} (invoke-c7 'sh08-lc-validate-types [[(:type result)]])))
+        (let [consumer (list-query-derived (list-query-input 'first [(:type result)]))]
           (is (= :accepted (:status consumer)))
           (is (= (if (empty? (:element-types expected)) :gravity.type/nil (first (:element-types expected))) (:type consumer))))
         (doseq [changed [(vector-rest-cross-family-descriptor descriptor)
