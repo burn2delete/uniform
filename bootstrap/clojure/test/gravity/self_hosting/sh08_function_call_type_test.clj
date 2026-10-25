@@ -22508,6 +22508,39 @@
     (prn {:first-order-map-get-recipe :checked :semantic-proof false
           :whole-reconstruction-accounting false :B47-verification-complete false :public-wrapper-changed false})))
 
+(deftest sh08-verifier-map-get-selected-reconstruction
+  (let [{:keys [core bindings forms]} (verifier-current-core-products (fn [_ operation] (operation)))
+        normal (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
+                 [core bindings forms {} 1048576])
+        selected (invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger
+                   [core bindings forms {} 1048576])
+        run #(invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger [% bindings forms {} 1048576])
+        key-index (- (count (:nodes core)) 4)]
+    (is (= :accepted (get-in normal [:result :status])))
+    (is (= normal selected))
+    (is (= :converged (get-in selected [:result :convergence :status])))
+    (is (< 1 (get-in selected [:result :convergence :round-count])))
+    (is (= :gravity.type/keyword
+           (get-in selected [:result :function-type-table 0 :return])))
+    (doseq [changed [(assoc-in core [:function-records 0 :signature :return :type-id] :gravity.type/string)
+                     (assoc-in core [:nodes key-index :attributes :value] :missing)
+                     (assoc-in core [:function-records 0 :body-core-node-id] (:node-id (first (:nodes core))))
+                     (assoc core :recursion-components [{}])
+                     (assoc core :error-handlers [{}])]]
+      (is (nil? (run changed))))
+    (let [call (nth (:nodes core) (- (count (:nodes core)) 3))
+          form-index (first (keep-indexed #(when (= (:form-id %2) (get-in call [:source :form-id])) %1) forms))
+          altered (assoc-in forms [form-index :child-form-ids] [])
+          rejected (invoke-c7 'sh08-vf-map-get-core-artifact-with-ledger
+                     [core bindings altered {} 1048576])
+          ordinary (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
+                     [core bindings altered {} 1048576])]
+      (is (= :rejected (get-in rejected [:result :status])))
+      (is (= ordinary rejected)))
+    (prn {:selected-reconstruction :complete-canonical-equivalence
+          :normal-producer-unchanged true :source-construction-replayed false
+          :private-route-only true :whole-paid-public-verifier false})))
+
 (deftest sh08-verifier-native-arraymap-storage-domain
   (let [bad (clojure.lang.PersistentArrayMap. (object-array [:odd]))
         nil-backing (clojure.lang.PersistentArrayMap. nil)
