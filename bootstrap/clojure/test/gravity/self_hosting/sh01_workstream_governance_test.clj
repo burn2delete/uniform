@@ -4,7 +4,10 @@
 (import '(java.nio.file Files LinkOption Paths))
 
 (System/setProperty "gravity.workstream-governance.library" "true")
+(System/setProperty "gravity.workstream.ledger.library" "true")
 (load-file "tools/validate_workstream_governance.clj")
+(load-file "tools/migrate_workstream_ledger.clj")
+(load-file "tools/publish_workstream_terminal_record.clj")
 (binding [*command-line-args* nil]
   (load-file "tools/verify_integration_candidate.clj"))
 (alias 'governance 'gravity.workstream-governance)
@@ -201,6 +204,33 @@
       (let [result (#'governance/read-shard path "test-shard")]
         (is (nil? (:error result)))
         (is (true? (= value (:value result)))))
+      (finally (Files/deleteIfExists path)))))
+
+(deftest ledger-tools-read-large-semantic-inputs-without-a-project-quota
+  (let [path (.toRealPath
+              (Files/createTempFile "gravity-ledger-tool-intake-" ".json"
+                                    (make-array java.nio.file.attribute.FileAttribute 0))
+              (make-array LinkOption 0))
+        large-candidate (assoc (eligible) "title"
+                               (apply str (repeat (inc (* 2 1024 1024)) "x")))]
+    (try
+      (doseq [[tool value as-ledger]
+              [['gravity.tools.migrate-workstream-ledger
+                (ledger large-candidate) identity]
+               ['gravity.tools.publish-workstream-terminal-record
+                large-candidate ledger]]]
+        (let [read-json-file (ns-resolve tool 'read-json-file)]
+          (spit (str path) (governance/canonical-json value) :encoding "UTF-8")
+          (let [snapshot (read-json-file path)]
+            (is (true? (= value (:value snapshot))))
+            (is (empty? (governance/validate-ledger
+                          (as-ledger (:value snapshot))))))
+          (testing (str tool " retains duplicate-key and UTF-8 rejection")
+            (spit (str path) "{\"key\":1,\"key\":2}" :encoding "UTF-8")
+            (is (thrown? clojure.lang.ExceptionInfo (read-json-file path)))
+            (Files/write path (byte-array [(unchecked-byte 0xff)])
+                         (make-array java.nio.file.OpenOption 0))
+            (is (thrown? clojure.lang.ExceptionInfo (read-json-file path))))))
       (finally (Files/deleteIfExists path)))))
 
 (deftest integration-admission-requires-exact-evidence-and-independent-review

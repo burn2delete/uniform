@@ -49,15 +49,16 @@ The ledger does not fabricate lifecycle events for commits integrated before
 this policy existed. Those commits remain Git history and reconciliation facts;
 only work governed from an observed `draft` state enters the lifecycle ledger.
 
-Only one active candidate may occupy an invariant family. Dependencies must
-reach the state floor required by a downstream candidate. Downstream proposals
-cannot route around a rejected prerequisite by assigning it a different task
-name or owner.
+Active candidates by different authors must not claim overlapping owned paths,
+including a directory and a path within it. Disjoint work may proceed within
+the same invariant family, and serial candidates by the same author are not a
+multiple-writer conflict. Candidate counts and prior rejections do not limit
+admission or require an architecture decision.
 
-After two rejected admission candidates in one invariant family, new active
-admission candidates are blocked until the ledger records a nonempty
-architecture decision. The decision must address the failed invariant rather
-than merely authorize another attempt.
+Dependencies must reach the state floor required by a downstream candidate.
+Downstream proposals cannot route around a rejected prerequisite by assigning
+it a different task name or owner. Historical rejection dispositions and
+architecture decisions remain immutable evidence, not retry allowances.
 
 Architecture decisions also carry a machine-readable authority tuple in one
 fenced `json gravity-architecture-authority-v1` block. New or active reports
@@ -137,9 +138,7 @@ clojure -M tools/check_worktree_preflight.clj \
   --mode inspect --base-ref main --worktree-scan all
 ```
 
-The full inventory is bounded at 256 registered worktrees and reports
-`WORKTREE-INVENTORY-BOUND` instead of performing an unbounded scan. The
-inventory mode never changes integration authority: only the candidate's
+The inventory mode never changes integration authority: only the candidate's
 cleanliness, branch identity, exact identities, and reconciliation relation
 can satisfy the integration preconditions.
 
@@ -157,7 +156,7 @@ but only the exact candidate worktree and identities can satisfy admission.
 The coordination layer conforms when:
 
 1. both JSON records reject duplicate keys and unknown fields;
-2. lifecycle, exclusivity, dependency, failure-stop, review, evidence, and
+2. lifecycle, conflict-free ownership, dependency, review, evidence, and
    nonclaim rules fail closed;
 3. Git inspection is deterministic and does not mutate repository state;
 4. integration mode rejects dirty, detached, stale, divergent, or
