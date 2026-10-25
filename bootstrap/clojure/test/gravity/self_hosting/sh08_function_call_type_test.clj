@@ -386,48 +386,60 @@
       (is (zero? (:vector-tail-calls observed)))
       (is (= membership-calls (:membership-calls observed))))))
 
-(deftest sh08-imported-work-boundaries-development-kernel
-  ;; Invocation-local memo/limit policy DATA. Public C7 always starts empty.
-  (let [bounds (invoke-c7 'sh08-local-bounds-value [])
-        id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+(deftest sh08-imported-producer-validation-development-kernel
+  ;; Invocation-local state is not public authentication authority.
+  (let [id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         module-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
         c5 {:artifact-id module-id}
         request {:b47-context {:artifact-id id :authenticated-wrapper {:sh06-resolution-artifact c5}}}
-        usage {:status :accepted :nodes 1 :scalar-units 1}
-        memo {id {:request request :result {:status :accepted} :usage usage}}
-        check #(invoke-c7 'sh08-im-work-check [%1 %2 %3])]
-    (is (= :accepted (:status (check {} {} usage))))
-    (is (= :module-type-distinct-producer-limit
-           (:reason (check (zipmap (range (:maximum-root-nodes bounds)) (repeat {:usage usage})) {} usage))))
-    (is (= :module-type-dependency-depth-limit
-           (:reason (check {} (zipmap (range (:maximum-carrier-depth bounds)) (repeat usage)) usage))))
-    (is (= :module-type-total-core-work-limit
-           (:reason (check {id {:usage (assoc usage :nodes (:maximum-carrier-nodes bounds))}} {} usage))))
-    (is (= :module-type-total-scalar-work-limit
-           (:reason (check {id {:usage (assoc usage :scalar-units (:maximum-scalar-units bounds))}} {} usage))))
-    (is (= :module-type-producer-core-bound (:reason (check {} {} {:status :rejected :reason :carrier-width-bound}))))
+        memo {id {:request request :result {:status :accepted}}}]
     (is (= {:status :accepted} (:result (invoke-c7 'sh08-im-derive [request memo {}]))))
     (is (= :substituted-module-type-request
            (get-in (invoke-c7 'sh08-im-derive [(assoc request :extra true) memo {}]) [:result :diagnostics 0 :reason])))
     (is (= :cyclic-module-type-request
-           (get-in (invoke-c7 'sh08-im-derive [request {} {id usage}]) [:result :diagnostics 0 :reason])))
+           (get-in (invoke-c7 'sh08-im-derive [request {} {id true}]) [:result :diagnostics 0 :reason])))
     (is (= :undeclared-module-type-producer (:reason (invoke-c7 'sh08-im-producers [[request] memo {} []]))))
     (is (= :undeclared-module-type-producer
            (:reason (invoke-c7 'sh08-im-producers [[request] memo {} [(assoc c5 :forged true)]]))))
     (is (= :duplicate-or-invalid-module-type-producer
            (:reason (invoke-c7 'sh08-im-producers [[request request] memo {} [c5]]))))
-    (is (= :module-type-input-count-limit
-           (:reason (invoke-c7 'sh08-im-inputs-check
+    (is (= :accepted
+           (:status (invoke-c7 'sh08-im-inputs-check
                       [{:artifact :gravity/sh08-module-type-inputs :schema-version 1
-                        :module-requests (vec (repeat (inc (:maximum-root-nodes bounds)) request))}]))))
-    (let [duplicated-proof (String. (char-array (inc (:maximum-scalar-units bounds)) \x))
+                        :module-requests (vec (repeat 4097 request))}]))))
+    (doseq [inputs [{:artifact :gravity/sh08-module-type-inputs :schema-version 2 :module-requests []}
+                    {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests '()}
+                    {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [] :forged true}]]
+      (is (= :malformed-module-type-inputs (:reason (invoke-c7 'sh08-im-inputs-check [inputs])))))
+    (let [duplicated-proof (String. (char-array 16777217 \x))
           supplied {:artifact :gravity/sh08-module-type-inputs :schema-version 1
                     :module-requests [(assoc request :coordinator-verification {:raw-proof duplicated-proof})]}]
-      ;; Container validation does not re-flatten proof bodies. This malformed
-      ;; producer still rejects through the unchanged full authentication path.
-      (is (= :rejected (:status (invoke-c7 'sh08-carrier-preflight [supplied]))))
+      ;; Finite DATA does not establish a producer's authenticated source.
+      (is (= {:status :accepted} (invoke-c7 'sh08-carrier-preflight [supplied])))
       (is (= :accepted (:status (invoke-c7 'sh08-im-inputs-check [supplied]))))
       (is (= :rejected (get-in (invoke-c7 'sh08-im-producers [(:module-requests supplied) {} {} [c5]]) [:status]))))))
+
+(deftest sh08-carrier-preflight-unmetered-development-kernel
+  (let [check #(invoke-c7 'sh08-carrier-preflight [%])
+        deep (reduce (fn [value _] [value]) :leaf (range 192))
+        shared {:leaf [:value]}
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "carrier rendering")))
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "carrier hashing"))))
+        lazy-tail (lazy-seq (swap! callbacks conj :forced) (list :value))
+        backing (object-array [:self nil])
+        cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 1 cyclic)
+    (doseq [value [deep (vec (repeat 70000 :member)) [shared shared] (sorted-map "key" :value)]]
+      (is (= {:status :accepted} (check value))))
+    (doseq [[value reason] [[cyclic :verification-native-cycle]
+                            [opaque :verification-native-carrier]
+                            [{:unused opaque} :verification-native-carrier]
+                            [(with-meta [] {:unused opaque}) :verification-carrier-metadata]
+                            [(clojure.lang.Cons. :head lazy-tail) :verification-native-list-tail]]]
+      (is (= {:status :rejected :reason reason} (check value))))
+    (is (empty? @callbacks))))
 
 (deftest sh08-atomic-signature-inference-development-kernel
   ;; Execute the current Gravity inference algorithm with normalized records;
