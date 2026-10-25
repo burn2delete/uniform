@@ -9605,28 +9605,69 @@ An empty eligible queue yields. Refill only the useful lane after a concrete
 dependency event through the coordinator, without a join-all barrier or an
 invented feature to keep a manager busy.
 
-At the 2026-10-24 orchestration snapshot on inspected remote main
-`64aa890ad5afa6fec23e13bdfbc4b739dbfeead4`, the Core two-document migration
-is frozen for independent review and its one Core-gap proposal lacks C01's
-candidate-bound occurrence join. Construction has acknowledged its charter,
-returned both read-only C12 reconciliations and has an empty queue; C12 remains
-OPEN. Cohort's six-owner read-only invalidation matrix has returned and its
-queue is empty; C16 remains OPEN. SOURCE's one allocated
-read-only C14 helper-shape reconciliation has returned and is awaiting ROOT
-review; its proposed C15 negative frontier is conditional/unallocated. The MIR
-producer's actual Integer edge needs SOURCE mode/range/source facts;
-diagnostics' nested origin needs a real
-producer representation. Optimization and standard library have no eligible
-implementation item. The later compiler C11/C13/C15 manager names must not be
-mistaken for SH07-C11/C13/C15 task ownership.
-The plan records the concrete C12 source-spelling/emitter-cap stop conditions
-and C14 helper typing frontiers separately; none is a new global gate or an
-implementation grant. Core's separate C6 inspection stops at the missing C01
-occurrence-to-product/evidence join, with no invented semantic feature.
-All eight intended managers have acknowledged bounded delegation and
-coordinator-only integration. That configuration observation does not accept
-these documents or complete the migration; advisory review adoption is still
-pending below.
+The current 2026-10-24 accounting base is inspected remote main
+`c4b1d19da11def44f835d552e44d06488d31fe46`, tree
+`a4145adf64c5c7d4ebc558c605f07d27f784cac5`. Earlier `64aa890a` queue/adoption
+observations are historical. The plan's
+[merged-increment table](self-hosting-sh07-completion-plan.md#merged-increments-and-current-composition-frontier)
+binds exact revisions and scope: PR294 helper G composition passed 1/133, Q
+text parity only; PR295's lawful 13 spelling repairs have separate 3/47
+current-reader/seed-leaf and 11/23 boundary/LOC executions; PR296's loop
+selection batch passed 15/102; PR297's if/do selection batch passed 17/314.
+Their original failed pin/EOF/delimiter attempts remain failed. These scoped
+changes do not complete full B51/H6, current migration, native support or a
+C-task, and retained changed-worktree evidence is not a fresh merged-main run.
+
+Core's two-document `fc29cdd4` accounting is independently accepted; this
+bounded status successor is frozen for review and substantive bridge bundling.
+It creates no standalone administrative PR/count credit or global gate.
+Construction's exact disjoint two-existing-`00581`-file/new-test options bridge
+is frozen at `1af5fd81`/`39ad9017`, awaiting integration after independent CODE
+and EVIDENCE acceptance (full tuple in the linked plan): legacy public
+arities retain the old fresh callee/two arguments, while explicit-options
+arities alone use the policy-aware fresh callee/three arguments. Keep original
+source/report validation, the exact typed-input shape and local/default
+ceilings; no new schema, wrapper or cache. Its 228-byte minimal-Map-get
+producer/fresh-policy-verifier prewrite probe passed within the normal bound;
+that is not DSE fit or completion of bridge integration. Separate actual
+groups passed at 1/19, 1/17 and 15/135 (17/171 across three runs, not a new
+aggregate execution). Original positive V1/V2 aggregates remain FAILED and
+the corrected current positive selector is UNRUN. Independent unchanged
+production/dependency/passive-observer conservation supports only V2's
+actually completed stock operations and 16 passing assertions in their
+original scope; no current positive aggregate is inferred passing.
+
+SOURCE's frozen `f3073c24`/`d188d977` has independent focused CODE/EVIDENCE
+acceptance for 13/678, but the actual 317-byte fixture whole-default run FAILED:
+1 test, 0 passed assertions, 1 failure, 1 error, 126284 ms parent duration.
+C7 work-limit reports preceded the deliberate stop; fresh C7 verification,
+public C8, assembly and runtime were UNREACHED. Preserve raw evidence at
+`/private/tmp/source-dse-full-f3073c24-20261024a`. First printed is not proven
+first internal refusal; minimum N and that failed run's global-versus-local
+cause remain unresolved.
+The existing PR291 trusted-caller cumulative policy makes default 65536 a
+default, not a universal semantic requirement; it does not remove local
+ceilings or establish fit. SOURCE's producer-only diagnostic subsequently
+accepted the genuine 317-byte source at existing N=1048576, five rounds/bound
+34: observed ordinary pool 220380 charged/828196 remaining, largest observed
+local DSE charge 31728 within unchanged 65536, 22 rows/zero drops/no observer
+error. Parent/child exited zero in 119415 ms parent duration with cleanup
+complete; raw evidence is at `/private/tmp/source-dse-producer-f3073c24-20261024b`.
+This is not minimum N, full C7 total work or fresh-verifier/C8/assembly/runtime
+evidence. The producer-only classification is independently accepted; the
+whole-default failure remains FAILED. Compact architecture work continues;
+the next Effects 180s local-fit method is preparation only, with no GO.
+No failed whole replay or held GIS execution follows. Original-request context already
+exists on the selected three-argument body-effects route; the detached
+two-argument route is unsupported for compact GIS, not a reason for a new API.
+
+Cohort's planning matrix is returned/queue-empty while C16 remains OPEN. The
+MIR Integer/source-fact and diagnostics producer-representation dependencies
+remain; optimization/standard library receive no invented implementation
+queue. Compiler C11/C13/C15 manager names are not SH07-C11/C13/C15 assignments.
+All ten ordinary-autonomy recipients have adopted; this observation does not
+establish sustained throughput. SOURCE and Construction continue independently;
+this accounting is not their execution prerequisite.
 
 These are planning/reconciliation deliverables and honest queue dispositions,
 not compiler completion or measured sustained throughput. Exact source/test/
@@ -9634,8 +9675,10 @@ interface reservations remain with their existing writers. Two normal broker
 leases, one memory-heavy lease and exclusive checks holding all slots remain
 the host capacity. Use the existing coordination root and applicable canonical
 heavy lock; extra agents do not add slots. Heavy/native/bootstrap/proof/
-performance holds and consumed grants survive; compact-proof, GIS and H6
-implementation/execution remain HOLD. Ordinary eligible work within the
+performance controls and consumed grants survive. Held GIS/H6 execution is
+not resumed; compact representation/validation/fees/identity/version and
+independent consumer evidence remain technical obligations, not discretionary
+human-approval labels. Ordinary eligible work within the
 allocation does not require a new per-command approval loop.
 
 ### Advisory process review
@@ -9663,10 +9706,12 @@ unchanged; configuration alone does not establish sustained throughput.
 At the frozen PR293 handoff, the reviewer charter/event had been sent with
 exposed state `waitingOnApproval` and no pending-operation details; adoption
 was pending. Subsequent to PR293, ROOT observed explicit reviewer adoption and
-ACTIVE state with no approval flags or pending approval/denial blocker. The
-reviewer is now idle/unblocked, with three findings pending coordinator
-disposition, not a migration blocker. The old pending observation remains
-historical. This status sync does not claim
+ACTIVE state with no approval flags, followed by an idle/three-findings
+observation. Those states are historical. The latest supported snapshot flags
+`waitingOnApproval` without a specific operation/request exposed. Do not
+claim current unblocked status, approve an unknown action or bypass platform
+controls. Advisory review remains non-global; disjoint ordinary work continues
+and the coordinator handles any actual exposed action. This status sync does not claim
 completed investigation, independent acceptance of this candidate or sustained
 throughput.
 
@@ -9695,7 +9740,7 @@ The coordinator should also report the highest continuous completed prefix.
 For example, completion of `SH-18` does not advance the prefix past `SH-07` if
 `SH-08` remains incomplete.
 
-Current reviewed accounting after `SH-06`:
+Retained reviewed accounting after `SH-06` (not renewed by these increments):
 
 ```text
 complete slices: 7 / 30
