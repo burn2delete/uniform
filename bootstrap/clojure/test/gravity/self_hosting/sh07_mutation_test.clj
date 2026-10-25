@@ -314,9 +314,12 @@
                            (or (and (seq? (:value parent)) (= 'quote (first (:value parent)))
                                     (= (:form-id child) (second (:child-form-ids parent))))
                                (recur parent))))]
-          (is (= (if (and (= :map (:kind original)) (not inert?))
-                   (vec (mapcat identity (reverse (partition 2 (:child-form-ids original)))))
-                   (:child-form-ids original)) (:child-form-ids changed)))))
+          (is (= (if inert?
+                   (:child-form-ids original)
+                   (case (:kind original)
+                     :map (vec (mapcat identity (reverse (partition 2 (:child-form-ids original)))))
+                     :set (vec (reverse (:child-form-ids original)))
+                     (:child-form-ids original))) (:child-form-ids changed)))))
         (is (= result (bootstrap/sh07-core-source-map-order resolution syntaxes trees)))))
     (let [{:keys [resolution syntaxes trees]} (map-order-kernel mixed)
           sources (get-in resolution [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :form-tree])
