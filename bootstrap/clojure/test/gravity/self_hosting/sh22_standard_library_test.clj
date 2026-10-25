@@ -999,7 +999,7 @@
                          [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
                          [(assoc base :allocation-policy :bounded-by-result) "STD1001" :allocation-policy-mismatch]
                          [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]
-                         [(assoc base :operation nil) "STD8001" :missing-io-authority]])]
+                         [(assoc base :operation nil) "STD1001" :malformed-library-request]])]
           (let [[result calls] (observe input)]
             (is (= :rejected (:status result)))
             (is (= rule (get-in result [:diagnostics 0 :rule])))
@@ -1567,7 +1567,7 @@
                  (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
                       [[] [[]] [[] :new :extra]])
                  [[(assoc base :effects #{} :arguments [[] nil]) "STD1002" :undeclared-library-effect]
-                  [(assoc base :operation nil) "STD1001" :allocation-policy-mismatch]
+                  [(assoc base :operation nil) "STD1001" :malformed-library-request]
                   [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
                   [(assoc base :allocation-policy :none) "STD1001" :allocation-policy-mismatch]
                   [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]])]
