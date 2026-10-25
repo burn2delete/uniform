@@ -1,0 +1,22 @@
+(ns gravity.self-hosting.sh15.located-span.accepted
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-located-span-request coordinator-located-spans])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn coordinator-located-span-request [span]
+  {:profile :safe :target :portable :semantic-anchor {:anchor-id "located-span"}
+   :layout-request
+   {:value-id :authenticated-fixed-slots :kind :tuple :source-span span
+    :origin-chain [{:kind :source :source-id :fixture
+                    :actual-source-path "/source.gravity"}]}})
+
+(defn coordinator-located-spans []
+  [{:source-id :fixture :actual-source-path "/source.gravity"
+    :start {:byte 0 :line 1 :column 1} :end {:byte 1 :line 1 :column 2}}
+   {:source-id :fixture :actual-source-path "/source.gravity"
+    :start {:byte 0 :line 1 :column 1} :end {:byte 0 :line 1 :column 1}}
+   {:source-id :fixture :actual-source-path "/source.gravity"
+    :start {:byte 1 :line 1 :column 7} :end {:byte 2 :line 2 :column 1}}
+   {:source-id :fixture :actual-source-path "/source.gravity"
+    :start {:byte 2147483647 :line 2147483647 :column 2147483647}
+    :end {:byte 2147483647 :line 2147483647 :column 2147483647}}])
