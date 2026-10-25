@@ -472,6 +472,56 @@
     (is (false? (all-true? duplicate)))
     (is (empty? @callbacks))))
 
+(deftest sh08-structural-vectors-unmetered-development-kernel
+  ;; Normalized Core shape/type development evidence; B47 is separate.
+  (let [sha #(str "sha256:" (format "%064x" %))
+        module {:namespace 'unmetered.core :profile :meta :target :jvm :safety :safe
+                :effects [] :capabilities [] :exports [] :source-revision-id (sha 9000)}
+        wide-module (assoc module :effects (vec (repeat 129 :memory/allocate))
+                                 :capabilities (vec (repeat 129 :test/capability))
+                                 :exports (mapv #(symbol (str "name" %)) (range 1025)))
+        origin {:origin-id (sha 8000) :kind :source :from-syntax-id (sha 8001) :role :original}
+        source (fn [i] {:syntax-id (sha i) :form-id (sha i) :semantic-span {}
+                        :origin-chain [] :generated-origin []})
+        metadata (into {} (map (fn [i] [(keyword (str "field" i)) i]) (range 257)))
+        literal (fn [i]
+                  {:artifact :gravity/sh07-core-node :node-id (sha i) :core-form :literal
+                   :children [] :attributes {:literal-kind :integer :value i}
+                   :source (source i) :binding-context nil :generated? false :resolved-binding-ids []
+                   :evaluation {} :module (select-keys module [:namespace :profile :target]) :metadata {}
+                   :preserved-declarations (select-keys module [:effects :capabilities :safety])
+                   :pending-fact-families [] :lowering-rule-version :sh07-development})
+        nodes (mapv literal (range 1 1026))
+        roots (mapv :node-id nodes)
+        core {:artifact :gravity/sh07-canonical-core-artifact :artifact-id (sha 9001)
+              :module module :nodes nodes :root-core-node-ids roots}
+        shape (invoke-c7 'sh08-validate-core-shape [core])
+        typed (invoke-c7 'sh08-type-core-artifact [core])
+        large-node (-> (first nodes) (assoc :metadata metadata)
+                       (assoc-in [:source :semantic-span] metadata)
+                       (assoc-in [:source :origin-chain] (vec (repeat 257 origin))))
+        binding {:binding-id (sha 9100) :name 'value :kind :var :binding-class :core
+                 :namespace 'gravity.core :package {:name 'gravity/core :version (apply str (repeat 1025 "v"))}
+                 :upstream-binding-id (sha 9101) :scope-id nil :definition-syntax-id (sha 9102)
+                 :definition-artifact-id (sha 9103) :visibility :public
+                 :profile-set (vec (repeat 129 :meta)) :target-set (vec (repeat 129 :jvm))
+                 :type-ref :gravity.type/integer :effects [] :capabilities [] :safety :safe :semantic-span metadata}]
+    (is (true? (invoke-c7 'sh08-module-shape? [wide-module])))
+    (is (false? (invoke-c7 'sh08-module-shape? [(assoc-in wide-module [:effects 128] 7)])))
+    (is (= :accepted (:status shape)))
+    (is (= :accepted (:status typed)) (pr-str (:diagnostics typed)))
+    (is (= 1025 (count (:type-table typed))))
+    (is (every? #{:gravity.type/integer} (vals (:type-table typed))))
+    (is (true? (invoke-c7 'sh08-node-shape? [large-node module])))
+    (is (false? (invoke-c7 'sh08-node-shape? [(assoc-in large-node [:source :origin-chain 256 :from-syntax-id] :forged) module])))
+    (is (true? (invoke-c7 'sh08-ft-binding-valid? [binding])))
+    (is (false? (invoke-c7 'sh08-ft-binding-valid? [(assoc binding :upstream-binding-id :forged)])))
+    (is (true? (invoke-c7 'sh08-ft-product-vector? [{:nodes (vec (repeat 70000 :row))} :nodes])))
+    (doseq [changed [(assoc-in core [:nodes 1024 :source :syntax-id] :forged)
+                     (assoc core :root-core-node-ids (conj roots (first roots)))
+                     (assoc core :root-core-node-ids (assoc roots 1024 (sha 9999)))]]
+      (is (= :rejected (:status (invoke-c7 'sh08-validate-core-shape [changed])))))))
+
 (deftest sh08-atomic-signature-inference-development-kernel
   ;; Execute the current Gravity inference algorithm with normalized records;
   ;; this does not substitute for authenticated B47/C7 composition.
