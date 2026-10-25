@@ -27106,7 +27106,7 @@
                                 width (if map-kind? (* 2 size) size)
                                 extra (if (= kind :set) 1 0)
                                 local (+ 32 (* 8 width) (* 8 extra))
-                                complete (+ required local (* 256 (+ width extra)))]
+                                complete (+ required local (* 512 (+ width extra)))]
                             (if (> width 65536) (sh08-vf-data-failure :verification-data-bound required required)
                               (if (> complete budget) (sh08-vf-data-failure :verification-work-limit complete required)
                                 (let [expanded (sh08-vf-expand-indexed item (if map-kind? :map kind) size depth tail arena)

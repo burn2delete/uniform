@@ -22429,6 +22429,12 @@
     (is (= :verification-carrier-metadata (:reason (data metadata allowance))))
     (is (= :verification-native-carrier (:reason (data (subvec [1 2 3] 1) allowance))))
     (is (= :verification-data-bound (:reason (data (nth (iterate vector nil) 129) allowance))))
+    ;; Independent small-value arithmetic, including the private arena fee.
+    (doseq [[value fee storage] [[nil 8208 16] [1 8209 17] [{} 8224 32]
+                                 [[1] 12841 57] [{:x 1} 17491 83] [(list 1) 16977 81]]]
+      (let [result (data value fee)]
+        (is (= [:accepted fee storage] ((juxt :status :work-count :storage-work) result)))
+        (is (= :verification-work-limit (:reason (data value (dec fee)))))))
     (let [leaf {:unchanged [1 "physical"]} repeated [leaf leaf]
           independent [(into {} leaf) (into {} leaf)]]
       (is (= (data repeated allowance) (data independent allowance)))
@@ -22445,7 +22451,10 @@
         (is (= :rejected (:status (data value allowance)))))
       (is (empty? @callbacks)))
     (doseq [target '[sh08-vf-data sh08-vf-compare-arenas]]
-      (prn {:verifier-native-control (verifier-native-control-audit target)}))
+      (let [audit (verifier-native-control-audit target) [constant edge] (:control-polynomial audit)]
+        (is (<= constant 4096)) (is (<= edge 512))
+        (is (= #{} (:opaque-children audit)))
+        (prn {:verifier-native-control audit})))
     (prn {:verifier-native-kernel :checked :public-wrapper-changed false
           :host-map-lookup false :physical-alias-deduplication false})))
 
