@@ -1,0 +1,21 @@
+(ns gravity.self-hosting.sh22.operation-membership.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-operation-membership-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-operation-membership-request []
+  {:artifact :gravity/sh22-library-request
+   :request-id :coordinator/operation-membership
+   :profile :meta
+   :experimental-opt-in true
+   :operation :ordered-set-contains-keyword
+   :arguments [{:artifact :gravity/ordered-set :values [:reader :syntax]} :reader]
+   :effects #{}
+   :capabilities #{}
+   :allocation-policy :none
+   :source-span {:source-id :coordinator/operation-membership :start 0 :end 64}
+   :origin-chain [{:kind :source :source-id :coordinator/operation-membership}]
+   :actual-source-path "fixtures/coordinator-operation-membership.gravity"})

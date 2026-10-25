@@ -1,0 +1,21 @@
+(ns gravity.self-hosting.sh15.published-identity.accepted
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-published-diagnostic-identity-request
+             coordinator-published-diagnostic-identity-primary])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; The original C12 producer rejects this incomplete request before auth.
+(defn coordinator-published-diagnostic-identity-request [anchor path]
+  {:profile :safe :target :portable :semantic-anchor {:anchor-id anchor}
+   :layout-request
+   {:value-id :authenticated-fixed-slots :kind :tuple
+    :source-span {:source-id :fixture :actual-source-path path
+                  :start {:byte 0 :line 1 :column 1}
+                  :end {:byte 1 :line 1 :column 2}}
+    :origin-chain [{:kind :source :source-id :fixture :actual-source-path path}]}})
+
+; Existing normalized primary identity; physical paths remain in diagnostic DATA.
+(defn coordinator-published-diagnostic-identity-primary []
+  {:span {:source-id :fixture :start {:byte 0 :line 1 :column 1}
+          :end {:byte 1 :line 1 :column 2}}
+   :artifact nil})
