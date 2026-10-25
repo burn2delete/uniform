@@ -94,9 +94,13 @@ These process restrictions are removed, not renamed or replaced. Historical
 permission-only/proposal-only/await-human labels create no current ordinary
 work hold. Preserve failed/interrupted/skipped evidence without converting it
 to success or treating a never-launched attempt as a consumed proof.
-Machine/resource safeguards and semantic work bounds retain their actual
-contracts; changes require evidence and correctness validation, with
-independent acceptance before integration. Platform/tool
+Project cost/work budgets, debit/reservation accounting, cost proofs and
+budget-exhaustion requirements are removed, including their operative contract
+and test assertions. Do not rename them as generic bounds or retain
+capacity-oracle node/depth/width/scalar/source-byte/token/form quotas that only
+refuse otherwise well-formed input. Preserve actual semantic, authentication
+and tamper requirements independently, plus host and platform safeguards and
+independent correctness acceptance before integration. Platform/tool
 restrictions, mandatory action-time approvals, destructive/security-sensitive
 actions, new external commitments and unrelated scope retain their limits;
 never approve an unknown pending action or bypass a restriction. Adoption
@@ -146,8 +150,10 @@ The queue snapshot below reconciles allocated work at `c4b1d19d`; it is not
 proof of sustained throughput or a compiler completion score. All ten
 ordinary-autonomy recipients have adopted the instruction. Advisory adoption
 is complete; its later platform flag has no exposed operation details.
-Older queue/process observations retain historical scope; they cannot revive
-the removed caps, attempt grants or ordinary method/approval staging above.
+Older queue/process and accounting observations retain historical scope; they
+cannot revive removed quotas, work allowances, fees, cost proofs, budget-only
+refusals, attempt grants or ordinary method/approval staging. Historical
+metered outputs do not establish the new unmetered implementation's correctness.
 
 | Manager | Finite current queue / state | Dependency event or stop |
 | --- | --- | --- |
@@ -175,7 +181,7 @@ unavailable rather than launching another JVM. Actual heavy/native/bootstrap/
 proof/performance resource safeguards and scope boundaries remain applicable;
 historical grants are not ordinary-development attempt budgets. GIS/H6 claims
 retain their concrete technical/provenance requirements. Compact representation,
-validation, fees, identity/version fences and affected independent review
+semantic validation, identity/version fences and affected independent review
 remain technical obligations, not a discretionary human-approval label.
 Publication of a design discussion is not implementation/fit evidence.
 Ordinary eligible work does not need a new
