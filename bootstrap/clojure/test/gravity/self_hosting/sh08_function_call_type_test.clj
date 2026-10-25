@@ -437,7 +437,7 @@
                             [opaque :verification-native-carrier]
                             [{:unused opaque} :verification-native-carrier]
                             [(with-meta [] {:unused opaque}) :verification-carrier-metadata]
-                            [(clojure.lang.Cons. :head lazy-tail) :verification-native-list-tail]]]
+                            [(clojure.lang.Cons. :head lazy-tail) :verification-native-carrier]]]
       (is (= {:status :rejected :reason reason} (check value))))
     (is (empty? @callbacks))))
 
