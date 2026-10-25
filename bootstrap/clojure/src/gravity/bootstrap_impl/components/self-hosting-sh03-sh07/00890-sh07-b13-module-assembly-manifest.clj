@@ -13,24 +13,9 @@
            :module-id
            (:sh06-semantic-projection-id lineage))))
 
-(defn sh07-core-authenticated-request
-  ([resolution-artifact]
-   (sh07-core-authenticated-request resolution-artifact ::legacy))
-  ([resolution-artifact context]
-  (let [contextual? (not= ::legacy context)
-        source-path
-        (sh07-core-source-path-from-resolution resolution-artifact)
-        _ (when (and contextual? (nil? context))
-            (throw
-             (ex-info "SH-07 requires lexical SH-06 authority"
-                      {:id "C6-VERIFY" :stage :core-lowering
-                       :source-path source-path
-                       :missing-fields [:sh06-context]})))
-        upstream-verification
-        (if contextual?
-          (sh06-resolution-artifact-verification
-           resolution-artifact context)
-          (sh06-resolution-artifact-verification resolution-artifact))]
+(defn- sh07-core-request-from-verified-upstream
+  [resolution-artifact upstream-verification]
+  (let [source-path (sh07-core-source-path-from-resolution resolution-artifact)]
     (when-not
      (and (= :gravity/sh06-resolution-artifact
              (:kind resolution-artifact))
@@ -175,7 +160,22 @@
           binding
           (reader-canonical-hash
            (sh07-core-projection-binding-input request))]
-      (assoc request :projection-binding binding)))))
+      (assoc request :projection-binding binding))))
+
+(defn sh07-core-authenticated-request
+  ([resolution-artifact]
+   (sh07-core-authenticated-request resolution-artifact ::legacy))
+  ([resolution-artifact context]
+   (let [contextual? (not= ::legacy context)
+         source-path (sh07-core-source-path-from-resolution resolution-artifact)
+         _ (when (and contextual? (nil? context))
+             (throw (ex-info "SH-07 requires lexical SH-06 authority"
+                             {:id "C6-VERIFY" :stage :core-lowering
+                              :source-path source-path :missing-fields [:sh06-context]})))
+         verification (if contextual?
+                        (sh06-resolution-artifact-verification resolution-artifact context)
+                        (sh06-resolution-artifact-verification resolution-artifact))]
+     (sh07-core-request-from-verified-upstream resolution-artifact verification))))
 
 (defn sh07-core-digest-reference-ordinal
   [value]
