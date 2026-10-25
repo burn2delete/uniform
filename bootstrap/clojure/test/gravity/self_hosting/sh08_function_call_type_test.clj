@@ -9725,6 +9725,122 @@
         (is (= :accepted (:status (derive work))))
         (is (= :not-work-limit (:reason (derive (dec work)))))))))
 
+(defn- gis3-original-row-input [lower upper]
+  ;; Fully materialized normalized original rows, not a reader/source pass.
+  ;; Integer parameter facts below come from current C7 literal typing and
+  ;; ordinary caller unification; no proof or parameter type is preseeded.
+  (let [id #(str "sha256:" (format "%064x" %)) counter (atom 50000) forms (atom {})
+        form-tree (fn form-tree [value parent]
+                    (let [start (swap! counter inc) fid (id start)
+                          kind (cond (integer? value) :integer (boolean? value) :boolean
+                                     (symbol? value) :symbol (vector? value) :vector :else :list)
+                          children (if (coll? value) (mapv #(form-tree % fid) value) [])]
+                      (swap! forms assoc fid {:form-id fid :syntax-id fid :kind kind :value value
+                                             :parent-form-id parent :child-form-ids children
+                                             :source-span {:byte-start start :byte-end (inc @counter)}
+                                             :origin-chain [] :generated-origin nil}) fid))
+        fn-form (form-tree (list 'fn ['x] (list 'if (list 'if (list '>= 'x lower) (list '<= 'x upper) false)
+                                              (list '- 'x lower) 0)) nil)
+        entry-form (form-tree '(bounded 42) nil)
+        fn-children (:child-form-ids (@forms fn-form)) parameter-form (second fn-children)
+        name-form (first (:child-form-ids (@forms parameter-form))) parameter-id (id 51000)
+        bindings (into {} (map-indexed
+                            (fn [n op]
+                              (let [bid (id (+ 52000 n))]
+                                [bid {:binding-id bid :name op :binding-class :core :kind :var :namespace 'gravity.core
+                                      :package {:name 'gravity/core :version "bootstrap-contract-v1"}
+                                      :type-ref :gravity.type/core-var :safety :safe :effects [] :capabilities []
+                                      :profile-set [:meta] :target-set [:all] :definition-syntax-id (id (+ 53000 n))}]))
+                            ['>= '<= '-]))
+        function-binding (id 54000)
+        bindings (assoc bindings parameter-id {:binding-id parameter-id :name 'x :binding-class :lexical :kind :local
+                                               :mutability :immutable :definition-syntax-id name-form}
+                                 function-binding {:binding-id function-binding :name 'bounded :binding-class :namespace
+                                                   :kind :function :definition-syntax-id fn-form})
+        by-name (into {} (map (fn [[bid row]] [(:name row) bid]) bindings))
+        nodes (atom {}) calls (atom []) edges (atom [])
+        emit (fn emit [fid owner operator?]
+               (let [form (@forms fid) value (:value form) fids (:child-form-ids form)
+                     kind (cond (= :symbol (:kind form)) :reference
+                                (contains? #{:integer :boolean} (:kind form)) :literal
+                                (= 'fn (first value)) :fn (= 'if (first value)) :if :else :call)
+                     child-forms (case kind :fn [(nth fids 2)] :if (vec (rest fids)) :call fids [])
+                     children (mapv #(emit % (if (= kind :fn) fid owner) (and (= kind :call) (= % (first fids)))) child-forms)
+                     bid (when (= kind :reference) (by-name value))
+                     attrs (case kind
+                             :literal {:literal-kind (:kind form) :value value}
+                             :reference (if operator?
+                                          {:symbol value :position :operator :binding-id bid :binding-class (:binding-class (bindings bid))
+                                           :definition-syntax-id (:definition-syntax-id (bindings bid))}
+                                          {:binding-id bid})
+                             :fn {:parameters ['x] :signature nil :parameter-form-id parameter-form :parameter-syntax-id parameter-form}
+                             :if {:condition-child-index 0 :then-child-index 1 :else-child-index 2
+                                  :condition-evaluation :always-first :branch-evaluation :exactly-one
+                                  :truthiness {:false-values [:nil :false] :other-values :true}}
+                             :call {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                                    :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
+                     attrs (if (and (= kind :call) (= 'bounded (first value)))
+                             (assoc attrs :argument-count 1 :argument-child-indexes [1]) attrs)
+                     resolved (case kind :reference [bid] :call [(by-name (first value))] :fn [parameter-id] [])
+                     evaluation {:kind (case kind :call :operator-then-arguments :if :condition-then-exclusive-branch
+                                             :fn :function-creation :value)
+                                 :owner-function-syntax-id owner :region (if owner :function-body :module-initialization)
+                                 :order (if (contains? #{:call :if} kind)
+                                          (mapv #(hash-map :index %1 :core-node-id %2) (range) children) [])}
+                     node {:node-id fid :core-form kind :children children :attributes attrs :resolved-binding-ids resolved
+                           :binding-context (id 55000) :evaluation evaluation
+                           :source {:form-id fid :syntax-id fid :semantic-span (:source-span form)
+                                    :origin-chain (:origin-chain form) :generated-origin (:generated-origin form)}}]
+                 (swap! nodes assoc fid node)
+                 (when (= kind :call)
+                   (let [callee (by-name (first value)) binding (bindings callee) local? (= callee function-binding)
+                         call {:core-node-id fid :operator-node-id (first children) :operator-binding-id callee
+                               :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                               :evaluation-order :operator-then-arguments :result-policy :call-result}
+                         edge {:ordinal (count @calls) :call-core-node-id fid :caller-function-syntax-id owner
+                               :caller-function-core-node-id owner :callee-binding-id callee
+                               :callee-definition-syntax-id (:definition-syntax-id binding)
+                               :callee-function-syntax-id (when local? fn-form) :callee-function-core-node-id (when local? fn-form)
+                               :argument-core-node-ids (:argument-node-ids call) :ordered-evaluation-node-ids children
+                               :evaluation-order :operator-then-arguments :classification (if local? :local-function :nonlocal-or-nonfunction)}]
+                     (swap! calls conj call) (swap! edges conj edge))) fid))
+        _ (emit fn-form nil false) _ (emit entry-form nil false)
+        record {:function-syntax-id fn-form :function-core-node-id fn-form :function-form-id fn-form
+                :body-core-node-id (nth fn-children 2) :definition-kind :named-top-level :definition-name 'bounded
+                :fixed-arity 1 :parameter-binding-ids [parameter-id] :signature nil}
+        core {:artifact-id (id 56000) :module {:namespace 'example.gis3 :profile :meta :target :jvm :safety :safe
+                                             :effects [] :capabilities [] :exports ['bounded]}
+              :nodes (vec (vals @nodes)) :calls @calls :call-edges @edges :function-records [record]
+              :mutations [] :recursion-components [] :recur-targets [] :recur-transfers []}
+        literal-types (into {} (for [[nid node] @nodes :when (= :literal (:core-form node))]
+                                  [nid (invoke-c7 'sh08-primitive-type-from-literal-kind [(get-in node [:attributes :literal-kind])])]))
+        entry (last @calls) entry-edge (last @edges)
+        functions {fn-form {:function-id fn-form :fixed-arity 1 :parameters [{:binding-id parameter-id :type :gravity.type/unknown}]
+                            :return :gravity.type/unknown :latent-effects [] :capabilities []}}
+        unified (invoke-c7 'sh08-ft-call-constraints-with-context
+                           [[entry] [entry-edge] @nodes literal-types {} functions
+                            {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
+                             :loop-work-left 65536}])
+        types (reduce (fn [out [nid node]]
+                        (if (= parameter-id (get-in node [:attributes :binding-id]))
+                          (assoc out nid (get-in unified [:binding-types parameter-id])) out)) literal-types @nodes)
+        target (:core-node-id (first (filter #(= '- (:name (bindings (:operator-binding-id %)))) @calls)))]
+    {:core core :bindings (vec (vals bindings)) :forms (vec (vals @forms)) :types types :target target
+     :unified unified :parameter-id parameter-id :nodes @nodes}))
+
+(deftest sh08-gis3-original-row-first-payment-development-kernel
+  (let [{:keys [core bindings forms types target unified parameter-id]} (gis3-original-row-input 0 0)
+        result (invoke-c7 'sh08-gis3-source-payment [core bindings forms types target 65536])]
+    (is (= [] (:diagnostics unified)))
+    (is (= :gravity.type/integer (get-in unified [:binding-types parameter-id])))
+    (is (every? #(= 71 (count %)) (concat (map :node-id (:nodes core)) (map :binding-id bindings) (map :form-id forms))))
+    (is (contains? #{:rejected :original-data-payment-complete} (:status result)))
+    (is (not (true? (:numeric-proof-established result))))
+    (prn {:gis3-first-original-row-payment (dissoc result :selected :indexes)
+          :original-node-count (count (:nodes core)) :original-form-count (count forms)
+          :original-bindings (count bindings) :current-parameter-type (get-in unified [:binding-types parameter-id])
+          :source-or-numeric-proof-established false})))
+
 (defn- atomic-equality-input [argument-types]
   (let [input (integral-ordering-input '= argument-types)]
     (assoc input :binding-types (:types input)
