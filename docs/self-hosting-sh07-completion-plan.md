@@ -900,6 +900,52 @@ rows. C5 binding identities, runtime primitive argument domains, actual Core
 products, full-reader compilation, migration and C-task completion remain
 OPEN. The private composition is not a claim of testing an exact main checkout.
 
+### C02 original DATA declaration at `4688551f`
+
+The source-region gap now has one actual Core join for the original
+`authenticated-envelope-bounds` declaration in
+`bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity`.
+The paired 724-byte `sh-07/compiler-envelope-bounds` fixtures copy its complete
+15-entry initializer and retain the selected declaration's explicit export.
+The fixture namespace and physical path are their own; this does not
+authenticate the complete owning module or its original namespace artifact.
+
+`sh07_current_data_declaration_test.clj` checks the original text and export,
+then constructs genuine current-reader C5 and owning Gravity Core products.
+It joins the public definition binding to its once-only initializer, all 30
+keyword/integer children, exact constructor order, literal kind/value and
+source maps. The resulting Core has 32 nodes. The owning Gravity template
+verifier rejects a same-kind integer increment and a complete map-entry
+reordering with `C6-VERIFY` / `:template-replay`; the altered templates retain
+their corresponding identity-preimage node/order fields.
+
+The corrected batch passed 12 tests/338 assertions, including the focused
+1/315 and boundary/LOC 11/23, with natural exit 0. Execution took
+68805.182625 ms under the normal broker, 2GiB heap and unchanged 120s execution
+watchdog. G traversed the actual compiler stages; Q received fixture-text
+parity only. C7-C10 remain pending. The other 36 DATA declarations, complete
+source-region coverage, full-owner compilation, migration, self-hosting and
+every C-task's completion remain OPEN.
+
+This execution used exact base
+`4688551f053fcefbb9b2cabdd2b4f91bfd7558ca` and loaded host source subtree
+`4fda9727f1ca84cb8e3ad36f09865da94135ed6c`. Raw output is
+`/tmp/sh07-current-data-declaration-4688551f-attempt2.log`, SHA256
+`0bb88d1d7b833b387bf17af7a6235b69953a085ec3520f4d3548f6ba43fdc034`.
+The matching `-result.edn` records six unchanged source/test/fixture bookends;
+`-products.edn` is an 832446-byte inspection projection of actual Core,
+authenticated request, reader identity and negative products, SHA256
+`97f512ad77986762a3714b12a3bc370eed9daa28da3a43f478649b522bfe55bf`.
+It is not a replacement admission artifact.
+
+The first executed fixture omitted the original export and correctly produced
+private C5/Core bindings. Its public-visibility assertion failed; the raw log,
+test subject and products remain retained as attempt 1. Adding the original
+selected export corrected the fixture rather than changing compiler policy.
+An earlier stale-local-main controller was cancelled while awaiting broker
+admission and contributes no compiler result. None of these histories is
+relabelled as execution on a later main checkout.
+
 ### C01 and C16 stopping point
 
 The six full subjects, ordinary current-reader intake, repository load boundary
