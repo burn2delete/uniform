@@ -84,7 +84,16 @@ whose compiler output is auditable data.
 ```
 
 The diagnostic id is stable over rule, primary artifact, stage, and semantic
-facts. It is not stable over display wording.
+facts. It must not depend on display wording.
+
+Availability follows the producing phase. Early reader diagnostics MUST retain
+the `:profile`, `:target`, and primary `:syntax-id` keys with explicit `nil`
+values when those facts have not yet been produced. They MUST preserve actual
+source-span variants, related locations, and origin data rather than inventing
+module identity, coordinates, or `:meta`/`:jvm` program context. Diagnostic-system
+errors likewise keep unavailable input metadata explicit. Private construction
+data and an unresolved digest request are not a resolved diagnostic identity or
+a safe public projection; binding and publication require their own checks.
 
 ## Severity and Lifecycle
 
