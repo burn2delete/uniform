@@ -1,0 +1,7 @@
+(ns gravity.sh12.literal-bool-specialization-parameter-nested
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [flag :- Bool] (if flag (if false 11 22) 33))
+

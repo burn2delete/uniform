@@ -25,6 +25,7 @@
              sh12-branch-join-mir-policy
              sh12-build-branch-join-mir
              sh12-verify-branch-join-mir
+             sh12-verify-literal-bool-branch-specialization
              sh12-authenticated-c10-mir-adapter-policy
              sh12-authenticated-c10-mir-carrier-preflight
              sh12-authenticated-c10-mir-input-valid?
@@ -6275,6 +6276,155 @@
                     (sh12-c10-mir-carrier-rejection
                      :c10-mir-carrier-seq-unsupported nodes enqueued)
                     (recur frontier (+ cursor 1) next-nodes enqueued)))))))))))
+
+; C11/C13/C18, D8/D9: a translation relation for the original C6 literal
+; Bool diamond only. No optimizer implementation or supplied report is authority.
+(defn sh12-literal-bool-specialization-report [status bindings checks diagnostics]
+  {:artifact :gravity/sh12-literal-bool-branch-specialization-report
+   :schema-version 1
+   :scope :original-zero-arity-literal-bool-diamond
+   :phase :verification
+   :status status
+   :input-bindings bindings
+   :checks checks
+   :diagnostics diagnostics
+   :nonclaims [:generic-c11-verifier :generic-optimization-verifier
+               :independent-acceptance :optimizer-credit :admission-credit
+               :optimized-execution :c14-credit
+               :backend-credit :release-credit :self-hosted?]})
+
+(defn sh12-literal-bool-specialization-rejected [bindings diagnostic-id reason core before]
+  (sh12-literal-bool-specialization-report
+   :rejected bindings []
+   [(if (= core nil)
+      {:diagnostic-id diagnostic-id :severity :error
+       :stage :c11-mir-verification :missing-fact reason
+       :mir-module nil :function nil :block nil :operation-id nil :value-id nil
+       :source-span nil :origin-chain [] :profile nil :target-request nil
+       :provenance {} :remediation :provide-bounded-original-specialization-inputs}
+      (sh12-branch-join-diagnostic diagnostic-id reason core before))]))
+
+(defn sh12-literal-bool-specialization-keep-uses [uses term-id]
+  (loop [remaining uses result []]
+    (if (= 0 (count remaining)) result
+      (let [use (first remaining)]
+        (recur (rest remaining)
+               (if (= :terminator (get use :consumer-kind))
+                 (if (= term-id (get use :consumer-id)) result (conj result use))
+                 (conj result use)))))))
+
+(defn sh12-literal-bool-specialization-expected [core before]
+  (let [function (get (get before :functions) 'main)
+        entry (get function :entry)
+        blocks (get function :blocks)
+        successors (get (get blocks entry) :successors)
+        literal (get (get (get core :core-nodes) 0) :attributes)
+        taken (if (= true (get literal :value)) (first successors) (second successors))
+        untaken (if (= true (get literal :value)) (second successors) (first successors))
+        cfg (get before :control-flow-graph)
+        join (get (get cfg :join) :block-id)
+        term (get (get blocks entry) :terminator)
+        condition (first (get term :operands))
+        term-id (get term :terminator-id)
+        data (get before :data-flow-graph)
+        dominance {entry [entry] taken [entry taken]
+                   untaken [untaken] join [entry taken join]}
+        new-blocks
+        (assoc blocks
+          entry (assoc (get blocks entry)
+                  :successors [taken] :dominators [entry]
+                  :terminator (assoc term :kind :branch :operands []
+                                     :successors [taken] :facts {}))
+          taken (assoc (get blocks taken) :dominators [entry taken])
+          untaken (assoc (get blocks untaken) :predecessors [] :dominators [untaken])
+          join (assoc (get blocks join) :dominators [entry taken join]))
+        edges (loop [remaining (get cfg :edges) result []]
+                (if (= 0 (count remaining)) result
+                  (let [edge (first remaining)]
+                    (recur (rest remaining)
+                           (if (= entry (get edge :from))
+                             (if (= untaken (get edge :to)) result (conj result edge))
+                             (conj result edge))))))
+        values (get data :values)
+        condition-value (get values condition)]
+    (assoc before
+      :functions (assoc (get before :functions) 'main (assoc function :blocks new-blocks))
+      :control-flow-graph (assoc cfg :edges edges :dominance dominance)
+      :data-flow-graph
+      (assoc data :terminator-uses
+             (sh12-literal-bool-specialization-keep-uses (get data :terminator-uses) term-id)
+             :values (assoc values condition
+                       (assoc condition-value :uses
+                         (sh12-literal-bool-specialization-keep-uses
+                          (get condition-value :uses) term-id)))))))
+
+(defn sh12-literal-bool-specialization-diagnostic-id [expected after]
+  ; Reuse the existing typed priorities only after their carrier guards.
+  (if (sh12-branch-join-module-carrier-valid? expected after)
+    (if (sh12-branch-join-block-carrier-valid? expected after)
+      (if (sh12-branch-join-data-carrier-valid? after)
+        (let [context (sh12-branch-join-fact-context expected after)]
+          (if (sh12-branch-join-types-valid? expected after context)
+            (if (sh12-branch-join-effects-valid? expected after context)
+              (if (sh12-branch-join-safety-valid? expected after context)
+                (if (sh12-branch-join-origins-valid? expected after context)
+                  "C11-VERIFY" "C11-ORIGIN")
+                "C11-SAFETY")
+              "C11-EFFECT")
+            "C11-TYPE"))
+        "C11-VERIFY")
+      "C11-VERIFY")
+    "C11-VERIFY"))
+
+(defn sh12-verify-literal-bool-branch-specialization [checked-core before after]
+  ; Complete carrier bounds precede all semantic traversal, equality, and
+  ; diagnostic extraction. In particular, never realize a candidate sequence.
+  (let [core-bound (sh12-authenticated-c10-mir-carrier-preflight checked-core)
+        before-bound (sh12-authenticated-c10-mir-carrier-preflight before)
+        after-bound (sh12-authenticated-c10-mir-carrier-preflight after)]
+    (if (= [:accepted :accepted :accepted]
+           [(get core-bound :status) (get before-bound :status) (get after-bound :status)])
+      (if (if (map? before) (= [] (get before :diagnostics)) false)
+       ; Original construction has no diagnostics. Reject report substitution
+       ; before the legacy diagnostic helper can inspect candidate metadata.
+       (let [original-report (sh12-verify-branch-join-mir checked-core before)]
+        (if (= :passed (get original-report :status))
+          (if (if (sh12-c6p-family? checked-core)
+                (sh12-c6p-zero-arity-bool? checked-core) false)
+            (let [bindings {:checked-core-artifact-id (get checked-core :artifact-id)
+                            :before-module-id (get before :module-id)
+                            :after-module-id
+                            (let [id (get after :module-id)]
+                              (if (if (string? id) true (symbol? id))
+                                (if (> (count (str id)) 512) nil id) nil))
+                            :relation :fresh-original-c6-reconstruction}
+                  canonical (c11-build-target-independent-mir checked-core)]
+              (if (= before canonical)
+                (let [expected (sh12-literal-bool-specialization-expected checked-core before)]
+                  (if (= expected after)
+                    (sh12-literal-bool-specialization-report
+                     :passed bindings
+                     [:bounded-input-carriers :fresh-original-mir-verification
+                      :original-zero-arity-hosted-jvm-bool-diamond
+                      :literal-selected-edge :cfg-and-dominance-reconstruction
+                      :terminator-and-value-use-reconstruction
+                      :complete-after-equality :type-effect-safety-origin-preservation
+                      :unchanged-instructions-joins-fact-check-and-proof-tables] [])
+                    (sh12-literal-bool-specialization-rejected
+                     bindings (sh12-literal-bool-specialization-diagnostic-id expected after)
+                     :literal-bool-specialization-relation checked-core before)))
+                (sh12-literal-bool-specialization-rejected
+                 bindings "C11-VERIFY" :complete-original-mir-reconstruction checked-core canonical)))
+            (sh12-literal-bool-specialization-rejected
+             {} "C11-VERIFY" :original-zero-arity-literal-bool-diamond
+             checked-core (c11-build-target-independent-mir checked-core)))
+          (let [diagnostic (first (get original-report :diagnostics))]
+            (sh12-literal-bool-specialization-rejected
+             {} (get diagnostic :diagnostic-id) (get diagnostic :missing-fact) nil nil))))
+       (sh12-literal-bool-specialization-rejected
+        {} "C11-VERIFY" :original-mir-diagnostic-carrier nil nil))
+      (sh12-literal-bool-specialization-rejected
+       {} "C11-VERIFY" :bounded-specialization-input-carriers nil nil))))
 
 (defn sh12-c10-mir-verification-member [verification key]
   (if (map? verification)

@@ -1,0 +1,7 @@
+(ns gravity.sh12.literal-bool-specialization-true
+  (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main [] (if true true false))
+
