@@ -26985,7 +26985,7 @@
 ; SH-08 records/unions is an early leaf over the authenticated B47 checked-core
 ; interface.  A named source definition carries a closed descriptor family as
 ; ordinary Gravity data.  The checker selects that definition from the
-; authenticated core and validates bounded descriptor consistency.  It emits
+; authenticated core and validates closed descriptor consistency.  It emits
 ; no typed-core, constructor, access, match, narrowing, or constraint facts.
 ; Surface defrecord/defunion and pattern lowering remain blocked on SH-07.
 
@@ -27019,14 +27019,12 @@
 
 (defn sh08-ru-all-record-shapes? [entries expected]
   (if (vector? entries)
-    (if (<= (count entries) 64)
-      (loop [remaining entries]
-        (if (= (count remaining) 0)
-          true
-          (if (sh08-ft-record-shape? (first remaining) expected)
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining entries]
+      (if (= (count remaining) 0)
+        true
+        (if (sh08-ft-record-shape? (first remaining) expected)
+          (recur (rest remaining))
+          false)))
     false))
 
 (defn sh08-ru-all-field-schemas-valid? [fields]

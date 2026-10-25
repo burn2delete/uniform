@@ -20829,6 +20829,52 @@
     @function-work-policy-current-c8-plan function arguments))
 
 
+(deftest sh08-record-union-descriptor-unmetered-development-kernel
+  ;; Normalized descriptor DATA exercises the owning closed-family checker.
+  ;; This is not authenticated source, nominal records/unions, or roadmap credit.
+  (let [names (mapv #(keyword (str "member-" %)) (range 65))
+        last-name (peek names)
+        family {:record-type {:name :record
+                              :fields (mapv #(hash-map :name % :type :gravity.type/integer) names)}
+                :record-construction {:type :record
+                                      :fields (mapv #(hash-map :name % :value 7) names)}
+                :record-access {:record-type :record :field last-name}
+                :union-type {:name :union
+                             :variants (mapv #(hash-map :tag % :payload-type :gravity.type/integer) names)}
+                :union-construction {:type :union :variant last-name :payload 7}
+                :union-match {:union-type :union
+                              :branches (mapv #(hash-map :variant % :result 1) names)}}
+        check #(invoke-c7 'sh08-ru-check-family [%])]
+    (is (= {:status :accepted} (check family)))
+    (doseq [[function path id-key]
+            [['sh08-ru-all-field-schemas-valid? [:record-type :fields] :name]
+             ['sh08-ru-all-field-values-valid? [:record-construction :fields] :name]
+             ['sh08-ru-all-variant-schemas-valid? [:union-type :variants] :tag]
+             ['sh08-ru-all-match-branches-valid? [:union-match :branches] :variant]]]
+      (let [rows (get-in family path)
+            valid? #(invoke-c7 function [%])]
+        (is (true? (valid? rows)))
+        (is (false? (valid? (assoc-in rows [64 id-key] (get (first rows) id-key)))))
+        (is (false? (valid? (assoc-in rows [64 id-key] "not-a-keyword"))))
+        (is (false? (valid? (assoc-in rows [64 :unexpected] true))))
+        (is (false? (valid? (apply list rows))))))
+    (doseq [[changed reason]
+            [[(assoc-in family [:record-type :fields 64 :type] :gravity.type/unknown)
+              :malformed-record-union-family]
+             [(assoc-in family [:union-type :variants 64 :payload-type] :gravity.type/unknown)
+              :malformed-record-union-family]
+             [(update-in family [:record-construction :fields] pop) :record-missing-field]
+             [(assoc-in family [:record-construction :fields 64 :value] "wrong") :record-field-type-mismatch]
+             [(assoc-in family [:record-access :field] :absent) :record-access-invalid-field]
+             [(assoc-in family [:union-construction :variant] :absent) :union-invalid-variant]
+             [(assoc-in family [:union-construction :payload] "wrong") :union-payload-type-mismatch]
+             [(update-in family [:union-match :branches] pop) :union-match-nonexhaustive]
+             [(assoc-in family [:union-match :branches 64 :variant] :absent) :union-match-invalid-variant]
+             [(assoc-in family [:union-match :branches 64 :result] "wrong") :union-match-branch-type-mismatch]]]
+      (let [result (check changed)]
+        (is (= :rejected (:status result)))
+        (is (= reason (:reason result)))))))
+
 (deftest sh08-verifier-unmetered-native-data
   (let [data #(invoke-c7 'sh08-vf-data [%])
         original #(invoke-c7 'sh08-vf-original-data [%])
