@@ -185,3 +185,27 @@
                         (assoc-in [:before-mir :functions 'main :returns] :gravity/i64)
                         (assoc-in [:c13-result :candidate-mir :functions 'main :returns] :gravity/i64)
                         (assoc-in [:checked-core :core-nodes 5 :type :return] :gravity/i64)))))
+
+(deftest sh17-current-reader-binding-and-source-construction-control
+  (let [source (path "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/zero_arity_bool_true_source.gravity")
+        text (slurp source) reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        reader-text (slurp reader) calls (atom 0) original bootstrap/read-source-form-records
+        artifact (with-redefs [bootstrap/read-source-form-records
+                               (fn [file contents]
+                                 (when (= source file) (swap! calls inc))
+                                 (original file contents))]
+                   (bootstrap/compiler-c2-reader-source-artifact
+                    source text (bootstrap/reader-project-context-for-source source) nil nil reader))
+        boundary (:gravity-reader-boundary artifact)
+        binding (:plan-binding boundary)
+        revision (get-in boundary [:authenticated-envelope-descriptor :source-revision])]
+    (is (= :gravity/stage0-c2-reader-document-artifact (:kind artifact)))
+    (is (= :accepted (get-in boundary [:resolved-reader-result :status])))
+    (is (= :gravity/sh03-compiler-source-v1 (get-in boundary [:resolved-reader-result :bounds :resource-policy])))
+    (is (= (str "sha256:" (bootstrap/sha256-hex reader-text))
+           (:source-content-hash binding) (:source-content-hash revision)))
+    (is (= (alength (.getBytes reader-text java.nio.charset.StandardCharsets/UTF_8))
+           (:source-byte-count binding) (:source-byte-count revision)))
+    (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in artifact [:source-unit-record :bytes-hash])))
+    (is (= :accepted (get-in boundary [:authenticated-envelope :status])))
+    (is (zero? @calls))))
