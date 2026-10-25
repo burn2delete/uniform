@@ -21775,6 +21775,110 @@
           :new-semantic-control-and-comparison-payment-closed false :paid-owning-wrapper-implemented false
           :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
 
+(defn- gis3-complete-data-control-work-model []
+  ;; One complete source dispatch, including entry/terminal/failure Maps.
+  ;; The pending loop is a single dispatch; each inner cursor executes at
+  ;; most width+1 times. Native List rest/conj and frame/entry Vector get
+  ;; are constant cursors. Native vec pays eight units per expanded child.
+  ;; No source helper or unassigned primitive is an opaque paid child.
+  (let [definition (with-open [reader (java.io.PushbackReader. (io/reader (path c7-source-relative-path)))]
+                     (binding [*read-eval* false]
+                       (loop []
+                         (let [form (read {:eof ::end} reader)]
+                           (cond (= ::end form) (throw (ex-info "Missing complete DATA source" {}))
+                                 (and (seq? form) (= 'defn (first form))
+                                      (= 'sh08-gis3-complete-data-tallies (second form))) form
+                                 :else (recur))))))
+        primitives '#{integer? >= > + - * = count first rest get map? vector? set? list?
+                      boolean? keyword? symbol? string? number? char? list conj vec
+                      bootstrap-symbol-utf16-unit-count}]
+    (letfn [(add [& values] (reduce #(mapv + %1 %2) [0 0] values))
+            (sum [values] (apply add values))
+            (scale-width [[a b]]
+              (when-not (zero? b) (throw (ex-info "Nested DATA edge loops" {}))) [a a])
+            (cost [form]
+              (cond
+                (map? form) (do (when-not (every? keyword? (keys form))
+                                 (throw (ex-info "Non-Keyword DATA result key" {})))
+                               (add [(+ 1 (* 2 (count form)) (* (count form) (inc (* 2 (count form))))) 0]
+                                    (sum (map cost (mapcat identity form)))))
+                (vector? form) (add [(inc (count form)) 0] (sum (map cost form)))
+                (not (seq? form)) [1 0]
+                :else
+                (let [[op & args] form base (add [(inc (count args)) 0] (sum (map cost args)))]
+                  (case op
+                    if (add [1 0] (cost (first args))
+                            (mapv max (cost (second args)) (cost (nth args 2))))
+                    let (let [[bindings & body] args n (quot (count bindings) 2)]
+                          (add [(inc (* 2 n)) 0] (sum (map cost (take-nth 2 (rest bindings)))) (sum (map cost body))))
+                    loop (let [[bindings & body] args n (quot (count bindings) 2)
+                               iteration (add [(* 4 n) 0] (sum (map cost body)))]
+                           (add [(inc (* 2 n)) 0] (sum (map cost (take-nth 2 (rest bindings))))
+                                (if (= 'pending (first bindings)) iteration (scale-width iteration))))
+                    recur (add [(inc (* 2 (count args))) 0] (sum (map cost args)))
+                    (do (when-not (contains? primitives op)
+                          (throw (ex-info "Unassigned complete DATA operation" {:op op})))
+                        (add base (case op vec [8 8] bootstrap-symbol-utf16-unit-count [64 0]
+                                        = [2 0] conj [1 0] rest [1 0] get [1 0] list [(count args) 0] [1 0])))))))]
+      {:dispatch-control-polynomial (add [(+ 8 (* 6 (count (nth definition 2)))) 0]
+                                         (sum (map cost (drop 3 definition))))
+       :reserved-control-polynomial [4096 256] :opaque-children #{}})))
+
+(defn- gis3-complete-data-payment [value]
+  (let [physical (gis3-independent-physical-data-fee value)
+        nodes (+ (:atoms physical) (:containers physical))
+        control (+ (* 4096 (inc nodes)) (* 256 (dec nodes)))]
+    {:physical physical :control control :total (+ (:B physical) control)}))
+
+(deftest sh08-gis3-complete-data-control-development-kernel
+  (let [model (gis3-complete-data-control-work-model)
+        run #(invoke-c7 'sh08-gis3-complete-data-tallies [%1 %2])
+        samples [nil true :keyword 'plain 'qualified/name (symbol "" "")
+                 "data" 12 3/2 1.5 \a [] '() #{} {} [nil :a "b"]
+                 {:left ['nested 7] :right #{:x :y}}]
+        builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
+        original @builtin owner (Thread/currentThread) materialized (atom 0) value [nil]
+        no-vec (fn [budget]
+                 (reset! materialized 0)
+                 (let [out (with-redefs-fn
+                             {builtin (fn [& args]
+                                        (let [[callee values] (take-last 2 args)]
+                                          (when (and (identical? owner (Thread/currentThread))
+                                                     (= 'vec callee) (identical? value (first values)))
+                                            (swap! materialized inc)))
+                                        (apply original args))}
+                             #(run value budget))]
+                   [out @materialized]))]
+    (is (every? true? (map <= (:dispatch-control-polynomial model) (:reserved-control-polynomial model))))
+    (is (= #{} (:opaque-children model)))
+    (doseq [value samples :let [{:keys [physical control total]} (gis3-complete-data-payment value)
+                               out (run value total) short (run value (dec total))]]
+      (is (= [:accepted total total (:V physical) (:T physical) (:W physical) (:B physical) control]
+             ((juxt :status :work-count :completed-work-count :visit-work :accounting-work
+                    :comparison-bound-work :physical-work-count :control-work-count) out)))
+      (is (= [:rejected :compact-gis-work-limit total]
+             ((juxt :status :reason :work-count) short)))
+      (is (< (:completed-work-count short) (:work-count short))))
+    ;; The root Vector requires 8477 before its first vec materialization.
+    (doseq [budget [0 4103 8199 8476]]
+      (let [[out calls] (no-vec budget)]
+        (is (= :compact-gis-work-limit (:reason out))) (is (zero? calls))))
+    (let [[out calls] (no-vec (:total (gis3-complete-data-payment value)))]
+      (is (= :accepted (:status out))) (is (= 1 calls)))
+    (is (= :compact-gis-invalid-work-allowance (:reason (run nil -1))))
+    (is (= :compact-gis-canonical-domain (:reason (run (vec (repeat 1025 nil)) 100000000))))
+    (is (= :compact-gis-canonical-domain (:reason (run (nth (iterate vector nil) 129) 100000000))))
+    (let [callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "complete DATA hash")))
+                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "complete DATA equality")))
+                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "complete DATA render"))))]
+      (is (= :compact-gis-canonical-domain (:reason (run {:unread opaque} 100000000))))
+      (is (empty? @callbacks)))
+    (prn {:gis3-complete-DATA-control :checked :source-model model
+          :logical-control-only true :CPU-or-whole-domain-claim false
+          :entry-wrapper-uses-complete-DATA false :numeric-proof-established false})))
+
 (defn- gis3-cold-entry-payment-worksheet [{:keys [core bindings forms]}]
   (let [fields [:module :preserved-resolution :nodes :calls :call-edges :function-records :definitions
                 :reference-uses :var-references :mutations :recur-targets :recur-transfers

@@ -2841,6 +2841,65 @@
                      :work-count (+ common 1) :completed-work-count paid}))))))))))
 
 
+(defn sh08-gis3-complete-data-tallies [value budget]
+  ; Complete, separate ledger: original physical V/T/W plus source control.
+  ; Each visit reserves 4096 control units before reading its frame. Each
+  ; container reserves 256 units per child before vec/frame/list creation.
+  ; The independent source audit covers both loop cursors and result Maps.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [start 4104]
+      (if (> start budget)
+        {:status :rejected :reason :compact-gis-work-limit :work-count start :completed-work-count 0}
+        (loop [pending (list [value 0]) used start visits 0 accounting 8 comparison 0 control 4096]
+          (if (= 0 (count pending))
+            {:status :accepted :work-count used :completed-work-count used
+             :visit-work visits :accounting-work accounting :comparison-bound-work comparison
+             :physical-work-count (+ visits accounting) :control-work-count control}
+            (let [visit-required (+ used 4096)]
+              (if (> visit-required budget)
+                {:status :rejected :reason :compact-gis-work-limit
+                 :work-count visit-required :completed-work-count used}
+                (let [frame (first pending) item (get frame 0) depth (get frame 1) tail (rest pending)]
+                  (if (> depth 128)
+                    {:status :rejected :reason :compact-gis-canonical-domain
+                     :work-count visit-required :completed-work-count visit-required}
+                    (if (if (map? item) true (if (vector? item) true (if (set? item) true (list? item))))
+                      (let [size (count item) width (if (map? item) (* 2 size) size)
+                            local (+ 1 size (if (map? item) (+ 1 (* 3 size)) 0) 1 (* 4 width))
+                            edge-control (* 256 width) required (+ visit-required local 14 edge-control)]
+                        (if (> size 1024)
+                          {:status :rejected :reason :compact-gis-canonical-domain
+                           :work-count visit-required :completed-work-count visit-required}
+                          (if (> required budget)
+                            {:status :rejected :reason :compact-gis-work-limit
+                             :work-count required :completed-work-count visit-required}
+                            (let [bound (+ 1 (if (map? item) (+ (* size size) width)
+                                              (if (set? item) (+ (* size size) width) width)))
+                                  next-pending (if (map? item)
+                                                 (loop [entries (vec item) i 0 out tail]
+                                                   (if (= i size) out
+                                                     (let [entry (get entries i)]
+                                                       (recur entries (+ i 1)
+                                                         (conj (conj out [(get entry 0) (+ depth 1)])
+                                                                        [(get entry 1) (+ depth 1)])))))
+                                                 (loop [items (vec item) i 0 out tail]
+                                                   (if (= i size) out
+                                                     (recur items (+ i 1) (conj out [(get items i) (+ depth 1)])))))]
+                              (recur next-pending required (+ visits local) (+ accounting 14) (+ comparison bound)
+                                     (+ control 4096 edge-control))))))
+                      (if (if (= nil item) true (if (boolean? item) true (if (keyword? item) true
+                            (if (symbol? item) true (if (string? item) true (if (number? item) true (char? item)))))))
+                        (let [local (+ 2 (if (string? item) (count item)
+                                          (if (symbol? item) (bootstrap-symbol-utf16-unit-count item) 0)))
+                              required (+ visit-required local 8)]
+                          (if (> required budget)
+                            {:status :rejected :reason :compact-gis-work-limit
+                             :work-count required :completed-work-count visit-required}
+                            (recur tail required (+ visits local) (+ accounting 8) (+ comparison local) (+ control 4096))))
+                        {:status :rejected :reason :compact-gis-canonical-domain
+                         :work-count visit-required :completed-work-count visit-required}))))))))))
+    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
 (defn sh08-gis3-view-get [value key]
   ; The caller prepays bounded Native key lookup before this helper runs.
   ; No untyped key is hashed and no lazy/foreign sequence is counted.
