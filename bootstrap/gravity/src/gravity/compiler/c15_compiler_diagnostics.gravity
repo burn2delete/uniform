@@ -532,15 +532,18 @@
 (defn sh15-upstream-source-span-valid? [diagnostic]
   (let [span (get diagnostic :source-span)]
     (if (= nil span)
-      ; Original C12 early schema rejection can have no available location.
+      ; Original C12 pre-C11 request-envelope rejection can lack location.
       ; The enclosing exact row schema still requires :source-span PRESENT;
       ; producer/verifier, profile/target and all other gates remain below.
-      (= ["S7-LAYOUT" "S7-LAYOUT" :request-schema-mismatch
+      (= ["S7-LAYOUT" "S7-LAYOUT" true
           :logical-data-layout :authenticated-layout-contract
           :domain-ir-layout :compiler-data-layout
           :supply-exact-authenticated-four-fact-fixed-slot-layout]
          [(get diagnostic :diagnostic-id) (get diagnostic :rule)
-          (get diagnostic :reason) (get diagnostic :family)
+          (sh15-member? [:request-schema-mismatch :request-member-carrier-rejected
+                         :artifact-mismatch :schema-version-mismatch]
+                        (get diagnostic :reason))
+          (get diagnostic :family)
           (get diagnostic :missing-fact) (get diagnostic :stage)
           (get diagnostic :domain) (get diagnostic :remediation)])
       (sh15-source-span-valid? span))))
@@ -685,10 +688,12 @@
 (defn sh15-preserve-diagnostic [diagnostic]
   (let [facts (sh15-preserved-facts diagnostic)
         primary {:span (get diagnostic :source-span)
-                 :artifact (get diagnostic :artifact-id)}]
+                 :artifact (get diagnostic :artifact-id)}
+        identity-primary
+        (assoc primary :span (sh15-identity-span (get primary :span)))]
     {:artifact :gravity/sh15-partial-diagnostic
      :diagnostic-id [:coordinator-digest-required
-                     (get diagnostic :rule) primary
+                     (get diagnostic :rule) identity-primary
                      (get diagnostic :stage) facts]
      :upstream-diagnostic-id (get diagnostic :diagnostic-id)
      :rule (get diagnostic :rule) :severity :error :lifecycle :active
