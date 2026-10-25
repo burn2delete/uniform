@@ -10185,6 +10185,50 @@
     (is (= '[sh08-gis3-index] (:entries exact)))
     (is (zero? @callbacks))))
 
+(deftest sh08-gis3-data-domain-controls-development-kernel
+  ;; Direct fee-worker controls, not source or Integer-proof acceptance.
+  (let [run #(invoke-c7 'sh08-gis3-data-tallies [%1 %2])
+        width-value (vec (repeat 1024 :leaf))
+        exact-fee (+ 8 14 2 (* 5 1024) (* 1024 (+ 2 8)))
+        exact (run width-value exact-fee) below (run width-value (dec exact-fee))
+        deep (nth (iterate vector :leaf) 128)
+        depth-fee (+ 8 (* 128 (+ 7 14)) 2 8)
+        depth-exact (run deep depth-fee) depth-above (run [deep] 65536)
+        shared {:unread ["physical" :value]}
+        repeated [shared shared] repeated-fee (:B (gis3-independent-physical-data-fee repeated))]
+    (is (= 15384 exact-fee))
+    (is (= [:accepted exact-fee exact-fee 3073]
+           ((juxt :status :work-count :completed-work-count :comparison-bound-work) exact)))
+    (is (= [:rejected :compact-gis-work-limit exact-fee (- exact-fee 10)]
+           ((juxt :status :reason :work-count :completed-work-count) below)))
+    (is (= 2706 depth-fee))
+    (is (= [:accepted depth-fee 258]
+           ((juxt :status :work-count :comparison-bound-work) depth-exact)))
+    (is (= [:rejected :compact-gis-canonical-domain]
+           ((juxt :status :reason) depth-above)))
+    (is (= repeated-fee (:work-count (run repeated repeated-fee))))
+    (is (= :rejected (:status (run repeated (dec repeated-fee)))))
+    (let [callbacks (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 DATA opaque hash")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 DATA opaque equality")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 DATA opaque print"))))
+          lazy-value (lazy-seq (swap! callbacks inc) (throw (AssertionError. "GIS3 DATA lazy realization")))
+          cycle (java.util.ArrayList.)]
+      (.add cycle cycle)
+      (doseq [value [opaque lazy-value cycle {:unread opaque} [lazy-value]]]
+        (is (= [:rejected :compact-gis-canonical-domain]
+               ((juxt :status :reason) (run value 65536))))
+        (is (zero? @callbacks)))
+      (doseq [budget [0 7 8]]
+        (is (= [:rejected :compact-gis-work-limit 0]
+               ((juxt :status :reason :completed-work-count) (run opaque budget))))
+        (is (zero? @callbacks)))
+      (is (= [:rejected :compact-gis-canonical-domain 13 8]
+             ((juxt :status :reason :work-count :completed-work-count)
+              (run (vec (repeat 1025 opaque)) 65536))))
+      (is (zero? @callbacks)))))
+
 (deftest sh08-gis3-original-row-first-payment-development-kernel
   (let [{:keys [core bindings forms types target unified parameter-id]} (gis3-original-row-input 0 0)
         result (invoke-c7 'sh08-gis3-source-payment [core bindings forms types target 65536])]
