@@ -27040,6 +27040,151 @@
      :canonical-producer-and-import-order :source-syntax-origin-links-preserved :path-neutral-identity-input]
     (sh08-ft-local-verification-checks expected)))
 
+(defn sh08-vf-data-failure [reason required completed]
+  {:status :rejected :reason reason :work-count required :completed-work-count completed})
+
+(defn sh08-vf-scalar-kind [kind]
+  (if (contains? #{:integer8 :integer16 :integer32 :integer64 :big-int :big-integer} kind) :integer kind))
+
+(defn sh08-vf-scalar-work [header]
+  ; Header observations are native operations, not callbacks or rendering.
+  ; Decimal scale and both Ratio components pay before scalar comparison.
+  (let [kind (get header 0) first-size (get header 3) second-size (get header 4)]
+    (+ 16 (if (integer? first-size) first-size 0)
+       (if (= kind :ratio) second-size
+         (if (= kind :big-decimal) (if (< second-size 0) (- 0 second-size) second-size) 0)))))
+
+(defn sh08-vf-expand-indexed [item kind size depth tail arena]
+  ; Only admitted native Map/Vector/Set implementations reach vec. Map
+  ; enumeration never hashes, compares, or looks up a supplied key.
+  (let [items (vec item)]
+    (loop [i 0 pending tail rows arena children []]
+      (if (= i size) {:pending pending :arena rows :children children}
+        (let [id (count rows)]
+          (if (= kind :map)
+            (let [entry (get items i)]
+              (recur (+ i 1)
+                (conj (conj pending [(get entry 0) (+ depth 1) (+ id 1) 0])
+                                   [(get entry 1) (+ depth 1) (+ id 2) 0])
+                (conj (conj (conj rows [:entry [(+ id 1) (+ id 2)] 0]) nil) nil)
+                (conj children id)))
+            (recur (+ i 1) (conj pending [(get items i) (+ depth 1) id 0])
+              (conj rows nil) (conj children id))))))))
+
+(defn sh08-vf-data [value budget]
+  ; An arena is private comparison data, never proof supplied by a caller.
+  ; No identity cache: every occurrence is visited and charged. Metadata and
+  ; SubVector are rejected by the existing canonical carrier contract. Native
+  ; default TreeMap is supported through enumeration, never guest lookup.
+  (if (if (integer? budget) (>= budget 0) false)
+    (if (< budget 4096) (sh08-vf-data-failure :verification-work-limit 4096 0)
+      (loop [pending (list [value 0 0 0]) arena [nil] used 4096 nodes 0 storage 0]
+        (if (= 0 (count pending))
+          {:status :accepted :arena arena :work-count used :completed-work-count used
+           :nodes nodes :storage-work storage}
+          (let [required (+ used 4096)]
+            (if (> required budget) (sh08-vf-data-failure :verification-work-limit required used)
+              (let [frame (first pending) item (get frame 0) depth (get frame 1)
+                    id (get frame 2) list-width (get frame 3) tail (rest pending)
+                    header (bootstrap-native-carrier-header item) kind (get header 0)
+                    next-nodes (+ nodes 1)]
+                (if (if (> next-nodes 1048576) true (if (> depth 128) true (> list-width 65536)))
+                  (sh08-vf-data-failure :verification-data-bound required required)
+                  (if (get header 1) (sh08-vf-data-failure :verification-carrier-metadata required required)
+                    (if (if (= kind :unsupported) true
+                          (if (= kind :subvector) true
+                            (if (= kind :tree-map) (= :foreign-comparator (get header 4)) false)))
+                      (sh08-vf-data-failure :verification-native-carrier required required)
+                      (if (if (> list-width 0) (contains? #{:list-node :empty-list :nil} kind) true)
+                        (if (contains? #{:map :tree-map :vector :set} kind)
+                          (let [size (get header 2) map-kind? (contains? #{:map :tree-map} kind)
+                                width (if map-kind? (* 2 size) size)
+                                extra (if (= kind :set) 1 0)
+                                local (+ 32 (* 8 width) (* 8 extra))
+                                complete (+ required local (* 256 (+ width extra)))]
+                            (if (> width 65536) (sh08-vf-data-failure :verification-data-bound required required)
+                              (if (> complete budget) (sh08-vf-data-failure :verification-work-limit complete required)
+                                (let [expanded (sh08-vf-expand-indexed item (if map-kind? :map kind) size depth tail arena)
+                                      rows (get expanded :arena) backing-id (count rows)
+                                      next-rows (if (= kind :set) (conj rows nil) rows)
+                                      next-pending (if (= kind :set)
+                                                     (conj (get expanded :pending) [(get header 4) depth backing-id 0])
+                                                     (get expanded :pending))]
+                                  (recur next-pending
+                                    (assoc next-rows id [(if map-kind? :map kind) (get expanded :children) 0])
+                                    complete next-nodes (+ storage local))))))
+                          (if (= kind :list-node)
+                            (let [complete (+ required 560) head-id (count arena) tail-id (+ head-id 1)]
+                              (if (> complete budget) (sh08-vf-data-failure :verification-work-limit complete required)
+                                (recur (conj (conj tail [(get header 4) (+ depth 1) head-id 0])
+                                                       [(get header 5) depth tail-id (+ list-width 1)])
+                                  (assoc (conj (conj arena nil) nil) id [:list-node [head-id tail-id] 0])
+                                  complete next-nodes (+ storage 48))))
+                            (let [scalar-work (sh08-vf-scalar-work header) complete (+ required scalar-work)
+                                  normalized (if (if (> list-width 0) (= kind :nil) false) :empty-list
+                                               (sh08-vf-scalar-kind kind))]
+                              (if (> scalar-work 16777216)
+                                (sh08-vf-data-failure :verification-scalar-bound required required)
+                                (if (> complete budget) (sh08-vf-data-failure :verification-work-limit complete required)
+                                  (recur tail (assoc arena id [normalized (if (= normalized :empty-list) nil item) scalar-work])
+                                    complete next-nodes (+ storage scalar-work)))))))
+                        (sh08-vf-data-failure :verification-native-list-tail required required)))))))))))
+    (sh08-vf-data-failure :invalid-verification-work-allowance 0 0)))
+
+(defn sh08-vf-compare-arenas [left right budget]
+  ; This continuation machine only looks up private integer arena indexes.
+  ; Map and Set matching is one-to-one and unordered. It compares complete
+  ; key/value entries, so unequal values cannot consume a matching key. All
+  ; candidate keys stay out of hash/lookup/comparator operations.
+  (loop [pending (list [:pair 0 0]) result true used 0]
+    (if (= 0 (count pending)) {:status :accepted :equal? result :work-count used :completed-work-count used}
+      (let [required (+ used 4096)]
+        (if (> required budget) (sh08-vf-data-failure :verification-work-limit required used)
+          (let [frame (first pending) tag (get frame 0) tail (rest pending)]
+            (if (= tag :pair)
+              (let [a (get left (get frame 1)) b (get right (get frame 2)) kind (get a 0)]
+                (if (= kind (get b 0))
+                  (if (contains? #{:map :set :vector :list-node :entry} kind)
+                    (let [xs (get a 1) ys (get b 1)]
+                      (if (= (count xs) (count ys))
+                        (recur (conj tail (if (contains? #{:map :set} kind)
+                                          [:unordered xs ys 0 0 #{}] [:sequence xs ys 0])) true required)
+                        (recur tail false required)))
+                    (let [scalar (if (> (get a 2) (get b 2)) (get a 2) (get b 2)) complete (+ required scalar)]
+                      (if (> complete budget) (sh08-vf-data-failure :verification-work-limit complete required)
+                        (recur tail (= (get a 1) (get b 1)) complete))))
+                  (recur tail false required)))
+              (if (= tag :sequence)
+                (let [xs (get frame 1) ys (get frame 2) i (get frame 3)]
+                  (if (if (= false result) true (= i (count xs))) (recur tail result required)
+                    (recur (conj (conj tail [:sequence xs ys (+ i 1)]) [:pair (get xs i) (get ys i)]) true required)))
+                (let [xs (get frame 1) ys (get frame 2) i (get frame 3) j (get frame 4) matched (get frame 5)]
+                  (if (= tag :resume-unordered)
+                    (if result
+                      (recur (conj tail [:unordered xs ys (+ i 1) 0 (conj matched j)]) true required)
+                      (recur (conj tail [:unordered xs ys i (+ j 1) matched]) true required))
+                    (if (= i (count xs)) (recur tail true required)
+                      (if (= j (count ys)) (recur tail false required)
+                        (if (contains? matched j)
+                          (recur (conj tail [:unordered xs ys i (+ j 1) matched]) true required)
+                          (recur (conj (conj tail [:resume-unordered xs ys i j matched])
+                                            [:pair (get xs i) (get ys j)]) true required))))))))))))))
+
+(defn sh08-vf-compare-data [expected candidate budget]
+  ; Candidate walks first; a forged candidate cannot cause reconstruction or
+  ; host equality. Each side owns fresh physical arenas inside this invocation.
+  (let [right (sh08-vf-data candidate budget)]
+    (if (= :accepted (get right :status))
+      (let [spent (get right :work-count) left (sh08-vf-data expected (- budget spent))
+            data-spent (+ spent (get left :work-count))]
+        (if (= :accepted (get left :status))
+          (let [compared (sh08-vf-compare-arenas (get left :arena) (get right :arena) (- budget data-spent))]
+            (assoc compared :work-count (+ data-spent (get compared :work-count))
+              :completed-work-count (+ data-spent (get compared :completed-work-count))
+              :candidate-DATA-work spent :expected-DATA-work (get left :work-count)
+              :comparison-work (get compared :work-count)))
+          (assoc left :work-count data-spent :completed-work-count (+ spent (get left :completed-work-count))))) right)))
+
 (defn sh08-verify-function-type-result [request candidate]
   (let [expected (sh08-function-type-core-artifact request)]
     {:artifact :gravity/sh08-function-type-verification

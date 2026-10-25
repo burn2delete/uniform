@@ -22354,6 +22354,101 @@
     {:engine :gravity-sh09-c7-effect-adapter-test :compiler-artifact-plan? true}
     @function-work-policy-current-c8-plan function arguments))
 
+(defn- verifier-native-control-audit [target]
+  ;; A source dispatch audit, independent of runtime results and receipts.
+  ;; Only the indexed expansion loop scales with width. Native scalar/header
+  ;; logical work is recorded separately; this is not a host CPU/heap bound.
+  (let [definitions (with-open [reader (java.io.PushbackReader. (io/reader (path c7-source-relative-path)))]
+                      (binding [*read-eval* false]
+                        (loop [out {}]
+                          (let [form (read {:eof ::end} reader)]
+                            (if (= ::end form) out
+                              (recur (if (and (seq? form) (= 'defn (first form)))
+                                       (assoc out (second form) form) out)))))))
+        primitives '#{integer? >= > < + - * = count first rest get assoc contains? list conj vec
+                      bootstrap-native-carrier-header}
+        helpers '#{sh08-vf-data-failure sh08-vf-scalar-kind sh08-vf-scalar-work sh08-vf-expand-indexed}]
+    (letfn [(add [& ps] (reduce #(mapv + %1 %2) [0 0] ps))
+            (sum [ps] (apply add ps))
+            (cost [form]
+              (cond
+                (map? form) (add [(+ 1 (* 128 (count form))) 0] (sum (map cost (mapcat identity form))))
+                (vector? form) (add [(inc (count form)) 0] (sum (map cost form)))
+                (set? form) [(+ 1 (* 64 (count form))) 0]
+                (not (seq? form)) [1 0]
+                :else
+                (let [[op & args] form base (add [(inc (count args)) 0] (sum (map cost args)))]
+                  (case op
+                    if (add [1 0] (cost (first args))
+                            (mapv max (cost (second args)) (cost (nth args 2))))
+                    let (let [[bindings & body] args n (quot (count bindings) 2)]
+                          (add [(inc (* 2 n)) 0] (sum (map cost (take-nth 2 (rest bindings)))) (sum (map cost body))))
+                    loop (let [[bindings & body] args n (quot (count bindings) 2)
+                               dispatch (add [(* 4 n) 0] (sum (map cost body)))]
+                           (when (and (not= 'pending (first bindings)) (not (zero? (second dispatch))))
+                             (throw (ex-info "Nested verifier width loop" {:target target})))
+                           (add [(inc (* 2 n)) 0] (sum (map cost (take-nth 2 (rest bindings))))
+                                (if (= 'pending (first bindings)) dispatch [(first dispatch) (first dispatch)])))
+                    recur (add [(inc (* 2 (count args))) 0] (sum (map cost args)))
+                    (cond
+                      (contains? helpers op) (add base (function-cost op))
+                      (contains? primitives op)
+                      (add base (case op get [33 0] assoc [35 0] contains? [64 0]
+                                      conj [33 0] vec [8 8] bootstrap-native-carrier-header [64 0]
+                                      = [2 0] list [(count args) 0] [1 0]))
+                      :else (throw (ex-info "Unassigned verifier source operation" {:op op :target target})))))))
+            (function-cost [name]
+              (let [definition (get definitions name)]
+                (when-not definition (throw (ex-info "Missing verifier source helper" {:name name})))
+                (add [(+ 8 (* 6 (count (nth definition 2)))) 0] (sum (map cost (drop 3 definition))))))]
+      {:source-function target :control-polynomial (function-cost target) :opaque-children #{}})))
+
+(deftest sh08-verifier-native-total-comparison-development-kernel
+  (let [run #(invoke-c7 'sh08-vf-compare-data [%1 %2 %3])
+        data #(invoke-c7 'sh08-vf-data [%1 %2])
+        allowance 100000000
+        left (array-map :key 1)
+        right (sorted-map "key" 1)
+        metadata (with-meta [:ordinary] {:inactive (Object.)})
+        samples [[nil nil true] [[1 2] '(1 2) false] ['(1 2) (cons 1 (list 2)) true]
+                 [{:a [1 2] :b #{:x :y}} (array-map :b #{:y :x} :a [1 2]) true]
+                 [left right false] [right left false]
+                 [{[1 :x] {:a 2}} {(list 1 :x) {:a 2}} false]
+                 [{#{:x :y} :value} {#{:y :x} :value} true]
+                 [#{[1] '(2)} #{[1] '(2)} true]
+                 [{:a 1} {:a 2} false] [1 1N true] [1 1.0 false]]]
+    ;; Raw host equality can throw for individually native Map values.
+    (is (thrown? ClassCastException (= left right)))
+    (doseq [[a b equal?] samples]
+      (let [result (run a b allowance) exact (:work-count result)
+            repeated (run a b exact) short (run a b (dec exact))]
+        (is (= [:accepted equal?] ((juxt :status :equal?) result)))
+        (is (= result repeated))
+        (is (= [:rejected :verification-work-limit] ((juxt :status :reason) short)))
+        (is (< (:completed-work-count short) (:work-count short)))))
+    (is (= :verification-carrier-metadata (:reason (data metadata allowance))))
+    (is (= :verification-native-carrier (:reason (data (subvec [1 2 3] 1) allowance))))
+    (is (= :verification-data-bound (:reason (data (nth (iterate vector nil) 129) allowance))))
+    (let [leaf {:unchanged [1 "physical"]} repeated [leaf leaf]
+          independent [(into {} leaf) (into {} leaf)]]
+      (is (= (data repeated allowance) (data independent allowance)))
+      (is (> (:storage-work (data repeated allowance)) (* 2 (:storage-work (data leaf allowance))))))
+    (let [callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "verifier hash")))
+                   (equals [_] (swap! callbacks conj :equal) (throw (AssertionError. "verifier equality")))
+                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "verifier render"))))
+          cmp (reify java.util.Comparator
+                (compare [_ _ _] (swap! callbacks conj :compare) (throw (AssertionError. "verifier comparator"))))]
+      (doseq [value [opaque {:inactive opaque} (list opaque) (cons :head (lazy-seq (swap! callbacks conj :tail) nil))
+                     (sorted-map-by cmp) (with-meta 'symbol {:inactive opaque})]]
+        (is (= :rejected (:status (data value allowance)))))
+      (is (empty? @callbacks)))
+    (doseq [target '[sh08-vf-data sh08-vf-compare-arenas]]
+      (prn {:verifier-native-control (verifier-native-control-audit target)}))
+    (prn {:verifier-native-kernel :checked :public-wrapper-changed false
+          :host-map-lookup false :physical-alias-deduplication false})))
+
 (deftest sh08-function-work-policy-public-composition
   ;; Existing authenticated function-local-call fixture and request constructor.
   (let [request (:request (function-work-policy-current-source (fixture-path "accepted" "function-local-call" ".gravity")))
