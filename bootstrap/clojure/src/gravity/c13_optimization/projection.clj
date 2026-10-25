@@ -40,7 +40,7 @@
             :emits [:optimization-pass-registry :optimization-pipeline-manifest
                     :optimization-decision-log :invalidated-fact-ledger
                     :analysis-cache-records :proof-and-certificate-usage
-                    :residual-cost-report :post-pass-verifier-reports
+                    :post-pass-verifier-reports
                     :optimized-mir-artifact :optimization-diagnostic-stream]
             :rejects (:c13-optimization-diagnostic-ids configuration)}
      :source-overrides source-overrides
@@ -81,11 +81,6 @@
               :proofs (:proofs-used decision)
               :status :accepted})
            decisions)
-     :residual-cost-report
-     {:artifact :gravity/residual-cost-report
-      :status :complete
-      :entries [{:pass :bounds-check-elide :claim :check-erased :residual-cost :none}
-                {:pass :target-layout-prepare :claim :layout-prepared :residual-cost :manifest-only}]}
      :check-elision-record
      {:artifact :gravity/check-elision-record
       :pass :bounds-check-elide
@@ -131,7 +126,6 @@
       :invalidation-status :complete
       :analysis-cache-status :complete
       :proof-status :complete
-      :residual-cost-status :complete
       :post-pass-verifier-status :complete
       :diagnostic-status :complete
       :status :complete}
