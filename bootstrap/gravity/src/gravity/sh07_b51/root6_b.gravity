@@ -4322,7 +4322,10 @@
                   {:status :rejected :reason :resolved-id-shape}))
               {:status :rejected :reason :reference-prefix}))
           {:status :rejected :reason :registered-reference-shape})
-        (let [token (first tokens) tail (rest tokens)]
+        (let [token (first tokens) tail (rest tokens)
+              conditional-slot?
+              (if (= token :slot-ids)
+                (= (first tail) :target-kind-loop) false)]
           (if (= token :each)
             (if (vector? value)
               (loop [remaining value result [] budget (- remaining-work 1)]
@@ -4359,16 +4362,27 @@
                     {:status :accepted :value value
                      :remaining-work (- remaining-work 1)}))
                 (if (map? value)
-                  (if (contains? value token)
-                    (let [child
-                          (sh07-b51-r6-materialize-registered-path
-                           (get value token) value tail resolved-prefix
-                           (+ depth 1) (- remaining-work 1))]
-                      (if (= (get child :status) :accepted)
-                        {:status :accepted
-                         :value (assoc value token (get child :value))
-                         :remaining-work (get child :remaining-work)}
-                        child))
+                  (if (if conditional-slot?
+                        (contains? #{:function :loop}
+                                   (get value :target-kind)) true)
+                    (if (if conditional-slot?
+                          (= (get value :target-kind) :function) false)
+                      ; Visit the selector to retain its depth/work charge while
+                      ; leaving the skipped record whole, without field lookup.
+                      (sh07-b51-r6-materialize-registered-path
+                       value value tail resolved-prefix
+                       (+ depth 1) (- remaining-work 1))
+                      (if (contains? value token)
+                        (let [child
+                              (sh07-b51-r6-materialize-registered-path
+                               (get value token) value tail resolved-prefix
+                               (+ depth 1) (- remaining-work 1))]
+                          (if (= (get child :status) :accepted)
+                            {:status :accepted
+                             :value (assoc value token (get child :value))
+                             :remaining-work (get child :remaining-work)}
+                            child))
+                        {:status :rejected :reason :registry-key-missing}))
                     {:status :rejected :reason :registry-key-missing})
                   {:status :rejected :reason :registry-map-required})))))))))
 
