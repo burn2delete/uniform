@@ -161,10 +161,7 @@
       (assoc :form-index (long (:form-index span))))))
 
 (defn p15-s23-c6c10-diagnostic-semantic-id
+  "Select native ID carriers; the canonical boundary validates their content."
   [candidate]
-  (let [text (when (or (keyword? candidate)
-                       (symbol? candidate)
-                       (string? candidate))
-               (str candidate))]
-    (when (and (string? text) (<= (.length ^String text) 256))
-      candidate)))
+  (when (contains? #{String clojure.lang.Keyword clojure.lang.Symbol} (class candidate))
+    candidate))

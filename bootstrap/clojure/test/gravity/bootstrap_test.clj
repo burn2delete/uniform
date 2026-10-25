@@ -34361,7 +34361,7 @@
     (is (= sealed-origin-id (:origin-id sealed-data)))
     (is (= sealed-origin-id
            (first (:generated-origin-chain sealed-data))))
-    (is (not (contains? oversized-data :syntax-id)))
+    (is (= oversized-keyword (:syntax-id oversized-data)))
     (is (re-matches #"sha256:[0-9a-f]{64}"
                     (:diagnostic-id oversized-data)))))
 
