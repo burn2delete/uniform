@@ -55,14 +55,26 @@ rules and repeated discretionary pre-run approval are removed for ordinary
 development, without a renamed replacement. Historical permission-only/
 proposal-only/await-human labels create no current ordinary-work hold. Failed,
 interrupted, skipped and never-launched attempts keep their actual status;
-none is relabelled success or a never-launched consumed proof. Machine/resource
-safeguards and semantic work bounds keep their actual contracts; changes need
-evidence and correctness validation, with independent acceptance before
-integration. Platform/tool restrictions,
+none is relabelled success or a never-launched consumed proof. Project cost
+models, work-unit allowances, debit/reservation plumbing, cost proofs and
+budget-exhaustion requirements are removed with their enforcing code,
+contracts and budget-only tests. Do not rename these as generic bounds or keep
+capacity-oracle node/depth/width/scalar/source-byte/token/form quotas merely to
+refuse well-formed input. Authentication, semantic validity, tamper checks and
+actual host/platform protections remain independently required. Independent
+correctness acceptance still precedes integration. Platform/tool restrictions,
 mandatory action-time approvals, destructive/security-sensitive actions,
 new external commitments and unrelated scope retain their limits; never
 approve an unknown action or bypass a restriction. Do not pause useful work
 for adoption acknowledgment.
+
+Accounting details in the retained implementation snapshots below describe
+their recorded revisions, including text written in the present tense at that
+time. Work totals, capacity constants, paid-operation formulas and exact/short
+budget tests are historical evidence, not current requirements. Their removal
+does not turn a failed run into success or establish an unmetered successor's
+correctness. Continue validating the actual semantic, authentication and
+tamper properties; no accounting proof is required before doing that work.
 
 Gradually replace the monolithic bootstrap implementation with contract-aligned,
 stage-owned namespaces:
@@ -982,7 +994,6 @@ clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh08-function-call-type-test \
   --exact sh08-quoted-data-recursive-development-kernel \
   --exact sh08-quoted-data-authentication-development-kernel \
-  --exact sh08-quoted-data-work-budget-development-kernel \
   --exact sh08-quoted-data-structural-development-kernel \
   --exact sh08-quoted-data-guard-development-kernel
 ```
