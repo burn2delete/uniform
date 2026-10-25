@@ -22469,6 +22469,32 @@
   (prn {:private-ordinary-ledger :checked :canonical-output-work-receipt false
         :whole-reconstruction-accounting false :public-wrapper-changed false}))
 
+(deftest sh08-verifier-native-symbol-operation-domain
+  (let [run #(invoke-c7 'sh08-vf-compare-data [%1 %2 10000000])
+        data #(invoke-c7 'sh08-vf-data [% 10000000])
+        a (clojure.lang.Symbol/intern nil nil)
+        b (clojure.lang.Symbol/intern nil nil)
+        qualified (clojure.lang.Symbol/intern "qualified" nil)]
+    (is (not (identical? a b)))
+    (is (thrown? NullPointerException (.equals a b)))
+    (doseq [bad [a b qualified]
+            value [bad {:inactive bad} [bad] (list bad) (array-map bad :value)]]
+      (let [out (data value)]
+        (is (= [:rejected :verification-native-symbol-name] ((juxt :status :reason) out)))
+        (is (not (contains? out :arena)))))
+    (doseq [[left right] [[a b] [a 'valid] ['valid b] [{:x a} {:x b}]
+                          [[a] [b]] [(list a) (list b)]]]
+      (let [out (run left right)]
+        (is (= [:rejected :verification-native-symbol-name] ((juxt :status :reason) out)))))
+    (doseq [[namespace name] [[nil ""] ["" ""] ["qualified" ""] [nil "valid"] ["qualified" "valid"]]]
+      (let [left (clojure.lang.Symbol/intern namespace name)
+            right (clojure.lang.Symbol/intern namespace name)
+            out (run left right)]
+        (is (= [:accepted true] ((juxt :status :equal?) out)))))
+    (prn {:native-symbol-operation-domain :checked :distinct-null-name-rejected true
+          :root-and-nested true :valid-empty-name-preserved true :native-header-observation-work 75
+          :public-wrapper-changed false})))
+
 (deftest sh08-verifier-native-total-comparison-development-kernel
   (let [run #(invoke-c7 'sh08-vf-compare-data [%1 %2 %3])
         data #(invoke-c7 'sh08-vf-data [%1 %2])

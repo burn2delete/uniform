@@ -27104,6 +27104,8 @@
                 (if (if (> next-nodes 1048576) true (if (> depth 128) true (> list-width 65536)))
                   (sh08-vf-data-failure :verification-data-bound required required)
                   (if (get header 1) (sh08-vf-data-failure :verification-carrier-metadata required required)
+                    (if (if (= kind :symbol) (= false (= true (get header 4))) false)
+                      (sh08-vf-data-failure :verification-native-symbol-name required required)
                     (if (if (= kind :unsupported) true
                           (if (= kind :subvector) true
                             (if (= kind :tree-map) (= :foreign-comparator (get header 4)) false)))
@@ -27141,7 +27143,7 @@
                                 (if (> complete budget) (sh08-vf-data-failure :verification-work-limit complete required)
                                   (recur tail (assoc arena id [normalized (if (= normalized :empty-list) nil item) scalar-work])
                                     complete next-nodes (+ storage scalar-work)))))))
-                        (sh08-vf-data-failure :verification-native-list-tail required required)))))))))))
+                        (sh08-vf-data-failure :verification-native-list-tail required required))))))))))))
     (sh08-vf-data-failure :invalid-verification-work-allowance 0 0)))
 
 (defn sh08-vf-compare-arenas [left right budget]
