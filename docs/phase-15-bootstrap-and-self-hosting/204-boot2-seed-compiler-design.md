@@ -80,7 +80,18 @@ other numeric classes remain unsupported observations, not language exclusions.
 Metadata is only a presence Boolean after a native class check. It is not
 walked, returned, or implicitly rejected. String/Symbol/Keyword metrics count
 native UTF16 spelling units without rendering; Keyword's native Symbol
-receiver is checked separately. Integer metrics are absolute-magnitude bits.
+receiver is checked separately. Symbol child0 is a fresh native name-present
+Boolean: false for a null name, true for an empty or other non-null name.
+Child1 remains nil. This fixed native getter and null test expose no name or
+namespace String, reject no Symbol DATA, and grant no comparison legality;
+the existing UTF16 metric and metadata observation are unchanged. Reserving
+two observations for the name read and derived Boolean gives the Symbol
+branch 75 logical cells: seven returned cells, 30 common plan-check cells,
+and 38 branch cells (30 nested Symbol-observer plan-check cells, six numeric
+observations and those two new observations). The unchanged Keyword branch
+uses 37 branch cells. Callers must reserve the applicable bound before invoking
+an unknown-kind observation; there is no constant-folding or cache discount.
+Integer metrics are absolute-magnitude bits.
 BigInt reads its native compact long or checks its exact native BigInteger
 backing before observing magnitude; it does not coerce through Number methods.
 Ratio supplies separate numerator/denominator bits, requiring exact native
