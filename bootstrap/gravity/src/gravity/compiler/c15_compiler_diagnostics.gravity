@@ -688,10 +688,12 @@
 (defn sh15-preserve-diagnostic [diagnostic]
   (let [facts (sh15-preserved-facts diagnostic)
         primary {:span (get diagnostic :source-span)
-                 :artifact (get diagnostic :artifact-id)}]
+                 :artifact (get diagnostic :artifact-id)}
+        identity-primary
+        (assoc primary :span (sh15-identity-span (get primary :span)))]
     {:artifact :gravity/sh15-partial-diagnostic
      :diagnostic-id [:coordinator-digest-required
-                     (get diagnostic :rule) primary
+                     (get diagnostic :rule) identity-primary
                      (get diagnostic :stage) facts]
      :upstream-diagnostic-id (get diagnostic :diagnostic-id)
      :rule (get diagnostic :rule) :severity :error :lifecycle :active
