@@ -520,7 +520,7 @@
     (let [bad (assoc-in nodes [1024 :core-form] :unsupported)
           rejected (invoke-c7 'sh08-type-nodes [bad {} [] module])]
       (is (= :rejected (:status rejected)))
-      (is (= 1024 (count (:type-table rejected)) (count (:type-facts rejected)))))
+      (is (= 1024 (count (:type-table rejected)) (count (:type-facts rejected))))
       (is (= [(sha 1025)] (mapv :core-node-id (:diagnostics rejected)))))
     (doseq [changed [(assoc-in core [:nodes 1024 :source :syntax-id] :forged)
                      (assoc core :root-core-node-ids (conj roots (first roots)))
