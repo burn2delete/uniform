@@ -14,7 +14,6 @@
 (def default-base-ref "origin/main")
 (def default-worktree-scan "candidate")
 (def worktree-scan-modes #{"candidate" "all"})
-(def max-worktree-inventory 256)
 (def max-output-exclusions 32)
 (def max-output-path-length 4096)
 (def ^:private oid-pattern (Pattern/compile "^[0-9a-fA-F]{40,64}$"))
@@ -237,11 +236,6 @@
     (if-not (zero? (:exit result))
       (throw (git-failure result arguments))
       (let [records (parse-worktree-list (:stdout result))]
-        (when (> (count records) max-worktree-inventory)
-          (throw (failure "WORKTREE-INVENTORY-BOUND"
-                          (str "full worktree inventory exceeds the bounded limit of "
-                               max-worktree-inventory " records")
-                          {:count (count records) :limit max-worktree-inventory})))
         (->> records
            (map (fn [record]
                   (let [path (canonical-path (:path record))

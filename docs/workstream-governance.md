@@ -142,6 +142,10 @@ The inventory mode never changes integration authority: only the candidate's
 cleanliness, branch identity, exact identities, and reconciliation relation
 can satisfy the integration preconditions.
 
+Full inventory has no project record-count quota. Run it with the normal host
+watchdog and output-capture safeguards; host or Git resource failures remain
+inspection failures, not successful inventory evidence.
+
 The preflight is read-only. It does not fetch, prune, reset, check out, merge,
 or delete. It distinguishes ancestry from tree equivalence. An identical or
 tree-equivalent candidate produces a `no_remerge` recommendation; replaying

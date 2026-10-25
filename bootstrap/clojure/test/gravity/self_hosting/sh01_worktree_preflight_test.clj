@@ -284,25 +284,56 @@
             (git! root "worktree" "remove" "--force" (str auxiliary))
             (delete-tree! parent)))))))
 
-(deftest full-inventory-is-safely-bounded
+(deftest full-inventory-has-no-project-record-count-quota
   (with-repository
     (fn [{:keys [root base]}]
-      (git! root "branch" "auxiliary" base)
-      (let [parent (Files/createTempDirectory "gravity-worktree-preflight-aux-"
-                                              (make-array java.nio.file.attribute.FileAttribute 0))
-            auxiliary (.resolve parent "auxiliary-worktree")]
-        (try
-          (git! root "worktree" "add" "-q" (str auxiliary) "auxiliary")
-          (let [options (assoc (expected-options root "origin/main" base)
-                               :worktree-scan "all")
-                limit-var (ns-resolve preflight-ns 'max-worktree-inventory)
-                [document exit-code]
-                (with-redefs-fn {limit-var 1}
-                  #(run-preflight root options))]
-            (is (= 1 exit-code))
-            (is (some #(= "WORKTREE-INVENTORY-BOUND" (:code %))
-                      (:diagnostics document)))
-            (is (false? (get-in document [:worktree-inventory :complete?]))))
-          (finally
-            (git! root "worktree" "remove" "--force" (str auxiliary))
-            (delete-tree! parent)))))))
+      (let [options (expected-options root "origin/main" base)
+            git-var (ns-resolve preflight-ns 'git-result)
+            real-git @git-var
+            inventory-calls (atom 0)
+            inventory (apply str
+                             (for [index (range 257)]
+                               (str "worktree " (.resolve root (str "missing-peer-" index))
+                                    "\nHEAD " base "\nbranch refs/heads/peer-" index "\n\n")))
+            before (git! root "status" "--porcelain=v1")]
+        (with-redefs-fn
+          {git-var (fn [directory arguments]
+                     (if (= ["worktree" "list" "--porcelain"] arguments)
+                       (do (swap! inventory-calls inc)
+                           {:exit 0 :stdout inventory :stderr ""})
+                       (real-git directory arguments)))}
+          (fn []
+            (let [[candidate code] (run-preflight root options)]
+              (is (zero? code))
+              (is (zero? @inventory-calls))
+              (is (= 1 (get-in candidate [:worktree-inventory :count]))))
+            (let [[document code] (run-preflight root (assoc options :worktree-scan "all"))]
+              (is (zero? code))
+              (is (= 1 @inventory-calls))
+              (is (empty? (:diagnostics document)))
+              (is (= 257 (count (:worktrees document))))
+              (is (= {:mode "all" :complete? true :candidate-focused? false :count 257}
+                     (:worktree-inventory document)))
+              (is (every? #(= "missing" (:state %)) (:worktrees document)))
+              (is (true? (get-in document [:preconditions :all-pass]))))))
+        (is (= before (git! root "status" "--porcelain=v1")))))))
+
+(deftest full-inventory-git-failure-remains-incomplete
+  (with-repository
+    (fn [{:keys [root base]}]
+      (let [options (assoc (expected-options root "origin/main" base)
+                           :worktree-scan "all")
+            git-var (ns-resolve preflight-ns 'git-result)
+            real-git @git-var
+            [document code]
+            (with-redefs-fn
+              {git-var (fn [directory arguments]
+                         (if (= ["worktree" "list" "--porcelain"] arguments)
+                           {:exit 1 :stdout "" :stderr "Git inventory failed"}
+                           (real-git directory arguments)))}
+              #(run-preflight root options))]
+        (is (= 1 code))
+        (is (false? (get-in document [:worktree-inventory :complete?])))
+        (is (false? (get-in document [:preconditions :all-pass])))
+        (is (some #(= "WORKTREE-GIT-COMMAND" (:code %))
+                  (:diagnostics document)))))))
