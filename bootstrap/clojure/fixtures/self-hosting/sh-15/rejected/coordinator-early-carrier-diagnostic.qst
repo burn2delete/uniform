@@ -1,0 +1,16 @@
+(ns gravity.self-hosting.sh15.early-carrier.rejected
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-early-carrier-diagnostic-invalid-rows])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Original produced diagnostic is the base; no new stage error meaning.
+(defn coordinator-early-carrier-diagnostic-invalid-rows [row]
+  [(assoc row :reason :c11-verification-carrier-rejected)
+   (assoc row :reason :candidate-substitution)
+   (assoc row :rule "OTHER")
+   (assoc row :missing-fact :other)
+   (assoc row :source-span {})
+   (assoc row :owner-document "C11")
+   (assoc row :verifier :gravity.compiler.c11/other)
+   (assoc row :profile :native)
+   (assoc row :target :llvm)])
