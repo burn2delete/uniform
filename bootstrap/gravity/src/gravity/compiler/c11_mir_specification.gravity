@@ -9318,7 +9318,7 @@
    :maximum-parameters 8
    :maximum-call-depth 32
    :maximum-execution-steps 512
-   :operation-set #{:const :local :truthy :add :sub :mul :eq :lt :lte :gt :call}
+   :operation-set #{:const :local :truthy :add :sub :mul :eq :lt :lte :gt :gte :call}
    :terminator-set
    #{:return :error-return :throw :panic
      :branch :conditional-branch}
@@ -9450,7 +9450,7 @@
       false
       (if
        (sh13-member?
-        #{:const :local :truthy :add :sub :mul :eq :lt :lte :gt :call}
+        #{:const :local :truthy :add :sub :mul :eq :lt :lte :gt :gte :call}
         (get operation :opcode))
        (if (vector? (get operation :operands))
          (if (= nil (get operation :type))
@@ -9673,7 +9673,8 @@
                 (if (= :bool (get operation :type)) nil :type)
                 :type)
               :type)
-            (if (if (= :lt opcode) true (if (= :lte opcode) true (= :gt opcode)))
+            (if (if (= :lt opcode) true
+                  (if (= :lte opcode) true (if (= :gt opcode) true (= :gte opcode))))
               (if (= 2 (count operands))
                 (if (= :i64 (get types (get operands 0)))
                   (if (= :i64 (get types (get operands 1)))
@@ -10312,13 +10313,17 @@
                  :value (= (get operands 0) (get operands 1))
                  :fuel next-fuel
                  :trace next-trace}
-                (if (if (= opcode :lt) true (if (= opcode :lte) true (= opcode :gt)))
-                  {:status :continue
-                   :value (if (= opcode :lt)
-                            (< (get operands 0) (get operands 1))
-                            (if (= opcode :lte)
-                              (<= (get operands 0) (get operands 1))
-                              (> (get operands 0) (get operands 1))))
+                (if (if (= opcode :lt) true
+                      (if (= opcode :lte) true (if (= opcode :gt) true (= opcode :gte))))
+                  {:status :continue,
+                   :value
+                   (if (= opcode :lt)
+                     (< (get operands 0) (get operands 1))
+                     (if (= opcode :lte)
+                       (<= (get operands 0) (get operands 1))
+                       (if (= opcode :gt)
+                         (> (get operands 0) (get operands 1))
+                         (>= (get operands 0) (get operands 1))))),
                    :fuel next-fuel
                    :trace next-trace}
                   (let [call-result
@@ -10667,7 +10672,8 @@
             (let [opcode (get comparison :opcode)]
               (if (if (= opcode :integer-eq) true
                     (if (= opcode :integer-lt) true
-                      (if (= opcode :integer-lte) true (= opcode :integer-gt))))
+                      (if (= opcode :integer-lte) true
+                        (if (= opcode :integer-gt) true (= opcode :integer-gte)))))
                 (= [opcode opcode [(get left :result) (get right :result)]
                     :gravity.type/bool :not-applicable]
                    [opcode (get comparison :source-operation)
@@ -10680,6 +10686,11 @@
 
 (defn sh13-branch-join-layout-valid? [entry then-ops else-ops]
   (let [widths [(count entry) (count then-ops) (count else-ops)]]
+    (if (= :integer-gte (get (get entry (- (count entry) 1)) :opcode))
+      (= widths [3 1 1])
+    (if (if (= :integer-gte (get (get then-ops (- (count then-ops) 1)) :opcode)) true
+          (= :integer-gte (get (get else-ops (- (count else-ops) 1)) :opcode)))
+      (if (= widths [1 3 1]) true (= widths [1 1 3]))
     (if (= :integer-gt (get (get entry (- (count entry) 1)) :opcode))
       (if (= widths [3 1 1]) true
         (if (= widths [3 3 1])
@@ -10711,7 +10722,7 @@
           (if (= widths [1 1 3]) true
             (if (= widths [3 3 1]) true
               (if (= widths [3 1 3]) true
-                (if (= widths [1 4 1]) true (= widths [1 1 4])))))))))))))))))
+                (if (= widths [1 4 1]) true (= widths [1 1 4])))))))))))))))))))
 
 (defn sh13-branch-join-arm-valid? [operations type]
   (if (= 1 (count operations))
@@ -10721,7 +10732,8 @@
         (let [opcode (get (get operations 2) :opcode)]
           (if (if (= opcode :integer-eq) true
                 (if (= opcode :integer-lt) true
-                  (if (= opcode :integer-lte) true (= opcode :integer-gt))))
+                  (if (= opcode :integer-lte) true
+                    (if (= opcode :integer-gt) true (= opcode :integer-gte)))))
             (sh13-branch-join-entry-valid? operations)
             false))
         false)
@@ -10925,11 +10937,13 @@
                               :integer-less-than-or-equal
                               (if (= :integer-gt (get operation :opcode))
                                 :integer-greater-than
+                              (if (= :integer-gte (get operation :opcode))
+                                :integer-greater-than-or-equal
                             (if (= :local-binding (get operation :opcode)) :lexical-binding
                               (if (= :local (get operation :opcode)) :local-reference
                                 (if (= :lexical-scope (get operation :opcode)) :lexical-scope
                                   (if (= :conditional-join (get operation :opcode))
-                                    :edge-join :function-result-alias)))))))))))))
+                                    :edge-join :function-result-alias))))))))))))))
               :operands (get operation :operands)
               :constant-payload (get operation :constant-payload)
               :source-type (get operation :type)
@@ -10969,7 +10983,8 @@
                 :opcode (if (= :integer-eq (get operation :opcode)) :eq
                             (if (= :integer-lt (get operation :opcode)) :lt
                               (if (= :integer-lte (get operation :opcode)) :lte
-                                (if (= :integer-gt (get operation :opcode)) :gt nil))))
+                                (if (= :integer-gt (get operation :opcode)) :gt
+                                  (if (= :integer-gte (get operation :opcode)) :gte nil)))))
                 :type :bool
                 :operands (get operation :operands)}))))))))
 
