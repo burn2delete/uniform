@@ -3134,6 +3134,49 @@
           {:status :rejected :reason :compact-gis-entry-input-required :work-count prefix :completed-work-count prefix})))
     {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
+(defn sh08-gis3-entry-complete-data [core binding-rows form-rows budget]
+  ; Fee-only preparation for the complete original entry census. The vector
+  ; retains whole original row families, including unread metadata. Payment
+  ; does not establish a parameter type, source match, or numeric proof.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [prefix 512 control 85124 reserved (+ prefix control)]
+      (if (> prefix budget)
+        {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
+        (if (if (map? core) (if (<= (count core) 1024)
+              (if (vector? binding-rows) (if (<= (count binding-rows) 1024)
+                (if (vector? form-rows) (<= (count form-rows) 1024) false) false) false) false) false)
+          (if (> reserved budget)
+            {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count prefix}
+            (let [rows [(sh08-gis3-view-get core :module) (sh08-gis3-view-get core :preserved-resolution)
+                        (sh08-gis3-view-get core :nodes) (sh08-gis3-view-get core :calls)
+                        (sh08-gis3-view-get core :call-edges) (sh08-gis3-view-get core :function-records)
+                        (sh08-gis3-view-get core :definitions) (sh08-gis3-view-get core :reference-uses)
+                        (sh08-gis3-view-get core :var-references) (sh08-gis3-view-get core :mutations)
+                        (sh08-gis3-view-get core :recur-targets) (sh08-gis3-view-get core :recur-transfers)
+                        (sh08-gis3-view-get core :recursion-components) (sh08-gis3-view-get core :lexical-bindings)
+                        (sh08-gis3-view-get core :control-flow) binding-rows form-rows]
+                  valid? (loop [i 0]
+                           (if (= i 17) true
+                             (let [value (get rows i)]
+                               (if (if (< i 2) (if (map? value) (<= (count value) 1024) false)
+                                     (if (vector? value) (<= (count value) 1024) false))
+                                 (recur (+ i 1)) false))))]
+              (if valid?
+                (let [checked (sh08-gis3-complete-data-tallies rows (- budget reserved))
+                      work (+ reserved (get checked :work-count))]
+                  (if (= :accepted (get checked :status))
+                    {:status :entry-original-data-payment-complete :work-count work :completed-work-count work
+                     :comparison-bound-work (get checked :comparison-bound-work) :rows rows
+                     :physical-DATA-work (get checked :physical-work-count)
+                     :DATA-control-work (get checked :control-work-count)
+                     :all-DATA-control-fees-closed true :numeric-proof-established false}
+                    {:status :rejected :reason (get checked :reason) :stage :entry-original-data
+                     :work-count work :completed-work-count (+ reserved (get checked :completed-work-count))}))
+                {:status :rejected :reason :compact-gis-entry-families-required
+                 :work-count reserved :completed-work-count reserved})))
+          {:status :rejected :reason :compact-gis-entry-input-required :work-count prefix :completed-work-count prefix})))
+    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
+
 (defn sh08-gis3-entry-indexes [rows budget]
   ; Fresh indexes for the original census families. The caller separately
   ; pays full original DATA; indexes confer no semantic or proof authority.
@@ -3636,7 +3679,7 @@
         (if (> reserved budget)
           {:status :rejected :reason :compact-gis-entry-work-limit :work-count reserved :completed-work-count prefix}
           (if (sh08-pc-id? target)
-            (let [data (sh08-gis3-entry-original-data core binding-rows form-rows (- budget reserved))
+            (let [data (sh08-gis3-entry-complete-data core binding-rows form-rows (- budget reserved))
                   data-work (+ reserved (get data :work-count))]
               (if (= :entry-original-data-payment-complete (get data :status))
                 (let [rows (get data :rows)
@@ -3657,7 +3700,7 @@
                           (assoc result :work-count required :completed-work-count required
                             :surrounding-work reserved :original-DATA-work (get data :work-count)
                             :fresh-index-work (get indexed :work-count) :semantic-work semantic
-                            :fresh-indexes (get indexed :indexes) :all-DATA-control-fees-closed false))))
+                            :fresh-indexes (get indexed :indexes) :all-DATA-control-fees-closed true))))
                     {:status :rejected :reason (get indexed :reason) :stage :entry-original-index
                      :work-count used :completed-work-count (+ data-work (get indexed :completed-work-count))}))
                 {:status :rejected :reason (get data :reason) :stage :entry-original-DATA
