@@ -227,9 +227,14 @@ ROOT's standing finite-goal charters apply to all eight implementation
 managers. Managers
 independently audit the repository, contracts, evidence and tests to discover,
 prioritize and execute dependency-ready work inside their exclusive families.
-Send ROOT the gap, contract, exact paths/interfaces, checks, dependencies and
-stop criteria before writing as ownership notification, not a task-grant wait.
-Pull the next eligible item in the same active turn, including during review
+Keep ROOT informed of actual ownership/interface changes, material blockers
+and immutable integration candidates. Within unchanged exclusive ownership,
+ordinary task discovery, edits and focused checks need no per-task prewrite
+notice, ticket, permission receipt or repeated preparation handoff. Record the
+actual gap and semantic checks in the existing work/evidence records without
+making that record another admission ceremony. Coordinate a genuine new
+cross-owner conflict before editing the contested path; independent owned
+work continues. Pull the next eligible item in the same active turn, including during review
 of an isolated immutable candidate. One blocked task does not block the whole
 goal. Before yielding, report COMPLETED plus NEXT_EXECUTING; a drained leaf
 queue does not justify default NEED_REFILL. Truly exhausted alternatives need

@@ -39,7 +39,10 @@ its adapters; SOURCE owns actual Core-to-C7 consumption and affected adoption;
 Diagnostics owns stage-produced preservation joins; Cohort owns current
 applicability of the actual producer/consumer evidence. ROOT resolves genuine
 shared ownership, routes independent acceptance and integrates main. A leaf
-freeze does not leave its joins ownerless. Restricted C12 work and denied
+freeze does not leave its joins ownerless. Routine work inside unchanged
+exclusive ownership needs no per-task ticket, prewrite notice or preparation
+handoff; communicate actual conflicts/interface changes, material blockers and
+review-ready candidates through existing records. Restricted C12 work and denied
 review/oracle actions remain with their exact restrictions, not reassigned.
 
 Milestone dependencies govern completion credit. Existing later managers
