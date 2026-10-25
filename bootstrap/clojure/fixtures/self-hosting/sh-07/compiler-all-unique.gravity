@@ -1,0 +1,13 @@
+; Verbatim helper from checked_core.gravity; this fixture is a separate subject.
+(ns self-hosting.sh07.compiler-all-unique
+  (:profile :meta) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports []))
+
+(defn sh07-all-unique? [values]
+  (loop [remaining values observed #{}]
+    (if (= (count remaining) 0)
+      true
+      (if (contains? observed (first remaining))
+        false
+        (recur (rest remaining) (conj observed (first remaining)))))))
