@@ -132,7 +132,7 @@
            (when-not (= plan active)
              (let [direct (outcome (fn [] (generic active [value])))]
                (is (= "L2-BUILTIN-ERROR" (get-in direct [:error :id])))
-               (is (= direct (outcome (fn [] (interpreted active [value])))))))))
+               (is (= direct (outcome (fn [] (interpreted active [value]))))))))))
     (is (zero? @renders))))
 
 (deftest native-numeric-header-real-fixtures-execute-both-spellings
