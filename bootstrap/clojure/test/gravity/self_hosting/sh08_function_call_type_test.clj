@@ -20664,6 +20664,84 @@
         (is (= [65536 65536] ((juxt :budget :allowance) (first (:inference default)))))
         (is (= 1 (count (:inference high)) (count (:inference exact))))))))
 
+(deftest sh08-gis3-invalid-remaining-allowance-development-kernel
+  (let [callbacks (atom 0) touches (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 allowance hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 allowance equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 allowance print"))))
+        lazy-value (lazy-seq (swap! callbacks inc) (throw (AssertionError. "GIS3 allowance lazy")))
+        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original @getter
+        invalid [nil -1 -100000000000000000000N 1.0 1/2 true "1048576" :allowance
+                 Double/NaN Double/POSITIVE_INFINITY opaque lazy-value []
+                 {:type-inference-work-allowance 1048576}]]
+    (with-redefs-fn
+      {getter (fn [plan value key]
+                (when (identical? opaque value) (swap! touches inc))
+                (original plan value key))}
+      #(doseq [budget invalid]
+         (let [result (invoke-c7 'sh08-gis3-source-payment [opaque opaque opaque opaque opaque budget])]
+           (is (= {:status :rejected :reason :compact-gis-invalid-work-allowance
+                   :work-count 0 :completed-work-count 0} result))
+           (is (zero? @touches))
+           (is (zero? @callbacks)))))))
+
+(deftest sh08-gis3-trusted-remaining-development-kernel
+  ;; Existing trusted options and actual charged ordinary inference supply the
+  ;; private budget. GIS3 has no production dispatch hook in this increment.
+  (let [{:keys [core bindings forms types target] :as input} (gis3-original-row-input 0 0)
+        allowance (invoke-c7 'sh08-ft-work-allowance [{:type-inference-work-allowance 1048576}])
+        lookup (map-present-get-input :file)
+        context {:ordering-core (:core lookup) :lookup-nodes (:nodes lookup)
+                 :lookup-forms (vec (vals (:forms lookup))) :lookup-bindings (vec (vals (:bindings lookup)))
+                 :shape-call-products (:products lookup) :loop-work-left allowance
+                 :type-inference-work-allowance allowance}
+        observed (observe-function-work-policy
+                   #(invoke-c7 'sh08-ft-infer-acyclic-with-context
+                               [(get-in lookup [:core :nodes]) (:nodes lookup) [] []
+                                (get-in lookup [:core :calls]) (get-in lookup [:core :call-edges])
+                                {} (:binding-types lookup) 10 context]))
+        inference (:value observed) remaining (:type-join-work-left inference)
+        run (fn [budget & [candidate-core]]
+              (invoke-c7 'sh08-gis3-source-payment [(or candidate-core core) bindings forms types target budget]))
+        paid (run remaining)
+        implicit (run (invoke-c7 'sh08-ft-work-allowance [{}]))
+        explicit (run (invoke-c7 'sh08-ft-work-allowance [{:type-inference-work-allowance 65536}]))
+        forged (run 65536 (assoc core :type-inference-work-allowance 1048576
+                                     :loop-work-left 1048576 :effective-work-policy {:type-inference-work-allowance 1048576}))
+        repeated (run (- remaining (:work-count paid)))
+        physical (mapv gis3-coordinate-unit-value (:readsets (gis3-original-coordinate-readsets input)))
+        physical-B (reduce + (map #(get (gis3-independent-physical-data-fee %) :B) physical))
+        rows [(get core :nodes) (get core :calls) (get core :call-edges) (get core :function-records) bindings forms]
+        keys [:node-id :core-node-id :call-core-node-id :function-syntax-id :binding-id :form-id]
+        index-B (reduce + (map (fn [rs key]
+                                (+ 8 (* (count rs) (count rs)) (* 6 (count rs))
+                                   (reduce + (map #(* 2 (count (get % key))) rs)))) rows keys))
+        declared-view-reservation 3472 charged-total (+ 64 index-B declared-view-reservation physical-B)]
+    (is (= :converged (:convergence-status inference)))
+    (is (= [] (:diagnostics inference)))
+    (is (< 65536 remaining allowance))
+    (is (every? (fn [[a b]] (<= (:budget b) (- (:budget a) (:work a)))) (partition 2 1 (:passes observed))))
+    (is (= remaining (:remaining (first (:inference observed)))))
+    (is (= :original-data-payment-complete (:status paid) (:status repeated)))
+    (is (= [68675 9863 82074] [physical-B index-B charged-total]))
+    (is (= charged-total (:work-count paid) (:completed-work-count paid)
+                             (:work-count repeated) (:completed-work-count repeated)))
+    (is (= physical (get-in paid [:selected :readsets]) (get-in repeated [:selected :readsets])))
+    (is (= [8 8 8] (mapv count (take 3 (get-in paid [:selected :readsets])))))
+    (is (= 10 (count (get-in paid [:selected :readsets]))))
+    (is (= false (:numeric-proof-established paid) (:numeric-proof-established repeated)))
+    (is (= implicit explicit forged))
+    (is (= [:rejected :compact-gis-work-limit :original-readset 5 65532 65542]
+           ((juxt :status :reason :stage :readset-ordinal :completed-work-count :work-count) implicit)))
+    (prn {:gis3-trusted-remaining {:allowance allowance :ordinary-used (- allowance remaining)
+                                 :remaining-before-first remaining :charged-component-work charged-total
+                                 :remaining-before-second (- remaining (:work-count paid))
+                                 :remaining-after-second (- remaining (:work-count paid) (:work-count repeated))}
+          :physical-DATA-B physical-B :declared-view-reservation declared-view-reservation
+          :all-view-bookkeeping-independently-closed false :numeric-proof-established false
+          :public-GIS-dispatch-present false})))
+
 (deftest sh08-function-work-policy-neighbour-fuel-development-kernel
   ;; Dispatch-only DATA: a real unresolved ordering prefix spends2 before
   ;; each real consumer. Oversized function vectors are rejection sentinels,

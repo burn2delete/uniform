@@ -2947,7 +2947,10 @@
 (defn sh08-gis3-source-payment [core binding-rows form-rows types target budget]
   ; First construction gate only. Complete original DATA payment precedes
   ; semantic matching and v3 output construction; success grants no proof.
-  (let [limit (if (> budget 65536) 65536 budget) prefix 64]
+  ; The private caller supplies its remaining trusted inference allowance.
+  ; Validate before touching source inputs; zero is an exhausted valid pool.
+  (if (if (integer? budget) (>= budget 0) false)
+  (let [limit budget prefix 64]
     (if (> prefix limit) {:status :rejected :reason :compact-gis-work-limit :work-count prefix :completed-work-count 0}
       (let [tables [[:nodes (get core :nodes) :node-id] [:calls (get core :calls) :core-node-id]
                     [:edges (get core :call-edges) :call-core-node-id]
@@ -2991,7 +2994,8 @@
                 (recur (rest remaining) (assoc indexes (get part 0) (get result :index)) work)
                 {:status :rejected :reason (get result :reason) :stage :original-index
                  :table (get part 0) :work-count work :completed-work-count (+ used (get result :completed-work-count))}))))
-        {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix})))))
+        {:status :rejected :reason :compact-gis-source-input-required :work-count prefix :completed-work-count prefix}))))
+    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.
