@@ -4325,7 +4325,14 @@
         (let [token (first tokens) tail (rest tokens)
               conditional-slot?
               (if (= token :slot-ids)
-                (= (first tail) :target-kind-loop) false)]
+                (= (first tail) :target-kind-loop) false)
+              control-kind
+              (if (= (first tail) :if-kind)
+                (if (contains? #{:condition-node-id :branches} token) :if nil)
+                (if (= (first tail) :do-kind)
+                  (if (contains? #{:ordered-child-node-ids :result-policy} token)
+                    :do nil)
+                  nil))]
           (if (= token :each)
             (if (vector? value)
               (loop [remaining value result [] budget (- remaining-work 1)]
@@ -4364,9 +4371,13 @@
                 (if (map? value)
                   (if (if conditional-slot?
                         (contains? #{:function :loop}
-                                   (get value :target-kind)) true)
+                                   (get value :target-kind))
+                        (if (= control-kind nil) true
+                          (contains? #{:if :do} (get value :kind))))
                     (if (if conditional-slot?
-                          (= (get value :target-kind) :function) false)
+                          (= (get value :target-kind) :function)
+                          (if (= control-kind nil) false
+                            (if (= (get value :kind) control-kind) false true)))
                       ; Visit the selector to retain its depth/work charge while
                       ; leaving the skipped record whole, without field lookup.
                       (sh07-b51-r6-materialize-registered-path

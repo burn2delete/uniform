@@ -795,6 +795,13 @@
               conditional-slot?
               (if (= token :slot-ids)
                 (= (first (rest tokens)) :target-kind-loop) false)
+              control-kind
+              (if (= (first (rest tokens)) :if-kind)
+                (if (contains? #{:condition-node-id :branches} token) :if nil)
+                (if (= (first (rest tokens)) :do-kind)
+                  (if (contains? #{:ordered-child-node-ids :result-policy} token)
+                    :do nil)
+                  nil))
               stepped
               (if (= token :each)
                 (loop [remaining states result []]
@@ -849,9 +856,14 @@
                           (if (map? value)
                             (if (if conditional-slot?
                                   (contains? #{:function :loop}
-                                             (get value :target-kind)) true)
+                                             (get value :target-kind))
+                                  (if (= control-kind nil) true
+                                    (contains? #{:if :do} (get value :kind))))
                               (if (if conditional-slot?
-                                    (= (get value :target-kind) :function) false)
+                                    (= (get value :target-kind) :function)
+                                    (if (= control-kind nil) false
+                                      (if (= (get value :kind) control-kind)
+                                        false true)))
                                 (recur (rest remaining)
                                        (conj result {:value value :parent value}))
                                 (if (contains? value token)

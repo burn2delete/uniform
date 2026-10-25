@@ -298,3 +298,140 @@
                                   {:recur-targets [{:target-kind :loop}]}
                                   (into [:optional :optional :optional]
                                         path-at-limit))))))))))
+
+(def ^:private control-helpers
+  (-> (merge producer-helpers root-helpers)
+      (update "producer_c.gravity" conj 'sh07-b51-inherited-product-reference-paths)
+      (assoc "producer_d.gravity" '#{sh07-b51-producer-inherited-control-flow})))
+
+(defn- control-records [invoke]
+  (let [one (assoc reference-zero :ordinal 1)]
+    (zipmap
+     [:if-a :do-a :if-b :do-b]
+     (invoke 'sh07-b51-producer-inherited-control-flow
+             [{:core-form :if :node-id reference-zero
+               :children [one reference-zero one]}
+              {:core-form :do :node-id reference-zero
+               :children [one reference-zero one]}
+              {:core-form :if :node-id one
+               :children [reference-zero one reference-zero]}
+              {:core-form :do :node-id one
+               :children [reference-zero one reference-zero]}]))))
+
+(def ^:private control-paths
+  ;; Attempt5's four conditional registered paths and per-selected-record work.
+  [{:path [:control-flow :each :condition-node-id :if-kind]
+    :kind :if :work 3 :ids {:if-a [1] :if-b [0]}}
+   {:path [:control-flow :each :branches :if-kind :each :core-node-id]
+    :kind :if :work 7 :ids {:if-a [0 1] :if-b [1 0]}}
+   {:path [:control-flow :each :ordered-child-node-ids :do-kind :each]
+    :kind :do :work 6 :ids {:do-a [1 0 1] :do-b [0 1 0]}}
+   {:path [:control-flow :each :result-policy :do-kind :core-node-id]
+    :kind :do :work 4 :ids {:do-a [1] :do-b [0]}}])
+
+(defn- resolved-control-records [records field]
+  ;; Explicit expected field values; all other producer fields stay untouched.
+  (case field
+    :condition-node-id
+    (-> records (assoc-in [:if-a field] digest-one)
+        (assoc-in [:if-b field] digest-zero))
+    :branches
+    (-> records (assoc-in [:if-a field 0 :core-node-id] digest-zero)
+        (assoc-in [:if-a field 1 :core-node-id] digest-one)
+        (assoc-in [:if-b field 0 :core-node-id] digest-one)
+        (assoc-in [:if-b field 1 :core-node-id] digest-zero))
+    :ordered-child-node-ids
+    (-> records (assoc-in [:do-a field] [digest-one digest-zero digest-one])
+        (assoc-in [:do-b field] [digest-zero digest-one digest-zero]))
+    :result-policy
+    (-> records (assoc-in [:do-a field :core-node-id] digest-one)
+        (assoc-in [:do-b field :core-node-id] digest-zero))))
+
+(deftest control-selectors-traverse-only-their-producer-variants
+  (with-source-helpers
+    control-helpers
+    (fn [invoke]
+      (let [records (control-records invoke)
+            one (assoc reference-zero :ordinal 1)
+            references [reference-zero one]
+            patterns [[] [:if-a] [:do-a] [:if-a :do-a] [:do-a :if-a]
+                      [:if-a :do-a :if-b :if-a] [:do-a :if-a :do-b :do-a]]
+            registered? (fn [path] (some #(= path %) (map :path control-paths)))
+            root-paths (filterv registered? (invoke 'sh07-b51-r6-tier3-core-paths))]
+        (is (= (mapv :path control-paths) root-paths
+               (filterv registered? (invoke 'sh07-b51-inherited-product-reference-paths))))
+        (doseq [{:keys [path kind work ids]} control-paths
+                pattern patterns]
+          (testing (pr-str [path pattern])
+            (let [preimage {:control-flow (mapv records pattern)}
+                  expected-records (resolved-control-records records (nth path 2))
+                  expected {:control-flow (mapv expected-records pattern)}
+                  selected (mapv references (mapcat #(get ids % []) pattern))
+                  budget (+ 2 (reduce + 0 (map #(if (contains? ids %) work 2) pattern)))
+                  result (invoke 'sh07-b51-r6-materialize-registered-path
+                                 preimage nil path [digest-zero digest-one] 0 budget)]
+              (is (= {:status :accepted :values selected}
+                     (invoke 'sh07-b51-r6-path-values preimage path)
+                     (invoke 'sh07-b51-reference-path-values preimage path)))
+              (is (= {:status :accepted :value expected :remaining-work 0} result))
+              (is (= {:status :accepted :value expected}
+                     (invoke 'sh07-b51-resolve-controlled-path
+                             preimage path [digest-zero digest-one])))
+              (is (= :materialization-work
+                     (:reason (invoke 'sh07-b51-r6-materialize-registered-path
+                                      preimage nil path [digest-zero digest-one]
+                                      0 (dec budget)))))
+              (is (= (pr-str (filterv #(not= kind (:kind %)) (:control-flow preimage)))
+                     (pr-str (filterv #(not= kind (:kind %))
+                                      (get-in result [:value :control-flow]))))))))))))
+
+(deftest control-selectors-preserve-selected-errors-and-resource-priorities
+  (with-source-helpers
+    control-helpers
+    (fn [invoke]
+      (let [records (control-records invoke)]
+        (doseq [{:keys [path kind work]} control-paths]
+          (let [tokens (subvec path 2)
+                field (first tokens)
+                selected (get records (if (= kind :if) :if-a :do-a))
+                skipped (get records (if (= kind :if) :do-a :if-a))
+                materialize (fn [value prefix depth budget]
+                              (invoke 'sh07-b51-r6-materialize-registered-path
+                                      value nil tokens prefix depth budget))
+                depth (- 256 (count tokens))]
+            (is (= :accepted (:status (materialize selected [digest-zero digest-one]
+                                                   depth work))))
+            (is (= :materialization-depth
+                   (:reason (materialize selected [digest-zero digest-one]
+                                         (inc depth) work))))
+            (is (= {:status :accepted :value skipped :remaining-work 0}
+                   (materialize skipped [] 255 2)))
+            (is (= :materialization-work (:reason (materialize skipped [] 255 1))))
+            (is (= :materialization-depth (:reason (materialize skipped [] 256 1))))
+            (is (= :reference-prefix (:reason (materialize selected [] 0 100))))
+            (is (= :resolved-id-shape
+                   (:reason (materialize selected [digest-zero :bad] 0 100))))
+            (doseq [value [(dissoc selected field) (dissoc selected :kind)
+                          (assoc selected :kind :unknown)]]
+              (is (= :registry-key-missing (:reason (materialize value [] 256 1))))
+              (is (= :registry-key-missing
+                     (:reason (invoke 'sh07-b51-r6-path-values value tokens)))))
+            (is (= :registry-map-required (:reason (materialize [] [] 256 1))))
+            (let [path-at-limit (into (vec (repeat (- 256 (count tokens)) :optional))
+                                      tokens)]
+              (is (= {:status :accepted :values []}
+                     (invoke 'sh07-b51-r6-path-values skipped path-at-limit)))
+              (is (= :registry-path-depth
+                     (:reason (invoke 'sh07-b51-r6-path-values
+                                      skipped (into [:optional] path-at-limit))))))
+            (doseq [[bad reason]
+                    (case field
+                      :condition-node-id [[:wrong :registered-reference-shape]]
+                      :branches [[:wrong :registry-vector-required]
+                                 [[{}] :registry-key-missing]]
+                      :ordered-child-node-ids [[:wrong :registry-vector-required]
+                                               [[:wrong] :registered-reference-shape]]
+                      :result-policy [[:wrong :registry-map-required]
+                                      [{} :registry-key-missing]])]
+              (is (= reason (:reason (materialize (assoc selected field bad)
+                                                  [digest-zero digest-one] 0 100)))))))))))
