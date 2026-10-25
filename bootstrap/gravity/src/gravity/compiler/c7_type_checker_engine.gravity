@@ -27286,6 +27286,30 @@
                         (sh08-vf-data-failure :verification-native-list-tail required required))))))))))))
     (sh08-vf-data-failure :invalid-verification-work-allowance 0 0)))
 
+(defn sh08-vf-work-product [remaining factors]
+  ; Internal factors are freshly constructed native nonnegative integers.
+  ; Seed from the trusted pool's arithmetic representation: a large caller N
+  ; must not overflow an intermediate Long or be clamped to an ordinary N.
+  (if (if (integer? remaining) (>= remaining 0) false)
+    (if (if (vector? factors) (<= (count factors) 4) false)
+      (loop [pending factors product (+ (- remaining remaining) 1)]
+        (if (= 0 (count pending)) (if (<= product remaining) product nil)
+          (let [factor (first pending)]
+            (if (if (integer? factor) (>= factor 0) false)
+              (if (= factor 0) (recur (rest pending) (- remaining remaining))
+                (if (> product (quot remaining factor)) nil
+                  (recur (rest pending) (* product factor)))) nil)))) nil) nil))
+
+(defn sh08-vf-work-sum-products [remaining terms]
+  ; Each product and cumulative sum is bounded before it is evaluated.
+  ; Callers separately reserve the bounded control and arithmetic work.
+  (if (if (integer? remaining) (>= remaining 0) false)
+    (if (if (vector? terms) (<= (count terms) 4) false)
+      (loop [pending terms used (- remaining remaining)]
+        (if (= 0 (count pending)) used
+          (let [term (sh08-vf-work-product (- remaining used) (first pending))]
+            (if (= term nil) nil (recur (rest pending) (+ used term)))))) nil) nil))
+
 (defn sh08-vf-original-width [kind size]
   (if (if (integer? size) (if (>= size 0) (<= size 65536) false) false)
     (if (contains? #{:map :tree-map} kind)

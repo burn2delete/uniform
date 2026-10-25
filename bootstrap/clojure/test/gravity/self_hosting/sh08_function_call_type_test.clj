@@ -22471,6 +22471,30 @@
   (prn {:private-ordinary-ledger :checked :canonical-output-work-receipt false
         :whole-reconstruction-accounting false :public-wrapper-changed false}))
 
+(deftest sh08-verifier-prospective-work-products
+  (let [product #(invoke-c7 'sh08-vf-work-product [%1 %2])
+        total #(invoke-c7 'sh08-vf-work-sum-products [%1 %2])
+        large 1000000000000000000000000000000N]
+    (is (= 0 (product 0 [0])))
+    (is (= 1 (product 1 [])))
+    (is (nil? (product 0 [])))
+    (is (= 1 (product Long/MAX_VALUE [1 1 1 1])))
+    (is (= Long/MAX_VALUE (product Long/MAX_VALUE [Long/MAX_VALUE])))
+    (is (nil? (product Long/MAX_VALUE [Long/MAX_VALUE 2])))
+    (is (= large (product large [1000000000000000000 1000000000000])))
+    (is (nil? (product (dec large) [1000000000000000000 1000000000000])))
+    (is (= 42 (total 42 [[6 7]])))
+    (is (nil? (total 41 [[6 7]])))
+    (is (= Long/MAX_VALUE (total Long/MAX_VALUE [[(dec Long/MAX_VALUE)] [1]])))
+    (is (nil? (total Long/MAX_VALUE [[Long/MAX_VALUE] [1]])))
+    (is (= large (total large [[(dec large)] [1]])))
+    (is (nil? (total (dec large) [[(dec large)] [1]])))
+    (doseq [factors [[-1] [1.0] [1 1 1 1 1]]]
+      (is (nil? (product large factors))))
+    (is (nil? (total large [[1] [1] [1] [1] [1]])))
+    (prn {:prospective-products :checked :overflow-before-rejection false
+          :caller-N-preserved true :public-wrapper-changed false})))
+
 (deftest sh08-verifier-original-stream-development-kernel
   (let [run #(invoke-c7 'sh08-vf-original-data [%1 %2])
         eligible [nil true 1N :key 'symbol "text" [] {} #{}
