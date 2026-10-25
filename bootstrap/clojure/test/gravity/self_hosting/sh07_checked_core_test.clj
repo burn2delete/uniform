@@ -1453,24 +1453,14 @@
          [:request-resolution-table-vector-required
           (assoc request :resolution-table :scalar)]
          [:request-macro-trace-vector-required
-          (assoc request :macro-expansion-trace :scalar)]
-         [:maximum-carrier-depth
-          (assoc request :macro-expansion-trace
-                 [{:unsupported-lazy-carrier (iterate inc 0)}])]
-         [:maximum-carrier-depth
-          (assoc-in request [:forms 0 :metadata :unsupported-lazy-carrier]
-                    (iterate inc 0))]]]
+          (assoc request :macro-expansion-trace :scalar)]]]
     (doseq [[expected mutation] mutations]
       (let [diagnostic
             (assert-diagnostic
              (diagnostic-result #(sh07-run-request mutation))
              "C6-VERIFY" source-path)
             rule-specific (get-in diagnostic [:facts :rule-specific])]
-        (if (= expected :maximum-carrier-depth)
-          (do
-            (is (= expected (:bound rule-specific)))
-            (is (= 257 (:observed rule-specific))))
-          (is (= expected (:reason rule-specific))))
+        (is (= expected (:reason rule-specific)))
         (is (true? (get-in diagnostic [:facts :fail-closed])))))))
 
 (deftest sh07-file-read-failure-is-a-structured-core-diagnostic

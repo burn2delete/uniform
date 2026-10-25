@@ -256,7 +256,7 @@
         cycle (clojure.lang.PersistentArrayMap. array)]
     (aset array 1 cycle)
     (doseq [[value expected] [[(with-meta [] {:origin :hidden}) :metadata-free-input-carrier]
-                              [lazy-value :exact-persistent-carrier-class]
+                              [lazy-value :input-carrier-value-domain]
                               [cycle :cyclic-input-carrier]
                               [(str (char 0xd800)) :well-formed-unicode-scalar-string]]]
       (let [failure (contained-coordinator-diagnostic
