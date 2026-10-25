@@ -292,6 +292,15 @@ distinction and hexadecimal UTF-8 canonical key ordering. Both passes apply the
 same per-preimage limits and must report identical final statistics. Their
 private statistics grant no candidate or replay authority.
 
+The validation-only common scalar path applies the original scalar guards and
+updates the same occurrence statistics without constructing discarded tagged
+forms or integer decimal strings. Map keys and uncommon scalar or compound
+fallbacks retain the existing normalizer and its failure order. Emission uses
+one fixed 8,192-character writer buffer to batch UTF-8 encoder calls; closing
+the writer flushes its final partial buffer before digest completion. This
+bounded temporary buffer changes neither canonical bytes nor input capacity,
+and establishes no whole-input time or heap guarantee.
+
 The stream retains normalized keys and ordering data for the current map,
 rather than normalized values for the entire token vector. Compound keys and
 sets may still use the existing bounded normalizer; this is not a universal

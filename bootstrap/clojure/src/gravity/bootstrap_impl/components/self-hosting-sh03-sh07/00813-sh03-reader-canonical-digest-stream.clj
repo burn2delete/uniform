@@ -74,8 +74,9 @@
         (sh03-reader-canonical-stream-validate-value! source-path stats (inc depth) child)))
 
     :else
-    ;; Includes sets, every supported scalar and all unsupported domains.
-    (do (p15-s23-c6c10-canonical-form* source-path stats depth value) nil)))
+    ;; Common scalar values validate without allocating discarded forms.
+    ;; Sets, uncommon scalars and unsupported domains retain original fallback.
+    (sh03-reader-canonical-validate-scalar! source-path stats depth value)))
 
 (defn- sh03-reader-canonical-stream-validation! [source-path value]
   (let [stats (sh03-reader-canonical-stream-stats)]
@@ -161,8 +162,10 @@
     (str "sha256:"
          (digest/sha256-output-hex
           (fn [output]
-            (let [writer (java.io.OutputStreamWriter.
-                          output java.nio.charset.StandardCharsets/UTF_8)]
+            (let [writer (java.io.BufferedWriter.
+                          (java.io.OutputStreamWriter.
+                           output java.nio.charset.StandardCharsets/UTF_8)
+                          8192)]
               (try
                 (sh03-reader-canonical-stream-write! source-path value validated-stats writer)
                 (catch Throwable primary
