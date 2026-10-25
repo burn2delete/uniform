@@ -104,6 +104,14 @@
     (is (some seq (map :changed-ops decisions)))
     (is (some empty? (map :changed-ops decisions)))
     (is (= :complete (get-in artifact [:capability-based-proof :status])))
+    (is (not (contains? artifact :residual-cost-report)))
+    (is (not-any? #{:residual-cost-report} (get-in artifact [:pass :emits])))
+    (is (not (contains? (:capability-based-proof artifact) :residual-cost-visible?)))
+    (is (not (contains? (:c13-optimization-results artifact) :residual-cost-status)))
+    (doseq [check [:proof-evidence-present? :check-elision-proof?
+                   :effect-order-preserved? :safety-outcomes-current?
+                   :post-pass-verifiers-passed?]]
+      (is (true? (get-in artifact [:capability-based-proof check]))))
     (is (= (set shared/c13-optimization-diagnostic-ids)
            (set (map :diagnostic
                      (get-in artifact

@@ -15989,7 +15989,6 @@
     (is (every? #(= :gravity/mir-pass-contract (:artifact %)) contracts))
     (is (every? #(= :accepted (:status %))
                 (mapcat :proofs-used decisions)))
-    (is (= :complete (get-in artifact [:residual-cost-report :status])))
     (is (= :accepted (get-in artifact [:check-elision-record :status])))
     (is (= :accepted (get-in artifact [:effect-reordering-record :status])))
     (is (= :current
@@ -16010,7 +16009,6 @@
     (is (true? (:invalidations-recorded? proof)))
     (is (true? (:analysis-caches-recorded? proof)))
     (is (true? (:proof-evidence-present? proof)))
-    (is (true? (:residual-cost-visible? proof)))
     (is (true? (:check-elision-proof? proof)))
     (is (true? (:effect-order-preserved? proof)))
     (is (true? (:safety-outcomes-current? proof)))
@@ -16028,7 +16026,6 @@
     (is (= :complete (:invalidation-status conformance)))
     (is (= :complete (:analysis-cache-status conformance)))
     (is (= :complete (:proof-status conformance)))
-    (is (= :complete (:residual-cost-status conformance)))
     (is (= :complete (:post-pass-verifier-status conformance)))
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))

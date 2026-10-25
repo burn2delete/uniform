@@ -112,7 +112,6 @@
      :analysis-caches-recorded? (= (count contracts) (count (:analysis-cache-records artifact)))
      :proof-evidence-present?
      (every? #(some (fn [proof] (= :accepted (:status proof))) (:proofs-used %)) decisions)
-     :residual-cost-visible? (= :complete (get-in artifact [:residual-cost-report :status]))
      :check-elision-proof? (= :accepted (get-in artifact [:check-elision-record :status]))
      :effect-order-preserved? (= :accepted (get-in artifact [:effect-reordering-record :status]))
      :safety-outcomes-current? (= :current (get-in artifact [:safety-outcome-refresh-report :status]))
