@@ -289,6 +289,77 @@ checks, and which required semantics still need implementation. C17 cannot be
 inferred from this desk reconciliation; C18 must distinguish a bounded module
 migration from completion of the milestone's whole declared compiler subset.
 
+## C16 applicability after PR294-PR300
+
+This desk comparison binds main
+`0067e9418de992900a95cd47d016029af62ff99c`, tree
+`fd1eb88b8d72da3681f7393d982568b91ab602d1`. It preserves the historical
+assessment and reconciliation tables above. No compiler, source proof or
+composition was executed for this comparison. Source identity, a retained
+semantic result, loaded seed identity and stable migration acceptance are
+separate observations.
+
+All six selected owner sources, `p15_s23/compiler.gravity`,
+`p15_s23/emitter.gravity`, and both Gravity runtime files have identical blobs
+between `64aa890a` and this main. Five owner sources and rule DATA also match
+`2a94fb71`; the reader matches that later snapshot, not the original
+257161-byte historical reader pin. Checked-Core remains 538443 bytes with
+SHA-256 `6cb8631a0fb826868624bc8ca6f84370bccbb9206f302f53d523ded4266518fe`,
+including `44709ea9`'s duplicate-match-binding rejection, versus the
+537749-byte source in that snapshot. The emitter remains 1670330 bytes with
+SHA-256 `23d49699bf187d56714257f88056bc0805ed158c4a76e7ea85af660c41d39d9c`;
+its snapshot value was 1599698 bytes. These actual deltas remain relevant
+before PR294 and are not erased by unchanged bytes in PR294-PR300.
+
+| Selected dependency at `0067e941` | Identity and actual use | Applicability consequence |
+| --- | --- | --- |
+| Raw seed plan construction and generic execution | `00580-p15-s23-stage2-compiler-artifact-expected-artifact-hash.clj:165-169` sends the three-argument plan constructor to `plan-raw`; its function construction invokes `p15-s23-stage2-seed-compile-function`. `00874:3-13` and `00885:69-77` use this route for resolver/Core plans. The selected seed compiler and `00593` executor are unchanged since `64aa890a`. | PR298 does not alter this executed edge. Actual selected plan/function identities and primitive uses remain required inputs; an unchanged constructor is not a recorded plan result. |
+| Current reader and authentic parent/consumer adapters | `compiler/00884:8-15` retains the explicit reader through C3, SH05 and SH06. `00898:160-164` derives the authenticated Core request; `00894:140-155` verifies C5 and exact membership before invoking the Gravity builder and verifiers. These adapters and six owner blobs are unchanged since `64aa890a`. | Retain their located scoped behavior and original source/binding/origin checks. Historical default-pinned file intake does not become explicit current-reader intake; full-subject and required-variant evidence remains open. |
+| Compiler rule and emitter freshness | `backends/00644` derives the plan-emitter rule DATA from `compiler.gravity`. `00874:50-57` and `00885:118-128` separately hash current compiler/emitter bytes into resolver/Core freshness keys. | The rule variable named `emitter` is not execution of the full emitter lowering source. PR298 changes neither rule nor freshness bytes. Earlier emitter changes still prevent relabelling old context-bound results as a current cohort. |
+| PR298 typed lowering interface | Only `00581-p15-s23-stage2-compiler-artifact-binding.clj` and `00581-p15-s23-stage2-typed-lowering-operation.clj` change host source after `64aa890a`: blobs `cc96442e411f05d8978c3b0709c485afa1d79ff1` and `f8539db9b7233bc06f3c743f8307756d6555af90`. Typed four-argument calls retain the legacy fresh verifier; explicit five-argument calls select the policy-aware fresh verifier and unwrap its verification report. | These changed typed entrypoints are outside the preceding raw seed-plan edge. Their typed/source joins need their own affected evidence; they do not demonstrate semantic invalidation of every earlier frontend result. |
+| Complete loaded host-resource tree | `bootstrap/clojure/src/` changes from `5c9aac1b3a98e4ad1b1c2242a1769f73a2443352` at `64aa890a` to `6d09b4788df56c2a732f1bbbcdf867560cdabad6`. Both changed `00581` files are loaded by `load_order.edn`, even when this endpoint does not call their typed branches. | Complete seed/TCB identity is changed. Preserve the actual complete loaded closure for provenance; do not prune it to executed function names or reuse an old whole-tree authority identity. Semantic applicability can still be narrower than that loaded closure. |
+| Contracts, dependency options, tests and actual fixtures | `contracts/` remains tree `ad57372a977b12712e8600151f4ce6264643b3ab`; `deps.edn` remains blob `f05e98ad6df21dca09d9183a82cb8d0ec30c23de`. Test tree is `1adee0d8b602d38389105492637eef1764cc8f2c`; fixture tree is `d17a99740fe7d902489728bbace13d7f2a3fb105`. PR294 adds the loop-helper pair/test; PR295-PR297 change only the three held B51 sources and their dedicated test outside this selected endpoint. PR299-PR300 are design documents. | Bind exact selected fixture/callee/grant/test dependencies, not a passing directory count. The B51 repairs and design documents neither renew the six-owner cohort nor create an additional required ordinary source. Actual external compiler/classpath/environment identities remain missing. |
+
+The following applicability rows retain each evidence family's actual input
+and output boundary. Audit references mean
+`self-hosting-sh00-sh06-evidence-audit.md`; they locate recovered historical
+records, not new acceptance. The PR298 branch analysis above supplies a reason
+to retain unaffected semantic scope, not a replacement execution receipt.
+
+| Existing evidence family | Retained claim and input assumptions | Current missing or affected obligation |
+| --- | --- | --- |
+| E02 envelope; E03 reader; E04 syntax | Original descriptor/reader-policy/syntax-origin schemas, original compiled plans, fixtures, compiler and host dependencies; audit E02-E04 and its requirement map. The unchanged envelope/syntax source bytes and unchanged PR298 raw seed route give no reason to discard those original semantic results. | Current reader differs from the historical pin; selected current reader/plan/options, envelope/digest context and full seed provenance must match the actual claim. Source sameness alone supplies none of those joins. |
+| E05 macro corpus, `defn` census and Stage0 body comparison | Original 36-source/1276-definition final shards and their exact expansion/body/origin results; the five-owner and checked-Core source censuses separate executable macro positions from quoted DATA. Macro owner bytes are unchanged. | SH-05.1 and SH-05.6 remain partial OPEN. Changed subject bodies, reader/seed assumptions and generated-body/Core consumers require their actual selected occurrence and comparison rows. No new unsupported macro was established by this comparison. |
+| E06 resolution and import/privacy/alias/profile/capability negatives | Original 37-source shards and actual module-artifact/catalog/grant inputs; later scoped source4/from-parent checks retain their declared current-reader route. PR298 leaves the resolver and these adapters unchanged. | The current resolver remains development-unadmitted, distinct from its historical 77209-byte revision. SH-06.6 remains partial OPEN. Select actual imported callee artifacts where required; historical normalized or default-reader checks do not establish current full-source resolution. |
+| Five whole-source frontend subject results and E39/E41 | The audit locates the five separate subject runs at macro `baf3f246`, envelope `96aa2973`, syntax `e61b4fd9`, resolver `4db0dc57` and reader `2a4ea770`; each recorded 1/19 through hosted Stage0 C6. E39/E41 are older frozen source-proof endpoints. | Current hosted-C6 differs from the original cohorts through `00036`/`00038` and `gravity/c6_core_lowering{,/lowering}.clj`; current reader and earlier seed/freshness changes also need affected reasoning. No hosted result is execution of the Gravity Core builder or a continuous present acceptance chain. |
+| Checked-Core full-source question | Audit `Checked-Core composition: incomplete bounded attempt` retains `b99989e3` exit 143 and the last observed hosted-C6 boundary. | Still INCOMPLETE, not a semantic rejection or pass. The selected source changed through duplicate-binding handling; no missing counters, raw log or timing receipt is supplied by this comparison. C12 needs its own bounded current source-analysis/replay decision. |
+| PR266 two-definition hex composition | Candidate `020e5b59`, merge `ddef9c1a`, current-reader source4 -> genuine parents -> actual Gravity Core and public replay; 1/342 for its separate at-most-2-KiB G subject and coherent operand-order rejection. Retained `/tmp/sh03-hex-source-composition-v3-020e5b59-20261022.{log,edn}` corroborates that result. | Later Core/emitter/host context differs from that run. Preserve the helper semantic result and its own provenance; do not promote it to a full-reader, six-subject or current migration result. Failed V1/V2 stay failed. |
+| PR294 original loop-helper composition | Base `ae6acbe9`; `sh07_current_loop_helper_test.clj` copies the unchanged original helper to its own paired fixture, uses actual source4/C5/Gravity Core and rejects coherent target substitution with fresh template replay. Retained `/tmp/sh07-current-loop-helper-ae6acbe9-20261024-attempt1.{log,edn}` records 1/133. Test, pair, owner body, raw seed route and freshness inputs remain unchanged through `0067e941`. | Scoped behavior can be reused across PR298's unrelated typed branch delta. Its original loaded-host context stays explicit. G traversed those stages; Q had text parity only. Unchanged extension handling does not itself justify a duplicate Q run under the development guide's proportionality rule. This is not full-subject or migration evidence. |
+| PR298 caller-policy bridge | Frozen `1af5fd81`/tree `39ad9017`: actual rejection groups 1/19 and 1/17, plus conservation 15/135, in three separate runs. Raw files under `/Users/matt/.codex/artifacts/sh01-typed-lowering-work-policy-20261024/` include `public-policy-rejections-v1`, `public-join-rejections-v1`, `final-conservation-v1` logs and `conservation.edn`. | Bridge mocks prove data flow only. Positive V1/V2 aggregates remain failed; unchanged production and dependency comparison retains only their actually completed operations and assertions. The corrected positive selector remains unrun in this evidence. Neither this bridge nor its earlier input-construction probe establishes whole C8/runtime fit or C16 migration. |
+
+C16's actual upstream gap remains complete current-cohort applicability for
+SH-05.1, SH-05.6 and SH-06.6, including the selected full checked-Core subject
+and the actual Gravity Core consumer. The returned matrix is complete for
+this desk question; those requirements are not complete. No new small macro,
+resolver or extension defect is demonstrated here. The existing current-reader
+module-source/from-parent check in `sh06_resolution_adapter_test.clj` already
+tests genuine callee membership and stale/duplicate/missing artifacts at C5;
+inventing another import fixture without a selected required use would not
+close C16.
+
+As of `0067e941`, there is no additional ready C16 implementation leaf from
+this comparison. Reopen at ROOT's candidate-bound C01 occurrence/use/plan map
+and C12 full-source/consumer/resource selection, or at a concrete changed
+reader/adapter/primitive/import/policy edge. Then select the corresponding
+existing producer and consumer plus a stale/coherently substituted rejection;
+allocate only that demonstrated missing case and its proportionate resource
+scope. Do not repeat the old corpus or interrupted source method by count.
+Ordinary C02-C15 semantic development continues independently. C17 separately
+requires stable compiler artifacts, dependency/environment/provenance and
+BOOT5/BOOT7/BOOT8 comparison/TCB evidence with independent acceptance.
+The historical 39-S/three-P traceability and all failed/interrupted outcomes
+retain their original meanings; no C01-C18 task or migration status is closed.
+
 ## Per-owner evidence, use contracts and missing work
 
 Evidence references below are retained results, not tests run for this
