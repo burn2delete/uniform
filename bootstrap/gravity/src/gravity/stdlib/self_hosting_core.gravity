@@ -509,20 +509,26 @@
    :origin-chain (get request :origin-chain)})
 
 (defn sh22-accepted [request value facts]
-  {:artifact :gravity/sh22-library-result
-   :schema-version 1
-   :status :accepted
-   :request-id (get request :request-id)
-   :operation (get request :operation)
-   :value value
-   :facts facts
-   :identity-input (sh22-identity-input request)
-   :provenance
-   {:actual-source-path (get request :actual-source-path)
-    :source-span (get request :source-span)
-    :origin-chain (get request :origin-chain)}
-   :diagnostics []
-   :pending (get (sh22-library-policy) :pending)})
+  ; Identity wrapping can outgrow an input-valid carrier. Check the complete
+  ; envelope before publishing acceptance; this is not allocation preflight.
+  (let [candidate
+        {:artifact :gravity/sh22-library-result
+         :schema-version 1
+         :status :accepted
+         :request-id (get request :request-id)
+         :operation (get request :operation)
+         :value value
+         :facts facts
+         :identity-input (sh22-identity-input request)
+         :provenance
+         {:actual-source-path (get request :actual-source-path)
+          :source-span (get request :source-span)
+          :origin-chain (get request :origin-chain)}
+         :diagnostics []
+         :pending (get (sh22-library-policy) :pending)}]
+    (if (= :accepted (get (sh22-carrier-preflight candidate) :status))
+      candidate
+      (sh22-rejected request "STD10003" :result-carrier-bound-exceeded))))
 
 (defn sh22-index-valid? [values index]
   (if (integer? index)
