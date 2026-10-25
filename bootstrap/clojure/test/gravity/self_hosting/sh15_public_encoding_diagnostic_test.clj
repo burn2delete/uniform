@@ -63,8 +63,9 @@
              (is (= before (pr-str public)))
              (is (some #{:upstream-source-authentication} (:nonclaims result)))
              (let [view (c15 'sh15-render-bounded-diagnostic-text [candidate])]
-               (rejected view "C15-SCHEMA")
-               (is (= :unsupported-primary-location (get-in view [:diagnostics 0 :facts :reason]))))
+               (is (= :accepted (:status view)))
+               (is (= :bounded-ascii-bytes-v1 (:rendering-version view)))
+               (is (string? (:text view))))
              candidate)) ["gravity" "qst"])]
     (is (= (:diagnostic-id (first rows)) (:diagnostic-id (second rows))))))
 
