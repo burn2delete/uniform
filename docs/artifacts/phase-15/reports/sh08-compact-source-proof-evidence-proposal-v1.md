@@ -542,3 +542,194 @@ publishes a proposal. Implementation must satisfy the technical criteria in its
 allocated scope; any later governed admission separately follows the actual
 ledger and lifecycle rules. No imagined rejection history or permission-only
 hold is created by this document.
+
+## Superseding v3 whole-application layout candidate
+
+Status: report-only layout proposal for independent review, 2026-10-24.
+This section supersedes the retained v2 representation choice above. The
+preceding v2 proposal remains historical text, with its original scope and
+nonclaims. Neither version is an implemented public GIS capability. This
+revision changes this report only; it introduces no compiler hook, schema-3
+producer, wrapper, proof table, cache, runtime change or execution grant.
+
+### Retained v2 first-gate obstruction
+
+The local first-gate candidate is commit
+`e3ec4f54712a678373ee0fbe1a62bd9de60bf62b`, tree
+`b48d59325cdf20057de2256dad2139ac871e39e9`, based on the separate immutable
+compiler composite `9a564d28872558d71f7fa9f9292485a89614dd0b`. It is retained
+locally as a measurement worker, not a public semantic implementation or an
+authority dependency of this report. None of its unmerged compiler code is
+included in this report-only revision, whose base is main
+`c74236906c9a5a970e35602532ae7e1a69c23377`.
+
+On schema-shaped DATA with 71-character IDs, the actual Gravity fee worker
+and an independent Clojure physical-tree arithmetic oracle agreed:
+
+| v2 selected payment | Actual result |
+| --- | --- |
+| Physical output | Five complete descriptor occurrences, six nested witness occurrences including the constraint solution, 1348 atoms and 225 containers. |
+| Complete candidate validation B | 45591 = 31649 visits + 13942 bookkeeping. |
+| One full candidate comparison reservation W | 33975. |
+| Required B + W | 79566, exceeding the unchanged 65536 local ceiling by 14030. |
+| Actual refusal | `:compact-gis-candidate-comparison-work-limit`; completed 45591, comparison work 0, storage work 0. Fresh original-input reconstruction had not begun. |
+
+The fixture minimized source spans and origins. It was not an admitted source
+fixture or a numeric proof. Its 36622-byte observation is expanded `pr-str`
+UTF-8 output, despite the original scalar field's inaccurate use of the word
+`canonical`; no canonical serializer was invoked. The focused test passed
+19 assertions confirming the expected refusal, copy census, independent B/W,
+exact/minus-one validation payment and opaque-leaf refusal. Separate
+language-boundary checks passed 6 tests/11 assertions; structural checks found
+zero issues. These results establish neither cycle/nonfinite validation nor a
+completed GIS constructor or fresh semantic consumer. In particular, a generic
+`number?` fee walk is not a validator for Integer proof fields.
+
+The immutable raw observation is
+`/tmp/source-compact-gis2-first-payment-20261024a.log`, SHA-256
+`7c997d49cb6fbe114b731a70f7959f80d6782608b879c9f4a4743042eb00d6ad`.
+Its worksheet is
+`/tmp/source-compact-gis2-first-payment-worksheet-20261024a.edn`, SHA-256
+`ea712fa7a90311b9519694fb06622ee5de4588ea09788fb88d4000cd86106ffc`.
+The failed cap outcome remains failed. It refutes the selected v2 whole-packet
+B+W payment at that cap; it is not an impossibility proof for every typed
+comparison algorithm. No higher allowance or unchanged replay followed.
+
+### Closed v3 representation choice
+
+The candidate compacts the complete application rather than only its nested
+witness. Keep the existing semantic header, argument/parameter/result types,
+numeric mode, safety outcome, application/evaluation policy, effects,
+capabilities, profile, target and invalidation fields. Retain
+`:call-core-node-id` and add `:core-input`, equal to the actual original Core
+artifact identity. Remove exactly these seven outer duplicate fields:
+
+- `:operator-node-id`
+- `:operator-binding-id`
+- `:source`
+- `:operator-source`
+- `:source-call`
+- `:source-edge`
+- `:source-binding`
+
+Resolve those records afresh from the existing original Core, form and binding
+rows using `(core-input, call-core-node-id)`. This is an occurrence locator,
+not a certificate or an accepted-result handle. It introduces no shared output
+table, wrapper, context API, cross-invocation memo or proof-pool authority.
+The complete original request must still be available to every consumer.
+
+The nested `:range-proof` is exactly the following two-key map:
+
+```clojure
+{:domain :gravity/sh08-gis-source-witness-v3
+ :input-range [L U]}
+```
+
+`L` and `U` must be Integers, freshly derived and matched to the actual lower
+and upper literal occurrences. The enclosing application version fixes the
+rule, numeric mode, guard retention and no-check-elision semantics. The witness
+does not independently attest its own values. Owner, unannotated parameter,
+control topology, literal occurrences, ancestry, subtrahend and result range
+`[0, U-L]` are all independently derived from complete original input; they
+are not inferred from the supplied interval. Subtrahend must equal L and
+`0 <= L <= U <= 127` must hold at the original guarded then-arm occurrence.
+
+The application keeps kind
+`:gravity.type/applied-guarded-integer-subtraction` and has exact version
+`:sh08-guarded-integer-subtraction-v3`. That kind/version pair defines the v3
+application identity domain, with Core identity and call occurrence bound by
+its `:core-input` and `:call-core-node-id`; it cannot alias a v1/v2 layout.
+The constraint producer rule is `:sh08-guarded-integer-subtraction-v3`.
+Constraint and call-fact identity requests use respectively
+`:gravity/sh08-guarded-integer-subtraction-constraint-v3` and
+`:gravity/sh08-guarded-integer-subtraction-call-type-fact-v3`, binding the
+complete v3 application. Every physical application copy must agree.
+
+The constraint solution's small witness is valid only inside its enclosing
+constraint: its lhs call, dependency application, identity-request application
+and Core identity must match the fresh reconstruction. A detached witness,
+or a solution witness transplanted from another application, must reject.
+There is no standalone witness-acceptance operation. Missing/extra keys,
+removed v2 fields reintroduced into v3, wrong domains, mixed layouts and
+unknown versions reject before generic shape or empty-effect acceptance.
+Existing implemented numeric v1 families remain unchanged; the held GIS v1
+and proposed v2 do not acquire implemented compatibility status.
+
+### Fresh original-input and compatibility obligations
+
+Removing output copies removes no input obligations. Retain the complete
+three eight-row packets and all ten old readsets, including unread
+binding-context and nested metadata; complete physical scans and duplicate
+detection; source, parent/child, origin and generated-origin joins; exact
+operator spelling, package and binding; call/edge/owner and evaluation order;
+module profile/target/safety; literal types/values; mutation, recursion,
+reentry and recur-transfer exclusion; and every ancestry parent step.
+Preserve depth 128, width 1024 and all other existing bounds. No validation
+receipt, stored digest or previously accepted type result replaces that work.
+
+Each constructor and consumer invocation rebuilds its own paid indexes and
+matching facts from original rows. The candidate may name its target call,
+but its supplied interval cannot select a different owner, path or source
+readset. Parameter Integer facts must come from current literal typing and
+ordinary caller unification, not annotations, preseeded proof types or a
+declared result. Active numeric/coordinate/ID fields need their exact native
+domains before equality, hashing or rendering. NaN, infinity, ratios and
+fractional values cannot become Integers through the generic fee walker.
+Preserve the existing handling of unrelated/inactive canonical metadata.
+
+| Affected consumer | Required support or refusal before public v3 publication |
+| --- | --- |
+| C7 construction and fresh verifier | Reconstruct the complete original-input proof independently; bind the v3 domains and compare all physical candidate copies at a separately paid budget. No public dispatch or schema-3 hook is implemented by this report. |
+| Three-argument Effects/C8 body route | Use the full original request already carried in the authenticated binding preimage. Preserve exact typed/identity projections and reconstruct source/owner/evaluation/effect joins, including the removed outer fields. No new API is needed. |
+| Detached two-argument C8 pure adapter | Explicitly reject v3 because it lacks original source context; supplied verification and self-consistent identities are insufficient. |
+| Development emitter/lowering | Use the existing original typed-input request and fresh observation to reconstruct source joins; reject unsupported v3 before field absence can fall through generic lowering. Retain original runtime guards and evaluation behavior. |
+| Existing schema-3 identity/typed-core projections | Preserve complete versioned content or reject explicitly. Unknown/mixed layout fences precede any generic call-fact or pure-effect acceptance. A projection incompatibility is a concrete stopping result, not permission to strip fields. |
+
+### Static layout estimate and first technical gates
+
+An independent read-only planner supplied the following calculation for its
+minimal v3 DATA layout. It is an UNEXECUTED layout calculation, not an actual
+Gravity result, source cost, accepted packet, fee certificate or fit claim.
+
+| Static planner component | Unexecuted units |
+| --- | --- |
+| Candidate B | 9580 |
+| Full candidate comparison W | 6622 |
+| B + W | 16202 |
+| B + W plus expected-output storage W | 22824 |
+| Maximum remainder from 65536 before all other work | 42712 |
+
+The remaining work still includes original-input validation and matching,
+scan/index/projection construction, numeric derivation, all output
+materialization, full fresh reconstruction and bookkeeping not counted in
+that subtotal. The estimate cannot establish that these fit the remainder.
+The actual implemented layout must reproduce or correct every number, count
+every physical copy and preserve all source obligations before a fit claim.
+Host sharing or smaller diagnostic printing pays no logical work.
+
+First independently review this closed layout and all affected consumer
+fences. Only then implement one standalone constructor and fresh consumer in
+the allocated semantic slice. Their first executed technical gate uses full
+original canonical payloads and 71-character IDs, with separate budgets
+`min(remaining, 65536)` for construction and consumption. Publish complete
+B/W, scan/index/projection/field-match/arithmetic/construction/storage fees,
+completed versus required payment, all physical copy paths, expanded output
+counts and exact/minus-one refusal before unpaid operations. No cap growth,
+automatic search, accepted-context cache or keyword-only primary fit witness.
+
+Accepted minimum and nontrivial intervals must precede a capability claim;
+hostile and coherent-transplant cases must cover wrong source/owner/arm,
+binding/package/call/edge/evaluation, literals and Integer facts, mutation and
+reentry, duplicate/dangling references, extra/unknown/mixed versions,
+ancestry cycles, depth/width excess and opaque leaves without unpaid
+callbacks. Keep unchanged adjacent numeric and local-call controls. Compare
+the actual emitted local packet against an independently authored expanded
+reference from the same matched inputs. Do not simulate whole public-result
+acceptance or reduction before its actual integration boundary is tested.
+
+If complete original matching or full fresh comparison exhausts the fixed
+cap, retain that exact frontier and stop for ROOT's bounded technical scope
+decision. Review of this report grants no alternate code, extra measurement
+JVM, source replay, held GIS execution, migration or release authority. Future
+ordinary implementation depends on the reviewed layout and actual complete
+fees, not a new human permission label.
