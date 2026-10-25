@@ -79,7 +79,9 @@
    :effects effects
    :capabilities capabilities
    :allocation allocation
-   :errors errors
+   :errors (if (contains? (set errors) "STD10003")
+             errors
+             (conj errors "STD10003"))
    :profiles profiles})
 
 (defn sh22-module-manifest []
@@ -488,13 +490,30 @@
    :remediation :use-bounded-checked-capability-explicit-library-operation})
 
 (defn sh22-rejected [request rule reason]
-  {:artifact :gravity/sh22-library-result
-   :schema-version 1
-   :status :rejected
-   :request-id (get request :request-id)
-   :operation (get request :operation)
-   :diagnostics [(sh22-diagnostic request rule reason)]
-   :pending (get (sh22-library-policy) :pending)})
+  (let [candidate
+        {:artifact :gravity/sh22-library-result
+         :schema-version 1
+         :status :rejected
+         :request-id (get request :request-id)
+         :operation (get request :operation)
+         :diagnostics [(sh22-diagnostic request rule reason)]
+         :pending (get (sh22-library-policy) :pending)}]
+    (if (= :accepted (get (sh22-carrier-preflight candidate) :status))
+      candidate
+      ; A redacted refusal carries no request-identity proof. Retain provenance
+      ; when it fits; otherwise report an explicitly unbound fixed diagnostic.
+      (let [redacted
+            (assoc candidate :request-id nil
+                   :diagnostics
+                   [(sh22-diagnostic
+                     (assoc request :request-id nil)
+                     "STD10003" :request-identity-carrier-bound-exceeded)])]
+        (if (= :accepted (get (sh22-carrier-preflight redacted) :status))
+          redacted
+          (assoc candidate :request-id nil :operation nil
+                 :diagnostics
+                 [(sh22-diagnostic
+                   {} "STD10003" :diagnostic-carrier-bound-exceeded)]))))))
 
 (defn sh22-identity-input [request]
   {:artifact (get request :artifact)
@@ -509,20 +528,26 @@
    :origin-chain (get request :origin-chain)})
 
 (defn sh22-accepted [request value facts]
-  {:artifact :gravity/sh22-library-result
-   :schema-version 1
-   :status :accepted
-   :request-id (get request :request-id)
-   :operation (get request :operation)
-   :value value
-   :facts facts
-   :identity-input (sh22-identity-input request)
-   :provenance
-   {:actual-source-path (get request :actual-source-path)
-    :source-span (get request :source-span)
-    :origin-chain (get request :origin-chain)}
-   :diagnostics []
-   :pending (get (sh22-library-policy) :pending)})
+  ; Identity wrapping can outgrow an input-valid carrier. Check the complete
+  ; envelope before publishing acceptance; this is not allocation preflight.
+  (let [candidate
+        {:artifact :gravity/sh22-library-result
+         :schema-version 1
+         :status :accepted
+         :request-id (get request :request-id)
+         :operation (get request :operation)
+         :value value
+         :facts facts
+         :identity-input (sh22-identity-input request)
+         :provenance
+         {:actual-source-path (get request :actual-source-path)
+          :source-span (get request :source-span)
+          :origin-chain (get request :origin-chain)}
+         :diagnostics []
+         :pending (get (sh22-library-policy) :pending)}]
+    (if (= :accepted (get (sh22-carrier-preflight candidate) :status))
+      candidate
+      (sh22-rejected request "STD10003" :result-carrier-bound-exceeded))))
 
 (defn sh22-index-valid? [values index]
   (if (integer? index)

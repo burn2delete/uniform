@@ -1,0 +1,26 @@
+(ns gravity.self-hosting.sh22.result-carrier.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-result-carrier-request sh22-result-carrier-depth-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-result-carrier-request []
+  {:artifact :gravity/sh22-library-request
+   :request-id :coordinator/result-carrier
+   :profile :meta
+   :experimental-opt-in true
+   :operation :vector-append
+   :arguments [[] :leaf]
+   :effects #{:memory/allocate}
+   :capabilities #{}
+   :allocation-policy :bounded-by-result
+   :source-span {:source-id :coordinator/result-carrier :start 0 :end 64}
+   :origin-chain [{:kind :source :source-id :coordinator/result-carrier}]
+   :actual-source-path "fixtures/coordinator-result-carrier.gravity"})
+
+(defn sh22-result-carrier-depth-request [depth]
+  (let [payload (loop [index 0 result :leaf]
+                  (if (= index depth) result (recur (+ index 1) [result])))]
+    (assoc (sh22-result-carrier-request) :arguments [[] payload])))
