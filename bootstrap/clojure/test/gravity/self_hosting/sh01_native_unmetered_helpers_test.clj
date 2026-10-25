@@ -397,3 +397,53 @@
       (is (= expected
              (failure #(sealed-rejection-data (assoc diagnostic :origin-chain origin))))))
     (is (zero? @calls))))
+
+(defn- foreign-list-tail [deny]
+  (Proxy/newProxyInstance (.getClassLoader clojure.lang.ISeq)
+    (into-array Class [clojure.lang.ISeq clojure.lang.IPersistentList clojure.lang.IObj])
+    (reify InvocationHandler (invoke [_ _ _ _] (deny)))))
+
+(deftest native-canonical-list-domain-does-not-admit-cons-or-force-foreign-tails
+  (let [calls (atom 0) deny (fn [] (swap! calls inc) (throw (AssertionError. "list tail callback")))
+        lazy-tail (lazy-seq (deny) (list :unreachable))
+        foreign (foreign-list-tail deny)
+        finite-cons (clojure.lang.Cons. :head (list :tail))
+        lazy-cons (clojure.lang.Cons. :head lazy-tail)
+        foreign-cons (clojure.lang.Cons. :head foreign)
+        malformed-list (field! (list :head :tail) "_rest" foreign)]
+    (doseq [value [finite-cons lazy-cons foreign-cons]]
+      (is (false? (list? value)))
+      (is (= :canonical-value-domain (failure #(record value))))
+      (is (= :canonical-value-domain (failure #(input value)))))
+    (is (= {:status :passed} (check finite-cons)))
+    (doseq [value [lazy-cons foreign-cons]]
+      (is (= :untrusted-list-tail-class (:reason (check value)))))
+    (is (= :exact-persistent-list-class (failure #(record malformed-list))))
+    (is (= :exact-persistent-carrier-class (failure #(input malformed-list))))
+    (is (= [:list [[:keyword nil "head"] [:keyword nil "tail"]]]
+           (:form (record (list :head :tail)))))
+    (is (= {:status :passed} (input (list :head :tail))))
+    (is (zero? @calls))))
+
+(deftest native-private-list-cursor-uses-raw-cons-tail-after-exact-class-check
+  ;; Cons is not in the public canonical domain. This explicit private-helper
+  ;; domain override tests its advance operation without changing that policy.
+  (let [calls (atom 0) deny (fn [] (swap! calls inc) (throw (AssertionError. "raw tail callback")))
+        lazy-tail (lazy-seq (deny) (list :unreachable))
+        foreign (foreign-list-tail deny)
+        finite (clojure.lang.Cons. :head (list :tail))
+        cyclic (clojure.lang.Cons. :head nil)
+        classes (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-list-classes)
+        cursor (deref (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-list-items))]
+    (field! cyclic "_more" cyclic)
+    (with-redefs-fn {classes (conj @classes "clojure.lang.Cons" (.getName (class foreign)))}
+      (fn []
+        (is (= [:head :tail] (cursor path finite)))
+        (is (= [:head :tail] (cursor path (list :head :tail))))
+        (doseq [value [(clojure.lang.Cons. :head lazy-tail)
+                       (clojure.lang.Cons. :head foreign)]]
+          (is (= :exact-persistent-list-class (failure #(cursor path value)))))
+        (is (= :cyclic-canonical-carrier (failure #(cursor path cyclic))))
+        (is (= :metadata-free-canonical-value
+               (failure #(cursor path (with-meta (clojure.lang.Cons. :head lazy-tail) {:present true})))))))
+    (is (zero? @calls))))
