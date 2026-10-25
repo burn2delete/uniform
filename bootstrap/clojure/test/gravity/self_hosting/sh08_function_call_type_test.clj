@@ -22377,7 +22377,7 @@
                 (set? form) [(+ 1 (* 64 (count form))) 0]
                 (not (seq? form)) [1 0]
                 :else
-                (let [[op & args] form base (add [(inc (count args)) 0] (sum (map cost args)))]
+                (let [[op & args] form base (delay (add [(inc (count args)) 0] (sum (map cost args))))]
                   (case op
                     if (add [1 0] (cost (first args))
                             (mapv max (cost (second args)) (cost (nth args 2))))
@@ -22391,9 +22391,9 @@
                                 (if (= 'pending (first bindings)) dispatch [(first dispatch) (first dispatch)])))
                     recur (add [(inc (* 2 (count args))) 0] (sum (map cost args)))
                     (cond
-                      (contains? helpers op) (add base (function-cost op))
+                      (contains? helpers op) (add @base (function-cost op))
                       (contains? primitives op)
-                      (add base (case op get [33 0] assoc [35 0] contains? [64 0]
+                      (add @base (case op get [33 0] assoc [35 0] contains? [64 0]
                                       conj [33 0] vec [8 8] bootstrap-native-carrier-header [64 0]
                                       = [2 0] list [(count args) 0] [1 0]))
                       :else (throw (ex-info "Unassigned verifier source operation" {:op op :target target})))))))
@@ -22410,19 +22410,19 @@
         left (array-map :key 1)
         right (sorted-map "key" 1)
         metadata (with-meta [:ordinary] {:inactive (Object.)})
-        samples [[nil nil true] [[1 2] '(1 2) false] ['(1 2) (cons 1 (list 2)) true]
+        samples [[nil nil true] [[1 2] (list 1 2) false] [(list 1 2) (cons 1 (list 2)) true]
                  [{:a [1 2] :b #{:x :y}} (array-map :b #{:y :x} :a [1 2]) true]
                  [left right false] [right left false]
                  [{[1 :x] {:a 2}} {(list 1 :x) {:a 2}} false]
                  [{#{:x :y} :value} {#{:y :x} :value} true]
-                 [#{[1] '(2)} #{[1] '(2)} true]
+                 [(hash-set [1] (list 2)) (hash-set [1] (list 2)) true]
                  [{:a 1} {:a 2} false] [1 1N true] [1 1.0 false]]]
     ;; Raw host equality can throw for individually native Map values.
     (is (thrown? ClassCastException (= left right)))
     (doseq [[a b equal?] samples]
       (let [result (run a b allowance) exact (:work-count result)
             repeated (run a b exact) short (run a b (dec exact))]
-        (is (= [:accepted equal?] ((juxt :status :equal?) result)))
+        (is (= [:accepted equal?] ((juxt :status :equal?) result)) (pr-str (dissoc result :arena)))
         (is (= result repeated))
         (is (= [:rejected :verification-work-limit] ((juxt :status :reason) short)))
         (is (< (:completed-work-count short) (:work-count short)))))
