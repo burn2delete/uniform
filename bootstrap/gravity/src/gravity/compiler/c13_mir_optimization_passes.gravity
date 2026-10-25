@@ -1504,7 +1504,7 @@
              :unchanged-instructions-joins-fact-check-and-proof-tables] (get report :checks))
          (= [] (get report :diagnostics))
          (= [:generic-c11-verifier :generic-optimization-verifier
-             :independent-acceptance :optimized-execution :c14-credit
+             :independent-acceptance :optimizer-credit :admission-credit :optimized-execution :c14-credit
              :backend-credit :release-credit :self-hosted?] (get report :nonclaims))]) false) false))
 
 (defn sh16-c13-build-literal-bool-translation-validation [before original-evidence after report]
@@ -1528,6 +1528,7 @@
                     :translation-validation-status :passed
                     :translation-validation-scope :original-zero-arity-literal-bool-diamond
                     :post-pass-report report
+                    :clojure-seed-boundary? true :self-hosted? false
                     :pass-contract
                     {:pass-id :sh16-literal-bool-branch-specialization :family :branch-simplification :version 1
                      :input-ir :gravity/mir :output-ir :gravity/mir
@@ -1545,6 +1546,7 @@
                                        :verifier-result :passed :verifier-scope :literal-bool-branch-specialization)
                     :pending [:public-mir-admission :proof-dominance-replay :target-lowering]
                     :nonclaims [:authentication :freshness :public-admission :independent-acceptance
+                                :optimizer-credit :admission-credit
                                 :generic-c11-verification :generic-translation-validation
                                 :optimized-execution :target-lowering :native-execution
                                 :migration :release :self-hosted?]) rejected) rejected) rejected)) rejected) rejected) rejected)))

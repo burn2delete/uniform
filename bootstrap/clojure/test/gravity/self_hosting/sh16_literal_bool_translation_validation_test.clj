@@ -35,6 +35,8 @@
     (is (= :constructed-unverified (:status result)))
     (is (= :passed (:translation-validation-status result)))
     (is (= [:pending :not-admitted] ((juxt :verification-status :admission-status) result)))
+    (is (= [true false] ((juxt :clojure-seed-boundary? :self-hosted?) result)))
+    (is (every? (set (:nonclaims result)) [:optimizer-credit :admission-credit :public-admission]))
     (is (= after (:candidate-mir result)))
     (is (= output-report (:post-pass-report result)))
     (is (= 1 (get-in result [:pass-contract :version])))
