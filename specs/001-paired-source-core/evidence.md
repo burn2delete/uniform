@@ -40,16 +40,35 @@ and historical C13 4/72 result do not replace the final reported scope.
 
 ## Unrun and remaining
 
-No compiler/JVM tests, raw receipt authentication, fresh proof candidate, six-owner
+No compiler semantic tests, raw receipt authentication, fresh proof candidate, six-owner
 occurrence census, native execution, release/self-hosting checks or merge were
 performed here. A later metadata read observed PR356 merged at 2026-10-25 18:40:11 UTC,
 merge `228da8a6f179399625c23b3b3770a65742bccc4e`, final head `c3fe9022`.
 The initial `700e2929` results above remain historical, not final-head evidence.
 This pilot did not perform that review or integration. Adoption PR371 still
-awaits Deus review/integration. No reviewer wake was requested. A fresh Codex process must still confirm
-local skill discovery and `$speckit-*` chat invocation; no `codex` executable is
-available in this execution environment, so only generated-file/helper behavior
-is observed. No autonomous `workflow run` was attempted.
+awaits Deus review/integration. No reviewer wake was requested. The initial
+execution environment lacked a `codex` executable; its recorded checks therefore
+covered generated files and helpers. The later fresh-task observation below
+adds narrower discovery/instruction-use evidence. Literal `$speckit-*` command
+parsing and a full workflow remain untested. No autonomous `workflow run` was
+attempted. Lightweight Clojure/JVM repository checks did run, as recorded below.
+
+## Fresh-task observation
+
+Deus and the assigned local executor reported a supported fresh local task on
+exact `8b9ab88a13a10392fb7c86908b7f5ed8f73365bb`, in managed worktree `22a5`.
+All ten skill metadata entries were automatically present before filesystem
+reads. The task selected `speckit-analyze`, read its complete `SKILL.md`, and
+used its instructions for read-only analysis. No CLI installation, repository
+writes or tests were performed by that probe. The large workflow-context read
+had a reported truncation limitation.
+
+Evidence task: `01a1746d-2236-7772-8b80-3abc61a2c28c`.
+Evidence turn: `01a1746d-236f-7ba1-ac3b-1dfeea97a48b`.
+This attributed observation supports metadata auto-discovery and instruction
+use. It does not establish literal command-parser behavior, a full workflow,
+compiler correctness or full adoption. The earlier 78 scaffold checks and
+6-test/11-assertion language-boundary result retain their original scope.
 
 ## Outcome authority
 

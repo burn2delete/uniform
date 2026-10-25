@@ -64,9 +64,12 @@ separate policy decision from Deus.
 ## Use in Codex
 
 Start/reload a Codex session rooted in this checkout to discover local skills.
-This execution environment has no `codex` executable; fresh discovery and chat
-runtime dispatch are unrun. The generated skill files were read and followed
-manually for the pilot; no model-dispatch test is claimed.
+The initial execution environment had no `codex` executable; generated skill
+files were read and followed manually for the pilot. A later supported fresh
+local task on exact `8b9ab88a` automatically discovered all ten skills before
+filesystem reads and used the read-only `speckit-analyze` instructions. See
+[the attributed observation](../specs/001-paired-source-core/evidence.md#fresh-task-observation).
+Literal `$speckit-*` command parsing and a full workflow remain untested.
 
 In Codex chat (not the shell):
 

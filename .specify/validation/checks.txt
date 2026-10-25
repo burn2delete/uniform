@@ -24,3 +24,11 @@ local evaluation; the source commit alone is not a transitive dependency lock.
 Unrun: fresh Codex discovery/chat invocation, compiler/JVM semantic tests,
 PR356 raw log authentication, independent adoption acceptance, merge.
 No automatic workflow/hook/scheduler or external service was enabled.
+
+Later attributed observation (not a rerun of these checks): a supported fresh
+local task on exact 8b9ab88a automatically discovered all ten skills before
+filesystem reads and used read-only speckit-analyze instructions. See the pilot
+evidence.md section "Fresh-task observation" for task/turn identities and limits.
+Literal command-parser and full-workflow behavior remain untested. Lightweight
+Clojure/JVM repository checks above did run; no compiler semantic/heavy proof run
+is claimed. Earlier checks and their original unrun disclosures remain historical.
