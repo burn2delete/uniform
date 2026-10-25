@@ -10088,11 +10088,13 @@
                  sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes
                  sh08-gis3-cold-entry sh08-gis3-entry-semantic-work
                  sh08-gis3-numeric-source sh08-gis3-numeric-semantic-work
-                 sh08-gis3-produce-product sh08-gis3-product-semantic-work sh08-gis3-output-reservation}
+                 sh08-gis3-produce-product sh08-gis3-product-semantic-work sh08-gis3-output-reservation
+                 sh08-gis3-consume-product sh08-gis3-candidate-semantic-work sh08-gis3-kind-comparison-work sh08-gis3-products-equal?}
         separately-paid '#{sh08-gis3-index sh08-gis3-original-readsets sh08-gis3-data-tallies
                           sh08-gis3-complete-data-tallies sh08-gis3-entry-complete-data
                           sh08-gis3-entry-original-data sh08-gis3-entry-indexes sh08-gis3-entry-unify sh08-gis3-numeric-match
-                          sh08-gis3-reconstruct-product sh08-gis3-complete-source-payment}
+                          sh08-gis3-reconstruct-product sh08-gis3-complete-source-payment sh08-gis3-produce-product
+                          sh08-gis3-candidate-valid? sh08-gis3-same-data-kinds?}
         metrics [:steps :field-gets :equalities :cells :map-writes :set-tests]
         zero (zipmap metrics (repeat [0 0 0])) cache (atom {}) result-assocs (atom [])]
     (letfn [(plus [a b] (mapv + a b))
@@ -10156,7 +10158,7 @@
                                (sum (map #(cost owner % remaining) args)))
                     (let [base (add (unit :steps 1) (unit :cells (count args))
                                     (sum (map #(cost owner % remaining) args)))]
-                      (if (and (contains? '#{sh08-gis3-source-payment sh08-gis3-complete-source-payment sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-cold-entry sh08-gis3-numeric-source sh08-gis3-produce-product} owner)
+                      (if (and (contains? '#{sh08-gis3-source-payment sh08-gis3-complete-source-payment sh08-gis3-entry-original-data sh08-gis3-entry-complete-data sh08-gis3-entry-indexes sh08-gis3-cold-entry sh08-gis3-numeric-source sh08-gis3-produce-product sh08-gis3-consume-product} owner)
                                (contains? separately-paid op))
                         (add base (unit :steps (+ 8 (* 4 (count args)))) (unit :cells (* 2 (count args))))
                       (if (contains? owned op) (add base (function-cost op))
@@ -21833,7 +21835,7 @@
                                  :else (recur))))))
         primitives '#{integer? >= > + - * = count first rest get map? vector? set? list?
                       boolean? keyword? symbol? string? number? char? list conj vec
-                      bootstrap-symbol-utf16-unit-count}]
+                      bootstrap-symbol-utf16-unit-count contains?}]
     (letfn [(add [& values] (reduce #(mapv + %1 %2) [0 0] values))
             (sum [values] (apply add values))
             (scale-width [[a b]]
@@ -21861,10 +21863,14 @@
                     (do (when-not (contains? primitives op)
                           (throw (ex-info "Unassigned complete DATA operation" {:op op})))
                         (add base (case op vec [8 8] bootstrap-symbol-utf16-unit-count [64 0]
-                                        = [2 0] conj [1 0] rest [1 0] get [1 0] list [(count args) 0] [1 0])))))))]
+                                        = [2 0] conj [1 0] rest [1 0]
+                                        get [(if (= target 'sh08-gis3-same-data-kinds?) 2051 1) 0]
+                                        contains? [2051 0] list [(count args) 0] [1 0])))))))]
       {:dispatch-control-polynomial (add [(+ 8 (* 6 (count (nth definition 2)))) 0]
                                          (sum (map cost (drop 3 definition))))
-       :source-function target :reserved-control-polynomial [4096 256] :opaque-children #{}}))))
+       :source-function target
+       :reserved-control-polynomial (if (= target 'sh08-gis3-same-data-kinds?) [65536 65536] [4096 256])
+       :opaque-children #{}}))))
 
 (deftest sh08-gis3-comparison-cursor-control-development-kernel
   (let [audit (gis3-complete-data-control-work-model 'sh08-gis3-comparison-data?)

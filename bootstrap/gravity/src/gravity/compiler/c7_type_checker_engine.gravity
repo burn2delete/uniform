@@ -3324,6 +3324,7 @@
                 (recur tail) false))))))))
 
 (defn sh08-gis3-source-span? [span]
+  (if (if (map? span) (= 8 (count span)) false)
   (if (sh08-gis3-keyword-record? span)
     (if (= #{:byte-start :byte-end :line-start :column-start :line-end :column-end :scalar-start :scalar-end} (set (keys span)))
       (if (loop [fields [:byte-start :byte-end :line-start :column-start :line-end :column-end :scalar-start :scalar-end]]
@@ -3333,7 +3334,7 @@
         (sh08-ft-all-true? [(<= (get span :byte-start) (get span :byte-end))
                            (<= (get span :scalar-start) (get span :scalar-end))
                            (<= 1 (get span :line-start)) (<= (get span :line-start) (get span :line-end))
-                           (<= 1 (get span :column-start)) (<= 1 (get span :column-end))]) false) false) false))
+                           (<= 1 (get span :column-start)) (<= 1 (get span :column-end))]) false) false) false) false))
 
 (defn sh08-gis3-source-match? [node form]
   (let [source (get node :source)]
@@ -3585,9 +3586,11 @@
     (loop [i 0]
       (if (= i (count ids)) true
         (let [row (get order i)]
+          (if (if (map? row) (= 2 (count row)) false)
           (if (sh08-gis3-keyword-record? row)
             (if (integer? (get row :index))
-              (if (= {:index i :core-node-id (get ids i)} row) (recur (+ i 1)) false) false) false)))) false))
+              (if (sh08-pc-id? (get row :core-node-id))
+                (if (= {:index i :core-node-id (get ids i)} row) (recur (+ i 1)) false) false) false) false)))) false))
 
 (defn sh08-gis3-entry-call? [core indexes header census call]
   (let [nodes (get indexes :nodes) bindings (get indexes :bindings) forms (get indexes :forms)
@@ -4217,9 +4220,96 @@
 (defn sh08-gis3-candidate-valid? [candidate]
   (if (sh08-gis3-comparison-data? candidate) (sh08-gis3-product-shape? candidate) false))
 
+(defn sh08-gis3-same-data-kinds? [expected candidate]
+  ; Both complete DATA values have already been paid. Every Map key in this
+  ; comparison domain is a Keyword. Traverse physical copies even when host
+  ; objects are shared; List and Vector are distinct canonical carriers.
+  (loop [pending (list [expected candidate])]
+    (if (= 0 (count pending)) true
+      (let [pair (first pending) left (get pair 0) right (get pair 1) tail (rest pending)]
+        (if (map? left)
+          (if (if (map? right) (= (count left) (count right)) false)
+            (let [entries (vec left)
+                  next (loop [i 0 out tail]
+                         (if (= i (count entries)) out
+                           (let [entry (get entries i) key (get entry 0)]
+                             (if (keyword? key)
+                               (if (contains? right key)
+                                 (recur (+ i 1) (conj out [(get entry 1) (get right key)])) nil) nil))))]
+              (if (list? next) (recur next) false)) false)
+          (if (if (vector? left) true (list? left))
+            (if (if (vector? left) (vector? right) (list? right))
+              (if (= (count left) (count right))
+                (let [left-items (vec left) right-items (vec right)]
+                  (recur (loop [i 0 out tail]
+                           (if (= i (count left-items)) out
+                             (recur (+ i 1) (conj out [(get left-items i) (get right-items i)])))))) false) false)
+            (if (set? left) false
+              (if (if (= nil left) (= nil right)
+                    (if (boolean? left) (boolean? right)
+                      (if (keyword? left) (keyword? right)
+                        (if (symbol? left) (symbol? right)
+                          (if (string? left) (string? right)
+                            (if (char? left) (char? right)
+                              (if (integer? left) (integer? right)
+                                (if (number? left) (if (number? right) (= false (integer? right)) false) false))))))))
+                (recur tail) false))))))))
+
 (defn sh08-gis3-products-equal? [expected candidate]
   ; The owning consumer prepays max(W(expected),W(candidate)) before this call.
   (= expected candidate))
+
+(defn sh08-gis3-candidate-semantic-work [d]
+  (+ 275646674 (* 4393 d)))
+
+(defn sh08-gis3-kind-comparison-work [d]
+  (+ 65536 (* 65536 d)))
+
+(defn sh08-gis3-consume-product [core binding-rows form-rows target candidate budget]
+  ; Candidate DATA and shape pay first. Expected semantics and all original
+  ; indexes/readsets are then rebuilt in this invocation with its own pool.
+  ; No producer receipt, prior work count or supplied verification is input.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [reserved (+ 512 4194304)]
+      (if (> reserved budget)
+        {:status :rejected :reason :compact-gis-consumer-work-limit :work-count reserved :completed-work-count 0}
+        (let [checked (sh08-gis3-complete-data-tallies candidate (- budget reserved))
+              candidate-work (+ reserved (get checked :work-count))]
+          (if (= :accepted (get checked :status))
+            (let [candidate-W (get checked :comparison-bound-work)
+                  d (+ 64 (* 2 candidate-W)) shape-work (sh08-gis3-candidate-semantic-work d)
+                  shaped (+ candidate-work shape-work)]
+              (if (> shaped budget)
+                {:status :rejected :reason :compact-gis-consumer-work-limit :stage :candidate-shape
+                 :work-count shaped :completed-work-count candidate-work}
+                (if (sh08-gis3-candidate-valid? candidate)
+                  (let [expected (sh08-gis3-produce-product core binding-rows form-rows target (- budget shaped))
+                        used (+ shaped (get expected :work-count))]
+                    (if (= :constructed (get expected :status))
+                      (let [expected-W (get (get expected :fees) :output-storage)
+                            comparison (if (> expected-W candidate-W) expected-W candidate-W)
+                            compare-d (+ 64 (* 2 comparison)) kind-work (sh08-gis3-kind-comparison-work compare-d)
+                            required (+ used kind-work comparison)]
+                        (if (> required budget)
+                          {:status :rejected :reason :compact-gis-consumer-work-limit :stage :product-comparison
+                           :work-count required :completed-work-count used}
+                          (if (sh08-gis3-same-data-kinds? (get expected :product) candidate)
+                            (if (sh08-gis3-products-equal? (get expected :product) candidate)
+                              {:status :accepted :type :gravity.type/integer :work-count required :completed-work-count required
+                               :fees {:surrounding reserved :candidate-DATA (get checked :work-count) :candidate-shape shape-work
+                                      :fresh-reconstruction (get expected :work-count) :kind-comparison kind-work :value-comparison comparison}
+                               :fresh-original-reconstruction true :numeric-proof-established false}
+                              {:status :rejected :reason :compact-gis-v3-candidate-mismatch :stage :product-value
+                               :work-count required :completed-work-count required})
+                            {:status :rejected :reason :compact-gis-v3-candidate-kind-mismatch :stage :product-kinds
+                             :work-count required :completed-work-count required})))
+                      {:status :rejected :reason (get expected :reason) :stage :fresh-original-source
+                       :work-count used :completed-work-count (+ shaped (get expected :completed-work-count))}))
+                  {:status :rejected :reason :compact-gis-v3-candidate-required :stage :candidate-shape
+                   :work-count shaped :completed-work-count shaped})))
+            {:status :rejected :reason (get checked :reason) :stage :candidate-DATA
+             :work-count candidate-work :completed-work-count (+ reserved (get checked :completed-work-count))}))))
+    {:status :rejected :reason :compact-gis-invalid-work-allowance :work-count 0 :completed-work-count 0}))
 
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.
