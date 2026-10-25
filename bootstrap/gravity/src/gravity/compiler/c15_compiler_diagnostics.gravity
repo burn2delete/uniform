@@ -1204,7 +1204,8 @@
 (defn sh15-text-source-path [span]
   (if (sh15-source-span-valid? span)
     (get span :actual-source-path)
-    (if (c15-reader-span-valid? span true)
+    (if (if (c15-reader-span-valid? span true) true
+          (c15-public-reader-span-valid? span))
       (if (<= (count (get span :source)) 512) (get span :source) nil)
       nil)))
 
