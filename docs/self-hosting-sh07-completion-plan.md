@@ -27,6 +27,15 @@ No task is closed by this documentation update.
 
 ## Purpose and authority
 
+Deus `01a172c9-3648-702c-b7ac-03dab5501018` is the sole current coordinator
+for goals, priorities, cross-owner dependencies, review routing, integration
+decisions and user reporting. In current task tables, ROOT means Deus.
+`019f4993-78b9-7573-b154-139d87a127b5` is a local execution/integration
+delegate, not a second coordinator. It performs only delegated operations and
+approved merge dispositions. The supported local bridge is
+`01a17017-4dc2-75fd-b4d8-113d3092e01f`; no direct cloud-to-local transport is
+assumed. Historical ROOT receipts retain their original actor and scope.
+
 This document decomposes the existing six
 [SH-07 requirements](self-hosting-milestone-completion-plan.md#sh-07---core-form-semantics-and-lowering)
 into exactly 18 completion tasks, `SH07-C01` through `SH07-C18`. It is the
@@ -166,13 +175,14 @@ held candidate.
 
 ## Three-layer ownership and finite queues
 
-The layers are ROOT coordination, persistent standalone slice managers, and
-bounded disjoint subagents within an allocated manager queue. ROOT alone
-allocates cross-slice/shared files, routes independent acceptance, reconciles
-current remote main and integrates every main PR. Managers own isolated local
+The layers are Deus coordination, persistent standalone slice managers, and
+disjoint subagents inside actual manager ownership. Deus resolves real shared
+ownership, routes independent acceptance and decides integration. The local
+executor reconciles current main and performs approved merges. Managers own isolated local
 work, focused checks and exact frozen commit/tree handoffs. Subagent research
 or implementation is not independent acceptance of its manager's candidate.
-Managers send cross-slice requests and results to ROOT, not directly to peers;
+Managers send cross-slice requests and results through the supported bridge or
+their existing authorized local relay to Deus, not a competing coordinator;
 they do not create competing schedulers or standalone worker threads.
 
 Matt authorizes routine in-scope best judgment on implementation details,
@@ -205,7 +215,7 @@ any implementation file:
 
 | Key | Accountable manager | SH07 responsibility |
 | --- | --- | --- |
-| ROOT | Coordinator `019f4993-78b9-7573-b154-139d87a127b5` | Cross-slice allocation, C17 admission/execution scheduling, C18 decision and all integration. |
+| ROOT | Deus `01a172c9-3648-702c-b7ac-03dab5501018` | Goals, priorities, dependencies, review routing, C17/C18 decisions and integration dispositions. Local executor `019f4993-78b9-7573-b154-139d87a127b5` performs only delegated execution and approved merges. |
 | Core | Scope/Core closure manager `01a16a54-eeb1-7941-ac35-7be30e47bdc7` | C01, C02-C11, C13 public ingress and C15 subset-negative closure. The selected-owner EDN map remains Core-owned; shared process/roadmap guidance in this plan and the backlog is reserved to the existing process/docs writer through ROOT. Contract-settled Core production/tests/fixtures follow ROOT's exclusive standing scope; foreign/shared interfaces stay outside it. |
 | Construction | `01a138f7-bfa4-7b90-8a22-5b3c417b2e11` | Existing C12-restricted operation remains with its original owner and cannot be resumed or transferred without actual eligibility resolution. Core tracks the independently permissible frontend outcome as specified above. |
 | SOURCE | `01a13b8d-509d-7771-b618-06a24933391b` | C14 affected C7 composition; existing C7/effects/emitter/tests and L5/STD3 reservations remain intact. Frozen candidate, diagnostic-method and compact-design work have distinct outcomes below. |
@@ -223,8 +233,7 @@ Managers derive and notify ROOT of their in-scope successors; new cross-slice
 ownership still routes through ROOT.
 Do not invent a compiler feature to demonstrate management migration.
 
-ROOT's standing finite-goal charters apply to all eight implementation
-managers. Managers
+The standing finite-goal charters apply to the implementation managers. Managers
 independently audit the repository, contracts, evidence and tests to discover,
 prioritize and execute dependency-ready work inside their exclusive families.
 Keep ROOT informed of actual ownership/interface changes, material blockers
@@ -236,13 +245,14 @@ making that record another admission ceremony. Coordinate a genuine new
 cross-owner conflict before editing the contested path; independent owned
 work continues. Pull the next eligible item in the same active turn, including during review
 of an isolated immutable candidate. One blocked task does not block the whole
-goal. Before yielding, report COMPLETED plus NEXT_EXECUTING; a drained leaf
-queue does not justify default NEED_REFILL. Truly exhausted alternatives need
-an evidence-backed goal-wide frontier routed through ROOT to the existing
-reviewer, with the exact owner, required action and wake event. Do not invent
-work or poll. ROOT retains shared allocation, independent acceptance and
-integration. Completion wakeups and the hourly all-eight fallback retain
-their existing cadence and preferences.
+goal. Report material completion and the next outcome without a mandatory
+pause or per-task handoff ceremony. A drained leaf queue does not justify
+default NEED_REFILL. Truly exhausted alternatives need an evidence-backed
+goal-wide frontier to Deus, naming the actual owner, action and wake event.
+Do not invent work or poll. The former coordinator's hourly automation is
+PAUSED; do not resume it or create a replacement. Gravity Progress reporting
+is unchanged. The denied advisory wake/handoff is not retried or transferred;
+it is not an admission gate on unrelated permitted work.
 
 The queue snapshot below reconciles allocated work at `c4b1d19d`; it is not
 proof of sustained throughput or a compiler completion score. All ten
@@ -289,7 +299,10 @@ per-command ROOT approval loop or unchanged expensive proof replay.
 
 The existing standalone adversarial process reviewer
 `01a17047-4e39-7013-9490-6feb82746d14` is advisory and independent. It is not a
-writer, scheduler, integrator or global acceptance gate. The durable event path
+writer, scheduler, integrator or global acceptance gate. Its wake/handoff is
+currently denied; do not retry it through ROOT, the bridge or another actor.
+Record findings locally for Deus and use only separately permitted reviews.
+The intended event path, when actually available, is
 is material process decision, stalled lane or integration outcome -> ROOT ->
 advisory process review -> explicit ROOT disposition. ROOT records one of
 accepted/assigned, rejected with evidence, deferred with a named dependency or
@@ -318,8 +331,9 @@ work continues and ROOT handles any actual exposed action at its boundary.
 These are adoption/platform observations,
 not completed investigation, independent acceptance of this candidate or a
 sustained-throughput claim.
-The saved heartbeat's existing schedule, target and notification preferences
-remain unchanged. ROOT reconciles the
+The old coordinator heartbeat remains PAUSED with no replacement. The
+following saved adoption snapshots are historical, not new scheduling authority.
+Deus reconciles the
 plan, operating memory, heartbeat and all manager acknowledgments before
 claiming orchestration migration complete. Configuration alone, this plan,
 the C12 reconciliation and the C16 matrix are not compiler progress.
