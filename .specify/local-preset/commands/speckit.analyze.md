@@ -21,3 +21,8 @@ Read the selected spec, plan, tasks and evidence record. Report contradictions,
 missing canonical references, unsupported completion/authority claims and owner
 conflicts with exact paths. Do not modify implementation or wake reviewers.
 Existing obligations determine severity; invent no generic process gates.
+
+Apply `.specify/semantic-names.md` to newly introduced implementation filenames,
+namespaces and application/API names. Use short subsystem/behavior words; keep
+planning IDs in metadata/cross-references. Review new names in this change only,
+record legacy rename dependencies, and preserve compatibility-bearing IDs.

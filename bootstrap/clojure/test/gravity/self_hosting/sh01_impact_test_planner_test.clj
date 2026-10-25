@@ -449,6 +449,31 @@
               (runner/select-tests ["--namespace" (str namespace)])))
           namespace))))
 
+(deftest semantic-standalone-catalog-entries-keep-exact-owners-and-freshness
+  ;; Catalog and dispatch only: discovering/selecting an authenticated test
+  ;; does not execute its provider or establish its semantic acceptance.
+  (doseq [stem ["stage2_module_lexical_call" "stage2_module_literal_map_key"
+                "stage2_module_loop_call" "stage2_module_map_call"
+                "stage2_module_map_order" "stage2_module_transitive_call"
+                "stage2_module_vector_call" "pass_execution_canonical_sort"
+                "source_fragment_binding"]]
+    (let [relative (str "bootstrap/clojure/test/gravity/self_hosting/" stem "_test.clj")
+          namespace (symbol (str "gravity.self-hosting." (str/replace stem "_" "-") "-test"))
+          slice (if (= stem "source_fragment_binding") "SH-07" "SH-01")
+          plan (planner/build-plan {:changed-paths [relative] :expand-dependants? true})
+          namespace-plan (planner/build-namespace-plan [namespace])
+          shard (first (:shards plan))]
+      (is (= [namespace] (:namespaces plan)) relative)
+      (is (= [namespace] (:namespaces namespace-plan)) relative)
+      (is (= [slice] (:direct-slices plan)) relative)
+      (is (= :exact-test-path
+             (get-in plan [:classifications 0 :development-selection])) relative)
+      (is (= (not= stem "pass_execution_canonical_sort")
+             (get-in shard [:test-policy :freshness-required?])) relative)
+      (is (false? (get-in shard [:test-policy :proof?])) relative)
+      (is (nil? (:cache-closure shard)) relative)
+      (is (false? (:authoritative? plan)) relative))))
+
 (deftest deleted-reviewed-test-conservatively-selects-component-dependencies
   (let [exists-var
         (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
@@ -730,6 +755,22 @@
             (catch clojure.lang.ExceptionInfo exception exception))]
       (is (= "SH01-IMPACT-UNOWNED" (:id (ex-data exception))) relative)
       (is (= [relative] (:paths (ex-data exception))) relative))))
+
+(deftest unknown-nested-production-input-is-never-treated-as-unrelated
+  (doseq [relative ["bootstrap/clojure/src/gravity/pass_execution/unregistered.clj"
+                    "bootstrap/clojure/src/gravity/tools/unregistered/body.clj"]]
+    (let [failure (try
+                    (planner/build-plan {:changed-paths [relative]})
+                    nil
+                    (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+      (is (= "SH01-IMPACT-UNOWNED" (:id failure)) relative)
+      (is (= [relative] (:paths failure)) relative)))
+  (let [context (planner/planning-context
+                 {:catalog [{:namespace 'gravity.self-hosting.sh01-ownership-test
+                             :slice "SH-01"}]})
+        plan (planner/build-plan {:context context :changed-paths ["README.md"]})]
+    (is (= ["README.md"] (:ignored-paths plan)))
+    (is (empty? (:namespaces plan)))))
 
 (deftest changed-path-plans-are-canonical
   (let [first-path
@@ -1241,6 +1282,59 @@
             nil
             (catch clojure.lang.ExceptionInfo exception exception))]
       (is (= "SH01-IMPACT-BASE" (:id (ex-data exception))) base-ref))))
+
+(deftest rename-discovery-selects-removed-and-added-dependency-owners
+  ;; Real Git discovery, followed by planning only. No compiler/provider test
+  ;; execution is implied by the selected namespace assertions below.
+  (doseq [phase [:committed :staged :working]]
+    (let [attributes (make-array FileAttribute 0)
+          repository (Files/createTempDirectory "gravity-impact-rename-" attributes)
+          old-path "bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_adapter_test.clj"
+          new-path "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
+          expected [old-path new-path]
+          namespaces '[gravity.self-hosting.sh06-resolution-adapter-test
+                       gravity.self-hosting.sh07-var-reference-test]
+          context (planner/planning-context
+                   {:catalog [{:namespace (first namespaces) :slice "SH-06"}
+                              {:namespace (second namespaces) :slice "SH-07"}]})]
+      (try
+        (run-process! repository "git" "init" "-b" "main")
+        (run-process! repository "git" "config" "user.name" "Gravity Test")
+        (run-process! repository "git" "config" "user.email" "gravity-test@example.invalid")
+        (run-process! repository "git" "config" "diff.renames" "true")
+        (let [old (.resolve repository old-path)
+              destination (.resolve repository new-path)]
+          (Files/createDirectories (.getParent old) attributes)
+          (spit (.toFile old) "; unchanged renamed dependency bytes\n")
+          (run-process! repository "git" "add" old-path)
+          (run-process! repository "git" "commit" "-m" "base dependency")
+          (run-process! repository "git" "switch" "-c" "topic")
+          (if (= :working phase)
+            (Files/move old destination (make-array java.nio.file.CopyOption 0))
+            (run-process! repository "git" "mv" old-path new-path))
+          (when (= :committed phase)
+            (run-process! repository "git" "commit" "-m" "rename dependency")))
+        (let [discovery (planner/change-discovery "main" repository)
+              plan (planner/build-plan {:context context
+                                        :changed-paths (:changed-paths discovery)
+                                        :expand-dependants? true})]
+          (when-not (= :working phase)
+            ;; Establish the negative control: ordinary rename detection loses
+            ;; the removed dependency even though its owner needs validation.
+            (is (= new-path
+                   (if (= :committed phase)
+                     (run-process! repository "git" "diff" "--name-only" "main" "HEAD")
+                     (run-process! repository "git" "diff" "--name-only" "HEAD")))
+                (str phase)))
+          (is (= expected (:changed-paths discovery)) (str phase))
+          (is (= namespaces (:namespaces plan)) (str phase))
+          (is (= (if (= :committed phase) expected []) (:committed-paths discovery))
+              (str phase))
+          (is (= (case phase :committed [] :staged expected :working [old-path])
+                 (:tracked-working-paths discovery)) (str phase))
+          (is (= (if (= :working phase) [new-path] []) (:untracked-paths discovery))
+              (str phase)))
+        (finally (delete-tree! repository))))))
 
 (deftest parse-plan-only-is-always-boolean
   (let [parse (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner

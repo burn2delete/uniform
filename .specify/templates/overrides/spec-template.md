@@ -25,3 +25,11 @@ Link evidence.md; distinguish local, reported, stale, unrun and blocked results.
 ## Unresolved items
 
 Record material questions; do not fill this section with invented gates.
+
+## Implementation naming review
+
+Keep planning IDs (for example `SH07`/`C6`) in metadata/cross-references. Proposed
+implementation names describe subsystem and behavior: `core/source_map.clj`,
+`gravity.core.source-map`, `source-map`. Reject new planning-ID names such as
+`sh07_core_map.clj`. Link `.specify/semantic-names.md`; identify any existing
+legacy names touched and any real protocol/schema/wire IDs to preserve.

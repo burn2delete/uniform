@@ -32,3 +32,8 @@ Continue independent tasks if one is blocked; report the precise blocked action,
 reason, completed work and pending/denied/uncertain status. Do not treat unfinished
 checklist items as a new permission ceremony. Keep the draft current. Report the
 completed declared increment and remaining work; Deus decides integration.
+
+Apply `.specify/semantic-names.md` to newly introduced implementation filenames,
+namespaces and application/API names. Use short subsystem/behavior words; keep
+planning IDs in metadata/cross-references. Review new names in this change only,
+record legacy rename dependencies, and preserve compatibility-bearing IDs.
