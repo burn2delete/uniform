@@ -1,0 +1,9 @@
+(ns gravity.self-hosting.sh15.origin-location.rejected
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-origin-location-forged])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Explicit post-production mutation, not a claimed original C12 output.
+(defn coordinator-origin-location-forged [row]
+  (assoc row :generated-origin-chain
+         [(assoc (first (get row :generated-origin-chain)) :actual-source-path "")]))

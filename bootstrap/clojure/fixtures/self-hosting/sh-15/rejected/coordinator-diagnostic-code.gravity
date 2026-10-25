@@ -1,0 +1,8 @@
+(ns gravity.self-hosting.sh15.diagnostic-code.rejected
+  (:profile :meta) (:target :jvm)
+  (:exports [coordinator-diagnostic-code-empty])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+; Explicit malformed-input mutations, not original C12 producer outputs.
+(defn coordinator-diagnostic-code-empty [row]
+  [(assoc row :diagnostic-id "") (assoc row :rule "")])

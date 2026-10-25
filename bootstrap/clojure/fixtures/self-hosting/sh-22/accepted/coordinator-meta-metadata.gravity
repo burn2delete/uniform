@@ -1,0 +1,28 @@
+(ns gravity.self-hosting.sh22.meta-metadata.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-meta-metadata-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-meta-metadata-request []
+  {:artifact :gravity/sh22-library-request
+   :request-id :coordinator/meta-metadata
+   :profile :meta
+   :experimental-opt-in true
+   :operation :meta-view
+   :arguments [{:syntax-id :syntax/metadata
+                :value '(if true retained-value rejected-value)
+                :source-span {:source-id :coordinator/meta-metadata :start 0 :end 64}
+                :hygiene-marks [:mark/root]
+                :namespace-context :gravity.compiler
+                :phase :compile
+                :origin-chain [{:kind :source :source-id :coordinator/meta-metadata}]
+                :metadata {:doc "Preserved syntax metadata" :tag 'SyntaxValue}}]
+   :effects #{:memory/allocate}
+   :capabilities #{}
+   :allocation-policy :bounded-by-result
+   :source-span {:source-id :coordinator/meta-metadata :start 0 :end 64}
+   :origin-chain [{:kind :source :source-id :coordinator/meta-metadata}]
+   :actual-source-path "fixtures/coordinator-meta-metadata.gravity"})
