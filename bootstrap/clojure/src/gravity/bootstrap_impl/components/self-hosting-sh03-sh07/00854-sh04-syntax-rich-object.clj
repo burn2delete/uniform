@@ -152,5 +152,4 @@
      :actual-path-provenance
      {:source-path source-path
       :workspace-root (System/getProperty "user.dir")
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))

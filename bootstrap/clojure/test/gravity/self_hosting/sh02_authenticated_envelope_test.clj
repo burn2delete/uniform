@@ -36,23 +36,6 @@
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-02")
 
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (def ^:private fact-families
   [:type :effect :ownership :capability :safety
    :runtime-checks :capability-proofs :proofs :source-map :effect-order])
@@ -171,7 +154,7 @@
                  {:from "main" :role :returns :to "return"}]}
         facts (mapv #(fact-transition % evidence-id) fact-families)]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh02-fixture
      :artifact-kind :gravity/sh02-fixture-plan
      :source-revision
@@ -255,8 +238,7 @@
      :actual-path-provenance
      {:source-path source-path
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- digest-ref-ordinal
   [value]
@@ -288,7 +270,6 @@
     (when-not (and (= :accepted (:status raw-result))
                    (vector? requests)
                    (pos? request-count)
-                   (<= request-count 2048)
                    (= 2 (count roots))
                    (= (:semantic-envelope-root raw-result) (first roots))
                    (= (:provenance-binding-root raw-result) (second roots)))
@@ -361,7 +342,6 @@
            (select-keys
             (get functions 'authenticated-envelope-verify-template)
             [:arity :params])))
-    (is (= 72 (count functions)))
     (is (= #{} (get-in @envelope-plan [:module :effects])))
     (is (= #{} (get-in @envelope-plan [:module :capabilities])))
     (is (= :safe (get-in @envelope-plan [:module :safety])))))
@@ -653,7 +633,7 @@
              [cyclic (:artifact-template cyclic-result)
               (:digest-requests cyclic-result)]))))))
 
-(deftest recursive-leaf-bounds-accept-the-maximum-and-reject-the-next-value
+(deftest reference-closure-and-logical-paths-have-no-policy-quota
   (let [fixture (fixture-case "accepted/envelope-comparison.gravity")
         base (descriptor fixture)
         node-ids
@@ -721,19 +701,13 @@
         (invoke-envelope 'authenticated-envelope-build-template
                          [deep-outside-path])]
     (is (= :accepted (:status exact-graph-result)))
-    (is (= :rejected (:status next-graph-result)))
-    (is (= :reference-closure
-           (get-in next-graph-result [:diagnostics 0 :reason])))
+    (is (= :accepted (:status next-graph-result)))
     (is (= :rejected (:status deep-graph-result)))
     (is (= :reference-closure
            (get-in deep-graph-result [:diagnostics 0 :reason])))
     (is (= :accepted (:status exact-path-result)))
-    (is (= :rejected (:status next-path-result)))
-    (is (= :source-revision
-           (get-in next-path-result [:diagnostics 0 :reason])))
-    (is (= :rejected (:status deep-path-result)))
-    (is (= :source-revision
-           (get-in deep-path-result [:diagnostics 0 :reason])))))
+    (is (= :accepted (:status next-path-result)))
+    (is (= :accepted (:status deep-path-result)))))
 
 (deftest one-leaf-contract-builds-distinct-c13-and-b1-envelopes
   (let [fixture (fixture-case "accepted/envelope-comparison.gravity")
@@ -1169,10 +1143,7 @@
      :artifact artifact
      :trusted-carrier
      (bootstrap/p15-s23-trusted-carrier-validation
-      artifact :default-only
-      (:maximum-carrier-nodes envelope-bounds)
-      (:maximum-carrier-depth envelope-bounds)
-      (:maximum-digest-requests envelope-bounds))}))
+      artifact :default-only)}))
 
 (defn- structured-diagnostic
   [f]
@@ -1285,10 +1256,6 @@
       (is (= :accepted (:status artifact)) label)
       (is (= #{:c13 :b1} (set (keys (:envelopes artifact)))) label)
       (is (= :passed (:status trusted-carrier)) label)
-      (is (<= (:observed-nodes trusted-carrier)
-              (:maximum-carrier-nodes envelope-bounds)) label)
-      (is (<= (:observed-depth trusted-carrier)
-              (:maximum-carrier-depth envelope-bounds)) label)
       (is (false?
            (bootstrap/p15-s23-stage2-sh02-authenticated-envelope-authentic?
             artifact)) label)

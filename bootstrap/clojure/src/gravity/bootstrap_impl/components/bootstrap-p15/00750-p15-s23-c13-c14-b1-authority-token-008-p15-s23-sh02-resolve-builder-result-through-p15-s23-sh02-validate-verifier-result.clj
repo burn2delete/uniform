@@ -171,12 +171,8 @@
 
 (defn- p15-s23-sh02-validate-verifier-result!
   [source-path raw-result verifier-result]
-  (p15-s23-sh02-require-bounded-carrier!
+  (p15-s23-sh02-require-carrier!
    source-path :gravity-verifier-result verifier-result)
-  (p15-s23-c11-mir-bounded-value!
-   source-path :sh02-gravity-verifier-result verifier-result
-   (:maximum-carrier-nodes p15-s23-sh02-authenticated-envelope-bounds)
-   (:maximum-carrier-depth p15-s23-sh02-authenticated-envelope-bounds))
   (when-not
    (and (map? verifier-result)
         (= p15-s23-sh02-verifier-result-keys
