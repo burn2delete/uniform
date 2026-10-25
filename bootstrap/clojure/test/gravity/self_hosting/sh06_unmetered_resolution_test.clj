@@ -197,5 +197,7 @@
     (is (not (contains? (:execution-boundary artifact) :component-transport-bounds)))
     (is (not (contains? (:execution-boundary artifact) :aggregate-artifact-bounds)))
     (is (not (contains? (get-in artifact [:gravity-resolution-boundary :raw-template-result]) :bounds)))
+    (is (= 2 (get-in artifact [:gravity-resolution-boundary :authenticated-envelope-descriptor :schema-version])))
+    (is (not (contains? (get-in artifact [:gravity-resolution-boundary :authenticated-envelope-descriptor]) :bounds)))
     (is (= artifact (b/sh06-resolution-deserialize serialized)))
     (is (= :failed (:status (b/sh06-resolution-artifact-verification changed))))))
