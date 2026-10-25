@@ -43,6 +43,21 @@ review and may prepare already allocated eligible disjoint work meanwhile.
 Expensive native or public proof remains separately authorized per stable
 candidate; a manager queue does not revive a consumed grant or held attempt.
 
+Matt authorizes routine in-scope best judgment on implementation details,
+local commits, proportionate tests, dependency/conflict fixes and priorities
+without discretionary Matt escalation. Managers stay within exact cap-three
+queues; cross-slice/interface/ownership decisions go to the coordinator, which
+alone routes independent acceptance and integrates main. Permission-only/
+proposal-only/await-human labels no longer block ordinary authorized work;
+identify actual technical, correctness, provenance, ownership, review and
+resource blockers. Held attempts and consumed runs are not blindly replayed.
+Resource/control changes require evidence, the actual owner, validation and
+independent review, not blanket limit removal. Platform/tool restrictions,
+mandatory action-time approvals, destructive/security-sensitive actions,
+new external commitments and unrelated scope retain their limits; never
+approve an unknown action or bypass a restriction. Do not pause useful work
+for adoption acknowledgment.
+
 Gradually replace the monolithic bootstrap implementation with contract-aligned,
 stage-owned namespaces:
 
@@ -9645,10 +9660,15 @@ bypass is implied. The coordinator reconciles plan, operating memory, the saved
 heartbeat and all manager acknowledgments before reporting orchestration
 migration complete. Existing hourly target/notification preferences are
 unchanged; configuration alone does not establish sustained throughput.
-The reviewer charter/event have been sent, but its exposed state is
-`waitingOnApproval` without exposed pending-operation details; adoption/handoff
-is pending. ROOT's independent configuration acceptance does not accept this
-repository change or establish finished migration.
+At the frozen PR293 handoff, the reviewer charter/event had been sent with
+exposed state `waitingOnApproval` and no pending-operation details; adoption
+was pending. Subsequent to PR293, ROOT observed explicit reviewer adoption and
+ACTIVE state with no approval flags or pending approval/denial blocker. The
+reviewer is now idle/unblocked, with three findings pending coordinator
+disposition, not a migration blocker. The old pending observation remains
+historical. This status sync does not claim
+completed investigation, independent acceptance of this candidate or sustained
+throughput.
 
 ## Progress Accounting
 

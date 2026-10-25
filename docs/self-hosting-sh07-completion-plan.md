@@ -74,6 +74,21 @@ or implementation is not independent acceptance of its manager's candidate.
 Managers send cross-slice requests and results to ROOT, not directly to peers;
 they do not create competing schedulers or standalone worker threads.
 
+Matt authorizes routine in-scope best judgment on implementation details,
+local commits, proportionate tests, dependency/conflict fixes and queue
+priorities without discretionary escalation to Matt. Managers act inside
+their exact cap-three allocations; cross-slice/interface/ownership decisions
+go to ROOT, which alone routes independent acceptance and integrates main.
+Permission-only/proposal-only/await-human labels are superseded for ordinary
+authorized work; name actual technical, correctness, provenance, ownership,
+review or resource blockers. Do not blindly execute held attempts or replay
+consumed runs. Resource/control changes need evidence, the actual owner,
+validation and independent review, not blanket limit removal. Platform/tool
+restrictions, mandatory action-time approvals, destructive/security-sensitive
+actions, new external commitments and unrelated scope retain their limits;
+never approve an unknown pending action or bypass a restriction. Adoption
+acknowledgment itself must not pause useful authorized work.
+
 These accountable managers supersede the generic role labels in the retained
 task descriptions below. This is task accountability, not permission to write
 any implementation file:
@@ -149,11 +164,16 @@ interfaces/goals, approval loops, stale proof/governance burden, queue
 starvation, tool access, resource allocation and genuine technical blockers,
 including tests, builds, compiler behavior, interfaces, integration and
 toolchains. It preserves necessary correctness, security, proof and resource gates; it
-grants no blanket bypass. The reviewer charter and material event were sent by
-ROOT; the exposed state is `waitingOnApproval`, with no pending operation
-details exposed. Adoption/handoff is pending, not completed and not a global
-gate. ROOT has received independent configuration acceptance only, not
-acceptance of this repository change or completion of the migration.
+grants no blanket bypass. At the frozen PR293 handoff, the reviewer charter and
+event had been sent, with exposed state `waitingOnApproval` and no pending
+operation details; adoption was pending and not a global gate. Subsequent to
+PR293, ROOT observed the reviewer's explicit adoption acknowledgment and
+ACTIVE state with no approval flags or pending approval/denial blocker. The
+reviewer is now idle/unblocked, with three findings pending ROOT disposition;
+it is not a migration gate. The earlier pending label remains historical.
+This is an adoption observation,
+not completed investigation, independent acceptance of this candidate or a
+sustained-throughput claim.
 The saved heartbeat's existing schedule, target and notification preferences
 remain unchanged. ROOT reconciles the
 plan, operating memory, heartbeat and all manager acknowledgments before
@@ -427,7 +447,7 @@ contain the named checks below; the remaining owner paths are in
 | --- | --- | --- | --- |
 | Six owner `def` DATA and `defn` bodies; quoted type/catalog maps, for example `sh07-atomic-type-id` | C02/C04/C05/C11; L1/L2/C4/C6 preserve kinds, inert quote, constructor order and generated `def`/`fn`. | `sh07_checked_core_test.clj` carrier-shaped DATA and decimal kernels; mutation tests for character occurrences, map source order and quoted duplicates; retained SH05 subject/reference comparisons. | Join every required literal/constructor/quote occurrence, including rejected shape/value/origin cases. A `defn` count is not execution of every body or completeness of primitive support. |
 | Named owner calls and exact source binding identities; `sh07-lower-reference`, `sh07-lower-def`, `sh07-lower-var` | C03/C05/C06; C5/C6 retain lexical/namespace/definition/value and call-edge distinctions. | `sh07_references_calls_test.clj`, alias-qualified and var-reference owners; `sh07-b5-qualified-var-development-kernel`; SH06 genuine imported/private/unresolved and stale binding compositions in the audit. | Select actual qualified/import/var uses, if any, from executable positions, not quoted handlers. Preserve upstream C5 rejection versus Core rejection. No ambient host lookup or inferred callee artifacts. |
-| Ordinary owner `if`/`let`/`loop`/`recur` algorithms; for example `sh07-vector-contains?` and `sh07-b13-flatten-fragment-field` | C04/C07/C11; L2 control/order/lexical/nearest-target records. | `sh07-b1-if-and-do-preserve-order-and-exclusive-branches`, malformed-control and replay-mutation selectors; `sh07-b3-let-products-preserve-sequential-scope`; owning loop/recur tests. | Exact body/empty/terminal/nested/transfer variants still need occurrence joins. A lowered recur is not a C7 type-compatible transfer or executable runtime loop. |
+| Ordinary owner `if`/`let`/`loop`/`recur` algorithms; for example `sh07-vector-contains?` and `sh07-b13-flatten-fragment-field` | C04/C07/C11; L2 control/order/lexical/nearest-target records. | Existing control/let and loop/recur selectors remain scoped evidence. New `sh07_current_loop_helper_test.clj` / `current-loop-helper-source-to-gravity-core-and-hostile-replay` copies verbatim `checked_core.gravity:363-369` into the 435-byte paired `sh-07/compiler-vector-contains` fixtures, preserving private visibility. On base `ae6acbe9`, one actual current-reader SOURCE4 -> C5 -> Gravity Core product and one coherent target-substitution replay passed 1 test/133 assertions; the owning fresh Gravity template verifier returned `C6-VERIFY` / `:template-replay` for the mutant. The normal-broker single 2GiB JVM exited 0 under its unchanged 120s watchdog: 62.32s test execution plus 6.61s namespace loading (development observations, not a performance claim). Original log/timing: `/tmp/sh07-current-loop-helper-ae6acbe9-20261024-attempt1.{log,edn}`. | Only G traversed those compiler stages; Q received UTF-8 fixture-text parity checks. This separate subject authenticates its own fixture path and copied source occurrences, not the full 538443-byte production module. Other required variants and full-subject joins remain OPEN; no C7 compatibility, runtime, migration or C-task completion follows. |
 | Ordinary functions/calls, including real two-function products | C05/C06/C12-C14; original function signatures, parameter IDs, ordered arguments, captures and recursion components. | `sh07-b47-two-i64-call-current-gravity-composition`: retained real current-reader G composition, public fresh verification and session mutations at its original revision; Q source selector was not run. B48 is separate direct-call legality. | Do not turn paired byte/seed-parser checks into Q composition, raw Core into checked C7-C10, or B48 into public ordinary-call routing. Required closure/cross-module/indirect/variadic variants need an explicit use and consumer decision. |
 | Mutation, typed errors/handlers and structural/guard match variants | C08-C10; L2/L7/L9/C6 location/RHS order, control exits, clause scopes and structural-failure skipping. | Qualified mutation, throw/try/multiple-catch, match/vector-pattern owners; quoted-symbol, keyword-map and root-map-guard kernels plus their source/forgery negatives. | Implementation exists for scoped variants, but source spelling in the lowerer's quoted dispatch DATA is not a required executable use. Do not exclude a variant as optional or close its task without the complete selected use matrix. Later guard Bool/totality, effects and ownership remain their owners' obligations. |
 | Complete Core graph, fragments, maps, retained metadata and declarations | C11/C13-C15; C6 canonical products and authentic source/input joins. | `sh07-b13-fragment-manifest-is-exact-root-aligned-and-exhaustive`, `sh07-b13-fragment-coverage-is-exact-ordered-and-complete`, `sh07-b13-fragment-request-alterations-fail-closed`; owning template/resolved/origin/source-map checks. | Inspect actual tested inputs/results and constructor route. Public default-pinned tests are not current-reader evidence. Graph/identity/provenance/source mutations require the real affected boundary, not a copied passed flag. |
