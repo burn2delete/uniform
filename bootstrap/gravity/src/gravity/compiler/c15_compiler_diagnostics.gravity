@@ -228,12 +228,106 @@
       false)
     false))
 
+; Actual C5 spans retain the C3 primary/all wrapper and flat scalar locations.
+(defn c15-c5-flat-span-valid? [span]
+  (if (sh15-exact-keys? span #{:file :source :byte-start :byte-end :scalar-start
+                              :scalar-end :line-start :line-end :column-start :column-end})
+    (let [start {:byte (get span :byte-start) :line (get span :line-start)
+                 :column (get span :column-start)}
+          end {:byte (get span :byte-end) :line (get span :line-end)
+               :column (get span :column-end)}]
+      (if (sh15-sha256-shape? (get span :file))
+        (if (if (string? (get span :source)) (< 0 (count (get span :source))) false)
+          (if (if (sh15-point-valid? start) (sh15-point-valid? end) false)
+            (if (sh15-span-order-valid? start end)
+              (if (c15-byte-offset-valid? (get span :scalar-start))
+                (if (c15-byte-offset-valid? (get span :scalar-end))
+                  (if (<= (get span :scalar-start) (get span :scalar-end))
+                    (if (<= (get span :scalar-start) (get span :byte-start))
+                      (<= (get span :scalar-end) (get span :byte-end)) false)
+                    false) false) false) false) false) false) false)) false))
+
+(defn c15-c5-span-valid? [span]
+  (if (if (sh15-exact-keys? span #{:primary :all :source}) true
+          (sh15-exact-keys? span #{:primary :all}))
+    (let [primary (get span :primary) all (get span :all)]
+      (if (c15-c5-flat-span-valid? primary)
+        (if (if (contains? span :source) (= (get span :source) (get primary :source)) true)
+          (if (vector? all)
+            (loop [index 0 primary-seen? false]
+              (if (= index (count all)) primary-seen?
+                (if (c15-c5-flat-span-valid? (get all index))
+                  (recur (+ index 1) (if (= primary (get all index)) true primary-seen?))
+                  false))) false) false) false)) false))
+
+(defn c15-c5-definition-span-valid? [span]
+  (if (sh15-exact-keys? span #{:source :byte-start :byte-end})
+    (if (if (string? (get span :source)) (< 0 (count (get span :source))) false)
+      (if (c15-byte-offset-valid? (get span :byte-start))
+        (if (c15-byte-offset-valid? (get span :byte-end))
+          (<= (get span :byte-start) (get span :byte-end)) false) false) false) false))
+
+(defn c15-c5-id-vector-valid? [values]
+  (if (vector? values)
+    (loop [index 0]
+      (if (= index (count values)) true
+        (if (sh15-sha256-shape? (get values index)) (recur (+ index 1)) false))) false))
+
+(defn c15-c5-source-origin-valid? [origin]
+  (if (sh15-exact-keys? origin #{:kind :span :producer :producer-version
+                                :input-syntax-ids :generation-reason :build-effects})
+    (let [producer (get origin :producer)]
+      (if (sh15-exact-keys? producer #{:kind :name :identity :source-id :generated-form-id})
+        (= [:source :reader true true true nil true true true]
+           [(get origin :kind) (get producer :kind) (symbol? (get producer :name))
+            (sh15-sha256-shape? (get producer :identity))
+            (if (c15-c5-flat-span-valid? (get origin :span))
+              (= (get producer :source-id) (get (get origin :span) :file)) false)
+            (get producer :generated-form-id)
+            (if (string? (get origin :producer-version))
+              (< 0 (count (get origin :producer-version))) false)
+            (c15-c5-id-vector-valid? (get origin :input-syntax-ids))
+            (if (= :source-read (get origin :generation-reason))
+              (vector? (get origin :build-effects)) false)]) false)) false))
+
+(defn c15-c5-generated-origin-valid? [origin]
+  (if (sh15-exact-keys? origin #{:kind :producer :inputs :call-site-span :definition-span
+                                :generated-span :reason :build-effects})
+    (let [producer (get origin :producer) generated (get origin :generated-span)]
+      (if (sh15-exact-keys? producer #{:kind :name :version :definition-syntax-id})
+        (if (sh15-exact-keys? generated #{:kind :producer :ordinal :call-site-syntax-id})
+          (= [:generated :macro true true true :generated true true true true true true true]
+             [(get origin :kind) (get producer :kind) (symbol? (get producer :name))
+              (sh15-sha256-shape? (get producer :version))
+              (sh15-sha256-shape? (get producer :definition-syntax-id))
+              (get generated :kind) (= (get generated :producer) (get producer :name))
+              (c15-byte-offset-valid? (get generated :ordinal))
+              (if (c15-c5-id-vector-valid? (get origin :inputs))
+                (sh15-member? (get origin :inputs) (get generated :call-site-syntax-id)) false)
+              (c15-c5-span-valid? (get origin :call-site-span))
+              (c15-c5-definition-span-valid? (get origin :definition-span))
+              (keyword? (get origin :reason)) (vector? (get origin :build-effects))]) false) false)) false))
+
+(defn c15-c5-origin-chain-valid? [origins]
+  (if (vector? origins)
+    (loop [index 0 source-ids []]
+      (if (= index (count origins)) (< 0 (count source-ids))
+        (let [origin (get origins index)]
+          (if (c15-c5-source-origin-valid? origin)
+            (recur (+ index 1) (conj source-ids (get (get origin :producer) :source-id)))
+            (if (c15-c5-generated-origin-valid? origin)
+              (if (sh15-member? source-ids (get (get (get origin :call-site-span) :primary) :file))
+                (recur (+ index 1) source-ids) false) false))))) false))
+
 (defn c15-span-valid? [span related?]
   (if (sh15-source-span-valid? span) true
     (if (c15-reader-span-valid? span true) true
       (if (c15-public-reader-span-valid? span) true
         (if (c15-public-byte-span-valid? span) true
-          (if related? (c15-reader-span-valid? span false) false))))))
+          (if (c15-c5-span-valid? span) true
+            (if related?
+              (if (c15-c5-definition-span-valid? span) true
+                (c15-reader-span-valid? span false)) false)))))))
 
 (defn c15-primary-valid? [primary stage]
   (if (sh15-exact-keys? primary #{:span :syntax-id :artifact})
@@ -281,7 +375,9 @@
       false)
     (if (c15-public-source-origin-valid? value) true
       (if (c15-source-bytes-origin-valid? value) true
-        (if (sh15-origin-valid? value) (= :source (get value :kind)) false)))))
+        (if (c15-c5-source-origin-valid? value) true
+          (if (c15-c5-generated-origin-valid? value) true
+            (if (sh15-origin-valid? value) (= :source (get value :kind)) false)))))))
 
 (defn c15-vector-valid? [values kind]
   (if (vector? values)
@@ -314,7 +410,11 @@
           [(keyword? stage) "C15-SCHEMA" :stage :invalid-stage]
           [(c15-primary-valid? (get fields 3) stage) "C15-SPAN" :primary :invalid-primary]
           [(c15-vector-valid? (get fields 4) :related) "C15-SPAN" :related :invalid-related]
-          [(c15-vector-valid? (get fields 5) :origin) "C15-ORIGIN" :origin-chain :invalid-origin]
+          [(if (if (= :name-resolution stage)
+                  (c15-c5-span-valid? (get (get fields 3) :span)) false)
+             (c15-c5-origin-chain-valid? (get fields 5))
+             (c15-vector-valid? (get fields 5) :origin))
+           "C15-ORIGIN" :origin-chain :invalid-origin]
           [(c15-context-value-valid? (get fields 6) stage) "C15-SCHEMA" :profile :invalid-profile]
           [(c15-context-value-valid? (get fields 7) stage) "C15-SCHEMA" :target :invalid-target]
           [(c15-keyword-map? (get fields 8)) "C15-FACTS" :facts :invalid-facts]
@@ -322,10 +422,53 @@
              (if (sh15-member? [:error :warning :internal-error] severity)
                (< 0 (count remediation)) true) false)
            "C15-REMEDIATION" :remediation :invalid-remediation]
-          [(c15-vector-valid? (get fields 10) :redaction)
+          ; C5 has not emitted a privacy assessment. Explicit nil is private
+          ; unassessed data; it does not clear the renderer disclosure gate.
+          [(if (= nil (get fields 10))
+             (if (= :name-resolution stage)
+               (c15-c5-span-valid? (get (get fields 3) :span)) false)
+             (c15-vector-valid? (get fields 10) :redaction))
            "C15-SCHEMA" :redactions :invalid-redactions]]))
       {:rule "C15-SCHEMA" :field :original-fields :reason :exact-eleven-fields-required})
     {:rule "C15-SCHEMA" :field :original-fields :reason :unsupported-canonical-carrier}))
+
+(defn sh15-c5-unresolved-fields [original]
+  (if (if (map? original) (c15-carrier-valid? original) false)
+    (if (= [:c5-name-resolution "C5-UNRESOLVED" :name-resolution :error true true true true true true true false true]
+           [(get original :diagnostic-family) (get original :id) (get original :stage)
+            (get original :severity) (symbol? (get original :symbol))
+            (symbol? (get original :namespace)) (keyword? (get original :profile))
+            (keyword? (get original :target)) (sh15-sha256-shape? (get original :syntax-id))
+            (sh15-sha256-shape? (get original :diagnostic-id))
+            (string? (get original :remediation)) (contains? original :redactions)
+            (vector? (get original :origin-chain))])
+      [(get original :id) (get original :severity) (get original :stage)
+       {:span (get original :source-span) :syntax-id (get original :syntax-id)
+        :artifact (get (get (get original :source-span) :primary) :file)}
+       (loop [origins (get original :origin-chain) related []]
+         (if (= 0 (count origins)) related
+           (let [origin (first origins)]
+             (recur (rest origins)
+                    (if (= :generated (get origin :kind))
+                      (conj (conj related
+                                  {:role :generated-by :span (get origin :definition-span)
+                                   :artifact (get (get origin :producer) :definition-syntax-id)})
+                            {:role :macro-call-site :span (get origin :call-site-span)
+                             :artifact (get (get origin :generated-span) :call-site-syntax-id)}) related)))))
+       (get original :origin-chain) (get original :profile) (get original :target)
+       (get original :facts)
+       [{:kind :declare-or-import-binding
+         :binding {:symbol (get original :symbol) :namespace (get original :namespace)}
+         :message (get original :remediation) :source-diagnostic original}]
+       nil] nil) nil))
+
+(defn sh15-build-c5-unresolved-diagnostic [original]
+  (let [fields (sh15-c5-unresolved-fields original)]
+    (if (= nil fields)
+      (c15-construction-failure "C15-SCHEMA" :source-diagnostic :unsupported-c5-diagnostic)
+      (build-c15-diagnostic
+       (get fields 0) (get fields 1) (get fields 2) (get fields 3) (get fields 4)
+       (get fields 5) (get fields 6) (get fields 7) (get fields 8) (get fields 9) (get fields 10)))))
 
 (defn c15-digest-request [fields]
   {:ordinal 0 :purpose :c15-diagnostic-id :domain :gravity/c15-diagnostic-id-v1
