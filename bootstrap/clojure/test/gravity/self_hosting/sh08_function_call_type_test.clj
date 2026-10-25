@@ -10193,7 +10193,9 @@
                  sh08-ft-caller-edge-valid? sh08-ft-local-callee-edge-valid? sh08-ft-nonlocal-callee-edge-valid?
                  sh08-ft-definition-by-binding-id sh08-ft-definition-names-local-function? sh08-ft-record-shape?
                  sh08-ft-all-true? sh08-ft-function-type-skeleton sh08-ft-function-type-skeleton-base
-                 sh08-ft-apply-declarations sh08-primitive-type-from-literal-kind}
+                 sh08-ft-apply-declarations sh08-primitive-type-from-literal-kind
+                 sh08-ft-ordinary-parameter-choice sh08-ft-known? sh08-ft-unknown?
+                 sh08-ni-valid-view? sh08-ni-tagged? sh08-ni-type? sh08-ni-atomic?}
         scalar-comparisons '#{sh08-gis3-keyword-record? sh08-gis3-ids? sh08-gis3-allowed-keyword?
                               sh08-gis3-comparison-data? sh08-gis3-source-span? sh08-gis3-entry-families?
                               sh08-gis3-evaluation-order? sh08-pc-id? sh08-sse-ids? sh08-ft-all-true?}

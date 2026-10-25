@@ -2639,6 +2639,11 @@
 (defn sh08-ft-known? [value]
   (if (sh08-ft-unknown? value) false (sh08-ni-valid-view? value)))
 
+(defn sh08-ft-ordinary-parameter-choice [prior argument]
+  (if (if (= argument :gravity.type/never) false (sh08-ft-known? argument))
+    (if (sh08-ft-known? prior) prior argument)
+    prior))
+
 ; L2/L5/C7: bounded loop typing over original canonical-core DATA.
 ; Each index, parent-edge, target, slot, argument and ancestor visit consumes
 ; one work unit, carried across inference rounds. Unknown stays unresolved;
@@ -3528,32 +3533,30 @@
     {:status :rejected :reason :compact-gis-entry-active-id-mismatch}))
 
 (defn sh08-gis3-entry-unify [core indexes target]
-  ; Cold literal typing and the existing ordinary scalar caller unifier.
-  ; No parameter fact or result type is seeded. The full source census is
-  ; rederived by the owning wrapper on each invocation, not supplied here.
+  ; Ground each actual caller through the existing literal rule and the
+  ; same parameter choice used by ordinary call inference. All construction
+  ; is local and modeled; no opaque legacy constructor or parameter seed.
   (let [established (sh08-gis3-entry-census core indexes target)]
-  (if (= :original-entry-census-complete (get established :status))
-  (let [header (get established :header) census (get established :census)
-        record (get header :record) calls (get census :calls) nodes (get indexes :nodes)
-        edges (loop [remaining calls out []]
-                (if (= 0 (count remaining)) out
-                  (recur (rest remaining) (conj out (sh08-gis3-pick (get indexes :edges) (get (first remaining) :core-node-id))))))
-        types (loop [remaining calls out {}]
-                (if (= 0 (count remaining)) out
-                  (let [id (get (get (first remaining) :argument-node-ids) 0)
-                        node (sh08-gis3-pick nodes id)]
-                    (recur (rest remaining)
-                      (assoc out id (sh08-primitive-type-from-literal-kind (get (get node :attributes) :literal-kind)))))))
-        functions (assoc {} (get record :function-syntax-id) (sh08-ft-function-type-skeleton record (get core :module)))
-        joined (sh08-ft-call-constraints calls edges nodes types {} functions)
-        pid (get (get header :parameter) :binding-id)]
-    (if (if (= :original-entry-census-complete (get established :status))
-          (if (= [] (get joined :diagnostics))
-            (= :gravity.type/integer (get (get joined :binding-types) pid)) false) false)
-      {:status :original-entry-Integer-derived :parameter-binding-id pid
-       :parameter-type (get (get joined :binding-types) pid) :literal-types types
-       :ordinary-argument-unification joined :numeric-proof-established false}
-      {:status :rejected :reason :compact-gis-entry-Integer-required})) established)))
+    (if (= :original-entry-census-complete (get established :status))
+      (let [header (get established :header) census (get established :census)
+            pid (get (get header :parameter) :binding-id)
+            derived (loop [remaining (get census :calls) prior :gravity.type/unknown types {} pairs []]
+                      (if (= 0 (count remaining)) {:type prior :literal-types types :pairs pairs}
+                        (let [call (first remaining) id (get (get call :argument-node-ids) 0)
+                              node (sh08-gis3-pick (get indexes :nodes) id)
+                              argument (sh08-primitive-type-from-literal-kind (get (get node :attributes) :literal-kind))
+                              chosen (sh08-ft-ordinary-parameter-choice prior argument)]
+                          (recur (rest remaining) chosen (assoc types id argument)
+                            (conj pairs {:parameter pid :argument-node-id id :call-core-node-id (get call :core-node-id)
+                                         :argument argument :chosen chosen})))))]
+        (if (= :gravity.type/integer (get derived :type))
+          {:status :original-entry-Integer-derived :parameter-binding-id pid :parameter-type (get derived :type)
+           :literal-types (get derived :literal-types)
+           :ordinary-argument-unification {:rule :ordinary-scalar-parameter-choice
+                                          :binding-types (assoc {} pid (get derived :type))
+                                          :pairs (get derived :pairs) :diagnostics [] :compatibility-work-count 0}
+           :numeric-proof-established false}
+          {:status :rejected :reason :compact-gis-entry-Integer-required})) established)))
 
 (defn sh08-lsi-first-ids? [ids]
   ; Shape only. Reached IDs are checked individually after their visit is paid.
@@ -24034,12 +24037,7 @@
                                            (get context :ordering-bindings) (- (get context :loop-work-left 65536) work used))
                             prior (get result (get parameter :binding-id)
                                        :gravity.type/unknown)
-                            chosen
-                            (if (if (= argument :gravity.type/never) false (sh08-ft-known? argument))
-                              (if (sh08-ft-known? prior)
-                                prior
-                                argument)
-                              prior)]
+                            chosen (sh08-ft-ordinary-parameter-choice prior argument)]
                         (recur
                          (rest ps)
                          (rest as)
