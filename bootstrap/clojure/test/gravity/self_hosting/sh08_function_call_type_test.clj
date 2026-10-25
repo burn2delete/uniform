@@ -22013,7 +22013,7 @@
                      {:value value :calls @seen}))
         accepted (observed exact) repeated (observed exact) short (observed (dec exact))
         reserved (:surrounding worksheet)]
-    (is (= [60373 0 0] (get-in worksheet [:surrounding-model :fee-polynomial])))
+    (is (= [60355 0 0] (get-in worksheet [:surrounding-model :fee-polynomial])))
     (is (= [83069 0 0] (get-in worksheet [:DATA-entry-model :fee-polynomial])))
     (is (every? true? (map <= (:dispatch-control-polynomial (gis3-complete-data-control-work-model)) [4096 256])))
     (is (true? (get-in worksheet [:semantic-model :legacy-child-new-construction-payment-established])))

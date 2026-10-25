@@ -3673,7 +3673,7 @@
   ; object is accepted. The complete DATA walk, indexes and semantic work
   ; are separate cumulative debits. This establishes no GIS numeric proof.
   (if (if (integer? budget) (>= budget 0) false)
-    (let [prefix 512 control 60373 reserved (+ prefix control)]
+    (let [prefix 512 control 60355 reserved (+ prefix control)]
       (if (> prefix budget)
         {:status :rejected :reason :compact-gis-entry-work-limit :work-count prefix :completed-work-count 0}
         (if (> reserved budget)
