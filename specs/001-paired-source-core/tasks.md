@@ -1,0 +1,26 @@
+# Tasks: paired source/Core reference pilot
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+Pilot owner: Spec Kit adoption delegate. Input: PR356 `700e2929`.
+
+## Declared adoption increment
+
+- [x] T001 [US1] Inspect the immutable PR356 test path and map R1-R5 in `specs/001-paired-source-core/spec.md`; evidence.md records source observations.
+- [x] T002 [US1] Create `specs/001-paired-source-core/plan.md` through the official plan helper and Uniform template; retain exact owner boundaries.
+- [x] T003 [US1] Create `specs/001-paired-source-core/tasks.md` after official task setup; keep reported implementation outcomes separate.
+- [x] T004 [US1] Record PR356's attributed results and unrun checks in `specs/001-paired-source-core/evidence.md` without copying implementation.
+- [ ] T005 [US1] Verify this artifact flow and configuration through `.specify/validation/verify.py` and record `.specify/validation/results.json`.
+
+## Existing implementation disposition (owned elsewhere)
+
+- [ ] T006 [US1] PR356 owner/reviewer reconciles raw validation evidence for `bootstrap/clojure/test/gravity/self_hosting/sh07_current_public_closure_integration_test.clj`; prior results are reported, not independently validated by this pilot.
+- [ ] T007 [US1] Independent reviewer records PR356 review disposition; Deus records integration decision on https://github.com/burn2delete/uniform/pull/356 .
+- [ ] T008 [US1] Deus reviews adoption PR371 and records integration decision for `.specify/README.md` and this pilot; process bridge owns any shared navigation link.
+
+## Dependencies and outcomes
+
+T001 -> T002 -> T003 -> T004 -> T005 describes the adoption artifact flow.
+T006/T007 belong to the existing implementation owners; this task does not wake
+or assign reviewers, rerun compiler tests, or take over that PR. T008 is parent
+review/integration, not a new routine permission gate. Checked pilot artifacts
+do not imply the underlying feature, SH07, or either PR is merged or complete.

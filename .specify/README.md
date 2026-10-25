@@ -20,8 +20,8 @@ were evaluated against that pinned release's source, not assumed legacy flags.
 
 ## What is installed
 
-- `.specify/scripts/bash/`: six unchanged official helper scripts.
-- `.specify/templates/`: official core templates; Uniform overrides in `overrides/`.
+- `.specify/scripts/bash/`: six official helpers, with recorded ASCII-only source adaptations.
+- `.specify/templates/`: official core templates rendered in ASCII; Uniform overrides in `overrides/`.
 - `.specify/local-preset/`: editable Uniform command sources, version 0.1.0.
 - `.specify/presets/uniform/`: CLI-installed copy of that local preset.
 - `.agents/skills/speckit-*/SKILL.md`: CLI-generated Codex skills; edit the preset,
@@ -87,7 +87,11 @@ python3 -m venv /tmp/uniform-spec-kit-venv
 
 For this evaluation the same pinned source was cloned, inspected and installed
 from its local directory into `/tmp`; dependency versions are recorded in
-[evidence](validation/environment.txt). The source pin does not freeze transitive
+[evidence](validation/environment.txt). [ASCII adaptations](validation/ascii-adaptations.json) replace display glyphs and
+comments; the UTF-8 locale probe uses equivalent octal bytes. Upstream file
+tracking manifests retain their original baseline hashes, so upgrades must be
+reviewed in scratch rather than forced over these local adaptations.
+The source pin does not freeze transitive
 Python dependencies; evaluate them again before upgrades. `--ignore-agent-tools`
 was needed because this execution host has no `codex` executable. It skips only
 the executable check and does not prove Codex runtime dispatch.

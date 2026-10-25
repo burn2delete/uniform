@@ -161,7 +161,7 @@ if [ -n "${LC_ALL:-}" ]; then
     locale_candidates=("$LC_ALL")
 fi
 for candidate in "${locale_candidates[@]}"; do
-    if [ -n "$candidate" ] && [ "$(printf 'é。' | LC_ALL="$candidate" sed 's/[^[:alnum:]]/-/g' 2>/dev/null)" = 'é-' ]; then
+    if [ -n "$candidate" ] && [ "$(printf '\303\251\343\200\202' | LC_ALL="$candidate" sed 's/[^[:alnum:]]/-/g' 2>/dev/null)" = "$(printf '\303\251-')" ]; then
         UNICODE_LOCALE="$candidate"
         break
     fi
@@ -378,7 +378,7 @@ else
         BRANCH_NUMBER=$((HIGHEST + 1))
     fi
 
-    # Force base-10 interpretation to prevent octal conversion (e.g., 010 → 8 in octal, but should be 10 in decimal)
+    # Force base-10 interpretation to prevent octal conversion (e.g., 010 -> 8 in octal, but should be 10 in decimal)
     FEATURE_NUM=$(printf "%03d" "$((10#$BRANCH_NUMBER))")
 
     # Treat an explicit number as a preference when its prefix is already used

@@ -1,0 +1,37 @@
+[
+  {
+    "path": ".specify/.gitignore",
+    "generated_sha256": "0a61c5378b0bb2e0f85babff99c8b166f2170a2c12378cd17d929aa19296ec88",
+    "ascii_sha256": "b9cb3e8d3bb0130ddbf288ec1132605a521bfedb993475f100f885ea5980c871"
+  },
+  {
+    "path": ".specify/templates/constitution-template.md",
+    "generated_sha256": "ce7549540fa45543cca797a150201d868e64495fdff39dc38246fb17bd4024b3",
+    "ascii_sha256": "2933148fc32a52dc99aee6f17fb49b69dff2d6549e6c32b0751f97db2060c3fa"
+  },
+  {
+    "path": ".specify/templates/tasks-template.md",
+    "generated_sha256": "b0f527d41e546af0c31903e04f9b20965b6b497b573792198f663a64ce128863",
+    "ascii_sha256": "86430fa4dd13ea03dc54f6bea6ee460a61d941503ad03afd6e3984d291a2ddbe"
+  },
+  {
+    "path": ".specify/templates/plan-template.md",
+    "generated_sha256": "a828ad6206526574ab3fc99be6d0154588cb1c9774c5919d71b81ab5b2dbffa0",
+    "ascii_sha256": "0ebefc87e7e8457e8bbabb68853fd5ede142c21ef45ed97412371b6e03c0ca5f"
+  },
+  {
+    "path": ".specify/scripts/bash/common.sh",
+    "generated_sha256": "e3f72d571b8d27088a0aa6a96068eb6583175fbfa7a48bad465be62b9898f09c",
+    "ascii_sha256": "d023c6f743fa75688b5e58edc660596c73dc321ec882782dcefb6736007e5e27"
+  },
+  {
+    "path": ".specify/scripts/bash/check-prerequisites.sh",
+    "generated_sha256": "47cddf0ee476a1a5201927260666364490b7c602a52fdd8466160802925f995b",
+    "ascii_sha256": "40995645edd777b00b24564748f665ce1c89ae5ff1baff47797bb1a5362196c2"
+  },
+  {
+    "path": ".specify/scripts/bash/create-new-feature.sh",
+    "generated_sha256": "972f03ed8ca5ee17b7baad6d56d821d46269d77abc337496beafb0fe85a725f2",
+    "ascii_sha256": "04c564b7c252e690b5df2ec91fb9cbb776be8515dfeb7c96b69f0b39ba7591fb"
+  }
+]
