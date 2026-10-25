@@ -1,10 +1,12 @@
 (ns gravity.self-hosting.sh01-development-loop-wiring-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is testing]]
             [clojure.java.shell :as shell]
             [clojure.string :as str]
             [gravity.self-hosting.sh01-development-test-cache :as cache]
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
-            [gravity.self-hosting.sh01-parallel-test-runner :as runner])
+            [gravity.self-hosting.sh01-parallel-test-runner :as runner]
+            [gravity.self-hosting-test-runner :as child-runner])
   (:import [java.nio.file Files LinkOption Path StandardCopyOption]
            [java.nio.file.attribute FileAttribute PosixFilePermissions]
            [java.util.concurrent CountDownLatch TimeUnit]))
@@ -1034,6 +1036,190 @@
           (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE" (:id failure)))
           (is (= :runtime-tool (:input-kind failure))))))))
 
+(deftest runtime-identities-and-cache-requests-bind-jvm-configuration
+  (with-coordination-root [base]
+    (let [resolve-wiring #(ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring %)
+          observed-arguments (atom ["-Xss256k" "-Dfixture.private=not-for-receipts"])
+          selected-context (context base)
+          job (first (:shards (impact-plan 'gravity.self-hosting.sh01-jvm-config-test)))
+          plan (impact-plan (:namespace job))
+          root (.normalize (.toAbsolutePath (.toPath (java.io.File. "."))))]
+      (with-redefs-fn
+        {(resolve-wiring 'jvm-input-arguments) (fn [] @observed-arguments)}
+        (fn []
+          (let [first-runtime ((resolve-wiring 'base-runtime-identities) root {})
+                first-fallback ((resolve-wiring 'runtime-identities) {})
+                first-request (wiring/cache-request selected-context plan job {})]
+            (reset! observed-arguments ["-Xss16m" "-Dfixture.private=not-for-receipts"])
+            (let [second-runtime ((resolve-wiring 'base-runtime-identities) root {})
+                  second-fallback ((resolve-wiring 'runtime-identities) {})
+                  second-request (wiring/cache-request selected-context plan job {})]
+              (is (not= first-runtime second-runtime))
+              (is (not= first-fallback second-fallback))
+              (is (not= (cache/cache-key first-request) (cache/cache-key second-request)))
+              (is (not (str/includes? (pr-str [first-runtime second-runtime
+                                              first-request second-request])
+                                     "not-for-receipts")))
+              (is (= first-runtime
+                     (do (reset! observed-arguments ["-Xss256k" "-Dfixture.private=not-for-receipts"])
+                         ((resolve-wiring 'base-runtime-identities) root {})))))))))))
+
+(deftest componentized-leaf-closures-bind-the-nested-implementation
+  (doseq [[namespace directory expected-count]
+          [['gravity.c11-mir-test "c11_mir" 6]
+           ['gravity.compiler-pass-manifest-test "compiler_pass_manifest" 15]]]
+    (with-coordination-root [base]
+      (let [root (.resolve base "repository")
+            coordination (.resolve base "coordination")
+            job (reviewed-closure-job namespace)
+            prefix (str "bootstrap/clojure/src/gravity/" directory "/")
+            inputs (filter #(str/starts-with? (:path %) prefix)
+                           (get-in job [:cache-closure :inputs]))]
+        (Files/createDirectories root no-file-attributes)
+        (copy-reviewed-closure! root job)
+        (is (= expected-count (count inputs)))
+        (is (every? #(= :transitive (:role %)) inputs))
+        (let [before (closure-cache-request coordination root job snapshot-id)]
+          (doseq [{:keys [path]} inputs]
+            (let [target (.resolve root path)
+                  original (Files/readAllBytes target)]
+              (try
+                (Files/write target (byte-array (concat original [(byte 10)]))
+                             (make-array java.nio.file.OpenOption 0))
+                (is (not= (cache/cache-key before)
+                          (cache/cache-key
+                           (closure-cache-request coordination root job snapshot-id)))
+                    path)
+                (finally
+                  (Files/write target original
+                               (make-array java.nio.file.OpenOption 0)))))))))))
+
+(deftest child-jvm-file-loading-and-unknown-options-stay-fresh
+  (let [supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                              'supported-child-jvm-argument?)]
+    (doseq [argument ["-Xmx512m" "-Xms64m" "-Xss2m"
+                      "-XX:-OmitStackTraceInFastThrow"]]
+      (is (true? (supported? argument)) argument))
+    (doseq [argument ["-javaagent:/tmp/agent.jar" "-agentpath:/tmp/native.so"
+                      "--patch-module=java.base=/tmp/patch"
+                      "-Djava.security.properties=/tmp/policy"
+                      "-Dfixture.unknown=private-value" "-Xbootclasspath/a:/tmp/classes"]]
+      (is (false? (supported? argument)) argument)))
+  (let [calls (atom 0)
+        operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+    (dotimes [_ 2]
+      (let [result (wiring/run-child-unit!
+                    ['gravity.compiler-pass-manifest-test]
+                    {:arguments ["not-the-actual-cli"]} operation)]
+        (is (true? (:tests-executed? result)))
+        (is (false? (:child-cache-hit? result)))
+        (is (= :unknown-child-configuration
+               (get-in result [:child-cache-receipt :reason])))
+        (is (false? (get-in result [:child-cache-receipt :stored?])))))
+    (is (= 2 @calls))))
+
+(deftest child-cache-cli-options-are-closed-and-explicit
+  (let [options {:cache-directory "/tmp/child-cache" :timeout-ms 1000
+                 :repository-identity snapshot-id}
+        selection ["--namespace" "gravity.compiler-pass-manifest-test"]
+        parsed (child-runner/select-tests
+                (into selection ["--development-cache" (pr-str options)]))]
+    (is (= options (:development-cache-options parsed)))
+    (is (= ['gravity.compiler-pass-manifest-test] (:namespaces parsed)))
+    (doseq [arguments [["--development-cache" (pr-str options)]
+                       ["--list" "--development-cache" (pr-str options)]
+                       (into selection ["--development-cache" "{}"])
+                       (into selection ["--development-cache" (str (pr-str options) " {}")])
+                       (into selection ["--development-cache"
+                                        (pr-str (assoc options :trusted? true))])
+                       (into selection ["--development-cache" (pr-str options)
+                                        "--development-cache" (pr-str options)])]]
+      (is (= "SH01-TEST-USAGE"
+             (:id (exception-data #(child-runner/select-tests arguments))))))))
+
+(deftest parent-launch-authority-and-expanded-child-provenance-remain-distinct
+  (with-coordination-root [base]
+    (let [namespace 'gravity.self-hosting.sh01-child-policy-test
+          plan (assoc-in (impact-plan namespace) [:shards 0 :resource-class] :normal)
+          launch-options (atom [])
+          test-producer {:revision {:commit "original-test-producer"}}
+          selected-context (assoc (context base) :test-only? false
+                                  :revision {:commit "current-parent"})]
+      (with-redefs [wiring/prepare-context (fn [& _] selected-context)
+                    runner/run-normal-batch-process
+                    (fn [jobs options]
+                      (swap! launch-options conj options)
+                      (-> (one-member-batch-result (first jobs))
+                          (assoc :child-jvm-launched? true)
+                          (assoc-in [:result :child-cache-hit?] true)
+                          (assoc-in [:result :tests-executed?] false)
+                          (assoc-in [:result :test-producer-provenance] test-producer)))]
+        (let [report (runner/execute-plan plan {:development-loop? true})
+              result (first (:results report))]
+          (is (= snapshot-id (get-in (first @launch-options)
+                                    [:child-development-cache :repository-identity])))
+          (is (false? (:cache-hit? result)))
+          (is (true? (:child-cache-hit? result)))
+          (is (false? (:tests-executed? result)))
+          (is (= test-producer (:test-producer-provenance result)))
+          (is (= {:commit "current-parent"}
+                 (get-in result [:execution-provenance :revision]))))
+        (doseq [[selected-plan options]
+                [[(assoc plan :authoritative? true) {}]
+                 [(assoc plan :authority :authoritative) {}]
+                 [plan {:fresh? true}]
+                 [plan {:proof? true}]
+                 [plan {:performance? true}]
+                 [plan {:nondeterministic? true}]
+                 [plan {:command ["custom-runner"]}]
+                 [(assoc-in plan [:shards 0 :freshness-required?] true) {}]
+                 [(assoc-in plan [:shards 0 :test-policy :proof?] true) {}]
+                 [(assoc-in plan [:shards 0 :test-policy :deterministic?] false) {}]
+                 [(assoc plan :authoritative? true)
+                  {:child-development-cache {:forged true}}]]]
+          (runner/execute-plan selected-plan (assoc options :development-loop? true))
+          (is (nil? (:child-development-cache (last @launch-options)))))))))
+
+(deftest unidentified-child-launch-never-reuses-production-results
+  (with-coordination-root [base]
+    (let [external-deps (.resolve base "external-user-deps.edn")
+          options {:cache-directory (str (.resolve base "cache"))
+                   :broker-root (str (.resolve base "broker"))}
+          selected-context (wiring/prepare-context "." options)
+          plan (impact-plan 'gravity.self-hosting.sh01-unidentified-child-test)
+          job (first (:shards plan))
+          calls (atom 0)
+          operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+      (is (= "SH01-DEVELOPMENT-LOOP-CONTEXT"
+             (:id (exception-data
+                   #(wiring/validate-context!
+                     (assoc selected-context :test-only? true) "." {})))))
+      (spit (str external-deps) "{:aliases {:test {:jvm-opts [\"-Xss256k\"]}}}")
+      (let [first-request (wiring/cache-request selected-context plan job {})
+            first-result (wiring/run-unit!
+                          selected-context (assoc job :development-cache-request first-request)
+                          operation)]
+        ;; Neither a parent JVM identity nor a whole-repository snapshot binds
+        ;; this external child-launch input. Do not pretend that it does.
+        (spit (str external-deps) "{:aliases {:test {:jvm-opts [\"-Xss16m\"]}}}")
+        (let [second-request (wiring/cache-request selected-context plan job {})
+              second-result (wiring/run-unit!
+                             selected-context (assoc job :development-cache-request second-request)
+                             operation)]
+          (is (= first-request second-request))
+          (is (true? (get-in first-request [:test-policy :freshness-required?])))
+          (is (= 2 @calls))
+          (is (= "DEV-TEST-CACHE-INELIGIBLE"
+                 (:id (exception-data #(cache/cache-key second-request)))))
+          (doseq [result [first-result second-result]]
+            (is (= :passed (:status result)))
+            (is (false? (:cache-hit? result)))
+            (is (true? (get-in result [:cache-receipt :producer-executed?])))
+            (is (false? (get-in result [:cache-receipt :cacheable?])))
+            (is (false? (get-in result [:cache-receipt :stored?])))
+            (is (= :freshness-required-test (get-in result [:cache-receipt :reason]))))
+          (is (nil? (:result (cache/lookup! second-request)))))))))
+
 (deftest injected-context-must-match-current-root-and-command
   (with-coordination-root [base]
     (let [selected-context (context base)
@@ -1104,6 +1290,43 @@
       (is (= 1 (:cache-hit-jvms second-report)))
       (is (zero? (:post-cache-planned-jvms second-report))))))
 
+(deftest emitted-runner-report-separates-producer-and-applying-revisions
+  (doseq [normal-batch? [false true]]
+    (with-coordination-root [base]
+      (let [namespace 'gravity.self-hosting.sh01-wiring-revision-test
+            plan (cond-> (impact-plan namespace)
+                   normal-batch?
+                   (assoc-in [:shards 0 :resource-class] :normal))
+            producer {:commit "producer-A" :tree "producer-tree-A"}
+            applying {:commit "applying-B" :tree "applying-tree-B"}
+            calls (atom 0)
+            launcher (fn [_ _]
+                       (swap! calls inc)
+                       {:status :passed :exit-code 0})
+            options (when normal-batch?
+                      {:normal-batch-worker
+                       (fn [jobs]
+                         (swap! calls inc)
+                         (one-member-batch-result (first jobs)))})
+            original (execute plan (assoc (context base) :revision producer)
+                              launcher options)
+            reused (execute plan (assoc (context base) :revision applying)
+                            launcher options)
+            ;; Exercise the serialized public report, not only report-facts.
+            emitted (edn/read-string (pr-str reused))]
+        (is (= 1 @calls))
+        (is (= :passed (:status original)))
+        (is (= :passed (:status emitted)))
+        (is (= producer (:revision original)))
+        (is (= applying (:revision emitted)))
+        (is (= producer (get-in emitted [:results 0 :execution-provenance :revision])))
+        (is (= (:snapshot (context base))
+               (get-in emitted [:results 0 :execution-provenance :repository-snapshot])))
+        (is (= 1 (:cache-hit-jvms emitted)))
+        (is (zero? (:launched-jvms emitted)))
+        (is (false? (get-in emitted [:results 0 :child-jvm-launched?])))
+        (is (false? (:authoritative? emitted)))))))
+
 (deftest all-miss-parent-probe-defers-verification-to-producer
   (with-coordination-root [base]
     (let [namespace 'gravity.self-hosting.sh07-wiring-all-miss-test
@@ -1125,6 +1348,168 @@
               :full-snapshot-path-observations 1
               :phases {:producer-post-operation 1}}
              (:snapshot-telemetry report))))))
+
+(deftest conserved-explicit-inputs-admit-real-results-across-unrelated-edits
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          job (reviewed-closure-job 'gravity.c11-mir-test)
+          _ (Files/createDirectories root no-file-attributes)
+          _ (copy-reviewed-closure! root job)
+          selected-context (assoc (context base)
+                                  :working-directory (str root)
+                                  :revalidate-snapshot? true
+                                  :revision {:commit "original-commit" :tree "original-tree"}
+                                  :runtime-tool-inputs
+                                  [{:id :test-runtime :sha256 snapshot-id}])
+          plan (impact-plan (:namespace job))
+          classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                'explicit-classpath-identities)
+          calls (atom 0)
+          unrelated (.resolve root "unrelated.md")]
+      (with-redefs-fn
+        {classpath (fn [_ closure-root]
+                     [{:path "classpath/entry-0000" :sha256 closure-root}])
+         #'wiring/repository-snapshot
+         (fn [_] (throw (Error. "explicit work read the whole tree")))}
+        (fn []
+          (let [attached (wiring/attach-request selected-context plan {} job)
+                operation (fn []
+                            (swap! calls inc)
+                            (spit (str unrelated) "unrelated change during execution")
+                            {:status :passed :exit-code 0})
+                result (wiring/run-unit! selected-context attached operation)]
+            (is (= :passed (:status result)))
+            (is (true? (get-in result [:cache-receipt :stored?])))
+            (spit (str unrelated) "another unrelated revision")
+            (is (:hit-result (wiring/probe selected-context attached)))
+            (is (:hit-result (first (wiring/probe-batch selected-context [attached]))))
+            (let [later-context (assoc selected-context :revision
+                                       {:commit "later-commit" :tree "later-tree"})
+                  reused (wiring/run-unit! later-context attached operation)]
+              (is (:cache-hit? reused))
+              (is (= (:revision selected-context)
+                     (get-in reused [:execution-provenance :revision])))
+              (is (= (:repository-identity (:development-cache-request attached))
+                     (get-in reused [:execution-provenance :consumed-input-identity])))
+              (is (= (:revision later-context)
+                     (:revision (wiring/report-facts later-context)))))
+            (is (= 1 @calls))
+            (is (false? (:authoritative? result)))
+            (is (false? (get-in result [:cache-receipt :proof-authority?])))))))))
+
+(deftest changed-explicit-inputs-reject-hits-and-reexecute-new-requests
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          job (reviewed-closure-job 'gravity.c11-mir-test)
+          _ (Files/createDirectories root no-file-attributes)
+          _ (copy-reviewed-closure! root job)
+          selected-context (assoc (context base)
+                                  :working-directory (str root)
+                                  :revalidate-snapshot? true
+                                  :runtime-tool-inputs
+                                  [{:id :test-runtime :sha256 snapshot-id}])
+          plan (impact-plan (:namespace job))
+          classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                'explicit-classpath-identities)
+          calls (atom 0)
+          operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+      (with-redefs-fn
+        {classpath (fn [_ closure-root]
+                     [{:path "classpath/entry-0000" :sha256 closure-root}])}
+        (fn []
+          (doseq [role [:production :test :runner :contract :classpath]
+                  :let [relative (:path (first (filter #(= role (:role %))
+                                                       (get-in job [:cache-closure :inputs]))))
+                        path (.resolve root ^String relative)
+                        original (Files/readAllBytes path)
+                        attached (wiring/attach-request selected-context plan {} job)]]
+            (wiring/run-unit! selected-context attached operation)
+            (spit (str path) "\n; changed consumed input\n" :append true)
+            (let [failure (exception-data #(wiring/probe selected-context attached))
+                  renewed (wiring/attach-request selected-context plan {} job)
+                  before @calls]
+              (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE" (:id failure)) (str role))
+              (is (= :explicit-closure (:input-kind failure)) (str role))
+              (is (not= (cache/cache-key (:development-cache-request attached))
+                        (cache/cache-key (:development-cache-request renewed))))
+              (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
+              (is (= (inc before) @calls)))
+            (Files/write path original (make-array java.nio.file.OpenOption 0))))))))
+
+(deftest explicit-producer-mutation-never-publishes-a-pass
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          job (reviewed-closure-job 'gravity.c11-mir-test)
+          _ (Files/createDirectories root no-file-attributes)
+          _ (copy-reviewed-closure! root job)
+          selected-context (assoc (context base) :working-directory (str root)
+                                  :revalidate-snapshot? true
+                                  :runtime-tool-inputs
+                                  [{:id :test-runtime :sha256 snapshot-id}])
+          classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                'explicit-classpath-identities)]
+      (with-redefs-fn
+        {classpath (fn [_ closure-root]
+                     [{:path "classpath/entry-0000" :sha256 closure-root}])}
+        (fn []
+          (let [attached (wiring/attach-request selected-context (impact-plan (:namespace job)) {} job)
+                failure (exception-data
+                         #(wiring/run-unit!
+                           selected-context attached
+                           (fn []
+                             (spit (str (.resolve root "bootstrap/clojure/src/gravity/c11_mir.clj"))
+                                   "\n; mutation during execution\n" :append true)
+                             {:status :passed :exit-code 0})))]
+            (is (= :explicit-closure (:input-kind failure)))
+            (is (= :miss (get-in (cache/lookup! (:development-cache-request attached))
+                                 [:receipt :decision])))))))))
+
+(deftest explicit-closure-keeps-runtime-shadow-inventory-and-freshness-guards
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          job (reviewed-closure-job 'gravity.c11-mir-test)
+          _ (Files/createDirectories root no-file-attributes)
+          _ (copy-reviewed-closure! root job)
+          selected-context (assoc (context base) :working-directory (str root)
+                                  :revalidate-snapshot? true
+                                  :runtime-tool-inputs
+                                  [{:id :test-runtime :sha256 snapshot-id}])
+          plan (impact-plan (:namespace job))
+          resolve-wiring #(ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring %)
+          verify-inputs (resolve-wiring 'verify-inputs!)]
+      (with-redefs-fn
+        {(resolve-wiring 'explicit-classpath-identities)
+         (fn [_ closure-root]
+           [{:path "classpath/entry-0000" :sha256 closure-root}])
+         (resolve-wiring 'base-runtime-identities) (fn [& _] [])
+         #'wiring/repository-snapshot
+         (fn [_] (assoc (:snapshot selected-context) :repository-identity "changed-tree"))}
+        (fn []
+          (let [attached (wiring/attach-request selected-context plan {} job)]
+            (is (= :runtime-tool
+                   (:input-kind
+                    (exception-data
+                     #(verify-inputs (assoc selected-context :revalidate-external-inputs? true)
+                                     :runtime-check [attached])))))
+            (doseq [relative ["bootstrap/clojure/src/gravity/c11_mir.cljc"
+                              "bootstrap/clojure/test/gravity/self_hosting/sh01_added_test.clj"]]
+              (let [path (.resolve root ^String relative)]
+                (spit (str path) "; new shadow or inventory input\n")
+                (is (= :explicit-closure
+                       (:input-kind (exception-data
+                                     #(verify-inputs selected-context :changed-input [attached]))))
+                    relative)
+                (Files/delete path)))
+            (doseq [options [{:fresh? true} {:proof? true} {:authoritative? true}]]
+              (let [fresh (wiring/attach-request selected-context plan options job)]
+                (is (= :repository
+                       (:input-kind (exception-data
+                                     #(verify-inputs selected-context :fresh-check [fresh]))))
+                    (pr-str options))
+                (is (= :repository
+                       (:input-kind (exception-data
+                                     #(verify-inputs selected-context :mixed-check [attached fresh]))))
+                    (pr-str options))))))))))
 
 (deftest parent-probes-share-one-verification-before-hit-admission
   (with-coordination-root [base]

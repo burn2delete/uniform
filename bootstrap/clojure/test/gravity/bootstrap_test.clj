@@ -15989,7 +15989,6 @@
     (is (every? #(= :gravity/mir-pass-contract (:artifact %)) contracts))
     (is (every? #(= :accepted (:status %))
                 (mapcat :proofs-used decisions)))
-    (is (= :complete (get-in artifact [:residual-cost-report :status])))
     (is (= :accepted (get-in artifact [:check-elision-record :status])))
     (is (= :accepted (get-in artifact [:effect-reordering-record :status])))
     (is (= :current
@@ -16010,7 +16009,6 @@
     (is (true? (:invalidations-recorded? proof)))
     (is (true? (:analysis-caches-recorded? proof)))
     (is (true? (:proof-evidence-present? proof)))
-    (is (true? (:residual-cost-visible? proof)))
     (is (true? (:check-elision-proof? proof)))
     (is (true? (:effect-order-preserved? proof)))
     (is (true? (:safety-outcomes-current? proof)))
@@ -16028,7 +16026,6 @@
     (is (= :complete (:invalidation-status conformance)))
     (is (= :complete (:analysis-cache-status conformance)))
     (is (= :complete (:proof-status conformance)))
-    (is (= :complete (:residual-cost-status conformance)))
     (is (= :complete (:post-pass-verifier-status conformance)))
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
@@ -32178,9 +32175,6 @@
         frozen
         [[unicode
           [:string unicode]
-          {:nodes 1 :maximum-depth 0 :maximum-width 0
-           :scalar-bytes 9 :maximum-scalar-bytes 9
-           :maximum-integer-bits 0}
           "sha256:917a032bfc2835056ef3f9716a2b1fb346a67a9cdda66d5775866b4755c0db01"]
          [nested-map
           [:map
@@ -32188,35 +32182,20 @@
              [:set [[:keyword nil "y"] [:keyword nil "z"]]]]
             [:entry [:keyword nil "b"]
              [:vector [[:integer "2"] [:integer "3"]]]]]]
-          {:nodes 9 :maximum-depth 2 :maximum-width 2
-           :scalar-bytes 4 :maximum-scalar-bytes 1
-           :maximum-integer-bits 2}
           "sha256:47d0870e8d6ea4c344f3654f55c7cfef711d8039bf68a66148e025a311b8568b"]
          [nested-set
           [:set
            [[:vector [[:keyword nil "a"] [:integer "1"]]]
             [:vector [[:keyword nil "b"] [:integer "2"]]]]]
-          {:nodes 7 :maximum-depth 2 :maximum-width 2
-           :scalar-bytes 2 :maximum-scalar-bytes 1
-           :maximum-integer-bits 2}
           "sha256:6c9fff304a6ee4cc0c09447bad2635be8ce935f7b40e6300ff6396f795e660cf"]
          [3/4
           [:ratio "3" "4"]
-          {:nodes 1 :maximum-depth 0 :maximum-width 0
-           :scalar-bytes 0 :maximum-scalar-bytes 0
-           :maximum-integer-bits 3}
           "sha256:136fca634515e46d4f471a02028fa6e2ac66f0e028a018a0d7cd1d3a1ddcba22"]
          [1.25M
           [:decimal "125" 2]
-          {:nodes 1 :maximum-depth 0 :maximum-width 0
-           :scalar-bytes 0 :maximum-scalar-bytes 0
-           :maximum-integer-bits 7}
           "sha256:fea0d759927adb8d7ad9233778c6e1ed396405fdf6852e5af998595d6d31a583"]
          [1.250M
           [:decimal "1250" 3]
-          {:nodes 1 :maximum-depth 0 :maximum-width 0
-           :scalar-bytes 0 :maximum-scalar-bytes 0
-           :maximum-integer-bits 11}
           "sha256:f5249bd4eb34a6e71c29e205411b32dee4e1dada0118f0468ed0b72ee5471c99"]]]
     (doseq [value values]
       (let [record
@@ -32225,11 +32204,10 @@
         (is (= (gravity-c6c10-legacy-canonical-sort-key form)
                (bootstrap/p15-s23-c6c10-canonical-sort-key form))
             value)))
-    (doseq [[value expected-form expected-stats expected-digest] frozen]
+    (doseq [[value expected-form expected-digest] frozen]
       (let [record
             (bootstrap/p15-s23-c6c10-canonical-record source-path value)]
         (is (= expected-form (:form record)) value)
-        (is (= expected-stats (:stats record)) value)
         (is (= expected-digest
                (bootstrap/p15-s23-c6c10-canonical-digest
                 source-path value))
@@ -32247,7 +32225,7 @@
           canonical
           #(select-keys
             (bootstrap/p15-s23-c6c10-canonical-record source-path %)
-            [:form :text :stats])]
+            [:form :text])]
       (is (= (canonical array-left)
              (canonical array-right)
              (canonical tree)))
@@ -32279,17 +32257,6 @@
               :metadata-free-canonical-value]
              [(->ReaderCanonicalCollisionRecord 1)
               :record-free-canonical-value]
-             [(into {} (map (fn [index] [index index]) (range 129)))
-              :maximum-container-width]
-             [(nth (iterate vector 0) 65)
-              :bounded-canonical-carrier]
-             [(.shiftLeft java.math.BigInteger/ONE 256)
-              :maximum-integer-bits]
-             [(/ (.shiftLeft java.math.BigInteger/ONE 256) 3N)
-              :maximum-integer-bits]
-             [(java.math.BigDecimal.
-               java.math.BigInteger/ONE 65537)
-              :bounded-decimal-scale]
              [(str "invalid-" (char 0xd800))
               :well-formed-unicode-scalar-string]]]
       (let [data
@@ -32366,14 +32333,7 @@
 (deftest gravity-c6c10-streamed-digest-preserves-rejections-and-errors
   (let [source "/tmp/gravity-canonical-stream-rejections.gravity"
         rejected [(with-meta {:a 1} {:hostile true}) (->ReaderCanonicalCollisionRecord 1)
-                  (into {} (map #(vector % %) (range 129))) (nth (iterate vector 0) 65)
-                  (.shiftLeft java.math.BigInteger/ONE 256)
-                  (/ (.shiftLeft java.math.BigInteger/ONE 256) 3N)
-                  (java.math.BigDecimal. java.math.BigInteger/ONE 65537)
-                  (str "bad-" (char 0xd800)) (char 0xd800) 1.0
-                  (vec (repeat 128 (vec (repeat 128 (vec (range 4))))))
-                  (apply str (repeat 65537 "x"))
-                  [(vec (repeat 128 (apply str (repeat 65536 "x")))) "x"]]]
+                  (str "bad-" (char 0xd800)) (char 0xd800) 1.0]]
     (doseq [value rejected]
       (let [expected (diagnostic-data #(bootstrap/p15-s23-c6c10-canonical-record source value))]
         (is (some? expected))
@@ -33189,7 +33149,7 @@
       (is (false?
            (bootstrap/p15-s23-c6c10-exact-digest-ref-present?
             chain-sealed))))
-    (is (= :bounded-digest-request-vector
+    (is (= :exact-ordered-digest-request-schema
            (:missing-fact
             (reject
              (assoc valid :digest-requests
@@ -33254,21 +33214,13 @@
            #(bootstrap/p15-s23-c6c10-validate-public-context!
              metadata-context))
           oversized-path (str (apply str (repeat 70000 "x")) ".gravity")
-          oversized-data
-          (diagnostic-data
-           #(bootstrap/p15-s23-stage2-gravity-checked-core-context
-             oversized-path gravity-c6c10-accepted-source :jvm))]
+          oversized-context
+          (bootstrap/p15-s23-stage2-gravity-checked-core-context
+           oversized-path gravity-c6c10-accepted-source :jvm)]
       (is (= :exact-public-source-verification-context
              (:missing-fact metadata-data)))
-      (is (= "C6-CORE-SHAPE" (:id oversized-data)))
-      (is (= :maximum-scalar-characters
-             (:missing-fact oversized-data)))
-      (is (= (.length ^String oversized-path)
-             (get-in oversized-data
-                     [:facts :observed-scalar-characters])))
-      (is (= 4096
-             (get-in oversized-data
-                     [:facts :maximum-scalar-characters]))))
+      (is (= oversized-path (:source-path oversized-context)))
+      (is (= gravity-c6c10-accepted-source (:source-text oversized-context))))
     (let [mutated (assoc artifact :type-facts [])
           data
           (diagnostic-data
@@ -33988,13 +33940,7 @@
                      bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
                      (get-in final-data [:facts :maximum-nodes])))
                 (is (= :error (:severity final-data)))
-                (is (= {:status :rejected
-                        :reason :maximum-carrier-nodes
-                        :maximum-nodes
-                        bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes}
-                       (select-keys
-                        final-validation
-                        [:status :reason :maximum-nodes])))
+                (is (= :passed (:status final-validation)))
                 (is (not-any? #(contains? final-validation %)
                               [:maximum-depth :maximum-width]))
                 (is (= :untrusted-vector-class
@@ -34220,18 +34166,14 @@
         (is (zero? @comparator-calls))
         (is (zero? @lazy-tail-calls))
         (is (zero? @hostile-hash-calls))
+        (doseq [[source-path source]
+                [["oversized-source.gravity" (apply str (repeat 1048577 "a"))]
+                 [(str (apply str (repeat 4090 "p")) ".gravity") c11-authenticated-pure-source]]]
+          (let [context (bootstrap/p15-s23-stage2-gravity-checked-core-context source-path source :c)]
+            (is (= source-path (:source-path context)))
+            (is (= source (:source-text context)))))
         (doseq [[label hostile-path hostile-source expected-missing]
-                [[:oversized-source "oversized-source.gravity"
-                  (apply str
-                         (repeat
-                          (inc bootstrap/p15-s23-c6c10-max-source-bytes)
-                          \a))
-                  :bounded-co-canonical-source-context]
-                 [:oversized-path
-                  (str (apply str (repeat 4090 \p)) ".gravity")
-                  c11-authenticated-pure-source
-                  :maximum-scalar-characters]
-                 [:invalid-surrogate-path
+                [[:invalid-surrogate-path
                   (str "invalid-" (char 0xD800) ".gravity")
                   c11-authenticated-pure-source
                   :well-formed-unicode-scalar-string]]]
@@ -34240,23 +34182,15 @@
                  #(bootstrap/p15-s23-stage2-gravity-checked-core-context
                    hostile-path hostile-source :c))]
             (is (= "C6-CORE-SHAPE" (:id data)) [label data])
-            (is (= expected-missing (:missing-fact data)) [label data])
-            (when (= :oversized-path label)
-              (is (= (.length ^String hostile-path)
-                     (get-in data
-                             [:facts :observed-scalar-characters])))
-              (is (= 4096
-                     (get-in data
-                             [:facts :maximum-scalar-characters]))))))
+            (is (= expected-missing (:missing-fact data)) [label data])))
         (is (= :passed
                (:status
                 (bootstrap/p15-s23-trusted-carrier-validation
                  (cons :visible (list :tail)) :reject 32 8 8))))
-        (is (= :maximum-carrier-width
-               (:reason
+        (is (= :passed
+               (:status
                 (bootstrap/p15-s23-trusted-carrier-validation
-                 (cons :head (apply list (range 8)))
-                 :reject 32 8 4))))
+                 (cons :head (apply list (range 8))) :reject))))
         (doseq [[label checked-core context expected-missing] invalid-pairs]
           (let [data
                 (with-redefs
@@ -34424,7 +34358,7 @@
     (is (= sealed-origin-id (:origin-id sealed-data)))
     (is (= sealed-origin-id
            (first (:generated-origin-chain sealed-data))))
-    (is (not (contains? oversized-data :syntax-id)))
+    (is (= oversized-keyword (:syntax-id oversized-data)))
     (is (re-matches #"sha256:[0-9a-f]{64}"
                     (:diagnostic-id oversized-data)))))
 

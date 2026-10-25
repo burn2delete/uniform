@@ -4,7 +4,7 @@
 ;; values are filled after the leaf source and its independent review freeze.
 ;; Keeping these separate from the builder makes the source/plan tripwire
 ;; explicit and prevents a rebuild from silently authorizing changed code.
-(def sh03-reader-expected-source-byte-count 270363)
+(def sh03-reader-expected-source-byte-count 231576)
 (def sh03-reader-uncredited-source-model-entrypoints
   ['stage1-read-source-formal-release-governance-seed-retirement
    'stage1-read-source-release-attestation-seed-retirement
@@ -16,16 +16,16 @@
    'stage1-read-source-core-bootstrap
    'stage1-read-source-self-hosted-runtime])
 (def sh03-reader-expected-source-content-hash
-  "sha256:8a12082681ee6ea5eec6da14a43ed1a295eda521c47e8f70b99d40c3893a41f4")
+  "sha256:d61a4224b6928b80d66c0f99e3a26f58ed8daa171d088bcecef0062c8913d146")
 (def sh03-reader-expected-plan-semantic-hash
-  "sha256:cce236c5e748b0db690aa16b6eebfe78a7e296e9b3847d8daabe97deb2c5d71b")
+  "sha256:2986e4fb33479576de0bdf6e17ae3da91f302b991b45af8c11c00847abc30555")
 (def sh03-reader-expected-functions-semantic-hash
-  "sha256:a38ec7deeba6a9f192c8a48b130d0cf9ec224326275ef2114db1032015cad88f")
-(def sh03-reader-expected-function-count 249)
+  "sha256:6b1b7fc1376926ae1adf96e3be2973c082bbc458aacc459426e9566834db7585")
+(def sh03-reader-expected-function-count 220)
 (def sh03-reader-expected-function-names-hash
-  "sha256:2395e5cd24b54103cf90518a53b953ec9210ef3a382cd06d153e81296ce71e97")
+  "sha256:0966b98c3d400464520bcda2c9e336c6790c7fc9f6fd44ee7adb29078d9bcd76")
 (def sh03-reader-expected-function-shapes-hash
-  "sha256:c04cb1ae449240205e82757857cf6c294c1548b7edec98a12938d24c91e4601e")
+  "sha256:43d6006f7f78d81ee6fd8479da3442de6124ba96c4ea58b3ef2dd2e87b8f747e")
 (def sh03-reader-expected-entrypoint-semantic-hash
   "sha256:6dddc9a5a656148c1edd3dde8eb4d31c8962ba5327ba0d60285acc8d40f4bea3")
 (def sh03-reader-expected-verifier-semantic-hash
@@ -33,22 +33,13 @@
 (def sh03-reader-expected-builtin-functions-hash
   "sha256:03394c173b55bcb279070adc77d0494ee334c42505d814593f46109000dc1400")
 
-(declare sh03-reader-canonical-maximum-scalar-bytes
-         sh03-reader-canonical-maximum-total-scalar-bytes)
+(declare sh03-reader-read-target-source-bytes!)
 
 (def sh03-reader-source-relative-path
   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
 (def sh03-reader-entrypoint 'sh03-read-source-unit)
 (def sh03-reader-verifier 'sh03-verify-reader-result)
 (def sh03-reader-function-prefix "sh03-")
-(def sh03-reader-plan-maximum-nodes 524288)
-(def sh03-reader-plan-maximum-depth 512)
-(def sh03-reader-plan-maximum-width 131072)
-(def sh03-reader-result-maximum-nodes 268435456)
-(def sh03-reader-result-maximum-depth 2048)
-(def sh03-reader-result-maximum-width 4194304)
-(def sh03-reader-input-maximum-identity-utf8-bytes 4096)
-(def sh03-reader-input-maximum-identity-code-units 1024)
 
 (def sh03-reader-plan-keys
   #{:kind :compiler-artifact-plan? :entrypoint :source :compiler :module
@@ -186,8 +177,7 @@
        source-path {:cause-message (.getMessage error)}))))
 
 (defn- sh03-reader-read-selected-source-bytes! [request-source selected-path]
-  (when-not (and (string? selected-path)
-                 (<= (.length ^String selected-path) sh03-reader-input-maximum-identity-code-units))
+  (when-not (string? selected-path)
     (sh03-reader-boundary-fail! request-source :selected-current-sh03-reader-source
                                nil {:required-source sh03-reader-source-relative-path}))
   (try
@@ -195,7 +185,7 @@
                  (.getCanonicalPath (java.io.File. selected-path)))
       (sh03-reader-boundary-fail! request-source :selected-current-sh03-reader-source
                                  nil {:required-source sh03-reader-source-relative-path}))
-    (let [snapshot (c2-pass-cache/bounded-source-snapshot! selected-path 1048576)]
+    (let [snapshot (c2-pass-cache/source-snapshot! selected-path)]
       {:source-path (:canonical-path snapshot) :bytes (:bytes snapshot)
        :source-byte-count (:byte-count snapshot) :source-content-hash (:bytes-hash snapshot)})
     (catch clojure.lang.ExceptionInfo error
@@ -205,3 +195,14 @@
     (catch Exception error
       (sh03-reader-boundary-fail! request-source :stable-current-sh03-reader-source
                                  nil {:cause-class (.getName (class error))}))))
+
+(defn- sh03-reader-invocation-source! [source-path selected-path expected-binding]
+  (let [source (sh03-reader-read-selected-source-bytes! source-path selected-path)
+        identity-keys [:source-content-hash :source-byte-count]]
+    (when (and expected-binding
+               (not (and (= :gravity/sh03-current-source-reader-plan-binding (:artifact expected-binding))
+                         (= (select-keys source identity-keys)
+                            (select-keys expected-binding identity-keys)))))
+      (sh03-reader-boundary-fail!
+       source-path :fresh-sh03-reader-invocation-source-binding nil {}))
+    source))

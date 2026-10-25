@@ -32,7 +32,7 @@
       (is (= (golden candidate) (:text result)))
       (is (= before (pr-str candidate))))))
 
-(deftest public-point-view-retains-existing-format-limits-and-semantic-id
+(deftest public-point-view-retains-existing-format-and-semantic-id
   (let [candidate (:candidate (row "gravity")) before (:diagnostic-id candidate)
         result (render candidate)]
     (is (= :bounded-ascii-v1 (:rendering-version result)))
@@ -50,7 +50,6 @@
         (is (= :accepted (:status view)))
         (is (= (golden input) (:text view)))
         (is (ascii-line? (:text view)))
-        (is (<= (count (:text view)) 4096))
         (is (= before (:diagnostic-id input)))))
     (let [five-key (update-in candidate [:primary :span] dissoc :file)]
       (is (= (:text result) (:text (render five-key)))))
@@ -60,7 +59,6 @@
   (let [candidate (:candidate (row "gravity")) span (get-in candidate [:primary :span])]
     (doseq [malformed [(assoc span :file "sha256:bad") (assoc span :file :source-id)
                        (assoc span :extra true) (assoc span :source "")
-                       (assoc span :source (apply str (repeat 513 "a")))
                        (assoc span :source "src/\u00e9.gravity")
                        (update span :byte-end inc) (assoc-in span [:start :column] 0)
                        (assoc-in span [:end :column-unit] :utf16)]]

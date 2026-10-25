@@ -78,6 +78,7 @@
    :return-type return-type
    :latent-effects latent-effects
    :recursive recursive
+   :maximum-call-depth 16
    :entry-block entry-block
    :blocks blocks
    :source-span (sh13-span start end)
@@ -250,7 +251,7 @@
    (sh13-exit-function :throw-main :throw #{:error/throw})
    (sh13-exit-function :panic-main :panic #{})])
 
-(defn sh13-module [module-id entry-function actual-source-path]
+(defn sh13-module [module-id entry-function actual-source-path maximum-steps]
   {:artifact :gravity/sh13-control-flow-module
    :module-id module-id
    :mir-verified true
@@ -268,6 +269,7 @@
    :profile :native
    :target :portable-mir
    :entry-function entry-function
+   :maximum-execution-steps maximum-steps
    :functions (sh13-functions)
    :source-span (sh13-span 0 164)
    :origin-chain (sh13-origin)
@@ -275,32 +277,32 @@
 
 (defn sh13-branch-module []
   (sh13-module
-   :sh13/control-flow :choose "/checkout-a/control.gravity"))
+   :sh13/control-flow :choose "/checkout-a/control.gravity" 256))
 
 (defn sh13-branch-alternate-path-module []
   (sh13-module
-   :sh13/control-flow :choose "/checkout-b/control.gravity"))
+   :sh13/control-flow :choose "/checkout-b/control.gravity" 256))
 
 (defn sh13-factorial-module []
   (sh13-module
-   :sh13/factorial :factorial "/checkout-a/control.gravity"))
+   :sh13/factorial :factorial "/checkout-a/control.gravity" 256))
 
 (defn sh13-loop-module []
   (sh13-module
-   :sh13/loop :sum-down "/checkout-a/control.gravity"))
+   :sh13/loop :sum-down "/checkout-a/control.gravity" 256))
 
 (defn sh13-indirect-module []
   (sh13-module
-   :sh13/indirect :indirect-main "/checkout-a/control.gravity"))
+   :sh13/indirect :indirect-main "/checkout-a/control.gravity" 256))
 
 (defn sh13-error-module []
   (sh13-module
-   :sh13/error :error-main "/checkout-a/control.gravity"))
+   :sh13/error :error-main "/checkout-a/control.gravity" 256))
 
 (defn sh13-throw-module []
   (sh13-module
-   :sh13/throw :throw-main "/checkout-a/control.gravity"))
+   :sh13/throw :throw-main "/checkout-a/control.gravity" 256))
 
 (defn sh13-panic-module []
   (sh13-module
-   :sh13/panic :panic-main "/checkout-a/control.gravity"))
+   :sh13/panic :panic-main "/checkout-a/control.gravity" 256))

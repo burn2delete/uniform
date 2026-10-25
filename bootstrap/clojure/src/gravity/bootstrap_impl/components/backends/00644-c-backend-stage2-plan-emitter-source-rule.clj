@@ -1,38 +1,34 @@
-(defn- p15-s23-h6-intake-fail! [reason field limit]
+(defn- p15-s23-h6-intake-fail! [reason field]
   (throw (ex-info "Retained source intake rejected"
                   {:id "SH07-B51-00945-GOVERNED-READ" :reason reason
-                   :details {:ordinal nil :path nil :field field
-                             :owner-id nil :limit limit}})))
+                   :details {:ordinal nil :path nil :field field :owner-id nil}})))
+
+(declare p15-s23-trusted-carrier-validation)
 
 (defn- p15-s23-h6-origin-source!
-  "Bound one retained entry and join bytes/text; does not authenticate its proof."
+  "Validate one retained entry and join bytes/text; does not authenticate its proof."
   [path descriptor proof claimed-text]
   (let [plain-map? #(contains? #{clojure.lang.PersistentArrayMap clojure.lang.PersistentHashMap}
                               (class %))
-        reject #(p15-s23-h6-intake-fail! %1 %2 nil)]
+        reject #(p15-s23-h6-intake-fail! %1 %2)]
     (when-not (and (plain-map? descriptor) (nil? (meta descriptor))
-                   (plain-map? proof) (nil? (meta proof)))
+                   (plain-map? proof) (nil? (meta proof))
+                   (= :passed (:status (p15-s23-trusted-carrier-validation
+                                        [descriptor proof] :default-only))))
       (reject :origin-shape-bound nil))
-    (let [values (:blob-bytes proof) n (when (= clojure.lang.PersistentVector (class values))
-                                           (count values))]
-      ;; 16MiB is the origin raw-vector width, not plan fuel or aggregate authority.
-      (when-not (and n (nil? (meta values)) (<= n 16777216))
-        (p15-s23-h6-intake-fail! :origin-shape-bound [:blob-bytes]
-                               {:name :max-source-entry-bytes :maximum 16777216 :observed n}))
-      (when-not (every? #(and (integer? %) (<= 0 % 255)) values)
+    (let [values (:blob-bytes proof)
+          n (when (= clojure.lang.PersistentVector (class values)) (count values))]
+      (when-not (and n (nil? (meta values))
+                     (every? #(and (integer? %) (<= 0 % 255)) values))
         (reject :origin-shape-bound [:blob-bytes]))
       (when-not (and (integer? (:byte-count descriptor)) (= n (:byte-count descriptor)))
         (reject :origin-source-binding [:byte-count]))
-      (when-not (and (string? path) (<= (count path) 4096)
-                     (string? (:path descriptor)) (<= (count (:path descriptor)) 4096)
-                     (string? (:path proof)) (<= (count (:path proof)) 4096)
+      (when-not (and (string? path) (string? (:path descriptor)) (string? (:path proof))
                      (= path (:path descriptor) (:path proof))
                      (let [raw-path (.getBytes ^String path java.nio.charset.StandardCharsets/UTF_8)]
-                       (and (<= (alength raw-path) 4096)
-                            (= path (String. raw-path java.nio.charset.StandardCharsets/UTF_8)))))
+                       (= path (String. raw-path java.nio.charset.StandardCharsets/UTF_8))))
         (reject :origin-source-binding [:path]))
-      (when-not (and (string? claimed-text) (<= (count claimed-text) 16777216)
-                     (string? (:raw-sha256 descriptor))
+      (when-not (and (string? claimed-text) (string? (:raw-sha256 descriptor))
                      (boolean (re-matches #"sha256:[0-9a-f]{64}" (:raw-sha256 descriptor))))
         (reject :origin-source-binding [:raw-sha256]))
       (let [raw (byte-array n)
@@ -52,93 +48,88 @@
          :source-content-hash (:raw-sha256 descriptor)}))))
 
 (defn- p15-s23-h6-seed-text-preflight! [^String text]
-  ;; Reserve lexical nodes before the host reader, including discarded forms
-  ;; and abbreviation expansion. Text units have their separate 16MiB cap.
-  ;; This finite retained seed subset excludes ambient namespace/alias resolution;
-  ;; it defines no Gravity language grammar or profile.
-  (let [fail #(p15-s23-h6-intake-fail! :origin-reader-contract nil
-                                     {:name %1 :maximum %2 :observed %3})
-        finish (fn [frames]
-                 (loop [fs frames]
-                   (if (= :prefix (:kind (peek fs)))
-                     (if (= 1 (:left (peek fs))) (recur (pop fs))
-                         (update-in fs [(dec (count fs)) :left] dec)) fs)))
-        separator? #(or (Character/isWhitespace ^char %) (contains? #{\, \; \" \( \) \[ \] \{ \} \' \` \~ \@ \^} %))]
-    (when (> (.length text) 16777216) (fail :max-source-text-units 16777216 (.length text)))
-    (loop [i 0 mode :space escaped? false frames [{:kind :root :width 0}] nodes 1]
-      (when (> nodes 524288) (fail :max-plan-nodes 524288 nodes))
-      (when (> (dec (count frames)) 512) (fail :max-plan-depth 512 (dec (count frames))))
-      (let [frame (peek frames) width (:width frame)
-            width (if (= :map (:kind frame)) (quot (inc width) 2) width)]
-        (when (> width 131072) (fail :max-plan-width 131072 width)))
+  ;; Reject ambient namespace/alias expansion before the host reader. Grammar
+  ;; and delimiter errors remain the reader's responsibility; no project quota.
+  (let [separator? #(or (Character/isWhitespace ^char %)
+                        (contains? #{\, \; \" \( \) \[ \] \{ \} \' \` \~ \@ \^} %))]
+    (loop [i 0 mode :space escaped? false]
       (when (< i (.length text))
         (let [c (.charAt text i) next-c (when (< (inc i) (.length text)) (.charAt text (inc i)))]
           (cond
-            (= mode :comment) (recur (inc i) (if (contains? #{\newline \return} c) :space :comment) false frames nodes)
-            (= mode :string) (cond escaped? (recur (inc i) :string false frames nodes)
-                                      (= c \\) (recur (inc i) :string true frames nodes)
-                                      (= c \") (recur (inc i) :space false (finish frames) nodes)
-                                      :else (recur (inc i) :string false frames nodes))
-            (= mode :char-first) (recur (inc i) :token false frames nodes)
-            (= mode :token) (if (separator? c) (recur i :space false (finish frames) nodes)
-                               (recur (inc i) :token false frames nodes))
-            (or (Character/isWhitespace c) (= c \,)) (recur (inc i) :space false frames nodes)
-            (= c \;) (recur (inc i) :comment false frames nodes)
-            (contains? #{\) \] \}} c) (recur (inc i) :space false (finish (if (> (count frames) 1) (pop frames) frames)) nodes)
+            (= mode :comment)
+            (recur (inc i) (if (contains? #{\newline \return} c) :space :comment) false)
+            (= mode :string)
+            (cond escaped? (recur (inc i) :string false)
+                  (= c \\) (recur (inc i) :string true)
+                  (= c \") (recur (inc i) :space false)
+                  :else (recur (inc i) :string false))
+            (= mode :char-first) (recur (inc i) :token false)
+            (= mode :token) (if (separator? c) (recur i :space false)
+                               (recur (inc i) :token false))
+            (or (Character/isWhitespace c) (= c \,)) (recur (inc i) :space false)
+            (= c \;) (recur (inc i) :comment false)
+            (contains? #{\) \] \}} c) (recur (inc i) :space false)
             :else
-            (let [_ (when (> (count frames) 512) (fail :max-plan-depth 512 (count frames)))
-                  _ (when (or (= c \`) (and (= c \:) (= next-c \:)))
-                      (p15-s23-h6-intake-fail! :origin-reader-contract nil nil))
-                  frames (update-in frames [(dec (count frames)) :width] inc)
-                  dispatch? (= c \#)
-                  _ (when (and dispatch? (not (contains? #{\{ \' \_} next-c)))
-                      (p15-s23-h6-intake-fail! :origin-reader-contract nil nil))
-                  prefix? (or (contains? #{\' \` \~ \@ \^} c)
+            (let [dispatch? (= c \#)
+                  _ (when (or (= c \`) (and (= c \:) (= next-c \:))
+                              (and dispatch? (not (contains? #{\{ \' \_} next-c))))
+                      (p15-s23-h6-intake-fail! :origin-reader-contract nil))
+                  prefix? (or (contains? #{\' \~ \@ \^} c)
                               (and dispatch? (contains? #{\' \_} next-c)))
-                  open? (or (contains? #{\( \[ \{} c)
-                            (and dispatch? (= \{ next-c)))
-                  cost (if prefix? 2 1)
-                  frames (cond prefix? (conj frames {:kind :prefix :left (if (= c \^) 2 1) :width 0})
-                               open? (conj frames {:kind (if (= c \{) :map :collection)
-                                                   :width 0}) :else frames)]
+                  open? (or (contains? #{\( \[ \{} c) (and dispatch? (= \{ next-c)))]
               (recur (+ i (if (and dispatch? (or prefix? open?)) 2 1))
-                     (cond (or prefix? open?) :space (= c \") :string (= c \\) :char-first :else :token)
-                     false frames (+ nodes cost)))))))))
+                     (cond (or prefix? open?) :space (= c \") :string
+                           (= c \\) :char-first :else :token)
+                     false))))))))
 
 (defn- p15-s23-h6-source-forms-preflight! [forms]
-  ;; Reader metadata is retained and bounded too; no recursive host walk.
+  ;; Retain native reader metadata, reject foreign callbacks and true ancestor
+  ;; cycles, and revisit shared immutable values on each independent path.
   (let [containers #{clojure.lang.PersistentVector clojure.lang.PersistentArrayMap
                      clojure.lang.PersistentHashMap clojure.lang.PersistentHashSet
                      clojure.lang.PersistentList clojure.lang.PersistentList$EmptyList clojure.lang.Cons}
         scalars #{java.lang.String java.lang.Character java.lang.Long java.lang.Integer
                   java.lang.Double java.lang.Float java.lang.Short java.lang.Byte java.lang.Boolean
                   java.math.BigInteger java.math.BigDecimal clojure.lang.BigInt clojure.lang.Ratio
-                  clojure.lang.Keyword clojure.lang.Symbol}]
-    (loop [pending [[forms 0]] nodes 0]
-      (when-let [[value depth] (peek pending)]
-        (let [reject #(p15-s23-h6-intake-fail! :origin-reader-contract nil
-                                            {:name %1 :maximum %2 :observed %3})
-              nodes (inc nodes) cls (class value)]
-          (when (> nodes 524288) (reject :max-plan-nodes 524288 nodes))
-          (when (> depth 512) (reject :max-plan-depth 512 depth))
-          (when-not (or (nil? value) (contains? containers cls) (contains? scalars cls))
-            (p15-s23-h6-intake-fail! :origin-reader-contract nil nil))
-          (let [children (if (contains? containers cls)
-                           (if (map? value) (mapcat identity value) value) [])
-                pending (pop pending)
-                pending (if (and (instance? clojure.lang.IMeta value) (some? (meta value)))
-                          (conj pending [(meta value) (inc depth)]) pending)]
-            (recur (loop [xs (seq children) width 0 stack pending]
-                     (if (nil? xs) stack
-                       (let [width (inc width)]
-                         (when (and (or (list? value) (= cls clojure.lang.Cons))
-                                    (not (contains? containers (class xs))))
-                           (p15-s23-h6-intake-fail! :origin-reader-contract nil nil))
-                         (let [observed (if (map? value) (quot (inc width) 2) width)]
-                           (when (> observed 131072) (reject :max-plan-width 131072 observed)))
-                         (when (> (+ nodes (count stack) 1) 524288)
-                           (reject :max-plan-nodes 524288 (+ nodes (count stack) 1)))
-                         (recur (next xs) width (conj stack [(first xs) (inc depth)]))))) nodes)))))))
+                  clojure.lang.Keyword clojure.lang.Symbol}
+        active (java.util.IdentityHashMap.)]
+    (loop [pending [[forms false]]]
+      (when-let [[value exit?] (peek pending)]
+        (let [pending (pop pending)]
+          (if exit?
+            (do (.remove active value) (recur pending))
+            (let [cls (class value)]
+              (when-not (or (nil? value) (contains? containers cls) (contains? scalars cls))
+                (p15-s23-h6-intake-fail! :origin-reader-contract nil))
+              ;; This host-reader preflight has no compiler plan. Inspect only
+              ;; exact native carriers; do not invent a plan to call the
+              ;; compiler-artifact builtin header adapter.
+              (when (or (and (map? value)
+                             (nil? (p15-s23-stage2-native-map-extent value)))
+                        (and (= clojure.lang.PersistentHashSet cls)
+                             (let [backing (p15-s23-stage2-native-hashset-backing value)]
+                               (or (not (contains? #{clojure.lang.PersistentArrayMap
+                                                     clojure.lang.PersistentHashMap}
+                                                   (class backing)))
+                                   (nil? (p15-s23-stage2-native-map-extent backing))))))
+                (p15-s23-h6-intake-fail! :origin-reader-contract nil))
+              (let [metadata (when (instance? clojure.lang.IMeta value) (meta value))
+                    branch? (or (contains? containers cls) (some? metadata))]
+                (when (and branch? (.containsKey active value))
+                  (p15-s23-h6-intake-fail! :origin-reader-contract nil))
+                (when branch? (.put active value true))
+                (let [children (cond (= clojure.lang.PersistentList cls)
+                                     [(.first ^clojure.lang.PersistentList value)
+                                      (.next ^clojure.lang.PersistentList value)]
+                                     (= clojure.lang.Cons cls)
+                                     [(.first ^clojure.lang.Cons value)
+                                      (.more ^clojure.lang.Cons value)]
+                                     (= clojure.lang.PersistentList$EmptyList cls) []
+                                     (map? value) (mapcat identity value)
+                                     (contains? containers cls) value :else [])
+                      pending (if branch? (conj pending [value true]) pending)
+                      pending (if (some? metadata) (conj pending [metadata false]) pending)]
+                  (recur (reduce #(conj %1 [%2 false]) pending children)))))))))))
 
 (defn- p15-s23-h6-fresh-source-form-records! [path text]
   (let [_ (p15-s23-h6-seed-text-preflight! text)

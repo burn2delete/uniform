@@ -231,9 +231,7 @@
   [source-path carrier value]
   (let [validation
         (p15-s23-trusted-carrier-validation
-         value :reject p15-s23-c6c10-max-carrier-nodes
-         p15-s23-c6c10-max-carrier-depth
-         p15-s23-c6c10-max-container-width)]
+         value :reject)]
     (when-not (= :passed (:status validation))
       (p15-s23-c6c10-host-fail!
        "C6-VERIFY" source-path :trusted-gravity-checked-core-carrier

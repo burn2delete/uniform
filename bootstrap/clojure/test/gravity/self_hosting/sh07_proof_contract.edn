@@ -153,46 +153,9 @@
   :verification-check-catalog-binding-required true
   :immutable-receipt-carriers-required true
   :finally-cleanup-required true
-  :maximum-receipts-per-phase 64
-  :maximum-sh05-full-verifications 4
   :minimum-independent-audit-executions
   {:sh05 1 :sh06 1 :sh07 1}
   :iteration-receipts-authoritative false}
- :bounds
- {:maximum-module-forms 65536
-  :maximum-module-core-nodes 65536
-  :maximum-fragments 1024
-  :maximum-top-level-forms 1024
-  :maximum-fragment-forms 1024
-  :maximum-form-children 1024
-  :maximum-form-depth 256
-  :maximum-module-bindings 2440
-  :maximum-bindings 2048
-  :maximum-alias-records 256
-  :maximum-fragment-resolutions 2048
-  :maximum-module-resolutions 65536
-  :maximum-origin-entries 256
-  :maximum-metadata-entries 256
-  :maximum-effects 128
-  :maximum-capabilities 128
-  :maximum-exports 1024
-  :maximum-module-carrier-nodes 8388608
-  :maximum-module-carrier-depth 256
-  :maximum-module-carrier-width 65536
-  :maximum-module-scalar-bytes 268435456
-  :maximum-template-carrier-nodes 33554432
-  :maximum-template-carrier-depth 256
-  :maximum-template-carrier-width 65536
-  :maximum-template-scalar-bytes 1073741824
-  :maximum-resolved-core-carrier-nodes 16777216
-  :maximum-resolved-core-carrier-depth 256
-  :maximum-resolved-core-carrier-width 65536
-  :maximum-resolved-core-scalar-bytes 1073741824
-  :maximum-generated-digest-carrier-nodes 16777216
-  :maximum-generated-digest-carrier-depth 256
-  :maximum-generated-digest-carrier-width 65536
-  :maximum-generated-digest-scalar-bytes 1073741824
-  :maximum-module-digest-requests 65540}
  :cache-key
  [:source-path
   :source-bytes-sha256

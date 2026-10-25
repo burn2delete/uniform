@@ -66,7 +66,10 @@
          (= summary descriptor-summary))))
 
 (defn- sh03-reader-precomputed-products-verify!
-  [candidate source-path source-text project-context products]
+  ([candidate source-path source-text project-context products]
+   (sh03-reader-precomputed-products-verify!
+    candidate source-path source-text project-context products nil))
+  ([candidate source-path source-text project-context products invocation]
   (when-not (identical? candidate sh03-reader-internal-product-authority)
     (c2-reader-fail!
      "C2-HASH" source-path
@@ -74,8 +77,8 @@
       :source-span (source-span source-path 0)
       :reader-options standard-reader-options}
      {:missing-fields [:internal-sh03-precomputed-product-authority]}))
-  (let [expected-binding
-        (dissoc (sh03-reader-current-binding! source-path) :plan)
+  (let [context (sh03-reader-verification-invocation! source-path invocation)
+        expected-binding (dissoc (:binding context) :plan)
         source-bytes
         (.getBytes source-text java.nio.charset.StandardCharsets/UTF_8)
         input-source-unit
@@ -127,6 +130,7 @@
         :reader-options standard-reader-options}
        {:missing-fields [:authenticated-sh03-precomputed-products]}))
     (sh03-reader-verifier-preflight! source-path raw-result report)
-    (p15-s23-stage2-sh02-descriptor-envelope-verify!
-     envelope :c2-reader :gravity/sh03-reader-products descriptor source-path)
-    products))
+    (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+           (cond-> [envelope :c2-reader :gravity/sh03-reader-products descriptor source-path]
+             (:envelope-options context) (conj (:envelope-options context))))
+    products)))

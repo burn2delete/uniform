@@ -67,26 +67,14 @@
 
 (defn p15-s23-sh02-reference-depth
   [root-id edges]
-  (let [adjacency (group-by :from edges)
-        maximum (:maximum-reference-depth
-                 p15-s23-sh02-authenticated-envelope-bounds)]
-    (loop [pending (conj clojure.lang.PersistentQueue/EMPTY
-                         [root-id 0])
-           discovered #{root-id}
-           observed 0]
-      (if (empty? pending)
-        observed
-        (let [[node depth] (peek pending)
-              pending (pop pending)
-              next-depth (inc depth)
-              targets (map :to (get adjacency node []))
-              unseen (remove discovered targets)]
-          (if (and (seq unseen) (> next-depth maximum))
-            next-depth
-            (recur
-             (into pending (map #(vector % next-depth) unseen))
-             (into discovered unseen)
-             (max observed depth))))))))
+  (let [adjacency (group-by :from edges)]
+    (loop [pending (conj clojure.lang.PersistentQueue/EMPTY [root-id 0])
+           discovered #{root-id} observed 0]
+      (if (empty? pending) observed
+        (let [[node depth] (peek pending) pending (pop pending)
+              unseen (remove discovered (map :to (get adjacency node [])))]
+          (recur (into pending (map #(vector % (inc depth)) unseen))
+                 (into discovered unseen) (max observed depth)))))))
 
 (defn p15-s23-sh02-reference-reachable-ids
   [root-id edges]
@@ -102,49 +90,11 @@
           (recur (into pending unseen) (into discovered unseen)))))))
 
 (declare p15-s23-sh02-fail!
-         p15-s23-sh02-require-bounded-carrier!)
+         p15-s23-sh02-require-carrier!)
 
-(defn- p15-s23-sh02-bounded-reference-edge-state
+(defn- p15-s23-sh02-reference-edge-state
   [stage root-id edge-seq]
-  (loop [remaining (seq edge-seq)
-         edges []
-         node-ids #{root-id}]
-    (if (nil? remaining)
-      {:edges edges :node-ids node-ids}
-      (let [edge (first remaining)
-            next-edges (conj edges edge)
-            next-node-ids (conj node-ids (:from edge) (:to edge))]
-        (when (or (> (count next-edges)
-                     (:maximum-reference-edges
-                      p15-s23-sh02-authenticated-envelope-bounds))
-                    (> (count next-node-ids)
-                     (:maximum-reference-nodes
-                      p15-s23-sh02-authenticated-envelope-bounds)))
-          (p15-s23-sh02-fail!
-           "<sh02-reference-closure>" {}
-           :bounded-sh02-reference-closure
-           {:stage stage
-            :observed-reference-nodes (count next-node-ids)
-            :observed-reference-edges (count next-edges)
-            :maximum-reference-nodes
-            (:maximum-reference-nodes
-             p15-s23-sh02-authenticated-envelope-bounds)
-            :maximum-reference-edges
-            (:maximum-reference-edges
-             p15-s23-sh02-authenticated-envelope-bounds)}))
-        (let [observed-depth
-              (p15-s23-sh02-reference-depth root-id next-edges)]
-          (when (> observed-depth
-                   (:maximum-reference-depth
-                    p15-s23-sh02-authenticated-envelope-bounds))
-            (p15-s23-sh02-fail!
-             "<sh02-reference-closure>" {}
-             :bounded-sh02-reference-closure
-             {:stage stage
-              :observed-reference-nodes (count next-node-ids)
-              :observed-reference-edges (count next-edges)
-              :observed-reference-depth observed-depth
-              :maximum-reference-depth
-              (:maximum-reference-depth
-               p15-s23-sh02-authenticated-envelope-bounds)})))
-        (recur (next remaining) next-edges next-node-ids))))))
+  (reduce (fn [state edge]
+            {:edges (conj (:edges state) edge)
+             :node-ids (conj (:node-ids state) (:from edge) (:to edge))})
+          {:edges [] :node-ids #{root-id}} edge-seq)))

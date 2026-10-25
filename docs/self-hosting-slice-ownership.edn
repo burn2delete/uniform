@@ -303,7 +303,43 @@
   "bootstrap/clojure/test/gravity/self_hosting/p15_proof_artifact_dag_test.clj"
   {:namespace gravity.self-hosting.p15-proof-artifact-dag-test
    :slice "SH-01"
-   :owner :sh-01-leaf}}
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/stage2_module_lexical_call_test.clj"
+  {:namespace gravity.self-hosting.stage2-module-lexical-call-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/stage2_module_literal_map_key_test.clj"
+  {:namespace gravity.self-hosting.stage2-module-literal-map-key-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/stage2_module_loop_call_test.clj"
+  {:namespace gravity.self-hosting.stage2-module-loop-call-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/stage2_module_map_call_test.clj"
+  {:namespace gravity.self-hosting.stage2-module-map-call-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/stage2_module_map_order_test.clj"
+  {:namespace gravity.self-hosting.stage2-module-map-order-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/stage2_module_transitive_call_test.clj"
+  {:namespace gravity.self-hosting.stage2-module-transitive-call-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/stage2_module_vector_call_test.clj"
+  {:namespace gravity.self-hosting.stage2-module-vector-call-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/pass_execution_canonical_sort_test.clj"
+  {:namespace gravity.self-hosting.pass-execution-canonical-sort-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/source_fragment_binding_test.clj"
+  {:namespace gravity.self-hosting.source-fragment-binding-test
+   :slice "SH-07"
+   :owner :sh-core}}
 
  :reserved-leaf-modules
  {

@@ -3,12 +3,8 @@
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]))
 
-;; Byte-for-byte snapshot of immutable commit 5bbf30835625f835e5075373dd77407067362e73.
-;; Keep the regression self-contained in fresh/shallow checkouts.
-(def ^:private baseline-relative-path
-  "bootstrap/clojure/fixtures/self-hosting/sh-03/policy/sh03-phase-lifetime-5bb-reader.gravity")
-(def ^:private baseline-reader-hash
-  "sha256:1b66e5f5b44669901d56a592685633a647d828074e8b1833597e3ffdf853d443")
+;; Current-source lifetime and fresh-replay regressions. Historical quota-bound
+;; source snapshots remain archived fixtures, not operative reader oracles.
 (def ^:private reader-relative-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
 
 (def ^:private root
@@ -30,16 +26,6 @@
 (def ^:private current-plan
   (delay (compile-source (slurp (io/file @root reader-relative-path)))))
 
-(def ^:private baseline-plan
-  (delay
-    ;; This invokes no subprocess, target-reader oracle or authenticated route.
-    (let [file (io/file @root baseline-relative-path)
-          _ (when-not (= 269031 (.length file))
-              (throw (ex-info "Frozen phase-lifetime baseline byte bound mismatch" {})))
-          out (slurp file :encoding "UTF-8")]
-      (when-not (= baseline-reader-hash (str "sha256:" (bootstrap/sha256-hex out)))
-        (throw (ex-info "Frozen reader baseline identity mismatch" {})))
-      (compile-source out))))
 
 (defn- execute-plan [plan function arguments]
   (with-redefs [bootstrap/sh03-reader-current-binding!
@@ -69,39 +55,8 @@
                     (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8))
                retain-trivia))
 
-(defn- compare-baseline [arguments]
-  (let [expected (execute-plan @baseline-plan 'sh03-read-source-unit arguments)
-        actual (execute-plan @current-plan 'sh03-read-source-unit arguments)]
-    ;; Complete equality includes all preimages, source maps, semantic values,
-    ;; deferred facts, resource declarations and structured rejection details.
-    (is (= expected actual))
-    actual))
 
-(deftest phase-lifetime-complete-output-matches-frozen-reader
-  (doseq [retain-trivia [false true]
-          fixture ["complete-reader-surface" "unicode-supplementary" "newline-crlf"
-                   "numeric-semantic-work-deferred" "numeric-work-boundary"]]
-    (testing (str fixture " retain-trivia=" retain-trivia)
-      (let [text (slurp (io/file @root
-                                (str "bootstrap/clojure/fixtures/self-hosting/sh-03/accepted/"
-                                     fixture ".gravity")))
-            result (compare-baseline (input text retain-trivia))]
-        (is (= :accepted (:status result)))))))
 
-(deftest phase-lifetime-rejections-match-frozen-reader
-  (doseq [retain-trivia [false true]
-          text ["[1)" "\"bad\\q\"" "1e+" "#unknown 1" "{:a}" "^1 x" "~x"]]
-    (let [result (compare-baseline (input text retain-trivia))]
-      (is (= :rejected (:status result)))))
-  (doseq [bytes [[128] [65 13 10 237 160 128] [240 144 128] [244 144 128 128]]]
-    (let [result (compare-baseline (input-bytes bytes true))]
-      (is (= :rejected (:status result)))
-      (is (= "C2-ENCODING" (get-in result [:diagnostics 0 :id])))))
-  (let [[unit bytes policy] (input "[1]" true)]
-    (doseq [arguments [[(assoc unit :source-byte-count 100) bytes policy]
-                      [unit bytes (assoc policy :retain-trivia :invalid)]
-                      [(assoc unit :encoding :utf-16) bytes policy]]]
-      (is (= :rejected (:status (compare-baseline arguments)))))))
 
 (def ^:private phase-functions
   '#{sh03-decode-source-bytes sh03-scan-tokens sh03-parse-tokens

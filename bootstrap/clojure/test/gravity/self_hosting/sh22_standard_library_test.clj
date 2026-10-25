@@ -123,10 +123,6 @@
    ['sh22-vector-assoc-request "STD1001" :malformed-library-request]
    'sh22-out-of-bounds-request
    ['sh22-vector-assoc-request "STD3002" :index-out-of-bounds]
-   'sh22-oversized-collection-request
-   ['sh22-vector-assoc-request "STD3001" :collection-bound-exceeded]
-   'sh22-full-vector-append-request
-   ['sh22-vector-append-request "STD3001" :collection-bound-exceeded]
    'sh22-invalid-utf8-request
    ['sh22-vector-assoc-request "STD4001" :invalid-utf8]
    'sh22-overflow-request
@@ -147,7 +143,7 @@
    ['sh22-meta-request "STD15001" :origin-chain-required]
    'sh22-noncanonical-map-request
    ['sh22-vector-assoc-request
-    "STD10003" :noncanonical-or-over-bound-value]
+    "STD10003" :noncanonical-value]
    'sh22-missing-allocation-effect-request
    ['sh22-vector-assoc-request "STD1002" :undeclared-library-effect]
    'sh22-unexpected-capability-request
@@ -201,12 +197,6 @@
         exports (:exports manifest)]
     (is (= :gravity/sh22-bootstrap-library-policy (:artifact policy)))
     (is (= 1 (:version policy)))
-    (is (= 256 (:maximum-collection-elements policy)))
-    (is (= 256 (:maximum-utf8-bytes policy)))
-    (is (= 32 (:maximum-carrier-depth policy)))
-    (is (= 16 (:maximum-canonical-depth policy)))
-    (is (= 512 (:maximum-carrier-width policy)))
-    (is (= 65536 (:maximum-carrier-nodes policy)))
     (is (true? (:experimental-opt-in-required policy)))
     (is (= 25 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
@@ -314,9 +304,8 @@
               (doseq [[input output] [[producer produced] [query result]]]
                 (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
           (let [producer (assoc assoc-base :arguments [(ordered entries) :slot/new nil]) result (handle producer)]
-            (is (= :rejected (:status result)))
-            (is (= "STD3001" (get-in result [:diagnostics 0 :rule])))
-            (is (= :collection-bound-exceeded (get-in result [:diagnostics 0 :reason])))
+            (is (= :accepted (:status result)))
+            (is (= (conj entries [:slot/new nil]) (get-in result [:value :entries])))
             (is (= (ordered entries) (first (:arguments producer))))
             (is (= :passed (:status (invoke-engine 'sh22-verify-result [producer result]))))))
         ;; Complete validation must reject malformed/duplicate suffixes before
@@ -328,7 +317,7 @@
                  [{:artifact :gravity/ordered-map :entries '([:value false])} "STD10003" :expected-ordered-map]
                  [(assoc (ordered [[:value false]]) :extra true) "STD10003" :expected-ordered-map]
                  [{:artifact :gravity/ordered-map} "STD10003" :expected-ordered-map]
-                 [(ordered (vec (repeat 257 [:value false]))) "STD3001" :collection-bound-exceeded]]
+                 [(ordered (vec (repeat 257 [:value false]))) "STD10003" :expected-ordered-map]]
                 input [(assoc get-base :arguments [value :value])
                        (assoc assoc-base :arguments [value :value nil])]]
           (let [[result lookups] (observe input)]
@@ -434,7 +423,7 @@
           (is (pos? (:equality counts))))
         (doseq [[arguments rule reason before-equality?]
                 (concat
-                 [[[(ordered (conj full [:slot/new 0])) :slot/k0] "STD3001" :collection-bound-exceeded true]
+                 [
                   [[{:value false} :value] "STD10003" :expected-ordered-map true]
                   [[(assoc (ordered entries) :extra true) :value] "STD10003" :expected-ordered-map true]
                   [[{:artifact :gravity/ordered-map :entries '([:value false])} :value] "STD10003" :expected-ordered-map true]
@@ -539,6 +528,21 @@
       (is (= :io/stdout
              (get-in stdout-result [:value :capability]))))))
 
+(deftest sh22-file-read-size-is-caller-selected-without-a-project-cap
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (request plan 'sh22-file-read-request)]
+      (doseq [size [1 16777217]]
+        (let [input (assoc-in base [:arguments 2] size) result (handle input)]
+          (is (= :accepted (:status result)))
+          (is (= size (get-in result [:value :maximum-bytes])))
+          (is (= :required (get-in result [:facts :provider-execution])))
+          (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+      (doseq [size [nil false 0 -1 1/2]]
+        (let [input (assoc-in base [:arguments 2] size) result (handle input)]
+          (is (= :rejected (:status result)))
+          (is (= :invalid-file-read-size (get-in result [:diagnostics 0 :reason])))
+          (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result])))))))))
+
 (deftest sh22-stdout-revalidates-utf8-before-building-provider-request
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original @scoped
@@ -594,7 +598,7 @@
                   "STD4001" :validated-text-facts-mismatch {:scan 1 :descriptor 0}))
         (reject (assoc stdout :arguments [(assoc (first (:arguments stdout))
                                                 :bytes (vec (repeat 257 65)) :scalar-count nil)])
-                "STD4001" :text-bound-exceeded {:scan 0 :descriptor 0})
+                "STD4001" :validated-text-facts-mismatch {:scan 1 :descriptor 0})
         (reject (assoc stdout :capabilities #{} :arguments [{:bytes [192 128]}])
                 "STD8001" :missing-io-authority {:scan 0 :descriptor 0})))))
 
@@ -633,15 +637,14 @@
           (is (= reason (get-in result [:diagnostics 0 :reason])))
           (is (nil? (:value result))))))))
 
-(deftest sh22-canonical-carrier-depth-is-bounded-without-host-failure
+(deftest sh22-canonical-carriers-have-no-project-depth-quota
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [base (request plan 'sh22-canonical-request)
           nested (nth (iterate vector :leaf) 20)
-          result (handle (assoc base :arguments [nested]))]
-      (is (= :rejected (:status result)))
-      (is (= "STD10003" (get-in result [:diagnostics 0 :rule])))
-      (is (= :noncanonical-or-over-bound-value
-             (get-in result [:diagnostics 0 :reason]))))))
+          input (assoc base :arguments [nested])
+          result (handle input)]
+      (is (= :accepted (:status result)))
+      (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result])))))))
 
 (deftest sh22-verifier-recomputes-and-rejects-substitution
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
@@ -661,7 +664,7 @@
         (is (= :library-result-substitution
                (get-in verification [:diagnostics 0 :reason])))))))
 
-(deftest sh22-verifier-rejects-over-bound-candidates-before-equality
+(deftest sh22-verifier-rejects-nonresult-candidates
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [request (request plan 'sh22-checked-add-request)
           candidate (vec (repeat 513 :candidate))
@@ -670,23 +673,16 @@
       (is (= :rejected (:status verification)))
       (is (= "STD10003"
              (get-in verification [:diagnostics 0 :rule])))
-      (is (= :verification-candidate-over-bound
+      (is (= :library-result-substitution
              (get-in verification [:diagnostics 0 :reason]))))))
 
-(deftest sh22-utf8-declared-byte-bound-is-executable-and-fail-closed
-  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
-    (let [base (request plan 'sh22-utf8-request)
-          at-bound
-          (handle (assoc base :arguments [(vec (repeat 256 65))]))
-          over-bound
-          (handle (assoc base :arguments [(vec (repeat 257 65))]))]
-      (is (= :accepted (:status at-bound)))
-      (is (= 256 (get-in at-bound [:value :byte-count])))
-      (is (= 256 (get-in at-bound [:value :scalar-count])))
-      (is (= :rejected (:status over-bound)))
-      (is (= "STD4001" (get-in over-bound [:diagnostics 0 :rule])))
-      (is (= :text-bound-exceeded
-             (get-in over-bound [:diagnostics 0 :reason]))))))
+(deftest sh22-utf8-validation-has-no-project-byte-quota
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan] size [256 257]]
+    (let [input (assoc (request plan 'sh22-utf8-request) :arguments [(vec (repeat size 65))])
+          result (handle input)]
+      (is (= :accepted (:status result)))
+      (is (= size (get-in result [:value :byte-count]) (get-in result [:value :scalar-count])))
+      (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result])))))))
 
 (deftest sh22-utf8-validation-covers-boundaries-and-invalid-classes
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
@@ -753,7 +749,7 @@
                                                  :scalar-count nil :encoding :utf-8}])
                       "STD4001" :validated-text-facts-mismatch))))
         (reject (assoc validation :arguments [(into [224 nil] (repeat 255 128))])
-                "STD4001" :text-bound-exceeded)
+                "STD4001" :invalid-utf8)
         (reject (assoc stdout :capabilities #{} :arguments [{:bytes [240 nil 128 128]}])
                 "STD8001" :missing-io-authority)))))
 
@@ -1138,8 +1134,7 @@
             (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
         ;; Bounds and the complete member/needle family check dominate equality.
         (doseq [[input rule reason census]
-                [[(assoc base :arguments [(ordered (conj values :member/k256)) :member/k0])
-                  "STD3001" :collection-bound-exceeded 0]
+                [
                  [(assoc base :arguments [(ordered [:reader "reader"]) :reader])
                   "STD10003" :expected-keyword-ordered-set 1]
                  [(assoc base :arguments [(ordered [:reader 'reader]) :reader])
@@ -1243,8 +1238,7 @@
             (doseq [[input output] [[insertion inserted] [query result]]]
               (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
         (doseq [[input rule reason census]
-                [[(assoc base :arguments [(ordered (conj values 'member/s256)) 'member/s0])
-                  "STD3001" :collection-bound-exceeded 0]
+                [
                  [(assoc base :arguments [(ordered ['reader "reader"]) 'reader])
                   "STD10003" :expected-symbol-ordered-set 1]
                  [(assoc base :arguments [(ordered ['reader :reader]) 'reader])
@@ -1360,7 +1354,7 @@
               (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
         (doseq [[arguments rule reason census]
                 (concat
-                 [[[(ordered (conj values 256)) 0] "STD3001" :collection-bound-exceeded 0]
+                 [
                   [[#{32} 32] "STD10003" :expected-ordered-set 0]
                   [[{:artifact :gravity/ordered-set} 32] "STD10003" :expected-ordered-set 0]
                   [[(assoc (ordered [32]) :extra true) 32] "STD10003" :expected-ordered-set 0]
@@ -1460,8 +1454,7 @@
               (is (= :passed (:status (invoke-engine 'sh22-verify-result [input output])))))))
         ;; Even a count mismatch or apparent first hit cannot bypass validation.
         (doseq [[left right reason census unique?]
-                [[(conj values :member/k256) [:reader] :collection-bound-exceeded 0 false]
-                 [[:reader] (conj values :member/k256) :collection-bound-exceeded 0 false]
+                [
                  [[:reader "reader"] [:reader] :expected-keyword-ordered-set 1 false]
                  [[:reader] [:reader 'reader] :expected-keyword-ordered-set 2 false]
                  [[:reader] [:reader nil] :expected-keyword-ordered-set 2 false]
@@ -1471,7 +1464,7 @@
           (let [input (assoc base :arguments [(ordered left) (ordered right)])
                 [result counts] (observe input)]
             (is (= :rejected (:status result)))
-            (is (= (if (= reason :collection-bound-exceeded) "STD3001" "STD10003")
+            (is (= "STD10003"
                    (get-in result [:diagnostics 0 :rule])))
             (is (= reason (get-in result [:diagnostics 0 :reason])))
             (is (= census (:census counts)))
@@ -1560,8 +1553,6 @@
               (is (= :passed (:status (invoke-engine 'sh22-verify-result [subject result])))))))
         (doseq [[input rule reason]
                 (concat
-                 (map #(vector (assoc base :arguments [(vec (repeat % nil)) :new])
-                               "STD3001" :collection-bound-exceeded) [256 257])
                  (map #(vector (assoc base :arguments [% :new]) "STD3002" :expected-vector)
                       [nil '(:reader) {:a :b} #{:reader}])
                  (map #(vector (assoc base :arguments %) "STD1001" :invalid-arity)
@@ -1588,44 +1579,19 @@
                            (assoc-in result [:identity-input :arguments 1] :wrong)]]
             (is (= :rejected (:status (invoke-engine 'sh22-verify-result [base changed]))))))))))
 
-(deftest sh22-collection-boundaries-run-before-recursive-search
+(deftest sh22-collections-grow-past-former-project-quotas
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [entries (mapv (fn [index] [index index]) (range 256))
           values (vec (range 256))
-          map-base (request plan 'sh22-map-assoc-request)
-          set-base (request plan 'sh22-set-conj-request)
-          map-update
-          (handle
-           (assoc map-base
-                  :arguments
-                  [{:artifact :gravity/ordered-map :entries entries}
-                   255
-                   :updated]))
-          map-growth
-          (handle
-           (assoc map-base
-                  :arguments
-                  [{:artifact :gravity/ordered-map :entries entries}
-                   256
-                   :new]))
-          set-existing
-          (handle
-           (assoc set-base
-                  :arguments
-                  [{:artifact :gravity/ordered-set :values values}
-                   255]))
-          set-growth
-          (handle
-           (assoc set-base
-                  :arguments
-                  [{:artifact :gravity/ordered-set :values values}
-                   256]))]
-      (is (= :accepted (:status map-update)))
-      (is (= :updated
-             (get-in map-update [:value :entries 255 1])))
-      (is (= :rejected (:status map-growth)))
-      (is (= "STD3001" (get-in map-growth [:diagnostics 0 :rule])))
-      (is (= :accepted (:status set-existing)))
-      (is (= 256 (count (get-in set-existing [:value :values]))))
-      (is (= :rejected (:status set-growth)))
-      (is (= "STD3001" (get-in set-growth [:diagnostics 0 :rule]))))))
+          map-input (assoc (request plan 'sh22-map-assoc-request)
+                           :arguments [{:artifact :gravity/ordered-map :entries entries} 256 :new])
+          set-input (assoc (request plan 'sh22-set-conj-request)
+                           :arguments [{:artifact :gravity/ordered-set :values values} 256])
+          vector-input (assoc (request plan 'sh22-vector-append-request) :arguments [values :new])]
+      (doseq [input [map-input set-input vector-input]]
+        (let [result (handle input)]
+          (is (= :accepted (:status result)))
+          (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+      (is (= (conj entries [256 :new]) (get-in (handle map-input) [:value :entries])))
+      (is (= (conj values 256) (get-in (handle set-input) [:value :values])))
+      (is (= (conj values :new) (:value (handle vector-input)))))))

@@ -56,7 +56,6 @@
         export (first (filter #(= :ordered-map-get-default-keyword (:name %)) (:exports manifest)))]
     (is (contains? (:operation-set policy) :ordered-map-get-default-keyword))
     (is (= (:operation-set policy) (set (map :name (:exports manifest)))))
-    (is (= 256 (:maximum-collection-elements policy)))
     (is (= :experimental (:stability export)))
     (is (= #{:meta} (:profiles export)))
     (is (= #{} (:effects export) (:capabilities export)))
@@ -133,9 +132,7 @@
           full (mapv #(vector (keyword "slot" (str "k" %)) %) (range 256))]
       (doseq [[entries key reason census unique?]
               (concat
-               [[(conj full [:extra 256]) :slot/k0 :collection-bound-exceeded 0 false]
-                [(conj full [:extra 256]) :missing :collection-bound-exceeded 0 false]
-                [[[:reader 1] [:syntax 2] [:reader 3]] :reader :expected-ordered-map 1 true]
+               [[[[:reader 1] [:syntax 2] [:reader 3]] :reader :expected-ordered-map 1 true]
                 [[[:reader 1] [:reader 2]] :missing :expected-ordered-map 1 true]]
                (for [bad-key [nil false 0 "late" 'late [] {}]]
                  [[[:reader 1] [bad-key 2]] :reader :expected-keyword-ordered-map 1 false])
@@ -145,7 +142,7 @@
                  [[[:reader 1]] bad-needle :expected-keyword 1 false]))]
         (let [input (assoc base :arguments [(ordered entries) key :fallback]) [result counts] (observe input)]
           (is (= :rejected (:status result)))
-          (is (= (if (= reason :collection-bound-exceeded) "STD3001" "STD10003")
+          (is (= "STD10003"
                  (get-in result [:diagnostics 0 :rule])))
           (is (= reason (get-in result [:diagnostics 0 :reason])))
           (is (= census (:census counts)))
@@ -160,8 +157,7 @@
           (is (= {:census 0 :unique 0 :lookup 0} counts))))
       (doseq [[function reason] [['sh22-keyword-map-default-duplicate-request :expected-ordered-map]
                                 ['sh22-keyword-map-default-late-key-request :expected-keyword-ordered-map]
-                                ['sh22-keyword-map-default-malformed-request :expected-keyword-ordered-map]
-                                ['sh22-keyword-map-default-over-bound-request :collection-bound-exceeded]]]
+                                ['sh22-keyword-map-default-malformed-request :expected-keyword-ordered-map]]]
         (let [input (invoke (get @fixtures ["rejected" extension]) function [base]) [result counts] (observe input)]
           (is (= :rejected (:status result)))
           (is (= reason (get-in result [:diagnostics 0 :reason])))

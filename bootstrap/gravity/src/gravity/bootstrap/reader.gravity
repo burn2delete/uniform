@@ -24,7 +24,6 @@
              stage1-read-source-release-attestation-seed-retirement
              stage1-read-source-formal-release-governance-seed-retirement
              sh03-reader-contract
-             sh03-reader-bounds
              sh03-read-source-unit
              sh03-verify-reader-result])
   (:effects #{})
@@ -1342,69 +1341,8 @@
    :whole-language? false
    :clojure-seed-boundary? true})
 
-(def sh03-reader-bounds
-  {:resource-policy :gravity/sh03-compiler-source-v1
-   :maximum-source-bytes 4194304
-   :maximum-characters 4194304
-   :maximum-tokens 524288
-   :maximum-forms 262144
-   :maximum-delimiter-depth 512
-   :maximum-semantic-work-units 8437834
-   :maximum-container-width 65536
-   :maximum-token-scalars 262144
-   :maximum-numeric-semantic-scalars 256
-   :maximum-numeric-semantic-work-units 65536
-   :maximum-canonical-scalar-bytes 1048576
-   :maximum-canonical-total-scalar-bytes 536870912
-   :maximum-source-identity-utf8-bytes 4096
-   :maximum-logical-source-id-code-units 1024
-   :maximum-actual-path-code-units 1024
-   :maximum-reader-tags 32
-   :maximum-reader-tag-codepoints 4
-   :maximum-result-carrier-nodes 268435456
-   :maximum-result-carrier-depth 2048
-   :maximum-result-carrier-width 4194304
-   :result-carrier-node-budget
-   {:fixed-nodes 1048576
-    :nodes-per-source-byte 24
-    :nodes-per-token 320
-    :nodes-per-form 1024
-    :nodes-per-reader-tag 2048
-    :derived-maximum-nodes 537985024
-    :construction-guard :prospective-physical-node-count
-    :admitted-maximum-nodes 268435456}})
 
-(defn sh03-bounds-record []
-  {:resource-policy :gravity/sh03-compiler-source-v1
-   :maximum-source-bytes 4194304
-   :maximum-characters 4194304
-   :maximum-tokens 524288
-   :maximum-forms 262144
-   :maximum-delimiter-depth 512
-   :maximum-semantic-work-units 8437834
-   :maximum-container-width 65536
-   :maximum-token-scalars 262144
-   :maximum-numeric-semantic-scalars 256
-   :maximum-numeric-semantic-work-units 65536
-   :maximum-canonical-scalar-bytes 1048576
-   :maximum-canonical-total-scalar-bytes 536870912
-   :maximum-source-identity-utf8-bytes 4096
-   :maximum-logical-source-id-code-units 1024
-   :maximum-actual-path-code-units 1024
-   :maximum-reader-tags 32
-   :maximum-reader-tag-codepoints 4
-   :maximum-result-carrier-nodes 268435456
-   :maximum-result-carrier-depth 2048
-   :maximum-result-carrier-width 4194304
-   :result-carrier-node-budget
-   {:fixed-nodes 1048576
-    :nodes-per-source-byte 24
-    :nodes-per-token 320
-    :nodes-per-form 1024
-    :nodes-per-reader-tag 2048
-    :derived-maximum-nodes 537985024
-    :construction-guard :prospective-physical-node-count
-    :admitted-maximum-nodes 268435456}})
+(defn sh03-bounds-record [] {})
 
 (defn sh03-execution-boundary-record []
   {:artifact :gravity/sh03-reader-execution-boundary
@@ -1424,25 +1362,14 @@
                            :canonical-encoding
                            :sha256-resolution
                            :contextual-envelope-reconstruction
-                           :bounded-result-carrier-validation
+                           :result-carrier-validation
                            :stage2-instruction-runner]
    :clojure-boundary-responsibility
    {:responsibility :result-carrier-validation
-    :maximum-nodes 268435456
-    :maximum-depth 2048
-    :maximum-width 4194304
-    :maximum-canonical-scalar-bytes 1048576
-    :maximum-canonical-total-scalar-bytes 536870912
     :failure-rule "C2-HASH"
     :result-committed? false}
    :gravity-input-responsibility
-   {:maximum-source-identity-utf8-bytes 4096
-    :maximum-logical-source-id-code-units 1024
-    :maximum-actual-path-code-units 1024
-    :maximum-source-bytes 4194304
-    :maximum-reader-tags 32
-    :maximum-reader-tag-codepoints 4
-    :invalid-input-carrier-policy :bounded-summary}
+   {:invalid-input-carrier-policy :summary}
    :forbidden-reader-delegation
    [:read-source-form-records
     :read-source-form-records-host-oracle
@@ -1527,10 +1454,10 @@
 (defn sh03-actual-path [source-unit]
   (get (sh03-actual-provenance source-unit) :path))
 
-(defn sh03-bounded-nonempty-string? [value maximum-code-units]
+(defn sh03-nonempty-string? [value]
   (if (string? value)
     (if (> (count value) 0)
-      (<= (count value) maximum-code-units)
+      true
       false)
     false))
 
@@ -1547,23 +1474,14 @@
       (if (= (get source-unit :artifact) :gravity/sh03-source-unit)
         (if (= (get source-unit :schema-version) 1)
           (if (sh03-sha256-id? (get source-unit :project-root-id))
-            (if (sh03-bounded-nonempty-string?
-                 (get source-unit :logical-source-id)
-                 (get (sh03-bounds-record)
-                      :maximum-logical-source-id-code-units))
+            (if (sh03-nonempty-string? (get source-unit :logical-source-id))
                 (if (sh03-sha256-id? (get source-unit :source-content-hash))
                   (if (sh03-nonnegative-integer? source-bytes)
-                    (if (<= source-bytes
-                            (get (sh03-bounds-record)
-                                 :maximum-source-bytes))
-                      (if (= (get source-unit :encoding) :utf-8)
+                    (if (= (get source-unit :encoding) :utf-8)
                         (if (sh03-exact-keys?
                              provenance
                              #{:path :extension :source-kind})
-                          (if (sh03-bounded-nonempty-string?
-                               (get provenance :path)
-                               (get (sh03-bounds-record)
-                                    :maximum-actual-path-code-units))
+                          (if (sh03-nonempty-string? (get provenance :path))
                             (if (sh03-vector-contains?
                                  [".gravity" ".qst"] extension)
                               (if (= extension ".gravity")
@@ -1573,7 +1491,6 @@
                             false)
                           false)
                         false)
-                      false)
                     false)
                   false)
                 false)
@@ -1601,10 +1518,7 @@
 (defn sh03-valid-tag-codepoints? [tag]
   (if (vector? tag)
     (if (> (count tag) 0)
-      (if (<= (count tag)
-              (get (sh03-bounds-record)
-                   :maximum-reader-tag-codepoints))
-        (loop [remaining tag]
+      (loop [remaining tag]
           (if (= (count remaining) 0)
             true
             (if (integer? (first remaining))
@@ -1612,7 +1526,6 @@
                 (recur (rest remaining))
                 false)
               false)))
-        false)
       false)
     false))
 
@@ -1630,12 +1543,9 @@
         (if (boolean? (get policy :retain-trivia))
           (let [tags (get policy :enabled-reader-tags)]
             (if (vector? tags)
-              (if (<= (count tags)
-                      (get (sh03-bounds-record) :maximum-reader-tags))
-                (if (sh03-reader-tags-registered-shape? tags)
+              (if (sh03-reader-tags-registered-shape? tags)
                   (sh03-all-unique? tags)
                   false)
-                false)
               false))
           false)
         false)
@@ -1687,11 +1597,7 @@
      :logical-source-id-string? (string? logical-source-id)
      :logical-source-id-code-units
      (if (string? logical-source-id) (count logical-source-id) nil)
-     :logical-source-id-within-bound?
-     (sh03-bounded-nonempty-string?
-      logical-source-id
-      (get (sh03-bounds-record)
-           :maximum-logical-source-id-code-units))
+     :logical-source-id-valid? (sh03-nonempty-string? logical-source-id)
      :source-content-hash-valid?
      (if (map? source-unit)
        (sh03-sha256-id? (get source-unit :source-content-hash))
@@ -1700,8 +1606,7 @@
      (if (map? source-unit)
        (let [source-byte-count (get source-unit :source-byte-count)]
          (if (sh03-nonnegative-integer? source-byte-count)
-           (<= source-byte-count
-               (get (sh03-bounds-record) :maximum-source-bytes))
+           true
            false))
        false)
      :encoding-valid? (if (map? source-unit)
@@ -1711,40 +1616,16 @@
      :actual-path-string? (string? actual-path)
      :actual-path-code-units
      (if (string? actual-path) (count actual-path) nil)
-     :actual-path-within-bound?
-     (sh03-bounded-nonempty-string?
-      actual-path
-      (get (sh03-bounds-record) :maximum-actual-path-code-units))
+     :actual-path-valid? (sh03-nonempty-string? actual-path)
      :extension-policy-valid?
      (if (sh03-source-unit-extension-policy-failure? source-unit)
        false
        true)}))
 
-(defn sh03-reader-tags-codepoint-bounded? [tags]
-  (if (vector? tags)
-    (if (<= (count tags)
-            (get (sh03-bounds-record) :maximum-reader-tags))
-      (loop [remaining tags]
-        (if (= (count remaining) 0)
-          true
-          (let [tag (first remaining)]
-            (if (vector? tag)
-              (if (if (> (count tag) 0)
-                    (<= (count tag)
-                        (get (sh03-bounds-record)
-                             :maximum-reader-tag-codepoints))
-                    false)
-                (recur (rest remaining))
-                false)
-              false))))
-      false)
-    false))
 
 (defn sh03-reader-tags-registered-shape? [tags]
   (if (vector? tags)
-    (if (<= (count tags)
-            (get (sh03-bounds-record) :maximum-reader-tags))
-      (loop [remaining tags]
+    (loop [remaining tags]
         (if (= (count remaining) 0)
           true
           (let [tag (first remaining)]
@@ -1753,7 +1634,6 @@
                 (recur (rest remaining))
                 false)
               false))))
-      false)
     false))
 
 (defn sh03-reader-policy-input-summary [reader-policy]
@@ -1761,13 +1641,6 @@
         (if (map? reader-policy)
           (get reader-policy :enabled-reader-tags)
           nil)
-        tag-count-within-bound?
-        (if (vector? tags)
-          (<= (count tags)
-              (get (sh03-bounds-record) :maximum-reader-tags))
-          false)
-        tag-codepoints-within-bound?
-        (sh03-reader-tags-codepoint-bounded? tags)
         registered-tag-shapes?
         (sh03-reader-tags-registered-shape? tags)
         reader-tags-unique?
@@ -1790,9 +1663,6 @@
        false)
      :enabled-reader-tags-vector? (vector? tags)
      :enabled-reader-tag-count (if (vector? tags) (count tags) nil)
-     :reader-tag-count-within-bound? tag-count-within-bound?
-     :reader-tag-codepoints-within-bound?
-     tag-codepoints-within-bound?
      :registered-reader-tag-shapes?
      registered-tag-shapes?
      :reader-tags-unique? reader-tags-unique?}))
@@ -1809,11 +1679,7 @@
      :observed-byte-count observed
      :count-matches? (if (vector? source-bytes)
                        (= expected observed)
-                       false)
-     :within-source-byte-bound?
-     (if (vector? source-bytes)
-       (<= observed (get (sh03-bounds-record) :maximum-source-bytes))
-       false)}))
+                       false)}))
 
 (defn sh03-neutral-position [position]
   {:line (get position :line)
@@ -1839,9 +1705,7 @@
 (defn sh03-source-byte-vector-valid? [source-unit source-bytes]
   (if (vector? source-bytes)
     (if (= (count source-bytes) (get source-unit :source-byte-count))
-      (if (<= (count source-bytes)
-              (get (sh03-bounds-record) :maximum-source-bytes))
-        (loop [remaining source-bytes]
+      (loop [remaining source-bytes]
           (if (= (count remaining) 0)
             true
             (if (integer? (first remaining))
@@ -1851,7 +1715,6 @@
                   false)
                 false)
               false)))
-        false)
       false)
     false))
 
@@ -1988,9 +1851,7 @@
 
 (defn sh03-decode-source-bytes [source-unit source-bytes]
   (if (sh03-source-byte-vector-valid? source-unit source-bytes)
-    (let [maximum-characters
-          (get (sh03-bounds-record) :maximum-characters)
-          source-byte-count (count source-bytes)]
+    (let [source-byte-count (count source-bytes)]
     (loop [position 0
            scalar-index 0
            utf16-index 0
@@ -2003,16 +1864,7 @@
          :character-count scalar-index
          :utf16-unit-count utf16-index
          :source-byte-count position}
-        (if (>= scalar-index maximum-characters)
-          {:status :rejected
-           :reason :character-count-limit
-           :byte-position position
-           :observed []
-           :line line
-           :column column
-           :char-position utf16-index
-           :scalar-index scalar-index}
-          (let [decoded (sh03-decode-one-utf8-scalar source-bytes position)]
+        (let [decoded (sh03-decode-one-utf8-scalar source-bytes position)]
             (if (= (get decoded :status) :accepted)
               (let [codepoint (get decoded :codepoint)
                   width (get decoded :width)
@@ -2055,7 +1907,7 @@
                  (assoc decoded :line line)
                  :column column)
                 :char-position utf16-index)
-               :scalar-index scalar-index)))))))
+               :scalar-index scalar-index))))))
     (sh03-utf8-rejection
      :source-byte-vector-contract 0 source-bytes)))
 
@@ -2503,39 +2355,6 @@
         exponent-digits
         (- (get trailing :removed) (count fraction-digits)))})))
 
-(defn sh03-bounded-decimal-spelling-key [codepoints]
-  (let [components (sh03-signed-components codepoints)
-        digits (get components :digits)
-        lower (sh03-split-once digits 101)
-        upper (sh03-split-once digits 69)
-        exponent-split (if (= (get lower :found) true) lower upper)
-        exponent-present
-        (if (= (get lower :found) true)
-          true
-          (= (get upper :found) true))
-        mantissa (if exponent-present
-                   (get exponent-split :left)
-                   digits)
-        exponent (if exponent-present (get exponent-split :right) [])
-        exponent-components (sh03-signed-components exponent)
-        point (sh03-split-once mantissa 46)
-        all-mantissa-digits
-        (sh03-append (get point :left)
-                     (if (= (get point :found) true)
-                       (get point :right)
-                       []))
-        zero? (sh03-zero-digits? all-mantissa-digits)]
-    {:kind :decimal
-     :normalization :reader-semantic-work-boundary
-     :sign (if zero? 1 (get components :sign))
-     :zero? zero?
-     :integer-digits
-     (sh03-trim-leading-zeroes (get point :left))
-     :fraction-digits
-     (if (= (get point :found) true) (get point :right) [])
-     :exponent-sign (get exponent-components :sign)
-     :exponent-digits
-     (sh03-trim-leading-zeroes (get exponent-components :digits))}))
 
 (defn sh03-decimal-descriptor [codepoints raw]
   (let [exponent-lower (sh03-split-once codepoints 101)
@@ -2553,20 +2372,11 @@
           (get exponent-split :right)
           [])
         point-split (sh03-split-once mantissa 46)
-        normalization-deferred?
-        (> (count codepoints)
-           (get (sh03-bounds-record) :maximum-numeric-semantic-scalars))
         semantic-key
-        (if normalization-deferred?
-          (sh03-bounded-decimal-spelling-key codepoints)
-          (sh03-decimal-semantic-key-from-codepoints codepoints))
+        (sh03-decimal-semantic-key-from-codepoints codepoints)
         host-range-deferred?
-        (if normalization-deferred?
-          false
-          (if (sh03-decimal-power-host-range-safe?
-               (get semantic-key :decimal-power))
-            false
-            true))]
+        (if (sh03-decimal-power-host-range-safe?
+             (get semantic-key :decimal-power)) false true)]
     {:artifact :gravity/decimal-literal
      :kind :decimal
      :raw raw
@@ -2578,13 +2388,8 @@
      :exponent-spelling exponent
      :semantic-key semantic-key
      :semantic-validation
-     (if normalization-deferred?
-       :deferred
-       (if host-range-deferred? :deferred :accepted))
-     :normalization-reason
-     (if normalization-deferred?
-       :reader-semantic-work-boundary
-       nil)
+     (if host-range-deferred? :deferred :accepted)
+     :normalization-reason nil
      :reason
      (if host-range-deferred? :host-independent-decimal-range nil)}))
 
@@ -2781,52 +2586,7 @@
                          :rule "C2-IDENTIFIER"
                          :engine nil}))))))))))))
 
-(defn sh03-defer-numeric-classification [classified codepoints]
-  (let [descriptor (get classified :descriptor)
-        observed-scalars (count codepoints)]
-    (assoc
-     classified :descriptor
-     (assoc
-      (assoc
-       (assoc
-        (assoc descriptor :semantic-validation :deferred)
-        :normalization-reason :reader-semantic-work-boundary)
-       :spelling-codepoints codepoints)
-      :numeric-semantic-work
-      {:observed-scalars observed-scalars
-       :maximum-scalars
-       (get (sh03-bounds-record) :maximum-numeric-semantic-scalars)
-       :observed-work-units (* observed-scalars observed-scalars)
-       :maximum-work-units
-       (get (sh03-bounds-record)
-            :maximum-numeric-semantic-work-units)}))))
 
-(defn sh03-classify-bounded-deferred-numeric [codepoints raw]
-  (if (sh03-decimal-integer-shape? codepoints)
-    {:status :accepted :kind :integer
-     :descriptor {:kind :integer :raw raw :radix 10
-                  :value (sh03-integer-value codepoints)}}
-    (if (sh03-radix-integer-shape? codepoints)
-      {:status :accepted :kind :integer
-       :descriptor
-       {:kind :integer
-        :raw raw
-        :radix
-        (if (contains? #{120 88}
-                       (second
-                        (get (sh03-signed-components codepoints) :digits)))
-          16 2)
-        :value (sh03-integer-value codepoints)}}
-      (if (sh03-ratio-shape? codepoints)
-        {:status :accepted :kind :ratio
-         :descriptor (sh03-ratio-descriptor codepoints raw)}
-        (if (sh03-decimal-shape? codepoints)
-          {:status :accepted :kind :decimal
-           :descriptor (sh03-decimal-descriptor codepoints raw)}
-          {:status :rejected
-           :reason :malformed-numeric
-           :rule "C2-NUMERIC"
-           :engine "STAGE1READER007"})))))
 
 (defn sh03-string-escape [codepoint]
   (if (= codepoint 34)
@@ -2994,20 +2754,11 @@
    :related []})
 
 (defn sh03-scan-tokens [characters]
-  (let [bounds (sh03-bounds-record)
-        maximum-tokens (get bounds :maximum-tokens)
-        maximum-numeric-scalars (get bounds :maximum-numeric-semantic-scalars)]
+  (let [bounds (sh03-bounds-record)]
   (loop [position 0 token-index 0 tokens []]
     (if (= position (count characters))
       {:status :accepted :tokens tokens}
-      (if (>= token-index maximum-tokens)
-        (sh03-lexical-rejection
-         "C2-HASH" "STAGE1READER006" :token-count-limit
-         (get (sh03-character-at characters position) :span)
-         nil
-         {:maximum-tokens maximum-tokens}
-         (sh03-token-id token-index))
-        (let [codepoint (sh03-codepoint-at characters position)]
+      (let [codepoint (sh03-codepoint-at characters position)]
           (if (sh03-ascii-whitespace? codepoint)
             (let [end (sh03-scan-run-end characters position :whitespace)
                   token (sh03-make-token
@@ -3188,20 +2939,14 @@
                                    characters position end)
                               base-classification
                               (if (sh03-numeric-looking? codepoints)
-                                (if (> (count codepoints) maximum-numeric-scalars)
-                                  (sh03-classify-bounded-deferred-numeric
-                                   codepoints raw)
-                                  (sh03-classify-atom codepoints raw))
+                                (sh03-classify-atom codepoints raw)
                                 (sh03-classify-atom codepoints raw))
                               classified
                               (if (= (get base-classification :status)
                                      :accepted)
                                 (if (contains? #{:integer :ratio :decimal}
                                                (get base-classification :kind))
-                                  (if (> (count codepoints) maximum-numeric-scalars)
-                                    (sh03-defer-numeric-classification
-                                     base-classification codepoints)
-                                    base-classification)
+                                  base-classification
                                   base-classification)
                                 base-classification)]
                           (if (= (get classified :status) :accepted)
@@ -3233,7 +2978,7 @@
                                     :raw-spelling raw}
                                    {}))
                                (get classified :facts))
-                             (sh03-token-id token-index)))))))))))))))))
+                             (sh03-token-id token-index))))))))))))))))
 
 (defn sh03-token-trivia? [token]
   (= (get token :trivia?) true))
@@ -3647,57 +3392,10 @@
          :denominator
          (sh03-canonical-ratio-number 1 normalized-denominator)}))))
 
-(defn sh03-deferred-numeric-semantic-key [descriptor]
-  (let [kind (get descriptor :kind)]
-    (if (= kind :integer)
-      (let [value (get descriptor :value)
-            spelling-components
-            (sh03-signed-components
-             (get descriptor :spelling-codepoints))
-            spelling-digits
-            (get spelling-components :digits)
-            radix (get descriptor :radix)
-            radix-digits
-            (if (if (contains? #{2 16} radix)
-                  (>= (count spelling-digits) 2)
-                  false)
-              (subvec spelling-digits 2 (count spelling-digits))
-              spelling-digits)
-            normalized-digits (sh03-trim-leading-zeroes radix-digits)
-            zero? (sh03-zero-digits? normalized-digits)]
-        {:kind :integer
-         :normalization :reader-semantic-work-boundary
-         :radix radix
-         :sign (if zero?
-                 :positive
-                 (get spelling-components :sign))
-         :zero? zero?
-         :digit-codepoints normalized-digits})
-      (if (= kind :ratio)
-        (let [numerator
-              (sh03-signed-components
-               (get descriptor :numerator-spelling))
-              numerator-digits
-              (sh03-trim-leading-zeroes (get numerator :digits))
-              zero? (sh03-zero-digits? numerator-digits)]
-          {:kind :ratio
-           :normalization :reader-semantic-work-boundary
-           :numerator-sign (if zero? :positive (get numerator :sign))
-           :zero? zero?
-           :numerator-digits numerator-digits
-           :denominator-digits
-           (sh03-trim-leading-zeroes
-            (get descriptor :denominator-spelling))})
-        {:kind :decimal
-         :normalization :reader-semantic-work-boundary
-         :bounded-semantic-key (get descriptor :semantic-key)}))))
 
 (defn sh03-token-semantic-key [token]
   (let [descriptor (get token :descriptor)
         kind (get descriptor :kind)]
-    (if (= (get descriptor :normalization-reason)
-           :reader-semantic-work-boundary)
-      (sh03-deferred-numeric-semantic-key descriptor)
     (if (= kind :nil)
       {:kind :nil}
       (if (= kind :boolean)
@@ -3720,111 +3418,17 @@
                   (if (= kind :keyword)
                     {:kind :keyword
                      :name-codepoints (get descriptor :name-codepoints)}
-                    descriptor))))))))))))
+                    descriptor)))))))))))
 
-(defn sh03-numeric-semantic-kind? [kind]
-  (contains? #{:integer :ratio :decimal} kind))
 
 (defn sh03-not-equal? [left right]
   (if (= left right) false true))
 
-(defn sh03-semantic-key-has-deferred-numeric? [semantic-key]
-  (if (map? semantic-key)
-    (if (= (get semantic-key :normalization)
-           :reader-semantic-work-boundary)
-      true
-      (= (get semantic-key :numeric-equivalence-deferred?) true))
-    false))
 
-(defn sh03-semantic-keys-have-deferred-numeric? [semantic-keys]
-  (loop [remaining semantic-keys]
-    (if (= (count remaining) 0)
-      false
-      (if (sh03-semantic-key-has-deferred-numeric? (first remaining))
-        true
-        (recur (rest remaining))))))
 
-(defn sh03-deferred-numeric-zero? [semantic-key]
-  (if (= (get semantic-key :kind) :decimal)
-    (= (get (get semantic-key :bounded-semantic-key) :zero?) true)
-    (= (get semantic-key :zero?) true)))
 
-(defn sh03-deferred-numeric-sign [semantic-key]
-  (let [kind (get semantic-key :kind)
-        sign
-        (if (= kind :integer)
-          (get semantic-key :sign)
-          (if (= kind :ratio)
-            (get semantic-key :numerator-sign)
-            (get (get semantic-key :bounded-semantic-key) :sign)))]
-    (if (if (= sign :negative) true (= sign -1)) -1 1)))
 
-(defn sh03-deferred-numerics-provably-distinct? [left right]
-  (if (if (sh03-semantic-key-has-deferred-numeric? left)
-        (sh03-semantic-key-has-deferred-numeric? right)
-        false)
-    (if (if (sh03-numeric-semantic-kind? (get left :kind))
-          (sh03-numeric-semantic-kind? (get right :kind))
-          false)
-      (if (if (sh03-deferred-numeric-zero? left)
-            false
-            (if (sh03-deferred-numeric-zero? right) false true))
-        (sh03-not-equal? (sh03-deferred-numeric-sign left)
-                         (sh03-deferred-numeric-sign right))
-        false)
-      false)
-    false))
 
-(defn sh03-semantic-key-comparison [left right observed-work]
-  (let [next-work (+ observed-work 1)
-        maximum-work
-        (get (sh03-bounds-record) :maximum-semantic-work-units)]
-    (if (> next-work maximum-work)
-      {:decision :limit :work-units next-work}
-      (if (= left right)
-        {:decision :equal :work-units next-work}
-        (let [left-deferred?
-              (sh03-semantic-key-has-deferred-numeric? left)
-              right-deferred?
-              (sh03-semantic-key-has-deferred-numeric? right)]
-          (if (if left-deferred? true right-deferred?)
-            (let [left-kind (if (map? left) (get left :kind) nil)
-                  right-kind (if (map? right) (get right :kind) nil)
-                  both-numeric?
-                  (if (sh03-numeric-semantic-kind? left-kind)
-                    (sh03-numeric-semantic-kind? right-kind)
-                    false)]
-              (if (sh03-deferred-numerics-provably-distinct? left right)
-                {:decision :distinct :work-units next-work}
-                (if (sh03-not-equal? left-kind right-kind)
-                  {:decision (if both-numeric? :undecidable :distinct)
-                   :work-units next-work}
-                  (if (contains? #{:list :vector} left-kind)
-                    (if (sh03-not-equal?
-                         (count (get left :items))
-                         (count (get right :items)))
-                      {:decision :distinct :work-units next-work}
-                      {:decision :undecidable :work-units next-work})
-                    (if (= left-kind :tagged-literal)
-                      (if (sh03-not-equal? (get left :tag-codepoints)
-                                           (get right :tag-codepoints))
-                        {:decision :distinct :work-units next-work}
-                        {:decision :undecidable :work-units next-work})
-                      (if (= left-kind :map)
-                        (if (sh03-not-equal?
-                             (count (get left :entries))
-                             (count (get right :entries)))
-                          {:decision :distinct :work-units next-work}
-                          {:decision :undecidable :work-units next-work})
-                        (if (= left-kind :set)
-                          (if (sh03-not-equal?
-                               (count (get left :items))
-                               (count (get right :items)))
-                            {:decision :distinct :work-units next-work}
-                            {:decision :undecidable :work-units next-work})
-                          {:decision :undecidable
-                           :work-units next-work})))))))
-            {:decision :distinct :work-units next-work}))))))
 
 (defn sh03-current-parent-id [frames]
   (if (= (count frames) 0)
@@ -3882,15 +3486,11 @@
              (assoc result (first remaining) (second remaining))))))
 
 (defn sh03-collection-semantic-key [kind semantic-keys]
-  (let [base
-        (if (= kind :map)
-          {:kind :map :entries (sh03-semantic-map semantic-keys)}
-          (if (= kind :set)
-            {:kind :set :items (set semantic-keys)}
-            {:kind kind :items semantic-keys}))]
-    (if (sh03-semantic-keys-have-deferred-numeric? semantic-keys)
-      (assoc base :numeric-equivalence-deferred? true)
-      base)))
+  (if (= kind :map)
+    {:kind :map :entries (sh03-semantic-map semantic-keys)}
+    (if (= kind :set)
+      {:kind :set :items (set semantic-keys)}
+      {:kind kind :items semantic-keys})))
 
 (defn sh03-metadata-form-kind? [kind]
   (contains? #{:keyword :symbol :map} kind))
@@ -4106,35 +3706,6 @@
               []
               (get facts :related))})
 
-(defn sh03-set-numeric-equivalence-check
-  [frame completed-key observed-work]
-  (let [candidate-deferred?
-        (sh03-semantic-key-has-deferred-numeric? completed-key)
-        comparison-keys
-        (if candidate-deferred?
-          (get frame :semantic-keys)
-          (get frame :deferred-semantic-keys))
-        comparison-form-ids
-        (if candidate-deferred?
-          (get frame :children)
-          (get frame :deferred-semantic-form-ids))]
-    (loop [remaining-keys comparison-keys
-           remaining-form-ids comparison-form-ids
-           work observed-work]
-      (if (= (count remaining-keys) 0)
-        {:status :accepted :semantic-work-units work}
-        (let [comparison
-              (sh03-semantic-key-comparison
-               (first remaining-keys) completed-key work)
-              decision (get comparison :decision)
-              next-work (get comparison :work-units)]
-          (if (= decision :distinct)
-            (recur (rest remaining-keys)
-                   (rest remaining-form-ids) next-work)
-            {:status :rejected
-             :decision decision
-             :semantic-work-units next-work
-             :first-form-id (first remaining-form-ids)}))))))
 
 (defn sh03-frame-with-child [frame record value semantic-key]
   (let [children (conj (get frame :children) (get record :form-id))
@@ -4158,17 +3729,7 @@
            :semantic-keys semantic-keys)
           :subtree-form-counts subtree-form-counts)
          :semantic-key-index semantic-key-index)]
-    (if (if (= (get frame :collection-kind) :set)
-          (sh03-semantic-key-has-deferred-numeric? semantic-key)
-          false)
-      (assoc
-       (assoc result
-              :deferred-semantic-keys
-              (conj (get frame :deferred-semantic-keys) semantic-key))
-       :deferred-semantic-form-ids
-       (conj (get frame :deferred-semantic-form-ids)
-             (get record :form-id)))
-      result)))
+    result))
 
 (defn sh03-sum-integers [values]
   (loop [remaining values result 0]
@@ -4232,7 +3793,7 @@
                :name-codepoints
                (sh03-abbreviation-operator-codepoints abbreviation)}
               target-value]}))
-        semantic-key-base
+        semantic-key
         (if (= kind :metadata-wrapper)
           target-key
           (if (= kind :tagged-literal)
@@ -4245,13 +3806,6 @@
                :name-codepoints
                (sh03-abbreviation-operator-codepoints abbreviation)}
               target-key]}))
-        semantic-key
-        (if (sh03-semantic-key-has-deferred-numeric? target-key)
-          (if (= kind :metadata-wrapper)
-            semantic-key-base
-            (assoc semantic-key-base
-                   :numeric-equivalence-deferred? true))
-          semantic-key-base)
         start (get frame :open-token-index)
         end (get child-record :close-token-index)
         open-token (get frame :open-token)
@@ -4284,23 +3838,20 @@
          :expanded-form value}]))))
 
 (defn sh03-attach-completed-form [tokens frames records roots root-values
-                                  record value semantic-key semantic-work]
+                                  record value semantic-key]
   (loop [remaining-frames frames
          result-records (sh03-records-with-form records record)
          result-roots roots
          result-root-values root-values
          completed-record record
          completed-value value
-         completed-key semantic-key
-         added-semantic-work
-         (* 2 (get record :subtree-form-count))]
+         completed-key semantic-key]
     (if (= (count remaining-frames) 0)
       {:status :accepted
        :frames remaining-frames
        :records result-records
        :roots (conj result-roots (get completed-record :form-id))
-       :root-values (conj result-root-values completed-value)
-       :semantic-work-units (+ semantic-work added-semantic-work)}
+       :root-values (conj result-root-values completed-value)}
       (let [frame (first remaining-frames)
             more-frames (rest remaining-frames)
             frame-kind (get frame :frame-kind)]
@@ -4325,61 +3876,12 @@
                 [{:role :first-literal
                   :span (get first-record :span)
                   :artifact first-form-id}]}))
-            (let [base-semantic-work
-                  (+ semantic-work added-semantic-work)
-                  equivalence
-                  (if (= (get frame :collection-kind) :set)
-                    (sh03-set-numeric-equivalence-check
-                     frame completed-key base-semantic-work)
-                    {:status :accepted
-                     :semantic-work-units base-semantic-work})]
-              (if (= (get equivalence :status) :rejected)
-                (if (= (get equivalence :decision) :equal)
-                  (sh03-frame-rejection
-                   "C2-SET" nil :duplicate-set-entry
-                   (get completed-record :span)
-                   (get completed-record :raw)
-                   {:duplicate-kind (get completed-record :kind)
-                    :first-form-id (get equivalence :first-form-id)
-                    :duplicate-form-id (get completed-record :form-id)
-                    :form-id (get completed-record :form-id)
-                    :token-id (get completed-record :open-token)})
-                  (sh03-frame-rejection
-                   "C2-HASH" "STAGE1READER006"
-                   :numeric-set-equivalence-limit
-                   (get completed-record :span)
-                   (get completed-record :raw)
-                   {:comparison-decision (get equivalence :decision)
-                    :first-form-id (get equivalence :first-form-id)
-                    :candidate-form-id (get completed-record :form-id)
-                    :observed-semantic-work-units
-                    (get equivalence :semantic-work-units)
-                    :maximum-semantic-work-units
-                    (get (sh03-bounds-record)
-                         :maximum-semantic-work-units)
-                    :form-id (get completed-record :form-id)
-                    :token-id (get completed-record :open-token)}))
-                (if (>= (count (get frame :children))
-                        (get (sh03-bounds-record)
-                             :maximum-container-width))
-                  (sh03-frame-rejection
-                   "C2-HASH" "STAGE1READER006" :container-width-limit
-                   (get completed-record :span)
-                   (get completed-record :raw)
-                   {:maximum-container-width
-                    (get (sh03-bounds-record) :maximum-container-width)
-                    :form-id (get completed-record :form-id)
-                    :token-id (get completed-record :open-token)})
-                  {:status :accepted
-                   :frames
-                   (conj more-frames
-                         (sh03-frame-with-child
-                          frame completed-record completed-value completed-key))
-                   :records result-records
-                   :roots result-roots
-                   :root-values result-root-values
-                   :semantic-work-units
-                   (get equivalence :semantic-work-units)}))))
+            {:status :accepted
+             :frames (conj more-frames
+                           (sh03-frame-with-child
+                            frame completed-record completed-value completed-key))
+             :records result-records :roots result-roots
+             :root-values result-root-values})
           (let [child-count (count (get frame :children))]
             (if (if (= (get frame :wrapper-kind) :metadata-wrapper)
                   (if (= child-count 0)
@@ -4395,34 +3897,15 @@
                         (sh03-reader-tag-payload-valid?
                          updated completed-record)
                         true)
-                    (let [wrapper-subtree-form-count
-                          (sh03-frame-subtree-form-count updated)
-                          wrapper-semantic-work
-                          (* 2 wrapper-subtree-form-count)
-                          observed-semantic-work
-                          (+ semantic-work added-semantic-work
-                             wrapper-semantic-work)]
-                      (if (> observed-semantic-work
-                             (get (sh03-bounds-record)
-                                  :maximum-semantic-work-units))
-                        (sh03-semantic-work-rejection
-                         (sh03-token-at
-                          tokens (get updated :open-token-index))
-                         (get updated :form-id)
-                         observed-semantic-work)
-                        (let [wrapper-record
-                              (sh03-finalize-wrapper
-                               tokens updated completed-record)]
-                          (recur more-frames
-                                 (sh03-records-with-form
-                                  result-records wrapper-record)
-                                 result-roots
-                                 result-root-values
-                                 wrapper-record
-                                 (get wrapper-record :value)
-                                 (get wrapper-record :semantic-key)
-                                 (+ added-semantic-work
-                                    wrapper-semantic-work)))))
+                    (let [wrapper-record
+                          (sh03-finalize-wrapper tokens updated completed-record)]
+                      (recur more-frames
+                             (sh03-records-with-form result-records wrapper-record)
+                             result-roots
+                             result-root-values
+                             wrapper-record
+                             (get wrapper-record :value)
+                             (get wrapper-record :semantic-key)))
                     (sh03-frame-rejection
                      "C2-EXTENSION" "STAGE1READER004"
                      :invalid-reader-tag-payload
@@ -4436,9 +3919,7 @@
                    :frames (conj more-frames updated)
                    :records result-records
                    :roots result-roots
-                   :root-values result-root-values
-                   :semantic-work-units
-                   (+ semantic-work added-semantic-work)}))
+                   :root-values result-root-values}))
               (sh03-frame-rejection
                "C2-METADATA" nil
                (if (= child-count 0)
@@ -4463,9 +3944,7 @@
    :child-values []
    :semantic-keys []
    :subtree-form-counts []
-   :semantic-key-index {}
-   :deferred-semantic-keys []
-   :deferred-semantic-form-ids []})
+   :semantic-key-index {}})
 
 (defn sh03-open-wrapper-frame [token token-position form-index parent-id]
   (let [abbreviation (get token :abbreviation)
@@ -4540,28 +4019,15 @@
      (sh03-frame-subtree-form-count frame)
      nil nil nil)))
 
-(defn sh03-semantic-work-rejection [token form-id observed]
-  (sh03-frame-rejection
-   "C2-HASH" "STAGE1READER006" :semantic-work-limit
-   (get token :span) (get token :raw)
-   {:observed-semantic-work-units observed
-    :maximum-semantic-work-units
-    (get (sh03-bounds-record) :maximum-semantic-work-units)
-    :token-id (get token :token-id)
-    :form-id form-id}))
 
 (defn sh03-parse-tokens [tokens reader-policy]
-  (let [bounds (sh03-bounds-record)
-        maximum-forms (get bounds :maximum-forms)
-        maximum-depth (get bounds :maximum-delimiter-depth)
-        maximum-semantic-work (get bounds :maximum-semantic-work-units)]
+  (let [bounds (sh03-bounds-record)]
   (loop [position 0
          next-form-index 0
          frames (list)
          records []
          roots []
-         root-values []
-         semantic-work 0]
+         root-values []]
     (let [cursor (sh03-skip-trivia tokens position)]
       (if (= cursor (count tokens))
         (if (= (count frames) 0)
@@ -4572,8 +4038,7 @@
               {:status :accepted
                :form-tree records
                :top-level-form-ids roots
-               :top-level-values root-values
-               :semantic-work-units semantic-work}
+               :top-level-values root-values}
               namespace-validation))
           (let [frame (first frames)
                 rule
@@ -4597,50 +4062,25 @@
              {:open-form-id (get frame :form-id)
               :form-id (get frame :form-id)
               :token-id (get frame :open-token)})))
-        (if (>= next-form-index maximum-forms)
-          (sh03-frame-rejection
-           "C2-HASH" "STAGE1READER006" :form-count-limit
-           (get (sh03-token-at tokens cursor) :span)
-           (get (sh03-token-at tokens cursor) :raw)
-           {:maximum-forms maximum-forms
-            :token-id (get (sh03-token-at tokens cursor) :token-id)
-            :form-id (sh03-form-id next-form-index)})
-          (let [token (sh03-token-at tokens cursor)
+        (let [token (sh03-token-at tokens cursor)
                 kind (get token :kind)
                 parent-id (sh03-current-parent-id frames)]
             (if (contains? #{:list-open :vector-open :map-open :set-open} kind)
-              (if (>= (count frames) maximum-depth)
-                (sh03-frame-rejection
-                 "C2-HASH" "STAGE1READER006" :delimiter-depth-limit
-                 (get token :span) (get token :raw)
-                 {:observed-depth (+ (count frames) 1)
-                  :maximum-delimiter-depth maximum-depth
-                  :token-id (get token :token-id)
-                  :form-id (sh03-form-id next-form-index)})
-                (recur (+ cursor 1)
+              (recur (+ cursor 1)
                        (+ next-form-index 1)
                        (conj frames
                              (sh03-open-collection-frame
                               token cursor next-form-index parent-id))
-                       (conj records nil) roots root-values semantic-work))
+                       (conj records nil) roots root-values)
               (if (= kind :abbreviation)
                 (if (sh03-abbreviation-placement-valid?
                      frames (get token :abbreviation))
-                  (if (>= (count frames) maximum-depth)
-                    (sh03-frame-rejection
-                     "C2-HASH" "STAGE1READER006"
-                     :reader-frame-depth-limit
-                     (get token :span) (get token :raw)
-                     {:observed-depth (+ (count frames) 1)
-                      :maximum-delimiter-depth maximum-depth
-                      :token-id (get token :token-id)
-                      :form-id (sh03-form-id next-form-index)})
-                    (recur (+ cursor 1)
+                  (recur (+ cursor 1)
                            (+ next-form-index 1)
                            (conj frames
                                  (sh03-open-wrapper-frame
                                   token cursor next-form-index parent-id))
-                           (conj records nil) roots root-values semantic-work))
+                           (conj records nil) roots root-values)
                   (sh03-frame-rejection
                    "C2-ABBREV" nil :invalid-abbreviation-placement
                    (get token :span) (get token :raw)
@@ -4651,21 +4091,12 @@
                   (if (sh03-vector-contains?
                        (get reader-policy :enabled-reader-tags)
                        (get token :tag-codepoints))
-                    (if (>= (count frames) maximum-depth)
-                      (sh03-frame-rejection
-                       "C2-HASH" "STAGE1READER006"
-                       :reader-frame-depth-limit
-                       (get token :span) (get token :raw)
-                       {:observed-depth (+ (count frames) 1)
-                        :maximum-delimiter-depth maximum-depth
-                        :token-id (get token :token-id)
-                        :form-id (sh03-form-id next-form-index)})
-                      (recur (+ cursor 1)
+                    (recur (+ cursor 1)
                              (+ next-form-index 1)
                              (conj frames
                                    (sh03-open-tag-frame
                                     token cursor next-form-index parent-id))
-                             (conj records nil) roots root-values semantic-work))
+                             (conj records nil) roots root-values)
                     (sh03-frame-rejection
                      "C2-EXTENSION" "STAGE1READER004"
                      :reader-tag-not-enabled
@@ -4690,16 +4121,7 @@
                             (if (if (= (get frame :collection-kind) :map)
                                   (even? (count (get frame :children)))
                                   true)
-                              (let [next-semantic-work
-                                    (+ semantic-work
-                                       (* 2
-                                          (sh03-frame-subtree-form-count
-                                           frame)))]
-                                (if (> next-semantic-work maximum-semantic-work)
-                                  (sh03-semantic-work-rejection
-                                   token (get frame :form-id)
-                                   next-semantic-work)
-                                  (let [record
+                              (let [record
                                         (sh03-finalize-collection
                                          tokens frame token cursor)
                                         attached
@@ -4707,18 +4129,15 @@
                                          tokens (rest frames)
                                          records roots root-values
                                          record (get record :value)
-                                         (get record :semantic-key)
-                                         semantic-work)]
+                                         (get record :semantic-key))]
                                     (if (= (get attached :status) :accepted)
                                       (recur (+ cursor 1)
                                              next-form-index
                                              (get attached :frames)
                                              (get attached :records)
                                              (get attached :roots)
-                                             (get attached :root-values)
-                                             (get attached
-                                                  :semantic-work-units))
-                                      attached))))
+                                             (get attached :root-values))
+                                      attached))
                               (sh03-frame-rejection
                                "C2-MAP" "STAGE1READER005"
                                :odd-map-arity
@@ -4758,30 +4177,22 @@
                            {:pending-form-id (get frame :form-id)
                             :form-id (get frame :form-id)
                             :token-id (get token :token-id)}))))
-                    (let [next-semantic-work
-                          (+ semantic-work 2)]
-                      (if (> next-semantic-work maximum-semantic-work)
-                        (sh03-semantic-work-rejection
-                         token (sh03-form-id next-form-index)
-                         next-semantic-work)
-                        (let [record
+                    (let [record
                               (sh03-atomic-form
                                token cursor next-form-index parent-id)
                               attached
                               (sh03-attach-completed-form
                                tokens frames records roots root-values
                                record (get record :value)
-                               (get record :semantic-key)
-                               semantic-work)]
+                               (get record :semantic-key))]
                           (if (= (get attached :status) :accepted)
                             (recur (+ cursor 1)
                                    (+ next-form-index 1)
                                    (get attached :frames)
                                    (get attached :records)
                                    (get attached :roots)
-                                   (get attached :root-values)
-                                   (get attached :semantic-work-units))
-                            attached)))))))))))))))
+                                   (get attached :root-values))
+                            attached))))))))))))
 
 (defn sh03-namespace-clause-category [key-codepoints]
   (if (contains? #{[112 114 111 102 105 108 101]
@@ -5215,8 +4626,7 @@
        (conj result (get (first remaining) :form-id))))))
 
 (defn sh03-accepted-semantic-template
-  [tokens forms roots value-table literals deferred extension-records
-   semantic-work]
+  [tokens forms roots value-table literals deferred extension-records]
   {:status :accepted
    :source-unit-id {:digest-ref 1}
    :token-stream-id {:digest-ref 2}
@@ -5225,7 +4635,6 @@
    :token-count (count tokens)
    :form-count (count forms)
    :semantic-value-count (count value-table)
-   :semantic-work-units semantic-work
    :top-level-form-ids roots
    :literal-form-ids (sh03-form-ids-from-records literals)
    :deferred-form-ids (sh03-form-ids-from-records deferred)
@@ -5537,244 +4946,16 @@
       :span (sh03-empty-span-at-byte 0) :raw nil :facts facts
       :token-id nil :form-id nil :related []})))
 
-; C2 construction prepayment counts physical carrier occurrences, including
-; repeated digest preimages. These helpers consume only successful parser
-; internals. In particular they never traverse collection values, collection
-; semantic keys, metadata values, or generated expanded forms: projection
-; removes those recursive fields. Atomic descriptor/key maps have bounded
-; schema depth and their vectors contain scalar codepoints, not form trees.
-(defn sh03-construction-atomic-nodes [value]
-  (if (map? value)
-    (loop [remaining (keys value) nodes (+ 1 (count value))]
-      (if (= (count remaining) 0)
-        nodes
-        (recur (rest remaining)
-               (+ nodes
-                  (sh03-construction-atomic-nodes
-                   (get value (first remaining)))))))
-    (if (vector? value) (+ 1 (count value)) 1)))
-
-; Map keys are scalar and remain present even when their values are replaced.
-(defn sh03-construction-retained-map-nodes [record omitted]
-  (loop [remaining (keys record) nodes (+ 1 (count record))]
-    (if (= (count remaining) 0)
-      nodes
-      (let [key (first remaining)]
-        (recur (rest remaining)
-               (if (contains? omitted key)
-                 nodes
-                 (+ nodes
-                    (sh03-construction-atomic-nodes (get record key)))))))))
-
-(defn sh03-construction-descriptor-nodes [descriptor raw-nodes]
-  (if (contains? descriptor :raw)
-    (+ (sh03-construction-retained-map-nodes descriptor #{:raw}) raw-nodes)
-    (sh03-construction-atomic-nodes descriptor)))
-
-(defn sh03-construction-origin-nodes [origins semantic?]
-  (loop [remaining origins nodes 1]
-    (if (= (count remaining) 0)
-      nodes
-      (let [origin (first remaining)]
-        ; Semantic origin: four scalar fields. Contextual origin adds :from.
-        (recur (rest remaining)
-               (+ nodes
-                  (if semantic? 9
-                    (+ 10
-                       (sh03-construction-atomic-nodes
-                        (get origin :from))))))))))
-
-(defn sh03-construction-token-nodes [token]
-  (let [descriptor (get token :descriptor)
-        atomic? (sh03-atomic-output-form? token)]
-    (+ (sh03-construction-retained-map-nodes token #{:raw :descriptor})
-       19
-       (if atomic? 9 (sh03-construction-descriptor-nodes descriptor 19)))))
-
-(defn sh03-construction-form-nodes [form]
-  (+ (sh03-construction-retained-map-nodes
-      form #{:raw :value :semantic-key :metadata :generated-origin})
-     19
-     (if (sh03-atomic-output-form? form) 18 2)
-     1
-     (sh03-construction-origin-nodes (get form :generated-origin) false)))
-
-(defn sh03-construction-semantic-form-nodes [form]
-  (+ 11
-     (sh03-construction-atomic-nodes (get form :form-id))
-     (sh03-construction-atomic-nodes (get form :form-index))
-     (sh03-construction-atomic-nodes (get form :kind))
-     (sh03-construction-atomic-nodes (get form :collection-kind))
-     (sh03-construction-atomic-nodes (get form :parent-form-id))
-     (sh03-construction-atomic-nodes (get form :children))
-     (if (sh03-atomic-output-form? form) 9 1)
-     (sh03-construction-atomic-nodes (get form :abbrev))
-     (sh03-construction-atomic-nodes (get form :tag-codepoints))
-     (sh03-construction-origin-nodes (get form :generated-origin) true)))
-
-(defn sh03-construction-value-nodes [form retain-trivia]
-  (if (sh03-atomic-output-form? form)
-    (let [descriptor (get form :value)
-          key-nodes (sh03-construction-atomic-nodes (get form :semantic-key))
-          descriptor-nodes (sh03-construction-descriptor-nodes descriptor 19)
-          table-nodes (+ 15 descriptor-nodes key-nodes)
-          ; Semantic identity always assocs :raw nil, even if originally absent.
-          identity-descriptor-nodes
-          (if (contains? descriptor :raw)
-            (sh03-construction-descriptor-nodes descriptor 1)
-            (+ 2 (sh03-construction-atomic-nodes descriptor)))]
-      (+ table-nodes
-         (if retain-trivia table-nodes
-           (+ 9 identity-descriptor-nodes key-nodes))))
-    0))
-
-(defn sh03-construction-tag-invocation-nodes [form reader-policy]
-  (if (= (get form :kind) :tagged-literal)
-    (loop [remaining (get reader-policy :enabled-reader-tags) nodes 0]
-      (if (= (count remaining) 0)
-        nodes
-        (recur (rest remaining)
-               (if (= (first remaining) (get form :tag-codepoints))
-                 (+ nodes (if (get reader-policy :retain-trivia) 110 80))
-                 nodes))))
-    0))
-
-(defn sh03-projected-result-node-count-with-limit
-  [source-bytes reader-policy tokens parsed maximum]
-  (let [retain-trivia (get reader-policy :retain-trivia)
-        ; Fixed reserve covers all envelope/request/vector roots, source-unit,
-        ; provenance, policies, bounds and execution-boundary records (<4096
-        ; physical nodes at the declared identity/tag bounds). Each registered
-        ; extension header is separately prepaid at 2048, including its second
-        ; digest occurrence and all handler/tag/policy fields.
-        initial (+ 1048576 (+ 1 (count source-bytes))
-                   (* 2048 (count (get reader-policy :enabled-reader-tags)))
-                   ; Root ids occur four times. Each root additionally has an
-                   ; 11-node parsed record and a 7-node semantic reference.
-                   (* 22 (count (get parsed :top-level-form-ids))))
-        token-nodes
-        (loop [remaining tokens nodes initial]
-          (if (> nodes maximum) nodes
-            (if (= (count remaining) 0) nodes
-              (let [token (first remaining)]
-                (recur (rest remaining)
-                       (if (if retain-trivia false
-                             (sh03-token-trivia? token))
-                         nodes
-                         (+ nodes (* 2 (sh03-construction-token-nodes token)) 33)))))))]
-    (loop [remaining (get parsed :form-tree) nodes token-nodes]
-      (if (> nodes maximum) nodes
-        (if (= (count remaining) 0) nodes
-          (let [form (first remaining)
-                compact-nodes (sh03-construction-form-nodes form)
-                literal? (sh03-literal-form? form)
-                deferred? (sh03-deferred-literal? (get form :kind)
-                            (get form :value))]
-            (recur (rest remaining)
-                   (+ nodes compact-nodes
-                      (if retain-trivia compact-nodes
-                        (sh03-construction-semantic-form-nodes form))
-                      (sh03-construction-value-nodes form retain-trivia)
-                      35
-                      ; Literal/deferred ids each occur in both copies of the
-                      ; semantic template, in addition to their product row.
-                      (if literal? 73 0)
-                      (if deferred? 41 0)
-                      (sh03-construction-tag-invocation-nodes
-                       form reader-policy)))))))))
-
-(defn sh03-projected-result-node-count [source-bytes reader-policy tokens parsed]
-  (sh03-projected-result-node-count-with-limit
-   source-bytes reader-policy tokens parsed
-   (get (sh03-bounds-record) :maximum-result-carrier-nodes)))
-
-; These are new, simultaneously retained accepted-product indexes/projections.
-; Decode/scan/parse tables already exist and have their own pre-growth bounds.
-; A filtered raw-token row retains its full raw spelling and descriptor; it is
-; charged again even when it shares an immutable host object with the scanner.
-(defn sh03-projected-construction-node-count-with-limit
-  [source-bytes reader-policy tokens parsed final-nodes maximum]
-  (let [retain-trivia (get reader-policy :retain-trivia)
-        index-nodes
-        (loop [remaining (get parsed :form-tree) nodes (+ final-nodes 2)]
-          (if (> nodes maximum) nodes
-            (if (= (count remaining) 0) nodes
-              (let [form (first remaining)]
-                (recur (rest remaining)
-                       (if (sh03-atomic-output-form? form)
-                         (+ nodes 11 15
-                            (sh03-construction-descriptor-nodes (get form :value) 19)
-                            (sh03-construction-atomic-nodes (get form :semantic-key)))
-                         nodes))))))]
-    (if retain-trivia index-nodes
-      (loop [remaining tokens nodes (+ index-nodes 1)]
-        (if (> nodes maximum) nodes
-          (if (= (count remaining) 0) nodes
-            (let [token (first remaining)]
-              (recur (rest remaining)
-                     (if (sh03-token-trivia? token) nodes
-                       (+ nodes (sh03-construction-atomic-nodes token)))))))))))
-
-(defn sh03-projected-construction-node-count [source-bytes reader-policy tokens parsed]
-  (sh03-projected-construction-node-count-with-limit
-   source-bytes reader-policy tokens parsed
-   (sh03-projected-result-node-count source-bytes reader-policy tokens parsed)
-   (get (sh03-bounds-record) :maximum-result-carrier-nodes)))
-
-; Private count-only observation. The larger, already declared unguarded
-; envelope bounds counting work, never reader construction or admission.
-; Production uses the fixed-hard-limit wrappers above. A limit-crossing value
-; is only a refused prefix, explicitly marked incomplete here.
-(defn sh03-complete-construction-census [source-bytes reader-policy tokens parsed]
-  (let [bounds (sh03-bounds-record)
-        maximum (get (get bounds :result-carrier-node-budget)
-                     :derived-maximum-nodes)
-        final-nodes
-        (sh03-projected-result-node-count-with-limit
-         source-bytes reader-policy tokens parsed maximum)
-        construction-nodes
-        (sh03-projected-construction-node-count-with-limit
-         source-bytes reader-policy tokens parsed final-nodes maximum)]
-    {:projected-result-nodes final-nodes
-     :accepted-construction-nodes construction-nodes
-     :limit maximum
-     :complete? (if (<= final-nodes maximum)
-                  (<= construction-nodes maximum)
-                  false)}))
-
-(defn sh03-construction-rejection [projected maximum]
-  (if (> projected maximum)
-    {:status :rejected
-     :rule "C2-HASH" :engine "STAGE1READER006"
-     :reason :result-construction-node-limit
-     :span (sh03-empty-span-at-byte 0) :raw nil
-     :facts {:maximum-accepted-construction-nodes maximum
-             :required-accepted-construction-nodes projected
-             :construction-count-scope :refused-prefix
-             :construction-phase :before-accepted-products
-             :result-committed? false}
-     :token-id nil :form-id nil :related []}
-    nil))
-
-; The construct phase retains only the source arguments, tokens and parsed
-; products. Its body and prepayment guard are unchanged by stage orchestration.
+; Construct the parsed product directly. Semantic validation and independent
+; replay do not depend on a projected construction-work allowance.
 (defn sh03-construct-parsed-source-unit
   [source-unit source-bytes reader-policy tokens parsed]
-  (let [construction-rejection
-                          (sh03-construction-rejection
-                           (sh03-projected-construction-node-count
-                            source-bytes reader-policy tokens parsed)
-                           (get (sh03-bounds-record)
-                                :maximum-result-carrier-nodes))]
-                      (if (= construction-rejection nil)
                     (let [raw-output-tokens
                           (sh03-filter-output-tokens
                            tokens (get reader-policy :retain-trivia))
                           raw-forms (get parsed :form-tree)
                           roots (get parsed :top-level-form-ids)
                           values (get parsed :top-level-values)
-                          semantic-work
-                          (get parsed :semantic-work-units)
                           value-table
                           (sh03-semantic-value-table tokens raw-forms)
                           token-value-index
@@ -5799,7 +4980,7 @@
                           semantic-template
                           (sh03-accepted-semantic-template
                            output-tokens forms roots value-table literals
-                           deferred extension-records semantic-work)
+                           deferred extension-records)
                           requests
                           (sh03-digest-requests
                            source-unit source-bytes reader-policy
@@ -5842,52 +5023,32 @@
                        :diagnostics []
                        :bounds (sh03-bounds-record)
                        :execution-boundary
-                       (sh03-execution-boundary-record)})
-                        (sh03-rejected-result
-                         source-unit source-bytes reader-policy
-                         construction-rejection))))
+                       (sh03-execution-boundary-record)}))
 
 (defn sh03-rejected-decoded-source-unit
   [source-unit source-bytes reader-policy decoded]
   (sh03-rejected-result
-             source-unit source-bytes reader-policy
-             {:rule (if (= (get decoded :reason) :character-count-limit)
-                      "C2-HASH"
-                      "C2-ENCODING")
-              :engine
-              (if (= (get decoded :reason) :character-count-limit)
-                "STAGE1READER006"
-                nil)
-              :reason (get decoded :reason)
-              :span
-              (sh03-invalid-byte-span
-               (count source-bytes)
-               (get decoded :byte-position)
-               (get decoded :char-position)
-               (get decoded :line)
-               (get decoded :column))
-              :raw {:encoding :utf-8
-                    :observed (get decoded :observed)}
-              :facts
-              (if (= (get decoded :reason) :character-count-limit)
-                {:byte-position (get decoded :byte-position)
-                 :char-position (get decoded :char-position)
-                 :scalar-index (get decoded :scalar-index)
-                 :line (get decoded :line)
-                 :column (get decoded :column)
-                 :maximum-characters
-                 (get (sh03-bounds-record) :maximum-characters)}
-                {:byte-position (get decoded :byte-position)
-                 :char-position (get decoded :char-position)
-                 :scalar-index (get decoded :scalar-index)
-                 :line (get decoded :line)
-                 :column (get decoded :column)})
-              :token-id nil :form-id nil :related []}))
+   source-unit source-bytes reader-policy
+   {:rule "C2-ENCODING" :engine nil
+    :reason (get decoded :reason)
+    :span (sh03-invalid-byte-span
+           (count source-bytes)
+           (get decoded :byte-position)
+           (get decoded :char-position)
+           (get decoded :line)
+           (get decoded :column))
+    :raw {:encoding :utf-8 :observed (get decoded :observed)}
+    :facts {:byte-position (get decoded :byte-position)
+            :char-position (get decoded :char-position)
+            :scalar-index (get decoded :scalar-index)
+            :line (get decoded :line)
+            :column (get decoded :column)}
+    :token-id nil :form-id nil :related []}))
 
 ; Recur replaces the interpreter loop environment with just its outer source
 ; arguments plus the four loop locals. It does not retain a prior phase's let
 ; locals. Explicit nils remove characters before parse and construction. These
-; locals refer to existing bounded phase input tables, without a new aggregate
+; locals refer to existing phase input tables, without a new aggregate
 ; data carrier. Interpreter environments/recur dispatch remain the existing
 ; execution boundary; accepted products and indexes keep their full charges.
 (defn sh03-read-source-unit [source-unit source-bytes reader-policy]
@@ -5968,16 +5129,7 @@
 
 (defn sh03-result-preflight? [result]
   (if (sh03-result-envelope-shape? result)
-    (if (<= (count (get result :token-stream))
-            (get (sh03-bounds-record) :maximum-tokens))
-      (if (<= (count (get result :form-tree))
-              (get (sh03-bounds-record) :maximum-forms))
-        (if (<= (count (get result :semantic-value-table))
-                (get (sh03-bounds-record) :maximum-forms))
-          (<= (count (get result :digest-requests)) 6)
-          false)
-        false)
-      false)
+    (<= (count (get result :digest-requests)) 6)
     false))
 
 (defn sh03-verify-reader-result [source-unit source-bytes

@@ -1,8 +1,11 @@
 
 
 (defn- sh04-syntax-build-from-fresh-c2!
-  [source-path c2-artifact integrity-report]
-  (let [binding (sh04-syntax-current-binding! source-path)
+  ([source-path c2-artifact integrity-report]
+   (sh04-syntax-build-from-fresh-c2! source-path c2-artifact integrity-report nil))
+  ([source-path c2-artifact integrity-report invocation]
+  (let [ae-options (when invocation (sh03-reader-authenticated-envelope-options source-path invocation))
+        binding (sh04-syntax-current-binding! source-path)
         source-unit (:source-unit-record c2-artifact)
         semantic-source-id
         (sh04-syntax-semantic-source-id source-path source-unit)
@@ -153,12 +156,12 @@
          :syntax-result-id syntax-result-id}
         descriptor (sh04-syntax-sh02-descriptor source-path binding summary)
         envelope
-        (p15-s23-stage2-sh02-descriptor-envelope
-         sh04-syntax-envelope-stage sh04-syntax-sealed-artifact-kind
-         descriptor source-path)
-        _ (p15-s23-stage2-sh02-descriptor-envelope-verify!
-           envelope sh04-syntax-envelope-stage
-           sh04-syntax-sealed-artifact-kind descriptor source-path)
+        (apply p15-s23-stage2-sh02-descriptor-envelope
+         (cond-> [sh04-syntax-envelope-stage sh04-syntax-sealed-artifact-kind descriptor source-path]
+           ae-options (conj ae-options)))
+        _ (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+           (cond-> [envelope sh04-syntax-envelope-stage sh04-syntax-sealed-artifact-kind descriptor source-path]
+             ae-options (conj ae-options)))
         reader-authentication-provenance
         {:actual-c2-artifact-id (:artifact-id c2-artifact)
          :actual-reader-product-integrity-hash
@@ -207,7 +210,7 @@
      :reader-binding reader-binding
      :reader-source-revision reader-source-revision
      :reader-authentication-provenance
-     reader-authentication-provenance}))
+     reader-authentication-provenance})))
 
 (defn sh04-syntax-resolved-result!
   [source-path c2-artifact]

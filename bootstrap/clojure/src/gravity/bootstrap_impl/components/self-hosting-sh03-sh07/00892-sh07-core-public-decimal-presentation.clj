@@ -49,53 +49,15 @@
     (throw (ex-info "Gravity checked-core lowering rejected the source"
                     resolved))))
 
-(defn sh07-core-nested-depth
-  [value]
-  (loop [frontier [[value 0]]
-         maximum 0
-         visited 0]
-    (if (empty? frontier)
-      maximum
-      (let [[item depth] (peek frontier)
-            frontier (pop frontier)]
-        (cond
-          (or (> depth 256) (> visited 8388608))
-          257
-
-          (or (map? item) (vector? item) (set? item) (list? item))
-          (let [next-depth (inc depth)
-                children
-                (if (map? item)
-                  (mapcat (fn [[key value]] [key value]) item)
-                  item)
-                bounded-children (vec (take 65537 children))]
-            (if (> (count bounded-children) 65536)
-              257
-              (recur
-               (into frontier
-                     (map #(vector % next-depth) bounded-children))
-               (max maximum next-depth)
-               (inc visited))))
-
-          (coll? item)
-          257
-
-          :else
-          (recur frontier maximum (inc visited)))))))
-
 (defn sh07-core-request-diagnostic!
   [request rule-specific]
   (let [source-path (get-in request [:provenance :actual-source-path])
         lineage (:lineage request)
         module (:module request)
         reason (or (:reason rule-specific)
-                   :bounded-authenticated-core-request)
+                   :authenticated-core-request)
         remediation
-        (case reason
-          :fragment-root-form-bound
-          "Split the top-level definition into supported bounded helper definitions."
-
-          "Replay the Gravity template and bind every digest ordinal exactly once.")
+        "Replay the Gravity template and bind every digest ordinal exactly once."
         diagnostic
         {:artifact :gravity/sh07-core-diagnostic
          :rule "C6-VERIFY"
@@ -122,8 +84,8 @@
          :remediation remediation
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-request-bound-diagnostic-v16
+          {:domain :gravity/sh07-request-diagnostic-v16
            :source-revision-id (:source-revision-id lineage)
            :rule-specific rule-specific})}]
-    (throw (ex-info "SH-07 authenticated request exceeded a bound"
+    (throw (ex-info "SH-07 authenticated request failed validation"
                     diagnostic))))

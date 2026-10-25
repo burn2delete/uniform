@@ -288,6 +288,26 @@
                                 expected)))
                  (set (map :namespace catalog)))))))))
 
+(deftest canonical-sort-regressions-use-the-existing-owned-leaf-module
+  ;; Verify ownership, registration and retained test declarations without
+  ;; loading or executing a provider namespace.
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        catalog (var-get (ns-resolve 'gravity.bootstrap-free-leaf-test-runner 'catalog))
+        relative "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj"
+        entry (some #(when (= relative (:test-path %)) %) catalog)
+        source (slurp (path relative))]
+    (is (= :sh-reader (get-in record [:module-owners relative])))
+    (is (= 'gravity.c2-artifact-identity-test (:namespace entry)))
+    (is (= "bootstrap/clojure/src/gravity/c2_artifact_identity.clj" (:source-path entry)))
+    (is (= :c2-c3 (:group entry)))
+    (is (not (.exists (path "bootstrap/clojure/test/gravity/c2_artifact_identity_sort_decoration_test.clj"))))
+    (doseq [name ["decorations-never-change-normalized-carriers-or-full-encoded-preimages"
+                  "sort-printer-call-order-and-thrown-object-are-conserved"
+                  "full-entry-order-and-stable-ties-survive-canonical-key-collisions"
+                  "final-string-printer-failure-precedes-the-injected-hash-callback"]]
+      (is (str/includes? source (str "(deftest " name)) name))))
+
 (deftest dedicated-test-routing-does-not-use-the-monolithic-test-file
   (let [deps (edn/read-string (slurp (path "deps.edn")))
         main-options (get-in deps [:aliases :test :main-opts])
@@ -493,8 +513,8 @@
     (is (= 8191 (count (:text output))))))
 
 (deftest duplicate-dedicated-namespace-mappings-are-rejected
-  (let [resource (io/resource "gravity/self_hosting")
-        test-root (io/file (.toURI resource))
+  (let [resource (io/resource "gravity/self_hosting/sh01_ownership_test.clj")
+        test-root (.getParentFile (io/file (.toURI resource)))
         directories-var
         (ns-resolve
          'gravity.self-hosting-test-runner

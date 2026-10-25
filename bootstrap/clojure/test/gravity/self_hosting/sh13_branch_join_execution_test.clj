@@ -113,6 +113,7 @@
                 (when (= :accepted (:status result))
                   (is (= arguments (:arguments result)))
                   (is (= expected (get-in result [:execution :value])))
+                  (is (= 504 (get-in result [:execution :fuel])))
                   (is (= (mapv ids [2 3 4 5 selected]) (vec (keep :operation (get-in result [:execution :trace])))))
                   (is (= (get ids 8) (get-in result [:projection :return-value-id])))
                   (is (= [:i64 :i64 :bool :bool :i64 :i64 :i64 :i64] (mapv :runtime-type (get-in result [:projection :operations]))))
@@ -176,6 +177,7 @@
       (let [result (argument-run-observation core mir arguments)]
         (is (= :accepted (:status result)))
         (is (= (< (first arguments) (second arguments)) (get-in result [:execution :value])))
+        (is (= 504 (get-in result [:execution :fuel])))
         (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments result))))))))
 
 (deftest sh13-consumes-two-i64-order-as-original-conditional-control
@@ -230,6 +232,7 @@
                 (when (= :accepted (:status result))
                   (is (= arguments (:arguments result)))
                   (is (= expected (get-in result [:execution :value])))
+                  (is (= 504 (get-in result [:execution :fuel])))
                   (is (= (mapv ids [2 3 4 5 selected]) (vec (keep :operation (get-in result [:execution :trace])))))
                   (is (= (get ids 8) (get-in result [:projection :return-value-id])))
                   (is (= [:gravity/i64 :gravity/i64] (mapv :source-type (get-in result [:projection :parameters]))))
@@ -290,6 +293,7 @@
       (let [result (argument-run-observation core mir arguments)]
         (is (= :accepted (:status result)))
         (is (= (< (first arguments) (second arguments)) (get-in result [:execution :value])))
+        (is (= 508 (get-in result [:execution :fuel])))
         (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments result))))))))
 
 (deftest sh13-consumes-two-i64-parameters-in-original-strict-order
@@ -344,6 +348,7 @@
                 (is (= args (:arguments result)))
                 (is (= (< (first args) (second args)) (get-in result [:execution :value])))
                 (is (boolean? (get-in result [:execution :value])))
+                (is (= 508 (get-in result [:execution :fuel])))
                 (is (= [left-local right-local comparison] (vec (keep :operation (get-in result [:execution :trace])))))
                 (is (= comparison (get-in result [:projection :return-value-id])))
                 (is (= [:gravity/i64 :gravity/i64] (mapv :source-type (get-in result [:projection :parameters]))))
@@ -412,6 +417,7 @@
       (let [result (argument-run-observation core mir [value])]
         (is (= :accepted (:status result)))
         (is (= value (get-in result [:execution :value])))
+        (is (= 510 (get-in result [:execution :fuel])))
         (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [value] result))))))))
 
 (deftest sh13-consumes-resolved-i64-identity-with-signed-arguments
@@ -464,6 +470,7 @@
               (when (= :accepted (:status result))
                 (is (= [value] (:arguments result)))
                 (is (= value (get-in result [:execution :value])))
+                (is (= 510 (get-in result [:execution :fuel])))
                 (is (= [local-id] (vec (keep :operation (get-in result [:execution :trace])))))
                 (is (= local-id (get-in result [:projection :return-value-id])))
                 (is (= :gravity/i64 (get-in result [:projection :parameters 0 :source-type])))
@@ -531,6 +538,7 @@
       (let [result (argument-run-observation core mir arguments)]
         (is (= :accepted (:status result)))
         (is (= (first arguments) (get-in result [:execution :value])))
+        (is (= 506 (get-in result [:execution :fuel])))
         (is (= arguments (:arguments result)))
         (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments result))))))))
 
@@ -596,6 +604,7 @@
                 (when (= :accepted (:status result))
                   (is (= arguments (:arguments result)))
                   (is (= value (get-in result [:execution :value])))
+                  (is (= (if a 502 506) (get-in result [:execution :fuel])))
                   (is (= (mapv ids (if a [3 4 5 6 (if b 7 8)] [3 4 10]))
                          (vec (keep :operation (get-in result [:execution :trace])))))
                   (is (= (if a 1 0) (count (filter #(= (get ids 5) (:operation %)) (get-in result [:execution :trace])))))
@@ -609,7 +618,7 @@
                   (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments result))))
                   (doseq [candidate [(assoc result :arguments [(not a) b c]) (assoc result :arguments [a (not b) c])
                                      (assoc result :arguments [a b (not c)]) (assoc-in result [:execution :value] (not value))
-                                     (assoc-in result [:execution :unexpected] :substitution) (update-in result [:execution :trace] #(vec (drop 1 %)))
+                                     (update-in result [:execution :fuel] inc) (update-in result [:execution :trace] #(vec (drop 1 %)))
                                      (update-in result [:projection :parameters] #(vec (reverse %)))
                                      (assoc-in result [:projection :parameters 2 :definition :operation-id] nil)]]
                     (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments candidate))))))))
@@ -677,9 +686,9 @@
   (let [directory "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/"
         binding ((existing 'parameter-compiled-binding-data)
                  (str (.resolve @(existing 'root) (str directory "bool_parameter_source.gravity"))))]
-    (doseq [[stem tuples expected]
-            [["bool_parameter_source" [[false] [true]] [false true]]
-             ["two_bool_parameter_source" [[false false] [false true] [true false] [true true]] [22 22 22 11]]]]
+    (doseq [[stem tuples expected fuel]
+            [["bool_parameter_source" [[false] [true]] [false true] 506]
+             ["two_bool_parameter_source" [[false false] [false true] [true false] [true true]] [22 22 22 11] 502]]]
       (let [path (str (.resolve @(existing 'root) (str directory stem ".gravity")))
             {:keys [raw upstream core mir]} (current-parameter-pair path binding)]
         (is (= :accepted (:status raw)))
@@ -689,6 +698,7 @@
           (let [result (argument-run-observation core mir arguments)]
             (is (= :accepted (:status result)))
             (is (= value (get-in result [:execution :value])))
+            (is (= fuel (get-in result [:execution :fuel])))
             (is (= arguments (:arguments result)))
             (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir arguments result))))))))))
 
@@ -763,6 +773,7 @@
                   (when (= :accepted (:status result))
                     (is (= arguments (:arguments result)))
                     (is (= (or a b) (get-in result [:execution :value])))
+                    (is (= 506 (get-in result [:execution :fuel])))
                     (is (= [(get ids 2) (get ids 3) (get ids (if a 4 5))]
                            (vec (keep :operation (get-in result [:execution :trace])))))
                     (is (= (if a 0 1) (count (filter #(= (get ids 5) (:operation %)) (get-in result [:execution :trace])))))
@@ -891,6 +902,7 @@
                   (when (= :accepted (:status result))
                     (is (= arguments (:arguments result)))
                     (is (= (and a b) (get-in result [:execution :value])))
+                    (is (= 506 (get-in result [:execution :fuel])))
                     (is (= [(get ids 2) (get ids 3) (get ids (if a 4 5))]
                            (vec (keep :operation (get-in result [:execution :trace])))))
                     (is (= (if a 1 0) (count (filter #(= (get ids 4) (:operation %)) (get-in result [:execution :trace])))))
@@ -1019,6 +1031,7 @@
               (when (= :accepted (:status result))
                 (is (= arguments (:arguments result)))
                 (is (= (if (and a b) 11 22) (get-in result [:execution :value])))
+                (is (= 502 (get-in result [:execution :fuel])))
                 (is (= [(get ids 2) (get ids 3) (get ids (if a 4 5)) (get ids 7) (get ids (if (and a b) 8 9))]
                        (vec (keep :operation (get-in result [:execution :trace])))))
                 (is (= (if a 1 0) (count (filter #(= (get ids 4) (:operation %)) (get-in result [:execution :trace])))))
@@ -1104,6 +1117,7 @@
             (when (= :accepted (:status result))
               (is (= [argument] (:arguments result)))
               (is (= (if equal-arms? true argument) (get-in result [:execution :value])))
+              (is (= 506 (get-in result [:execution :fuel])))
               (is (= :passed (get-in result [:upstream-verification :status])))
               (is (false? (:self-hosted? result)))
               (is (some #{:authenticated-public-c6-c11-source-ingress} (:pending result)))
@@ -1213,6 +1227,7 @@
                     (when (= :accepted (:status result))
                       (is (= [argument] (:arguments result)))
                       (is (= (if argument then-value else-value) (get-in result [:execution :value])))
+                      (is (= 506 (get-in result [:execution :fuel])))
                       (is (= [(get-in nodes [1 :node-id]) (get-in nodes [2 :node-id])
                               (get-in nodes [(if argument 3 4) :node-id])]
                              (vec (keep :operation (get-in result [:execution :trace])))))
@@ -1300,6 +1315,7 @@
                       (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
                       (when (= :accepted (:status result))
                         (is (= (if argument then-value else-value) (get-in result [:execution :value])))
+                        (is (= 503 (get-in result [:execution :fuel])))
                         (is (= [(get ids 1) local-binder (get ids 3) (get ids 4)
                                 (get ids (if argument 5 6)) scope]
                                (vec (keep :operation (get-in result [:execution :trace])))))
@@ -1313,7 +1329,7 @@
                         (doseq [candidate [(assoc result :arguments [(not argument)])
                                            (assoc-in result [:projection :return-value-id] if-id)
                                            (assoc-in result [:projection :operations 8 :alias-of] if-id)
-                                           (assoc-in result [:execution :unexpected] :substitution)
+                                           (assoc-in result [:execution :fuel] 506)
                                            (update-in result [:execution :trace]
                                                       #(vec (remove (fn [row] (= scope (:operation row))) %)))]]
                           (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
@@ -1372,6 +1388,7 @@
         (is (= :accepted (:status result)))
         (is (= argument (get-in result [:execution :value])))
         (is (= [argument] (:arguments result)))
+        (is (= 506 (get-in result [:execution :fuel])))
         (is (= [(get-in nodes [1 :node-id]) (get-in nodes [2 :node-id])
                 (get-in nodes [(if argument 3 4) :node-id])]
                (vec (keep :operation (get-in result [:execution :trace])))))
@@ -1414,6 +1431,7 @@
                   (when (= :accepted (:status result))
                     (is (= (if argument then-value else-value) (get-in result [:execution :value])))
                     (is (= [argument] (:arguments result)))
+                    (is (= 503 (get-in result [:execution :fuel])))
                     (is (= [(get ids 1) binder (get ids 3) (get ids 4)
                             (get ids (if argument 5 6)) scope]
                            (vec (keep :operation (get-in result [:execution :trace])))))
@@ -1488,6 +1506,7 @@
                     (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
                     (when (= :accepted (:status result))
                       (is (= (if argument then-value else-value) (get-in result [:execution :value])))
+                      (is (= 501 (get-in result [:execution :fuel])))
                       (is (= [(get ids 1) first-binder (get ids 3) second-binder
                               (get ids 5) (get ids 6) (get ids (if argument 7 8)) scope]
                              (vec (keep :operation (get-in result [:execution :trace])))))
@@ -1495,7 +1514,7 @@
                       (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
                                                      core mir [argument] result))))
                       (doseq [candidate [(assoc result :arguments [(not argument)])
-                                         (assoc-in result [:execution :unexpected] :substitution)
+                                         (assoc-in result [:execution :fuel] 503)
                                          (assoc-in result [:projection :return-value-id] if-id)
                                          (update-in result [:execution :trace]
                                                     #(vec (remove (fn [row] (= second-binder (:operation row))) %)))]]
@@ -1614,6 +1633,7 @@
                   (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
                   (when (= :accepted (:status result))
                     (is (= (if argument then-value else-value) (get-in result [:execution :value])))
+                    (is (= 499 (get-in result [:execution :fuel])))
                     (is (= [(get ids 1) binding (get ids 3) (get ids 4) (get ids (if argument 5 6))
                             (get ids 8) (get ids (if argument 9 10)) scope]
                            (vec (keep :operation (get-in result [:execution :trace])))))
@@ -1621,7 +1641,7 @@
                     (is (= scope (get-in result [:projection :return-value-id])))
                     (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] result))))
                     (doseq [candidate [(assoc result :arguments [(not argument)])
-                                       (assoc-in result [:execution :unexpected] :substitution)
+                                       (assoc-in result [:execution :fuel] 512)
                                        (assoc-in result [:projection :return-value-id] outer)
                                        (assoc-in result [:execution :value] (if argument else-value then-value))]]
                       (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] candidate))))))))
@@ -1731,6 +1751,7 @@
                   (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
                   (when (= :accepted (:status result))
                     (is (= argument (get-in result [:execution :value])))
+                    (is (= 502 (get-in result [:execution :fuel])))
                     (is (= [(get ids 1) binding (get ids 3) (get ids 4)
                             (get ids (if argument 5 6)) local scope]
                            (vec (keep :operation (get-in result [:execution :trace])))))
@@ -1860,6 +1881,7 @@
                   (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
                   (when (= :accepted (:status result))
                     (is (= argument (get-in result [:execution :value])))
+                    (is (= 503 (get-in result [:execution :fuel])))
                     (is (= [(get ids 1) binding (get ids 3) (get ids 4) (get ids (if argument 5 6)) scope]
                            (vec (keep :operation (get-in result [:execution :trace])))))
                     (is (= (if selected? 1 0) (count (filter #(= local (:operation %)) (get-in result [:execution :trace])))))
@@ -1867,7 +1889,7 @@
                     (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] result))))
                     (doseq [candidate [(assoc result :arguments [(not argument)])
                                        (assoc-in result [:projection :return-value-id] conditional)
-                                       (assoc-in result [:execution :unexpected] :substitution)
+                                       (assoc-in result [:execution :fuel] 512)
                                        (update-in result [:projection :operations]
                                                   #(mapv (fn [row] (if (= local (:operation-id row))
                                                                     (assoc row :operands [parameter]) row)) %))]]
@@ -1983,6 +2005,7 @@
                   (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
                   (when (= :accepted (:status result))
                     (is (= (if inner-value 11 22) (get-in result [:execution :value])))
+                    (is (= 499 (get-in result [:execution :fuel])))
                     (is (= [(get ids 1) (get ids 2) (get ids (if argument 3 4)) binding local (get ids 8)
                             (get ids (if inner-value 9 10)) scope]
                            (vec (keep :operation (get-in result [:execution :trace])))))
@@ -1991,7 +2014,7 @@
                     (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] result))))
                     (doseq [candidate [(assoc result :arguments [(not argument)])
                                        (assoc-in result [:projection :return-value-id] outer)
-                                       (assoc-in result [:execution :unexpected] :substitution)
+                                       (assoc-in result [:execution :fuel] 512)
                                        (update-in result [:execution :trace] #(vec (remove (fn [row] (= binding (:operation row))) %)))]]
                       (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] candidate))))))))
               (is (integer? edge-index))
@@ -2124,12 +2147,13 @@
                   (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
                   (when (= :accepted (:status result))
                     (is (= (if inner-value 11 22) (get-in result [:execution :value])))
+                    (is (= 502 (get-in result [:execution :fuel])))
                     (is (= [(get ids 1) (get ids 2) (get ids (if argument 3 4)) (get ids 6) (get ids (if inner-value 7 8))]
                            (vec (keep :operation (get-in result [:execution :trace])))))
                     (is (= 10 (count (get-in result [:projection :operations]))))
                     (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] result))))
                     (doseq [candidate [(assoc result :arguments [(not argument)])
-                                       (assoc-in result [:execution :unexpected] :substitution)
+                                       (assoc-in result [:execution :fuel] 512)
                                        (assoc-in result [:projection :return-value-id] (get ids 5))
                                        (update-in result [:execution :trace] #(vec (remove (fn [row] (= (get ids 6) (:operation row))) %)))]]
                       (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] candidate))))))))
@@ -2255,13 +2279,14 @@
                   (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
                   (when (= :accepted (:status result))
                     (is (= (if (= side :then) (if argument 22 33) (if argument 11 22)) (get-in result [:execution :value])))
+                    (is (= (if nested? 499 503) (get-in result [:execution :fuel])))
                     (is (= executed (vec (keep :operation (get-in result [:execution :trace])))))
                     (is (= scope (get-in result [:projection :return-value-id])))
                     (is (= 13 (count (get-in result [:projection :operations]))))
                     (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] result))))
                     (doseq [candidate [(assoc result :arguments [(not argument)])
                                        (assoc-in result [:projection :return-value-id] outer)
-                                       (assoc-in result [:execution :unexpected] :substitution)
+                                       (assoc-in result [:execution :fuel] 512)
                                        (update-in result [:execution :trace] #(vec (remove (fn [row] (= scope (:operation row))) %)))]]
                       (is (= :rejected (:status (invoke 'sh13-verify-branch-join-execution-with-arguments core mir [argument] candidate))))))))
               (doseq [[bad-core bad-mir]
@@ -2398,13 +2423,14 @@
                     (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
                     (when (= :accepted (:status result))
                       (is (= expected-value (get-in result [:execution :value])))
+                      (is (= (if nested? 502 506) (get-in result [:execution :fuel])))
                       (is (= expected-ops (vec (keep :operation (get-in result [:execution :trace])))))
                       (is (= 10 (count (get-in result [:projection :operations]))))
                       (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
                                                      core mir [argument] result))))
                       (doseq [candidate [(assoc result :arguments [(not argument)])
                                          (assoc-in result [:execution :value] -1)
-                                         (assoc-in result [:execution :unexpected] :substitution)
+                                         (assoc-in result [:execution :fuel] 512)
                                          (assoc-in result [:upstream-verification :scope] :single-conditional-branch-join)
                                          (assoc-in result [:upstream-verification :checks 0] :single-function-diamond)
                                          (update-in result [:projection :operations] pop)]]
@@ -2465,6 +2491,7 @@
           (let [result (argument-run-observation core mir [argument])]
             (is (= :accepted (:status result)))
             (is (= (if argument 22 33) (get-in result [:execution :value])))
+            (is (= (if argument 502 506) (get-in result [:execution :fuel])))
             (is (= :passed (:status (invoke 'sh13-verify-branch-join-execution-with-arguments
                                            core mir [argument] result))))))
         ;; The hostile methods are live, then the original public verifier
@@ -2566,7 +2593,8 @@
         (is (= :passed (get-in result [:upstream-verification :status])))
         (is (= :returned (get-in result [:execution :status])))
         (is (= expected (get-in result [:execution :value])))
-        (is (= [{:function function :event :enter}
+        (is (= 507 (get-in result [:execution :fuel])))
+        (is (= [{:function function :event :enter :depth 0}
                 {:function function :operation (ids 0) :opcode :const}
                 {:function function :block entry :terminator :conditional-branch}
                 {:function function :operation selected-id :opcode :const}
@@ -2739,6 +2767,7 @@
         (is (= :accepted (:status result)))
         (is (= :passed (get-in result [:upstream-verification :status])))
         (is (= expected (get-in result [:execution :value])))
+        (is (= 505 (get-in result [:execution :fuel])))
         (is (= (conj (subvec ids 0 3) (ids (if condition 3 4)))
                (mapv :operation (filter :operation (get-in result [:execution :trace])))))
         (is (= ids (mapv :operation-id rows)))
@@ -2824,6 +2853,7 @@
         (is (= :passed (get-in result [:upstream-verification :status])))
         (is (= :accepted (:status result)))
         (is (= expected (get-in result [:execution :value])))
+        (is (= 505 (get-in result [:execution :fuel])))
         (is (= :passed (:status (verify core mir result))))))
     ;; Entry <= still does not compose with Eq/Lt arms.
     (doseq [placement [:then :else] operation [:integer-eq :integer-lt]]
@@ -2852,7 +2882,7 @@
           (is (= :rejected (:status rejected)))
           (is (= (:diagnostics upstream) (:diagnostics rejected)))
           (is (nil? (:execution rejected)))))
-      (is (= :rejected (:status (verify core mir (assoc-in result [:execution :unexpected] :substitution))))))))
+      (is (= :rejected (:status (verify core mir (assoc-in result [:execution :fuel] 506))))))))
 
 (defn- check-selected-comparison-arm [operation role cases]
   (doseq [extension [".gravity" ".qst"] placement [:then :else]]
@@ -2883,6 +2913,7 @@
           (is (= :passed (get-in result [:upstream-verification :status])))
           (is (= (if selected? comparison-result (not condition))
                  (get-in result [:execution :value])))
+          (is (= (if selected? 505 507) (get-in result [:execution :fuel])))
           (is (= operation-ids
                  (mapv :operation (filter :operation (get-in result [:execution :trace])))))
           (is (= ids (mapv :operation-id rows)))
@@ -2999,6 +3030,7 @@
           (is (= :accepted (:status result)))
           (is (= (if selected? arm-value (not condition))
                  (get-in result [:execution :value])))
+          (is (= (if selected? 503 505) (get-in result [:execution :fuel])))
           (is (= (into (subvec ids 0 3) selected-ids)
                  (mapv :operation (filter :operation (get-in result [:execution :trace])))))
           (is (= 9 (count rows)))
@@ -3075,6 +3107,7 @@
         (is (= expected (get-in result [:execution :value])))
         (is (= (namespace expected) (namespace (get-in result [:execution :value]))))
         (is (= (name expected) (name (get-in result [:execution :value]))))
+        (is (= (if operation 505 507) (get-in result [:execution :fuel])))
         (is (= ids (mapv :operation-id rows)))
         (is (= types (mapv :source-type rows)))
         (is (= (mapv {:gravity.type/i64 :i64 :gravity.type/bool :bool
@@ -3193,6 +3226,7 @@
       (is (= :passed (get-in result [:upstream-verification :status])))
       (is (= :accepted (:status result)))
       (is (= (if truth left right) (get-in result [:execution :value])))
+      (is (= 506 (get-in result [:execution :fuel])))
       (is (= [(ids 0) (ids 1) (ids (if truth 2 3))]
              (mapv :operation (filter :operation (get-in result [:execution :trace])))))
       (is (= 1 (count (filter #(= (ids 0) (:operation %)) (get-in result [:execution :trace])))))
@@ -3304,6 +3338,7 @@
       (is (= :passed (get-in result [:upstream-verification :status])))
       (is (= :accepted (:status result)))
       (is (= (if condition left right) (get-in result [:execution :value])))
+      (is (= (if selected? 504 507) (get-in result [:execution :fuel])))
       (is (= expected-ids (mapv :operation (filter :operation (get-in result [:execution :trace])))))
       (is (= (if selected? 1 0)
              (count (filter #(= (alias-ids 0) (:operation %)) (get-in result [:execution :trace])))))
@@ -3377,16 +3412,16 @@
     (let [base (scalar-core (checked extension) true :gravity.type/nil nil nil)
           cases (concat
                  (for [condition [true false]]
-                   [(scalar-core (checked extension) condition :gravity.type/nil nil nil) nil])
-                 [[(with-scalar-truthiness extension (checked extension) :gravity.type/nil nil) 22]
-                  [(with-scalar-truthiness extension base :gravity.type/nil nil) nil]]
+                   [(scalar-core (checked extension) condition :gravity.type/nil nil nil) nil 507])
+                 [[(with-scalar-truthiness extension (checked extension) :gravity.type/nil nil) 22 506]
+                  [(with-scalar-truthiness extension base :gravity.type/nil nil) nil 506]]
                  (for [right [0 1]]
-                   [(with-integer-comparison extension base :condition :integer-eq 0 right) nil])
+                   [(with-integer-comparison extension base :condition :integer-eq 0 right) nil 505])
                  (for [placement [:then :else] condition [true false]]
                    [(with-scalar-let extension
                       (scalar-core (checked extension) condition :gravity.type/nil nil nil) placement)
-                    nil]))]
-      (doseq [[core expected] cases]
+                    nil (if (= placement (if condition :then :else)) 504 507)]))]
+      (doseq [[core expected fuel] cases]
         (let [mir (build core) result (run core mir)
               rows (get-in result [:projection :operations])]
           (is (= :passed (get-in result [:upstream-verification :status])))
@@ -3394,6 +3429,7 @@
           (is (= :returned (get-in result [:execution :status])))
           (is (contains? (:execution result) :value))
           (is (= expected (get-in result [:execution :value])))
+          (is (= fuel (get-in result [:execution :fuel])))
           (is (every? #(= :nil (:runtime-type %))
                       (filter #(= :gravity.type/nil (:source-type %)) rows)))
           (is (= (mapv :source (:core-nodes core)) (mapv :source rows)))
@@ -3495,6 +3531,7 @@
       (is (= :passed (get-in result [:upstream-verification :status])))
       (is (= :accepted (:status result)))
       (is (= (if selected? value other) (get-in result [:execution :value])))
+      (is (= (if selected? 505 507) (get-in result [:execution :fuel])))
       (is (= (into [(ids 0)] (if selected? body-ids
                               [((:operands if-node) (if condition 1 2))]))
              (mapv :operation (filter :operation (get-in result [:execution :trace])))))
@@ -3595,6 +3632,7 @@
       (is (= :passed (get-in result [:upstream-verification :status])))
       (is (= :accepted (:status result)))
       (is (= (if selected? value other) (get-in result [:execution :value])))
+      (is (= (if selected? 504 506) (get-in result [:execution :fuel])))
       (is (= (into (subvec ids 0 2) (if selected? body-ids
                                     [((:operands if-node) (if truth 1 2))]))
              (mapv :operation (filter :operation (get-in result [:execution :trace])))))
@@ -3725,6 +3763,7 @@
           (is (= :passed (get-in result [:upstream-verification :status])))
           (is (= :accepted (:status result)))
           (is (= (if selected? (<= start end) false) (get-in result [:execution :value])))
+          (is (= (if selected? 503 505) (get-in result [:execution :fuel])))
           (is (= (into (subvec ids 0 3) selected-ids)
                  (mapv :operation (filter :operation (get-in result [:execution :trace])))))
           (is (= 9 (count rows)))
@@ -3772,7 +3811,7 @@
               (is (nil? (:execution rejected)))))
           (doseq [candidate [(assoc-in result [:execution :value] :forged)
                              (assoc-in result [:projection :operations 2 :role] :integer-less-than)
-                             (assoc-in result [:execution :unexpected] :substitution)]]
+                             (assoc-in result [:execution :fuel] 504)]]
             (is (= :rejected (:status (verify core mir candidate))))))))))
 
 (deftest sh13-executes-the-bounded-integer-greater-than-family
@@ -3805,6 +3844,7 @@
         (is (= :passed (get-in result [:upstream-verification :status])))
         (is (= :accepted (:status result)))
         (is (= expected (get-in result [:execution :value])))
+        (is (= 505 (get-in result [:execution :fuel])))
         (is (= :passed (:status (verify core mir result)))))))
   (doseq [extension [".gravity" ".qst"] placement [:then :else]]
     (letfn [(subject [granted proof-count]
@@ -3834,6 +3874,7 @@
           (is (= :passed (get-in result [:upstream-verification :status])))
           (is (= :accepted (:status result)))
           (is (= (if selected? (> proof-count 0) true) (get-in result [:execution :value])))
+          (is (= (if selected? 503 505) (get-in result [:execution :fuel])))
           (is (= (into (subvec ids 0 3) selected-ids)
                  (mapv :operation (filter :operation (get-in result [:execution :trace])))))
           (is (= 9 (count rows)))
@@ -3874,7 +3915,7 @@
               (is (nil? (:execution rejected)))))
           (doseq [candidate [(assoc-in result [:execution :value] :forged)
                              (assoc-in result [:projection :operations 2 :role] :integer-less-than)
-                             (assoc-in result [:execution :unexpected] :substitution)]]
+                             (assoc-in result [:execution :fuel] 504)]]
             (is (= :rejected (:status (verify core mir candidate)))))))
       (let [base (scalar-core (checked extension) true :gravity.type/bool false true)
             arm (with-integer-comparison extension base placement :integer-gt 1 0)]

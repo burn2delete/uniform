@@ -13,7 +13,7 @@
         sh05-artifact (:sh05-macro-artifact artifact)
         sh05-report
         (try
-          (sh05-macro-artifact-verification sh05-artifact)
+          (sh06-resolution-verify-sh05 sh05-artifact)
           (catch Throwable _ {:status :failed}))
         binding
         (try
@@ -22,7 +22,7 @@
             (sh06-resolution-context-plan-binding! source-path context))
           (catch Throwable _ nil))
         expected-plan-binding
-        (when binding (dissoc binding :plan :source-text :input-key))
+        (when binding (dissoc binding :plan :source-text :input-key :reader-invocation))
         replay
         (when (and binding (= :passed (:status sh05-report)))
           (try
@@ -63,13 +63,14 @@
                 (:authenticated-envelope boundary)
                 sh06-resolution-envelope-stage
                 sh06-resolution-sealed-artifact-kind
-                expected-descriptor source-path)
+                expected-descriptor source-path
+                (sh06-resolution-envelope-source-options binding))
                true
                (catch Throwable _ false)))
         base-checks
         (cond->
-        {:bounded-artifact-carrier? true
-         :bounded-semantic-components? true
+        {:trusted-artifact-carrier? true
+         :trusted-semantic-components? true
          :exact-kind? (= :gravity/sh06-resolution-artifact (:kind artifact))
          :accepted-status? (= :accepted (:status artifact))
          :document-set-current?
@@ -174,14 +175,6 @@
          :execution-boundary-current?
          (= sh06-resolution-execution-boundary-contract
             (:execution-boundary artifact))
-         :component-transport-bounds-current?
-         (= sh06-resolution-transport-bounds
-            (get-in artifact
-                    [:execution-boundary :component-transport-bounds]))
-         :aggregate-artifact-bounds-current?
-         (= sh06-resolution-artifact-bounds
-            (get-in artifact
-                    [:execution-boundary :aggregate-artifact-bounds]))
          :provenance-current?
          (let [source-revision-id
                (get-in boundary

@@ -50,6 +50,10 @@ Do not mark any full-language task complete unless all of these are true:
 
 For final language completion, lower-stage commands are not sufficient. The
 final proof must be produced by the self-hosted public `gravity` executable.
+An absent command or runner, or a missing, skipped or unexecuted required case,
+means NOT ESTABLISHED. Conditional implementation wording is not a waiver of
+final execution. Build the real runner while feature implementation proceeds;
+completion still requires its actual accepted/rejected execution and replay.
 
 ## Current Proven Release Surface
 
@@ -597,8 +601,9 @@ Tasks:
       workflows, cross-tenant memory, untrusted AI output, and prompt-injection
       escalation.
   - Proof gate:
-    - `gravity test` or the conformance runner replays AI/workflow fixtures
-      deterministically when the command exists.
+    - The real `gravity test` or conformance runner actually executes and
+      deterministically replays the required AI/workflow fixtures. An absent
+      runner or unexecuted required case means NOT ESTABLISHED.
 
 ## Phase 12 - Build, Package, And Artifact System
 
@@ -634,7 +639,9 @@ Tasks:
   - Subtasks:
     - Implement `gravity check`, `gravity run`, `gravity compile`, and
       `gravity run-compiled` for every released source feature family.
-    - Add `gravity test` when the Gravity-native conformance runner exists.
+    - Implement and expose the real Gravity-native conformance runner through
+      `gravity test` or the actual equivalent self-hosted public command;
+      missing runner execution leaves this requirement NOT ESTABLISHED.
     - Add `gravity self-host verify` or equivalent when self-hosting
       verification exists.
     - Ensure `.qst` and `.gravity` are accepted everywhere a Gravity source
@@ -804,7 +811,9 @@ Tasks:
     - Run generated executables successfully.
     - Reject every negative conformance fixture through `gravity check` or
       `gravity compile` with stable diagnostics.
-    - Run `gravity test` if implemented.
+    - Actually run required final conformance through `gravity test` or the
+      equivalent self-hosted public runner. Missing commands/runners and
+      skipped or unexecuted required cases mean NOT ESTABLISHED.
     - Run `gravity self-host verify` or equivalent self-host verification.
     - Record provenance, SBOM, release governance, and seed-boundary evidence.
   - Proof gate:

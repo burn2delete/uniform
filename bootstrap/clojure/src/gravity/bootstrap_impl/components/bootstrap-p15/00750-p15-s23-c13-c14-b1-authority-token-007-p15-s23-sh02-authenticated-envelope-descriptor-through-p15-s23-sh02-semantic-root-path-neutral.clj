@@ -13,7 +13,7 @@
           :c13 (get-in record [:actual-path-provenance :c13-source])
           :b1 (get-in record [:actual-path-provenance :b1-source]))]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage (case stage :c13 :c13-mir-optimization
                         :b1 :b1-backend-interface)
      :artifact-kind (:artifact record)
@@ -42,8 +42,7 @@
      :actual-path-provenance
      {:source-path actual-source-path
       :workspace-root workspace-root
-      :invocation-root invocation-root}
-     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+      :invocation-root invocation-root}}))
 
 (def p15-s23-sh02-builder-result-keys
   #{:status :artifact-template :digest-requests :digest-graph-root
@@ -52,7 +51,7 @@
 
 (def p15-s23-sh02-builder-authority
   {:semantic-owner :gravity-source
-   :host-role :bounded-validation-hashing-and-instantiation
+   :host-role :validation-hashing-and-instantiation
    :scope :reusable-authenticated-envelope
    :semantic-root-path-neutral? true
    :physical-provenance-separate? true
@@ -90,32 +89,22 @@
            :sh02-boundary :authenticated-envelope}
           facts)))
 
-(defn- p15-s23-sh02-require-bounded-carrier!
+(defn- p15-s23-sh02-require-carrier!
   [source-path carrier value]
-  (let [bounds p15-s23-sh02-authenticated-envelope-bounds
-        validation
-        (p15-s23-trusted-carrier-validation
-         value :default-only
-         (:maximum-carrier-nodes bounds)
-         (:maximum-carrier-depth bounds)
-         (:maximum-digest-requests bounds))]
+  (let [validation (p15-s23-trusted-carrier-validation value :default-only)]
     (when-not (= :passed (:status validation))
-      (p15-s23-sh02-fail!
-       source-path {} :trusted-bounded-sh02-carrier
-       (merge {:carrier carrier}
-              (select-keys
-               validation
-               [:reason :observed-nodes :observed-depth
-                :maximum-nodes :maximum-depth :maximum-width]))))
-    validation))
+      (p15-s23-sh02-fail! source-path {} :trusted-sh02-carrier
+                        {:carrier carrier :reason (:reason validation)}))
+    (try (p15-s23-c6c10-canonical-form* source-path value)
+         (catch clojure.lang.ExceptionInfo error
+           (p15-s23-sh02-fail! source-path {} :canonical-sh02-carrier
+                             {:carrier carrier :reason (:missing-fact (ex-data error))})))
+    {:status :passed}))
 
 (defn- p15-s23-sh02-validate-builder-carrier!
   [source-path raw-result]
-  (p15-s23-sh02-require-bounded-carrier!
+  (p15-s23-sh02-require-carrier!
    source-path :gravity-builder-result raw-result)
-  ;; The SH-02 carrier preflight above enforces its 2,048-request contract
-  ;; before the shared canonical C6/C10 walker applies the remaining depth,
-  ;; scalar, integer, and per-container limits.
   (try
     (p15-s23-c6c10-validate-builder-result-canonical-carrier!
      source-path raw-result)
@@ -124,11 +113,11 @@
       (throw interrupted))
     (catch StackOverflowError _
       (p15-s23-sh02-fail!
-       source-path {} :bounded-sh02-builder-host-stack {}))
+       source-path {} :sh02-builder-host-stack {}))
     (catch clojure.lang.ExceptionInfo exception
       (p15-s23-sh02-fail!
        source-path {} :canonical-sh02-builder-carrier
-       {:bounded-reason (:missing-fact (ex-data exception))})))
+       {:reason (:missing-fact (ex-data exception))})))
   raw-result)
 
 (defn- p15-s23-sh02-validate-builder-envelope!
@@ -140,11 +129,10 @@
            (set (keys raw-result)))
         (= :accepted (:status raw-result))
         (map? (:artifact-template raw-result))
+        (= 2 (get-in raw-result [:artifact-template :schema-version]))
+        (not (contains? (:artifact-template raw-result) :bounds))
         (vector? (:digest-requests raw-result))
         (pos? (count (:digest-requests raw-result)))
-        (<= (count (:digest-requests raw-result))
-            (:maximum-digest-requests
-             p15-s23-sh02-authenticated-envelope-bounds))
         (vector? (:digest-graph-roots raw-result))
         (= 2 (count (:digest-graph-roots raw-result)))
         (= (:digest-graph-root raw-result)
@@ -153,9 +141,6 @@
         (= (:provenance-binding-root raw-result)
            (second (:digest-graph-roots raw-result)))
         (vector? (:identity-checks raw-result))
-        (<= (count (:identity-checks raw-result))
-            (:maximum-identity-subjects
-             p15-s23-sh02-authenticated-envelope-bounds))
         (= [] (:diagnostics raw-result))
         (= p15-s23-sh02-builder-authority (:authority raw-result)))
     (p15-s23-sh02-fail!
