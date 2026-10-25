@@ -1,0 +1,43 @@
+(ns self-hosting.sh07.current-literal-cluster
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh07-literal-kind? [kind]
+  (contains?
+   #{:nil :boolean :integer :decimal :ratio
+     :character :string :keyword}
+   kind))
+
+(defn sh07-decimal-digit? [value]
+  (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9} value))
+
+(defn sh07-all-decimal-digits? [characters]
+  (if (= (count characters) 0)
+    false
+    (loop [remaining characters]
+      (if (= (count remaining) 0)
+        true
+        (if (sh07-decimal-digit? (first remaining))
+          (recur (rest remaining))
+          false)))))
+
+(defn sh07-canonical-signed-integer-string? [value]
+  (if (string? value)
+    (let [characters (vec value)]
+      (if (= (count characters) 0)
+        false
+        (if (= (first characters) \-)
+          (if (> (count characters) 1)
+            (if (= (first (rest characters)) \0)
+              false
+              (sh07-all-decimal-digits? (rest characters)))
+            false)
+          (if (sh07-all-decimal-digits? characters)
+            (if (> (count characters) 1)
+              (if (= (first characters) \0) false true)
+              true)
+            false))))
+    false))
