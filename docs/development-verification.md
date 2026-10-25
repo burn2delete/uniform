@@ -6560,7 +6560,7 @@ general persistent Vector law separately from this implementation subset.
 Aliases, parameters and arbitrary Vector receivers are not established.
 
 C7, C8 and typed lowering reconstruct the parent and nested child evidence,
-pay the actual child proof work again, and require unique original calls,
+remove child-proof work accounting, and require unique original calls,
 edges, call facts and producer rows. Physical IDs, Symbols and nonnegative
 Integer ordinals precede selected lookups/comparisons. Every normal operand
 still proves itself when another is Never; Never suppresses cross-operand
@@ -7027,9 +7027,9 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 Validate both full member domains and within-operand value distinctness before
-cardinality or membership mismatch, reserving full worst-case content and pair
-work within the remaining allowance. Native String representation units are
-accounting, not Unicode-scalar counts or a provider CPU/heap guarantee. Host
+cardinality or membership mismatch. Remove content/pair reservations and
+remaining-allowance accounting. Native String representation units do not
+define semantic equality or guarantee provider CPU/heap safety. Host
 Set equality, lookup and hashing do not decide the result. The hosting path
 must itself support every operation used by these owning functions.
 
