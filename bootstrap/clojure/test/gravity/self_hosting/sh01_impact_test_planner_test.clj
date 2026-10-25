@@ -1242,6 +1242,59 @@
             (catch clojure.lang.ExceptionInfo exception exception))]
       (is (= "SH01-IMPACT-BASE" (:id (ex-data exception))) base-ref))))
 
+(deftest rename-discovery-selects-removed-and-added-dependency-owners
+  ;; Real Git discovery, followed by planning only. No compiler/provider test
+  ;; execution is implied by the selected namespace assertions below.
+  (doseq [phase [:committed :staged :working]]
+    (let [attributes (make-array FileAttribute 0)
+          repository (Files/createTempDirectory "gravity-impact-rename-" attributes)
+          old-path "bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_adapter_test.clj"
+          new-path "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
+          expected [old-path new-path]
+          namespaces '[gravity.self-hosting.sh06-resolution-adapter-test
+                       gravity.self-hosting.sh07-var-reference-test]
+          context (planner/planning-context
+                   {:catalog [{:namespace (first namespaces) :slice "SH-06"}
+                              {:namespace (second namespaces) :slice "SH-07"}]})]
+      (try
+        (run-process! repository "git" "init" "-b" "main")
+        (run-process! repository "git" "config" "user.name" "Gravity Test")
+        (run-process! repository "git" "config" "user.email" "gravity-test@example.invalid")
+        (run-process! repository "git" "config" "diff.renames" "true")
+        (let [old (.resolve repository old-path)
+              destination (.resolve repository new-path)]
+          (Files/createDirectories (.getParent old) attributes)
+          (spit (.toFile old) "; unchanged renamed dependency bytes\n")
+          (run-process! repository "git" "add" old-path)
+          (run-process! repository "git" "commit" "-m" "base dependency")
+          (run-process! repository "git" "switch" "-c" "topic")
+          (if (= :working phase)
+            (Files/move old destination (make-array java.nio.file.CopyOption 0))
+            (run-process! repository "git" "mv" old-path new-path))
+          (when (= :committed phase)
+            (run-process! repository "git" "commit" "-m" "rename dependency")))
+        (let [discovery (planner/change-discovery "main" repository)
+              plan (planner/build-plan {:context context
+                                        :changed-paths (:changed-paths discovery)
+                                        :expand-dependants? true})]
+          (when-not (= :working phase)
+            ;; Establish the negative control: ordinary rename detection loses
+            ;; the removed dependency even though its owner needs validation.
+            (is (= new-path
+                   (if (= :committed phase)
+                     (run-process! repository "git" "diff" "--name-only" "main" "HEAD")
+                     (run-process! repository "git" "diff" "--name-only" "HEAD")))
+                (str phase)))
+          (is (= expected (:changed-paths discovery)) (str phase))
+          (is (= namespaces (:namespaces plan)) (str phase))
+          (is (= (if (= :committed phase) expected []) (:committed-paths discovery))
+              (str phase))
+          (is (= (case phase :committed [] :staged expected :working [old-path])
+                 (:tracked-working-paths discovery)) (str phase))
+          (is (= (if (= :working phase) [new-path] []) (:untracked-paths discovery))
+              (str phase)))
+        (finally (delete-tree! repository))))))
+
 (deftest parse-plan-only-is-always-boolean
   (let [parse (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
                           'parse-arguments)]

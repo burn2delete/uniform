@@ -1694,7 +1694,8 @@
   With an explicit base ref, committed paths are read from
   merge-base(base, HEAD)..HEAD. Tracked and untracked working paths are always
   included. The three sources remain separate in the result and their union is
-  returned under `:changed-paths`."
+  returned under `:changed-paths`. Renames remain deletion/addition pairs so
+  both the removed dependency and its destination select their owning checks."
   ([]
    (change-discovery nil (path ".")))
   ([base-ref]
@@ -1743,10 +1744,10 @@
                  exception)))))
          committed-paths
          (if merge-base
-           (vec (run ["git" "diff" "--name-only" merge-base "HEAD"]))
+           (vec (run ["git" "diff" "--no-renames" "--name-only" merge-base "HEAD"]))
            [])
          tracked-working-paths
-         (vec (run ["git" "diff" "--name-only" "HEAD"]))
+         (vec (run ["git" "diff" "--no-renames" "--name-only" "HEAD"]))
          untracked-paths
          (vec (run ["git" "ls-files" "--others" "--exclude-standard"]))
          changed-paths
