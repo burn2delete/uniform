@@ -36,7 +36,7 @@
            [(int 7) [:integer32 false nil 3 nil nil]]
            [(long 7) [:integer64 false nil 3 nil nil]]
            ["text" [:string false nil 4 nil nil]]
-           ['ns/name [:symbol false nil 7 nil nil]]
+           ['ns/name [:symbol false nil 7 true nil]]
            [:ns/name [:keyword false nil 8 nil nil]]
            [(array-map :a 1) [:map false 1 nil nil nil]]
            [(hash-map :a 1) [:map false 1 nil nil nil]]
@@ -51,6 +51,23 @@
     (is (= header (interpreted plan [value]))))
   (let [header (observe (sorted-map :a 1 :b 2))]
     (is (= [:tree-map false 2 nil :default-comparator nil] header))))
+
+(deftest native-header-symbol-name-presence-distinguishes-null-from-empty
+  (doseq [[namespace name units present?]
+          [[nil nil 0 false] [nil "" 0 true] ["" nil 5 false] ["" "" 1 true]
+           ["ns" nil 7 false] ["ns" "" 3 true] ["ns" "name" 7 true]
+           ["unicode" "\ud83d\ude00" 10 true]]
+          metadata? [false true]]
+    (let [symbol (clojure.lang.Symbol/intern namespace name)
+          value (if metadata? (with-meta symbol {:name-present? (not present?)}) symbol)
+          expected [:symbol metadata? nil units present? nil]
+          header (observe value)]
+      (is (= expected header))
+      (is (= expected (interpreted plan [value])))
+      (is (boolean? (nth header 4)))
+      (is (nil? (nth header 5)))
+      (is (= units (b/p15-s23-stage2-runtime-invoke-builtin
+                    plan 'bootstrap-symbol-utf16-unit-count [value]))))))
 
 (deftest native-header-scalar-metrics-do-not-render-or-normalize
   (doseq [[value bits]
@@ -233,5 +250,9 @@
             invoke #(b/p15-s23-stage2-runtime-execute-function runtime compiled %1 %2)]
         (is (= :integer64 (invoke 'kind-of [(long 7)])))
         (is (= [:integer64 false nil 3 nil nil] (invoke 'observe [(long 7)])))
+        (is (= [:symbol false nil 7 true nil] (invoke 'observe ['ns/name])))
+        (is (= [:symbol false nil 0 true nil] (invoke 'observe [(symbol "")])))
+        (is (= [:symbol false nil 0 false nil]
+               (invoke 'observe [(clojure.lang.Symbol/intern nil nil)])))
         (is (= "L2-BUILTIN-ARITY" (get-in (outcome #(invoke 'wrong-arity [])) [:error :id])))
         (is (not (contains? (set (get-in emitter [:call-rules :builtin-functions])) operation)))))))
