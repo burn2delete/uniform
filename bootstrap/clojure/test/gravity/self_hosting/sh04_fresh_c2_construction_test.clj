@@ -69,8 +69,9 @@
     (is (= :complete (:status proof)))
     (is (= :failed (:status (bootstrap/c3-syntax-capability-proof
                              (assoc-in actual [:gravity-metadata-ledger :entries 0 :action] :substituted)))))
+    (is (some? (get-in actual [:gravity-syntax-boundary :gravity-syntax-serialization :semantic-payload])))
     (is (= (get-in actual [:gravity-syntax-boundary :gravity-syntax-serialization :semantic-payload])
-           (get-in actual [:gravity-syntax-boundary :gravity-syntax-deserialization :semantic-payload]))))))
+           (get-in actual [:gravity-syntax-boundary :gravity-syntax-deserialization :semantic-payload])))))
 
 (defn- bad-override-text []
   (slurp (path "bootstrap/clojure/fixtures/rejected/compiler-c3-shape.gravity")))
