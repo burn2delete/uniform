@@ -31,3 +31,8 @@ and negative checks, evidence ownership, unrun behavior and integration path.
 Reuse existing verification tools; do not create new admission or accounting
 systems. Omit inapplicable design artifacts. Preserve unresolved questions as
 explicit facts; progress on independent work without routine approval stops.
+
+Apply `.specify/semantic-names.md` to newly introduced implementation filenames,
+namespaces and application/API names. Use short subsystem/behavior words; keep
+planning IDs in metadata/cross-references. Review new names in this change only,
+record legacy rename dependencies, and preserve compatibility-bearing IDs.

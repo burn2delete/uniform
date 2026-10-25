@@ -31,7 +31,7 @@ workflow, scheduler, credential, service or global agent setting is enabled.
 | Path | Purpose |
 | --- | --- |
 | `.specify/memory/constitution.md` | Actual user decisions and canonical links |
-| `.specify/local-preset/` | Editable Uniform command sources, v0.1.0 |
+| `.specify/local-preset/` | Editable Uniform command sources, v0.2.0 |
 | `.specify/presets/uniform/` | Official CLI-installed copy; regenerate from source |
 | `.specify/templates/overrides/` | Bounded spec, plan and task formats |
 | `.specify/templates/` | Official generated core templates, converted to ASCII |
@@ -159,3 +159,8 @@ Proposed shared navigation text (through the process bridge only):
 `For optional bounded-change planning, see [Spec Kit adoption](../.specify/README.md).
 Canonical contracts and evidence rules remain here.` No global approval ticket
 or new routine ceremony is required to use the current artifact workflow.
+
+New implementation naming follows [semantic naming guidance](semantic-names.md).
+The [naming pilot and incremental legacy audit](naming-pilot/plan.md) is a
+bounded adoption handoff, separate from the component registry/Reader roadmap
+owned by the parent cloud worker. Planning IDs remain traceability metadata.
