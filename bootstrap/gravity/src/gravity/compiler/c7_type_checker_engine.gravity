@@ -26412,7 +26412,7 @@
                            :higher-order-functions :records :unions
                            :protocols :generics :casts :dynamic-boundaries]})))
 
-(defn sh08-ft-function-type-core-artifact-with-imports-and-allowance [core-artifact bindings source-forms imports allowance]
+(defn sh08-ft-function-type-core-artifact-with-imports-and-ledger [core-artifact bindings source-forms imports allowance]
   (if (map? core-artifact)
     (let [shape (sh08-validate-core-shape core-artifact)
           module (if (map? (get core-artifact :module))
@@ -26440,7 +26440,7 @@
                 (if (= :accepted (get recursive-proof :status)) false true)
                 false))
               (if unsupported-higher-order?
-                {:artifact :gravity/sh08-function-typed-core-template
+                {:result {:artifact :gravity/sh08-function-typed-core-template
                  :schema-version 3
                  :status :rejected
                  :scope :capture-free-higher-order-fixed-arity-one-hop
@@ -26459,8 +26459,8 @@
                    {})]
                  :pending [:recursive-type-annotations
                            :higher-order-functions :records :unions
-                           :protocols :generics :casts :dynamic-boundaries]}
-                {:artifact :gravity/sh08-function-typed-core-template
+                           :protocols :generics :casts :dynamic-boundaries]} :ordinary-work-count 0}
+                {:result {:artifact :gravity/sh08-function-typed-core-template
                  :schema-version 3
                  :status :rejected
                  :scope :first-order-fixed-arity-functions-locals-calls
@@ -26472,7 +26472,7 @@
                  [(sh08-ft-recursive-diagnostic recursive-proof module)]
                  :pending [:recursive-type-annotations
                            :higher-order-functions :records :unions
-                           :protocols :generics :casts :dynamic-boundaries]})
+                           :protocols :generics :casts :dynamic-boundaries]} :ordinary-work-count 0})
               (let [base-function-skeletons
                 (sh08-ft-function-skeletons
                  (get products :function-records) module)
@@ -26515,7 +26515,7 @@
                    :shape-call-products (assoc products :module module)))
                 handler-types (sh08-eh-type-checks (get handler-products :groups {}) (get unprojected-inference :type-table) nodes)
                 direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table)
-                                (- 65536 (get handler-products :work-count 0)))
+                                (- 65536 (get handler-products :ordinary-work-count 0)))
                 throw-products (if (sh08-rv? recursive-proof)
                                  (assoc direct-throws :recursive-error-status :pending-sh09-recursive-body)
                                  (if (if (= :accepted (get direct-throws :status))
@@ -26523,7 +26523,7 @@
                                        (= nil (sh08-ft-first-unknown-node (get shape :nodes) (get unprojected-inference :type-table))) false) false)
                                  (sh08-tc-products-with-source-forms core-artifact (get unprojected-inference :type-table)
                                    (get unprojected-inference :function-types) bindings direct-throws source-forms
-                                   (- 65536 (get direct-throws :work-count 0) (get handler-products :work-count 0))) direct-throws))
+                                   (- 65536 (get direct-throws :ordinary-work-count 0) (get handler-products :ordinary-work-count 0))) direct-throws))
                 raw-inference (if (if (sh08-rv? recursive-proof) true (= 0 (count (get throw-products :throws)))) unprojected-inference
                   (assoc unprojected-inference
                     :type-table (sh08-th-type-map (get unprojected-inference :type-table) (get throw-products :throws))
@@ -26577,9 +26577,11 @@
                 final-functions
                 (if (sh08-rv? recursive-proof) (sh08-ft-final-functions functions)
                   (sh08-th-functions (sh08-ft-final-functions functions) (get throw-products :throws)))]
-            (sh08-ft-finish-function-type-core
-              core-artifact imports products module recursive-proof higher-order-proof nodes recursive? higher-order? inference quoted-products match-checks throw-products final-functions)))))
-        {:artifact :gravity/sh08-function-typed-core-template
+            {:result (sh08-ft-finish-function-type-core
+              core-artifact imports products module recursive-proof higher-order-proof nodes recursive? higher-order? inference quoted-products match-checks throw-products final-functions)
+             :ordinary-work-count (+ (- allowance (get raw-inference :type-join-work-left allowance))
+                                     (get raw-match-checks :call-join-work 0))}))))
+        {:result {:artifact :gravity/sh08-function-typed-core-template
          :schema-version 3
          :status :rejected
          :scope :first-order-fixed-arity-functions-locals-calls
@@ -26595,8 +26597,8 @@
            (get products :reason) {})]
          :pending [:recursive-type-annotations
                    :higher-order-functions :records :unions
-                   :protocols :generics :casts :dynamic-boundaries]}))
-    {:artifact :gravity/sh08-function-typed-core-template
+                   :protocols :generics :casts :dynamic-boundaries]} :ordinary-work-count 0}))
+    {:result {:artifact :gravity/sh08-function-typed-core-template
      :schema-version 3
      :status :rejected
      :scope :first-order-fixed-arity-functions-locals-calls
@@ -26606,7 +26608,13 @@
      :diagnostics
      [(sh08-ft-diagnostic
        "C7-VERIFY" {} {} :sh07-canonical-core-map core-artifact
-       :sh07-shaped-core-map-required {})]}));
+       :sh07-shaped-core-map-required {})]} :ordinary-work-count 0}));
+
+(defn sh08-ft-function-type-core-artifact-with-imports-and-allowance [core-artifact bindings source-forms imports allowance]
+  ; Canonical producer artifacts and identities do not contain work receipts.
+  ; The verifier uses the separate private ledger, never a candidate receipt.
+  (get (sh08-ft-function-type-core-artifact-with-imports-and-ledger
+         core-artifact bindings source-forms imports allowance) :result))
 
 (defn sh08-ft-function-type-core-artifact-with-imports [core-artifact bindings source-forms imports]
   (sh08-ft-function-type-core-artifact-with-imports-and-allowance core-artifact bindings source-forms imports 65536))

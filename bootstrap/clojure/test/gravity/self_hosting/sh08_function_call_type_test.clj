@@ -22394,7 +22394,7 @@
                       (contains? helpers op) (add @base (function-cost op))
                       (contains? primitives op)
                       (add @base (case op get [33 0] assoc [35 0] contains? [64 0]
-                                      conj [33 0] vec [8 8] bootstrap-native-carrier-header [64 0]
+                                      conj [33 0] vec [8 8] bootstrap-native-carrier-header [75 0]
                                       = [2 0] list [(count args) 0] [1 0]))
                       :else (throw (ex-info "Unassigned verifier source operation" {:op op :target target})))))))
             (function-cost [name]
@@ -22402,6 +22402,72 @@
                 (when-not definition (throw (ex-info "Missing verifier source helper" {:name name})))
                 (add [(+ 8 (* 6 (count (nth definition 2)))) 0] (sum (map cost (drop 3 definition))))))]
       {:source-function target :control-polynomial (function-cost target) :opaque-children #{}})))
+
+(defn- verifier-current-core-products [stage]
+  ;; A separate source fixture exercises the changed ledger. This stops before
+  ;; the independently authenticated B47 request/public verifier boundary.
+  (let [source-path (fixture-path "accepted" "function-verifier-work-ledger" ".gravity")
+        text (slurp source-path)
+        resolved (function-work-policy-current-resolution source-path text
+                   {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)
+        artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
+        boundary (:gravity-core-boundary artifact)]
+    {:source-path source-path :source-text text :resolved resolved :core-wrapper artifact
+     :core (:canonical-core-artifact boundary)
+     :forms (get-in boundary [:authenticated-core-request :forms])
+     :bindings (get-in boundary [:authenticated-core-request :binding-table])}))
+
+(deftest sh08-verifier-private-ordinary-ledger-current-source
+  (let [stage (fn [name operation]
+                (let [start (System/nanoTime) out (operation)]
+                  (prn {:verifier-ledger-source-stage name :elapsed-ms (quot (- (System/nanoTime) start) 1000000)})
+                  (flush) out))
+        {:keys [source-path source-text resolved core-wrapper core forms bindings]} (verifier-current-core-products stage)
+        run (fn [allowance]
+              (observe-function-work-policy
+                #(invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger
+                   [core bindings forms {} allowance])))
+        observed (run 1048576) ledger (:value observed) result (:result ledger)
+        spent (:ordinary-work-count ledger) inference (first (:inference observed))]
+    (is (= :accepted (:status resolved) (:status core-wrapper)))
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (is (= [{:definition-name 'tone :return :gravity.type/keyword}]
+           (mapv #(select-keys % [:definition-name :return]) (:function-type-table result))))
+    (is (= 1 (count (:inference observed))))
+    (is (= spent (- (:budget inference) (:remaining inference))))
+    (is (< 0 spent 1048576))
+    (is (not (contains? result :ordinary-work-count)))
+    (is (not (contains? (:identity-input result) :ordinary-work-count)))
+    (when (and (= :accepted (:status result)) (pos? spent))
+      (let [exact (:value (run spent)) short (:value (run (dec spent)))]
+        (is (= result (:result exact)))
+        (is (= spent (:ordinary-work-count exact)))
+        (is (= :rejected (get-in short [:result :status])))
+        (is (> (:ordinary-work-count short) (dec spent)))
+        (is (some #(and (= "C7-GENERIC" (:rule %))
+                        (str/includes? (name (:reason %)) "work-limit"))
+                  (get-in short [:result :diagnostics])))))
+    (is (= source-text (slurp (fixture-path "accepted" "function-verifier-work-ledger" ".qst"))))
+    (prn {:private-ordinary-ledger-source :checked :source-path source-path
+          :core-id (:artifact-id core) :ordinary-work-count spent :declared-allowance 1048576
+          :actual-independent-inference inference :public-verifier-established false
+          :B47-verification-complete false :source-construction-replayed false})))
+
+(deftest sh08-verifier-private-ordinary-ledger-boundary
+  ;; This private ledger records the existing ordinary inference domain. It
+  ;; does not pretend that validation, proof discovery or throw analysis is
+  ;; free, and is not yet the complete public verifier reconstruction ledger.
+  (doseq [core [nil {} {:module {}}]]
+    (let [args [core [] [] {} 65536]
+          ledger (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-ledger args)
+          result (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-allowance args)]
+      (is (= #{:result :ordinary-work-count} (set (keys ledger))))
+      (is (= 0 (:ordinary-work-count ledger)))
+      (is (= result (:result ledger)))
+      (is (= :rejected (:status result)))
+      (is (not (contains? result :ordinary-work-count)))))
+  (prn {:private-ordinary-ledger :checked :canonical-output-work-receipt false
+        :whole-reconstruction-accounting false :public-wrapper-changed false}))
 
 (deftest sh08-verifier-native-total-comparison-development-kernel
   (let [run #(invoke-c7 'sh08-vf-compare-data [%1 %2 %3])
