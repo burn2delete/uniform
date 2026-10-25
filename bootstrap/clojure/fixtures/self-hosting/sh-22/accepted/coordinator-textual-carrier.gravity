@@ -1,0 +1,21 @@
+(ns gravity.self-hosting.sh22.textual-carrier.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-textual-carrier-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-textual-carrier-request [value]
+  {:artifact :gravity/sh22-library-request
+   :request-id :coordinator/textual-carrier
+   :profile :meta
+   :experimental-opt-in true
+   :operation :vector-append
+   :arguments [[] value]
+   :effects #{:memory/allocate}
+   :capabilities #{}
+   :allocation-policy :bounded-by-result
+   :source-span {:source-id :coordinator/textual-carrier :start 0 :end 64}
+   :origin-chain [{:kind :source :source-id :coordinator/textual-carrier}]
+   :actual-source-path "fixtures/coordinator-textual-carrier.gravity"})
