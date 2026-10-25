@@ -88,7 +88,7 @@
         (p15-s23-c6c10-canonical-digest
          source-path {:syntax-result (:syntax-result-id summary)})]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :c3-syntax
      :artifact-kind sh04-syntax-sealed-artifact-kind
      :source-revision

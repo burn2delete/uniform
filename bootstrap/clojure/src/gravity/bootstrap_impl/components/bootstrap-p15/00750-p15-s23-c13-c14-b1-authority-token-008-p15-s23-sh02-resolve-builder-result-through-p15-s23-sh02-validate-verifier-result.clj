@@ -161,13 +161,14 @@
 
 (defn- p15-s23-sh02-source-rule
   [binding]
-  (assoc
+  (cond-> (assoc
    (p15-s23-c13-c14-b1-source-rule
     :gravity.compiler/authenticated-envelope binding
     'authenticated-envelope-build-template)
    :artifact :gravity/pinned-authenticated-envelope-source-rule
    :verifier-function 'authenticated-envelope-verify-template
-   :verifier-semantic-hash (:verifier-semantic-hash binding)))
+   :verifier-semantic-hash (:verifier-semantic-hash binding))
+    (:development-current? binding) (assoc :admission-status :development-unadmitted)))
 
 (defn- p15-s23-sh02-validate-verifier-result!
   [source-path raw-result verifier-result]

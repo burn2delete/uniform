@@ -21,7 +21,7 @@
         (p15-s23-c6c10-canonical-digest
          source-path {:macro-result (:artifact-id summary)})]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage sh05-macro-envelope-stage
      :artifact-kind sh05-macro-sealed-artifact-kind
      :source-revision
