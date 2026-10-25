@@ -1,49 +1,60 @@
 
 
 (defn sh05-macro-artifact-verification
-  [artifact]
+  ([artifact] (sh05-macro-artifact-verification artifact nil))
+  ([artifact invocation]
+  (when invocation
+    (sh03-reader-authenticated-envelope-options
+     (get-in artifact [:provenance :source-path]) invocation))
   (sh07-proof-transaction-report
    :sh05 :final
    {:verifier-root
     (var-get #'sh05-macro-artifact-verification*)
     :report-schema-version 1
+    :invocation invocation
     :check-catalog-domain :gravity/sh05-final-verification-checks
     :source-content-hash sh05-macro-expected-source-content-hash
     :plan-semantic-hash sh05-macro-expected-plan-semantic-hash
     :functions-semantic-hash
     sh05-macro-expected-functions-semantic-hash}
    artifact
-   #(sh05-macro-artifact-verification* artifact false)))
+   #(sh05-macro-artifact-verification* artifact false invocation))))
 
 (defn sh05-macro-capability-based-proof-for-construction
-  [artifact]
+  ([artifact] (sh05-macro-capability-based-proof-for-construction artifact nil))
+  ([artifact invocation]
+  (when invocation
+    (sh03-reader-authenticated-envelope-options
+     (get-in artifact [:provenance :source-path]) invocation))
   (let [report
         (sh07-proof-transaction-report
          :sh05 :construction
          {:verifier-root
           (var-get #'sh05-macro-artifact-verification*)
           :report-schema-version 1
+          :invocation invocation
           :check-catalog-domain :gravity/sh05-construction-verification-checks
           :source-content-hash sh05-macro-expected-source-content-hash
           :plan-semantic-hash sh05-macro-expected-plan-semantic-hash
           :functions-semantic-hash
           sh05-macro-expected-functions-semantic-hash}
          artifact
-         #(sh05-macro-artifact-verification* artifact true))
+         #(sh05-macro-artifact-verification* artifact true invocation))
         checks (:checks report)]
     (assoc checks
            :artifact :gravity/sh05-macro-capability-proof
            :status (if (= :passed (:status report)) :complete :failed)
-           :failed-checks (:failed-checks report))))
+           :failed-checks (:failed-checks report)))))
 
 (defn sh05-macro-capability-based-proof
-  [artifact]
-  (let [report (sh05-macro-artifact-verification artifact)
+  ([artifact] (sh05-macro-capability-based-proof artifact nil))
+  ([artifact invocation]
+  (let [report (sh05-macro-artifact-verification artifact invocation)
         checks (:checks report)]
     (assoc checks
            :artifact :gravity/sh05-macro-capability-proof
            :status (if (= :passed (:status report)) :complete :failed)
-           :failed-checks (:failed-checks report))))
+           :failed-checks (:failed-checks report)))))
 
 (defn sh05-authenticated-source-snapshot!
   "Check current bounded no-follow source identity against nested C2."

@@ -186,7 +186,7 @@
   (let [state (atom {:dependencies :stable :bindings :stable :phase nil})
         overrides {'sh07-core-construction-carrier! (constantly :trusted)
                    'sh07-core-source-path-from-resolution (constantly "guard.gravity")
-                   'sh07-core-construction-dependencies (fn [_] (:dependencies @state))
+                   'sh07-core-construction-dependencies (fn [& _] (:dependencies @state))
                    'sh07-core-construction-bindings (fn [_] (:bindings @state))
                    'sh07-core-construction-phase (fn [] (:phase @state))
                    'sh07-core-construction-reader (constantly :selected-reader)
