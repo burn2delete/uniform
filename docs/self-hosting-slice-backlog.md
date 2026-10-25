@@ -9706,6 +9706,18 @@ broader SH07 support exemption. Qualified reader name membership is not C5
 authority. Top-level DATA/declarations and quoted interiors remain separate
 unclosed source regions; no full-source or migration credit follows.
 
+The following C01 declaration/leaf audit adds the six namespace headers and
+37 top-level DATA declarations to the source inventory. It also closes a
+demonstrated test-record gap: after plan/function rehashing, a Bool value change
+and redirect to another existing parameter had been accepted despite unchanged
+source. Direct literal/local source checks now reject both. The current-seed
+composition including `f2bb3a35` passed 20 tests/207 assertions; its host subtree
+matches main's new Symbol/reader-policy TCB. The
+[declaration and leaf record](self-hosting-sh07-completion-plan.md#c01-source-declarations-and-leaf-equivalence-at-c7d31338)
+keeps all prior fields, exact before-fix/timeout history and new dependency
+bookends. This is C01 source-to-seed validation, not public Core/C5 acceptance,
+runtime argument-domain proof, migration or C-task completion.
+
 The current 2026-10-24 accounting base is inspected remote main
 `c4b1d19da11def44f835d552e44d06488d31fe46`, tree
 `a4145adf64c5c7d4ebc558c605f07d27f784cac5`. Earlier `64aa890a` queue/adoption

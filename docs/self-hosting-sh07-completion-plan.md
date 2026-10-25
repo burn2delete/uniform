@@ -846,6 +846,60 @@ inspection; it was not this execution's checkout. Every prior report field
 remains conserved. Namespace/top-level initialization and source-to-Core
 acceptance remain unproven.
 
+### C01 source declarations and leaf equivalence at `c7d31338`
+
+The next source audit found 37 top-level DATA definitions and six namespace
+headers in addition to the 1008 function definitions. It compared all selected
+seed leaves with their source forms: 21902 literal values, 14750 local
+identifier spellings and 78 quoted payloads. All matched. There were zero
+selected-body references that inline a top-level DATA symbol, so no such use
+is invented. The earlier full-body supplement retains its historical
+body-only scope; this new declaration supplement records the additional
+namespace/initializer source regions.
+
+A concrete gap remained in the C01 test record validator. On frozen `b32f1c8a`,
+an actual envelope-owner probe changed a Bool literal and redirected a local
+reference from `state` to the existing parameter `preimage`. It recomputed the
+function hash and whole plan ID while preserving the source hash, definition
+hash and positions. The validator accepted both altered plans. This was a
+C01 source/plan record gap, not a public compiler or Gravity Core verifier
+vulnerability claim.
+
+The owning check now compares scalar literal values, local names and quoted
+payloads directly with source. It retains the existing seed literal-table
+boundary if a source symbol is inlined. The EDN's new declaration/leaf rows
+record namespace form hashes/spans, normalized module headers and each DATA
+definition's initializer kind/hash and normalized value hash. DATA normalization
+uses the declared temporary seed API; it is not an actual Core `def` product,
+profile/effect legality or execution of the initializer.
+
+Actual tests reject a same-kind Bool flip and a redirect to another existing
+parameter after both plan/function hashes are resealed. Stable record
+diagnostics are `SH07-C01-JOIN` / `:literal-value` and `:local-name`. The changed
+batch passed 20 tests/207 assertions (C01 9/184; boundary/LOC 11/23) under the
+normal broker, 2GiB heap and 120s watchdog, natural exit 0. Its recorded
+completion interval was 15933.343916 ms.
+
+The tested private composition is
+`c7d31338fb53e832ce63eefd408b3be19a10d14d`, including main
+`f2bb3a35e6da25d66be99efbfa82a8aee4cfe28e`, the accepted reconciliation and
+the dependent C01 work. Its loaded host source subtree
+`4fda9727f1ca84cb8e3ad36f09865da94135ed6c` exactly matches that main reference.
+The new Symbol ABI and reader intake policy changed the seed TCB; the new
+execution dependencies are recorded separately, with all prior artifact
+fields and their earlier contexts preserved. An earlier old-context test
+controller timed out before broker admission/test execution and contributes
+zero assertions.
+
+Raw successful output is
+`/tmp/sh07-c01-source-leaves-c7d31338-attempt1.log`, SHA256
+`972dce278389cd4259dc414e09ad602b828881bc1f6dbc2c63f3e2658f0a0d3c`.
+The existing EDN pins the source audit, before-fix accepted-mutant probe,
+failed admission, current test source/method/result and fresh declaration
+rows. C5 binding identities, runtime primitive argument domains, actual Core
+products, full-reader compilation, migration and C-task completion remain
+OPEN. The private composition is not a claim of testing an exact main checkout.
+
 ### C01 and C16 stopping point
 
 The six full subjects, ordinary current-reader intake, repository load boundary
