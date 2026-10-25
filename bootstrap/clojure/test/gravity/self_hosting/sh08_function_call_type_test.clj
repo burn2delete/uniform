@@ -20272,9 +20272,8 @@
                              (original-get plan value key))}
       #(doseq [options invalid]
          (let [producer (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [opaque options])
-               verifier (invoke-c7 'sh08-verify-function-type-result-with-work-policy [opaque opaque options])
-               private (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-work-policy [opaque opaque opaque opaque options])]
-           (doseq [[envelope key] [[producer :result] [verifier :verification] [private :result]]]
+               verifier (invoke-c7 'sh08-verify-function-type-result-with-work-policy [opaque opaque options])]
+           (doseq [[envelope key] [[producer :result] [verifier :verification]]]
              (is (nil? (:effective-work-policy envelope)))
              (is (= [:rejected "C7-GENERIC" :invalid-type-inference-work-policy]
                     ((juxt :status (fn [value] (get-in value [:diagnostics 0 :rule]))
@@ -21009,7 +21008,7 @@
     (is (empty? @callbacks))))
 
 (defn- verifier-current-core-products [stage]
-  ;; A separate source fixture exercises the changed ledger. This stops before
+  ;; Original source transport for ordinary C7 construction. This stops before
   ;; the independently authenticated B47 request/public verifier boundary.
   (let [source-path (fixture-path "accepted" "function-verifier-work-ledger" ".gravity")
         text (slurp source-path)
@@ -21021,6 +21020,42 @@
      :core (:canonical-core-artifact boundary)
      :forms (get-in boundary [:authenticated-core-request :forms])
      :bindings (get-in boundary [:authenticated-core-request :binding-table])}))
+
+(deftest ordinary-function-construction-preserves-semantic-results
+  ;; This uses original source/Core construction, not an authenticated B47
+  ;; request, public verifier, Effects/emitter body verifier or C12 execution.
+  (let [stage (fn [name operation]
+                (prn {:ordinary-function-construction :source-transport :stage name :event :start})
+                (let [result (operation)]
+                  (prn {:ordinary-function-construction :source-transport :stage name :event :complete})
+                  result))
+        {:keys [resolved core-wrapper core forms bindings]} (verifier-current-core-products stage)
+        construct #(invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-allowance
+                              [% bindings forms {} 65536])
+        result (construct core)
+        ordinary (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports [core bindings forms {}])]
+    (is (= :accepted (:status resolved) (:status core-wrapper)))
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (is (= result ordinary))
+    (is (= [{:definition-name 'tone :return :gravity.type/keyword}]
+           (mapv #(select-keys % [:definition-name :return]) (:function-type-table result))))
+    (is (= [[:direct-map-get :gravity.type/keyword :cool]]
+           (mapv (juxt :dispatch :result-type #(get-in % [:applied-map-get :key])) (:call-type-facts result))))
+    (is (= (:type-table result) (get-in result [:typed-core :types]) (get-in result [:identity-input :type-table])))
+    (is (= (:constraint-ledger result) (get-in result [:typed-core :constraints])
+           (get-in result [:identity-input :constraint-ledger])))
+    (is (every? #(not-any? (fn [key] (contains? % key)) [:ordinary-work-count :effective-work-policy])
+                [result (:typed-core result) (:identity-input result)]))
+    (doseq [[changed reason] [[nil :sh07-shaped-core-map-required]
+                              [(assoc core :artifact :invalid) :malformed-sh07-core-shape]
+                              [(update core :nodes conj (first (:nodes core))) :malformed-sh07-core-shape]]]
+      (let [rejected (construct changed)
+            repeated (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports [changed bindings forms {}])]
+        (is (= :rejected (:status rejected)))
+        (is (= reason (get-in rejected [:diagnostics 0 :reason])))
+        (is (= rejected repeated))
+        (is (seq (:diagnostics rejected)))
+        (is (every? #(= "C7-VERIFY" (:rule %)) (:diagnostics rejected)))))))
 
 
 
