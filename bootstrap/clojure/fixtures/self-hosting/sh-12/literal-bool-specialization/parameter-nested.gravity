@@ -4,4 +4,3 @@
   (:exports [main]))
 
 (defn main [flag :- Bool] (if flag (if false 11 22) 33))
-

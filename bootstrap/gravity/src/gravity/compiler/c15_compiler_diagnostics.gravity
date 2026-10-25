@@ -6,6 +6,7 @@
              c15-diagnostic-stream-contract
              c15-diagnostic-catalog
              build-c15-diagnostic
+             verify-c15-resolved-diagnostic
              verify-c15-diagnostic-stream
              sh15-diagnostic-input-valid?
              sh15-build-diagnostic-boundary
@@ -104,22 +105,16 @@
 
 (defn build-c15-diagnostic
   [rule severity stage primary related origin-chain profile target facts remediation redactions]
-  (quote {:artifact :gravity/diagnostic
-          :diagnostic-id [:stable-id rule primary stage facts]
-          :rule rule
-          :severity severity
-          :lifecycle :active
-          :stage stage
-          :message-key rule
-          :primary primary
-          :related related
-          :origin-chain origin-chain
-          :profile profile
-          :target target
-          :facts facts
-          :remediation remediation
-          :redactions redactions
-          :contract c15-diagnostic-shape-contract}))
+  (let [fields [rule severity stage primary related origin-chain profile target
+                facts remediation redactions]
+        error (c15-fields-error fields)]
+    (if (= nil error)
+      (let [record (c15-unresolved-record fields)]
+        (if (c15-carrier-valid? record)
+          record
+          (c15-construction-failure "C15-SCHEMA" :record :constructed-carrier-bound)))
+      (c15-construction-failure (get error :rule) (get error :field)
+                                (get error :reason)))))
 
 (defn verify-c15-diagnostic-stream [diagnostic-stream]
   (quote {:status :stage1-source-owned
@@ -139,6 +134,225 @@
                       :origin-chains :related-spans
                       :diagnostic-facts :remediation-records
                       :redaction-markers :golden-fixture-identity]}))
+
+; Canonical first-slice construction is private DATA until an external resolver
+; binds the declared request. It is not a safe-publication or stream verifier.
+
+(defn c15-carrier-valid? [value]
+  (loop [frontier [[value 0]] nodes 0 enqueued 1 units 0]
+    (if (= 0 (count frontier))
+      true
+      (let [entry (first frontier) current (first entry) depth (second entry)
+            remaining (subvec frontier 1 (count frontier))]
+        (if (if (> (+ nodes 1) 16384) true (> depth 128))
+          false
+          (if (seq? current)
+            false
+            (if (sh15-aggregate? current)
+              ; Test width BEFORE enumerating map children.
+              (if (> (count current) (if (vector? current) 1024 512))
+                false
+                (let [children (sh15-children current)
+                      next-enqueued (+ enqueued (count children))]
+                  (if (> next-enqueued 16384)
+                    false
+                    (recur (sh15-push-children remaining children depth)
+                           (+ nodes 1) next-enqueued units))))
+              (if (sh15-scalar-valid? current)
+                (let [next-units (+ units (sh15-scalar-units current))]
+                  (if (> next-units 65536)
+                    false
+                    (recur remaining (+ nodes 1) enqueued next-units)))
+                false))))))))
+
+(defn c15-keyword-map? [value]
+  (if (map? value)
+    (loop [remaining (keys value)]
+      (if (= 0 (count remaining)) true
+        (if (keyword? (first remaining)) (recur (rest remaining)) false)))
+    false))
+
+(defn c15-identifier? [value]
+  (if (string? value) (<= 1 (count value)) (keyword? value)))
+
+(defn c15-rule-valid? [value]
+  (if (string? value) (sh15-upstream-code-valid? value)
+    (if (keyword? value)
+      (if (<= 2 (count (str value))) (<= (count (str value)) 128) false)
+      false)))
+
+(defn c15-unavailable-stage? [stage]
+  (sh15-member? [:read-source :compiler-diagnostics] stage))
+
+(defn c15-context-value-valid? [value stage]
+  (if (= nil value) (c15-unavailable-stage? stage) (keyword? value)))
+
+(defn c15-reader-point-valid? [point]
+  (if (sh15-exact-keys? point #{:byte :char :line :column :column-unit})
+    (if (= :unicode-scalar (get point :column-unit))
+      (if (sh15-point-valid? {:byte (get point :byte) :line (get point :line)
+                             :column (get point :column)})
+        (if (integer? (get point :char))
+          (if (<= 0 (get point :char)) (<= (get point :char) (get point :byte)) false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c15-reader-span-valid? [span physical?]
+  (if (sh15-exact-keys? span (if physical? #{:source :start :end :byte-start :byte-end}
+                                         #{:start :end :byte-start :byte-end}))
+    (if (if physical?
+          (if (string? (get span :source)) (<= 1 (count (get span :source))) false)
+          true)
+      (let [start (get span :start) end (get span :end)]
+        (if (c15-reader-point-valid? start)
+          (if (c15-reader-point-valid? end)
+            (if (= [(get start :byte) (get end :byte)]
+                   [(get span :byte-start) (get span :byte-end)])
+              (if (sh15-span-order-valid? start end)
+                (<= (get start :char) (get end :char)) false)
+              false)
+            false)
+          false))
+      false)
+    false))
+
+(defn c15-span-valid? [span related?]
+  (if (sh15-source-span-valid? span) true
+    (if (c15-reader-span-valid? span true) true
+      (if related? (c15-reader-span-valid? span false) false))))
+
+(defn c15-primary-valid? [primary stage]
+  (if (sh15-exact-keys? primary #{:span :syntax-id :artifact})
+    (if (if (= nil (get primary :span)) (= :compiler-diagnostics stage)
+          (c15-span-valid? (get primary :span) false))
+      (if (if (= nil (get primary :syntax-id)) (c15-unavailable-stage? stage)
+            (c15-identifier? (get primary :syntax-id)))
+        (if (= nil (get primary :artifact)) (= :compiler-diagnostics stage)
+          (c15-identifier? (get primary :artifact)))
+        false)
+      false)
+    false))
+
+(defn c15-related-valid? [value]
+  (if (sh15-exact-keys? value #{:role :span :artifact})
+    (if (keyword? (get value :role))
+      (if (c15-span-valid? (get value :span) true)
+        (c15-identifier? (get value :artifact)) false)
+      false)
+    false))
+
+(defn c15-origin-valid? [value]
+  (if (sh15-exact-keys? value #{:kind :logical-source-id :source-content-hash})
+    (if (= :source (get value :kind))
+      (if (string? (get value :logical-source-id))
+        (if (<= 1 (count (get value :logical-source-id)))
+          (sh15-sha256-shape? (get value :source-content-hash)) false)
+        false)
+      false)
+    (if (sh15-origin-valid? value) (= :source (get value :kind)) false)))
+
+(defn c15-vector-valid? [values kind]
+  (if (vector? values)
+    (if (<= (count values) 64)
+      (loop [index 0]
+        (if (= index (count values)) true
+          (let [value (get values index)
+                valid (if (= kind :related) (c15-related-valid? value)
+                        (if (= kind :origin) (c15-origin-valid? value)
+                          (if (= kind :redaction)
+                            (if (keyword? value) true
+                              (if (c15-keyword-map? value) (keyword? (get value :kind)) false))
+                            (if (c15-keyword-map? value) (keyword? (get value :kind)) false))))]
+            (if valid (recur (+ index 1)) false))))
+      false)
+    false))
+
+(defn c15-first-field-error [checks]
+  (if (= 0 (count checks)) nil
+    (let [check (first checks)]
+      (if (first check) (c15-first-field-error (rest checks))
+        {:rule (get check 1) :field (get check 2) :reason (get check 3)}))))
+
+(defn c15-fields-error [fields]
+  (if (c15-carrier-valid? fields)
+    (if (if (vector? fields) (= 11 (count fields)) false)
+      (let [stage (get fields 2) severity (get fields 1) remediation (get fields 9)]
+        (c15-first-field-error
+         [[(c15-rule-valid? (get fields 0)) "C15-SCHEMA" :rule :invalid-rule]
+          [(sh15-member? [:error :warning :info :hint :internal-error] severity)
+           "C15-SCHEMA" :severity :invalid-severity]
+          [(keyword? stage) "C15-SCHEMA" :stage :invalid-stage]
+          [(c15-primary-valid? (get fields 3) stage) "C15-SPAN" :primary :invalid-primary]
+          [(c15-vector-valid? (get fields 4) :related) "C15-SPAN" :related :invalid-related]
+          [(c15-vector-valid? (get fields 5) :origin) "C15-ORIGIN" :origin-chain :invalid-origin]
+          [(c15-context-value-valid? (get fields 6) stage) "C15-SCHEMA" :profile :invalid-profile]
+          [(c15-context-value-valid? (get fields 7) stage) "C15-SCHEMA" :target :invalid-target]
+          [(c15-keyword-map? (get fields 8)) "C15-FACTS" :facts :invalid-facts]
+          [(if (c15-vector-valid? remediation :remediation)
+             (if (sh15-member? [:error :warning :internal-error] severity)
+               (< 0 (count remediation)) true) false)
+           "C15-REMEDIATION" :remediation :invalid-remediation]
+          [(c15-vector-valid? (get fields 10) :redaction)
+           "C15-SCHEMA" :redactions :invalid-redactions]]))
+      {:rule "C15-SCHEMA" :field :original-fields :reason :exact-eleven-fields-required})
+    {:rule "C15-SCHEMA" :field :original-fields :reason :canonical-carrier-bound}))
+
+(defn c15-digest-request [fields]
+  {:ordinal 0 :purpose :c15-diagnostic-id :domain :gravity/c15-diagnostic-id-v1
+   :preimage {:rule (get fields 0) :primary-artifact (get (get fields 3) :artifact)
+              :stage (get fields 2) :facts (get fields 8)}})
+
+(defn c15-unresolved-record [fields]
+  {:artifact :gravity/diagnostic :diagnostic-id {:digest-ref 0}
+   :diagnostic-id-request (c15-digest-request fields)
+   :rule (get fields 0) :severity (get fields 1) :lifecycle :active
+   :stage (get fields 2) :message-key (get fields 0)
+   :primary (get fields 3) :related (get fields 4) :origin-chain (get fields 5)
+   :profile (get fields 6) :target (get fields 7) :facts (get fields 8)
+   :remediation (get fields 9) :redactions (get fields 10)
+   :contract c15-diagnostic-shape-contract})
+
+(defn c15-construction-failure [rule field reason]
+  {:artifact :gravity/c15-diagnostic-construction :schema-version 1 :status :rejected
+   :diagnostics
+   [(assoc (c15-unresolved-record
+            [rule :error :compiler-diagnostics {:span nil :syntax-id nil :artifact nil}
+             [] [] nil nil {:schema-field field :reason reason}
+             [{:kind :supply-valid-diagnostic-data}] [:input-omitted]])
+           :offending-diagnostic-id nil :schema-field field :artifact-id nil)]})
+
+(defn c15-verify-resolved-result [original-fields candidate request resolved-digest]
+  (let [error (c15-fields-error original-fields)]
+    (if (= nil error)
+      (if (if (c15-carrier-valid? candidate)
+            (if (c15-carrier-valid? request) (c15-carrier-valid? resolved-digest) false)
+            false)
+        (let [expected (c15-unresolved-record original-fields)]
+          (if (c15-carrier-valid? expected)
+            (if (= request (get expected :diagnostic-id-request))
+              (if (sh15-sha256-shape? resolved-digest)
+                (if (= candidate (assoc expected :diagnostic-id resolved-digest))
+                  {:artifact :gravity/c15-resolved-diagnostic-verification
+                   :schema-version 1 :status :passed :diagnostics []
+                   :verification-status :fresh-fields-and-external-digest-equality
+                   :nonclaims [:digest-recomputation :upstream-source-authentication
+                               :public-safe-projection :canonical-stream-verification
+                               :self-hosting :release]}
+                  (c15-construction-failure "C15-ID" :candidate :candidate-substitution))
+                (c15-construction-failure "C15-ID" :resolved-digest :invalid-resolved-digest))
+              (c15-construction-failure "C15-ID" :diagnostic-id-request :request-substitution))
+            (c15-construction-failure "C15-SCHEMA" :record :constructed-carrier-bound)))
+        (c15-construction-failure "C15-SCHEMA" :candidate :candidate-carrier-bound))
+      (c15-construction-failure (get error :rule) (get error :field) (get error :reason)))))
+
+(defn verify-c15-resolved-diagnostic [original-fields candidate request resolved-digest]
+  (assoc (c15-verify-resolved-result original-fields candidate request resolved-digest)
+         :artifact :gravity/c15-resolved-diagnostic-verification
+         :nonclaims [:digest-recomputation :upstream-source-authentication
+                     :public-safe-projection :canonical-stream-verification
+                     :self-hosting :release]))
 
 ; SH-15 is a bounded, non-authoritative preservation boundary over small
 ; external references.  Tests derive these references only after fresh SH13

@@ -371,7 +371,10 @@
                               [(first remaining) (+ depth 1)]))))]
                     (recur next-frontier next-nodes scalar-units)))
                 (let [next-scalar-units
-                      (+ scalar-units (count (vec (str current))))]
+                      (+ scalar-units
+                         (if (symbol? current)
+                           (bootstrap-symbol-utf16-unit-count current)
+                           (count (vec (str current)))))]
                   (if (> next-scalar-units maximum-scalar-units)
                     {:status :rejected :reason :carrier-scalar-bound}
                     (recur
