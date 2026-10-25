@@ -91,6 +91,56 @@
       (is (= :accepted (:status (call 'sh22-carrier-preflight [rejected]))))
       (is (verified? bad rejected)))))
 
+(deftest sh22-rejection-bounds-unreportable-request-identities
+  (doseq [extension ["gravity" "qst"]]
+    (let [base (base-request extension)
+          normal (handle (assoc base :arguments [7 :leaf]))]
+      (doseq [id [(nth (iterate vector :id) 31) (apply str (repeat 35000 "i"))]
+              arguments [[[] :leaf] [7 :leaf]]]
+        (let [input (assoc base :request-id id :arguments arguments) result (handle input)]
+          (is (true? (call 'sh22-request-common-valid? [input])))
+          (is (= :rejected (:status result)))
+          (is (= (set (keys normal)) (set (keys result))))
+          (is (true? (nil? (:request-id result))))
+          (is (true? (nil? (get-in result [:diagnostics 0 :request-id]))))
+          (is (= "STD10003" (get-in result [:diagnostics 0 :rule])))
+          (is (= :request-identity-carrier-bound-exceeded (get-in result [:diagnostics 0 :reason])))
+          (is (= (:source-span input) (get-in result [:diagnostics 0 :source-span])))
+          (is (= (:origin-chain input) (get-in result [:diagnostics 0 :origin-chain])))
+          (is (= :accepted (:status (call 'sh22-carrier-preflight [result]))))
+          (is (= result (handle input)))
+          ;; Recomputes the owned refusal; a redacted ID is not identity proof.
+          (is (true? (verified? input result)))
+          (is (true? (not (verified? input (assoc-in result [:diagnostics 0 :reason] :forged)))))))
+      (doseq [id [:ordinary false 0 [] {}]]
+        (let [input (assoc base :request-id id :arguments [7 :leaf]) result (handle input)]
+          (is (true? (call 'sh22-request-common-valid? [input])))
+          (is (= id (:request-id result) (get-in result [:diagnostics 0 :request-id])))
+          (is (= "STD3002" (get-in result [:diagnostics 0 :rule])))
+          (is (= :expected-vector (get-in result [:diagnostics 0 :reason])))
+          (is (verified? input result)))))))
+
+(deftest sh22-rejection-has-bounded-fallback-when-provenance-cannot-fit
+  (doseq [extension ["gravity" "qst"]]
+    (let [base (assoc-in (assoc (base-request extension) :request-id :id :arguments [7 :leaf])
+                         [:source-span :source-id] :s)
+          units (:scalar-units (call 'sh22-carrier-preflight [base]))
+          source-id (keyword (apply str (repeat (+ 1 (- 65536 units)) "s")))
+          input (assoc-in base [:source-span :source-id] source-id)
+          result (handle input)]
+      (is (true? (call 'sh22-request-common-valid? [input])))
+      (is (= 65536 (:scalar-units (call 'sh22-carrier-preflight [input]))))
+      (is (= :rejected (:status result)))
+      (is (= "STD10003" (get-in result [:diagnostics 0 :rule])))
+      (is (= :diagnostic-carrier-bound-exceeded (get-in result [:diagnostics 0 :reason])))
+      (doseq [key [:request-id :operation]]
+        (is (true? (nil? (get result key))))
+        (is (true? (nil? (get-in result [:diagnostics 0 key])))))
+      (doseq [key [:source-span :origin-chain]]
+        (is (true? (nil? (get-in result [:diagnostics 0 key])))))
+      (is (= :accepted (:status (call 'sh22-carrier-preflight [result]))))
+      (is (true? (verified? input result))))))
+
 (deftest sh22-accepted-result-envelope-obeys-scalar-bound
   (doseq [extension ["gravity" "qst"]]
     (let [base (base-request extension)]

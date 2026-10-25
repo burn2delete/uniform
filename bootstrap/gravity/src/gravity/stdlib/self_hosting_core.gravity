@@ -490,13 +490,30 @@
    :remediation :use-bounded-checked-capability-explicit-library-operation})
 
 (defn sh22-rejected [request rule reason]
-  {:artifact :gravity/sh22-library-result
-   :schema-version 1
-   :status :rejected
-   :request-id (get request :request-id)
-   :operation (get request :operation)
-   :diagnostics [(sh22-diagnostic request rule reason)]
-   :pending (get (sh22-library-policy) :pending)})
+  (let [candidate
+        {:artifact :gravity/sh22-library-result
+         :schema-version 1
+         :status :rejected
+         :request-id (get request :request-id)
+         :operation (get request :operation)
+         :diagnostics [(sh22-diagnostic request rule reason)]
+         :pending (get (sh22-library-policy) :pending)}]
+    (if (= :accepted (get (sh22-carrier-preflight candidate) :status))
+      candidate
+      ; A redacted refusal carries no request-identity proof. Retain provenance
+      ; when it fits; otherwise report an explicitly unbound fixed diagnostic.
+      (let [redacted
+            (assoc candidate :request-id nil
+                   :diagnostics
+                   [(sh22-diagnostic
+                     (assoc request :request-id nil)
+                     "STD10003" :request-identity-carrier-bound-exceeded)])]
+        (if (= :accepted (get (sh22-carrier-preflight redacted) :status))
+          redacted
+          (assoc candidate :request-id nil :operation nil
+                 :diagnostics
+                 [(sh22-diagnostic
+                   {} "STD10003" :diagnostic-carrier-bound-exceeded)]))))))
 
 (defn sh22-identity-input [request]
   {:artifact (get request :artifact)
