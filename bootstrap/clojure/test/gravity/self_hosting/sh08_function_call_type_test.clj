@@ -10229,6 +10229,46 @@
               (run (vec (repeat 1025 opaque)) 65536))))
       (is (zero? @callbacks)))))
 
+(deftest sh08-gis3-index-comparison-fee-development-kernel
+  ;; Native 71-character collision DATA, not authenticated Core identities.
+  (let [prefix (str "sha256:" (apply str (repeat 62 "a")))
+        left (str prefix "Aa") right (str prefix "BB")
+        callbacks (atom 0) row-gets (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "GIS3 index opaque hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "GIS3 index opaque equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "GIS3 index opaque print"))))
+        rows [{:node-id left :unread opaque} {:node-id right :unread opaque}]
+        bound (:comparison-bound-work (invoke-c7 'sh08-gis3-data-tallies [left 65536]))
+        base (+ 8 (* 2 6) (* 2 2 bound)) total (+ base (* 2 2 71))
+        run #(invoke-c7 'sh08-gis3-index [%1 :node-id %2])
+        accepted (run rows total) below (run rows (dec total))
+        duplicate (run [(first rows) (first rows)] total)
+        invalid (run [(first rows) {:node-id opaque}] total)
+        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original @getter
+        early (with-redefs-fn
+                {getter (fn [plan value key]
+                          (when (some #(identical? % value) rows) (swap! row-gets inc))
+                          (original plan value key))}
+                #(run rows (dec base)))]
+    (is (= [71 71] (mapv count [left right])))
+    (is (= (.hashCode ^String left) (.hashCode ^String right)))
+    (is (not= left right))
+    (is (= [73 312 596] [bound base total]))
+    (is (= [:accepted total total] ((juxt :status :work-count :completed-work-count) accepted)))
+    (is (identical? (first rows) (get (:index accepted) left)))
+    (is (identical? (second rows) (get (:index accepted) right)))
+    (is (= [:rejected :compact-gis-index-work-limit total (- total 142)]
+           ((juxt :status :reason :work-count :completed-work-count) below)))
+    (is (= [:rejected :compact-gis-duplicate-id total total]
+           ((juxt :status :reason :work-count :completed-work-count) duplicate)))
+    (is (= [:rejected :compact-gis-source-id-required (- total 142)]
+           ((juxt :status :reason :work-count) invalid)))
+    (is (= [:rejected :compact-gis-index-work-limit base 0]
+           ((juxt :status :reason :work-count :completed-work-count) early)))
+    (is (zero? @row-gets))
+    (is (zero? @callbacks))))
+
 (deftest sh08-gis3-original-row-first-payment-development-kernel
   (let [{:keys [core bindings forms types target unified parameter-id]} (gis3-original-row-input 0 0)
         result (invoke-c7 'sh08-gis3-source-payment [core bindings forms types target 65536])]
@@ -20843,7 +20883,7 @@
         rows [(get core :nodes) (get core :calls) (get core :call-edges) (get core :function-records) bindings forms]
         keys [:node-id :core-node-id :call-core-node-id :function-syntax-id :binding-id :form-id]
         index-B (reduce + (map (fn [rs key]
-                                (+ 8 (* (count rs) (count rs)) (* 6 (count rs))
+                                (+ 8 (* (+ 2 71) (count rs) (count rs)) (* 6 (count rs))
                                    (reduce + (map #(* 2 (count (get % key))) rs)))) rows keys))
         declared-view-reservation 3472 charged-total (+ 64 index-B declared-view-reservation physical-B)]
     (is (= :converged (:convergence-status inference)))
@@ -20852,7 +20892,7 @@
     (is (every? (fn [[a b]] (<= (:budget b) (- (:budget a) (:work a)))) (partition 2 1 (:passes observed))))
     (is (= remaining (:remaining (first (:inference observed)))))
     (is (= :original-data-payment-complete (:status paid) (:status repeated)))
-    (is (= [68675 9863 82074] [physical-B index-B charged-total]))
+    (is (= [68675 87839 160050] [physical-B index-B charged-total]))
     (is (= charged-total (:work-count paid) (:completed-work-count paid)
                              (:work-count repeated) (:completed-work-count repeated)))
     (is (= physical (get-in paid [:selected :readsets]) (get-in repeated [:selected :readsets])))
@@ -20860,8 +20900,8 @@
     (is (= 10 (count (get-in paid [:selected :readsets]))))
     (is (= false (:numeric-proof-established paid) (:numeric-proof-established repeated)))
     (is (= implicit explicit forged))
-    (is (= [:rejected :compact-gis-work-limit :original-readset 5 65532 65542]
-           ((juxt :status :reason :stage :readset-ordinal :completed-work-count :work-count) implicit)))
+    (is (= [:rejected :compact-gis-index-work-limit :original-index :forms 38570 84353]
+           ((juxt :status :reason :stage :table :completed-work-count :work-count) implicit)))
     (prn {:gis3-trusted-remaining {:allowance allowance :ordinary-used (- allowance remaining)
                                  :remaining-before-first remaining :charged-component-work charged-total
                                  :remaining-before-second (- remaining (:work-count paid))

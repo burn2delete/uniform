@@ -2834,8 +2834,11 @@
 
 
 (defn sh08-gis3-index [rows key budget]
+  ; Together, contains? and assoc compare at most n*n prior keys. Reserve
+  ; the existing scalar W=2+71 for each Native ID comparison, including
+  ; String hash collisions; Keyword W=2 is below this common bound.
   (if (if (vector? rows) (<= (count rows) 1024) false)
-    (let [size (count rows) base (+ 8 (* size size) (* 6 size))]
+    (let [size (count rows) base (+ 8 (* 73 size size) (* 6 size))]
       (if (> base budget) {:status :rejected :reason :compact-gis-index-work-limit :work-count base :completed-work-count 0}
         (loop [remaining rows index {} used base]
           (if (= 0 (count remaining)) {:status :accepted :index index :work-count used :completed-work-count used}
