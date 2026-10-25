@@ -655,7 +655,16 @@
 (defn sh15-preflighted-request-error [request]
   (let [preflight (sh15-carrier-preflight request)]
     (if (= :accepted (get preflight :status))
-      (sh15-request-semantics-error request)
+      (let [error (sh15-request-semantics-error request)]
+        (if (= nil error)
+          ; Stream and identity records repeat input data. Keep the existing
+          ; carrier budget closed over construction, not only over intake.
+          (if (= :accepted
+                 (get (sh15-carrier-preflight
+                       (sh15-construct-result request)) :status))
+            nil
+            :result-carrier-rejected)
+          error))
       :request-carrier-rejected)))
 
 (defn sh15-request-error [request]
@@ -770,6 +779,11 @@
    :identity-binding-status :unbound
    :pending (sh15-pending) :nonclaims (sh15-nonclaims)})
 
+(defn sh15-bounded-keyword [value]
+  (if (keyword? value)
+    (if (sh15-scalar-valid? value) value nil)
+    nil))
+
 (defn sh15-owned-diagnostic [request reason]
   {:diagnostic-id [:coordinator-digest-required "C15-SCHEMA" reason
                    :external-reference-diagnostic-boundary]
@@ -777,8 +791,8 @@
    :stage :compiler-diagnostics :message-key :diagnostic-boundary-invalid
    :primary {:span nil :syntax-id nil :artifact nil}
    :related [] :origin-chain []
-   :profile (if (keyword? (get request :profile)) (get request :profile) nil)
-   :target (if (keyword? (get request :target)) (get request :target) nil)
+   :profile (sh15-bounded-keyword (get request :profile))
+   :target (sh15-bounded-keyword (get request :target))
    :facts {:reason reason :schema-field :external-reference-boundary}
    :remediation [:supply-exact-bounded-external-reference-request]
    :redactions [:upstream-carrier-omitted]})
@@ -788,10 +802,8 @@
    :status :rejected :diagnostics [(sh15-owned-diagnostic request reason)]
    :pending [:valid-external-reference-request]})
 
-(defn sh15-build-diagnostic-boundary [request]
-  (let [error (sh15-request-error request)]
-    (if (= nil error)
-      (let [diagnostics
+(defn sh15-construct-result [request]
+  (let [diagnostics
             (sh15-preserve-diagnostics-from
              (get request :upstream-diagnostics) 0 [])]
         {:artifact :gravity/sh15-diagnostic-boundary :schema-version 1
@@ -812,7 +824,12 @@
          :diagnostic-input-status :external-unverified-preservation-input
          :identity-input (sh15-identity-input request diagnostics)
          :provenance (get request :provenance) :diagnostics []
-         :pending (sh15-pending) :nonclaims (sh15-nonclaims)})
+         :pending (sh15-pending) :nonclaims (sh15-nonclaims)}))
+
+(defn sh15-build-diagnostic-boundary [request]
+  (let [error (sh15-request-error request)]
+    (if (= nil error)
+      (sh15-construct-result request)
       (sh15-rejection request error))))
 
 (defn sh15-verify-diagnostic-boundary [request candidate]
