@@ -478,16 +478,26 @@
       false)
     false))
 
+(defn sh15-span-order-valid? [start end]
+  (if (<= (get start :byte) (get end :byte))
+    (if (<= (get start :line) (get end :line))
+      (if (= (get start :line) (get end :line))
+        (<= (get start :column) (get end :column))
+        true)
+      false)
+    false))
+
 (defn sh15-source-span-valid? [span]
   (if (sh15-exact-keys?
        span #{:source-id :actual-source-path :start :end})
     (if (keyword? (get span :source-id))
       (if (string? (get span :actual-source-path))
-        (if (<= (count (get span :actual-source-path)) 512)
+        (if (if (<= 1 (count (get span :actual-source-path)))
+              (<= (count (get span :actual-source-path)) 512)
+              false)
           (if (sh15-point-valid? (get span :start))
             (if (sh15-point-valid? (get span :end))
-              (<= (get (get span :start) :byte)
-                  (get (get span :end) :byte))
+              (sh15-span-order-valid? (get span :start) (get span :end))
               false)
             false)
           false)
@@ -501,7 +511,9 @@
     (if (keyword? (get origin :kind))
       (if (keyword? (get origin :source-id))
         (if (string? (get origin :actual-source-path))
-          (<= (count (get origin :actual-source-path)) 512)
+          (if (<= 1 (count (get origin :actual-source-path)))
+            (<= (count (get origin :actual-source-path)) 512)
+            false)
           false)
         false)
       false)
@@ -517,6 +529,11 @@
 (defn sh15-bounded-string? [value maximum-units]
   (if (string? value)
     (<= (count value) maximum-units)
+    false))
+
+(defn sh15-upstream-code-valid? [value]
+  (if (sh15-bounded-string? value 128)
+    (<= 1 (count value))
     false))
 
 (defn sh15-optional-sha256-shape? [value]
@@ -552,8 +569,8 @@
   (if (sh15-exact-keys? diagnostic (sh15-upstream-diagnostic-keys))
     (= [true true true true true true true true true true true true true true
         true true true true true true]
-       [(sh15-bounded-string? (get diagnostic :diagnostic-id) 128)
-        (sh15-bounded-string? (get diagnostic :rule) 128)
+       [(sh15-upstream-code-valid? (get diagnostic :diagnostic-id))
+        (sh15-upstream-code-valid? (get diagnostic :rule))
         (keyword? (get diagnostic :family))
         (keyword? (get diagnostic :reason))
         (keyword? (get diagnostic :missing-fact))
