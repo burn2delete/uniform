@@ -52,6 +52,25 @@
   (let [header (observe (sorted-map :a 1 :b 2))]
     (is (= [:tree-map false 2 nil :default-comparator nil] header))))
 
+(deftest native-header-array-map-physical-shape-precedes-observation
+  (let [calls (atom 0) deny (forbidden calls)
+        opaque (proxy [Object] [] (toString [] (deny)) (hashCode [] (deny)) (equals [_] (deny)))
+        metadata (opaque-map calls)]
+    (doseq [backing [nil (object-array [:unpaired]) (object-array [:a 1 :unpaired])
+                     (object-array (repeat 4097 opaque))]
+            meta [nil metadata]]
+      (let [value (clojure.lang.PersistentArrayMap. meta backing)]
+        (is (= unsupported (observe value)))
+        (is (= unsupported (interpreted plan [value])))))
+    (doseq [backing [(object-array []) (object-array [opaque opaque])
+                     (object-array [:duplicate 1 :duplicate 2]) (into-array String ["a" "b"])]
+            meta [nil metadata]]
+      (let [value (clojure.lang.PersistentArrayMap. meta backing)
+            expected [:map (some? meta) (quot (alength ^objects backing) 2) nil nil nil]]
+        (is (= expected (observe value)))
+        (is (= expected (interpreted plan [value])))))
+    (is (zero? @calls))))
+
 (deftest native-header-symbol-name-presence-distinguishes-null-from-empty
   (doseq [[namespace name units present?]
           [[nil nil 0 false] [nil "" 0 true] ["" nil 5 false] ["" "" 1 true]
@@ -193,6 +212,53 @@
         #(dotimes [_ 2] (is (= unsupported (observe #{:a})))))
       (is (nil? @access)))))
 
+(deftest native-header-array-map-field-is-closed-and-denial-is-sticky
+  (let [field-var (private-var 'p15-s23-stage2-native-arraymap-field-once)
+        field (deref (deref (var-get field-var)))
+        calls (atom 0) attempts (atom 0)
+        subclass (proxy [clojure.lang.PersistentArrayMap] [(object-array [])]
+                   (count [] ((forbidden calls))) (meta [] ((forbidden calls))))]
+    (is (some? field))
+    (when field
+      (is (= "array" (.getName ^java.lang.reflect.Field field)))
+      (is (identical? clojure.lang.PersistentArrayMap (.getDeclaringClass ^java.lang.reflect.Field field)))
+      (is (identical? (class (object-array [])) (.getType ^java.lang.reflect.Field field))))
+    (is (= unsupported (observe subclass)))
+    (is (= unsupported (interpreted plan [subclass])))
+    (is (zero? @calls))
+    (with-redefs-fn {field-var (delay (swap! attempts inc) (atom nil))}
+      #(dotimes [_ 2]
+         (is (= unsupported (observe (array-map :a 1))))
+         (is (= unsupported (interpreted plan [(array-map :a 1)])))
+         (is (= [:map false 1 nil nil nil] (observe (hash-map :a 1))))))
+    (is (= 1 @attempts))
+    (let [access (atom (.getDeclaredField clojure.lang.PersistentArrayMap "array"))]
+      (with-redefs-fn {field-var (delay access)}
+        #(dotimes [_ 2]
+           (is (= unsupported (observe (array-map :a 1))))
+           (is (= unsupported (interpreted plan [(array-map :a 1)])))))
+      (is (nil? @access)))))
+
+(deftest native-header-array-map-backed-hashset-shares-physical-guard
+  (let [field (deref (deref (var-get (private-var 'p15-s23-stage2-native-hashset-field-once))))
+        value (with-meta #{:probe} {:fixture true})]
+    (is (some? field))
+    (when field
+      (let [original (.get ^java.lang.reflect.Field field value)]
+        (try
+          (doseq [backing [nil (object-array [:unpaired]) (object-array [:a 1 :tail])]]
+            (.set ^java.lang.reflect.Field field value (clojure.lang.PersistentArrayMap. backing))
+            (is (= unsupported (observe value)))
+            (is (= unsupported (interpreted plan [value]))))
+          (doseq [backing [(object-array []) (object-array [:a :a])]]
+            (let [map (clojure.lang.PersistentArrayMap. backing)]
+              (.set ^java.lang.reflect.Field field value map)
+              (doseq [header [(observe value) (interpreted plan [value])]]
+                (is (= [:set true (quot (alength ^objects backing) 2) nil] (subvec header 0 4)))
+                (is (identical? map (nth header 4)))
+                (is (nil? (nth header 5))))))
+          (finally (.set ^java.lang.reflect.Field field value original)))))))
+
 (deftest native-header-indirect-scalar-receivers-are-closed
   (let [calls (atom 0) deny (forbidden calls)
         foreign (proxy [BigInteger] ["1"]
@@ -254,5 +320,9 @@
         (is (= [:symbol false nil 0 true nil] (invoke 'observe [(symbol "")])))
         (is (= [:symbol false nil 0 false nil]
                (invoke 'observe [(clojure.lang.Symbol/intern nil nil)])))
+        (doseq [backing [nil (object-array [:unpaired]) (object-array [:a 1 :tail])]]
+          (is (= unsupported (invoke 'observe [(clojure.lang.PersistentArrayMap. backing)]))))
+        (is (= [:map false 1 nil nil nil]
+               (invoke 'observe [(clojure.lang.PersistentArrayMap. (object-array [:a 1]))])))
         (is (= "L2-BUILTIN-ARITY" (get-in (outcome #(invoke 'wrong-arity [])) [:error :id])))
         (is (not (contains? (set (get-in emitter [:call-rules :builtin-functions])) operation)))))))
