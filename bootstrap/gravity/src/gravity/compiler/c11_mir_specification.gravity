@@ -4524,6 +4524,7 @@
           :clojure-seed-boundary? :self-hosted? :artifact-id
           :target-request-metadata :physical-provenance}]
   (if (sh12-c6p-keys? core (if (sh12-c6p-zero-arity-bool? core) fields (conj fields :resolved-parameter)))
+   (if (if (sh12-c6p-zero-arity-bool? core) true (map? (get core :resolved-parameter)))
     (loop [fields [:source-core-input :physical-provenance :semantic-provenance :authenticated-input
                    :type-facts :effect-facts :ownership-facts :capability-facts :safety-facts
                    :profile-facts :proof-records :source-origin-table :origin-closure :typed-core
@@ -4535,7 +4536,7 @@
                        (sh12-c6p-keys? (get core :physical-provenance)
                          #{:actual-paths :source-content-hash :c2-source-unit-id :c3-artifact-id
                            :binding-pins :digest-graph-proof-id :request-binding-id})])
-        (if (map? (get core (first fields))) (recur (rest fields)) false))) false)))
+        (if (map? (get core (first fields))) (recur (rest fields)) false))) false) false)))
 
 (defn sh12-c6p-role-nodes-valid? [core index]
   (if (= index (count (get core :core-nodes))) true

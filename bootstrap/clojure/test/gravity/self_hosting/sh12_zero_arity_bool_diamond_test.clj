@@ -153,3 +153,34 @@
 (deftest sh12-original-zero-arity-false-bool-diamond (check-original "false" "gravity" false))
 (deftest sh12-original-zero-arity-bool-diamond-qst (check-original "true" "qst" false))
 (deftest sh12-original-zero-arity-false-bool-diamond-qst (check-original "false" "qst" false))
+
+(deftest sh12-original-parameter-carrier-keeps-early-map-diagnostic
+  ;; One original current C6 producer call, not a normalized/retagged Core.
+  ;; This structural regression does not need a second source/replay build.
+  (let [path (str (.resolve @(existing 'root)
+                           "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        reader (str (.resolve @(existing 'root) "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        text (slurp path) products ((existing 'parameter-source-products) path text nil reader)
+        raw ((existing 'invoke) (existing 'parameter-c6-plan)
+             'c6-c10-build-checked-core-template [(:envelope products)])
+        sealed (bootstrap/p15-s23-c6c10-seal-digest-request-result! path raw)
+        context (bootstrap/p15-s23-stage2-gravity-checked-core-context path text :jvm)
+        core (bootstrap/p15-s23-c6c10-public-artifact
+              context (:compiled-binding-data products) (:ingress products) sealed)
+        mir (invoke 'sh12-build-branch-join-mir core)
+        result (invoke 'sh13-run-branch-join-mir-with-arguments core mir [true])]
+    (is (= :accepted (:status raw)))
+    (is (= :gravity/mir-module (:artifact mir)))
+    (is (= :passed (:status (invoke 'sh12-verify-branch-join-mir core mir))))
+    (is (= :accepted (:status result)))
+    (is (= true (get-in result [:execution :value])))
+    (doseq [value [nil false []]]
+      (let [invalid (assoc core :resolved-parameter value)]
+        (is (false? (invoke 'sh12-c6p-top-shape? invalid)))
+        (doseq [report [(invoke 'sh12-build-branch-join-mir invalid)
+                        (invoke 'sh12-verify-branch-join-mir invalid mir)
+                        (invoke 'sh13-run-branch-join-mir-with-arguments invalid mir [true])]]
+          (is (= :rejected (:status report)))
+          (is (= ["C11-MODULE" :bounded-original-c6-carrier]
+                 ((juxt :diagnostic-id :missing-fact) (first (:diagnostics report)))))
+          (is (nil? (:execution report))))))))
