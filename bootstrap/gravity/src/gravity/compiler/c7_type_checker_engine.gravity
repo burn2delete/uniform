@@ -4050,20 +4050,6 @@
               (recur (rest remaining) (assoc out key row) total)
               {:status :rejected :reason :incoherent-loop-member-ledger :work-count total})))))))
 
-(defn sh08-lsi-target-rows [core target rows budget]
-  (let [cost (+ (count (get target :binding-ids)) (count (get core :recur-transfers)))]
-    (if (> cost budget) {:status :rejected :reason :loop-type-work-limit :work-count cost}
-      (let [slots (loop [ids (get target :binding-ids) out []]
-                    (if (= 0 (count ids)) out
-                      (recur (rest ids) (conj out (get rows [:loop-slot-type (first ids)])))))
-            all (loop [transfers (get core :recur-transfers) out slots]
-                  (if (= 0 (count transfers)) out
-                    (let [transfer (first transfers)]
-                      (recur (rest transfers) (if (= (get target :target-id) (get transfer :target-id))
-                        (conj out (get rows [:loop-recur-type (get transfer :recur-core-node-id)])) out)))))
-            checked (sh08-lsi-row-index all (- budget cost))]
-        (assoc checked :work-count (+ cost (get checked :work-count)))))))
-
 (defn sh08-lsi-target-bindings [target invariants]
   (loop [remaining (get target :binding-ids) out []]
     (if (= 0 (count remaining)) out
@@ -11534,37 +11520,6 @@
               (if (= next reached) {:status :accepted :work-count work}
                 (recur (+ pass 1) next)))))))))
 
-(defn sh08-pmk-metadata-work [proof budget]
-  ; Budget and first-order checks. Owning reconstruction checks closed field domains.
-  ; Parent facts have independent validation in their current typed tables.
-  (loop [pending [[proof 0]] used 0]
-    (if (= 0 (count pending)) {:status :accepted :work-count used}
-      (if (>= used budget) {:status :rejected :reason :private-map-keys-work-limit :work-count used}
-        (let [frame (get pending (- (count pending) 1)) value (get frame 0) depth (get frame 1)
-              tail (subvec pending 0 (- (count pending) 1)) work (+ used 1)]
-          (if (> depth 128) {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}
-            (if (if (map? value) true (vector? value))
-              (let [width (if (map? value) (* 2 (count value)) (count value))]
-                (if (> (+ work (count tail) width) budget)
-                  {:status :rejected :reason :private-map-keys-work-limit :work-count (+ work (count tail) width)}
-                  (let [next (if (map? value)
-                               (loop [entries (vec value) out tail]
-                                 (if (= 0 (count entries)) out
-                                   (let [entry (first entries)]
-                                     (recur (rest entries) (conj (conj out [(get entry 0) (+ depth 1)])
-                                                                    [(get entry 1) (+ depth 1)])))))
-                               (loop [remaining value out tail]
-                                 (if (= 0 (count remaining)) out
-                                   (recur (rest remaining) (conj out [(first remaining) (+ depth 1)])))))]
-                    (recur next work))))
-              (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
-                    (if (symbol? value) true (if (string? value) true (if (integer? value) true (char? value)))))))
-                (let [scalar-work (+ work (if (string? value) (count value)
-                                           (if (if (symbol? value) true (keyword? value)) (count (str value)) 0)))]
-                  (if (> scalar-work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count scalar-work}
-                    (recur tail scalar-work)))
-                {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}))))))))
-
 (defn sh08-pmk-unknown? [value]
   (if (= nil value) true
     (if (keyword? value) (= :gravity.type/unknown value) false)))
@@ -13200,22 +13155,6 @@
                             :entry (if invoked? :invoked :not-invoked) :argument-shape shape
                             :selected-part part :selected-coordinate (get part :coordinate) :selected-type value-type})
               (if invoked? value-type selected) (if invoked? (+ normal-count 1) normal-count)) nil)))) nil))
-
-(defn sh08-pe-check-work [header descriptor core nodes bindings forms types budget]
-  ; The caller reserves the existing census; this result carries newly paid
-  ; selection/type validation, never an unchecked common constructor shape.
-  (let [census (sh08-pe-census header core nodes bindings forms)
-        entries (get (get descriptor :presence-proof) :entries)]
-    (if (if (map? census) (if (vector? entries) (= (count entries) (count (get census :calls))) false) false)
-      (let [shapes (loop [remaining entries out []]
-                     (if (= 0 (count remaining)) out
-                       (recur (rest remaining) (conj out (get (first remaining) :argument-shape)))))
-            checked (sh08-pe-selected-work header census shapes types true budget)
-            expected (if (= :accepted (get checked :status)) (sh08-pe-finish header census shapes core nodes types) nil)]
-        (if (map? expected) (assoc checked :descriptor expected)
-          (if (= :rejected (get checked :status)) checked
-            {:status :rejected :reason :map-get-private-entry-presence-required :work-count (get checked :work-count)})))
-      {:status :rejected :reason :map-get-private-entry-presence-required :work-count 0})))
 
 (defn sh08-pe-recheck [header descriptor core nodes bindings forms types]
   (let [census (sh08-pe-census header core nodes bindings forms)
