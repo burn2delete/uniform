@@ -24,7 +24,6 @@
              stage1-read-source-release-attestation-seed-retirement
              stage1-read-source-formal-release-governance-seed-retirement
              sh03-reader-contract
-             sh03-reader-bounds
              sh03-read-source-unit
              sh03-verify-reader-result])
   (:effects #{})

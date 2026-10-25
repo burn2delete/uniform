@@ -1,5 +1,35 @@
 (declare ^:private p15-s23-c6c10-digest-validated-form)
 
+(defn- sh03-reader-authenticated-envelope-options [source-path plan-binding]
+  (case (:artifact plan-binding)
+    :gravity/sh03-pinned-reader-plan-binding nil
+    :gravity/sh03-current-source-reader-plan-binding {:source :development-current}
+    (sh03-reader-boundary-fail!
+     source-path :explicit-sh03-reader-invocation-source-selection
+     nil {:observed-binding-kind (:artifact plan-binding)})))
+
+(defn- sh03-reader-validate-envelope-options! [source-path options]
+  (when (some? options)
+    (when-not (and (= :passed (:status (p15-s23-trusted-carrier-validation options :default-only)))
+                   (= {:source :development-current} options))
+      (sh03-reader-boundary-fail!
+       source-path :explicit-sh03-authenticated-envelope-selection nil {})))
+  options)
+
+(defn- sh03-reader-verification-invocation! [source-path invocation]
+  (if (nil? invocation)
+    {:binding (sh03-reader-current-binding! source-path) :envelope-options nil}
+    (do
+      (when-not
+       (and (= :passed (:status (p15-s23-trusted-carrier-validation invocation :default-only)))
+            (= #{:reader-source-path :authenticated-envelope-options} (set (keys invocation)))
+            (string? (:reader-source-path invocation))
+            (= {:source :development-current} (:authenticated-envelope-options invocation)))
+        (sh03-reader-boundary-fail!
+         source-path :explicit-sh03-reader-verification-invocation nil {}))
+      {:binding (sh03-reader-current-binding! source-path (:reader-source-path invocation))
+       :envelope-options (:authenticated-envelope-options invocation)})))
+
 (defn sh03-reader-canonical-identity [source-path value]
   (p15-s23-c6c10-canonical-identity source-path value))
 
