@@ -158,15 +158,8 @@
        (sh07-core-source-artifact source-path text)
        (let [reader-path (sh03-reader-resolve-source-path)
              resolved (compiler-c5-resolution-source-artifact source-path text
-                        {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader-path)
-             revision (get-in resolved [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact
-                                       :c2-reader-artifact :sh03-reader-authentication :reader-source-revision])]
-         (when-not (string? (:source-content-hash revision))
-           (throw (ex-info "Current reader revision is absent"
-                          {:id "C6-VERIFY" :stage :core-lowering :missing-fields [:current-reader-source-revision]})))
-         (assoc-in (sh07-core-from-resolution-artifact resolved) [:provenance :source-ingress]
-                   {:mode :development-current-reader :revision-status :development-unadmitted
-                    :reader-source-path reader-path :reader-source-revision revision}))))))
+                        {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader-path)]
+         (sh07-core-from-resolution-artifact resolved))))))
 
 (defn sh07-core-artifact-identity-input
   [artifact]

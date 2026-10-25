@@ -78,6 +78,59 @@
       (finally (delete! directory)))))
 
 (def observed-snapshot-product (atom nil))
+(def observed-fresh-verification (atom nil))
+(def ^:dynamic *development-public-product* nil)
+
+(defn- current-public-product []
+  ;; A bounded verifier run can supply a separately captured real CLI product.
+  ;; The unchanged fresh verifier still reconstructs its expected Core artifact.
+  (or *development-public-product*
+      (b/sh07-public-core-file-artifact
+       (str (io/file (root) "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.gravity"))
+       {:reader :development-current})))
+
+(defn- coherent-literal-substitution [artifact]
+  (let [boundary (:gravity-core-boundary artifact)
+        core (:canonical-core-artifact boundary)
+        index (first (keep-indexed (fn [index node]
+                                    (when (and (= :literal (:core-form node))
+                                               (instance? Boolean (get-in node [:attributes :value]))) index)) (:nodes core)))
+        _ (assert (some? index) "Fixture must contain a Bool literal")
+        nodes (update-in (:nodes core) [index :attributes :value] not)
+        preimage (assoc (:identity-preimage core) :nodes nodes)
+        id (b/reader-canonical-hash {:domain :gravity/sh07-declared-digest-v1
+                                     :purpose :sh07-core-artifact-id :preimage preimage})]
+    (-> artifact
+        (assoc :artifact-id id)
+        (assoc-in [:gravity-core-boundary :canonical-core-artifact]
+                  (assoc core :artifact-id id :nodes nodes :identity-preimage preimage))
+        (assoc-in [:gravity-core-boundary :authenticated-envelope :semantic-artifact-id] id)
+        (assoc-in [:gravity-core-boundary :authenticated-envelope-descriptor :semantic-artifact-id] id))))
+
+(deftest development-public-product-passes-fresh-verification
+  (let [artifact (current-public-product)
+        verified (b/sh07-core-artifact-verification artifact)]
+    (is (= :accepted (:status artifact)))
+    (is (= #{:source-path} (set (keys (:provenance artifact)))))
+    (is (= :complete (get-in artifact [:capability-based-proof :status])))
+    (is (= :passed (:status verified)))
+    (is (empty? (:failed-checks verified)))
+    (is (true? (get-in verified [:checks :authoritative-products-replay?])))
+    (is (true? (get-in verified [:checks :stored-capability-proof-current?])))
+    (reset! observed-fresh-verification {:genuine-report verified :artifact-id (:artifact-id artifact)})))
+
+(deftest development-public-product-rejects-rehashed-core
+  (let [artifact (current-public-product)
+        substituted (coherent-literal-substitution artifact)
+        rejected (b/sh07-core-artifact-verification substituted)]
+    (is (not= (:artifact-id artifact) (:artifact-id substituted)))
+    (is (= (:capability-based-proof artifact) (:capability-based-proof substituted)))
+    (is (= :failed (:status rejected)))
+    (is (true? (get-in rejected [:checks :semantic-artifact-id-current?])))
+    (is (false? (get-in rejected [:checks :canonical-core-replays?])))
+    (is (false? (get-in rejected [:checks :authoritative-products-replay?])))
+    (reset! observed-fresh-verification {:substitution-report rejected :artifact-id (:artifact-id artifact)
+                                       :substituted-artifact-id (:artifact-id substituted)})))
 
 (deftest development-public-api-retains-the-single-target-snapshot
   (let [directory (temporary-root)
@@ -99,7 +152,6 @@
                               (java.nio.file.Files/delete (.toPath (io/file path)))
                               resolved))]
               (b/sh07-public-core-file-artifact path {:reader :development-current}))
-            ingress (get-in artifact [:provenance :source-ingress])
             boundary (:gravity-core-boundary artifact)
             c2 (get-in artifact [:sh06-resolution-artifact :sh05-macro-artifact
                                 :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact])
@@ -110,10 +162,9 @@
         (is (= :accepted (:status artifact)))
         (is (= :gravity.checked-core (get-in artifact [:pass :owner])))
         (is (= :passed (get-in boundary [:template-verification :status]) (get-in boundary [:resolved-verification :status])))
-        (is (= [:development-current-reader :development-unadmitted] ((juxt :mode :revision-status) ingress)))
-        (is (= reader (:reader-source-path ingress)))
+        (is (not (contains? (:provenance artifact) :source-ingress)))
+        (is (= #{:source-path} (set (keys (:provenance artifact)))))
         (is (= (str "sha256:" (b/sha256-bytes-hex (java.nio.file.Files/readAllBytes (.toPath (io/file reader)))))
-               (get-in ingress [:reader-source-revision :source-content-hash])
                (get-in c2 [:sh03-reader-authentication :reader-source-revision :source-content-hash])))
         (is (= path (get-in artifact [:provenance :source-path])
                (get-in boundary [:canonical-core-artifact :provenance :actual-source-path])))

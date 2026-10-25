@@ -136,13 +136,16 @@ C6 consumes its retained source without rereading the target. The focused test
 `development-public-api-retains-the-single-target-snapshot` removes its own
 target at that boundary and requires an accepted Core product.
 
-The development result adds informational `[:provenance :source-ingress]`
-metadata containing `:mode :development-current-reader`,
-`:revision-status :development-unadmitted`, the resolved reader source path
-and the actual authenticated C2 reader revision. This marker does not change
-the canonical Core identity, grant fresh admission, or alter the generic
-verification API. Core acceptance leaves C7-C10 pending and does not establish
-SH-07 completion, migration, native execution or self-hosting. Use the exact
+The explicit CLI flag or API option selects development mode. The result is
+the original Core artifact, with its stored proof and provenance unchanged.
+Inspect the actual reader revision already retained at
+`[:sh06-resolution-artifact :sh05-macro-artifact :gravity-macro-boundary
+:authenticated-sh04-artifact :c2-reader-artifact :sh03-reader-authentication
+:reader-source-revision]`. No extra provenance marker or wrapper is added.
+The unchanged fresh generic verifier must accept the genuine Core product and
+reject a coherently rehashed Core substitution. That verification does not
+renew reader migration authority. Core acceptance leaves C7-C10 pending and
+does not establish SH-07 completion, migration, native execution or self-hosting. Use the exact
 tests in `gravity.self-hosting.sh07-public-development-ingress-test` for the
 closed options, paired source-policy and retained-input boundaries. Changes to
 this public transport also require actual paired command products and rejected
