@@ -58,9 +58,10 @@
     (let [args (arguments "12abc")
           malformed (execute 'sh03-read-source-unit args)
           report (execute 'sh03-verify-reader-result (conj args malformed))]
-      (is (= :rejected (:status malformed) (:status report)))
+      (is (= :rejected (:status malformed) (:reader-result-status report)))
+      (is (= :accepted (:status report)))
       (is (true? (:verified? report)))
-      (is (= ["STAGE1READER007"] (mapv :engine (:diagnostics malformed)))))
+      (is (= ["STAGE1READER007"] (mapv :reader-engine-diagnostic (:diagnostics malformed)))))
     (doseq [[bad expected-arity]
             [[(update plan :functions dissoc 'sh03-token-with-raw) nil]
              [(assoc-in plan [:functions 'sh03-token-with-raw :arity] 7) 7]]]
