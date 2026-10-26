@@ -2638,7 +2638,7 @@
               (input (finite (vec (repeat 1025 s))) (finite []) 2)
               (input (finite []) (finite (vec (repeat 1025 s))) 3)]
         checked (mapv (fn [{:keys [core node nodes types bindings forms]}]
-                        (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])) data)
+                        (c7 'sh08-ij-derive [core node nodes types bindings forms])) data)
         core (assoc (:core (first data)) :nodes (vec (mapcat #(get-in % [:core :nodes]) data))
                                              :function-records (vec (mapcat #(get-in % [:core :function-records]) data))
                                              :control-flow (vec (mapcat #(get-in % [:core :control-flow]) data)))
@@ -2674,7 +2674,7 @@
                    (assoc original :extra :forged)
                    (assoc original :element-types (apply list (:element-types original)))]]
         (let [changed (assoc types id bad)]
-          (is (= :not-applicable (:status (c7 'sh08-ij-derive [core node nodes changed bindings forms 65536]))))
+          (is (= :not-applicable (:status (c7 'sh08-ij-derive [core node nodes changed bindings forms]))))
           (is (= :not-applicable (:status (leaf 'body-ij-derive core node nodes changed bindings forms 65536))))
           (is (= :rejected (:status (run (assoc-in facts [:type-table id] bad) 65536))))))
       (is (= :rejected (:status (run (assoc-in facts [:constraint-ledger 2 :dependencies

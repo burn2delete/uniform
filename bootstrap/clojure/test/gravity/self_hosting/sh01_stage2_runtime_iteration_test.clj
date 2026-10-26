@@ -5069,7 +5069,7 @@
                          [(finite (vec (repeat 1025 s))) (finite [])]
                          [(finite []) (finite (vec (repeat 1025 s)))]]]
       (let [{:keys [core node nodes types bindings forms nids refs]} (input-fn left right)
-            derived (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])
+            derived (c7 'sh08-ij-derive [core node nodes types bindings forms])
             row (c7 'sh08-ij-row [(:premise derived)])
             types (assoc types (:node-id node) homogeneous)
             facts {:type-table types :constraint-ledger [row]}
@@ -5094,7 +5094,7 @@
                        (assoc type :extra :forged)
                        (assoc type :element-types (apply list (:element-types type)))]]
             (let [changed (assoc types (nids role) bad)]
-              (is (= :not-applicable (:status (c7 'sh08-ij-derive [core node nodes changed bindings forms 65536]))))
+              (is (= :not-applicable (:status (c7 'sh08-ij-derive [core node nodes changed bindings forms]))))
               (is (= :not-applicable (:status (invoke 'p15-s23-ij-derive core node nodes changed bindings forms 65536))))
               (is (= :rejected (:status (compile (assoc context :types changed) 65536))))))
           (is (= :rejected (:status (compile (assoc-in context [:ledger 0 :dependencies
@@ -5130,7 +5130,7 @@
           (let [condition-type (cond (nil? condition) :gravity.type/nil (keyword? condition) :gravity.type/keyword
                                      (string? condition) :gravity.type/string :else :gravity.type/bool)
                 actual-types (assoc types (nids :condition) condition-type)
-                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms 65536])
+                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms])
                 actual-row (c7 'sh08-ij-row [(:premise actual-join)])
                 actual-facts {:type-table actual-types :constraint-ledger [actual-row]}
                 actual-checked (check actual-facts 65536)
