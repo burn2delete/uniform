@@ -73,10 +73,11 @@ facets where they constrain the same observable behavior. Candidate clause count
 are not summed. Shared invariants are joined centrally; distinct contextual
 behavior remains a refinement or separate requirement with a stated boundary.
 
-The first central slice proposes three source-unit requirements from one exact
-L1 paragraph. Until independent semantic review, that paragraph remains unresolved
-for readiness: zero reviewed dispositions, one proposed disposition, 10,096
-unresolved nonblank source blocks. The three IDs are proposed semantic units,
-not an approved denominator. Two have dated historical fixture support; stable
+The first central slice defines three source-unit requirements from one exact
+L1 paragraph. Independent local semantic review validates that split and its
+historical entailment: one reviewed disposition, zero proposed dispositions,
+10,095 unresolved nonblank source blocks. Cross-family nonoverlap remains
+unreviewed, so these IDs do not establish an approved denominator. Two have
+dated historical fixture support; stable
 root-relative identity has no qualifying support in those receipts. All project
 scope and evidence qualification work remains visible in the draft.

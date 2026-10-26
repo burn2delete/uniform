@@ -145,6 +145,8 @@
       {:authority :source-conservation-and-canonical-traceability-only
        :scope-version (:scope-version manifest)
        :source-documents (count sources) :source-occurrences (count occurrences)
+       :source-dispositions {:reviewed (count (remove #(= :proposed (:review-state %)) dispositions))
+                             :proposed (count (filter #(= :proposed (:review-state %)) dispositions))}
        :unresolved-source-occurrences unresolved
        :proposed-requirement-ids ids :denominator-ready? (boolean ready?)
        :denominator (when ready? (count req-set))

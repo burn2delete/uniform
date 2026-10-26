@@ -8,9 +8,26 @@
    :obligation
    "Recognize .qst and .gravity as first-class source kinds and reject other source extensions before reading forms.",
    :acceptance-authority :canonical-task-only,
-   :atomicity :proposed,
+   :atomicity :reviewed,
    :nonoverlap :proposed,
    :id "source/reading/canonical-source-kinds",
+   :local-semantic-review
+   {:kind :independent-local-semantic-and-evidence-guard-review,
+    :head "c0dc5790197a1bbd3a8aa285e5458c272d877220",
+    :tree "a12edffc848cf9af4643c465bdf8cc6234fe6945",
+    :receipt-sha256
+    "e7630f9a4e2db3be361fffd5e5138598b3dc9d3d1c2fe04f973f844769238abc",
+    :scope
+    [:three-distinct-local-behaviors
+     :exact-l1-compound-paragraph
+     :two-narrow-historical-facets
+     :evidence-guard-regressions],
+    :excludes
+    [:cross-family-nonoverlap
+     :whole-project-denominator
+     :current-implementation-acceptance
+     :integration
+     :dashboard]},
    :historical-support
    [{:facet "co-canonical extension recognition and fixture parity",
      :receipt
@@ -48,9 +65,26 @@
    :obligation
    "Preserve the actual supplied source-unit path and extension in provenance.",
    :acceptance-authority :canonical-task-only,
-   :atomicity :proposed,
+   :atomicity :reviewed,
    :nonoverlap :proposed,
    :id "source/provenance/original-path",
+   :local-semantic-review
+   {:kind :independent-local-semantic-and-evidence-guard-review,
+    :head "c0dc5790197a1bbd3a8aa285e5458c272d877220",
+    :tree "a12edffc848cf9af4643c465bdf8cc6234fe6945",
+    :receipt-sha256
+    "e7630f9a4e2db3be361fffd5e5138598b3dc9d3d1c2fe04f973f844769238abc",
+    :scope
+    [:three-distinct-local-behaviors
+     :exact-l1-compound-paragraph
+     :two-narrow-historical-facets
+     :evidence-guard-regressions],
+    :excludes
+    [:cross-family-nonoverlap
+     :whole-project-denominator
+     :current-implementation-acceptance
+     :integration
+     :dashboard]},
    :historical-support
    [{:facet
      "actual supplied extension in source-unit, reader and sidecar paths",
@@ -89,9 +123,26 @@
    :obligation
    "Derive stable source identity from the declared project-root identifier and the source path relative to that root.",
    :acceptance-authority :canonical-task-only,
-   :atomicity :proposed,
+   :atomicity :reviewed,
    :nonoverlap :proposed,
    :id "source/identity/declared-root-relative-path",
+   :local-semantic-review
+   {:kind :independent-local-semantic-and-evidence-guard-review,
+    :head "c0dc5790197a1bbd3a8aa285e5458c272d877220",
+    :tree "a12edffc848cf9af4643c465bdf8cc6234fe6945",
+    :receipt-sha256
+    "e7630f9a4e2db3be361fffd5e5138598b3dc9d3d1c2fe04f973f844769238abc",
+    :scope
+    [:three-distinct-local-behaviors
+     :exact-l1-compound-paragraph
+     :two-narrow-historical-facets
+     :evidence-guard-regressions],
+    :excludes
+    [:cross-family-nonoverlap
+     :whole-project-denominator
+     :current-implementation-acceptance
+     :integration
+     :dashboard]},
    :historical-support [],
    :task-reference
    {:path "specs/reader-workflow/tasks.md",
@@ -1571,13 +1622,30 @@
  [{:occurrence-id
    "L1/source/fe1ed0c47976768e2ffd57d6ece7a7cfd5c3c67e4bd23c9cdb942f9a54402fff",
    :kind :requirement,
-   :review-state :proposed,
+   :review-state :reviewed,
    :requirement-ids
    ["source/reading/canonical-source-kinds"
     "source/provenance/original-path"
     "source/identity/declared-root-relative-path"],
    :rationale
-   "One compound paragraph states three independently observable behaviors; extension recognition, provenance and root-relative identity have distinct acceptance boundaries. Repeated phase/task views do not add requirements."}],
+   "One compound paragraph states three independently observable behaviors; extension recognition, provenance and root-relative identity have distinct acceptance boundaries. Repeated phase/task views do not add requirements.",
+   :local-semantic-review
+   {:kind :independent-local-semantic-and-evidence-guard-review,
+    :head "c0dc5790197a1bbd3a8aa285e5458c272d877220",
+    :tree "a12edffc848cf9af4643c465bdf8cc6234fe6945",
+    :receipt-sha256
+    "e7630f9a4e2db3be361fffd5e5138598b3dc9d3d1c2fe04f973f844769238abc",
+    :scope
+    [:three-distinct-local-behaviors
+     :exact-l1-compound-paragraph
+     :two-narrow-historical-facets
+     :evidence-guard-regressions],
+    :excludes
+    [:cross-family-nonoverlap
+     :whole-project-denominator
+     :current-implementation-acceptance
+     :integration
+     :dashboard]}}],
  :scope-decisions
  [{:id "scope/release-extension-relations",
    :state :unresolved,

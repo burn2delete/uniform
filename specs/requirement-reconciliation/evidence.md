@@ -93,3 +93,12 @@ lines. Historical support must match the manifest's exact inspected baseline.
 Twelve focused tests / 67 assertions pass, including both regressions. This
 correction awaits immutable successor review and does not establish current
 implementation acceptance or a complete denominator.
+
+The exact successor `c0dc5790197a1bbd3a8aa285e5458c272d877220`, tree
+`a12edffc848cf9af4643c465bdf8cc6234fe6945`, passed independent local semantic
+and evidence-guard review. The manifest records its receipt digest and exact
+scope. One L1 compound paragraph now has a reviewed disposition; 10,095
+nonblank blocks remain unresolved. The three local units have reviewed atomicity,
+with cross-family nonoverlap still proposed. Their two historical support facets
+remain separate from unassessed current acceptance. Neither the source-disposition
+count nor the unit count is a project completion percentage.
