@@ -4102,11 +4102,10 @@
                                  (if (= (if members? #{:kind :member-types :shape} #{:kind :element-types :shape}) (set (keys type)))
                                    (if (= :literal (get type :shape))
                                      (if (vector? children)
-                                       (if (<= (count children) 1024)
-                                         (if members? (loop [remaining children]
+                                       (if members? (loop [remaining children]
                                                         (if (= 0 (count remaining)) true
                                                           (if (= 1 (count remaining)) false (recur (rest (rest remaining)))))) true)
-                                         false) false) false) false) false)))]
+                                       false) false) false) false)))]
                     (if valid?
                       (if (> (+ next-work (count tail) (count children)) 65536)
                         {:status :rejected :reason :type-size :work-count next-work}
