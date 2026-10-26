@@ -8,10 +8,28 @@ The existing token constructor signature and numeric classifier are retained.
 Current-source regressions cover raw tokens including trivia, exact bytes,
 Unicode spans, descriptors, malformed inputs, fresh replay and tampering.
 
-Validation and independent implementation review are pending. This increment
-does not close the lexical surface, authenticated Reader-to-Syntax handoff,
-full C2/C5 construction, digest-resolution cost, C14 acceptance or release.
-It changes no historical source pin and claims no measured speedup.
+Focused validation of `c4a56b81778eb29b29e11a16af8642d68fb00d35`, tree
+`1bf281a9bfdf573d5a918e459f05ec89b7b6730e`, passed nine current-source tests
+with 306 assertions and the language boundary's six tests with 11 assertions.
+The process exited naturally zero under the existing serialized 2 GiB /
+120-second profile; clean commit/tree bookends matched. These are semantic
+regressions, not performance measurements or authenticated handoff acceptance.
+
+Independent review requested exact malformed-atom spelling/span assertions.
+Their first run failed one assertion (two tests / 32 assertions) because the
+test expected an engine identifier where the unchanged malformed-keyword
+diagnostic returns nil. Correcting only that expectation produced the passing
+receipt above; Reader production stayed unchanged. Independent source/test
+review accepted the corrected candidate without a production finding.
+Reader projection checks and four projection tests / 29 assertions passed,
+as did the canonical document and full-language roadmap validators.
+
+This increment does not close the lexical surface, authenticated
+Reader-to-Syntax handoff, full C2/C5 construction, digest-resolution cost, C14
+acceptance or release. It changes no historical source pin and claims no
+measured speedup.
+
+## Earlier workflow evidence
 
 Current candidate: Reader implementation task authority transfer. The original
 scaffold observations below retain their historical scope and are not fresh
