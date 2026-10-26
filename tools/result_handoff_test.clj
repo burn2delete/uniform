@@ -81,8 +81,10 @@
 
 (defn invoke-cli [args]
   (let [java (str (io/file (System/getProperty "java.home") "bin" "java"))
-        argv (into [java "-Xmx128m" "-cp" (System/getProperty "java.class.path")
-                    "clojure.main" "tools/result_handoff.clj"] args)
+        classpath (str (System/getProperty "java.class.path") java.io.File/pathSeparator
+                       (.getCanonicalPath (io/file "tools")))
+        argv (into [java "-Xmx128m" "-cp" classpath
+                    "clojure.main" "-m" "result-handoff"] args)
         process (.start (doto (ProcessBuilder. ^java.util.List argv) (.redirectErrorStream true)))
         finished (.waitFor process 10 java.util.concurrent.TimeUnit/SECONDS)]
     (when-not finished (.destroyForcibly process) (.waitFor process))
@@ -117,6 +119,36 @@
         (is (:finished actual))
         (is (not= 0 (:exit actual))))
       (finally (.delete receipt) (.delete plan-file) (.delete dir)))))
+
+(deftest inherited-arguments-do-not-dispatch-library-main
+  (binding [*command-line-args* ["unrelated" "arguments"]]
+    (is (= "" (with-out-str (load-file "tools/result_handoff.clj")))))
+  (is (fn? result-handoff/-main)))
+
+(deftest bounded-capture-covers-growing-and-oversized-input
+  (let [observed (atom 0)
+        channel (reify java.nio.channels.ReadableByteChannel
+                  (isOpen [_] true)
+                  (close [_])
+                  (read [_ buffer]
+                    ;; More bytes become available on every read. No initial
+                    ;; size observation can justify a later allocation/read.
+                    (let [n (min 3 (.remaining ^java.nio.ByteBuffer buffer))]
+                      (dotimes [_ n] (.put ^java.nio.ByteBuffer buffer (byte 32)))
+                      (swap! observed + n)
+                      n)))]
+    (is (rejects? #(result-handoff/read-bounded-bytes channel 16)))
+    (is (= 17 @observed)))
+  (let [bytes (.getBytes "1234567890123456" "UTF-8")]
+    (with-open [channel (java.nio.channels.Channels/newChannel
+                        (java.io.ByteArrayInputStream. bytes))]
+      (is (= (seq bytes) (seq (result-handoff/read-bounded-bytes channel 16))))))
+  (let [file (java.io.File/createTempFile "handoff-oversized-" ".edn")]
+    (try
+      (with-open [random (java.io.RandomAccessFile. file "rw")]
+        (.setLength random (inc result-handoff/max-evidence-bytes)))
+      (is (rejects? #(result-handoff/read-document file)))
+      (finally (.delete file)))))
 
 (let [result (run-tests)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

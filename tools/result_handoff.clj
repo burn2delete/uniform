@@ -3,7 +3,7 @@
   This tool does not execute commands, classify acceptance, or publish anything."
   (:require [clojure.edn :as edn]
             [clojure.string :as str])
-  (:import [java.io PushbackReader StringReader]
+  (:import [java.io ByteArrayOutputStream PushbackReader StringReader]
            [java.nio ByteBuffer]
            [java.nio.charset CodingErrorAction StandardCharsets]
            [java.nio.file Files LinkOption OpenOption Path StandardOpenOption]
@@ -13,19 +13,27 @@
 (defn sha256 [bytes]
   (apply str (map #(format "%02x" (bit-and 255 %))
                   (.digest (MessageDigest/getInstance "SHA-256") bytes))))
+(def max-evidence-bytes (* 16 1024 1024))
+(defn read-bounded-bytes [^java.nio.channels.ReadableByteChannel channel limit]
+  ;; Enforce the capture bound on actual reads, including growth after open.
+  ;; Read at most one byte beyond the limit to distinguish EOF from overflow.
+  (let [buffer (ByteBuffer/allocate 8192)
+        output (ByteArrayOutputStream.)]
+    (loop [captured 0]
+      (.clear buffer)
+      (.limit buffer (int (min (.capacity buffer) (inc (- limit captured)))))
+      (let [n (.read channel buffer)]
+        (cond
+          (= -1 n) (.toByteArray output)
+          (> (+ captured n) limit) (reject "Evidence exceeds the reader's host capture limit")
+          :else (do (.write output (.array buffer) 0 n)
+                    (recur (+ captured n))))))))
 (defn read-document [file]
-  ;; Read and hash the same snapshot; never reopen it to calculate provenance.
+  ;; Parse and hash the same captured bytes; never reopen for provenance.
   (let [path (Path/of (str file) (make-array String 0))
         options (into-array OpenOption [StandardOpenOption/READ LinkOption/NOFOLLOW_LINKS])
         bytes (with-open [channel (Files/newByteChannel path options)]
-                (when (> (.size channel) (* 16 1024 1024))
-                  (reject "Evidence exceeds the reader's host capture limit"))
-                (let [buffer (ByteBuffer/allocate (int (.size channel)))]
-                  (loop [] (when (and (.hasRemaining buffer) (not= -1 (.read channel buffer)))
-                             (recur)))
-                  (when (or (.hasRemaining buffer) (not= (.size channel) (.capacity buffer)))
-                    (reject "Evidence changed size during capture"))
-                  (.array buffer)))
+                (read-bounded-bytes channel max-evidence-bytes))
         decoder (doto (.newDecoder StandardCharsets/UTF_8)
                   (.onMalformedInput CodingErrorAction/REPORT)
                   (.onUnmappableCharacter CodingErrorAction/REPORT))
@@ -112,18 +120,10 @@
        :fields fields})))
 
 (defn -main [& args]
-  (when-not (= 1 (count args)) (reject "Usage: clojure -M tools/result_handoff.clj PLAN.edn"))
+  (when-not (= 1 (count args))
+    (reject "Usage: clojure -Sdeps '{:paths [\"tools\"]}' -M -m result-handoff PLAN.edn"))
   (let [plan (read-document (first args))
         result (project (:value plan) read-document)]
     (prn (assoc result :plan-sha256 (:sha256 plan)))))
 
-;; Clojure supplies nil for a script with no arguments and for load-file.
-;; Recognize the direct clojure.main script as well as nonempty script args.
-(let [command (System/getProperty "sun.java.command" "")
-      prefix "clojure.main "
-      direct-file (when (str/starts-with? command prefix) (subs command (count prefix)))]
-  (when (or (seq *command-line-args*)
-            (and direct-file
-                 (= (.getCanonicalPath (java.io.File. direct-file))
-                    (.getCanonicalPath (java.io.File. *file*)))))
-    (apply -main *command-line-args*)))
+;; Library loading has no CLI dispatch. Invoke explicitly with -m result-handoff.

@@ -35,7 +35,7 @@ brokers. It neither collects dashboard state nor creates a competing task ledger
    exact source/test head/tree, clean observations, argv digest, actual process
    outcome, observer validity, individual test counts and pending/unrun fields
    that the reviewer needs. Select original fields rather than copying values.
-3. Run `clojure -J-Xmx256m -M tools/result_handoff.clj PLAN.edn`. The command reads
+3. Run `clojure -J-Xmx256m -Sdeps '{:paths ["tools"]}' -M -m result-handoff PLAN.edn`. The command reads
    only; stdout is the packet. Run under the existing resource policy. Keep the
    plan private because it contains local receipt paths. The packet includes its
    SHA256 so the reviewed plan version is identifiable.
@@ -76,6 +76,15 @@ The EDN reader rejects trailing forms, duplicate keys, unknown tags, invalid
 UTF8 and a symlink receipt leaf. It hashes the same bytes it parses and has a
 16 MiB host capture limit. It is not a sandbox for hostile filesystem parents
 or proof of producer truth. Keep evidence in its existing trusted location.
+
+The library file has no automatic dispatch, including when its caller has
+nonempty `*command-line-args*`. The command above explicitly invokes `-main`
+through Clojure's `-m` entrypoint; direct script loading is not a CLI invocation.
+The byte reader enforces its existing 16 MiB host capture limit on actual reads,
+including growth after open. It never sizes an allocation from a changing file
+size. It reads at most one extra byte to distinguish EOF from overflow, and
+hashes the exact captured bytes it decodes. This is not a promise of an immutable
+filesystem snapshot; expected receipt digests still bind the retained input.
 
 ## Validation and current boundary
 
@@ -169,3 +178,26 @@ before/after commit/tree and empty Git status matched. Tool SHA256 is now
 are unchanged from the actual retained-receipt consumption above; that evidence
 is reused with its original provenance. Independent review of this corrected
 entry and subprocess controls remains pending at this receipt revision.
+
+
+## Narrow review corrections and remaining consumer boundary
+
+Cloud review of frozen head `58ad2375fc735ba5afdeca518ae3a99bfe92295a`
+identified two limitations in that revision: inherited nonempty command-line
+arguments could dispatch the CLI during library loading, and repeated size
+observations did not make the 16 MiB capture bound safe against growth. Its
+validation and retained receipts remain historical. The successor removes
+implicit dispatch entirely in favor of explicit `-m result-handoff` and counts
+actual captured bytes with fixed-size buffers. Cheap controls exercise inherited
+arguments, input that continues growing, an exact-limit read and an oversized
+file. No compiler tests or producer operations are needed for these corrections.
+
+The six retained-receipt readback checks above are producer-side checks. The
+independent peer reviewer received selected facts in prose and statically
+reviewed source/test bytes; this was not independent consumption or
+authentication of original portable packet bytes. CO4 remains open until the
+actual bytes have reached an independent consumer through an authorized channel
+and the consumer has assessed the declared handoff behavior. A public disclosure
+attempt was rejected and created no comment; no alternate transfer has been
+used. No preexisting private artifact supplies the held packet bytes. Source
+review, counts, a merge or a checksum alone cannot close this boundary.
