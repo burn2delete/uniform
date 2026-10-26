@@ -1,7 +1,8 @@
 (ns gravity.self-hosting.sh07-c11-mir-source-preflight-test
-  "Bounded, source-only C11 MIR preflight.
+  "Source-only C11 MIR preflight with finite snapshot and structural checks.
 
-  The three fixed selectors share one authenticated source snapshot.  The
+  Structural selectors share one observed, unauthenticated source snapshot.
+  Only the dedicated binding selector checks the historical source pin. The
   preflight deliberately stops at reader data: it does not invoke compiler,
   artifact, or authority code.  A bounded lexical delimiter pass runs before
   the host reader; subsequent structural walks are iterative and have
@@ -78,11 +79,10 @@
 (def ^:private invalid-definition-duplicates ::invalid-definition-duplicates)
 
 ;; These limits are intentionally independent of the moving C11 source and
-;; export list.  The source snapshot has a finite 512 KiB ceiling so structural
-;; selectors can inspect a moving source before the exact pin is refreshed.
+;; export list. Snapshot reads are bounded by the initially observed file size
+;; plus one EOF probe, not a fixed project byte ceiling. Storage remains O(N).
 ;; The binding selector below remains the sole owner of the exact byte/SHA
 ;; contract.
-(def ^:private maximum-source-bytes (* 512 1024))
 (def ^:private maximum-top-level-forms 4096)
 (def ^:private maximum-form-nodes 250000)
 (def ^:private maximum-form-depth 512)
@@ -91,11 +91,15 @@
 (def ^:private maximum-diagnostic-message-bytes 256)
 
 (def ^:dynamic *source-snapshot-loader*
-  "Test seam for a pre-authenticated snapshot map.  Production leaves nil."
+  "Test seam for untrusted snapshot bytes; loading never authenticates them."
   nil)
 
 (def ^:dynamic *snapshot-before-open-hook*
   "Test seam invoked after initial stat and before descriptor opening."
+  nil)
+
+(def ^:dynamic *snapshot-after-open-hook*
+  "Test seam after descriptor/state checks and before reading. Production nil."
   nil)
 
 (def ^:private reader-eof-marker (Object.))
@@ -226,11 +230,38 @@
            :source-path (str source-path)}
           error))))))
 
+(defn- snapshot-buffer-capacity
+  "Validate the actual int-indexed buffer plus probe representation, not heap availability."
+  [size]
+  (when-not (and (integer? size) (<= 0 size) (< size Integer/MAX_VALUE))
+    (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES"
+             "C11 snapshot size plus EOF probe is not representable by the host buffer"
+             {:observed size :maximum (dec Integer/MAX_VALUE)}))
+  (int (inc size)))
+
+(defn- read-snapshot-buffer!
+  [^java.nio.channels.ReadableByteChannel channel ^java.nio.ByteBuffer buffer]
+  (loop [zero-reads 0]
+    (if (= (.position buffer) (.capacity buffer))
+      nil
+      (let [read-count (.read channel buffer)]
+        (cond
+          (= -1 read-count) nil
+          (and (zero? read-count) (< zero-reads 2)) (recur (inc zero-reads))
+          (zero? read-count)
+          (failure "SH07-C11-PREFLIGHT-SOURCE-READ"
+                   "C11 source channel made no progress")
+          :else (recur 0))))))
+
 (defn- read-source-snapshot
-  "Read one bounded, no-follow descriptor snapshot.
+  "Read at most the observed file size plus one probe on a no-follow descriptor.
 
   Path metadata is sampled before opening, immediately after opening, and
-  after the bounded channel read.  The decoded text and digest are derived
+  after the bounded channel read. This does not authenticate descriptor identity
+  or exclude hostile same-size edits with restored metadata. Owner observations
+  are optional; pathname integrity is not a held-dirfd race proof. Storage is
+  O(N), and representable sizes can still exhaust finite host heap/CPU.
+  The decoded text and digest are derived
   only from those exact bytes.  Exact source-pin authentication belongs to
   the dedicated binding selector."
   [source-path]
@@ -250,13 +281,8 @@
       (failure "SH07-C11-PREFLIGHT-SOURCE-IDENTITY"
                "C11 source file identity is unavailable"
                {:source-path (str path)}))
-    (when (> (:size state-before) maximum-source-bytes)
-      (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES"
-               "C11 source exceeds bounded input"
-               {:source-path (str path)
-                :observed (:size state-before)
-                :maximum maximum-source-bytes}))
-    (let [open-options
+    (let [capacity (snapshot-buffer-capacity (:size state-before))
+          open-options
           (into-array java.nio.file.OpenOption
                       [java.nio.file.StandardOpenOption/READ
                        java.nio.file.LinkOption/NOFOLLOW_LINKS])]
@@ -278,23 +304,11 @@
             (failure "SH07-C11-PREFLIGHT-SOURCE-MUTATED"
                      "C11 source changed before descriptor read"
                      {:source-path (str path)}))
-          ;; Read one probe byte beyond the admitted ceiling.  This lets an
-          ;; exact-bound file reach EOF and be accepted while a file that grew
-          ;; during the read is rejected without an unbounded allocation.
-          (let [buffer (java.nio.ByteBuffer/allocate (inc maximum-source-bytes))]
-            (loop [zero-reads 0]
-              (if (= (.position buffer) (.capacity buffer))
-                nil
-                (let [read-count (.read channel buffer)]
-                  (cond
-                    (= -1 read-count) nil
-                    (and (zero? read-count) (< zero-reads 2))
-                    (recur (inc zero-reads))
-                    (zero? read-count)
-                    (failure "SH07-C11-PREFLIGHT-SOURCE-READ"
-                             "C11 source channel made no progress")
-                    :else
-                    (recur 0)))))
+          (when *snapshot-after-open-hook* (*snapshot-after-open-hook*))
+          ;; The fixed initial N bounds allocation and read growth even if a
+          ;; writer appends concurrently. Never resize or chase the new size.
+          (let [buffer (java.nio.ByteBuffer/allocate capacity)]
+            (read-snapshot-buffer! channel buffer)
             (let [observed-bytes (.position buffer)
                   channel-size-after (.size channel)
                   state-after (basic-file-state path)
@@ -302,7 +316,7 @@
                   (when (and (:root location) (:relative location))
                     (safe-contained-source-path (:root location)
                                                 (:relative location)))]
-              (when (or (> observed-bytes maximum-source-bytes)
+              (when (or (not= observed-bytes (:size state-before))
                         (not= channel-size-before channel-size-after)
                         (not= channel-size-before observed-bytes)
                         (not (same-file-state? state-before state-after))
@@ -339,14 +353,10 @@
     (when-not (bytes? bytes)
       (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES"
                "C11 source snapshot did not provide byte data"))
-    (when (> (alength ^bytes bytes) maximum-source-bytes)
-      (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES"
-               "C11 source snapshot exceeds bounded input"
-               {:observed (alength ^bytes bytes)
-                :maximum maximum-source-bytes}))
     ;; Ignore any injected :source-text: all parsing must use the bytes from
     ;; the bounded, coherent snapshot and the strict UTF-8 decoder.
     (assoc snapshot
+           :size (alength ^bytes bytes)
            :source-text (strict-utf8 bytes "C11 source snapshot")
            :source-sha256 (sha256-id bytes)
            :authenticated? false)))
@@ -627,6 +637,8 @@
         (set (remove definitions exports))))))
 
 (deftest sh07-c11-source-binding-is-exact
+  ;; Historical admission remains fail-closed. Independent intake tests do not
+  ;; refresh this pin or count a moving source snapshot as authenticated.
   (let [bytes (source-bytes)
         production-snapshot @source-snapshot
         contract (proof-contract)
@@ -640,127 +652,7 @@
            (:module-namespace expectation)))
     (is (= {:source-byte-count expected-source-byte-count
             :source-bytes-sha256 expected-source-revision-id}
-           (:source-binding expectation)))
-    (testing "injected source text cannot override strict bytes decoding"
-      (let [loaded
-            (binding [*source-snapshot-loader*
-                      (fn [] {:bytes bytes :source-text "wrong text"})]
-              (load-source-snapshot))]
-        (is (= (strict-utf8 bytes "expected")
-               (:source-text loaded))))))
-  (testing "structural selectors can inspect a moving pin, but binding rejects it"
-    (let [text "(ns synthetic (:exports [x])) (def x 1)"
-          bytes (.getBytes text "UTF-8")
-          loaded (binding [*source-snapshot-loader*
-                           (fn [] {:bytes bytes :source-text "wrong text"})]
-                   (load-source-snapshot))
-          forms (read-forms (:source-text loaded))]
-      (is (= text (:source-text loaded)))
-      (is (empty? (invalid-source-if-forms forms)))
-      (is (empty? (missing-export-definitions forms)))
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (validate-source-binding! loaded)))))
-  (testing "injected snapshots cannot bypass the source-byte ceiling"
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (binding [*source-snapshot-loader*
-                           (fn [] {:bytes (byte-array
-                                           (inc maximum-source-bytes))})]
-                   (load-source-snapshot)))))
-  (testing "strict UTF-8 rejects malformed bytes without a platform decoder"
-    (is (try
-          (strict-utf8 (byte-array [(unchecked-byte 0xc3) (byte 0x28)])
-                       "synthetic")
-          false
-          (catch clojure.lang.ExceptionInfo error
-            (= "SH07-C11-PREFLIGHT-SOURCE-UTF8"
-               (:id (ex-data error)))))))
-  (testing "path authentication rejects containment escapes and symlink leaves"
-    (let [temporary
-          (java.nio.file.Files/createTempDirectory
-           "sh07-c11-path-test" (make-array java.nio.file.attribute.FileAttribute 0))
-          real-file (.resolve temporary "real.gravity")
-          link-file (.resolve temporary "link.gravity")
-          oversized-file (.resolve temporary "oversized.gravity")
-          exact-bound-file (.resolve temporary "exact-bound.gravity")
-          replacement-file (.resolve temporary "replacement.gravity")
-          moved-original (.resolve temporary "original.gravity")
-          real-directory (.resolve temporary "real-directory")
-          intermediate-link (.resolve temporary "intermediate-link")
-          nested-file (.resolve real-directory "nested.gravity")]
-      (try
-        (java.nio.file.Files/write
-         real-file
-         (.getBytes "(ns synthetic (:exports [x])) (def x 1)" "UTF-8")
-         (make-array java.nio.file.OpenOption 0))
-        (java.nio.file.Files/write
-         oversized-file
-         (byte-array (inc maximum-source-bytes))
-         (make-array java.nio.file.OpenOption 0))
-        (java.nio.file.Files/write
-         exact-bound-file
-         (byte-array maximum-source-bytes)
-         (make-array java.nio.file.OpenOption 0))
-        (let [snapshot (read-source-snapshot exact-bound-file)]
-          (is (= maximum-source-bytes (:size snapshot)))
-          (is (= maximum-source-bytes
-                 (alength ^bytes (:bytes snapshot)))))
-        (is (thrown? clojure.lang.ExceptionInfo
-                     (read-source-snapshot oversized-file)))
-        (is (thrown? clojure.lang.ExceptionInfo
-                     (safe-contained-source-path temporary "../escape.gravity")))
-        (try
-          (java.nio.file.Files/createSymbolicLink
-           link-file real-file
-           (make-array java.nio.file.attribute.FileAttribute 0))
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (read-source-snapshot link-file)))
-          (catch java.nio.file.FileSystemException _
-            (is true))
-          (catch UnsupportedOperationException _
-            (is true)))
-        (java.nio.file.Files/createDirectory
-         real-directory
-         (make-array java.nio.file.attribute.FileAttribute 0))
-        (java.nio.file.Files/write
-         nested-file
-         (.getBytes "(ns nested)" "UTF-8")
-         (make-array java.nio.file.OpenOption 0))
-        (try
-          (java.nio.file.Files/createSymbolicLink
-           intermediate-link real-directory
-           (make-array java.nio.file.attribute.FileAttribute 0))
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (safe-contained-source-path
-                        temporary "intermediate-link/nested.gravity")))
-          (catch java.nio.file.FileSystemException _
-            (is true))
-          (catch UnsupportedOperationException _
-            (is true)))
-        (java.nio.file.Files/write
-         replacement-file
-         (.getBytes "(ns replacement (:exports [x])) (def x 1)" "UTF-8")
-         (make-array java.nio.file.OpenOption 0))
-        (binding [*snapshot-before-open-hook*
-                  (fn []
-                    (java.nio.file.Files/move
-                     real-file moved-original
-                     (make-array java.nio.file.CopyOption 0))
-                    (java.nio.file.Files/move
-                     replacement-file real-file
-                     (make-array java.nio.file.CopyOption 0)))]
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (read-source-snapshot real-file))))
-        (finally
-          (java.nio.file.Files/deleteIfExists link-file)
-          (java.nio.file.Files/deleteIfExists real-file)
-          (java.nio.file.Files/deleteIfExists replacement-file)
-          (java.nio.file.Files/deleteIfExists moved-original)
-          (java.nio.file.Files/deleteIfExists exact-bound-file)
-          (java.nio.file.Files/deleteIfExists oversized-file)
-          (java.nio.file.Files/deleteIfExists intermediate-link)
-          (java.nio.file.Files/deleteIfExists nested-file)
-          (java.nio.file.Files/deleteIfExists real-directory)
-          (java.nio.file.Files/deleteIfExists temporary))))))
+           (:source-binding expectation)))))
 
 (deftest sh07-c11-source-control-form-arities-are-exact
   (let [analysis @source-analysis-cache]
