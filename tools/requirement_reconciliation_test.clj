@@ -127,6 +127,16 @@
     (is (thrown? Exception (requirement-evidence/task-record (str/replace text record (str record "\n\n" record)) "active" "reader/identity")))
     (is (thrown? Exception (requirement-evidence/task-record (str/replace text "Current evidence/status: Partial;" "Current evidence/status: Accepted;") "active" "reader/identity")))))
 
+(deftest adjacent-task-records-have-independent-status-and-uniqueness
+  (let [accepted "- [x] `first` First\nCurrent evidence/status: Accepted; exact first receipt.\nDone when (yes/no): First boundary."
+        partial "- [ ] `second` Second\nCurrent evidence/status: Partial; second fixture only.\nDone when (yes/no): Second boundary."
+        wrap #(str "<!-- active:start -->\n" % "\n<!-- active:end -->")
+        second-task (requirement-evidence/task-record (wrap (str accepted "\n" partial)) "active" "second")]
+    (is (false? (:checked? second-task)))
+    (is (= "Partial; second fixture only." (:status second-task)))
+    (is (= "Second boundary." (:acceptance second-task)))
+    (is (thrown? Exception (requirement-evidence/task-record (wrap (str partial "\n" partial)) "active" "second")))))
+
 (deftest historical-facets-never-upgrade-canonical-acceptance
   (let [task "<!-- active:start -->\n\n- [ ] `reader/identity` Identity\n\nCurrent evidence/status: Partial; fixture only.\n\nDone when (yes/no): All supplied paths.\n<!-- active:end -->"
         row "| 2026-07-02 | Recorder | `P18-T00` | proof.edn | fixture only |"
@@ -138,15 +148,17 @@
                  :verification-date "2026-07-02" :source-baseline (apply str (repeat 40 "a"))}
         requirement {:id "source/provenance" :task-reference {:path "task.md" :marker "active" :id "reader/identity"}
                      :historical-support [support]}
-        project #(requirement-evidence/project % (fn [pin] (get files (:path pin))) rr/sha256)
+        baseline (apply str (repeat 40 "a"))
+        project #(requirement-evidence/project % (fn [pin] (get files (:path pin))) rr/sha256 baseline)
         report (project requirement)]
     (is (= :unassessed (:current-acceptance report)))
     (is (= 1 (count (:historical-support report))))
     (is (false? (get-in report [:canonical-task :checked?])))
     (is (thrown? Exception (project (assoc-in requirement [:historical-support 0 :selector] [:unsupported]))))
     (is (thrown? Exception (project (assoc-in requirement [:historical-support 0 :verification-date] "2026-07-03"))))
+    (is (thrown? Exception (project (assoc-in requirement [:historical-support 0 :source-baseline] (apply str (repeat 40 "0"))))))
     (is (thrown? Exception (requirement-evidence/project requirement
                             (fn [pin] (if (= "ledger.md" (:path pin)) (str row "\n## Evidence Ledger\n")
-                                          (get files (:path pin)))) rr/sha256)))))
+                                          (get files (:path pin)))) rr/sha256 baseline)))))
 
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

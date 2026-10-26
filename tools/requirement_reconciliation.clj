@@ -191,7 +191,7 @@
                         (let [text (read-source (checked-path root path))]
                           (require! (= sha256 (requirement-reconciliation/sha256 text))
                                     (str "Task/evidence source drift: " path))
-                          text)) sha256))
+                          text)) sha256 (:source-baseline manifest)))
                    (filter :task-reference (:requirements manifest)))
              :manifest-sha256 (sha256 (read-source (checked-path root manifest-path)))
              :source-digests (into (sorted-map) (map (fn [[id text]] [id (sha256 text)]) texts))))))

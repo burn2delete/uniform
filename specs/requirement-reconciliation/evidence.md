@@ -83,3 +83,13 @@ duplicate task rejection, checkbox/status consistency, dated ledger containment,
 receipt selector mismatch, date mismatch and proposed-disposition withholding.
 Historical support is projected separately from unassessed current acceptance.
 No implementation task, original receipt or dashboard store was modified.
+
+Independent proposal review confirmed the three local behaviors and the narrow
+historical entailment, while leaving cross-family nonoverlap unreviewed. It found
+two evidence-guard defects: adjacent task headers could share a parsed record,
+and a well-shaped but unrelated historical source commit could pass. Records now
+split at every task header and reject duplicate literal IDs regardless of blank
+lines. Historical support must match the manifest's exact inspected baseline.
+Twelve focused tests / 67 assertions pass, including both regressions. This
+correction awaits immutable successor review and does not establish current
+implementation acceptance or a complete denominator.

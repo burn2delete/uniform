@@ -12,7 +12,7 @@
     (require! (and (= 2 (count starts)) (= 2 (count ends))) "Missing or duplicate canonical task region")
     (let [parts (str/split (second starts) (re-pattern (java.util.regex.Pattern/quote end)) -1)
           _ (require! (= 2 (count parts)) "Reversed canonical task region")
-          records (str/split (first parts) #"\n\n(?=- \[)")
+          records (str/split (first parts) #"(?m)(?=^- \[[ x]\] `)")
           matched (filter #(re-find (re-pattern (str "(?m)^- \\[([ x])\\] `"
                                                            (java.util.regex.Pattern/quote id) "` ")) %) records)]
       (require! (= 1 (count matched)) "Missing or duplicate canonical task ID")
@@ -25,7 +25,7 @@
                   "Canonical checkbox and acceptance status disagree")
         {:id id :checked? (= checked "x") :status status :acceptance acceptance}))))
 
-(defn project [requirement read-pinned sha256]
+(defn project [requirement read-pinned sha256 source-baseline]
   (let [{:keys [path marker id] :as task} (:task-reference requirement)
         record (task-record (read-pinned task) marker id)
         historical
@@ -40,7 +40,8 @@
                             "Historical receipt does not support the selected facet")
                   (require! (and row (str/starts-with? row (str "| " (:date ledger) " |"))
                                  (= (:verification-date support) (:date ledger))
-                                 (re-matches #"[0-9a-f]{40}" (or (:source-baseline support) ""))
+                                 (= source-baseline (:source-baseline support))
+                                 (re-matches #"[0-9a-f]{40}" (or source-baseline ""))
                                  (str/includes? row (str "`" (:task-id ledger) "`"))
                                  (str/includes? row (:path receipt)))
                             "Historical dated ledger association is absent")
