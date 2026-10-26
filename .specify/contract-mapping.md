@@ -1,6 +1,6 @@
 # Canonical contract to Spec Kit mapping
 
-Source baseline: `d5d8e15c773929337e1d9646da4f32af2d461e17` (2026-10-26).
+Source baseline: `063989e153b88c00f3ac3f69c2f7a04b5981ab2d` (2026-10-26).
 Mapping state: proposed for independent review; no replacement accepted.
 
 The [240-document inventory](../docs/document-inventory.json) remains semantic
