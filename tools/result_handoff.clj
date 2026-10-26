@@ -117,4 +117,8 @@
         result (project (:value plan) read-document)]
     (prn (assoc result :plan-sha256 (:sha256 plan)))))
 
-(when (some? *command-line-args*) (apply -main *command-line-args*))
+;; Clojure supplies nil for a script with no arguments and for load-file.
+;; Recognize the direct clojure.main script as well as nonempty script args.
+(when (or (seq *command-line-args*)
+          (= (System/getProperty "sun.java.command") (str "clojure.main " *file*)))
+  (apply -main *command-line-args*))
