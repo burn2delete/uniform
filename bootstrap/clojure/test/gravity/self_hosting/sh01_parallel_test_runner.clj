@@ -288,6 +288,13 @@
         (->> namespaced
              vals
              (map (fn [job]
+                    ;; Recompute the owning policy rather than trusting optional
+                    ;; shard fields that a direct caller could omit or relabel.
+                    (when-let [blocked (planner/unsupported-execution (:namespace job))]
+                      (throw
+                       (ex-info
+                        "Selected source tests require their established guarded owner wrapper"
+                        blocked)))
                     (when-not
                      (contains? #{:normal :memory-heavy :exclusive}
                                 (resource-class job))

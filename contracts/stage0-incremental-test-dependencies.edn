@@ -336,7 +336,13 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? false}}]}]
  :standalone-tests
- [{:test-id "reader-parameter-invocation"
+ [{:test-id "runtime-module-reads"
+   :path "bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
+   :namespace gravity.self-hosting.runtime-module-reads-test
+   :jvm-group "runtime-module-reads"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "reader-parameter-invocation"
    :path "bootstrap/clojure/test/gravity/self_hosting/c6_parameter_reader_invocation_test.clj"
    :namespace gravity.self-hosting.c6-parameter-reader-invocation-test
    :jvm-group "reader-parameter-invocation"

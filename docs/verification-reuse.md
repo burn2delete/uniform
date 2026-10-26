@@ -134,3 +134,26 @@ new request. Corrected planner/wiring validation passed 103 tests / 922
 assertions with zero failures/errors. Independent correction review and final
 integration remain pending. No full compiler or heavy source replay is needed
 for this runner-input correction.
+
+### Current-main Runtime catalog integration
+
+Main subsequently added `runtime_module_reads_test.clj` without a standalone
+catalog mapping. A one-selector planner control reproduced that catalog error
+without loading or running the Runtime provider. The existing source ownership
+maps `runtime.gravity` to SH-19 / `:sh-runtime`; its owner confirmed that mapping
+and required freshness. The namespace is now discoverable under that owner.
+
+Its established source execution needs the common host broker, host-exclusive
+and canonical-heavy guards. No committed route currently represents all three.
+Plans therefore retain the namespace and explicitly mark execution unsupported.
+The existing parallel runner recomputes that policy and rejects before
+scheduling, broker acquisition or launch, even if a caller omits or forges the
+shard marker or relabels the job exclusive. Owner-local guarded execution remains
+separate; this mapping does not claim Runtime acceptance or authorize a generic
+source run. No new runner or resource-limit substitution is introduced.
+
+Planner validation passed 60 tests / 537 assertions. The exact injected runner
+negative passed 1 / 13 with zero worker/launcher calls. The initial design that
+rejected plan construction also blocked six legitimate discovery tests; it was
+replaced by preserved plan discovery and rejection at actual execution admission.
+That nonpassing intermediate result remains history, not acceptance evidence.

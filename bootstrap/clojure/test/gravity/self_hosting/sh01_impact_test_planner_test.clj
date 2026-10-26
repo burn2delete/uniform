@@ -484,6 +484,26 @@
       (is (nil? (:cache-closure shard)) relative)
       (is (false? (:authoritative? plan)) relative))))
 
+(deftest runtime-module-read-catalog-preserves-owner-and-requires-guarded-execution
+  (let [path "bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
+        namespace 'gravity.self-hosting.runtime-module-reads-test
+        context (planner/planning-context)
+        owner (get-in context [:ownership :standalone-test-owners path])
+        entry (get-in context [:standalone-test-index :by-namespace namespace])]
+    (is (= {:namespace namespace :slice "SH-19" :owner :sh-runtime} owner))
+    (is (true? (get-in entry [:test-policy :freshness-required?])))
+    (is (nil? (:cache-closure entry)))
+    (doseq [request [#(planner/build-namespace-plan [namespace])
+                     #(planner/build-plan {:changed-paths [path]})
+                     #(planner/build-plan {:direct-slices ["SH-19"]})
+                     #(planner/build-plan {:iteration-slices ["SH-19"]})]]
+      (let [data (first (filter #(= namespace (:namespace %)) (:shards (request))))]
+        (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+        (is (= :unsupported (:execution data)))
+        (is (= namespace (:namespace data)))
+        (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+               (:required-guards data)))))))
+
 (deftest deleted-reviewed-test-conservatively-selects-component-dependencies
   (let [exists-var
         (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
