@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/github/spec-kit",
+  "release": "v1.2.3",
+  "tag_object": "8ac9e8103319d98099cfc274a2517bb2b621626c",
+  "commit": "5ea8b1cf0a38699340a38e00d02770308997d8c0",
+  "evaluated_on": "2026-10-25",
+  "uniform_baseline": "228da8a6f179399625c23b3b3770a65742bccc4e",
+  "integration": "codex",
+  "script": "sh",
+  "runtime_events": false,
+  "extensions": [],
+  "workflows": [],
+  "customization": "prompt/artifact-only local preset modeled on upstream lean; template overrides",
+  "omitted_components": [
+    "executable helper scripts (repository Lisp-only policy)",
+    "bundled automated workflow"
+  ],
+  "inventory_adaptation": "Shared manifest narrowed to copied text assets only; upstream baseline hashes preserved for those assets"
+}

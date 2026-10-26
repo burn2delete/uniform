@@ -75,6 +75,16 @@
     (is (= :accepted (:status execution)))
     (is (= condition (get-in execution [:execution :value])))
     (is (= :passed (:status report)) (pr-str report))
+    (is (= [:input-carrier-kinds
+            :fresh-original-mir-verification
+            :original-zero-arity-hosted-jvm-bool-diamond
+            :literal-selected-edge
+            :cfg-and-dominance-reconstruction
+            :terminator-and-value-use-reconstruction
+            :complete-after-equality
+            :type-effect-safety-origin-preservation
+            :unchanged-instructions-joins-fact-check-and-proof-tables]
+           (:checks report)))
     (is (= :gravity/sh12-literal-bool-branch-specialization-report (:artifact report)))
     (is (= 1 (:schema-version report)))
     (is (every? (set (:nonclaims report))
@@ -148,20 +158,58 @@
       (is (= :rejected (:status (invoke 'sh12-verify-literal-bool-branch-specialization
                                         core (assoc before :extra :unverified) after))))
       (doseq [position (range 3)
-              hostile [(iterate vector nil) (nth (iterate vector nil) 258)
-                       (vec (repeat 1025 nil)) (zipmap (range 513) (repeat nil))
-                       (vec (repeat 33 (vec (repeat 1024 nil))))]]
+              hostile [(iterate vector nil) (list :unsupported)]]
         (let [inputs (assoc [core before after] position hostile)
               rejected (apply invoke 'sh12-verify-literal-bool-branch-specialization inputs)]
           (is (= :rejected (:status rejected)))
           (is (= :bounded-specialization-input-carriers
                  (:missing-fact (first (:diagnostics rejected)))))))
+      ;; Persistent carriers have no project traversal quota. These malformed
+      ;; inputs pass the kind check, then fail the existing semantic relation.
+      (doseq [position (range 3)
+              malformed [(nth (iterate vector nil) 258)
+                         (vec (repeat 1025 nil)) (zipmap (range 513) (repeat nil))
+                         (vec (repeat 33 (vec (repeat 1024 nil))))]]
+        (let [inputs (assoc [core before after] position malformed)
+              carrier (invoke 'sh12-authenticated-c10-mir-carrier-preflight malformed)
+              rejected (apply invoke 'sh12-verify-literal-bool-branch-specialization inputs)]
+          (is (= :accepted (:status carrier)))
+          (is (= :rejected (:status rejected)))
+          (is (not= :bounded-specialization-input-carriers
+                    (:missing-fact (first (:diagnostics rejected)))))))
       (is (= report (verify after))))))
 
 (deftest sh12-literal-bool-specialization-true (check-source true "gravity" true))
 (deftest sh12-literal-bool-specialization-false (check-source false "gravity" false))
 (deftest sh12-literal-bool-specialization-true-qst (check-source true "qst" false))
 (deftest sh12-literal-bool-specialization-false-qst (check-source false "qst" false))
+
+(deftest original-checked-core-carrier-validation-preserves-mir-legality
+  (let [{:keys [raw upstream core before]} (source-pair "true" "gravity")
+        build #(invoke 'sh12-build-branch-join-mir %)
+        verify #(invoke 'sh12-verify-branch-join-mir % before)]
+    (is (= :accepted (:status raw)))
+    (is (= :passed (:status upstream)))
+    (is (= 1 (:schema-version core)))
+    (is (= {:status :passed} (:input-carrier-validation core)))
+    (is (not (contains? core :bounds)))
+    (is (= :gravity/mir-module (:artifact before)))
+    (is (= :passed (:status (verify core))))
+    (doseq [malformed [(dissoc core :input-carrier-validation)
+                      (assoc core :input-carrier-validation nil)
+                      (assoc core :input-carrier-validation {:status :rejected})
+                      (assoc core :input-carrier-validation {:status :passed :extra true})
+                      (assoc core :bounds {})
+                      (assoc core :schema-version 2)
+                      (assoc-in core [:authenticated-input :source-content-hash]
+                                (str "sha256:" (apply str (repeat 64 "0"))))
+                      (assoc-in core [:core-nodes 0 :type] :gravity/i64)]]
+      (let [constructed (build malformed)
+            report (verify malformed)]
+        (is (= :rejected (:status constructed)))
+        (is (= :rejected (:status report)))
+        (is (some #{"C11-MODULE" "C11-TYPE" "C11-VERIFY"}
+                  (map :diagnostic-id (:diagnostics report))))))))
 
 (deftest sh12-literal-bool-specialization-rejects-valid-normalized-family
   (let [core ((existing 'checked-core) ".gravity")
@@ -175,8 +223,7 @@
       (let [before (assoc mir :diagnostics diagnostics)
             rejected (invoke 'sh12-verify-literal-bool-branch-specialization core before mir)]
         (is (= :rejected (:status rejected)))
-        (is (= :original-mir-diagnostic-carrier (:missing-fact (first (:diagnostics rejected)))))
-        (is (< (count (pr-str rejected)) 2048))))))
+        (is (= :original-mir-diagnostic-carrier (:missing-fact (first (:diagnostics rejected)))))))))
 
 (defn- reject-original-nested [extension]
   (let [{:keys [raw upstream core before]} (source-pair "parameter-nested" extension)]

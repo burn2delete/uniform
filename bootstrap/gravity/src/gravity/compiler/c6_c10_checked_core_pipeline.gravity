@@ -3414,45 +3414,9 @@
      #{:c2-semantic-hash :c3-semantic-hash :plan-semantic-hash :reader-integrity-hash
        :builder-source-hash :builder-plan-hash :builder-function-hash})))
 
-(defn c6c10-nonnegative-at-most? [value maximum]
-  (if (integer? value)
-    (if (< value 0) false (<= value maximum))
-    false))
-
 (defn c6c10-carrier-validation-shape? [validation]
-  (if (c6c10-exact-map-keys?
-       validation
-       #{:status :maximum-carrier-nodes :maximum-carrier-depth
-         :maximum-container-width :maximum-scalar-bytes
-         :maximum-integer-bits :observed-carrier-nodes
-         :observed-carrier-depth :observed-container-width
-         :observed-scalar-bytes :observed-integer-bits})
-    (if (= (get validation :status) :passed)
-      (if (= (get validation :maximum-carrier-nodes) 65536)
-        (if (= (get validation :maximum-carrier-depth) 64)
-          (if (= (get validation :maximum-container-width) 128)
-            (if (= (get validation :maximum-scalar-bytes) 65536)
-              (if (= (get validation :maximum-integer-bits) 256)
-                (if (c6c10-nonnegative-at-most?
-                     (get validation :observed-carrier-nodes) 65536)
-                  (if (c6c10-nonnegative-at-most?
-                       (get validation :observed-carrier-depth) 64)
-                    (if (c6c10-nonnegative-at-most?
-                         (get validation :observed-container-width) 128)
-                      (if (c6c10-nonnegative-at-most?
-                           (get validation :observed-scalar-bytes) 65536)
-                        (c6c10-nonnegative-at-most?
-                         (get validation :observed-integer-bits) 256)
-                        false)
-                      false)
-                    false)
-                  false)
-                false)
-              false)
-            false)
-          false)
-        false)
-      false)
+  (if (c6c10-exact-map-keys? validation #{:status})
+    (= (get validation :status) :passed)
     false))
 
 (defn c6c10-authoritative-module-shape? [module]
@@ -3643,26 +3607,7 @@
               :source-content-hash (get input :source-content-hash)
               :plan-id (get plan :plan-id)
               :binding-pins (get input :binding-pins)}
-             :bounds
-             {:maximum-functions 1
-              :maximum-forms 128
-              :maximum-plan-nodes 128
-              :maximum-digest-requests 2048
-              :reserved-verifier-diagnostic-requests 1
-              :maximum-graph-depth 48
-              :maximum-carrier-nodes 65536
-              :maximum-carrier-depth 64
-              :maximum-container-width 128
-              :maximum-scalar-bytes 65536
-              :maximum-integer-bits 256
-              :observed-forms (count forms)
-              :observed-plan-nodes
-              (get function-product :plan-node-count)
-              :observed-derived-nodes (count nodes)
-              :observed-graph-depth
-              (get function-product :maximum-depth)
-              :input-carrier-validation
-              (get input :carrier-validation)}
+             :input-carrier-validation (get input :carrier-validation)
              :semantic-provenance
              {:source-content-hash (get input :source-content-hash)
               :binding-pins (get input :binding-pins)}
@@ -3682,27 +3627,7 @@
             artifact-id (get artifact-request :ref)
             artifact (assoc artifact-base :artifact-id artifact-id)
             final-state (get artifact-request :state)]
-        (if (if (> (count nodes) 128)
-              true
-              (if (> (get function-product :plan-node-count) 128)
-                true
-                (if (> (get function-product :maximum-depth) 48)
-                  true
-                  (> (+ (count (get final-state :requests)) 1)
-                     2048))))
-          (c6c10-envelope-rejection
-           :C6-VERIFY :lower-to-core :diagnostic/c6-verify input
-           {:missing-fact :bounded-gravity-checked-core-construction
-            :observed-derived-nodes (count nodes)
-            :observed-plan-nodes
-            (get function-product :plan-node-count)
-            :observed-graph-depth
-            (get function-product :maximum-depth)
-            :observed-digest-requests
-            (count (get final-state :requests))
-            :reserved-verifier-diagnostic-requests 1}
-           :reduce-source-program-size)
-          {:status :accepted
+        {:status :accepted
            :artifact-template artifact
            :digest-requests (get final-state :requests)
            :digest-graph-root artifact-id
@@ -3714,7 +3639,7 @@
             :scope (if (c6c10-checked-mul-plan? plan) :bounded-checked-i64-mul-c6-c10
                      (if (c6c10-checked-sub-plan? plan) :bounded-checked-i64-sub-c6-c10
                        (if (c6c10-checked-add-plan? plan) :bounded-checked-i64-add-c6-c10 :bounded-pure-c6-c10)))
-            :self-hosted? false}}))
+            :self-hosted? false}})
           (c6c10-envelope-rejection
            :C6-VERIFY :lower-to-core :diagnostic/c6-verify input
            {:missing-fact :validated-dependency-and-lexical-order

@@ -1,0 +1,23 @@
+[
+  {
+    "path": ".specify/.gitignore",
+    "generated_sha256": "0a61c5378b0bb2e0f85babff99c8b166f2170a2c12378cd17d929aa19296ec88",
+    "ascii_sha256": "6d8ebbeed10de4794ac24efd400d8f35ccbbeadd7440dc712a0e83121765be67",
+    "additional_change": "Ignore checkout-local locks and workflow run receipts"
+  },
+  {
+    "path": ".specify/templates/constitution-template.md",
+    "generated_sha256": "ce7549540fa45543cca797a150201d868e64495fdff39dc38246fb17bd4024b3",
+    "ascii_sha256": "2933148fc32a52dc99aee6f17fb49b69dff2d6549e6c32b0751f97db2060c3fa"
+  },
+  {
+    "path": ".specify/templates/tasks-template.md",
+    "generated_sha256": "b0f527d41e546af0c31903e04f9b20965b6b497b573792198f663a64ce128863",
+    "ascii_sha256": "86430fa4dd13ea03dc54f6bea6ee460a61d941503ad03afd6e3984d291a2ddbe"
+  },
+  {
+    "path": ".specify/templates/plan-template.md",
+    "generated_sha256": "a828ad6206526574ab3fc99be6d0154588cb1c9774c5919d71b81ab5b2dbffa0",
+    "ascii_sha256": "0ebefc87e7e8457e8bbabb68853fd5ede142c21ef45ed97412371b6e03c0ca5f"
+  }
+]

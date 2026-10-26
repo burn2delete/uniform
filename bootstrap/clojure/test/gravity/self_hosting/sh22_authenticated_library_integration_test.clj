@@ -112,133 +112,6 @@
       [name (select-keys function [:arity :params])]))
    (:functions plan)))
 
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
-(defn- digest-ref-ordinal
-  [value]
-  (when-not
-   (and
-    (map? value)
-    (= #{:digest-ref} (set (keys value)))
-    (nat-int? (:digest-ref value)))
-    (throw
-     (ex-info
-      "Invalid SH-22 authenticated digest reference"
-      {:id "SH22-AUTH-DIGEST-REFERENCE" :value value})))
-  (:digest-ref value))
-
-(defn- reachable-ordinals
-  [requests roots]
-  (loop [pending (mapv digest-ref-ordinal roots)
-         reachable #{}]
-    (if (empty? pending)
-      reachable
-      (let [ordinal (peek pending)
-            remaining (pop pending)]
-        (if (contains? reachable ordinal)
-          (recur remaining reachable)
-          (recur
-           (into remaining (:depends-on (get requests ordinal)))
-           (conj reachable ordinal)))))))
-
-(defn- seal-builder-result!
-  [raw]
-  (let [requests (:digest-requests raw)
-        request-count (count requests)
-        roots (:digest-graph-roots raw)]
-    (when-not
-     (and
-      (= :accepted (:status raw))
-      (vector? requests)
-      (pos? request-count)
-      (<= request-count 2048)
-      (= 2 (count roots))
-      (= (:semantic-envelope-root raw) (first roots))
-      (= (:provenance-binding-root raw) (second roots)))
-      (throw
-       (ex-info
-        "Invalid SH-22 authenticated envelope template"
-        {:id "SH22-AUTH-ENVELOPE-TEMPLATE"})))
-    (doseq [[ordinal request] (map-indexed vector requests)]
-      (let [references
-            (bootstrap/p15-s23-c6c10-collect-digest-ref-ordinals!
-             "<sh22-authenticated-envelope>"
-             (:preimage request)
-             request-count ordinal)]
-        (when-not
-         (and
-          (= #{:algorithm :depends-on :encoding :key
-               :ordinal :preimage}
-             (set (keys request)))
-          (= ordinal (:key request) (:ordinal request))
-          (= :sha256 (:algorithm request))
-          (= :gravity/canonical-edn-v1 (:encoding request))
-          (= (:depends-on request)
-             (vec (sort (distinct (:depends-on request)))))
-          (= (set references) (set (:depends-on request)))
-          (every? #(< % ordinal) (:depends-on request)))
-          (throw
-           (ex-info
-            "Invalid SH-22 authenticated digest graph"
-            {:id "SH22-AUTH-DIGEST-GRAPH" :ordinal ordinal})))))
-    (when-not
-     (= (set (range request-count))
-        (reachable-ordinals requests roots))
-      (throw
-       (ex-info
-        "Unreachable SH-22 authenticated digest request"
-        {:id "SH22-AUTH-DIGEST-REACHABILITY"})))
-    (let [resolved
-          (reduce
-           (fn [digests request]
-             (let [ordinal (:ordinal request)
-                   preimage
-                   (bootstrap/p15-s23-c6c10-resolve-digest-references!
-                    "<sh22-authenticated-envelope>"
-                    (:preimage request)
-                    request-count ordinal digests)]
-               (conj digests (canonical-id preimage))))
-           [] requests)
-          resolve-final
-          (fn [value]
-            (bootstrap/p15-s23-c6c10-resolve-digest-references!
-             "<sh22-authenticated-envelope>"
-             value request-count nil resolved))
-          checks (resolve-final (:identity-checks raw))
-          mismatches
-          (filterv
-           #(not= (:computed-id %) (:observed-id %))
-           checks)]
-      (when (seq mismatches)
-        (throw
-         (ex-info
-          "SH-22 authenticated identity subject mismatch"
-          {:id "SH22-AUTH-IDENTITY"
-           :subjects (mapv :name mismatches)})))
-      {:template (resolve-final (:artifact-template raw))
-       :semantic-root
-       (resolve-final (:semantic-envelope-root raw))
-       :provenance-root
-       (resolve-final (:provenance-binding-root raw))
-       :identity-checks checks
-       :requests requests
-       :resolved-digests resolved})))
-
 (defn- fact-transition
   [name value evidence-id]
   {:name name
@@ -343,7 +216,7 @@
          #(fact-transition % (get fact-values %) evidence-id)
          fact-names)]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh22-authenticated-vector-bridge
      :artifact-kind :gravity/sh22-authenticated-vector-upstream
      :source-revision (bridge-source-revision)
@@ -450,12 +323,23 @@
      :actual-path-provenance
      {:source-path source-path
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- authenticated-envelope
   [descriptor]
-  (let [raw
+  (let [source-path (get-in descriptor [:actual-path-provenance :source-path])
+        options {:source :development-current}
+        product
+        (bootstrap/p15-s23-stage2-sh02-descriptor-envelope
+         :sh22-authenticated-vector-bridge
+         :gravity/sh22-authenticated-vector-upstream
+         descriptor source-path options)
+        verification
+        (bootstrap/p15-s23-stage2-sh02-descriptor-envelope-verify!
+         product :sh22-authenticated-vector-bridge
+         :gravity/sh22-authenticated-vector-upstream
+         descriptor source-path options)
+        raw
         (invoke
          envelope-plan
          'authenticated-envelope-build-template
@@ -467,16 +351,21 @@
          [descriptor
           (:artifact-template raw)
           (:digest-requests raw)])
-        sealed (seal-builder-result! raw)]
-    {:envelope (:template sealed)
+        sealed (:sealed-artifact product)]
+    (when-not (= :passed verification)
+      (throw (ex-info "SH-22 envelope fresh verification failed"
+                      {:id "SH22-AUTH-FRESH-VERIFICATION"})))
+    {:envelope sealed
+     :stage-envelope product
+     :fresh-verification verification
      :template-replay replay
      :verification
      {:artifact :gravity/sh22-envelope-contextual-verification
       :status :contextual-verification-passed
-      :artifact-template (:template sealed)
-      :semantic-envelope-root (:semantic-root sealed)
-      :provenance-binding-root (:provenance-root sealed)
-      :identity-checks (:identity-checks sealed)
+      :artifact-template sealed
+      :semantic-envelope-root (:semantic-envelope-id product)
+      :provenance-binding-root (:provenance-binding-id product)
+      :identity-checks (:identity-checks product)
       :identity-enforcement :passed
       :eligible-for-contextual-acceptance? true
       :host-digest-resolution :passed
@@ -490,8 +379,8 @@
       (get-in descriptor
               [:proof-composite :proof-records 0
                :sh14-verification])}
-     :semantic-root (:semantic-root sealed)
-     :provenance-root (:provenance-root sealed)}))
+     :semantic-root (:semantic-envelope-id product)
+     :provenance-root (:provenance-binding-id product)}))
 
 (defn- bridge-request
   [products descriptor authenticated actual-source-path]
@@ -565,47 +454,55 @@
             (get functions 'sh22-verify-authenticated-vector-result)
             [:arity :params])))))
 
-(deftest sh22-authenticated-bridge-carrier-bounds-cover-genuine-request
+(deftest sh22-authenticated-bridge-validation-has-no-project-quotas
   (let [products (upstream-products)
-        descriptor
-        (descriptor products "/checkout-a/sh22-bridge.gravity")
+        descriptor (descriptor products "/checkout-a/sh22-bridge.gravity")
         authenticated (authenticated-envelope descriptor)
-        request
-        (bridge-request
-         products descriptor authenticated
-         "/checkout-a/library-call.gravity")
-        genuine-census
-        (invoke
-         bridge-plan
-         'sh22-bridge-carrier-preflight
-         [request])
-        scalar-chunk (apply str (repeat 2048 "a"))
-        inclusive-carrier (vec (repeat 64 scalar-chunk))
-        over-limit-carrier
-        (assoc inclusive-carrier 0 (str scalar-chunk "a"))
-        inclusive
-        (invoke
-         bridge-plan
-         'sh22-bridge-carrier-preflight
-         [inclusive-carrier])
-        over-limit
-        (invoke
-         bridge-plan
-         'sh22-bridge-carrier-preflight
-         [over-limit-carrier])]
-    (is (= {:maximum-depth 15
-            :maximum-width 36
-            :nodes 10592
-            :scalar-units 103173
-            :status :accepted}
-           genuine-census))
-    (is (= :accepted (:status inclusive)))
-    (is (= 65 (:nodes inclusive)))
-    (is (= 1 (:maximum-depth inclusive)))
-    (is (= 64 (:maximum-width inclusive)))
-    (is (= 131072 (:scalar-units inclusive)))
-    (is (= :rejected (:status over-limit)))
-    (is (= :carrier-scalar-bound (:reason over-limit)))))
+        request (bridge-request products descriptor authenticated "/checkout-a/library-call.gravity")
+        text (apply str (repeat 131073 "a"))]
+    (doseq [value [request text (vec (repeat 65 :value)) (nth (iterate vector :value) 33)]]
+      (is (= {:status :accepted}
+             (invoke bridge-plan 'sh22-bridge-carrier-preflight [value]))))
+    (let [physical (object-array [:self nil])
+          cycle (clojure.lang.PersistentArrayMap. physical)]
+      (aset physical 1 cycle)
+      (is (= {:status :rejected :reason :cyclic-carrier}
+             (invoke bridge-plan 'sh22-bridge-carrier-preflight [cycle]))))))
+
+(deftest sh22-ae2-public-replay-preserves-admission-and-tamper-checks
+  (let [input (descriptor (upstream-products) "/checkout-a/sh22-bridge.gravity")
+        authenticated (authenticated-envelope input)
+        product (:stage-envelope authenticated)
+        source-path (get-in input [:actual-path-provenance :source-path])
+        failure (fn [f]
+                  (try (f) nil
+                       (catch clojure.lang.ExceptionInfo error
+                         (ex-data error))))]
+    (is (= 2 (:schema-version input)))
+    (is (not (contains? input :bounds)))
+    (is (= 1 (:schema-version product)))
+    (is (= 2 (get-in product [:sealed-artifact :schema-version])))
+    (is (not (contains? (:sealed-artifact product) :bounds)))
+    (is (= :passed (:fresh-verification authenticated)))
+    (is (= :development-unadmitted
+           (get-in product [:source-rule :admission-status])))
+    (is (= (source-hash (slurp (path envelope-source)))
+           (get-in product [:source-rule :source-content-hash])))
+    (doseq [candidate [(assoc-in product [:sealed-artifact :schema-version] 1)
+                       (assoc-in product [:sealed-artifact :bounds] {})
+                       (assoc product :semantic-envelope-id
+                              (:provenance-binding-id product))]]
+      (is (map?
+           (failure
+            #(bootstrap/p15-s23-stage2-sh02-descriptor-envelope-verify!
+              candidate :sh22-authenticated-vector-bridge
+              :gravity/sh22-authenticated-vector-upstream
+              input source-path {:source :development-current})))))
+    (is (map?
+         (failure
+          #(bootstrap/p15-s23-stage2-sh02-descriptor-envelope
+            :sh22-authenticated-vector-bridge
+            :gravity/sh22-authenticated-vector-upstream input source-path))))))
 
 (deftest sh22-executes-one-authenticated-pure-vector-operation
   (let [products (upstream-products)
@@ -699,6 +596,18 @@
             [[:execution altered-execution "STD22-BRIDGE-ENVELOPE"]
              [:layout altered-layout "STD22-BRIDGE-SH14"]
              [:envelope altered-envelope "STD22-BRIDGE-ENVELOPE"]
+             [:prior-descriptor-schema
+              (assoc-in request [:envelope-descriptor :schema-version] 1)
+              "STD22-BRIDGE-ENVELOPE"]
+             [:descriptor-bounds
+              (assoc-in request [:envelope-descriptor :bounds] {})
+              "STD22-BRIDGE-ENVELOPE"]
+             [:prior-envelope-schema
+              (assoc-in request [:envelope :schema-version] 1)
+              "STD22-BRIDGE-ENVELOPE"]
+             [:envelope-bounds
+              (assoc-in request [:envelope :bounds] {})
+              "STD22-BRIDGE-ENVELOPE"]
              [:sh13-verification
               altered-sh13-verification
               "STD22-BRIDGE-SH13"]
@@ -779,7 +688,7 @@
             :gravity/sh22-authenticated-vector-bridge-request
             :schema-version 1
             :unexpected true}
-           (nth (iterate vector :over-bound) 70)]]
+           (nth (iterate vector :nested) 70)]]
     (let [result
           (invoke
            bridge-plan

@@ -14,11 +14,15 @@
   ([source-path c3-artifact]
    (sh05-macro-artifact-from-c3-artifact* source-path c3-artifact false))
   ([source-path c3-artifact legacy?]
+   (sh05-macro-artifact-from-c3-artifact* source-path c3-artifact legacy? nil))
+  ([source-path c3-artifact legacy? invocation]
    (sh05-authenticated-c3-parent! source-path c3-artifact)
-   (let [c2-artifact (:c2-reader-artifact c3-artifact)
+   (let [ae-options (when invocation
+                      (sh03-reader-authenticated-envelope-options source-path invocation))
+        c2-artifact (:c2-reader-artifact c3-artifact)
         source-before (sh05-authenticated-source-snapshot!
                        source-path c2-artifact :source-authentication-before-c4 legacy?)
-        _ (c3-syntax-validate! source-path c3-artifact)
+        _ (c3-syntax-validate! source-path c3-artifact invocation)
         forms (:parsed-semantic-values c2-artifact)
         module (parse-module source-path forms)
         binding (sh05-macro-current-binding! source-path)
@@ -142,12 +146,13 @@
         descriptor
         (sh05-macro-sh02-descriptor source-path binding summary)
         envelope
-        (p15-s23-stage2-sh02-descriptor-envelope
-         sh05-macro-envelope-stage sh05-macro-sealed-artifact-kind
-         descriptor source-path)
-        _ (p15-s23-stage2-sh02-descriptor-envelope-verify!
-           envelope sh05-macro-envelope-stage
-           sh05-macro-sealed-artifact-kind descriptor source-path)
+        (apply p15-s23-stage2-sh02-descriptor-envelope
+         (cond-> [sh05-macro-envelope-stage sh05-macro-sealed-artifact-kind
+                  descriptor source-path] ae-options (conj ae-options)))
+        _ (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+           (cond-> [envelope sh05-macro-envelope-stage
+                    sh05-macro-sealed-artifact-kind descriptor source-path]
+             ae-options (conj ae-options)))
         artifact-with-envelope
         (-> artifact-base
             (assoc :artifact-id artifact-id)
@@ -157,9 +162,9 @@
                        :authenticated-envelope] envelope))
         proof
         (sh05-macro-capability-based-proof-for-construction
-         artifact-with-envelope)
+         artifact-with-envelope invocation)
         artifact (assoc artifact-with-envelope :capability-based-proof proof)
-        final-report (sh05-macro-artifact-verification artifact)]
+        final-report (sh05-macro-artifact-verification artifact invocation)]
     (when-not (= :passed (:status final-report))
       (sh05-macro-boundary-fail!
        "C4-TRACE" source-path :final-authenticated-macro-artifact
@@ -173,7 +178,9 @@
     (get-in c3-artifact [:c2-reader-artifact :source-unit-record :path])
     c3-artifact false))
   ([source-path c3-artifact]
-   (sh05-macro-artifact-from-c3-artifact* source-path c3-artifact false)))
+   (sh05-macro-artifact-from-c3-artifact source-path c3-artifact nil))
+  ([source-path c3-artifact invocation]
+   (sh05-macro-artifact-from-c3-artifact* source-path c3-artifact false invocation)))
 
 (defn sh05-macro-source-artifact
   [source-path source-text]

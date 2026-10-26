@@ -118,19 +118,17 @@
         (is (= "C15-SCHEMA" (get-in result [:diagnostics 0 :rule])))
         (is (= :duplicate-upstream-diagnostic-id (reason result)))))))
 
-(deftest sh15-distinct-layout-retains-row-carrier-and-count-rejections
+(deftest sh15-distinct-layout-retains-row-and-carrier-rejections
   (let [a (original-row "layout-a") b (original-row "layout-b")
         malformed (invoke @rejected-plan 'coordinator-distinct-layout-diagnostic-malformed [b])]
     (doseq [row (concat malformed [(dissoc b :source-span) (assoc b :extra :forbidden)
-                                   (assoc b :diagnostic-id (apply str (repeat 129 "X")))
                                    (assoc b :generated-origin-chain (vec (repeat 65 {})))])]
       (let [input (request [a row]) result (build input)]
         (is (false? (c15 'sh15-diagnostic-input-valid? [input])))
         (is (= :rejected (:status result)))
         (is (= :upstream-diagnostic-schema (reason result)))))
     (doseq [[rows expected]
-            [[(vec (repeat 257 a)) :diagnostic-count-bound]
-             [(list a b) :request-carrier-rejected]]]
+            [[(list a b) :request-carrier-rejected]]]
       (let [result (build (request rows))]
         (is (= :rejected (:status result)))
         (is (= expected (reason result)))))))

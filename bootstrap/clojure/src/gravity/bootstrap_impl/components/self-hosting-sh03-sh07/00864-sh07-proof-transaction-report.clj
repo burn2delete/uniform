@@ -68,15 +68,6 @@
                 (swap!
                  context
                  (fn [current]
-                   (when (>= (count (:receipts current))
-                             (:maximum-receipts current))
-                     (throw
-                      (ex-info
-                       "SH-07 proof transaction receipt bound exceeded"
-                       {:id "C6-VERIFY"
-                        :stage :sh07-proof-transaction
-                        :reason :maximum-receipts
-                        :maximum (:maximum-receipts current)})))
                    (update current :receipts conj
                            {:phase phase
                             :stage stage

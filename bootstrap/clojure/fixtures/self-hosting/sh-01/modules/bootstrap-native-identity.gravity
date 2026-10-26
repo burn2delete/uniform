@@ -1,0 +1,13 @@
+(ns gravity.self-hosting.native-identity
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [same-object? wrong-arity])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn same-object? [left right]
+  (bootstrap-native-identical? left right))
+
+(defn wrong-arity []
+  (bootstrap-native-identical? nil))

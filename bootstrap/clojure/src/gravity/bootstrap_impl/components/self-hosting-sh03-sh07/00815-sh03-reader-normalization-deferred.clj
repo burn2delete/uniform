@@ -1,22 +1,5 @@
 
 
-(defn sh03-reader-normalization-deferred?
-  [descriptor]
-  (and (= :deferred (:semantic-validation descriptor))
-       (= :reader-semantic-work-boundary
-          (:normalization-reason descriptor))))
-
-(defn sh03-reader-host-deferred-numeric-value
-  [kind raw descriptor]
-  {:artifact :gravity/deferred-numeric-literal
-   :kind kind
-   :raw raw
-   :descriptor (assoc descriptor :raw raw)
-   :semantic-validation :deferred
-   :reason :reader-semantic-work-boundary
-   :normalization-reason :reader-semantic-work-boundary
-   :numeric-semantic-work (:numeric-semantic-work descriptor)})
-
 (defn sh03-reader-host-character-value!
   [source-path descriptor]
   (let [codepoint (:codepoint descriptor)]
@@ -38,10 +21,7 @@
         raw (sh03-reader-accepted-raw-text!
              source-path source-bytes source-content-id scalar-boundaries
              (:raw form) (:span form))]
-    (if (and (contains? #{:integer :ratio :decimal} kind)
-             (sh03-reader-normalization-deferred? descriptor))
-      (sh03-reader-host-deferred-numeric-value kind raw descriptor)
-      (case kind
+    (case kind
       :nil nil
       :boolean (:value descriptor)
       :integer (sh03-reader-host-bigint! source-path (:value descriptor))
@@ -75,7 +55,7 @@
       :keyword (keyword (sh03-reader-codepoints-text!
                          source-path (:name-codepoints descriptor)))
       (sh03-reader-boundary-fail!
-       source-path :sh03-reader-atomic-kind form {:kind kind})))))
+       source-path :sh03-reader-atomic-kind form {:kind kind}))))
 
 (defn sh03-reader-metadata-map!
   [source-path metadata-value metadata-form]

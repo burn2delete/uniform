@@ -204,7 +204,7 @@
 
 (defn- read-channel-exact!
   [^FileChannel channel size diagnostic-id description]
-  (let [buffer (ByteBuffer/allocate (int size))]
+  (let [buffer (ByteBuffer/allocate (Math/toIntExact (long size)))]
     (loop []
       (when (.hasRemaining buffer)
         (let [count (.read channel buffer)]
@@ -214,6 +214,6 @@
                          {:expected-bytes size}))
           (recur))))
     (when-not (= -1 (.read channel (ByteBuffer/allocate 1)))
-      (cache-fail! diagnostic-id (str description " grew during bounded read")
+      (cache-fail! diagnostic-id (str description " grew during snapshot read")
                    {:expected-bytes size}))
     (.array buffer)))

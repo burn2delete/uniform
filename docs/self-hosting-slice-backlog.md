@@ -17,7 +17,51 @@ validation starting points, composition boundaries and stopping rules. This
 backlog remains the live status/evidence record; writing or validating the plan
 does not promote any milestone or renew migration evidence.
 
+## SH07 finish line and current outcome ownership
+
+SH07 has one canonical endpoint: required bootstrap source forms pass the
+owning source/expansion/resolution and Gravity lowering route to freshly
+verified canonical Core, with applicable negative composition, provenance,
+source/binding/order preservation and independently accepted scoped migration
+evidence. Its [completion plan](self-hosting-sh07-completion-plan.md#one-sh07-finish-line)
+records C01-C18 dispositions and accountable complete-outcome owners.
+
+C01 derives the required source/import/generated-form/primitive population
+from existing inventories, manifests and BOOT5 records now. It does not wait
+for SH23-SH25 implementation, silently equate six selected files with the full
+required population, or exclude a required construct to pass. Later compiler
+builds consume accepted frontend revisions; they are not a circular prerequisite
+for establishing those revisions. SH07 does not claim full C7-C10, MIR/runtime,
+backend, package/driver/build completion, self-hosting or seed retirement.
+
+Core owns the permissible authentic frontend/public-ingress outcome through
+its adapters; SOURCE owns actual Core-to-C7 consumption and affected adoption;
+Diagnostics owns stage-produced preservation joins and the assigned authenticated
+envelope quota-removal producer; Cohort owns the assigned resolver quota-removal
+producer and current applicability of the actual producer/consumer evidence. ROOT resolves genuine
+shared ownership, routes independent acceptance and integrates main. A leaf
+freeze does not leave its joins ownerless. Routine work inside unchanged
+exclusive ownership needs no per-task ticket, prewrite notice or preparation
+handoff; communicate actual conflicts/interface changes, material blockers and
+review-ready candidates through existing records. Restricted C12 work and denied
+review/oracle actions remain with their exact restrictions, not reassigned.
+
+Milestone dependencies govern completion credit. Existing later managers
+continue useful work against available interfaces without waiting for global
+SH07 completion. No task-count, attempt, cost, budget or replacement accounting
+gate governs that initiative. Reuse applicable execution evidence; source
+association or a plan is not a fresh execution result.
+
 ## Master Coordinator Goal
+
+Deus `01a172c9-3648-702c-b7ac-03dab5501018` is the sole coordinator for
+goals, priorities, dependencies, review routing, integration decisions and user
+reporting. Current ROOT references mean Deus; historical receipts keep their
+original actor. Former coordinator `019f4993-78b9-7573-b154-139d87a127b5`
+is a delegated local executor/integrator only. The supported bridge is
+`01a17017-4dc2-75fd-b4d8-113d3092e01f`. Direct cloud-to-local transport is
+not assumed. The old hourly coordinator automation is PAUSED, no replacement
+is created, and Gravity Progress reporting remains unchanged.
 
 Iterate on Gravity through the 30 smallest independently provable vertical
 slices in this plan until the language is fully self-hosted, feature-complete
@@ -55,14 +99,26 @@ rules and repeated discretionary pre-run approval are removed for ordinary
 development, without a renamed replacement. Historical permission-only/
 proposal-only/await-human labels create no current ordinary-work hold. Failed,
 interrupted, skipped and never-launched attempts keep their actual status;
-none is relabelled success or a never-launched consumed proof. Machine/resource
-safeguards and semantic work bounds keep their actual contracts; changes need
-evidence and correctness validation, with independent acceptance before
-integration. Platform/tool restrictions,
+none is relabelled success or a never-launched consumed proof. Project cost
+models, work-unit allowances, debit/reservation plumbing, cost proofs and
+budget-exhaustion requirements are removed with their enforcing code,
+contracts and budget-only tests. Do not rename these as generic bounds or keep
+capacity-oracle node/depth/width/scalar/source-byte/token/form quotas merely to
+refuse well-formed input. Authentication, semantic validity, tamper checks and
+actual host/platform protections remain independently required. Independent
+correctness acceptance still precedes integration. Platform/tool restrictions,
 mandatory action-time approvals, destructive/security-sensitive actions,
 new external commitments and unrelated scope retain their limits; never
 approve an unknown action or bypass a restriction. Do not pause useful work
 for adoption acknowledgment.
+
+Accounting details in the retained implementation snapshots below describe
+their recorded revisions, including text written in the present tense at that
+time. Work totals, capacity constants, paid-operation formulas and exact/short
+budget tests are historical evidence, not current requirements. Their removal
+does not turn a failed run into success or establish an unmetered successor's
+correctness. Continue validating the actual semantic, authentication and
+tamper properties; no accounting proof is required before doing that work.
 
 Gradually replace the monolithic bootstrap implementation with contract-aligned,
 stage-owned namespaces:
@@ -982,7 +1038,6 @@ clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh08-function-call-type-test \
   --exact sh08-quoted-data-recursive-development-kernel \
   --exact sh08-quoted-data-authentication-development-kernel \
-  --exact sh08-quoted-data-work-budget-development-kernel \
   --exact sh08-quoted-data-structural-development-kernel \
   --exact sh08-quoted-data-guard-development-kernel
 ```
@@ -9581,9 +9636,10 @@ owner:
 | 4 | `SH-21`, `SH-24`; compiler-driver integration | `SH-22` standard-library core | `SH-23` package/build subset | Stage comparison and mutation suites |
 | 5 | `SH-25` to `SH-29`; bootstrap/release authority | Independent rebuild | Diverse verification | Provenance, SBOM, signing, and governance review |
 
-The coordinator exclusively owns shared dispatch, generated release artifacts,
-coverage accounting, completion attestations, final status changes and all main
-integration. A manager owns only its explicitly allocated files, fixtures and
+Deus owns shared authority, review and integration decisions, completion
+attestations and final status decisions. Named path owners implement their
+actual artifacts; the local executor performs approved main operations.
+A manager owns only its explicitly allocated files, fixtures and
 tests; this wave table grants no implementation reservation. Managers may
 delegate bounded disjoint work within that allocation using `gpt-6.1-sol` at
 medium or higher effort. Delegation does not confer independent acceptance or
@@ -9594,8 +9650,8 @@ artifacts without an exact coordinator allocation.
 
 The [existing C01-C18 plan](self-hosting-sh07-completion-plan.md#three-layer-ownership-and-finite-queues),
 owned for scope/Core closure by `01a16a54-eeb1-7941-ac35-7be30e47bdc7`,
-is the current finite closure plan, with accountable managers, selected six
-subjects/targets, per-task accepted/rejected gates, exact unknowns and stopping
+is the current finite closure plan, with accountable managers, the actual
+required source/use population and targets, semantic acceptance, exact unknowns and stopping
 rules. It is not another runner, lane, schema or admission system. All 18 tasks
 remain OPEN. C01-C11/Core variants, C12 construction, C13 public ingress, C14
 affected C7 composition, C15 subset negatives, C16 current upstream evidence,
@@ -9611,20 +9667,25 @@ Managers derive useful in-scope successors and notify the coordinator; new
 cross-slice allocations still require its ownership decision. No join-all
 barrier or invented feature is justified to keep a manager busy.
 
-The standing finite-goal charters apply to all eight implementation managers.
+The standing finite-goal charters apply to the implementation managers.
 Managers independently
 audit repository/contracts/evidence/tests, discover and prioritize confirmed
-dependency-ready work, and notify ROOT of its gap/contract/path/interface,
-checks, dependencies and stop criteria before writing. That notification is
-not a task-grant wait. Self-pull eligible work in the same active turn; one
+dependency-ready work. Within unchanged exclusive ownership, no per-task
+prewrite notice, ticket, permission receipt or preparation handoff is required.
+Communicate actual ownership/interface changes, material blockers and frozen
+review candidates through the existing bridge/records. Coordinate genuine
+conflicting writers before changing contested paths; independent work continues.
+Self-pull eligible work in the same active turn; one
 blocked leaf does not block the whole goal, and an immutable review candidate
-does not block disjoint work in safe isolation. Before yielding, send COMPLETED
-plus NEXT_EXECUTING. A drained queue does not justify default NEED_REFILL;
+does not block disjoint work in safe isolation. Report material completion and
+next outcomes without a mandatory pause or handoff ceremony. A drained queue
+does not justify default NEED_REFILL;
 truly exhausted goal-wide alternatives require an evidence-backed frontier to
-the existing reviewer through ROOT, naming the exact owner/action/wake event.
-ROOT retains shared allocation, independent acceptance and integration; no
-daemon, filler inventory or new cadence follows. Existing completion wakeups
-and the hourly all-eight fallback keep their schedule and preferences.
+Deus, naming the exact owner/action/wake event. The denied advisory wake/handoff
+must not be retried, transferred or made a global gate. No daemon, filler
+inventory or new cadence follows. The old coordinator hourly task is PAUSED;
+Gravity Progress reporting is unchanged. Deus decides review/integration and
+the local executor performs only delegated operations.
 
 At `0067e9418de992900a95cd47d016029af62ff99c`, Core completed the allocated
 actual API trace and self-pulled the selected-owner seed-plan map/test, then
@@ -9818,8 +9879,8 @@ tests, builds, compiler behavior, interfaces, integration and toolchains.
 Necessary correctness, security, proof and resource gates remain; no blanket
 bypass is implied. The coordinator reconciles plan, operating memory, the saved
 heartbeat and all manager acknowledgments before reporting orchestration
-migration complete. Existing hourly target/notification preferences are
-unchanged; configuration alone does not establish sustained throughput.
+migration complete. The old coordinator hourly task is PAUSED, with no
+replacement; configuration alone does not establish sustained throughput.
 At the frozen PR293 handoff, the reviewer charter/event had been sent with
 exposed state `waitingOnApproval` and no pending-operation details; adoption
 was pending. Subsequent to PR293, ROOT observed explicit reviewer adoption and

@@ -1,9 +1,10 @@
 
 (declare sh06-resolution-module-request)
+(declare ^:private sh06-resolution-verify-sh05)
 
 (defn sh06-resolution-base-request-data
   [source-path sh05-artifact overrides]
-   (let [verification (sh05-macro-artifact-verification sh05-artifact)
+   (let [verification (sh06-resolution-verify-sh05 sh05-artifact)
         _ (when-not (= :passed (:status verification))
             (c5-resolution-fail!
              "C5-UNRESOLVED" source-path

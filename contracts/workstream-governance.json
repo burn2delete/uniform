@@ -43,8 +43,6 @@
     }
   },
   "admission_policy": {
-    "one_active_candidate_per_invariant_family": true,
-    "architecture_decision_after_failures": 2,
     "dependency_state_floor": {
       "review-pending": ["accepted", "integration-eligible", "integrated"],
       "accepted": ["accepted", "integration-eligible", "integrated"],
@@ -69,14 +67,13 @@
     "WG003": "a workstream record or nested record is not closed",
     "WG004": "a lifecycle history or transition is illegal",
     "WG005": "an identifier, invariant family, owner, or list is invalid or duplicated",
-    "WG006": "more than one active candidate occupies an invariant family",
     "WG007": "a dependency is missing, cyclic, or below its required admission state",
-    "WG008": "two failed candidates require a nonempty architecture decision before new active work",
     "WG009": "integration evidence is incomplete or malformed",
     "WG010": "an independent accepted review is absent or is not independent",
     "WG011": "a self-audit attempted to confer integration eligibility",
     "WG012": "an authority or product-completion overclaim was attempted",
-    "WG013": "a sharded manifest, active reservation, or immutable terminal record was tampered with"
+    "WG013": "a sharded manifest, active reservation, or immutable terminal record was tampered with",
+    "WG014": "active candidates by different authors claim overlapping owned paths"
   },
   "nonclaims": [
     "Ledger acceptance does not establish implementation correctness.",

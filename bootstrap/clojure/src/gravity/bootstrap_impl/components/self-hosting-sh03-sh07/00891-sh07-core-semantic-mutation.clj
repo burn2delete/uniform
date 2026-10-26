@@ -194,11 +194,7 @@
 
 (defn sh07-core-digest-requests
   [source-path digest-requests]
-  (let [carrier (sh07-core-execute! source-path 'sh07-generated-digest-carrier-preflight
-                                   [digest-requests])]
-    (when-not (= :accepted (:status carrier))
-      (throw (ex-info "SH-07 digest carrier rejected before hashing"
-                      {:id "C6-VERIFY" :reason :generated-digest-input-carrier-bound}))))
+  (p15-s23-c6c10-carrier-validation source-path digest-requests)
   (loop [remaining digest-requests
          ordinal 0
          resolved []]
@@ -207,8 +203,7 @@
       (let [request (first remaining)]
         (when-not
          (and (= ordinal (:ordinal request))
-              (= #{:ordinal :purpose :preimage} (set (keys request)))
-              (<= 0 ordinal 65539))
+              (= #{:ordinal :purpose :preimage} (set (keys request))))
           (throw
            (ex-info "Malformed SH-07 digest request sequence"
                     {:id "C6-VERIFY" :stage :core-lowering

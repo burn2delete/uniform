@@ -56,6 +56,43 @@
                   :else (str character)))
               text)))
 
+(deftest sh15-valid-data-does-not-require-carrier-or-display-accounting
+  (let [large-string (apply str (repeat 70000 "x"))
+        wide (into {} (map #(vector (keyword (str "fact-" %)) %) (range 600)))
+        deep (nth (iterate vector :leaf) 150)
+        facts {:text large-string :wide wide :deep deep :items (vec (range 1100))
+               :positive 9007199254740992 :negative -9007199254740992
+               :keyword (keyword (apply str (repeat 700 "k")))
+               :symbol (symbol (apply str (repeat 700 "s")))}
+        arguments [(apply str (repeat 700 "R")) :error :compiler-diagnostics
+                   {:span nil :syntax-id nil :artifact nil} [] [] nil nil facts
+                   (vec (repeat 70 {:kind :repair})) (vec (repeat 70 :private))]
+        candidate (c15 'build-c15-diagnostic arguments)]
+    (is (= {:status :accepted} (c15 'sh15-carrier-preflight [facts])))
+    (is (true? (c15 'c15-carrier-valid? [facts])))
+    (is (= facts (:facts candidate)))
+    (is (= (nth arguments 9) (:remediation candidate)))
+    (is (= (nth arguments 10) (:redactions candidate)))
+    (is (= facts (get-in candidate [:diagnostic-id-request :preimage :facts]))))
+  (let [rule (apply str (repeat 700 "R"))
+        path (apply str (repeat 800 \u0000))
+        input (-> (diagnostic) (assoc :rule rule)
+                  (assoc-in [:primary :span :actual-source-path] path)
+                  (assoc-in [:primary :span :start :byte] 2147483648)
+                  (assoc-in [:primary :span :end :byte] 2147483649)
+                  (assoc-in [:primary :span :start :line] 2147483648)
+                  (assoc-in [:primary :span :end :line] 2147483648))
+        result (render input)]
+    (is (= :accepted (:status result)))
+    (is (= (str "code=\"" rule "\" severity=:error location=\""
+                (escaped-ascii path) "\":2147483648:3 redactions=:clear")
+           (:text result)))
+    (is (ascii-line? (:text result)))
+    (let [redacted (render (assoc input :redactions (vec (repeat 70 :private))))]
+      (is (= :accepted (:status redacted)))
+      (is (= :recorded (:redaction-status redacted)))
+      (is (str/includes? (:text redacted) "location=<redacted>")))))
+
 (deftest sh15-bounded-text-paired-fixtures-and-golden
   (doseq [[family function]
           [["accepted" 'coordinator-bounded-diagnostic-text]
@@ -80,7 +117,7 @@
     (is (some #{:cli-integration} (:nonclaims result)))
     (is (some #{:complete-c15-conformance} (:nonclaims result)))))
 
-(deftest sh15-bounded-text-escaping-severities-and-limits
+(deftest sh15-bounded-text-escaping-and-severities
   (let [characters (apply str (map char (range 128)))
         input (-> (diagnostic) (assoc :rule characters)
                   (assoc-in [:primary :span :actual-source-path] characters))
@@ -105,7 +142,6 @@
                   (assoc-in [:primary :span :end :column] 2147483647))
         result (render input)]
     (is (= :accepted (:status result)))
-    (is (<= (count (:text result)) 4096))
     (is (= (count (:text result))
            (alength (.getBytes ^String (:text result) "US-ASCII"))))
     (is (ascii-line? (:text result)))))
@@ -144,13 +180,8 @@
                     [:diagnostic-not-map :empty-rule :unsupported-severity
                      :unsupported-redaction-state :unsupported-rule-character
                      :unsupported-primary-location])
-               [[(assoc (diagnostic) :rule (apply str (repeat 129 "A"))) :rule-bound]
-                [(assoc (diagnostic) :rule []) :unsupported-rule]
+               [[(assoc (diagnostic) :rule []) :unsupported-rule]
                 [(assoc (diagnostic) :rule "\ud83d\ude00") :unsupported-rule-character]
-                [(assoc (diagnostic) :redactions (vec (repeat 65 :private)))
-                 :unsupported-redaction-state]
-                [(assoc-in (diagnostic) [:primary :span :actual-source-path]
-                           (apply str (repeat 513 "a"))) :unsupported-primary-location]
                 [(assoc-in (diagnostic) [:primary :span :start :line] 0)
                  :unsupported-primary-location]
                 [(assoc (diagnostic) :primary []) :unsupported-primary-location]])]

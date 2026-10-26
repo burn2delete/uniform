@@ -52,7 +52,6 @@
         (is (= :bounded-ascii-bytes-v1 (:rendering-version view)))
         (is (= (golden input) (:text view)))
         (is (ascii-line? (:text view)))
-        (is (<= (count (:text view)) 4096))
         (is (not (contains? (get-in input [:primary :span]) :start)))
         (is (not (contains? (get-in input [:primary :span]) :end)))))))
 
@@ -60,10 +59,9 @@
   (let [candidate (:candidate (row "gravity")) span (get-in candidate [:primary :span])]
     (doseq [malformed [(dissoc span :file) (assoc span :file "sha256:bad")
                        (assoc span :source "") (assoc span :source "src/\u00e9.gravity")
-                       (assoc span :source (apply str (repeat 513 "a")))
                        (assoc span :byte-start -1) (assoc span :byte-end 1.5)
                        (assoc span :byte-start 2 :byte-end 1)
-                       (assoc span :byte-end 2147483648) (assoc span :start nil)
+                       (assoc span :start nil)
                        (assoc span :end nil) (assoc span :extra true)]]
       (let [result (render (assoc-in candidate [:primary :span] malformed))]
         (is (= :rejected (:status result)))

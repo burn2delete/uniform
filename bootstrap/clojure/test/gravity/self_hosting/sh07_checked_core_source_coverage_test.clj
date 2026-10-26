@@ -4,8 +4,7 @@
             [clojure.set :as set]
             [clojure.test :refer [deftest is]]
             [clojure.walk :as walk]
-            [gravity.bootstrap :as bootstrap]
-            [gravity.self-hosting.sh07-proof-census :as proof-census]))
+            [gravity.bootstrap :as bootstrap]))
 
 (defn- repository-root []
   (let [resource
@@ -57,7 +56,6 @@
    {:arity 4 :params '[request resolved-core digest-requests resolved-digests]}})
 (def ^:private expected-export-names
   '[sh07-core-contract
-    sh07-core-bounds
     sh07-core-diagnostic-catalog
     sh07-build-core-template
     sh07-verify-core-template
@@ -65,13 +63,13 @@
     sh07-resolve-source-core-map-preimage
     sh07-verify-source-core-map])
 (def ^:private expected-data-definition-names
-  '#{sh07-core-contract sh07-core-bounds sh07-core-diagnostic-catalog})
+  '#{sh07-core-contract sh07-core-diagnostic-catalog})
 (def ^:private expected-required-functions
   '#{sh07-build-core-template sh07-verify-core-template
      sh07-verify-core-resolved sh07-request-shape?
      sh07-b13-fragment-products-shape? sh07-accepted-result
      sh07-graph-references-valid? sh07-lineage-shape?
-     sh07-resolved-core-success sh07-resolved-core-carrier-preflight})
+     sh07-resolved-core-success})
 (def ^:private expected-diagnostic-ids
   ["C6-CORE-SHAPE" "C6-LOWERING-GAP" "C6-EVAL-ORDER" "C6-ORIGIN"
    "C6-EFFECT-DROP" "C6-UNSAFE-DROP" "C6-DOMAIN-BOUNDARY" "C6-VERIFY"])
@@ -194,7 +192,6 @@
         definitions (filter #(and (seq? %) (#{'def 'defn} (first %))) forms)
         by-name (into {} (map (juxt second identity)) definitions)
         contract (nth (get by-name 'sh07-core-contract) 2)
-        bounds (nth (get by-name 'sh07-core-bounds) 2)
         catalog (nth (get by-name 'sh07-core-diagnostic-catalog) 2)
         metadata (get-in clauses [:metadata :bootstrap])
         if-calls (mapcat #(collect-calls 'if %) definitions)]
@@ -220,10 +217,6 @@
     (is (= :gravity/sh07-core-contract (:artifact contract)))
     (is (= :gravity/sh07-authenticated-sh06-core-request (:input contract)))
     (is (= :gravity/sh07-canonical-core-artifact (:resolved-output contract)))
-    (is (= 65536 (:maximum-forms bounds)))
-    (is (= 2440 (:maximum-module-bindings bounds)))
-    (is (= 2048 (:maximum-bindings bounds)))
-    (is (= 1024 (:maximum-keyword-lookup-records bounds)))
     (is (= expected-diagnostic-ids (:diagnostics catalog)))
     (is (= {4 1882}
            (frequencies (map count if-calls))))
@@ -429,28 +422,6 @@
                                 expected-b16-cohort-product-counts)))))
     (is true "Set GRAVITY_SH07_B45_CONTRACT=1 after coordinator registration")))
 
-(deftest sh07-b45-checked-core-measured-census-fits-declared-bounds
-  (if (= "1" (System/getenv "GRAVITY_SH07_B45_CENSUS"))
-    (let [contract (edn/read-string
-                    (slurp (path proof-contract-relative-path)))
-          bounds (:bounds contract)
-          result (proof-census/census (path source-relative-path))
-          measurements (:measurements result)]
-      (is (= :gravity/sh07-proof-census (:artifact result)))
-      (is (= :within-declared-bounds (:status result)))
-      (is (= expected-source-revision-id
-             (get-in result [:request :source-revision-id])))
-      (is (= 308 (:fragments measurements) (:top-level-forms measurements)))
-      (is (<= (:maximum-fragment-forms measurements)
-              (:maximum-fragment-forms bounds)))
-      (is (<= (:carrier-nodes measurements)
-              (:maximum-module-carrier-nodes bounds)))
-      (is (empty? (:violations result)))
-      (is (false? (:performed-sh07-lowering? result)))
-      (is (= 42 (count (:authoritative-modules contract))))
-      (is (= 38 (count (:required-core-product-counts contract)))))
-    (is true "Set GRAVITY_SH07_B45_CENSUS=1 in an isolated 8 GiB JVM")))
-
 (deftest sh07-b45-checked-core-authentic-source-core-and-reduced-replay
   (if (= "1" (System/getenv "GRAVITY_SH07_B45_AUTHENTIC"))
     (let [artifact @source-artifact
@@ -515,24 +486,3 @@
           (is (not= left-path (str right-path))))
         (finally (delete-tree! temp-root))))
     (is true "Set GRAVITY_SH07_B45_PARITY=1 in an isolated 8 GiB JVM")))
-
-(deftest sh07-b45-resolved-carrier-failure-preserves-telemetry
-  (let [resolution
-        {:status :rejected
-         :reason :resolved-core-output-carrier-bound
-         :carrier {:status :rejected :reason :carrier-scalar-byte-bound}
-         :measurement {:status :accepted
-                       :nodes 1
-                       :scalar-bytes 2}}
-        failure
-        (try
-          (with-redefs [bootstrap/sh07-core-execute!
-                        (fn [& _] resolution)]
-            (bootstrap/sh07-core-resolve-result
-             "checked_core.gravity" {} [] []))
-          nil
-          (catch clojure.lang.ExceptionInfo exception
-            (ex-data exception)))]
-    (is (= "C6-VERIFY" (:id failure)))
-    (is (= :resolved-core-output-carrier-bound (:reason failure)))
-    (is (= resolution (:resolution failure)))))
