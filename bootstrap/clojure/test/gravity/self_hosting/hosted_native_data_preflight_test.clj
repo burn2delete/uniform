@@ -124,3 +124,17 @@
     (doseq [[name args] [['bootstrap-native-carrier-header [x]] ['bootstrap-native-identical? [x x]]]]
       (is (some? (diagnostic #(builtin @plan name args)))))
     (is (= 0 @calls))))
+
+(deftest hosted-native-data-rejects-foreign-maps-and-opaque-keys-before-callbacks
+  (let [calls (atom 0) deny (fn [] (swap! calls inc) (throw (AssertionError. "foreign callback")))
+        foreign-map (java.lang.reflect.Proxy/newProxyInstance
+                     (.getClassLoader clojure.lang.IPersistentMap)
+                     (into-array Class [clojure.lang.IPersistentMap clojure.lang.IObj])
+                     (reify java.lang.reflect.InvocationHandler (invoke [_ _ _ _] (deny))))
+        opaque (proxy [Object] [] (hashCode [] (deny)) (equals [_] (deny)) (toString [] (deny)))
+        keyed (array-map [opaque :value])]
+    (doseq [x [foreign-map [foreign-map] (with-meta [] foreign-map)]]
+      (is (= {:status :rejected :reason :untrusted-map-class-or-comparator} (check x))))
+    (doseq [x [opaque keyed]]
+      (is (= {:status :rejected :reason :untrusted-scalar-class} (check x))))
+    (is (= 0 @calls))))
