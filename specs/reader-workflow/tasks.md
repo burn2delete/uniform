@@ -35,7 +35,7 @@ Done when (yes/no): Both extensions preserve actual paths; byte/scalar and line/
 
 - [ ] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure
 
-Current evidence/status: Partial Reader and projection sources.
+Current evidence/status: Partial Reader and projection sources. The focused token-spelling reuse increment and its validation limits are recorded in [Reader evidence](https://github.com/burn2delete/uniform/blob/codex/reader-token-spelling-reuse-20261026/specs/reader-workflow/evidence.md#token-spelling-reuse); it does not close the complete lexical surface.
 
 Done when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified.
 
