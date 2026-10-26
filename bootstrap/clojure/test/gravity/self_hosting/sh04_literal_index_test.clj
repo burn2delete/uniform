@@ -59,7 +59,9 @@
 
 (deftest every-live-factory-consumer-and-predicate-root-disables-reuse
   (doseq [v [#'clojure.core/keep #'clojure.core/get
+             #'clojure.core/reduce #'clojure.core/class
              #'l/c3-index-operations-current? #'indexes/operations-current?
+             #'l/current-operation #'l/invoke
              #'b/c3-source-form-kind #'l/with-operations]]
     (let [a (artifact) original @v]
       (transaction a
@@ -81,7 +83,8 @@
               first-entry (:literal-forms @slot)
               result (with-bindings {(pv '*c3-literal-projection-leaf-call?*) true}
                        (l/with-operations
-                        {:c3-form-index (fn [_] (swap! calls inc) (throw marker))}
+                        (assoc ((pv 'c3-literal-projection-ops))
+                               :c3-form-index (fn [_] (swap! calls inc) (throw marker)))
                         #(outcome (fn [] (b/c3-form-index a)))))]
           (is (identical? marker (second result))) (is (= 1 @calls))
           (is (identical? first-entry (:literal-forms @slot)))
