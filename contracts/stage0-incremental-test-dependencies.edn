@@ -23,6 +23,12 @@
       :inputs
       [{:path "bootstrap/clojure/src/gravity/c11_mir.clj"
         :role :production}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/artifact.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/operations.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/policy.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/projection.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/records.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir/validation.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/digest.clj"
         :role :production}
        {:path "bootstrap/clojure/test/gravity/c11_mir_test.clj"
@@ -159,6 +165,21 @@
       :inputs
       [{:path "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
         :role :production}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/artifact.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/contracts.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostic_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/failures.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/incremental.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/incremental_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/pipeline_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/plugin_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/plugins.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/proof.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/suite.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/support.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/verification.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest/verification_validation.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/diagnostics.clj"
         :role :production}
        {:path "bootstrap/clojure/src/gravity/digest.clj"
@@ -361,6 +382,30 @@
    :path "bootstrap/clojure/test/gravity/self_hosting/source_fragment_binding_test.clj"
    :namespace gravity.self-hosting.source-fragment-binding-test
    :jvm-group "source-fragment-binding"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "mir-scalar-admission"
+   :path "bootstrap/clojure/test/gravity/self_hosting/mir_scalar_admission_test.clj"
+   :namespace gravity.self-hosting.mir-scalar-admission-test
+   :jvm-group "mir-scalar-admission"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "mir-source-snapshot"
+   :path "bootstrap/clojure/test/gravity/self_hosting/mir_source_snapshot_test.clj"
+   :namespace gravity.self-hosting.mir-source-snapshot-test
+   :jvm-group "mir-source-snapshot"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "resolution-construction-inputs"
+   :path "bootstrap/clojure/test/gravity/self_hosting/resolution_construction_inputs_test.clj"
+   :namespace gravity.self-hosting.resolution-construction-inputs-test
+   :jvm-group "resolution-construction-inputs"
    :test-policy {:deterministic? true
                  :performance? false
                  :proof? false

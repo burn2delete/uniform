@@ -1402,10 +1402,10 @@
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00811-sh03-reader-plan-validate.clj", :reader-line 144639, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-plan-validate!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00812-sh03-reader-input-source-unit.clj", :reader-line 144850, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-input-source-unit"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-scalar-validation.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-canonical-stream-scalar-value?"}
- {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-digest-stream.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-canonical-stream-stats"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-digest-stream.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-canonical-stream-header!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-identity.clj", :reader-line 145087, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-canonical-identity"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00814-sh03-reader-source-slice-text.clj", :reader-line 145316, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-source-slice-text!"}
- {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00815-sh03-reader-normalization-deferred.clj", :reader-line 145552, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-normalization-deferred?"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00815-sh03-reader-normalization-deferred.clj", :reader-line 145552, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-host-character-value!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00816-sh03-reader-raise-rejection.clj", :reader-line 145761, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-raise-rejection!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00817-sh03-reader-adapt-evidence.clj", :reader-line 145998, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-adapt-evidence!"}
  {:resource "gravity/bootstrap_impl/semantic_late/146156-sh03-reader-adapt-source-unit.clj", :reader-line 146156, :metadata-symbol sh03-reader-adapt-products!, :metadata-line 146156, :metadata-column 1}
@@ -1427,7 +1427,7 @@
  {:resource "gravity/bootstrap_impl/components/compiler/00827-c2-reader-capability-proof.clj", :reader-line 146589, :owner :compiler, :first-form "c2-reader-capability-proof"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00828-sh03-reader-internal-product-authority.clj", :reader-line 146637, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-internal-product-authority"}
  {:resource "gravity/bootstrap_impl/components/compiler/00829-compiler-c2-reader-source-artifact.clj", :reader-line 146768, :owner :compiler, :first-form "compiler-c2-reader-source-artifact"}
- {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00830-sh03-reader-maximum-source-bytes.clj", :reader-line 146972, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-maximum-source-bytes"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00830-sh03-reader-maximum-source-bytes.clj", :reader-line 146972, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-read-target-source-bytes!"}
  {:resource "gravity/bootstrap_impl/components/compiler/00831-c2-pass-cache-compiler-contract.clj", :reader-line 147043, :owner :compiler, :first-form "c2-pass-cache-compiler-contract"}
  {:resource "gravity/bootstrap_impl/components/compiler/00832-c2-pass-cache-revalidate-artifact.clj", :reader-line 147254, :owner :compiler, :first-form "c2-pass-cache-revalidate-artifact!"}
  {:resource "gravity/bootstrap_impl/components/foundation/00833-c3-syntax-diagnostics-leaf-call.clj", :reader-line 147450, :owner :foundation, :first-form "*c3-syntax-diagnostics-leaf-call?*"}
@@ -1493,6 +1493,7 @@
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00879-sh06-resolution-artifact-verification-bounded-02.clj", :reader-line 153143, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-artifact-verification-bounded*"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification.clj", :reader-line 153243, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-artifact-verification*"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification-02.clj", :reader-line 153482, :owner :self-hosting-sh03-sh07, :first-form "sh06-authenticated-sh05-parent!"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "resolution-construction-eligible?"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification-03.clj", :reader-line 153672, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-source-artifact-candidate"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00881-sh06-resolution-finalize-candidate.clj", :reader-line 153464, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-finalize-candidate"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00881-sh06-resolution-finalize-candidate-02.clj", :reader-line 153672, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-deserialize"}

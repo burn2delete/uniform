@@ -408,7 +408,6 @@
            [:sh05 :final] (sha "6")
            [:sh06 :final] (sha "7")
            [:sh07 :final] (sha "8")}
-          :maximum-receipts 64
           :artifact-id artifact-id
           :verification-report-id (sha "9")
           :construction-receipts-cleared? true

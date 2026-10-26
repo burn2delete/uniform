@@ -1,69 +1,3 @@
-(defn- sh07-core-template-carrier-census
-  [value]
-  (let [maximum-nodes (* 32 1024 1024)
-        maximum-scalar-bytes (* 8 268435456)
-        frontier (java.util.ArrayDeque.)]
-    (.addLast frontier [value 0])
-    (loop [nodes 0
-           aggregate-nodes 0
-           component-nodes 0
-           scalar-bytes 0
-           maximum-depth 0
-           maximum-width 0]
-      (if (.isEmpty frontier)
-        {:status :complete
-         :nodes nodes
-         :aggregate-nodes aggregate-nodes
-         :component-nodes component-nodes
-         :scalar-bytes scalar-bytes
-         :maximum-depth maximum-depth
-         :maximum-width maximum-width}
-        (let [[current depth] (.removeLast frontier)
-              next-nodes (inc nodes)
-              aggregate?
-              (or (map? current) (vector? current)
-                  (set? current) (seq? current))]
-          (cond
-            (> next-nodes maximum-nodes)
-            {:status :truncated
-             :reason :measurement-node-bound
-             :observed-at-least next-nodes
-             :maximum maximum-nodes}
-
-            aggregate?
-            (let [components
-                  (if (map? current)
-                    (mapcat (fn [[key item]] [key item]) current)
-                    current)
-                  width (if (map? current)
-                          (* 2 (count current))
-                          (count current))]
-              (doseq [component components]
-                (.addLast frontier [component (inc depth)]))
-              (recur
-               next-nodes
-               (inc aggregate-nodes)
-               (+ component-nodes width)
-               scalar-bytes
-               (max maximum-depth depth)
-               (max maximum-width width)))
-
-            :else
-            (let [next-scalar-bytes
-                  (+ scalar-bytes (* 4 (count (str current))))]
-              (if (> next-scalar-bytes maximum-scalar-bytes)
-                {:status :truncated
-                 :reason :measurement-scalar-byte-bound
-                 :observed-at-least next-scalar-bytes
-                 :maximum maximum-scalar-bytes}
-                (recur
-                 next-nodes
-                 aggregate-nodes
-                 component-nodes
-                 next-scalar-bytes
-                 (max maximum-depth depth)
-                 maximum-width)))))))))
-
 (defn sh07-core-run-structural-request-for-test
   "Test-only structural runner. It does not authenticate SH-06 membership;
   callers testing the executable boundary must use
@@ -95,14 +29,7 @@
                  (ex-info "Gravity SH-07 template replay failed"
                           {:id "C6-VERIFY" :stage :core-lowering
                            :source-path source-path
-                           :template-verification
-                           template-verification
-                           :template-carrier-census
-                           (sh07-core-template-carrier-census
-                            template)
-                           :digest-request-carrier-census
-                           (sh07-core-template-carrier-census
-                            digest-requests)})))
+                           :template-verification template-verification})))
             resolved-digests
             (sh07-core-digest-requests source-path digest-requests)
             resolved-template
@@ -137,12 +64,20 @@
                        :reason :checked-core-operation-revision-drift})))
     run))
 
-(defn sh07-core-run-request-for-test [resolution-artifact authenticated-request]
-  (let [upstream-verification
-        (sh06-resolution-artifact-verification resolution-artifact)
+(defn sh07-core-run-request-for-test
+  ([resolution-artifact authenticated-request]
+   (sh07-core-run-request-for-test resolution-artifact authenticated-request nil))
+  ([resolution-artifact authenticated-request invocation]
+  (let [_ (when invocation
+            (sh03-reader-authenticated-envelope-options
+             (sh07-core-source-path-from-resolution resolution-artifact) invocation))
+        upstream-verification
+        (if invocation
+          (sh06-resolution-artifact-verification resolution-artifact ::legacy invocation)
+          (sh06-resolution-artifact-verification resolution-artifact))
         expected-request
         (when (= :passed (:status upstream-verification))
-          (sh07-core-authenticated-request resolution-artifact))]
+          (sh07-core-authenticated-request resolution-artifact ::legacy invocation))]
     (when-not (= :passed (:status upstream-verification))
       (sh07-core-request-diagnostic!
        authenticated-request
@@ -152,7 +87,7 @@
       (sh07-core-request-diagnostic!
        authenticated-request
        {:reason :authenticated-sh06-request-membership-mismatch}))
-    (sh07-core-run-structural-request-for-test authenticated-request)))
+    (sh07-core-run-structural-request-for-test authenticated-request))))
 
 (defn sh07-core-projection-diagnostic!
   [resolution-artifact reason]

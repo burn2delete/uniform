@@ -151,7 +151,7 @@
         (p15-s23-c6c10-canonical-digest
          source-path {:reader-result (:reader-result-id summary)})]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :c2-reader
      :artifact-kind :gravity/sh03-reader-products
      :source-revision
@@ -237,5 +237,4 @@
      {:source-path source-path
       :workspace-root (or (:project-root-path project-context)
                           (System/getProperty "user.dir"))
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))

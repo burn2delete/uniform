@@ -135,7 +135,7 @@
     (is (= 1 (:version policy)))
     (is (= 32 (:maximum-functions policy)))
     (is (= 32 (:maximum-blocks-per-function policy)))
-    (is (= 64 (:maximum-operations-per-block policy)))
+    (is (not (contains? policy :maximum-operations-per-block)))
     (is (= 512 (:maximum-execution-steps policy)))
     (is (contains? (:operation-set policy) :call))
     (is (contains? (:terminator-set policy) :conditional-branch))
@@ -174,6 +174,71 @@
               (invoke-engine
                'sh13-verify-execution
                [module [true] when-true])))))))
+
+(deftest finite-operation-carriers-preserve-execution-resource-controls
+  (let [base (module accepted-gravity-plan 'sh13-branch-module)
+        original (first (:functions base))
+        entry (first (:blocks original))
+        constant (get-in original [:blocks 1 :operations 0])
+        return (get-in original [:blocks 3 :terminator])
+        carrier (fn [size]
+                  (let [operations (mapv #(assoc constant :op-id (keyword (str "constant-" %))
+                                                        :result (keyword (str "constant-" %))
+                                                        :literal %) (range size))
+                        block (assoc entry :operations operations
+                                     :terminator (assoc return :opcode :return
+                                                        :value (:op-id (peek operations))))]
+                    (assoc base :functions [(assoc original :blocks [block])])))]
+    (let [large (carrier 65) result (run large [true])]
+      (is (= :accepted (:status result)))
+      (is (= 64 (get-in result [:execution :value])))
+      (is (= :passed (:status (invoke-engine 'sh13-verify-execution [large [true] result]))))
+      (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
+                                              [large [true] (assoc-in result [:execution :fuel] 0)])))))
+    (let [large (carrier 513) result (run large [true])
+          invalid (assoc-in large [:functions 0 :blocks 0 :operations 512 :type] :bool)]
+      (is (nil? (invoke-engine 'sh13-module-error [large])))
+      (is (= :rejected (:status result)))
+      (is (= :execution-step-bound (get-in result [:execution :reason])))
+      (is (= 0 (get-in result [:execution :fuel])))
+      (is (= :type (invoke-engine 'sh13-module-error [invalid])))
+      (is (nil? (:execution (run invalid [true])))))
+    (doseq [budget [nil 0 -1 513 "512"]]
+      (let [result (run (assoc (carrier 65) :maximum-execution-steps budget) [true])]
+        (is (= :rejected (:status result)))
+        (is (nil? (:execution result)))))
+    (doseq [depth [nil 0 -1 33 "32"]]
+      (let [result (run (assoc-in (carrier 65) [:functions 0 :maximum-call-depth] depth) [true])]
+        (is (= :rejected (:status result)))
+        (is (nil? (:execution result)))))
+    (let [loop-block (assoc entry :operations []
+                           :terminator (assoc (:terminator entry) :opcode :branch
+                                              :target (:block-id entry) :arguments (:params entry)))
+          looping (assoc base :maximum-execution-steps 8
+                              :functions [(assoc original :blocks [loop-block])])
+          result (run looping [true])]
+      (is (nil? (invoke-engine 'sh13-module-error [looping])))
+      (is (= :rejected (:status result)))
+      (is (= :execution-step-bound (get-in result [:execution :reason])))
+      (is (= 0 (get-in result [:execution :fuel])))
+      (is (= 9 (count (get-in result [:execution :trace])))))))
+
+(deftest operation-heavy-call-graphs-preserve-cycle-and-identity-checks
+  (let [base (module accepted-gravity-plan 'sh13-indirect-module)
+        caller-index (first (keep-indexed #(when (= :indirect-main (:fn-id %2)) %1)
+                                          (:functions base)))
+        operation (get-in base [:functions caller-index :blocks 0 :operations 0])
+        operations (mapv #(assoc operation :op-id (keyword (str "call-" %))
+                                           :result (keyword (str "call-" %))) (range 513))
+        path [:functions caller-index :blocks 0]
+        large (-> base
+                  (assoc-in (conj path :operations) operations)
+                  (assoc-in (conj path :terminator :value) (:op-id (peek operations))))]
+    (is (nil? (invoke-engine 'sh13-module-error [large])))
+    (is (= :dominance (invoke-engine 'sh13-module-error
+                                     [(assoc-in large (conj path :operations 512 :op-id) :call-0)])))
+    (is (= :verify (invoke-engine 'sh13-module-error
+                                  [(assoc-in large (conj path :operations 512 :allowed-callees) #{})])))))
 
 (deftest sh13-executes-direct-recursion-with-an-explicit-depth-bound
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
@@ -746,8 +811,8 @@
             truthy (make 'sh13-operation [:nil/truthy :truthy [:nil/value] :bool 1 2])]
         (check (single [constant eq] :bool :nil/equal) [] :returned true)
         (check (single [constant truthy] :bool :nil/truthy) [] :returned false)
-        (doseq [opcode [:add :sub :mul :lt :lte :gt]]
-          (let [op (assoc eq :opcode opcode :type (if (#{:lt :lte :gt} opcode) :bool :i64))]
+        (doseq [opcode [:add :sub :mul :lt :lte :gt :gte]]
+          (let [op (assoc eq :opcode opcode :type (if (#{:lt :lte :gt :gte} opcode) :bool :i64))]
             (reject (single [constant op] (:type op) :nil/equal) [] "C11-TYPE")))
         (let [number (make 'sh13-constant [:nil/number 0 :i64 1 2])]
           (reject (single [constant number (assoc eq :operands [:nil/value :nil/number])]
@@ -947,6 +1012,9 @@
 
 (deftest sh13-normalized-greater-than-checks-i64-operands
   (check-normalized-order-comparison :gt >))
+
+(deftest sh13-normalized-greater-than-or-equal-checks-i64-operands
+  (check-normalized-order-comparison :gte >=))
 
 (deftest sh13-missing-discriminators-reject-before-execution
   ;; C11/SH13.6: normalized fixture evidence, not authenticated Core ingress.

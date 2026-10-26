@@ -269,26 +269,14 @@
                                 :candidate-reference :artifact-id]
                                (digest 915299))
         lazy-value (assoc request :upstream-diagnostics (lazy-seq [upstream]))
-        scalar-value (assoc request :provenance
-                            (apply str (repeat 65537 "x")))
-        deep-value (assoc request :provenance
-                          (loop [n 130 v :leaf]
-                            (if (zero? n) v (recur (dec n) [v]))))
-        overbound (assoc request :upstream-diagnostics
-                         (vec (repeat 257 upstream)))
         malformed-rule
-        (assoc-in request [:upstream-diagnostics 0 :rule]
-                  (apply str (repeat 129 "R")))
+        (assoc-in request [:upstream-diagnostics 0 :rule] "")
         malformed-fact
         (assoc-in request [:upstream-diagnostics 0 :missing-fact]
                   "not-a-keyword")
         negative-span
         (assoc-in request
                   [:upstream-diagnostics 0 :source-span :start :byte] -1)
-        oversized-span
-        (assoc-in request
-                  [:upstream-diagnostics 0 :source-span :end :byte]
-                  2147483648)
         substituted-candidate (assoc candidate :semantic-authority :compiler)
         forged-id (digest 915298)
         forged-domain (assoc (:domain-reference refs) :artifact-id forged-id)
@@ -307,13 +295,9 @@
              [:authority authority :layout-reference-invalid]
              [:substitution substitution :domain-verification-reference-invalid]
              [:lazy lazy-value :request-carrier-rejected]
-             [:scalar scalar-value :request-carrier-rejected]
-             [:deep deep-value :request-carrier-rejected]
-             [:overbound overbound :diagnostic-count-bound]
              [:malformed-rule malformed-rule :upstream-diagnostic-schema]
              [:malformed-fact malformed-fact :upstream-diagnostic-schema]
-             [:negative-span negative-span :upstream-diagnostic-schema]
-             [:oversized-span oversized-span :upstream-diagnostic-schema]]]
+             [:negative-span negative-span :upstream-diagnostic-schema]]]
       (testing (str label)
         (let [result (invoke-c15 'sh15-build-diagnostic-boundary [mutation])]
           (is (= :rejected (:status result)) result)

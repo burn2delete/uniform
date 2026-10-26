@@ -84,6 +84,10 @@
 
 (deftest catalog-is-exactly-the-owned-bootstrap-free-top-level-surface
   (is (nil? (find-ns 'gravity.bootstrap)))
+  (doseq [filename ["native_syntax_invocation_test.clj" "reader_invocation_test.clj"]]
+    (is (contains? runner/excluded-top-level-test-files filename))
+    (is (not-any? #(str/ends-with? (:test-path %) (str "/" filename))
+                  runner/catalog)))
   (is (= runner/expected-catalog-count (count runner/catalog)))
   (is (= (set (runner/owned-top-level-test-paths))
          (set (map :test-path runner/catalog))))

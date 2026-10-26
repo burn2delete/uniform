@@ -37,12 +37,8 @@
    [:resolution-table [:resolution-table]]])
 
 (defn sh06-resolution-carrier-validation
-  [value bounds]
-  (p15-s23-trusted-carrier-validation
-   value :default-only
-   (:maximum-carrier-nodes bounds)
-   (:maximum-carrier-depth bounds)
-   (:maximum-container-width bounds)))
+  ([value] (p15-s23-trusted-carrier-validation value :default-only))
+  ([value _obsolete-bounds] (sh06-resolution-carrier-validation value)))
 
 (defn sh06-resolution-component-validations
   [artifact]
@@ -52,29 +48,8 @@
     (fn [[component path]]
       [component
        (sh06-resolution-carrier-validation
-        (get-in artifact path) sh06-resolution-transport-bounds)]))
+        (get-in artifact path))]))
    sh06-resolution-component-paths))
-
-(defn- sh06-resolution-candidate-measurements
-  [artifact]
-  (let [aggregate
-        (sh06-resolution-carrier-validation
-         artifact sh06-resolution-diagnostic-measurement-bounds)
-        trusted-aggregate? (= :passed (:status aggregate))
-        boundary (when (and trusted-aggregate? (map? artifact))
-                   (:gravity-resolution-boundary artifact))
-        exact-shape?
-        (and (map? artifact)
-             (= sh06-resolution-artifact-keys (set (keys artifact)))
-             (map? boundary)
-             (= (sh06-resolution-boundary-keys-for boundary) (set (keys boundary))))]
-    {:aggregate aggregate
-     :components
-     (when exact-shape?
-       (sh06-resolution-component-validations artifact))
-     :trusted-exact-shape? (boolean exact-shape?)
-     :measurement-only? true
-     :authorizes-bound-change? false}))
 
 (def sh06-resolution-pass-contract
   {:name :sh06-gravity-name-resolution
@@ -91,6 +66,4 @@
    :digest-resolver :clojure-stage0
    :envelope-binder :clojure-stage0
    :compatibility-adapter :clojure-stage0
-   :component-transport-bounds sh06-resolution-transport-bounds
-   :aggregate-artifact-bounds sh06-resolution-artifact-bounds
    :self-hosted? false})

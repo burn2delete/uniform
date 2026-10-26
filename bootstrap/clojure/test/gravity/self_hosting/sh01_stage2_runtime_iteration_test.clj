@@ -695,11 +695,10 @@
           (is (= "P15S23X002" (get-in result [0 :diagnostic])))
           (is (= :invalid-local-runtime-instruction (get-in result [0 :reason]))))))
     (let [hidden {:op :namespace-read :binding-id :missing}
-          instruction (set-ir [hidden]) children (invoke 'p15-s23-runtime-instruction-children instruction 2)
+          instruction (set-ir [hidden]) children (invoke 'p15-s23-runtime-instruction-children instruction)
           functions {'main {:params [] :instructions [instruction]}}
-          read-check (invoke 'p15-s23-runtime-module-reads-work functions {} 65536)]
-      (is (= {:status :accepted :work-count 2 :children [hidden]} children))
-      (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-instruction-children instruction 1))))
+          read-check (invoke 'runtime-module-reads functions {})]
+      (is (= {:status :accepted :children [hidden]} children))
       (is (= :namespace-read-without-initialized-definition (:reason read-check)))
       (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit \a)]) 65536))))
       (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}}
@@ -709,7 +708,7 @@
       (is (= [payload "" :normal] result))
       (is (identical? payload (first result)))
       (is (= :accepted (:status (invoke 'p15-s23-runtime-initializer-work quoted 65536))))
-      (is (= :accepted (:status (invoke 'p15-s23-runtime-module-reads-work {'main {:instructions [quoted]}} {} 65536)))))
+      (is (= :accepted (:status (invoke 'runtime-module-reads {'main {:instructions [quoted]}} {})))))
     (let [failure (AssertionError. "original Keyword representation failure") original-str str
           observed (with-redefs [clojure.core/str (fn [& values]
                                                   (if (= [:explode] values) (throw failure) (apply original-str values)))]
@@ -3018,8 +3017,8 @@
                  'p15-s23-runtime-string-set-insertion-work 3 'p15-s23-runtime-keyword-set-contains-work 3 'p15-s23-runtime-character-set-contains-work 3
                  'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-character-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2 'p15-s23-runtime-keyword-vector-set-work 2
                  'p15-s23-runtime-keyword-list-set-work 2
-                 'p15-s23-runtime-module-census 2 'p15-s23-runtime-instruction-children 2
-                 'p15-s23-runtime-module-reads-work 3 'p15-s23-runtime-initialize-module 2
+                 'p15-s23-runtime-module-census 2 'p15-s23-runtime-instruction-children 1
+                 'runtime-module-reads 2 'p15-s23-runtime-initialize-module 2
                  'p15-s23-runtime-keyword-set-domain 2 'p15-s23-runtime-keyword-set-equality-work 3
                  'p15-s23-runtime-list-equality-work 3
                  'p15-s23-runtime-vector-domain 2 'p15-s23-runtime-vector-equality-work 3 'p15-s23-runtime-vector-equality 2
@@ -5388,11 +5387,10 @@
       (is (= :accepted (:status census)) (pr-str census))
       (is (= census (invoke 'p15-s23-runtime-module-census plan work)))
       (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-module-census plan (dec work)))))
-      (let [reads (invoke 'p15-s23-runtime-module-reads-work (:functions plan) (:definitions census) 65536)]
+      (let [reads (invoke 'runtime-module-reads (:functions plan) (:definitions census))]
         (is (= :accepted (:status reads)))
-        (is (= reads (invoke 'p15-s23-runtime-module-reads-work (:functions plan) (:definitions census) (:work-count reads))))
-        (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-module-reads-work
-                                                                 (:functions plan) (:definitions census) (dec (:work-count reads))))))))
+        (is (= :namespace-read-without-initialized-definition
+               (:reason (invoke 'runtime-module-reads (:functions plan) {}))))))
     (doseq [evaluate [(invoke 'p15-s23-runtime-evaluate-closed-instruction read {'modes expected :namespace-pool {"binding-modes" expected}} "")
                       (invoke 'p15-s23-runtime-evaluate-in-context read {} "" (assoc (:functions plan) :namespace-pool {"binding-modes" expected}) [])
                       (invoke 'p15-s23-runtime-activate-function (get-in plan [:functions 'getter]) [] "" (:functions plan) [])]]
@@ -25278,11 +25276,10 @@
           (is (= "P15S23X002" (get-in result [0 :diagnostic])))
           (is (= :invalid-local-runtime-instruction (get-in result [0 :reason]))))))
     (let [hidden {:op :namespace-read :binding-id :missing}
-          instruction (set-ir [hidden]) children (invoke 'p15-s23-runtime-instruction-children instruction 2)
+          instruction (set-ir [hidden]) children (invoke 'p15-s23-runtime-instruction-children instruction)
           functions {'main {:params [] :instructions [instruction]}}
-          read-check (invoke 'p15-s23-runtime-module-reads-work functions {} 65536)]
-      (is (= {:status :accepted :work-count 2 :children [hidden]} children))
-      (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-instruction-children instruction 1))))
+          read-check (invoke 'runtime-module-reads functions {})]
+      (is (= {:status :accepted :children [hidden]} children))
       (is (= :namespace-read-without-initialized-definition (:reason read-check)))
       (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit \a)]) 65536))))
       (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}}
@@ -25292,7 +25289,7 @@
       (is (= [payload "" :normal] result))
       (is (identical? payload (first result)))
       (is (= :accepted (:status (invoke 'p15-s23-runtime-initializer-work quoted 65536))))
-      (is (= :accepted (:status (invoke 'p15-s23-runtime-module-reads-work {'main {:instructions [quoted]}} {} 65536)))))
+      (is (= :accepted (:status (invoke 'runtime-module-reads {'main {:instructions [quoted]}} {})))))
     (let [scalar (bootstrap/sh03-reader-host-character-value! "<duplicate-character-construction>" {:codepoint 0x1f600})
           same-codepoint (assoc scalar :text "xy") result (work [scalar same-codepoint] 65536)]
       (is (not= scalar same-codepoint))

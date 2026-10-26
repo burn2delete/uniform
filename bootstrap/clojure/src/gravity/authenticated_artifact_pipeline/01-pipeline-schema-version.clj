@@ -68,7 +68,6 @@
 
 (def ^:private policy-binding
   {:reader-policy :gravity/standard-reader
-   :source-bound :sh03-reader-maximum-source-bytes
    :fresh-policy :cache-free-same-jvm-reconstruction
    :fast-policy :path-scoped-content-addressed-memory})
 

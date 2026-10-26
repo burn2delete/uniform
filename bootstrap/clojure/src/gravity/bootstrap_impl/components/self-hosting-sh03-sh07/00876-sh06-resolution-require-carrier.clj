@@ -3,20 +3,12 @@
 (defn sh06-resolution-require-carrier!
   [source-path carrier value]
   (let [validation
-        (p15-s23-trusted-carrier-validation
-         value :default-only
-         (:maximum-carrier-nodes sh06-resolution-transport-bounds)
-         (:maximum-carrier-depth sh06-resolution-transport-bounds)
-         (:maximum-container-width sh06-resolution-transport-bounds))]
+        (p15-s23-trusted-carrier-validation value :default-only)]
     (when-not (= :passed (:status validation))
       (sh06-resolution-boundary-fail!
-       "C5-UNRESOLVED" source-path :bounded-sh06-resolution-carrier
-       (select-keys
-        validation
-        [:reason :class :observed-nodes :observed-depth
-         :maximum-nodes :maximum-depth :maximum-width])
-       {:carrier carrier
-        :transport-bounds sh06-resolution-transport-bounds}))
+       "C5-UNRESOLVED" source-path :untrusted-sh06-resolution-carrier
+       (select-keys validation [:reason :class])
+       {:carrier carrier}))
     validation))
 
 (defn sh06-resolution-digest-reference
@@ -97,11 +89,10 @@
 (defn sh06-resolution-resolve-digest-requests!
   [source-path raw-analysis digest-requests]
   (when-not (and (vector? digest-requests)
-                 (<= (count digest-requests) 8192)
                  (seq digest-requests))
     (sh06-resolution-boundary-fail!
-     "C5-UNRESOLVED" source-path :bounded-resolution-digest-requests
-     digest-requests {:maximum-digest-requests 8192}))
+     "C5-UNRESOLVED" source-path :resolution-digest-requests
+     digest-requests {}))
   (let [binding-count (count (:binding-table raw-analysis))]
     (when-not (= (inc binding-count) (count digest-requests))
       (sh06-resolution-boundary-fail!

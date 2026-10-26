@@ -1,0 +1,107 @@
+# Implementation plan: Types task authority
+
+Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)
+Owner role: compiler types maintainer.
+Input revision: `88f621ee7633be6965f34d33a43a361cbdd26157`.
+
+## Contract alignment
+
+The [canonical inventory](../../docs/document-inventory.json) and owning
+contracts remain normative. Follow the [constitution](../../.specify/memory/constitution.md),
+[development workflow](../../docs/development-verification.md) and
+[compiler architecture phase](../../docs/phase-06-compiler-architecture/README.md).
+Only task editing authority changes; language and compiler semantics do not.
+
+Retain these references for navigation. Cross-cutting contracts may also be used
+by other component packages; inclusion is not exclusive ownership or semantic
+conformance acceptance.
+
+- [L5: Type System Specification](../../docs/phase-01-core-language/015-l5-type-system-specification.md)
+- [L8: Protocols, Interfaces & Dispatch Specification](../../docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md)
+- [L17: Alternative Type System Contract](../../docs/phase-01-core-language/027-l17-alternative-type-system-contract.md)
+- [SAFE9: Numeric Safety](../../docs/phase-02-safety/038-safe9-numeric-safety.md)
+- [C7: Type Checker Design](../../docs/phase-06-compiler-architecture/086-c7-type-checker-design.md)
+- [TEST11: Formal Semantics and Verification Plan](../../docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md)
+
+## Canonical work and handoffs
+
+- Implementation work: [five authoritative records](tasks.md#implementation-tasks).
+- Compatibility view: [generated table](../../docs/component-roadmaps/types.md#current-evidence-and-remaining-work).
+- Completion criteria: [owning acceptance checklist](../../docs/component-roadmaps/types.md#acceptance-criteria-yesno).
+- Release outcome: [component finish line](../../docs/component-roadmaps/types.md#release-outcome).
+- Overall composition: [integration outcomes](../../docs/component-roadmaps/README.md#integration-outcomes).
+- Input: Core nodes, resolved bindings, declared types, schemas, profile and representation requirements.
+- Output: Typed core, type environment, constraint ledger, function/type tables, conversion/check obligations and diagnostics.
+
+Core and Resolve supply real node and binding identities. Effects and Legality
+consume typed facts; Lower supplies representation requirements. These interface
+dependencies do not require completed downstream components. Record order adds
+no dependency graph or overall completion score.
+
+## Approach and exact files
+
+Edit the marked implementation region in `specs/types-workflow/tasks.md`.
+Each record has a stable semantic ID, title, checkbox, exact evidence/status
+and concrete exit evidence. The known five-ID set prevents row loss/substitution;
+the ID must agree with the retained phase/title slug. An intentional task-set
+change needs explicit review, not positional renumbering.
+
+`tools/types_task_projection.clj` follows Reader's accepted projection pattern.
+It validates the complete source before writing only the marked table region in
+`docs/component-roadmaps/types.md`. Its focused test covers accepted projection
+and rejection controls. The three-column table, all cells, existing anchors,
+release criteria and historical receipts retain their original meaning. Original
+migration checkboxes stay frozen outside the implementation region and are not
+an implementation denominator. No independent machine-readable status ledger is
+added. The four workflow artifacts explain this authority transfer.
+
+## Validation and evidence
+
+Run from repository root:
+
+```bash
+clojure -J-Xmx512m -M tools/types_task_projection.clj --write
+clojure -J-Xmx512m -M tools/types_task_projection.clj --check
+clojure -J-Xmx512m -M tools/types_task_projection_test.clj
+clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
+clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
+```
+
+`--check` is read-only. Missing/duplicate IDs and region markers, malformed
+records, identity/title mismatch, checkbox/status disagreement, unsupported
+Markdown and stale projections reject. Record fields support plain text and
+inline absolute HTTPS links, preventing receipt targets from changing between
+ledger and roadmap locations. URL syntax alone cannot establish acceptance.
+
+Compare baseline/current table bytes and all five phase/title IDs and complete
+historical migration ledger bytes. Check all five affected Markdown files for
+ASCII and local file/heading links; check `git diff --check`. Run integration
+preflight against the exact final base/commit/tree. Record actual results in
+[evidence](evidence.md). Structural checks do not establish compiler semantics
+or authoritative module admission. No compiler source or compiler test changes
+belong to this task-authority migration.
+
+## Delivery and remaining work
+
+Publish a draft after independent current-head review of the complete product
+payload and PR body. Keep implementation, validation, review and integration
+distinct. Merge only after the maintainer confirms independent review and
+integration disposition. Future implementation updates change the ledger and
+regenerate the table together. No task closes here.
+
+## Names, callers and compatibility
+
+Preserve existing anchors, links, semantic IDs and table text; consumers continue
+reading the generated roadmap table. New semantic tool filenames/namespaces
+follow Reader conventions. No caller, import, load order, runtime API, schema,
+diagnostic, manifest hash or wire ID changes.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L7](../../docs/phase-01-core-language/017-l7-pattern-matching-specification.md#requirements): Check narrowed branch bindings, closed-match exhaustiveness and Boolean normally returning guards after expansion.

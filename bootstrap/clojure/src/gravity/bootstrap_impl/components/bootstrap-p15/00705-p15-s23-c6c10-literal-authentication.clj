@@ -1,7 +1,9 @@
 
 
 (defn p15-s23-c6c10-literal-authentication
-  [source-path raw-front-end]
+  ([source-path raw-front-end]
+   (p15-s23-c6c10-literal-authentication source-path raw-front-end nil))
+  ([source-path raw-front-end invocation]
   (let [embedded-c2 (:c2-reader-artifact raw-front-end)
         integrity-report
         (when (map? embedded-c2)
@@ -32,7 +34,7 @@
                                         expected-rich-syntax))
         fresh-c3-proof
         (when authenticated-c3
-          (c3-syntax-capability-proof authenticated-c3))
+          (c3-syntax-capability-proof authenticated-c3 invocation))
         authenticated-c3-current?
         (and authenticated-c3
              (= embedded-c2 (:c2-reader-artifact authenticated-c3))
@@ -40,7 +42,7 @@
                 (c3-artifact-id authenticated-c3))
              (c3-syntax-stream-reader-products-authentic?
               authenticated-c3-stream embedded-c2
-              (:gravity-syntax-boundary authenticated-c3))
+              (:gravity-syntax-boundary authenticated-c3) invocation)
              (= :complete (:status fresh-c3-proof))
              (= fresh-c3-proof
                 (:capability-based-proof authenticated-c3))
@@ -163,7 +165,7 @@
                   source-path authentication raw-front-end))]
       (assoc authentication :occurrences
              (p15-s23-c6c10-base-numeric-occurrences
-              source-path authentication raw-front-end)))))
+              source-path authentication raw-front-end))))))
 
 (def p15-s23-c6c10-numeric-projection-fields
   #{:c2-token-stream :c2-form-tree :c2-syntax-seed-stream
