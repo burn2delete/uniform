@@ -1,16 +1,15 @@
-# Implementation plan: Legality workflow migration
+# Implementation plan: Legality task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)
-Migration owner: checked-IR documentation workstream.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Owner role: profile, ownership and safety maintainer.
+Input revision: `a57aae5f5c018434dfeca5c8d5106e67ba6f043c`.
 
 ## Contract alignment
 
 The [canonical inventory](../../docs/document-inventory.json) and owning
 contracts remain normative. The [constitution](../../.specify/memory/constitution.md)
 and [development workflow](../../docs/development-verification.md) retain their
-semantic, provenance and execution boundaries. This new documentation migration
-does not reopen historical accepted increments.
+semantic, provenance and execution boundaries. Only task editing authority changes; historical acceptance is not reopened.
 
 The following retained references are routed here for navigation. Cross-cutting
 contracts may also be used by other component packages; inclusion is not
@@ -60,36 +59,64 @@ exclusive ownership or semantic conformance acceptance.
 
 ## Approach and exact files
 
-Use the existing project-local spec/plan/tasks overrides. Add only this package's
-four Markdown artifacts. Preserve existing feature packages and historical
-receipts. A central migration index is integrated separately; no shared index
-or component page is edited here.
+The marked [implementation region](tasks.md#implementation-tasks) is the sole
+editable task authority. Preserve all five component/heading/title-slug IDs,
+titles, Open statuses, evidence baselines, closing criteria and historical
+migration records. The [roadmap](../../docs/component-roadmaps/legality.md#remaining-tasks-and-evidence)
+is generated; its [acceptance](../../docs/component-roadmaps/legality.md#acceptance-and-integration)
+and [release outcome](../../docs/component-roadmaps/legality.md#release-outcome)
+remain unchanged.
 
-- [Implementation task source](../../docs/component-roadmaps/legality.md#remaining-tasks-and-evidence): select and update implementation work there, never by copying its checklist into this package.
-- [Component acceptance](../../docs/component-roadmaps/legality.md#acceptance-and-integration): retains the semantic finish line.
-- [Component release outcome](../../docs/component-roadmaps/legality.md#release-outcome): remains open independently of migration status.
+The shared pure parser accepts optional record keys and a field validator; its
+default shape and HTTPS-only policy remain unchanged for all six existing
+wrappers. Legality adds a separate evidence-baseline field and explicit status.
+The component wrapper owns relative-link validation and target-based rebasing;
+there is no duplicate link catalog. Resolve paths against the fixed source
+document, reject paths escaping the repository, require existing files and reject
+symlink escapes. Rebase to the fixed destination document only for rendering.
+Fragments, queries, encoded paths, images, reference links and arbitrary schemes
+are unsupported. HTTPS validation keeps the accepted common grammar.
 
-Types and Effects feed profile legality; Auth validates grants from those intermediate facts; ownership and safety consume them before MIR. No whole-component Auth/Legality completion cycle is introduced.
+The original all-open three-column table is byte-identical at transfer. Later
+non-Open statuses produce an explicit Status column. No checkbox alone grants
+acceptance. Historical checkboxes remain outside the parsed region.
+
+Types and Effects feed profile legality; Auth validates grants from intermediate
+facts; ownership and safety consume them before MIR. This transfer changes none
+of those dependencies and introduces no whole-component completion cycle.
 
 ## Validation and evidence
 
-Validate all four artifacts, relative paths and heading fragments, ASCII text,
-semantic directory names, no copied implementation checklist, and no private
-execution paths or raw logs. Negative checks must detect a missing link target
-and an unsupported acceptance label. Run existing structural documentation and
-full-language roadmap validators; these prove structure, not language semantics.
-No compiler execution, external Specify CLI invocation or automatic command
-discovery is claimed. Record commands/results and limits in evidence.md.
+Run from repository root:
+
+```bash
+clojure -J-Xmx512m -M tools/legality_task_projection.clj --write
+clojure -J-Xmx512m -M tools/legality_task_projection.clj --check
+clojure -J-Xmx512m -M tools/legality_task_projection_test.clj
+clojure -J-Xmx512m -M tools/task_projection_test.clj
+clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
+clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
+```
+
+Run the six unchanged component suites and compare their accepted compatibility
+cases. Compare original/current table bytes, all five derived IDs, all five
+actual evidence targets and the entire historical tasks suffix. Validate ASCII
+and file/heading links across five affected Markdown documents, including all
+retained plan contract links. Test malformed/missing/duplicate IDs and markers,
+status disagreement, stale views, bad links, escaping symlinks and extra CLI
+arguments. Subprocess fixtures must prove valid writes touch only the fixed
+roadmap and invalid writes leave it unchanged. Run whitespace and clean
+exact-base/head/tree integration preflight. Record actual evidence separately
+from review and integration; no compiler semantic suites are required here.
 
 ## Delivery and remaining work
 
-Keep partial work in a draft PR. Independent review must inspect the exact
-candidate, link ownership and separation of migration from implementation
-status. Integration records a verified merge receipt without rewriting earlier
-validation provenance. Component implementation then continues from its canonical
-list, not from an inferred all-feature completion state.
+Independent review inspects all public files and the proposed PR body. Publish
+a draft for maintainer current-head review; merge only after integration
+disposition and repository gates. No implementation outcome closes here.
 
 ## Names, callers and compatibility
 
-Only `legality-workflow` and the four standard artifact filenames are new.
-No caller, import, load order, manifest hash, diagnostic or wire contract changes.
+The new semantic tool names follow existing component entrypoints. No compiler
+API, runtime schema, diagnostic, manifest hash or wire identity changes.
