@@ -46,7 +46,10 @@
      :sha256 (digest/sha256-bytes-hex (Files/readAllBytes path))
      :mode (if (Files/isExecutable path) :executable :regular)}))
 
-(defn- read-first-form [text path]
+(defn with-source-reader
+  "Runs trusted audit code with a non-evaluating source reader. The callback
+  must inspect data only; this helper supplies no source execution authority."
+  [text path operation]
   (try
     (binding [*read-eval* false
               *data-readers*
@@ -54,9 +57,14 @@
                'uuid (fn [_] (reject! :tagged-source {:path path :tag 'uuid}))}
               *default-data-reader-fn*
               (fn [tag _] (reject! :tagged-source {:path path :tag tag}))]
-      (read {:eof nil} (java.io.PushbackReader. (java.io.StringReader. text))))
+      (with-open [reader (clojure.lang.LineNumberingPushbackReader.
+                         (java.io.StringReader. text))]
+        (operation reader)))
     (catch Exception exception
       (reject! :namespace-read {:path path :message (.getMessage exception)}))))
+
+(defn- read-first-form [text path]
+  (with-source-reader text path #(read {:eof nil} %)))
 
 (defn- required-namespaces [form path]
   (when-not (and (seq? form) (= 'ns (first form)) (symbol? (second form)))
