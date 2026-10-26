@@ -5949,7 +5949,6 @@
                              :values :preserved :nesting :preserved :duplicates :preserved
                              :allocation :normal-invocation-even-empty}
        :value-origin {:kind :evaluated-list-construction :operand-node-ids args}
-       :operand-type-work (get validation :work-count)
        :application (if invoked? :normal :not-invoked)
        :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
