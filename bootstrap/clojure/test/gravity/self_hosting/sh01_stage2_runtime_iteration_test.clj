@@ -14446,7 +14446,7 @@
         (is (= (= :jvm target) (lower 'p15-s23-st-binding? binding module)))))))
 
 (deftest current-gravity-set-conversion-lowering-runtime-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'set-conversion-input)
         derive (ns-resolve upstream 'set-conversion-derived)
@@ -14458,8 +14458,16 @@
     (doseq [type [{:kind :gravity.type/vector :shape :literal :element-types []}
                   {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 3 :gravity.type/string))}
                   :gravity.type/never]]
-      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+      (let [{:keys [core node nodes forms bindings types module call edge] :as input} (input-fn [type])
             result (derive input 65536) descriptor (:descriptor result)
+            validation (lower 'p15-s23-st-type-work [type] 65536)
+            body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+            effect-validation (body 'body-st-type-work [type] 65536)
+            source-arguments [core node call edge nodes bindings types module]
+            emitter-descriptor (lower 'p15-s23-st-finish
+                                 (apply lower 'p15-s23-st-source (conj source-arguments validation)))
+            effect-descriptor (body 'body-st-finish
+                                (apply body 'body-st-source (conj source-arguments effect-validation)))
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -14467,6 +14475,8 @@
                      :ledger [(c7 'sh08-st-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call %2)
             compiled (compile context 65536)]
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= descriptor emitter-descriptor effect-descriptor))
         (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
         (when-not (= :complete (:status compiled))
           (throw (ex-info "Set conversion lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
@@ -14484,7 +14494,8 @@
                          (assoc-in descriptor [:construction-policy :operand-position] :tail)
                          (assoc descriptor :direct-effects [:io/write])
                          (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
-                         (assoc descriptor :operand-type-work 0)]]
+                         (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :operand-type-work (:work-count validation))]]
           (let [forged (-> context (assoc-in [:types :operator] changed)
                            (assoc :call-facts {:call (c7 'sh08-st-call-fact [changed module])}
                                   :ledger [(c7 'sh08-st-constraint [changed])]))]
@@ -14568,7 +14579,7 @@
                (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "" {'produce function} ['main])))))))
 
 (deftest current-gravity-keyword-vector-set-conversion-lowering-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'set-conversion-input)
         derive (ns-resolve upstream 'set-conversion-derived)
@@ -14580,8 +14591,16 @@
     (doseq [type [{:kind :gravity.type/vector :shape :literal :element-types []}
                   {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 3 :gravity.type/keyword))}
                   :gravity.type/never]]
-      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+      (let [{:keys [core node nodes forms bindings types module call edge] :as input} (input-fn [type])
             result (derive input 65536) descriptor (:descriptor result)
+            validation (lower 'p15-s23-st-type-work [type] 65536)
+            body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+            effect-validation (body 'body-st-type-work [type] 65536)
+            source-arguments [core node call edge nodes bindings types module]
+            emitter-descriptor (lower 'p15-s23-st-finish
+                                 (apply lower 'p15-s23-st-source (conj source-arguments validation)))
+            effect-descriptor (body 'body-st-finish
+                                (apply body 'body-st-source (conj source-arguments effect-validation)))
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -14589,6 +14608,8 @@
                      :ledger [(c7 'sh08-st-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call %2)
             compiled (compile context 65536)]
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= descriptor emitter-descriptor effect-descriptor))
         (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
         (when-not (= :complete (:status compiled))
           (throw (ex-info "Set conversion lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
@@ -14607,6 +14628,7 @@
                          (assoc descriptor :direct-effects [:io/write])
                          (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
                          (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :operand-type-work (:work-count validation))
                          (assoc descriptor :version :forged)
                          (assoc-in descriptor [:input-policy :version] :forged)
                          (assoc-in descriptor [:input-policy :output-refinements] :member-domain)
