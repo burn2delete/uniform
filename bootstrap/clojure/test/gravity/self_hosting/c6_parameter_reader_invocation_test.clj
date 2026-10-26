@@ -57,58 +57,74 @@
               (diagnostic #(b/p15-s23-c6c10-resolved-parameter source text front nil invocation)))))
       (is (empty? @calls)))))
 
-(deftest current-reader-parameter-construction-and-fresh-replay-reach-native-boundary
-  ;; Genuine development composition; historical pinned admission stays closed.
+(defn- current-parameter-case [binding-data]
+  ;; One genuine source traversal. Compiled binding DATA may be reused, never
+  ;; a source ingress, accepted Core or verifier result.
   (binding [b/*p15-s23-stage2-compiler-artifact-binding*
             @(var-get (ns-resolve 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test 'current-emitter))]
     (let [root @(owner 'root)
           path (str (.resolve root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
-          text (slurp path)
-          reader (str (.resolve root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+          text (slurp path) reader (str (.resolve root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
           invocation {:reader-source-path reader :authenticated-envelope-options {:source :development-current}}
           observed (atom []) actual-macro b/sh05-macro-artifact-from-c3-artifact
-          source-products
-          (fn [binding-data]
-            (with-redefs [b/sh05-macro-artifact-from-c3-artifact
-                          (fn [& arguments]
-                            (swap! observed conj (vec arguments))
-                            (apply actual-macro arguments))]
-              ((owner 'parameter-source-products) path text binding-data reader)))
-          products (stage :original-source-products #(source-products nil))
-          call (owner 'invoke) plan (owner 'parameter-c6-plan)
-          raw (stage :original-c6 #(call plan 'c6-c10-build-checked-core-template [(:envelope products)]))
-          fresh (stage :fresh-source-products #(source-products (:compiled-binding-data products)))
-          replay (stage :fresh-c6-replay #(call plan 'c6-c10-build-checked-core-template [(:envelope fresh)]))
+          products (stage :source-products
+                          #(with-redefs [b/sh05-macro-artifact-from-c3-artifact
+                                         (fn [& arguments]
+                                           (swap! observed conj (vec arguments))
+                                           (apply actual-macro arguments))]
+                             ((owner 'parameter-source-products) path text binding-data reader)))
+          raw (stage :c6-build #((owner 'invoke) (owner 'parameter-c6-plan)
+                                'c6-c10-build-checked-core-template [(:envelope products)]))]
+      (is (= :accepted (:status raw)))
+      (when-not (= :accepted (:status raw))
+        (throw (ex-info "Original C6 construction rejected" {:id "C6-TEST-CONSTRUCTION"})))
+      (is (= (str "sha256:" (b/sha256-hex text)) (:source-content-hash (:envelope products))))
+      (is (= 1 (count @observed)))
+      (doseq [arguments @observed]
+        (is (= 3 (count arguments)))
+        (is (= path (first arguments)))
+        (is (= invocation (last arguments))))
+      {:root root :path path :text text :reader reader :invocation invocation
+       :parent (second (first @observed)) :products products :raw raw})))
+
+(defn- check-parameter-replay [raw fresh]
+  ;; The original template is untrusted input until current C6 reconstructs it.
+  (binding [b/*p15-s23-stage2-compiler-artifact-binding*
+            @(var-get (ns-resolve 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test 'current-emitter))]
+    (let [{:keys [root path text invocation parent products]} fresh
+          replay (:raw fresh) call (owner 'invoke) plan (owner 'parameter-c6-plan)
+          _ (is (= raw replay))
+          _ (when-not (= raw replay)
+              (throw (ex-info "Complete original/fresh C6 results differ" {:id "C6-TEST-REPLAY-MISMATCH"})))
           upstream (stage :fresh-c6-verifier
                           #(call plan 'c6-c10-verify-checked-core-template
-                                 [(:envelope fresh) (:artifact-template raw) (:digest-requests replay)]))
+                                 [(:envelope products) (:artifact-template raw) (:digest-requests replay)]))
+          _ (is (= :passed (:status upstream)))
+          _ (when-not (= :passed (:status upstream))
+              (throw (ex-info "Fresh C6 verifier rejected" {:id "C6-TEST-REPLAY-REJECTED"})))
           sealed (b/p15-s23-c6c10-seal-digest-request-result! path raw)
           context (b/p15-s23-stage2-gravity-checked-core-context path text :jvm)
           core (b/p15-s23-c6c10-public-artifact context (:compiled-binding-data products) (:ingress products) sealed)
           mir (stage :gravity-mir #(call (owner 'c11-plan) 'sh12-build-branch-join-mir [core]))
           gravity (stage :gravity-verifier #(call (owner 'c11-plan) 'sh12-verify-branch-join-mir [core mir]))
           native (stage :native-boundary #(diagnostic (fn [] (b/p15-s23-c11-mir-validate-constructed! path core mir))))
-          parent (second (first @observed))
-          binder-id (get-in core [:core-nodes 0 :node-id])
-          entry (get-in mir [:functions 'main :entry])]
-      (is (= :accepted (:status raw)))
-      (is (= raw replay))
-      (is (= :passed (:status upstream) (:status gravity)))
+          binder-id (get-in core [:core-nodes 0 :node-id]) entry (get-in mir [:functions 'main :entry])
+          actual-macro b/sh05-macro-artifact-from-c3-artifact]
+      (is (= :passed (:status gravity)))
       (is (= (str "sha256:" (b/sha256-hex text)) (:source-content-hash core)))
-      (is (= 2 (count @observed)))
-      (doseq [arguments @observed]
-        (is (= 3 (count arguments)))
-        (is (= path (first arguments)))
-        (is (= invocation (last arguments))))
       (is (= [binder-id] (get-in mir [:functions 'main :params])))
       (is (= {:value-id binder-id :parameter-index 0 :block-id entry}
              (get-in mir [:data-flow-graph :definitions binder-id])))
       (is (= :parameter (get-in mir [:data-flow-graph :values binder-id :kind])))
       (is (not-any? #(= binder-id (:op-id %)) (mapcat :instructions (vals (get-in mir [:functions 'main :blocks])))))
-      ;; This separately records the next Native boundary, not compatibility.
+      ;; A separate downstream baseline, not Native parameter compatibility.
       (is (= {:id "C11-MODULE" :missing-fact :authenticated-c11-function-envelope :fallback-status :rejected}
              (select-keys native [:id :missing-fact :fallback-status])))
+      (prn {:parameter-native-boundary (select-keys native [:id :missing-fact :fallback-status])}) (flush)
       (testing "real owner validation rejects invalid invocation and substituted parent/source"
+        (is (= ["C3-FACT-STALE" [:reader-products-authentic?]]
+               ((juxt :id :missing-fields) (diagnostic #(actual-macro path parent))))))
+      (testing "explicit context never grants source authority"
         (doseq [[supplied-invocation missing]
                 [[(assoc invocation :authority :supplied) :explicit-sh03-reader-invocation-source-selection]
                  [(assoc invocation :authenticated-envelope-options {}) :explicit-sh03-reader-invocation-source-selection]
@@ -126,3 +142,11 @@
                               (str "sha256:" (apply str (repeat 64 "0"))))
               failure (diagnostic #(b/c3-syntax-validate! path stale invocation))]
           (is (= ["C3-FACT-STALE" [:reader-products-authentic?]] ((juxt :id :missing-fields) failure))))))))
+
+(deftest current-reader-parameter-construction-and-fresh-replay-reach-native-boundary
+  ;; This ordinary single-JVM composition can also be checked in two bounded
+  ;; children: serialize only genuine original C6 DATA, then reconstruct fresh
+  ;; source products and compare the complete result before owner verification.
+  (let [original (current-parameter-case nil)
+        fresh (current-parameter-case (get-in original [:products :compiled-binding-data]))]
+    (check-parameter-replay (:raw original) fresh)))
