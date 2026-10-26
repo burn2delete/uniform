@@ -88,3 +88,46 @@
                       #(assoc-in % [:forms :arg0 :parent-form-id] :stale)
                       #(assoc-in % [:types :arg0] :gravity.type/unknown)]]
         (is (= :rejected (:status (compile (change context)))))))))
+
+(deftest private-map-route-reconstructs-the-complete-descriptor
+  (let [{:keys [core node call edge nodes bindings forms types facts descriptor type-result join-result]}
+        ((helper 'private-map-keys-typed-input))
+        source-args [core node call edge nodes bindings types (:module core) 65536]
+        sources [(apply c7 'sh08-pmk-source source-args)
+                 (apply body 'body-pmk-source source-args) (apply emit 'p15-s23-pmk-source source-args)]
+        request {:canonical-core-artifact core
+                 :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        parameters (body 'body-lp-context request facts bindings 65536)
+        facts (assoc facts :list-parameter-context (:context parameters))
+        prepare #(body 'body-lq-context request % bindings 65536)
+        prepared (prepare facts)
+        context {:core core :nodes nodes :forms forms :bindings bindings :types types
+                 :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                 :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                 :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+                 :call-facts (:call-type-facts facts) :ledger (:constraint-ledger facts)
+                 :current-function (first (:function-records core))
+                 :locals {:span-binding 'span} :parameter-types {:span-binding :gravity.type/map}}
+        compile #(emit 'p15-s23-typed-compile-node % :present-get 65536)]
+    (is (= :accepted (:status type-result) (:status parameters) (:status prepared)))
+    (is (= [] (:diagnostics join-result)))
+    (is (= :gravity.type/applied-private-map-keys (:kind descriptor)))
+    (is (every? #(= :accepted (:status %)) sources))
+    (is (apply = (map :descriptor sources)))
+    (is (not-any? #(contains? (:descriptor %) :operand-type-work) sources))
+    (is (true? (body 'body-lq-call-valid? core (assoc facts :list-query-context (:context prepared))
+                    bindings node call edge nodes)))
+    (is (= :complete (:status (compile context))))
+    (doseq [changed [(assoc descriptor :operand-type-work 0)
+                     (assoc descriptor :extra true)
+                     (assoc-in descriptor [:source :syntax-id] :forged)
+                     ((helper 'private-map-keys-cross-family-descriptor) descriptor)]]
+      (let [changed-row (c7 'sh08-mkeys-constraint changed)
+            changed-call (c7 'sh08-mkeys-call-fact changed (:module core))
+            changed-facts (-> facts (assoc-in [:type-table :operator] changed)
+                              (assoc-in [:constraint-ledger 0] changed-row)
+                              (assoc-in [:call-type-facts 0] changed-call))
+            changed-context (-> context (assoc-in [:types :operator] changed)
+                                (assoc-in [:ledger 0] changed-row) (assoc-in [:call-facts 0] changed-call))]
+        (is (= :rejected (:status (prepare changed-facts))))
+        (is (= :rejected (:status (compile changed-context))))))))
