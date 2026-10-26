@@ -235,10 +235,11 @@ canonical lock. Complete stdout was 2672 and 1693 bytes respectively, stderr
 empty, exact source/tree bookends clean and cleanup complete. No process or
 lease remains active. Current main readback remained the tested baseline.
 
-Fresh test catalog/ownership and generic execution restrictions for the new
-module-census namespace still require the verification owner's metadata increment
-before main integration. It must remain fresh, with no cache acceptance; generic
-execution stays unsupported until its actual three-guard route is represented.
+At initial source publication, fresh test catalog/ownership and generic execution
+restrictions for the new module-census namespace still required the verification
+owner's metadata increment before main integration. It must remain fresh, with
+no cache acceptance; generic execution stays unsupported until its actual
+three-guard route is represented.
 Authenticated-source/public runtime admission, restricted C12, release and whole
 ACC-09/accounting acceptance remain unrun. Initializer helper accounting, runtime
 function/source-shape maxima and other collection cost policies remain open.
@@ -251,3 +252,47 @@ function/source-shape maxima and other collection cost policies remain open.
 | Runtime source | `e1084872868b99eb8dc38a2e23f0b871864529eb107a68ab16dd3825867a13fe` |
 | Module census test | `da7394ed6e440480a57d50bfe8ba2fc542aa54a9cb38236d933ccfa74885428c` |
 | Runtime iteration test | `887d9b65ee46b71ab4317e5953813bca9f1813e7ba681930086217d863b6ba47` |
+
+### Current-main metadata composition
+
+Normal reconciliation imported main
+`a1b991be499d50579a8b4366976c519ae8949224`, tree
+`5b62819e511bfc7e6b5eba0527d8c9b5883c5572`.
+The main delta contained only verification documentation and three audit-tool
+paths; bootstrap/compiler/runtime, dependency and contract inputs were identical
+to the tested source candidate at that reconciliation.
+
+The verification owner handed off independently reviewed metadata commit
+`88dc0f511b738d3f98f58e321d4cc6be6aa3539b`, tree
+`f379df1799194f8cdb517d8babc02b20402f9006`, based on the immutable source
+candidate. Normal import produced composition
+`452c05ed28e074f3fd6c9f3342c60d25bd78ef89`, tree
+`9a7172aef086270bb653fea242b062d88c48890a`. All five metadata/control blobs
+match the handed-off commit exactly. Runtime, bootstrap Clojure implementation,
+dependency inputs and both semantic test bodies remain identical to tested
+`db2e925b`; its 12/599 receipt retains that original provenance.
+
+The new namespace belongs to SH19/sh-runtime and requires fresh execution,
+with no cache closure. It remains discoverable, while generic execution is
+explicitly unsupported until a committed route represents all three required
+resource guards. The existing shared denial policy applies before normalized
+planning, single-process and every batch job, including forged support/resource
+markers. No guarded route is fabricated, and no runtime wrapper/provider was
+executed by these metadata controls.
+
+On the exact clean composition, the planner suite, three injected runner controls
+and six language tests passed: 69 tests/671 assertions, zero failures or errors,
+natural exit 0 in 11777 ms. The child was configured at 256 MiB with a 60-second
+watchdog; stdout was complete at 8291 bytes, stderr empty, bookends exact and
+cleanup complete. An injected ordinary-launch positive accompanies zero-launch
+denial controls. This is fresh metadata/catalog/control evidence, not another
+runtime semantic execution or a combined test count. The document gate passed
+240 documents/19 indexes and the full-language roadmap gate passed. Independent
+source/import and actual retained-result review accepted the composition.
+
+Finite integration still requires final exact-head preflight and public readback.
+Authenticated/public runtime, C12, release and broader accounting boundaries
+remain unchanged and open.
+
+Composition receipt SHA-256:
+`be932baae0aa66458e4548b85677948f9d024d90c9cd8ba444c910421346335e`.
