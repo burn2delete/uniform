@@ -25,7 +25,7 @@
      :artifact-build-count (if (= "b8-regression" route-name) 4 0)
      :status status
      :exit-code exit-code
-     :summary {:test 1 :pass (if (= :passed status) 1 0)
+     :summary {:test (count selected) :pass (if (= :passed status) 1 0)
                :fail (if (= :failed status) 1 0) :error 0}
      :elapsed-ms 1}))
 
@@ -111,6 +111,56 @@
     (is (= "SH07-DEV-MALFORMED-OUTPUT" (:diagnostic-id result)) result)
     (is (nil? (:child-report result)) result)
     (is (false? (:timed-out? result)) result)))
+
+(deftest producer-claims-cannot-replace-observed-execution
+  (let [parse (ns-resolve 'gravity.self-hosting.sh07-bounded-development-runner
+                          'parse-child-report)
+        report (route-report "c6-contract" :passed 0)
+        output (fn [value] {:text (str "SH07_DEV_RESULT " (pr-str value))
+                            :complete? true :truncated? false})]
+    (doseq [summary [{:test 0 :pass 0 :fail 0 :error 0}
+                     {:test 1 :pass 0 :fail 0 :error 0}
+                     {:test 1 :pass 1000000 :fail 1 :error 0}]]
+      (is (nil? (:report (parse "c6-contract"
+                               (output (assoc report :summary summary)) 0)))))
+    (is (nil? (:report (parse "c6-contract" (output report) 1))))
+    (doseq [[key value] [[:authority :authoritative] [:authoritative? true]
+                         [:mergeable true] [:verification-report {:status :passed}]]]
+      (is (nil? (:report (parse "c6-contract"
+                               (output (assoc report key value)) 0)))))
+    (doseq [capture [(assoc (output report) :truncated? true)
+                     (assoc (output report) :complete? false)
+                     (dissoc (output report) :complete?)]]
+      (is (nil? (:report (parse "c6-contract" capture 0)))))
+    (is (= report (:report (parse "c6-contract" (output report) 0))))))
+
+(deftest saturated-output-cannot-hide-a-second-terminal-result
+  (let [line (str "SH07_DEV_RESULT "
+                  (pr-str (route-report "c6-contract" :passed 0)))
+        result (runner/run-process!
+                "c6-contract"
+                {:timeout-ms 2000
+                 :child-command-fn
+                 (fn [_ _]
+                   ["/bin/sh" "-c"
+                    "printf '%s\\n' \"$1\"; head -c 262144 /dev/zero | tr '\\000' x; printf '\\n%s\\n' \"$1\""
+                    "capture-saturation-test" line])})]
+    (is (true? (get-in result [:stdout :truncated?])))
+    (is (<= (get-in result [:stdout :bytes]) (* 256 1024)))
+    (is (= :failed (:status result)))
+    (is (= "SH07-DEV-MALFORMED-OUTPUT" (:diagnostic-id result)))
+    (is (nil? (:child-report result)))))
+
+(deftest failed-stream-observation-is-not-complete-output
+  (let [capture (ns-resolve 'gravity.self-hosting.sh07-bounded-development-runner
+                            'capture-stream-output)
+        failed (capture (proxy [java.io.InputStream] []
+                          (read [] (throw (java.io.IOException. "read failed")))))
+        empty (capture (java.io.ByteArrayInputStream. (byte-array 0)))]
+    (is (false? (:complete? failed)))
+    (is (false? (:truncated? failed)))
+    (is (true? (:complete? empty)))
+    (is (false? (:truncated? empty)))))
 
 (deftest descendant-cleanup-covers-background-child
   (let [result

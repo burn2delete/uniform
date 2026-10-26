@@ -241,19 +241,20 @@
   (let [buffer (byte-array 8192)
         output (ByteArrayOutputStream.)
         observed (atom 0)]
-    (letfn [(snapshot []
+    (letfn [(snapshot [complete?]
               (let [bytes (.toByteArray output)
                     text (String. bytes StandardCharsets/UTF_8)
                     count (long @observed)]
                 {:text text
                  :bytes (alength bytes)
                  :observed-bytes count
-                 :truncated? (> count output-limit-bytes)}))]
+                 :truncated? (> count output-limit-bytes)
+                 :complete? complete?}))]
       (try
         (loop []
           (let [read (.read ^java.io.InputStream stream buffer)]
             (if (= -1 read)
-              (snapshot)
+              (snapshot true)
               (let [current (long @observed)
                     remaining (max 0 (- output-limit-bytes current))
                     kept (int (min remaining read))]
@@ -265,7 +266,7 @@
           ;; Closing a process pipe after a timeout unblocks this reader.
           ;; Preserve the bounded prefix instead of making cleanup wait for
           ;; an orphaned descendant that inherited the pipe.
-          (snapshot))))))
+          (snapshot false))))))
 
 (defn- capture-stream
   "Capture a process stream on a daemon thread.
@@ -292,7 +293,8 @@
 (defn- capture-value
   [capture timeout-ms]
   (let [value (deref (:result capture) timeout-ms
-                     {:text "" :bytes 0 :observed-bytes 0 :truncated? true})]
+                     {:text "" :bytes 0 :observed-bytes 0
+                      :truncated? true :complete? false})]
     ;; Closing after the bounded wait also handles an exited parent whose
     ;; descendant retained the pipe.  The daemon reader cannot keep the
     ;; development JVM alive while it drains or observes that orphan.
@@ -348,7 +350,14 @@
 
 (defn- report-counters?
   [value]
-  (and (integer? value) (not (neg? (long value)))))
+  (and (integer? value) (<= 0 value Long/MAX_VALUE)))
+
+(defn- passing-summary?
+  [summary]
+  ;; These closed routes contain executable assertions. Empty execution is
+  ;; non-passing feedback; nonzero counters still confer no proof authority.
+  (and (pos? (:test summary)) (pos? (:pass summary))
+       (zero? (:fail summary)) (zero? (:error summary))))
 
 (defn- report-selection-counts?
   [report selected]
@@ -372,8 +381,7 @@
              (every? report-counters? (vals summary)))
         passed? (and counters-valid?
                      (= :passed status)
-                     (zero? (long (:fail summary)))
-                     (zero? (long (:error summary))))]
+                     (passing-summary? summary))]
     (and (map? report)
          (= #{:schema :authority :authoritative? :route :selected
               :selection-count :artifact-build-count
@@ -397,11 +405,18 @@
   (let [lines (->> (str/split-lines (:text output))
                    (filter #(str/starts-with? % child-result-prefix))
                    vec)]
-    (if (not= 1 (count lines))
+    (cond
+      (or (not (true? (:complete? output)))
+          (not (false? (:truncated? output))))
+      {:diagnostic-id "SH07-DEV-MALFORMED-OUTPUT"
+       :diagnostic {:reason :incomplete-output}}
+
+      (not= 1 (count lines))
       {:diagnostic-id "SH07-DEV-MALFORMED-OUTPUT"
        :diagnostic {:reason (if (empty? lines) :missing-result-line
                                 :multiple-result-lines)
                     :result-line-count (count lines)}}
+      :else
       (let [payload (subs (first lines) (count child-result-prefix))
             report (try (strict-read-edn payload)
                         (catch Throwable _ nil))]
@@ -791,8 +806,7 @@
                              (original-report event))]
                (test/test-vars vars))))))
       (let [summary @counters
-            passed? (and (zero? (:fail summary))
-                         (zero? (:error summary)))
+            passed? (passing-summary? summary)
             report {:schema :gravity/sh07-development-child-result-v1
                     :authority :non-authoritative
                     :authoritative? false
