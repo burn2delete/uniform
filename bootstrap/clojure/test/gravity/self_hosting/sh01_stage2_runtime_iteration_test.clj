@@ -36607,7 +36607,9 @@ else
       (is (contains? #{:type-size :work-limit} (:reason bulk-result)))
       (is (<= (:work-count bulk-result) 65536))))
 (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        _ (require upstream) c7 (ns-resolve upstream 'invoke-c7)
+        _ (require upstream 'gravity.self-hosting.sh09-body-effect-test)
+        c7 (ns-resolve upstream 'invoke-c7)
+        body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol} nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}]
     (doseq [[input-name derive-name family expected]
             [['list-construction-input 'list-construction-derived "lc" nested]
@@ -36616,6 +36618,13 @@ else
       (let [input ((ns-resolve upstream input-name) [carrier]) derive (ns-resolve upstream derive-name)
             result (if (= family "lc") (derive input) (derive input 65536)) descriptor (:descriptor result)
             {:keys [core node nodes forms bindings types module call edge]} input
+            validation (invoke 'p15-s23-lc-type-work [[carrier] 65536])
+            effect-validation (body 'body-lc-type-work [carrier] 65536)
+            source-arguments [core node call edge nodes bindings types module]
+            emitter-descriptor (invoke (symbol (str "p15-s23-" family "-finish"))
+                                 [(invoke (symbol (str "p15-s23-" family "-source")) (conj source-arguments validation))])
+            effect-descriptor (body (symbol (str "body-" family "-finish"))
+                                (apply body (symbol (str "body-" family "-source")) (conj source-arguments effect-validation)))
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call expected)
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -36625,7 +36634,15 @@ else
             compile #(invoke 'p15-s23-typed-compile-node [% :call %2])
             lowered (compile context 65536)]
         (is (= :accepted (:status result)))
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= descriptor emitter-descriptor effect-descriptor))
         (is (= :complete (:status lowered)) (pr-str lowered))
+        (doseq [stale-work [0 (:work-count validation)]]
+          (let [stale (assoc descriptor :operand-type-work stale-work)
+                forged (-> context (assoc-in [:types :operator] stale)
+                           (assoc :call-facts {:call (c7 (symbol (str "sh08-" family "-call-fact")) [stale module])}
+                                  :ledger [(c7 (symbol (str "sh08-" family "-constraint")) [stale])]))]
+            (is (= :rejected (:status (compile forged 65536))))))
         (is (= lowered (compile context (:work-count lowered))))
         (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))))))
 
