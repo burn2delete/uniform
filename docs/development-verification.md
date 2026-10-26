@@ -8289,9 +8289,11 @@ Unrelated repository changes may reuse a result only when all those consumed
 inputs and the effective runtime are unchanged. Runtime/configuration paths
 remain bound, so cross-worktree production reuse is not claimed.
 
-Historical bootstrap-compatibility closure declarations predate the component
-loader and are not used for narrower production reuse. Those and other
-reviewed deterministic selections retain the complete-repository key.
+Bootstrap-dependent compatibility selections have no explicit narrowed closure.
+Their obsolete declarations were removed after the
+[compatibility loader audit](verification-reuse.md#compatibility-loader-closure-audit).
+Those and other reviewed deterministic selections retain the complete-repository
+key. This fallback does not prove that unrelated documentation is a semantic input.
 Undeclared, authoritative, freshness-required, performance, proof and
 nondeterministic work remains fresh. Failures and timeouts are never stored;
 corrupt entries are preserved and rejected. Existing cross-process per-key
