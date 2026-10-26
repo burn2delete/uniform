@@ -21511,3 +21511,19 @@
             (is (= :rejected (:status rejected)))))
         (is (= (slurp source-path)
                (slurp (fixture-path "accepted" "local-runtime-bare-set-equality" ".qst"))))))))
+
+(deftest sh08-nonintrinsic-opaque-ordering-classification-development-kernel
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks conj :format) (throw (AssertionError. "opaque formatting"))))
+        actual {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string opaque]}
+        input (homogeneous-list-parameter-input actual)
+        result (bare-list-parameter-constraints input)]
+    (is (nil? (integral-ordering-descriptor (assoc input :module (get-in input [:core :module])))))
+    (is (= :call-argument-type-mismatch (get-in result [:diagnostics 0 :reason])))
+    (is (empty? (:constraints result)))
+    (doseq [type [opaque actual]]
+      (is (nil? (integral-ordering-descriptor (integral-ordering-input '< [type type])))))
+    (is (empty? @callbacks))))

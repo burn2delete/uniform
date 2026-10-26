@@ -7702,8 +7702,9 @@
                  (if (= 0 (count remaining)) out
                    (recur (rest remaining) (if (= :gravity.type/never (first remaining)) out (conj out (first remaining))))))
         family (first normal) invoked? (= (count normal) (count args))
-        integral? (contains? #{:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
-                              :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64} family)
+        integral? (if (keyword? family)
+                    (contains? #{:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64} family) false)
         caller (loop [remaining (get core :function-records)]
                  (if (= 0 (count remaining)) nil
                    (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
