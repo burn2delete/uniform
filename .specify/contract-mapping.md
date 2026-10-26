@@ -1,6 +1,6 @@
 # Canonical contract to Spec Kit mapping
 
-Source baseline: `846644db7402c26a421eb7afd52615d52f145590` (2026-10-26).
+Source baseline: `d5d8e15c773929337e1d9646da4f32af2d461e17` (2026-10-26).
 Mapping state: proposed for independent review; no replacement accepted.
 
 The [240-document inventory](../docs/document-inventory.json) remains semantic
@@ -17,7 +17,7 @@ implementation ledger, language specification or conformance report.
 | Existing four-artifact packages | 29 | 29 |
 | Existing package artifacts | 116 | 116 |
 | Contracts directly linked from package artifacts | 218 | 236 |
-| Contracts without a fitting existing package | 22 unlinked | 4 explicit evolution-workflow proposals |
+| Contracts with no direct package reference | 22 unlinked | 4 explicit evolution-workflow proposals |
 | Contracts with an explicit disposition here | No consolidated matrix | 240 |
 | Accepted contract replacements or retirements | 0 | 0 |
 
