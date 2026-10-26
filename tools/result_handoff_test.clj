@@ -79,5 +79,28 @@
         (java.nio.file.Files/delete link))
       (finally (.delete file) (.delete dir)))))
 
+(deftest cli-producer-consumer-roundtrip
+  (let [dir (.toFile (java.nio.file.Files/createTempDirectory "handoff-cli-" (make-array java.nio.file.attribute.FileAttribute 0)))
+        receipt (io/file dir "receipt.edn")
+        plan-file (io/file dir "plan.edn")]
+    (try
+      (spit receipt (pr-str (:value document)))
+      (let [captured (result-handoff/read-document receipt)
+            selected (assoc-in (assoc-in plan [:receipts 0 :file] (str receipt))
+                               [:receipts 0 :sha256] (:sha256 captured))]
+        (spit plan-file (pr-str selected))
+        (let [output (with-out-str (result-handoff/-main (str plan-file)))
+              packet (clojure.edn/read-string output)]
+          (is (= (:sha256 (result-handoff/read-document plan-file)) (:plan-sha256 packet)))
+          (is (= (:sha256 captured) (get-in packet [:receipts 0 :sha256])))
+          (is (= (assoc (result-handoff/project selected result-handoff/read-document)
+                        :plan-sha256 (:plan-sha256 packet)) packet))
+          (is (not (str/includes? output (str dir)))))
+        ;; Original producer evidence is immutable for this version of the plan.
+        (spit receipt "{:changed true}")
+        (is (rejects? #(result-handoff/-main (str plan-file)))))
+      (is (rejects? #(result-handoff/-main)))
+      (finally (.delete receipt) (.delete plan-file) (.delete dir)))))
+
 (let [result (run-tests)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
