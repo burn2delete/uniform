@@ -95,6 +95,9 @@
         source-args [core node call edge nodes bindings types (:module core) 65536]
         sources [(apply c7 'sh08-pmk-source source-args)
                  (apply body 'body-pmk-source source-args) (apply emit 'p15-s23-pmk-source source-args)]
+        complete-args [core node call edge nodes bindings types forms 65536]
+        headers [(apply c7 'sh08-pmk-header complete-args)
+                 (apply body 'body-pmk-header complete-args) (apply emit 'p15-s23-pmk-header complete-args)]
         request {:canonical-core-artifact core
                  :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
         parameters (body 'body-lp-context request facts bindings 65536)
@@ -115,11 +118,32 @@
     (is (every? #(= :accepted (:status %)) sources))
     (is (apply = (map :descriptor sources)))
     (is (not-any? #(contains? (:descriptor %) :operand-type-work) sources))
+    (is (every? #(= :accepted (:status %)) headers))
+    (is (every? #(= descriptor (:descriptor %)) headers))
+    (is (apply = (map #(get-in % [:descriptor :key-domain-proof]) headers)))
+    (is (not-any? #(contains? (:descriptor %) :entry-proof-work) headers))
+    (is (= (c7 'sh08-pmk-constraint descriptor)
+           (c7 'sh08-lq-constraint descriptor)
+           (body 'body-mkeys-constraint descriptor)
+           (body 'body-lq-constraint descriptor)
+           (emit 'p15-s23-mkeys-constraint descriptor)
+           (emit 'p15-s23-lq-constraint descriptor)))
+    (is (= (c7 'sh08-pmk-call-fact descriptor (:module core))
+           (c7 'sh08-lq-call-fact descriptor (:module core))
+           (body 'body-mkeys-call-fact descriptor (:module core))
+           (body 'body-lq-call-fact descriptor (:module core))
+           (emit 'p15-s23-mkeys-call-fact descriptor (:module core))
+           (emit 'p15-s23-lq-call-fact descriptor (:module core))))
     (is (true? (body 'body-lq-call-valid? core (assoc facts :list-query-context (:context prepared))
                     bindings node call edge nodes)))
     (is (= :complete (:status (compile context))))
     (doseq [changed [(assoc descriptor :operand-type-work 0)
+                     (assoc descriptor :entry-proof-work 0)
+                     (assoc descriptor :operand-type-work 0 :entry-proof-work 2875)
                      (assoc descriptor :extra true)
+                     (assoc descriptor :kind :gravity.type/applied-map-keys)
+                     (assoc-in descriptor [:key-domain-proof :normal-witness-count] 0)
+                     (assoc-in descriptor [:key-domain-proof :entries] [])
                      (assoc-in descriptor [:source :syntax-id] :forged)
                      ((helper 'private-map-keys-cross-family-descriptor) descriptor)]]
       (let [changed-row (c7 'sh08-mkeys-constraint changed)
@@ -131,3 +155,20 @@
                                 (assoc-in [:ledger 0] changed-row) (assoc-in [:call-facts 0] changed-call))]
         (is (= :rejected (:status (prepare changed-facts))))
         (is (= :rejected (:status (compile changed-context))))))))
+
+(deftest public-map-query-aliases-keep-the-existing-family
+  (doseq [members [[] [:gravity.type/keyword :gravity.type/bool]]]
+    (let [input ((helper 'map-keys-input) {:kind :gravity.type/map :shape :literal :member-types members})
+          {:keys [core node call edge nodes bindings types forms module]} input
+          result (c7 'sh08-mkeys-derive core node call edge nodes bindings types forms 65536)
+          descriptor (:descriptor result)]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/applied-map-keys (:kind descriptor)))
+      (is (= (c7 'sh08-mkeys-constraint descriptor) (body 'body-mkeys-constraint descriptor)
+             (emit 'p15-s23-mkeys-constraint descriptor) (emit 'p15-s23-lq-constraint descriptor)))
+      (is (= (c7 'sh08-mkeys-call-fact descriptor module) (body 'body-mkeys-call-fact descriptor module)
+             (emit 'p15-s23-mkeys-call-fact descriptor module) (emit 'p15-s23-lq-call-fact descriptor module)))
+      (is (= :direct-map-keys (:dispatch (emit 'p15-s23-lq-call-fact descriptor module))))))
+  (let [{:keys [core node call edge nodes bindings types forms]}
+        ((helper 'map-keys-input) :gravity.type/map)]
+    (is (not= :accepted (:status (c7 'sh08-mkeys-derive core node call edge nodes bindings types forms 65536))))))

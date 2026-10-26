@@ -11615,7 +11615,7 @@
           (if (= :accepted (get proof :status))
             {:status :accepted :work-count work
              :descriptor (assoc (get source :descriptor) :key-domain-proof (get proof :proof)
-                           :key-domain-work (get proof :key-domain-work) :entry-proof-work (get proof :work-count)
+                           :key-domain-work (get proof :key-domain-work)
                            :result-type-work 3 :construction-work-basis :one-static-operation-with-separate-existing-runtime-census)}
             (assoc proof :work-count work)))
         (assoc source :work-count initial)))))
