@@ -2798,7 +2798,7 @@
                        :callee-function-syntax-id (get record :function-syntax-id)
                        :parameter-binding-id bid :parameter-binding binding :declaration declaration :type-binding type-binding
                        :argument-source (get argument :source) :call-source (get node :source)
-                       :source-call call :source-edge edge :operand-type-work (get validation :work-count)
+                       :source-call call :source-edge edge
                        :forgets [:key-value-member-types :static-entry-count]
                        :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
                        :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
@@ -2857,7 +2857,7 @@
                        :callee-function-syntax-id (get record :function-syntax-id)
                        :parameter-binding-id bid :parameter-binding binding :declaration declaration :type-binding type-binding
                        :argument-source (get argument :source) :call-source (get node :source)
-                       :source-call call :source-edge edge :operand-type-work (get validation :work-count)
+                       :source-call call :source-edge edge
                        :forgets [:positional-element-types :static-length]
                        :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
                        :profile (get (get core :module) :profile) :target (get (get core :module) :target)}]
