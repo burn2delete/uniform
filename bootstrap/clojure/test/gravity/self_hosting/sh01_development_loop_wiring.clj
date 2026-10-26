@@ -1521,12 +1521,13 @@
                                     index namespace)]
                        (assoc entry :namespace namespace
                                     :cache-closure closure
-                                    ;; Compatibility declarations predate the
-                                    ;; bootstrap component loader. They retain
-                                    ;; the conservative complete-tree identity.
+                                    ;; Only the re-audited bootstrap-free leaves
+                                    ;; have explicit closures. Bootstrap-dependent
+                                    ;; selections retain complete-tree identity.
                                     :cache-closure-authorized?
                                     (and (some? closure)
-                                         (contains? '#{gravity.c11-mir-test
+                                         (contains? '#{gravity.c2-artifact-identity-test
+                                                       gravity.c11-mir-test
                                                        gravity.compiler-pass-manifest-test}
                                                     namespace)))))
                    namespaces)

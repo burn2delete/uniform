@@ -39,3 +39,12 @@ Publish the prepared slice as a draft. An independent reviewer checks mapping, a
 ## Names, callers and compatibility
 
 Package key `platform-workflow` is semantic. No imports, load order, manifests, source hashes, schemas or public APIs are changed. Historical planning IDs in canonical links remain traceability only.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [GOV5](../../docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md#requirements): Adopted platform targets require explicit tier, runtime/service limits, diagnostics and conformance. This reference selects no ISA, device or physical product.

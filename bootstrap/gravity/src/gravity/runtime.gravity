@@ -2346,24 +2346,13 @@
                   {:status :rejected :reason :module-initialization-root-source :work-count used}))))
           {:status :rejected :reason :invalid-module-initialization-manifest :work-count base})))))
 
-(defn p15-s23-runtime-instruction-children [instruction budget]
+(defn p15-s23-runtime-instruction-children [instruction]
   (let [op (get instruction :op)
         args? (contains? #{:function-call :builtin-call :keyword-map-lookup :recur :println} op)
         values (get instruction (if args? :args (if (contains? #{:vector-literal :set-literal} op) :items :body)))
         bindings? (contains? #{:let :loop} op)
-        entries (get instruction (if (= op :map-literal) :entries (if (= op :try) :handlers :clauses)))
-        width (if args? (if (vector? values) (count values) 0)
-                (if (contains? #{:vector-literal :set-literal} op) (if (vector? values) (count values) 0)
-                (if (= op :do) (if (vector? values) (count values) 0)
-                (if bindings? (+ (if (vector? values) (count values) 0)
-                                 (if (vector? (get instruction :bindings)) (count (get instruction :bindings)) 0))
-                (if (= op :if) 3
-                (if (= op :throw) 1
-                (if (= op :map-literal) (if (vector? entries) (* 2 (count entries)) 0)
-                (if (= op :try) (+ 1 (if (vector? entries) (count entries) 0))
-                (if (= op :structural-match) (+ 1 (if (vector? entries) (* 2 (count entries)) 0)) 0)))))))))]
-    (if (> (+ 1 width) budget) {:status :rejected :reason :module-initialization-work-limit :work-count (+ 1 width)}
-      {:status :accepted :work-count (+ 1 width)
+        entries (get instruction (if (= op :map-literal) :entries (if (= op :try) :handlers :clauses)))]
+      {:status :accepted
        :children (if (if args? true (contains? #{:vector-literal :set-literal :do} op))
                    (if (vector? values) values [])
                  (if bindings?
@@ -2381,34 +2370,29 @@
                            (if (= op :map-literal) (conj (conj out (get entry :key)) (get entry :value))
                              (if (= op :try) (conj out (get entry :body))
                                (if (if (map? entry) (contains? entry :guard) false) (conj (conj out (get entry :guard)) (get entry :body))
-                                 (conj out (get entry :body))))))))) [])))))})))
+                                 (conj out (get entry :body))))))))) [])))))}))
 
-(defn p15-s23-runtime-module-reads-work [functions definitions budget]
-  (let [count-functions (if (map? functions) (count functions) 0)]
-    (if (> count-functions budget) {:status :rejected :reason :module-initialization-work-limit :work-count count-functions}
-      (loop [remaining (if (map? functions) (keys functions) []) pending [] used count-functions]
-        (if (= 0 (count pending))
-          (if (= 0 (count remaining)) {:status :accepted :work-count used}
-            (let [instructions (get (get functions (first remaining)) :instructions)
-                  width (if (vector? instructions) (count instructions) 0)]
-              (if (> (+ used width) budget) {:status :rejected :reason :module-initialization-work-limit :work-count (+ used width)}
-                (recur (rest remaining)
-                  (loop [items (if (vector? instructions) instructions []) out []]
-                    (if (= 0 (count items)) out (recur (rest items) (conj out {:instruction (first items) :depth 0}))))
-                  (+ used width)))))
-          (let [frame (get pending (- (count pending) 1)) instruction (get frame :instruction)
-                depth (get frame :depth) tail (subvec pending 0 (- (count pending) 1))
-                read? (= :namespace-read (get instruction :op))]
-            (if (> depth 128) {:status :rejected :reason :module-initialization-work-limit :work-count (+ used 1)}
-              (if (if read? (p15-s23-runtime-namespace-read-source? instruction (get definitions (get instruction :binding-id))) true)
-                (let [children (p15-s23-runtime-instruction-children instruction (- budget used)) total (+ used (get children :work-count))]
-                  (if (= :accepted (get children :status))
-                    (recur remaining
-                      (loop [items (get children :children) out tail]
-                        (if (= 0 (count items)) out
-                          (recur (rest items) (conj out {:instruction (first items) :depth (+ depth 1)})))) total)
-                    (assoc children :work-count total)))
-                {:status :rejected :reason :namespace-read-without-initialized-definition :work-count (+ used 1)}))))))))
+(defn runtime-module-reads [functions definitions]
+  ; Visit every executable child. Quoted payloads remain data; source checks
+  ; apply to namespace reads regardless of their position or nesting depth.
+  (loop [remaining (if (map? functions) (keys functions) []) pending []]
+    (if (= 0 (count pending))
+      (if (= 0 (count remaining))
+        {:status :accepted}
+        (let [instructions (get (get functions (first remaining)) :instructions)]
+          (recur (rest remaining) (if (vector? instructions) instructions []))))
+      (let [instruction (get pending (- (count pending) 1))
+            tail (subvec pending 0 (- (count pending) 1))
+            read? (= :namespace-read (get instruction :op))]
+        (if (if read?
+              (p15-s23-runtime-namespace-read-source?
+               instruction (get definitions (get instruction :binding-id))) true)
+          (let [children (p15-s23-runtime-instruction-children instruction)]
+            (recur remaining
+                   (loop [items (get children :children) out tail]
+                     (if (= 0 (count items)) out
+                       (recur (rest items) (conj out (first items)))))))
+          {:status :rejected :reason :namespace-read-without-initialized-definition})))))
 
 (defn p15-s23-runtime-initialize-module [census functions]
   (loop [remaining (get census :initializers) pool {} order [] constructors {}]
@@ -2430,7 +2414,7 @@
         module? (contains? plan :module-initialization)
         census (if module? (p15-s23-runtime-module-census plan 65536) {:status :accepted})
         reads (if (if module? (= :accepted (get census :status)) false)
-                (p15-s23-runtime-module-reads-work functions (get census :definitions) (- 65536 (get census :work-count))) census)
+                (runtime-module-reads functions (get census :definitions)) census)
         initialized (if (if module? (= :accepted (get reads :status)) false) (p15-s23-runtime-initialize-module census functions) reads)
         result (if (= :accepted (get initialized :status))
                  (p15-s23-runtime-activate-function-in-instance (get functions entrypoint) [] "" functions [entrypoint] (get initialized :pool))

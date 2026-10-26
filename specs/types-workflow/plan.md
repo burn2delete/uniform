@@ -96,3 +96,12 @@ Preserve existing anchors, links, semantic IDs and table text; consumers continu
 reading the generated roadmap table. New semantic tool filenames/namespaces
 follow Reader conventions. No caller, import, load order, runtime API, schema,
 diagnostic, manifest hash or wire ID changes.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L7](../../docs/phase-01-core-language/017-l7-pattern-matching-specification.md#requirements): Check narrowed branch bindings, closed-match exhaustiveness and Boolean normally returning guards after expansion.
