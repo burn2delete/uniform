@@ -7582,7 +7582,7 @@
                                                        :lifetime :persistent-values :allocation :possible-even-empty
                                                        :provider-allocation-bound :not-established}
                                       :value-origin {:kind :vector-value-rest :operation 'rest :operand-node-id (first args)}
-                                      :operand-type-work (get validation :work-count) :profile-validation-work (- reserved base)
+                                      :profile-validation-work (- reserved base)
                                       :construction-work construction-work :result-count result-count
                                       :application :normal :latent-effects [:memory/allocate] :direct-effects [:memory/allocate] :capabilities [] :thrown-error-effects []
                                       :parameter-types [receiver] :return result-type :result-type result-type
