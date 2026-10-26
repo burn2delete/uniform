@@ -1,10 +1,11 @@
 (ns gravity.self-hosting.canonical-keyword-scalar-path-test
   (:require [clojure.test :refer [deftest is]]
-            [gravity.bootstrap]))
+            [gravity.bootstrap :as bootstrap]))
 
 (def ^:private path "/declared/canonical-keyword.gravity")
 (defn- operation [name] (ns-resolve 'gravity.bootstrap name))
-(defn- form [value] ((operation 'p15-s23-c6c10-canonical-form*) path value))
+;; Use the same production identity entrypoint as Reader digest resolution.
+(defn- form [value] (bootstrap/sh03-reader-canonical-identity path value))
 (defn- capture [f]
   (try {:value (f)}
        (catch clojure.lang.ExceptionInfo error
