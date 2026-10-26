@@ -63,9 +63,18 @@
                 :module-initialization-root-source]
                [(assoc-in small [:module-initialization :roots last-root :ordinal] -1)
                 :module-initialization-root-source]
-               [(assoc-in small [:module-initialization :roots last-root :binding-id] "binding-modes")
+               [(-> small
+                    (assoc-in [:module-initialization :roots last-root :binding-id] "binding-modes")
+                    (assoc-in [:module-initialization :initializers last-initializer :binding-id] "binding-modes"))
                 :module-initialization-root-source]
                [(assoc-in small [:module-initialization :roots last-root :name] 'modes)
+                :module-initialization-root-source]
+               [(assoc-in small [:module-initialization :roots last-root :definition-core-node-id] "initializer-modes")
+                :module-initialization-root-source]
+               [(assoc-in small [:module-initialization :roots last-root :value-core-node-id] "definition-modes")
+                :module-initialization-root-source]
+               [(assoc-in small [:module-initialization :roots last-root :definition-core-node-id]
+                          (get-in small [:module-initialization :roots last-root :value-core-node-id]))
                 :module-initialization-root-source]
                [(assoc-in small [:module-initialization :roots last-root :type] :gravity.type/keyword)
                 :module-initialization-type]

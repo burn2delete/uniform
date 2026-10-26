@@ -2313,9 +2313,9 @@
                                   (if (if (p15-s23-runtime-module-source? (get root :definition-source))
                                           (p15-s23-runtime-module-source? (get root :value-source)) false)
                                     (if (if (= def-id value-id) true
-                                          (if (contains? names name) false
-                                          (if (contains? bindings id) false
-                                            (if (contains? nodes def-id) false (contains? nodes value-id)))))
+                                          (if (contains? names name) true
+                                          (if (contains? bindings id) true
+                                            (if (contains? nodes def-id) true (contains? nodes value-id)))))
                                       false true) false) false) false) false) false) false) false) false)
                   (if function?
                     (if (if (map? function)
