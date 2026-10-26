@@ -220,6 +220,14 @@
   (let [value (:resource-class job)]
     (if (nil? value) :normal value)))
 
+(defn- require-supported-namespace!
+  [namespace]
+  ;; Policy comes from the owner, never from caller-supplied shard markers.
+  (when-let [blocked (planner/unsupported-execution namespace)]
+    (throw
+     (ex-info "Selected source tests require their established guarded owner wrapper"
+              blocked))))
+
 (defn- canonical-jobs
   "Canonicalizes either the planner's `:namespaces` plus `:shards` or a plan
   containing shards alone.  Namespace identity is unique and reporting order
@@ -288,6 +296,9 @@
         (->> namespaced
              vals
              (map (fn [job]
+                    ;; Recompute the owning policy rather than trusting optional
+                    ;; shard fields that a direct caller could omit or relabel.
+                    (require-supported-namespace! (:namespace job))
                     (when-not
                      (contains? #{:normal :memory-heavy :exclusive}
                                 (resource-class job))
@@ -1207,6 +1218,7 @@
    (run-normal-batch-process jobs {}))
   ([jobs options]
    (let [jobs (vec jobs)
+         _ (doseq [job jobs] (require-supported-namespace! (:namespace job)))
          _ (when (or (empty? jobs)
                      (some #(not= :normal (:resource-class %)) jobs))
              (throw (ex-info "Warm-JVM batching accepts normal jobs only"
@@ -1983,6 +1995,7 @@
   ([job]
    (run-namespace-process job {}))
   ([job options]
+   (require-supported-namespace! (:namespace job))
    (let [started (System/nanoTime)
          command (namespace-command (:namespace job) options)
          working-directory (or (:working-directory options) @root)

@@ -300,7 +300,22 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/self_hosting/p15_bounded_profile_test.clj"
+ {"bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
+  {:namespace gravity.self-hosting.runtime-module-reads-test
+   :slice "SH-19" :owner :sh-runtime}
+  "bootstrap/clojure/test/gravity/self_hosting/c6_parameter_reader_invocation_test.clj"
+  {:namespace gravity.self-hosting.c6-parameter-reader-invocation-test
+   :slice "SH-07" :owner :sh-core}
+  "bootstrap/clojure/test/gravity/self_hosting/canonical_keyword_scalar_path_test.clj"
+  {:namespace gravity.self-hosting.canonical-keyword-scalar-path-test
+   :slice "SH-03" :owner :sh-reader}
+  "bootstrap/clojure/test/gravity/self_hosting/reader_staged_closure_test.clj"
+  {:namespace gravity.self-hosting.reader-staged-closure-test
+   :slice "SH-03" :owner :sh-reader}
+  "bootstrap/clojure/test/gravity/self_hosting/reader_token_spelling_reuse_test.clj"
+  {:namespace gravity.self-hosting.reader-token-spelling-reuse-test
+   :slice "SH-03" :owner :sh-reader}
+  "bootstrap/clojure/test/gravity/self_hosting/p15_bounded_profile_test.clj"
   {:namespace gravity.self-hosting.p15-bounded-profile-test
    :slice "SH-01"
    :owner :sh-01-leaf}
