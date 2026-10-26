@@ -38,9 +38,78 @@ No MIR source/compiler child or lease was launched by this accounting audit.
 
 ## Current acceptance boundaries
 
-All ACC tasks remain open. Inventory is incomplete; exact Native/opt paths,
-runtime writer and additional per-guard dispositions are pending confirmation.
-No semantic compiler, runtime, authoritative, release or C12 execution occurred
-in this audit. No original C7 publication operation was repeated. Independent
-review and main integration of this new ledger are pending. Historical
-candidate evidence is retained with its original scope and invalidation.
+All ACC tasks remain open. Inventory is incomplete; exact Native/opt paths and
+additional per-guard dispositions are pending confirmation. Parent confirmed no
+identified active runtime/library writer and authorized precise preserved-state
+takeover. The existing library accounting checkout was clean at
+`2b533de0692859016207fb629cdd8a4b96e7c10b`, tree
+`d90ca938bc76ce7e1b40fd2e165553d8234025dc`. No other checkout was changed.
+PR359 confirms no overlap with its current runtime/test paths. Historical
+candidate evidence remains scoped and conservatively invalidated.
+
+## Discovery census
+
+A local Clojure textual census on ledger commit
+`57429a9ca2225ec829ed870f616f1eaac06e574e`, tree
+`4ee6147fcbd5928605d4e2fe6edeea976874e3f9`, scanned 2585 tracked implementation,
+test and tooling files. It grouped 4103 candidate definitions in 1186 files.
+Every candidate is unclassified. Comments/history are included, and unnamed
+ceilings/transitive callsites can be missed; these are not coverage numbers.
+The census is a local discovery artifact, not a replacement status ledger.
+Artifact SHA-256: `acfc975412cc78f3c9f2280002c1cf2a174842c0cdb5f182892429b2bbd665af`;
+script SHA-256: `a92c9892829b8ac8b183cd7acff8a2bfa7de703f9320619338acfa0bfab9bb83`.
+
+## Runtime module-read increment
+
+Tested source commit `a722ba820d5fd4c362296752857c3c3592185f83`, tree
+`8554ba879a6b7d562d459ca05dcbf643c8700a30`.
+Runtime source SHA-256:
+`840c2ce49c42c0e200b5ea170d1f6b59d6c1ee7d4463a4fc7d718c380fd1e99f`.
+New test SHA-256:
+`1b1894af4ef46cbdb7e08e393d657d3476a3db6d364e8739d033d00b8900950f`.
+
+| Stage | Actual result | Scope and limits |
+| --- | --- | --- |
+| Structural document validation | Exit 0, 240 documents/19 indexes | Ledger baseline; structural only |
+| Clojure form-read and whitespace checks | Passed | Runtime and both affected test files parse; no semantic acceptance |
+| Actual-owner baseline | Natural exit 0, 8282 ms | Original traversal accepts ordinary valid input but refuses wide/deep valid and deep invalid read with work-limit; expected defect observations |
+| Candidate semantic and module execution | Natural exit 0, 63949 ms, 10 tests/123 assertions, zero failures/errors | Three new helper tests, existing normalized module-plan execution selector and six language-boundary tests |
+| Authenticated source compilation, public runtime admission, release | Unrun | Helper/normalized plan evidence cannot close these boundaries |
+| C12 and original C7 publication operation | Unexecuted | Restrictions preserved |
+
+Both executed stages used the existing Git-common normal broker, host exclusive
+broker and canonical lock, with a 2 GiB child, 120-second watchdog and complete
+65536-byte/character capture per stream. Both exact before/after commit/tree
+bookends were clean and unchanged. All processes/leases completed; the brief
+environment disconnect did not cause a duplicate run. An initial sandbox lock
+open failure started no child; supported escalation then ran the baseline.
+
+The candidate covers valid depth 130, width 65537, invalid reads beyond either
+old limit, every function, preserved executable child positions, quote data,
+and ten source/definition substitutions. The existing module fixture exercises
+actual Gravity initialization, fresh instance value identity and semantic
+rejections on normalized plans. Other runtime quotas remain and are not
+declared accepted merely because their preexisting tests pass.
+
+Baseline observation SHA-256:
+`97c16b83aad445af93c892a78ee7c591a34358e1deb112784393bdae2fd150ea`;
+baseline process receipt:
+`254b0bec4413b065ea080effe5bb98d25e0494334f00bd3fc3969f0e1c1cc5c6`;
+candidate process receipt:
+`ba015e917c9a10d2c924998b50ffaa1d190cbedfedf2041c55844f5ee823562e`.
+The assurance owner independently inspected this exact source/test delta and
+retained receipt, verified the receipt hash, and reported no blocking finding
+for the declared module-read increment. That review confirms preserved child
+selection, iterative full traversal, source validation, quote boundaries and
+updated caller/arity expectations. It is code and retained-evidence review,
+not a second fresh execution or whole-source/public-admission authentication.
+These hashes identify evidence and confer no authority themselves.
+
+## Publication blocker
+
+Push of `codex/accounting-completion` and draft PR creation to
+`burn2delete/uniform` were denied before execution by automatic approval review.
+The stated reason was external publication without explicit destination
+authorization. No push or PR occurred, and no alternate tool, actor or retry was
+used. Publication and integration remain blocked pending approval addressing
+that rejection. Local validation and review continue independently.

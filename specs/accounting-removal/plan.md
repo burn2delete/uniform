@@ -11,7 +11,7 @@ Use an isolated checkout; never update another writer's checkout.
 | C7 | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Existing PR359 writer through current guard and Map/List publication; explicit release pending |
 | Effects | `bootstrap/gravity/src/gravity/effects.gravity` | Same PR359 writer |
 | Emitter | `bootstrap/gravity/p15_s23/emitter.gravity` | Same PR359 writer |
-| Runtime | `bootstrap/gravity/src/gravity/runtime.gravity` | Accounting audits; actual writer identity unresolved before edits |
+| Runtime | `bootstrap/gravity/src/gravity/runtime.gravity` | Accounting owns precisely inventoried module-read traversal increment after parent confirmation of no active runtime writer; existing work preserved |
 | MIR | `bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity`; `bootstrap/clojure/test/gravity/self_hosting/{sh12_c10_mir_adapter_test,sh12_literal_bool_specialization_test,mir_scalar_admission_test}.clj` | Existing PR378/421 owner |
 | Native | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh00-sh02/` Native adapter components and existing Native tests | Existing PR383/parameter writer; exact component paths to confirm |
 | Opt/lower | PR370 producer/consumer source and tests | Existing PR370 writer; exact paths/remaining acceptance to confirm |
@@ -57,3 +57,15 @@ or historical bounded-candidate decisions alone.
 New implementation names use semantic subsystem/behavior words. Planning IDs
 remain here; compatibility-bearing schema and diagnostic IDs are not renamed
 incidentally. No shared runner/receipt/schema edits without one agreed writer.
+
+## First runtime increment
+
+ACC-09's instruction-child enumeration and module namespace-read scan are
+iterative and validate executable read/definition relationships. Their synthetic
+width charge, cumulative work pool and fixed depth-128 refusal have no separate
+type, representability or runtime recursion purpose. Remove those mechanisms,
+rename the scan `runtime-module-reads`, and remove budget/work interfaces from
+all current callsites. Preserve the exact executable child positions and the
+source validator; quote payloads stay data. Module initializer/census and other
+runtime cost policies remain open. This increment does not remove genuine
+runtime call/loop containment or assert whole-plan admission beyond that scope.
