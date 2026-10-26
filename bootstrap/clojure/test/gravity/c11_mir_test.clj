@@ -131,3 +131,53 @@
         (is (some? error))
         (is (= expected-id (:id (ex-data error))))
         (is (= "C11" (:document-id (ex-data error))))))))
+
+(defn- hosted-artifact []
+  (c11/with-operations (operations)
+    #(c11/compiler-c11-mir-source-artifact "c11-test.gravity" "ignored")))
+
+(defn- recomputed-report [artifact module flow]
+  (c11/c11-mir-verifier-report module (:mir-operations artifact) flow
+    (:domain-anchor-table artifact) (:mir-diagnostic-stream artifact)))
+
+(defn- validation-error [f]
+  (try (f) nil (catch clojure.lang.ExceptionInfo e (ex-data e))))
+
+(deftest failed-dominance-reaches-hosted-report-proof-and-validation
+  ;; These are the existing hosted compatibility records, not canonical MIR
+  ;; verification or public source/artifact/report admission.
+  (let [artifact (hosted-artifact)
+        flow (assoc-in (:data-flow-graph artifact) [0 :dominance-status] :failed)
+        report (recomputed-report artifact (:mir-module artifact) flow)
+        changed (assoc artifact :data-flow-graph flow :mir-verifier-report report)]
+    (is (seq (:data-flow-graph artifact)))
+    (is (true? (get-in artifact [:mir-verifier-report :dominance-valid?])))
+    (is (false? (:dominance-valid? report)))
+    (is (= :failed (:status report)))
+    (is (false? (:dominance-valid? (c11/c11-mir-capability-proof changed))))
+    (doseq [attempt [#(c11/c11-mir-validate! "c11-test.gravity" changed)
+                     #(c11/with-operations
+                        (assoc (operations) :c11-data-flow-graph (constantly flow))
+                        (fn [] (c11/compiler-c11-mir-source-artifact "c11-test.gravity" "ignored")))
+                     #(c11/c11-mir-validate! "c11-test.gravity"
+                        (update artifact :mir-verifier-report dissoc :dominance-valid?))]]
+      (let [error (validation-error attempt)]
+        (is (= "C11-DOMINANCE" (:id error)))
+        (is (= [:dominance-valid?] (:missing-fields error)))
+        (is (= "C11" (:document-id error)))))))
+
+(deftest missing-terminator-cannot-produce-a-passing-hosted-report
+  (let [artifact (hosted-artifact) module (:mir-module artifact)
+        function (first (keys (:functions module)))
+        block (first (keys (get-in module [:functions function :blocks])))
+        malformed (update-in module [:functions function :blocks block] dissoc :terminator)
+        report (recomputed-report artifact malformed (:data-flow-graph artifact))
+        changed (assoc artifact :mir-module malformed :mir-verifier-report report)]
+    (is (true? (get-in artifact [:mir-verifier-report :blocks-terminate?])))
+    (is (false? (:blocks-terminate? report)))
+    (is (= :failed (:status report)))
+    (doseq [attempt [#(c11/c11-mir-validate! "c11-test.gravity" changed)
+                     #(c11/with-operations
+                        (assoc (operations) :c11-mir-module-record (fn [& _] malformed))
+                        (fn [] (c11/compiler-c11-mir-source-artifact "c11-test.gravity" "ignored")))]]
+      (is (= "C11-BLOCK" (:id (validation-error attempt)))))))
