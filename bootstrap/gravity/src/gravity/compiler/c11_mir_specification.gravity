@@ -4887,9 +4887,9 @@
                 (if (boolean? value) true
                   (if (integer? value) true
                     (if (char? value) true
-                      (if (string? value) (<= (count value) 65536)
-                        (if (symbol? value) (<= (count (str value)) 65536)
-                          (if (keyword? value) (<= (count (str value)) 65536) false)))))))
+                      (if (string? value) true
+                        (if (symbol? value) true
+                          (if (keyword? value) true false)))))))
             (recur frontier (+ cursor 1)) false))))))
 
 (defn sh12-c6p-producer-metadata-valid? [core]
