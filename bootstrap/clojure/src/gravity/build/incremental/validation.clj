@@ -1,4 +1,4 @@
-(ns gravity.c16-incremental.validation
+(ns gravity.build.incremental.validation
   (:require [clojure.set :as set]))
 
 (defn fail!

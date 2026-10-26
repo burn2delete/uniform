@@ -200,6 +200,20 @@
            (is (= :gravity.development-test-runner/unknown-namespace
                   (:type (exception-data
                           (fn [] (selected (parse-args ["--namespace" unknown]))))))))))))
+(deftest bootstrap-invocation-integration-tests-remain-explicitly-selectable
+  (let [parse-args @#'gravity.development-test-runner/parse-args
+        selected @#'gravity.development-test-runner/selected-namespace-records]
+    (with-redefs-fn
+      {#'gravity.development-test-runner/generated-namespace-authority
+       (fn [] (throw (ex-info "manifest must not gate local development" {})))}
+      #(doseq [[namespace path]
+               [["gravity.native-syntax-invocation-test"
+                 "bootstrap/clojure/test/gravity/native_syntax_invocation_test.clj"]
+                ["gravity.reader-invocation-test"
+                 "bootstrap/clojure/test/gravity/reader_invocation_test.clj"]]]
+         (is (= [{:namespace (symbol namespace) :path path}]
+                (selected (parse-args ["--namespace" namespace]))))))))
+
 (deftest empty-development-selection-is-not-a-passing-run
   (with-redefs-fn
     {#'gravity.development-test-runner/load-selected-namespaces! (constantly nil)

@@ -113,6 +113,35 @@
     (is (= 3 @calls))
     (is (= baseline (cache-key)))))
 
+(deftest projection-preserves-metadata-precedence-and-stage-identities
+  (doseq [[metadata expected]
+          [[{:compiler {:c16-incremental {:fail :c16-key}
+                        :verification {:fail :c16-stale}}} {:fail :c16-key}]
+           [{:compiler {:c16-incremental nil
+                        :verification {:fail :c16-stale}}} {:fail :c16-stale}]
+           [{:compiler {:c16-incremental {}
+                        :verification {:fail :c16-stale}}} {}]
+           [{} {}]]]
+    (is (= expected
+           (c16/c16-incremental-source-overrides {:metadata metadata}))))
+  (is (= {:artifact :gravity/cache-key
+          :stage :reader
+          :source "source-input"
+          :reader "sha256:c16-reader-options"
+          :syntax "sha256:c16-syntax-stream"
+          :macro-expansion "sha256:c16-macro-expansion"
+          :namespace "sha256:c16-namespace-analysis"
+          :profile "sha256:c16-profile-manifest"
+          :target "sha256:c16-target-request"
+          :compiler "sha256:gravity-stage0-clojure"
+          :pass-contract "sha256:c16-pass-reader"
+          :dependencies "dependency-input"
+          :build-effects "sha256:c16-replay-record"
+          :capabilities "sha256:c16-capability-policy"
+          :language-facets "sha256:c16-facets"
+          :policy "sha256:c16-policy"}
+         (c16/c16-stage-cache-key :reader "source-input" "dependency-input"))))
+
 (deftest incremental-evidence-engine-emits-complete-products
   (let [artifact
         (c16/with-operations
@@ -171,3 +200,38 @@
               (catch clojure.lang.ExceptionInfo exception exception))]
         (is (some? error))
         (is (= expected-id (:id (ex-data error))))))))
+
+(deftest validation-and-proof-projection-preserve-compatibility-data
+  (let [path "c16-test.gravity"
+        artifact (c16/with-operations
+                   (operations)
+                   #(c16/compiler-c16-incremental-source-artifact path "source"))]
+    (is (= :complete (c16/c16-incremental-validate! path artifact)))
+    (doseq [[invalid expected-id]
+            [[(update-in artifact [:stage-cache-keys 0] dissoc :source) "C16-KEY"]
+             [(update-in artifact [:cache-entry-manifest 0] dissoc :artifact-id)
+              "C16-ENTRY"]
+             [(assoc-in artifact [:stale-proof-rejection-report :status] :accepted)
+              "C16-PROOF"]
+             [(assoc-in artifact [:incremental-dependency-graph :status] :invalid)
+              "C16-GRAPH"]]]
+      (let [error (try
+                    (c16/c16-incremental-validate! path invalid)
+                    nil
+                    (catch clojure.lang.ExceptionInfo exception exception))
+            data (ex-data error)]
+        (is (= expected-id (:id data)))
+        (is (= :compiler-incremental (:diagnostic-family data)))
+        (is (= {:source path :form-index 0} (:source-span data)))))
+    (let [valid (c16/c16-incremental-capability-proof artifact)
+          altered (c16/c16-incremental-capability-proof
+                   (-> artifact
+                       (assoc-in [:incremental-dependency-graph :status] :invalid)
+                       (assoc-in [:c15-diagnostics-artifact :capability-based-proof
+                                  :status] :incomplete)))]
+      (is (true? (:dependency-graph-consistent? valid)))
+      (is (true? (:c15-diagnostics-input-verified? valid)))
+      (is (false? (:dependency-graph-consistent? altered)))
+      (is (false? (:c15-diagnostics-input-verified? altered)))
+      ;; Retain the existing projection status; it is not proof authority.
+      (is (= :complete (:status altered))))))

@@ -33,6 +33,9 @@
   #{"bootstrap_test.clj"
     "cli_test.clj"
     "diagnostics_test.clj"
+    ;; Require gravity.bootstrap; run explicitly through :dev-test instead.
+    "native_syntax_invocation_test.clj"
+    "reader_invocation_test.clj"
     "reader_primitives_test.clj"
     "source_span_test.clj"
     "c2_pass_cache_test.clj"
