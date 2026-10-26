@@ -433,7 +433,17 @@ measurement when startup resources are unreviewed. Wiring passed 45 tests /
 507 assertions. The first attempt could not compile the new test because its
 `clojure.java.io` alias was missing; no controls ran, and that nonpass is retained.
 Three selected injected runner controls passed 3 tests / 104 assertions;
-language boundary passed 6 / 11 and documents passed 240 / 19. Independent
-review and integration are pending. Complete
+language boundary passed 6 / 11 and documents passed 240 / 19. Composition
+with main `06a256fd` repeated wiring and boundary controls (51 / 518) and
+documents (240 / 19); the selected injected runner evidence retains its
+original candidate attribution.
+
+Independent review found that the enclosing runtime observer swallowed a
+startup observation's interruption through its broad exception fallback.
+The correction restores and rethrows interruption before that fallback.
+Injected controls verify zero cache lookups and zero test executions on this
+interruption, while an ordinary observation error still permits fresh tests.
+The corrected wiring controls passed 46 / 518. Independent successor review
+and integration are pending. Complete
 bootstrap initialization/resource closure, a separately reviewed cache
 representation, producer evidence and RV1/RV4 remain open.

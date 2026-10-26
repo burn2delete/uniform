@@ -1530,6 +1530,9 @@
           {:id :actual-child-runtime-v1
            :sha256 (sha256-id (pr-str fingerprints))
            :fingerprints fingerprints})))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
     (catch Exception _
       ;; Unknown launch inputs disable the optional optimization, not the test.
       nil)))

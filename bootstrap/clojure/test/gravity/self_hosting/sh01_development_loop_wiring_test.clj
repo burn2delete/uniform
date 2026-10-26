@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh01-development-loop-wiring-test
   (:require [clojure.edn :as edn]
+            [clojure.java.basis :as basis]
             [clojure.test :refer [deftest is testing]]
             [clojure.java.io :as io]
             [clojure.java.shell :as shell]
@@ -1130,6 +1131,40 @@
     (is (= 4 @operations))
     (is (zero? @measurements))
     (is (zero? @lookups))))
+
+(deftest runtime-startup-revalidation-propagates-interruption-without-execution
+  (let [resource io/resource]
+    (doseq [failure [(InterruptedException. "startup observation interrupted")
+                     (ex-info "startup observation unavailable" {})]]
+      (let [observations (atom 0)
+            operations (atom 0)
+            lookups (atom 0)]
+        (try
+          (with-redefs [basis/current-basis (constantly {})
+                        wiring/project-startup-resources-absent? (constantly true)
+                        io/resource (fn [name]
+                                      (if (= "user.clj" name)
+                                        (when (= 2 (swap! observations inc)) (throw failure))
+                                        (resource name)))
+                        cache/lookup-or-run! (fn [& _] (swap! lookups inc)
+                                              (throw (ex-info "cache lookup must not run" {})))]
+            (try
+              (let [result (wiring/run-child-unit!
+                            ['gravity.compiler-pass-manifest-test]
+                            {:arguments ["not-the-actual-cli"]}
+                            #(do (swap! operations inc) {:status :passed :exit-code 0}))]
+                (is (not (instance? InterruptedException failure)))
+                (is (= :unknown-child-configuration
+                       (get-in result [:child-cache-receipt :reason])))
+                (is (true? (:tests-executed? result))))
+              (catch InterruptedException interrupted
+                (let [interrupted? (Thread/interrupted)]
+                  (is (identical? failure interrupted))
+                  (is interrupted?)))))
+          (is (= 2 @observations))
+          (is (= (if (instance? InterruptedException failure) 0 1) @operations))
+          (is (zero? @lookups))
+          (finally (Thread/interrupted)))))))
 
 (deftest child-jvm-file-loading-and-unknown-options-stay-fresh
   (let [supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
