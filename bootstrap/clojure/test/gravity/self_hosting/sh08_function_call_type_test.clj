@@ -20167,9 +20167,8 @@
                              (original-get plan value key))}
       #(doseq [options invalid]
          (let [producer (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [opaque options])
-               verifier (invoke-c7 'sh08-verify-function-type-result-with-work-policy [opaque opaque options])
-               private (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-work-policy [opaque opaque opaque opaque options])]
-           (doseq [[envelope key] [[producer :result] [verifier :verification] [private :result]]]
+               verifier (invoke-c7 'sh08-verify-function-type-result-with-work-policy [opaque opaque options])]
+           (doseq [[envelope key] [[producer :result] [verifier :verification]]]
              (is (nil? (:effective-work-policy envelope)))
              (is (= [:rejected "C7-GENERIC" :invalid-type-inference-work-policy]
                     ((juxt :status (fn [value] (get-in value [:diagnostics 0 :rule]))

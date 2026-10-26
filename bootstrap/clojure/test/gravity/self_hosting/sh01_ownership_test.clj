@@ -176,7 +176,11 @@
       (is (= 202 (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
-      (is (= 15 (count support-paths)))
+      (is (= 17 (count support-paths)))
+      (doseq [relative ["bootstrap/clojure/test/gravity/native_syntax_invocation_test.clj"
+                        "bootstrap/clojure/test/gravity/reader_invocation_test.clj"]]
+        (is (contains? support-paths relative))
+        (is (some #{relative} (get-in record [:coordinator-owned :central-routing]))))
       (is (contains? support-paths
                      "bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj"))
       (is (every? #(or (not (contains? module-owners %))

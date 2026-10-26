@@ -1,4 +1,4 @@
-(ns gravity.c16-incremental.artifact)
+(ns gravity.build.incremental.artifact)
 
 (def stages
   [:reader :macro-expansion :type-check :effect-check :safety-analysis :mir
