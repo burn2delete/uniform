@@ -112,4 +112,41 @@
     (is (seq (:unresolved-source-occurrences report)))
     (is (some #{:no-dashboard-write} (:limits report)))))
 
+(deftest proposed-source-disposition-is-not-reviewed-closure
+  (let [[manifest sources] (complete-fixture)
+        proposed (assoc-in manifest [:source-dispositions 0 :review-state] :proposed)]
+    (is (false? (:denominator-ready? (rr/project proposed sources))))
+    (is (= 1 (count (:unresolved-source-occurrences (rr/project proposed sources)))))))
+
+(deftest canonical-task-region-controls-the-projection
+  (let [record "- [ ] `reader/identity` Identity\n\nCurrent evidence/status: Partial; fixture only.\n\nDone when (yes/no): Declared roots determine identity."
+        text (str "- [x] `reader/identity` historical checkbox\n<!-- active:start -->\n\n" record "\n<!-- active:end -->")]
+    (is (= "Partial; fixture only." (:status (requirement-evidence/task-record text "active" "reader/identity"))))
+    (is (false? (:checked? (requirement-evidence/task-record text "active" "reader/identity"))))
+    (is (thrown? Exception (requirement-evidence/task-record text "missing" "reader/identity")))
+    (is (thrown? Exception (requirement-evidence/task-record (str/replace text record (str record "\n\n" record)) "active" "reader/identity")))
+    (is (thrown? Exception (requirement-evidence/task-record (str/replace text "Current evidence/status: Partial;" "Current evidence/status: Accepted;") "active" "reader/identity")))))
+
+(deftest historical-facets-never-upgrade-canonical-acceptance
+  (let [task "<!-- active:start -->\n\n- [ ] `reader/identity` Identity\n\nCurrent evidence/status: Partial; fixture only.\n\nDone when (yes/no): All supplied paths.\n<!-- active:end -->"
+        row "| 2026-07-02 | Recorder | `P18-T00` | proof.edn | fixture only |"
+        ledger (str "## Evidence Ledger\n" row "\n")
+        files {"task.md" task "proof.edn" "{:fixture {:path-preserved? true}}" "ledger.md" ledger}
+        support {:facet "paired paths" :receipt {:path "proof.edn"}
+                 :selector [:fixture :path-preserved?] :expected true
+                 :ledger {:path "ledger.md" :date "2026-07-02" :task-id "P18-T00" :line-sha256 (rr/sha256 row)}
+                 :verification-date "2026-07-02" :source-baseline (apply str (repeat 40 "a"))}
+        requirement {:id "source/provenance" :task-reference {:path "task.md" :marker "active" :id "reader/identity"}
+                     :historical-support [support]}
+        project #(requirement-evidence/project % (fn [pin] (get files (:path pin))) rr/sha256)
+        report (project requirement)]
+    (is (= :unassessed (:current-acceptance report)))
+    (is (= 1 (count (:historical-support report))))
+    (is (false? (get-in report [:canonical-task :checked?])))
+    (is (thrown? Exception (project (assoc-in requirement [:historical-support 0 :selector] [:unsupported]))))
+    (is (thrown? Exception (project (assoc-in requirement [:historical-support 0 :verification-date] "2026-07-03"))))
+    (is (thrown? Exception (requirement-evidence/project requirement
+                            (fn [pin] (if (= "ledger.md" (:path pin)) (str row "\n## Evidence Ledger\n")
+                                          (get files (:path pin)))) rr/sha256)))))
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

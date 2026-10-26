@@ -24,7 +24,12 @@ The reviewer holds any project-wide percentage pending actual atomic scope,
 semantic deduplication, full-project extension relations and evidence review.
 An audit extraction defect involving multiline P15 status text was found; the
 original source remains authoritative and first-line status summaries receive
-no acceptance authority. Replacement auditor receipts must resolve that defect.
+no acceptance authority. The corrected audit and independently reviewed additive
+recovery preserve complete status spans and dated ledger containment. All 189
+individual-row lookup gaps have grouped/range receipt support: 174 scoped stage0
+artifact-validation claims and 15 historical foundation-validator claims. These
+are historical discovery inputs, not current requirement acceptance. The manifest
+retains their immutable audit and independent suitability identities.
 
 ## Validation and authority
 
@@ -54,3 +59,27 @@ supersession authority, rationale, exact source occurrences and versioned lineag
 Eight focused tests / 49 assertions pass, including the three regressions and
 valid amendment/supersession controls. Full semantic reconciliation and the
 acceptance projection remain unfinished; no completion rate is accepted.
+
+## First semantic and historical-evidence slice
+
+The proposed IDs `source/reading/canonical-source-kinds`,
+`source/provenance/original-path` and
+`source/identity/declared-root-relative-path` distinguish three behaviors in L1's
+Source Units paragraph. The exact compound occurrence is preserved and linked
+to all three; its proposed disposition does not yet close source readiness.
+Independent review must check the split and cross-family equivalence before
+these IDs enter an accepted denominator.
+
+The marked Reader task remains Partial and unchecked. The dated P18-T00 ledger
+and pinned proof support historical paired extension recognition/parity and
+actual-extension provenance for hosted/stage0 fixtures. They do not establish
+every unsupported-extension rejection, complete provenance population,
+declared-root-relative identity, current consumed closure or seedless release.
+The original 2026-07-02 verification date remains visible; inspecting the receipt
+does not claim a new compiler validation run.
+
+Eleven focused tests / 62 assertions pass, including canonical-region isolation,
+duplicate task rejection, checkbox/status consistency, dated ledger containment,
+receipt selector mismatch, date mismatch and proposed-disposition withholding.
+Historical support is projected separately from unassessed current acceptance.
+No implementation task, original receipt or dashboard store was modified.

@@ -1,6 +1,105 @@
 {:inventory-sha256
  "2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc",
- :requirements [],
+ :requirements
+ [{:acceptance-facets
+   ["Both canonical kinds remain accepted without alias-only or deprecation treatment."
+    "Other extensions fail before form reading; historical parity is not evidence for this rejected-extension boundary."],
+   :source-binding :exact-compound-paragraph,
+   :obligation
+   "Recognize .qst and .gravity as first-class source kinds and reject other source extensions before reading forms.",
+   :acceptance-authority :canonical-task-only,
+   :atomicity :proposed,
+   :nonoverlap :proposed,
+   :id "source/reading/canonical-source-kinds",
+   :historical-support
+   [{:facet "co-canonical extension recognition and fixture parity",
+     :receipt
+     {:path
+      "docs/artifacts/phase-18/source-extensions/p18-t00-co-canonical-source-extensions-proof.edn",
+      :sha256
+      "1e2393eb447f1cf55927b45c3a43a11d7562dd8ac3b999726d3ba68c3ea0c559"},
+     :selector
+     [:capability-based-proof :co-canonical-source-extensions?],
+     :expected true,
+     :ledger
+     {:path
+      "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+      :sha256
+      "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+      :line-sha256
+      "164ca514f8fd84b9e6e13a555222294eaf327ca06028243ecd86984885224ea0",
+      :date "2026-07-02",
+      :task-id "P18-T00"},
+     :verification-date "2026-07-02",
+     :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+     :qualification
+     "Historical hosted/stage0 paired fixtures and wrapper parity only. Does not establish rejection of every unsupported extension or seedless release."}],
+   :task-reference
+   {:path "specs/reader-workflow/tasks.md",
+    :sha256
+    "cf479cfbf7a6c766aca97cb4442ebd89281e0bc446ce596dffb74fe2c8f46dee",
+    :marker "reader-implementation-tasks",
+    :id
+    "reader/finite-remaining-work/decode-and-source-identity-closure"}}
+  {:acceptance-facets
+   ["Reader source maps and downstream source-unit/sidecar provenance retain supplied extension."
+    "Do not substitute a normalized canonical extension for the supplied extension."],
+   :source-binding :exact-compound-paragraph,
+   :obligation
+   "Preserve the actual supplied source-unit path and extension in provenance.",
+   :acceptance-authority :canonical-task-only,
+   :atomicity :proposed,
+   :nonoverlap :proposed,
+   :id "source/provenance/original-path",
+   :historical-support
+   [{:facet
+     "actual supplied extension in source-unit, reader and sidecar paths",
+     :receipt
+     {:path
+      "docs/artifacts/phase-18/source-extensions/p18-t00-co-canonical-source-extensions-proof.edn",
+      :sha256
+      "1e2393eb447f1cf55927b45c3a43a11d7562dd8ac3b999726d3ba68c3ea0c559"},
+     :selector
+     [:capability-based-proof :provenance-preserves-actual-extension?],
+     :expected true,
+     :ledger
+     {:path
+      "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+      :sha256
+      "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+      :line-sha256
+      "164ca514f8fd84b9e6e13a555222294eaf327ca06028243ecd86984885224ea0",
+      :date "2026-07-02",
+      :task-id "P18-T00"},
+     :verification-date "2026-07-02",
+     :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+     :qualification
+     "Historical paired hello/core-app fixture paths only; complete provenance population and current consumed closure are unassessed."}],
+   :task-reference
+   {:path "specs/reader-workflow/tasks.md",
+    :sha256
+    "cf479cfbf7a6c766aca97cb4442ebd89281e0bc446ce596dffb74fe2c8f46dee",
+    :marker "reader-implementation-tasks",
+    :id
+    "reader/finite-remaining-work/decode-and-source-identity-closure"}}
+  {:acceptance-facets
+   ["Ambient working-directory changes do not substitute a different root for the declared root."
+    "Preserving a supplied path does not by itself establish stable root-relative identity."],
+   :source-binding :exact-compound-paragraph,
+   :obligation
+   "Derive stable source identity from the declared project-root identifier and the source path relative to that root.",
+   :acceptance-authority :canonical-task-only,
+   :atomicity :proposed,
+   :nonoverlap :proposed,
+   :id "source/identity/declared-root-relative-path",
+   :historical-support [],
+   :task-reference
+   {:path "specs/reader-workflow/tasks.md",
+    :sha256
+    "cf479cfbf7a6c766aca97cb4442ebd89281e0bc446ce596dffb74fe2c8f46dee",
+    :marker "reader-implementation-tasks",
+    :id
+    "reader/finite-remaining-work/decode-and-source-identity-closure"}}],
  :scope-state :open,
  :schema-version 1,
  :scope-version "gravity-project-1-draft",
@@ -1468,7 +1567,17 @@
    :sha256
    "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3"}],
  :kind :gravity/requirement-reconciliation,
- :source-dispositions [],
+ :source-dispositions
+ [{:occurrence-id
+   "L1/source/fe1ed0c47976768e2ffd57d6ece7a7cfd5c3c67e4bd23c9cdb942f9a54402fff",
+   :kind :requirement,
+   :review-state :proposed,
+   :requirement-ids
+   ["source/reading/canonical-source-kinds"
+    "source/provenance/original-path"
+    "source/identity/declared-root-relative-path"],
+   :rationale
+   "One compound paragraph states three independently observable behaviors; extension recognition, provenance and root-relative identity have distinct acceptance boundaries. Repeated phase/task views do not add requirements."}],
  :scope-decisions
  [{:id "scope/release-extension-relations",
    :state :unresolved,
@@ -1498,5 +1607,17 @@
    [:requirements-section-only-is-not-whole-scope
     :unchanged-path-is-not-complete-consumed-closure
     :grouped-receipt-may-cover-multiple-original-tasks
-    :historical-status-is-not-current-acceptance]}],
+    :historical-status-is-not-current-acceptance]}
+  {:stage0-artifact-validation-claims 174,
+   :recovered-claims 189,
+   :audit-tree "c29c58863d300408400619ca721454c45f5bb5de",
+   :acceptance-authority :none,
+   :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+   :audit-commit "f3b13c5b5f8240f2f2f3be9a2f9aef3e55a1c9be",
+   :kind :historical-recovery-overlay,
+   :independent-suitability-receipt-sha256
+   "4fc12616e38d71a8dcf2b915da534e447d30cc802770f8d50c6107a515d1c3a0",
+   :qualification
+   "Grouped dated receipts recover all 189 individual-row lookup gaps. Preserve original scoped work; neither changed dependencies nor unchanged direct paths establish current consumed closure. The incomplete terminal Phase 15 seed-retirement proof overrides broad completion prose for that final gate, without erasing 14 supported stage0 tasks.",
+   :retired-foundation-validator-claims 15}],
  :aliases []}

@@ -3,6 +3,8 @@
   (:require [clojure.edn :as edn] [clojure.java.io :as io]
             [clojure.string :as str] [gravity.tooling.strict-json :as json]))
 
+(load-file "tools/requirement_evidence.clj")
+
 (def manifest-path "contracts/requirement-reconciliation.edn")
 (defn require! [condition message]
   (when-not condition (throw (ex-info message {:diagnostic "REQUIREMENT-RECONCILIATION"}))))
@@ -132,6 +134,7 @@
     (let [unresolved (vec (for [o occurrences
                                :when (and (= :source-block (:structural-kind o))
                                           (or (nil? (get mapped (:id o)))
+                                              (= :proposed (:review-state (get mapped (:id o))))
                                               (= :scope-decision (:kind (get mapped (:id o))))))]
                            (:id o)))
           unresolved-reqs (filter #(not (and (= :reviewed (:atomicity %))
@@ -180,6 +183,16 @@
           result (project manifest texts)]
       (require! (= (count sources) (count texts)) "Duplicate original/extension source ID")
       (assoc result :source-baseline (:source-baseline manifest)
+             :evidence-projections
+             (mapv (fn [requirement]
+                     (requirement-evidence/project
+                      requirement
+                      (fn [{:keys [path sha256]}]
+                        (let [text (read-source (checked-path root path))]
+                          (require! (= sha256 (requirement-reconciliation/sha256 text))
+                                    (str "Task/evidence source drift: " path))
+                          text)) sha256))
+                   (filter :task-reference (:requirements manifest)))
              :manifest-sha256 (sha256 (read-source (checked-path root manifest-path)))
              :source-digests (into (sorted-map) (map (fn [[id text]] [id (sha256 text)]) texts))))))
 

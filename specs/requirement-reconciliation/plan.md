@@ -51,3 +51,32 @@ component writers and the dashboard store owner retain their exact paths.
 Preserve original IDs and source histories. Source-block hashes are discovery
 identities, not atomic requirement counts; semantic requirement identities need
 explicit reviewed lineage when split, merged, added or superseded.
+
+## Finite classification batches
+
+The following disjoint source families cover the original 240 documents.
+Nonblank blocks are provenance units to dispose, not denominator units. Five
+extension/policy sources add 151 nonblank blocks and remain explicit scope work.
+
+| Family | Original documents | Nonblank source blocks | Central disposition work |
+| --- | ---: | ---: | --- |
+| Foundation D0-D9 | 10 | 559 | Documentation lock, foundation invariants and milestone aliases |
+| Language L1-L19 | 19 | 1401 | Source, reader, core, effects, typing and language behavior |
+| Safety, profiles, performance | 39 | 2014 | Shared invariants, profile refinements and selective accounting removal |
+| Mathematics, compiler, backends | 43 | 2146 | Stage interfaces, mathematical behavior and target refinements |
+| Runtime, domains, schemas | 42 | 1481 | Runtime interfaces, specialist domain gaps and schema facets |
+| AI, build, tools, testing | 49 | 1335 | Artifact production, projection and harness boundaries |
+| Bootstrap, standard library, governance | 38 | 1009 | Historical stage0 support, library behavior and governance gaps |
+
+Family proposals fold schemas, diagnostics and conformance cases into acceptance
+facets where they constrain the same observable behavior. Candidate clause counts
+are not summed. Shared invariants are joined centrally; distinct contextual
+behavior remains a refinement or separate requirement with a stated boundary.
+
+The first central slice proposes three source-unit requirements from one exact
+L1 paragraph. Until independent semantic review, that paragraph remains unresolved
+for readiness: zero reviewed dispositions, one proposed disposition, 10,096
+unresolved nonblank source blocks. The three IDs are proposed semantic units,
+not an approved denominator. Two have dated historical fixture support; stable
+root-relative identity has no qualifying support in those receipts. All project
+scope and evidence qualification work remains visible in the draft.
