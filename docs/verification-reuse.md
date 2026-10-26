@@ -328,6 +328,8 @@ or acceptance coverage.
 | The sixteen `c2_pass_cache` loads | Fifteen facade loads plus `adapter_request.clj`'s `capacity_handoff` load introduce additional source during namespace initialization. | The literal load order and owning namespace must survive a future representation. |
 | `00811-sh03-reader-plan-validate.clj` and `00885-sh07-core-source-relative-path.clj` | The first cached binding wraps its builder in `delay`; the second uses `reify` methods that invoke binding/source-key functions when called. Their bodies must not be counted as already executed merely because they appear under `def`. | Macro resolution, method invocation and callers remain separate obligations. |
 | `00945-p15-s23-sh07-b51-plan-linker-02.clj` | The byte-array class initializer calls `Class/forName` with `[B`. This is a runtime class dependency, not an accepted-source byte allowance. | Runtime/classpath identity remains required. |
+| `00826-standard-reader-options.clj` | Initialization computes the policy hash through `reader-canonical-hash`, `c2-artifact-identity-call` and `c2-artifact-identity-ops`. That map contains live function values passed through `with-operations` and the compatibility trampoline. | `fn?` validates callable shape, not purity. The default digest/canonical bodies are observed source, but the actual operation bindings and transitive calls require a supported runtime contract. |
+| `00438-p15-s23-artifact-context-contract-version.clj` | `p15-s23-required-evidence-keys` builds a set from the declared required-evidence vector and adds the seed-retirement key; its rejected-candidate initializer is data construction. | Preserve the referenced data and function binding; this is no seed-retirement acceptance evidence. |
 | Local interposition macros and the selected `deftest` | Inspected macro definitions construct expansion data. Function/method/test bodies and macro expansion are different stages. | Generated code, macro bindings and later calls cannot be dismissed by syntactic containment. |
 
 The installed Clojure source inspected for `fn`, `defn`, `delay`, `reify`,
@@ -344,6 +346,15 @@ The report retains the body candidates, spelling assumptions and unresolved
 call/effect status. It never expands a macro or resolves an observed runtime
 Var. The shared reader policy is reused from the dependency audit; its old
 first-form behavior remains intact.
+
+The concrete dynamic seam is the policy initializer's callback map in
+`compiler/00799-c2-artifact-identity-ops.clj` and invocation bridge in
+`compiler/00801-c2-artifact-identity-call.clj`. The leaf's operation validator
+and `call-entrypoint-body` check callable shape and establish invocation state;
+they do not certify an I/O-free function body. The observed default hash path
+ends in the canonical leaf and `gravity.digest`, but a static function name or
+unchanged map is not evidence that the live bindings cannot differ. No callback,
+authentication, class or invocation guard is removed to make this audit close.
 
 The distinct `:gravity/compatibility-initialization-observations-v1` format is
 an audit representation only. It carries no cache declaration or acceptance
