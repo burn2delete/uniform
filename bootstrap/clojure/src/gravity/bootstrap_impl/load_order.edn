@@ -1493,6 +1493,7 @@
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00879-sh06-resolution-artifact-verification-bounded-02.clj", :reader-line 153143, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-artifact-verification-bounded*"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification.clj", :reader-line 153243, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-artifact-verification*"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification-02.clj", :reader-line 153482, :owner :self-hosting-sh03-sh07, :first-form "sh06-authenticated-sh05-parent!"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "resolution-construction-eligible?"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification-03.clj", :reader-line 153672, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-source-artifact-candidate"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00881-sh06-resolution-finalize-candidate.clj", :reader-line 153464, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-finalize-candidate"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00881-sh06-resolution-finalize-candidate-02.clj", :reader-line 153672, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-deserialize"}
