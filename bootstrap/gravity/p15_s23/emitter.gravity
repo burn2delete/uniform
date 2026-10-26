@@ -12786,7 +12786,7 @@
        :operation 'not= :semantic-owner 'gravity.core :intrinsic :gravity.core/atomic-value-inequality
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
 
        :inequality-policy {:operation :complement-of-binary-atomic-value-equality
                          :domain [:nil :boolean :character :string :symbol :keyword]
@@ -14128,7 +14128,7 @@
 
 
                                       :value-origin {:kind :bare-keyword-anchor-set-value-equality :operation '= :operand-node-ids args}
-                                      :operand-type-work (get validation :work-count) :profile-validation-work (- reserved base)
+                                      :profile-validation-work (- reserved base)
                                       :result-type-work result-type-work :anchor-domain-work anchor-domain-work
                                       :anchor-operand-index anchor-index :bare-operand-index bare-index :anchor-type anchor-type
                                       :operand-counts (if (= bare-index 0) [nil anchor-count] [anchor-count nil])
@@ -14530,7 +14530,6 @@
                                                                   :right-domain :not-refined}
                                                 :value-origin {:kind :checked-bare-set-equality
                                                                :operation '= :operand-node-ids args}
-                                                :operand-type-work (get validation :work-count)
                                                 :fixed-structural-work fixed-structural-work
                                                 :function-record-slot-work function-record-slot-work
                                                 :function-record-census-work (get records-data :work-count)
