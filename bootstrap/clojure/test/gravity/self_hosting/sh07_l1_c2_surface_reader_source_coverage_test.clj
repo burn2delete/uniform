@@ -368,23 +368,17 @@
                                :l1-c2-surface-reader]))))
     (is true "Set GRAVITY_SH07_B39_CONTRACT=1 after coordinator registration")))
 
-(deftest sh07-b39-l1-c2-measured-census-fits-declared-bounds
+(deftest sh07-b39-l1-c2-authenticated-request-census
   (if (= "1" (System/getenv "GRAVITY_SH07_B39_CENSUS"))
     (let [contract (edn/read-string
                     (slurp (path proof-contract-relative-path)))
-          bounds (:bounds contract)
           result (proof-census/census (path source-relative-path))
           measurements (:measurements result)]
       (is (= :gravity/sh07-proof-census (:artifact result)))
-      (is (= :within-declared-bounds (:status result)))
+      (is (= :authenticated-request (:status result)))
       (is (= expected-source-revision-id
              (get-in result [:request :source-revision-id])))
       (is (= 32 (:fragments measurements) (:top-level-forms measurements)))
-      (is (<= (:maximum-fragment-forms measurements)
-              (:maximum-fragment-forms bounds)))
-      (is (<= (:carrier-nodes measurements)
-              (:maximum-module-carrier-nodes bounds)))
-      (is (empty? (:violations result)))
       (is (false? (:performed-sh07-lowering? result)))
       (is (= 35 (count (:authoritative-modules contract))))
       (is (= 31 (count (:required-core-product-counts contract)))))

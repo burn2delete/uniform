@@ -62,7 +62,7 @@
 (defn- sh06-resolution-binding-current! [source-path binding]
   (when-not (= (:input-key binding) (sh06-resolution-current-source-key))
     (sh06-resolution-boundary-fail! "C5-UNRESOLVED" source-path
-      :resolution-source-or-toolchain-drift (dissoc binding :plan :source-text) {}))
+      :resolution-source-or-toolchain-drift (dissoc binding :plan :source-text :reader-invocation) {}))
   binding)
 
 (defn sh06-resolution-current-binding!
@@ -118,28 +118,33 @@
        function {:contained-host-error (.getName (class error))
                  :cause-message (.getMessage error)}))))
 
-(def sh06-resolution-transport-bounds
-  ;; Per-component request, replay, result, and upstream carrier limits.  These
-  ;; remain strict even though the aggregate artifact serializes several
-  ;; independently bounded products and projections together.
-  {:maximum-carrier-nodes 33554432
-   :maximum-carrier-depth 64
-   :maximum-container-width 131072})
+;; Temporary value for external 00580/00897 two-argument callers. The SH06
+;; carrier validator ignores that obsolete argument; this is not a quota.
+(def sh06-resolution-artifact-bounds nil)
 
-(def sh06-resolution-artifact-bounds
-  ;; The checked-core self-input exceeds the earlier reader-sized envelope.
-  ;; Keep a finite power-of-two aggregate ceiling while retaining independent
-  ;; component, depth, and width checks.
-  {:maximum-carrier-nodes 67108864
-   :maximum-carrier-depth 64
-   :maximum-container-width 131072
-   ;; The serialized ceiling is checked before EDN parsing.
-   :maximum-serialized-bytes 1073741824})
+(defn- sh06-resolution-envelope-source-options [binding]
+  (if (= :development-unadmitted (:revision-status binding))
+    {:source :development-current}
+    {}))
 
-(def sh06-resolution-diagnostic-measurement-bounds
-  ;; Failure-only measurement ceiling.  This never authorizes transport or
-  ;; artifact acceptance; it exists to replace blind resource-bound changes
-  ;; with an exact finite observation when the normal aggregate gate rejects.
-  {:maximum-carrier-nodes 134217728
-   :maximum-carrier-depth 64
-   :maximum-container-width 131072})
+(declare ^:private sh03-reader-authenticated-envelope-options)
+
+(defn- sh06-resolution-reader-invocation []
+  (:reader-invocation *sh06-resolution-operation-binding*))
+
+(defn- sh06-resolution-with-reader-invocation [source-path invocation operation]
+  (when (some? invocation)
+    (sh03-reader-authenticated-envelope-options source-path invocation))
+  (let [current (sh06-resolution-current-binding! source-path)]
+    (binding [*sh06-resolution-operation-binding* (assoc current :reader-invocation invocation)]
+      (operation))))
+
+(defn- sh06-resolution-verify-sh05 [artifact]
+  (if-let [invocation (sh06-resolution-reader-invocation)]
+    (sh05-macro-artifact-verification artifact invocation)
+    (sh05-macro-artifact-verification artifact)))
+
+(defn- sh06-resolution-validate-c3! [source-path artifact]
+  (if-let [invocation (sh06-resolution-reader-invocation)]
+    (c3-syntax-validate! source-path artifact invocation)
+    (c3-syntax-validate! source-path artifact)))

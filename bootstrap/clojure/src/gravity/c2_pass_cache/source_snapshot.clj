@@ -1,21 +1,13 @@
 ;; Semantic C2 pass-cache component loaded by gravity.c2-pass-cache.
 ;; It deliberately evaluates in the facade namespace to retain private test seams.
-(defn bounded-source-snapshot!
-  "Read a no-follow regular source file into one bounded immutable snapshot.
+(defn source-snapshot!
+  "Read a no-follow regular source file into one immutable snapshot.
 
   The returned byte array is an execution input, not part of the key record;
   only its byte count and SHA-256 identity enter the semantic preimage."
-  ([path]
-   (bounded-source-snapshot! path maximum-source-bytes))
-  ([path byte-limit]
-   (when-not (and (integer? byte-limit)
-                  (pos? byte-limit)
-                  (<= byte-limit maximum-source-bytes))
-     (cache-fail! "C16-KEY" "source snapshot bound is invalid"
-                  {:maximum-source-bytes maximum-source-bytes
-                   :requested byte-limit}))
+  [path]
    (with-contained-host-errors
-    "C16-KEY" :bounded-source-snapshot
+    "C16-KEY" :source-snapshot
     (fn []
       (let [source-path (normalized-absolute-path! path)
             parent (.getParent source-path)
@@ -24,7 +16,7 @@
         (with-open [raw-parent (Files/newDirectoryStream parent)]
           (let [parent-stream
                 (require-secure-directory-stream!
-                 raw-parent :bounded-source-snapshot)
+                 raw-parent :source-snapshot)
                 _ (verify-secure-directory-handle! parent-stream
                                                    parent-identity)
                 {:keys [^BasicFileAttributes basic
@@ -36,17 +28,16 @@
                            (not (.isSymbolicLink basic))
                            (= 1 links)
                            (= (current-owner-name) (.getName (.owner posix)))
-                           (<= 0 (.size basic) byte-limit))
+                           (<= 0 (.size basic)))
               (cache-fail!
-               "C16-KEY" "source snapshot is not a bounded secure file"
+               "C16-KEY" "source snapshot is not a secure file"
                {:path (str source-path)
                 :regular-file? (.isRegularFile basic)
                 :symbolic-link? (.isSymbolicLink basic)
                 :link-count links
                 :owner (.getName (.owner posix))
                 :required-owner (current-owner-name)
-                :observed-bytes (.size basic)
-                :maximum-bytes byte-limit}))
+                :observed-bytes (.size basic)}))
             (let [expected-size (long (.size basic))
                   raw-channel
                   (.newByteChannel ^SecureDirectoryStream parent-stream relative
@@ -55,7 +46,7 @@
                                    (make-array FileAttribute 0))
                   channel
                   (require-file-channel! raw-channel "C16-KEY"
-                                         :bounded-source-snapshot)]
+                                         :source-snapshot)]
               (with-open [channel channel]
                 (let [first-bytes
                       (read-channel-exact! channel expected-size "C16-KEY"
@@ -88,12 +79,16 @@
                   (verify-secure-directory-handle! parent-stream
                                                    parent-identity)
                   (verify-directory-identity! parent-identity)
-                  {:artifact :gravity/bounded-source-snapshot
+                  {:artifact :gravity/source-snapshot
                    :schema-version 1
                    :canonical-path (str source-path)
                    :byte-count (alength first-bytes)
                    :bytes-hash
                    (str "sha256:"
                         (digest/sha256-bytes-hex first-bytes))
-                   :bytes first-bytes
-                   :maximum-source-bytes byte-limit}))))))))))
+                   :bytes first-bytes})))))))))
+
+(defn bounded-source-snapshot!
+  "Compatibility entrypoint; legacy size arguments impose no admission quota."
+  ([path] (source-snapshot! path))
+  ([path _legacy-size] (source-snapshot! path)))

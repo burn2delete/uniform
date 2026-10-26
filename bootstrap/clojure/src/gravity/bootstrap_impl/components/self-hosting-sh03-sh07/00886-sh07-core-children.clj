@@ -16,15 +16,12 @@
     (when-not
      (and evidence
           (= :decimal (:kind evidence))
-          (= value (:decoded evidence))
-          (<= (.bitLength ^java.math.BigInteger unscaled)
-              p15-s23-c6c10-max-integer-bits)
-          (<= (Math/abs scale) 65536))
+          (= value (:decoded evidence)))
       (throw
-       (ex-info "Decimal literal is not exactly bound to bounded C2 evidence"
+       (ex-info "Decimal literal is not exactly bound to C2 evidence"
                 {:id "C6-ORIGIN" :stage :core-lowering
                  :source-path source-path
-                 :reason :exact-bounded-decimal-c2-evidence})))
+                 :reason :exact-decimal-c2-evidence})))
     {:kind :gravity/arbitrary-decimal-literal
      :unscaled-value (.toString unscaled)
      :scale scale

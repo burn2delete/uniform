@@ -95,23 +95,16 @@
         (is (keyword? (:schema-field diagnostic)))
         (is (= {:digest-ref 0} (:diagnostic-id diagnostic)))))))
 
-(deftest construction-preflights-input-and-expanded-private-record
+(deftest construction-rejects-noncanonical-data-without-rendering-it
   (let [arguments (fields (:event (original "delimiter" "gravity")))
         calls (atom 0)
         opaque (reify Object (toString [_] (swap! calls inc)
-                               (throw (ex-info "not renderable" {}))))
-        wide (into {} (map #(vector (keyword (str "k" %)) 1) (range 513)))
-        deep (nth (iterate vector :leaf) 130)]
-    (doseq [facts [opaque wide deep (list :not-canonical)]]
+                               (throw (ex-info "not renderable" {}))))]
+    (doseq [facts [opaque (list :not-canonical)]]
       (let [result (c15 'build-c15-diagnostic (assoc arguments 8 facts))]
         (is (= :rejected (:status result)))
         (is (= "C15-SCHEMA" (:rule (failure result))))))
-    (is (= 0 @calls))
-    (let [facts (into {} (map #(vector (keyword (str "k" %))
-                                      (apply str (repeat 4000 "x"))) (range 15)))
-          result (c15 'build-c15-diagnostic (assoc arguments 8 facts))]
-      (is (= :rejected (:status result)))
-      (is (= :constructed-carrier-bound (get-in result [:diagnostics 0 :facts :reason]))))))
+    (is (= 0 @calls))))
 
 (deftest original-fields-are-separate-from-untrusted-verification-inputs
   ;; Resolved positive verification awaits the actual 00813 C15 binding seam.

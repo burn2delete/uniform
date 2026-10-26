@@ -7,14 +7,13 @@
         facts (:facts diagnostic)
         details (:rule-specific facts)
         ordinal (get-in facts [:semantic-span :ordinal])
-        width (:maximum-container-width sh06-resolution-transport-bounds)
         reference-fields [:name :qualifier :position :scope-chain]]
     (when (and (= :c5-name-resolution (:diagnostic-family diagnostic))
                (= :name-resolution (:stage diagnostic))
                (not (contains? diagnostic :origin-chain))
                (map? facts) (map? details)
-               (vector? references) (<= (count references) width)
-               (vector? syntax-stream) (<= (count syntax-stream) width)
+               (vector? references)
+               (vector? syntax-stream)
                (integer? ordinal) (pos? ordinal) (<= ordinal (count references)))
       (let [reference (get references (dec ordinal))
             candidates (:candidate-bindings diagnostic)
@@ -88,22 +87,27 @@
    (let [contextual? (not= ::legacy context)
         _ (when (and contextual? (nil? context))
             (sh06-resolution-c5-fail! source-path :missing-context {}))
-        _ (sh06-authenticated-sh05-parent!
-            source-path sh05-artifact)
+        prepared (when (and (not contextual?) (resolution-construction-eligible?))
+                   (resolution-construction-inputs source-path sh05-artifact legacy?))
+        _ (when-not prepared
+            (sh06-authenticated-sh05-parent! source-path sh05-artifact))
         c2-artifact (get-in sh05-artifact
                             [:gravity-macro-boundary
                              :authenticated-sh04-artifact
                              :c2-reader-artifact])
         source-before
-        (if contextual?
+        (if prepared (:source-before prepared)
+         (if contextual?
           (sh06-authenticated-source-snapshot!
            source-path c2-artifact :source-authentication-before-c5
            legacy? context)
           (sh06-authenticated-source-snapshot!
-           source-path c2-artifact :source-authentication-before-c5 legacy?))
-        request (if contextual?
+           source-path c2-artifact :source-authentication-before-c5 legacy?)))
+        request (if prepared
+                  (resolution-module-request-from-base source-path sh05-artifact module-inputs (:base prepared))
+                 (if contextual?
                   (sh06-resolution-request source-path sh05-artifact context)
-                  (sh06-resolution-module-request source-path sh05-artifact module-inputs))
+                  (sh06-resolution-module-request source-path sh05-artifact module-inputs)))
         binding (if contextual?
                   (sh06-resolution-context-plan-binding! source-path context)
                   (sh06-resolution-current-binding! source-path))
@@ -117,7 +121,7 @@
                   (throw error))))
         analysis (:resolved-analysis run)
         projections (sh06-resolution-product-projections analysis)
-        plan-binding (dissoc binding :plan :source-text :input-key)
+        plan-binding (dissoc binding :plan :source-text :input-key :reader-invocation)
         boundary-base
         (cond-> {:slice :SH-06
          :owner :gravity-source
@@ -164,8 +168,6 @@
            :digest-resolver :clojure-stage0
            :envelope-binder :clojure-stage0
            :compatibility-adapter :clojure-stage0
-           :component-transport-bounds sh06-resolution-transport-bounds
-           :aggregate-artifact-bounds sh06-resolution-artifact-bounds
            :self-hosted? false}
           :capability-based-proof nil
           :diagnostics []}
@@ -182,10 +184,12 @@
         envelope
         (p15-s23-stage2-sh02-descriptor-envelope
          sh06-resolution-envelope-stage
-         sh06-resolution-sealed-artifact-kind descriptor source-path)
+         sh06-resolution-sealed-artifact-kind descriptor source-path
+         (sh06-resolution-envelope-source-options binding))
         _ (p15-s23-stage2-sh02-descriptor-envelope-verify!
            envelope sh06-resolution-envelope-stage
-           sh06-resolution-sealed-artifact-kind descriptor source-path)
+           sh06-resolution-sealed-artifact-kind descriptor source-path
+           (sh06-resolution-envelope-source-options binding))
         artifact-with-envelope
         (-> artifact-with-id
             (assoc-in [:gravity-resolution-boundary

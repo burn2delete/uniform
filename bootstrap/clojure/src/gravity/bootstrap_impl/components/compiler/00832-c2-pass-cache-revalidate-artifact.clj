@@ -1,8 +1,12 @@
 
 
 (defn- c2-pass-cache-revalidate-artifact!
-  [source-path source-text expected-source-unit current-binding
-   artifact entry key]
+  ([source-path source-text expected-source-unit current-binding artifact entry key]
+   (c2-pass-cache-revalidate-artifact!
+    source-path source-text expected-source-unit current-binding artifact entry key nil))
+  ([source-path source-text expected-source-unit current-binding
+    artifact entry key envelope-options]
+  (sh03-reader-validate-envelope-options! source-path envelope-options)
   (let [source-unit (:source-unit-record artifact)
         token-stream (:token-stream artifact)
         form-tree (:form-tree artifact)
@@ -36,9 +40,9 @@
         (:uncredited-source-models c2-pass-cache-boundary-contract)
         boundary-projection-id
         (c2-pass-cache-boundary-projection-id artifact)]
-    (p15-s23-stage2-sh02-descriptor-envelope-verify!
-     envelope :c2-reader :gravity/sh03-reader-products
-     envelope-descriptor source-path)
+    (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
+           (cond-> [envelope :c2-reader :gravity/sh03-reader-products envelope-descriptor source-path]
+             envelope-options (conj envelope-options)))
     (when-not
      (and (= :gravity/stage0-c2-reader-document-artifact (:kind artifact))
           (= "P06-D081" (:task artifact))
@@ -95,7 +99,7 @@
          :release-authority? false
          :self-hosted? false})))
     (c2-reader-validate! source-path artifact)
-    artifact))
+    artifact)))
 
 (defn- compiler-c2-reader-file-artifact-uncached
   [path]
@@ -122,8 +126,7 @@
   hit/miss evidence.  A validated hit does not execute the target reader.  This
   local cache has no release, proof, equivalence, or self-hosting authority."
   [path cache-base]
-  (let [snapshot (c2-pass-cache/bounded-source-snapshot!
-                  path sh03-reader-maximum-source-bytes)
+  (let [snapshot (c2-pass-cache/source-snapshot! path)
         current-binding (c2-pass-cache-current-binding! path)
         {:keys [key source-text source-unit]}
         (c2-pass-cache-key-context! path snapshot current-binding)

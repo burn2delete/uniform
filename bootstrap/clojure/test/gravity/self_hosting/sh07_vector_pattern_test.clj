@@ -267,7 +267,9 @@
                   plan function arguments))
         sha #(str "sha256:" (format "%064x" %))
         ordinal (atom 0)
-        forms (atom {})]
+        forms (atom {})
+        upstream-cases ['{:id x :name y} '[{:inner {:tags [(quote ready) _ z]}}] {}
+                        (into {} (map (fn [n] [(keyword (str "k" n)) n]) (range 12)))]]
     (letfn [(make! [value]
               (let [kind (cond (map? value) :map (vector? value) :vector (seq? value) :list
                                (symbol? value) :symbol (keyword? value) :keyword
@@ -294,8 +296,10 @@
                  :internal-indexes {:forms {:by-id @forms}
                                     :bindings {:by-definition (into {} (map (juxt :definition-syntax-id identity) bindings))
                                                :by-id (into {} (map (juxt :binding-id identity) bindings))}}}))]
-      (doseq [value ['{:id x :name y} '[{:inner {:tags [(quote ready) _ z]}}] {}
-                    (into {} (map (fn [n] [(keyword (str "k" n)) n]) (range 12)))]]
+      (doseq [value (concat upstream-cases
+                           [(vec (repeat 257 '_))
+                            (into {} (map (fn [n] [(keyword (str "wide" n)) '_]) (range 257)))
+                            (nth (iterate vector '_) 65)])]
         (let [match-form (make! (list 'match 0 value 1 '_ 2))
               input (request)
               pattern (get @forms (nth (:child-form-ids match-form) 2))
@@ -379,7 +383,7 @@
           (let [map-record (first (filter #(= :map (:pattern-kind %)) records))
                 map-form (get @forms (:pattern-form-id map-record))
                 children (filterv #(= (:ordinal map-record) (:parent-ordinal %)) records)]
-            (when (seq children)
+            (when (and map-record (seq children))
               (let [child (first children)
                     mutant (assoc-in records [(:ordinal child) :path (dec (count (:path child)))]
                                      (dec (peek (:path child))))]
@@ -390,9 +394,12 @@
                        (get-in (invoke 'sh07-match-pattern-descriptor
                                        [(update-in input [:internal-indexes :forms :by-id (:form-id map-form) :child-form-ids] pop)
                                         (update map-form :child-form-ids pop) 0]) [:facts :reason])))))
-            (is (true? (bootstrap/sh06-fixed-vector-pattern? value)))
-            (is (= (count (:bindings (invoke 'sh07-match-pattern-descriptor [input pattern 0])))
-                   (count (bootstrap/sh06-unique-match-binding-paths value []))))))
+            ;; New Core-only cases do not claim adoption of the separately
+            ;; owned unmetered resolver. Retain its existing composition cases.
+            (when (some #{value} upstream-cases)
+              (is (true? (bootstrap/sh06-fixed-vector-pattern? value)))
+              (is (= (count (:bindings (invoke 'sh07-match-pattern-descriptor [input pattern 0])))
+                     (count (bootstrap/sh06-unique-match-binding-paths value [])))))))
       (let [form (make! (into {} (map (fn [n] [(keyword (str "edge" n)) n]) (range 256))))
             result (invoke 'sh07-match-pattern-descriptor [(request) form 0])]
         (is (= 512 (count (:child-form-ids form))))
@@ -403,8 +410,7 @@
                               ['{:nested {:when true :id x}} :guard-pattern-deferred]
                               ['{:a x :b x} :duplicate-match-binding]
                               ['{:id (Ok x)} :unsupported-vector-pattern-leaf]
-                              ['{:id [x & y]} :variable-width-vector-pattern-deferred]
-                              [(into {} (map (fn [n] [(keyword (str "wide" n)) n]) (range 257))) :vector-pattern-width-bound]]]
+                              ['{:id [x & y]} :variable-width-vector-pattern-deferred]]]
         (let [form (make! value)
               result (invoke 'sh07-match-pattern-descriptor [(request) form 0])]
           (is (= :rejected (:status result)))
@@ -915,7 +921,7 @@
                   ((required-var 'sh07-core-artifact-verification)
                    altered)))))))))
 
-(deftest sh07-b11-pattern-resolvers-enforce-record-depth-width-and-count-bounds
+(deftest sh07-b11-pattern-resolvers-enforce-record-shape-and-coordinates
   (let [basename "nested-vector-patterns"
         artifact (file-artifact "accepted" basename ".gravity")
         records
@@ -932,13 +938,13 @@
          "negative ordinal"
          [(assoc vector-record :ordinal -1)
           :match-pattern-ordinal]
-         "depth above maximum"
+         "negative depth"
          [(assoc vector-record
-                 :depth 65
-                 :path (vec (repeat 65 0)))
+                 :depth -1
+                 :path [])
           :match-pattern-ordinal-or-depth]
-         "width above maximum"
-         [(assoc vector-record :vector-width 257)
+         "negative width"
+         [(assoc vector-record :vector-width -1)
           :match-pattern-value]}]
     (is (map? vector-record))
     (doseq [[label [record reason]] cases]
@@ -953,7 +959,7 @@
            (execute-core-function
             basename
             'sh07-resolve-match-pattern-vector
-            [(vec (repeat 1025 {})) resolved-digests])))))
+            [:not-a-vector resolved-digests])))))
 
 (deftest sh07-b11-pattern-resolver-rejects-invalid-parent-graphs
   (let [basename "nested-vector-patterns"

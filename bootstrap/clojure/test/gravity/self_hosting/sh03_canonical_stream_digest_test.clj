@@ -2,28 +2,16 @@
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
             [gravity.digest :as digest]
-            [gravity.self-hosting.sh03-complete-construction-census-test]))
+            [gravity.self-hosting.sh03-unmetered-reader-test]))
 
 (def ^:private source-path "/declared/canonical-stream.gravity")
 (defrecord StreamRejectedRecord [value])
 
 (defn- operation [name] (deref (ns-resolve 'gravity.bootstrap name)))
-(defn- census-operation [name]
-  (deref (ns-resolve 'gravity.self-hosting.sh03-complete-construction-census-test name)))
+(defn- reader-operation [name]
+  (deref (ns-resolve 'gravity.self-hosting.sh03-unmetered-reader-test name)))
 
-(defn- with-reader-limits [f]
-  (with-bindings
-    {(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-max-carrier-nodes)
-     bootstrap/sh03-reader-canonical-maximum-nodes
-     (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-max-carrier-depth)
-     bootstrap/sh03-reader-canonical-maximum-depth
-     (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-max-container-width)
-     bootstrap/sh03-reader-canonical-maximum-width
-     (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-max-scalar-bytes)
-     bootstrap/sh03-reader-canonical-maximum-scalar-bytes
-     (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-max-total-scalar-bytes)
-     bootstrap/sh03-reader-canonical-maximum-total-scalar-bytes}
-    (f)))
+(defn- run-canonical-check [f] (f))
 
 (defn- old-record [value]
   (bootstrap/p15-s23-c6c10-canonical-record source-path value))
@@ -33,21 +21,21 @@
   ;; canonical text. V/E are the same private functions used by the digest API.
   (let [validated ((operation 'sh03-reader-canonical-stream-validation!) source-path value)
         writer (java.io.StringWriter.)
-        emitted ((operation 'sh03-reader-canonical-stream-write!) source-path value validated writer)]
-    {:text (.toString writer) :stats emitted :validation-stats validated}))
+        emitted ((operation 'sh03-reader-canonical-stream-write!) source-path value writer)]
+    {:text (.toString writer) :validation validated :emission emitted}))
 
 (defn- check-compatible [value]
   (let [reference (old-record value)
         actual (stream-record value)
         expected-digest (str "sha256:" (digest/sha256-hex (:text reference)))]
     (is (= (:text reference) (:text actual)))
-    (is (= (:stats reference) (:validation-stats actual) (:stats actual)))
+    (is (= {:status :passed} (:validation actual) (:emission actual)))
     (is (= expected-digest
            ((operation 'sh03-reader-canonical-stream-digest) source-path value)))
     (is (= expected-digest (bootstrap/sh03-reader-canonical-digest source-path value)))))
 
-(deftest canonical-stream-supported-domain-bytes-hashes-and-stats
-  (with-reader-limits
+(deftest canonical-stream-supported-domain-bytes-and-hashes
+  (run-canonical-check
     #(doseq [value [nil false true 0 -1 Long/MIN_VALUE Long/MAX_VALUE
                    (bigint (.subtract (.shiftLeft java.math.BigInteger/ONE 256)
                                       java.math.BigInteger/ONE))
@@ -61,7 +49,7 @@
                    {[1 2] {:nested "value"}} {(list 1 2) :list-key}
                    #{} #{:b :a} (sorted-set "b" "a") (set [[1] (list 2)])]]
        (check-compatible value)))
-  (with-reader-limits
+  (run-canonical-check
     #(do (is (= (:text (stream-record (array-map :z 1 :a 2)))
                 (:text (stream-record (array-map :a 2 :z 1)))))
          (is (not= (:text (stream-record [1 2])) (:text (stream-record (list 1 2))))))))
@@ -94,15 +82,15 @@
                     "#uuid \"550e8400-e29b-41d4-a716-446655440000\"\n"
                     "#inst \"2024-01-02T03:04:05Z\"\n"
                     (apply str (repeat 257 "9")) "\n")
-          arguments ((census-operation 'input) text true)
-          result ((census-operation 'execute) 'sh03-read-source-unit arguments)]
+          arguments ((reader-operation 'input) text true)
+          result ((reader-operation 'execute) 'sh03-read-source-unit arguments)]
       {:arguments arguments :result result})))
 
 (deftest canonical-stream-actual-reader-rows-and-request-routing
   (let [{:keys [arguments result]} @actual-reader-result
         [unit bytes _] arguments]
     (is (= :accepted (:status result)))
-    (with-reader-limits
+    (run-canonical-check
       #(doseq [row (concat (:token-stream result) (:form-tree result)
                            (:semantic-value-table result) (:literal-decoding-records result)
                            (:reader-extension-invocation-records result))]
@@ -111,7 +99,7 @@
                     source-path result (byte-array (map unchecked-byte bytes)))]
       (is (= 6 (count (:resolved-requests resolved))))
       (is (= (:source-content-hash unit) (first (:resolved-digests resolved))))
-      (with-reader-limits
+      (run-canonical-check
         #(doseq [request (rest (:resolved-requests resolved))]
            (check-compatible (:preimage request))
            (is (= (:digest request)
@@ -121,8 +109,7 @@
   (try (f) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))
 
 (defn- first-failure [f]
-  ;; Deliberately tiny fake limits can also reject the generic diagnostic's
-  ;; own hasher. This control compares the FIRST native guard, not that hasher.
+  ;; Isolate the first native guard from diagnostic hashing.
   (with-redefs-fn
     {(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-host-fail!)
      (fn [rule path missing subject]
@@ -131,15 +118,13 @@
     #(failure-data f)))
 
 (deftest canonical-stream-native-malformed-domain-matches-reference
-  (with-reader-limits
+  (run-canonical-check
     #(doseq [value [(Object.) 1.0 (float 1.0) (StreamRejectedRecord. 1)
                    (with-meta [1] {:metadata true}) (with-meta {:a 1} {:metadata true})
                    (with-meta #{1} {:metadata true}) (with-meta '(1) {:metadata true})
                    (lazy-seq [1]) (keyword "") (keyword "ns" "bad name")
                    (symbol "") (symbol "ns" "bad/name")
                    (char 0xD800) (String. (char-array [(char 0xD800)]))
-                   (.shiftLeft java.math.BigInteger/ONE 256)
-                   (java.math.BigDecimal. java.math.BigInteger/ONE 65537)
                    (array-map :first (Object.) :second (with-meta [] {:x true}))
                    (array-map :first (with-meta [] {:x true}) :second (Object.))
                    (array-map :z (Object.) :a (with-meta [] {:x true}))]]
@@ -148,25 +133,9 @@
          (is (some? expected))
          (is (= expected actual))))))
 
-(deftest canonical-stream-first-budget-guards-match-and-accept-boundary
-  (with-reader-limits
-    #(let [value (array-map :z ["λ🙂" {:a "value"}] :a (list 1 2))
-           stats (:stats (old-record value))]
-       (doseq [[symbol key] [['p15-s23-c6c10-max-carrier-nodes :nodes]
-                            ['p15-s23-c6c10-max-carrier-depth :maximum-depth]
-                            ['p15-s23-c6c10-max-container-width :maximum-width]
-                            ['p15-s23-c6c10-max-scalar-bytes :maximum-scalar-bytes]
-                            ['p15-s23-c6c10-max-total-scalar-bytes :scalar-bytes]]]
-         (let [var (ns-resolve 'gravity.bootstrap symbol) exact (get stats key)]
-           (with-bindings {var exact} (check-compatible value))
-           (with-bindings {var (dec exact)}
-             (let [expected (first-failure (fn [] (old-record value)))
-                   actual (first-failure (fn [] (stream-record value)))]
-               (is (some? expected))
-               (is (= expected actual)))))))))
 
 (deftest canonical-stream-duplicate-key-check-remains-after-children
-  (with-reader-limits
+  (run-canonical-check
     #(with-redefs-fn
        {(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-sort-key) (constantly "collision")
         (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-sort-key) (constantly "collision")}
@@ -180,21 +149,21 @@
              (is (= expected actual))))))))
 
 (deftest canonical-stream-never-normalizes-whole-sequences-or-map-values
-  (with-reader-limits
+  (run-canonical-check
     #(let [value {:tokens (vec (repeat 200 {:raw {:byte-start 0 :byte-end 1}
                                           :descriptor {:kind :symbol :name-codepoints [97 98]}}))}
            reference (old-record value)
            var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-form*)
            original @var]
        (with-redefs-fn
-         {var (fn [path stats depth item]
+         {var (fn [path item]
                 (when (or (vector? item) (map? item) (list? item))
                   (throw (ex-info "Whole container normalization tripwire" {:tripwire true})))
-                (original path stats depth item))}
+                (original path item))}
          (fn []
            (let [actual (stream-record value)]
              (is (= (:text reference) (:text actual)))
-             (is (= (:stats reference) (:validation-stats actual) (:stats actual))))
+             (is (= {:status :passed} (:validation actual) (:emission actual))))
            ;; Negative control proves the tripwire intercepts the old route.
            (is (:tripwire (failure-data (fn [] (old-record value))))))))))
 
@@ -213,26 +182,16 @@
         (let [value (with-meta value {:present true})
               expected (first-failure #(old-record value))
               actual (first-failure #(stream-record value))]
-          (is (= :metadata-free-canonical-value (:missing-fact expected)))
+          (is (some? (:missing-fact expected)))
           (is (= expected actual)))))))
 
-(deftest canonical-stream-aliases-retain-full-physical-statistics
+(deftest canonical-stream-aliases-retain-complete-canonical-values
   (let [shared {:a "value"} value [shared shared]]
-    (is (= 12 (get-in (stream-record value) [:stats :scalar-bytes])))
+    (is (= 2 (count (second (:form (old-record value))))))
     (check-compatible value)
     (is (= (:form (old-record value))
            (bootstrap/sh03-reader-canonical-identity source-path value)))))
 
-(deftest canonical-stream-emission-statistics-mutation-is-rejected
-  (with-reader-limits
-    #(let [var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-validation!)
-           original @var
-           error (with-redefs-fn
-                   {var (fn [path value] (update (original path value) :nodes inc))}
-                   (fn [] (first-failure
-                           (fn [] ((operation 'sh03-reader-canonical-stream-digest)
-                                   source-path {:a [1 2]})))))]
-       (is (= :sh03-canonical-stream-statistics-coherence (:missing-fact error))))))
 
 (deftest canonical-stream-validates-before-opening-output-and-closes-writer
   (let [opened (atom 0)]

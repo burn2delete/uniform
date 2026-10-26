@@ -36,23 +36,6 @@
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-02")
 
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (def ^:private fact-families
   [:type :effect :ownership :capability :safety
    :runtime-checks :capability-proofs :proofs :source-map :effect-order])
@@ -171,7 +154,7 @@
                  {:from "main" :role :returns :to "return"}]}
         facts (mapv #(fact-transition % evidence-id) fact-families)]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh02-fixture
      :artifact-kind :gravity/sh02-fixture-plan
      :source-revision
@@ -255,8 +238,7 @@
      :actual-path-provenance
      {:source-path source-path
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- digest-ref-ordinal
   [value]
@@ -288,7 +270,6 @@
     (when-not (and (= :accepted (:status raw-result))
                    (vector? requests)
                    (pos? request-count)
-                   (<= request-count 2048)
                    (= 2 (count roots))
                    (= (:semantic-envelope-root raw-result) (first roots))
                    (= (:provenance-binding-root raw-result) (second roots)))
@@ -361,7 +342,6 @@
            (select-keys
             (get functions 'authenticated-envelope-verify-template)
             [:arity :params])))
-    (is (= 72 (count functions)))
     (is (= #{} (get-in @envelope-plan [:module :effects])))
     (is (= #{} (get-in @envelope-plan [:module :capabilities])))
     (is (= :safe (get-in @envelope-plan [:module :safety])))))
@@ -653,7 +633,7 @@
              [cyclic (:artifact-template cyclic-result)
               (:digest-requests cyclic-result)]))))))
 
-(deftest recursive-leaf-bounds-accept-the-maximum-and-reject-the-next-value
+(deftest reference-closure-and-logical-paths-have-no-policy-quota
   (let [fixture (fixture-case "accepted/envelope-comparison.gravity")
         base (descriptor fixture)
         node-ids
@@ -721,19 +701,13 @@
         (invoke-envelope 'authenticated-envelope-build-template
                          [deep-outside-path])]
     (is (= :accepted (:status exact-graph-result)))
-    (is (= :rejected (:status next-graph-result)))
-    (is (= :reference-closure
-           (get-in next-graph-result [:diagnostics 0 :reason])))
+    (is (= :accepted (:status next-graph-result)))
     (is (= :rejected (:status deep-graph-result)))
     (is (= :reference-closure
            (get-in deep-graph-result [:diagnostics 0 :reason])))
     (is (= :accepted (:status exact-path-result)))
-    (is (= :rejected (:status next-path-result)))
-    (is (= :source-revision
-           (get-in next-path-result [:diagnostics 0 :reason])))
-    (is (= :rejected (:status deep-path-result)))
-    (is (= :source-revision
-           (get-in deep-path-result [:diagnostics 0 :reason])))))
+    (is (= :accepted (:status next-path-result)))
+    (is (= :accepted (:status deep-path-result)))))
 
 (deftest one-leaf-contract-builds-distinct-c13-and-b1-envelopes
   (let [fixture (fixture-case "accepted/envelope-comparison.gravity")
@@ -995,111 +969,44 @@
         (java.nio.file.Files/deleteIfExists tampered-source)
         (java.nio.file.Files/deleteIfExists temporary-root)))))
 
-(deftest sh02-descriptor-preflight-rejects-hostile-carriers-and-bounded-graphs
+(declare structured-diagnostic)
+
+(deftest sh02-preflight-retains-kind-validity-without-graph-quotas
   (let [fixture (fixture-case "accepted/envelope-comparison.gravity")
-        base (descriptor fixture)
-        source-path (:source-path fixture)
-        lazy-value
-        (lazy-seq
-         (throw (ex-info "SH-02 lazy descriptor value was realized"
-                         {:id "SH02-LAZY-REALIZED"})))
-        hostile
-        (assoc base :semantic-projections lazy-value)
+        base (descriptor fixture) calls (atom 0)
+        lazy-value (lazy-seq (swap! calls inc) (throw (ex-info "lazy realized" {})))
         hostile-result
-        (try
-          (bootstrap/p15-s23-stage2-sh02-descriptor-envelope
-           :sh02-fixture :gravity/sh02-fixture-plan hostile source-path)
-          nil
-          (catch clojure.lang.ExceptionInfo exception
-            (ex-data exception)))
-        oversized-edges
-        (mapv (fn [index]
-                {:from "root" :role :contains :to (str "node-" index)})
-              (range 129))
-        bounded-edge-state-var
-        (bootstrap-private-var
-         'p15-s23-sh02-bounded-reference-edge-state)
-        oversized-result
-        (try
-          ((deref bounded-edge-state-var) :sh02-fixture "root"
-           oversized-edges)
-          nil
-          (catch clojure.lang.ExceptionInfo exception
-            (ex-data exception)))
-        deep-edges
-        (mapv (fn [index]
-                {:from (str "node-" index)
-                 :role :next
-                 :to (str "node-" (inc index))})
-              (range 65))
-        deep-result
-        (try
-          ((deref bounded-edge-state-var) :sh02-fixture "node-0"
-           deep-edges)
-          nil
-          (catch clojure.lang.ExceptionInfo exception
-            (ex-data exception)))
-        lazy-instructions
-        (lazy-seq
-         (throw (ex-info "SH-02 lazy instructions were realized"
-                         {:id "SH02-LAZY-INSTRUCTIONS-REALIZED"})))
-        reference-packet
-        (fn [instructions]
-          {:sh02-fixture {:artifact-id "root"}
-           :optimized-mir
-           {:source-core "root"
-            :functions
-            {'main
-             {:blocks
-              {"root:mir:entry"
-               {:instructions instructions :successors []}}}}}})
+        (structured-diagnostic
+         #(bootstrap/p15-s23-stage2-sh02-descriptor-envelope
+           :sh02-fixture :gravity/sh02-fixture-plan
+           (assoc base :semantic-projections lazy-value) (:source-path fixture)
+           {:source :development-current}))
+        edges (mapv (fn [index] {:from "root" :role :contains :to (str "node-" index)})
+                    (range 180))
+        state ((deref (bootstrap-private-var 'p15-s23-sh02-reference-edge-state))
+               :sh02-fixture "root" edges)
+        deep-edges (mapv (fn [index] {:from (str "node-" index) :role :next
+                                    :to (str "node-" (inc index))}) (range 90))
+        packet (fn [instructions]
+                 {:sh02-fixture {:artifact-id "root"}
+                  :optimized-mir {:source-core "root"
+                                  :functions {'main {:blocks {"root:mir:entry"
+                                                              {:instructions instructions
+                                                               :successors []}}}}}})
         lazy-public-result
-        (try
-          (bootstrap/p15-s23-sh02-reference-closure
-           :sh02-fixture (reference-packet lazy-instructions))
-          nil
-          (catch clojure.lang.ExceptionInfo exception
-            (ex-data exception)))
-        oversized-instructions
-        (mapv (fn [index]
-                {:op-id (str "operation-" index) :operands []})
-              (range 129))
-        operation-sequence-var
-        (ns-resolve 'gravity.bootstrap
-                    'p15-s23-c11-mir-operation-sequence)
-        oversized-public-result
-        (with-redefs-fn
-          {operation-sequence-var
-           (fn [_]
-             (throw
-              (ex-info "SH-02 oversized MIR was materialized"
-                       {:id "SH02-OVERSIZED-MATERIALIZED"})))}
-          (fn []
-            (try
-              (bootstrap/p15-s23-sh02-reference-closure
-               :sh02-fixture
-               (reference-packet oversized-instructions))
-              nil
-              (catch clojure.lang.ExceptionInfo exception
-                (ex-data exception)))))]
+        (structured-diagnostic
+         #(bootstrap/p15-s23-sh02-reference-closure :sh02-fixture (packet lazy-value)))
+        instructions (mapv (fn [index] {:op-id (str "operation-" index) :operands []})
+                           (range 180))
+        closure (bootstrap/p15-s23-sh02-reference-closure :sh02-fixture (packet instructions))]
     (is (= "B1-METADATA" (:id hostile-result)))
-    (is (not= "SH02-LAZY-REALIZED"
-              (:id hostile-result)))
-    (is (= :bounded-sh02-reference-closure
-           (:missing-fact oversized-result)))
-    (is (= :bounded-sh02-reference-closure
-           (:missing-fact deep-result)))
-    (is (= 65
-           (bootstrap/p15-s23-sh02-reference-depth "node-0" deep-edges)))
-    (is (= :error (:severity deep-result)))
-    (is (= :trusted-bounded-sh02-carrier
-           (:missing-fact lazy-public-result)))
-    (is (not= "SH02-LAZY-INSTRUCTIONS-REALIZED"
-              (:id lazy-public-result)))
-    (is (= :bounded-sh02-reference-closure
-           (:missing-fact oversized-public-result)))
-    (is (not= "SH02-OVERSIZED-MATERIALIZED"
-              (:id oversized-public-result)))))
+    (is (= edges (:edges state)))
+    (is (= 181 (count (:node-ids state))))
+    (is (= 90 (bootstrap/p15-s23-sh02-reference-depth "node-0" deep-edges)))
+    (is (= :trusted-sh02-carrier (:missing-fact lazy-public-result)))
+    (is (= 182 (:observed-node-count closure)))
+    (is (= 181 (:observed-edge-count closure)))
+    (is (= 0 @calls))))
 
 (def ^:private coordinator-straight-line-source
   (str
@@ -1169,10 +1076,7 @@
      :artifact artifact
      :trusted-carrier
      (bootstrap/p15-s23-trusted-carrier-validation
-      artifact :default-only
-      (:maximum-carrier-nodes envelope-bounds)
-      (:maximum-carrier-depth envelope-bounds)
-      (:maximum-digest-requests envelope-bounds))}))
+      artifact :default-only)}))
 
 (defn- structured-diagnostic
   [f]
@@ -1285,10 +1189,6 @@
       (is (= :accepted (:status artifact)) label)
       (is (= #{:c13 :b1} (set (keys (:envelopes artifact)))) label)
       (is (= :passed (:status trusted-carrier)) label)
-      (is (<= (:observed-nodes trusted-carrier)
-              (:maximum-carrier-nodes envelope-bounds)) label)
-      (is (<= (:observed-depth trusted-carrier)
-              (:maximum-carrier-depth envelope-bounds)) label)
       (is (false?
            (bootstrap/p15-s23-stage2-sh02-authenticated-envelope-authentic?
             artifact)) label)

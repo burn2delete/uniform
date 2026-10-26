@@ -95,30 +95,6 @@
 (def ^:private expected-global-nonclaims
   #{:sh07-complete :sh17-complete :seed-retirement
     :self-hosting-complete})
-(def ^:private expected-b16-bounds
-  {:maximum-module-forms 65536 :maximum-module-core-nodes 65536
-   :maximum-fragments 1024 :maximum-top-level-forms 1024
-   :maximum-fragment-forms 1024 :maximum-form-children 1024
-   :maximum-form-depth 256 :maximum-bindings 2048
-   :maximum-alias-records 256 :maximum-fragment-resolutions 2048
-   :maximum-module-resolutions 65536 :maximum-origin-entries 256
-   :maximum-metadata-entries 256 :maximum-effects 128
-   :maximum-capabilities 128 :maximum-exports 1024
-   :maximum-module-carrier-nodes 8388608
-   :maximum-module-carrier-depth 256 :maximum-module-carrier-width 65536
-   :maximum-module-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 33554432
-   :maximum-template-carrier-depth 256 :maximum-template-carrier-width 65536
-   :maximum-template-scalar-bytes 1073741824
-   :maximum-resolved-core-carrier-nodes 16777216
-   :maximum-resolved-core-carrier-depth 256
-   :maximum-resolved-core-carrier-width 65536
-   :maximum-resolved-core-scalar-bytes 1073741824
-   :maximum-generated-digest-carrier-nodes 16777216
-   :maximum-generated-digest-carrier-depth 256
-   :maximum-generated-digest-carrier-width 65536
-   :maximum-generated-digest-scalar-bytes 1073741824
-   :maximum-module-digest-requests 65540})
 (def ^:private rejected-sh07-families
   {"core-shape" "C6-CORE-SHAPE" "lowering-gap" "C6-LOWERING-GAP"})
 (def ^:private zero-id (str "sha256:" (apply str (repeat 64 "0"))))
@@ -427,29 +403,19 @@
       (is (= {:keyword-lookups 0}
              (get-in contract [:required-core-product-counts :b2-c])))
       (is (every? (set (:nonclaims contract)) expected-b38-nonclaims))
-      (is (every? (set (:nonclaims contract)) expected-global-nonclaims))
-      (is (= expected-b16-bounds (:bounds contract))))
+      (is (every? (set (:nonclaims contract)) expected-global-nonclaims)))
     (is true "Set GRAVITY_SH07_B38_CONTRACT=1 after coordinator registration")))
 
-(deftest sh07-b38-b2-measured-census-fits-declared-bounds
+(deftest sh07-b38-b2-authenticated-request-census
   (if (= "1" (System/getenv "GRAVITY_SH07_B38_CENSUS"))
     (let [result (proof-census/census (path b2-relative-path))
           measurements (:measurements result)]
       (is (= :gravity/sh07-proof-census (:artifact result)))
-      (is (= :within-declared-bounds (:status result)))
+      (is (= :authenticated-request (:status result)))
       (is (= expected-source-revision-id
              (get-in result [:request :source-revision-id])))
       (is (= 129 (:fragments measurements)
              (:top-level-forms measurements)))
-      (is (= (:forms measurements)
-             (:predicted-maximum-core-nodes measurements)))
-      (is (= (+ 4 (:predicted-maximum-core-nodes measurements))
-             (:predicted-maximum-digest-requests measurements)))
-      (is (<= (:maximum-fragment-forms measurements)
-              (:maximum-fragment-forms expected-b16-bounds)))
-      (is (<= (:carrier-nodes measurements)
-              (:maximum-module-carrier-nodes expected-b16-bounds)))
-      (is (empty? (:violations result)))
       (is (false? (:performed-sh07-lowering? result))))
     (is true "Set GRAVITY_SH07_B38_CENSUS=1 in an isolated 8 GiB JVM")))
 

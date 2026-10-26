@@ -61,7 +61,7 @@
                       (get-in source-unit
                               [:identity-inputs :project-relative-path]))
                    (integer? (:byte-count source-snapshot))
-                   (<= 0 (:byte-count source-snapshot) maximum-source-bytes))
+                   (<= 0 (:byte-count source-snapshot)))
       (cache-fail! "C16-KEY" "source snapshot and C2 source-unit bindings disagree"
                    {}))
     (when-not (= {:applicability :not-applicable-at-c2} profile-binding)

@@ -1,0 +1,9 @@
+(ns current-cohort.unmetered
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [identity-value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn identity-value [value] value)

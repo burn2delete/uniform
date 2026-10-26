@@ -149,6 +149,9 @@ of:
 
 Optimization records name which evidence was used.
 
+Removing mandatory project accounting reports does not establish a zero-cost
+or performance claim. Such claims still require the applicable `PERF2` evidence.
+
 ## Determinism and Reproducibility
 
 Optimization pipelines record:

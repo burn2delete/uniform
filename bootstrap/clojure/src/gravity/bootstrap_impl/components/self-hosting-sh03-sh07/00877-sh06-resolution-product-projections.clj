@@ -153,7 +153,7 @@
         (p15-s23-c6c10-canonical-digest
          source-path {:resolution-result (:artifact-id summary)})]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage sh06-resolution-envelope-stage
      :artifact-kind sh06-resolution-sealed-artifact-kind
      :source-revision
@@ -219,8 +219,7 @@
      :actual-path-provenance
      {:source-path source-path
       :workspace-root (System/getProperty "user.dir")
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (def sh06-resolution-artifact-keys
   #{:kind :status :slice :task :document-set :governing-document

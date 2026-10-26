@@ -1,11 +1,13 @@
 
 
 (defn p15-s23-c6c10-project-front-end
-  [source-path raw-front-end]
+  ([source-path raw-front-end]
+   (p15-s23-c6c10-project-front-end source-path raw-front-end nil))
+  ([source-path raw-front-end invocation]
   (let [raw-source-unit (:source-unit-record raw-front-end)
         source-content-hash (:bytes-hash raw-source-unit)
         literal-authentication
-        (p15-s23-c6c10-literal-authentication source-path raw-front-end)
+        (p15-s23-c6c10-literal-authentication source-path raw-front-end invocation)
         private-identity
         (p15-s23-c6c10-private-source-identity source-path raw-source-unit)
         private-source-id (:private-source-id private-identity)
@@ -112,7 +114,7 @@
         projected (assoc projected-base :c3-artifact-id new-c3-artifact-id)
         _ (p15-s23-c6c10-verify-private-front-end-projection!
            source-path raw-front-end literal-authentication projected)]
-    projected))
+    projected)))
 
 (def p15-s23-c6c10-plan-projection-keys
   [:kind :compatibility-kind :diagnostics :plan-id :functions

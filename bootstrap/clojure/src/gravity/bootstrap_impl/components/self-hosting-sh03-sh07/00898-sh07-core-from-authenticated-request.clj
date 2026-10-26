@@ -1,9 +1,11 @@
 
 
 (defn sh07-core-from-authenticated-request
-  [resolution-artifact authenticated-request]
+  ([resolution-artifact authenticated-request]
+   (sh07-core-from-authenticated-request resolution-artifact authenticated-request nil))
+  ([resolution-artifact authenticated-request invocation]
   (sh07-core-with-fresh-construction resolution-artifact
-    #(sh07-core-build-verified-artifact resolution-artifact authenticated-request %)))
+    #(sh07-core-build-verified-artifact resolution-artifact authenticated-request %) invocation)))
 
 (defn- sh07-core-build-verified-artifact
   [resolution-artifact authenticated-request construction]
@@ -164,10 +166,11 @@
     artifact))
 
 (defn sh07-core-from-resolution-artifact
-  [resolution-artifact]
+  ([resolution-artifact] (sh07-core-from-resolution-artifact resolution-artifact nil))
+  ([resolution-artifact invocation]
   (sh07-core-with-fresh-construction resolution-artifact
     #(sh07-core-build-verified-artifact resolution-artifact
-       (or (:request %) (sh07-core-request-from-verified-upstream resolution-artifact (:report %))) %)))
+       (or (:request %) (sh07-core-request-from-verified-upstream resolution-artifact (:report %))) %) invocation)))
 
 (def ^:private sh07-core-verification-session-schema-version 2)
 (def ^:private sh07-core-verification-session-kind

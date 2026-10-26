@@ -47,20 +47,17 @@
       (is (= :rejected (:status view)))
       (is (= :empty-rule (reason view))))))
 
-(deftest sh15-code-validation-retains-bounds-and-the-optional-anchor-domain
+(deftest sh15-code-validation-retains-codes-and-the-optional-anchor-domain
   (let [original (row "code-field")]
-    ;; Supplied bounded-code controls, not claims that C12 emitted new codes.
+    ;; Supplied code controls, not claims that C12 emitted new codes.
     (doseq [field [:rule :diagnostic-id]]
-      (let [code (apply str (repeat 128 "X")) input (request (assoc original field code))
+      (let [code (apply str (repeat 700 "X")) input (request (assoc original field code))
             result (c15 'sh15-build-diagnostic-boundary [input])
             preserved (get-in result [:diagnostic-stream :diagnostics 0])]
         (is (true? (c15 'sh15-diagnostic-input-valid? [input])))
         (is (= :accepted (:status result)))
         (is (= code (get preserved (if (= :rule field) :rule :upstream-diagnostic-id))))
-        (is (= :passed (:status (c15 'sh15-verify-diagnostic-boundary [input result])))))
-      (is (= :upstream-diagnostic-schema
-             (reason (c15 'sh15-build-diagnostic-boundary
-                          [(request (assoc original field (apply str (repeat 129 "X"))))]))))))
+        (is (= :passed (:status (c15 'sh15-verify-diagnostic-boundary [input result])))))))
   (let [original (row "") result (c15 'sh15-build-diagnostic-boundary [(request original)])]
     (is (= "" (:semantic-anchor original)))
     (is (= :accepted (:status result)))

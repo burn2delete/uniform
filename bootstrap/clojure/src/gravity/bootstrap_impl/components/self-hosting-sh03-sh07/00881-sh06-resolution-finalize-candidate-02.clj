@@ -1,28 +1,14 @@
 
 (defn sh06-resolution-deserialize
-  [serialized]
-  (let [maximum (:maximum-serialized-bytes
-                 sh06-resolution-artifact-bounds)
-        serialized-byte-count
-        (cond
-          (string? serialized)
-          (sh06-resolution-utf8-byte-count-up-to serialized maximum)
-
-          (= (class serialized) (Class/forName "[B"))
-          (alength ^bytes serialized)
-
-          :else nil)
-        _
-        (when-not (and (some? serialized-byte-count)
-                       (<= serialized-byte-count maximum))
+  ([serialized]
+  (let [_
+        (when-not (or (string? serialized)
+                      (= (class serialized) (Class/forName "[B")))
           (sh06-resolution-boundary-fail!
            "C5-UNRESOLVED" "<sh06-resolution-deserialize>"
-           :bounded-resolution-serialization-bytes
+           :resolution-serialization-input
            {:serialized-class
-            (when (some? serialized) (.getName (class serialized)))
-            :observed-serialized-bytes serialized-byte-count
-            :maximum-serialized-bytes maximum}
-           {:aggregate-artifact-bounds sh06-resolution-artifact-bounds}))
+              (when (some? serialized) (.getName (class serialized)))} {}))
         artifact
         (try
           (let [serialized-text
@@ -52,12 +38,15 @@
        :verified-resolution-artifact-after-deserialization
        (:failed-checks report) {}))
     artifact))
+  ([serialized invocation]
+   (sh06-resolution-with-reader-invocation
+    "<sh06-resolution-deserialize>" invocation
+    #(sh06-resolution-deserialize serialized))))
 (defn sh06-resolution-module-input-views!
   [source-path inputs]
   (when-not (and (map? inputs) (= #{:artifact :schema-version :module-artifacts} (set (keys inputs)))
                  (= :gravity/sh06-module-inputs (:artifact inputs)) (= 1 (:schema-version inputs))
                  (vector? (:module-artifacts inputs))
-                 (<= (count (:module-artifacts inputs)) 256)
                  (= :passed (:status (sh06-resolution-carrier-validation inputs sh06-resolution-artifact-bounds))))
     (sh06-resolution-boundary-fail! "C5-UNRESOLVED" source-path :ordinary-module-inputs inputs
                                   {:reason :malformed-module-inputs}))
@@ -77,13 +66,18 @@
         :resolved-digests (:resolved-digests boundary) :definitions (:definitions request)}))
    (:module-artifacts inputs)))
 
-(defn sh06-resolution-module-request
-  [source-path sh05-artifact inputs]
-  (let [base (sh06-resolution-base-request-data source-path sh05-artifact {})
-        views (sh06-resolution-module-input-views! source-path inputs)
+(defn- resolution-module-request-from-base
+  [source-path sh05-artifact inputs base]
+  (let [views (sh06-resolution-module-input-views! source-path inputs)
         header (first (:expanded-syntax-stream sh05-artifact))
         imports (mapv #(-> % (assoc :source-span (:span header))
                             (assoc-in [:semantic-span :namespace-syntax-id] (:syntax/id header))) (:imports base))]
     (assoc base :artifact :gravity/sh06-ordinary-module-resolution-request :schema-version 2
            :namespace-source {:semantic-span {:namespace-syntax-id (:syntax/id header)} :source-span (:span header)}
            :module-premises views :imports imports)))
+
+(defn sh06-resolution-module-request
+  [source-path sh05-artifact inputs]
+  (resolution-module-request-from-base
+   source-path sh05-artifact inputs
+   (sh06-resolution-base-request-data source-path sh05-artifact {})))

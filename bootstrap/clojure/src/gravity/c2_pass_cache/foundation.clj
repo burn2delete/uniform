@@ -3,7 +3,6 @@
 (def ^:private cache-schema-version 1)
 (def ^:private canonicalizer-version 1)
 (def ^:private cache-stage :c2-reader)
-(def ^:private maximum-source-bytes 1048576)
 (def ^:private maximum-canonical-depth 640)
 (def ^:private maximum-canonical-nodes 524288)
 (def ^:private maximum-encoded-bytes (* 32 1024 1024))
@@ -73,7 +72,7 @@
   {:namespace 'gravity.c2-pass-cache
    :contract-boundary :hosted-c2-local-pass-cache-v2-adapter
    :public-api
-   '#{cache-contract canonical-content-id bounded-source-snapshot!
+   '#{cache-contract canonical-content-id source-snapshot! bounded-source-snapshot!
       cache-key open-local-store lookup! store! lookup-or-compute!}
    :storage-root ".cpcache/compiler-pass/v2"
    :legacy-storage-root ".cpcache/compiler-pass/v1"
@@ -85,7 +84,7 @@
     :maximum-v2-envelope-bytes (* 48 1024 1024)}
    :semantic-stage :c2-reader
    :owns [:versioned-semantic-key
-          :bounded-source-snapshot
+          :source-snapshot
           :c2-to-generic-pass-request-adaptation
           :opaque-metadata-preserving-artifact-envelope
           :generic-v2-producer-receipt-projection

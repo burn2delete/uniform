@@ -32,3 +32,8 @@ directory after checking current feature names. Write the checkout-local
 do not recreate implementation or retrospectively assert full conformance.
 Name user scenarios, accepted/rejected behavior, canonical links, scope exclusions,
 owner and evidence expectations. Do not bulk-convert existing contracts.
+
+Apply `.specify/semantic-names.md` to newly introduced implementation filenames,
+namespaces and application/API names. Use short subsystem/behavior words; keep
+planning IDs in metadata/cross-references. Review new names in this change only,
+record legacy rename dependencies, and preserve compatibility-bearing IDs.
