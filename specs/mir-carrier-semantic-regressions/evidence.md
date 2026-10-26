@@ -44,3 +44,15 @@ Repository language-boundary namespace also naturally exited 0: 6 tests,
 9 tests / 65 assertions; this count is not project progress or coverage.
 
 Review and integration remain pending; the task checkbox is intentionally open.
+
+## Independent review
+
+Independent review accepted commit
+`3e3d8841a1e90b7518d24d9a87a6366012ceb77c`, tree
+`6f59c9b9c3dcef2aad48da318d8c33d58348dc57`, against baseline
+`f487d977fd86f7b35bc60a5d76c9240cd9cbc3ba` on 2026-10-26. Review checked the exact
+five-file diff, baseline/candidate receipts, unchanged production and identity
+pins, new boundary/late-invalid/zero-realization controls, retained identity,
+index and type checks, and the accounting-removal contract. It did not rerun
+heavy compiler tests. Acceptance is for a successor to draft #378, not main or
+whole-producer integration. C12/C13 and dependent #383 holds remain.

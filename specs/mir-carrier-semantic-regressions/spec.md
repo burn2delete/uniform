@@ -2,7 +2,7 @@
 
 Semantic task: `mir/carrier-semantic-regressions`.
 Owner role: MIR regression implementation; independent reviewer separate.
-Status: running; review and integration pending.
+Status: independently reviewed; draft publication and main integration pending.
 
 ## Contract and finite outcome
 
