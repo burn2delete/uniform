@@ -1,16 +1,11 @@
 
 (declare sh06-resolution-module-request)
+(declare ^:private resolution-module-request-from-base)
 (declare ^:private sh06-resolution-verify-sh05)
 
-(defn sh06-resolution-base-request-data
+(defn- resolution-base-request-from-authenticated-parent
   [source-path sh05-artifact overrides]
-   (let [verification (sh06-resolution-verify-sh05 sh05-artifact)
-        _ (when-not (= :passed (:status verification))
-            (c5-resolution-fail!
-             "C5-UNRESOLVED" source-path
-             {:stage :name-resolution}
-             {:missing-fields [:verified-sh05-macro-artifact]}))
-        forms (mapv :form (:expanded-syntax-stream sh05-artifact))
+   (let [forms (mapv :form (:expanded-syntax-stream sh05-artifact))
         module (parse-module source-path forms)
         imports (sh06-resolution-import-records
                  source-path module overrides)
@@ -56,6 +51,16 @@
       :authenticated-envelope-id
       (sh06-resolution-envelope-id sh05-artifact)}
      :provenance {:actual-source-path source-path}}))
+
+(defn sh06-resolution-base-request-data
+  [source-path sh05-artifact overrides]
+  (let [verification (sh06-resolution-verify-sh05 sh05-artifact)]
+    (when-not (= :passed (:status verification))
+      (c5-resolution-fail!
+       "C5-UNRESOLVED" source-path
+       {:stage :name-resolution}
+       {:missing-fields [:verified-sh05-macro-artifact]}))
+    (resolution-base-request-from-authenticated-parent source-path sh05-artifact overrides)))
 
 (defn sh06-resolution-base-request
   ([source-path sh05-artifact]
