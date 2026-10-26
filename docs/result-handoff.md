@@ -201,3 +201,41 @@ and the consumer has assessed the declared handoff behavior. A public disclosure
 attempt was rejected and created no comment; no alternate transfer has been
 used. No preexisting private artifact supplies the held packet bytes. Source
 review, counts, a merge or a checksum alone cannot close this boundary.
+
+## Final finite disposition
+
+Independent cloud review approved corrected source
+`3569fe974788d195ff3c3f48d69f4a21ddc37f53`, tree
+`c7698433349a62b07943e8f8b30067e07b85fdb3`. Its actual focused controls passed
+6 tests / 62 assertions; documents passed 240/19; language boundary passed
+6 tests / 11 assertions. All exits were naturally 0, with clean identical
+bookends and existing normal brokers. The first broker timeout started no
+validation child and remains nonexecution history.
+
+The parent separately authorized private local independent consumption. An
+independent laptop reviewer read both original receipts, plans and packets,
+used an independent digest/path/type oracle, and consumed the plans through the
+actual tool. All 18 positive-case and 9 historical failure-case fields matched
+the originals; both actual outputs exactly matched retained packet bytes. Failed
+exit, capacity nonexecution, absent whole-source authentication and unpublished
+state remained intact. This verifies consumption for these two real handoffs;
+it does not reproduce the producer operations or authenticate other receipts.
+Private contents and review records remain private.
+
+[PR 428](https://github.com/burn2delete/uniform/pull/428) merged normally by
+squash at `ef55fe3b58dbf17359e36df5d418730264074408`, tree
+`0e422f7addb6a281e23598c5bcdb4dccfc8d63e7`. That entire tree matches the
+integration candidate. Source/test bytes remain identical to the reviewed,
+tested successor above; exact integration preflight passed over current main.
+The remote branch and evidence links are retained. No producer or compiler
+operation was replayed for consumption or integration.
+
+CO1 extraction, CO2 captured-byte/provenance binding, CO3 reusable owner handoff
+and CO4 independent consumer use plus reviewed integration are closed for this
+finite tooling outcome. This is not universal receipt compatibility, compiler
+acceptance or platform routing repair. Explicit field selection, public-safety
+review, genuine independent acceptance, single-writer coordination and host
+controls remain necessary; unfamiliar receipt layouts require their own checks.
+The earlier public disclosure remains denied and unexecuted. Authorized private
+local review made that publication unnecessary; no held payload was uploaded or
+transferred through another external route.
