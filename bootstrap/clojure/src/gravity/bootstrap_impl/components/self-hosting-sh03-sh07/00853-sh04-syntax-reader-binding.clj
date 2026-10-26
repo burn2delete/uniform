@@ -174,6 +174,7 @@
                  (conj visited form-id))))
       visited)))
 
+(declare ^:private sh04-syntax-form-index)
 (defn sh04-syntax-source-descriptor
   [seed form-record c2-artifact integrity-report semantic-source-id
    reader-binding reader-source-revision registered-literals]
@@ -181,7 +182,7 @@
         source-namespace (or (:namespace seed) 'gravity.user)
         namespace-context {:current source-namespace :aliases {} :imports []}
         forms-by-id
-        (into {} (map (juxt :form-id identity)) (:form-tree c2-artifact))
+        (sh04-syntax-form-index c2-artifact)
         descendant-form-ids
         (sh04-syntax-descendant-form-ids
          forms-by-id (:form-id form-record))

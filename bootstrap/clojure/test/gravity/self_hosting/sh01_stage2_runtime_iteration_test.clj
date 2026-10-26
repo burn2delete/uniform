@@ -3017,7 +3017,7 @@
                  'p15-s23-runtime-string-set-insertion-work 3 'p15-s23-runtime-keyword-set-contains-work 3 'p15-s23-runtime-character-set-contains-work 3
                  'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-character-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2 'p15-s23-runtime-keyword-vector-set-work 2
                  'p15-s23-runtime-keyword-list-set-work 2
-                 'p15-s23-runtime-module-census 2 'p15-s23-runtime-instruction-children 1
+                 'p15-s23-runtime-module-census 1 'p15-s23-runtime-instruction-children 1
                  'runtime-module-reads 2 'p15-s23-runtime-initialize-module 2
                  'p15-s23-runtime-keyword-set-domain 2 'p15-s23-runtime-keyword-set-equality-work 3
                  'p15-s23-runtime-list-equality-work 3
@@ -5368,10 +5368,9 @@
     (is (= ["binding-modes"] (get-in first-run [:module-initialization :initialized-binding-ids])))
     (is (= {"binding-modes" {:vector-literal 1}} (get-in first-run [:module-initialization :validated-constructor-occurrences])))
     (is (= "" (:stdout first-run)))
-    (let [census (invoke 'p15-s23-runtime-module-census plan 65536) work (:work-count census)]
+    (let [census (invoke 'p15-s23-runtime-module-census plan)]
       (is (= :accepted (:status census)) (pr-str census))
-      (is (= census (invoke 'p15-s23-runtime-module-census plan work)))
-      (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-module-census plan (dec work)))))
+      (is (not (contains? census :work-count)))
       (let [reads (invoke 'runtime-module-reads (:functions plan) (:definitions census))]
         (is (= :accepted (:status reads)))
         (is (= :namespace-read-without-initialized-definition
@@ -18827,7 +18826,7 @@
             instruction (call helper-name [(say "unreached" (literal values)) (literal :alpha) (literal 0)])]
         (is (= ["" :rejected] (subvec (evaluate instruction {} deep functions) 1))))
       (let [{:keys [plan read]} (module-literal-runtime-input)
-            census (invoke 'p15-s23-runtime-module-census plan 65536)
+            census (invoke 'p15-s23-runtime-module-census plan)
             initialized (invoke 'p15-s23-runtime-initialize-module census (:functions plan))
             pool (:pool initialized)
             caller (assoc helper :instructions [{:op :do :body [read step-op]}])]
@@ -26873,7 +26872,7 @@
           (reset! constructor-calls 0)
           (let [{:keys [plan initializer definition read]} (input values)
                 checked (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan 65536)]
+                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan)]
             (is (= :accepted (:status checked) (:status census)) (pr-str checked))
             (is (= charge (:work-count checked)))
             (is (= :exact-logical-content-reservation (:work-count-kind checked)))
@@ -26884,9 +26883,7 @@
             (is (= :module-initialization-work-limit
                    (:reason (invoke 'p15-s23-runtime-initializer-work initializer (dec charge)))))
             (is (true? (invoke 'p15-s23-runtime-initializer-type? definition initializer)))
-            (is (= census (invoke 'p15-s23-runtime-module-census plan (:work-count census))))
-            (is (= :module-initialization-work-limit
-                   (:reason (invoke 'p15-s23-runtime-module-census plan (dec (:work-count census))))))
+            (is (not (contains? census :work-count)))
             (is (= 0 @constructor-calls))
             (let [first-run (execute plan) pair (:entrypoint-result first-run)]
               (is (= :complete (:status first-run)) (pr-str first-run))
@@ -26950,17 +26947,19 @@
                            (update-in [:module-initialization :initializers] conj
                                       {:ordinal 3 :binding-id (:binding-id unused) :instruction initializer}))
               one (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-              census (invoke 'p15-s23-runtime-module-census two 65536)]
+              census (invoke 'p15-s23-runtime-module-census two)]
           (is (= :accepted (:status one)))
           (is (= (reservation [long-key]) (:work-count one)))
-          (is (= :module-initialization-work-limit (:reason census)))
-          (is (= 65537 (:work-count census)))
-          (is (= :exceeded-allowance-lower-bound (:work-count-kind census)))
+          (is (= :accepted (:status census)))
+          (is (not (contains? census :work-count)))
+          (is (not (contains? census :work-count-kind)))
           (reset! constructor-calls 0)
           (let [result (execute two)]
-            (is (= :rejected (:status result)))
+            (is (= :complete (:status result)))
             (is (= "" (:stdout result)))
-            (is (= 0 @constructor-calls))))
+            (is (= [(:binding-id definition) (:binding-id unused)]
+                   (get-in result [:module-initialization :initialized-binding-ids])))
+            (is (= 2 @constructor-calls))))
         (let [callbacks (atom 0)
               opaque (proxy [Object] []
                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "payload equality")))
@@ -27287,7 +27286,7 @@
           (reset! constructor-calls 0)
           (let [{:keys [plan initializer definition read]} (input values)
                 checked (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan 65536)]
+                charge (reservation values) census (invoke 'p15-s23-runtime-module-census plan)]
             (is (= :accepted (:status checked) (:status census)) (pr-str checked))
             (is (= charge (:work-count checked)))
             (is (= :exact-logical-content-reservation (:work-count-kind checked)))
@@ -27298,9 +27297,7 @@
             (is (= :module-initialization-work-limit
                    (:reason (invoke 'p15-s23-runtime-initializer-work initializer (dec charge)))))
             (is (true? (invoke 'p15-s23-runtime-initializer-type? definition initializer)))
-            (is (= census (invoke 'p15-s23-runtime-module-census plan (:work-count census))))
-            (is (= :module-initialization-work-limit
-                   (:reason (invoke 'p15-s23-runtime-module-census plan (dec (:work-count census))))))
+            (is (not (contains? census :work-count)))
             (is (= 0 @constructor-calls))
             (let [first-run (execute plan) pair (:entrypoint-result first-run)]
               (is (= :complete (:status first-run)) (pr-str first-run))
@@ -27366,17 +27363,19 @@
                            (update-in [:module-initialization :initializers] conj
                                       {:ordinal 3 :binding-id (:binding-id unused) :instruction initializer}))
               one (invoke 'p15-s23-runtime-initializer-work initializer 65536)
-              census (invoke 'p15-s23-runtime-module-census two 65536)]
+              census (invoke 'p15-s23-runtime-module-census two)]
           (is (= :accepted (:status one)))
           (is (= (reservation [long-string]) (:work-count one)))
-          (is (= :module-initialization-work-limit (:reason census)))
-          (is (= 65537 (:work-count census)))
-          (is (= :exceeded-allowance-lower-bound (:work-count-kind census)))
+          (is (= :accepted (:status census)))
+          (is (not (contains? census :work-count)))
+          (is (not (contains? census :work-count-kind)))
           (reset! constructor-calls 0)
           (let [result (execute two)]
-            (is (= :rejected (:status result)))
+            (is (= :complete (:status result)))
             (is (= "" (:stdout result)))
-            (is (= 0 @constructor-calls))))
+            (is (= [(:binding-id definition) (:binding-id unused)]
+                   (get-in result [:module-initialization :initialized-binding-ids])))
+            (is (= 2 @constructor-calls))))
         (let [callbacks (atom 0)
               opaque (proxy [Object] []
                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "payload equality")))

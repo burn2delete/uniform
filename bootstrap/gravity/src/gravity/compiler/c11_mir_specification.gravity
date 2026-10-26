@@ -94,9 +94,6 @@
                ; One resolved I64 identity preserves a linear parameter/local/Fn.
                ; A resolved I64 pair preserves ordered locals and strict <.
                {:maximum-conditionals 1
-                :maximum-module-carrier-nodes 16384
-                :maximum-final-artifact-carrier-nodes 32768
-                :maximum-carrier-depth 256
                 :whole-c11 false}
                :preserves #{:source-spans :syntax-identity
                             :diagnostic-codes :artifact-provenance
@@ -173,9 +170,6 @@
             :do :if :let :str :println :function
             :runtime-check]
            :maximum-conditionals 1
-           :maximum-module-carrier-nodes 16384
-           :maximum-final-artifact-carrier-nodes 32768
-           :maximum-carrier-depth 256
            :whole-c11? false
            :self-hosted? false}})
 
@@ -1537,9 +1531,11 @@
 
 (defn c11-append-uses
   [left right]
-  (if (= (count right) 0)
-    left
-    (c11-append-uses (conj left (first right)) (rest right))))
+  (let [values (vec right)]
+    (loop [result left index 0]
+      (if (= index (count values))
+        result
+        (recur (conj result (get values index)) (+ index 1))))))
 
 (defn c11-build-values
   [checked-core nodes data-flow definitions terminator-uses result]
@@ -2218,9 +2214,6 @@
          :do :if :let :str :println :function
          :runtime-check])
         :maximum-conditionals (if (sh12-c6p-i64-arithmetic? checked-core) 0 (if (= conditional-count 2) 2 1))
-        :maximum-module-carrier-nodes 16384
-        :maximum-final-artifact-carrier-nodes 32768
-        :maximum-carrier-depth 256
         :whole-c11? false
         :domain-ir-credit? false
         :optimization-credit? false
@@ -4876,21 +4869,25 @@
        (sh12-branch-join-fact-ids-unique? nodes (get core :ownership-facts) :fact-id [])])))
 
 (defn sh12-c6p-scalars-valid? [core]
-  ; Called only AFTER the existing complete width/depth/node preflight. This
-  ; second bounded walk closes the scalar domain before schema arithmetic.
   (loop [frontier [core] cursor 0]
-    (if (= cursor (count frontier)) true
+    (if (= cursor (count frontier))
+      true
       (let [value (get frontier cursor)]
         (if (sh12-c10-mir-persistent-aggregate? value)
           (recur (c11-append-uses frontier (sh12-c10-mir-aggregate-components value)) (+ cursor 1))
-          (if (if (= nil value) true
-                (if (boolean? value) true
-                  (if (integer? value) true
-                    (if (char? value) true
-                      (if (string? value) true
-                        (if (symbol? value) true
-                          (if (keyword? value) true false)))))))
-            (recur frontier (+ cursor 1)) false))))))
+          (if (if (= nil value)
+                true
+                (if (boolean? value)
+                  true
+                  (if (integer? value)
+                    true
+                    (if (char? value)
+                      true
+                      (if (string? value)
+                        true
+                        (if (symbol? value) true (if (keyword? value) true false)))))))
+            (recur frontier (+ cursor 1))
+            false))))))
 
 (defn sh12-c6p-producer-metadata-valid? [core]
   (let [pins (get (get core :authenticated-input) :binding-pins)]
@@ -4933,28 +4930,43 @@
               (recur (rest fields)) false))) false) false)))
 
 (defn sh12-c6p-checked-core-preflight [core]
-  ; Reuse the bounded complete-carrier walk BEFORE any role/table census.
-  ; The enclosing module's existing 16384-node limit remains an input limit;
-  ; this helper's 32768-node hard walk budget is the existing adapter budget.
   (let [carrier (sh12-authenticated-c10-mir-carrier-preflight core)]
     (if (if (= (get carrier :status) :accepted)
-          (if (<= (get carrier :nodes) 16384)
-            (if (sh12-c6p-scalars-valid? core) (sh12-c6p-top-shape? core) false) false) false)
+          (if (sh12-c6p-scalars-valid? core) (sh12-c6p-top-shape? core) false)
+          false)
       (let [view (sh12-c6p-role-view core)]
-        (if (if (= view nil) false
-              (if (if (sh12-c6p-lineage-valid? core) (sh12-c6p-producer-metadata-valid? core) false)
+        (if (if (= view nil)
+              false
+              (if (if (sh12-c6p-lineage-valid? core)
+                    (sh12-c6p-producer-metadata-valid? core)
+                    false)
                 (if (sh12-c6p-shape-valid? core view)
                   (if (sh12-c6p-role-nodes-valid? core 0)
                     (if (sh12-c6p-declaration-valid? core)
-                      (sh12-c6p-tables-valid? core (get core :core-nodes)
-                                            (get view :ids) (get view :origins) 0) false) false) false) false))
+                      (sh12-c6p-tables-valid?
+                        core
+                        (get core :core-nodes)
+                        (get view :ids)
+                        (get view :origins)
+                        0)
+                      false)
+                    false)
+                  false)
+                false))
           (let [problem (sh12-c6p-nodes-problem core (get core :core-nodes) 0)]
             (if (= problem nil)
-              (if (sh12-c6p-graphs-valid? core view) {:status :accepted}
-                {:status :rejected :diagnostic-id "C11-VERIFY" :missing-fact :original-c6-parameter-graphs})
+              (if (sh12-c6p-graphs-valid? core view)
+                {:status :accepted}
+                {:status :rejected,
+                 :diagnostic-id "C11-VERIFY",
+                 :missing-fact :original-c6-parameter-graphs})
               (assoc problem :status :rejected)))
-          {:status :rejected :diagnostic-id "C11-MODULE" :missing-fact :original-c6-bool-parameter-family}))
-      {:status :rejected :diagnostic-id "C11-MODULE" :missing-fact :bounded-original-c6-carrier})))
+          {:status :rejected,
+           :diagnostic-id "C11-MODULE",
+           :missing-fact :original-c6-bool-parameter-family}))
+      {:status :rejected,
+       :diagnostic-id "C11-MODULE",
+       :missing-fact :original-c6-carrier-kind})))
 
 (defn sh12-branch-join-checked-core-preflight [checked-core]
   (if (sh12-c6p-family? checked-core)
@@ -6183,100 +6195,19 @@
       value
       (if (set? value) (vec value) []))))
 
-(defn sh12-c10-mir-carrier-rejection [reason nodes enqueued]
-  {:status :rejected
-   :reason reason
-   :nodes nil
-   :observed-nodes nodes
-   :enqueued enqueued
-   :nodes-exact? false})
-
-; Complete-carrier admission follows the proven C10 carrier envelope.  O(1)
-; widths are checked before children are appended; arbitrary seq/lazy-seq
-; values are rejected and never realized.  The adapter still has a strictly
-; bounded, non-authoritative evidence scope; these limits merely admit the
-; exact schema-2 C10/C9 lineage carrier without forcing a second shape.
+; Reject sequence carriers before semantic traversal; never realize a lazy value.
 (defn sh12-authenticated-c10-mir-carrier-preflight [value]
-  (loop [frontier [[value 0]] cursor 0 nodes 0 enqueued 1]
+  (loop [frontier [value] cursor 0]
     (if (= cursor (count frontier))
-      {:status :accepted
-       :nodes nodes
-       :enqueued enqueued
-       :nodes-exact? true}
-      (let [entry (get frontier cursor)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 32768)
-          (sh12-c10-mir-carrier-rejection
-           :c10-mir-carrier-node-bound nodes enqueued)
-          (if (> depth 256)
-            (sh12-c10-mir-carrier-rejection
-             :c10-mir-carrier-depth-bound nodes enqueued)
-            (if (map? current)
-              (let [width (count current)]
-                (if (> width 512)
-                  (sh12-c10-mir-carrier-rejection
-                   :c10-mir-carrier-width-bound nodes enqueued)
-                  (let [next-enqueued (+ enqueued (* 2 width))]
-                    (if (> next-enqueued 32768)
-                      (sh12-c10-mir-carrier-rejection
-                       :c10-mir-carrier-node-bound nodes enqueued)
-                      (let [children (sh12-c10-mir-aggregate-components current)
-                            next-frontier
-                            (loop [remaining children result frontier]
-                              (if (= (count remaining) 0)
-                                result
-                                (recur
-                                 (rest remaining)
-                                 (conj result
-                                       [(first remaining) (+ depth 1)]))))]
-                        (recur next-frontier (+ cursor 1) next-nodes
-                               next-enqueued))))))
-              (if (vector? current)
-                (let [width (count current)]
-                  (if (> width 1024)
-                    (sh12-c10-mir-carrier-rejection
-                     :c10-mir-carrier-width-bound nodes enqueued)
-                    (let [next-enqueued (+ enqueued width)]
-                      (if (> next-enqueued 32768)
-                        (sh12-c10-mir-carrier-rejection
-                         :c10-mir-carrier-node-bound nodes enqueued)
-                        (let [children (sh12-c10-mir-aggregate-components current)
-                              next-frontier
-                              (loop [remaining children result frontier]
-                                (if (= (count remaining) 0)
-                                  result
-                                  (recur
-                                   (rest remaining)
-                                   (conj result
-                                         [(first remaining) (+ depth 1)]))))]
-                          (recur next-frontier (+ cursor 1) next-nodes
-                                 next-enqueued))))))
-                (if (set? current)
-                  (let [width (count current)]
-                    (if (> width 512)
-                      (sh12-c10-mir-carrier-rejection
-                       :c10-mir-carrier-width-bound nodes enqueued)
-                      (let [next-enqueued (+ enqueued width)]
-                        (if (> next-enqueued 32768)
-                          (sh12-c10-mir-carrier-rejection
-                           :c10-mir-carrier-node-bound nodes enqueued)
-                          (let [children (sh12-c10-mir-aggregate-components current)
-                                next-frontier
-                                (loop [remaining children result frontier]
-                                  (if (= (count remaining) 0)
-                                    result
-                                    (recur
-                                     (rest remaining)
-                                     (conj result
-                                           [(first remaining) (+ depth 1)]))))]
-                            (recur next-frontier (+ cursor 1) next-nodes
-                                   next-enqueued))))))
-                  (if (seq? current)
-                    (sh12-c10-mir-carrier-rejection
-                     :c10-mir-carrier-seq-unsupported nodes enqueued)
-                    (recur frontier (+ cursor 1) next-nodes enqueued)))))))))))
+      {:status :accepted}
+      (let [current (get frontier cursor)]
+        (if (sh12-c10-mir-persistent-aggregate? current)
+          (recur
+            (c11-append-uses frontier (sh12-c10-mir-aggregate-components current))
+            (+ cursor 1))
+          (if (seq? current)
+            {:status :rejected, :reason :c10-mir-carrier-seq-unsupported}
+            (recur frontier (+ cursor 1))))))))
 
 ; C11/C13/C18, D8/D9: a translation relation for the original C6 literal
 ; Bool diamond only. No optimizer implementation or supplied report is authority.
@@ -6378,54 +6309,76 @@
     "C11-VERIFY"))
 
 (defn sh12-verify-literal-bool-branch-specialization [checked-core before after]
-  ; Complete carrier bounds precede all semantic traversal, equality, and
-  ; diagnostic extraction. In particular, never realize a candidate sequence.
   (let [core-bound (sh12-authenticated-c10-mir-carrier-preflight checked-core)
         before-bound (sh12-authenticated-c10-mir-carrier-preflight before)
         after-bound (sh12-authenticated-c10-mir-carrier-preflight after)]
-    (if (= [:accepted :accepted :accepted]
-           [(get core-bound :status) (get before-bound :status) (get after-bound :status)])
+    (if (=
+          [:accepted :accepted :accepted]
+          [(get core-bound :status) (get before-bound :status) (get after-bound :status)])
       (if (if (map? before) (= [] (get before :diagnostics)) false)
-       ; Original construction has no diagnostics. Reject report substitution
-       ; before the legacy diagnostic helper can inspect candidate metadata.
-       (let [original-report (sh12-verify-branch-join-mir checked-core before)]
-        (if (= :passed (get original-report :status))
-          (if (if (sh12-c6p-family? checked-core)
-                (sh12-c6p-zero-arity-bool? checked-core) false)
-            (let [bindings {:checked-core-artifact-id (get checked-core :artifact-id)
-                            :before-module-id (get before :module-id)
-                            :after-module-id
-                            (let [id (get after :module-id)]
-                              (if (if (string? id) true (symbol? id))
-                                (if (> (count (str id)) 512) nil id) nil))
-                            :relation :fresh-original-c6-reconstruction}
-                  canonical (c11-build-target-independent-mir checked-core)]
-              (if (= before canonical)
-                (let [expected (sh12-literal-bool-specialization-expected checked-core before)]
-                  (if (= expected after)
-                    (sh12-literal-bool-specialization-report
-                     :passed bindings
-                     [:bounded-input-carriers :fresh-original-mir-verification
-                      :original-zero-arity-hosted-jvm-bool-diamond
-                      :literal-selected-edge :cfg-and-dominance-reconstruction
-                      :terminator-and-value-use-reconstruction
-                      :complete-after-equality :type-effect-safety-origin-preservation
-                      :unchanged-instructions-joins-fact-check-and-proof-tables] [])
-                    (sh12-literal-bool-specialization-rejected
-                     bindings (sh12-literal-bool-specialization-diagnostic-id expected after)
-                     :literal-bool-specialization-relation checked-core before)))
-                (sh12-literal-bool-specialization-rejected
-                 bindings "C11-VERIFY" :complete-original-mir-reconstruction checked-core canonical)))
-            (sh12-literal-bool-specialization-rejected
-             {} "C11-VERIFY" :original-zero-arity-literal-bool-diamond
-             checked-core (c11-build-target-independent-mir checked-core)))
-          (let [diagnostic (first (get original-report :diagnostics))]
-            (sh12-literal-bool-specialization-rejected
-             {} (get diagnostic :diagnostic-id) (get diagnostic :missing-fact) nil nil))))
-       (sh12-literal-bool-specialization-rejected
-        {} "C11-VERIFY" :original-mir-diagnostic-carrier nil nil))
+        (let [original-report (sh12-verify-branch-join-mir checked-core before)]
+          (if (= :passed (get original-report :status))
+            (if (if (sh12-c6p-family? checked-core) (sh12-c6p-zero-arity-bool? checked-core) false)
+              (let [bindings {:checked-core-artifact-id (get checked-core :artifact-id),
+                              :before-module-id (get before :module-id),
+                              :after-module-id
+                              (let [id (get after :module-id)]
+                                (if (if (string? id) true (symbol? id)) id nil)),
+                              :relation :fresh-original-c6-reconstruction}
+                    canonical (c11-build-target-independent-mir checked-core)]
+                (if (= before canonical)
+                  (let [expected (sh12-literal-bool-specialization-expected checked-core before)]
+                    (if (= expected after)
+                      (sh12-literal-bool-specialization-report
+                        :passed
+                        bindings
+                        [:input-carrier-kinds
+                         :fresh-original-mir-verification
+                         :original-zero-arity-hosted-jvm-bool-diamond
+                         :literal-selected-edge
+                         :cfg-and-dominance-reconstruction
+                         :terminator-and-value-use-reconstruction
+                         :complete-after-equality
+                         :type-effect-safety-origin-preservation
+                         :unchanged-instructions-joins-fact-check-and-proof-tables]
+                        [])
+                      (sh12-literal-bool-specialization-rejected
+                        bindings
+                        (sh12-literal-bool-specialization-diagnostic-id expected after)
+                        :literal-bool-specialization-relation
+                        checked-core
+                        before)))
+                  (sh12-literal-bool-specialization-rejected
+                    bindings
+                    "C11-VERIFY"
+                    :complete-original-mir-reconstruction
+                    checked-core
+                    canonical)))
+              (sh12-literal-bool-specialization-rejected
+                {}
+                "C11-VERIFY"
+                :original-zero-arity-literal-bool-diamond
+                checked-core
+                (c11-build-target-independent-mir checked-core)))
+            (let [diagnostic (first (get original-report :diagnostics))]
+              (sh12-literal-bool-specialization-rejected
+                {}
+                (get diagnostic :diagnostic-id)
+                (get diagnostic :missing-fact)
+                nil
+                nil))))
+        (sh12-literal-bool-specialization-rejected
+          {}
+          "C11-VERIFY"
+          :original-mir-diagnostic-carrier
+          nil
+          nil))
       (sh12-literal-bool-specialization-rejected
-       {} "C11-VERIFY" :bounded-specialization-input-carriers nil nil))))
+        {}
+        "C11-VERIFY"
+        :bounded-specialization-input-carriers
+        nil
+        nil))))
 
 (defn sh12-c10-mir-verification-member [verification key]
   (if (map? verification)
@@ -6439,16 +6392,6 @@
      :checks (get verification :checks)
      :nonclaims (get verification :nonclaims)}
     {}))
-
-(defn sh12-c10-mir-preflight-node-count [receipt]
-  (if (integer? (get receipt :nodes))
-    (get receipt :nodes)
-    0))
-
-(defn sh12-c10-mir-preflight-node-count-exact? [receipt]
-  (if (= true (get receipt :nodes-exact?))
-    (integer? (get receipt :nodes))
-    false))
 
 (defn sh12-c10-mir-verification-metadata-values-valid? [metadata]
   (if (keyword? (get metadata :artifact))
@@ -6474,89 +6417,53 @@
   (let [metadata (sh12-c10-mir-verification-metadata verification)
         expected (sh12-c10-mir-verification-member verification :expected)
         candidate (sh12-c10-mir-verification-member verification :candidate)
-        metadata-preflight
-        (sh12-authenticated-c10-mir-carrier-preflight metadata)
-        expected-preflight
-        (sh12-authenticated-c10-mir-carrier-preflight expected)
-        candidate-preflight
-        (sh12-authenticated-c10-mir-carrier-preflight candidate)
-        nodes-exact?
-        (if (sh12-c10-mir-preflight-node-count-exact?
-             metadata-preflight)
-          (if (sh12-c10-mir-preflight-node-count-exact?
-               expected-preflight)
-            (sh12-c10-mir-preflight-node-count-exact?
-             candidate-preflight)
-            false)
-          false)
-        nodes
-        (if nodes-exact?
-          (+ (sh12-c10-mir-preflight-node-count metadata-preflight)
-             (sh12-c10-mir-preflight-node-count expected-preflight)
-             (sh12-c10-mir-preflight-node-count candidate-preflight))
-          nil)
-        envelope-keys?
-        (sh12-c10-mir-exact-keys?
-         verification
-         #{:artifact :status :checks :nonclaims :expected :candidate})
-        metadata-keys?
-        (sh12-c10-mir-exact-keys?
-         metadata
-         #{:artifact :status :checks :nonclaims})]
+        metadata-preflight (sh12-authenticated-c10-mir-carrier-preflight metadata)
+        expected-preflight (sh12-authenticated-c10-mir-carrier-preflight expected)
+        candidate-preflight (sh12-authenticated-c10-mir-carrier-preflight candidate)
+        envelope-keys? (sh12-c10-mir-exact-keys?
+                         verification
+                         #{:nonclaims :candidate :checks :status :expected :artifact})
+        metadata-keys? (sh12-c10-mir-exact-keys? metadata #{:nonclaims :checks :status :artifact})]
     (if envelope-keys?
       (if metadata-keys?
         (if (= :accepted (get metadata-preflight :status))
           (if (sh12-c10-mir-verification-metadata-values-valid? metadata)
             (if (= :accepted (get expected-preflight :status))
               (if (= :accepted (get candidate-preflight :status))
-                {:status :accepted
-                 :nodes nodes
-                 :nodes-exact? nodes-exact?
-                 :reason nil
-                 :metadata-preflight metadata-preflight
-                 :expected-preflight expected-preflight
+                {:status :accepted,
+                 :reason nil,
+                 :metadata-preflight metadata-preflight,
+                 :expected-preflight expected-preflight,
                  :candidate-preflight candidate-preflight}
-                {:status :rejected
-                 :nodes nodes
-                 :nodes-exact? nodes-exact?
-                 :reason :c10-mir-verification-candidate-bound
-                 :metadata-preflight metadata-preflight
-                 :expected-preflight expected-preflight
+                {:status :rejected,
+                 :reason :c10-mir-verification-candidate-bound,
+                 :metadata-preflight metadata-preflight,
+                 :expected-preflight expected-preflight,
                  :candidate-preflight candidate-preflight})
-              {:status :rejected
-               :nodes nodes
-               :nodes-exact? nodes-exact?
-               :reason :c10-mir-verification-expected-bound
-               :metadata-preflight metadata-preflight
-               :expected-preflight expected-preflight
+              {:status :rejected,
+               :reason :c10-mir-verification-expected-bound,
+               :metadata-preflight metadata-preflight,
+               :expected-preflight expected-preflight,
                :candidate-preflight candidate-preflight})
-            {:status :rejected
-             :nodes nodes
-             :nodes-exact? nodes-exact?
-             :reason :c10-mir-verification-metadata-values
-             :metadata-preflight metadata-preflight
-             :expected-preflight expected-preflight
+            {:status :rejected,
+             :reason :c10-mir-verification-metadata-values,
+             :metadata-preflight metadata-preflight,
+             :expected-preflight expected-preflight,
              :candidate-preflight candidate-preflight})
-          {:status :rejected
-           :nodes nodes
-           :nodes-exact? nodes-exact?
-           :reason :c10-mir-verification-metadata-bound
-           :metadata-preflight metadata-preflight
-           :expected-preflight expected-preflight
+          {:status :rejected,
+           :reason :c10-mir-verification-metadata-bound,
+           :metadata-preflight metadata-preflight,
+           :expected-preflight expected-preflight,
            :candidate-preflight candidate-preflight})
-        {:status :rejected
-         :nodes nodes
-         :nodes-exact? nodes-exact?
-         :reason :c10-mir-verification-metadata-shape
-         :metadata-preflight metadata-preflight
-         :expected-preflight expected-preflight
+        {:status :rejected,
+         :reason :c10-mir-verification-metadata-shape,
+         :metadata-preflight metadata-preflight,
+         :expected-preflight expected-preflight,
          :candidate-preflight candidate-preflight})
-      {:status :rejected
-       :nodes nodes
-       :nodes-exact? nodes-exact?
-       :reason :c10-mir-verification-envelope-shape
-       :metadata-preflight metadata-preflight
-       :expected-preflight expected-preflight
+      {:status :rejected,
+       :reason :c10-mir-verification-envelope-shape,
+       :metadata-preflight metadata-preflight,
+       :expected-preflight expected-preflight,
        :candidate-preflight candidate-preflight})))
 
 (defn sh12-c10-mir-diagnostic [bound reason]
@@ -8861,8 +8768,6 @@
         false)
       false)))
 
-
-
  (defn sh12-build-authenticated-c10-mir-template [bound verification]
   (if (sh12-authenticated-c10-mir-input-valid? bound verification)
     (let [semantic (sh12-c10-mir-semantic-input bound)
@@ -9270,7 +9175,7 @@
                                       bound :template-recomputation-mismatch)]})]
                 {:artifact :gravity/sh12-c10-proof-reference-mir-verification
                  :status (if (= expected candidate) :passed :rejected)
-                 :checks [:bounded-all-input-carriers
+                 :checks [:all-input-carrier-kinds
                           :exact-c10-bound-and-result-lineage
                           :exact-proof-reference-operation
                           :explicit-proof-token-definition-and-use

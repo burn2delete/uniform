@@ -16,10 +16,6 @@
   {:task :FL-P06-T03
    :slice :authenticated-checked-core-to-target-independent-mir
    :maximum-conditionals 1
-   :maximum-module-carrier-nodes p15-s23-c11-mir-max-carrier-nodes
-   :maximum-final-artifact-carrier-nodes
-   p15-s23-c11-mir-max-final-artifact-carrier-nodes
-   :maximum-carrier-depth p15-s23-c11-mir-max-carrier-depth
    :whole-c11? false
    :target-lowering-credit? false
    :backend-credit? false

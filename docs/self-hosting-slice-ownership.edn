@@ -300,7 +300,10 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
+ {"bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
+  {:namespace gravity.self-hosting.module-census-test
+   :slice "SH-19" :owner :sh-runtime}
+  "bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
   {:namespace gravity.self-hosting.runtime-module-reads-test
    :slice "SH-19" :owner :sh-runtime}
   "bootstrap/clojure/test/gravity/self_hosting/c6_parameter_reader_invocation_test.clj"

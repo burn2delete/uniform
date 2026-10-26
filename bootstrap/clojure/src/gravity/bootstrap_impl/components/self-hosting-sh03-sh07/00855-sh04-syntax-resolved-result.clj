@@ -21,6 +21,8 @@
         top-level-products (c2-top-level-products c2-artifact)
         seeds (:syntax-seed-stream c2-artifact)
         base-products
+        (clojure.core/binding [*sh04-syntax-form-index-transaction*
+                  {:artifact c2-artifact :thread (Thread/currentThread) :slot (volatile! nil)}]
         (mapv
          (fn [seed {:keys [form-record]}]
            (let [descriptor
@@ -34,7 +36,7 @@
              (sh04-syntax-resolve-template!
               source-path binding raw reader-binding
               reader-source-revision)))
-         seeds top-level-products)
+         seeds top-level-products))
         _ (when (empty? base-products)
             (sh04-syntax-boundary-fail!
              "C3-SHAPE" source-path :nonempty-syntax-object-stream
