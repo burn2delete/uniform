@@ -11,77 +11,31 @@
     "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
     "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"})
 
-(defn fail [message] (throw (ex-info message {})))
-
-(defn region [text marker]
-  (let [start (str "<!-- " marker ":start -->")
-        end (str "<!-- " marker ":end -->")
-        starts (str/split text (re-pattern (java.util.regex.Pattern/quote start)) -1)
-        ends (str/split text (re-pattern (java.util.regex.Pattern/quote end)) -1)]
-    (when-not (and (= 2 (count starts)) (= 2 (count ends)))
-      (fail (str "Missing or duplicate region: " marker)))
-    (let [[prefix tail] starts
-          [body suffix] (str/split tail (re-pattern (java.util.regex.Pattern/quote end)) -1)]
-      (when (nil? suffix) (fail (str "Reversed region: " marker)))
-      {:prefix (str prefix start) :body body :suffix (str end suffix)})))
+(load-file "tools/task_projection.clj")
 
 (def record-pattern
   #"(?s)^- \[([ x])\] `(core/current-evidence-and-remaining-work/core[1-5]-[a-z-]+)` ([^\n|]+)\n\nCurrent evidence/status: ([^\n|]+)\n\nDone when \(yes/no\): ([^\n|]+)$")
 
-(defn validate-links [field]
-  ;; Deliberately small Markdown subset: plain text and inline HTTPS links.
-  ;; Copying source-relative links would silently change their target location.
-  ;; Core's existing exit evidence names set!; punctuation is not an image.
-  (when (str/includes? field "![")
-    (fail "Core task images are unsupported; use plain text or inline HTTPS links"))
-  (let [remaining
-        (str/replace field #"\[([^\[\]<>!\\\n]+)\]\(([^\s()<>\"`\\]+)\)"
-          (fn [[_ _ target]]
-            (let [uri (try (java.net.URI. target)
-                           (catch java.net.URISyntaxException _ nil))]
-              (when-not (and uri (= "https" (.getScheme uri))
-                             (seq (.getHost uri)) (nil? (.getUserInfo uri)))
-                (fail "Core task links must be absolute HTTPS URLs")))
-            ""))]
-    (when (re-find #"[\[\]<>\\]" remaining)
-      (fail "Unsupported Core task Markdown; use plain text or inline HTTPS links"))))
+(defn- options []
+  {:component "Core"
+   :task-marker "core-implementation-tasks"
+   :projection-marker "core-task-projection"
+   :record-pattern record-pattern
+   :semantic-ids semantic-ids
+   :table-header "\n| Task | Status | Concrete exit evidence |\n| --- | --- | --- |\n"
+   :title-id-prefix "core/current-evidence-and-remaining-work/"
+   :title-id-error "Core task ID and preserved title disagree"
+   :allow-bang? true})
 
-(defn records [text]
-  (let [body (str/trim (:body (region text "core-implementation-tasks")))
-        blocks (str/split body #"\n\n(?=- \[)")
-        rows (mapv (fn [block]
-                     (let [[_ checked id title status acceptance] (re-matches record-pattern block)]
-                       (when-not id (fail "Malformed Core task record"))
-                       (when-not (= id (str "core/current-evidence-and-remaining-work/"
-                                         (-> title str/lower-case
-                                             (str/replace #"[^a-z0-9 -]" "")
-                                             (str/replace #" +" "-"))))
-                         (fail "Core task ID and preserved title disagree"))
-                       (doseq [field [title status acceptance]] (validate-links field))
-                       (when-not (= (= checked "x") (str/starts-with? status "Accepted;"))
-                         (fail "Checkbox and explicit acceptance status disagree"))
-                       {:id id :title title :status status :acceptance acceptance})) blocks)
-        ids (mapv :id rows)]
-    (when-not (= (count ids) (count (set ids))) (fail "Duplicate Core task ID"))
-    (when-not (= semantic-ids (set ids)) (fail "Missing or unknown Core task ID"))
-    (when-not (= (count rows) (count (set (map :title rows))))
-      (fail "Duplicate Core task title"))
-    rows))
-
-(defn table [rows]
-  (str "\n| Task | Status | Concrete exit evidence |\n| --- | --- | --- |\n"
-       (apply str (for [{:keys [title status acceptance]} rows]
-                    (str "| " title " | " status " | " acceptance " |\n")))))
-
+(defn fail [message] (task-projection/fail message))
+(defn region [text marker] (task-projection/region text marker))
+(defn validate-links [field] (task-projection/validate-links (options) field))
+(defn records [text] (task-projection/records (options) text))
+(defn table [rows] (task-projection/table (:table-header (options)) rows))
 (defn project [task-text roadmap-text]
-  (let [rows (records task-text)
-        {:keys [prefix suffix]} (region roadmap-text "core-task-projection")]
-    (str prefix (table rows) suffix)))
-
+  (task-projection/project (options) task-text roadmap-text))
 (defn check-projection [task-text roadmap-text]
-  (when-not (= roadmap-text (project task-text roadmap-text))
-    (fail "Stale Core projection; edit tasks.md, then run --write"))
-  true)
+  (task-projection/check-projection (options) task-text roadmap-text))
 
 (defn run [args]
   (when-not (#{["--check"] ["--write"]} (vec args))
