@@ -256,7 +256,7 @@
               (invoke-c11
                'sh12-authenticated-c10-mir-carrier-preflight [value])]
           (is (= :accepted (:status receipt)))
-          (is (< (:nodes receipt) 32768))))
+          (is (= #{:status} (set (keys receipt))))))
       (is (= (:digest operation-resolution)
              (:operation-identity-id candidate)))
       (is (= (get-in resolved [:module-resolution :digest])
@@ -412,253 +412,62 @@
       value
       (recur (dec remaining) {:child value}))))
 
-(deftest sh12-c10-carrier-preflight-boundaries
-  (let [map-512 (zipmap (range 512) (repeat 512 :leaf))
-        map-513 (zipmap (range 513) (repeat 513 :leaf))
-        vector-1024 (vec (repeat 1024 :leaf))
-        vector-1025 (vec (repeat 1025 :leaf))
-        set-512 (set (range 512))
-        set-513 (set (range 513))
-        lazy-seq (map identity [:leaf])
-        cases
-        [[map-512 :accepted nil]
-         [map-513 :rejected :c10-mir-carrier-width-bound]
-         [vector-1024 :accepted nil]
-         [vector-1025 :rejected :c10-mir-carrier-width-bound]
-         [set-512 :accepted nil]
-         [set-513 :rejected :c10-mir-carrier-width-bound]
-         [lazy-seq :rejected :c10-mir-carrier-seq-unsupported]
-         [(nested-carrier 256) :accepted nil]
-         [(nested-carrier 257) :rejected :c10-mir-carrier-depth-bound]]]
-    (doseq [[carrier expected reason] cases]
-      (let [receipt
-            (invoke-c11
-             'sh12-authenticated-c10-mir-carrier-preflight [carrier])]
-        (is (= expected (:status receipt)) (str "carrier=" (type carrier)))
-        (when reason
-          (is (= reason (:reason receipt))
-              (str "carrier=" (type carrier))))))))
+(deftest sh12-c10-carrier-preflight-has-no-project-quotas
+  (doseq [scalar [(apply str (repeat 65537 "x"))
+                  (symbol (apply str (repeat 65537 "x")))
+                  (keyword (apply str (repeat 65537 "x")))]]
+    (is (true? (invoke-c11 'sh12-c6p-scalars-valid? [scalar]))))
+  (is (false? (invoke-c11 'sh12-c6p-scalars-valid? [1.5])))
+  (doseq [carrier [(zipmap (range 513) (repeat :leaf))
+                   (vec (repeat 32769 :leaf))
+                   (set (range 513))
+                   (nested-carrier 257)]]
+    (is (= {:status :accepted}
+           (invoke-c11 'sh12-authenticated-c10-mir-carrier-preflight [carrier]))))
+  (let [calls (atom 0)
+        poison (lazy-seq (swap! calls inc) (throw (ex-info "realized" {})))]
+    (is (= {:status :rejected :reason :c10-mir-carrier-seq-unsupported}
+           (invoke-c11 'sh12-authenticated-c10-mir-carrier-preflight [{:nested poison}])))
+    (is (zero? @calls))))
 
 (deftest sh12-c10-verification-envelope-preflight
-  (let [prepared @prepared-c10
-        bound (:safety-bound prepared)
-        verification (:safety-verification prepared)
-        map-512 (zipmap (range 512) (repeat 512 :leaf))
-        map-513 (zipmap (range 513) (repeat 513 :leaf))
-        vector-31x1024
-        (vec (repeat 31 (vec (repeat 1024 :leaf))))
-        vector-32x1024
-        (vec (repeat 32 (vec (repeat 1024 :leaf))))
-        near-bound-verification
-        (assoc verification
-               :expected vector-31x1024
-               :candidate vector-31x1024)
-        near-bound-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [near-bound-verification])
-        expected-over-bound
-        (assoc verification :expected map-513)
-        expected-over-bound-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [expected-over-bound])
-        candidate-over-bound
-        (assoc verification :candidate map-513)
-        candidate-over-bound-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [candidate-over-bound])
-        expected-node-bound
-        (assoc verification :expected vector-32x1024)
-        expected-node-bound-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [expected-node-bound])
-        candidate-node-bound
-        (assoc verification :candidate vector-32x1024)
-        candidate-node-bound-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [candidate-node-bound])
-        metadata-over-bound
-        (assoc verification :checks map-513)
-        metadata-over-bound-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [metadata-over-bound])
-        metadata-malformed
-        (assoc verification :checks (map identity [:malformed]))
-        metadata-malformed-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [metadata-malformed])
-        metadata-poison
-        (assoc verification
-               :checks
-               (lazy-seq
-                (throw (ex-info "metadata sequence was realized"
-                                {:id :sh12-c10-metadata-poison}))))
-        metadata-poison-receipt
-        (try
-          (invoke-c11
-           'sh12-c10-mir-verification-envelope-preflight
-           [metadata-poison])
-          (catch Throwable error
-            {:threw? true :error error}))
-        metadata-artifact-wrong
-        (assoc verification :artifact :wrong-artifact)
-        metadata-status-wrong
-        (assoc verification :status :rejected)
-        metadata-checks-wrong
-        (assoc verification :checks [:wrong-check])
-        metadata-nonclaims-wrong
-        (assoc verification :nonclaims [:wrong-nonclaim])
-        metadata-artifact-wrong-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [metadata-artifact-wrong])
-        metadata-status-wrong-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [metadata-status-wrong])
-        metadata-checks-wrong-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [metadata-checks-wrong])
-        metadata-nonclaims-wrong-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight
-         [metadata-nonclaims-wrong])
-        missing-key (dissoc verification :candidate)
-        extra-key (assoc verification :unexpected :extra)
-        missing-key-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight [missing-key])
-        extra-key-receipt
-        (invoke-c11
-         'sh12-c10-mir-verification-envelope-preflight [extra-key])
-        input-result
-        (invoke-c11
-         'sh12-authenticated-c10-mir-input-valid?
-         [bound expected-over-bound])
-        bind-result
-        (invoke-c11
-         'sh12-bind-authenticated-c10-mir
-         [bound candidate-over-bound {} {}])
-        verify-result
-        (invoke-c11
-         'sh12-verify-authenticated-c10-mir
-         [bound expected-over-bound {} {} {}])
-        source-path
-        (.resolve @root
-                  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
-        source-text (java.nio.file.Files/readString source-path)
-        helper-occurrences
-        (count (re-seq
-                #"sh12-c10-mir-verification-envelope-preflight"
-                source-text))]
-    (is (= :accepted (:status near-bound-receipt)))
-    (is (= :accepted
-           (get-in near-bound-receipt [:expected-preflight :status])))
-    (is (= :accepted
-           (get-in near-bound-receipt [:candidate-preflight :status])))
-    (is (< (get-in near-bound-receipt [:expected-preflight :nodes])
-           32768))
-    (is (< (get-in near-bound-receipt [:candidate-preflight :nodes])
-           32768))
-    (is (= :rejected (:status expected-over-bound-receipt)))
-    (is (= :c10-mir-verification-expected-bound
-           (:reason expected-over-bound-receipt)))
-    (is (= :rejected (:status candidate-over-bound-receipt)))
-    (is (= :c10-mir-verification-candidate-bound
-           (:reason candidate-over-bound-receipt)))
-    (is (= :rejected (:status expected-node-bound-receipt)))
-    (is (= :c10-mir-verification-expected-bound
-           (:reason expected-node-bound-receipt)))
-    (is (= :c10-mir-carrier-node-bound
-           (get-in expected-node-bound-receipt
-                   [:expected-preflight :reason])))
-    (is (= false
-           (get-in expected-node-bound-receipt
-                   [:expected-preflight :nodes-exact?])))
-    (is (integer?
-         (get-in expected-node-bound-receipt
-                [:expected-preflight :observed-nodes])))
-    (is (integer?
-         (get-in expected-node-bound-receipt
-                [:expected-preflight :enqueued])))
-    (is (= :rejected (:status candidate-node-bound-receipt)))
-    (is (= :c10-mir-verification-candidate-bound
-           (:reason candidate-node-bound-receipt)))
-    (is (= :c10-mir-carrier-node-bound
-           (get-in candidate-node-bound-receipt
-                   [:candidate-preflight :reason])))
-    (is (= false
-           (get-in candidate-node-bound-receipt
-                   [:candidate-preflight :nodes-exact?])))
-    (is (integer?
-         (get-in candidate-node-bound-receipt
-                [:candidate-preflight :observed-nodes])))
-    (is (integer?
-         (get-in candidate-node-bound-receipt
-                [:candidate-preflight :enqueued])))
-    (is (= :rejected (:status metadata-over-bound-receipt)))
-    (is (= :c10-mir-verification-metadata-bound
-           (:reason metadata-over-bound-receipt)))
-    (is (= :c10-mir-carrier-width-bound
-           (get-in metadata-over-bound-receipt
-                   [:metadata-preflight :reason])))
-    (is (= :rejected (:status metadata-malformed-receipt)))
-    (is (= :c10-mir-verification-metadata-bound
-           (:reason metadata-malformed-receipt)))
-    (is (= :c10-mir-carrier-seq-unsupported
-           (get-in metadata-malformed-receipt
-                   [:metadata-preflight :reason])))
-    (is (not (:threw? metadata-poison-receipt)))
-    (is (= :rejected (:status metadata-poison-receipt)))
-    (is (= :c10-mir-verification-metadata-bound
-           (:reason metadata-poison-receipt)))
-    (is (= :c10-mir-carrier-seq-unsupported
-           (get-in metadata-poison-receipt
-                   [:metadata-preflight :reason])))
-    (doseq [receipt [metadata-artifact-wrong-receipt
-                     metadata-status-wrong-receipt
-                     metadata-checks-wrong-receipt
-                     metadata-nonclaims-wrong-receipt]]
-      (is (= :rejected (:status receipt)))
-      (is (= :c10-mir-verification-metadata-values
-             (:reason receipt))))
-    (is (= :rejected (:status missing-key-receipt)))
-    (is (= :c10-mir-verification-envelope-shape
-           (:reason missing-key-receipt)))
-    (is (= :rejected (:status extra-key-receipt)))
-    (is (= :c10-mir-verification-envelope-shape
-           (:reason extra-key-receipt)))
-    (is (false? input-result))
-    (is (= :rejected (:status bind-result)))
-    (is (= :verification-carrier-bound
-           (get-in bind-result [:diagnostics 0 :reason])))
-    (is (= :c10-mir-verification-candidate-bound
-           (get-in bind-result
-                  [:diagnostics 0 :preflight :reason])))
-    (is (= :c10-mir-carrier-width-bound
-           (get-in bind-result
-                  [:diagnostics 0 :preflight :candidate-preflight
-                   :reason])))
-    (is (= :rejected (:status verify-result)))
-    (is (= [:verification-carrier-bound]
-           (:checks verify-result)))
-    (is (= :c10-mir-verification-expected-bound
-           (get-in verify-result [:verification-preflight :reason])))
-    (is (= :c10-mir-carrier-width-bound
-           (get-in verify-result
-                  [:verification-preflight :expected-preflight :reason])))
-    (is (= 4 helper-occurrences))))
+  ;; This exercises carrier/schema validation on supplied DATA. Fresh C10
+  ;; authentication remains in the separate positive and mutation tests.
+  (let [verification {:artifact :gravity/sh11-safety-identity-binding-verification
+                      :status :passed
+                      :checks (invoke-c11 'sh12-c10-mir-binding-checks [])
+                      :nonclaims (invoke-c11 'sh12-c10-mir-binding-nonclaims [])
+                      :expected {} :candidate {}}
+        wide (zipmap (range 513) (repeat :leaf))
+        large (vec (repeat 32769 :leaf))
+        preflight #(invoke-c11 'sh12-c10-mir-verification-envelope-preflight [%])]
+    (doseq [value [wide large]]
+      (is (= :accepted (:status (preflight (assoc verification :expected value)))))
+      (is (= :accepted (:status (preflight (assoc verification :candidate value))))))
+    (doseq [candidate [(assoc verification :artifact :wrong-artifact)
+                       (assoc verification :status :rejected)
+                       (assoc verification :checks [:wrong-check])
+                       (assoc verification :nonclaims [:wrong-nonclaim])
+                       (assoc verification :checks wide)]]
+      (is (= :c10-mir-verification-metadata-values (:reason (preflight candidate)))))
+    (doseq [candidate [(dissoc verification :candidate)
+                       (assoc verification :unexpected :extra)]]
+      (is (= :c10-mir-verification-envelope-shape (:reason (preflight candidate)))))
+    (let [calls (atom 0)
+          poison (lazy-seq (swap! calls inc) (throw (ex-info "realized" {})))]
+      (doseq [field [:checks :expected :candidate]]
+        (let [receipt (preflight (assoc verification field poison))]
+          (is (= :rejected (:status receipt)))
+          (is (= :c10-mir-carrier-seq-unsupported
+                 (get-in receipt [(case field
+                                   :checks :metadata-preflight
+                                   :expected :expected-preflight
+                                   :candidate :candidate-preflight) :reason])))))
+      (is (zero? @calls)))))
 
 (deftest sh12-c10-authenticated-gravity-boundary
   ;; Explicit five-var candidate lane; the real .gravity boundary is last:
-  ;; clojure -J-Xmx8g -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --fail-fast --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-proof-reference-api-and-positive --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-path-neutral-provenance-pair --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-representative-mutation-rejections --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-carrier-preflight-boundaries --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-authenticated-gravity-boundary --max-cache-entries 1
+  ;; clojure -J-Xmx8g -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --fail-fast --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-proof-reference-api-and-positive --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-path-neutral-provenance-pair --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-representative-mutation-rejections --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-carrier-preflight-has-no-project-quotas --test-var gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-authenticated-gravity-boundary --max-cache-entries 1
   ;; This is an explicit selector order, not a promise about namespace order.
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (require 'gravity.self-hosting.sh08-primitive-function-type-test)
@@ -837,27 +646,21 @@
         diagnostic-ladder
         {:bound-preflight
          {:status (:status bound-preflight)
-          :nodes (:nodes bound-preflight)
           :reason (:reason bound-preflight)}
          :verification-preflight
          {:status (:status verification-preflight)
-          :nodes (:nodes verification-preflight)
          :reason (:reason verification-preflight)}
          :legacy-whole-envelope-preflight
          {:status (:status legacy-whole-envelope-preflight)
-          :nodes (:nodes legacy-whole-envelope-preflight)
           :reason (:reason legacy-whole-envelope-preflight)}
          :verification-expected-preflight
          {:status (:status verification-expected-preflight)
-          :nodes (:nodes verification-expected-preflight)
           :reason (:reason verification-expected-preflight)}
          :verification-candidate-preflight
          {:status (:status verification-candidate-preflight)
-          :nodes (:nodes verification-candidate-preflight)
           :reason (:reason verification-candidate-preflight)}
          :verification-metadata-preflight
          {:status (:status verification-metadata-preflight)
-          :nodes (:nodes verification-metadata-preflight)
           :reason (:reason verification-metadata-preflight)}
          :bound-shape-valid? bound-shape-valid?
          :c8-fact-tables-valid? c8-fact-tables-valid?
@@ -886,11 +689,10 @@
     (is (= :passed (:status safety-verification)))
     (is (= :accepted (:status bound-preflight))
         (str "C11 diagnostic ladder: " diagnostic-ladder))
-    (is (= :rejected (:status legacy-whole-envelope-preflight))
+    (is (= :accepted (:status legacy-whole-envelope-preflight))
         (str "C11 legacy whole-envelope diagnostic: "
              legacy-whole-envelope-preflight))
-    (is (= :c10-mir-carrier-node-bound
-           (:reason legacy-whole-envelope-preflight))
+    (is (nil? (:reason legacy-whole-envelope-preflight))
         (str "C11 legacy whole-envelope diagnostic: "
              legacy-whole-envelope-preflight))
     (is (= :accepted (:status verification-preflight))
@@ -907,34 +709,7 @@
            (get-in verification-preflight
                    [:candidate-preflight :status]))
         (str "C11 diagnostic ladder: " diagnostic-ladder))
-    (is (= 36113 (:nodes verification-preflight))
-        (str "C11 diagnostic ladder: " diagnostic-ladder))
-    (is (= true (:nodes-exact? verification-preflight))
-        (str "C11 diagnostic ladder: " diagnostic-ladder))
-    (is (= 21
-           (get-in verification-preflight
-                   [:metadata-preflight :nodes]))
-        (str "C11 diagnostic ladder: " diagnostic-ladder))
-    (is (= true
-           (get-in verification-preflight
-                   [:metadata-preflight :nodes-exact?]))
-        (str "C11 diagnostic ladder: " diagnostic-ladder))
-    (is (= 18046
-           (get-in verification-preflight
-                   [:expected-preflight :nodes]))
-        (str "C11 diagnostic ladder: " diagnostic-ladder))
-    (is (= true
-           (get-in verification-preflight
-                   [:expected-preflight :nodes-exact?]))
-        (str "C11 diagnostic ladder: " diagnostic-ladder))
-    (is (= 18046
-           (get-in verification-preflight
-                   [:candidate-preflight :nodes]))
-        (str "C11 diagnostic ladder: " diagnostic-ladder))
-    (is (= true
-           (get-in verification-preflight
-                   [:candidate-preflight :nodes-exact?]))
-        (str "C11 diagnostic ladder: " diagnostic-ladder))
+
     (is (= :accepted (:status verification-expected-preflight))
         (str "C11 diagnostic ladder: " diagnostic-ladder))
     (is (= :accepted (:status verification-candidate-preflight))

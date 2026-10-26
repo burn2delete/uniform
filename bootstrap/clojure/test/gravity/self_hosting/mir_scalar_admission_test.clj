@@ -21,7 +21,7 @@
       (is (true? (invoke 'sh12-c6p-scalars-valid? scalar)))
       (is (= (preflight "x") (preflight scalar))))
     (is (true? (invoke 'sh12-c6p-scalars-valid? nested)))
-    (is (= {:status :accepted :nodes 6 :enqueued 6 :nodes-exact? true}
+    (is (= {:status :accepted}
            (preflight nested)))
     (is (= (preflight small) (preflight nested)))
     (doseq [value [1.5 1/2 1M]]
@@ -30,11 +30,20 @@
     (is (true? (invoke 'sh12-c10-mir-sha256-id? (str "sha256:" (apply str (repeat 64 "a"))))))
     (doseq [identity [text (str "sha256:" text) (symbol text) 42]]
       (is (false? (invoke 'sh12-c10-mir-sha256-id? identity))))
-    (is (= :c10-mir-carrier-width-bound
-           (:reason (preflight (vec (repeat 1025 text))))))
+    ;; Crossing the removed width quota does not change semantic admission.
+    (doseq [width [1024 1025]]
+      (let [wide (vec (repeat width text))]
+        (is (= {:status :accepted} (preflight wide)))
+        (is (true? (invoke 'sh12-c6p-scalars-valid? wide)))))
+    ;; Validation must reach invalid leaves beyond the former width quota.
+    (doseq [invalid [1.5 (Object.)]]
+      (is (false? (invoke 'sh12-c6p-scalars-valid?
+                          {:field (conj (vec (repeat 1025 text)) invalid)}))))
     (let [calls (atom 0)
           poison (lazy-seq (swap! calls inc) (throw (ex-info "must not realize" {})))]
       (is (= :c10-mir-carrier-seq-unsupported (:reason (preflight {:field poison}))))
+      (is (= {:status :rejected :reason :c10-mir-carrier-seq-unsupported}
+             (preflight {:field (conj (vec (repeat 1025 text)) poison)})))
       (is (zero? @calls)))))
 
 (deftest scalar-kind-acceptance-does-not-authorize-invalid-mir-indices-or-types
