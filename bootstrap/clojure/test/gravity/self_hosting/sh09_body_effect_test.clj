@@ -1715,7 +1715,7 @@
               (is (= :rejected (:status changed-context)))
               (is (= :body-list-construction-operand-type-required
                      (:reason changed-context)))
-              (is (false? (valid (assoc changed-facts :list-construction-context (:context changed-context))))))))
+              (is (false? (valid (assoc changed-facts :list-construction-context (:context changed-context)))))))
           (doseq [type [(assoc wide :element-types (vec (repeat 1025 {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})))
                         {:kind :gravity.type/map :shape :literal :member-types (vec (repeat 1026 :gravity.type/string))}]]
             (is (= :accepted (:status (c7 'sh08-lc-validate-types [[type]]))))
