@@ -87,22 +87,27 @@
    (let [contextual? (not= ::legacy context)
         _ (when (and contextual? (nil? context))
             (sh06-resolution-c5-fail! source-path :missing-context {}))
-        _ (sh06-authenticated-sh05-parent!
-            source-path sh05-artifact)
+        prepared (when (and (not contextual?) (resolution-construction-eligible?))
+                   (resolution-construction-inputs source-path sh05-artifact legacy?))
+        _ (when-not prepared
+            (sh06-authenticated-sh05-parent! source-path sh05-artifact))
         c2-artifact (get-in sh05-artifact
                             [:gravity-macro-boundary
                              :authenticated-sh04-artifact
                              :c2-reader-artifact])
         source-before
-        (if contextual?
+        (if prepared (:source-before prepared)
+         (if contextual?
           (sh06-authenticated-source-snapshot!
            source-path c2-artifact :source-authentication-before-c5
            legacy? context)
           (sh06-authenticated-source-snapshot!
-           source-path c2-artifact :source-authentication-before-c5 legacy?))
-        request (if contextual?
+           source-path c2-artifact :source-authentication-before-c5 legacy?)))
+        request (if prepared
+                  (resolution-module-request-from-base source-path sh05-artifact module-inputs (:base prepared))
+                 (if contextual?
                   (sh06-resolution-request source-path sh05-artifact context)
-                  (sh06-resolution-module-request source-path sh05-artifact module-inputs))
+                  (sh06-resolution-module-request source-path sh05-artifact module-inputs)))
         binding (if contextual?
                   (sh06-resolution-context-plan-binding! source-path context)
                   (sh06-resolution-current-binding! source-path))
