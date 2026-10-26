@@ -16,7 +16,7 @@
 (defn- field! [x name value]
   (let [field (.getDeclaredField (class x) name)]
     (is (.trySetAccessible field)) (.set field x value) x))
-(defn- array-map [entries] (clojure.lang.PersistentArrayMap. (object-array entries)))
+(defn- raw-array-map [entries] (clojure.lang.PersistentArrayMap. (object-array entries)))
 
 (deftype ForeignMeta [calls]
   clojure.lang.IMeta (meta [_] (swap! calls inc) (throw (ex-info "foreign meta" {}))))
@@ -93,7 +93,7 @@
   (let [calls (atom 0) x (foreign-vector calls)]
     (is (= {:status :rejected :reason :untrusted-vector-class} (check x)))
     (is (= 0 @calls)))
-  (let [x (array-map [:cycle nil])]
+  (let [x (raw-array-map [:cycle nil])]
     (field! x "array" (object-array [:cycle x]))
     (is (= {:status :rejected :reason :cyclic-carrier} (check x))))
   (let [x (with-meta [] {:cycle nil}) metadata (meta x)]
@@ -113,7 +113,7 @@
   (doseq [x [(with-meta [] {:line 1}) (subvec [1 2] 0 1)]]
     (is (= :rejected (:status (b/p15-s23-trusted-carrier-validation x :default-only))))
     (is (= (b/p15-s23-trusted-carrier-validation x :default-only)
-           (b/p15-s23-trusted-carrier-validation x :default-only 1 1 1)))))
+           (b/p15-s23-trusted-carrier-validation x :default-only 1 1 1))))
   (let [calls (atom 0) x (ForeignMeta. calls)]
     (doseq [bad [(assoc-in @plan [:module :profile] :meta)
                  (assoc-in @plan [:module :target] :native)
@@ -132,7 +132,7 @@
                      (into-array Class [clojure.lang.IPersistentMap clojure.lang.IObj])
                      (reify java.lang.reflect.InvocationHandler (invoke [_ _ _ _] (deny))))
         opaque (proxy [Object] [] (hashCode [] (deny)) (equals [_] (deny)) (toString [] (deny)))
-        keyed (array-map [opaque :value])]
+        keyed (raw-array-map [opaque :value])]
     (doseq [x [foreign-map [foreign-map] (with-meta [] foreign-map)]]
       (is (= {:status :rejected :reason :untrusted-map-class-or-comparator} (check x))))
     (doseq [x [opaque keyed]]
