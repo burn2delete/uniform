@@ -149,7 +149,8 @@
                          {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
                          (:reader-source-path invocation) invocation)
                        (sh06-resolution-artifact-from-sh05-artifact source-path parent))))
-        request (sh07-core-authenticated-request resolved)
+        request (if (some? invocation) (sh07-core-authenticated-request resolved ::legacy invocation)
+                    (sh07-core-authenticated-request resolved))
         forms (into {} (map (juxt :form-id identity)) (:forms request))
         root (get forms (first (:top-level-form-ids request)))
         function (get forms (get (:child-form-ids root) 2))

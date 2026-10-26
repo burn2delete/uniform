@@ -21,31 +21,36 @@
   (let [source "fixture.gravity" text "fixture" front {} parent {:marker :c3-parent}
         invocation {:reader-source-path "reader.gravity"
                     :authenticated-envelope-options {:source :development-current}}
-        macro-parent {:marker :macro-parent} sentinel (ex-info "routing observed" {:routing :observed})
+        macro-parent {:marker :macro-parent} resolved {:marker :resolved}
+        sentinel (ex-info "routing observed" {:routing :observed})
         calls (atom [])]
     (with-redefs [b/sh05-macro-artifact-from-c3-artifact
                   (fn [& arguments] (swap! calls conj [:macro arguments]) macro-parent)
                   b/sh06-resolution-artifact-from-sh05-artifact
-                  (fn [& arguments] (swap! calls conj [:resolve arguments]) (throw sentinel))
+                  (fn [& arguments] (swap! calls conj [:resolve arguments]) resolved)
                   b/sh06-resolution-source-artifact
-                  (fn [& arguments] (swap! calls conj [:source arguments]) (throw sentinel))]
+                  (fn [& arguments] (swap! calls conj [:source arguments]) resolved)
+                  b/sh07-core-authenticated-request
+                  (fn [& arguments] (swap! calls conj [:request arguments]) (throw sentinel))]
       (doseq [arguments [[source text front] [source text front nil] [source text front nil nil]]]
         (reset! calls [])
         (is (= {:routing :observed} (diagnostic #(apply b/p15-s23-c6c10-resolved-parameter arguments))))
-        (is (= [[:source [source text]]] @calls)))
+        (is (= [[:source [source text]] [:request [resolved]]] @calls)))
       (doseq [arguments [[source text front parent] [source text front parent nil]]]
         (reset! calls [])
         (is (= {:routing :observed} (diagnostic #(apply b/p15-s23-c6c10-resolved-parameter arguments))))
-        (is (= [[:macro [source parent]] [:resolve [source macro-parent]]] @calls)))
+        (is (= [[:macro [source parent]] [:resolve [source macro-parent]] [:request [resolved]]] @calls)))
       (reset! calls [])
       (is (= {:routing :observed}
              (diagnostic #(b/p15-s23-c6c10-resolved-parameter source text front parent invocation))))
       (is (= [[:macro [source parent invocation]]
               [:resolve [source macro-parent
                          {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
-                         (:reader-source-path invocation) invocation]]] @calls))
+                         (:reader-source-path invocation) invocation]]
+              [:request [resolved :gravity.bootstrap/legacy invocation]]] @calls))
       (is (identical? invocation (last (second (first @calls)))))
       (is (identical? invocation (last (second (second @calls)))))
+      (is (identical? invocation (last (second (last @calls)))))
       (reset! calls [])
       (is (= ["C6-VERIFY" :explicit-reader-c3-parent]
              ((juxt :id :missing-fact)
