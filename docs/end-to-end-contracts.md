@@ -9,7 +9,7 @@ This is the sole detailed backlog for ownership cleanup, using OWN-01 through
 OWN-06. The [component index](component-roadmaps/README.md) supplies navigation;
 component implementation tasks remain in their existing linked ledgers. These
 records describe joins between components, not replacement component checklists.
-All six joins remain open beyond the explicitly accepted pilot below.
+All six joins remain open beyond the explicitly accepted scoped increments below.
 
 ## Governing boundary
 
@@ -92,11 +92,15 @@ whole Build or release prerequisite. Acceptance: both source extensions preserve
 their actual paths, byte/scalar spans, origins and current identities through
 fresh Syntax; malformed/tampered inputs retain owning-stage diagnostics.
 Record supported surface and known missing families against the Reader ledger.
-Current blocker: owner reports the full-C11-source constructor returned before
-206.726 seconds but observation filled 80 events and failed before artifact/auth
-assertions. This is not a passing C2 receipt. Repair and cheap harness review are
-owned there; a new run requires the separately restricted parent disposition.
-The ownership task neither repeats the run nor broadens that authorization.
+The corrected full-C11-source C2 run now passed on the exact frozen source tuple
+recorded below, after independent harness and result review. All nine acceptance
+checks passed, including actual Reader execution, authenticated envelope, fresh
+verified replay, source bindings and lexical/representation validation. This
+closes that positive C2 dependency observation, not all Reader/Syntax surfaces or
+the downstream join. The previous 120-second timeout and 206.726-second
+observation failure remain separate nonpasses. Genuine C3 and C5 consumption of
+the complete source is the next open integration boundary; no downstream run
+or source authority is inferred from this receipt.
 
 ### OWN-02 - Authenticated Source-to-Core population
 
@@ -235,6 +239,36 @@ The latter source run timed out at 120 seconds with no completed test counts;
 helper 36/327, harness 10/52 and controlled codec 10/92 receipts do not replace it.
 These are attributed owner reports, not locally rerun acceptance. Different
 source tuples cannot be joined by comparing counts or relabeling historical pins.
+
+### Independently checked full-C11-source C2 increment
+
+The corrected run used frozen commit
+`2422be8ce0d1de5e12a3e741244ef96a319bba9b`, tree
+`329a1978796509ae7d7b159a89921d97d2064d61`, with the 573124-byte C11 source
+and `b9b68c69...5184f` hash above. It exited naturally with 0 in 193.576
+seconds at an actual 2147483648-byte maximum heap under the unchanged
+240-second host profile. Source identity and all captured control/input hashes
+were equal before and after; the worktree was clean. The valid observer retained
+12 detailed events, 55 completed resolver calls and no resolver errors.
+
+Independent result readback checked all nine owner acceptance flags and the
+actual execution/fresh-verification events against the reviewed harness. The
+receipt SHA256 is
+`04462d360ca77faa67aacde3626ae61f22b75fb04b7d46e318c3c7de17719829`;
+its unchanged plan/harness/capture SHA256 identities are respectively
+`31e9e12540c214b5e10dd88b0e98e37a8a0752e62cd6b1e228e0dcec9f12e48d`,
+`b9ff51c1e183804e0f254ddbacce771ad180f9d4768d7376d043e888784a2802`,
+and `8accd74a643d3cb8572b48fa16fd39974a36585de8a9cae127c9d5ddfbb8514f`.
+No construction was repeated during readback. This is development evidence for
+the complete C11 source through C2, not a current-main run, speedup comparison,
+C3/C5 composition, C6/MIR producer admission, C14, migration or public release.
+
+The supported next proposal is one ordinary five-argument current-source C5
+constructor, which builds C2/C3 once and forwards the actual parent/invocation
+through SH05/SH06. The current-selected C3 API requires direct construction;
+saved C2 injection or nil-argument/token workarounds are not an alternative.
+The proposal needs its own exact plan, profile and execution evidence. It does
+not itself establish the downstream acceptance or authorize another run.
 
 Every future closure receipt must name exact head/tree and source/dependency/
 harness identities; actual producer and consumer invocations; passed, failed and
