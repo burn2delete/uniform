@@ -38,3 +38,13 @@ Publish the prepared slice as a draft. An independent reviewer checks mapping, a
 ## Names, callers and compatibility
 
 Package key `tools-workflow` is semantic. No imports, load order, manifests, source hashes, schemas or public APIs are changed. Historical planning IDs in canonical links remain traceability only.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [D6](../../docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md#requirements): Performance inspection and benchmark reporting must retain source/compiler/target/harness identity. Reports do not establish optimizer correctness or realtime latency.
+- [PERF6](../../docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md#requirements): Profile-data producers expose identity, redaction/retention and hot/cold maps; collected data alone is not an accepted PGO transformation.
