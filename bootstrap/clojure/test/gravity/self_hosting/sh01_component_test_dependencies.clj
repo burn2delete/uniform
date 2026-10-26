@@ -116,10 +116,12 @@
     :transitive
     (or (boolean (re-matches #"bootstrap/clojure/src/gravity/[^/]+\.clj"
                             path))
-        ;; Only the two re-audited bootstrap-free leaves opt into their
+        ;; Only the explicitly re-audited bootstrap-free leaves opt into their
         ;; componentized internal namespaces. This is not a broad recursive
         ;; production-path allowance for stale compatibility declarations.
         (case (:namespace test-entry)
+          gravity.c2-artifact-identity-test
+          (boolean (re-matches #"bootstrap/clojure/src/gravity/c2_artifact_identity/[^/]+\.clj" path))
           gravity.c11-mir-test
           (boolean (re-matches #"bootstrap/clojure/src/gravity/c11_mir/[^/]+\.clj" path))
           gravity.compiler-pass-manifest-test

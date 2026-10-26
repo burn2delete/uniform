@@ -823,6 +823,48 @@
       (finally
         (java.nio.file.Files/deleteIfExists pid-file)))))
 
+(deftest runtime-module-read-owner-wrapper-is-required-before-scheduling
+  (let [namespace 'gravity.self-hosting.runtime-module-reads-test
+        starts (atom 0)]
+    (doseq [impact-plan [{:namespaces [namespace]}
+                        (plan [{:namespace namespace :slice "SH-19"
+                                :resource-class :normal}])
+                        ;; Neither a stronger resource label nor a forged
+                        ;; support marker supplies the missing guarded route.
+                        (plan [{:namespace namespace :slice "SH-19"
+                                :resource-class :exclusive :execution :supported}])]]
+      (let [data (exception-data
+                  #(runner/execute-plan
+                    impact-plan {:worker (fn [_] (swap! starts inc) {:exit-code 0})
+                                 :process-launcher (fn [& _] (swap! starts inc))}))]
+        (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+        (is (= :unsupported (:execution data)))
+        (is (= namespace (:namespace data)))
+        (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+               (:required-guards data)))))
+    (is (zero? @starts))))
+
+(deftest direct-process-entrypoints-require-the-runtime-owner-wrapper
+  (let [starts (atom 0)
+        options {:working-directory "/tmp"
+                 :process-launcher (fn [& _] (swap! starts inc) {:exit-code 0})}]
+    (doseq [namespace ['gravity.self-hosting.runtime-module-reads-test
+                      "gravity.self-hosting.runtime-module-reads-test"]
+            marker [nil :supported]]
+      (let [job (cond-> {:namespace namespace :slice "SH-19" :resource-class :normal}
+                  marker (assoc :execution marker))]
+        (doseq [operation [#(runner/run-namespace-process job options)
+                           #(runner/run-namespace-process (assoc job :resource-class :exclusive) options)
+                           #(runner/run-normal-batch-process
+                             [{:namespace 'gravity.self-hosting.ordinary-test
+                               :slice "SH-01" :resource-class :normal} job] options)]]
+          (let [data (exception-data operation)]
+            (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+            (is (= :unsupported (:execution data)))
+            (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+                   (:required-guards data)))))))
+    (is (zero? @starts))))
+
 (deftest malformed-and-empty-plans-fail-closed
   (is (= "SH01-PARALLEL-EMPTY-PLAN"
          (:id
