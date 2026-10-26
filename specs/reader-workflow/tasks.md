@@ -1,4 +1,80 @@
-# Tasks: Reader workflow migration
+# Tasks: Reader implementation workflow
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+Owner role: Reader maintainer; existing implementation reservations are unchanged.
+Authority transfer baseline: `c40d74aded3a019ff2bdeb1f4050cf95dbb11c1e`.
+
+## Implementation tasks
+
+This is the sole editable Reader implementation task ledger. The roadmap's
+[finite remaining work](../../docs/component-roadmaps/reader.md#finite-remaining-work)
+is generated from these records, not a second editable truth. Stable semantic
+IDs do not change with ordering. An unchecked box means not accepted complete;
+the evidence/status text distinguishes open, partial and unassessed evidence.
+Check a box only with an explicit accepted outcome and its immutable receipt in
+the evidence/status field. No task closes through this authority transfer.
+Order is display order, not a dependency edge or an overall completion score.
+Evidence references to the linked pilot resolve to the unchanged
+[accepted finite invocation evidence](../../docs/component-roadmaps/reader.md#accepted-finite-invocation-evidence).
+The governing contracts and source leaves are linked in that same roadmap.
+
+
+<!-- reader-implementation-tasks:start -->
+
+- [ ] `reader/finite-remaining-work/contract-coverage-reconciliation` Contract coverage reconciliation
+
+Current evidence/status: Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures.
+
+Done when (yes/no): Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete.
+
+- [ ] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure
+
+Current evidence/status: Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population.
+
+Done when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity.
+
+- [ ] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure
+
+Current evidence/status: Partial Reader and projection sources. The focused token-spelling reuse increment and its validation limits are recorded in [Reader evidence](https://github.com/burn2delete/uniform/blob/codex/reader-token-spelling-reuse-20261026/specs/reader-workflow/evidence.md#token-spelling-reuse); it does not close the complete lexical surface.
+
+Done when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified.
+
+- [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure
+
+Current evidence/status: Extension records/projected views exist; accepted authorization behavior not established here.
+
+Done when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler.
+
+- [ ] `reader/finite-remaining-work/authentication-and-quota-removal-closure` Authentication and quota-removal closure
+
+Current evidence/status: Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open.
+
+Done when (yes/no): Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance.
+
+- [ ] `reader/finite-remaining-work/fresh-syntax-handoff` Fresh Syntax handoff
+
+Current evidence/status: Partial; real current Reader/Syntax products participate in the linked accepted pilot. Full component handoff coverage remains open.
+
+Done when (yes/no): Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run.
+
+- [ ] `reader/finite-remaining-work/component-release-evidence` Component release evidence
+
+Current evidence/status: Open; the accepted finite invocation receipt is not the complete Reader release outcome.
+
+Done when (yes/no): Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome.
+
+<!-- reader-implementation-tasks:end -->
+
+## Historical migration record
+
+The following original scaffold record is frozen history at the transfer
+baseline, not current implementation tasks or a completion denominator. Its
+pending review/integration text records what that scaffold stated; it is not
+a fresh claim about the merged PR. The current authority above supersedes its
+old navigation-only rule. Original artifact preparation and evidence remain
+inspectable; no historical checkbox is silently reclassified.
+
+### Tasks: Reader workflow migration
 
 Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
 Owner: Frontend Spec Kit migration maintainer.
