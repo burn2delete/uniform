@@ -51,7 +51,8 @@
 
 (defn p15-s23-c11-mir-validate-data-flow!
   [source-path checked-core mir operation-products]
-  (let [nodes (:nodes operation-products)
+  (let [parameter (p15-s23-c11-mir-entry-parameter! source-path checked-core)
+        nodes (:nodes operation-products)
         operations (:operations operation-products)
         operation-by-id (:operation-by-id operation-products)
         blocks (:blocks operation-products)
@@ -79,9 +80,9 @@
                   block-id (:block-id (get operation-by-id node-id))
                   check (get-in node [:safety :check])]
               (cond->
-               [[node-id {:value-id node-id
+               [[node-id (or (when (= node-id (:id parameter)) (:definition parameter)) {:value-id node-id
                           :operation-id node-id
-                          :block-id block-id}]]
+                          :block-id block-id})]]
                 check
                 (conj
                  [(p15-s23-c11-mir-runtime-check-token-id check)
@@ -102,7 +103,7 @@
                [[node-id
                  (p15-s23-c11-mir-expected-value
                   node expected-data-flow expected-terminator-uses
-                  (get operation-by-id node-id))]]
+                  (get operation-by-id node-id) (when (= node-id (:id parameter)) parameter))]]
                 check
                 (conj
                  [(p15-s23-c11-mir-runtime-check-token-id check)
@@ -130,7 +131,7 @@
     (p15-s23-c11-mir-require!
      (every? #(p15-s23-c11-mir-valid-dominance-edge?
                % blocks operation-by-id expected-definitions
-               position-by-id join)
+               position-by-id join parameter)
              data-flow)
      "C11-DOMINANCE" source-path mir :definition-dominates-use)
     (p15-s23-c11-mir-require!

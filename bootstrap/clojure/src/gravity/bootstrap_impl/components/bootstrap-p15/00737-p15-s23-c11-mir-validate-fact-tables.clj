@@ -106,6 +106,7 @@
 (defn p15-s23-c11-mir-validate-runtime-checks!
   [source-path checked-core mir operation-products]
   (let [nodes (:core-nodes checked-core)
+        parameter (p15-s23-c11-mir-entry-parameter! source-path checked-core)
         operation-by-id (:operation-by-id operation-products)
         runtime-nodes
         (filterv #(= :runtime-checked (get-in % [:safety :outcome])) nodes)
@@ -148,8 +149,9 @@
           (p15-s23-c11-mir-require!
            (and (not-any? #(= node-id (:guarded-operation-id %))
                           (vals observed-table))
-                (= :not-applicable op-reference)
-                (= :not-applicable op-failure)
+                (if (= node-id (:id parameter))
+                  (nil? operation)
+                  (and (= :not-applicable op-reference) (= :not-applicable op-failure)))
                 (= :not-applicable (:runtime-check safety-fact))
                 (= :not-applicable (:failure-behavior safety-fact)))
            "C11-SAFETY" source-path operation

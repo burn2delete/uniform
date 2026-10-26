@@ -2,7 +2,9 @@
 
 (defn p15-s23-c11-mir-validate-operations!
   [source-path checked-core mir]
-  (let [nodes (:core-nodes checked-core)
+  (let [parameter (p15-s23-c11-mir-entry-parameter! source-path checked-core)
+        nodes (:core-nodes checked-core)
+        instruction-nodes (filterv #(not= (:id parameter) (:node-id %)) nodes)
         node-by-id (into {} (map (juxt :node-id identity)) nodes)
         runtime-nodes
         (filterv #(map? (get-in % [:safety :check])) nodes)
@@ -22,9 +24,9 @@
                      [block-id (mapv :op-id (:instructions block))]))
               block-by-id)]
     (p15-s23-c11-mir-require!
-     (and (= (+ (count nodes) (count runtime-nodes))
+     (and (= (+ (count instruction-nodes) (count runtime-nodes))
              (count operations))
-          (= (set/union (set (keys node-by-id)) runtime-operation-ids)
+          (= (set/union (set (map :node-id instruction-nodes)) runtime-operation-ids)
              (set (keys operation-by-id)))
           (= (count operations) (count operation-by-id)))
      "C11-MODULE" source-path mir
