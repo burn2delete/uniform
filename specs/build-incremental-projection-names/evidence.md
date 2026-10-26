@@ -121,7 +121,25 @@ resolved. Eight nested-helper/rename-pair/full-transaction requests still fail
 closed with the same `SH01-IMPACT-UNOWNED` diagnostics on both trees. No unknown
 path acceptance or nested-helper ownership was broadened by this rename.
 
-The normal reconciliation and its new evidence require final delta review;
-coordinator exact-head/current-main verification and merge remain pending.
 The historical heavy bootstrap failure was not replayed and is not presented
 as a result on this current base.
+
+## Verified implementation integration
+
+Independent review accepted the final reconciliation/evidence delta at
+`d17cb087d9039f4099a64d54e72c31af7e14be66`, tree
+`b56e5a0d2a2d88f889850f07d6bd4460c371a1cd`, with no blocking findings.
+The coordinator accepted the exact-head/current-base preflight and merged
+[PR397](https://github.com/burn2delete/uniform/pull/397) on
+2026-10-26 at 00:39:35 UTC. Independent GitHub and Git readback verified:
+
+- Merge: `8b0b2ed4fb20511b46478189a8c8f554d47d5983`.
+- Ordered parents: `d6d100127ab8d67e6e0ba6f334b60fa99bcb4019` and
+  `d17cb087d9039f4099a64d54e72c31af7e14be66`.
+- Merge tree: `b56e5a0d2a2d88f889850f07d6bd4460c371a1cd`, exactly the reviewed
+  and validated final candidate tree; PR state closed/merged, worktree clean.
+
+These receipts close this finite implementation's review/integration tasks.
+This later documentation reconciliation records the existing implementation
+merge; it is not a new implementation acceptance, test replay or public API
+migration. The planner limitations and explicit nonclaims above still apply.

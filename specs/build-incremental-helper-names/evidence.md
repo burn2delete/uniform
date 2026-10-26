@@ -59,11 +59,10 @@ records, and inspected the retained passing execution logs. This is not a claim
 of an independent compiler-test replay. The complete transaction remains
 unowned in the planner; matching refusals are not automatic routing coverage.
 
-The implementation composes cleanly with freshly fetched main `8b0b2ed4`,
-yielding the same tree `4f782354`. Documentation-only evidence updates do not
-alter the reviewed source/tests. Coordinator final-head/current-main preflight
-and merge remain pending. GitHub reported no workflow runs or status checks for
-the implementation head; no CI success is inferred. Historical heavy compiler
+The implementation composed cleanly with main `8b0b2ed4`, yielding the same tree
+`4f782354`. Documentation-only evidence updates did not alter the reviewed
+source/tests. GitHub reported no workflow runs or status checks for the
+implementation head; no CI success is inferred. Historical heavy compiler
 failures were not replayed or treated as current results.
 
 The private legacy directory is gone. The public `gravity.c16-incremental`
@@ -71,3 +70,24 @@ facade, public var names, test selector and serialized schema/diagnostic IDs
 remain intentional compatibility boundaries, and historical pins are unchanged.
 This finite group completes the selected internal naming migration; it does
 not start an automatic public API rename or add cache/proof/release authority.
+
+## Verified implementation integration
+
+Independent review accepted the final documentation-only delta's exact tree
+`f5af10b403e72cf959a09f5319e123972a5d4db5`, published at
+`cc43455acb229aa51214ef34ed877dda7d1bc86c`, with no blocking findings.
+The coordinator accepted the exact-head/current-base preflight and merged
+[PR399](https://github.com/burn2delete/uniform/pull/399) on
+2026-10-26 at 01:50:28 UTC. Independent GitHub and Git readback verified:
+
+- Merge: `2bb0a6dbd03b8a724ffc722f8974fc9bf7f7f5a2`.
+- Ordered parents: `8b0b2ed4fb20511b46478189a8c8f554d47d5983` and
+  `cc43455acb229aa51214ef34ed877dda7d1bc86c`.
+- Merge tree: `f5af10b403e72cf959a09f5319e123972a5d4db5`, exactly the reviewed
+  final candidate tree with unchanged tested source; PR state closed/merged,
+  worktree clean.
+
+These receipts close this finite implementation's integration task. This later
+documentation reconciliation records the already completed implementation
+merge, not a new implementation acceptance or full component/public API
+completion. No compiler tests were replayed for this status update.
