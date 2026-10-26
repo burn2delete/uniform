@@ -82,3 +82,13 @@ Preserve existing anchors, links, explicit IDs and table text; consumers continu
 reading the same generated roadmap table. New semantic tool filenames/namespaces
 follow existing Reader conventions. No caller, load order, runtime API, schema,
 diagnostic, manifest or wire ID changes. No global catalog or dashboard is edited.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L16](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#requirements): Reference-equivalence conformance preserves L4 expansion semantics, hygiene, phase separation, declared/granted/replayable build effects and generated-origin chains. Compiler API retains provider registration; generated forms still undergo ordinary downstream validation.
+- [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md#requirements): Produce hygiene/capture, macro safety declarations, build-effect traces and generated-origin/unsafe metadata; reject declaration/expansion disagreement. Legality retains downstream safety classification and generated code must pass normal checks.

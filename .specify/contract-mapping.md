@@ -14,8 +14,11 @@ implementation ledger, language specification or conformance report.
 | Measure | Baseline | This candidate |
 | --- | --- | --- |
 | Canonical contracts | 240 | 240 |
-| Existing four-artifact packages | 29 | 29 |
-| Existing package artifacts | 116 | 116 |
+| Existing specs-only four-artifact packages | 29 | 29 |
+| Existing specs-only package artifacts | 116 | 116 |
+| Historical .specify four-artifact packages | 2 | 2 |
+| Historical .specify package artifacts | 8 | 8 |
+| Total retained packages / artifacts | 31 / 124 | 31 / 124 |
 | Contracts directly linked from package artifacts | 218 | 236 |
 | Contracts with no direct package reference | 22 unlinked | 4 explicit evolution-workflow proposals |
 | Contracts with an explicit disposition here | No consolidated matrix | 240 |
@@ -23,8 +26,9 @@ implementation ledger, language specification or conformance report.
 
 The 218 baseline links are retained as scoped interfaces, including historical
 finite increments. Eighteen previously unlinked contracts gain package-plan
-references; L9, L11 and L12 gain additional interfaces after source review. GOV1, GOV6, GOV7 and GOV8 remain without an owning package; their
-proposed workflow below is not counted as mapped. Do not count a matrix row,
+references; L9, L11, L12, L16, L18, SAFE12, SAFE14 and PERF10 gain additional
+interfaces after source review. GOV1, GOV6, GOV7 and GOV8 remain without an
+owning package; their proposed workflow below is not counted as mapped. Do not count a matrix row,
 constitution mention, phase index or proposed package name as a direct package
 reference. D6's earlier constitution/adoption mention was therefore not counted.
 
@@ -111,7 +115,7 @@ Accountable component role: Core maintainer. Acceptance boundary: Core forms/des
 
 [spec](../specs/diag-workflow/spec.md) | [plan](../specs/diag-workflow/plan.md) | [tasks](../specs/diag-workflow/tasks.md) | [evidence](../specs/diag-workflow/evidence.md)
 
-Accountability: the finite increment owner named in its spec/plan. Acceptance boundary: only that pinned paired-source, resolution-verification or incremental-naming increment. It supports the component workflow; it does not own the full linked contract or receive fresh acceptance here.
+Accountable component role: Diagnostic infrastructure maintainer. Acceptance boundary: Canonical structured diagnostic identity, deterministic ordering, original/generated origins, redaction and equivalent text/JSON/public rendering across compiler, runtime, CLI and editor consumers. Stage owners retain rule semantics; diagnostic infrastructure acceptance does not establish source-rule completion.
 
 ### Package domains-workflow
 
@@ -221,6 +225,18 @@ Accountable component role: Developer-tooling maintainer and service specialists
 
 Accountable component role: Type-system maintainer. Acceptance boundary: Solved typed-core constraints and checked conversions; no invented effect/ownership facts.
 
+### Package reader-core-invocation
+
+[spec](reader-core-invocation/spec.md) | [plan](reader-core-invocation/plan.md) | [tasks](reader-core-invocation/tasks.md) | [evidence](reader-core-invocation/evidence.md)
+
+Historical .specify package: the finite Reader-to-Core invocation owner retains the pinned paired-source/current-source invocation and rejection evidence. Its recorded PR388 integration is attributed history, not fresh Reader, Resolve or Core component acceptance. Its C2/C5/C6 links are supporting interfaces already covered by the component workflows.
+
+### Package naming-pilot
+
+[spec](naming-pilot/spec.md) | [plan](naming-pilot/plan.md) | [tasks](naming-pilot/tasks.md) | [evidence](naming-pilot/evidence.md)
+
+Historical .specify package: the naming-adoption owner retains its bounded guidance, generated-command and sampled legacy-audit scope. It contains no direct canonical-document links and receives no implementation-rename or whole-component acceptance here. Both historical packages and all eight original artifacts remain unchanged and included in the 31-package/124-artifact total; their presence adds no unique contract to the 236 linked count.
+
 ## Contract dispositions
 
 Each source link names its Requirements section; `criteria` names its
@@ -259,9 +275,9 @@ its explicit proposed disposition is in [the evolution proposal](#evolution-work
 | [L13](../docs/phase-01-core-language/023-l13-standard-library-design-principles.md#requirements) / [criteria](../docs/phase-01-core-language/023-l13-standard-library-design-principles.md#conformance-criteria) | [stdlib-workflow](#package-stdlib-workflow) | Public library APIs expose profiles and authority | Retained |
 | [L14](../docs/phase-01-core-language/024-l14-language-facet-system-specification.md#requirements) / [criteria](../docs/phase-01-core-language/024-l14-language-facet-system-specification.md#conformance-criteria) | [compiler-api-workflow](#package-compiler-api-workflow), [domains-workflow](#package-domains-workflow) | Facet registration and domain semantic anchors | Retained |
 | [L15](../docs/phase-01-core-language/025-l15-capability-provider-specification.md#requirements) / [criteria](../docs/phase-01-core-language/025-l15-capability-provider-specification.md#conformance-criteria) | [auth-workflow](#package-auth-workflow) | Explicit providers and capability grants | Retained |
-| [L16](../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#requirements) / [criteria](../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#conformance-criteria) | [compiler-api-workflow](#package-compiler-api-workflow) | Alternative macro engines preserve reference semantics | Retained |
+| [L16](../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#requirements) / [criteria](../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#conformance-criteria) | [compiler-api-workflow](#package-compiler-api-workflow), [expand-workflow](#package-expand-workflow) | Alternative macro engines preserve reference semantics | Extended |
 | [L17](../docs/phase-01-core-language/027-l17-alternative-type-system-contract.md#requirements) / [criteria](../docs/phase-01-core-language/027-l17-alternative-type-system-contract.md#conformance-criteria) | [compiler-api-workflow](#package-compiler-api-workflow), [types-workflow](#package-types-workflow) | Alternative typing produces accepted typed core | Retained |
-| [L18](../docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md#requirements) / [criteria](../docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md#conformance-criteria) | [compiler-api-workflow](#package-compiler-api-workflow), [legality-workflow](#package-legality-workflow) | Alternative memory providers preserve safety evidence | Retained |
+| [L18](../docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md#requirements) / [criteria](../docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md#conformance-criteria) | [compiler-api-workflow](#package-compiler-api-workflow), [legality-workflow](#package-legality-workflow), [runtime-workflow](#package-runtime-workflow) | Alternative memory providers preserve safety evidence | Extended |
 | [L19](../docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md#requirements) / [criteria](../docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md#conformance-criteria) | [backends-workflow](#package-backends-workflow), [domains-workflow](#package-domains-workflow), [runtime-workflow](#package-runtime-workflow) | Foreign ABI/host/schema boundaries and migration parity | Added |
 | [SAFE1](../docs/phase-02-safety/030-safe1-safe-gravity-semantics.md#requirements) / [criteria](../docs/phase-02-safety/030-safe1-safe-gravity-semantics.md#conformance-criteria) | [legality-workflow](#package-legality-workflow) | Exactly one safety outcome per dangerous operation | Retained |
 | [SAFE2](../docs/phase-02-safety/031-safe2-memory-safety-model.md#requirements) / [criteria](../docs/phase-02-safety/031-safe2-memory-safety-model.md#conformance-criteria) | [legality-workflow](#package-legality-workflow) | Initialization, bounds and lifetime-safe memory access | Retained |
@@ -274,9 +290,9 @@ its explicit proposed disposition is in [the evolution proposal](#evolution-work
 | [SAFE9](../docs/phase-02-safety/038-safe9-numeric-safety.md#requirements) / [criteria](../docs/phase-02-safety/038-safe9-numeric-safety.md#conformance-criteria) | [domains-workflow](#package-domains-workflow), [legality-workflow](#package-legality-workflow), [types-workflow](#package-types-workflow) | Numeric modes and checked mathematical assumptions | Retained |
 | [SAFE10](../docs/phase-02-safety/039-safe10-capability-security-model.md#requirements) / [criteria](../docs/phase-02-safety/039-safe10-capability-security-model.md#conformance-criteria) | [auth-workflow](#package-auth-workflow), [legality-workflow](#package-legality-workflow) | Explicit authority and deny-by-default capability policy | Retained |
 | [SAFE11](../docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md#requirements) / [criteria](../docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md#conformance-criteria) | [auth-workflow](#package-auth-workflow), [legality-workflow](#package-legality-workflow) | Taint, secret propagation and redaction | Retained |
-| [SAFE12](../docs/phase-02-safety/041-safe12-macro-safety.md#requirements) / [criteria](../docs/phase-02-safety/041-safe12-macro-safety.md#conformance-criteria) | [legality-workflow](#package-legality-workflow) | Build effects and compile-time isolation | Retained |
+| [SAFE12](../docs/phase-02-safety/041-safe12-macro-safety.md#requirements) / [criteria](../docs/phase-02-safety/041-safe12-macro-safety.md#conformance-criteria) | [legality-workflow](#package-legality-workflow), [expand-workflow](#package-expand-workflow) | Macro hygiene, origins, safety declarations and build effects | Extended |
 | [SAFE13](../docs/phase-02-safety/042-safe13-ai-tool-safety.md#requirements) / [criteria](../docs/phase-02-safety/042-safe13-ai-tool-safety.md#conformance-criteria) | [auth-workflow](#package-auth-workflow), [domains-workflow](#package-domains-workflow), [legality-workflow](#package-legality-workflow) | AI/tool authority and validated outputs | Retained |
-| [SAFE14](../docs/phase-02-safety/043-safe14-supply-chain-safety.md#requirements) / [criteria](../docs/phase-02-safety/043-safe14-supply-chain-safety.md#conformance-criteria) | [auth-workflow](#package-auth-workflow) | Supply-chain integrity and artifact trust | Retained |
+| [SAFE14](../docs/phase-02-safety/043-safe14-supply-chain-safety.md#requirements) / [criteria](../docs/phase-02-safety/043-safe14-supply-chain-safety.md#conformance-criteria) | [auth-workflow](#package-auth-workflow), [build-workflow](#package-build-workflow) | Supply-chain integrity and artifact trust | Extended |
 | [SAFE15](../docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md#requirements) / [criteria](../docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md#conformance-criteria) | [auth-workflow](#package-auth-workflow), [compiler-api-workflow](#package-compiler-api-workflow), [legality-workflow](#package-legality-workflow) | Proof/certificate validity for check elision | Retained |
 | [SAFE16](../docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md#requirements) / [criteria](../docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md#conformance-criteria) | [legality-workflow](#package-legality-workflow) | Accepted, rejected and unsafe safety conformance | Retained |
 | [P1](../docs/phase-03-profile-system/046-p1-profile-system-specification.md#requirements) / [criteria](../docs/phase-03-profile-system/046-p1-profile-system-specification.md#conformance-criteria) | [legality-workflow](#package-legality-workflow) | Compile-time profile legality and manifest validation | Retained |
@@ -301,7 +317,7 @@ its explicit proposed disposition is in [the evolution proposal](#evolution-work
 | [PERF7](../docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md#requirements) / [criteria](../docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md#conformance-criteria) | [backends-workflow](#package-backends-workflow), [opt-workflow](#package-opt-workflow) | Valid candidate selection, guarded variants and fallback | Added |
 | [PERF8](../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md#requirements) / [criteria](../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md#conformance-criteria) | [backends-workflow](#package-backends-workflow), [lower-workflow](#package-lower-workflow), [opt-workflow](#package-opt-workflow) | Lane/alias/bounds proofs and guarded target intrinsics | Added |
 | [PERF9](../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md#requirements) / [criteria](../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md#conformance-criteria) | [platform-workflow](#package-platform-workflow) | Worst-case latency and deterministic runtime assumptions | Retained |
-| [PERF10](../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md#requirements) / [criteria](../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md#conformance-criteria) | [legality-workflow](#package-legality-workflow) | Surviving proof or retained runtime safety check | Retained |
+| [PERF10](../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md#requirements) / [criteria](../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md#conformance-criteria) | [legality-workflow](#package-legality-workflow), [opt-workflow](#package-opt-workflow) | Surviving proof or retained runtime safety check | Extended |
 | [MATH1](../docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md#requirements) / [criteria](../docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md#conformance-criteria) | [domains-workflow](#package-domains-workflow) | Numeric types and explicit conversion/overflow semantics | Retained |
 | [MATH2](../docs/phase-05-mathematical-and-elementary-function-system/070-math2-elementary-function-system-specification.md#requirements) / [criteria](../docs/phase-05-mathematical-and-elementary-function-system/070-math2-elementary-function-system-specification.md#conformance-criteria) | [domains-workflow](#package-domains-workflow) | Elementary functions expose domain and error contracts | Retained |
 | [MATH3](../docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md#requirements) / [criteria](../docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md#conformance-criteria) | [domains-workflow](#package-domains-workflow) | EFIR preserves elementary semantic anchors | Retained |
@@ -314,11 +330,11 @@ its explicit proposed disposition is in [the evolution proposal](#evolution-work
 | [MATH10](../docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md#requirements) / [criteria](../docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md#conformance-criteria) | [domains-workflow](#package-domains-workflow) | Verified EFIR optimization with checked certificates | Retained |
 | [MATH11](../docs/phase-05-mathematical-and-elementary-function-system/079-math11-math-verification-and-conformance-test-plan.md#requirements) / [criteria](../docs/phase-05-mathematical-and-elementary-function-system/079-math11-math-verification-and-conformance-test-plan.md#conformance-criteria) | [domains-workflow](#package-domains-workflow) | Positive/negative math fixtures and certificate validation | Retained |
 | [C1](../docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md#conformance-criteria) | [compiler-api-workflow](#package-compiler-api-workflow) | Data-oriented pass graph and preserved facts | Retained |
-| [C2](../docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md#conformance-criteria) | [reader-workflow](#package-reader-workflow) | Deterministic decoding, tokens, forms and spans | Retained |
+| [C2](../docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md#conformance-criteria) | [reader-core-invocation](#package-reader-core-invocation), [reader-workflow](#package-reader-workflow) | Deterministic decoding, tokens, forms and spans | Retained |
 | [C3](../docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md#conformance-criteria) | [syntax-workflow](#package-syntax-workflow) | Syntax identity, hygiene and origin chains | Retained |
 | [C4](../docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md#conformance-criteria) | [expand-workflow](#package-expand-workflow) | Deterministic macro traces and declared build effects | Retained |
-| [C5](../docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md#conformance-criteria) | [001-paired-source-core](#package-001-paired-source-core), [resolve-owner-source-core-verification](#package-resolve-owner-source-core-verification), [resolve-workflow](#package-resolve-workflow) | Binding identities in executable and declaration positions | Retained |
-| [C6](../docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md#conformance-criteria) | [001-paired-source-core](#package-001-paired-source-core), [core-workflow](#package-core-workflow), [resolve-owner-source-core-verification](#package-resolve-owner-source-core-verification) | Explicit core nodes and source-to-core maps | Retained |
+| [C5](../docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md#conformance-criteria) | [reader-core-invocation](#package-reader-core-invocation), [001-paired-source-core](#package-001-paired-source-core), [resolve-owner-source-core-verification](#package-resolve-owner-source-core-verification), [resolve-workflow](#package-resolve-workflow) | Binding identities in executable and declaration positions | Retained |
+| [C6](../docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md#conformance-criteria) | [reader-core-invocation](#package-reader-core-invocation), [001-paired-source-core](#package-001-paired-source-core), [core-workflow](#package-core-workflow), [resolve-owner-source-core-verification](#package-resolve-owner-source-core-verification) | Explicit core nodes and source-to-core maps | Retained |
 | [C7](../docs/phase-06-compiler-architecture/086-c7-type-checker-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/086-c7-type-checker-design.md#conformance-criteria) | [types-workflow](#package-types-workflow) | Solved constraints, conversions and typed-core facts | Retained |
 | [C8](../docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md#conformance-criteria) | [effects-workflow](#package-effects-workflow) | Direct/latent effects and call graph enforcement | Retained |
 | [C9](../docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md#requirements) / [criteria](../docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md#conformance-criteria) | [legality-workflow](#package-legality-workflow) | Borrow, move and linear resource analysis | Retained |
@@ -585,6 +601,28 @@ untouched to avoid overlap with task-authority migrations.
 
 - [build-workflow](#package-build-workflow): Publication/retrieval verifies package identity, signatures, provenance, SBOM, capability/profile/target metadata and policy-bound yanks/advisories. Namespace adjudication and emergency policy authority remain proposed governance work, not Build authority.
 
+## Grouped semantic review corrections
+
+Diagnostics retains the actual C15 infrastructure boundary in its registry
+entry, rather than finite-pilot scope. The following already-linked IDs gain
+only the independently identified primary interfaces; their existing links and
+source requirements/conformance criteria remain authoritative. These additions
+change neither the 236 unique linked count nor the four governance gaps.
+
+- L16 / [expand-workflow](#package-expand-workflow): Reference-equivalence conformance preserves L4 expansion semantics, hygiene, phase separation, declared/granted/replayable build effects and generated-origin chains. Compiler API retains provider registration; generated forms still undergo ordinary downstream validation.
+- L18 / [runtime-workflow](#package-runtime-workflow): Execute the declared memory-provider families and test allocation/failure, lifetimes, cleanup/leak behavior, ownership transfer and FFI/device boundaries. Provider registration and compile-time safety facts do not establish actual runtime conformance.
+- PERF10 / [opt-workflow](#package-opt-workflow): Elide checks only under a named dominating proof valid after intervening transforms; record proof/pass/profile/target and invalidation. Regenerate invalidated proof, retain residual checks or reject no-checks compilation; never remove policy checks merely for speed.
+- SAFE12 / [expand-workflow](#package-expand-workflow): Produce hygiene/capture, macro safety declarations, build-effect traces and generated-origin/unsafe metadata; reject declaration/expansion disagreement. Legality retains downstream safety classification and generated code must pass normal checks.
+- SAFE14 / [build-workflow](#package-build-workflow): Resolve pinned lockfile dependencies, record generator/source/build-effect provenance and produce reproducible builds or accepted attestations. Auth retains artifact trust and grants; build evidence cannot silently expand dependency authority.
+
+GOV4 navigation through Auth and Legality covers their authority/trust and
+safety/security evidence interfaces. It does not transfer embargo handling,
+advisory publication, patch/backport coordination or release decisions to
+those components. Those residual responsibilities require the existing
+security-response, affected-component and release owners under GOV4, with
+governance ownership made explicit where not yet assigned; no new package
+link or reassignment is inferred here.
+
 ## Evolution workflow proposal
 
 No current package owns the complete change/RFC/experiment/stabilization
@@ -642,14 +680,18 @@ The focused read-only checker validates inventory equality, unique IDs, actual
 package references, four-artifact packages, all mapping and changed-plan local
 paths/headings, ASCII, explicit gaps and preservation against the named source
 baseline. It also exercises missing-ID, duplicate-ID, missing-file,
-missing-heading and false-disposition rejection cases. It does not implement
-compiler semantics, approve mapping policy or authenticate historical passing
+missing-heading, false-disposition and workflow-misclassification rejection
+cases. The last control distinguishes component accountability from historical
+finite-pilot scope; it does not prove the semantics of the stated boundary.
+It does not implement compiler semantics, approve mapping policy or authenticate historical passing
 claims. Existing task/evidence bytes are compared, not rewritten.
 
-The 18 new dispositions and three extended interfaces have source-requirement and component-boundary review
-notes above. The 218 retained dispositions preserve each existing package's
-limited scope; a historical finite package remains supporting evidence rather
+The 18 new dispositions and eight extended interfaces have source-requirement
+and component-boundary review notes above. The 218 retained dispositions
+preserve each existing package's limited scope; a historical finite package remains supporting evidence rather
 than owner of its full contract. Whole-language conformance, runtime/backend
 execution, performance and seed retirement remain unassessed by this mapping.
-Independent review of the complete matrix and exact patch is pending; no
+The grouped successor addresses independent review findings, including the
+Diagnostics boundary and the retained historical-package inventory. Independent
+review of the corrected complete matrix and exact patch is pending; no
 self-audit or structural validator is recorded as independent acceptance.

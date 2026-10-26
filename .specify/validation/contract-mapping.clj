@@ -45,10 +45,16 @@
                   (contains? (anchors (slurp resolved)) anchor))))))
 (defn local-target? [target]
   (not (re-find #"^[a-zA-Z][a-zA-Z0-9+.-]*:" target)))
-(def package-paths
+(def specs-package-paths
   (vec (sort (for [f (file-seq (io/file "specs")) :when (.isFile f)] (.getPath f)))))
+(def historical-package-paths
+  (vec (sort (for [pkg ["naming-pilot" "reader-core-invocation"]
+                   artifact ["spec" "plan" "tasks" "evidence"]]
+               (str ".specify/" pkg "/" artifact ".md")))))
+(def package-paths (vec (sort (concat specs-package-paths historical-package-paths))))
 (def baseline-package-paths
-  (vec (str/split-lines (git "ls-tree" "-r" "--name-only" baseline "--" "specs"))))
+  (vec (sort (concat historical-package-paths
+                     (str/split-lines (git "ls-tree" "-r" "--name-only" baseline "--" "specs"))))))
 (def current-text (into {} (map (fn [p] [p (slurp p)]) package-paths)))
 (def baseline-text
   (into {} (map (fn [p] [p (git "show" (str baseline ":" p))]) baseline-package-paths)))
@@ -76,21 +82,33 @@
       (check! (= refs (:packages row)) (str id " package routes differ from actual links"))
       (check! (= (:disposition row) (cond (contains? gap-ids id) "Gap"
                                          (contains? added-ids id) "Added"
-                                         (contains? #{"L9" "L11" "L12"} id) "Extended" :else "Retained"))
+                                         (contains? #{"L9" "L11" "L12" "L16" "L18" "SAFE12" "SAFE14" "PERF10"} id) "Extended" :else "Retained"))
               (str id " false disposition"))
       (check! (= (empty? refs) (contains? gap-ids id)) (str id " unrecorded package gap")))))
 (defn rejected? [f]
   (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
+(defn validate-registry! [text]
+  (let [sections (rest (str/split text #"(?m)^### Package "))
+        entries (into {} (map #(str/split % #"\n" 2) sections))
+        packages (set (map #(second (str/split % #"/")) package-paths))]
+    (check! (= packages (set (keys entries))) "Package accountability registry mismatch")
+    (doseq [pkg packages :when (str/ends-with? pkg "-workflow")]
+      (check! (str/includes? (first (str/split (get entries pkg) #"(?m)^## "))
+                            "Accountable component role:")
+              (str pkg " incorrectly classified as a historical finite increment")))))
 
 (check! (empty? *command-line-args*) "No arguments supported")
 (check! (= package-paths baseline-package-paths) "Package files added/removed")
-(check! (= 116 (count package-paths)) "Expected 29 four-artifact packages")
+(check! (= 116 (count specs-package-paths)) "Expected 29 specs-only four-artifact packages")
+(check! (= 124 (count package-paths)) "Expected 31 total packages including two historical .specify packages")
+(doseq [p historical-package-paths]
+  (check! (= (get current-text p) (get baseline-text p)) (str "Historical package changed: " p)))
 (doseq [[pkg paths] (group-by #(second (str/split % #"/")) package-paths)]
   (check! (= #{"spec.md" "plan.md" "tasks.md" "evidence.md"}
              (set (map #(last (str/split % #"/")) paths))) (str pkg " artifact set mismatch")))
 (def changed-plans
   (vec (for [p package-paths :when (not= (get current-text p) (get baseline-text p))] p)))
-(check! (= 14 (count changed-plans)) "Expected 14 minimally extended package plans")
+(check! (= 15 (count changed-plans)) "Expected 15 minimally extended package plans")
 (doseq [p changed-plans]
   (check! (and (str/ends-with? p "/plan.md")
                (str/starts-with? (get current-text p)
@@ -101,9 +119,10 @@
 (def untracked (set (remove str/blank? (str/split-lines (git "ls-files" "--others" "--exclude-standard")))))
 (check! (every? allowed (concat changed untracked)) "Change outside mapping scope")
 (validate-rows! rows)
+(validate-registry! mapping)
 (check! (= 218 (count (filter #(seq (package-refs baseline-text %)) inventory))) "Baseline coverage drift")
 (check! (= 236 (count (filter #(seq (package-refs current-text %)) inventory))) "Candidate coverage drift")
-(def paths-to-check (cons mapping-path changed-plans))
+(def paths-to-check (concat [mapping-path] changed-plans historical-package-paths))
 (def links (for [p paths-to-check target (markdown-targets (slurp p)) :when (local-target? target)] [p target]))
 (doseq [p (conj (vec paths-to-check) ".specify/validation/contract-mapping.clj")]
   (check! (every? #(<= (int %) 127) (slurp p)) (str "Non-ASCII: " p)))
@@ -113,11 +132,17 @@
 (check! (rejected? #(validate-rows! (assoc-in rows [0 :disposition] "Added"))) "False-disposition negative control failed")
 (check! (not (resolve-link mapping-path "../specs/absent-contract-fixture/spec.md")) "Missing-file negative control failed")
 (check! (not (resolve-link mapping-path "contract-mapping.md#absent-contract-fixture")) "Missing-heading negative control failed")
+(check! (rejected? #(validate-registry!
+                    (str/replace mapping "Accountable component role: Diagnostic infrastructure maintainer."
+                                 "Accountability: historical finite increment.")))
+        "Workflow misclassification negative control failed")
 (prn {:scope :contract-navigation-only :source-baseline baseline
-      :contracts 240 :packages 29 :package-artifacts 116
+      :contracts 240 :specs-only-packages 29 :specs-only-artifacts 116
+      :historical-specify-packages 2 :historical-specify-artifacts 8
+      :total-packages 31 :total-package-artifacts 124
       :baseline-linked 218 :candidate-linked 236 :explicit-gaps (sort gap-ids)
       :newly-linked 18 :retained 218 :accepted-replacements 0
-      :local-path-and-heading-checks (count links) :negative-controls 5
-      :preserved-package-files (- 116 (count changed-plans)) :append-only-plans (count changed-plans)
+      :local-path-and-heading-checks (count links) :negative-controls 6
+      :preserved-package-files (- 124 (count changed-plans)) :append-only-plans (count changed-plans)
       :independent-review :pending :implementation-acceptance :unassessed})
 (shutdown-agents)
