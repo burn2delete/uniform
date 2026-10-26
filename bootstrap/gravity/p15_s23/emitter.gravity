@@ -7883,7 +7883,7 @@
                                       :storage-policy {:representation :pending-profile-representation :query :stored-emptiness-test
                                                        :collection-construction :none :copy :none :provider-allocation-bound :not-established}
                                       :value-origin {:kind :vector-value-query :operation 'empty? :operand-node-id (first args)}
-                                      :operand-type-work (get validation :work-count) :profile-validation-work (- reserved base)
+                                      :profile-validation-work (- reserved base)
                                       :application :normal :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
                                       :parameter-types [receiver] :return :gravity.type/bool :result-type :gravity.type/bool
                                       :profile (get module :profile) :target (get module :target)
