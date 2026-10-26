@@ -1,4 +1,4 @@
-(ns gravity.c16-incremental.projection
+(ns gravity.build.incremental.projection
   (:require [clojure.string :as str]))
 
 (defn source-overrides [module]
