@@ -1653,8 +1653,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'list-construction-input) derive (ns-resolve upstream 'list-construction-derived)
-        c7 (ns-resolve upstream 'invoke-c7)]
+        c7 (ns-resolve upstream 'invoke-c7)
+        wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 :gravity.type/string))}]
     (doseq [arguments [[] [:gravity.type/string] [:gravity.type/nil :gravity.type/bool :gravity.type/string]
+                       [wide]
                        [:gravity.type/map {:kind :gravity.type/list :element-types [:gravity.type/string] :shape :literal}]
                        [:gravity.type/never :gravity.type/string] [:gravity.type/string :gravity.type/never]
                        [:gravity.type/never :gravity.type/never]]]
@@ -1694,6 +1696,27 @@
                           facts (:bindings base) 65536))))
         (is (= context (leaf 'body-lc-context request facts (:bindings base) (:work-count context))))
         (is (= :body-deferred-work-limit (:reason (leaf 'body-lc-context request facts (:bindings base) (dec (:work-count context))))))
+        (when (= [wide] arguments)
+          ;; One constructor operand: this tests nested type width, not call arity.
+          (is (= 1025 (count (get-in descriptor [:argument-types 0 :element-types]))))
+          (doseq [bad [(assoc-in wide [:element-types 0] :gravity.type/unknown)
+                       (assoc-in wide [:element-types 1024] :gravity.type/unknown)
+                       (assoc-in wide [:element-types 1024] :gravity.type/never)
+                       (assoc wide :shape :unknown) (assoc wide :extra :forged)
+                       (assoc wide :element-types (apply list (:element-types wide)))
+                       {:kind :gravity.type/map :shape :literal :member-types (:element-types wide)}]]
+            (let [argument-id (first (:argument-node-ids call))
+                  changed-input (assoc-in input [:types argument-id] bad)
+                  changed-facts (assoc-in facts [:type-table argument-id] bad)]
+              (is (= :rejected (:status (derive changed-input))))
+              (is (= :rejected (:status (leaf 'body-lc-type-work [bad] 65536))))
+              (is (= :body-list-construction-operand-type-required
+                     (:reason (leaf 'body-lc-context request changed-facts (:bindings base) 65536))))
+              (is (false? (valid changed-facts)))))
+          (doseq [type [(assoc wide :element-types (vec (repeat 1025 {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})))
+                        {:kind :gravity.type/map :shape :literal :member-types (vec (repeat 1026 :gravity.type/string))}]]
+            (is (= :accepted (:status (c7 'sh08-lc-validate-types [[type]]))))
+            (is (= :accepted (:status (leaf 'body-lc-type-work [type] 65536))))))
         (doseq [changed [(assoc-in descriptor [:construction-policy :allocation] :none)
                          (assoc-in descriptor [:construction-policy :order] :reverse)
                          (assoc-in descriptor [:value-origin :kind] :quoted-data)
@@ -9792,7 +9815,7 @@
           bulk-result (work [bulk] 65536)]
       (is (= :accepted (:status (work [(nest 127 carrier)] 65536))))
       (is (= :type-depth (:reason (work [(nest 128 carrier)] 65536))))
-      (is (= :rejected (:status (work [wide] 65536))))
+      (is (= :accepted (:status (work [wide] 65536))))
       (is (= :rejected (:status bulk-result)))
       (is (contains? #{:type-size :work-limit} (:reason bulk-result)))
       (is (<= (:work-count bulk-result) 65536))))))
