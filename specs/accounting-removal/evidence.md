@@ -169,3 +169,130 @@ successor ownership is acknowledged; no LR/PL implementation has started.
 That release does not integrate PR359 or close ACC-02. The LR three-owner
 version/invalidation proposal was read as design, preserving semantic extents,
 full equality, complete validation and historical receipt invalidation.
+
+## Finite runtime module-census removal
+
+Earlier sections record historical snapshots. This increment starts from
+current main `b45bdeebcac7caafce8e67ee6738ec3cf85dbc06`, tree
+`ab7138e11e09e27876727604d26211f7fe923af2`. It is separate from unfinished
+C7/Effects/emitter work in draft PR359 and does not give that draft acceptance.
+
+A read-only normalized runtime baseline completed naturally in 15184 ms with
+exact clean bookends, 443 bytes of complete stdout and empty stderr. A valid
+7-root module passed census and closed execution. A 4100-root module was
+rejected by both census and closed execution with
+module-initialization-work-limit and an accounting charge of 82002. That
+observation establishes the old refusal, not new-source acceptance.
+
+The finite change removes census root/function charges, the shared cumulative
+initializer pool, its budget argument and exported census work counts. The
+closed executor, all direct test callers and the runtime function-arity census
+use the new one-argument API. Each initializer still calls its unchanged helper
+with its existing 65536 limit; this is explicitly temporary unresolved accounting,
+not an increased or removed helper limit. Initializer-specific reservation,
+duplicate/callback/type and own-limit tests remain. Census failures retain the
+semantic initializer-reason when present while omitting accounting fields.
+
+All manifest shape/version, ordered roots/initializers, complete function
+bijection, source identity, type and validated constructor provenance checks
+remain. A static review first caught the lost initializer-reason; that was
+corrected before candidate execution. No authoritative source pin, target
+runtime artifact or authenticated-source acceptance result was changed.
+
+First executed candidate `2e602ac88418c857b1e488ce0141b50a8bf2bcb8`, tree
+`14d5bf8d3e041bff8723e191cde6f563e9e2cd03`, is **NONPASS**: 12 tests,
+580 passing assertions, four failures, zero errors, natural exit 1 in 25069 ms.
+New duplicate-root controls exposed a pre-existing root guard error, unchanged
+from the baseline: three branches returned false inside an invalidity predicate,
+allowing duplicate names/bindings/definition-node identities. A duplicate binding
+was rejected later for initializer order; a duplicate name reached initialization.
+The valid large-module execution and four affected existing runtime kernels
+passed. This failed receipt remains failed and is not summed with later results.
+
+Correction `db2e925bd8ae7f5a1596e38768a41fbbc5409f1d`, tree
+`45e2ac6410ffd83012a1cebd3f2fb920376700c2`, changes precisely those three
+Boolean branches to reject duplicates. It adds coherent root/initializer binding
+duplication, both cross-role node collisions and same-root node collision controls.
+The existing value-node and same-root collision checks remain. Exact rejection
+reasons and zero initialization are required; a positive observer first proves
+that it sees actual initialization. This strengthens a genuine uniqueness guard.
+
+The corrected bounded batch passed 12 tests/599 assertions, zero failures or
+errors, natural exit 0 in 25545 ms. Actual selectors cover complete census and
+closed execution of all 4100 roots, late invalid source/initializer/type/function/
+duplicate/orphan records before initialization, preserved duplicate-initializer
+diagnostics, literal/Keyword Set/String Set and indexed private runtime kernels,
+two individually accepted initializers whose aggregate formerly exceeded the
+pool, actual two-constructor execution, runtime arity inventory and six language
+boundary tests. Independent static source and actual retained driver/counts/
+stdout/receipt review accepted this finite scope; the reviewer did not perform a
+second semantic execution. The separate document gate passed 240 documents and
+19 phase indexes.
+
+Both candidate runs used configured 2 GiB children, a 120-second watchdog,
+65536-byte/character capture bounds, the existing common and host brokers and
+canonical lock. Complete stdout was 2672 and 1693 bytes respectively, stderr
+empty, exact source/tree bookends clean and cleanup complete. No process or
+lease remains active. Current main readback remained the tested baseline.
+
+At initial source publication, fresh test catalog/ownership and generic execution
+restrictions for the new module-census namespace still required the verification
+owner's metadata increment before main integration. It must remain fresh, with
+no cache acceptance; generic execution stays unsupported until its actual
+three-guard route is represented.
+Authenticated-source/public runtime admission, restricted C12, release and whole
+ACC-09/accounting acceptance remain unrun. Initializer helper accounting, runtime
+function/source-shape maxima and other collection cost policies remain open.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Baseline receipt | `7500cf1669be8a55840a187820f997ea9884ea60b55d6862b9bd5bde27d01dbd` |
+| Failed first candidate receipt | `a8a3ed065cc5016d96db0d4088c56ed97b7a629747f1fd480e9334a53165937f` |
+| Corrected candidate receipt | `e45362e3d2b5b29c6174031df23efd8929902b6a3243715ed7151bccbebde637` |
+| Runtime source | `e1084872868b99eb8dc38a2e23f0b871864529eb107a68ab16dd3825867a13fe` |
+| Module census test | `da7394ed6e440480a57d50bfe8ba2fc542aa54a9cb38236d933ccfa74885428c` |
+| Runtime iteration test | `887d9b65ee46b71ab4317e5953813bca9f1813e7ba681930086217d863b6ba47` |
+
+### Current-main metadata composition
+
+Normal reconciliation imported main
+`a1b991be499d50579a8b4366976c519ae8949224`, tree
+`5b62819e511bfc7e6b5eba0527d8c9b5883c5572`.
+The main delta contained only verification documentation and three audit-tool
+paths; bootstrap/compiler/runtime, dependency and contract inputs were identical
+to the tested source candidate at that reconciliation.
+
+The verification owner handed off independently reviewed metadata commit
+`88dc0f511b738d3f98f58e321d4cc6be6aa3539b`, tree
+`f379df1799194f8cdb517d8babc02b20402f9006`, based on the immutable source
+candidate. Normal import produced composition
+`452c05ed28e074f3fd6c9f3342c60d25bd78ef89`, tree
+`9a7172aef086270bb653fea242b062d88c48890a`. All five metadata/control blobs
+match the handed-off commit exactly. Runtime, bootstrap Clojure implementation,
+dependency inputs and both semantic test bodies remain identical to tested
+`db2e925b`; its 12/599 receipt retains that original provenance.
+
+The new namespace belongs to SH19/sh-runtime and requires fresh execution,
+with no cache closure. It remains discoverable, while generic execution is
+explicitly unsupported until a committed route represents all three required
+resource guards. The existing shared denial policy applies before normalized
+planning, single-process and every batch job, including forged support/resource
+markers. No guarded route is fabricated, and no runtime wrapper/provider was
+executed by these metadata controls.
+
+On the exact clean composition, the planner suite, three injected runner controls
+and six language tests passed: 69 tests/671 assertions, zero failures or errors,
+natural exit 0 in 11777 ms. The child was configured at 256 MiB with a 60-second
+watchdog; stdout was complete at 8291 bytes, stderr empty, bookends exact and
+cleanup complete. An injected ordinary-launch positive accompanies zero-launch
+denial controls. This is fresh metadata/catalog/control evidence, not another
+runtime semantic execution or a combined test count. The document gate passed
+240 documents/19 indexes and the full-language roadmap gate passed. Independent
+source/import and actual retained-result review accepted the composition.
+
+Finite integration still requires final exact-head preflight and public readback.
+Authenticated/public runtime, C12, release and broader accounting boundaries
+remain unchanged and open.
+
+Composition receipt SHA-256:
+`be932baae0aa66458e4548b85677948f9d024d90c9cd8ba444c910421346335e`.

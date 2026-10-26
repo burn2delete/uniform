@@ -1137,15 +1137,17 @@
 (defn unsupported-execution
   "Describe a known source selection without a committed guarded runner route."
   [namespace]
-  ;; This source test has only an owner-local wrapper. Its established common
+  ;; These source tests have only owner-local wrappers. Their established common
   ;; broker, host-exclusive and canonical-heavy guards have no committed route.
-  ;; Discover its real owner without silently scheduling it as an ordinary job.
-  (when (= 'gravity.self-hosting.runtime-module-reads-test (symbol (str namespace)))
-    {:id "SH01-IMPACT-EXTERNAL-WRAPPER"
-     :namespace 'gravity.self-hosting.runtime-module-reads-test
-     :slice "SH-19" :owner :sh-runtime :execution :unsupported
-     :reason :missing-committed-resource-wrapper
-     :required-guards [:common-host-broker :host-exclusive :canonical-heavy-lock]}))
+  ;; Discover their real owner without silently scheduling ordinary jobs.
+  (let [namespace (symbol (str namespace))]
+    (when (contains? '#{gravity.self-hosting.runtime-module-reads-test
+                       gravity.self-hosting.module-census-test} namespace)
+      {:id "SH01-IMPACT-EXTERNAL-WRAPPER"
+       :namespace namespace
+       :slice "SH-19" :owner :sh-runtime :execution :unsupported
+       :reason :missing-committed-resource-wrapper
+       :required-guards [:common-host-broker :host-exclusive :canonical-heavy-lock]})))
 
 (defn- build-iteration-plan
   [context classified changed-paths requested]
