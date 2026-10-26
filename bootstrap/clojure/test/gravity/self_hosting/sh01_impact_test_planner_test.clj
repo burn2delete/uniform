@@ -588,20 +588,12 @@
     (is (true? (get-in by-namespace
                        ['gravity.compiler-pass-manifest-test
                         :cache-closure-valid?])))
-    (is (true? (get-in by-namespace
-                       ['gravity.bootstrap-compatibility.c11-test
-                        :cache-closure-valid?])))
-    (is (true? (get-in by-namespace
-                       ['gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
-                        :cache-closure-valid?])))
     (doseq [namespace
             ['gravity.bootstrap-compatibility.c11-test
              'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test]]
-      (let [inputs (get-in by-namespace [namespace :cache-closure :inputs])]
-        (is (= 52 (count (filter #(contains? #{:production :transitive}
-                                             (:role %))
-                                 inputs))))
-        (is (= 1 (count (filter #(= :fixture (:role %)) inputs))))))
+      (is (nil? (get-in by-namespace [namespace :cache-closure])))
+      (is (false? (get-in by-namespace [namespace :cache-closure-valid?])))
+      (is (nil? (component-dependencies/reviewed-cache-closure index namespace))))
     (let [contract (component-dependencies/read-contract)
           malformed
           (assoc-in contract
@@ -638,12 +630,12 @@
     (is (true? (get-in metadata
                        ['gravity.c11-mir-test
                         :cache-closure-authorized?])))
-    (is (map? (get-in metadata
+    (is (nil? (get-in metadata
                       ['gravity.bootstrap-compatibility.c11-test
                        :cache-closure])))
-    (is (true? (get-in metadata
-                       ['gravity.bootstrap-compatibility.c11-test
-                        :cache-closure-authorized?])))))
+    (is (not (true? (get-in metadata
+                            ['gravity.bootstrap-compatibility.c11-test
+                             :cache-closure-authorized?]))))))
 
 (deftest nested-cache-inputs-retain-exact-component-ownership
   (let [owned? (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
