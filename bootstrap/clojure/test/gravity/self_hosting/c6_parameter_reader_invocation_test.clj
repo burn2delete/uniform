@@ -107,7 +107,7 @@
           core (b/p15-s23-c6c10-public-artifact context (:compiled-binding-data products) (:ingress products) sealed)
           mir (stage :gravity-mir #(call (owner 'c11-plan) 'sh12-build-branch-join-mir [core]))
           gravity (stage :gravity-verifier #(call (owner 'c11-plan) 'sh12-verify-branch-join-mir [core mir]))
-          native (stage :native-boundary #(diagnostic (fn [] (b/p15-s23-c11-mir-validate-constructed! path core mir))))
+          native (stage :native-boundary #(b/p15-s23-c11-mir-validate-constructed! path core mir))
           binder-id (get-in core [:core-nodes 0 :node-id]) entry (get-in mir [:functions 'main :entry])
           actual-macro b/sh05-macro-artifact-from-c3-artifact]
       (is (= :passed (:status gravity)))
@@ -117,10 +117,10 @@
              (get-in mir [:data-flow-graph :definitions binder-id])))
       (is (= :parameter (get-in mir [:data-flow-graph :values binder-id :kind])))
       (is (not-any? #(= binder-id (:op-id %)) (mapcat :instructions (vals (get-in mir [:functions 'main :blocks])))))
-      ;; A separate downstream baseline, not Native parameter compatibility.
-      (is (= {:id "C11-MODULE" :missing-fact :authenticated-c11-function-envelope :fallback-status :rejected}
-             (select-keys native [:id :missing-fact :fallback-status])))
-      (prn {:parameter-native-boundary (select-keys native [:id :missing-fact :fallback-status])}) (flush)
+      ;; The original rejection remains historical evidence. The new narrow
+      ;; Native entry-value path must now accept this same genuine artifact.
+      (is (= :passed (:status native)))
+      (prn {:parameter-native-boundary (select-keys native [:status :operation-count])}) (flush)
       (testing "real owner validation rejects invalid invocation and substituted parent/source"
         (is (= ["C3-FACT-STALE" [:reader-products-authentic?]]
                ((juxt :id :missing-fields) (diagnostic #(actual-macro path parent))))))

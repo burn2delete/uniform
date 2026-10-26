@@ -158,7 +158,9 @@
      :exit-id (if (zero? conditional-count) entry-id join-id)}))
 
 (defn p15-s23-c11-mir-valid-dominance-edge?
-  [edge blocks operation-by-id definitions position-by-id join]
+  ([edge blocks operation-by-id definitions position-by-id join]
+   (p15-s23-c11-mir-valid-dominance-edge? edge blocks operation-by-id definitions position-by-id join nil))
+  ([edge blocks operation-by-id definitions position-by-id join parameter]
   (let [from-definition (get definitions (:from edge))
         from-operation
         (get operation-by-id (:operation-id from-definition))
@@ -182,7 +184,11 @@
                         :value (:from edge)}
                        %)
                    (:incoming join)))]
-    (and (map? from-operation)
+    (and (or (map? from-operation)
+             (and (= (:from edge) (:id parameter))
+                  (= from-definition (:definition parameter))
+                  (= :operand (:edge-kind edge))
+                  (contains? (set dominators) (:entry-id parameter))))
          (map? to-operation)
          (= :operation (:consumer-kind edge))
          (= (if (= :runtime-check (:opcode from-operation))
@@ -193,10 +199,11 @@
            (zero? (:operand-index edge))
            true)
          (= consumer-block (:block-id to-operation))
-         (or ordered-within-block?
+         (or (and (= (:from edge) (:id parameter)) (= from-definition (:definition parameter)))
+             ordered-within-block?
              (and (not same-block?)
                   (contains? (set dominators) definition-block))
-             predecessor-phi?))))
+             predecessor-phi?)))))
 
 (defn p15-s23-c11-mir-valid-terminator-use?
   [use blocks operation-by-id position-by-id]
