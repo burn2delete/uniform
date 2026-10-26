@@ -96,3 +96,43 @@ launch only synthetic shell children. They do not launch a compiler route.
 Run the language boundary and structural docs gate under the existing host
 resource policy before integration. Preserve fresh independent compiler replay
 for the component acceptance claims that require it.
+
+## Immutable runner validation receipt
+
+Tested head `3d98800f906e7a66fdbda26cc6b1be474278811f`, tree
+`6ba5a222d2267690de797dd4c5f02b5960f7797e`, base
+`176c4ee65bb3ceb545f51edfaa599902030a0cb7`. Git head/tree and empty
+tracked/untracked status matched before and after each command. Both existing
+normal resource brokers admitted the run. Supported escalation enabled actual
+process inspection; the earlier sandbox failure remains above. Every child
+exited naturally within its 60-second watchdog.
+
+| Stage | Exact selection | Result |
+| --- | --- | --- |
+| Runner | `clojure -J-Xmx256m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e "(require 'clojure.test 'gravity.self-hosting.sh07-bounded-development-runner-test) (let [r (clojure.test/run-tests 'gravity.self-hosting.sh07-bounded-development-runner-test)] (System/exit (if (zero? (+ (:fail r) (:error r))) 0 1)))"` | Natural exit 0, 3778 ms; 12 tests / 71 assertions, zero failures/errors |
+| Docs | `clojure -J-Xmx256m -M tools/validate_gravity_docs.clj` | Natural exit 0, 1391 ms; 240 docs / 19 phase indexes |
+| Language | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test` | Natural exit 0, 1710 ms; 6 tests / 11 assertions, zero failures/errors; one namespace attempted, none skipped |
+
+The exact runner SHA256 is
+`17721a14e5cca596df91185b49b384df5793fef1175fc9b07abc5c162e2716a7`;
+test SHA256 is
+`b4d0f4805112e72ca82b7813230658be64c29e52c511113de5aac9d4faabe0f4`.
+Retained process receipt SHA256 values are runner
+`ee264dc27ba1e5ae12e135bc46c767341a91ff7833a15e720407c720f5dc91f1`,
+docs `cd16b7050458fb35f58fa182423b7acc604b5d37063ddf399d00ea08b20bd0c5`,
+language `c0454599a3dc6daa4ad2e846fa412896781f2e17507ca0678897122592de894c`.
+These are operational receipts, not new acceptance authority.
+
+Independent static review of this exact source/tests/document tuple found no
+blocking defect for the finite AS1/AS2 runner increment. The reviewer checked
+EOF-only capture, saturation and read failure, declared/observed exit agreement,
+empty execution, counter representability and sampling-failure cleanup. The
+review did not independently execute the tests. A later documentation-only
+receipt commit does not change tested runner/test bytes or imply another run.
+
+AS1 source inventory and AS2 runner controls are evidenced for this increment.
+AS3 shared codec policy, actual artifact domain, genuine fresh replay and
+public admission remain open with their existing owners. AS4 publication and
+integration must name the final exact head. No compiler construction,
+authoritative migration, runtime safety proof, C12 execution or original C7
+publication was performed by these checks. Whole-outcome completion is open.
