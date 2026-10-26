@@ -1707,12 +1707,15 @@
                        {:kind :gravity.type/map :shape :literal :member-types (:element-types wide)}]]
             (let [argument-id (first (:argument-node-ids call))
                   changed-input (assoc-in input [:types argument-id] bad)
-                  changed-facts (assoc-in facts [:type-table argument-id] bad)]
+                  changed-facts (assoc-in facts [:type-table argument-id] bad)
+                  ;; The module analyzer rebuilds this context before full joins.
+                  changed-context (leaf 'body-lc-context request changed-facts (:bindings base) 65536)]
               (is (= :rejected (:status (derive changed-input))))
               (is (= :rejected (:status (leaf 'body-lc-type-work [bad] 65536))))
+              (is (= :rejected (:status changed-context)))
               (is (= :body-list-construction-operand-type-required
-                     (:reason (leaf 'body-lc-context request changed-facts (:bindings base) 65536))))
-              (is (false? (valid changed-facts)))))
+                     (:reason changed-context)))
+              (is (false? (valid (assoc changed-facts :list-construction-context (:context changed-context))))))))
           (doseq [type [(assoc wide :element-types (vec (repeat 1025 {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})))
                         {:kind :gravity.type/map :shape :literal :member-types (vec (repeat 1026 :gravity.type/string))}]]
             (is (= :accepted (:status (c7 'sh08-lc-validate-types [[type]]))))
