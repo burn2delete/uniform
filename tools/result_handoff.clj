@@ -119,6 +119,11 @@
 
 ;; Clojure supplies nil for a script with no arguments and for load-file.
 ;; Recognize the direct clojure.main script as well as nonempty script args.
-(when (or (seq *command-line-args*)
-          (= (System/getProperty "sun.java.command") (str "clojure.main " *file*)))
-  (apply -main *command-line-args*))
+(let [command (System/getProperty "sun.java.command" "")
+      prefix "clojure.main "
+      direct-file (when (str/starts-with? command prefix) (subs command (count prefix)))]
+  (when (or (seq *command-line-args*)
+            (and direct-file
+                 (= (.getCanonicalPath (java.io.File. direct-file))
+                    (.getCanonicalPath (java.io.File. *file*)))))
+    (apply -main *command-line-args*)))
