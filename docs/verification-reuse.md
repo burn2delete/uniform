@@ -311,3 +311,73 @@ Independent closure review remains pending; the next eligible source review is
 the reported initialization
 and dynamic read boundary, followed by representation design only if that
 boundary can be closed. RV1 and whole-outcome RV4 remain open.
+
+### Initialization calls, effects and representation boundary
+
+This unit starts at `b45bdeebcac7caafce8e67ee6738ec3cf85dbc06`, tree
+`ab7138e11e09e27876727604d26211f7fe923af2`. The dependency observation is still
+`e893375079f95a22f95b12d2394430403ea6c6ed3ff7844d919088a82e44e0a0`.
+Reading all 1,878 observed Clojure files produced 9,642 top-level forms without
+evaluating source. This is an index of observed source, not measured execution
+or acceptance coverage.
+
+| Source boundary | Established dependency or behavior | Remaining condition |
+| --- | --- | --- |
+| `bootstrap_impl/loader.clj` | `resource-text` resolves a classpath resource and reads it; `load-component!` passes its text to `Compiler/load`. The ordered manifest and component bytes are initialization inputs. | Physical repository observations do not prove the runtime classloader selected those exact resources. |
+| Loader `begin-data!`, `append-data!`, `finish-data!` | Begin/finish change loader-local assembly state; append reads the named EDN resource. Incomplete assembly rejects. | Preserve state/error behavior and resource resolution; a data count is not an effect proof. |
+| The sixteen `c2_pass_cache` loads | Fifteen facade loads plus `adapter_request.clj`'s `capacity_handoff` load introduce additional source during namespace initialization. | The literal load order and owning namespace must survive a future representation. |
+| `00811-sh03-reader-plan-validate.clj` and `00885-sh07-core-source-relative-path.clj` | The first cached binding wraps its builder in `delay`; the second uses `reify` methods that invoke binding/source-key functions when called. Their bodies must not be counted as already executed merely because they appear under `def`. | Macro resolution, method invocation and callers remain separate obligations. |
+| `00945-p15-s23-sh07-b51-plan-linker-02.clj` | The byte-array class initializer calls `Class/forName` with `[B`. This is a runtime class dependency, not an accepted-source byte allowance. | Runtime/classpath identity remains required. |
+| `00826-standard-reader-options.clj` | Initialization computes the policy hash through `reader-canonical-hash`, `c2-artifact-identity-call` and `c2-artifact-identity-ops`. That map contains live function values passed through `with-operations` and the compatibility trampoline. | `fn?` validates callable shape, not purity. The default digest/canonical bodies are observed source, but the actual operation bindings and transitive calls require a supported runtime contract. |
+| `00438-p15-s23-artifact-context-contract-version.clj` | `p15-s23-required-evidence-keys` builds a set from the declared required-evidence vector and adds the seed-retirement key; its rejected-candidate initializer is data construction. | Preserve the referenced data and function binding; this is no seed-retirement acceptance evidence. |
+| Local interposition macros and the selected `deftest` | Inspected macro definitions construct expansion data. Function/method/test bodies and macro expansion are different stages. | Generated code, macro bindings and later calls cannot be dismissed by syntactic containment. |
+
+The installed Clojure source inspected for `fn`, `defn`, `delay`, `reify`,
+`deftype` and `deftest` was version 1.12.5. Core/test source hashes are retained
+with the private source observations. This readback establishes which library
+source was inspected; it is not a runtime admission receipt for a future child.
+
+`tools/compatibility_initialization_audit.clj` records per-file form order,
+source locations, definition kinds and call candidates separated into current
+syntax and body syntax. Those labels are conditional on source spellings:
+locally shadowed `delay`, an immediately invoked function, higher-order calls
+or macro-generated code can invalidate a naive eager/deferred interpretation.
+The report retains the body candidates, spelling assumptions and unresolved
+call/effect status. It never expands a macro or resolves an observed runtime
+Var. The shared reader policy is reused from the dependency audit; its old
+first-form behavior remains intact.
+
+The concrete dynamic seam is the policy initializer's callback map in
+`compiler/00799-c2-artifact-identity-ops.clj` and invocation bridge in
+`compiler/00801-c2-artifact-identity-call.clj`. The leaf's operation validator
+and `call-entrypoint-body` check callable shape and establish invocation state;
+they do not certify an I/O-free function body. The observed default hash path
+ends in the canonical leaf and `gravity.digest`, but a static function name or
+unchanged map is not evidence that the live bindings cannot differ. No callback,
+authentication, class or invocation guard is removed to make this audit close.
+
+The distinct `:gravity/compatibility-initialization-observations-v1` format is
+an audit representation only. It carries no cache declaration or acceptance
+token. `:authority :none`, `:closure-complete? false` and
+`:cache-narrowing-authorized? false` cannot be upgraded by caller fields.
+Controls demonstrate that the existing `valid-cache-closure?` consumer rejects
+the report, including forged completion flags or the old cache schema name.
+The old flat-input bound, roles and inventories are unchanged. Wrapping this
+larger observation in one alleged flat input would not establish a valid cache
+closure and is not an admitted representation.
+
+Current unresolved work is actual namespace load order, lexical/dynamic call
+and Var binding, macro expansion and generated-code effects, transitive
+initializer effects, runtime classpath/resource resolution, reader conditionals
+and atomic input consistency. A manifest-backed cache representation requires
+separate review after that read/effect boundary is established. A separately
+attributed producer remains unrun until the complete closure and a supported
+execution route are established. Conservative fallback and fresh public
+verification remain active.
+
+The reused reader controls passed 10 tests / 45 assertions; new initialization
+controls passed 7 / 37. The first attempt passed the reader controls but could
+not read the new tool because of an unmatched delimiter; no new controls or
+source audit ran in that attempt. That nonpass is retained. Independent source
+and representation review, documentation/language gates and integration remain
+pending for this unit. Whole RV1/RV4 closure is not implied.
