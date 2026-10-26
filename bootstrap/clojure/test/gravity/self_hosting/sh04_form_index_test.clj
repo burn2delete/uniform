@@ -67,7 +67,11 @@
                  (hashCode [] (swap! calls inc) (.hashCode :same))
                  (hasheq [] (swap! calls inc) (.hasheq ^clojure.lang.IHashEq native-id))
                  (equals [other] (swap! calls inc) (identical? :same other)))
-        a {:form-tree [{:form-id :same :value 1} {:form-id opaque :value 2}]}
+        ;; Exceed ArrayMap width so the native HashMap collision path invokes
+        ;; the opaque incoming key and retains the earlier native key.
+        a {:form-tree (into [{:form-id :same :value 1}]
+                            (concat (map #(hash-map :form-id (keyword (str "other-" %))) (range 20))
+                                    [{:form-id opaque :value 2}]))}
         run (fn [f] (reset! calls 0) (f) @calls)
         baseline (run #(do (original-index a) (original-index a)))
         observed (run #(transaction a (fn [slot] (index a) (index a) (is (nil? @slot)))))]
