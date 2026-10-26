@@ -31,7 +31,7 @@ case construction; current Native/MIR source/composition receipts.
 
 ## Exact Reader leaf closure
 
-The opt-in is only `gravity.c2-artifact-identity-test`. Its production closure is
+The opt-in is only `gravity.c2-artifact-identity-test`. Its leaf production closure is
 `bootstrap/clojure/src/gravity/c2_artifact_identity.clj` and
 `c2_artifact_identity/{artifacts,canonical,incremental,operations,projections}.clj`.
 These files use core collection operations and supplied operation callbacks.
@@ -39,7 +39,10 @@ The test supplies deterministic hash/graph/span callbacks and literal carriers;
 it does not load `gravity.bootstrap`, read Gravity source or authenticate C2
 products. Its existing assertions explicitly reject those authority claims.
 
-All test code, runner code, ownership/backlog/dependency contracts and
+The consumed runner dependency `bootstrap/clojure/src/gravity/digest.clj` is
+also explicit: both the wiring and cache load it to compute identity hashes.
+Changing its implementation must invalidate reuse even if its hash outputs
+are preserved. All test code, runner code, ownership/backlog/dependency contracts and
 `deps.edn` remain consumed inputs. Existing classpath ordering, `.cljc` and
 compiled shadows, data readers, class inventories, runtime executable and
 effective child configuration checks remain. The actual test JVM still starts;
@@ -114,3 +117,20 @@ direct user publication/integration intent, one supported reassessment of the
 same action succeeded; no actor or route substitution was used. This does not
 waive any remaining restriction or grant compiler authority. No speedup, saved
 JVM launch, proof, migration, release or self-hosting completion is claimed.
+
+### Independent review correction: consumed digest implementation
+
+Subsequent parent review found a blocking omission in `2982760e`: the Reader
+closure alone omitted `gravity/digest.clj`, although both included runner
+namespaces require it. The earlier peer reviews and actual child results above
+remain historical evidence on the incomplete closure; they do not establish
+that a digest implementation edit would invalidate those old results.
+
+The narrow successor adds that exact production input, updates the expected
+closure regression and adds a copied-repository control that changes only a
+comment in the consumed digest file. That preserves its behavior and hash
+outputs, but must reject the old hit, change the request key and execute the
+new request. Corrected planner/wiring validation passed 103 tests / 922
+assertions with zero failures/errors. Independent correction review and final
+integration remain pending. No full compiler or heavy source replay is needed
+for this runner-input correction.

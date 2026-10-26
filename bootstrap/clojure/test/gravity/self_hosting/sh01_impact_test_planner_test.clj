@@ -655,7 +655,7 @@
         source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"
         plan (planner/build-plan {:changed-paths [source]})
         shard (first (:shards plan))]
-    (is (= #{source
+    (is (= #{source "bootstrap/clojure/src/gravity/digest.clj"
              "bootstrap/clojure/src/gravity/c2_artifact_identity/artifacts.clj"
              "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj"
              "bootstrap/clojure/src/gravity/c2_artifact_identity/incremental.clj"

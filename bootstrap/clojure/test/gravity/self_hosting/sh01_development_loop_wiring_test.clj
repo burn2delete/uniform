@@ -1139,6 +1139,38 @@
               (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
               (is (= 2 @calls)))))))))
 
+(deftest reader-identity-digest-runner-input-invalidates-reuse
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          job (reviewed-closure-job 'gravity.c2-artifact-identity-test)
+          _ (Files/createDirectories root no-file-attributes)
+          _ (copy-reviewed-closure! root job)
+          selected-context (assoc (context base) :working-directory (str root)
+                                  :revalidate-snapshot? true)
+          classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                'explicit-classpath-identities)
+          calls (atom 0)]
+      (with-redefs-fn
+        {classpath (fn [_ closure-root] [{:path "classpath/entry-0000" :sha256 closure-root}])}
+        (fn []
+          (let [plan (impact-plan (:namespace job))
+                attached (wiring/attach-request selected-context plan {} job)
+                operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+            (is (some #(= "bootstrap/clojure/src/gravity/digest.clj" (:path %))
+                      (get-in attached [:development-cache-request :dependencies :production-inputs])))
+            (is (= :passed (:status (wiring/run-unit! selected-context attached operation))))
+            ;; Preserve every hash output: a source comment must still invalidate
+            ;; evidence because both consumed runner namespaces load this code.
+            (spit (str (.resolve root "bootstrap/clojure/src/gravity/digest.clj"))
+                  "\n; consumed runner digest implementation changed\n" :append true)
+            (is (= :explicit-closure
+                   (:input-kind (exception-data #(wiring/probe selected-context attached)))))
+            (let [renewed (wiring/attach-request selected-context plan {} job)]
+              (is (not= (cache/cache-key (:development-cache-request attached))
+                        (cache/cache-key (:development-cache-request renewed))))
+              (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
+              (is (= 2 @calls)))))))))
+
 (deftest child-jvm-file-loading-and-unknown-options-stay-fresh
   (let [supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
                               'supported-child-jvm-argument?)]
