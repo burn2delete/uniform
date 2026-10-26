@@ -1,9 +1,12 @@
 # Uniform component projects
 
-Status: **proposed component decomposition**, not adopted release claims.
+Status: **component-roadmap navigation in use**; the finite Reader invocation
+pilot is integrated. Component release acceptance remains separate.
 Working names below are concrete descriptive defaults, not approved branding.
-Source baseline: main `c21068a6d39259b7110845bbbcefaf9bf6901232`, inspected
-2026-10-25. Subsequent moving code and private work are not silently included.
+Original source-inspection baseline: main
+`c21068a6d39259b7110845bbbcefaf9bf6901232`, inspected 2026-10-25.
+Later accepted increments are linked explicitly below, not treated as a new
+whole-repository audit.
 
 ## Purpose and authority
 
@@ -25,7 +28,7 @@ traceability metadata, not component boundaries or implementation names.
 This is a successor decomposition to the already delivered complete roadmap,
 not a claim that the earlier artifact was missing. Its preserved source package
 and editorial provenance are recorded in [baseline and decisions](baseline.md).
-No phase/task status is auto-closed or overwritten by this proposal. Deus is
+No phase/task status is auto-closed or overwritten by navigation updates. Deus is
 sole review/integration coordinator; existing code owners keep their paths.
 Unassigned owners on component pages are explicit assignment decisions, not
 permission for a new writer to take reserved files.
@@ -33,9 +36,10 @@ permission for a new writer to take reserved files.
 ## Component registry
 
 Each name links to the sole canonical outcome and task list for that project.
-All outcomes remain open unless an exact accepted receipt is linked on its page.
-The first draft may contain pages still being elaborated; those are proposal
-work, never completed implementation. Components are semantic boundaries, not
+Component release outcomes remain open until a linked receipt accepts the
+complete declared outcome; an accepted finite increment is not that receipt.
+Written plans are not completed implementation, and accepted finite increments
+do not close larger release outcomes. Components are semantic boundaries, not
 one project per file, numbered contract, test, or historical task.
 
 | Working name / semantic key | Purpose and boundary | Canonical outcome |
@@ -85,6 +89,24 @@ an exact receipt, not merely all individual pages having checkmarks.
 | Runnable selected target | Checked IR plus [Opt](opt.md#release-outcome), [Lower](lower.md#release-outcome), [Emit](emit.md#release-outcome), [selected compiler runtime services](runtime.md#selected-compiler-runtime-outcome), [compiler-support library](stdlib.md#compiler-support-outcome) | Selected-target artifacts actually execute accepted programs; unchecked IR and undeclared runtime service use reject. Target and residual host boundary are explicit. |
 | Reproducible compiler product | Runnable target plus [Build](build.md#release-outcome), [selected compiler commands](cli.md#selected-compiler-cli-outcome), [Diagnostics](diag.md#release-outcome), [Release](release.md#release-outcome) | Complete compiler source closure, actual next-stage rebuild/equivalence, hermetic package/provenance and public seedless release satisfy existing gates. |
 | Wider language/platform | Relevant [domain outcomes](domains.md#release-outcome) and separately decided [Platform](platform.md#release-outcome) | Each declared domain/profile/target demonstrates its own executable accepted/rejected surface. The product does not inherit universal hardware/OS support from the compiler release. |
+
+## Accepted scoped increments
+
+The [Reader-to-Core invocation pilot](../../.specify/reader-core-invocation/spec.md)
+completed specification, implementation, independent review and integration.
+Its sole finite [task ledger](../../.specify/reader-core-invocation/tasks.md) and
+[verified evidence](../../.specify/reader-core-invocation/evidence.md#verified-integration-receipt)
+record the accepted scope: current development source-to-Core invocation plus
+minimal existing-consumer compatibility. Implementation
+[PR #388](https://github.com/burn2delete/uniform/pull/388) merged at
+`001ab9ed`; the completed pilot documentation merged in
+[PR #381](https://github.com/burn2delete/uniform/pull/381).
+
+Reader remains partial, and the full source-to-Core/SH-07 source population and
+component release outcomes above remain open. This receipt supplies neither a
+whole-component percentage nor a release acceptance. The older 30-milestone
+rollup preserved in [baseline and decisions](baseline.md#source-baseline) remains
+historical context, not a replacement for component pages and scoped receipts.
 
 ## Dependency and parallel-interface view
 
@@ -149,7 +171,9 @@ selected implementation increment. Its spec links the component outcome and
 owning canonical contracts; its plan names owned paths/interfaces; its tasks
 cover only that increment; its evidence links exact results back to the outcome.
 Do not fork the normative specs or duplicate this component's release task list
-in an overall rollup. Existing Spec Kit ownership and pilot remain untouched.
+in an overall rollup. The completed [pilot tasks](../../.specify/reader-core-invocation/tasks.md)
+remain the sole task ledger for that selected increment; this index links them
+rather than copying their checklist.
 
 A status update needs: exact source/candidate identity, what actually ran,
 accepted/rejected evidence, remaining boundaries and reviewer disposition.
@@ -157,10 +181,10 @@ Source inspection, tests, composed integration, migration admission and release
 are separate evidence classes. A changed consumer or source invalidates only
 the evidence it affects, never silently promotes an old receipt to a new SHA.
 
-The proposed adoption gate is a review of component boundaries, owners and
-outcomes by Deus with relevant maintainers. Recommendation: adopt semantic
-working names now, keep wire identifiers stable, and link this index from the
-shared overview and Spec Kit guidance through their existing owners. Naming
+The merged index and Spec Kit guidance support the completed finite pilot.
+Further component-boundary, ownership and outcome changes remain subject to
+review by Deus with relevant maintainers. Keep wire identifiers stable; working
+names do not establish approved branding or component acceptance. Naming
 preference is not a reason to stop independent implementation.
 
 ### Domain project navigation
@@ -178,7 +202,8 @@ not by CLI argument routing. Wider-language integration includes those named
 service outcomes; a selected compiler release consumes only services actually
 required by its declared public surface. Completion of every editor/profiler
 service is not an added prerequisite for basic compiler development.
-See [validation scope and results](validation.md) for this documentation change.
+See [original roadmap validation](validation.md) for the baseline documentation
+checks; later navigation updates retain their own PR validation receipts.
 
 ### Compiler execution and target-family integration
 

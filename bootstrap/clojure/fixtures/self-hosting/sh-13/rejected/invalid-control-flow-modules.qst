@@ -23,7 +23,8 @@
              sh13-operation-profile-module
              sh13-operation-fact-module
              sh13-pure-ordering-module
-             sh13-mutual-recursion-module])
+             sh13-mutual-recursion-module
+             sh13-low-fuel-module])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe))
@@ -253,3 +254,6 @@
       :operands [:x])
      :dispatch :direct)
     :allowed-callees #{})))
+
+(defn sh13-low-fuel-module [module]
+  (assoc module :maximum-execution-steps 2))

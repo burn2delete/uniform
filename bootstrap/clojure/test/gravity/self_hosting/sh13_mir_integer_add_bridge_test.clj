@@ -93,7 +93,7 @@
                   " (:effects #{}) (:capabilities #{}) (:safety :safe))\n"
                   (apply str (map #(str (pr-str %) "\n") selected)))
         _ (assert (= names (set (map second selected))))
-        _ (assert (= 2 (count selected)))
+        _ (assert (and (= 2 (count selected)) (< (count text) 4096)))
         _ (assert (every? #(or (contains? names %) (contains? primitives %)) callees) (pr-str callees))
         emitter (:emitter (gravity.bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (gravity.bootstrap/p15-s23-stage2-compiler-artifact-plan emitter "reversed-add-binding-order.gravity" text)
@@ -259,6 +259,7 @@
         callees (set (for [form selected expression (tree-seq coll? seq form)
                           :when (and (seq? expression) (symbol? (first expression)))] (first expression)))
         _ (assert (= 1 (count selected)))
+        _ (assert (< (count text) 2048))
         _ (assert (every? '#{defn if > < <= >= = -} callees) (pr-str {:callees callees}))
         emitter (:emitter (gravity.bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (gravity.bootstrap/p15-s23-stage2-compiler-artifact-plan emitter "original-add-guard-kernel.gravity" text)
