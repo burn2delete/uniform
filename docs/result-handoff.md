@@ -144,3 +144,28 @@ independent test rerun. [Draft PR 428](https://github.com/burn2delete/uniform/pu
 preserves unfinished review/integration work. Full compiler, authoritative
 migration, restricted executions, runtime safety and release acceptance are
 unrun and outside this tooling increment.
+
+The actual no-argument script control subsequently found that both `seq` and
+`some?` guards alone can silently skip `-main`: Clojure supplies nil for an
+argument-free script. Candidates `cdbd9d4ff7ad5ca041d619cd5e1338f0f08ef7dd`
+(tree `549403dd25b63e7c65bab11512e22a937501d145`) and
+`5b429435a621f3efa368783c2aab4372c5c43d26` (tree
+`6a96f3f47b9d087294008c7d3b900d95919c1226`) each failed 1 of 56 assertions;
+those failures remain historical. Their document and language gates passed.
+The corrected guard recognizes the canonical direct `clojure.main` script path;
+load-file as a library remains inactive. Actual subprocess controls exercise
+both a valid plan and a missing plan. No new operation runner is introduced.
+
+Final tested source is `eda135df4b07a4a164a1b0e6136758e513e7ed45`, tree
+`7fe7ddfe7ecea46f0ba3ed7fd4cab2d56d718861`. With identical commands and broker
+profile to the table above, the focused gate passed 4 tests / 56 assertions in
+1756 ms, docs passed 240/19 in 1364 ms, and language boundary passed 6 tests /
+11 assertions in 1103 ms. All natural exits were 0, no timeout occurred, and
+before/after commit/tree and empty Git status matched. Tool SHA256 is now
+`ab096aa60938e2e5354d7118138eae162b072c8eeafe272b43b300c7c2312c54`, Git blob
+`eb1bfa952a1d97fb41a394c363202c1f4dd6dae9`; test SHA256 is
+`c538ad77a62472040f4f75dea957b521aa845ee18c36e46b01a202261fd5d140`, Git blob
+`322d0e62ffd5d2caecfa9ee0eadd6e2a298eba6b`. Projection and reader functions
+are unchanged from the actual retained-receipt consumption above; that evidence
+is reused with its original provenance. Independent review of this corrected
+entry and subprocess controls remains pending at this receipt revision.
