@@ -193,7 +193,7 @@
     (loop []
       (if (.hasNext entries)
         (let [entry ^java.util.Map$Entry (.next entries)]
-          (and (not (.isThreadBound ^clojure.lang.Var (.getKey entry)))
+          (and (nil? (.getThreadBinding ^clojure.lang.Var (.getKey entry)))
                (identical? (.getValue entry) (.deref ^clojure.lang.Var (.getKey entry)))
                (recur)))
         true))))
