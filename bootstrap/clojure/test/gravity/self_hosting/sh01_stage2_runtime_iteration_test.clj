@@ -16948,7 +16948,7 @@
       (is (= 1 @visits)))))
 
 (deftest current-gravity-keyword-predicate-lowering-runtime-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'keyword-predicate-input)
         derive (ns-resolve upstream 'keyword-predicate-derived)
@@ -16973,8 +16973,16 @@
     (doseq [type [:gravity.type/keyword :gravity.type/nil :gravity.type/map :gravity.type/never
                   {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}
                   {:kind :gravity.type/nil-or :value-type :gravity.type/string}]]
-      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+      (let [{:keys [core node nodes forms bindings types module call edge] :as input} (input-fn [type])
             result (derive input 65536) descriptor (:descriptor result)
+            validation (lower 'p15-s23-lc-type-work [type] 65536)
+            body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+            effect-validation (body 'body-lc-type-work [type] 65536)
+            source-arguments [core node call edge nodes bindings types module]
+            emitter-descriptor (lower 'p15-s23-kp-finish
+                                 (apply lower 'p15-s23-kp-source (conj source-arguments validation)))
+            effect-descriptor (body 'body-kp-finish
+                                (apply body 'body-kp-source (conj source-arguments effect-validation)))
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -16982,6 +16990,8 @@
                      :ledger [(c7 'sh08-kp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call %2)
             compiled (compile context 65536)]
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= descriptor emitter-descriptor effect-descriptor))
         (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
         (when-not (= :complete (:status compiled))
           (throw (ex-info "Keyword predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
@@ -17001,7 +17011,8 @@
                          (assoc descriptor :semantic-owner 'gravity.collections)
                          (assoc descriptor :capabilities [:io/stdout])
                          (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
-                         (assoc descriptor :operand-type-work 0)]]
+                         (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :operand-type-work (:work-count validation))]]
           (let [forged (-> context (assoc-in [:types :operator] changed)
                            (assoc :call-facts {:call (c7 'sh08-kp-call-fact [changed module])}
                                   :ledger [(c7 'sh08-kp-constraint [changed])]))]
