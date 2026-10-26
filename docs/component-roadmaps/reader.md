@@ -1,8 +1,8 @@
 # Reader
 
 Working name: **Reader** (proposed descriptive default, not an approved brand).
-Semantic key: `reader`. Status: proposed component roadmap; implementation
-partial, release outcome not accepted. Source baseline:
+Semantic key: `reader`. Status: implementation partial; finite invocation pilot
+integrated, full Reader release outcome not accepted. Original source baseline:
 `c21068a6d39259b7110845bbbcefaf9bf6901232` (2026-10-25).
 
 ## Purpose and ownership
@@ -56,14 +56,15 @@ is superseded by [current direction](../development-verification.md#remove-proje
 | Tooling consumer | [CLI](cli.md#release-outcome) and formatter clients use supplied paths, trivia and diagnostic spans; they must not reinterpret malformed input. |
 
 Existing artifact schemas, diagnostic identifiers and wire IDs remain unchanged
-by this proposal. New implementation names use `reader` and meaningful helper
+by this roadmap. New implementation names use `reader` and meaningful helper
 names. Existing ID-bearing paths below are source locators, not naming examples.
 Any later code rename needs an owner-scoped compatibility change, not a silent
 protocol rename in a documentation patch.
 
-## Pinned implementation evidence
+## Original source-inspection baseline
 
-These are inspected source facts, not fresh execution or acceptance results.
+These are source-inspection facts from the original baseline, not fresh
+execution or acceptance results. Later accepted evidence is recorded below.
 
 | Evidence | What exists; what it does not establish |
 | --- | --- |
@@ -76,21 +77,40 @@ These are inspected source facts, not fresh execution or acceptance results.
 | [Source coverage fixture](../../bootstrap/clojure/test/gravity/self_hosting/sh07_reader_source_coverage_test.clj) and [surface coverage fixture](../../bootstrap/clojure/test/gravity/self_hosting/sh07_l1_c2_surface_reader_source_coverage_test.clj) | Pinned censuses and source-path expectations exist; assertions and historical counts do not prove current execution or complete compiler population. |
 | [Current migration cohort](../self-hosting-current-migration-cohort.md) | First source-to-Core endpoint is proposed. The six frontend sources are not the whole required compiler population. |
 
+## Accepted finite invocation evidence
+
+The [Reader-to-Core pilot tasks](../../.specify/reader-core-invocation/tasks.md)
+and [evidence](../../.specify/reader-core-invocation/evidence.md#minimal-affected-consumer-closure-and-final-verification)
+record the completed selected increment, without duplicating this component's
+release checklist. Real paired source construction, fresh public Core
+verification, coherent substitution rejection, source/context controls and
+minimal existing-consumer compatibility were independently reviewed.
+
+[PR #388](https://github.com/burn2delete/uniform/pull/388) integrated that finite
+outcome at `001ab9ed`; [PR #381](https://github.com/burn2delete/uniform/pull/381)
+integrated its Spec Kit receipt. The
+[verified integration record](../../.specify/reader-core-invocation/evidence.md#verified-integration-receipt)
+preserves exact source/test trees, merge identity and residual boundaries.
+Historical defaults remain fail-closed; current-source invocation grants no
+migration or release authority. This is not complete Reader surface/extension
+coverage, full SH-07/C01, a full compiler-owner census or self-hosting acceptance.
+
 ## Finite remaining work
 
 These are the canonical Reader tasks; aggregate roadmaps link this outcome,
 not copies of this list. `Open` means completion evidence has not been admitted,
-not that no implementation exists. No Reader task is closed by this docs PR.
+not that no implementation exists. The scoped receipt updates partial evidence;
+no full Reader release task is closed by this navigation change.
 
 | Task | Current evidence/status | Done when (yes/no) |
 | --- | --- | --- |
 | Contract coverage reconciliation | Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures. | Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete. |
-| Decode and source identity closure | Partial source-unit/Reader implementation; no new execution here. | Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity. |
+| Decode and source identity closure | Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population. | Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity. |
 | Lexical products and origins closure | Partial Reader and projection sources. | All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified. |
 | Extension policy closure | Extension records/projected views exist; accepted authorization behavior not established here. | Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler. |
-| Authentication and quota-removal closure | Authenticated graph contract exists; historical quota-bearing source remains visible. | Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance. |
-| Fresh Syntax handoff | Separate Syntax and Reader products exist; composed successor receipt absent here. | Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run. |
-| Component release evidence | Open; historical staged reader reports are not this outcome. | Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome. |
+| Authentication and quota-removal closure | Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open. | Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance. |
+| Fresh Syntax handoff | Partial; real current Reader/Syntax products participate in the linked accepted pilot. Full component handoff coverage remains open. | Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run. |
+| Component release evidence | Open; the accepted finite invocation receipt is not the complete Reader release outcome. | Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome. |
 
 ## Acceptance checklist
 

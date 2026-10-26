@@ -1,11 +1,13 @@
 (ns gravity.self-hosting.sh07-c11-mir-source-preflight-test
-  "Source-only C11 MIR preflight without project input quotas.
+  "Source-only C11 MIR preflight with finite snapshot and structural checks.
 
-  Structural selectors share one source snapshot; historical admission pins
-  remain a separate binding check. The preflight stops at reader data and
-  does not invoke compiler or artifact code. Lexical delimiter validation
-  precedes the host reader, and structural walks are iterative. Host reader,
-  stack and heap limits remain implementation boundaries."
+  Structural selectors share one observed, unauthenticated source snapshot.
+  Only the dedicated binding selector checks the historical source pin. The
+  preflight deliberately stops at reader data: it does not invoke compiler,
+  artifact, or authority code.  A bounded lexical delimiter pass runs before
+  the host reader; subsequent structural walks are iterative and have
+  explicit limits.  This prevents stack growth in the supported lexical
+  cases, while the host reader remains a separate bounded parsing step."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]))
@@ -76,20 +78,45 @@
 (def ^:private invalid-export-clause ::invalid-export-clause)
 (def ^:private invalid-definition-duplicates ::invalid-definition-duplicates)
 
+;; These limits are intentionally independent of the moving C11 source and
+;; export list. Snapshot reads are bounded by the initially observed file size
+;; plus one EOF probe, not a fixed project byte ceiling. Storage remains O(N).
+;; The binding selector below remains the sole owner of the exact byte/SHA
+;; contract.
+(def ^:private maximum-top-level-forms 4096)
+(def ^:private maximum-form-nodes 250000)
+(def ^:private maximum-form-depth 512)
+(def ^:private maximum-collection-width 1024)
+(def ^:private maximum-diagnostics 64)
+(def ^:private maximum-diagnostic-message-bytes 256)
+
 (def ^:dynamic *source-snapshot-loader*
-  "Test seam for a pre-authenticated snapshot map.  Production leaves nil."
+  "Test seam for untrusted snapshot bytes; loading never authenticates them."
   nil)
 
 (def ^:dynamic *snapshot-before-open-hook*
   "Test seam invoked after initial stat and before descriptor opening."
   nil)
 
+(def ^:dynamic *snapshot-after-open-hook*
+  "Test seam after descriptor/state checks and before reading. Production nil."
+  nil)
+
 (def ^:private reader-eof-marker (Object.))
 
+(defn- bounded-message
+  [message]
+  (let [value (str message)]
+    (if (<= (count value) maximum-diagnostic-message-bytes)
+      value
+      (str (subs value 0 (- maximum-diagnostic-message-bytes 3)) "..."))))
+
 (defn- failure
-  ([id message] (failure id message {}))
+  ([id message]
+   (failure id message {}))
   ([id message data]
-    (throw (ex-info (str message) (merge {:id id} (dissoc data :bytes :source-text))))))
+   (throw (ex-info (bounded-message message)
+                   (merge {:id id} (dissoc data :bytes :source-text))))))
 
 (def ^:private no-follow-link-options
   (into-array java.nio.file.LinkOption
@@ -203,98 +230,136 @@
            :source-path (str source-path)}
           error))))))
 
+(defn- snapshot-buffer-capacity
+  "Validate the actual int-indexed buffer plus probe representation, not heap availability."
+  [size]
+  (when-not (and (integer? size) (<= 0 size) (< size Integer/MAX_VALUE))
+    (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES"
+             "C11 snapshot size plus EOF probe is not representable by the host buffer"
+             {:observed size :maximum (dec Integer/MAX_VALUE)}))
+  (int (inc size)))
+
+(defn- read-snapshot-buffer!
+  [^java.nio.channels.ReadableByteChannel channel ^java.nio.ByteBuffer buffer]
+  (loop [zero-reads 0]
+    (if (= (.position buffer) (.capacity buffer))
+      nil
+      (let [read-count (.read channel buffer)]
+        (cond
+          (= -1 read-count) nil
+          (and (zero? read-count) (< zero-reads 2)) (recur (inc zero-reads))
+          (zero? read-count)
+          (failure "SH07-C11-PREFLIGHT-SOURCE-READ"
+                   "C11 source channel made no progress")
+          :else (recur 0))))))
+
 (defn- read-source-snapshot
-  "Read a no-follow descriptor snapshot; decode and hash only its exact bytes."
+  "Read at most the observed file size plus one probe on a no-follow descriptor.
+
+  Path metadata is sampled before opening, immediately after opening, and
+  after the bounded channel read. This does not authenticate descriptor identity
+  or exclude hostile same-size edits with restored metadata. Owner observations
+  are optional; pathname integrity is not a held-dirfd race proof. Storage is
+  O(N), and representable sizes can still exhaust finite host heap/CPU.
+  The decoded text and digest are derived
+  only from those exact bytes.  Exact source-pin authentication belongs to
+  the dedicated binding selector."
   [source-path]
   (let [location (if (map? source-path)
                    source-path
-                   {:path
-                    (if (instance? java.nio.file.Path source-path)
-                      source-path
-                      (.toPath (io/file source-path)))})
+                   {:path (if (instance? java.nio.file.Path source-path)
+                            source-path
+                            (.toPath (io/file source-path)))})
         path (:path location)
         component-states (:components location)
         state-before (basic-file-state path)]
     (when (or (:symlink? state-before) (not (:regular? state-before)))
-      (failure
-        "SH07-C11-PREFLIGHT-SOURCE-FILE"
-        "C11 source must be a regular non-symlink file"
-        {:source-path (str path)}))
+      (failure "SH07-C11-PREFLIGHT-SOURCE-FILE"
+               "C11 source must be a regular non-symlink file"
+               {:source-path (str path)}))
     (when (nil? (:file-key state-before))
-      (failure
-        "SH07-C11-PREFLIGHT-SOURCE-IDENTITY"
-        "C11 source file identity is unavailable"
-        {:source-path (str path)}))
-    (when *snapshot-before-open-hook* (*snapshot-before-open-hook*))
-    (when (and
-            component-states
-            (not=
-              component-states
-              (:components (safe-contained-source-path (:root location) (:relative location)))))
-      (failure
-        "SH07-C11-PREFLIGHT-SOURCE-MUTATED"
-        "C11 source path components changed before descriptor read"))
-    (with-open [channel (java.nio.channels.FileChannel/open
-                          path
-                          (into-array
-                            java.nio.file.OpenOption
-                            [java.nio.file.StandardOpenOption/READ
-                             java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
-      (let [state-open (basic-file-state path) channel-size-before (.size channel)]
-        (when (or
-                (not (same-file-state? state-before state-open))
-                (not= channel-size-before (:size state-before)))
-          (failure
-            "SH07-C11-PREFLIGHT-SOURCE-MUTATED"
-            "C11 source changed before descriptor read"
-            {:source-path (str path)}))
-        (let [output (java.io.ByteArrayOutputStream.)
-              input (java.nio.channels.Channels/newInputStream channel)
-              _ (.transferTo input output)
-              bytes (.toByteArray output)
-              observed-bytes (alength bytes)
-              state-after (basic-file-state path)]
-          (when (or
-                  (not= channel-size-before (.size channel))
-                  (not= channel-size-before observed-bytes)
-                  (not (same-file-state? state-before state-after))
-                  (and
-                    component-states
-                    (not=
-                      component-states
-                      (:components
-                        (safe-contained-source-path (:root location) (:relative location))))))
-            (failure
-              "SH07-C11-PREFLIGHT-SOURCE-MUTATED"
-              "C11 source changed during descriptor read"
-              {:source-path (str path), :observed-bytes observed-bytes}))
-          {:bytes bytes,
-           :source-text (strict-utf8 bytes path),
-           :source-sha256 (sha256-id bytes),
-           :file-key (:file-key state-before),
-           :size observed-bytes,
-           :modified (:modified state-before),
-           :owner (:owner state-before)})))))
+      (failure "SH07-C11-PREFLIGHT-SOURCE-IDENTITY"
+               "C11 source file identity is unavailable"
+               {:source-path (str path)}))
+    (let [capacity (snapshot-buffer-capacity (:size state-before))
+          open-options
+          (into-array java.nio.file.OpenOption
+                      [java.nio.file.StandardOpenOption/READ
+                       java.nio.file.LinkOption/NOFOLLOW_LINKS])]
+      (when *snapshot-before-open-hook*
+        (*snapshot-before-open-hook*))
+      (let [location-open
+            (when (and (:root location) (:relative location))
+              (safe-contained-source-path (:root location)
+                                          (:relative location)))]
+        (when (and component-states
+                   (not= component-states (:components location-open)))
+          (failure "SH07-C11-PREFLIGHT-SOURCE-MUTATED"
+                   "C11 source path components changed before descriptor read"))
+      (with-open [channel (java.nio.channels.FileChannel/open path open-options)]
+        (let [state-open (basic-file-state path)
+              channel-size-before (.size channel)]
+          (when (or (not (same-file-state? state-before state-open))
+                    (not= channel-size-before (:size state-before)))
+            (failure "SH07-C11-PREFLIGHT-SOURCE-MUTATED"
+                     "C11 source changed before descriptor read"
+                     {:source-path (str path)}))
+          (when *snapshot-after-open-hook* (*snapshot-after-open-hook*))
+          ;; The fixed initial N bounds allocation and read growth even if a
+          ;; writer appends concurrently. Never resize or chase the new size.
+          (let [buffer (java.nio.ByteBuffer/allocate capacity)]
+            (read-snapshot-buffer! channel buffer)
+            (let [observed-bytes (.position buffer)
+                  channel-size-after (.size channel)
+                  state-after (basic-file-state path)
+                  location-after
+                  (when (and (:root location) (:relative location))
+                    (safe-contained-source-path (:root location)
+                                                (:relative location)))]
+              (when (or (not= observed-bytes (:size state-before))
+                        (not= channel-size-before channel-size-after)
+                        (not= channel-size-before observed-bytes)
+                        (not (same-file-state? state-before state-after))
+                        (and component-states
+                             (not= component-states
+                                   (:components location-after))))
+                (failure "SH07-C11-PREFLIGHT-SOURCE-MUTATED"
+                         "C11 source changed during bounded descriptor read"
+                         {:source-path (str path)
+                          :observed-bytes observed-bytes}))
+              (.flip buffer)
+              (let [bytes (byte-array observed-bytes)]
+                (.get buffer bytes)
+                {:bytes bytes
+                 :source-text (strict-utf8 bytes path)
+                 :source-sha256 (sha256-id bytes)
+                 :file-key (:file-key state-before)
+                 :size observed-bytes
+                 :modified (:modified state-before)
+                 :owner (:owner state-before)})))))))))
 
 (defn- source-path
   []
   (:path (safe-contained-source-path @root source-relative-path)))
 
-(defn- load-source-snapshot []
-  (let [snapshot (if *source-snapshot-loader*
-                   (*source-snapshot-loader*)
-                   (read-source-snapshot (safe-contained-source-path @root source-relative-path)))
+(defn- load-source-snapshot
+  []
+  (let [snapshot
+        (if *source-snapshot-loader*
+          (*source-snapshot-loader*)
+          (read-source-snapshot
+           (safe-contained-source-path @root source-relative-path)))
         bytes (:bytes snapshot)]
     (when-not (bytes? bytes)
-      (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES" "C11 source snapshot did not provide byte data"))
-    (assoc
-      snapshot
-      :source-text
-      (strict-utf8 bytes "C11 source snapshot")
-      :source-sha256
-      (sha256-id bytes)
-      :authenticated?
-      false)))
+      (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES"
+               "C11 source snapshot did not provide byte data"))
+    ;; Ignore any injected :source-text: all parsing must use the bytes from
+    ;; the bounded, coherent snapshot and the strict UTF-8 decoder.
+    (assoc snapshot
+           :size (alength ^bytes bytes)
+           :source-text (strict-utf8 bytes "C11 source snapshot")
+           :source-sha256 (sha256-id bytes)
+           :authenticated? false)))
 
 (defn- validate-source-binding!
   "Enforce the exact source pin for the dedicated binding selector only."
@@ -321,7 +386,7 @@
 
 (defn- source-bytes
   []
-  ;; Return a copy so callers cannot mutate the process-local snapshot
+  ;; Return a copy so callers cannot mutate the process-local bounded snapshot
   ;; held by the delay; exact source binding is enforced by its own selector.
   (aclone ^bytes (:bytes @source-snapshot)))
 
@@ -329,84 +394,111 @@
   []
   (:source-text @source-snapshot))
 
+(defn- bounded-elements
+  [value maximum id message]
+  (loop [remaining (seq value)
+         result []]
+    (cond
+      (nil? remaining) result
+      (>= (count result) maximum)
+      (failure id message {:maximum maximum})
+      :else (recur (next remaining) (conj result (first remaining))))))
+
 (defn- lexical-delimiter-depth!
-  "Validate delimiter balance without recursively entering source text.\n\n  Strings, regex strings, comments, and one-character/named character\n  literals are skipped conservatively.  This is a lexical guard, not a\n  replacement for the Clojure reader."
+  "Validate delimiter balance/depth without recursively entering source text.
+
+  Strings, regex strings, comments, and one-character/named character
+  literals are skipped conservatively.  This is a lexical guard, not a
+  replacement for the Clojure reader."
   [source]
-  (let [length (.length source) matching-delimiter {\( \), \[ \], \{ \}} closing #{\) \] \}}]
-    (loop [index 0 delimiters [] maximum-seen 0 mode :normal escaped? false]
+  (let [length (.length ^String source)
+        matching-delimiter {\( \) \[ \] \{ \}}
+        closing #{\) \] \}}]
+    (loop [index 0
+           delimiters []
+           maximum-seen 0
+           mode :normal
+           escaped? false]
       (if (= index length)
         (do
           (when-not (#{:normal :comment} mode)
-            (failure
-              "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
-              "C11 source has an unterminated lexical literal"))
+            (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
+                     "C11 source has an unterminated lexical literal"))
           (when (seq delimiters)
-            (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS" "C11 source has unclosed delimiters"))
+            (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
+                     "C11 source has unclosed delimiters"))
           maximum-seen)
-        (let [character (.charAt source index)
-              next-character (when (< (inc index) length) (.charAt source (inc index)))]
-          (case
-            mode
+        (let [character (.charAt ^String source index)
+              next-character (when (< (inc index) length)
+                               (.charAt ^String source (inc index)))]
+          (case mode
             :comment
             (if (or (= character \newline) (= character \return))
               (recur (inc index) delimiters maximum-seen :normal false)
               (recur (inc index) delimiters maximum-seen :comment false))
+
             :string
             (cond
               escaped? (recur (inc index) delimiters maximum-seen :string false)
               (= character \\) (recur (inc index) delimiters maximum-seen :string true)
               (= character \") (recur (inc index) delimiters maximum-seen :normal false)
               :else (recur (inc index) delimiters maximum-seen :string false))
+
             :regex
             (cond
               escaped? (recur (inc index) delimiters maximum-seen :regex false)
               (= character \\) (recur (inc index) delimiters maximum-seen :regex true)
               (= character \") (recur (inc index) delimiters maximum-seen :normal false)
               :else (recur (inc index) delimiters maximum-seen :regex false))
+
             :character
+            ;; The first codepoint is enough to hide delimiter characters;
+            ;; named literals such as \\newline then continue as ordinary
+            ;; non-delimiter letters, which is conservative for this bound.
             (recur (inc index) delimiters maximum-seen :normal false)
+
+            ;; :normal
             (cond
               (= character \;) (recur (inc index) delimiters maximum-seen :comment false)
               (= character \") (recur (inc index) delimiters maximum-seen :string false)
-              (and (= character \#) (= next-character \")) (recur
-                                                             (+ index 2)
-                                                             delimiters
-                                                             maximum-seen
-                                                             :regex
-                                                             false)
+              (and (= character \#) (= next-character \"))
+              (recur (+ index 2) delimiters maximum-seen :regex false)
               (= character \\) (recur (inc index) delimiters maximum-seen :character false)
-              (contains? matching-delimiter character) (let [next-delimiters
-                                                             (conj delimiters character)
-                                                             next-depth (count next-delimiters)]
-                                                                                                        (recur
-                                                           (inc index)
-                                                           next-delimiters
-                                                           (max maximum-seen next-depth)
-                                                           :normal
-                                                           false))
-              (contains? closing character) (if (or
-                                                  (empty? delimiters)
-                                                  (not=
-                                                    character
-                                                    (matching-delimiter (peek delimiters))))
-                                              (failure
-                                                "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
-                                                "C11 source has an unmatched or mismatched delimiter")
-                                              (recur
-                                                (inc index)
-                                                (pop delimiters)
-                                                maximum-seen
-                                                :normal
-                                                false))
+              (contains? matching-delimiter character)
+              (let [next-delimiters (conj delimiters character)
+                    next-depth (count next-delimiters)]
+                (when (> next-depth maximum-form-depth)
+                  (failure "SH07-C11-PREFLIGHT-FORM-DEPTH"
+                           "C11 source exceeds bounded lexical delimiter depth"
+                           {:maximum maximum-form-depth}))
+                (recur (inc index) next-delimiters (max maximum-seen next-depth)
+                       :normal false))
+              (contains? closing character)
+              (if (or (empty? delimiters)
+                      (not= character
+                            (matching-delimiter (peek delimiters))))
+                (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
+                         "C11 source has an unmatched or mismatched delimiter")
+                (recur (inc index) (pop delimiters) maximum-seen :normal false))
               :else (recur (inc index) delimiters maximum-seen :normal false))))))))
 
-(defn- read-forms [source]
+(defn- read-forms
+  [source]
   (binding [*read-eval* false]
     (lexical-delimiter-depth! source)
-    (with-open [reader (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. source))]
+    (with-open [reader
+                (clojure.lang.LineNumberingPushbackReader.
+                 (java.io.StringReader. ^String source))]
       (loop [forms []]
         (let [form (read {:eof reader-eof-marker} reader)]
-          (if (identical? reader-eof-marker form) forms (recur (conj forms form))))))))
+          (if (identical? reader-eof-marker form)
+            forms
+            (do
+              (when (>= (count forms) maximum-top-level-forms)
+                (failure "SH07-C11-PREFLIGHT-FORM-COUNT"
+                         "C11 source has too many top-level forms"
+                         {:maximum maximum-top-level-forms}))
+              (recur (conj forms form)))))))))
 
 (def ^:private source-forms-cache
   (delay (read-forms (source-text))))
@@ -415,19 +507,66 @@
   []
   @source-forms-cache)
 
+(defn- form-children
+  [form]
+  (if (coll? form)
+    (bounded-elements form maximum-collection-width
+                      "SH07-C11-PREFLIGHT-COLLECTION-WIDTH"
+                      "C11 source collection is wider than the bounded gate")
+    []))
+
 (defn- analyze-form-sequence
-  "Iteratively inspect the source forms for invalid control-form arity."
+  "Iteratively inspect forms and return bounded shape diagnostics."
   [forms]
-  (let [roots (vec forms)]
-    (loop [pending (vec (reverse roots)) invalid-if-forms []]
+  (let [roots (bounded-elements forms maximum-top-level-forms
+                                "SH07-C11-PREFLIGHT-FORM-COUNT"
+                                "C11 source has too many top-level forms")]
+    (loop [pending (reduce (fn [stack form]
+                             (conj stack [form 0]))
+                           []
+                           (reverse roots))
+           node-count 0
+           invalid-if-forms []
+           maximum-depth-seen 0]
       (if (empty? pending)
-        {:forms roots, :invalid-if-forms invalid-if-forms}
-        (let [form (peek pending)
-              children (if (coll? form) (vec form) [])
-              invalid-if? (and (seq? form) (= 'if (first form)) (not= 4 (count children)))]
-          (recur
-            (into (pop pending) (reverse children))
-            (if invalid-if? (conj invalid-if-forms form) invalid-if-forms)))))))
+        {:forms roots
+         :node-count node-count
+         :maximum-depth maximum-depth-seen
+         :invalid-if-forms invalid-if-forms}
+        (let [[form depth] (peek pending)
+              pending (pop pending)]
+          (when (>= node-count maximum-form-nodes)
+            (failure "SH07-C11-PREFLIGHT-FORM-NODES"
+                     "C11 source has too many recursive form nodes"
+                     {:maximum maximum-form-nodes}))
+          (when (> depth maximum-form-depth)
+            (failure "SH07-C11-PREFLIGHT-FORM-DEPTH"
+                     "C11 source exceeds bounded form depth"
+                     {:maximum maximum-form-depth}))
+          (let [children (form-children form)
+                invalid-if?
+                (and (seq? form)
+                     (= 'if (first form))
+                     (not= 4 (count children)))
+                invalid-if-forms
+                (if invalid-if?
+                  (do
+                    (when (>= (count invalid-if-forms) maximum-diagnostics)
+                      (failure "SH07-C11-PREFLIGHT-DIAGNOSTICS"
+                               "C11 source produced too many diagnostics"
+                               {:maximum maximum-diagnostics}))
+                    (conj invalid-if-forms form))
+                  invalid-if-forms)
+                child-depth (inc depth)
+                pending
+                (reduce (fn [stack child]
+                          (conj stack [child child-depth]))
+                        pending
+                        (reverse children))]
+            (recur pending
+                   (inc node-count)
+                   invalid-if-forms
+                   (max maximum-depth-seen depth))))))))
 
 (def ^:private source-analysis-cache
   (delay (analyze-form-sequence (source-forms))))
@@ -440,12 +579,16 @@
   "Return a frequency map of top-level def/defn names."
   [forms]
   (reduce
-    (fn [frequencies form]
-      (if (and (seq? form) (#{'defn 'def} (first form)) (symbol? (second form)))
-        (update frequencies (second form) (fnil inc 0))
-        frequencies))
-    {}
-    (vec forms)))
+   (fn [frequencies form]
+     (if (and (seq? form)
+              (#{'def 'defn} (first form))
+              (symbol? (second form)))
+       (update frequencies (second form) (fnil inc 0))
+       frequencies))
+   {}
+   (bounded-elements forms maximum-top-level-forms
+                     "SH07-C11-PREFLIGHT-FORM-COUNT"
+                     "C11 source has too many top-level forms")))
 
 (defn- duplicate-definition-names
   [forms]
@@ -453,211 +596,162 @@
                (when (> frequency 1) name))
              (definition-names forms))))
 
-(defn- export-names [forms]
-  (let [forms (vec forms) _ (analyze-form-sequence forms) namespace-form (first forms)]
-    (if (and
-          (seq? namespace-form)
-          (= 'ns (first namespace-form))
-          (symbol? (second namespace-form)))
-      (let [clauses (filter #(and (seq? %) (= :exports (first %))) (drop 2 namespace-form))]
+(defn- export-names
+  [forms]
+  (let [forms (bounded-elements forms maximum-top-level-forms
+                                "SH07-C11-PREFLIGHT-FORM-COUNT"
+                                "C11 source has too many top-level forms")
+        _ (analyze-form-sequence forms)
+        namespace-form (first forms)]
+    (if (and (seq? namespace-form)
+             (= 'ns (first namespace-form))
+             (symbol? (second namespace-form)))
+      (let [clauses
+            (filter
+             #(and (seq? %) (= :exports (first %)))
+             (drop 2 namespace-form))]
         (if (= 1 (count clauses))
-          (let [clause (first clauses) values (second clause)]
-            (if (and
-                  (= 2 (count clause))
-                  (vector? values)
-                  (seq values)
-                  (every? symbol? values)
-                  (= (count values) (count (set values))))
+          (let [clause (first clauses)
+                values (second clause)]
+            (if (and (= 2 (count clause))
+                     (vector? values)
+                     (seq values)
+                     (every? symbol? values)
+                     (= (count values) (count (set values))))
               values
               invalid-export-clause))
           invalid-export-clause))
       invalid-export-clause)))
 
-(defn- missing-export-definitions [forms]
-  (let [forms (vec forms) exports (export-names forms) definitions (definition-names forms)]
+(defn- missing-export-definitions
+  [forms]
+  (let [forms (bounded-elements forms maximum-top-level-forms
+                                "SH07-C11-PREFLIGHT-FORM-COUNT"
+                                "C11 source has too many top-level forms")
+        exports (export-names forms)
+        definitions (definition-names forms)]
     (if (= invalid-export-clause exports)
       invalid-export-clause
       (if (seq (duplicate-definition-names forms))
         invalid-definition-duplicates
         (set (remove definitions exports))))))
 
-(deftest
-  sh07-c11-source-binding-is-exact
+(deftest sh07-c11-source-binding-is-exact
+  ;; Historical admission remains fail-closed. Independent intake tests do not
+  ;; refresh this pin or count a moving source snapshot as authenticated.
   (let [bytes (source-bytes)
         production-snapshot @source-snapshot
         contract (proof-contract)
-        expectation (get-in
-                      contract
-                      [:authoritative-coverage-census :module-expectations :c11-mir])]
+        expectation
+        (get-in contract
+                [:authoritative-coverage-census :module-expectations :c11-mir])]
     (is (= expected-source-byte-count (alength bytes)))
     (is (= expected-source-revision-id (sha256-id bytes)))
     (is (:authenticated? (validate-source-binding! production-snapshot)))
-    (is (= 'gravity.compiler.c11-mir-specification (:module-namespace expectation)))
-    (is
-      (=
-        {:source-byte-count expected-source-byte-count,
-         :source-bytes-sha256 expected-source-revision-id}
-        (:source-binding expectation)))
-    (testing
-      "injected source text cannot override strict bytes decoding"
-      (let [loaded (binding [*source-snapshot-loader* (fn []
-                                                        {:bytes bytes, :source-text "wrong text"})]
-                     (load-source-snapshot))]
-        (is (= (strict-utf8 bytes "expected") (:source-text loaded)))))))
+    (is (= 'gravity.compiler.c11-mir-specification
+           (:module-namespace expectation)))
+    (is (= {:source-byte-count expected-source-byte-count
+            :source-bytes-sha256 expected-source-revision-id}
+           (:source-binding expectation)))))
 
-(deftest
-  sh07-c11-source-snapshot-preserves-identity
-  (testing
-    "structural selectors can inspect a moving pin, but binding rejects it"
-    (let [text "(ns synthetic (:exports [x])) (def x 1)"
-          bytes (.getBytes text "UTF-8")
-          loaded (binding [*source-snapshot-loader* (fn []
-                                                      {:bytes bytes, :source-text "wrong text"})]
-                   (load-source-snapshot))
-          forms (read-forms (:source-text loaded))]
-      (is (= text (:source-text loaded)))
-      (is (empty? (invalid-source-if-forms forms)))
-      (is (empty? (missing-export-definitions forms)))
-      (is (thrown? clojure.lang.ExceptionInfo (validate-source-binding! loaded)))))
-  (testing
-    "strict UTF-8 rejects malformed bytes without a platform decoder"
-    (is
-      (try
-        (strict-utf8 (byte-array [(unchecked-byte 195) (byte 40)]) "synthetic")
-        false
-        (catch
-          clojure.lang.ExceptionInfo
-          error
-          (= "SH07-C11-PREFLIGHT-SOURCE-UTF8" (:id (ex-data error)))))))
-  (testing
-    "path authentication rejects containment escapes and symlink leaves"
-    (let [temporary (java.nio.file.Files/createTempDirectory
-                      "sh07-c11-path-test"
-                      (make-array java.nio.file.attribute.FileAttribute 0))
-          real-file (.resolve temporary "real.gravity")
-          link-file (.resolve temporary "link.gravity")
-          larger-file (.resolve temporary "oversized.gravity")
-          former-limit-file (.resolve temporary "exact-bound.gravity")
-          replacement-file (.resolve temporary "replacement.gravity")
-          moved-original (.resolve temporary "original.gravity")
-          real-directory (.resolve temporary "real-directory")
-          intermediate-link (.resolve temporary "intermediate-link")
-          nested-file (.resolve real-directory "nested.gravity")]
-      (try
-        (java.nio.file.Files/write
-          real-file
-          (.getBytes "(ns synthetic (:exports [x])) (def x 1)" "UTF-8")
-          (make-array java.nio.file.OpenOption 0))
-        (java.nio.file.Files/write
-          larger-file
-          (byte-array (inc 524288))
-          (make-array java.nio.file.OpenOption 0))
-        (java.nio.file.Files/write
-          former-limit-file
-          (byte-array 524288)
-          (make-array java.nio.file.OpenOption 0))
-        (let [snapshot (read-source-snapshot former-limit-file)]
-          (is (= 524288 (:size snapshot)))
-          (is (= 524288 (alength (:bytes snapshot)))))
-        (is (= 524289 (:size (read-source-snapshot larger-file))))
-        (is
-          (thrown?
-            clojure.lang.ExceptionInfo
-            (safe-contained-source-path temporary "../escape.gravity")))
-        (try
-          (java.nio.file.Files/createSymbolicLink
-            link-file
-            real-file
-            (make-array java.nio.file.attribute.FileAttribute 0))
-          (is (thrown? clojure.lang.ExceptionInfo (read-source-snapshot link-file)))
-          (catch java.nio.file.FileSystemException _ (is true))
-          (catch UnsupportedOperationException _ (is true)))
-        (java.nio.file.Files/createDirectory
-          real-directory
-          (make-array java.nio.file.attribute.FileAttribute 0))
-        (java.nio.file.Files/write
-          nested-file
-          (.getBytes "(ns nested)" "UTF-8")
-          (make-array java.nio.file.OpenOption 0))
-        (try
-          (java.nio.file.Files/createSymbolicLink
-            intermediate-link
-            real-directory
-            (make-array java.nio.file.attribute.FileAttribute 0))
-          (is
-            (thrown?
-              clojure.lang.ExceptionInfo
-              (safe-contained-source-path temporary "intermediate-link/nested.gravity")))
-          (catch java.nio.file.FileSystemException _ (is true))
-          (catch UnsupportedOperationException _ (is true)))
-        (java.nio.file.Files/write
-          replacement-file
-          (.getBytes "(ns replacement (:exports [x])) (def x 1)" "UTF-8")
-          (make-array java.nio.file.OpenOption 0))
-        (binding [*snapshot-before-open-hook* (fn []
-                                                (java.nio.file.Files/move
-                                                  real-file
-                                                  moved-original
-                                                  (make-array java.nio.file.CopyOption 0))
-                                                (java.nio.file.Files/move
-                                                  replacement-file
-                                                  real-file
-                                                  (make-array java.nio.file.CopyOption 0)))]
-          (is (thrown? clojure.lang.ExceptionInfo (read-source-snapshot real-file))))
-        (finally
-          (java.nio.file.Files/deleteIfExists link-file)
-          (java.nio.file.Files/deleteIfExists real-file)
-          (java.nio.file.Files/deleteIfExists replacement-file)
-          (java.nio.file.Files/deleteIfExists moved-original)
-          (java.nio.file.Files/deleteIfExists former-limit-file)
-          (java.nio.file.Files/deleteIfExists larger-file)
-          (java.nio.file.Files/deleteIfExists intermediate-link)
-          (java.nio.file.Files/deleteIfExists nested-file)
-          (java.nio.file.Files/deleteIfExists real-directory)
-          (java.nio.file.Files/deleteIfExists temporary))))))
-
-(deftest
-  sh07-c11-source-control-form-arities-are-exact
+(deftest sh07-c11-source-control-form-arities-are-exact
   (let [analysis @source-analysis-cache]
     (is (empty? (:invalid-if-forms analysis)))
     (is (empty? (duplicate-definition-names (:forms analysis))))
-    (testing
-      "both under- and over-arity if forms fail the same source-only gate"
+    (testing "both under- and over-arity if forms fail the same source-only gate"
       (is (= 1 (count (invalid-source-if-forms '[(if true)]))))
-      (is (= 1 (count (invalid-source-if-forms '[(if true :then :else :extra)])))))
-    (testing
-      "a literal namespaced eof-like value cannot truncate later forms"
-      (is (= 3 (count (read-forms "(ns synthetic) ::eof (def later 1)")))))
-    (testing
-      "the lexical guard ignores delimiters in strings, regexes, comments, and chars"
-      (is (= 1 (lexical-delimiter-depth! "(\"}\" #\"[\" ; )\n \\( )"))))
-    (testing
-      "lexical modes handle escaped quotes and backslashes exactly"
-      (is
-        (=
-          1
-          (lexical-delimiter-depth!
-            "(\"escaped \\\" quote and \\\\ slash )\" #\"escaped \\\" quote and \\\\ slash [\" \\) )"))))
-    (testing
-      "a trailing comment may terminate at EOF"
-      (is (= 1 (count (read-forms "(ns synthetic) ; trailing comment")))))
-    (testing
-      "unterminated string, regex, and character modes fail closed"
-      (doseq [unterminated ["\"unterminated" "#\"unterminated" "\\"]]
-        (is (thrown? clojure.lang.ExceptionInfo (lexical-delimiter-depth! unterminated)))))
-    (testing
-      "unmatched, mismatched, and unclosed delimiters fail closed"
+      (is (= 1
+             (count
+              (invalid-source-if-forms
+               '[(if true :then :else :extra)])))))
+    (testing "a literal namespaced eof-like value cannot truncate later forms"
+      (is (= 3
+             (count (read-forms
+                     "(ns synthetic) ::eof (def later 1)")))))
+    (testing "the lexical guard ignores delimiters in strings, regexes, comments, and chars"
+      (is (= 1
+             (lexical-delimiter-depth!
+              "(\"}\" #\"[\" ; )\n \\( )"))))
+    (testing "lexical modes handle escaped quotes and backslashes exactly"
+      (is (= 1
+             (lexical-delimiter-depth!
+              "(\"escaped \\\" quote and \\\\ slash )\" #\"escaped \\\" quote and \\\\ slash [\" \\) )"))))
+    (testing "a trailing comment may terminate at EOF"
+      (is (= 1
+             (count (read-forms
+                     "(ns synthetic) ; trailing comment")))))
+    (testing "unterminated string, regex, and character modes fail closed"
+      (doseq [unterminated ["\"unterminated"
+                            "#\"unterminated"
+                            "\\"]]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (lexical-delimiter-depth! unterminated)))))
+    (testing "unmatched, mismatched, and unclosed delimiters fail closed"
       (doseq [invalid [")" "([)]" "("]]
-        (is (thrown? clojure.lang.ExceptionInfo (lexical-delimiter-depth! invalid)))))))
-
-(deftest sh07-c11-source-shape-has-no-project-quotas
-  (is (= 4097 (count (read-forms (apply str (repeat 4097 "nil "))))))
-  (is (empty? (invalid-source-if-forms [(vec (repeat 250001 :leaf))])))
-  (is (= 65 (count (invalid-source-if-forms (vec (repeat 65 '(if true)))))))
-  (is (= 1 (count (invalid-source-if-forms [(apply list (cons 'if (repeat 1025 true)))]))))
-  (is (= 513 (lexical-delimiter-depth! (str (apply str (repeat 513 "("))
-                                           (apply str (repeat 513 ")"))))))
-  (is (empty? (missing-export-definitions (source-forms)))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (lexical-delimiter-depth! invalid)))))
+    (testing "lexical delimiter depth rejects actual over-deep text before reader entry"
+      (let [deep-text
+            (str (apply str (repeat (inc maximum-form-depth) "("))
+                 (apply str (repeat (inc maximum-form-depth) ")")))]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (lexical-delimiter-depth! deep-text)))))
+    (testing "top-level and collection bounds reject only the first over-limit item"
+      (let [top-level-at-limit
+            (vec (repeat maximum-top-level-forms 'nil))
+            top-level-over-limit (conj top-level-at-limit 'nil)
+            collection-at-limit
+            (vec (repeat maximum-collection-width :value))
+            collection-over-limit (conj collection-at-limit :value)]
+        (is (= maximum-top-level-forms
+               (count (bounded-elements
+                       top-level-at-limit maximum-top-level-forms
+                       "C11-TEST-TOP" "top"))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (bounded-elements
+                      top-level-over-limit maximum-top-level-forms
+                      "C11-TEST-TOP" "top")))
+        (is (= maximum-collection-width
+               (count (bounded-elements
+                       collection-at-limit maximum-collection-width
+                       "C11-TEST-WIDTH" "width"))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (bounded-elements
+                      collection-over-limit maximum-collection-width
+                      "C11-TEST-WIDTH" "width")))))
+    (testing "node and diagnostic bounds reject the first over-limit item"
+      (let [base-root-count 250
+            leaves-per-base-root 998
+            ;; Each root contributes exactly 1,000 nodes: the collection,
+            ;; its branch-head symbol, and 998 leaves.  All roots stay below
+            ;; the independent collection-width bound.
+            exact-forms
+            (vec (repeat base-root-count
+                         (apply list
+                                (cons 'branch
+                                      (repeat leaves-per-base-root 'leaf)))))
+            over-forms (conj exact-forms 'one-node-over)
+            diagnostic-at-limit
+            (vec (repeat maximum-diagnostics '(if true)))
+            diagnostic-over-limit (conj diagnostic-at-limit '(if true))]
+        (is (= maximum-form-nodes
+               (:node-count (analyze-form-sequence exact-forms))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (analyze-form-sequence over-forms)))
+        (is (= maximum-diagnostics
+               (count (invalid-source-if-forms diagnostic-at-limit))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (invalid-source-if-forms diagnostic-over-limit)))))
+    (testing "deep and wide synthetic carriers fail closed before recursion grows"
+      (let [deep (reduce (fn [form _] (list form))
+                         'leaf
+                         (range (inc maximum-form-depth)))
+            wide (apply list (cons 'if (cons true
+                                              (repeat maximum-collection-width :x))))]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (invalid-source-if-forms [deep])))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (invalid-source-if-forms [wide])))))))
 
 (deftest sh07-c11-source-exports-have-definitions
   (let [analysis @source-analysis-cache

@@ -359,27 +359,22 @@
                                 expected-b16-cohort-product-counts)))))
     (is true "Set GRAVITY_SH07_B41_CONTRACT=1 after coordinator registration")))
 
-(deftest sh07-b41-sh22-measured-census-fits-declared-bounds
+(deftest sh07-b41-sh22-census-records-authenticated-request
   (if (= "1" (System/getenv "GRAVITY_SH07_B41_CENSUS"))
     (let [contract (edn/read-string
                     (slurp (path proof-contract-relative-path)))
-          bounds (:bounds contract)
           result (proof-census/census (path source-relative-path))
           measurements (:measurements result)]
       (is (= :gravity/sh07-proof-census (:artifact result)))
-      (is (= :within-declared-bounds (:status result)))
+      (is (= 2 (:schema-version result)))
+      (is (= :authenticated-request (:status result)))
       (is (= expected-source-revision-id
              (get-in result [:request :source-revision-id])))
       (is (= 64 (:fragments measurements) (:top-level-forms measurements)))
-      (is (<= (:maximum-fragment-forms measurements)
-              (:maximum-fragment-forms bounds)))
-      (is (<= (:carrier-nodes measurements)
-              (:maximum-module-carrier-nodes bounds)))
-      (is (empty? (:violations result)))
       (is (false? (:performed-sh07-lowering? result)))
       (is (= 37 (count (:authoritative-modules contract))))
       (is (= 33 (count (:required-core-product-counts contract)))))
-    (is true "Set GRAVITY_SH07_B41_CENSUS=1 in an isolated 8 GiB JVM")))
+    (is true "Set GRAVITY_SH07_B41_CENSUS=1 for actual authenticated request construction")))
 
 (deftest sh07-b41-sh22-authentic-source-core-and-reduced-replay
   (if (= "1" (System/getenv "GRAVITY_SH07_B41_AUTHENTIC"))
@@ -445,3 +440,90 @@
           (is (not= left-path (str right-path))))
         (finally (delete-tree! temp-root))))
     (is true "Set GRAVITY_SH07_B41_PARITY=1 in an isolated 8 GiB JVM")))
+
+(deftest current-census-keeps-authenticated-source-identity-without-work-admission
+  ;; This small current-source subject exercises the consumer contract only.
+  ;; It does not replace the frozen Stdlib subject or claim its census ran.
+  (let [subject (.getCanonicalPath
+                 (io/file (path "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.gravity")))
+        revision (sha256-id (source-bytes subject))
+        legacy-rejection (try (proof-census/census subject) nil
+                              (catch clojure.lang.ExceptionInfo error (ex-data error)))
+        result (proof-census/census subject {:reader :development-current})]
+    (is (= :pinned-sh02-source-snapshot (:missing-fact legacy-rejection)))
+    (is (= :gravity/sh07-proof-census (:artifact result)))
+    (is (= 2 (:schema-version result)))
+    (is (= :authenticated-request (:status result)))
+    (is (= subject (:source-path result)))
+    (is (= revision (get-in result [:request :source-revision-id])))
+    (is (= 1 (get-in result [:measurements :fragments])
+             (get-in result [:measurements :top-level-forms])))
+    (is (false? (:performed-sh07-lowering? result)))
+    (is (not-any? #(contains? result %) [:bounds :violations]))
+    (is (not-any? #(contains? (:measurements result) %)
+                  [:carrier-nodes :carrier-depth :carrier-width :carrier-scalar-bytes
+                   :predicted-maximum-core-nodes :predicted-maximum-digest-requests]))
+    (is (re-matches #"sha256:[0-9a-f]{64}"
+                    (get-in result [:request :sh06-semantic-projection-id])))))
+
+(deftest census-rejects-unknown-options-before-source-access
+  (let [reads (atom 0)]
+    (with-redefs [clojure.core/slurp
+                  (fn [& _] (swap! reads inc) (throw (AssertionError. "unexpected source access")))]
+      (doseq [options [nil [] :development-current {:reader :historical}
+                      {:reader "development-current"}
+                      {:reader :development-current :extra true}]]
+        (is (= "CORE-REQUEST-CENSUS-OPTIONS"
+               (:id (try (proof-census/census "unread.gravity" options) nil
+                         (catch clojure.lang.ExceptionInfo error (ex-data error)))))))
+      (is (zero? @reads)))))
+
+(deftest census-current-routing-uses-only-host-selected-invocation
+  ;; These are transparent routing mocks, not authenticated-product evidence.
+  (let [subject (path "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.gravity")
+        canonical (.getCanonicalPath (io/file subject))
+        reader "host-selected-reader.gravity"
+        invocation {:reader-source-path reader
+                    :authenticated-envelope-options {:source :development-current}}
+        resolved {:invocation {:reader-source-path "forged-reader.gravity"}}
+        calls (atom [])
+        deny (fn [& _] (throw (AssertionError. "historical construction or Core lowering")))]
+    (with-redefs [bootstrap/sh03-reader-resolve-source-path (constantly reader)
+                  bootstrap/read-gravity-source-text
+                  (fn [selected] (swap! calls conj [:read selected]) "source")
+                  bootstrap/compiler-c5-resolution-source-artifact
+                  (fn [& arguments] (swap! calls conj [:construct (vec arguments)]) resolved)
+                  bootstrap/sh07-core-authenticated-request
+                  (fn [& arguments] (swap! calls conj [:request (vec arguments)]) {})
+                  bootstrap/sh06-resolution-source-artifact deny
+                  bootstrap/sh07-core-from-resolution-artifact deny]
+      (let [result (proof-census/census subject {:reader :development-current})]
+        (is (= [[:read canonical]
+                [:construct [canonical "source"
+                             {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                             reader invocation]]
+                [:request [resolved :gravity.bootstrap/legacy invocation]]]
+               @calls))
+        (is (= canonical (:source-path result)))
+        (is (not-any? #(contains? result %) [:invocation :context :authenticated-envelope-options]))
+        (is (not-any? #(contains? (:request result) %) [:invocation :context :authenticated-envelope-options]))
+        (is (false? (:performed-sh07-lowering? result)))))))
+
+(deftest census-omitted-and-empty-options-preserve-historical-routing
+  (let [subject "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys.gravity"
+        source (slurp subject :encoding "UTF-8")
+        calls (atom [])
+        resolved {:routing-only true}
+        deny (fn [& _] (throw (AssertionError. "unexpected current-source selection")))]
+    (with-redefs [bootstrap/sh06-resolution-source-artifact
+                  (fn [& arguments] (swap! calls conj [:construct (vec arguments)]) resolved)
+                  bootstrap/sh07-core-authenticated-request
+                  (fn [& arguments] (swap! calls conj [:request (vec arguments)]) {})
+                  bootstrap/sh03-reader-resolve-source-path deny
+                  bootstrap/compiler-c5-resolution-source-artifact deny
+                  bootstrap/read-gravity-source-text deny]
+      (doseq [call [#(proof-census/census subject) #(proof-census/census subject {})]]
+        (reset! calls [])
+        (let [result (call)]
+          (is (= [[:construct [subject source]] [:request [resolved]]] @calls))
+          (is (= subject (:source-path result))))))))

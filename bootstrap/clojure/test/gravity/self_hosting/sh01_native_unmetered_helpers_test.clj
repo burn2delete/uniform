@@ -447,3 +447,68 @@
         (is (= :metadata-free-canonical-value
                (failure #(cursor path (with-meta (clojure.lang.Cons. :head lazy-tail) {:present true})))))))
     (is (zero? @calls))))
+
+(defn- c11-carrier [value]
+  (b/p15-s23-c11-mir-bounded-value! path :native-c11-test value))
+
+(deftest native-c11-carriers-have-semantic-validation-without-accounting
+  (let [deny (fn [& _] (throw (AssertionError. "obsolete runtime accounting")))
+        shared {:text "λ🙂" :value 3/4}
+        large [(vec (repeat 32769 nil)) (nth (iterate vector nil) 257)
+               (apply str (repeat 65537 "x"))
+               (.shiftLeft BigInteger/ONE 4097)
+               (BigDecimal. BigInteger/ONE 65537)]]
+    (with-redefs [b/p15-s23-reference-runtime-bounded-value! deny]
+      (doseq [value (into large [[shared shared] (list shared shared)
+                                (clojure.lang.Cons. shared (list shared))
+                                (sorted-map :a 1) (sorted-set 1 2)
+                                (float 1.25) (double 1.25)])]
+        (is (= {:status :passed} (c11-carrier value)))
+        (is (= {:status :passed}
+               (b/p15-s23-c11-mir-bounded-value!
+                path :native-c11-test value (Object.) nil)))))))
+
+(deftest native-c11-carriers-reject-invalid-unicode-native-shapes-and-cycles
+  (let [calls (atom 0)
+        deny (fn [] (swap! calls inc) (throw (AssertionError. "foreign callback")))
+        foreign (foreign-map deny)
+        lazy-tail (lazy-seq (deny) (list :unreachable))]
+    (doseq [value [(Object.) foreign [foreign] (cycle-map)
+                   (with-meta [1] {:present true})
+                   (sorted-map-by (fn [_ _] (deny)))
+                   (clojure.lang.Cons. :head lazy-tail)
+                   (clojure.lang.Ratio. BigInteger/ONE BigInteger/ZERO)]]
+      (is (= :valid-native-c11-carrier (failure #(c11-carrier value)))))
+    (doseq [value [(str (char 0xd800)) (char 0xd800)
+                   (symbol (str "name" (char 0xd800)))
+                   (keyword (str "name" (char 0xdc00)))]]
+      (is (= :well-formed-unicode-c11-carrier (failure #(c11-carrier value)))))
+    (is (zero? @calls))))
+
+(deftest native-carrier-traversal-is-stack-safe-for-large-finite-shapes
+  ;; Finite host-limit evidence, not a guarantee for arbitrary heap sizes.
+  (doseq [value [(nth (iterate vector nil) 4096)
+                 (into '() (range 32769))]]
+    (is (= {:status :passed} (c11-carrier value))))
+  (with-redefs [b/p15-s23-trusted-carrier-validation
+                (fn [& _] (throw (StackOverflowError. "contained-native-test")))]
+    (is (= :contained-c11-carrier-host-stack (failure #(c11-carrier nil))))))
+
+(deftest native-carrier-validation-retains-main-mir-scope-and-ingress-semantics
+  (let [scope (b/p15-s23-c11-mir-scope-record)
+        contract-scope (:scope (b/p15-s23-c11-mir-pass-contract-record))
+        quotas {:maximum-module-carrier-nodes b/p15-s23-c11-mir-max-carrier-nodes
+                :maximum-final-artifact-carrier-nodes b/p15-s23-c11-mir-max-final-artifact-carrier-nodes
+                :maximum-carrier-depth b/p15-s23-c11-mir-max-carrier-depth}]
+    ;; Scope migration belongs to the separate producer-qualified successor.
+    (is (= quotas (select-keys scope (keys quotas))))
+    (is (= quotas (select-keys contract-scope (keys quotas))))
+    (is (= 1 (:maximum-conditionals scope)))
+    (doseq [value [(vec (repeat 32769 nil)) (nth (iterate vector nil) 4096)]]
+      ;; Even a valid native carrier cannot supply absent Core authority.
+      (let [report (try (b/p15-s23-stage2-c11-mir-verification-report
+                         value nil {:source-path path})
+                       nil
+                       (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= "C11-MODULE" (:id report)))
+        (is (= :authenticated-checked-core-ingress-pair (:missing-fact report)))))))
