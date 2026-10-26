@@ -343,7 +343,19 @@
   "bootstrap/clojure/test/gravity/self_hosting/source_fragment_binding_test.clj"
   {:namespace gravity.self-hosting.source-fragment-binding-test
    :slice "SH-07"
-   :owner :sh-core}}
+   :owner :sh-core}
+  "bootstrap/clojure/test/gravity/self_hosting/mir_scalar_admission_test.clj"
+  {:namespace gravity.self-hosting.mir-scalar-admission-test
+   :slice "SH-12"
+   :owner :sh-mir}
+  "bootstrap/clojure/test/gravity/self_hosting/mir_source_snapshot_test.clj"
+  {:namespace gravity.self-hosting.mir-source-snapshot-test
+   :slice "SH-07"
+   :owner :sh-core}
+  "bootstrap/clojure/test/gravity/self_hosting/resolution_construction_inputs_test.clj"
+  {:namespace gravity.self-hosting.resolution-construction-inputs-test
+   :slice "SH-06"
+   :owner :sh-resolution}}
 
  :reserved-leaf-modules
  {

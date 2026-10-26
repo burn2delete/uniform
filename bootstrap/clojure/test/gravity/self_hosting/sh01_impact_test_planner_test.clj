@@ -456,10 +456,15 @@
                 "stage2_module_loop_call" "stage2_module_map_call"
                 "stage2_module_map_order" "stage2_module_transitive_call"
                 "stage2_module_vector_call" "pass_execution_canonical_sort"
-                "source_fragment_binding"]]
+                "source_fragment_binding" "mir_scalar_admission"
+                "mir_source_snapshot" "resolution_construction_inputs"]]
     (let [relative (str "bootstrap/clojure/test/gravity/self_hosting/" stem "_test.clj")
           namespace (symbol (str "gravity.self-hosting." (str/replace stem "_" "-") "-test"))
-          slice (if (= stem "source_fragment_binding") "SH-07" "SH-01")
+          slice (case stem
+                  ("source_fragment_binding" "mir_source_snapshot") "SH-07"
+                  "mir_scalar_admission" "SH-12"
+                  "resolution_construction_inputs" "SH-06"
+                  "SH-01")
           plan (planner/build-plan {:changed-paths [relative] :expand-dependants? true})
           namespace-plan (planner/build-namespace-plan [namespace])
           shard (first (:shards plan))]
