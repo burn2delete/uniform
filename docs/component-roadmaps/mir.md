@@ -42,6 +42,11 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
+Implementation task authority: [Spec Kit ledger](../../specs/mir-workflow/tasks.md#implementation-tasks).
+The following table is generated; edit the ledger and run
+`clojure -M tools/mir_task_projection.clj --write`.
+
+<!-- mir-task-projection:start -->
 | Task | Status | Concrete exit evidence |
 | --- | --- | --- |
 | mir/1: Construct semantic MIR | Open; partial source evidence above is not closure | Lower checked-core control flow, calls/closures, data, memory/regions/resources, errors, FFI/concurrency and declared domain/workflow/AI operations without target-specific instructions. |
@@ -49,6 +54,7 @@ release acceptance.
 | mir/3: Verify graph and legality | Open; partial source evidence above is not closure | Check block termination, dominance, operand schemas, effect ordering, guard dominance, resource facts and valid domain anchors; reject missing or stale evidence. |
 | mir/4: Serialize stable modules | Open; partial source evidence above is not closure | Round-trip operations and shared tables with deterministic identity and preserve analysis invalidation hooks. |
 | mir/5: Gate downstream consumption | Open; partial source evidence above is not closure | Run actual verifier on constructed and mutated MIR; retain positive and negative artifacts for malformed flow, missing facts, target leaks and invalid origins before Opt/Lower consumption. |
+<!-- mir-task-projection:end -->
 
 The tasks above are the canonical remaining list for this outcome. Close a row
 only with the exact source revision, actual invocation/result and relevant
