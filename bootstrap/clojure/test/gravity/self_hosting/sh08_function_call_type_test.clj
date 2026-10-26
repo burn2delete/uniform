@@ -6248,7 +6248,7 @@
             derive #(invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms %])
             result (derive 65536) premise (:premise result) row (invoke-c7 'sh08-lr-row [premise])]
         (is (= :accepted (:status result)) (pr-str result))
-        (is (= :sh08-homogeneous-list-return-v1 (:version premise)))
+        (is (= :sh08-homogeneous-list-return-v2 (:version premise)))
         (is (= :all-positional-elements-match (:relation premise)))
         (is (= [(positional members) declared-type (count members)]
                [(:actual-body-type premise) (:declared-return-type premise) (:checked-element-count premise)]))
@@ -6297,7 +6297,7 @@
           (is (= type (:return returned)))
           (is (= (positional [s]) (:return-actual-type returned)))
           (is (nil? (:return-conflict returned)))
-          (is (= :sh08-homogeneous-list-return-v1 (get-in returned [:return-compatibility :version])))
+          (is (= :sh08-homogeneous-list-return-v2 (get-in returned [:return-compatibility :version])))
           (is (= 1 (count (:constraints result))))
           (is (= result (update (:work-count result))))
           (is (= :list-return-work-limit (get-in (update (dec (:work-count result))) [:diagnostics 0 :reason])))))
