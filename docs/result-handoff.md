@@ -86,3 +86,61 @@ No C2/C7/C12/Native/MIR acceptance execution is needed for this tooling change.
 Independent review and integration are pending until an exact candidate and
 validation receipt are supplied. No cleanup completion is inferred from this
 document or the existence of the packet format.
+
+## Observed implementation receipts
+
+The tested candidate is `81f5002766867de6e5f40b03b14801d9784e18b3`, tree
+`4017dc86f4502e7e85d17563df62df21bfc769f3`, based on the audited main above.
+Git commit/tree and empty tracked/untracked status matched before and after.
+The existing repository-common and host brokers admitted normal-class execution;
+no heavy proof was run. The following children exited naturally with no timeout:
+
+| Exact command | Result | Elapsed |
+| --- | --- | --- |
+| `clojure -J-Xmx256m -M tools/result_handoff_test.clj` | Exit 0; 4 tests, 51 assertions, zero failures/errors | 649 ms |
+| `clojure -J-Xmx256m -M tools/validate_gravity_docs.clj` | Exit 0; 240 docs, 19 phase indexes, ASCII, no placeholders | 1378 ms |
+| `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test` | Exit 0; 6 tests, 11 assertions, zero failures/errors, one namespace attempted, none skipped | 1046 ms |
+
+The exact tool SHA256 is
+`2e4e2a3a4331551992db2aa8386837ec0214cfaa7ff96855a4ba49a9d71c357e`;
+test SHA256 is
+`e94779d1560a66a749ed702eb5f942057a9ea9d004f02d6ec2e5156971a8e8fa`.
+Git blobs are `ba97b93e3f93d4e982ed502677f07d4880c2fc06` and
+`9fcc23880aaacda721edb8928ffd681592442d73`, respectively. A subsequent
+receipt-documentation-only commit does not represent another execution.
+
+An actual retained owner diagnosis was independently selected through `-main`
+and read back with six assertions, natural exit 0. It was not replayed. Original
+receipt: 1289 bytes, SHA256
+`319746b2a20319373f49f3897f03d2aa4e707d2167529c0426a1e7870fec4d89`.
+Private selection-plan SHA256:
+`7227886aa639abc306389714d1eb7a74cb557e665eee0b38afe648fd14e7fab7`.
+Public-safe packet SHA256:
+`d04cae3819f4e7328b59441f72232cd29f62205acee97eae01413a14fd18f1d7`.
+The packet retains `:authority :none`, `:new-execution false` and
+`:observation-source :retained-producer-receipts`. Selected paths/values were:
+
+| Original receipt path | Preserved observation |
+| --- | --- |
+| `[:baseline :commit]` / `[:baseline :tree]` | `4c5aac01190e52fe013909437987071826492d5e` / `f26326954ebeb71bf807a7177257242e776f87eb` |
+| `[:baseline :status]` | Empty producer Git status, projected as true |
+| `[:matrix :exit]` / `[:matrix :elapsed-ms]` | Reported exit 1 / 24880 ms |
+| `[:matrix :result-sha256]` | `4914ab9362a3e6b4f2e3b3b22796df015994343ec78ae1f38b863de84c512ce6` |
+| `[:capacity-nonexecution :child-started]` | False |
+| `[:whole-source-authentication]` / `[:publication]` | False / false |
+
+This is consumption of failed and nonexecuted historical observations, not
+acceptance of the product or independent reproduction of the producer result.
+The synthetic CLI roundtrip also rejects changing the receipt after pinning its
+bytes. Private original evidence and paths remain with the producer.
+
+An independent assurance reviewer inspected the initial exact source candidate
+`405878a22728ab655987662616a4a027a347696f`, tree
+`c8e32cc1731cb6998c040024e58084ac4ff27baa`, finding no blocking defect within
+the documented trusted-evidence boundary. That source blob is unchanged in the
+tested successor. Review of the added CLI test and final documentation is still
+pending at this receipt revision. The review is static; it does not claim an
+independent test rerun. [Draft PR 428](https://github.com/burn2delete/uniform/pull/428)
+preserves unfinished review/integration work. Full compiler, authoritative
+migration, restricted executions, runtime safety and release acceptance are
+unrun and outside this tooling increment.
