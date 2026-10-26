@@ -15534,7 +15534,7 @@
     (is (zero? @callbacks))))
 
 (deftest current-gravity-nil-predicate-lowering-runtime-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'nil-predicate-input)
         derive (ns-resolve upstream 'nil-predicate-derived)
@@ -15562,8 +15562,16 @@
                   {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/string]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
-      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+      (let [{:keys [core node nodes forms bindings types module call edge] :as input} (input-fn [type])
             result (derive input 65536) descriptor (:descriptor result)
+            validation (lower 'p15-s23-lc-type-work [type] 65536)
+            body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+            effect-validation (body 'body-lc-type-work [type] 65536)
+            source-arguments [core node call edge nodes bindings types module]
+            emitter-descriptor (lower 'p15-s23-nilp-finish
+                                 (apply lower 'p15-s23-nilp-source (conj source-arguments validation)))
+            effect-descriptor (body 'body-nilp-finish
+                                (apply body 'body-nilp-source (conj source-arguments effect-validation)))
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -15571,6 +15579,8 @@
                      :ledger [(c7 'sh08-nilp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call %2)
             compiled (compile context 65536)]
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= descriptor emitter-descriptor effect-descriptor))
         (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
         (when-not (= :complete (:status compiled))
           (throw (ex-info "Nil predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
@@ -15638,6 +15648,7 @@
                          (assoc descriptor :direct-effects [:memory/allocate])
                          (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
                          (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :operand-type-work (:work-count validation))
                          (assoc-in descriptor [:nil-query-classification :version] :forged)
                          (assoc-in descriptor [:nil-query-classification :operand-type] :gravity.type/unknown)
                          (assoc-in descriptor [:nil-query-classification :case] :forged)
