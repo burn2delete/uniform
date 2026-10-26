@@ -146,14 +146,24 @@ and required freshness. The namespace is now discoverable under that owner.
 Its established source execution needs the common host broker, host-exclusive
 and canonical-heavy guards. No committed route currently represents all three.
 Plans therefore retain the namespace and explicitly mark execution unsupported.
-The existing parallel runner recomputes that policy and rejects before
-scheduling, broker acquisition or launch, even if a caller omits or forges the
-shard marker or relabels the job exclusive. Owner-local guarded execution remains
-separate; this mapping does not claim Runtime acceptance or authorize a generic
-source run. No new runner or resource-limit substitution is introduced.
+The existing parallel runner recomputes that policy at plan normalization and
+both namespace-oriented process entrypoints (`run-namespace-process` and
+`run-normal-batch-process`). It rejects before scheduling, broker acquisition
+or launch, even if a caller omits or forges the shard marker, supplies a string
+namespace or relabels the job exclusive. The established owner-local wrapper
+uses the separate explicit-command process API with all three guards already
+held; compatibility with this successor has not been executed. This mapping
+does not claim Runtime acceptance or authorize a generic source run. No new
+runner or resource-limit substitution is introduced.
 
 Planner validation passed 60 tests / 537 assertions. The exact injected runner
 negative passed 1 / 13 with zero worker/launcher calls. The initial design that
 rejected plan construction also blocked six legitimate discovery tests; it was
 replaced by preserved plan discovery and rejection at actual execution admission.
 That nonpassing intermediate result remains history, not acceptance evidence.
+An independent source review then found that the direct single/batch process
+APIs could bypass the initial plan-only check. The shared policy check now
+covers those entrypoints too. Three selected injected runner tests passed
+3 tests / 55 assertions: plan rejection, direct entrypoint zero-launch
+controls and an ordinary single-process positive control. No real Runtime
+provider or subprocess cleanup test was executed for these injected controls.
