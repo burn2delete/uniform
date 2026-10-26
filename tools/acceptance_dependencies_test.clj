@@ -30,6 +30,19 @@
     (is (thrown? Exception (dependencies/full-language-graph (str/replace text "none." "the next successor."))))
     (is (thrown? Exception (dependencies/full-language-graph (str/replace text "Dependencies:" "Prerequisite:"))))))
 
+(deftest missing-terminal-and-malformed-task-rows-reject
+  (let [text (slurp dependencies/roadmap-path)
+        without-leaf (str/replace text #"(?m)^- \[ \] `FL-P18-T01`[^\n]*\n" "")]
+    (is (thrown? Exception
+                 (dependencies/require-population! dependencies/full-language-task-ids
+                   (keys (dependencies/full-language-graph without-leaf)) "full-language task")))
+    (doseq [bad ["- [] `FL-P18-T01`" "- [ ] FL-P18-T01" "- [y] `FL-P18-T01`"]]
+      (is (thrown? Exception (dependencies/full-language-graph
+                             (str/replace text "- [ ] `FL-P18-T01`" bad)))))
+    (is (thrown? Exception
+                 (dependencies/require-population! dependencies/full-language-task-ids
+                   (conj (disj dependencies/full-language-task-ids "FL-P18-T01") "FL-P18-T99") "full-language task")))))
+
 (deftest staged-edges-preserve-every-executable-prerequisite
   (let [original {"producer" #{"consumer"} "consumer" #{"producer"}}
         staged (dependencies/staged-graph original)]

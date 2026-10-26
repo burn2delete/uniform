@@ -8,8 +8,26 @@
 (def roadmap-path "docs/full-language-implementation-gap-map.md")
 (def milestone-path "docs/self-hosting-milestone-completion-plan.md")
 
+;; Fixed existing completion population, not a quota on new language work.
+;; Any intentional population amendment must update its owning roadmap and this
+;; explicit identity set in the same reviewed change; deleting a leaf is not closure.
+(def full-language-task-ids
+  #{"FL-P00-T00" "FL-P00-T01" "FL-P00-T02"
+    "FL-P01-T01" "FL-P01-T02" "FL-P01-T03"
+    "FL-P02-T01" "FL-P02-T02" "FL-P03-T01" "FL-P03-T02"
+    "FL-P04-T01" "FL-P04-T02" "FL-P05-T01" "FL-P05-T02"
+    "FL-P06-T01" "FL-P06-T02" "FL-P06-T03"
+    "FL-P07-T01" "FL-P07-T02" "FL-P08-T01" "FL-P08-T02"
+    "FL-P09-T01" "FL-P10-T01" "FL-P11-T01" "FL-P12-T01"
+    "FL-P13-T01" "FL-P13-T02" "FL-P14-T01" "FL-P14-T02"
+    "FL-P15-T01" "FL-P15-T02" "FL-P15-T03" "FL-P16-T01"
+    "FL-P17-T01" "FL-P18-T01" "FL-P18-T02"})
+
 (defn require! [condition message]
   (when-not condition (throw (ex-info message {:diagnostic "ACCEPTANCE-DEPENDENCY"}))))
+
+(defn require-population! [expected actual label]
+  (require! (= expected (set actual)) (str "Missing or unknown " label " identity")))
 
 (defn full-language-graph [text]
   (let [phases (vec (for [[_ phase body]
@@ -18,6 +36,12 @@
                       :ids (mapv second (re-seq #"(?m)^- \[[ xX]\] `(FL-P\d{2}-T\d{2})`" body))}))
         ids (vec (mapcat :ids phases))]
     (require! (and (seq ids) (= (count ids) (count (set ids)))) "Missing or duplicate full-language task IDs")
+    (doseq [{:keys [phase body ids]} phases]
+      (require! (and (seq ids) (every? #(str/starts-with? % (str "FL-P" phase "-")) ids))
+                (str "Missing or wrong-phase task IDs: " phase))
+      (doseq [line (re-seq #"(?m)^- \[[^\n]*" body)]
+        (require! (re-matches #"- \[[ xX]\] `FL-P\d{2}-T\d{2}` .+" line)
+                  (str "Malformed task row: " line))))
     (into (sorted-map)
           (mapcat (fn [{:keys [phase body ids]}]
                     (let [declaration (second (re-find #"(?s)Dependencies: (.*?)(?:\n\n|\z)" body))
@@ -39,7 +63,8 @@
 (defn milestone-graph [text]
   (let [rows (re-seq #"(?m)^\| \[?(SH-\d{2})\]?[^|]*\|[^|]*\| ([^|]+)\|[^|]*\|$" text)
         ids (mapv second rows)]
-    (require! (and (= 30 (count ids)) (= (count ids) (count (set ids))))
+    (require! (and (= (set (map #(format "SH-%02d" %) (range 30))) (set ids))
+                   (= (count ids) (count (set ids))))
               "Missing or duplicate milestone rows")
     (into (sorted-map)
           (for [[_ id dependencies] rows]
@@ -153,6 +178,7 @@
   (let [roadmap (slurp roadmap-path)
         milestones (slurp milestone-path)
         graph (validate-graph (full-language-graph roadmap))
+        _ (require-population! full-language-task-ids (keys graph) "full-language task")
         _ (require! (and (str/includes? roadmap "### Dependency stages and finite acceptance")
                          (every? #(str/includes? roadmap %) ["| Interface |" "| Implementation |" "| Composition |" "| Acceptance |"
                                                                   "Every original dependency survives at composition."]))

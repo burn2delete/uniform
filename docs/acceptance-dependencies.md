@@ -89,6 +89,10 @@ connected sets (including self edges), and demonstrates that every original
 prerequisite remains an executable composition input. It rejects missing or
 duplicate IDs, unknown dependency syntax, malformed implementation regions,
 unknown prerequisites, SH cycles and a cyclic staged graph. It never treats
+deleted unreferenced leaf tasks as closure: the real audit enforces the explicit
+existing 36 task identities and SH-00 through SH-29, with malformed-row controls.
+An intentional population amendment requires an owning-contract change and
+independent review of the new identities. The checker never treats
 zero staged cycles as proof that the components run or that all prose has been
 formalized. Newly discovered semantic dependencies require explicit owning
 contract updates; they cannot be hidden by a green structural report.
