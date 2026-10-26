@@ -14821,7 +14821,7 @@
                (evaluate {:op :builtin-call :function 'count :args [{:op :do :body [say {:op :throw :value {:op :literal :value :problem}}]}]})))))))
 
 (deftest current-gravity-map-predicate-lowering-runtime-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'map-predicate-input)
         derive (ns-resolve upstream 'map-predicate-derived)
@@ -14842,8 +14842,16 @@
     (doseq [type [:gravity.type/map :gravity.type/keyword :gravity.type/never
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
-      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+      (let [{:keys [core node nodes forms bindings types module call edge] :as input} (input-fn [type])
             result (derive input 65536) descriptor (:descriptor result)
+            validation (lower 'p15-s23-lc-type-work [type] 65536)
+            body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+            effect-validation (body 'body-lc-type-work [type] 65536)
+            source-arguments [core node call edge nodes bindings types module]
+            emitter-descriptor (lower 'p15-s23-mapp-finish
+                                 (apply lower 'p15-s23-mapp-source (conj source-arguments validation)))
+            effect-descriptor (body 'body-mapp-finish
+                                (apply body 'body-mapp-source (conj source-arguments effect-validation)))
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -14851,6 +14859,8 @@
                      :ledger [(c7 'sh08-mapp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call %2)
             compiled (compile context 65536)]
+        (is (not (contains? descriptor :operand-type-work)))
+        (is (= descriptor emitter-descriptor effect-descriptor))
         (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
         (when-not (= :complete (:status compiled))
           (throw (ex-info "Map predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
@@ -14868,7 +14878,8 @@
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
                          (assoc descriptor :direct-effects [:memory/allocate])
                          (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
-                         (assoc descriptor :operand-type-work 0)]]
+                         (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :operand-type-work (:work-count validation))]]
           (let [forged (-> context (assoc-in [:types :operator] changed)
                            (assoc :call-facts {:call (c7 'sh08-mapp-call-fact [changed module])}
                                   :ledger [(c7 'sh08-mapp-constraint [changed])]))]
