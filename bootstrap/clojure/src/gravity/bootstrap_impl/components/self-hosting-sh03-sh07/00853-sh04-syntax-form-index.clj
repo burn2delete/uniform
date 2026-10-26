@@ -70,14 +70,16 @@
           (let [index (original)]
             ;; Preserve the original eager construction before qualification,
             ;; including malformed/opaque callbacks and last-wins behavior.
-            (when (and (identical? clojure.lang.PersistentVector (class records))
+            (when (and (sh04-syntax-form-index-roots-current?)
+                       (identical? clojure.lang.PersistentVector (class records))
                        (sh04-syntax-native-keyword-map? index)
                        (let [iterator (.iterator ^java.lang.Iterable records)]
                          (loop []
                            (if (.hasNext iterator)
                              (let [record (.next iterator)]
                                (and (sh04-syntax-native-keyword-map? record)
-                                    (identical? clojure.lang.Keyword (class (get record id-key)))
+                                    (identical? clojure.lang.Keyword
+                                                (class (.valAt ^clojure.lang.ILookup record id-key)))
                                     (recur)))
                              true))))
               (vreset! (:slot transaction)

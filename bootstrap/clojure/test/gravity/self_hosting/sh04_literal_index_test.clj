@@ -124,3 +124,22 @@
           (is (= [forms tokens] fresh))
           (is (not (identical? forms (first fresh))))
           (is (not (identical? tokens (second fresh)))))))))
+
+(deftest opaque-collision-cannot-introduce-a-post-build-get-callback
+  (doseq [[factory field id] [[b/c3-form-index :form-tree :form-id] [b/c3-token-index :token-stream :token-id]]]
+    (let [original @#'clojure.core/get calls (atom 0) owner (ex-info "get must not be introduced" {})
+          changed (fn [& _] (swap! calls inc) (throw owner))
+          native :same
+          opaque (proxy [Object clojure.lang.IHashEq] []
+                   (hashCode [] (.bindRoot #'clojure.core/get changed) (.hashCode native))
+                   (hasheq [] (.bindRoot #'clojure.core/get changed) (.hasheq ^clojure.lang.IHashEq native))
+                   (equals [other] (identical? native other)))
+          records (into [{id native :value 1}]
+                        (concat (map #(hash-map id (keyword (str "other" %))) (range 20)) [{id opaque :value 2}]))
+          a {field records}
+          result (transaction a
+                   (fn [slot]
+                     (try [(outcome #(factory a)) @slot]
+                          (finally (.bindRoot #'clojure.core/get original)))))]
+      (is (= :returned (ffirst result)))
+      (is (zero? @calls)) (is (nil? (second result))))))
