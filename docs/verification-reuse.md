@@ -381,3 +381,59 @@ not read the new tool because of an unmatched delimiter; no new controls or
 source audit ran in that attempt. That nonpass is retained. Independent source
 and representation review, documentation/language gates and integration remain
 pending for this unit. Whole RV1/RV4 closure is not implied.
+
+### Startup resources before the child cache decision
+
+The initialization observations and audit-only format were integrated through
+PR443 as `a1b991be499d50579a8b4366976c519ae8949224`, with full tree identity to
+reviewed `5ccc754b`, tree `5b62819e511bfc7e6b5eba0527d8c9b5883c5572`.
+The small documentation successor retained all three tested tool blobs; only
+document validation was repeated. This does not close the runtime effect proof.
+
+A subsequent startup audit at `f51a43ae267736a81587d81ffe52839c86c02b2d`
+found a consumed resource outside the old narrowed requests. Installed Clojure
+1.12.5 `RT.doInit` calls `maybeLoadResourceScript("user.clj")` before entering
+the runner. The child cache wraps `run-namespaces`; the selected namespace's
+`require` occurs inside that operation. A cache hit therefore does not freshly
+initialize that namespace or observe its live operation bindings.
+
+A copied-closure control added and changed comment-only `user.clj` fixture
+bytes outside the actual classpath. Its absent, present and changed request
+keys were equal on the old code. No startup code was executed and no production
+stale hit was observed. The source/runtime trace establishes the omitted input;
+the older producer observations retain their original scope and do not prove
+startup closure completeness.
+
+The correction keeps tests fresh for an unreviewed startup domain. Single and
+batch command construction omit the optional cache argument when project
+classpath roots contain `user.clj` or a `clojure/` override location, before the
+child JVM starts. Standard-library overrides are conservatively outside the
+reviewed domain; this is not proof that every file below that prefix is used.
+The child independently checks project locations and the currently resolved
+`user.clj` resource, including external resources. Unknown observations also
+stay fresh, and effective-runtime revalidation repeats that check across the
+operation and hit boundary. These presence observations are not atomic
+attestation or proof of prior nonexecution.
+
+The existing closed cache-option validator is shared by the command builders
+and child parser. Only a valid optional cache argument may be omitted. Malformed
+arguments stay on the child's original `SH01-TEST-USAGE` refusal path; they
+cannot become a successful fresh run by having their invalid option dropped.
+The fields, CLI data validation and target selection are unchanged. Existing
+cache refusal/error handling remains in place for eligible cache attempts;
+unsupported startup configurations run fresh without probing that state.
+No flat closure bound, roles, inventories or public-verification
+authority is changed, and no bootstrap-dependent selection gains narrowed reuse.
+
+New controls cover both project roots, startup source locations, standard-library
+override locations, dangling links, both command builders, malformed-option
+refusal, resolved external startup resources and observation errors. Injected
+child controls require fresh execution with zero cache lookups and no runtime
+measurement when startup resources are unreviewed. Wiring passed 45 tests /
+507 assertions. The first attempt could not compile the new test because its
+`clojure.java.io` alias was missing; no controls ran, and that nonpass is retained.
+Three selected injected runner controls passed 3 tests / 104 assertions;
+language boundary passed 6 / 11 and documents passed 240 / 19. Independent
+review and integration are pending. Complete
+bootstrap initialization/resource closure, a separately reviewed cache
+representation, producer evidence and RV1/RV4 remain open.

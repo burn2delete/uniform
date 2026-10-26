@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh01-development-loop-wiring-test
   (:require [clojure.edn :as edn]
             [clojure.test :refer [deftest is testing]]
+            [clojure.java.io :as io]
             [clojure.java.shell :as shell]
             [clojure.string :as str]
             [gravity.self-hosting.sh01-development-test-cache :as cache]
@@ -1041,6 +1042,94 @@
                         (cache/cache-key (:development-cache-request renewed))))
               (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
               (is (= 2 @calls)))))))))
+
+(deftest project-startup-resource-absence-is-explicit-and-link-safe
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")]
+      (Files/createDirectories root no-file-attributes)
+      (is (true? (wiring/project-startup-resources-absent? root)))
+      (doseq [relative ["bootstrap/clojure/src/user.clj"
+                        "bootstrap/clojure/test/user.clj"
+                        "bootstrap/clojure/src/clojure/core/server.clj"
+                        "bootstrap/clojure/test/clojure/core/server.clj"]]
+        (let [path (.resolve root relative)
+              cleanup (if (str/includes? relative "/clojure/core/")
+                        (.getParent (.getParent path)) path)]
+          (Files/createDirectories (.getParent path) no-file-attributes)
+          (try
+            ;; These are inert fixture bytes outside the actual classpath.
+            (spit (str path) "; startup fixture\n")
+            (is (false? (wiring/project-startup-resources-absent? root)) relative)
+            (finally
+              (if (Files/isDirectory cleanup no-links) (delete-tree! cleanup)
+                  (Files/deleteIfExists cleanup))))))
+      (let [path (.resolve root "bootstrap/clojure/src/user.clj")]
+        (Files/createSymbolicLink path (.resolve base "absent-target.clj") no-file-attributes)
+        (is (false? (wiring/project-startup-resources-absent? root)))
+        (Files/delete path))
+      (spit (str (.resolve root "bootstrap/clojure/src/user.cljc")) "; not the RT startup name\n")
+      (is (true? (wiring/project-startup-resources-absent? root))))))
+
+(deftest startup-resources-disable-command-reuse-before-child-startup
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          namespace 'gravity.compiler-pass-manifest-test
+          cache-options {:cache-directory (str (.resolve base "cache"))
+                         :timeout-ms 1000 :repository-identity snapshot-id}
+          options {:working-directory (str root) :child-development-cache cache-options}
+          commands (fn [opts]
+                     [(runner/namespace-command namespace opts)
+                      (runner/normal-batch-command [{:namespace namespace}]
+                                                  (str (.resolve base "report.edn")) opts)])]
+      (Files/createDirectories root no-file-attributes)
+      (doseq [command (commands options)]
+        (is (some #{"--development-cache"} command)))
+      (let [startup (.resolve root "bootstrap/clojure/src/user.clj")]
+        (Files/createDirectories (.getParent startup) no-file-attributes)
+        (spit (str startup) "; never executed\n")
+        (doseq [command (commands options)]
+          (is (not-any? #{"--development-cache"} command))
+          (is (some #{"--namespace"} command)))
+        ;; Dropping a malformed optimization would hide its existing refusal.
+        (doseq [invalid [(assoc cache-options :extra true)
+                         (assoc cache-options :timeout-ms 0)
+                         (dissoc cache-options :repository-identity)]
+                command (commands (assoc options :child-development-cache invalid))]
+          (is (some #{"--development-cache"} command))
+          (is (= "SH01-TEST-USAGE"
+                 (:id (exception-data #(child-runner/select-tests (vec (drop 2 command))))))))))))
+
+(deftest resolved-startup-resources-and-observation-errors-bypass-all-cache-lookup
+  (let [resource io/resource
+        runtime-var (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                'effective-child-runtime)
+        operations (atom 0)
+        measurements (atom 0)
+        lookups (atom 0)]
+    (doseq [startup [(java.net.URL. "file:/unopened-startup-fixture") ::unavailable]]
+      (with-redefs-fn
+        {#'io/resource (fn [name]
+                         (if (= "user.clj" name)
+                           (if (= ::unavailable startup)
+                             (throw (ex-info "fixture resource lookup failed" {})) startup)
+                           (resource name)))
+         runtime-var (fn [& _] (swap! measurements inc)
+                       (throw (ex-info "runtime measurement must not run" {})))
+         #'cache/lookup-or-run! (fn [& _] (swap! lookups inc)
+                                 (throw (ex-info "cache lookup must not run" {})))}
+        (fn []
+          (dotimes [_ 2]
+            (let [result (wiring/run-child-unit!
+                          ['gravity.compiler-pass-manifest-test]
+                          {:arguments ["not-the-actual-cli"]}
+                          #(do (swap! operations inc) {:status :passed :exit-code 0}))]
+              (is (true? (:tests-executed? result)))
+              (is (false? (:child-cache-hit? result)))
+              (is (= :unreviewed-startup-resources (get-in result [:child-cache-receipt :reason])))
+              (is (false? (get-in result [:child-cache-receipt :stored?]))))))))
+    (is (= 4 @operations))
+    (is (zero? @measurements))
+    (is (zero? @lookups))))
 
 (deftest child-jvm-file-loading-and-unknown-options-stay-fresh
   (let [supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring

@@ -1444,6 +1444,34 @@
         (recur (next remaining) (conj result argument)))
       result)))
 
+(defn project-startup-resources-absent?
+  "True only when known project-classpath startup override locations are absent.
+  This is a current filesystem observation, not proof of prior nonexecution."
+  [working-directory]
+  (try
+    (let [root (.normalize
+                (.toAbsolutePath
+                 (if (instance? Path working-directory) working-directory
+                     (.toPath (io/file working-directory)))))]
+      (every? #(Files/notExists (.resolve root ^String %) no-links)
+              ["bootstrap/clojure/src/user.clj"
+               "bootstrap/clojure/test/user.clj"
+               "bootstrap/clojure/src/clojure"
+               "bootstrap/clojure/test/clojure"]))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
+(defn- child-startup-resources-absent? [working-directory]
+  (try
+    (and (project-startup-resources-absent? working-directory)
+         (nil? (io/resource "user.clj")))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
 (defn- effective-child-runtime
   [working-directory arguments]
   (try
@@ -1465,6 +1493,7 @@
           internal (filterv #(.startsWith ^Path % root) classpath-paths)
           internal-relative (mapv #(str (.relativize root ^Path %)) internal)]
       (when (and (map? current)
+                 (child-startup-resources-absent? working-directory)
                  (= current (basis/initial-basis))
                  (map? config)
                  (every? #{:root :user :project :extra :args :aliases} (keys config))
@@ -1538,7 +1567,8 @@
                                                      :freshness-required?]))))
                           jobs)
         working-directory (System/getProperty "user.dir")
-        runtime (when reviewed?
+        startup-absent? (and reviewed? (child-startup-resources-absent? working-directory))
+        runtime (when (and reviewed? startup-absent?)
                   (effective-child-runtime working-directory arguments))]
     (if-not runtime
       (assoc (operation)
@@ -1548,8 +1578,10 @@
              :child-cache-receipt
              {:decision :fresh :cacheable? false :stored? false
               :producer-executed? true
-              :reason (if reviewed? :unknown-child-configuration
-                          :unreviewed-or-fresh-test-policy)})
+              :reason (cond
+                        (not reviewed?) :unreviewed-or-fresh-test-policy
+                        (not startup-absent?) :unreviewed-startup-resources
+                        :else :unknown-child-configuration)})
       (let [context (assoc (prepare-context working-directory options)
                            :child-runtime-token child-runtime-token)
             _ (when-not (= (:repository-identity options)
