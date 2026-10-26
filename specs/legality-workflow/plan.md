@@ -120,3 +120,13 @@ disposition and repository gates. No implementation outcome closes here.
 
 The new semantic tool names follow existing component entrypoints. No compiler
 API, runtime schema, diagnostic, manifest hash or wire identity changes.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L7](../../docs/phase-01-core-language/017-l7-pattern-matching-specification.md#requirements): Validate owned/linear pattern moves and evidence for trusted closed shapes; structural matching alone does not validate external data.
+- [L11](../../docs/phase-01-core-language/021-l11-concurrency-model-specification.md#requirements): Reject races and invalid shared-mutation/ownership transfer before execution; effect labels alone do not establish concurrency safety.
