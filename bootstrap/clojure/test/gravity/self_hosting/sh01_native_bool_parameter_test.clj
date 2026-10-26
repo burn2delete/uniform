@@ -27,8 +27,11 @@
         value-path [:data-flow-graph :values binder]
         definition-path [:data-flow-graph :definitions binder]
         type-fact (get-in core [:type-facts binder :fact-id])
-        safety-fact (get-in core [:safety-facts binder :outcome-id])
+        safety-fact (:safety-outcome-id (b/p15-s23-c11-mir-node-facts core (first (:core-nodes core))))
         validate #(b/p15-s23-c11-mir-validate-constructed! path %1 %2)]
+    (is (contains? (:safety-table mir) safety-fact))
+    (when-not (contains? (:safety-table mir) safety-fact)
+      (throw (ex-info "Missing genuine binder safety row" {:id "NATIVE-PARAMETER-TEST-PREMISE"})))
     (doseq [[label changed id missing]
             [[:missing-parameter (assoc-in mir [:functions 'main :params] [])
               "C11-MODULE" :authenticated-c11-function-envelope]
