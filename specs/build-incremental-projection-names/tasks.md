@@ -8,6 +8,10 @@ Spec: [spec.md](spec.md). Plan: [plan.md](plan.md). Evidence: [evidence.md](evid
   distinguish passing focused tests from unchanged baseline catalog refusals.
 - [x] Independently review exact implementation `003dbbe6`/tree `ea2d10f8`:
   no blocking findings; baseline limitations retained, no compiler replay claimed.
+- [x] Reconcile normally with main `d6d10012`; preserve reviewed owned blobs,
+  rerun focused leaf/catalog checks and all 12 actual planner requests. Record
+  the repaired catalog paths separately from unchanged nested-helper refusals.
+- [ ] Review the final reconciliation/evidence delta.
 - [ ] Coordinator verifies the final base and merges the accepted finite change.
 
 The public facade and other legacy helpers remain explicit future debt; no

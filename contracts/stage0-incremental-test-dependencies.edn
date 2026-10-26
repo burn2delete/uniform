@@ -385,6 +385,30 @@
    :test-policy {:deterministic? true
                  :performance? false
                  :proof? false
+                 :freshness-required? true}}
+  {:test-id "mir-scalar-admission"
+   :path "bootstrap/clojure/test/gravity/self_hosting/mir_scalar_admission_test.clj"
+   :namespace gravity.self-hosting.mir-scalar-admission-test
+   :jvm-group "mir-scalar-admission"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "mir-source-snapshot"
+   :path "bootstrap/clojure/test/gravity/self_hosting/mir_source_snapshot_test.clj"
+   :namespace gravity.self-hosting.mir-source-snapshot-test
+   :jvm-group "mir-source-snapshot"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "resolution-construction-inputs"
+   :path "bootstrap/clojure/test/gravity/self_hosting/resolution_construction_inputs_test.clj"
+   :namespace gravity.self-hosting.resolution-construction-inputs-test
+   :jvm-group "resolution-construction-inputs"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
                  :freshness-required? true}}]
  :nonclaims
  ["This development dependency map does not replace slice ownership."
