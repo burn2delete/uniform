@@ -33546,13 +33546,10 @@
                 (is (not= (:actual-path-binding-id left)
                           (:actual-path-binding-id wasm)))))
             (testing "pass execution and B1 candidate are content-bound"
-              (is (= bootstrap/p15-s23-c11-mir-max-carrier-nodes
-                     (:maximum-module-carrier-nodes scope)))
-              (is (=
-                   bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
-                   (:maximum-final-artifact-carrier-nodes scope)))
-              (is (= bootstrap/p15-s23-c11-mir-max-carrier-depth
-                     (:maximum-carrier-depth scope)))
+              (is (not-any? #(contains? scope %)
+                            [:maximum-module-carrier-nodes
+                             :maximum-final-artifact-carrier-nodes
+                             :maximum-carrier-depth]))
               (is (= (bootstrap/p15-s23-c11-mir-pass-execution-record
                       module left-core (:verification-report left))
                      (:pass-execution-record module)))
