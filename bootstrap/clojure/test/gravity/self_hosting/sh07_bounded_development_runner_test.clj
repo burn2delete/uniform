@@ -162,6 +162,17 @@
     (is (true? (:complete? empty)))
     (is (false? (:truncated? empty)))))
 
+(deftest failed-process-observation-cannot-claim-complete-cleanup
+  (let [cleanup (ns-resolve 'gravity.self-hosting.sh07-bounded-development-runner
+                            'cleanup-process-tree!)
+        process (proxy [Process] []
+                  (toHandle [] (throw (UnsupportedOperationException. "unavailable")))
+                  (isAlive [] false))
+        result (cleanup process)]
+    (is (true? (:sampling-failed? result)))
+    (is (false? (:cleanup-complete? result)))
+    (is (true? (:root-exited? result)))))
+
 (deftest descendant-cleanup-covers-background-child
   (let [result
         (runner/run-process!

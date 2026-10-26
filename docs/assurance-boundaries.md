@@ -84,7 +84,11 @@ The first affected-namespace run after the fix produced 10 tests / 64 assertions
 63 passed, 1 failed, exit 1. The unchanged descendant-cleanup assertion expected
 a positive captured descendant count but observed zero; root cleanup completed.
 That failure is retained and is not a passing watchdog receipt. A subsequent
-failed-stream-read control was added. Final immutable validation and independent
+minimal process-observation diagnostic failed with `Operation not permitted
+(sysctl failed)`. The sampler previously swallowed that exception and could
+claim complete cleanup without observing descendants. Sampling failure now
+explicitly prevents a complete-cleanup claim. Failed-stream-read and
+failed-process-observation controls were added. Final immutable validation and independent
 review must record their own exact source tuple and current results.
 
 Run this namespace with a 256 MiB JVM and the existing test classpath; the tests

@@ -309,16 +309,18 @@
         (let [observed (vec (take (inc process-pid-limit)
                                   (iterator-seq (.iterator descendants))))]
           {:root (.pid handle)
+           :sampling-failed? false
            :pids (vec (take process-pid-limit
                             (map #(.pid ^java.lang.ProcessHandle %)
                                  observed)))
            :truncated? (> (count observed) process-pid-limit)})))
-    (catch Throwable _ {:root nil :pids [] :truncated? false})))
+    (catch Throwable _ {:root nil :pids [] :truncated? false
+                        :sampling-failed? true})))
 
 (defn- cleanup-process-tree!
   "Terminate a child and all bounded descendants, returning cleanup evidence."
   [^Process process]
-  (let [{:keys [pids truncated?]} (process-pids process)
+  (let [{:keys [pids truncated? sampling-failed?]} (process-pids process)
         handles
         (keep #(try
                  (some-> (java.lang.ProcessHandle/of (long %))
@@ -338,7 +340,8 @@
         (if (or (and (empty? alive) (not root-alive?))
                 (>= (System/nanoTime) deadline))
           {:cleanup-complete? (and (empty? alive) (not root-alive?)
-                                   (not truncated?))
+                                   (not truncated?) (not sampling-failed?))
+           :sampling-failed? sampling-failed?
            :capture-overflow? truncated?
            :captured-descendant-count (count handles)
            :root-exited? (not root-alive?)
