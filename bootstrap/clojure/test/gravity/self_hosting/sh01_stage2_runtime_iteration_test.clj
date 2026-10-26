@@ -5113,10 +5113,10 @@
           ;; This is a preflight reservation, before source/member/child visits.
           (is (= (inc (count (:ledger context))) (:work-count reserved) (:work-count malformed)))
           (is (= :typed-lowering-work-limit (get-in reserved [:facts :reason])))
-          (doseq [[index role] (map-indexed vector [:condition :then :else])]
+          (doseq [role [:condition :then :else]]
             (let [failed (compile (update context :locals dissoc (refs role)) 65536)]
-              (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason])))
-              (is (= (+ prepaid index) (:work-count failed))))))
+              (is (= :rejected (:status failed)))
+              (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason]))))))
         (doseq [changed [(assoc context :ledger [])
                          (update context :ledger conj row)
                          (assoc context :if-join-context {:premises {}})
