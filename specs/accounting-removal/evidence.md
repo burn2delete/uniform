@@ -228,3 +228,76 @@ was relaxed or promoted. PR359 remains unfinished and draft.
 | Corrected Effects source | `48d6b1742ec9e13f5b95a91853afcbf9589ee6f646a1247fccf9f4f9ac90b1d1` |
 | Corrected emitter source | `fa36f3666c1180f669a0b8191eccfe787e2de010246dfd9407156bffb32c1013` |
 | New LR test | `60358bed80b605a8b3311c8496c7a91434aa957d811461eb3e15c475bb42ed8c` |
+
+## Inequality and Set descriptor reconstruction
+
+The next source-pinned baseline was published LR head
+`19f7533124c1a7fc51e56ad1757e83ea3751bc5a`, tree
+`cf626348d23c845da6cd6c2eac6e03dd714f44c5`.
+Five normalized actual-owner cases completed naturally in 17791 ms. Both BKA
+operand orientations and DSE complete descriptors differed only at obsolete
+consumer operand-type-work; actual typed calls rejected at the matching owner.
+The first ANE comparison mistakenly compared completed C7 descriptors with raw
+consumer source headers: return/result/parameter fields were confounded, not
+established semantic disagreements. That observation is retained as qualified
+diagnosis. A separate two-case correction applies the actual body-ane-finish
+and p15-s23-ane-finish interfaces; natural exit 0 in 18725 ms confirmed complete
+descriptor equality apart from operand-type-work. No BKA/DSE baseline was rerun.
+
+Candidate `06b03ec3eb7303dfb63be0895831a01e3ab771b8`, tree
+`469324099c20399fc1d2f1243305547177fd4534`, removes exactly six stale map fields
+from Effects/emitter ANE, BKA and DSE reconstruction. C7, runtime, all validators,
+helper budgets and other live cost/policy fields remain unchanged. Complete
+fresh descriptor equality remains mandatory; no incoming field stripping or
+zero-valued telemetry is introduced.
+
+The candidate passed 16 tests/1013 assertions, zero failures/errors, natural
+exit 0 in 30234 ms. Coverage includes all three completed descriptor owners,
+actual typed calls, coherent stale/extra/source/profile tampering, ledger,
+callee and type negatives, full Effects joins/module analysis, existing typed
+Set controls and coherent-Set runtime regressions, plus six language checks.
+Independent source and actual retained driver/result review accepted this
+finite normalized scope. This does not assert arbitrary raw-host Set admission,
+authenticated source, public B47, C12, release or whole accounting acceptance.
+
+## Private Map reconstruction remains failed and open
+
+A separate read-only baseline on `06b03ec3` completed naturally in 18510 ms.
+All three pmk-source builders accepted and complete source headers differed
+only at operand-type-work. Actual C7 mkeys derivation accepted the private Map
+route and homogeneous Keyword List result; call-join diagnostics were empty.
+Effects parameter context accepted, but the actual query context rejected
+body-private-map-keys-source-mismatch and typed private-call lowering rejected
+unsupported-or-mismatched-typed-private-map-keys.
+
+Experimental successor `e963e772cc16ba871e77a1a1e6f529fa6d79ba6e`, tree
+`ba9fc6db2cf5ecf03032be53ad05f20e26a5f6b3`, removes only the two stale
+pmk-source consumer fields and adds explicit private-route controls. Its actual
+batch FAILED: 9 tests, 115 passing assertions, 10 failures, zero errors, natural
+exit 1 in 27021 ms. Source-header parity now passes, but the same positive
+Effects/full-call and typed-private-call checks still reject in both new and
+existing tests. Negative passes cannot confer acceptance while positives fail.
+The private Map increment is not accepted, and the entire PR remains draft.
+The accepted three-family result above retains its own exact provenance.
+
+Independent inspection confirmed the failure and the minimal source delta.
+Next diagnosis must compare complete sh08/body/p15-s23-pmk-header outputs
+(including pmk-proof), then isolate pmk-evidence/row/fact/entry censuses on the
+same original Core/calls/edges/facts. Entry-proof-work and nested proof entries
+are candidates to inspect, not findings to delete blindly. Full proof/source/
+row equality, private-entry domain and public-route restrictions remain intact;
+no entry refinement, verifier acceptance or source pin is fabricated.
+
+These processes used unchanged 2 GiB/120-second/capture limits and the
+existing shared brokers/canonical lock, with complete stdout, empty stderr and
+clean identical before/after bookends. All processes and leases are terminal.
+The next diagnostic is held while the existing Reader owner uses shared heavy
+capacity; there is no duplicate accounting child or automatic repeat.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Five-case descriptor baseline receipt | `da61bab8e05b62b40705ed8c2374bba8463a616e4b50d3cfc9033d0db5bb6c6d` |
+| Corrected two-case ANE receipt | `0a8611d2102eb00ccefe7f51e1f185538e7ce62dfc1123792a268239c583e169` |
+| Accepted three-family receipt | `06f0021e2c6eaa79d9994e38dfc1aa504ffe741228f3b6883a1a8487f56d45aa` |
+| Private Map baseline receipt | `75fcbf155457d98ce141a0f5a99c0e7c1da423c8c68406718c4d4f402ad14c11` |
+| Failed private Map candidate receipt | `5f46f53b45ac8d7ef429a7902875aa31682f0242a45adec99c1ed0dcc41f1050` |
