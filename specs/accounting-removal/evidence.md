@@ -356,3 +356,67 @@ acceptance remain unrun. The PR remains unfinished and draft.
 | Corrected Effects source | `bc9319237f495455d6bc2ff5e0289ad57afde333ecd0cb33b0b9ad2105045bef` |
 | Corrected emitter source | `cfe059b408e91616636bd9c11773d992d2c669960969456f1b1d4ed910e70c84` |
 | Descriptor reconstruction test | `8c58b98522b799fdbc0763293ab21946d7bee59c071a575bff02b602f7a5d4d8` |
+
+## PL exported accounting and stale depth assertion
+
+A read-only baseline on clean `fcaeb25deb9f2859a9874f2f7ebcd23461029716`,
+tree `2e489d7d54dc6fbf94146c7a2d28d85d5c9e5b73`, completed naturally in
+17859 ms. Sixteen actual-owner cases covered bare, homogeneous and literal
+Lists, String/Keyword/Symbol Set insertion and Never. Five List descriptors
+differed only in exported operand-type-work/result-type-work and their typed
+calls rejected. Eleven Set cases already agreed and typed calls completed;
+their exported fields were common bookkeeping, not reproduced defects.
+
+Candidate `624b207fa3772ed4d3611a64f4446ee487eae7e5`, tree
+`9eefe7164bb48b8839713687d80d640a9daa0f7c`, removes precisely
+operand-type-work, result-type-work and type-construction-work from each of
+four pl-source branches in all three owners: 36 exported fields. Full
+descriptor identity/reconstruction/equality, semantic result and extents,
+application/effects/allocation/storage policies and complete validation remain.
+No incoming fields are stripped. Existing semantic family IDs remain bound to
+the complete descriptor and source invalidation; no old-wire compatibility is
+claimed. Live helper budgets, work counts, construction debits, width/depth
+limits and runtime representation-work policies remain open work.
+
+The initial candidate batch is **NONPASS**: 21 tests, 3027 passing assertions,
+one failure, zero errors, natural exit 1 in 34166 ms. Its sole failure was an
+inherited C7 List test expecting depth-128 result rejection. The existing
+canonical C7 finite/native type validator already has no depth allowance;
+that validator and pl-type-work were unchanged by this increment. The other
+14 non-boundary selectors passed, as did six boundary tests. Coverage includes
+whole completed descriptors without cost stripping, actual typed calls and
+Effects joins across all four families, Never effects, coherent reinsertion of
+each old field and all three through rebuilt rows/facts, source/type/callee/
+ledger forgeries, late invalid/opaque members within admissible extents and
+zero opaque callbacks, plus unsupported receiver controls.
+
+Test-only correction `eac4463d3cb438021e86cf0997f4d1bc8a9286b6`, tree
+`a251e08c698aa6cc55821a31305372a6ec14ddb6`, replaces that stale assertion
+with actual accepted prepend results at depths 127/128/129 and whole expected
+result/return/descriptor equality. Unknown leaves at each same depth must
+reject with the actual operand-type reason. This asserts canonical C7 behavior;
+it makes no claim about consumer deep-type acceptance. The focused changed C7
+test and six boundary tests passed: 7 tests/226 assertions, zero failures or
+errors, natural exit 0 in 15645 ms. Production, bootstrap Clojure source,
+contracts and dependency inputs are identical to the original candidate;
+only that test body changed. The 14 unaffected non-boundary selectors retain
+their original candidate provenance. No combined fresh pass or summed count
+is claimed, and the failed original receipt remains failed.
+
+Independent static source/test and actual retained driver/counts/receipt review
+accepted this finite composed scope. The reviewer did not rerun the compiler.
+Both runs used the existing brokers/canonical lock, configured 2 GiB child,
+120-second watchdog and 65536-byte/character captures. Exact clean bookends,
+complete stdout (2848 and 954 bytes), empty stderr and complete cleanup were
+recorded. Authenticated source/public B47/C12/release/current-main and whole
+accounting acceptance remain unrun; the draft and ACC-05 remain unfinished.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Sixteen-case PL baseline receipt | `b9e0da6d45e1299661f25b436713b174f59337a96af6263250467aef278087b3` |
+| Failed original PL candidate receipt | `46738741b0f6f2c90e8fd0aea606adce18dcbebcf4b21378fda2a8ab53296cc8` |
+| Focused correction receipt | `6e60bd404fbfc4c961ae3943a89f7bb550c5fe6709b56f75b072713780ecbe76` |
+| C7 source | `e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e` |
+| Effects source | `b2180d1ebe3e2df23bbd45ead8749b37e3405220ece0e3bb51a38ad9388c0802` |
+| Emitter source | `06f790a4c708d366acd6497256b57a0cafd3ff724d200f170962ca6e1a403eea` |
+| Prepend premise test | `ef01b806ebe3cd04ca7990bcb917f0a85f565da45ae180a64b795d8dc0ff591b` |
