@@ -9609,8 +9609,7 @@
                         :physical-sharing :unpromised :enumeration :unobserved}
        :input-extent (get validation :input-extent)
        :result-extent nil
-       :operand-type-work (get validation :operand-work) :result-type-work (get validation :result-work)
-       :type-construction-work (get validation :construction-work) :result-type (get validation :result-type)
+       :result-type (get validation :result-type)
        :application (if invoked? :normal :not-invoked)
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
@@ -9641,8 +9640,7 @@
                         :physical-sharing :unpromised :enumeration :unobserved}
        :input-extent (get validation :input-extent)
        :result-extent nil
-       :operand-type-work (get validation :operand-work) :result-type-work (get validation :result-work)
-       :type-construction-work (get validation :construction-work) :result-type (get validation :result-type)
+       :result-type (get validation :result-type)
        :application (if invoked? :normal :not-invoked)
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
@@ -9673,8 +9671,7 @@
                         :physical-sharing :unpromised :enumeration :unobserved}
        :input-extent (get validation :input-extent)
        :result-extent nil
-       :operand-type-work (get validation :operand-work) :result-type-work (get validation :result-work)
-       :type-construction-work (get validation :construction-work) :result-type (get validation :result-type)
+       :result-type (get validation :result-type)
        :application (if invoked? :normal :not-invoked)
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
@@ -9693,8 +9690,7 @@
        :input-extent (if (= :literal (get (first arguments) :shape)) (count (get (first arguments) :element-types)) nil)
        :result-extent (if (if invoked? (= :literal (get (first arguments) :shape)) false)
                         (+ 1 (count (get (first arguments) :element-types))) nil)
-       :operand-type-work (get validation :operand-work) :result-type-work (get validation :result-work)
-       :type-construction-work (get validation :construction-work) :result-type (get validation :result-type)
+       :result-type (get validation :result-type)
        :application (if invoked? :normal :not-invoked)
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
