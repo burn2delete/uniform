@@ -66,6 +66,39 @@ focused staged Reader route, not whole C2/C5/C6 composition, C14 acceptance,
 migration, release or a performance improvement. Independent final review and
 integration remain separate requirements.
 
+## Native Keyword canonical identity path
+
+The hosted canonical form builder now handles an exact native Keyword root
+without allocating the generic traversal's entered map and stack. It retains
+the existing shared ancestor binding and calls the existing carrier validator,
+then scalar/component/Unicode validation, freshly on every invocation. All
+other values retain the generic traversal. Both canonical and host-equality
+uniqueness checks, source pins and admission policy are unchanged.
+
+The contract tests enter through the production Reader canonical identity
+entrypoint. They compare complete root/collection-contained diagnostics for
+invalid components and Unicode; observe exact validation order and ancestor
+context; reject a second carrier or scalar validation with the original
+exception; preserve ancestor markers on success/failure; and retain both
+collision controls. Existing scalar and actual-cycle regressions also ran.
+
+Corrected-main baseline `5579e0f14fb303299b7028a062815790b7fde162`, tree
+`110093df7e02dcf23914e636a6cb5a1d2c7c8024`, and candidate
+`68685af9327631dd37ba8ca4f05b93f4712c1d1a`, tree
+`b13ffb098b6f60c07ee0ccc67770c9b9c196c227`, used the identical test blob.
+Each passed 19 tests / 582 assertions plus language boundary 6 / 11, with zero
+failures/errors, natural exit zero and matching clean commit/tree bookends.
+Execution used serialized 512 MiB / 60-second profiles; elapsed times were
+7.806 and 7.981 seconds respectively. An intervening capacity wait expired
+before candidate tests started; that separate failure was retained, and the
+unchanged candidate ran only after confirmed release of the competing process.
+
+These finite checks support the scoped validation contract, not a speedup or
+full-source performance claim. Full original C11 C2 construction, its later
+digest-resolution behavior, and the C14 contextual consumer remain separate
+validation milestones. No C14 acceptance, authoritative migration or release
+credit is established here.
+
 ## Earlier workflow evidence
 
 Current candidate: Reader implementation task authority transfer. The original
