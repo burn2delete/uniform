@@ -12,7 +12,8 @@ Source inspection confirms live C7 inference options/pools and per-round debits,
 Effects cumulative module pools, runtime cost/budget hooks, syntax fixed graph
 and container maxima, host canonical-schema reservations/debits, and macro
 expansion depth. Search is discovery evidence, not an exhaustive disposition
-or proof of semantic removal. No production source edited by this increment.
+or proof of semantic removal. No production source was edited during this
+initial source inspection.
 
 ## Attributed existing-owner evidence
 
