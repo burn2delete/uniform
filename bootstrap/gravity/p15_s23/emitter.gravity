@@ -11763,7 +11763,7 @@
        :operation 'symbol? :semantic-owner 'gravity.core :intrinsic :gravity.core/symbol-family-classification
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :query-semantics {:operation :symbol-family-classification :operand-evaluation :once :operand-position :non-tail
                          :construction :none :payload-evaluation :none :mutation :none :refinement :none
                          :coercion :none :syntax-unwrapping :none :authority-grant :none}
@@ -11849,7 +11849,7 @@
        :operation 'boolean? :semantic-owner 'gravity.core :intrinsic :gravity.core/boolean-family-classification
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :query-semantics {:operation :boolean-family-classification :operand-evaluation :once :operand-position :non-tail
                          :construction :none :payload-evaluation :none :mutation :none :refinement :none
                          :coercion :none :truthiness :unobserved}
@@ -11947,7 +11947,7 @@
        :operation 'char? :semantic-owner 'gravity.text :intrinsic :gravity.text/character-family-classification
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :character-query-classification classification
        :query-semantics {:operation :character-family-classification :operand-evaluation :once :operand-position :non-tail
                          :construction :none :payload-evaluation :none :mutation :none :refinement :none
@@ -13385,7 +13385,7 @@
        :operation 'string? :semantic-owner 'gravity.text :intrinsic :gravity.text/string-family-classification
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :query-semantics {:operation :string-family-classification :operand-evaluation :once :operand-position :non-tail
                          :construction :none :payload-evaluation :none :mutation :none :refinement :none}
        :application (if invoked? :normal :not-invoked)
@@ -13527,7 +13527,7 @@
        :operation 'integer? :semantic-owner 'gravity.math :intrinsic :gravity.math/integer-family-classification
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :query-semantics {:operation :integer-family-classification :operand-evaluation :once :operand-position :non-tail
                          :construction :none :payload-evaluation :none :mutation :none :refinement :none}
        :application (if invoked? :normal :not-invoked)
@@ -13669,7 +13669,7 @@
        :operation 'vector? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/vector-family-classification
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :query-semantics {:operation :vector-family-classification :operand-evaluation :once :operand-position :non-tail
                          :construction :none :payload-evaluation :none :mutation :none :refinement :none}
        :application (if invoked? :normal :not-invoked)
