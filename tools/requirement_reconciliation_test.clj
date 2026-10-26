@@ -62,6 +62,46 @@
     (is (thrown? Exception (rr/validate-amendment! {:previous-ids ["a"] :active-ids [] :added [] :removed ["a"]})))
     (is (nil? (rr/validate-amendment! {:previous-ids ["a"] :active-ids ["b"] :added ["b"] :removed ["a"] :authority "review" :reason "versioned split"})))))
 
+(deftest orphan-and-detached-amendment-regressions
+  (let [[manifest sources] (complete-fixture)
+        amendment {:from-version "fixture-0" :to-version "fixture-1"
+                   :previous-ids ["old"] :active-ids ["fixture/one-thing"]
+                   :added ["fixture/one-thing"] :removed ["old"]
+                   :authority "fixture review" :reason "explicit replacement"}
+        amended (assoc manifest :prior-scope {:version "fixture-0" :active-ids ["old"]
+                                             :review-reference "fixture-reviewed-scope"}
+                                :scope-amendments [amendment])]
+    (is (thrown? Exception (rr/project (update manifest :requirements conj
+                                             {:id "no-source" :atomicity :reviewed :nonoverlap :reviewed}) sources)))
+    (is (thrown? Exception (rr/project (assoc manifest :scope-amendments [amendment]) sources)))
+    (is (= 1 (:denominator (rr/project amended sources))))
+    (is (thrown? Exception (rr/project (assoc-in amended [:scope-amendments 0 :to-version] "unrelated") sources)))
+    (is (thrown? Exception (rr/project (assoc-in amended [:prior-scope :active-ids] ["other"]) sources)))
+    (is (thrown? Exception (rr/project (-> amended
+                                         (assoc-in [:scope-amendments 0 :active-ids] ["unrelated"])
+                                         (assoc-in [:scope-amendments 0 :added] ["unrelated"])) sources)))))
+
+(deftest supersession-requires-bound-authority-and-lineage
+  (let [[manifest sources] (complete-fixture)
+        sources (assoc sources "legacy" "Old project quota.\n" "policy" "Remove project quotas.\n")
+        old-id (:id (first (rr/source-occurrences "legacy" (get sources "legacy"))))
+        authority-id (:id (first (rr/source-occurrences "policy" (get sources "policy"))))
+        decision {:id "removal" :state :accepted :scope-version "fixture-1"
+                  :authority "fixture standing policy" :reason "obsolete work quota"
+                  :authority-source-occurrence-id authority-id :source-occurrence-ids [old-id]
+                  :lineage {:superseded-source-occurrence-id old-id
+                            :authority-source-occurrence-id authority-id :scope-version "fixture-1"}}
+        proposed (-> manifest
+                     (assoc :scope-decisions [decision])
+                     (update :source-dispositions into
+                             [{:occurrence-id old-id :kind :superseded :decision-id "removal"}
+                              {:occurrence-id authority-id :kind :nonnormative
+                               :rationale "Fixture policy authority; implementation scope is represented separately."}]))]
+    (is (= 1 (:denominator (rr/project proposed sources))))
+    (doseq [field [:authority :reason :scope-version :lineage :authority-source-occurrence-id :source-occurrence-ids]]
+      (is (thrown? Exception (rr/project (update-in proposed [:scope-decisions 0] dissoc field) sources))))
+    (is (thrown? Exception (rr/project (assoc proposed :scope-decisions [{:id "removal" :state :accepted}]) sources)))))
+
 (deftest actual-source-census-has-no-requirement-or-dashboard-authority
   (let [report (rr/audit ".")]
     (is (= 245 (:source-documents report)))

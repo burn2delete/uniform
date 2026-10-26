@@ -42,3 +42,15 @@ overall rate is established. No compiler replay, self-hosting proof or dashboard
 this increment. Original implementation receipts and independent operations/
 seedless evidence remain unchanged. Current-main applicability is unassessed
 until exact evidence reconciliation and independent review are recorded.
+
+## Readiness regression corrections
+
+Independent review of initial head `d72eaba15ff30b3789fc7f3a4fbe9a779b1da1f5`
+confirmed byte/span conservation but found three synthetic readiness defects:
+orphan semantic IDs, detached scope amendments and unqualified supersession.
+The successor requires source provenance for every active ID; binds amendment
+chains to the prior scope, actual IDs and actual version; and requires applied
+supersession authority, rationale, exact source occurrences and versioned lineage.
+Eight focused tests / 49 assertions pass, including the three regressions and
+valid amendment/supersession controls. Full semantic reconciliation and the
+acceptance projection remain unfinished; no completion rate is accepted.

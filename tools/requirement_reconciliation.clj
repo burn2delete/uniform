@@ -64,6 +64,39 @@
     (require! (= (set added) (set (remove before after))) "Scope additions differ")
     (require! (= (set removed) (set (remove after before))) "Scope removals differ")))
 
+(defn validate-scope-lineage! [manifest]
+  (let [prior (:prior-scope manifest) amendments (:scope-amendments manifest)]
+    (when (or prior (seq amendments))
+      (require! (and (string? (:version prior)) (seq (:review-reference prior))
+                     (vector? (:active-ids prior))) "Missing prior approved scope")
+      (let [last-scope
+            (reduce (fn [{:keys [version active-ids]} amendment]
+                      (validate-amendment! amendment)
+                      (require! (and (= version (:from-version amendment))
+                                     (= (set active-ids) (set (:previous-ids amendment)))
+                                     (string? (:to-version amendment))
+                                     (not= version (:to-version amendment)))
+                                "Scope amendment is detached from prior version")
+                      {:version (:to-version amendment) :active-ids (:active-ids amendment)})
+                    prior amendments)]
+        (require! (and (= (:scope-version manifest) (:version last-scope))
+                       (= (set (map :id (:requirements manifest))) (set (:active-ids last-scope))))
+                  "Scope amendment is detached from actual canonical IDs/version")))))
+
+(defn validate-supersession! [manifest decision occurrence-id by-source]
+  (let [authority-id (:authority-source-occurrence-id decision)
+        lineage (:lineage decision)]
+    (require! (and (= :accepted (:state decision))
+                   (= (:scope-version manifest) (:scope-version decision))
+                   (not (str/blank? (:authority decision)))
+                   (not (str/blank? (:reason decision)))
+                   (contains? by-source authority-id)
+                   (contains? (set (:source-occurrence-ids decision)) occurrence-id)
+                   (= occurrence-id (:superseded-source-occurrence-id lineage))
+                   (= authority-id (:authority-source-occurrence-id lineage))
+                   (= (:scope-version manifest) (:scope-version lineage)))
+              "Supersession lacks source-bound authority, rationale or versioned lineage")))
+
 (defn project [manifest sources]
   (let [requirements (:requirements manifest) ids (mapv :id requirements)
         occurrences (mapcat (fn [[id text]] (source-occurrences id text)) sources)
@@ -74,20 +107,28 @@
         _ (require! (= (count dispositions) (count (set (map :occurrence-id dispositions))))
                     "Duplicate source disposition")
         _ (validate-aliases! requirements (:aliases manifest))
-        _ (doseq [a (:scope-amendments manifest)] (validate-amendment! a))
+        _ (validate-scope-lineage! manifest)
         mapped (into {} (map (juxt :occurrence-id identity) dispositions))]
     (doseq [{:keys [occurrence-id kind requirement-ids rationale decision-id]} dispositions]
       (require! (contains? by-source occurrence-id) "Disposition targets missing source occurrence")
       (require! (#{:requirement :alias :refinement :nonnormative :superseded :scope-decision} kind)
                 "Unknown disposition kind")
       (when (#{:requirement :alias :refinement} kind)
-        (require! (and (seq requirement-ids) (every? req-set requirement-ids))
+        (require! (and (= :source-block (:structural-kind (get by-source occurrence-id)))
+                       (seq requirement-ids) (every? req-set requirement-ids))
                   "Disposition has dangling requirement"))
       (when (#{:alias :refinement :nonnormative} kind)
         (require! (not (str/blank? rationale)) "Missing semantic disposition rationale"))
       (when (#{:superseded :scope-decision} kind)
         (require! (contains? (set (map :id (:scope-decisions manifest))) decision-id)
-                  "Missing versioned scope decision")))
+                  "Missing versioned scope decision"))
+      (when (= :superseded kind)
+        (validate-supersession! manifest
+                               (first (filter #(= decision-id (:id %)) (:scope-decisions manifest)))
+                               occurrence-id by-source)))
+    (require! (= req-set (set (mapcat :requirement-ids
+                                     (filter #(#{:requirement :alias :refinement} (:kind %)) dispositions))))
+              "Canonical requirement has no source provenance")
     (let [unresolved (vec (for [o occurrences
                                :when (and (= :source-block (:structural-kind o))
                                           (or (nil? (get mapped (:id o)))
