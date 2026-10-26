@@ -24,8 +24,8 @@ case construction; current Native/MIR source/composition receipts.
 | ID | Exact boundary and files | Dependency and acceptance | Current disposition |
 | --- | --- | --- | --- |
 | RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Further removal remains unproved; retain those checks. No repeat fixture experiment or new elision in this change. |
-| RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Implemented locally; validation/review/integration pending. No report, cache or receipt schema change. |
-| RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | Baseline failure under investigation; mapping repair is a prerequisite to RV2 plan acceptance. |
+| RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Implemented and independently code/result reviewed; exact receipts below. Integration pending. No report, cache or receipt schema change. |
+| RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | Baseline failure reproduced; exact mapping repair passes planner validation. Integration pending. |
 | RV3 | `bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj` | Reuse one genuine immutable upstream case for the same diagnostic reference tests; preserve independently constructed changed-source/ordinal cases and resolved verification. | Already integrated at `c3f35fef`; representative case and references are delayed, with an explicit build counter. No duplicate reconstruction of that accepted fix. |
 | RV4 | RV1-RV3 records, exact candidate diff, execution receipts and independent review | Close each inventory row by integrated regression evidence or a source-grounded necessary-check decision. Preserve failed, unrun and stale boundaries. | Open until independent review and integration. |
 
@@ -75,6 +75,42 @@ redundancy. It does not mean zero verification, a closed compiler pipeline or
 a complete language. Unproved reuse prerequisites, unexplored conservative
 fallbacks, independent review and integration are open boundaries, not credit.
 
-Execution receipts and review disposition will be recorded for the immutable
-candidate. No current-main pass, speedup, saved JVM launch, proof, migration,
-release or self-hosting completion is claimed by this draft.
+The finite Reader closure/mapping increment is published in
+[PR #432](https://github.com/burn2delete/uniform/pull/432). Independent code
+review and separate actual-result readback found no blocking finding on
+`6159eb721840e33fdda465f0d5dcd8a921415598`, tree
+`123d1fc50b787cf51b0a08c79a4db53830d4b96b`.
+
+| Observed scope | Result |
+| --- | --- |
+| Planner on the tested source tree | 59 tests / 518 assertions, zero failures/errors |
+| Wiring, including all five nested-input invalidations and provenance controls | 43 / 398, zero failures/errors |
+| Documents; language boundary and LOC gates | 240 documents / 19 indexes; 11 / 23, passed |
+| Actual child producer, 256 MiB under the existing broker | 18 / 930, natural exit 0, non-authoritative |
+| Unrelated documentation and existing test-body changes | Two child launches, both hits, `tests-executed? false`; original producer provenance retained and applying snapshots distinct |
+| Changed consumed contract | Cache miss and real fresh 18 / 930, natural exit 0 |
+
+Temporary control edits were restored and clean exact head/tree bookends
+checked. Hit assertion totals describe the original producer, not newly run
+assertions. The failed first harness report path, preliminary baseline command
+error and initial catalog failures remain failed/unrun history. An unchanged
+base one-test control reproduced the four orphan namespace catalog error;
+their bodies were not executed for this mapping repair.
+
+Normal reconciliation with main `48f81c4bf2d7e7ecb01905949586253b797aaf98`
+produced `101d3bb4b08b528d326e2b4d6d8c67ca51194fbf`, tree
+`21c8e05d286499f2a2190568deb762739b4fd25b`. Every consumed bootstrap,
+contract, classpath declaration, backlog and ownership blob, and the dedicated
+test path inventory, is unchanged from the tested source tree. The 13 incoming
+documentation/tool paths exactly match main. Fresh scoped composition checks
+passed 70 tests / 541 assertions plus documents 240 / 19. Independent review
+accepted that composition and retained the original child evidence without
+claiming a new child execution. This usage/evidence-only successor changes no
+consumed input; it requires documentation validation and review, not another
+compiler replay.
+
+The original branch publication was denied and did not execute. After new
+direct user publication/integration intent, one supported reassessment of the
+same action succeeded; no actor or route substitution was used. This does not
+waive any remaining restriction or grant compiler authority. No speedup, saved
+JVM launch, proof, migration, release or self-hosting completion is claimed.
