@@ -169,3 +169,62 @@ successor ownership is acknowledged; no LR/PL implementation has started.
 That release does not integrate PR359 or close ACC-02. The LR three-owner
 version/invalidation proposal was read as design, preserving semantic extents,
 full equality, complete validation and historical receipt invalidation.
+
+## Runtime integration receipt
+
+PR433 was normally squash-merged on 2026-10-26 at
+`cfb499405450d479955fa70daa0f14dfa3233ee8`. Fresh GitHub state reported MERGED
+against main, and a fresh fetch showed its entire tree
+`87c466ffda7cef690714c1d09b65ecded29bc9b8` equals the reviewed final candidate.
+The remote source branch was retained at
+`f2aba5db916f49ba120bdf22ba9e6f84e0a2983b`. This closes the declared module-read
+increment, not ACC-09's remaining runtime policies or the whole cleanup.
+
+## Coordinated List return premise removal
+
+Released PR359 `972a2126` was normally merged with main through PR433 in an
+isolated successor. Reconciled baseline:
+`e2c6126f05503470304123bbcc9ccc226e66e57a`, tree
+`36211551a6e6309b1dd1f115e3c78c59c749dd71`.
+Four fresh actual-owner cases (empty/two-member positional, homogeneous
+identity and Never) reproduced rejection: the three complete premise schemas
+agreed except for type-work, while semantic element counts agreed. Effects and
+emitter contexts and actual typed definitions rejected. Baseline natural exit
+0 in 18604 ms records expected defect observations, not successful LR joins.
+
+The coordinated v2 contract removes premise type-work and member-work across
+C7, Effects and emitter. A direct reference audit found member-work only in
+the three unchanged helper outputs and the three derived-premise getters;
+it is bookkeeping, distinct from checked-member-count/checked-element-count.
+Helpers and their internal budgets/work counts remain unchanged and open under
+ACC-06/07. The semantic extents, every-member validation, source/declaration
+checks, full premise/function/row equality and invalidation dependencies remain.
+The row identity domain and producer versions change together. Legacy v1
+producers stay recognized solely for rejection/census; no v1 acceptance or
+incoming-field stripping is provided. Historical v1 receipts remain historical.
+
+| Stage | Exact observed result | Acceptance boundary |
+| --- | --- | --- |
+| Initial v2 candidate | `d2c27c644c2f86eee5f3be55b3187b2b443429d7`, tree `bab4103cc2fc3f29e687057feb9bcc59deb50ac3`; natural 0, 30401 ms, 13 tests/908 assertions, zero failures/errors | Independent review then found an untested appended legacy-row/foreign-kind census gap; this pass did not close it |
+| Correction | `23ad7bea39493d45f08242e997d91ec9fd91b816`, tree `ba98a7080da8e8704b2b2c0455f42b10b83e43f8` | Two context filters retain reserved v1 producer recognition solely for stale-row rejection; new controls append coherent legacy rows with original/equality/unknown/missing kinds |
+| Corrected targeted and inherited-owner controls | Same corrected tuple; natural 0, 28868 ms, 15 tests/893 assertions, zero failures/errors | Two LR vars include six current positive owner/typed-definition cases and exact new negatives; seven inherited guard/Map-List vars run fresh after main changed their input closure; six language checks |
+| Independent review | Source and actual retained drivers/counts/receipts/stdout inspected; no blocking finding for corrected finite LR increment | No independent second execution; no whole PR359 or whole-accounting acceptance |
+
+All process captures were complete, with clean exact before/after bookends and
+released processes, brokers and canonical lock. The existing 2 GiB child,
+120-second watchdog and 65536-byte/character captures were unchanged. The
+original 13-selector batch was not restarted; its unchanged controls retain
+their original provenance alongside the correction's targeted evidence.
+Authenticated source compilation, public B47, C12, release and whole-accounting
+validation remain unrun. No authoritative source pin or saved verifier result
+was relaxed or promoted. PR359 remains unfinished and draft.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Fresh baseline process receipt | `b6b00c77fc7a4f8669794fd31c957bb903f0c4c7ab4d2b3e93691b61953af64a` |
+| Initial v2 process receipt | `bbf71c1b1ff73a2a1bd6ad6c6c30bf8821f8772783aaa9e1af53b0dcf6ba6d9c` |
+| Corrected controls receipt | `5074b3b574761cbbf4d427d4788b845a73889e30f6a3c3780ebd2fd5840cf3d9` |
+| Corrected C7 source | `5094651fdfeac801167a8274cc4312c58a02e94f66b7228bccdd8d08d7570a12` |
+| Corrected Effects source | `48d6b1742ec9e13f5b95a91853afcbf9589ee6f646a1247fccf9f4f9ac90b1d1` |
+| Corrected emitter source | `fa36f3666c1180f669a0b8191eccfe787e2de010246dfd9407156bffb32c1013` |
+| New LR test | `60358bed80b605a8b3311c8496c7a91434aa957d811461eb3e15c475bb42ed8c` |
