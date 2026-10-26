@@ -28,8 +28,8 @@
     (if (and transaction
              (identical? (Thread/currentThread) (:thread transaction))
              (identical? c2-artifact (:artifact transaction))
-             (sh04-syntax-native-keyword-map? c2-artifact)
              (sh04-syntax-form-index-roots-current?)
+             (sh04-syntax-native-keyword-map? c2-artifact)
              sh04-syntax-form-index-runtime?)
       (let [tree (:form-tree c2-artifact)
             previous @(:slot transaction)]
@@ -59,8 +59,8 @@
     (if (and transaction
              (identical? (Thread/currentThread) (:thread transaction))
              (identical? artifact (:artifact transaction))
-             (sh04-syntax-native-keyword-map? artifact)
              (sh04-syntax-form-index-roots-current?)
+             (sh04-syntax-native-keyword-map? artifact)
              sh04-syntax-form-index-runtime?
              (c3-literal-projection/c3-index-operations-current?
               sh04-syntax-literal-operation-defaults))
@@ -103,6 +103,8 @@
    #'c3-deferred-ratio-descriptor-from-raw c3-deferred-ratio-descriptor-from-raw
    #'c3-c2-reader-integrity-report c3-c2-reader-integrity-report #'form-kind form-kind
    #'c3-literal-projection/with-operations c3-literal-projection/with-operations
+   #'c3-literal-projection/current-operation @#'c3-literal-projection/current-operation
+   #'c3-literal-projection/invoke @#'c3-literal-projection/invoke
    #'c3-literal-projection/c3-form-index c3-literal-projection/c3-form-index
    #'c3-literal-projection/c3-token-index c3-literal-projection/c3-token-index
    #'c3-literal-projection/c3-lossless-literal-descriptor c3-literal-projection/c3-lossless-literal-descriptor
@@ -115,7 +117,7 @@
    #'gravity.c3-literal-projection.indexes/token-index gravity.c3-literal-projection.indexes/token-index
    #'gravity.c3-literal-projection.indexes/operations-current? gravity.c3-literal-projection.indexes/operations-current?
    #'gravity.c3-literal-projection.indexes/native-keyword-map? @#'gravity.c3-literal-projection.indexes/native-keyword-map?
-   #'clojure.core/get get #'clojure.core/keep keep
+   #'clojure.core/get get #'clojure.core/keep keep #'clojure.core/class class
    #'clojure.core/reduce reduce #'clojure.core/conj conj
    #'clojure.core/into into #'clojure.core/map map #'clojure.core/juxt juxt
    #'clojure.core/identity identity #'clojure.core/transduce transduce

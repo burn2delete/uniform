@@ -31,7 +31,7 @@
           (is (identical? forms (b/c3-form-index a)))
           (is (identical? tokens (b/c3-token-index a)))
           (is (not (identical? forms @(future (b/c3-form-index a)))))
-          (is (not (identical? forms (b/c3-form-index (assoc a :other true))))))
+          (is (not (identical? forms (b/c3-form-index (assoc a :other true)))))
           (is (not (identical? forms (transaction a (fn [_] (b/c3-form-index a)))))))))))
 
 (deftest input-shapes-duplicates-and-unicode-preserve-last-wins
@@ -60,7 +60,7 @@
 (deftest every-live-factory-consumer-and-predicate-root-disables-reuse
   (doseq [v [#'clojure.core/keep #'clojure.core/get
              #'l/c3-index-operations-current? #'indexes/operations-current?
-             #'b/c3-source-form-kind #'l/with-operations]]]
+             #'b/c3-source-form-kind #'l/with-operations]]
     (let [a (artifact) original @v]
       (transaction a
         (fn [_]
