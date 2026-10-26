@@ -1,4 +1,18 @@
 # Evidence: Reader workflow migration
+
+## Token spelling reuse
+
+The focused Reader change reuses the raw spelling already constructed for an
+atom or string token and obtains atom codepoints from that same spelling.
+The existing token constructor signature and numeric classifier are retained.
+Current-source regressions cover raw tokens including trivia, exact bytes,
+Unicode spans, descriptors, malformed inputs, fresh replay and tampering.
+
+Validation and independent implementation review are pending. This increment
+does not close the lexical surface, authenticated Reader-to-Syntax handoff,
+full C2/C5 construction, digest-resolution cost, C14 acceptance or release.
+It changes no historical source pin and claims no measured speedup.
+
 Current candidate: Reader implementation task authority transfer. The original
 scaffold observations below retain their historical scope and are not fresh
 acceptance of this candidate. Current validation is recorded at the end.
