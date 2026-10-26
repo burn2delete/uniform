@@ -6281,7 +6281,6 @@
                        {:representation :development-persistent-list :first :stored-head-value
                         :rest :existing-immutable-tail :retention :may-retain-input-storage :copy :none})
        :value-origin {:kind :list-value-query :operation (get binding :name) :operand-node-id (first args)}
-       :operand-type-work (get validation :work-count)
        :application (if invoked? :normal :not-invoked)
        :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
