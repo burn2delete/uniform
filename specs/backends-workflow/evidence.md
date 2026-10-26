@@ -147,3 +147,16 @@ semantics, compiler/backend implementation/test or other task status changed.
 All fifteen grouped records and family releases remain open. No backend tier,
 whole-family coverage, portfolio release, self-hosting, seed retirement,
 dependency readiness or overall completion percentage is inferred.
+
+### Prepublication review correction and composition
+
+Independent review found that the non-Open summary initially implied every
+family block displayed an explicit status even though unchanged Open blocks
+omit that extra line. The summary now accurately describes the displayed
+non-Open statuses. Current all-Open paragraph bytes are unaffected.
+
+Normal reconciliation preserves the integrated ownership/finite-boundary
+cleanup and runtime accounting-removal updates exactly. Backends source inputs
+and shared helpers are unchanged across that main advance; the candidate diff
+against reconciled main remains seven Backends files. No new compiler/runtime
+acceptance is imported from composition.

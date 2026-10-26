@@ -43,7 +43,7 @@
 (def record-pattern
   #"(?s)^- \[([ x])\] `(backend-[a-z-]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nProjected task block:\n(Remaining tasks: .+)$")
 (def open-summary "All remaining tasks below are open.")
-(def mixed-summary "Implementation task status is recorded in each projected family block.")
+(def mixed-summary "Non-Open implementation task statuses are shown in the projected family blocks.")
 
 (defn fail [message] (task-projection/fail message))
 (defn region [text marker] (task-projection/region text marker))
