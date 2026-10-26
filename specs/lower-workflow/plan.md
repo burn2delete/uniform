@@ -48,3 +48,13 @@ Do not add a recurring acceptance loop solely because evidence text changes.
 No source names, callers, wire/schema identities, load order or historical pins
 change. Retain original task identities and phase anchors. Future source work
 uses subsystem/behavior names under the semantic naming rule, separately reviewed.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [PERF4](../../docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md#requirements): Realize target alignment, packing and boundary adapters from explicit layout manifests; reject unsupported or unsafe representations.
+- [PERF8](../../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md#requirements): Lower lane/tail/alignment plans only under target feature and numeric/certificate facts; retain checks or reject missing evidence.

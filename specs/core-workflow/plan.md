@@ -84,3 +84,13 @@ Preserve existing anchors, links, semantic IDs and table text; consumers continu
 reading the generated roadmap table. New semantic tool filenames/namespaces
 follow Reader conventions. No caller, load order, runtime API, schema,
 diagnostic, manifest or wire ID changes.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L7](../../docs/phase-01-core-language/017-l7-pattern-matching-specification.md#requirements): Lower match decision trees with branch origins and exactly-once ordered guards; do not decide type narrowing here.
+- [L9](../../docs/phase-01-core-language/019-l9-error-handling-specification.md#requirements): Core error/control forms preserve throw/try evaluation and propagation semantics; diagnostic formatting alone cannot implement error behavior.

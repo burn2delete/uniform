@@ -66,3 +66,16 @@ Do not add a recurring acceptance loop solely because evidence text changes.
 No source names, callers, wire/schema identities, load order or historical pins
 change. Retain original task identities and phase anchors. Future source work
 uses subsystem/behavior names under the semantic naming rule, separately reviewed.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L19](../../docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md#requirements): Lower native/managed/Wasm foreign declarations with explicit ABI, layout and unsupported-profile diagnostics.
+- [PERF7](../../docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md#requirements): Generated target variants preserve source maps and compatibility metadata, with explicit feature guards and truthful dispatch overhead.
+- [PERF8](../../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md#requirements): Target intrinsic maps and scalar/guarded fallback must match declared features; strict floating reduction cannot silently reassociate.
+- [TEST6](../../docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md#requirements): Conformance covers the declared target/backend/runtime matrix, observable semantics, unsupported diagnostics, ABI/layout, manifests and source maps; compile-only evidence is labeled as such.
+- [GOV5](../../docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md#requirements): Target support records bind owner, tier, supported/unsupported profiles and actual lowering/conformance evidence; backend availability is not tier promotion.

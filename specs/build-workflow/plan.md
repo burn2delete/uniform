@@ -48,3 +48,16 @@ Do not add a recurring acceptance loop solely because evidence text changes.
 No source names, callers, wire/schema identities, load order or historical pins
 change. Retain original task identities and phase anchors. Future source work
 uses subsystem/behavior names under the semantic naming rule, separately reviewed.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L12](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md#requirements): Compile-time file/environment/provider inputs and granted effects participate in reproducibility and cache invalidation; grant checking alone is not evaluation.
+- [PERF3](../../docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md#requirements): Cache and replay inputs include source/profile/target/provider/build-effect/proof dependencies; changed inputs invalidate specialized artifacts.
+- [PERF6](../../docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md#requirements): Record accepted/advisory/stale/rejected/required-missing data status and reproducible profile-data inputs; stale data cannot silently guide releases.
+- [GOV2](../../docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md#requirements): Consume package/schema/lock compatibility classifications and migration metadata. Compatibility decision authority remains a governance gap in the central mapping.
+- [GOV10](../../docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md#requirements): Publication/retrieval verifies package identity, signatures, provenance, SBOM, capability/profile/target metadata and policy-bound yanks/advisories. Namespace adjudication and emergency policy authority remain proposed governance work, not Build authority.
