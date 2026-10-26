@@ -113,6 +113,35 @@
     (is (= 3 @calls))
     (is (= baseline (cache-key)))))
 
+(deftest projection-preserves-metadata-precedence-and-stage-identities
+  (doseq [[metadata expected]
+          [[{:compiler {:c16-incremental {:fail :c16-key}
+                        :verification {:fail :c16-stale}}} {:fail :c16-key}]
+           [{:compiler {:c16-incremental nil
+                        :verification {:fail :c16-stale}}} {:fail :c16-stale}]
+           [{:compiler {:c16-incremental {}
+                        :verification {:fail :c16-stale}}} {}]
+           [{} {}]]]
+    (is (= expected
+           (c16/c16-incremental-source-overrides {:metadata metadata}))))
+  (is (= {:artifact :gravity/cache-key
+          :stage :reader
+          :source "source-input"
+          :reader "sha256:c16-reader-options"
+          :syntax "sha256:c16-syntax-stream"
+          :macro-expansion "sha256:c16-macro-expansion"
+          :namespace "sha256:c16-namespace-analysis"
+          :profile "sha256:c16-profile-manifest"
+          :target "sha256:c16-target-request"
+          :compiler "sha256:gravity-stage0-clojure"
+          :pass-contract "sha256:c16-pass-reader"
+          :dependencies "dependency-input"
+          :build-effects "sha256:c16-replay-record"
+          :capabilities "sha256:c16-capability-policy"
+          :language-facets "sha256:c16-facets"
+          :policy "sha256:c16-policy"}
+         (c16/c16-stage-cache-key :reader "source-input" "dependency-input"))))
+
 (deftest incremental-evidence-engine-emits-complete-products
   (let [artifact
         (c16/with-operations

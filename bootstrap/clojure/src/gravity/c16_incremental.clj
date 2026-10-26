@@ -3,7 +3,7 @@
   (:require [gravity.c16-incremental.artifact :as artifact]
             [gravity.build.incremental.operations :as operations]
             [gravity.c16-incremental.policy :as policy]
-            [gravity.c16-incremental.projection :as projection]
+            [gravity.build.incremental.projection :as projection]
             [gravity.c16-incremental.proof :as proof]
             [gravity.c16-incremental.validation :as validation]
             [gravity.compiler-verification-shared :as shared]
