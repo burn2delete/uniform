@@ -185,7 +185,8 @@
           parameter? (contains? #{1 2 3} (get-in (stage0-function-table raw-module) ['main :arity]))
           resolved-parameter (when parameter?
                                (p15-s23-c6c10-resolved-parameter source-path source-text front-end
-                                 (when (some? reader-source-path) (:authenticated-c3-source-artifact raw-front-end))))
+                                 (when (some? reader-source-path) (:authenticated-c3-source-artifact raw-front-end))
+                                 invocation))
           emitter-rule
           (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
           raw-plan
