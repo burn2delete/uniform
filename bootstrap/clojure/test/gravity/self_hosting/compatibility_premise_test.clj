@@ -119,7 +119,7 @@
                   (is (= :rejected (get-in rejected [:context :status])))
                   (is (false? (local-valid? body input (:checked rejected) actual)))
                   (is (= :rejected (:status (compile (assoc-in typed [:ledger 0 :rhs 0 :compatibility key] value)))))))))
-          (doseq [changed [(assoc-in typed [:forms (get-in input [:declaration :marker-form-id]) :value] :forged)
+          (doseq [changed [(assoc-in typed [:forms (get-in input [:declaration :type-form-id]) :syntax-id] :forged)
                            (assoc-in typed [:edges :call :callee-function-syntax-id] :orphan)
                            (update typed :ledger into (:ledger typed))
                            (assoc-in typed [:calls :call :argument-node-ids] [])]]
