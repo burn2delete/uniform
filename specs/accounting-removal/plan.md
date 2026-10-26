@@ -8,9 +8,9 @@ Use an isolated checkout; never update another writer's checkout.
 
 | Alias | Repository paths | Current ownership |
 | --- | --- | --- |
-| C7 | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Existing PR359 writer through current guard and Map/List publication; explicit release pending |
-| Effects | `bootstrap/gravity/src/gravity/effects.gravity` | Same PR359 writer |
-| Emitter | `bootstrap/gravity/p15_s23/emitter.gravity` | Same PR359 writer |
+| C7 | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Accounting successor; explicit release received after PR359 guard and Map/List publication at `972a2126` |
+| Effects | `bootstrap/gravity/src/gravity/effects.gravity` | Same released accounting successor ownership |
+| Emitter | `bootstrap/gravity/p15_s23/emitter.gravity` | Same released accounting successor ownership |
 | Runtime | `bootstrap/gravity/src/gravity/runtime.gravity` | Accounting owns precisely inventoried module-read traversal increment after parent confirmation of no active runtime writer; existing work preserved |
 | MIR | `bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity`; `bootstrap/clojure/test/gravity/self_hosting/{sh12_c10_mir_adapter_test,sh12_literal_bool_specialization_test,mir_scalar_admission_test}.clj` | Existing PR378/421 owner |
 | Native | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh00-sh02/` Native adapter components and existing Native tests | Existing PR383/parameter writer; exact component paths to confirm |

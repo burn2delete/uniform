@@ -106,11 +106,66 @@ updated caller/arity expectations. It is code and retained-evidence review,
 not a second fresh execution or whole-source/public-admission authentication.
 These hashes identify evidence and confer no authority themselves.
 
-## Publication blocker
+## Initial publication denial and supported reassessment
 
 Push of `codex/accounting-completion` and draft PR creation to
 `burn2delete/uniform` were denied before execution by automatic approval review.
 The stated reason was external publication without explicit destination
 authorization. No push or PR occurred, and no alternate tool, actor or retry was
-used. Publication and integration remain blocked pending approval addressing
-that rejection. Local validation and review continue independently.
+used. The denial remains part of the operation history.
+
+The user subsequently directly instructed that the completion tasks be merged
+to main. Following that new evidence, remote branch and PR lookups confirmed
+the denied operation had not executed. Independent complete outgoing-content
+and PR-body inspection found no private material, and one historical-audit
+wording correction was applied. One supported reassessment through the original
+actor and git/gh route succeeded: [draft PR433](https://github.com/burn2delete/uniform/pull/433).
+Initial published head `6e5cf69e125c24fe5aaf4977a6d076b199e1a7ac` matched fresh
+remote branch and PR readback. No administrator bypass, actor substitution,
+credential change or branch deletion occurred.
+
+## Current-main reconciliation
+
+Normal merges brought main `48f81c4bf2d7e7ecb01905949586253b797aaf98`, tree
+`847cae797ac742d8a394b9c137966f9aae61b3ad`, into candidate
+`31f9e87bf716e621138dc62cb686122319fd5563`, tree
+`37bd9b2b68962fedd59596586b6886b0c55cf335`.
+The only main changes were independently owned Emit workflow/projector and
+acceptance documentation/tooling. Runtime source, affected tests, bootstrap
+implementations, emitter, broker and process-runner inputs remained identical
+to the original tested candidate. Reuse of the three unchanged semantic tests
+is limited to that exact consumed input closure.
+
+A fresh current-main affected integration run passed the existing normalized
+module-literal execution selector, six language-boundary selectors and the
+240-document/19-index validator: natural exit 0 in 17412 ms, 7 tests and 72
+assertions, zero failures/errors. The same existing normal/exclusive brokers,
+canonical lock, 2 GiB child, 120-second watchdog and 65536-byte/character capture
+limits applied. Exact clean before/after bookends matched the above tuple;
+stdout was complete at 1034 bytes, stderr empty, and cleanup completed. No
+process or lease remains active. This renews affected normalized integration,
+not authenticated source/public runtime/release acceptance.
+
+Current-main process receipt SHA-256:
+`da1520e70c11bf812666a84a003572185aadd2e00d6788b755eb566f5bdb1630`.
+
+Independent static reconciliation review found no blocking change against
+current main; the three runtime/test blobs remained identical to the accepted
+original. Independent inspection of the fresh driver, receipt, stdout and
+counters accepted the declared current-main scope and verified the receipt
+hash. It also verified unchanged bootstrap, dependency and contract inputs
+against the original semantic-test tuple. This is retained-evidence review,
+not a second fresh execution. Main integration was pending at evidence
+preparation and must be established by fresh remote merged-state and
+reachability readback.
+
+## PR359 ownership release
+
+The prior writer published and explicitly released C7, Effects, emitter and
+its owning tests at PR359 head `972a2126f7eeb149cce0a39a51d26453a84f39a4`, tree
+`31bf8d40ff0af0461c750abe9f2bdcd7023f5861`, with no active process/lease or
+pending publication. Its checkout remains an immutable audit copy. Accounting
+successor ownership is acknowledged; no LR/PL implementation has started.
+That release does not integrate PR359 or close ACC-02. The LR three-owner
+version/invalidation proposal was read as design, preserving semantic extents,
+full equality, complete validation and historical receipt invalidation.
