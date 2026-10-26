@@ -29,6 +29,43 @@ Reader-to-Syntax handoff, full C2/C5 construction, digest-resolution cost, C14
 acceptance or release. It changes no historical source pin and claims no
 measured speedup.
 
+## Staged closure compatibility correction
+
+PR414's full-module semantic tests did not exercise the staged Reader builder's
+existing `sh03-` function selection. Its new `reader-token-with-raw` helper was
+therefore omitted, and genuine selected-source construction failed during seed
+compilation with `L2-UNKNOWN-CORE-FORM`, operator `reader-token-with-raw`.
+The original passing leaf evidence above remains limited to its stated route.
+
+The correction renames only the private helper definition and its three calls
+to `sh03-token-with-raw`. This compatibility name follows the established
+Reader closure contract; selection, structural validation, historical pins,
+the token constructor signature and spelling reuse are unchanged.
+
+The actual staged regression uses the existing explicit-current-source Reader
+binding and current-emitter lexical binding. It builds and structurally verifies
+the selected closure, checks the eight-argument helper, executes original source
+and fresh Reader verification, and rejects missing-helper, wrong-arity and four
+raw/span/descriptor/digest substitutions. Retained leaf regressions check Unicode
+spans, exact bytes, numeric classification and malformed inputs.
+
+Baseline `de605c89cb1b7e375e96eaaba6c64ef8db0dc505`, tree
+`5807f121437d9eadf7cbbf4fba92d4be2adc9bb9`, failed naturally in 10.434 seconds
+with the unknown-helper diagnostic before any C3/C6 consumer. After the rename,
+an initial test run failed two newly written malformed-result expectations:
+successful verification of a rejected source returns an accepted report, and
+the engine diagnostic is stored in `:reader-engine-diagnostic`. Correcting those
+test expectations preserved production and the original failed receipt.
+
+Validated `edf7da074f1120c1dc743c74d9d1b673d3189f48`, tree
+`ef0b6583ce1dddd218e5d2c445b9db9b912ab185`, passed 10 tests / 345 assertions
+and language boundary 6 / 11, with zero failures/errors. The process exited
+naturally zero in 12.998 seconds under serialized 2 GiB / 120-second execution;
+clean before/after commit and tree identities matched. This establishes the
+focused staged Reader route, not whole C2/C5/C6 composition, C14 acceptance,
+migration, release or a performance improvement. Independent final review and
+integration remain separate requirements.
+
 ## Earlier workflow evidence
 
 Current candidate: Reader implementation task authority transfer. The original
