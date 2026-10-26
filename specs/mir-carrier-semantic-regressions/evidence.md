@@ -43,7 +43,7 @@ Repository language-boundary namespace also naturally exited 0: 6 tests,
 11 assertions, 0 failures/errors. `git diff --check` passed. All three runs total
 9 tests / 65 assertions; this count is not project progress or coverage.
 
-Review and integration remain pending; the task checkbox is intentionally open.
+Independent review is recorded below; draft publication and main integration remain pending. The task checkbox stays open.
 
 ## Independent review
 
