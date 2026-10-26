@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest is run-tests]]
             [clojure.java.io :as io]
             [clojure.string :as str]))
-(load-file "tools/result_handoff.clj")
+(binding [*command-line-args* nil] (load-file "tools/result_handoff.clj"))
 (def hash-a (apply str (repeat 64 "a")))
 (def oid (apply str (repeat 40 "b")))
 (def document {:sha256 hash-a :bytes 120
@@ -79,6 +79,15 @@
         (java.nio.file.Files/delete link))
       (finally (.delete file) (.delete dir)))))
 
+(defn invoke-cli [args]
+  (let [java (str (io/file (System/getProperty "java.home") "bin" "java"))
+        argv (into [java "-Xmx128m" "-cp" (System/getProperty "java.class.path")
+                    "clojure.main" "tools/result_handoff.clj"] args)
+        process (.start (doto (ProcessBuilder. ^java.util.List argv) (.redirectErrorStream true)))
+        finished (.waitFor process 10 java.util.concurrent.TimeUnit/SECONDS)]
+    (when-not finished (.destroyForcibly process) (.waitFor process))
+    {:exit (.exitValue process) :finished finished :output (slurp (.getInputStream process))}))
+
 (deftest cli-producer-consumer-roundtrip
   (let [dir (.toFile (java.nio.file.Files/createTempDirectory "handoff-cli-" (make-array java.nio.file.attribute.FileAttribute 0)))
         receipt (io/file dir "receipt.edn")
@@ -96,10 +105,17 @@
           (is (= (assoc (result-handoff/project selected result-handoff/read-document)
                         :plan-sha256 (:plan-sha256 packet)) packet))
           (is (not (str/includes? output (str dir)))))
+        (let [actual (invoke-cli [(str plan-file)])]
+          (is (:finished actual))
+          (is (= 0 (:exit actual)))
+          (is (= :result-handoff-v1 (:schema (clojure.edn/read-string (:output actual))))))
         ;; Original producer evidence is immutable for this version of the plan.
         (spit receipt "{:changed true}")
         (is (rejects? #(result-handoff/-main (str plan-file)))))
       (is (rejects? #(result-handoff/-main)))
+      (let [actual (invoke-cli [])]
+        (is (:finished actual))
+        (is (not= 0 (:exit actual))))
       (finally (.delete receipt) (.delete plan-file) (.delete dir)))))
 
 (let [result (run-tests)]

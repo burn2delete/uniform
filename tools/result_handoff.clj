@@ -117,4 +117,4 @@
         result (project (:value plan) read-document)]
     (prn (assoc result :plan-sha256 (:sha256 plan)))))
 
-(when (seq *command-line-args*) (apply -main *command-line-args*))
+(when (some? *command-line-args*) (apply -main *command-line-args*))
