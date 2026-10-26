@@ -48,7 +48,10 @@
 
 (defn- read-first-form [text path]
   (try
-    (binding [*read-eval* false *data-readers* {}
+    (binding [*read-eval* false
+              *data-readers*
+              {'inst (fn [_] (reject! :tagged-source {:path path :tag 'inst}))
+               'uuid (fn [_] (reject! :tagged-source {:path path :tag 'uuid}))}
               *default-data-reader-fn*
               (fn [tag _] (reject! :tagged-source {:path path :tag tag}))]
       (read {:eof nil} (java.io.PushbackReader. (java.io.StringReader. text))))
@@ -120,9 +123,10 @@
       (if (or (contains? visited path) (not (str/ends-with? path ".clj")))
         (recur (subvec pending 1) (conj visited path) loads)
         (let [resources
-              (map second
-                   (re-seq #"\((?:clojure\.core/)?load\s+\"(/[^\"\r\n]+)\""
-                           (slurp (.toFile (local-path! root path)))))
+              (mapcat (fn [[_ arguments]]
+                        (map second (re-seq #"\"(/[^\"\r\n]+)\"" arguments)))
+                      (re-seq #"\((?:clojure\.core/)?load\s+((?:\"/[^\"\r\n]+\"\s*)+)\)"
+                              (slurp (.toFile (local-path! root path)))))
               loaded
               (mapv
                (fn [resource]
@@ -153,10 +157,19 @@
   ([root {:keys [namespace manifest loader fixtures]
           :or {namespace selection manifest manifest-resource loader loader-path
                fixtures [accepted-fixture]}}]
-   (let [root (.toRealPath (.toPath (io/file root)) no-links)
+   (let [supplied (.normalize (.toAbsolutePath (.toPath (io/file root))))
+         _ (when (Files/isSymbolicLink supplied)
+             (reject! :symbolic-root {}))
+         _ (when-not (Files/isDirectory supplied no-links)
+             (reject! :audit-root {}))
+         ;; Resolve ancestor aliases such as macOS /var; reject a supplied root
+         ;; that is itself a link. Child links still reject in local-path!.
+         root (.toRealPath supplied (make-array LinkOption 0))
          manifest-path (str (first source-roots) "/" (relative-path! manifest))
          _ (read-input! root manifest-path)
-         entries (edn/read-string {:readers {} :default (fn [tag _] (reject! :tagged-manifest {:tag tag}))}
+         entries (edn/read-string {:readers {'inst (fn [_] (reject! :tagged-manifest {:tag 'inst}))
+                                            'uuid (fn [_] (reject! :tagged-manifest {:tag 'uuid}))}
+                                  :default (fn [tag _] (reject! :tagged-manifest {:tag tag}))}
                                   (slurp (.toFile (local-path! root manifest-path))))
          _ (when-not (and (vector? entries)
                           (every? #(and (map? %) (string? (:resource %))) entries))
@@ -191,7 +204,8 @@
                                         (:other-loading-clauses loader-inputs)))
       :read-candidates sites
       :unresolved [:arbitrary-initialization-effects :dynamic-body-call-targets
-                   :computed-resource-paths :atomic-read-consistency
+                   :computed-resource-paths :computed-relative-or-unparsed-load-forms
+                   :atomic-read-consistency
                    :classpath-runtime-identity :manifest-backed-closure-representation]
       :representation {:current-kind :bounded-flat-explicit-inputs
                        :policy-source "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj"

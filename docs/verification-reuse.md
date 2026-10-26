@@ -248,7 +248,12 @@ candidates and the accepted fixture. It hashes observed bytes and executable
 mode and preserves manifest order. It rejects missing, escaping, symlinked or
 ambiguous namespace inputs. It reads namespace declarations with reader
 evaluation disabled and never loads the observed namespaces or compiler.
-Relative or computed loads remain unresolved.
+Built-in `inst` and `uuid` tags and custom tags reject in the namespace and
+manifest forms read by the audit. Source bodies are hashed and scanned, not
+evaluated. A supplied audit root that is itself a symlink rejects; ancestor
+aliases such as macOS `/var` resolve to a canonical root before child checks.
+All arguments of flat literal absolute `load` forms are observed. Relative,
+computed or otherwise unparsed load forms remain explicitly unresolved.
 The tool can be run with:
 
 ```sh
@@ -294,6 +299,14 @@ the fifteen direct loads plus the nested `capacity_handoff.clj` load from
 `adapter_request.clj`. There are 306 syntactic read candidates after the multiline
 correction and loaded-file traversal. The new observation digest is
 `e893375079f95a22f95b12d2394430403ea6c6ed3ff7844d919088a82e44e0a0`.
+Independent review then required explicit tag-reader and audit-root policies
+and multi-argument load handling. Their controls now pass 10 tests / 45
+assertions, plus language boundary 6 / 11. An intermediate 10 / 45 run had two
+fixture-stage failures because the previous tagged manifest was not restored
+before probing the next source tag; those failures remain nonpasses. The
+fixture reset was corrected without relaxing the reader policy. These policy
+changes preserve the observed input set and observation digest above; they
+do not establish initialization-effect or cache authority.
 Independent closure review remains pending; the next eligible source review is
 the reported initialization
 and dynamic read boundary, followed by representation design only if that

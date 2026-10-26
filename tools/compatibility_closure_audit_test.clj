@@ -148,5 +148,42 @@
     (is (some #(and (= component (:path %)) (= 1 (:line %)))
               (:read-candidates (audit/audit root options))))))
 
+(deftest all-flat-literal-load-arguments-are-observed
+  (with-fixture [root]
+    (let [first-path "bootstrap/clojure/src/gravity/first_load.clj"
+          second-path "bootstrap/clojure/src/gravity/second_load.clj"]
+      (put! root "bootstrap/clojure/src/gravity/nested.clj"
+            "(ns gravity.nested)\n(load \"/gravity/first_load\"\n \"/gravity/second_load\")")
+      (put! root first-path "(def first-value true)")
+      (put! root second-path "(def second-value true)")
+      (is (= [first-path second-path] (:literal-load-candidates (audit/audit root options))))
+      (io/delete-file (io/file root second-path))
+      (is (= :literal-load-resolution (reason #(audit/audit root options))))
+      (put! root "bootstrap/clojure/src/gravity/nested.clj"
+            "(ns gravity.nested)\n(load \"relative\" (str \"computed\"))")
+      (let [report (audit/audit root options)]
+        (is (contains? (set (:unresolved report)) :computed-relative-or-unparsed-load-forms))
+        (is (false? (:closure-complete? report)))))))
+
+(deftest built-in-and-custom-tag-readers-are-not-invoked
+  (with-fixture [root]
+    (doseq [literal ["#inst \"2026-10-26\""
+                     "#uuid \"00000000-0000-0000-0000-000000000000\""
+                     "#probe/custom \"value\""]]
+      (put! root manifest-path
+            "[{:resource \"gravity/bootstrap_impl/components/probe.clj\"}]")
+      (put! root test-path (str "(ns gravity.probe-test (:probe " literal "))"))
+      (is (= :namespace-read (reason #(audit/audit root options))))
+      (put! root test-path "(ns gravity.probe-test)")
+      (put! root manifest-path
+            (str "[{:resource \"gravity/bootstrap_impl/components/probe.clj\" :probe " literal "}]"))
+      (is (= :tagged-manifest (reason #(audit/audit root options)))))))
+
+(deftest symlinked-audit-root-rejects-before-reading
+  (with-fixture [root]
+    (let [alias (.toPath (io/file root "root-alias"))]
+      (Files/createSymbolicLink alias (.toPath root) (make-array FileAttribute 0))
+      (is (= :symbolic-root (reason #(audit/audit (.toFile alias) options)))))))
+
 (let [result (run-tests 'compatibility-closure-audit-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
