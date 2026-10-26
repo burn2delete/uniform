@@ -517,3 +517,30 @@
              (failure #(b/p15-s23-c11-mir-require-strict-structure!
                          path producer (assoc-in native [:scope key] 1)
                          :producer-contract-parity)))))))
+
+(deftest native-carrier-traversal-is-stack-safe-for-large-finite-shapes
+  ;; Finite host-limit evidence, not a guarantee for arbitrary heap sizes.
+  (doseq [value [(nth (iterate vector nil) 4096)
+                 (into '() (range 32769))]]
+    (is (= {:status :passed} (c11-carrier value))))
+  (with-redefs [b/p15-s23-trusted-carrier-validation
+                (fn [& _] (throw (StackOverflowError. "contained-native-test")))]
+    (is (= :contained-c11-carrier-host-stack (failure #(c11-carrier nil))))))
+
+(deftest native-carrier-validation-retains-current-mir-scope-and-ingress-semantics
+  (let [scope (b/p15-s23-c11-mir-scope-record)
+        contract-scope (:scope (b/p15-s23-c11-mir-pass-contract-record))
+        quotas [:maximum-module-carrier-nodes
+                :maximum-final-artifact-carrier-nodes :maximum-carrier-depth]]
+    ;; Scope migration does not grant authority to an otherwise valid carrier.
+    (is (not-any? #(contains? scope %) quotas))
+    (is (not-any? #(contains? contract-scope %) quotas))
+    (is (= 1 (:maximum-conditionals scope)))
+    (doseq [value [(vec (repeat 32769 nil)) (nth (iterate vector nil) 4096)]]
+      ;; Even a valid native carrier cannot supply absent Core authority.
+      (let [report (try (b/p15-s23-stage2-c11-mir-verification-report
+                         value nil {:source-path path})
+                       nil
+                       (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= "C11-MODULE" (:id report)))
+        (is (= :authenticated-checked-core-ingress-pair (:missing-fact report)))))))
