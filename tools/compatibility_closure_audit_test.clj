@@ -121,5 +121,32 @@
       (Files/createSymbolicLink target other (make-array FileAttribute 0))
       (is (= :symbolic-link (reason #(audit/audit root options)))))))
 
+(deftest literal-initialization-loads-are-recursive-and-closed
+  (with-fixture [root]
+    (let [path "bootstrap/clojure/src/gravity/loaded.clj"
+          nested "bootstrap/clojure/src/gravity/loaded_nested.clj"]
+      (put! root "bootstrap/clojure/src/gravity/nested.clj"
+            "(ns gravity.nested)\n(load \"/gravity/loaded\")")
+      (put! root path "(load \"/gravity/loaded_nested\")")
+      (put! root nested "(def loaded-value :one)")
+      (let [report (audit/audit root options)]
+        (is (= [path nested] (:literal-load-candidates report)))
+        (is (every? (set (map :path (:inputs report))) [path nested]))
+        (put! root nested "(def loaded-value :two)")
+        (is (not= (:observation-sha256 report)
+                  (:observation-sha256 (audit/audit root options)))))
+      (put! root "bootstrap/clojure/src/gravity/loaded.cljc" "(def shadow true)")
+      (is (= :literal-load-resolution (reason #(audit/audit root options))))
+      (io/delete-file (io/file root "bootstrap/clojure/src/gravity/loaded.cljc"))
+      (io/delete-file (io/file root nested))
+      (is (= :literal-load-resolution (reason #(audit/audit root options)))))))
+
+(deftest multiline-read-sites-remain-visible
+  (with-fixture [root]
+    (put! root component
+          "(gravity.bootstrap-impl.loader/append-data!\n :probe\n \"gravity/bootstrap_impl/data/probe.edn\")")
+    (is (some #(and (= component (:path %)) (= 1 (:line %)))
+              (:read-candidates (audit/audit root options))))))
+
 (let [result (run-tests 'compatibility-closure-audit-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

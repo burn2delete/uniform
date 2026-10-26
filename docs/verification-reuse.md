@@ -241,12 +241,14 @@ before calling that function. The accepted `compiler-passes.gravity` fixture
 is therefore a consumed input, rather than path-valued metadata.
 
 `tools/compatibility_closure_audit.clj` records read-only source observations:
-the selected test's recursive literal namespace requirements, the explicitly
-loaded bootstrap loader, ordered component manifest, literal data-resource
+the selected test's recursive literal namespace requirements, recursive literal
+absolute `load` candidates, the explicitly loaded bootstrap loader, ordered
+component manifest, literal data-resource
 candidates and the accepted fixture. It hashes observed bytes and executable
 mode and preserves manifest order. It rejects missing, escaping, symlinked or
 ambiguous namespace inputs. It reads namespace declarations with reader
 evaluation disabled and never loads the observed namespaces or compiler.
+Relative or computed loads remain unresolved.
 The tool can be run with:
 
 ```sh
@@ -272,14 +274,27 @@ this observation tool does not launch or authorize one.
 Cheap synthetic controls cover nested requirements, ordered manifest changes,
 component/data/fixture mutations, namespace shadows, missing and escaping
 resources, symlinks and reader-evaluation attempts. Computed resources stay
-explicitly unresolved. Final controls passed 5 tests / 28 assertions; language
+explicitly unresolved. Initial controls passed 5 tests / 28 assertions; language
 boundary passed 6 / 11 and documents passed 240 / 19. The preceding broker wait
 timed out before revised controls or the real-source audit ran; it remains a
 nonpass. The actual source observation recorded 1,982 inputs, 1,578 ordered
 components, 118 literal data candidates and 186 syntactic read candidates.
-The observation digest is
+That initial observation digest is
 `9df558db90d4022c6b37661dd778699744ca8ebc6e5a4bd502e4cc27d53110ee`;
-it identifies those observations, not a complete or accepted closure.
-Independent closure review remains pending; the next eligible source review is the reported initialization
+it identifies those observations, not a complete or accepted closure. Subsequent
+read-only form-context analysis found fifteen literal initialization loads in
+`c2_pass_cache.clj` that namespace requirements alone did not follow. The
+successor includes those loaded files recursively and tests their mutation,
+missing-file and shadow behavior. It also preserves multiline `append-data!`
+read candidates that the initial line matcher missed. Neither correction
+enables reuse or makes a complete-closure claim.
+Final successor controls passed 7 tests / 34 assertions and language boundary
+6 / 11. Its observation includes 1,998 inputs and sixteen literal loaded files:
+the fifteen direct loads plus the nested `capacity_handoff.clj` load from
+`adapter_request.clj`. There are 306 syntactic read candidates after the multiline
+correction and loaded-file traversal. The new observation digest is
+`e893375079f95a22f95b12d2394430403ea6c6ed3ff7844d919088a82e44e0a0`.
+Independent closure review remains pending; the next eligible source review is
+the reported initialization
 and dynamic read boundary, followed by representation design only if that
 boundary can be closed. RV1 and whole-outcome RV4 remain open.

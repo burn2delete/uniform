@@ -114,10 +114,34 @@
   (mapv second
         (re-seq #"\"(gravity/bootstrap_impl/data/[^\"\r\n]+\.edn)\"" text)))
 
+(defn- literal-load-inputs [root initial-paths]
+  (loop [pending (vec (sort initial-paths)) visited #{} loads #{}]
+    (if-let [path (first pending)]
+      (if (or (contains? visited path) (not (str/ends-with? path ".clj")))
+        (recur (subvec pending 1) (conj visited path) loads)
+        (let [resources
+              (map second
+                   (re-seq #"\((?:clojure\.core/)?load\s+\"(/[^\"\r\n]+)\""
+                           (slurp (.toFile (local-path! root path)))))
+              loaded
+              (mapv
+               (fn [resource]
+                 (let [relative (relative-path! (subs resource 1))
+                       candidates
+                       (vec (for [prefix source-roots suffix [".clj" ".cljc" ".class"]
+                                  :let [p (str prefix "/" relative suffix)]
+                                  :when (Files/exists (local-path! root p) no-links)] p))]
+                   (when-not (and (= 1 (count candidates))
+                                  (str/ends-with? (first candidates) ".clj"))
+                     (reject! :literal-load-resolution {:resource resource :candidates candidates}))
+                   (first candidates))) resources)]
+          (recur (into (subvec pending 1) loaded) (conj visited path) (into loads loaded))))
+      loads)))
+
 (defn- read-sites [path text]
   (vec (keep-indexed
         (fn [index line]
-          (when (re-find #"\((?:[A-Za-z0-9_.-]+/)?(?:slurp|resource|load|load-file|require|requiring-resolve|append-data!)(?=\s|\))" line)
+          (when (re-find #"\((?:[A-Za-z0-9_.-]+/)?(?:slurp|resource|load|load-file|require|requiring-resolve|append-data!)(?=\s|\)|$)" line)
             {:path path :line (inc index) :text (str/trim line)
              :classification :syntactic-candidate-not-execution}))
         (str/split-lines text))))
@@ -145,8 +169,10 @@
          ns-inputs (namespace-inputs root namespace)
          ;; The loader is an explicit require outside bootstrap's ns form.
          loader-inputs (namespace-inputs root 'gravity.bootstrap-impl.loader)
-         paths (into (set (concat [manifest-path loader] component-paths data-paths fixtures))
-                     (concat (:paths ns-inputs) (:paths loader-inputs)))
+         initial-paths (into (set (concat [manifest-path loader] component-paths data-paths fixtures))
+                             (concat (:paths ns-inputs) (:paths loader-inputs)))
+         loaded-paths (literal-load-inputs root initial-paths)
+         paths (into initial-paths loaded-paths)
          inputs (mapv #(read-input! root %) (sort paths))
          source-paths (filter #(str/ends-with? % ".clj") paths)
          sites (vec (mapcat #(read-sites % (slurp (.toFile (local-path! root %))))
@@ -158,6 +184,7 @@
       :observation-sha256 (digest/sha256-hex (pr-str observations))
       :inputs inputs :ordered-components (:ordered-components observations)
       :literal-data-candidates (vec (sort data-paths))
+      :literal-load-candidates (vec (sort loaded-paths))
       :external-namespaces (vec (sort (set (concat (:external-namespaces ns-inputs)
                                                   (:external-namespaces loader-inputs)))))
       :other-loading-clauses (vec (concat (:other-loading-clauses ns-inputs)
