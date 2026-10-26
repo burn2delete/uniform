@@ -200,3 +200,38 @@
               (catch clojure.lang.ExceptionInfo exception exception))]
         (is (some? error))
         (is (= expected-id (:id (ex-data error))))))))
+
+(deftest validation-and-proof-projection-preserve-compatibility-data
+  (let [path "c16-test.gravity"
+        artifact (c16/with-operations
+                   (operations)
+                   #(c16/compiler-c16-incremental-source-artifact path "source"))]
+    (is (= :complete (c16/c16-incremental-validate! path artifact)))
+    (doseq [[invalid expected-id]
+            [[(update-in artifact [:stage-cache-keys 0] dissoc :source) "C16-KEY"]
+             [(update-in artifact [:cache-entry-manifest 0] dissoc :artifact-id)
+              "C16-ENTRY"]
+             [(assoc-in artifact [:stale-proof-rejection-report :status] :accepted)
+              "C16-PROOF"]
+             [(assoc-in artifact [:incremental-dependency-graph :status] :invalid)
+              "C16-GRAPH"]]]
+      (let [error (try
+                    (c16/c16-incremental-validate! path invalid)
+                    nil
+                    (catch clojure.lang.ExceptionInfo exception exception))
+            data (ex-data error)]
+        (is (= expected-id (:id data)))
+        (is (= :compiler-incremental (:diagnostic-family data)))
+        (is (= {:source path :form-index 0} (:source-span data)))))
+    (let [valid (c16/c16-incremental-capability-proof artifact)
+          altered (c16/c16-incremental-capability-proof
+                   (-> artifact
+                       (assoc-in [:incremental-dependency-graph :status] :invalid)
+                       (assoc-in [:c15-diagnostics-artifact :capability-based-proof
+                                  :status] :incomplete)))]
+      (is (true? (:dependency-graph-consistent? valid)))
+      (is (true? (:c15-diagnostics-input-verified? valid)))
+      (is (false? (:dependency-graph-consistent? altered)))
+      (is (false? (:c15-diagnostics-input-verified? altered)))
+      ;; Retain the existing projection status; it is not proof authority.
+      (is (= :complete (:status altered))))))

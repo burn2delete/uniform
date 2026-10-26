@@ -1,4 +1,4 @@
-(ns gravity.c16-incremental.proof
+(ns gravity.build.incremental.proof
   (:require [clojure.set :as set]))
 
 (defn capability-proof

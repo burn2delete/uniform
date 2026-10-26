@@ -1,11 +1,11 @@
 (ns gravity.c16-incremental
   "Hosted Stage0 C16 incremental-compilation schema/evidence projection."
-  (:require [gravity.c16-incremental.artifact :as artifact]
+  (:require [gravity.build.incremental.artifact :as artifact]
             [gravity.build.incremental.operations :as operations]
-            [gravity.c16-incremental.policy :as policy]
+            [gravity.build.incremental.policy :as policy]
             [gravity.build.incremental.projection :as projection]
-            [gravity.c16-incremental.proof :as proof]
-            [gravity.c16-incremental.validation :as validation]
+            [gravity.build.incremental.proof :as proof]
+            [gravity.build.incremental.validation :as validation]
             [gravity.compiler-verification-shared :as shared]
             [gravity.digest :as digest]))
 
