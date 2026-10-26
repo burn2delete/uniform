@@ -4,6 +4,7 @@
             [clojure.java.io :as io]))
 
 (load-file "tools/task_projection.clj")
+(load-file "tools/task_projection_links.clj")
 
 (def task-path "specs/legality-workflow/tasks.md")
 (def roadmap-path "docs/component-roadmaps/legality.md")
@@ -13,42 +14,20 @@
     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
     "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
     "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"})
-(def link-pattern #"\[([^\[\]<>!\\\n]+)\]\(([^\s()<>\"`\\]+)\)")
+(def link-pattern task-projection-links/link-pattern)
 (def record-pattern
   #"(?s)^- \[([ x])\] `(legality/remaining-tasks-and-evidence/[a-z-]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nEvidence baseline: ([^\n|]+)\n\nClosing evidence: ([^\n|]+)$")
 
 (defn fail [message] (task-projection/fail message))
 
 (defn relative-target [document target]
-  ;; Pure lexical resolution. File existence and symlink containment are checked
-  ;; separately before any projection can be written.
-  (let [uri (try (java.net.URI. target) (catch java.net.URISyntaxException _ nil))]
-    (when-not (and uri (nil? (.getScheme uri)) (nil? (.getAuthority uri))
-                   (nil? (.getFragment uri)) (nil? (.getQuery uri))
-                   (not (str/starts-with? target "/"))
-                   (not (str/includes? target "%")) (seq (.getPath uri)))
-      (fail "Legality relative links must name repository files without fragments or queries"))
-    (let [path (.normalize (.resolve (.getParent (.toPath (io/file document))) target))]
-      (when (or (.isAbsolute path) (.startsWith path ".."))
-        (fail "Legality link escapes repository"))
-      path)))
+  (task-projection-links/relative-target "Legality" document target))
 
 (defn rebase-links [field source destination]
-  (str/replace field link-pattern
-    (fn [[whole label target]]
-      (if (str/starts-with? target "https:")
-        whole
-        (let [path (relative-target source target)
-              rebased (.relativize (.getParent (.toPath (io/file destination))) path)]
-          (str "[" label "](" rebased ")"))))))
+  (task-projection-links/rebase-links "Legality" field source destination))
 
 (defn validate-field [field]
-  ;; Reuse the accepted Markdown grammar after validating relative path syntax.
-  (task-projection/validate-links {:component "Legality"}
-    (str/replace field link-pattern
-      (fn [[whole _ target]]
-        (if (str/starts-with? target "https:") whole
-          (do (relative-target task-path target) ""))))))
+  (task-projection-links/validate-field "Legality" task-path field))
 
 (defn records [text]
   (let [rows (task-projection/records
@@ -57,16 +36,8 @@
                 :record-keys [:id :title :status :evidence :acceptance]
                 :title-id-prefix "legality/remaining-tasks-and-evidence/"
                 :title-id-error "Legality task ID and preserved title disagree"
-                :validate-field validate-field} text)
-        root (.toRealPath (.toPath (io/file ".")) (make-array java.nio.file.LinkOption 0))]
-    (doseq [row rows field (vals (dissoc row :id)) [_ _ target] (re-seq link-pattern field)
-            :when (not (str/starts-with? target "https:"))]
-      (let [path (relative-target task-path target)
-            file (io/file (str path))]
-        (when-not (.isFile file) (fail "Legality link target is not an existing file"))
-        (when-not (.startsWith (.toRealPath (.toPath file) (make-array java.nio.file.LinkOption 0)) root)
-          (fail "Legality link target resolves outside repository"))))
-    rows))
+                :validate-field validate-field} text)]
+    (task-projection-links/validate-targets "Legality" task-path rows)))
 
 (defn table [rows]
   (let [all-open? (every? #(= "Open" (:status %)) rows)]
