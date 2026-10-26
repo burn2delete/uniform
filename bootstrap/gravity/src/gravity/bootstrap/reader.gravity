@@ -2669,19 +2669,24 @@
 (defn sh03-token-id [index]
   (str "token/" index))
 
-(defn sh03-make-token [characters index kind start end descriptor extra]
+(defn reader-token-with-raw [characters index kind start end descriptor extra raw]
   (let [base
         {:token-id (sh03-token-id index)
          :index index
          :kind kind
          :scalar-start start
          :scalar-end end
-         :raw (sh03-range-raw-spelling characters start end)
+         :raw raw
          :span (sh03-span-between-characters characters start end)
          :descriptor descriptor
          :reader-origin :source
          :trivia? (contains? #{:whitespace :comment} kind)}]
     (if (= extra nil) base (sh03-append-map base extra))))
+
+(defn sh03-make-token [characters index kind start end descriptor extra]
+  (reader-token-with-raw
+   characters index kind start end descriptor extra
+   (sh03-range-raw-spelling characters start end)))
 
 (defn sh03-semantic-value-token-index [value-table]
   (loop [remaining value-table result {}]
@@ -2786,9 +2791,9 @@
                            :raw raw
                            :decoded-codepoints
                            (get scanned :decoded-codepoints)}
-                          token (sh03-make-token
+                          token (reader-token-with-raw
                                  characters token-index :string
-                                 position end descriptor nil)]
+                                 position end descriptor nil raw)]
                       (recur end (+ token-index 1) (conj tokens token)))
                     (sh03-lexical-rejection
                      "C2-STRING" "STAGE1READER003"
@@ -2932,11 +2937,9 @@
                                        (+ position 1)
                                        position)
                                      :atom))
-                              codepoints
-                              (sh03-character-range-codepoints
-                               characters position end)
                               raw (sh03-range-raw-spelling
                                    characters position end)
+                              codepoints (get raw :unicode-scalars)
                               base-classification
                               (if (sh03-numeric-looking? codepoints)
                                 (sh03-classify-atom codepoints raw)
@@ -2951,11 +2954,11 @@
                                 base-classification)]
                           (if (= (get classified :status) :accepted)
                             (let [token
-                                  (sh03-make-token
+                                  (reader-token-with-raw
                                    characters token-index
                                    (get classified :kind)
                                    position end
-                                   (get classified :descriptor) nil)]
+                                   (get classified :descriptor) nil raw)]
                               (recur end (+ token-index 1)
                                      (conj tokens token)))
                             (sh03-lexical-rejection
