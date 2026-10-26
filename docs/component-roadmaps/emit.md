@@ -42,6 +42,11 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
+Implementation task authority: [Spec Kit ledger](../../specs/emit-workflow/tasks.md#implementation-tasks).
+The following table is generated; edit the ledger and run
+`clojure -M tools/emit_task_projection.clj --write`.
+
+<!-- emit-task-projection:start -->
 | Task | Status | Concrete exit evidence |
 | --- | --- | --- |
 | emit/1: Reconcile selected target contracts | Open; partial source evidence above is not closure | Record exact target/ABI/runtime tuples, emitted kinds and supported operations for the existing staged Linux LLVM release candidate; distinguish hosted development artifacts, validate Lower input and reject undeclared targets. |
@@ -49,6 +54,7 @@ release acceptance.
 | emit/3: Bind provenance to bytes | Open; partial source evidence above is not closure | Hash actual outputs and attach source/compiler/dependency identity, source/debug maps, profile/effect/capability/safety/proof and ABI/runtime records. |
 | emit/4: Establish conformance | Open; partial source evidence above is not closure | Execute accepted target fixtures and reject illegal or unsupported inputs; compare observable behavior and verify metadata preservation, tamper detection and reproducibility. |
 | emit/5: Integrate artifact consumers | Open; partial source evidence above is not closure | Deliver actual artifact/manifests to Runtime and Build, retaining source-pinned receipts and distinguishing development binaries from seedless signed release artifacts. |
+<!-- emit-task-projection:end -->
 
 The tasks above are the canonical remaining list for this outcome. Close a row
 only with the exact source revision, actual invocation/result and relevant
