@@ -48,10 +48,8 @@ this documentation change.
 ## Implementation authority transfer candidate
 
 Baseline: `023ec47d86004fc829ae7dc5753b715ca4a653dc`, inspected on
-2026-10-26. Remote main matched this commit and the open PR inventory contained
-Syntax PR408, with no overlapping Expand migration. Work is isolated on
-`spec-kit/expand-task-authority`; existing primary-checkout edits and processes
-were left alone. No schedule was created, resumed or changed.
+2026-10-26. Remote main matched this commit. The candidate is scoped to the
+Expand roadmap, its four workflow artifacts and focused projection tool/test.
 
 The five real Expand rows now live in [tasks.md](tasks.md#implementation-tasks)
 as the sole editable authority. The roadmap table is generated. All titles,
@@ -69,7 +67,7 @@ component/heading/title-slug identity convention. The adjacent
 independently reports comparison with the dashboard and preserves slash/colon
 punctuation removal in title slugs. This Expand migration applies that same
 convention to the unchanged checked-in titles; it does not renumber them or
-claim a fresh execution of the cloud-owned dashboard.
+claim a fresh execution of the dashboard.
 
 The IDs are `expand/current-evidence-and-remaining-work/` plus:
 
@@ -96,7 +94,7 @@ Observed locally on 2026-10-26 from repository root:
 - `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test`: 6 tests, 11 assertions, zero failures/errors.
 - `clojure -J-Xmx512m -M tools/validate_gravity_docs.clj`: passed, 240 documents and 19 phase indexes.
 - `clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj`: passed.
-- `clojure -J-Xmx512m -M /tmp/verify-expand.clj`: passed baseline/current table byte equality, all five derived IDs in order, complete historical-ledger byte preservation, five affected Markdown ASCII/local file/heading checks and two negative link controls. The temporary harness is local validation tooling, not another task authority or global catalog payload.
+- A local Clojure comparison harness passed baseline/current table byte equality, all five derived IDs in order, complete historical-ledger byte preservation, five affected Markdown ASCII/local file/heading checks and two negative link controls. It is validation tooling, not another task authority.
 
 The first negative test edited an introductory display-ID reference rather than
 a record; it was corrected to target the record before the passing run.
@@ -107,16 +105,14 @@ run produced the byte/ID results above. Neither failure changed task evidence.
 
 Independent immutable-candidate review and exact final-tree preflight are
 recorded in the PR handoff when completed. Integration remains pending; the
-parent must confirm independent current-head review before merging. No merge is
+maintainer must confirm independent current-head review before merging. No merge is
 authorized by this evidence record.
 
 No compiler semantics or generated-program conformance tests were run or claimed.
 No implementation acceptance, full compiler migration, self-hosting, seed
 retirement, release completion, dependency readiness or global percentage is
-established. Syntax, other active compiler owners, the dashboard and held global
-catalog/bridge payload remain outside the seven-file candidate.
+established. Other component workflows, compiler implementation and dashboard
+behavior remain outside the seven-file candidate.
 
-Successor: after this finite transfer is independently reviewed and integrated,
-select the next unowned component authority transfer from current main/open PRs;
-Resolve is a candidate, subject to fresh ownership/overlap inspection. Actual
-Expand implementation still begins with the open task selected by its owner.
+Future Expand implementation updates its authoritative task record and
+regenerates the roadmap table; the five implementation outcomes remain open.

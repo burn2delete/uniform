@@ -40,7 +40,7 @@ Own the four Expand workflow artifacts, Expand roadmap and focused Clojure
 projection tool/test. Preserve phase/title semantic IDs and explicit `expand/1` through `expand/5` labels,
 all table cells, existing headings, links, release criteria and historical
 checkboxes. Do not change Syntax or other components, compiler source, normative
-contracts, the dashboard, global catalog or held migration bridge. No automatic
+contracts or dashboard behavior. No automatic
 workflow discovery, external Specify CLI, dependency readiness or overall
 progress percentage is claimed.
 

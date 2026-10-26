@@ -72,8 +72,8 @@ Structural checks are not compiler semantic validation or migration admission.
 ## Delivery and remaining work
 
 Publish a draft for independent current-head review. Record review separately
-from implementation and integration. The parent coordinates merging only after
-confirming independent review. Future implementation updates change the ledger
+from implementation and integration. Merge only after the maintainer confirms
+independent current-head review. Future implementation updates change the ledger
 and regenerate the table together. No implementation task closes here.
 
 ## Names, callers and compatibility
