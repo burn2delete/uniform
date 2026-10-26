@@ -2669,7 +2669,7 @@
 (defn sh03-token-id [index]
   (str "token/" index))
 
-(defn reader-token-with-raw [characters index kind start end descriptor extra raw]
+(defn sh03-token-with-raw [characters index kind start end descriptor extra raw]
   (let [base
         {:token-id (sh03-token-id index)
          :index index
@@ -2684,7 +2684,7 @@
     (if (= extra nil) base (sh03-append-map base extra))))
 
 (defn sh03-make-token [characters index kind start end descriptor extra]
-  (reader-token-with-raw
+  (sh03-token-with-raw
    characters index kind start end descriptor extra
    (sh03-range-raw-spelling characters start end)))
 
@@ -2791,7 +2791,7 @@
                            :raw raw
                            :decoded-codepoints
                            (get scanned :decoded-codepoints)}
-                          token (reader-token-with-raw
+                          token (sh03-token-with-raw
                                  characters token-index :string
                                  position end descriptor nil raw)]
                       (recur end (+ token-index 1) (conj tokens token)))
@@ -2954,7 +2954,7 @@
                                 base-classification)]
                           (if (= (get classified :status) :accepted)
                             (let [token
-                                  (reader-token-with-raw
+                                  (sh03-token-with-raw
                                    characters token-index
                                    (get classified :kind)
                                    position end

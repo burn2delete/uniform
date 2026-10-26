@@ -38,6 +38,7 @@
                  sh03-construct-parsed-source-unit]]
     (is (= :complete (:status binding)))
     (is (contains? (:functions plan) 'sh03-token-with-raw))
+    (is (= 8 (get-in plan [:functions 'sh03-token-with-raw :arity])))
     (is (not (contains? (:functions plan) 'reader-token-with-raw)))
     (is (every? #(str/starts-with? (name %) "sh03-") (keys (:functions plan))))
     (is (= (:source-content-hash binding) (get-in plan [:source :sha256])))
@@ -59,4 +60,14 @@
           report (execute 'sh03-verify-reader-result (conj args malformed))]
       (is (= :rejected (:status malformed) (:status report)))
       (is (true? (:verified? report)))
-      (is (= ["STAGE1READER007"] (mapv :engine (:diagnostics malformed)))))))
+      (is (= ["STAGE1READER007"] (mapv :engine (:diagnostics malformed)))))
+    (doseq [[bad expected-arity]
+            [[(update plan :functions dissoc 'sh03-token-with-raw) nil]
+             [(assoc-in plan [:functions 'sh03-token-with-raw :arity] 7) 7]]]
+      (let [error (try (bootstrap/sh03-reader-plan-static-audit! "<reader-staged-closure>" bad)
+                       nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= "C2-HASH" (:id error)))
+        (is (= [:exact-sh03-reader-function-call] (:missing-fields error)))
+        (is (= 'sh03-token-with-raw (get-in error [:facts :function])))
+        (is (= expected-arity (get-in error [:facts :expected-arity])))
+        (is (= 8 (get-in error [:facts :actual-arity])))))))
