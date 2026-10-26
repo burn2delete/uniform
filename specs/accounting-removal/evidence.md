@@ -260,7 +260,7 @@ Independent source and actual retained driver/result review accepted this
 finite normalized scope. This does not assert arbitrary raw-host Set admission,
 authenticated source, public B47, C12, release or whole accounting acceptance.
 
-## Private Map reconstruction remains failed and open
+## Initial private Map reconstruction failure
 
 A separate read-only baseline on `06b03ec3` completed naturally in 18510 ms.
 All three pmk-source builders accepted and complete source headers differed
@@ -277,7 +277,8 @@ batch FAILED: 9 tests, 115 passing assertions, 10 failures, zero errors, natural
 exit 1 in 27021 ms. Source-header parity now passes, but the same positive
 Effects/full-call and typed-private-call checks still reject in both new and
 existing tests. Negative passes cannot confer acceptance while positives fail.
-The private Map increment is not accepted, and the entire PR remains draft.
+That experimental private Map increment was not accepted; its later correction
+has separate evidence below. The entire PR remains draft.
 The accepted three-family result above retains its own exact provenance.
 
 Independent inspection confirmed the failure and the minimal source delta.
@@ -301,3 +302,57 @@ capacity; there is no duplicate accounting child or automatic repeat.
 | Accepted three-family receipt | `06f0021e2c6eaa79d9994e38dfc1aa504ffe741228f3b6883a1a8487f56d45aa` |
 | Private Map baseline receipt | `75fcbf155457d98ce141a0f5a99c0e7c1da423c8c68406718c4d4f402ad14c11` |
 | Failed private Map candidate receipt | `5f46f53b45ac8d7ef429a7902875aa31682f0242a45adec99c1ed0dcc41f1050` |
+
+## Completed-proof diagnosis and private Map correction
+
+A changed read-only diagnostic on clean
+`4c7800d7ba860d3e5ce86228e1ed7df59389fb65`, tree
+`cb9984bd14daab9db728b15904b8bfbc39cb5436`, finished naturally in 19091 ms.
+All three complete pmk-header builders accepted, and C7's completed header
+equaled the actual produced descriptor. The entire nested semantic proof was
+identical; only exported entry-proof-work differed (2875 versus 2905). Both
+actual evidence consumers rejected. The diagnostic also established that the
+emitter's generic Map row/fact constructors lacked the exact private-kind
+delegations already present in C7 and Effects. Static inspection found the
+same missing private route in its generic List-query wrappers.
+
+Correction `e81a16bd337d62f950084a39c080cf5afe32c7c7`, tree
+`2fa6ff222452d6c2d1c7351e45b17dde2abd0497`, removes only exported
+entry-proof-work from all three complete header builders and restores those
+four exact existing private-kind delegations. Public fallback bodies remain
+unchanged. Helper budgets, internal counts, key-domain-work, entire semantic
+proofs, full row/fact equality, source checks and private-entry restrictions
+remain unchanged. This is a prerequisite consumer-routing repair, not removal
+of an admission guard or widening of the public Map domain.
+
+The internal v1 semantic family identifiers remain unchanged: complete changed
+descriptors participate in identity requests, fresh consumers rederive them,
+and changed source fingerprints invalidate old evidence. No backward-compatible
+old-wire acceptance is claimed. Coherently restored old operand-type-work or
+entry-proof-work fields still reject; no field is stripped from incoming data.
+No authoritative source pin or saved verifier report was altered.
+
+The corrected targeted batch passed 14 tests/457 assertions, zero failures or
+errors, natural exit 0 in 29716 ms, on that exact clean before/after tuple.
+Coverage includes all three complete headers and entire proofs, both generic
+row/fact wrapper layers, actual Effects joins and typed private calls, private
+entry/source/callee/census negatives, coherent stale/both-cost-field forgeries,
+public finite Map fallback and unsupported bare-public-Map rejection, plus six
+language checks. Original failed and accepted batches were not restarted.
+Independent source and actual retained driver/counts/receipt review accepted
+the corrected finite scope. This is not a second fresh reviewer execution.
+
+The same existing brokers/canonical lock, 2 GiB child, 120-second watchdog and
+65536-byte/character capture bounds applied; stdout was complete at 1916 bytes,
+stderr empty, cleanup complete and no lease or process remains active. Source
+authentication/public B47/C12/release/arbitrary-public-Map and whole accounting
+acceptance remain unrun. The PR remains unfinished and draft.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Complete-proof diagnostic receipt | `2a6dbb7aaf2ec92f867959196979c53ba4e7ba44f76e725596b2cc11b9b7eef4` |
+| Corrected private Map receipt | `05e81a57427aeb9406bda7eb28683872c208e31e5ca323a4a815256ce990c579` |
+| Corrected C7 source | `a24ad7b415369cbb059bd674737dfba905c6fc7beebe44c2e41b94bd68537089` |
+| Corrected Effects source | `bc9319237f495455d6bc2ff5e0289ad57afde333ecd0cb33b0b9ad2105045bef` |
+| Corrected emitter source | `cfe059b408e91616636bd9c11773d992d2c669960969456f1b1d4ed910e70c84` |
+| Descriptor reconstruction test | `8c58b98522b799fdbc0763293ab21946d7bee59c071a575bff02b602f7a5d4d8` |
