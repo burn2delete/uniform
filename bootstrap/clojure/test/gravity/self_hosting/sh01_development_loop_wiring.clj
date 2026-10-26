@@ -1526,7 +1526,8 @@
                                     ;; the conservative complete-tree identity.
                                     :cache-closure-authorized?
                                     (and (some? closure)
-                                         (contains? '#{gravity.c11-mir-test
+                                         (contains? '#{gravity.c2-artifact-identity-test
+                                                       gravity.c11-mir-test
                                                        gravity.compiler-pass-manifest-test}
                                                     namespace)))))
                    namespaces)

@@ -148,11 +148,13 @@
      :slice "SH-00"
      :resource-class :normal
      :component-id
-     (if (contains? #{'gravity.c11-mir-test
+     (cond
+       (= 'gravity.c2-artifact-identity-test namespace) "c2-artifact-identity"
+       (contains? #{'gravity.c11-mir-test
                       'gravity.bootstrap-compatibility.c11-test}
                     namespace)
        "c11-mir"
-       "compiler-pass-manifest")
+       :else "compiler-pass-manifest")
      :batch-key (str "closure/" namespace)
      :cache-closure closure
      :cache-closure-authorized? true
@@ -1066,7 +1068,8 @@
 
 (deftest componentized-leaf-closures-bind-the-nested-implementation
   (doseq [[namespace directory expected-count]
-          [['gravity.c11-mir-test "c11_mir" 6]
+          [['gravity.c2-artifact-identity-test "c2_artifact_identity" 5]
+           ['gravity.c11-mir-test "c11_mir" 6]
            ['gravity.compiler-pass-manifest-test "compiler_pass_manifest" 15]]]
     (with-coordination-root [base]
       (let [root (.resolve base "repository")
@@ -1093,6 +1096,48 @@
                 (finally
                   (Files/write target original
                                (make-array java.nio.file.OpenOption 0)))))))))))
+
+(deftest reader-identity-reuse-keeps-producer-and-consumed-inputs-exact
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          job (reviewed-closure-job 'gravity.c2-artifact-identity-test)
+          _ (Files/createDirectories root no-file-attributes)
+          _ (copy-reviewed-closure! root job)
+          unrelated (.resolve root "bootstrap/clojure/test/gravity/self_hosting/unrelated_test.clj")
+          notes (.resolve root "notes.md")
+          _ (spit (str unrelated) "; existing unrelated test body")
+          selected-context (assoc (context base) :working-directory (str root)
+                                  :revalidate-snapshot? true
+                                  :revision {:commit "producer" :tree "producer-tree"})
+          classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                'explicit-classpath-identities)
+          calls (atom 0)]
+      (with-redefs-fn
+        {classpath (fn [_ closure-root] [{:path "classpath/entry-0000" :sha256 closure-root}])
+         #'wiring/repository-snapshot (fn [_] (throw (Error. "unexpected broad snapshot")))}
+        (fn []
+          (let [attached (wiring/attach-request selected-context (impact-plan (:namespace job)) {} job)
+                operation #(do (swap! calls inc) {:status :passed :exit-code 0})
+                original (wiring/run-unit! selected-context attached operation)]
+            (spit (str notes) "unrelated documentation")
+            (spit (str unrelated) "; changed unrelated test body")
+            (let [later (assoc selected-context :revision {:commit "applying" :tree "applying-tree"})
+                  reused (wiring/run-unit! later attached operation)]
+              (is (= 1 @calls))
+              (is (true? (:cache-hit? reused)))
+              (is (= (:execution-provenance original) (:execution-provenance reused)))
+              (is (= (:revision selected-context)
+                     (get-in reused [:execution-provenance :revision])))
+              (is (false? (:authoritative? reused))))
+            (spit (str (.resolve root "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj"))
+                  "\n; changed consumed implementation\n" :append true)
+            (is (= :explicit-closure
+                   (:input-kind (exception-data #(wiring/probe selected-context attached)))))
+            (let [renewed (wiring/attach-request selected-context (impact-plan (:namespace job)) {} job)]
+              (is (not= (cache/cache-key (:development-cache-request attached))
+                        (cache/cache-key (:development-cache-request renewed))))
+              (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
+              (is (= 2 @calls)))))))))
 
 (deftest child-jvm-file-loading-and-unknown-options-stay-fresh
   (let [supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring

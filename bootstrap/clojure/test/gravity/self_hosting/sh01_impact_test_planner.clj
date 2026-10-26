@@ -950,7 +950,8 @@
 
 (defn- closure-owned?
   [ownership component-id closure]
-  (let [stem (get {"c11-mir" "c11_mir"
+  (let [stem (get {"c2-artifact-identity" "c2_artifact_identity"
+                   "c11-mir" "c11_mir"
                    "compiler-pass-manifest" "compiler_pass_manifest"}
                   component-id)
         source (when stem (str "bootstrap/clojure/src/gravity/" stem ".clj"))
