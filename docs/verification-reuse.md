@@ -217,7 +217,12 @@ the compatibility compiler. Existing mixed/fresh fallback, symlink, deletion and
 read-race controls now use audited pure leaves. Generic byte, mode, shadow,
 classpath and singleflight controls remain.
 
-Validation and independent review of this successor remain pending. Narrower
+Planner, wiring and language-boundary validation passed 108 tests / 1,011
+assertions with zero failures/errors. A preceding attempt timed out awaiting
+host capacity before tests; the first executed gate rejected the fixture's
+noncanonical macOS path (108 / 936, one error). Both remain nonpasses. The
+fixture now resolves its real Git root; no guard was weakened. Independent
+review and integration of this successor remain pending. Narrower
 bootstrap reuse remains open until the ordered loader, nested namespace, data,
 runtime-I/O and shadow dependencies are fully bound and independently reviewed.
 The conservative fallback does not prove unrelated documentation intrinsically

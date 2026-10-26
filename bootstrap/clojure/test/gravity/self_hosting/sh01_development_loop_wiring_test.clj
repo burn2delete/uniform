@@ -667,7 +667,10 @@
   (doseq [namespace ['gravity.bootstrap-compatibility.c11-test
                     'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test]]
     (with-coordination-root [base]
-      (let [root (.resolve base "repository")
+      (let [root (.toRealPath
+                  (Files/createDirectories (.resolve base "repository")
+                                           no-file-attributes)
+                  no-links)
             paths ["bootstrap/clojure/src/gravity/bootstrap_impl/loader.clj"
                    "bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn"
                    "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/fixture.clj"
@@ -676,7 +679,6 @@
                    "bootstrap/clojure/fixtures/accepted/compiler-passes.gravity"]
             job (reviewed-closure-job namespace)
             calls (atom 0)]
-        (Files/createDirectories root no-file-attributes)
         (is (zero? (:exit (shell/sh "git" "init" "-q" :dir (str root)))))
         (doseq [relative paths]
           (let [path (.resolve root relative)]
