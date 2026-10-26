@@ -4398,7 +4398,7 @@
                                         :input-storage :not-retained :borrow :none :lifetime :persistent-values
                                         :allocation :possible-even-empty :provider-allocation-bound :not-established}
                                       :value-origin {:kind :list-value-set-conversion :operation 'set :operand-node-id (first args)}
-                                      :operand-type-work (get validation :work-count) :profile-validation-work (- reserved base)
+                                      :profile-validation-work (- reserved base)
                                       :result-type-work result-type-work
                                       :runtime-census-policy {:traversal :bounded-prepaid-first-rest :termination :prepaid-empty-list-carrier
                                                              :domain-validation :all-physical-keywords-before-equality-or-hash
