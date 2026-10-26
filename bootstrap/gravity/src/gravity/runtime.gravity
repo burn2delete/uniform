@@ -2276,26 +2276,25 @@
                     [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
                      output :rejected])))))))))))))))))))))))
 
-(defn p15-s23-runtime-module-census [plan budget]
+(defn p15-s23-runtime-module-census [plan]
+  ; Validate the complete manifest before initialization. Root count and the
+  ; aggregate initializer cost do not grant or consume an admission allowance.
+  ; The initializer helper retains its existing per-initializer limit for now.
   (let [manifest (get plan :module-initialization) functions (get plan :functions)
-        roots (get manifest :roots) initializers (get manifest :initializers)
-        width (if (map? functions) (count functions) 0)
-        base (+ 8 width (if (vector? roots) (* 16 (count roots)) 0)
-                        (if (vector? initializers) (* 4 (count initializers)) 0))]
-    (if (> base budget) {:status :rejected :reason :module-initialization-work-limit :work-count base}
+        roots (get manifest :roots) initializers (get manifest :initializers)]
       (if (if (= manifest nil) (= false (contains? plan :module-initialization)) false)
-        {:status :accepted :work-count base :definitions {} :initializers [] :module nil}
+        {:status :accepted :definitions {} :initializers [] :module nil}
         (if (if (map? manifest)
               (if (= #{:version :module :instance-policy :roots :initializers} (set (keys manifest)))
                 (if (= [:p15-s23-module-literals-v1 :fresh-per-closed-plan-execution]
                        [(get manifest :version) (get manifest :instance-policy)])
                   (if (symbol? (get manifest :module))
                     (if (vector? roots) (if (vector? initializers) (map? functions) false) false) false) false) false) false)
-          (loop [remaining roots pending initializers ordinal 0 definitions {} names #{} bindings #{} nodes #{} functions-seen #{} out [] used base]
+          (loop [remaining roots pending initializers ordinal 0 definitions {} names #{} bindings #{} nodes #{} functions-seen #{} out []]
             (if (= 0 (count remaining))
               (if (if (= 0 (count pending)) (= functions-seen (set (keys functions))) false)
-                {:status :accepted :work-count used :definitions definitions :initializers out :module (get manifest :module)}
-                {:status :rejected :reason :module-initialization-census :work-count used})
+                {:status :accepted :definitions definitions :initializers out :module (get manifest :module)}
+                {:status :rejected :reason :module-initialization-census})
               (let [root (first remaining) id (get root :binding-id) name (get root :name)
                     def-id (get root :definition-core-node-id) value-id (get root :value-core-node-id)
                     function? (= :function (get root :kind)) initializer (first pending)
@@ -2326,25 +2325,24 @@
                       (if (= [id value-id] [(get (get function :type-input) :definition-binding-id)
                                              (get (get function :type-input) :function-core-node-id)])
                         (recur (rest remaining) pending (+ ordinal 1) definitions (conj names name) (conj bindings id)
-                               (conj (conj nodes def-id) value-id) (conj functions-seen name) out used)
-                        {:status :rejected :reason :module-initialization-function-source :work-count used})
-                      {:status :rejected :reason :module-initialization-function-source :work-count used})
+                               (conj (conj nodes def-id) value-id) (conj functions-seen name) out)
+                        {:status :rejected :reason :module-initialization-function-source})
+                      {:status :rejected :reason :module-initialization-function-source})
                     (if (if (map? initializer) (= #{:ordinal :binding-id :instruction} (set (keys initializer))) false)
                       (if (= [ordinal id] [(get initializer :ordinal) (get initializer :binding-id)])
                         (let [instruction (get initializer :instruction)
-                              checked (p15-s23-runtime-initializer-work instruction (- budget used))
-                              total (+ used (get checked :work-count))]
+                              checked (p15-s23-runtime-initializer-work instruction 65536)]
                           (if (= :accepted (get checked :status))
                             (if (p15-s23-runtime-initializer-type? root instruction)
                               (recur (rest remaining) (rest pending) (+ ordinal 1) (assoc definitions id root)
                                      (conj names name) (conj bindings id) (conj (conj nodes def-id) value-id) functions-seen
-                                     (conj out {:definition root :instruction instruction :constructors (get checked :constructors)}) total)
-                              {:status :rejected :reason :module-initialization-type :work-count total})
-                            (assoc checked :work-count total)))
-                        {:status :rejected :reason :module-initialization-source-order :work-count used})
-                      {:status :rejected :reason :module-initialization-source-order :work-count used}))
-                  {:status :rejected :reason :module-initialization-root-source :work-count used}))))
-          {:status :rejected :reason :invalid-module-initialization-manifest :work-count base})))))
+                                     (conj out {:definition root :instruction instruction :constructors (get checked :constructors)}))
+                              {:status :rejected :reason :module-initialization-type})
+                            {:status :rejected :reason (get checked :reason)}))
+                        {:status :rejected :reason :module-initialization-source-order})
+                      {:status :rejected :reason :module-initialization-source-order}))
+                  {:status :rejected :reason :module-initialization-root-source}))))
+          {:status :rejected :reason :invalid-module-initialization-manifest}))))
 
 (defn p15-s23-runtime-instruction-children [instruction]
   (let [op (get instruction :op)
@@ -2412,7 +2410,7 @@
 (defn p15-s23-runtime-execute-closed-plan [plan]
   (let [entrypoint (get plan :entrypoint) functions (get plan :functions)
         module? (contains? plan :module-initialization)
-        census (if module? (p15-s23-runtime-module-census plan 65536) {:status :accepted})
+        census (if module? (p15-s23-runtime-module-census plan) {:status :accepted})
         reads (if (if module? (= :accepted (get census :status)) false)
                 (runtime-module-reads functions (get census :definitions)) census)
         initialized (if (if module? (= :accepted (get reads :status)) false) (p15-s23-runtime-initialize-module census functions) reads)
