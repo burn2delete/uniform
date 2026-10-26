@@ -99,3 +99,21 @@
         (is (= :collision-free-resolved-map-keys (get-in result [:data :missing-fact])))
         (is (= canonical-count (get-in result [:data :facts :canonical-identity-count])))
         (is (= host-count (get-in result [:data :facts :host-equality-count])))))))
+
+(deftest scalar-rejection-preserves-caller-ancestor-markers
+  (let [scalar (operation 'p15-s23-c6c10-canonical-scalar-form)
+        ancestors (operation 'p15-s23-c6c10-canonical-ancestors)
+        active (java.util.IdentityHashMap.) marker (Object.)
+        original-error (ex-info "Scalar rejected" {:scalar true})]
+    (.put active marker true)
+    (.put active :x true)
+    (with-bindings {ancestors active}
+      (with-redefs-fn
+        {scalar (fn [& _]
+                  (is (identical? active @ancestors))
+                  (throw original-error))}
+        #(is (identical? original-error (try (form :x) nil (catch Throwable e e)))))
+      (is (identical? active @ancestors)))
+    (is (= 2 (.size active)))
+    (is (true? (.get active marker)))
+    (is (true? (.get active :x)))))
