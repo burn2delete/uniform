@@ -228,3 +228,58 @@ runtime-I/O and shadow dependencies are fully bound and independently reviewed.
 The conservative fallback does not prove unrelated documentation intrinsically
 requires a compiler rerun, and this audit claims no runtime speedup or fresh
 compiler acceptance.
+
+### Compiler-pass compatibility seam observations
+
+The next RV2 unit starts at integrated source
+`688da420ea4e41572a0e7548e1ef7cd19e5b2317`. It targets only
+`gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test`.
+The test loads the real `gravity.bootstrap` facade. Its interposition of
+`compiler-pass-source-artifact` does not avoid the fixture read:
+`foundation/00790-compiler-pass-file-artifact.clj` evaluates `(slurp path)`
+before calling that function. The accepted `compiler-passes.gravity` fixture
+is therefore a consumed input, rather than path-valued metadata.
+
+`tools/compatibility_closure_audit.clj` records read-only source observations:
+the selected test's recursive literal namespace requirements, the explicitly
+loaded bootstrap loader, ordered component manifest, literal data-resource
+candidates and the accepted fixture. It hashes observed bytes and executable
+mode and preserves manifest order. It rejects missing, escaping, symlinked or
+ambiguous namespace inputs. It reads namespace declarations with reader
+evaluation disabled and never loads the observed namespaces or compiler.
+The tool can be run with:
+
+```sh
+clojure -M tools/compatibility_closure_audit.clj --audit
+```
+
+Its source read-site list is syntactic evidence for further review, not a call
+graph or an execution trace. Comments and metadata can overapproximate literal
+resource candidates. Computed paths, arbitrary initialization effects, dynamic
+body calls, atomic read consistency and runtime/classpath identity remain
+unresolved. Neither input counts nor an unchanged observation fingerprint
+prove complete dependencies. Every report explicitly retains `:authority :none`,
+`:closure-complete? false` and `:cache-narrowing-authorized? false`.
+
+The current `valid-cache-closure?` representation permits only 1-96 flat explicit
+inputs with fixed roles and inventories. This audit neither widens that gate
+nor adds a manifest exception. A manifest-backed representation requires its
+own reviewed contract, including ordered resource resolution and invalidation.
+Existing conservative fallback remains active. A producer run is a separate
+step after a complete closure and supported execution route are established;
+this observation tool does not launch or authorize one.
+
+Cheap synthetic controls cover nested requirements, ordered manifest changes,
+component/data/fixture mutations, namespace shadows, missing and escaping
+resources, symlinks and reader-evaluation attempts. Computed resources stay
+explicitly unresolved. Final controls passed 5 tests / 28 assertions; language
+boundary passed 6 / 11 and documents passed 240 / 19. The preceding broker wait
+timed out before revised controls or the real-source audit ran; it remains a
+nonpass. The actual source observation recorded 1,982 inputs, 1,578 ordered
+components, 118 literal data candidates and 186 syntactic read candidates.
+The observation digest is
+`9df558db90d4022c6b37661dd778699744ca8ebc6e5a4bd502e4cc27d53110ee`;
+it identifies those observations, not a complete or accepted closure.
+Independent closure review remains pending; the next eligible source review is the reported initialization
+and dynamic read boundary, followed by representation design only if that
+boundary can be closed. RV1 and whole-outcome RV4 remain open.
