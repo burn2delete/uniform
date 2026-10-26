@@ -88,10 +88,14 @@
 
 (defn p15-s23-c6c10-canonical-form*
   [source-path value]
-  (let [active (or p15-s23-c6c10-canonical-ancestors (java.util.IdentityHashMap.))
-        entered (java.util.IdentityHashMap.)]
+  (let [active (or p15-s23-c6c10-canonical-ancestors (java.util.IdentityHashMap.))]
     (binding [p15-s23-c6c10-canonical-ancestors active]
-      (try
+      (if (identical? clojure.lang.Keyword (class value))
+        (do
+          (p15-s23-c6c10-canonical-carrier source-path value)
+          (p15-s23-c6c10-canonical-scalar-form source-path value))
+        (let [entered (java.util.IdentityHashMap.)]
+          (try
         (loop [stack [[:visit value]] results []]
           (let [[action item kind size] (peek stack) stack (pop stack)]
             (if (= :finish action)
@@ -118,7 +122,7 @@
                     (if (empty? stack) form (recur stack (conj results form)))))))))
         (finally
           ;; Preserve markers owned by the caller, including on failed fallback.
-          (doseq [item (.keySet entered)] (.remove active item)))))))
+          (doseq [item (.keySet entered)] (.remove active item)))))))))
 
 (defn p15-s23-c6c10-canonical-record
   ([value]
