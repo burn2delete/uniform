@@ -11011,7 +11011,7 @@
        :operation 'nil? :semantic-owner 'gravity.core :intrinsic :gravity.core/nil-value-classification
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :nil-query-classification classification
        :query-semantics {:operation :nil-value-classification :operand-evaluation :once :operand-position :non-tail
                          :construction :none :payload-evaluation :none :mutation :none :refinement :none
