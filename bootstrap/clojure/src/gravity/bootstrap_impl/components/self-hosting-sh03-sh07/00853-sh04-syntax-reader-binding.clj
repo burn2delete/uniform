@@ -175,7 +175,7 @@
       visited)))
 
 (def ^:dynamic ^:private *sh04-syntax-form-index-transaction* nil)
-(declare ^:private sh04-syntax-form-index-roots)
+(declare ^:private sh04-syntax-form-index-roots sh04-syntax-form-index-runtime?)
 
 (defn- sh04-syntax-native-keyword-map? [value]
   (and (or (identical? clojure.lang.PersistentArrayMap (class value))
@@ -193,7 +193,8 @@
     (loop []
       (if (.hasNext entries)
         (let [entry ^java.util.Map$Entry (.next entries)]
-          (and (identical? (.getValue entry) (.deref ^clojure.lang.Var (.getKey entry)))
+          (and (not (.isThreadBound ^clojure.lang.Var (.getKey entry)))
+               (identical? (.getValue entry) (.deref ^clojure.lang.Var (.getKey entry)))
                (recur)))
         true))))
 
@@ -204,7 +205,7 @@
              (identical? c2-artifact (:artifact transaction))
              (sh04-syntax-native-keyword-map? c2-artifact)
              (sh04-syntax-form-index-roots-current?)
-             (= "1.12.5" (clojure-version)))
+             sh04-syntax-form-index-runtime?)
       (let [tree (:form-tree c2-artifact)
             previous @(:slot transaction)]
         (if (and previous (identical? tree (:tree previous)))
@@ -218,7 +219,10 @@
                        (let [records (.iterator ^java.lang.Iterable tree)]
                          (loop []
                            (if (.hasNext records)
-                             (and (sh04-syntax-native-keyword-map? (.next records)) (recur))
+                             (let [record (.next records)]
+                               (and (sh04-syntax-native-keyword-map? record)
+                                    (identical? clojure.lang.Keyword (class (:form-id record)))
+                                    (recur)))
                              true))))
               (vreset! (:slot transaction) {:tree tree :index index}))
             index)))
@@ -301,6 +305,7 @@
 ;; The native PersistentVector/into3 path in the supported Clojure runtime.
 ;; An interposed descriptor/walker or core dependency disables reuse, retaining
 ;; the original lookup count, callback behavior and error order on that call.
+(def ^:private sh04-syntax-form-index-runtime? (= "1.12.5" (clojure-version)))
 (def ^:private sh04-syntax-form-index-roots
   {#'sh04-syntax-source-descriptor sh04-syntax-source-descriptor
    #'sh04-syntax-descendant-form-ids sh04-syntax-descendant-form-ids

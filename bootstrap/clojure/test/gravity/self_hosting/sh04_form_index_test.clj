@@ -30,9 +30,9 @@
 
 (deftest duplicate-nil-string-unicode-and-nonnative-input-semantics
   (doseq [records [[] [{:form-id :a :value 1} {:form-id :a :value 2}]
-                   [{:form-id nil :value :nil}] [{:form-id "unicode-\u03bb" :value :unicode}]
+                   [{:form-id nil :value :nil}] [{:form-id (str "unicode-" (char 0x03bb)) :value :unicode}]
                    (list {:form-id :a :children []})
-                   [{:form-id :a :value "\u03bb"}]]]
+                   [{:form-id (keyword (str (char 0x03bb))) :value (str (char 0x03bb))}]]]
     (let [a {:form-tree records} expected (original-index a)]
       (transaction a (fn [_] (is (= expected (index a))) (is (= expected (index a))))))))
 
@@ -61,19 +61,38 @@
         observed (run #(transaction a (fn [slot] (index a) (index a) (is (nil? @slot)))))]
     (is (= baseline observed))))
 
+(deftest opaque-form-id-collision-cannot-hide-behind-a-native-index-key
+  (let [calls (atom 0) native-id :same
+        opaque (proxy [Object clojure.lang.IHashEq] []
+                 (hashCode [] (swap! calls inc) (.hashCode :same))
+                 (hasheq [] (swap! calls inc) (.hasheq ^clojure.lang.IHashEq native-id))
+                 (equals [other] (swap! calls inc) (identical? :same other)))
+        a {:form-tree [{:form-id :same :value 1} {:form-id opaque :value 2}]}
+        run (fn [f] (reset! calls 0) (f) @calls)
+        baseline (run #(do (original-index a) (original-index a)))
+        observed (run #(transaction a (fn [slot] (index a) (index a) (is (nil? @slot)))))]
+    (is (pos? baseline))
+    (is ((private-var 'sh04-syntax-native-keyword-map?) (original-index a)))
+    (is (= baseline observed))))
+
 (deftest every-native-factory-root-remains-live-after-an-index-hit
   (doseq [name '[into map juxt identity transduce transient conj! persistent! meta with-meta]]
     (let [v (ns-resolve 'clojure.core name) original @v a (artifact) owner (ex-info "second call rejects" {:root name})]
       (transaction a
         (fn [_]
-          (index a)
+          (let [first-index (index a)]
           ;; Restore with direct Var APIs: redefining map/into must not disable
           ;; the test framework's own restoration path.
-          (let [error (try
+          (let [[baseline observed] (try
                         (.bindRoot ^clojure.lang.Var v (fn [& _] (throw owner)))
-                        (failure #(index a))
+                        [(try [:returned (original-index a)] (catch Throwable t [:threw t]))
+                         (try [:returned (index a)] (catch Throwable t [:threw t]))]
                         (finally (.bindRoot ^clojure.lang.Var v original)))]
-            (is (identical? owner error) (str name))))))))
+            (is (= (first baseline) (first observed)) (str name))
+            (if (= :threw (first baseline))
+              (is (identical? (second baseline) (second observed)) (str name))
+              (do (is (= (second baseline) (second observed)) (str name))
+                  (is (not (identical? first-index (second observed))) (str name)))))))))))
 
 (deftest interposed-descriptor-walker-and-runtime-disable-reuse
   (doseq [v [#'b/sh04-syntax-source-descriptor #'b/sh04-syntax-descendant-form-ids
@@ -96,6 +115,26 @@
                            (index a))]
           (is (= first-index next-index))
           (is (not (identical? first-index next-index))))))))
+
+(deftest same-value-thread-binding-still-disables-reuse
+  (let [a (artifact)]
+    (transaction a
+      (fn [_]
+        (let [first-index (index a)
+              next-index (binding [*clojure-version* *clojure-version*] (index a))]
+          (is (= first-index next-index))
+          (is (not (identical? first-index next-index))))))))
+
+(deftest runtime-qualification-adds-no-version-formatting-callback
+  (let [a (artifact) original @#'clojure.core/str owner (ex-info "str must not run" {})]
+    (transaction a
+      (fn [_]
+        (let [first-index (index a)
+              next-index (try
+                           (.bindRoot #'clojure.core/str (fn [& _] (throw owner)))
+                           (index a)
+                           (finally (.bindRoot #'clojure.core/str original)))]
+          (is (identical? first-index next-index)))))))
 
 (deftest descriptor-signature-and-early-error-order-are-preserved
   (is (= '([seed form-record c2-artifact integrity-report semantic-source-id reader-binding reader-source-revision registered-literals])
