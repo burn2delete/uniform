@@ -82,7 +82,16 @@
       (let [result (scan text)]
         (is (= [:rejected rule reason] ((juxt :status :rule :reason) result)))
         (is (map? (:span result)))
-        (is (vector? (get-in result [:raw :bytes]))))))
+        (is (vector? (get-in result [:raw :bytes])))
+        (when (contains? #{"12abc" ":a/b/c"} text)
+          (let [size (count text)]
+            (is (= {:encoding :utf-8 :bytes (utf8-bytes text)
+                    :unicode-scalars (vec (.toArray (.codePoints ^String text)))} (:raw result)))
+            (is (= {:start {:line 1 :column 1 :column-unit :unicode-scalar :char 0 :byte 0}
+                    :end {:line 1 :column (inc size) :column-unit :unicode-scalar :char size :byte size}
+                    :byte-start 0 :byte-end size} (:span result)))
+            (is (= (if (= text "12abc") "STAGE1READER007" "STAGE1READER003")
+                   (:engine result))))))))
   (doseq [[text kind] [["42" :integer] ["-3" :integer] ["0b10" :integer]
                        ["2/3" :ratio] [".5" :decimal] ["1e2" :decimal]
                        ["+" :symbol] ["-" :symbol] ["." :symbol]
