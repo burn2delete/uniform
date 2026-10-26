@@ -2355,7 +2355,8 @@
                      (let [row (first remaining)]
                        (recur (rest remaining)
                          (if (if (= :sh08-homogeneous-list-return-v2 (get row :producer-rule)) true
-                               (= :return-compatibility (get row :kind))) (conj out row) out)))))
+                               (if (= :sh08-homogeneous-list-return-v1 (get row :producer-rule)) true
+                                 (= :return-compatibility (get row :kind)))) (conj out row) out)))))
             active? (loop [remaining records]
                       (if (= 0 (count remaining)) false
                         (if (= :sh07-list-return-declaration-v1 (get (get (get (first remaining) :signature) :return) :rule-version))

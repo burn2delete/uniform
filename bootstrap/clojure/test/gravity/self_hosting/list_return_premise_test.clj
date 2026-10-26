@@ -128,3 +128,23 @@
     (is (every? #(= :accepted (:status %)) (derives input)))
     (doseq [change changes]
       (is (every? #(= :rejected (:status %)) (derives (change input)))))))
+
+(deftest legacy-return-producers-cannot-escape-the-row-census
+  (let [products ((helper 'homogeneous-list-return-products)
+                  [(positional [:gravity.type/string])] :gravity.type/string)
+        facts (:facts products)
+        legacy (walk/postwalk
+                #(cond
+                   (premise? %) (assoc % :version :sh08-homogeneous-list-return-v1 :type-work 0 :member-work 1)
+                   (and (map? %) (= :sh08-homogeneous-list-return-v2 (:producer-rule %)))
+                   (assoc % :producer-rule :sh08-homogeneous-list-return-v1)
+                   (and (map? %) (= :gravity/sh08-homogeneous-list-return-constraint-v2 (:domain %)))
+                   (assoc % :domain :gravity/sh08-homogeneous-list-return-constraint-v1)
+                   :else %) (first (:constraint-ledger facts)))]
+    (is (every? #(= :accepted (:status %)) (contexts products facts)))
+    (doseq [row [legacy (assoc legacy :kind :equality)
+                 (assoc legacy :kind :unrecognized)
+                 (dissoc legacy :kind)]]
+      (let [results (contexts products (update facts :constraint-ledger conj row))]
+        (is (every? #(= :rejected (:status %)) results))
+        (is (every? #(= :list-return-constraint-census (:reason %)) results))))))
