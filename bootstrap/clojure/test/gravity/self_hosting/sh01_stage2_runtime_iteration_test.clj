@@ -5065,7 +5065,9 @@
         homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
         expected {:op :if :test {:op :local :name 'include} :then {:op :local :name 'left} :else {:op :local :name 'right}}]
     (doseq [[left right] [[(finite [s]) (finite [])] [(finite []) (finite [s])]
-                         [homogeneous (finite [])] [(finite [s s]) homogeneous]]]
+                         [homogeneous (finite [])] [(finite [s s]) homogeneous]
+                         [(finite (vec (repeat 1025 s))) (finite [])]
+                         [(finite []) (finite (vec (repeat 1025 s)))]]]
       (let [{:keys [core node nodes types bindings forms nids refs]} (input-fn left right)
             derived (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])
             row (c7 'sh08-ij-row [(:premise derived)])
@@ -5084,6 +5086,19 @@
         (is (= :list-if-join-work-limit (:reason (check facts (dec (:work-count checked))))))
         (is (= :complete (:status result)) (pr-str result))
         (is (= expected (:value result)))
+        (doseq [[branch role type] [[0 :then left] [1 :else right]]
+                :when (= 1025 (count (:element-types type)))]
+          (is (= 1025 (get-in checked [:context :premises (:node-id node)
+                                      :branch-compatibility branch :checked-member-count])))
+          (doseq [bad [(assoc-in type [:element-types 1024] :gravity.type/keyword)
+                       (assoc type :extra :forged)
+                       (assoc type :element-types (apply list (:element-types type)))]]
+            (let [changed (assoc types (nids role) bad)]
+              (is (= :not-applicable (:status (c7 'sh08-ij-derive [core node nodes changed bindings forms 65536]))))
+              (is (= :not-applicable (:status (invoke 'p15-s23-ij-derive core node nodes changed bindings forms 65536))))
+              (is (= :rejected (:status (compile (assoc context :types changed) 65536))))))
+          (is (= :rejected (:status (compile (assoc-in context [:ledger 0 :dependencies
+                                                               :branch-compatibility branch :checked-member-count] 1024) 65536)))))
         (is (= result (compile context (:work-count result))))
         (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count result))) [:facts :reason])))
         (let [prepaid (+ 1 (count (:ledger context))
