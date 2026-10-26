@@ -33,11 +33,13 @@
       (fail (str "Unsupported " component " task Markdown; use plain text or inline HTTPS links")))))
 
 (defn records [{:keys [component task-marker record-pattern semantic-ids
-                      title-id-prefix title-id-error] :as options} text]
+                      title-id-prefix title-id-error record-keys validate-field] :as options} text]
   (let [body (str/trim (:body (region text task-marker)))
         blocks (str/split body #"\n\n(?=- \[)")
         rows (mapv (fn [block]
-                     (let [[_ checked id title status acceptance] (re-matches record-pattern block)]
+                     (let [[_ checked & values] (re-matches record-pattern block)
+                           row (zipmap (or record-keys [:id :title :status :acceptance]) values)
+                           {:keys [id title status]} row]
                        (when-not id (fail (str "Malformed " component " task record")))
                        (when (and title-id-prefix
                                   (not= id (str title-id-prefix
@@ -45,10 +47,11 @@
                                                     (str/replace #"[^a-z0-9 -]" "")
                                                     (str/replace #" +" "-")))))
                          (fail title-id-error))
-                       (doseq [field [title status acceptance]] (validate-links options field))
+                       (doseq [field (vals (dissoc row :id))]
+                         (if validate-field (validate-field field) (validate-links options field)))
                        (when-not (= (= checked "x") (str/starts-with? status "Accepted;"))
                          (fail "Checkbox and explicit acceptance status disagree"))
-                       {:id id :title title :status status :acceptance acceptance})) blocks)
+                       row)) blocks)
         ids (mapv :id rows)]
     (when-not (= (count ids) (count (set ids))) (fail (str "Duplicate " component " task ID")))
     (when-not (= semantic-ids (set ids)) (fail (str "Missing or unknown " component " task ID")))

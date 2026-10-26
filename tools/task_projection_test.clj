@@ -129,5 +129,23 @@
         (finally
           (doseq [file (reverse (file-seq temp))] (io/delete-file file)))))))
 
+(deftest explicit-record-shape-and-field-policy
+  (let [extended (-> options
+                     (assoc :record-keys [:id :title :status :evidence :acceptance]
+                            :record-pattern #"(?s)^- \[([ x])\] `(fixture/[a-z-]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nEvidence: ([^\n|]+)\n\nDone: ([^\n|]+)$"
+                            :validate-field #(when (str/includes? % "forbidden")
+                                               (task-projection/fail "Rejected field"))))
+        source (str/replace tasks "\n\nDone:" "\n\nEvidence: baseline\n\nDone:")
+        rows (task-projection/records extended source)]
+    (is (= 2 (count rows)))
+    (is (= #{:id :title :status :evidence :acceptance} (set (keys (first rows)))))
+    (is (= "baseline" (:evidence (first rows))))
+    (is (= "First outcome" (:acceptance (first rows))))
+    (doseq [field ["First" "Open; first evidence" "baseline" "First outcome"]]
+      (is (rejects? #(task-projection/records extended
+                      (str/replace-first source field "forbidden")))))
+    (is (rejects? #(task-projection/records extended
+                    (str/replace-first source "- [ ]" "- [x]"))))))
+
 (let [result (run-tests)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
