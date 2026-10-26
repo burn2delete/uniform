@@ -97,11 +97,15 @@ coverage, full SH-07/C01, a full compiler-owner census or self-hosting acceptanc
 
 ## Finite remaining work
 
-These are the canonical Reader tasks; aggregate roadmaps link this outcome,
-not copies of this list. `Open` means completion evidence has not been admitted,
+This table is a generated compatibility projection of the sole editable
+[Spec Kit implementation tasks](../../specs/reader-workflow/tasks.md#implementation-tasks).
+Do not edit its rows directly. Run `clojure -M tools/reader_task_projection.clj --write`
+after editing the task ledger, and `--check` to reject drift. Aggregate roadmaps
+link this outcome, not copies of this list. `Open` means completion evidence has not been admitted,
 not that no implementation exists. The scoped receipt updates partial evidence;
 no full Reader release task is closed by this navigation change.
 
+<!-- reader-task-projection:start -->
 | Task | Current evidence/status | Done when (yes/no) |
 | --- | --- | --- |
 | Contract coverage reconciliation | Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures. | Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete. |
@@ -111,6 +115,7 @@ no full Reader release task is closed by this navigation change.
 | Authentication and quota-removal closure | Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open. | Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance. |
 | Fresh Syntax handoff | Partial; real current Reader/Syntax products participate in the linked accepted pilot. Full component handoff coverage remains open. | Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run. |
 | Component release evidence | Open; the accepted finite invocation receipt is not the complete Reader release outcome. | Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome. |
+<!-- reader-task-projection:end -->
 
 ## Acceptance checklist
 
