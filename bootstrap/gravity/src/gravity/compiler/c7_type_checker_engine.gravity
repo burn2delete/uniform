@@ -24618,13 +24618,6 @@
 (defn sh08-ft-function-type-core-artifact-with-imports [core-artifact bindings source-forms imports]
   (sh08-ft-function-type-core-artifact-with-imports-and-allowance core-artifact bindings source-forms imports 65536))
 
-(defn sh08-ft-function-type-core-artifact-with-imports-and-work-policy [core-artifact bindings source-forms imports options]
-  (let [allowance (sh08-ft-work-allowance options)]
-    (if (= nil allowance)
-      {:effective-work-policy nil :result (sh08-ft-invalid-work-policy)}
-      {:effective-work-policy (sh08-ft-effective-work-policy allowance)
-       :result (sh08-ft-function-type-core-artifact-with-imports-and-allowance core-artifact bindings source-forms imports allowance)})))
-
 (defn sh08-function-type-boundary-policy []
   {:verification-boundary
    :host-validated-b47-report-and-opaque-provenance-digest
