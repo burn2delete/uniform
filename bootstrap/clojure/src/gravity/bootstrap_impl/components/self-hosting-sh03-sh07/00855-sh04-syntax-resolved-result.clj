@@ -21,7 +21,7 @@
         top-level-products (c2-top-level-products c2-artifact)
         seeds (:syntax-seed-stream c2-artifact)
         base-products
-        (binding [*sh04-syntax-form-index-transaction*
+        (clojure.core/binding [*sh04-syntax-form-index-transaction*
                   {:artifact c2-artifact :thread (Thread/currentThread) :slot (volatile! nil)}]
         (mapv
          (fn [seed {:keys [form-record]}]
