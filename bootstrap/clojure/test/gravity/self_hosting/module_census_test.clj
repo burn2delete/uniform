@@ -104,4 +104,18 @@
               (is (= reason (:reason checked) (get-in result [:diagnostic :reason])))
               (is (not (contains? checked :work-count)))
               (is (= "" (:stdout result)))
-              (is (zero? @started)))))))))
+              (is (zero? @started)))))
+        (doseq [[value element reason] [[:duplicate :gravity.type/keyword :duplicate-set-literal-keyword]
+                                        ["duplicate" :gravity.type/string :duplicate-set-literal-string]]]
+          (reset! started 0)
+          (let [changed (-> small
+                            (assoc-in [:module-initialization :roots last-root :type]
+                                      {:kind :gravity.type/set :shape :literal :element-types [element element]})
+                            (assoc-in [:module-initialization :initializers last-initializer :instruction]
+                                      {:op :set-literal :items [{:op :literal :value value} {:op :literal :value value}]}))
+                checked (census changed) result (execute changed)]
+            (is (= :rejected (:status checked) (:status result)))
+            (is (= :unsupported-module-initializer (:reason checked) (get-in result [:diagnostic :reason])))
+            (is (= reason (:initializer-reason checked)))
+            (is (not (contains? checked :work-count)))
+            (is (zero? @started))))))))

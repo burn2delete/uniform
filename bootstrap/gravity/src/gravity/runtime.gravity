@@ -2338,7 +2338,10 @@
                                      (conj names name) (conj bindings id) (conj (conj nodes def-id) value-id) functions-seen
                                      (conj out {:definition root :instruction instruction :constructors (get checked :constructors)}))
                               {:status :rejected :reason :module-initialization-type})
-                            {:status :rejected :reason (get checked :reason)}))
+                            (if (contains? checked :initializer-reason)
+                              {:status :rejected :reason (get checked :reason)
+                               :initializer-reason (get checked :initializer-reason)}
+                              {:status :rejected :reason (get checked :reason)})))
                         {:status :rejected :reason :module-initialization-source-order})
                       {:status :rejected :reason :module-initialization-source-order}))
                   {:status :rejected :reason :module-initialization-root-source}))))
