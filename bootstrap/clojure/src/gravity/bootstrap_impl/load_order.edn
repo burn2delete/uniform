@@ -1136,6 +1136,7 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720-p15-s23-c6c10-compiled-binding-cache-key.clj", :reader-line 114439, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-compiled-binding-cache-key"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720a-p15-s23-c6c10-compiled-binding-cache.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "let"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720b-p15-s23-c6c10-current-reader-program.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "declare"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720d-p15-s23-c6c10-reader-owner-projection.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "declare"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720c-p15-s23-c6c10-current-reader-envelope.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "declare"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00721-p15-s23-c6c10-digest-ref-shape.clj", :reader-line 114677, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-digest-ref-shape?"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00722-p15-s23-c6c10-validate-digest-request-graph.clj", :reader-line 114890, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-validate-digest-request-graph!"}

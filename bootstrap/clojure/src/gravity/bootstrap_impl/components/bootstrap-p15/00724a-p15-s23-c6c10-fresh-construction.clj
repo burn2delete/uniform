@@ -54,8 +54,12 @@
                     [:status :request-count :semantic-authority :checks])}
         (= 2 version)
         (assoc :source-policy-receipt
-               (assoc (:source-policy-receipt ingress)
-                      :expression-binding (dissoc expression :plan))))))))
+               (let [receipt (assoc (:source-policy-receipt ingress)
+                              :expression-binding
+                              (p15-s23-c6c10-project-expression-owner-metadata
+                               source-path (dissoc expression :plan)))]
+                 (p15-s23-c6c10-require-trusted-carrier! source-path :complete-current-source-policy-receipt receipt)
+                 receipt)))))))
 
 (defn p15-s23-stage2-gravity-checked-core-source-artifact
   ([context]
