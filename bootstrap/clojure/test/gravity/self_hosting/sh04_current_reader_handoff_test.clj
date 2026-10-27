@@ -54,17 +54,17 @@
 
 (def ^:private expected-kinds
   [:nil :boolean :boolean :integer :keyword :symbol :character :list :map :set
-   :tagged-literal :tagged-literal :list :list :symbol :list :vector :decimal])
+   :tagged-literal :tagged-literal :list :list :symbol :list :vector :decimal :string])
 (def ^:private rejected-sources
   [["delimiter" "[)" "C2-DELIMITER"]
    ["map" "{:a}" "C2-MAP"]
    ["set" "#{:a :a}" "C2-SET"]
    ["string" "\"\\q\"" "C2-STRING"]
    ["character" "\\uD800" "C2-STRING"]
-   ["identifier" "item/" "C2-IDENTIFIER"]
+   ["identifier" ":" "C2-IDENTIFIER"]
    ["metadata" "^1 item" "C2-METADATA"]
    ["abbreviation" "~item" "C2-ABBREV"]
-   ["namespace" "(ns)" "L1-NS-SHAPE"]
+   ["namespace" "(ns)" "C2-NS-SHAPE"]
    ["extension" "#unknown/tag \"x\"" "C2-EXTENSION"]])
 
 (deftest selected-current-reader-family-population-reaches-fresh-syntax
