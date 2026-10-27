@@ -12,7 +12,7 @@ compiler migration or release acceptance.
 | --- | --- | --- | --- |
 | static | Always | Always | actionlint 1.7.7 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
 | projections | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
-| bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary. No modeled aliases installed by this harness. |
+| bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
 | fresh-leaf-regressions | Markdown-only PRs omit leaves; otherwise full fresh catalog | Full fresh catalog | Existing reviewed bootstrap-free catalog, each namespace in its own JVM. Unknown paths fall back to the full catalog; no unproven affected-test graph or cross-run result cache. This is not the full compiler suite. |
 | source-Core-readiness | Omitted | Explicitly failing unavailable gate | Genuine selected-current-Reader construction plus independent verification is not yet available on main. Never treated as a pass or simulated using mocks. |
 | experimental-source-snapshot | Preview artifact | Preview artifact | Exact SHA source tarball, independently repeated Git archive hash, capability notes/changelog and provenance. No compiler binary. |
@@ -50,6 +50,18 @@ signature, SBOM and independent release-acceptance claims. Artifacts expire
 after 14 days; published prerelease assets persist under GitHub release policy.
 
 ## Outputs and acceptance
+
+The strict leaf catalog preserves all 54 primary component records and their
+48 bootstrap-free classifications. Four auxiliary helper tests have explicit
+production-source, namespace and owner associations. Their actual transitive
+requires include the native C3 fixture dependency and remain compiler-free.
+Unknown files, metadata drift and missing ownership still fail closed. These
+hosted helper tests grant no Reader authentication or compiler execution credit.
+
+At main `a33e0eef`, the broader ownership inventory also detects the existing
+unregistered `bootstrap/clojure/src/gravity/macro_run_storage.clj` helper.
+CI runs that check and retains its failure; adding the four Reader associations
+does not waive or reclassify the Macro ownership gap.
 
 The Native owner's reported genuine A baseline failed naturally at
 `C6-VERIFY/:actual-selected-current-reader-products`. The corrected C3

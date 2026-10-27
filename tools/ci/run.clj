@@ -127,7 +127,13 @@
                            "--namespace" "gravity.c3-reader-expansions-test")]
                  ["language-boundary" 90
                   (command "512m" "-M:test" "--namespace"
-                           "gravity.self-hosting.sh01-language-boundary-test")]]
+                           "gravity.self-hosting.sh01-language-boundary-test")]
+                 ["catalog-controls" 120
+                  (command "512m" "-M:test" "--namespace"
+                           "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
+                 ["ownership-inventory" 90
+                  (command "512m" "-M:test" "--namespace"
+                           "gravity.self-hosting.sh01-ownership-test")]]
     "leaves" [["fresh-leaf-catalog" 900 (command "512m" "-M:leaf-test")]]
     (throw (ex-info "Unknown CI mode" {:mode mode}))))
 

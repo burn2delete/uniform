@@ -138,6 +138,40 @@
       "paths": ["bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"]
     }
   ],
+  "auxiliary_bootstrap_free_tests": [
+    {
+      "id": "c2-reader-scalar-spans",
+      "owner": "sh-reader",
+      "kind": "hosted-helper-test-association",
+      "source": {"path": "bootstrap/clojure/src/gravity/c2_reader_product_projection/scalar_spans.clj", "namespace": "gravity.c2-reader-product-projection.scalar-spans"},
+      "test": {"path": "bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj", "namespace": "gravity.c2-reader-scalar-spans-test", "lane": "bootstrap-free", "execution_requires_bootstrap": false},
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-literal-indexes",
+      "owner": "sh-syntax",
+      "kind": "hosted-helper-test-association",
+      "source": {"path": "bootstrap/clojure/src/gravity/c3_literal_projection/indexes.clj", "namespace": "gravity.c3-literal-projection.indexes"},
+      "test": {"path": "bootstrap/clojure/test/gravity/c3_literal_indexes_test.clj", "namespace": "gravity.c3-literal-indexes-test", "lane": "bootstrap-free", "execution_requires_bootstrap": false},
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-reader-expansions",
+      "owner": "sh-syntax",
+      "kind": "hosted-helper-test-association",
+      "source": {"path": "bootstrap/clojure/src/gravity/c3_reader_expansions.clj", "namespace": "gravity.c3-reader-expansions"},
+      "test": {"path": "bootstrap/clojure/test/gravity/c3_reader_expansions_test.clj", "namespace": "gravity.c3-reader-expansions-test", "lane": "bootstrap-free", "execution_requires_bootstrap": false},
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-reader-lossless-span",
+      "owner": "sh-syntax",
+      "kind": "hosted-helper-test-association",
+      "source": {"path": "bootstrap/clojure/src/gravity/c3_literal_projection/spans.clj", "namespace": "gravity.c3-literal-projection.spans"},
+      "test": {"path": "bootstrap/clojure/test/gravity/c3_reader_lossless_span_test.clj", "namespace": "gravity.c3-reader-lossless-span-test", "lane": "bootstrap-free", "execution_requires_bootstrap": false},
+      "leaf_execution_group": "c2-c3"
+    }
+  ],
   "components": [
     {
       "id": "bootstrap",
