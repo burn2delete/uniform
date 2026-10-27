@@ -544,3 +544,167 @@
                        (catch clojure.lang.ExceptionInfo error (ex-data error)))]
         (is (= "C11-MODULE" (:id report)))
         (is (= :authenticated-checked-core-ingress-pair (:missing-fact report)))))))
+
+;; Explicit C11 source-interface dispatch: no genuine source replay in these controls.
+(defn
+ c11-interface-diagnostic
+ [f]
+ (try
+  (f)
+  :unexpected-pass
+  (catch
+   clojure.lang.ExceptionInfo
+   e
+   (select-keys (ex-data e) [:id :missing-fact :reason]))))
+(deftype
+ C11InterfaceForeign
+ [calls]
+ clojure.lang.IMeta
+ (meta [_] (swap! calls inc) nil)
+ clojure.lang.ILookup
+ (valAt [_ _] (swap! calls inc) nil)
+ (valAt [_ _ _] (swap! calls inc) nil)
+ Object
+ (toString [_] (swap! calls inc) "foreign"))
+(def c11-interface-header {:interface :gravity/c11-mir, :version 2})
+(def
+ c11-interface-v2
+ {:kind :gravity/p15-s23-c11-authenticated-mir-artifact,
+  :schema-version 2})
+(defn
+ c11-interface-rejection
+ [reason]
+ {:id "C11-VERIFY",
+  :missing-fact :versioned-c11-interface,
+  :reason reason})
+(deftest
+ c11-interface-public-arities
+ (doseq
+  [[name expected]
+   [['p15-s23-stage2-c11-mir-artifact [2 3]]
+    ['p15-s23-stage2-c11-mir-verification-report [3 4]]
+    ['p15-s23-stage2-c11-mir-verify! [3 4]]
+    ['p15-s23-stage2-c11-mir-authentic? [1 3 4]]]]
+  (is
+   (=
+    expected
+    (mapv
+     count
+     (:arglists (meta (ns-resolve 'gravity.bootstrap name))))))))
+(deftest
+ c11-interface-selector-before-core-access
+ (let
+  [calls (atom 0) foreign (C11InterfaceForeign. calls)]
+  (doseq
+   [[selector reason]
+    [[foreign :interface-map-class]
+     [(assoc c11-interface-header :version (int 2))
+      :interface-version-class-or-value]
+     [(assoc c11-interface-header :version 1)
+      :explicit-interface-version]
+     [(assoc c11-interface-header :interface foreign) :interface-id]]]
+   (is
+    (=
+     (c11-interface-rejection reason)
+     (c11-interface-diagnostic
+      (fn*
+       []
+       (b/p15-s23-stage2-c11-mir-artifact foreign foreign selector)))))
+   (is
+    (=
+     (c11-interface-rejection reason)
+     (c11-interface-diagnostic
+      (fn*
+       []
+       (b/p15-s23-stage2-c11-mir-verification-report
+        foreign
+        foreign
+        foreign
+        selector))))))
+  (is (= 0 @calls))))
+(deftest
+ c11-interface-mixed-version-before-payload-or-core
+ (let
+  [calls
+   (atom 0)
+   foreign
+   (C11InterfaceForeign. calls)
+   artifact
+   (assoc
+    c11-interface-v2
+    :mir-module
+    foreign
+    :verification-report
+    foreign)]
+  (is
+   (=
+    (c11-interface-rejection :mixed-c11-interface-versions)
+    (c11-interface-diagnostic
+     (fn*
+      []
+      (b/p15-s23-stage2-c11-mir-verification-report
+       artifact
+       foreign
+       foreign)))))
+  (is
+   (=
+    (c11-interface-rejection :mixed-c11-interface-versions)
+    (c11-interface-diagnostic
+     (fn*
+      []
+      (b/p15-s23-stage2-c11-mir-verification-report
+       (assoc artifact :schema-version 1)
+       foreign
+       foreign
+       c11-interface-header)))))
+  (is
+   (false?
+    (b/p15-s23-stage2-c11-mir-authentic? artifact foreign foreign)))
+  (is (= 0 @calls))))
+(deftest
+ c11-interface-malformed-legacy-owning-diagnostic
+ (doseq
+  [artifact [nil {}]]
+  (is
+   (=
+    {:id "C11-MODULE",
+     :missing-fact :authenticated-checked-core-ingress-pair}
+    (c11-interface-diagnostic
+     (fn*
+      []
+      (b/p15-s23-stage2-c11-mir-verification-report
+       artifact
+       nil
+       nil))))))
+ (is (false? (b/p15-s23-stage2-c11-mir-authentic? c11-interface-v2))))
+(deftest
+ c11-interface-record-and-scope-bindings
+ (is
+  (not
+   (contains?
+    (b/p15-s23-c11-mir-scope-record)
+    :supported-source-family)))
+ (is
+  (=
+   :bool-branch-join
+   (:supported-source-family (b/p15-s23-c11-mir-scope-record 2))))
+ (is
+  (=
+   c11-interface-header
+   (:source-interface (b/p15-s23-c11-mir-scope-record 2))))
+ (is
+  (=
+   10
+   (get-in
+    (b/p15-s23-c11-mir-contract 1)
+    [:required-functions 'c11-build-definitions :arity])))
+ (is
+  (=
+   11
+   (get-in
+    (b/p15-s23-c11-mir-contract 2)
+    [:required-functions 'c11-build-definitions :arity])))
+ (is
+  (=
+   {:x :unchanged}
+   (b/p15-s23-c11-mir-versioned-record {:x :unchanged} 1))))
