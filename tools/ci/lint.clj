@@ -23,8 +23,13 @@
         (+ row delta)))))
 
 (defn mapped-warning [finding {:keys [changes before after]}]
-  (let [start (:row finding) end (or (:end-row finding) start)]
-    (when (and (= :warning (:level finding)) (pos-int? start) (pos-int? end) (<= start end))
+  (let [start (:row finding) end (:end-row finding)
+        col (:col finding) end-col (:end-col finding)]
+    (when (and (= :warning (:level finding)) (every? pos-int? [start end col end-col])
+               (<= start end (count after))
+               (or (< start end) (<= col end-col))
+               (<= col (inc (count (nth after (dec start)))))
+               (<= end-col (inc (count (nth after (dec end))))))
       (let [rows (range start (inc end))
             old-rows (mapv #(old-row % changes) rows)]
         (when (and (every? pos-int? old-rows)
@@ -46,10 +51,19 @@
                (cond-> blocking (and (not matched?) (#{:warning :error} (:level finding))) (conj finding))))
       {:baseline-warnings existing :blocking blocking})))
 
+(defn read-one! [path]
+  (with-open [reader (java.io.PushbackReader. (io/reader path))]
+    (let [eof (Object.)
+          result (edn/read {:eof eof} reader)]
+      (when (or (identical? eof result)
+                (not (identical? eof (edn/read {:eof eof} reader))))
+        (throw (ex-info "Expected exactly one EDN observation" {:path (str path)})))
+      result)))
+
 (defn findings! [path allowed-filenames rename]
-  (let [result (edn/read-string (slurp path))
-        receipt (edn/read-string (slurp (io/file (.getParentFile path)
-                                                 (str/replace (.getName path) #"\.log$" ".edn"))))
+  (let [result (read-one! path)
+        receipt (read-one! (io/file (.getParentFile path)
+                                    (str/replace (.getName path) #"\.log$" ".edn")))
         counts (frequencies (map :level (:findings result)))
         expected-exit (cond (pos? (get counts :error 0)) 3
                             (pos? (get counts :warning 0)) 2 :else 0)]

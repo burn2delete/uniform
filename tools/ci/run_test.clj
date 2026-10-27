@@ -74,6 +74,11 @@
       (is (= 1 (count (:blocking duplicate))))
       (is (= [finding] (:blocking (lint/classify [finding] [finding] {}))))
       (is (= [error] (:blocking (lint/classify [error] [error] sources))))
+      (doseq [unknown [(dissoc finding :col) (dissoc finding :end-col) (dissoc finding :end-row)
+                       (assoc finding :row 0) (assoc finding :end-row 0)
+                       (assoc finding :end-row 2) (assoc finding :end-col 1)
+                       (assoc finding :col 100 :end-col 101)]]
+        (is (= [unknown] (:blocking (lint/classify [unknown] [unknown] sources)))))
       (spit log (pr-str result))
       (spit receipt (pr-str {:exit-code 2}))
       (is (= [finding] (lint/findings! log #{"sample.clj"} identity)))
@@ -86,6 +91,12 @@
         (spit log (pr-str bad-result))
         (spit receipt (pr-str {:exit-code bad-exit}))
         (is (thrown? clojure.lang.ExceptionInfo (lint/findings! log #{"sample.clj"} identity))))
+      (spit log (str (pr-str result) "\n{:unexpected :trailing}"))
+      (spit receipt (pr-str {:exit-code 2}))
+      (is (thrown? clojure.lang.ExceptionInfo (lint/findings! log #{"sample.clj"} identity)))
+      (spit log (pr-str result))
+      (spit receipt "{:exit-code 2}\n:trailing")
+      (is (thrown? clojure.lang.ExceptionInfo (lint/findings! log #{"sample.clj"} identity)))
       (finally (doseq [file (reverse (file-seq directory))] (io/delete-file file))))))
 
 (defn alive? [pid]
