@@ -1,7 +1,10 @@
 
 
 (defn p15-s23-c11-mir-validate-final-artifact!
-  [artifact checked-core context]
+  ([artifact checked-core context]
+   (p15-s23-c11-mir-validate-final-artifact! artifact checked-core context 1))
+  ([artifact checked-core context version]
+  (p15-s23-c11-mir-contract version)
   (let [source-path (p15-s23-c11-ingress-source-path context)
         checked-core-sorted-policy
         (p15-s23-c11-carrier-sorted-policy checked-core)]
@@ -12,6 +15,7 @@
      source-path :checked-core checked-core checked-core-sorted-policy)
     (p15-s23-c11-mir-require-trusted-carrier!
      source-path :checked-core-context context checked-core-sorted-policy)
+    (p15-s23-c11-mir-v2-source-family! checked-core version)
     (p15-s23-c11-mir-bounded-value!
      source-path :authenticated-c11-mir-artifact artifact
      p15-s23-c11-mir-max-final-artifact-carrier-nodes
@@ -30,7 +34,7 @@
           (= p15-s23-c11-mir-artifact-keys (set (keys artifact)))
           (= :gravity/p15-s23-c11-authenticated-mir-artifact
              (:kind artifact))
-          (= 1 (:schema-version artifact))
+          (= version (:schema-version artifact))
           (= (:artifact-id checked-core)
              (:source-core-artifact-id artifact))
           (= (:b1-preflight artifact)
@@ -71,21 +75,21 @@
               (:mir-module artifact)
               checked-core
               (:verification-report artifact)
-              (:scope artifact))
+              (:scope artifact) version)
              (:b1-preflight artifact)))
      "C11-VERIFY" source-path artifact :verified-mir-candidate-for-b1)
     (p15-s23-c11-mir-require-strict-structure!
      source-path
      (p15-s23-c11-b1-candidate-record
       (:mir-module artifact) checked-core
-      (:verification-report artifact) (:scope artifact))
+      (:verification-report artifact) (:scope artifact) version)
      (:b1-preflight artifact) :type-sensitive-verified-mir-candidate-for-b1)
     (p15-s23-c11-mir-require!
      (and (= (p15-s23-c11-mir-pass-contract-record)
              (get-in artifact [:mir-module :pass-contract]))
           (= (p15-s23-c11-mir-pass-execution-record
               (:mir-module artifact) checked-core
-              (:verification-report artifact))
+              (:verification-report artifact) version)
              (get-in artifact [:mir-module :pass-execution-record])))
      "C11-VERIFY" source-path artifact
      :content-bound-build-mir-pass-contract-and-execution)
@@ -96,46 +100,24 @@
     (p15-s23-c11-mir-require-strict-structure!
      source-path
      (p15-s23-c11-mir-pass-execution-record
-      (:mir-module artifact) checked-core (:verification-report artifact))
+      (:mir-module artifact) checked-core (:verification-report artifact) version)
      (get-in artifact [:mir-module :pass-execution-record])
      :type-sensitive-content-bound-build-mir-pass-execution)
     (p15-s23-c11-mir-require!
-     (= (p15-s23-c11-mir-scope-record) (:scope artifact))
+     (= (p15-s23-c11-mir-scope-record version) (:scope artifact))
      "C11-VERIFY" source-path artifact :exact-partial-c11-scope)
     (p15-s23-c11-mir-require-strict-structure!
-     source-path (p15-s23-c11-mir-scope-record) (:scope artifact)
+     source-path (p15-s23-c11-mir-scope-record version) (:scope artifact)
      :type-sensitive-partial-c11-scope)
     (p15-s23-c11-mir-require!
      (= (p15-s23-c11-mir-source-rule-record
-         {:source-content-hash
-          p15-s23-c11-mir-expected-source-content-hash
-          :source-byte-count p15-s23-c11-mir-source-byte-count
-          :plan-semantic-hash
-          p15-s23-c11-mir-expected-plan-semantic-hash
-          :functions-semantic-hash
-          p15-s23-c11-mir-expected-functions-semantic-hash
-          :builder-semantic-hash
-          p15-s23-c11-mir-expected-builder-semantic-hash
-          :verifier-semantic-hash
-          p15-s23-c11-mir-expected-verifier-semantic-hash
-          :function-shapes p15-s23-c11-mir-required-functions})
+         (p15-s23-c11-mir-contract-binding version))
         (:source-rule artifact))
      "C11-VERIFY" source-path artifact :pinned-c11-source-rule-record)
     (p15-s23-c11-mir-require-strict-structure!
      source-path
      (p15-s23-c11-mir-source-rule-record
-      {:source-content-hash
-       p15-s23-c11-mir-expected-source-content-hash
-       :source-byte-count p15-s23-c11-mir-source-byte-count
-       :plan-semantic-hash
-       p15-s23-c11-mir-expected-plan-semantic-hash
-       :functions-semantic-hash
-       p15-s23-c11-mir-expected-functions-semantic-hash
-       :builder-semantic-hash
-       p15-s23-c11-mir-expected-builder-semantic-hash
-       :verifier-semantic-hash
-       p15-s23-c11-mir-expected-verifier-semantic-hash
-       :function-shapes p15-s23-c11-mir-required-functions})
+      (p15-s23-c11-mir-contract-binding version))
      (:source-rule artifact)
      :type-sensitive-pinned-c11-source-rule)
     (p15-s23-c11-mir-require!
@@ -207,13 +189,13 @@
            source-path checked-core
            (p15-s23-c11-mir-pending-view (:mir-module artifact)))]
       (p15-s23-c11-mir-require!
-       (= (p15-s23-c11-independent-verifier-record recomputed-verifier)
+       (= (p15-s23-c11-independent-verifier-record recomputed-verifier version)
           (:verification-report artifact))
        "C11-VERIFY" source-path artifact
        :independently-recomputed-verifier-report)
       (p15-s23-c11-mir-require-strict-structure!
        source-path
-       (p15-s23-c11-independent-verifier-record recomputed-verifier)
+       (p15-s23-c11-independent-verifier-record recomputed-verifier version)
        (:verification-report artifact)
        :type-sensitive-independently-recomputed-verifier-report))
-    :passed))))
+    :passed)))))

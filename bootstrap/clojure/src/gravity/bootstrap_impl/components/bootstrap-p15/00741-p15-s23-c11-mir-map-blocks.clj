@@ -12,8 +12,10 @@
              blocks)))))
 
 (defn p15-s23-c11-mir-scope-record
-  []
-  {:task :FL-P06-T03
+  ([] (p15-s23-c11-mir-scope-record 1))
+  ([version]
+  (p15-s23-c11-mir-versioned-record
+  (cond-> {:task :FL-P06-T03
    :slice :authenticated-checked-core-to-target-independent-mir
    :maximum-conditionals 1
    :whole-c11? false
@@ -22,17 +24,19 @@
    :llvm-credit? false
    :release-credit? false
    :whole-language? false
-   :self-hosted? false})
+   :self-hosted? false}
+    (= 2 version) (assoc :supported-source-family :bool-branch-join)) version)))
 
 (defn p15-s23-c11-independent-verifier-record
-  [verifier]
+  ([verifier] (p15-s23-c11-independent-verifier-record verifier 1))
+  ([verifier version]
   (let [base
-        (assoc verifier
+        (p15-s23-c11-mir-versioned-record (assoc verifier
                :artifact :gravity/c11-independent-verifier-report
                :verification-status :passed
                :verified-semantic-constructor :gravity-source
                :verifier-implementation :clojure-stage0-seed
-               :verification-tcb :clojure-stage0-rule-runner)
+               :verification-tcb :clojure-stage0-rule-runner) version)
         report-hash (p15-s23-c11-mir-digest base)
         report-id
         (p15-s23-c11-mir-digest
@@ -40,7 +44,7 @@
           :report-hash report-hash})]
     (assoc base
            :report-id report-id
-           :report-hash report-hash)))
+           :report-hash report-hash))))
 
 (defn p15-s23-c11-mir-module-content-id
   [mir]
@@ -51,9 +55,11 @@
      (dissoc mir :b1-preflight :pass-execution-record))}))
 
 (defn p15-s23-c11-mir-pass-execution-record
-  [mir checked-core verifier-record]
+  ([mir checked-core verifier-record]
+   (p15-s23-c11-mir-pass-execution-record mir checked-core verifier-record 1))
+  ([mir checked-core verifier-record version]
   (let [base
-        {:artifact :gravity/build-mir-pass-execution-record
+        (p15-s23-c11-mir-versioned-record {:artifact :gravity/build-mir-pass-execution-record
          :pass-id :c11-build-mir-bounded-slice
          :pass-contract-hash
          (p15-s23-c11-mir-digest (p15-s23-c11-mir-pass-contract-record))
@@ -62,15 +68,17 @@
          :verifier-report-id (:report-id verifier-record)
          :verifier-report-hash (:report-hash verifier-record)
          :diagnostics []
-         :status :verified-by-independent-seed}]
+         :status :verified-by-independent-seed} version)]
     (assoc base :record-id
            (p15-s23-c11-mir-digest
             {:kind :gravity/build-mir-pass-execution-record-id
-             :record base}))))
+             :record base})))))
 
 (defn p15-s23-c11-b1-candidate-record
-  [mir checked-core verifier-record scope]
-  {:artifact :gravity/verified-mir-candidate-for-b1
+  ([mir checked-core verifier-record scope]
+   (p15-s23-c11-b1-candidate-record mir checked-core verifier-record scope 1))
+  ([mir checked-core verifier-record scope version]
+  (p15-s23-c11-mir-versioned-record {:artifact :gravity/verified-mir-candidate-for-b1
    :status :verified-mir-candidate-for-b1
    :input-kind :gravity/mir
    :requires-verifier-status :passed
@@ -85,10 +93,12 @@
     :scope-hash (p15-s23-c11-mir-digest scope)}
    :target-lowering-credit? false
    :backend-credit? false
-   :llvm-credit? false})
+   :llvm-credit? false} version)))
 
 (defn p15-s23-c11-mir-finalize
-  [mir checked-core verifier-record scope]
+  ([mir checked-core verifier-record scope]
+   (p15-s23-c11-mir-finalize mir checked-core verifier-record scope 1))
+  ([mir checked-core verifier-record scope version]
   (let [verified
         (-> mir
             (p15-s23-c11-mir-map-blocks
@@ -107,10 +117,10 @@
         with-execution
         (assoc verified :pass-execution-record
                (p15-s23-c11-mir-pass-execution-record
-                verified checked-core verifier-record))]
+                verified checked-core verifier-record version))]
     (assoc with-execution :b1-preflight
            (p15-s23-c11-b1-candidate-record
-            with-execution checked-core verifier-record scope))))
+            with-execution checked-core verifier-record scope version)))))
 
 (defn p15-s23-c11-mir-pending-view
   [mir]
@@ -146,6 +156,7 @@
 
 (defn p15-s23-c11-mir-source-rule-record
   [binding]
+  (p15-s23-c11-mir-versioned-record
   {:artifact :gravity/c11-pinned-source-rule
    :owner :gravity-source
    :source-content-hash (:source-content-hash binding)
@@ -160,7 +171,7 @@
    :compiled-by :clojure-stage0-seed
    :executed-by :clojure-stage0-rule-runner
    :clojure-seed-boundary? true
-   :self-hosted? false})
+   :self-hosted? false} (or (:interface-version binding) 1)))
 
 (def p15-s23-c11-legacy-effectful-context-keys
   #{:source-path :source-text :source-content-hash

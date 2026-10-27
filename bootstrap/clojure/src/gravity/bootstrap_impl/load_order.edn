@@ -1143,10 +1143,12 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00730-p15-s23-c11-mir-span-with-source.clj", :reader-line 116293, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-span-with-source"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00731-p15-s23-c11-mir-diagnostic-message.clj", :reader-line 116525, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-diagnostic-message"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00732-p15-s23-c11-mir-owned-upstream-diagnostic.clj", :reader-line 116742, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-owned-upstream-diagnostic?"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00732a-p15-s23-c11-mir-versioned-source-binding.clj", :reader-line 116923, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-source-binding!*"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00733-p15-s23-c11-mir-source-binding.clj", :reader-line 116984, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-source-binding!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00734-p15-s23-c11-mir-runtime-check-fact-record.clj", :reader-line 117200, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-runtime-check-fact-record"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00735b-p15-s23-c11-mir-parameter-facts.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-parameter-facts-valid?"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00735a-p15-s23-c11-mir-entry-parameter.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-parameter-position?"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00735c-p15-s23-c11-mir-v2-source-family.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-v2-source-family!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00735-p15-s23-c11-mir-downstream-ids.clj", :reader-line 117424, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-downstream-ids"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00736-p15-s23-c11-mir-block-keys.clj", :reader-line 117659, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-block-keys"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00737-p15-s23-c11-mir-validate-fact-tables.clj", :reader-line 117868, :owner :bootstrap-p15, :first-form "p15-s23-c11-mir-validate-fact-tables!"}

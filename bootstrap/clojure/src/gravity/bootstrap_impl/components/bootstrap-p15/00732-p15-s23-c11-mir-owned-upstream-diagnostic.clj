@@ -117,6 +117,43 @@
        item))
    value))
 
+(require '[gravity.c11-mir.source-interface :as c11-source-interface]
+         '[gravity.c11-mir.source-contract :as c11-source-contract])
+
+(defn p15-s23-c11-mir-contract
+  [version]
+  (when-not (identical? Long (class version))
+    (throw (ex-info "Invalid C11 source contract version"
+                    {:id "C11-VERIFY" :missing-fact :reviewed-c11-source-contract})))
+  (case (.longValue ^Long version)
+    1 {:version 1
+       :source-byte-count p15-s23-c11-mir-source-byte-count
+       :source-content-hash p15-s23-c11-mir-expected-source-content-hash
+       :plan-semantic-hash p15-s23-c11-mir-expected-plan-semantic-hash
+       :functions-semantic-hash p15-s23-c11-mir-expected-functions-semantic-hash
+       :builder-semantic-hash p15-s23-c11-mir-expected-builder-semantic-hash
+       :verifier-semantic-hash p15-s23-c11-mir-expected-verifier-semantic-hash
+       :required-functions p15-s23-c11-mir-required-functions}
+    2 c11-source-contract/v2-source-contract
+    (throw (ex-info "Unknown C11 source contract version"
+                    {:id "C11-VERIFY" :missing-fact :reviewed-c11-source-contract}))))
+
+(defn p15-s23-c11-mir-versioned-record
+  [record version]
+  (p15-s23-c11-mir-contract version)
+  (if (= 2 version)
+    (assoc record :source-interface {:interface :gravity/c11-mir :version 2})
+    record))
+
+(defn p15-s23-c11-mir-contract-binding
+  [version]
+  (let [contract (p15-s23-c11-mir-contract version)]
+    (cond-> (assoc (select-keys contract
+                               [:source-content-hash :source-byte-count :plan-semantic-hash
+                                :functions-semantic-hash :builder-semantic-hash :verifier-semantic-hash])
+                   :function-shapes (:required-functions contract))
+      (= 2 version) (assoc :interface-version version))))
+
 (defn p15-s23-c11-mir-resolve-source-path
   "Resolve the pinned C11 source independently of the caller's CWD."
   []
@@ -140,104 +177,3 @@
                       :else nil))))
               roots)
         relative)))
-
-(defn p15-s23-c11-mir-source-binding!*
-  "Compile and authenticate the exact Gravity-authored C11 builder source.
-  The executable plan is retained only for the opaque constructor/replay
-  boundary; public artifacts receive hashes and function shapes, not a mutable
-  plan that can be substituted after authentication."
-  [request-source requested-target]
-  (let [source-path (p15-s23-c11-mir-resolve-source-path)]
-    (when-not (.isFile (java.io.File. source-path))
-      (p15-s23-c11-mir-fail!
-       "C11-MODULE" request-source {}
-       {:missing-fact :pinned-gravity-c11-source
-        :requested-target requested-target}))
-    (let [source-file (java.io.File. source-path)
-          observed-file-bytes
-          (java.nio.file.Files/size (.toPath source-file))
-          _
-          (when-not (= p15-s23-c11-mir-source-byte-count
-                       observed-file-bytes)
-            (p15-s23-c11-mir-fail!
-             "C11-VERIFY" request-source {}
-             {:missing-fact :pinned-gravity-c11-source-byte-size
-              :expected-source-bytes p15-s23-c11-mir-source-byte-count
-              :observed-source-bytes observed-file-bytes
-              :requested-target requested-target}))
-          source-text (slurp source-file)
-          source-bytes (alength (.getBytes
-                                 source-text
-                                 java.nio.charset.StandardCharsets/UTF_8))
-          source-content-hash (str "sha256:" (sha256-hex source-text))]
-      (when-not (and (= p15-s23-c11-mir-source-byte-count source-bytes)
-                     (= p15-s23-c11-mir-expected-source-content-hash
-                        source-content-hash))
-        (p15-s23-c11-mir-fail!
-         "C11-VERIFY" request-source {}
-         {:missing-fact :pinned-gravity-c11-source-identity
-          :expected-source-bytes p15-s23-c11-mir-source-byte-count
-          :observed-source-bytes source-bytes
-          :expected-source-content-hash
-          p15-s23-c11-mir-expected-source-content-hash
-          :observed-source-content-hash source-content-hash}))
-      (let [emitter-rule
-            (c-backend-stage2-plan-emitter-source-rule!
-             request-source requested-target)
-            plan
-            (try
-              (p15-s23-stage2-compiler-artifact-plan
-               (:emitter emitter-rule) source-path source-text)
-              (catch clojure.lang.ExceptionInfo ex
-                (p15-s23-c11-mir-fail!
-                 "C11-VERIFY" request-source {}
-                 {:missing-fact :gravity-c11-source-compilation
-                  :cause-diagnostic (:id (ex-data ex))})))
-            functions (:functions plan)
-            observed-shapes
-            (into {}
-                  (map (fn [[name _]]
-                         [name (select-keys (get functions name)
-                                            [:arity :params])]))
-                  p15-s23-c11-mir-required-functions)
-            plan-semantic-hash
-            (p15-s23-c11-mir-digest
-             (p15-s23-stage2-compiler-artifact-semantic-input plan))
-            functions-semantic-hash
-            (p15-s23-c11-mir-digest functions)
-            builder-semantic-hash
-            (p15-s23-c11-mir-digest
-             (get functions p15-s23-c11-mir-builder-function))
-            verifier-semantic-hash
-            (p15-s23-c11-mir-digest
-             (get functions p15-s23-c11-mir-verifier-function))]
-        (when-not (= p15-s23-c11-mir-required-functions observed-shapes)
-          (p15-s23-c11-mir-fail!
-           "C11-MODULE" request-source {}
-           {:missing-fact :pinned-gravity-c11-function-shapes
-            :observed-function-shapes observed-shapes}))
-        (when-not
-         (and (= p15-s23-c11-mir-expected-plan-semantic-hash
-                 plan-semantic-hash)
-              (= p15-s23-c11-mir-expected-functions-semantic-hash
-                 functions-semantic-hash)
-              (= p15-s23-c11-mir-expected-builder-semantic-hash
-                 builder-semantic-hash)
-              (= p15-s23-c11-mir-expected-verifier-semantic-hash
-                 verifier-semantic-hash))
-          (p15-s23-c11-mir-fail!
-           "C11-VERIFY" request-source {}
-           {:missing-fact :pinned-gravity-c11-function-identity
-            :observed-plan-semantic-hash plan-semantic-hash
-            :observed-functions-semantic-hash functions-semantic-hash
-            :observed-builder-semantic-hash builder-semantic-hash
-            :observed-verifier-semantic-hash verifier-semantic-hash}))
-        {:source-path source-path
-         :source-content-hash source-content-hash
-         :source-byte-count source-bytes
-         :plan-semantic-hash plan-semantic-hash
-         :functions-semantic-hash functions-semantic-hash
-         :builder-semantic-hash builder-semantic-hash
-         :verifier-semantic-hash verifier-semantic-hash
-         :function-shapes observed-shapes
-         :plan plan}))))

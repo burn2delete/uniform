@@ -115,3 +115,13 @@
     (when-not (== (.longValue ^Long selected-version) (.longValue ^Long observed))
       (reject! :mixed-c11-interface-versions)))
   nil)
+
+(defn reject-recognized-v2-on-legacy!
+  "Keep malformed legacy inputs on their original owning validation path.
+   Only a safely recognized v2 discriminant is an early dispatch rejection."
+  [artifact]
+  (let [observed (try (artifact-version! artifact)
+                      (catch clojure.lang.ExceptionInfo _ nil))]
+    (when (and (some? observed) (== 2 (.longValue ^Long observed)))
+      (reject! :mixed-c11-interface-versions)))
+  nil)
