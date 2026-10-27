@@ -455,6 +455,7 @@
     (is (= {:status :accepted :scope :normalized-inference-control} (get-in accepted [:result :result])))
     (is (= (:request accepted) (:request entry)))
     (is (= #{:request :result} (set (keys entry))))
+    (is (= [core] (second (first (filter #(= 'sh08-carrier-preflight (first %)) calls)))))
     (is (= (assoc (:active accepted) :current-module true) (nth producer-args 2)))
     (is (= 37 (last producer-args) (last inference-args))))
   (doseq [resolution [{:status :accepted :core (nth (iterate vector :leaf) 129)}
@@ -464,6 +465,8 @@
       (is (= :rejected (get-in result [:result :status])))
       (is (= (if (= :accepted (:status resolution)) :module-type-producer-core-bound
                  :normalized-authentication-rejection) (:reason diagnostic)))
+      (when (= :accepted (:status resolution))
+        (is (= :carrier-depth-bound (get-in diagnostic [:actual :reason]))))
       (is (= (if (= :accepted (:status resolution))
                (assoc memo :current-module {:request request :result (:result result)}) memo)
              (:memo result)))
