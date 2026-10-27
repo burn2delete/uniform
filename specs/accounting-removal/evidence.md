@@ -488,3 +488,98 @@ implementation and semantic-test bodies remain identical to the accepted inputs.
 Semantic receipts retain their original identities; composition requires fresh
 repository gates and an exact-base preflight rather than an unchanged semantic
 replay. No Reader/Syntax or authenticated-source acceptance is inferred.
+
+## ACC-13 Record/Union descriptor and branch cardinality
+
+This finite increment starts at main
+`5e84b5acb59f605d8f71cc2d5cf21cc24d15a662`, tree
+`05c048d435b15b7b46972daac8a2d265284279b4`. Accounting retains the released C7
+engine and SH08 function-test ownership. No Native, registration, held runtime,
+Reader or other writer's source is changed. L5's type facts and C7's complete
+descriptor/source/equality checks remain the owning semantic requirements.
+
+`sh08-ru-all-record-shapes?` imposes one 64-entry cap on field schemas, field
+values, variants and descriptor match branches. `sh08-ram-symbol-vector?`
+independently caps typed match branch references at 64. Both are removed
+together, preserving vector requirements, symbol-reference nonemptiness and
+uniqueness, complete closed entry schemas, supported scalar/pattern types,
+constructor/access consistency and exhaustive branch semantics.
+
+Four RU validators previously hashed names/tags for uniqueness before checking
+their types. They now finish the complete key/type scan before the unchanged
+shared uniqueness helper. Supported declared types are checked as Keywords
+before set membership; value classification uses constant-first nil comparison
+and the existing Boolean primitive rather than hashing an untyped value.
+Native nil/Boolean/Integer/String/Keyword classifications are unchanged. These
+local preconditions let newly reached invalid/opaque members reject without
+callbacks. They do not establish safety for arbitrary foreign containers.
+
+The verifier's descriptive check changes from
+`:closed-descriptor-schema-bounded` to `:closed-descriptor-schema-valid`; no
+external consumer was found. Existing preparatory/typed-core scope flags remain
+closed-family limitations, not a 64-entry guarantee. Descriptor v1 and typed
+result v2 semantic families, complete identity inputs, source/provenance joins,
+fresh reconstruction, pending runtime/language features and authentication
+requirements remain unchanged. No exported budget or old-policy fallback exists.
+
+The old-source baseline completed 15 observations at `5e84b5ac`: both actual
+producers and their fresh verifiers accepted a small family, while 65/129-entry
+families and branch references reached the old refusals. The verifiers also
+recomputed those rejected results. Authentication was supplied at an explicit
+test-only seam; no genuine B47 receipt was produced. Natural exit 0, 13.839
+seconds, actual 2 GiB heap, 1,161 complete stdout bytes, empty stderr and clean
+exact bookends/cleanup. Receipt SHA-256:
+`92c34e3ef15623612d47aeaeea9461a346ba4c77b932dc24d45b9d404a1e0a8b`.
+
+Compiler-free fixture construction and compilation of the new Clojure test
+forms passed for extents 2/65/129 with Bootstrap unloaded; that control ran no
+semantic tests or Gravity compiler. Boundary/LOC 11/23 plus actual repository LOC
+passed before the semantic batch, receipt SHA-256:
+`75196e64aab7234dc4287cb0de8e9761f322e5ca8d58cf0179235e23d662fcd7`.
+
+At `0183600583ab43ac9ea169879609f0137ce53f8b`, tree
+`d296577c7c3f7c10fab89abcbd8df3f9bd432dbb`, actual validation passed 11 tests /
+197 assertions, no failures/errors, natural exit 0 in 17.992 seconds, actual
+2 GiB heap, 1,637 complete stdout bytes, empty stderr and exact clean bookends/
+completed cleanup. Both producers and both recomputing verifiers accept 65/129
+members and retain complete descriptor identity, record/branch facts, pattern
+environments, solved constraints and the last members' actual types. Controls
+reject late malformed/duplicate/missing/extra members, type conflicts, fact and
+provenance substitutions, source-definition changes, path/extension mismatch
+and supplied authentication rejection. Opaque names, tags, declared types,
+field values, payloads and branch results reject with zero callbacks.
+Receipt SHA-256:
+`ef695d71167451ebea2c5cebfedb1720eb589404d77089f8846899b57d796aef`.
+
+The sole substituted operation is authentication, restricted to the exact test
+thread, engine, selected source plan, request identity and authentication
+callee. All descriptor derivation, source joins, semantic checks, fact production
+and verifier recomputation execute in Gravity. Independent source and actual
+retained-result review accepted this finite boundary without another execution.
+
+| Tested input | SHA-256 |
+| --- | --- |
+| C7 engine | `6fc9a3f4d06374e898c5ad460b6e69ebfc76b2da4b5438913576526c8b2bb0b3` |
+| SH08 test source | `718fa973023217ef13034ae2d382355e20df84a4b8ac6a53c143178783b521e5` |
+
+Main `ea92ccad` adds only a verification-reuse document; normal reconciliation
+preserves it with all consumed semantic inputs unchanged. This does not imply
+a fresh semantic replay. Genuine authenticated-source/public acceptance,
+foreign-container safety, carrier/inference allowance removal, runtime, C12,
+release and whole ACC-13 remain open or unrun.
+
+Carrier accounting remains a separate open disposition: its current generic
+collection traversal/stringification does not itself demonstrate native-class
+or identity-cycle validation. Dropping its depth/size refusals alone would not
+establish termination or representation safety. No new permanent quota or
+runtime-certification prerequisite is introduced by that observation.
+
+Subsequent normal reconciliation `f1f93901b5192381fa57c56dc4a8b50aba3df52f`,
+tree `5a9f09059249e97b47ce944dd5198a02f559634a`, preserves main `6a453ea4`'s
+seven lossless C3 projection/fixture/test/report paths. Independent route review
+confirmed that SH08 compiler-plan construction still uses host-oracle records
+and the unchanged hosted syntax-object-stream; canonical C3 literal projection
+is not invoked. The 11/197 semantic receipt retains `01836005` provenance with
+all actual consumed inputs unchanged. Fresh composed repository gates and an
+exact-base preflight cover the new repository tree; no Reader/C3 or genuine
+authenticated-source acceptance is inferred.
