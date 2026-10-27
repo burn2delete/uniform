@@ -439,3 +439,93 @@ implementation or conformance alone does not create a new scope blocker.
 All original candidate definitions, source facets and historical pointers stay
 intact. Current task-reference additions are preserved independently of this
 source-predicate review, whose inspected definition commit remains explicit.
+
+## Complete structured source import and guard correction
+
+The final twenty Standard Library documents now have structured dispositions.
+Their frozen input retains 829 catalogue coverage records and 94 reviewed law
+records; normalization adds 67 candidate outcomes and 80 existing-owner context
+bindings. Public names do not become one unit each. The existing compiled-module
+public-contract producer retains its full source promise, while independently
+specified execution laws remain separate. Five explicit ownership questions and
+31 mixed accounting/conformance residual facets remain unresolved.
+
+The API view unions the fragment's local and external owner links, as its
+declared materialization policy requires, and rebuilds reciprocal incidence.
+It preserves original external IDs and all raw facet identities. An initial
+import omitted that union and correctly failed the known-owner guard before
+writing; the importer was corrected, not the validator weakened. Five exact
+temporary audit-input references become logical artifact names with original
+reference hashes; canonical source/task paths and semantic text are unchanged.
+
+All 240 original documents and five extension/policy sources now have complete
+structured occurrence coverage: 10,096 nonblank dispositions, including one
+reviewed and 10,095 proposed, and 29,177 exact facets. The draft has 1,296
+candidate outcomes, not an accepted denominator. All 25 currently applied alias
+dispositions have scoped independent confirmation, including the six
+Language/Runtime routes and kernel atomic ordering. The device-transfer reason
+correctly cites DOM13, with the original DOM14 citation retained in correction
+lineage; no alias route or source facet changes for that correction.
+
+Independent evidence review supports the native producers' fourteen original
+facets and preserves the three finite completed increments and selected SH22
+consumer adoption. Applicable provider/closure qualifications remain. Header
+backing-field/reflection qualifications are not imposed on identity or Symbol
+intrinsics. No current accepted numerator or new runtime execution is claimed.
+
+Independent review found a structural supersession bypass: after superseding
+all behavioral text, a trailing newline could impersonate remaining current
+provenance. The unchanged original probe returned ready/one before the fix.
+At `d529deff308f8a72afb054c9d806b7fa5395f14c`, tree
+`3d39bab5646b6ded5ef55c81ac591e571165c920`, it rejects with no substantive
+current provenance. Genuine current predicates still pass; blank and explicitly
+layout/nonnormative/navigation/heading fragments cannot supply that provenance.
+The exact two-file fix independently passes 25 tests / 186 assertions and its
+frozen audit. Its manifest equals the parent, keeping this guard approval
+separate from the later imports. Earlier held receipts remain historical;
+semantic denominator, evidence acceptance and integration remain unfinished.
+
+## Current finite task view and explicit central queue
+
+[Current status and done criteria](current-status.md) is a read-only projection,
+with its complete candidate/decision index in [current-status.edn](current-status.edn).
+Canonical task statuses are read from immutable integrated main
+`254a5b50ea5e2825c424248c9216802cc866c0fd`, tree
+`abb83592fc9e5e81c0f041e59c67749dbb67b55c`. The 24 registered components
+contain 138 outcome records: one accepted, three partial, 133 open and one
+unassessed. Reader's accepted fresh Syntax handoff retains its selected-current,
+development-unadmitted boundary and the attributed mixed-suite failure. The
+1/138 fraction describes these coarse records, not whole-project implementation.
+The nine other retained task ledgers and their 35 checked/20 unchecked steps
+remain visible without summing overlapping or differently scoped checklists.
+Preparation/selected-scope checkboxes outside implementation regions stay separate.
+
+The draft requirement inventory still has 1,296 proposed records, 522 scoped
+atomicity flags and no approved whole-model denominator. It has 638 primary
+task interfaces, 54 additional-interface-only records and 604 with no current
+canonical task interface. Those gaps are not automatically 604 new tasks:
+binding constraints, compound records and pending folds need their actual roles.
+Current requirement acceptance projection remains unassessed; known historical
+completion and qualified native support remain separately retained.
+
+All requested family review batches have arrived. Profile/Performance79,
+AI/Build/Tools245, Safety119 and Language/Runtime/Domain/Schema295 are incorporated
+as bounded decisions. Foundation82, Testing104, Math/Backends134 and Compiler119
+are delivered but not yet centrally applied: 439 records. The generated index
+lists every ID, action and disposition, plus remaining BOOT/GOV34, library67 and
+extension/policy43 scope work. The main blocker is this central adjudication,
+not absent source inventory or a requirement to assess all evidence before
+retaining known-scope units. The view does not grant new task or unit acceptance.
+
+One concrete compound correction keeps `profile/declaration-manifest` as the
+compiler's emitted namespace-manifest outcome and routes the independent
+declaration-checking clauses to the existing namespace-contract checker. Fourteen
+raw facets and the complete old definition survive; no new active ID is added.
+Profile-policy definition publication remains a distinct source-defined product.
+This applied slice awaits independent review and does not close global nonoverlap.
+
+Task source versions remain explicit. The newly integrated Compiler API fourth
+development-boundary record and Release executor clarification do not auto-upgrade
+requirement acceptance. Their nineteen existing API references and changed Reader
+status source require preserved-history rebinding during normal reconciliation;
+the generated task census can report current source statuses independently.
