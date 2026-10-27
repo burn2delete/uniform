@@ -1579,6 +1579,12 @@
       ;; Unknown launch inputs disable the optional optimization, not the test.
       nil)))
 
+(def ^:private unreviewed-bootstrap-effect-selections
+  ;; Full repository identity binds source bytes, not initialization effects.
+  ;; These two inventoried suites still lack that execution-effect closure.
+  '#{gravity.bootstrap-compatibility.c11-test
+     gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test})
+
 (defn run-child-unit!
   "Optionally reuse a complete selection inside the actual existing test JVM.
 
@@ -1586,7 +1592,8 @@
   not inspect processes or acquire a nested lease. Unknown launches and test
   policies execute fresh; no parent assertion can supply a child identity."
   [namespaces {:keys [arguments fail-fast?] :as options} operation]
-  (let [resource-loaders-supported? (supported-resource-loaders?)
+  (let [effects-reviewed? (not-any? unreviewed-bootstrap-effect-selections namespaces)
+        resource-loaders-supported? (supported-resource-loaders?)
         index (component-dependencies/dependency-index)
         by-namespace (into {} (map (juxt :namespace identity)
                                   (vals (:by-test-path index))))
@@ -1613,9 +1620,9 @@
                                                      :freshness-required?]))))
                           jobs)
         working-directory (System/getProperty "user.dir")
-        startup-absent? (and resource-loaders-supported? reviewed?
+        startup-absent? (and effects-reviewed? resource-loaders-supported? reviewed?
                              (child-startup-resources-absent? working-directory))
-        runtime (when (and resource-loaders-supported? reviewed? startup-absent?)
+        runtime (when (and effects-reviewed? resource-loaders-supported? reviewed? startup-absent?)
                   (effective-child-runtime working-directory arguments))]
     (if-not runtime
       (assoc (operation)
@@ -1626,6 +1633,7 @@
              {:decision :fresh :cacheable? false :stored? false
               :producer-executed? true
               :reason (cond
+                        (not effects-reviewed?) :unreviewed-bootstrap-initialization-effects
                         (not resource-loaders-supported?) :unreviewed-resource-loaders
                         (not reviewed?) :unreviewed-or-fresh-test-policy
                         (not startup-absent?) :unreviewed-startup-resources

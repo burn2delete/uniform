@@ -941,6 +941,52 @@
                      (do (reset! observed-arguments ["-Xss256k" "-Dfixture.private=not-for-receipts"])
                          ((resolve-wiring 'base-runtime-identities) root {})))))))))))
 
+(deftest bootstrap-compatibility-effects-stay-fresh-before-cache-observation
+  (let [c11 'gravity.bootstrap-compatibility.c11-test
+        manifest 'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
+        leaf 'gravity.c2-artifact-identity-test
+        observations (atom [])
+        operations (atom 0)
+        resolve-wiring #(ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring %)]
+    (with-redefs-fn
+      {(resolve-wiring 'supported-resource-loaders?) (constantly true)
+       (resolve-wiring 'child-startup-resources-absent?)
+       (fn [& _] (swap! observations conj :startup) true)
+       (resolve-wiring 'effective-child-runtime)
+       (fn [& _] (swap! observations conj :runtime) nil)
+       #'basis/current-basis (fn [] (swap! observations conj :basis) nil)
+       #'wiring/repository-snapshot (fn [& _] (swap! observations conj :snapshot) nil)
+       #'cache/lookup-or-run! (fn [& _] (swap! observations conj :lookup) nil)}
+      (fn []
+        (doseq [selection [[c11] [manifest] [c11 manifest] [manifest c11]
+                          [leaf c11] [manifest leaf]]
+                status [:passed :error]]
+          (let [result (wiring/run-child-unit!
+                        selection {:arguments ["not-the-actual-cli"]}
+                        #(do (swap! operations inc) {:status status :sentinel ::result}))]
+            (is (= status (:status result)))
+            (is (= ::result (:sentinel result)))
+            (is (true? (:tests-executed? result)))
+            (is (false? (:child-cache-hit? result)))
+            (is (= :unreviewed-bootstrap-initialization-effects
+                   (get-in result [:child-cache-receipt :reason])))))
+        (is (= 12 @operations))
+        (is (empty? @observations))
+        (let [failure (ex-info "fresh operation error" {:id ::operation-error})]
+          (is (identical? failure
+                          (try
+                            (wiring/run-child-unit! [c11] {} #(throw failure))
+                            (catch clojure.lang.ExceptionInfo observed observed)))))
+        ;; The three reviewed leaves still reach the existing runtime observer.
+        ;; No saved result or successful compiler execution is supplied here.
+        (doseq [selection [['gravity.c2-artifact-identity-test]
+                           ['gravity.c11-mir-test]
+                           ['gravity.compiler-pass-manifest-test]]]
+          (let [result (wiring/run-child-unit! selection {} (constantly {:status :passed}))]
+            (is (= :unknown-child-configuration
+                   (get-in result [:child-cache-receipt :reason])))))
+        (is (= [:startup :runtime :startup :runtime :startup :runtime] @observations))))))
+
 (deftest componentized-leaf-closures-bind-the-nested-implementation
   (doseq [[namespace directory expected-count]
           [['gravity.c2-artifact-identity-test "c2_artifact_identity" 5]
