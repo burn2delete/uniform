@@ -258,3 +258,37 @@ known scope; exact mixed accounting removal remains a source-identity question.
 Every proposed category names its affected existing owners and rationale. This
 repair changes no requirement, source disposition, facet, historical receipt or
 implementation task status.
+
+## Integrated authorities and remaining source population
+
+The draft normally reconciles main `82f7e8d62c71b4e5bd895f8b62c2c76363e15d3b`.
+All 245 normative source digests remain equal to the original inspected pin;
+incoming implementation and authority changes are preserved. The current task
+reader supports Compiler API's existing owner/table/yes-no grouped record shape,
+retaining all five rows per outcome. It rejects malformed role headings.
+
+Fifty-seven existing candidates gain scoped interfaces to the integrated
+Compiler API (19), Runtime (29) and Standard Library (9) task authorities. Actual
+task IDs, source hashes and acceptance-boundary hashes are retained. Existing
+primary references survive; additional interfaces do not replace them. Earlier
+missing-marker observations remain dated by their source context in task trace
+history. Each join remains a partial accountable interface with detailed source
+predicates and applicable implementation receipts unassessed. All referenced new
+groups are Open; no task or requirement acceptance is upgraded.
+
+The 18-document Bootstrap/Governance import retains all 34 proposed outcomes,
+440 nonblank occurrences and 1,174 partition facets. Historical stage0 and
+Foundation work, the incomplete P15 terminal proof, security/advisory ownership,
+external-only library relationships and proposed equivalences remain explicit.
+Its 939 known-owner implementation/signature/evidence residuals are acceptance
+qualifications, not scope-identity claims. They remain unaccepted.
+
+Structured source partitions now cover 220 original documents plus all five
+extensions. The remaining 20 originals are Standard Library, whose 829 catalogue
+records are being retained as coverage facets of the actual compiled public
+contract and applicable execution outcomes, not 829 denominator units. The
+current 1,254 candidate records and 27,425 facets remain proposed scope. One
+source disposition is reviewed, 9,526 are proposed and 569 nonblank blocks await
+structured import. Global atomicity/nonoverlap review and acceptance projection
+remain unfinished; no overall rate is established. Twenty-one focused tests /
+124 assertions pass on the current composition.

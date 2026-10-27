@@ -277,4 +277,16 @@
     (is (thrown? Exception (rr/project (update-in m [:source-facets 0] dissoc :qualification-reason) sources)))
     (is (thrown? Exception (rr/project (assoc-in m [:source-facets 0 :unresolved] false) sources)))))
 
+(deftest integrated-api-grouped-records-retain-tables-and-acceptance
+  (let [text (slurp "specs/compiler-api-workflow/tasks.md")]
+    (doseq [id ["pipeline" "plugins" "pass-evidence"]
+            :let [r (requirement-evidence/task-record text "compiler-api-implementation-tasks" id)]]
+      (is (= "Open" (:status r)))
+      (is (false? (:checked? r)))
+      (is (str/includes? (:acceptance r) "| Task | Concrete closing evidence |"))
+      (is (str/includes? (:acceptance r) "Yes/no acceptance:")))
+    (is (thrown? Exception (requirement-evidence/task-record
+                            (str/replace text "Owner role:" "Malformed role:")
+                            "compiler-api-implementation-tasks" "pipeline")))))
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

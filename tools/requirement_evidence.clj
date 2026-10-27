@@ -21,7 +21,7 @@
             statuses (re-seq #"(?m)^(Current evidence/status|Status): (.+)$" block)
             ordinary (re-seq #"(?m)^(Done when \(yes/no\)|Closing evidence|Concrete exit evidence): (.+)$" block)
             projected-headings (re-seq #"(?m)^Projected task block:\n" block)
-            projected (re-find #"(?ms)^(Projected task block):\n(Remaining tasks: .+?)\s*\z" block)
+            projected (re-find #"(?ms)^(Projected task block):\n((?:Remaining tasks|Owner role): .+?)\s*\z" block)
             boundaries (concat ordinary (when projected [projected]))
             status (nth (first statuses) 2 nil) acceptance (nth (first boundaries) 2 nil)]
         (require! (and (= 1 (count statuses)) (= 1 (count boundaries))
