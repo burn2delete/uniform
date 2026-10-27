@@ -5,6 +5,10 @@ Owner role: platform architecture and target maintainers; current owner
 unassigned by this proposal. Baseline:
 `c21068a6d39259b7110845bbbcefaf9bf6901232`.
 
+Implementation task authority: [Spec Kit platform ledger](../../specs/platform-workflow/tasks.md#implementation-tasks).
+Edit the ledger and run `clojure -M tools/platform_task_projection.clj --write`;
+the project table and full-product scope below are generated.
+
 ## Purpose and scope
 
 Track the full hardware, firmware, operating-system/kernel and device-extension
@@ -33,6 +37,7 @@ simulation fixtures and architecture decisions may proceed in parallel.
 
 ## Finite projects and remaining tasks
 
+<!-- platform-task-projection:start -->
 All projects are proposed and open. Their owner is the platform maintainer until
 individual target ownership is explicitly assigned, not inferred from a file.
 
@@ -42,6 +47,7 @@ individual target ownership is explicitly assigned, not inferred from a file.
 | Firmware / `firmware` | Adopt device memory/startup target; implement interrupt/MMIO/startup and explicit allocation; verify image/link map and rejected unsupported services on execution or named emulator | [Firmware contract](../phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md) |
 | Kernel / `kernel` | Adopt kernel ABI/execution model; implement initialization, memory and scheduling interface slice required by contract; verify unsafe boundaries, no hidden hosted services and artifact provenance | [Kernel contract](../phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md) |
 | Devices / `devices` | Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/transfer adapters; validate denial without grants, lifetime handling and device failure translation | [Device contract](../phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md) |
+<!-- platform-task-projection:end -->
 
 These are separate component projects, not an assertion that one generic target
 covers all platforms. Baseline evidence includes
@@ -71,6 +77,7 @@ requires all adopted project outcomes, not native compiler availability alone.
 
 ## Full Uniform platform product (separate from domain conformance)
 
+<!-- platform-product-projection:start -->
 The full goal also includes Uniform-authored hardware, firmware, drivers, an
 operating system and applications working together. The target-conformance
 outcome above is an enabling milestone, not a substitute for this product.
@@ -125,3 +132,4 @@ isolation and device failure cases enforced? Is each source/tool/hardware
 boundary documented and verified? Does the claimed physical deliverable exist
 when one is in scope? All applicable answers must be yes, separately from the
 language-domain conformance gates above.
+<!-- platform-product-projection:end -->

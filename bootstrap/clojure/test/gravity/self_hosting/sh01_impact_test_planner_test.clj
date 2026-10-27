@@ -457,13 +457,18 @@
                 "stage2_module_map_order" "stage2_module_transitive_call"
                 "stage2_module_vector_call" "pass_execution_canonical_sort"
                 "source_fragment_binding" "mir_scalar_admission"
-                "mir_source_snapshot" "resolution_construction_inputs"]]
+                "mir_source_snapshot" "resolution_construction_inputs"
+                "c6_parameter_reader_invocation" "canonical_keyword_scalar_path"
+                "reader_staged_closure" "reader_token_spelling_reuse"]]
     (let [relative (str "bootstrap/clojure/test/gravity/self_hosting/" stem "_test.clj")
           namespace (symbol (str "gravity.self-hosting." (str/replace stem "_" "-") "-test"))
           slice (case stem
                   ("source_fragment_binding" "mir_source_snapshot") "SH-07"
                   "mir_scalar_admission" "SH-12"
                   "resolution_construction_inputs" "SH-06"
+                  "c6_parameter_reader_invocation" "SH-07"
+                  ("canonical_keyword_scalar_path" "reader_staged_closure"
+                   "reader_token_spelling_reuse") "SH-03"
                   "SH-01")
           plan (planner/build-plan {:changed-paths [relative] :expand-dependants? true})
           namespace-plan (planner/build-namespace-plan [namespace])
@@ -478,6 +483,50 @@
       (is (false? (get-in shard [:test-policy :proof?])) relative)
       (is (nil? (:cache-closure shard)) relative)
       (is (false? (:authoritative? plan)) relative))))
+
+(deftest runtime-module-read-catalog-preserves-owner-and-requires-guarded-execution
+  (doseq [[path namespace]
+          [["bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
+            'gravity.self-hosting.runtime-module-reads-test]
+           ["bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
+            'gravity.self-hosting.module-census-test]]]
+    (let [context (planner/planning-context)
+          owner (get-in context [:ownership :standalone-test-owners path])
+          entry (get-in context [:standalone-test-index :by-namespace namespace])]
+      (is (= {:namespace namespace :slice "SH-19" :owner :sh-runtime} owner))
+      (is (true? (get-in entry [:test-policy :freshness-required?])))
+      (is (nil? (:cache-closure entry)))
+      (doseq [request [#(planner/build-namespace-plan [namespace])
+                       #(planner/build-plan {:changed-paths [path]})
+                       #(planner/build-plan {:direct-slices ["SH-19"]})
+                       #(planner/build-plan {:iteration-slices ["SH-19"]})]]
+        (let [data (first (filter #(= namespace (:namespace %)) (:shards (request))))]
+          (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+          (is (= :unsupported (:execution data)))
+          (is (= namespace (:namespace data)))
+          (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+                 (:required-guards data))))))))
+
+(deftest resolution-parent-mutation-is-discovered-but-needs-the-owner-wrapper
+  (let [path "bootstrap/clojure/test/gravity/self_hosting/resolution_parent_mutation_test.clj"
+        namespace 'gravity.self-hosting.resolution-parent-mutation-test
+        context (planner/planning-context)
+        entry (get-in context [:standalone-test-index :by-namespace namespace])]
+    (is (= {:namespace namespace :slice "SH-06" :owner :sh-resolution}
+           (get-in context [:ownership :standalone-test-owners path])))
+    (is (true? (get-in entry [:test-policy :freshness-required?])))
+    (is (nil? (:cache-closure entry)))
+    (doseq [request [#(planner/build-namespace-plan [namespace])
+                     #(planner/build-plan {:changed-paths [path]})
+                     #(planner/build-plan {:direct-slices ["SH-06"]})
+                     #(planner/build-plan {:iteration-slices ["SH-06"]})]]
+      (let [data (first (filter #(= namespace (:namespace %)) (:shards (request))))]
+        (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+        (is (= :unsupported (:execution data)))
+        (is (= "SH-06" (:slice data)))
+        (is (= :sh-resolution (:owner data)))
+        (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+               (:required-guards data)))))))
 
 (deftest deleted-reviewed-test-conservatively-selects-component-dependencies
   (let [exists-var
@@ -557,24 +606,18 @@
     (is (= :gravity/stage0-incremental-test-dependencies-v2
            (:schema index)))
     (is (true? (get-in by-namespace
+                       ['gravity.c2-artifact-identity-test :cache-closure-valid?])))
+    (is (true? (get-in by-namespace
                        ['gravity.c11-mir-test :cache-closure-valid?])))
     (is (true? (get-in by-namespace
                        ['gravity.compiler-pass-manifest-test
                         :cache-closure-valid?])))
-    (is (true? (get-in by-namespace
-                       ['gravity.bootstrap-compatibility.c11-test
-                        :cache-closure-valid?])))
-    (is (true? (get-in by-namespace
-                       ['gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
-                        :cache-closure-valid?])))
     (doseq [namespace
             ['gravity.bootstrap-compatibility.c11-test
              'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test]]
-      (let [inputs (get-in by-namespace [namespace :cache-closure :inputs])]
-        (is (= 52 (count (filter #(contains? #{:production :transitive}
-                                             (:role %))
-                                 inputs))))
-        (is (= 1 (count (filter #(= :fixture (:role %)) inputs))))))
+      (is (nil? (get-in by-namespace [namespace :cache-closure])))
+      (is (false? (get-in by-namespace [namespace :cache-closure-valid?])))
+      (is (nil? (component-dependencies/reviewed-cache-closure index namespace))))
     (let [contract (component-dependencies/read-contract)
           malformed
           (assoc-in contract
@@ -611,12 +654,12 @@
     (is (true? (get-in metadata
                        ['gravity.c11-mir-test
                         :cache-closure-authorized?])))
-    (is (map? (get-in metadata
+    (is (nil? (get-in metadata
                       ['gravity.bootstrap-compatibility.c11-test
                        :cache-closure])))
-    (is (true? (get-in metadata
-                       ['gravity.bootstrap-compatibility.c11-test
-                        :cache-closure-authorized?])))))
+    (is (not (true? (get-in metadata
+                            ['gravity.bootstrap-compatibility.c11-test
+                             :cache-closure-authorized?]))))))
 
 (deftest nested-cache-inputs-retain-exact-component-ownership
   (let [owned? (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
@@ -637,6 +680,35 @@
            (:classification
             (planner/classify-path ownership
                                    "bootstrap/clojure/src/gravity/c11_mir/unreviewed.clj"))))))
+
+(deftest reader-identity-closure-is-exact-and-owner-bound
+  (let [namespace 'gravity.c2-artifact-identity-test
+        closure (component-dependencies/reviewed-cache-closure namespace)
+        production (filter #(contains? #{:production :transitive} (:role %))
+                           (:inputs closure))
+        owned? (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner 'closure-owned?)
+        ownership (:ownership (planner/planning-context))
+        source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"
+        plan (planner/build-plan {:changed-paths [source]})
+        shard (first (:shards plan))]
+    (is (= #{source "bootstrap/clojure/src/gravity/digest.clj"
+             "bootstrap/clojure/src/gravity/c2_artifact_identity/artifacts.clj"
+             "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj"
+             "bootstrap/clojure/src/gravity/c2_artifact_identity/incremental.clj"
+             "bootstrap/clojure/src/gravity/c2_artifact_identity/operations.clj"
+             "bootstrap/clojure/src/gravity/c2_artifact_identity/projections.clj"}
+           (set (map :path production))))
+    (is (= [namespace] (:namespaces plan)))
+    (is (= closure (:cache-closure shard)))
+    (is (true? (:cache-closure-authorized? shard)))
+    (is (true? (owned? ownership "c2-artifact-identity" closure)))
+    (is (false? (owned? ownership "c11-mir" closure)))
+    (is (false? (owned? (update ownership :module-owners dissoc source)
+                        "c2-artifact-identity" closure)))
+    (is (= :unowned
+           (:classification
+            (planner/classify-path ownership
+              "bootstrap/clojure/src/gravity/c2_artifact_identity/unreviewed.clj"))))))
 
 (deftest stage0-c2-module-maps-to-reader-slice-and-downstream-closure
   (let [source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"

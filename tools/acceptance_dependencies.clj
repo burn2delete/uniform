@@ -29,6 +29,19 @@
 (defn require-population! [expected actual label]
   (require! (= expected (set actual)) (str "Missing or unknown " label " identity")))
 
+(defn dependency-list [declaration token-pattern terminal-period?]
+  (let [text (str/trim declaration)
+        _ (when terminal-period?
+            (require! (str/ends-with? text ".") "Dependency declaration must end with one period"))
+        body (if terminal-period? (subs text 0 (dec (count text))) text)
+        parts (str/split body #"," -1)
+        parsed (mapv #(re-matches token-pattern (str/trim %)) parts)]
+    (require! (and (seq parts) (every? some? parsed))
+              (str "Malformed dependency list: " declaration))
+    (let [ids (mapv second parsed)]
+      (require! (= (count ids) (count (set ids))) "Duplicate dependency token")
+      (set ids))))
+
 (defn full-language-graph [text]
   (let [phases (vec (for [[_ phase body]
                          (re-seq #"(?ms)^## Phase (\d{2})[^\n]*\n(.*?)(?=^## |\z)" text)]
@@ -53,22 +66,27 @@
                             (set (mapcat :ids (filter #(not (#{"00" "14" "15" "17" "18"} (:phase %))) phases)))
                             (= "all previous full-language tasks." declaration)
                             (set (mapcat :ids (filter #(neg? (compare (:phase %) phase)) phases)))
-                            :else (let [refs (set (re-seq #"FL-P\d{2}-T\d{2}" declaration))]
-                                    (require! (and (seq refs)
-                                                   (re-matches #"[\s`,.FLPT0-9-]+" declaration))
-                                              (str "Unknown dependency syntax: " declaration))
-                                    refs))]
+                            :else (dependency-list declaration #"`(FL-P\d{2}-T\d{2})`" true))]
+                      (require! (every? (set (mapcat :ids phases)) dependencies)
+                                (str "Unknown full-language prerequisite in phase " phase))
                       (map (fn [id] [id dependencies]) ids))) phases))))
 
 (defn milestone-graph [text]
-  (let [rows (re-seq #"(?m)^\| \[?(SH-\d{2})\]?[^|]*\|[^|]*\| ([^|]+)\|[^|]*\|$" text)
+  (let [rows (re-seq #"(?m)^\| \[(SH-\d{2})\]\(#[a-z0-9-]+\) \| [^|\n]+ \| ([^|\n]+) \| [^|\n]+ \|$" text)
+        row-lines (re-seq #"(?m)^\| \[?SH-[^\n]*" text)
+        expected (set (map #(format "SH-%02d" %) (range 30)))
         ids (mapv second rows)]
-    (require! (and (= (set (map #(format "SH-%02d" %) (range 30))) (set ids))
+    (require! (and (= expected (set ids)) (= (count rows) (count row-lines)))
+              "Missing, unknown or malformed milestone row")
+    (require! (and (= expected (set ids))
                    (= (count ids) (count (set ids))))
               "Missing or duplicate milestone rows")
     (into (sorted-map)
           (for [[_ id dependencies] rows]
-            [id (set (re-seq #"SH-\d{2}" dependencies))]))))
+            (let [refs (if (= "none" (str/trim dependencies)) #{}
+                         (dependency-list dependencies #"(SH-\d{2})" false))]
+              (require! (every? expected refs) (str "Unknown milestone prerequisite: " id))
+              [id refs])))))
 
 (defn validate-graph [graph]
   (require! (seq graph) "Empty dependency graph")
@@ -132,10 +150,15 @@
         (require! (and (= 1 starts ends) (< (.indexOf text start) (.indexOf text end)))
                   (str "Malformed implementation region: " component))
         (let [region (subs text (+ (.indexOf text start) (count start)) (.indexOf text end))
-              ids (mapv second (re-seq #"(?m)^- \[[ xX]\] `([^`]+)`" region))]
-          (require! (and (seq ids) (= (count ids) (count (set ids)))
-                         (every? #(str/starts-with? % (str component "/")) ids))
-                    (str "Missing, duplicate or foreign implementation IDs: " component))
+              rows (re-seq #"(?m)^- \[[^\n]*" region)
+              parsed (mapv #(re-matches #"- \[[ xX]\] `([^\s`]+)`(?: .*)?" %) rows)
+              ids (mapv second parsed)]
+          ;; Preserve literal existing IDs, including backend-llvm. Naming is
+          ;; not ownership: each component's projector validates its own exact
+          ;; population; this read-only census must not invent a prefix policy.
+          (require! (and (seq ids) (every? some? parsed)
+                         (= (count ids) (count (set ids))))
+                    (str "Missing, duplicate or malformed implementation IDs: " component))
           ids)))))
 
 (defn component-census [registry read-text exists?]

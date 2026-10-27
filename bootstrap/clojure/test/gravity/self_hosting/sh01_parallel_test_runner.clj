@@ -14,7 +14,8 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
-            [gravity.self-hosting.sh01-impact-test-planner :as planner]))
+            [gravity.self-hosting.sh01-impact-test-planner :as planner]
+            [gravity.self-hosting-test-runner :as child-runner]))
 
 (import '(java.io ByteArrayOutputStream InputStream)
         '(java.nio ByteBuffer CharBuffer)
@@ -220,6 +221,14 @@
   (let [value (:resource-class job)]
     (if (nil? value) :normal value)))
 
+(defn- require-supported-namespace!
+  [namespace]
+  ;; Policy comes from the owner, never from caller-supplied shard markers.
+  (when-let [blocked (planner/unsupported-execution namespace)]
+    (throw
+     (ex-info "Selected source tests require their established guarded owner wrapper"
+              blocked))))
+
 (defn- canonical-jobs
   "Canonicalizes either the planner's `:namespaces` plus `:shards` or a plan
   containing shards alone.  Namespace identity is unique and reporting order
@@ -288,6 +297,9 @@
         (->> namespaced
              vals
              (map (fn [job]
+                    ;; Recompute the owning policy rather than trusting optional
+                    ;; shard fields that a direct caller could omit or relabel.
+                    (require-supported-namespace! (:namespace job))
                     (when-not
                      (contains? #{:normal :memory-heavy :exclusive}
                                 (resource-class job))
@@ -1071,6 +1083,14 @@
       (sequential? command) (mapv str command)
       :else [(str command) "-M:test"])))
 
+(defn- forward-child-cache-option? [options]
+  (when-let [cache-options (:child-development-cache options)]
+    ;; Keep malformed options on the child's original refusal path. Only a
+    ;; valid optional optimization may be omitted to run the tests fresh.
+    (or (not (child-runner/valid-development-cache-options? cache-options))
+        (wiring/project-startup-resources-absent?
+         (or (:working-directory options) @root)))))
+
 (defn namespace-command
   "Returns the exact ProcessBuilder argument vector for one namespace."
   ([namespace]
@@ -1078,7 +1098,7 @@
   ([namespace options]
    (cond-> (into (vec (command-prefix options))
                  ["--namespace" (namespace-name namespace)])
-     (:child-development-cache options)
+     (forward-child-cache-option? options)
      (into ["--development-cache" (pr-str (:child-development-cache options))]))))
 
 (defn normal-batch-command
@@ -1092,7 +1112,7 @@
                     ["--namespace" (namespace-name (:namespace job))])
                   jobs))
      (:fail-fast? options) (conj "--fail-fast")
-     (:child-development-cache options)
+     (forward-child-cache-option? options)
      (into ["--development-cache" (pr-str (:child-development-cache options))])
      true (into ["--report-file" (str report-file)]))))
 
@@ -1207,6 +1227,7 @@
    (run-normal-batch-process jobs {}))
   ([jobs options]
    (let [jobs (vec jobs)
+         _ (doseq [job jobs] (require-supported-namespace! (:namespace job)))
          _ (when (or (empty? jobs)
                      (some #(not= :normal (:resource-class %)) jobs))
              (throw (ex-info "Warm-JVM batching accepts normal jobs only"
@@ -1983,6 +2004,7 @@
   ([job]
    (run-namespace-process job {}))
   ([job options]
+   (require-supported-namespace! (:namespace job))
    (let [started (System/nanoTime)
          command (namespace-command (:namespace job) options)
          working-directory (or (:working-directory options) @root)

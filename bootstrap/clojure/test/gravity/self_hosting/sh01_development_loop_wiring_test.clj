@@ -1,13 +1,17 @@
 (ns gravity.self-hosting.sh01-development-loop-wiring-test
   (:require [clojure.edn :as edn]
+            [clojure.java.basis :as basis]
             [clojure.test :refer [deftest is testing]]
+            [clojure.java.io :as io]
             [clojure.java.shell :as shell]
             [clojure.string :as str]
             [gravity.self-hosting.sh01-development-test-cache :as cache]
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
             [gravity.self-hosting.sh01-parallel-test-runner :as runner]
             [gravity.self-hosting-test-runner :as child-runner])
-  (:import [java.nio.file Files LinkOption Path StandardCopyOption]
+  (:import [java.net URL URLClassLoader]
+           [java.util.jar Attributes$Name JarEntry JarOutputStream Manifest]
+           [java.nio.file Files LinkOption Path StandardCopyOption]
            [java.nio.file.attribute FileAttribute PosixFilePermissions]
            [java.util.concurrent CountDownLatch TimeUnit]))
 
@@ -148,11 +152,13 @@
      :slice "SH-00"
      :resource-class :normal
      :component-id
-     (if (contains? #{'gravity.c11-mir-test
+     (cond
+       (= 'gravity.c2-artifact-identity-test namespace) "c2-artifact-identity"
+       (contains? #{'gravity.c11-mir-test
                       'gravity.bootstrap-compatibility.c11-test}
                     namespace)
        "c11-mir"
-       "compiler-pass-manifest")
+       :else "compiler-pass-manifest")
      :batch-key (str "closure/" namespace)
      :cache-closure closure
      :cache-closure-authorized? true
@@ -661,202 +667,73 @@
                            [:receipt :decision])))
             (is (= 2 @calls))))))))
 
-(deftest bootstrap-compatibility-closures-bind-exact-content-mode-and-fixtures
-  (doseq [[namespace fixture]
-          [['gravity.bootstrap-compatibility.c11-test
-            "bootstrap/clojure/fixtures/accepted/compiler-c11-mir-spec.gravity"]
-           ['gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
-            "bootstrap/clojure/fixtures/accepted/compiler-passes.gravity"]]]
+(deftest bootstrap-compatibility-fallback-binds-loader-resources-and-rejects-stale-hits
+  (doseq [namespace ['gravity.bootstrap-compatibility.c11-test
+                    'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test]]
     (with-coordination-root [base]
-      (let [first-root (.resolve base "first-worktree")
-            second-root (.resolve base "second-worktree")
+      (let [root (.toRealPath
+                  (Files/createDirectories (.resolve base "repository")
+                                           no-file-attributes)
+                  no-links)
+            paths ["bootstrap/clojure/src/gravity/bootstrap_impl/loader.clj"
+                   "bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn"
+                   "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/fixture.clj"
+                   "bootstrap/clojure/src/gravity/bootstrap_impl/data/foundation/fixture.edn"
+                   "bootstrap/clojure/fixtures/accepted/compiler-c11-mir-spec.gravity"
+                   "bootstrap/clojure/fixtures/accepted/compiler-passes.gravity"]
             job (reviewed-closure-job namespace)
-            full-id-b (str "sha256:" (apply str (repeat 64 "b")))]
-        (Files/createDirectories first-root no-file-attributes)
-        (Files/createDirectories second-root no-file-attributes)
-        (copy-reviewed-closure! first-root job)
-        (copy-reviewed-closure! second-root job)
-        (Files/write (.resolve second-root "unrelated.txt")
-                     (.getBytes "unrelated" "UTF-8")
-                     (make-array java.nio.file.OpenOption 0))
-        (let [first-request
-              (closure-cache-request (.resolve base "first-coordination")
-                                     first-root job snapshot-id)
-              unrelated-request
-              (closure-cache-request (.resolve base "second-coordination")
-                                     second-root job full-id-b)
-              bootstrap-relative "bootstrap/clojure/src/gravity/bootstrap.clj"
-              bootstrap-path (.resolve second-root bootstrap-relative)
-              bootstrap-bytes (Files/readAllBytes bootstrap-path)
-              bootstrap-time
-              (Files/getLastModifiedTime bootstrap-path no-links)]
-          (is (= (cache/cache-key first-request)
-                 (cache/cache-key unrelated-request))
-              (str namespace))
-          (is (not (str/includes? (pr-str unrelated-request)
-                                  (str second-root))))
-          (aset-byte bootstrap-bytes 0
-                     (byte (bit-xor 1
-                                    (bit-and 0xff (aget bootstrap-bytes 0)))))
-          (Files/write bootstrap-path bootstrap-bytes
-                       (make-array java.nio.file.OpenOption 0))
-          (Files/setLastModifiedTime bootstrap-path bootstrap-time)
-          (is (not= (cache/cache-key first-request)
-                    (cache/cache-key
-                     (closure-cache-request
-                      (.resolve base "content-coordination") second-root job
-                      full-id-b))))
-          (Files/copy (.resolve first-root bootstrap-relative) bootstrap-path
-                      (into-array StandardCopyOption
-                                  [StandardCopyOption/REPLACE_EXISTING
-                                   StandardCopyOption/COPY_ATTRIBUTES]))
-          (Files/setPosixFilePermissions
-           bootstrap-path (PosixFilePermissions/fromString "rwx------"))
-          (is (not= (cache/cache-key first-request)
-                    (cache/cache-key
-                     (closure-cache-request
-                      (.resolve base "mode-coordination") second-root job
-                      full-id-b))))
-          (Files/copy (.resolve first-root bootstrap-relative) bootstrap-path
-                      (into-array StandardCopyOption
-                                  [StandardCopyOption/REPLACE_EXISTING
-                                   StandardCopyOption/COPY_ATTRIBUTES]))
-          (let [fixture-path (.resolve second-root fixture)]
-            (Files/write fixture-path
-                         (byte-array
-                          (concat (Files/readAllBytes fixture-path) [(byte 10)]))
-                         (make-array java.nio.file.OpenOption 0))
-            (is (not= (cache/cache-key first-request)
-                      (cache/cache-key
-                      (closure-cache-request
-                        (.resolve base "fixture-coordination") second-root job
-                        full-id-b))))
-            (Files/copy (.resolve first-root fixture) fixture-path
-                        (into-array StandardCopyOption
-                                    [StandardCopyOption/REPLACE_EXISTING
-                                     StandardCopyOption/COPY_ATTRIBUTES]))
-            (Files/delete fixture-path)
-            (is (= full-id-b
-                   (:repository-identity
-                    (closure-cache-request
-                     (.resolve base "missing-fixture-coordination")
-                     second-root job full-id-b))))
-            (Files/copy (.resolve first-root fixture) fixture-path
-                        (into-array StandardCopyOption
-                                    [StandardCopyOption/REPLACE_EXISTING
-                                     StandardCopyOption/COPY_ATTRIBUTES])))
-          (Files/delete
-           (.resolve second-root
-                     "bootstrap/clojure/src/gravity/c10_safety_analysis.clj"))
-          (is (= full-id-b
-                 (:repository-identity
-                  (closure-cache-request
-                   (.resolve base "missing-transitive-coordination")
-                   second-root job full-id-b)))))))))
-
-(deftest bootstrap-compatibility-closure-singleflight-is-cross-worktree-safe
-  (with-coordination-root [base]
-    (let [first-root (.resolve base "first-worktree")
-          second-root (.resolve base "second-worktree")
-          job
-          (reviewed-closure-job
-           'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test)
-          calls (atom 0)
-          entered (CountDownLatch. 1)
-          release (CountDownLatch. 1)]
-      (Files/createDirectories first-root no-file-attributes)
-      (Files/createDirectories second-root no-file-attributes)
-      (copy-reviewed-closure! first-root job)
-      (copy-reviewed-closure! second-root job)
-      (let [first-request
-            (closure-cache-request (.resolve base "first-coordination")
-                                   first-root job snapshot-id)
-            second-request
-            (assoc
-             (closure-cache-request
-              (.resolve base "second-coordination") second-root job
-              (str "sha256:" (apply str (repeat 64 "b"))))
-             :cache-directory (:cache-directory first-request))
-            operation
-            (fn []
-              (swap! calls inc)
-              (.countDown entered)
-              (.await release 5 TimeUnit/SECONDS)
-              {:status :passed
-               :exit-code 0
-               :authority :non-authoritative
-               :authoritative? false
-               :timed-out? false
-               :nondeterministic? false
-               :performance? false
-               :proof? false
-               :freshness-required? false})
-            first-result (future (cache/lookup-or-run! first-request operation))
-            _ (is (.await entered 5 TimeUnit/SECONDS))
-            second-result
-            (future (cache/lookup-or-run! second-request operation))]
-        (.countDown release)
-        (is (= [:hit :miss]
-               (sort [(get-in @first-result [:receipt :decision])
-                      (get-in @second-result [:receipt :decision])])) )
-        (is (= 1 @calls))))))
-
-(deftest bootstrap-compatibility-fixtures-invalidate-only-their-owner
-  (with-coordination-root [base]
-    (let [repository-root (.resolve base "worktree")
-          c11-job
-          (reviewed-closure-job 'gravity.bootstrap-compatibility.c11-test)
-          manifest-job
-          (reviewed-closure-job
-           'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test)
-          c11-fixture
-          "bootstrap/clojure/fixtures/accepted/compiler-c11-mir-spec.gravity"
-          manifest-fixture
-          "bootstrap/clojure/fixtures/accepted/compiler-passes.gravity"
-          selected-request
-          (fn [suffix job]
-            (closure-cache-request (.resolve base suffix) repository-root job
-                                   snapshot-id))]
-      (Files/createDirectories repository-root no-file-attributes)
-      (copy-reviewed-closure! repository-root c11-job)
-      (copy-reviewed-closure! repository-root manifest-job)
-      (let [c11-request (selected-request "c11-initial" c11-job)
-            manifest-request
-            (selected-request "manifest-initial" manifest-job)
-            append! (fn [relative]
-                      (let [path (.resolve repository-root relative)]
-                        (Files/write
-                         path
-                         (byte-array
-                          (concat (Files/readAllBytes path) [(byte 10)]))
-                         (make-array java.nio.file.OpenOption 0))))]
-        (append! c11-fixture)
-        (is (not= (cache/cache-key c11-request)
-                  (cache/cache-key
-                   (selected-request "c11-fixture-change" c11-job))))
-        (is (= (cache/cache-key manifest-request)
-               (cache/cache-key
-                (selected-request "c11-fixture-manifest" manifest-job))))
-        (Files/copy (.resolve (.toRealPath (.toPath (java.io.File. "."))
-                                           no-links)
-                              c11-fixture)
-                    (.resolve repository-root c11-fixture)
-                    (into-array StandardCopyOption
-                                [StandardCopyOption/REPLACE_EXISTING
-                                 StandardCopyOption/COPY_ATTRIBUTES]))
-        (append! manifest-fixture)
-        (is (= (cache/cache-key c11-request)
-               (cache/cache-key
-                (selected-request "manifest-fixture-c11" c11-job))))
-        (is (not= (cache/cache-key manifest-request)
-                  (cache/cache-key
-                   (selected-request "manifest-fixture-change"
-                                     manifest-job))))))))
+            calls (atom 0)]
+        (is (zero? (:exit (shell/sh "git" "init" "-q" :dir (str root)))))
+        (doseq [relative paths]
+          (let [path (.resolve root relative)]
+            (Files/createDirectories (.getParent path) no-file-attributes)
+            (spit (str path) "alpha")))
+        (is (zero? (:exit (shell/sh "git" "add" "." :dir (str root)))))
+        (is (zero? (:exit (shell/sh "git" "-c" "user.name=Gravity"
+                                    "-c" "user.email=gravity@example.invalid"
+                                    "commit" "-qm" "fixture" :dir (str root)))))
+        (is (nil? (:cache-closure job)))
+        (let [snapshot (wiring/repository-snapshot root)
+              selected-context (assoc (context base) :working-directory (str root)
+                                      :snapshot snapshot :revalidate-snapshot? true)
+              selected-plan (impact-plan namespace)
+              attached (wiring/attach-request selected-context selected-plan {} job)
+              request (:development-cache-request attached)
+              operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+          (is (= (:repository-identity snapshot) (:repository-identity request)))
+          (is (= ["repository/complete-production-closure-v1"]
+                 (mapv :path (get-in request [:dependencies :production-inputs]))))
+          (is (= :passed (:status (wiring/run-unit! selected-context attached operation))))
+          (is (:hit-result (wiring/probe selected-context attached)))
+          (doseq [relative paths]
+            (let [path (.resolve root relative)
+                  original (Files/readAllBytes path)
+                  timestamp (Files/getLastModifiedTime path no-links)
+                  before @calls]
+              (try
+                ;; Equal length and preserved mtime must not manufacture a hit.
+                (spit (str path) "omega")
+                (Files/setLastModifiedTime path timestamp)
+                (let [changed (wiring/repository-snapshot root)
+                      later (assoc selected-context :snapshot changed)
+                      renewed (wiring/attach-request later selected-plan {} job)]
+                  (is (not= (:repository-identity snapshot) (:repository-identity changed)) relative)
+                  (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                         (:id (exception-data #(wiring/probe selected-context attached)))) relative)
+                  (is (not= (cache/cache-key request)
+                            (cache/cache-key (:development-cache-request renewed))) relative)
+                  (is (= :passed (:status (wiring/run-unit! later renewed operation))) relative)
+                  (is (= (inc before) @calls) relative))
+                (finally
+                  (Files/write path original (make-array java.nio.file.OpenOption 0))
+                  (Files/setLastModifiedTime path timestamp)))))
+          (is (= (inc (count paths)) @calls))
+          (is (:hit-result (wiring/probe selected-context attached))))))))
 
 (deftest explicit-closure-falls-back-for-mixed-fresh-and-authoritative-work
   (with-coordination-root [base]
     (let [repository-root (.resolve base "worktree")
-          job (reviewed-closure-job 'gravity.bootstrap-compatibility.c11-test)
+          job (reviewed-closure-job 'gravity.c11-mir-test)
           full-id (str "sha256:" (apply str (repeat 64 "b")))]
       (Files/createDirectories repository-root no-file-attributes)
       (copy-reviewed-closure! repository-root job)
@@ -923,7 +800,7 @@
     (let [repository-root (.resolve base "worktree")
           job
           (reviewed-closure-job
-           'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test)
+           'gravity.compiler-pass-manifest-test)
           update-file
           (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
                       'update-file!)
@@ -962,7 +839,7 @@
         (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE" (:id failure))))
       (let [source
             (.resolve repository-root
-                      "bootstrap/clojure/src/gravity/bootstrap.clj")
+                      "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj")
             target (.resolve repository-root "replacement.clj")]
         (Files/write target (.getBytes "replacement" "UTF-8")
                      (make-array java.nio.file.OpenOption 0))
@@ -980,8 +857,8 @@
     (let [repository-root (.resolve base "worktree")
           coordination-root (.resolve base "deletion-race-coordination")
           job
-          (reviewed-closure-job 'gravity.bootstrap-compatibility.c11-test)
-          source-relative "bootstrap/clojure/src/gravity/bootstrap.clj"
+          (reviewed-closure-job 'gravity.c11-mir-test)
+          source-relative "bootstrap/clojure/src/gravity/c11_mir.clj"
           source (.resolve repository-root source-relative)
           update-file
           (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
@@ -1066,7 +943,8 @@
 
 (deftest componentized-leaf-closures-bind-the-nested-implementation
   (doseq [[namespace directory expected-count]
-          [['gravity.c11-mir-test "c11_mir" 6]
+          [['gravity.c2-artifact-identity-test "c2_artifact_identity" 5]
+           ['gravity.c11-mir-test "c11_mir" 6]
            ['gravity.compiler-pass-manifest-test "compiler_pass_manifest" 15]]]
     (with-coordination-root [base]
       (let [root (.resolve base "repository")
@@ -1093,6 +971,202 @@
                 (finally
                   (Files/write target original
                                (make-array java.nio.file.OpenOption 0)))))))))))
+
+(deftest reader-identity-reuse-keeps-producer-and-consumed-inputs-exact
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          job (reviewed-closure-job 'gravity.c2-artifact-identity-test)
+          _ (Files/createDirectories root no-file-attributes)
+          _ (copy-reviewed-closure! root job)
+          unrelated (.resolve root "bootstrap/clojure/test/gravity/self_hosting/unrelated_test.clj")
+          notes (.resolve root "notes.md")
+          _ (spit (str unrelated) "; existing unrelated test body")
+          selected-context (assoc (context base) :working-directory (str root)
+                                  :revalidate-snapshot? true
+                                  :revision {:commit "producer" :tree "producer-tree"})
+          classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                'explicit-classpath-identities)
+          calls (atom 0)]
+      (with-redefs-fn
+        {classpath (fn [_ closure-root] [{:path "classpath/entry-0000" :sha256 closure-root}])
+         #'wiring/repository-snapshot (fn [_] (throw (Error. "unexpected broad snapshot")))}
+        (fn []
+          (let [attached (wiring/attach-request selected-context (impact-plan (:namespace job)) {} job)
+                operation #(do (swap! calls inc) {:status :passed :exit-code 0})
+                original (wiring/run-unit! selected-context attached operation)]
+            (spit (str notes) "unrelated documentation")
+            (spit (str unrelated) "; changed unrelated test body")
+            (let [later (assoc selected-context :revision {:commit "applying" :tree "applying-tree"})
+                  reused (wiring/run-unit! later attached operation)]
+              (is (= 1 @calls))
+              (is (true? (:cache-hit? reused)))
+              (is (= (:execution-provenance original) (:execution-provenance reused)))
+              (is (= (:revision selected-context)
+                     (get-in reused [:execution-provenance :revision])))
+              (is (false? (:authoritative? reused))))
+            (spit (str (.resolve root "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj"))
+                  "\n; changed consumed implementation\n" :append true)
+            (is (= :explicit-closure
+                   (:input-kind (exception-data #(wiring/probe selected-context attached)))))
+            (let [renewed (wiring/attach-request selected-context (impact-plan (:namespace job)) {} job)]
+              (is (not= (cache/cache-key (:development-cache-request attached))
+                        (cache/cache-key (:development-cache-request renewed))))
+              (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
+              (is (= 2 @calls)))))))))
+
+(deftest reader-identity-digest-runner-input-invalidates-reuse
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          job (reviewed-closure-job 'gravity.c2-artifact-identity-test)
+          _ (Files/createDirectories root no-file-attributes)
+          _ (copy-reviewed-closure! root job)
+          selected-context (assoc (context base) :working-directory (str root)
+                                  :revalidate-snapshot? true)
+          classpath (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                'explicit-classpath-identities)
+          calls (atom 0)]
+      (with-redefs-fn
+        {classpath (fn [_ closure-root] [{:path "classpath/entry-0000" :sha256 closure-root}])}
+        (fn []
+          (let [plan (impact-plan (:namespace job))
+                attached (wiring/attach-request selected-context plan {} job)
+                operation #(do (swap! calls inc) {:status :passed :exit-code 0})]
+            (is (some #(= "bootstrap/clojure/src/gravity/digest.clj" (:path %))
+                      (get-in attached [:development-cache-request :dependencies :production-inputs])))
+            (is (= :passed (:status (wiring/run-unit! selected-context attached operation))))
+            ;; Preserve every hash output: a source comment must still invalidate
+            ;; evidence because both consumed runner namespaces load this code.
+            (spit (str (.resolve root "bootstrap/clojure/src/gravity/digest.clj"))
+                  "\n; consumed runner digest implementation changed\n" :append true)
+            (is (= :explicit-closure
+                   (:input-kind (exception-data #(wiring/probe selected-context attached)))))
+            (let [renewed (wiring/attach-request selected-context plan {} job)]
+              (is (not= (cache/cache-key (:development-cache-request attached))
+                        (cache/cache-key (:development-cache-request renewed))))
+              (is (= :passed (:status (wiring/run-unit! selected-context renewed operation))))
+              (is (= 2 @calls)))))))))
+
+(deftest project-startup-resource-absence-is-explicit-and-link-safe
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")]
+      (Files/createDirectories root no-file-attributes)
+      (is (true? (wiring/project-startup-resources-absent? root)))
+      (doseq [relative ["bootstrap/clojure/src/user.clj"
+                        "bootstrap/clojure/test/user.clj"
+                        "bootstrap/clojure/src/clojure/core/server.clj"
+                        "bootstrap/clojure/test/clojure/core/server.clj"]]
+        (let [path (.resolve root relative)
+              cleanup (if (str/includes? relative "/clojure/core/")
+                        (.getParent (.getParent path)) path)]
+          (Files/createDirectories (.getParent path) no-file-attributes)
+          (try
+            ;; These are inert fixture bytes outside the actual classpath.
+            (spit (str path) "; startup fixture\n")
+            (is (false? (wiring/project-startup-resources-absent? root)) relative)
+            (finally
+              (if (Files/isDirectory cleanup no-links) (delete-tree! cleanup)
+                  (Files/deleteIfExists cleanup))))))
+      (let [path (.resolve root "bootstrap/clojure/src/user.clj")]
+        (Files/createSymbolicLink path (.resolve base "absent-target.clj") no-file-attributes)
+        (is (false? (wiring/project-startup-resources-absent? root)))
+        (Files/delete path))
+      (spit (str (.resolve root "bootstrap/clojure/src/user.cljc")) "; not the RT startup name\n")
+      (is (true? (wiring/project-startup-resources-absent? root))))))
+
+(deftest startup-resources-disable-command-reuse-before-child-startup
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          namespace 'gravity.compiler-pass-manifest-test
+          cache-options {:cache-directory (str (.resolve base "cache"))
+                         :timeout-ms 1000 :repository-identity snapshot-id}
+          options {:working-directory (str root) :child-development-cache cache-options}
+          commands (fn [opts]
+                     [(runner/namespace-command namespace opts)
+                      (runner/normal-batch-command [{:namespace namespace}]
+                                                  (str (.resolve base "report.edn")) opts)])]
+      (Files/createDirectories root no-file-attributes)
+      (doseq [command (commands options)]
+        (is (some #{"--development-cache"} command)))
+      (let [startup (.resolve root "bootstrap/clojure/src/user.clj")]
+        (Files/createDirectories (.getParent startup) no-file-attributes)
+        (spit (str startup) "; never executed\n")
+        (doseq [command (commands options)]
+          (is (not-any? #{"--development-cache"} command))
+          (is (some #{"--namespace"} command)))
+        ;; Dropping a malformed optimization would hide its existing refusal.
+        (doseq [invalid [(assoc cache-options :extra true)
+                         (assoc cache-options :timeout-ms 0)
+                         (dissoc cache-options :repository-identity)]
+                command (commands (assoc options :child-development-cache invalid))]
+          (is (some #{"--development-cache"} command))
+          (is (= "SH01-TEST-USAGE"
+                 (:id (exception-data #(child-runner/select-tests (vec (drop 2 command))))))))))))
+
+(deftest resolved-startup-resources-and-observation-errors-bypass-all-cache-lookup
+  (let [resource io/resource
+        runtime-var (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                'effective-child-runtime)
+        operations (atom 0)
+        measurements (atom 0)
+        lookups (atom 0)]
+    (doseq [startup [(java.net.URL. "file:/unopened-startup-fixture") ::unavailable]]
+      (with-redefs-fn
+        {#'io/resource (fn [name]
+                         (if (= "user.clj" name)
+                           (if (= ::unavailable startup)
+                             (throw (ex-info "fixture resource lookup failed" {})) startup)
+                           (resource name)))
+         runtime-var (fn [& _] (swap! measurements inc)
+                       (throw (ex-info "runtime measurement must not run" {})))
+         #'cache/lookup-or-run! (fn [& _] (swap! lookups inc)
+                                 (throw (ex-info "cache lookup must not run" {})))}
+        (fn []
+          (dotimes [_ 2]
+            (let [result (wiring/run-child-unit!
+                          ['gravity.compiler-pass-manifest-test]
+                          {:arguments ["not-the-actual-cli"]}
+                          #(do (swap! operations inc) {:status :passed :exit-code 0}))]
+              (is (true? (:tests-executed? result)))
+              (is (false? (:child-cache-hit? result)))
+              (is (= :unreviewed-startup-resources (get-in result [:child-cache-receipt :reason])))
+              (is (false? (get-in result [:child-cache-receipt :stored?]))))))))
+    (is (= 4 @operations))
+    (is (zero? @measurements))
+    (is (zero? @lookups))))
+
+(deftest runtime-startup-revalidation-propagates-interruption-without-execution
+  (let [resource io/resource]
+    (doseq [failure [(InterruptedException. "startup observation interrupted")
+                     (ex-info "startup observation unavailable" {})]]
+      (let [observations (atom 0)
+            operations (atom 0)
+            lookups (atom 0)]
+        (try
+          (with-redefs [basis/current-basis (constantly {})
+                        wiring/project-startup-resources-absent? (constantly true)
+                        io/resource (fn [name]
+                                      (if (= "user.clj" name)
+                                        (when (= 2 (swap! observations inc)) (throw failure))
+                                        (resource name)))
+                        cache/lookup-or-run! (fn [& _] (swap! lookups inc)
+                                              (throw (ex-info "cache lookup must not run" {})))]
+            (try
+              (let [result (wiring/run-child-unit!
+                            ['gravity.compiler-pass-manifest-test]
+                            {:arguments ["not-the-actual-cli"]}
+                            #(do (swap! operations inc) {:status :passed :exit-code 0}))]
+                (is (not (instance? InterruptedException failure)))
+                (is (= :unknown-child-configuration
+                       (get-in result [:child-cache-receipt :reason])))
+                (is (true? (:tests-executed? result))))
+              (catch InterruptedException interrupted
+                (let [interrupted? (Thread/interrupted)]
+                  (is (identical? failure interrupted))
+                  (is interrupted?)))))
+          (is (= 2 @observations))
+          (is (= (if (instance? InterruptedException failure) 0 1) @operations))
+          (is (zero? @lookups))
+          (finally (Thread/interrupted)))))))
 
 (deftest child-jvm-file-loading-and-unknown-options-stay-fresh
   (let [supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
@@ -1776,3 +1850,190 @@
                       :receipt
                       :reason))
               label))))))
+
+(defn- write-loader-archive! [^Path path class-path entries]
+  (let [manifest (Manifest.)
+        attributes (.getMainAttributes manifest)]
+    (.put attributes Attributes$Name/MANIFEST_VERSION "1.0")
+    (when (some? class-path)
+      (.put attributes Attributes$Name/CLASS_PATH class-path))
+    (with-open [archive (JarOutputStream. (Files/newOutputStream path
+                                          (make-array java.nio.file.OpenOption 0)) manifest)]
+      (doseq [[name content] entries]
+        (.putNextEntry archive (JarEntry. name))
+        (.write archive (.getBytes ^String content "UTF-8"))
+        (.closeEntry archive)))))
+
+(deftest manifest-class-path-resources-are-not-covered-by-listed-archive-bytes
+  (with-coordination-root [base]
+    (let [root (.resolve base "repository")
+          archive (.resolve base "listed.jar")
+          dependency (.resolve base "dependency.jar")
+          malformed (.resolve base "malformed.jar")
+          link (.resolve base "archive-link.jar")
+          accepted? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                               'archive-loader-inputs-contained?)
+          identities (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                 'explicit-classpath-identities)
+          file-identity (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                    'regular-file-identity)
+          old-classpath (System/getProperty "java.class.path")
+          separator (System/getProperty "path.separator")
+          resource-content (fn []
+                             (with-open [loader (URLClassLoader.
+                                                  (into-array URL [(.toURL (.toUri archive))])
+                                                  nil)]
+                               (slurp (.getResource loader "dependency-marker.txt"))))]
+      (Files/createDirectories root no-file-attributes)
+      (write-loader-archive! archive nil {})
+      (try
+        (System/setProperty "java.class.path"
+          (str (.resolve root "bootstrap/clojure/src") separator
+               (.resolve root "bootstrap/clojure/test") separator archive))
+        (is (true? (accepted? archive)))
+        (is (= 3 (count (identities root snapshot-id))))
+        (write-loader-archive! archive "dependency.jar" {})
+        (write-loader-archive! dependency nil {"dependency-marker.txt" "first"})
+        (let [listed-before (file-identity archive)]
+          (is (= "first" (resource-content)))
+          (is (false? (accepted? archive)))
+          (is (nil? (identities root snapshot-id)))
+          (write-loader-archive! dependency nil {"dependency-marker.txt" "other"})
+          (is (= "other" (resource-content)))
+          (is (= listed-before (file-identity archive)))
+          (is (false? (accepted? archive)))
+          (is (nil? (identities root snapshot-id))))
+        ;; Even empty or unresolvable declarations are outside this domain.
+        (doseq [value ["" "absent.jar" "https://example.invalid/dependency.jar" "../classes/"]]
+          (write-loader-archive! archive value {})
+          (is (false? (accepted? archive)))
+          (is (nil? (identities root snapshot-id))))
+        (spit (str malformed) "not an archive")
+        (Files/createSymbolicLink link archive no-file-attributes)
+        (doseq [path [malformed link root (.resolve base "missing.jar")]]
+          (is (false? (accepted? path))))
+        (finally (System/setProperty "java.class.path" old-classpath))))))
+
+(deftest actual-runtime-observer-rejects-transitive-and-unknown-archives
+  (with-coordination-root [base]
+    (let [archive (.resolve base "runtime.jar")
+          root (.resolve base "repository")
+          basis-path (.resolve base "basis.edn")
+          current {:basis-config {} :argmap {:main-opts ["-m" "gravity.self-hosting-test-runner"]}}
+          arguments ["--namespace" "gravity.compiler-pass-manifest-test"]
+          observe (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                              'effective-child-runtime)
+          jvm-args (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                               'jvm-input-arguments)
+          startup (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                              'child-startup-resources-absent?)
+          keys ["java.class.path" "sun.java.command" "clojure.basis"]
+          original (into {} (map (fn [key] [key (System/getProperty key)]) keys))
+          separator (System/getProperty "path.separator")]
+      (Files/createDirectories root no-file-attributes)
+      (spit (str basis-path) "{}")
+      (write-loader-archive! archive nil {})
+      (try
+        (System/setProperty "java.class.path"
+          (str (.resolve root "bootstrap/clojure/src") separator
+               (.resolve root "bootstrap/clojure/test") separator archive))
+        (System/setProperty "clojure.basis" (str basis-path))
+        (System/setProperty "sun.java.command"
+          (str/join " " (into ["clojure.main" "-m" "gravity.self-hosting-test-runner"] arguments)))
+        (with-redefs-fn {#'basis/current-basis (constantly current)
+                        #'basis/initial-basis (constantly current)
+                        jvm-args (constantly []) startup (constantly true)}
+          (fn []
+            (is (= :actual-child-runtime-v1 (:id (observe (str root) arguments))))
+            (write-loader-archive! archive "outside.jar" {})
+            (is (nil? (observe (str root) arguments)))
+            (spit (str archive) "unreadable archive structure")
+            (is (nil? (observe (str root) arguments)))
+            (Files/delete archive)
+            (is (nil? (observe (str root) arguments)))))
+        (finally
+          (doseq [[key value] original]
+            (if value (System/setProperty key value) (System/clearProperty key))))))))
+
+(deftest unlisted-context-resources-change-without-changing-the-declared-classpath
+  (with-coordination-root [base]
+    (let [thread (Thread/currentThread)
+          original (.getContextClassLoader thread)
+          classpath (System/getProperty "java.class.path")
+          marker (.resolve base "unlisted-loader-marker.txt")
+          supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                 'supported-resource-loaders?)
+          observations (atom 0)
+          lookups (atom 0)
+          operations (atom 0)]
+      (with-open [loader (URLClassLoader. (into-array URL [(.toURL (.toUri base))])
+                                         (ClassLoader/getSystemClassLoader))]
+        (try
+          (.setContextClassLoader thread loader)
+          (spit (str marker) "first")
+          (is (= "first" (slurp (io/resource "unlisted-loader-marker.txt"))))
+          (spit (str marker) "other")
+          (is (= "other" (slurp (io/resource "unlisted-loader-marker.txt"))))
+          (is (= classpath (System/getProperty "java.class.path")))
+          (is (false? (supported?)))
+          (with-redefs [io/resource (fn [& _] (swap! observations inc)
+                                     (throw (ex-info "startup resource lookup must not run" {})))
+                        basis/current-basis (fn [] (swap! observations inc)
+                                              (throw (ex-info "basis lookup must not run" {})))
+                        cache/lookup-or-run! (fn [& _] (swap! lookups inc)
+                                              (throw (ex-info "cache lookup must not run" {})))]
+            (dotimes [_ 2]
+              (let [result (wiring/run-child-unit!
+                             ['gravity.compiler-pass-manifest-test]
+                             {:arguments ["not-the-actual-cli"]}
+                             #(do (swap! operations inc) {:status :passed :exit-code 0}))]
+                (is (true? (:tests-executed? result)))
+                (is (false? (:child-cache-hit? result)))
+                (is (= :unreviewed-resource-loaders
+                       (get-in result [:child-cache-receipt :reason]))))))
+          (is (= 2 @operations))
+          (is (zero? @observations))
+          (is (zero? @lookups))
+          (finally (.setContextClassLoader thread original)))))))
+
+(deftest compiler-resource-loader-url-addition-invalidates-the-reviewed-domain
+  (with-coordination-root [base]
+    (let [thread (Thread/currentThread)
+          original (.getContextClassLoader thread)
+          system (ClassLoader/getSystemClassLoader)
+          supported? (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                                 'supported-resource-loaders?)
+          observe (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                              'effective-child-runtime)
+          marker (.resolve base "compiler-loader-marker.txt")
+          callbacks (atom 0)]
+      (spit (str marker) "compiler resource")
+      (try
+        (.setContextClassLoader thread system)
+        (with-open [loader (clojure.lang.DynamicClassLoader. system)]
+          (with-bindings {clojure.lang.Compiler/LOADER loader}
+            (is (true? (supported?)))
+            (is (nil? (.getResource loader "compiler-loader-marker.txt")))
+            (.addURL loader (.toURL (.toUri base)))
+            (is (false? (supported?)))
+            (with-open [input (clojure.lang.RT/resourceAsStream
+                                (clojure.lang.RT/baseLoader) "compiler-loader-marker.txt")]
+              (is (= "compiler resource" (slurp input))))
+            (with-redefs [basis/current-basis (fn [] (swap! callbacks inc)
+                                                (throw (ex-info "must reject before basis" {})))]
+              (is (nil? (observe "." []))))))
+        ;; Exact class matters: an empty URL list cannot authorize arbitrary delegation.
+        (with-open [custom (proxy [clojure.lang.DynamicClassLoader] [system]
+                             (getURLs [] (swap! callbacks inc)
+                               (throw (ex-info "custom loader callback must not run" {}))))]
+          (with-bindings {clojure.lang.Compiler/LOADER custom}
+            (is (false? (supported?))))
+          (.setContextClassLoader thread custom)
+          (is (false? (supported?))))
+        (.setContextClassLoader thread nil)
+        (is (false? (supported?)))
+        (.setContextClassLoader thread system)
+        (with-bindings {clojure.lang.Compiler/LOADER nil}
+          (is (false? (supported?))))
+        (is (zero? @callbacks))
+        (finally (.setContextClassLoader thread original))))))

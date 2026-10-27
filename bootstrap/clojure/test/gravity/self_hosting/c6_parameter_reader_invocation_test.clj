@@ -57,13 +57,18 @@
               (diagnostic #(b/p15-s23-c6c10-resolved-parameter source text front nil invocation)))))
       (is (empty? @calls)))))
 
-(defn- current-parameter-case [binding-data]
+(defn- current-parameter-case
+  ([binding-data] (current-parameter-case binding-data ".gravity"))
+  ([binding-data extension]
+   (when-not (contains? #{".gravity" ".qst"} extension)
+     (throw (ex-info "Unsupported parameter fixture extension"
+                     {:id "C6-TEST-SOURCE-EXTENSION" :extension extension})))
   ;; One genuine source traversal. Compiled binding DATA may be reused, never
   ;; a source ingress, accepted Core or verifier result.
   (binding [b/*p15-s23-stage2-compiler-artifact-binding*
             @(var-get (ns-resolve 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test 'current-emitter))]
     (let [root @(owner 'root)
-          path (str (.resolve root "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+          path (str (.resolve root (str "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source" extension)))
           text (slurp path) reader (str (.resolve root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
           invocation {:reader-source-path reader :authenticated-envelope-options {:source :development-current}}
           observed (atom []) actual-macro b/sh05-macro-artifact-from-c3-artifact
@@ -85,7 +90,7 @@
         (is (= path (first arguments)))
         (is (= invocation (last arguments))))
       {:root root :path path :text text :reader reader :invocation invocation
-       :parent (second (first @observed)) :products products :raw raw})))
+       :parent (second (first @observed)) :products products :raw raw}))))
 
 (defn- check-parameter-replay [raw fresh]
   ;; The original template is untrusted input until current C6 reconstructs it.
@@ -107,7 +112,7 @@
           core (b/p15-s23-c6c10-public-artifact context (:compiled-binding-data products) (:ingress products) sealed)
           mir (stage :gravity-mir #(call (owner 'c11-plan) 'sh12-build-branch-join-mir [core]))
           gravity (stage :gravity-verifier #(call (owner 'c11-plan) 'sh12-verify-branch-join-mir [core mir]))
-          native (stage :native-boundary #(diagnostic (fn [] (b/p15-s23-c11-mir-validate-constructed! path core mir))))
+          native (stage :native-boundary #(b/p15-s23-c11-mir-validate-constructed! path core mir))
           binder-id (get-in core [:core-nodes 0 :node-id]) entry (get-in mir [:functions 'main :entry])
           actual-macro b/sh05-macro-artifact-from-c3-artifact]
       (is (= :passed (:status gravity)))
@@ -117,10 +122,10 @@
              (get-in mir [:data-flow-graph :definitions binder-id])))
       (is (= :parameter (get-in mir [:data-flow-graph :values binder-id :kind])))
       (is (not-any? #(= binder-id (:op-id %)) (mapcat :instructions (vals (get-in mir [:functions 'main :blocks])))))
-      ;; A separate downstream baseline, not Native parameter compatibility.
-      (is (= {:id "C11-MODULE" :missing-fact :authenticated-c11-function-envelope :fallback-status :rejected}
-             (select-keys native [:id :missing-fact :fallback-status])))
-      (prn {:parameter-native-boundary (select-keys native [:id :missing-fact :fallback-status])}) (flush)
+      ;; The original rejection remains historical evidence. The new narrow
+      ;; Native entry-value path must now accept this same genuine artifact.
+      (is (= :passed (:status native)))
+      (prn {:parameter-native-boundary (select-keys native [:status :operation-count])}) (flush)
       (testing "real owner validation rejects invalid invocation and substituted parent/source"
         (is (= ["C3-FACT-STALE" [:reader-products-authentic?]]
                ((juxt :id :missing-fields) (diagnostic #(actual-macro path parent))))))

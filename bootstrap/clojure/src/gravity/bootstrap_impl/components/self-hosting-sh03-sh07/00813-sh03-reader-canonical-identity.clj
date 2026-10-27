@@ -193,7 +193,7 @@
            :verification-report verifier-result
            :invocation-context
            (when (some? reader-source-path)
-             {:reader-source-path sh03-reader-source-relative-path
+             {:reader-source-path (:source-path binding)
               :authenticated-envelope-options {:source :development-current}})
            :plan-binding (dissoc binding :plan)))))
 

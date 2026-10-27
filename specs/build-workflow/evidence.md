@@ -46,3 +46,36 @@ skill discovery are unrun. Independent review and integration remain pending.
 Pending independent review and coordinator integration. Their absence is not
 a request for another general project approval. Only an exact accepted package
 plus integration receipt closes this migration increment.
+
+## Implementation authority transfer
+
+Source: `dcc9849df582ebb177560b41d702071e3481669a`.
+The five original implementation rows are edited only in
+[tasks.md](tasks.md#implementation-tasks), with the roadmap table generated.
+IDs derive from the existing component/section/title-slug convention rather
+than literal IDs in the original table. All rows remain Open. Actual evidence
+targets, the entire historical task file, prior navigation and any integrated
+contract-interface appendix remain unchanged. Historical workflow statements
+above describe the earlier preparation slice, not current task authority.
+
+Exact checks and independent review belong to the public change receipt.
+Structural projection does not execute the product, authenticate semantic
+evidence, grant authority or accept implementation/release outcomes.
+
+### Observed transfer checks
+
+Focused projector tests passed 4 tests / 66 assertions, zero failures/errors;
+projection check passed. Baseline comparisons passed all five original table
+rows/cells, derived IDs/Open statuses, five links/five actual targets, entire
+historical suffix, original full roadmap reconstruction, prior navigation,
+exact L12/PERF3/PERF6/GOV2/GOV10/SAFE14 appendix, five Markdown ASCII/file/heading
+checks and missing-file/missing-heading controls.
+Table SHA256:
+`3ca5f3bf94744a582694ea129aeef7382af38deb20383979006695fc60d0eb07`.
+Appendix SHA256:
+`db0dd0083300d6cbd75daed56debcc075478b28745c79be8e7ff3dbffe846b67`.
+Language boundary passed 6 tests / 11 assertions; dependency tests passed
+10 tests / 88 assertions. Documentation passed 240 documents / 19 phase indexes;
+full-language roadmap and whitespace passed. All commands exited naturally with
+0. Exact committed-tree preflight and independent disposition belong to the
+public PR receipt. None of these checks executes a build or verifies a package.

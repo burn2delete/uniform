@@ -4,6 +4,10 @@ Working name: **CLI** (proposed). Semantic key: `cli`.
 Owner role: developer-tooling maintainer; current owner unassigned by this
 proposal. Baseline: `c21068a6d39259b7110845bbbcefaf9bf6901232`.
 
+Implementation task authority: [Spec Kit ledger](../../specs/cli-workflow/tasks.md#implementation-tasks).
+Edit the ledger and run `clojure -M tools/cli_task_projection.clj --write`;
+the remaining-task table below is generated.
+
 ## Purpose and scope
 
 Expose compiler truth through stable arguments, output formats, exit codes and
@@ -35,6 +39,7 @@ golden output and rejection fixtures can develop in parallel with service work.
 
 ## Remaining tasks and evidence
 
+<!-- cli-task-projection:start -->
 | Task (all open) | Evidence baseline | Closing evidence |
 | --- | --- | --- |
 | Reconcile supported command/options with normative families | [Dispatcher](../../bootstrap/clojure/src/gravity/cli/dispatch.clj) | Command matrix that distinguishes implemented, rejected and unavailable operations |
@@ -42,6 +47,7 @@ golden output and rejection fixtures can develop in parallel with service work.
 | Connect REPL/format/lint/doc/inspect/profile/audit/AI/registry/explain services | [Tooling contracts](../phase-13-tooling-and-developer-experience/README.md) | Each declared command has a genuine service result and negative fixture; no metadata-only success |
 | Normalize JSON, text, exit codes and redaction | [Diagnostic presentation](../../bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj) | Golden success/error outputs including source, target, grants and redacted secrets |
 | Package and verify user entrypoints | [Release contract](../phase-18-binary-distribution-and-seedless-release/README.md) | Installed invocation, source-extension provenance and unsupported-option rejection |
+<!-- cli-task-projection:end -->
 
 The compile dispatcher explicitly distinguishes supported targets and rejects
 others; this is not evidence that every backend is complete. Recommendation
@@ -59,6 +65,7 @@ prerequisite for developing CLI behavior.
 
 ## Selected compiler CLI outcome
 
+<!-- cli-compiler-commands-projection:start -->
 `cli/compiler-commands` is the finite CLI slice required by the selected
 compiler distribution, not the entire command-family outcome above. Owner:
 CLI maintainer, current owner unchanged/unassigned by this proposal. Its inputs
@@ -111,3 +118,4 @@ and excluding them from this slice does not close or waive their wider outcomes.
 implementations; CLI owns their command routing. Selected-command parsing and
 fixtures can develop in parallel with services; actual integrated acceptance
 requires those services, not completion of the entire Developer Tools portfolio.
+<!-- cli-compiler-commands-projection:end -->

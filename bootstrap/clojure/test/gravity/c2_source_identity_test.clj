@@ -304,3 +304,28 @@
                    :source-reading? :source-authentication? :proof-authority?
                    :self-hosted? :release-authority?]]
       (is (false? (get contract claim))))))
+
+(deftest string-escape-offsets-follow-complete-escaped-spellings
+  ;; Explicit raw UTF-16 offsets; this oracle does not use the producer regex.
+  (doseq [[raw expected]
+          [[(str "\"a" "\\\\" "\\n" "\"")
+            [{:raw "\\\\" :character-offset 2} {:raw "\\n" :character-offset 4}]]
+           [(str "\"a" "\\\\" "\\u03bb" "\"")
+            [{:raw "\\\\" :character-offset 2} {:raw "\\u03bb" :character-offset 4}]]
+           [(str "\"🙂" "\\\\" "\\t" "\"")
+            [{:raw "\\\\" :character-offset 3} {:raw "\\t" :character-offset 5}]]
+           [(str "\"" "\\\\" "\\\"" "\"")
+            [{:raw "\\\\" :character-offset 1} {:raw "\\\"" :character-offset 3}]]
+           ["\"plain λ🙂\"" []]
+           [(str "\"" "\\n" "\\t" "\"")
+            [{:raw "\\n" :character-offset 1} {:raw "\\t" :character-offset 3}]]]]
+    (let [record (first (identity/c2-literal-records
+                         [{:form-id :string :kind :string :raw raw :value "fixture"
+                           :span {:byte-start 0 :byte-end 0}}]))
+          escapes (get-in record [:facts :escapes])]
+      (testing raw
+        (is (= expected escapes))
+        (doseq [{:keys [raw character-offset]} escapes]
+          (is (= raw (.substring ^String (:raw record) character-offset
+                                 (+ character-offset (.length ^String raw)))))))))
+  (is (nil? (find-ns 'gravity.bootstrap))))

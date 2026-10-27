@@ -18,6 +18,7 @@
             [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
             [gravity.c3-reader-integrity :as c3-reader-integrity]
+            [gravity.c3-reader-expansions :as c3-reader-expansions]
             [gravity.c3-syntax-diagnostics :as c3-syntax-diagnostics]
             [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]

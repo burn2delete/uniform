@@ -1,4 +1,5 @@
 (declare ^:private c3-current-reader-revision-authentic?)
+(declare ^:private sh04-syntax-reader-expansion-history sh04-syntax-reader-expansions-current?)
 (defn c3-syntax-stream-reader-products-authentic?
   ([syntax-stream c2-artifact]
    (c3-syntax-stream-reader-products-authentic?
@@ -39,7 +40,9 @@
                        [:gravity-syntax-serialization :status]))
             (= :accepted
                (get-in gravity-boundary
-                       [:gravity-syntax-deserialization :status]))))
+                       [:gravity-syntax-deserialization :status]))
+            (sh04-syntax-reader-expansions-current? syntax-stream c2-artifact gravity-boundary invocation
+              (sh04-syntax-reader-expansion-history source-path c2-artifact))))
          false)
        (let [integrity-report (c3-c2-reader-integrity-report c2-artifact)]
         (if gravity-boundary
@@ -124,8 +127,9 @@
                envelope (:authenticated-envelope gravity-boundary)
                envelope-descriptor
                (:authenticated-envelope-descriptor gravity-boundary)
+               expansion-history (sh04-syntax-reader-expansion-history source-path c2-artifact)
                expected-summary
-               {:slice :SH-04 :status :accepted
+               (cond-> {:slice :SH-04 :status :accepted
                 :adapter-contract sh04-syntax-adapter-contract
                 :semantic-source-id semantic-source-id
                 :reader-binding-id
@@ -140,6 +144,8 @@
                 (reader-canonical-hash
                  (:graph-verification-report result))
                 :syntax-result-id (:artifact-id result)}
+                 (:id expansion-history)
+                 (assoc :reader-expansion-history-id (:id expansion-history)))
                expected-envelope-descriptor
                (sh04-syntax-sh02-descriptor source-path binding
                                             expected-summary)
@@ -205,7 +211,8 @@
                    (get-in result [:graph-verification-report :status]))
                 (= :accepted (:status envelope))
                 (= :c3-syntax (:stage envelope))
-                (= :passed envelope-verification)))
+                (= :passed envelope-verification)
+                (sh04-syntax-reader-expansions-current? syntax-stream c2-artifact gravity-boundary invocation expansion-history)))
          (let [source-unit (:source-unit-record c2-artifact)
                top-level-products (c2-top-level-products c2-artifact)
                expected-base
@@ -224,7 +231,6 @@
                 (= expected-stream syntax-stream))))))))
      (catch StackOverflowError _ false)
      (catch Exception _ false))))
-
 (declare c3-syntax-verification-report
          c3-syntax-capability-proof
          c3-syntax-validate!)

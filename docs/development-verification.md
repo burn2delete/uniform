@@ -8276,9 +8276,12 @@ not semantic cache keys. Selection, fail-fast behavior and timeout remain
 keyed. Effective configuration and consumed inputs are revalidated before
 execution, after execution and before admitting a hit.
 
-Only `gravity.c11-mir-test` and `gravity.compiler-pass-manifest-test` currently
-use re-audited explicit production closures, including their six and fifteen
-nested implementation files respectively. The runner never infers `require`
+`gravity.c2-artifact-identity-test`, `gravity.c11-mir-test` and
+`gravity.compiler-pass-manifest-test` use re-audited explicit production
+closures, including their five, six and fifteen nested implementation files
+respectively. The [Reader identity reuse acceptance record](verification-reuse.md)
+distinguishes unrelated documentation/test bodies from consumed tests and
+governing contracts. The runner never infers `require`
 edges. Declared paths, roles, modes and bytes, runner/contracts, both supported
 classpath orders, alternate `.cljc`/compiled shadows, data-reader resources,
 internal class-file inventories and the test-catalog path set are bound.
@@ -8286,9 +8289,11 @@ Unrelated repository changes may reuse a result only when all those consumed
 inputs and the effective runtime are unchanged. Runtime/configuration paths
 remain bound, so cross-worktree production reuse is not claimed.
 
-Historical bootstrap-compatibility closure declarations predate the component
-loader and are not used for narrower production reuse. Those and other
-reviewed deterministic selections retain the complete-repository key.
+Bootstrap-dependent compatibility selections have no explicit narrowed closure.
+Their obsolete declarations were removed after the
+[compatibility loader audit](verification-reuse.md#compatibility-loader-closure-audit).
+Those and other reviewed deterministic selections retain the complete-repository
+key. This fallback does not prove that unrelated documentation is a semantic input.
 Undeclared, authoritative, freshness-required, performance, proof and
 nondeterministic work remains fresh. Failures and timeouts are never stored;
 corrupt entries are preserved and rejected. Existing cross-process per-key

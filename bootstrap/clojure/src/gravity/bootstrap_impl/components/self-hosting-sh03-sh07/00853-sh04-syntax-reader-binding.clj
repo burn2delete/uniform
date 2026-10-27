@@ -1,5 +1,3 @@
-
-
 (defn sh04-syntax-reader-binding
   [source-path c2-artifact semantic-source-id]
   (let [reader-source (or (get-in c2-artifact [:gravity-reader-boundary
@@ -129,14 +127,12 @@
                        :source-revision-id (:revision-id revision))]
     {:reader-binding binding
      :reader-source-revision revision}))
-
 (defn sh04-syntax-empty-hygiene
   [namespace]
   {:marks [] :lexical-scopes [] :renames {}
    :introduced-identifiers [] :captures []
    :macro-definition-namespace nil
    :macro-call-site-namespace namespace})
-
 (defn sh04-syntax-strip-host-metadata
   [value]
   (let [clean
@@ -161,7 +157,6 @@
     (if (instance? clojure.lang.IObj clean)
       (with-meta clean nil)
       clean)))
-
 (defn sh04-syntax-descendant-form-ids
   [forms-by-id root-form-id]
   (loop [pending [root-form-id]
@@ -173,7 +168,7 @@
           (recur (into (pop pending) (:children record))
                  (conj visited form-id))))
       visited)))
-
+(declare ^:private sh04-syntax-form-index)
 (defn sh04-syntax-source-descriptor
   [seed form-record c2-artifact integrity-report semantic-source-id
    reader-binding reader-source-revision registered-literals]
@@ -181,7 +176,7 @@
         source-namespace (or (:namespace seed) 'gravity.user)
         namespace-context {:current source-namespace :aliases {} :imports []}
         forms-by-id
-        (into {} (map (juxt :form-id identity)) (:form-tree c2-artifact))
+        (sh04-syntax-form-index c2-artifact)
         descendant-form-ids
         (sh04-syntax-descendant-form-ids
          forms-by-id (:form-id form-record))
@@ -201,6 +196,10 @@
           (seq registered-literal-bindings)
           (assoc :registered-literal-bindings
                  registered-literal-bindings))
+        expansions (c3-reader-expansions/project (:form-tree c2-artifact)
+                     descendant-form-ids seed semantic-source-id)
+        host-facts (cond-> host-facts
+                     (seq expansions) (assoc :reader-expansion-origins expansions))
         facts
         (cond-> (dissoc host-facts :reader-product-integrity-hash
                         :reader-source-id)

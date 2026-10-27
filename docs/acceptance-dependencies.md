@@ -97,6 +97,16 @@ zero staged cycles as proof that the components run or that all prose has been
 formalized. Newly discovered semantic dependencies require explicit owning
 contract updates; they cannot be hidden by a green structural report.
 
+Dependency lists consume their whole declaration or table cell: IDs must match
+exactly, use the original comma separators and, for full-language declarations,
+retain their backticks and final period. `SH-XX`, `SH-003` and `FL-P06-T030`
+are rejected rather than silently omitted or truncated. Unknown references,
+duplicate references, empty/trailing cells and ambiguous separators reject.
+Implementation ledger IDs are read literally inside their marked region;
+the census does not require a fabricated component prefix or replace the
+owning projector's exact identity validation. Existing Backends keys such as
+`backend-llvm` therefore remain unchanged.
+
 Run from the repository root under the existing normal resource brokers:
 
 ```bash

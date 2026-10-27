@@ -9,7 +9,60 @@ This is the sole detailed backlog for ownership cleanup, using OWN-01 through
 OWN-06. The [component index](component-roadmaps/README.md) supplies navigation;
 component implementation tasks remain in their existing linked ledgers. These
 records describe joins between components, not replacement component checklists.
-All six joins remain open beyond the explicitly accepted pilot below.
+OWN-04 is complete for its declared supported development adapter; the other
+five joins retain the residual acceptance gates below.
+
+## Current cleanup assessment
+
+Assessed 2026-10-26 22:28 MDT (2026-10-27 04:28 UTC) against main
+`15a5499e97798621d270c36dd2546ce98ddd62a9`, tree
+`aa5dd1d419594b31f9f9837ba6d09e39894b3562`. This updates the original
+OWN-01 through OWN-06 criteria, not their scope or the component task ledgers.
+The original inspection baseline above remains historical provenance.
+
+| Original ID | Current disposition | Accepted merged progress | Exact remaining acceptance |
+| --- | --- | --- | --- |
+| OWN-01 | Partial | Full-C11 C2 construction/authentication/replay receipt recorded through PR436; Unicode scalar coordinates through PR471; fresh Reader-to-Syntax decimal and expansion-lineage handoff through PR482. | Complete the original supported source/diagnostic and identity rows with actual paired source paths, origins and tamper diagnostics. PR482 leaves other Reader rows and canonical generated-node coverage open; full-C11 C3/C5 consumption is not accepted. |
+| OWN-02 | Partial | Paired-source authenticated source-to-Core pilot PR388 at `001ab9edbe84ca0132f3ebc7e6117792ec8d3e13`, with its original receipt. | Establish the required compiler-owner source population through real immediate parents and current module inputs into authenticated canonical Core. The pilot and a passing C2 receipt do not fill this population; full-C11 C5 attempts remain nonpasses. |
+| OWN-03 | Partial | PR421 composes genuine Core/MIR construction, verifier and Native consumers for the exercised Bool development joins. | Populate every claimed type/effect/profile/grant/ownership/safety/origin fact from its actual owner and exercise substitutions at the actual MIR consumer. Fixture declarations and the finite Bool paths do not establish the full required fact population. C12 remains restricted where actually consumed. |
+| OWN-04 | Closed for the declared supported Bool development adapter | PR421 zero-arity and Bool-parameter joins, PR438 parameter consumer integration, PR465 missing Bool `.qst` original/fresh join, and PR476 independently reviewed supported-family disposition satisfy the criteria enumerated below. | No additional run is identified inside this adapter. Current-source final admission is OWN-06. General nil/unit and other unsupported product families retain their MIR ledger obligations and receive no acceptance credit. |
+| OWN-05 | Open | Existing scoped MIR acceptance is available as input; verified unoptimized MIR is explicitly allowed into Lower. | Demonstrate the same actual accepted MIR through the selected Opt/Lower path, with post-pass verification, fact invalidation/regeneration and target/ABI/provider identities plus stale-input and proofless-elision negatives. PR370 and contextual PR374 remain drafts; no contextual C14 acceptance is inferred. |
+| OWN-06 | Partial | Existing final-validator APIs and the accepted development source joins are identified; their structural/report and source-authentication responsibilities are separated below. | Complete genuine current-source public Core construction/fresh report parity, then version propagation into the actual C11 final artifact/public report consumer with source/context/policy/report/artifact negatives. Bind actual target/emitted artifact/execution inputs where this path consumes them. Historical source pins and development acceptance cannot substitute for final admission. |
+
+Merged join identities are PR421 `06a256fdb97f49b5fedea36a6803483302631bbc`,
+PR438 `164a28c203ffd61b51ab35830fa950165da0095f`, PR465
+`82f7e8d62c71b4e5bd895f8b62c2c76363e15d3b`, and the last merged OWN
+criterion disposition, PR476 `5e84b5acb59f605d8f71cc2d5cf21cc24d15a662`.
+Their original source, tree and execution receipts remain in OWN-04 below;
+none is relabeled as a run on the assessment main. Reader PR482 merged at
+`6c3d9e448be2caa290cf0af0a8c2b211c162d723`. Its genuine owner observations
+were independently accepted within a combined exit-1 batch; the separate
+correct-context composition passed 19/106. This is scoped evidence, not a
+blanket passing-batch or complete OWN-01 claim. See its
+[existing handoff report](artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md).
+
+The next original OWN-06 increment belongs to the existing Native public Core
+writer and MIR private integration writer. The current frozen candidate is
+`f7f86a042a14885489aca5a3a885474a6070626c`, tree
+`0f4c6d319fb18573b5b4bed38de772430600beb9`. Independent source/harness review
+has accepted preparation for one genuine public Core constructor observation;
+there is no accepted original/fresh Core result at this assessment. The prior
+expression-owner observation is an accepted prerequisite, not Core admission.
+Public PR453 at `10a03c3dcc247bbb2286e92e8edd3c0b24e1aa8a` and PR475 at
+`edc0009c4190b8c6fbfb15cb8960dee6fc687f79` remain drafts and are not the
+unpublished candidate's result. Fresh Reader-result/SourceRule and expression
+binding authentication, typed semantic/target/physical/root parity and actual
+final C11 consumer rejection gates remain open. Existing writers and their
+guarded process route are preserved; this assessment starts no execution.
+
+The dashboard's 55% from 2026-10-26 04:11 is a historical provisional estimate,
+not measured coverage. This assessment supplies completed and remaining
+milestones instead of a replacement percentage: the original IDs have unequal
+scope and no agreed numerical weights. PR, test and assertion counts are not
+a completion denominator. Recent Reader handoffs advance OWN-01; the necessary
+PR483 Bootstrap load-order repair restores a shared entry dependency, but does
+not itself close another OWN criterion. Full cleanup remains open until the
+remaining original joins meet their own positive and negative acceptance gates.
 
 ## Governing boundary
 
@@ -92,11 +145,15 @@ whole Build or release prerequisite. Acceptance: both source extensions preserve
 their actual paths, byte/scalar spans, origins and current identities through
 fresh Syntax; malformed/tampered inputs retain owning-stage diagnostics.
 Record supported surface and known missing families against the Reader ledger.
-Current blocker: owner reports the full-C11-source constructor returned before
-206.726 seconds but observation filled 80 events and failed before artifact/auth
-assertions. This is not a passing C2 receipt. Repair and cheap harness review are
-owned there; a new run requires the separately restricted parent disposition.
-The ownership task neither repeats the run nor broadens that authorization.
+The corrected full-C11-source C2 run now passed on the exact frozen source tuple
+recorded below, after independent harness and result review. All nine acceptance
+checks passed, including actual Reader execution, authenticated envelope, fresh
+verified replay, source bindings and lexical/representation validation. This
+closes that positive C2 dependency observation, not all Reader/Syntax surfaces or
+the downstream join. The previous 120-second timeout and 206.726-second
+observation failure remain separate nonpasses. Genuine C3 and C5 consumption of
+the complete source is the next open integration boundary; no downstream run
+or source authority is inferred from this receipt.
 
 ### OWN-02 - Authenticated Source-to-Core population
 
@@ -138,8 +195,10 @@ type/effect/profile/grant/ownership/safety/origin substitutions reject. Preserve
 runtime checks and proof references through serialization. Confirm currently
 unassigned component ownership and pair each claimed fact with its actual
 producer; constructed fixture declarations cannot fill a missing producer.
-MIR producer #378 remains draft, with guarded semantic regressions and held
-consumer composition. C12 execution remains prohibited; any consumed C12
+The finite producer/consumer composition preserving #378 and #383 ancestry
+merged through #421 at `06a256fdb97f49b5fedea36a6803483302631bbc` (receipt
+below). This accepts the exercised development joins, not the complete analysis
+fact population required by OWN-03. C12 execution remains prohibited; any consumed C12
 dependency remains a blocker, not an excluded passing path.
 
 ### OWN-04 - MIR/Native schema, parameters and DATA continuity
@@ -153,22 +212,146 @@ Contracts: C6/C11/B1. Producer source is C11 above. Native consumer files are
 `00738-p15-s23-c11-mir-validate-operations.clj`,
 `00739-p15-s23-c11-mir-validate-terminator.clj`,
 `00740-p15-s23-c11-mir-validate-effect-edge-placement.clj` and
-`00741-p15-s23-c11-mir-map-blocks.clj` in that same directory. Native #383 adds
+`00741-p15-s23-c11-mir-map-blocks.clj` in that same directory. Native #383 added
 `bootstrap/clojure/test/gravity/self_hosting/sh01_native_original_bool_compatibility_test.clj`;
-that fixture is absent from inspected main and is not current-main coverage.
+that fixture is now integrated through #421. Its absence at the original
+inspection baseline is historical, not the current disposition.
 
 Dependency: OWN-03's exact input tuple and one reviewed shared DATA domain.
 Acceptance: genuine original construction, complete typed DATA preservation,
 independent fresh replay and actual Gravity/Native positives and crossed-source,
 parameter/type/quota negatives on one compatible tuple. The generic SH12 branch
 builder already delegates to the generic C11 builder; another run of that helper
-does not itself exercise a new producer. Native #383 removes stale consumer quota
-expectations in 00734/00736/00741; #421 composes that change with #378. Neither
-draft establishes integration acceptance. Native owns the parameter descriptor
-and shared codec. Controlled codec fixtures preserve scalar classes/metadata and
-container kind but do not prove exact concrete map/vector preservation or the
-actual composite artifact inventory. Agree class/callback policy and review
-before source A/B; do not weaken equality to manufacture a pass.
+does not itself exercise a new producer. Native #383 removed stale consumer quota
+expectations in 00734/00736/00741; merged #421 composes that change with #378 and
+the independently guarded Bool-entry-parameter consumer. Native owns the
+parameter descriptor and shared codec; MIR owns producer/integration semantics.
+The shared V3 DATA domain and genuine source joins below received independent
+review. The earlier controlled codec probe alone was insufficient; the later
+accepted evidence must not be described as that probe or as timeout-only work.
+
+#### Accepted finite OWN-04 joins
+
+[PR421](https://github.com/burn2delete/uniform/pull/421) merged reviewed head
+`d67406b305d93e052f54c9439da8142efbb663c0` as
+`06a256fdb97f49b5fedea36a6803483302631bbc`, with identical full tree
+`6ed68a337f85d9a044d7eb3d08aa1ae8eebccea2`. The
+[frozen receipt](https://github.com/burn2delete/uniform/pull/421#issuecomment-6428826929)
+retains each producer identity; reconciliation does not reissue its source runs.
+
+| Accepted join | Exact producer and evidence | Remaining boundary |
+| --- | --- | --- |
+| Zero-arity source to C6/MIR and Native | `8b9dd46ea38eafba1d3d7a49d8c6ca6b6488563f`, tree `ed9d118e18f5f1a3f04138603e282ade9fb70701`: genuine true `.gravity` and false `.qst` construction, separate fresh C6 verification, Gravity reconstruction verification, Native positives, both source-substitution directions and exact type/quota negatives. Separate children naturally exited 0 at 2 GiB/120 seconds. | B's DATA was inspected in-process but not retained for a later independent saved-artifact rewalk. No other source or parameter family is inferred. |
+| Composed Native consumer | `38f8f6e0`, tree `5b2f86c3`: retained A passed real seal/provenance, Gravity and Native consumption, with type, retired-scope, source-Core and parameter-impostor negatives; 42 tests / 426 assertions, natural exit 0. | This reconsumes A; it is not a new original source construction. |
+| Single Bool entry parameter, `.gravity` | The same `38f8f6e0` / `5b2f86c3` tuple: genuine c41 `.gravity` original 1/7 and separate independent fresh replay 1/48, natural exit 0 at 2 GiB/120 seconds. Full typed raw-C6 equality, actual C6/Gravity verification, Native acceptance and parameter negatives passed. | These original receipts retain their `.gravity` attribution; other parameter families are not inferred. |
+| Single Bool entry parameter, `.qst` | `66f46c53aaa24bfecffca782eb8f2128b85ac1e1`, tree `bce85a1d8daac945ab26b039f180685cf68990b6`: genuine original 1/7 and separate independent fresh replay 1/48, both natural exit 0 at actual 2 GiB under the unchanged 120-second execution profile. Complete typed raw-C6 equality, fresh C6 verification, Gravity build/verification, Native acceptance and the existing parameter/source/type negatives passed. | This closes the missing `.qst` case for this supported Bool diamond. No other parameter family, final admission or newer-tuple source execution is inferred. |
+| Final main reconciliation | `d67406b3` / `6ed68a33`: independent source/contract review conserved the SH04 projection, fallback, descriptors and fresh authentication; fresh focused/boundary/LOC controls 21/94, docs 240/19 and exact integration preflight passed. | Earlier source evidence retains its original tuple. No emitted-code or final-artifact admission is inferred. |
+
+The parameter handoff's strict V3 typed DATA digest is
+`b065758e2bcc644b75835046d93ba70dec7479beea5974370864563040012958`.
+Its supported concrete collection classes, metadata and backing/view policy
+were reviewed; no equality relaxation replaced the source/callback guards.
+The C11 producer in these receipts is 567399 bytes, SHA256
+`c41d9e0317b398a53e4b28d7bba90be7bebda23c51fa9c74a6a8c91be38ce79e`.
+It must not inherit the full-Reader b9 source receipt or vice versa.
+
+The `.qst` candidate changes only the private source-test helper relative to
+`38f8f6e0`: its existing one-argument `.gravity` default is preserved, with an
+explicit second argument restricted to `.gravity` or `.qst`. Reader released
+that helper to the existing Native C6 owner before the change. Native reused
+the original guarded controller and shared V3 codec, archiving the historical
+`.gravity` controller bytes and receipts. No saved Reader product, accepted Core
+or verification result was injected; only original raw C6 DATA crossed the
+externally gated handoff. Independent source/harness review and compiler-free
+controls passed 6/56 before either source child ran.
+
+Original and replay execution phases were 99803.001334 ms and 106984.993042 ms;
+these are not total controller/process wall times. Both external supervisors
+observed natural exit zero. All four source/harness bookends matched on the
+frozen `.qst` tuple; source and controller stderr were empty. The raw handoff
+SHA256 is `c08a443d902d639ef5f72699aac4bb86c94516302be3dd04220aebb17fea8687`.
+Original/replay terminal SHA256 values are
+`5b87d16342d143871985220e987973bce304998fca149f30f8585f757f06ff7a` and
+`6ad973861c7ca05b740a4d8354e375673afddbd87361e260a1d4e9ebb593d3d7`.
+Retained-result readback checked those hashes, the `.qst` source selection,
+complete typed comparison and actual C6/Gravity/Native verification. Earlier
+cheap-control failures remain nonpasses; this adds no original source retry.
+
+Normal main composition retains these receipts at `66f46c53`. Incoming Reader
+index changes from PR442/449 do not receive a new full source-run claim here.
+The source-test helper, fixture pair, consumed Gravity C6/C11/Reader/emitter sources
+and p15 independent constructed-validator components remain identical to that
+accepted candidate. The separate hosted `gravity/c11_mir/validation.clj` facade
+changed through PR447/`0968daed`, adding termination/dominance checks to its
+status, proof and diagnostic handling. The frozen source receipts do not accept
+that changed facade or reexecute it on the newer tuple. The helper addition
+and this acceptance record require their own reviewed main
+integration; merging them does not reissue the frozen semantic receipts.
+
+#### Supported-family disposition
+
+The MIR producer and Native consumer independently confirmed the following
+boundary against the unchanged c41 source. This consumes the existing OWN-04
+criterion; it does not add a language or parameter family.
+
+| Current development-adapter row | Disposition | Accountable boundary |
+| --- | --- | --- |
+| Zero-arity literal-Bool diamond, `.gravity` and `.qst` | Accepted source construction/replay, DATA continuity and Native consumption in PR421, with original identities above. No repeat is needed. | Existing MIR producer and Native consumer |
+| Single-Bool entry-parameter diamond, `.gravity` and `.qst` | Accepted `.gravity` evidence in PR421 and `.qst` evidence integrated through [PR465](https://github.com/burn2delete/uniform/pull/465), merge `82f7e8d62c71b4e5bd895f8b62c2c76363e15d3b`. No additional parameter permutation is identified inside this supported adapter. | Existing Native C6 constructor/controller and MIR verifier owners |
+| Other opcode names or carrier classes in generic schema guards | Schema membership is not a claim of an authenticated source family. The reviewed V3 domain and complete actual artifact checks remain accepted; a generic DATA fixture cannot create another source join. | MIR/Native own their existing schemas and guards |
+| Flat zero-arity nil / `:unit` | Outside the current supported/evidence-covered SH12 Bool adapter. No PR421/438/465 source acceptance applies. | Broader MIR construction/fact/verifier/downstream obligations remain open as detailed below |
+
+The current supported Bool development joins and their DATA handoff are
+accounted for. No further evidence run is identified inside that declared
+adapter. OWN-03's complete fact population and OWN-05's Opt/Lower consumption
+remain separate. Current-source final artifact/report successor admission is
+OWN-06, not a reason to erase or repeat these accepted development joins.
+
+The original OWN-04 criteria at this declared interface have the following
+finite closure, rather than a test-count percentage:
+
+- Producer/consumer accountability and schema agreement: confirmed by the
+  existing MIR and Native owners, including the preserved Reader helper handoff.
+- Original construction, independent fresh replay, typed DATA continuity and
+  actual Gravity/Native positives: accepted in PR421 and PR465 on their exact
+  tuples. Shared V3 class, metadata and backing/view rules remain unchanged.
+- Crossed source, type, retired quota-field and parameter/fact/safety negatives:
+  accepted in those same scoped receipts. PR438's parameter consumer work is
+  integrated; its earlier source receipts are not relabeled as c41 executions.
+- Reviewed main integration: PR421/438/465 are merged. The accepted source
+  receipts keep their frozen identities; current-source final/public admission
+  remains the distinct OWN-06 dependency.
+
+These criteria are complete for the currently supported Bool development
+adapter. This does not accept every operation named in the general MIR schema,
+close general C11 product implementation, or grant current-source final
+admission. Unsupported capabilities retain their governing obligations and
+explicit owners instead of being counted as passing joins.
+
+The nil row is a verifier-route boundary, not a demonstrated producer/consumer
+encoding defect. `c11-build-operation` already derives `:unit` from
+`:gravity/nil`, and `c11-build-linear-mir` uses that builder. Native component
+00738 expects the same derivation. However, the executable SH12 constructor and
+verifier require the original-C6 family preflight, which lacks flat nil support.
+The generic `verify-c11-mir-module` returns a `:stage1-source-owned` description;
+its check labels supply no executed verification credit. Skipping SH12 or
+substituting that description cannot close the join.
+
+General C6/C11 nil/unit semantics remain a product implementation/evidence
+obligation under the existing
+[MIR tasks](../specs/mir-workflow/tasks.md#implementation-tasks):
+`mir1-construct-semantic-mir`, `mir2-attach-fact-tables`,
+`mir3-verify-graph-and-legality` and `mir5-gate-downstream-consumption`.
+These tasks are not closed or rescoped by this disposition. If that capability
+is pursued, the MIR producer owns a narrowly reviewed real-family
+preflight/verifier amendment, followed by genuine original/fresh C6 parity and
+actual Gravity/Native verification with type, unit/value, payload, source and
+fact negatives. Native repairs only a demonstrated consumer defect; its unit
+rule and Bool successor scope stay intact. No new implementation or source run
+was performed for this disposition.
+
+No C12, Opt/Lower, emitted-code, release, self-hosting or whole-OWN completion
+follows from this finite acceptance and unsupported-capability record.
 
 ### OWN-05 - Optimization and lowering consume the same accepted MIR
 
@@ -205,7 +388,14 @@ artifact, verifier report and execution result; original source/facts/report/
 artifact substitution and undeclared runtime services reject at the real consumer.
 `p15-s23-c11-mir-validate-constructed!` accepts Core/MIR and produces a fresh
 report; saved-report equality demonstrates reproducibility, not rejection of a
-supplied report. The frozen final artifact route and admission contract's
+supplied report. The distinct existing final-artifact validator in 00743 accepts
+an artifact-contained report, recomputes it through 00740 and requires ordinary
+and type-sensitive equality. The public C11 verifier in 00744 additionally
+authenticates Core/context and performs independent Gravity builder replay.
+Those APIs do not yet accept the current c41 source through the historical
+330835-byte/cf7 source-rule contract. The MIR producer and Native consumer owners
+are preparing an explicitly versioned successor through these existing APIs;
+design work is not a passing final-admission receipt. The frozen final artifact route and admission contract's
 unfrozen replay-owner policies remain separate open interfaces. No repinning,
 injected pass report, synthetic final artifact or relaxed source guard closes
 them. Runtime writer/acceptance ownership must be confirmed; accounting removal
@@ -231,10 +421,42 @@ inspected main baseline; it does not rerun the owner's construction.
 MIR owner reports composite tree `ed9d118e18f5f1a3f04138603e282ade9fb70701`,
 C11 source 567399 bytes, SHA256
 `c41d9e0317b398a53e4b28d7bba90be7bebda23c51fa9c74a6a8c91be38ce79e`.
-The latter source run timed out at 120 seconds with no completed test counts;
-helper 36/327, harness 10/52 and controlled codec 10/92 receipts do not replace it.
+The initial latter-source run timed out at 120 seconds with no completed test
+counts; it remains a historical nonpass. Helper 36/327, harness 10/52 and
+controlled codec 10/92 receipts did not replace it. The subsequently accepted
+source and composed-consumer receipts are recorded under OWN-04 above.
 These are attributed owner reports, not locally rerun acceptance. Different
 source tuples cannot be joined by comparing counts or relabeling historical pins.
+
+### Independently checked full-C11-source C2 increment
+
+The corrected run used frozen commit
+`2422be8ce0d1de5e12a3e741244ef96a319bba9b`, tree
+`329a1978796509ae7d7b159a89921d97d2064d61`, with the 573124-byte C11 source
+and `b9b68c69...5184f` hash above. It exited naturally with 0 in 193.576
+seconds at an actual 2147483648-byte maximum heap under the unchanged
+240-second host profile. Source identity and all captured control/input hashes
+were equal before and after; the worktree was clean. The valid observer retained
+12 detailed events, 55 completed resolver calls and no resolver errors.
+
+Independent result readback checked all nine owner acceptance flags and the
+actual execution/fresh-verification events against the reviewed harness. The
+receipt SHA256 is
+`04462d360ca77faa67aacde3626ae61f22b75fb04b7d46e318c3c7de17719829`;
+its unchanged plan/harness/capture SHA256 identities are respectively
+`31e9e12540c214b5e10dd88b0e98e37a8a0752e62cd6b1e228e0dcec9f12e48d`,
+`b9ff51c1e183804e0f254ddbacce771ad180f9d4768d7376d043e888784a2802`,
+and `8accd74a643d3cb8572b48fa16fd39974a36585de8a9cae127c9d5ddfbb8514f`.
+No construction was repeated during readback. This is development evidence for
+the complete C11 source through C2, not a current-main run, speedup comparison,
+C3/C5 composition, C6/MIR producer admission, C14, migration or public release.
+
+The supported next proposal is one ordinary five-argument current-source C5
+constructor, which builds C2/C3 once and forwards the actual parent/invocation
+through SH05/SH06. The current-selected C3 API requires direct construction;
+saved C2 injection or nil-argument/token workarounds are not an alternative.
+The proposal needs its own exact plan, profile and execution evidence. It does
+not itself establish the downstream acceptance or authorize another run.
 
 Every future closure receipt must name exact head/tree and source/dependency/
 harness identities; actual producer and consumer invocations; passed, failed and

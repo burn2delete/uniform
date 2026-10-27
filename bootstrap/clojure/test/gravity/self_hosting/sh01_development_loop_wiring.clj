@@ -23,7 +23,8 @@
            [java.nio.file.attribute BasicFileAttributes FileAttribute
             PosixFilePermission PosixFilePermissions]
            [java.security MessageDigest]
-           [java.util Arrays]))
+           [java.util Arrays]
+           [java.util.jar Attributes$Name JarFile]))
 
 (def ^:private default-timeout-ms (* 60 60 1000))
 (def ^:private child-runtime-token (Object.))
@@ -844,6 +845,46 @@
       (sequential? command) (mapv str command)
       :else [(str command) "-M:test"])))
 
+(defn- supported-resource-loaders?
+  "Observe only the reviewed resource-delegation domain, not in-memory class identity."
+  []
+  (try
+    (let [system (ClassLoader/getSystemClassLoader)
+          delegates?
+          (fn [loader]
+            (loop [current loader seen #{}]
+              (cond
+                (identical? current system) true
+                (not= clojure.lang.DynamicClassLoader (class current)) false
+                (contains? seen current) false
+                (seq (.getURLs ^clojure.lang.DynamicClassLoader current)) false
+                :else (recur (.getParent ^ClassLoader current) (conj seen current)))))]
+      (and (= "jdk.internal.loader.ClassLoaders$AppClassLoader" (.getName (class system)))
+           (nil? (.getClassLoader (class system)))
+           (identical? system (.getClassLoader clojure.lang.Compiler))
+           (delegates? (.getContextClassLoader (Thread/currentThread)))
+           (delegates? (clojure.lang.RT/baseLoader))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
+(defn- archive-loader-inputs-contained?
+  "Listed archive bytes cover manifest loading only when no Class-Path is declared.
+  Unknown archives are outside the reviewed reuse domain. No referenced URL is opened."
+  [^Path path]
+  (try
+    (and (Files/isRegularFile path no-links)
+         (with-open [archive (JarFile. (.toFile path))]
+           (let [manifest (.getManifest archive)]
+             (or (nil? manifest)
+                 (not (.containsKey (.getMainAttributes manifest)
+                                    Attributes$Name/CLASS_PATH))))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
 (defn- explicit-classpath-identities
   [^Path repository-root closure-root]
   (let [separator (java.util.regex.Pattern/quote
@@ -865,11 +906,11 @@
              (mapv #(str (.relativize repository-root ^Path %))))
         external-paths
         (remove #(.startsWith ^Path % repository-root) paths)]
-    (when (and (= 2 (count internal-roots))
+    (when (and (supported-resource-loaders?)
+               (= 2 (count internal-roots))
                (= #{"bootstrap/clojure/src" "bootstrap/clojure/test"}
                   (set internal-roots))
-               (every? #(Files/isRegularFile ^Path % no-links)
-                       external-paths))
+               (every? archive-loader-inputs-contained? external-paths))
       (mapv
        (fn [index ^Path path]
          {:path (format "classpath/entry-%04d" index)
@@ -1444,10 +1485,39 @@
         (recur (next remaining) (conj result argument)))
       result)))
 
+(defn project-startup-resources-absent?
+  "True only when known project-classpath startup override locations are absent.
+  This is a current filesystem observation, not proof of prior nonexecution."
+  [working-directory]
+  (try
+    (let [root (.normalize
+                (.toAbsolutePath
+                 (if (instance? Path working-directory) working-directory
+                     (.toPath (io/file working-directory)))))]
+      (every? #(Files/notExists (.resolve root ^String %) no-links)
+              ["bootstrap/clojure/src/user.clj"
+               "bootstrap/clojure/test/user.clj"
+               "bootstrap/clojure/src/clojure"
+               "bootstrap/clojure/test/clojure"]))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
+(defn- child-startup-resources-absent? [working-directory]
+  (try
+    (and (project-startup-resources-absent? working-directory)
+         (nil? (io/resource "user.clj")))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
 (defn- effective-child-runtime
   [working-directory arguments]
   (try
-    (let [current (basis/current-basis)
+    (when (supported-resource-loaders?)
+      (let [current (basis/current-basis)
           config (:basis-config current)
           root (.normalize (.toAbsolutePath (.toPath (io/file working-directory))))
           jvm-arguments (jvm-input-arguments)
@@ -1465,6 +1535,7 @@
           internal (filterv #(.startsWith ^Path % root) classpath-paths)
           internal-relative (mapv #(str (.relativize root ^Path %)) internal)]
       (when (and (map? current)
+                 (child-startup-resources-absent? working-directory)
                  (= current (basis/initial-basis))
                  (map? config)
                  (every? #{:root :user :project :extra :args :aliases} (keys config))
@@ -1481,7 +1552,7 @@
                  (= #{"bootstrap/clojure/src" "bootstrap/clojure/test"}
                     (set internal-relative))
                  (every? #(or (.startsWith ^Path % root)
-                              (Files/isRegularFile ^Path % no-links))
+                              (archive-loader-inputs-contained? %))
                          classpath-paths))
         (let [material
               {:basis current
@@ -1500,7 +1571,10 @@
                                  material)]
           {:id :actual-child-runtime-v1
            :sha256 (sha256-id (pr-str fingerprints))
-           :fingerprints fingerprints})))
+           :fingerprints fingerprints}))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
     (catch Exception _
       ;; Unknown launch inputs disable the optional optimization, not the test.
       nil)))
@@ -1512,7 +1586,8 @@
   not inspect processes or acquire a nested lease. Unknown launches and test
   policies execute fresh; no parent assertion can supply a child identity."
   [namespaces {:keys [arguments fail-fast?] :as options} operation]
-  (let [index (component-dependencies/dependency-index)
+  (let [resource-loaders-supported? (supported-resource-loaders?)
+        index (component-dependencies/dependency-index)
         by-namespace (into {} (map (juxt :namespace identity)
                                   (vals (:by-test-path index))))
         jobs (mapv (fn [namespace]
@@ -1521,12 +1596,13 @@
                                     index namespace)]
                        (assoc entry :namespace namespace
                                     :cache-closure closure
-                                    ;; Compatibility declarations predate the
-                                    ;; bootstrap component loader. They retain
-                                    ;; the conservative complete-tree identity.
+                                    ;; Only the re-audited bootstrap-free leaves
+                                    ;; have explicit closures. Bootstrap-dependent
+                                    ;; selections retain complete-tree identity.
                                     :cache-closure-authorized?
                                     (and (some? closure)
-                                         (contains? '#{gravity.c11-mir-test
+                                         (contains? '#{gravity.c2-artifact-identity-test
+                                                       gravity.c11-mir-test
                                                        gravity.compiler-pass-manifest-test}
                                                     namespace)))))
                    namespaces)
@@ -1537,7 +1613,9 @@
                                                      :freshness-required?]))))
                           jobs)
         working-directory (System/getProperty "user.dir")
-        runtime (when reviewed?
+        startup-absent? (and resource-loaders-supported? reviewed?
+                             (child-startup-resources-absent? working-directory))
+        runtime (when (and resource-loaders-supported? reviewed? startup-absent?)
                   (effective-child-runtime working-directory arguments))]
     (if-not runtime
       (assoc (operation)
@@ -1547,8 +1625,11 @@
              :child-cache-receipt
              {:decision :fresh :cacheable? false :stored? false
               :producer-executed? true
-              :reason (if reviewed? :unknown-child-configuration
-                          :unreviewed-or-fresh-test-policy)})
+              :reason (cond
+                        (not resource-loaders-supported?) :unreviewed-resource-loaders
+                        (not reviewed?) :unreviewed-or-fresh-test-policy
+                        (not startup-absent?) :unreviewed-startup-resources
+                        :else :unknown-child-configuration)})
       (let [context (assoc (prepare-context working-directory options)
                            :child-runtime-token child-runtime-token)
             _ (when-not (= (:repository-identity options)

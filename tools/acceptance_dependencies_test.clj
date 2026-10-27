@@ -43,6 +43,35 @@
                  (dependencies/require-population! dependencies/full-language-task-ids
                    (conj (disj dependencies/full-language-task-ids "FL-P18-T01") "FL-P18-T99") "full-language task")))))
 
+(deftest full-language-dependencies-consume-whole-tokens
+  (let [source (str (phase "00" "none." ["FL-P00-T01"])
+                    (phase "06" "`FL-P00-T01`." ["FL-P06-T03"]))]
+    (is (= #{"FL-P00-T01"} (get (dependencies/full-language-graph source) "FL-P06-T03")))
+    (doseq [bad ["`FL-P06-T030`." "`FL-P06-T03`garbage." "`FL-P06-T99`."
+                 "`FL-P00-T01`,." ",`FL-P00-T01`." "`FL-P00-T01` `FL-P06-T03`."
+                 "`FL-P00-T01`; `FL-P06-T03`." "FL-P00-T01." "`FL-P00-T01`. trailing"
+                 "`FL-P00-T01`.." "`FL-P00-T01`, `FL-P00-T01`." "`FL-P00-T01`"]]
+      (is (thrown? Exception
+                   (dependencies/full-language-graph
+                    (str/replace source "Dependencies: `FL-P00-T01`." (str "Dependencies: " bad)))))))
+  (is (= #{"FL-P00-T01" "FL-P06-T03"}
+         (dependencies/dependency-list "`FL-P00-T01`,\n`FL-P06-T03`." #"`(FL-P\d{2}-T\d{2})`" true))))
+
+(deftest milestone-dependencies-consume-whole-cells
+  (let [source (apply str
+                (for [n (range 30)]
+                  (format "| [SH-%02d](#sh-%02d) | Outcome | %s | open |\n"
+                          n n (if (zero? n) "none" "SH-00"))))]
+    (is (= #{"SH-00"} (get (dependencies/milestone-graph source) "SH-01")))
+    (doseq [bad ["SH-XX" "SH-003" "SH-00x" "SH-99" "SH-00," ", SH-00"
+                 "SH-00 SH-01" "SH-00; SH-01" "none, SH-00" "SH-00 and SH-01"
+                 "`SH-00`" "SH-00." "SH-00, SH-00" ""]]
+      (is (thrown? Exception (dependencies/milestone-graph
+                             (str/replace source "| SH-00 |" (str "| " bad " |"))))))
+    (is (thrown? Exception (dependencies/milestone-graph (str/replace source "[SH-00]" "[SH-003]"))))
+    (is (thrown? Exception (dependencies/milestone-graph (str/replace source "[SH-00]" "[SH-XX]"))))
+    (is (= #{"SH-00" "SH-01"} (dependencies/dependency-list "SH-00, SH-01" #"(SH-\d{2})" false)))))
+
 (deftest staged-edges-preserve-every-executable-prerequisite
   (let [original {"producer" #{"consumer"} "consumer" #{"producer"}}
         staged (dependencies/staged-graph original)]
@@ -66,8 +95,34 @@
     (is (= ["reader/real-outcome"] (dependencies/implementation-ids record "reader")))
     (is (nil? (dependencies/implementation-ids "- [x] T001 Historical only" "reader")))
     (is (thrown? Exception (dependencies/implementation-ids (str record record) "reader")))
-    (is (thrown? Exception (dependencies/implementation-ids (str/replace record "reader/real-outcome" "syntax/other") "reader")))
+    (is (thrown? Exception (dependencies/implementation-ids (str/replace record "reader/real-outcome" "") "reader")))
     (is (thrown? Exception (dependencies/implementation-ids (str/replace record "tasks:end" "tasks:missing") "reader")))))
+
+(deftest literal-backend-project-keys-are-not-renamed
+  (let [ids ["backend-interface" "backend-c" "backend-llvm" "backend-wasm"
+             "backend-jvm" "backend-js" "backend-mlir" "backend-gpu"
+             "backend-hdl" "backend-workflow" "backend-ai" "backend-query"
+             "backend-mobile" "backend-emission" "backend-conformance"]
+        region (str "- [x] T001 Historical migration\n"
+                    "<!-- backends-implementation-tasks:start -->\n"
+                    (apply str (map #(str "- [ ] `" % "` Original family\n") ids))
+                    "<!-- backends-implementation-tasks:end -->\n"
+                    "- [x] T005 Historical integration\n")]
+    (is (= ids (dependencies/implementation-ids region "backends")))
+    (is (= [(first ids)]
+           (dependencies/implementation-ids
+            "<!-- backends-implementation-tasks:start -->\n- [ ] `backend-interface` Original\n<!-- backends-implementation-tasks:end -->"
+            "backends")))
+    ;; This is a census, not a second component identity/ownership validator.
+    (is (= ["existing-project-key"]
+           (dependencies/implementation-ids
+            "<!-- tools-implementation-tasks:start -->\n- [ ] `existing-project-key` Original\n<!-- tools-implementation-tasks:end -->"
+            "tools")))
+    (doseq [bad [(str/replace region "`backend-llvm`" "`backend-c`")
+                 (str/replace region "`backend-llvm`" "``")
+                 (str/replace region "- [ ] `backend-llvm`" "- [y] `backend-llvm`")
+                 (str/replace region "- [ ] `backend-llvm`" "- [ ] backend-llvm")]]
+      (is (thrown? Exception (dependencies/implementation-ids bad "backends"))))))
 
 (deftest component-links-are-references
   (let [registry "| Reader / `reader` | boundary | outcome |\n| Syntax / `syntax` | boundary | outcome |\n"
