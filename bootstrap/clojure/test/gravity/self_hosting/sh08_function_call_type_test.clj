@@ -386,38 +386,27 @@
       (is (zero? (:vector-tail-calls observed)))
       (is (= membership-calls (:membership-calls observed))))))
 
-(deftest sh08-imported-work-boundaries-development-kernel
-  ;; Invocation-local memo/limit policy DATA. Public C7 always starts empty.
+(deftest sh08-imported-module-validation-development-kernel
+  ;; Invocation-local normalized memo DATA, not authenticated source admission.
   (let [bounds (invoke-c7 'sh08-local-bounds-value [])
         id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         module-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
         c5 {:artifact-id module-id}
         request {:b47-context {:artifact-id id :authenticated-wrapper {:sh06-resolution-artifact c5}}}
-        usage {:status :accepted :nodes 1 :scalar-units 1}
-        memo {id {:request request :result {:status :accepted} :usage usage}}
-        check #(invoke-c7 'sh08-im-work-check [%1 %2 %3])]
-    (is (= :accepted (:status (check {} {} usage))))
-    (is (= :module-type-distinct-producer-limit
-           (:reason (check (zipmap (range (:maximum-root-nodes bounds)) (repeat {:usage usage})) {} usage))))
-    (is (= :module-type-dependency-depth-limit
-           (:reason (check {} (zipmap (range (:maximum-carrier-depth bounds)) (repeat usage)) usage))))
-    (is (= :module-type-total-core-work-limit
-           (:reason (check {id {:usage (assoc usage :nodes (:maximum-carrier-nodes bounds))}} {} usage))))
-    (is (= :module-type-total-scalar-work-limit
-           (:reason (check {id {:usage (assoc usage :scalar-units (:maximum-scalar-units bounds))}} {} usage))))
-    (is (= :module-type-producer-core-bound (:reason (check {} {} {:status :rejected :reason :carrier-width-bound}))))
+        memo {id {:request request :result {:status :accepted}}}]
     (is (= {:status :accepted} (:result (invoke-c7 'sh08-im-derive [request memo {}]))))
     (is (= :substituted-module-type-request
            (get-in (invoke-c7 'sh08-im-derive [(assoc request :extra true) memo {}]) [:result :diagnostics 0 :reason])))
     (is (= :cyclic-module-type-request
-           (get-in (invoke-c7 'sh08-im-derive [request {} {id usage}]) [:result :diagnostics 0 :reason])))
+           (get-in (invoke-c7 'sh08-im-derive [request {} {id true}]) [:result :diagnostics 0 :reason])))
     (is (= :undeclared-module-type-producer (:reason (invoke-c7 'sh08-im-producers [[request] memo {} []]))))
     (is (= :undeclared-module-type-producer
            (:reason (invoke-c7 'sh08-im-producers [[request] memo {} [(assoc c5 :forged true)]]))))
     (is (= :duplicate-or-invalid-module-type-producer
            (:reason (invoke-c7 'sh08-im-producers [[request request] memo {} [c5]]))))
-    (is (= :module-type-input-count-limit
-           (:reason (invoke-c7 'sh08-im-inputs-check
+    ;; This accepts the container only; duplicated producers still reject above.
+    (is (= :accepted
+           (:status (invoke-c7 'sh08-im-inputs-check
                       [{:artifact :gravity/sh08-module-type-inputs :schema-version 1
                         :module-requests (vec (repeat (inc (:maximum-root-nodes bounds)) request))}]))))
     (let [duplicated-proof (String. (char-array (inc (:maximum-scalar-units bounds)) \x))
@@ -428,6 +417,62 @@
       (is (= :rejected (:status (invoke-c7 'sh08-carrier-preflight [supplied]))))
       (is (= :accepted (:status (invoke-c7 'sh08-im-inputs-check [supplied]))))
       (is (= :rejected (get-in (invoke-c7 'sh08-im-producers [(:module-requests supplied) {} {} [c5]]) [:status]))))))
+
+(defn- normalized-import-derive [resolution]
+  ;; Supply normalized authentication/inference results at explicit test seams.
+  ;; Real carrier validation, input checks, producer traversal and memo updates
+  ;; still execute in Gravity. This does not confer authentication authority.
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped owner (Thread/currentThread) calls (atom [])
+        request {:b47-context {:artifact-id :current-module}}
+        bounds (invoke-c7 'sh08-local-bounds-value [])
+        memo (zipmap (range (inc (:maximum-root-nodes bounds))) (repeat {:request {} :result {}}))
+        active (zipmap (range (inc (:maximum-carrier-depth bounds))) (repeat true))
+        result (with-redefs-fn
+                 {scoped (fn [runtime plan callee args scope]
+                           (if (and (identical? owner (Thread/currentThread))
+                                    (= :gravity-sh08-function-call-type-leaf (:engine runtime)))
+                             (do (when (contains? #{'sh08-ft-authenticated-core 'sh08-carrier-preflight
+                                                    'sh08-im-producers-with-allowance
+                                                    'sh08-ft-function-type-core-artifact-with-imports-and-allowance} callee)
+                                   (swap! calls conj [callee args]))
+                                 (cond
+                                   (= 'sh08-ft-authenticated-core callee) resolution
+                                   (= 'sh08-ft-function-type-core-artifact-with-imports-and-allowance callee)
+                                   {:status :accepted :scope :normalized-inference-control}
+                                   :else (original runtime plan callee args scope)))
+                             (original runtime plan callee args scope)))}
+                 #(invoke-c7 'sh08-im-derive-with-allowance [request memo active 37]))]
+    {:result result :calls @calls :request request :memo memo :active active}))
+
+(deftest sh08-imported-module-control-routing-development-kernel
+  (let [core {:module {:namespace 'example.normalized} :nodes []}
+        accepted (normalized-import-derive {:status :accepted :core core :binding-table []})
+        calls (:calls accepted)
+        producer-args (second (first (filter #(= 'sh08-im-producers-with-allowance (first %)) calls)))
+        inference-args (second (first (filter #(= 'sh08-ft-function-type-core-artifact-with-imports-and-allowance (first %)) calls)))
+        entry (get-in accepted [:result :memo :current-module])]
+    (is (= {:status :accepted :scope :normalized-inference-control} (get-in accepted [:result :result])))
+    (is (= (:request accepted) (:request entry)))
+    (is (= #{:request :result} (set (keys entry))))
+    (is (= [core] (second (first (filter #(= 'sh08-carrier-preflight (first %)) calls)))))
+    (is (= (assoc (:active accepted) :current-module true) (nth producer-args 2)))
+    (is (= 37 (last producer-args) (last inference-args))))
+  (doseq [resolution [{:status :accepted :core (nth (iterate vector :leaf) 129)}
+                      {:status :rejected :reason :normalized-authentication-rejection}]]
+    (let [{:keys [result calls memo request]} (normalized-import-derive resolution)
+          diagnostic (get-in result [:result :diagnostics 0])]
+      (is (= :rejected (get-in result [:result :status])))
+      (is (= (if (= :accepted (:status resolution)) :module-type-producer-core-bound
+                 :normalized-authentication-rejection) (:reason diagnostic)))
+      (when (= :accepted (:status resolution))
+        (is (= :carrier-depth-bound (get-in diagnostic [:actual-type :reason]))))
+      (is (= (if (= :accepted (:status resolution))
+               (assoc memo :current-module {:request request :result (:result result)}) memo)
+             (:memo result)))
+      (is (false? (boolean
+                    (some #(contains? #{'sh08-im-producers-with-allowance
+                                        'sh08-ft-function-type-core-artifact-with-imports-and-allowance} (first %)) calls)))))))
 
 (deftest sh08-atomic-signature-inference-development-kernel
   ;; Execute the current Gravity inference algorithm with normalized records;
