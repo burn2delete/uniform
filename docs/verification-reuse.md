@@ -1121,7 +1121,14 @@ The test-only correction expresses the fixture as a function with explicit
 callback bindings and preserves its permissions, return value and `finally`
 cleanup. It changes no production guard or lint policy. Local clj-kondo
 2025.10.23 reports zero errors/warnings for that test source; renewed wiring
-validation and independent review are required on the changed fixture.
+validation at `f4e8624ad8cd79010aaab6ed0cc16388404511c2`, tree
+`5b85853014fa9bbdcf855c4c6b08617aa05f0eac`, passed 51 / 633, natural exit 0
+at 256 MiB with identical clean bookends and Bootstrap absent. A non-evaluating
+source comparison confirms all 43 callback bodies and other forms are unchanged
+after removing only the explicit wrapper; reader-generated argument names and
+regex objects are compared as source data. Its initial object-identity
+comparison was invalid and is not acceptance evidence. Exact successor review,
+current-head configured CI and integration remain required.
 
 Closing unsupported admission does not close original RV2's redundancy
 criterion. Complete compatibility read/effect closure and a reviewed reusable
