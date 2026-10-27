@@ -844,3 +844,13 @@ replacement budget. Other original rows remain open, as listed in the current
 `tasks.md` assessment. Genuine authenticated-source/public admission, arbitrary
 foreign-container safety, runtime execution, C12 and product release are unrun.
 No percentage or whole-accounting closure follows from this row.
+
+Normal reconciliation `40566675b774fa2e5d185c8955d6cd2a0679ea24`, tree
+`474cbc8ab74b7aefa4ed776d83ae0efa7c2925cc`, preserves current main
+`254a5b50ea5e2825c424248c9216802cc866c0fd` and its ten compiler-API/release
+documentation, projection-tool and task-lineage paths. All bootstrap sources,
+own implementation/test bodies, `deps.edn` and contracts remain byte-identical
+to accepted `26768f8e`. Those incoming tools are not consumed by the selected
+C7/Effects/emitter execution route. Semantic receipts retain their original
+provenance; fresh repository gates and exact-base preflight cover the composed
+candidate. No compiler-API/release implementation acceptance is inferred here.
