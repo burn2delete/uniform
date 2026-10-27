@@ -88,7 +88,7 @@ raise a source/runtime allowance.
 Fresh main remains `9c093bc6`. Each derive's existing source prefix and budget,
 context/inference pools, PL construction and PE/PC ceilings remain open
 accounting work. Whole-plan foreign ingress, authenticated source, Core, C12,
-language-runtime execution and release remain unrun. No held Native/shared
+public runtime admission and release remain unrun. No held Native/shared
 registration or runtime source is imported. Only ACC-02/03 are closed; the
 other eleven original criteria remain open or partial.
 
