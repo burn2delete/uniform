@@ -23198,18 +23198,15 @@
   {:form-id (get form :form-id) :syntax-id (get form :syntax-id) :semantic-span (get form :source-span)
    :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)})
 
-(defn sh08-lr-type-work [declared actual budget]
-  (let [members (if (map? actual) (get actual :element-types) nil)
-        finite? (if (map? actual) (= [:gravity.type/list :literal] [(get actual :kind) (get actual :shape)]) false)
-        member-work (if (if finite? (vector? members) false) (count members) 0)
-        base (+ 1 member-work)]
-    (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
-      (if (= false (sh08-hl-type? declared))
-        {:status :rejected :reason :list-return-declaration-required :work-count base}
-        (let [validation (sh08-lc-validate-types [actual declared])
-              work base]
+(defn sh08-lr-validate-types [declared actual]
+  (let [declaration (sh08-lc-validate-types [declared])]
+    (if (= :accepted (get declaration :status))
+      (if (sh08-hl-type? declared)
+        (let [validation (sh08-lc-validate-types [actual])]
           (if (= :accepted (get validation :status))
-            (let [relation (if (= actual :gravity.type/never) :non-returning-bottom
+            (let [members (if (map? actual) (get actual :element-types) nil)
+                  finite? (if (map? actual) (= [:gravity.type/list :literal] [(get actual :kind) (get actual :shape)]) false)
+                  relation (if (= actual :gravity.type/never) :non-returning-bottom
                              (if (= actual declared) :homogeneous-list-identity
                                (if finite?
                                  (if (loop [remaining members]
@@ -23217,11 +23214,13 @@
                                          (if (= (first remaining) (get declared :element-type))
                                            (recur (rest remaining)) false))) :all-positional-elements-match nil) nil)))]
               (if (= relation nil)
-                {:status :rejected :reason :homogeneous-list-return-incompatible :work-count work}
-                {:status :accepted :relation relation :work-count work :member-work member-work
- :checked-member-count (if finite? (count members) nil)}))
+                {:status :rejected :reason :homogeneous-list-return-incompatible}
+                {:status :accepted :relation relation
+                 :checked-member-count (if finite? (count members) nil)}))
             {:status :rejected :reason :homogeneous-list-return-incompatible
-             :type-check-reason (get validation :reason) :work-count work}))))))
+             :type-check-reason (get validation :reason)}))
+        {:status :rejected :reason :list-return-declaration-required})
+      {:status :rejected :reason :list-return-declaration-required})))
 
 (defn sh08-lr-derive [core record function nodes types bindings forms budget]
   (let [signature (get record :signature) declaration (get signature :return)
@@ -23229,7 +23228,7 @@
         actual (get types body-id :gravity.type/unknown)
         base (+ 64 (if (vector? (get signature :parameters)) (count (get signature :parameters)) 0))]
     (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
-      (let [validation (sh08-lr-type-work declared actual (- budget base)) work (+ base (get validation :work-count))]
+      (let [validation (sh08-lr-validate-types declared actual) work base]
         (if (= :accepted (get validation :status))
           (let [fn-node (get nodes (get record :function-core-node-id)) body (get nodes body-id)
                 fn-form (get forms (get (get fn-node :source) :form-id))

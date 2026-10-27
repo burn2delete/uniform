@@ -6198,7 +6198,7 @@
       (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/string :gravity.type/unknown
                      (positional [s :gravity.type/keyword]) (positional [:gravity.type/never]) (positional [:gravity.type/nil])
                      (positional [:gravity.type/unknown]) (positional [type])]]
-        (is (= :rejected (:status (invoke-c7 'sh08-lr-type-work [type actual 65536]))) (pr-str actual)))
+        (is (= :rejected (:status (invoke-c7 'sh08-lr-validate-types [type actual]))) (pr-str actual)))
       (let [{:keys [core record function nodes types bindings forms declaration signature] :as input} (homogeneous-list-return-input (positional [s]) s 0)]
         (doseq [mutate [#(assoc-in % [:record :signature :return :element-binding-id] "forged")
                         #(assoc-in % [:bindings (:element-binding-id declaration) :kind] :var)
@@ -21408,9 +21408,9 @@
                     (return-premise-positional [:gravity.type/string opaque])
                     (return-premise-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))
                     (return-premise-positional '()) (return-premise-positional [return-premise-homogeneous])]]
-      (let [args [return-premise-homogeneous actual 65536]
-            results [(apply return-premise-c7 'sh08-lr-type-work args)
-                     (apply return-premise-effects 'body-lr-type-work args) (apply return-premise-emit 'p15-s23-lr-type-work args)]]
+      (let [args [return-premise-homogeneous actual]
+            results [(apply return-premise-c7 'sh08-lr-validate-types args)
+                     (apply return-premise-effects 'body-lr-validate-types args) (apply return-premise-emit 'p15-s23-lr-validate-types args)]]
         (is (every? #(= :rejected (:status %)) results))))
     (is (= 0 @callbacks)))
   (let [input ((return-premise-helper 'homogeneous-list-return-input) (return-premise-positional [:gravity.type/string]) :gravity.type/string 0)
@@ -22255,7 +22255,7 @@
       (is (= :complete (:status (pr359-prepend-emit 'p15-s23-typed-compile-node context :call 65536))))))
   (let [members (vec (repeat 1025 :gravity.type/string))]
     (doseq [[invoke prefix] [[return-premise-c7 "sh08-"] [return-premise-effects "body-"] [return-premise-emit "p15-s23-"]]]
-      (let [check #(invoke (symbol (str prefix "lr-type-work")) return-premise-homogeneous (recursive-validation-positional %) 65536)
+      (let [check #(invoke (symbol (str prefix "lr-validate-types")) return-premise-homogeneous (recursive-validation-positional %))
             accepted (check members)
             invalid (check (assoc members 1024 :gravity.type/unknown))]
         (is (= :accepted (:status accepted)))
@@ -22473,3 +22473,121 @@
           (is (= {:status :rejected :reason :map-get-private-first-entry-presence-required}
                  (check (assoc types (id 4) (recursive-validation-positional [:gravity.type/string invalid]))))))
         (is (empty? @callbacks))))))
+
+(defn- list-return-validation-check [owner declared actual]
+  (case owner
+    :C7 (return-premise-c7 'sh08-lr-validate-types declared actual)
+    :Effects (return-premise-effects 'body-lr-validate-types declared actual)
+    :emitter (return-premise-emit 'p15-s23-lr-validate-types declared actual)))
+
+(deftest list-return-validation-relations-have-no-cost-interface
+  (let [declared return-premise-homogeneous]
+    (doseq [owner [:C7 :Effects :emitter]
+            [actual relation checked]
+            [[(recursive-validation-positional []) :all-positional-elements-match 0]
+             [(recursive-validation-positional [:gravity.type/string]) :all-positional-elements-match 1]
+             [(recursive-validation-positional (vec (repeat 1030 :gravity.type/string))) :all-positional-elements-match 1030]
+             [declared :homogeneous-list-identity nil]
+             [:gravity.type/never :non-returning-bottom nil]]]
+      (is (= {:status :accepted :relation relation :checked-member-count checked}
+             (list-return-validation-check owner declared actual)) (str owner)))
+    (let [members (vec (repeat 1030 :gravity.type/string))]
+      (doseq [owner [:C7 :Effects :emitter]]
+        (is (= {:status :rejected :reason :homogeneous-list-return-incompatible}
+               (list-return-validation-check owner declared
+                 (recursive-validation-positional (assoc members 1029 :gravity.type/keyword))))))
+      ;; The canonical walk pushes members in order and pops the last first.
+      ;; Index zero is therefore the late grammar failure, unlike the late
+      ;; relational mismatch at the final member above.
+      (doseq [owner [:C7 :Effects :emitter]]
+        (is (= {:status :rejected :reason :homogeneous-list-return-incompatible
+                :type-check-reason :unsupported-type}
+               (list-return-validation-check owner declared
+                 (recursive-validation-positional (assoc members 0 :gravity.type/unknown)))))))))
+
+(deftest list-return-validation-native-guards-precede-field-and-equality-callbacks
+  (let [callbacks (atom [])
+        declared return-premise-homogeneous
+        foreign-declared (recursive-validation-foreign-map declared callbacks)
+        foreign-actual (recursive-validation-foreign-map (recursive-validation-positional []) callbacks)
+        foreign-members (recursive-validation-foreign-vector callbacks)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "LR opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "LR opaque equality")))
+                 (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "LR opaque printing"))))
+        bad-declared-key (clojure.lang.PersistentArrayMap.
+                          (object-array [:kind :gravity.type/list :shape :homogeneous opaque :gravity.type/string]))
+        bad-actual-key (clojure.lang.PersistentArrayMap.
+                        (object-array [:kind :gravity.type/list :shape :literal opaque []]))
+        self-view (recursive-validation-view [:gravity.type/string] 0 1)]
+    (recursive-validation-link! self-view "v" self-view)
+    (doseq [owner [:C7 :Effects :emitter]]
+      (doseq [bad [nil :gravity.type/list :gravity.type/never foreign-declared opaque bad-declared-key
+                   (assoc declared :element-type opaque) (assoc declared :element-type :gravity.type/unknown)
+                   (recursive-validation-cyclic-type)]
+              actual [:gravity.type/never (recursive-validation-positional [:gravity.type/string])]]
+        (is (= {:status :rejected :reason :list-return-declaration-required}
+               (list-return-validation-check owner bad actual)) (str owner))
+        (is (empty? @callbacks)))
+      (doseq [[bad diagnostic]
+              [[foreign-actual :unsupported-type] [opaque :unsupported-type] [bad-actual-key :unsupported-type]
+               [(recursive-validation-positional foreign-members) :malformed-type]
+               [(recursive-validation-positional self-view) :malformed-type]
+               [(recursive-validation-positional (recursive-validation-view foreign-members 0 1)) :malformed-type]
+               [(recursive-validation-positional [:gravity.type/string opaque]) :unsupported-type]
+               [(recursive-validation-positional [:gravity.type/never]) :nested-never]
+               [(recursive-validation-cyclic-type) :cyclic-type]]]
+        (is (= {:status :rejected :reason :homogeneous-list-return-incompatible :type-check-reason diagnostic}
+               (list-return-validation-check owner declared bad)) (str owner))
+        (is (empty? @callbacks))))))
+
+(deftest list-return-validation-native-views-metadata-and-graph-semantics
+  (let [callbacks (atom []) metadata (recursive-validation-foreign-map {:inert true} callbacks)
+        hidden (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "LR hidden hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "LR hidden equality")))
+                 (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "LR hidden printing"))))
+        declared (with-meta return-premise-homogeneous metadata)
+        view (recursive-validation-view [hidden :gravity.type/string :gravity.type/string hidden] 1 3)
+        actual (with-meta (recursive-validation-positional view) (recursive-validation-cyclic-metadata))
+        shared (recursive-validation-positional [:gravity.type/string])
+        dag (recursive-validation-positional [shared shared])]
+    (doseq [owner [:C7 :Effects :emitter]]
+      (is (= {:status :accepted :relation :all-positional-elements-match :checked-member-count 2}
+             (list-return-validation-check owner declared actual)))
+      (is (= {:status :accepted :relation :homogeneous-list-identity :checked-member-count nil}
+             (list-return-validation-check owner declared (with-meta return-premise-homogeneous metadata))))
+      (is (= {:status :accepted} (recursive-validation-check owner [dag])))
+      (is (= {:status :rejected :reason :homogeneous-list-return-incompatible}
+             (list-return-validation-check owner declared dag)))
+      (is (empty? @callbacks)))
+    (is (identical? metadata (meta declared)))))
+
+(deftest list-return-validation-derive-prefix-and-source-parity
+  (doseq [actual [(recursive-validation-positional (vec (repeat 1030 :gravity.type/string)))
+                  return-premise-homogeneous :gravity.type/never]]
+    (let [{:keys [core record function nodes types bindings forms declaration]}
+          (homogeneous-list-return-input actual :gravity.type/string 0)
+          prefix (+ 64 (count (get-in record [:signature :parameters])))
+          owners [[return-premise-c7 'sh08-lr-derive]
+                  [return-premise-effects 'body-lr-derive]
+                  [return-premise-emit 'p15-s23-lr-derive]]
+          results (mapv (fn [[invoke helper]] (invoke helper core record function nodes types bindings forms prefix)) owners)]
+      (is (every? #(= :accepted (:status %)) results))
+      (is (apply = results))
+      (is (= prefix (:work-count (first results))))
+      (doseq [[invoke helper] owners]
+        (is (= {:status :rejected :reason :list-return-work-limit :work-count prefix}
+               (invoke helper core record function nodes types bindings forms (dec prefix))))
+        (is (= :list-return-source-mismatch
+               (:reason (invoke helper core record function nodes types bindings
+                          (assoc-in forms [(:type-form-id declaration) :parent-form-id] :forged) prefix))))))))
+
+(defn list-return-validation-large-owner-acceptance [phase]
+  ;; Invoked only by the separately guarded manual owner check, never by a
+  ;; registered test. Each scalar result is retained before its assertion.
+  (let [width 65537
+        members (vec (repeat width :gravity.type/string))
+        members (case phase :matching members :late-mismatch (assoc members (dec width) :gravity.type/keyword))
+        result (list-return-validation-check :C7 return-premise-homogeneous (recursive-validation-positional members))]
+    {:owner :C7 :phase phase :member-count width :last-index (dec width) :result result}))

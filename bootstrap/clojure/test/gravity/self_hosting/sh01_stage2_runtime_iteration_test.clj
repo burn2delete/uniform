@@ -18155,10 +18155,9 @@
                  :gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]]
     (doseq [element atomics members [[] [element] (vec (repeat 1024 element))]]
       (let [type {:kind :gravity.type/list :shape :homogeneous :element-type element}
-            result (leaf 'p15-s23-lr-type-work type (positional members) 65536)]
-        (is (= :accepted (:status result)))
-        (is (= result (leaf 'p15-s23-lr-type-work type (positional members) (:work-count result))))
-        (is (= :list-return-work-limit (:reason (leaf 'p15-s23-lr-type-work type (positional members) (dec (:work-count result))))))))
+            result (leaf 'p15-s23-lr-validate-types type (positional members))]
+        (is (= {:status :accepted :relation :all-positional-elements-match
+                 :checked-member-count (count members)} result))))
     (let [s :gravity.type/string type {:kind :gravity.type/list :shape :homogeneous :element-type s}
           actuals (vec (concat [(positional (vec (repeat 1024 s))) type :gravity.type/never] (repeat 9 (positional []))))
           {:keys [inputs core forms bindings functions checked facts]} (products actuals s)
@@ -18194,7 +18193,7 @@
     (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/unknown
                     (positional [:gravity.type/never]) (positional [:gravity.type/nil]) (positional [:gravity.type/keyword])
                     (positional [:gravity.type/unknown]) (positional [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}])]]
-      (is (= :rejected (:status (leaf 'p15-s23-lr-type-work {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} actual 65536)))))))
+      (is (= :rejected (:status (leaf 'p15-s23-lr-validate-types {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} actual)))))))
 
 (deftest current-gravity-list-prepend-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
