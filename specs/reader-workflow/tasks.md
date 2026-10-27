@@ -33,9 +33,9 @@ Current evidence/status: Accepted; the [selected-current decoding and identity r
 
 Done when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity.
 
-- [ ] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure
+- [x] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure
 
-Current evidence/status: Partial Reader and projection sources. The focused token-spelling reuse increment and its validation limits are recorded in [Reader evidence](https://github.com/burn2delete/uniform/blob/codex/reader-token-spelling-reuse-20261026/specs/reader-workflow/evidence.md#token-spelling-reuse); it does not close the complete lexical surface.
+Current evidence/status: Accepted; the [finite current lexical/origin reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-lexical-origin-closure-20261027/docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md) records the complete enabled collection/literal/abbreviation/metadata population, exact/deferred facts, trivia filtering, graph/origin joins and malformed numeric rejection. Exact `8a0d6a90` / tree `79ed93ab` passed seven genuine Reader calls in two tests / 6,241 assertions with fresh Reader/envelope checks; pure source-identity controls passed 9 tests / 146 assertions. The earlier escape-offset baseline remains a nonpass. PR478/482/492 retain their original complementary evidence. New suffix grammars, extension authorization/effects, quota/authentication closure, release and downstream acceptance remain open.
 
 Done when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified.
 
