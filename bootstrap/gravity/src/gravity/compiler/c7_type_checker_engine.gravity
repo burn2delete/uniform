@@ -24893,42 +24893,14 @@
   (if (sh08-exact-keys? inputs #{:artifact :schema-version :module-requests})
     (if (= [:gravity/sh08-module-type-inputs 1] [(get inputs :artifact) (get inputs :schema-version)])
       (if (vector? (get inputs :module-requests))
-        (if (<= (count (get inputs :module-requests)) (get (sh08-local-bounds-value) :maximum-root-nodes))
-          {:status :accepted}
-          (sh08-im-failure "C7-VERIFY" :module-type-input-count-limit nil))
+        {:status :accepted}
         (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil))
       (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil))
     (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil)))
 
-(defn sh08-im-usage [entries pending?]
-  (loop [ids (keys entries) result {:nodes 0 :scalar-units 0}]
-    (if (= (count ids) 0) result
-      (let [entry (get entries (first ids)) usage (if pending? entry (get entry :usage))]
-        (recur (rest ids) {:nodes (+ (get result :nodes) (get usage :nodes 0))
-                          :scalar-units (+ (get result :scalar-units) (get usage :scalar-units 0))})))))
-
-(defn sh08-im-work-check [memo active usage]
-  ; Units are distinct authenticated producers and their canonical-core DATA
-  ; visits, not raw repeated proof bytes, VM operations, or a CPU guarantee.
-  (let [bounds (sh08-local-bounds-value) complete (sh08-im-usage memo false) pending (sh08-im-usage active true)
-        total {:producers (+ (count memo) (count active) 1) :dependency-depth (+ (count active) 1)
-               :nodes (+ (get complete :nodes) (get pending :nodes) (get usage :nodes 0))
-               :scalar-units (+ (get complete :scalar-units) (get pending :scalar-units) (get usage :scalar-units 0))}]
-    (if (= :accepted (get usage :status))
-      (if (<= (get total :producers) (get bounds :maximum-root-nodes))
-        (if (<= (get total :dependency-depth) (get bounds :maximum-carrier-depth))
-          (if (<= (get total :nodes) (get bounds :maximum-carrier-nodes))
-            (if (<= (get total :scalar-units) (get bounds :maximum-scalar-units)) {:status :accepted :usage total}
-              (sh08-im-failure "C7-VERIFY" :module-type-total-scalar-work-limit total))
-            (sh08-im-failure "C7-VERIFY" :module-type-total-core-work-limit total))
-          (sh08-im-failure "C7-VERIFY" :module-type-dependency-depth-limit total))
-        (sh08-im-failure "C7-VERIFY" :module-type-distinct-producer-limit total))
-      (sh08-im-failure "C7-VERIFY" :module-type-producer-core-bound usage))))
-
 (defn sh08-im-derive-with-allowance [request memo active allowance]
   (let [id (sh08-im-path request [:b47-context :artifact-id]) previous (get memo id)
-        preliminary (sh08-im-work-check memo active {:status :accepted :nodes 0 :scalar-units 0})
-        resolution (if (if (map? previous) true (if (contains? active id) true (= :rejected (get preliminary :status))))
+        resolution (if (if (map? previous) true (contains? active id))
                      {} (sh08-ft-authenticated-core request))
         inputs (get request :module-type-inputs {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests []})]
     (if (map? previous)
@@ -24936,14 +24908,12 @@
         {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :substituted-module-type-request id)) :memo memo})
       (if (contains? active id)
         {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :cyclic-module-type-request id)) :memo memo}
-      (if (= :rejected (get preliminary :status))
-        {:result (sh08-im-rejected-result request preliminary) :memo memo}
       (if (= :accepted (get resolution :status))
-        (let [usage (sh08-carrier-preflight (get resolution :core))
-              work (sh08-im-work-check memo active usage)
-              input-check (if (= :accepted (get work :status)) (sh08-im-inputs-check inputs) work)
+        (let [checked (sh08-carrier-preflight (get resolution :core))
+              input-check (if (= :accepted (get checked :status)) (sh08-im-inputs-check inputs)
+                            (sh08-im-failure "C7-VERIFY" :module-type-producer-core-bound checked))
               producers (if (= :accepted (get input-check :status))
-                          (sh08-im-producers-with-allowance (get inputs :module-requests) memo (assoc active id usage)
+                          (sh08-im-producers-with-allowance (get inputs :module-requests) memo (assoc active id true)
                             (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact
                                                   :gravity-resolution-boundary :module-inputs :module-artifacts]) allowance) input-check)
               imports (if (= :accepted (get producers :status))
@@ -24956,8 +24926,8 @@
                          (get imports :imports))
                        (sh08-im-rejected-result request imports))
               next (get producers :memo memo)]
-          {:result result :memo (assoc next id {:request request :result result :usage usage})})
-        {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" (get resolution :reason) (get resolution :reason))) :memo memo}))))))
+          {:result result :memo (assoc next id {:request request :result result})})
+        {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" (get resolution :reason) (get resolution :reason))) :memo memo})))))
 
 (defn sh08-im-derive [request memo active]
   (sh08-im-derive-with-allowance request memo active 65536))
