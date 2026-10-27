@@ -58,7 +58,7 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   zero failures/errors. Missing/malformed/duplicate source populations reject;
   UTF-8 offsets and real deterministic rollup/source/gate boundaries are checked.
 - `clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj`: focused
-  extension passed 13 tests / 392 assertions, zero failures/errors. The first
+  extension passed 13 tests / 395 assertions, zero failures/errors. The first
   run caught an incorrect false-condition predicate (two errors); it was fixed
   to explicit membership and the final run passed. This is source/graph checking,
   not compiler, migration or release acceptance.
@@ -79,6 +79,11 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   artifact hashes and parsed top-level values are retained in crosswalk.edn;
   neither the inconsistent whole-gate flags nor older completion prose grants
   current SH26-SH29 acceptance. No artifact was regenerated.
+- A self-audit after the initial freeze added an explicit source-bound shared
+  completion-rule projection for SH03-SH29. Its evidence nodes retain actual
+  owning execution, rejects/preserved facts, composition and applicable
+  independently accepted stable migration requirements. They add no tasks or
+  unconditional development replay. SH00-SH02 keep their original exception.
 
 ## Remaining finite publication gates
 

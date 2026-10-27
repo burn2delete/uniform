@@ -3,6 +3,7 @@
  :requirements
  [{:mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
+   :shared-completion-rule nil,
    :completion-prerequisites [],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -66,6 +67,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
+   :shared-completion-rule nil,
    :completion-prerequisites [],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -135,6 +137,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
+   :shared-completion-rule nil,
    :completion-prerequisites [],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -204,6 +207,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
+   :shared-completion-rule nil,
    :completion-prerequisites [],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -273,6 +277,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
+   :shared-completion-rule nil,
    :completion-prerequisites [],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -331,6 +336,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-00",
+   :shared-completion-rule nil,
    :completion-prerequisites [],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -397,6 +403,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -470,6 +477,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -543,6 +551,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -616,6 +625,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -689,6 +699,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -762,6 +773,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-01",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -835,6 +847,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -912,6 +925,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -986,6 +1000,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1060,6 +1075,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1134,6 +1150,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1208,6 +1225,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-02",
+   :shared-completion-rule nil,
    :completion-prerequisites ["SH-00"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1285,6 +1303,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1349,6 +1368,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1409,6 +1429,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1472,6 +1493,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1536,6 +1558,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1595,6 +1618,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-03",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-01" "SH-02"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1658,6 +1682,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1718,6 +1743,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1778,6 +1804,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1842,6 +1869,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1902,6 +1930,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -1973,6 +2002,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-04",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-03"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2033,6 +2063,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-current-cohort-open,
@@ -2092,6 +2123,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2152,6 +2184,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2216,6 +2249,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2287,6 +2321,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2347,6 +2382,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-05",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-04"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-current-cohort-open,
@@ -2409,6 +2445,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2473,6 +2510,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2533,6 +2571,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2593,6 +2632,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2657,6 +2697,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
    :coverage :mapped-owner-review-pending,
    :current-evidence
@@ -2721,6 +2762,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-06",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-05"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-current-cohort-open,
@@ -2780,6 +2822,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -2894,6 +2937,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3008,6 +3052,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3122,6 +3167,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3236,6 +3282,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3350,6 +3397,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-07",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-06"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3467,6 +3515,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3556,6 +3605,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3649,6 +3699,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3742,6 +3793,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3835,6 +3887,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -3932,6 +3985,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-08",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-07"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4021,6 +4075,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4093,6 +4148,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4165,6 +4221,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4251,6 +4308,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4330,6 +4388,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4409,6 +4468,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-09",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4488,6 +4548,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4563,6 +4624,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4638,6 +4700,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4713,6 +4776,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4788,6 +4852,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4874,6 +4939,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-10",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-08"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -4953,6 +5019,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5035,6 +5102,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5117,6 +5185,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5199,6 +5268,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5281,6 +5351,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5374,6 +5445,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-11",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-09" "SH-10"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5460,6 +5532,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5528,6 +5601,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5596,6 +5670,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5664,6 +5739,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5736,6 +5812,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5804,6 +5881,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-12",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5872,6 +5950,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -5950,6 +6029,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -6028,6 +6108,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -6093,6 +6174,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -6171,6 +6253,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -6232,6 +6315,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-13",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -6314,6 +6398,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -6379,6 +6464,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -6444,6 +6530,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -6502,6 +6589,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -6573,6 +6661,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -6637,6 +6726,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-14",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-12"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -6705,6 +6795,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -6764,6 +6855,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -6818,6 +6910,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -6888,6 +6981,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -6952,6 +7046,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7006,6 +7101,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-15",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7087,6 +7183,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7141,6 +7238,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7199,6 +7297,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7253,6 +7352,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7307,6 +7407,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7364,6 +7465,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-16",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7422,6 +7524,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7483,6 +7586,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7548,6 +7652,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7613,6 +7718,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7674,6 +7780,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7739,6 +7846,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-17",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-16"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -7810,6 +7918,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -7874,6 +7983,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -7962,6 +8072,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8026,6 +8137,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8090,6 +8202,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8148,6 +8261,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-18",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8205,6 +8319,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8265,6 +8380,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8318,6 +8434,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8399,6 +8516,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8470,6 +8588,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8535,6 +8654,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-19",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-11" "SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8600,6 +8720,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -8647,6 +8768,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -8694,6 +8816,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -8752,6 +8875,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -8803,6 +8927,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -8861,6 +8986,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-20",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-17"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :partial-work-not-accepted-complete,
@@ -8926,6 +9052,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -8982,6 +9109,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9066,6 +9194,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9124,6 +9253,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9174,6 +9304,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9239,6 +9370,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-21",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-15" "SH-17" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9296,6 +9428,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9357,6 +9490,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9418,6 +9552,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9479,6 +9614,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9550,6 +9686,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9621,6 +9758,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-22",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-13" "SH-14" "SH-19"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9703,6 +9841,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9757,6 +9896,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9822,6 +9962,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9876,6 +10017,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -9941,6 +10083,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10005,6 +10148,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-23",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-20" "SH-21" "SH-22"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10070,6 +10214,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10127,6 +10272,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10176,6 +10322,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10222,6 +10369,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10269,6 +10417,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10320,6 +10469,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-24",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-18" "SH-19" "SH-20" "SH-23"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10381,6 +10531,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10434,6 +10585,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10490,6 +10642,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10554,6 +10707,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10619,6 +10773,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10683,6 +10838,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-25",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-21" "SH-22" "SH-24"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10740,6 +10896,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10805,6 +10962,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10870,6 +11028,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10924,6 +11083,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -10988,6 +11148,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11053,6 +11214,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-26",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-25"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11111,6 +11273,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11176,6 +11339,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11234,6 +11398,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11304,6 +11469,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11375,6 +11541,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11432,6 +11599,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-27",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-26"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11497,6 +11665,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11562,6 +11731,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11627,6 +11797,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11692,6 +11863,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11757,6 +11929,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11814,6 +11987,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-28",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-27"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11879,6 +12053,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11930,6 +12105,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -11988,6 +12164,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -12044,6 +12221,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -12091,6 +12269,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -12149,6 +12328,7 @@
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}
   {:mapping-review :pending-independent-owner-review,
    :milestone "SH-29",
+   :shared-completion-rule :sh03-and-later-uniform-completion,
    :completion-prerequisites ["SH-28"],
    :coverage :mapped-owner-review-pending,
    :current-evidence :executable-coverage-unassessed,
@@ -12208,6 +12388,21 @@
    :relation :retained-explicit-accepted-task-record,
    :qualification
    "Selected-current development-unadmitted fresh Reader/Syntax handoff only; original reported mixed-suite failure retained. No full SH03, canonical Syntax, C5/C14 or release closure."}],
+ :shared-completion-rule
+ {:id :sh03-and-later-uniform-completion,
+  :applicability :sh03-through-sh29,
+  :source
+  {:path "docs/self-hosting-milestone-completion-plan.md",
+   :start-byte 4709,
+   :end-byte 7664,
+   :start-line 81,
+   :end-line 122,
+   :sha256
+   "e72027e8febb7e7f5c9014835f2717d006ce664ce1fb091cc54b47f2efe3800a",
+   :raw
+   "## Three boundaries and one shared completion rule\n\nFollow [development verification](development-verification.md), using existing\ncompiler interfaces and direct tests:\n\n| Boundary | What is sufficient for that boundary | What it does not establish |\n| --- | --- | --- |\n| Implementation | Owning implementation changes; real accepted and rejected cases; focused semantic and preservation checks. | Authoritative module migration or milestone completion. |\n| Integration | Affected producer-to-consumer composition, interface, diagnostic and regression checks. | Whole-stage equivalence, all targets or seed retirement. |\n| Authoritative completion | All six requirements, completed dependencies, applicable uniform backlog gates and fresh stable-revision migration evidence independently accepted. | Features, targets or release claims outside the recorded support set. |\n\nBefore marking any SH-03 or later milestone complete:\n\n1. Map every numbered requirement and required variant to its owning contract,\n   implementation entrypoint, accepted `.gravity`/`.qst` fixture pair,\n   rejection-family fixtures, expected artifact/result or diagnostic, and\n   actual selected checks. Missing cases are open work, not implicit passes.\n2. Execute the claimed Gravity implementation. Classifying supplied records,\n   emitting a report, interpreting an unrelated host implementation, or\n   compiling source without exercising the claimed behavior is insufficient.\n3. Preserve or explicitly transform the pass's required source, origin,\n   binding, type, effect, capability, ownership, safety and artifact facts.\n   Test malformed outputs and relevant stale/substituted boundary inputs.\n4. Pass focused checks and affected integration/regressions; preserve failed,\n   interrupted, skipped and unsupported results accurately. A target emission\n   claim additionally needs an independent target tool's validation/execution.\n5. At explicit admission, satisfy BOOT3/TEST13 stage comparison, conformance,\n   source/compiler/dependency provenance, BOOT5 support and TCB accounting,\n   unsafe audits and required independent review for that migration. SH-26\n   through SH-29 additionally require their whole-stage/release checks.\n6. Record an accepted clean verified revision and evidence references in the\n   existing backlog/compatibility records. Keep implementation, integration\n   and authoritative status separate. A stale proof stays stale after edits;\n   it does not prohibit focused testing of those edits.\n\nSH-00 through SH-02 retain their already accepted baseline/process/envelope\nscope. They do not acquire new language obligations from this document.\nRecorded completion is not reopened merely to reissue unchanged evidence.\nReuse valid unchanged expensive evidence; refresh affected evidence when\nsource, compiler, semantic inputs, target, dependencies or policy invalidate it.\nPreserve existing resource limits and admission requirements for heavy runs.\n\n"},
+  :qualification
+  "Implementation, integration and authoritative completion remain separate. Actual owning execution, rejection/preservation/composition, exact provenance/support/TCB and independently accepted stable revision are required only for the applicable claim. SH00-SH02 retain accepted baseline/process scope; no unconditional replay of unchanged evidence."},
  :global-requirement-handoff
  {:sha256
   "25be0fe3d53bf133b72f405d50d039ba3ab9fb186499036587ab72a860174954",
@@ -15493,7 +15688,7 @@
    "D1 places Core Gravity AST before Name Resolution; C1 places resolve-names before lower-to-core. C5 resolves syntax after expansion and before type/effects; C6 explicitly consumes resolved syntax and C5 bindings. Use that actual C6 consumer edge without requiring completed semantic Core for Resolve. Whether D1 means the identical AST construction event remains an explicit architecture-owner qualification; no source rewrite or invented fused pass."}],
  :source-digests
  {"docs/acceptance-dependencies.md"
-  "cfe4c8d546bd3d5625d135b3d8da9338c8f7e5a4444d5280db930a81b40a3d87",
+  "68977b97c4fc045c8573e37465acdee662e1431d3182802167bbb350d1036293",
   "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md"
   "8349689573969359e95c678518bb81df7a8b9d685d764927f33ac7dfd4a5f7c9",
   "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn"

@@ -185,6 +185,8 @@
       (is (contains? (get-in view [:adjacency (:id r)]) p)))
     (is (= #{"SH07-C01"} (get-in view [:adjacency "SH07-C02"])))
     (is (= 17 (count (get-in view [:adjacency "SH07-C18"]))))
+    (is (contains? (get-in view [:adjacency "SH-03"]) "uniform-gate:SH-03"))
+    (is (not (contains? (get-in view [:adjacency "SH-02"]) "uniform-gate:SH-02")))
     (is (= :eligible-for-declared-facet (get-in view [:frontier "SH07-C01" :state])))
     (is (= :prerequisite-not-accepted (get-in view [:frontier "SH-29" :state])))
     (is (every? #(= :unassessed (:state %)) (map (:nodes view) ids)))
@@ -194,6 +196,7 @@
                      (assoc-in source [:requirements 0 :acceptance-source :raw] "forged acceptance")
                      (assoc-in source [:requirements 6 :completion-prerequisites] [])
                      (assoc-in source [:requirements 0 :context-source :raw] "forged stopping rule")
+                     (assoc-in source [:requirements 18 :shared-completion-rule] nil)
                      (assoc-in source [:task-authorities "core" 0 :checked] true)
                      (assoc-in source [:sh07-sequence 1 :dependency-declaration] "none")
                      (update source :sh07-sequence pop)]]

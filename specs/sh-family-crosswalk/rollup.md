@@ -10,6 +10,8 @@ Every requirement retains its complete acceptance/context text, source bytes,
 lines and SHA256 in original-inventory.edn and crosswalk.edn. Current acceptance
 is unassessed unless an exact scoped task receipt explicitly establishes it.
 
+SH03-SH29 additionally retain the original [shared completion rule](../../docs/self-hosting-milestone-completion-plan.md#three-boundaries-and-one-shared-completion-rule): actual owning execution, rejection/preservation/composition and applicable independently accepted migration evidence. SH00-SH02 keep their historical baseline/process scope.
+
 ## SH-00
 
 Completion-credit prerequisites: none. These do not prohibit interface-based development.

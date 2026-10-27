@@ -178,6 +178,14 @@ consumer-to-prerequisite direction, source identity, evidence facet and explicit
 condition. Unknown conditions retain their conservative edge and cannot grant
 eligibility. An explicitly false condition disables only its specific edge.
 
+SH03-SH29 retain the plan's complete shared completion rule as an exact hashed
+source span and explicit acceptance conjunction: actual owning execution,
+reject/preservation/composition evidence, target-tool checks where claimed,
+applicable BOOT/TEST13 provenance/support/TCB and independent stable-revision
+acceptance. These are evidence facets, not additional tasks. SH00-SH02 retain
+the original baseline/process exception. Reuse of unchanged evidence remains
+allowed; this view introduces no unconditional development replay.
+
 Selected acceptance facets refer to existing task IDs without requiring their
 entire wider language or target scope to finish. A current SH facet remains
 unassessed without exact applicable execution and independent acceptance. The

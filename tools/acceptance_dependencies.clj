@@ -232,7 +232,7 @@
             [id {:state (cond
                           (= :accepted (:state row)) :accepted-recorded-scope
                           (= :missing-task-authority (:coverage row)) :missing-task-authority
-                          (= :selected-acceptance-facet (:scope row)) :execution-and-review-unassessed
+                          (#{:selected-acceptance-facet :uniform-completion-gate} (:scope row)) :execution-and-review-unassessed
                           (unresolved id) :unknown-condition
                           (some #(not= :accepted (:state (nodes %))) (graph id)) :prerequisite-not-accepted
                           (= :current-acceptance (:scope row)) :execution-and-review-unassessed
@@ -290,6 +290,11 @@
 
 (defn task-sh-view [crosswalk read-text]
   (let [requirements (:requirements crosswalk)
+        shared-rule (:shared-completion-rule crosswalk)
+        _ (source-bound! (:source shared-rule) read-text)
+        _ (require! (and (= :sh03-and-later-uniform-completion (:id shared-rule))
+                         (str/starts-with? (get-in shared-rule [:source :raw]) "## Three boundaries and one shared completion rule"))
+                    "Missing original shared completion rule")
         original-sh (milestone-graph (read-text milestone-path))
         _ (require-population! (set (for [n (range 30) r (range 1 7)] (format "SH-%02d.%d" n r)))
                                (map :id requirements) "SH acceptance criterion")
@@ -319,6 +324,9 @@
                         (str "Changed evidence-source locator: " path)))
             (require! (= (set (:completion-prerequisites r)) (get original-sh (:milestone r)))
                       "SH criterion changed original completion prerequisites")
+            (require! (= (:shared-completion-rule r)
+                         (when (<= 3 (Long/parseLong (subs (:milestone r) 3))) (:id shared-rule)))
+                      "Changed shared completion applicability")
             (require! (or (seq (:task-references r)) (= :missing-task-authority (:coverage r)))
                       "Unmapped SH criterion without explicit gap")
             (doseq [t (:task-references r)]
@@ -356,13 +364,18 @@
         composition-nodes (into {} (for [[id row] task-map]
                                       [(str "task:" id "/composition")
                                        {:state :unassessed :scope :actual-selected-producer-consumer :task-id id}]))
-        nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes)
+        shared-gate-nodes (into {} (for [n (range 3 30)] [(format "uniform-gate:SH-%02d" n)
+                                      {:state :unassessed :scope :uniform-completion-gate :rule (:id shared-rule)}]))
+        nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes shared-gate-nodes)
         conditions {:optimization-requested :unknown :runtime-service-required :unknown
                     :compiler-artifacts-consumed :unknown :build-command-selected :unknown
                     :execution-command-selected :unknown :stable-candidate-selection :unknown}
         edges (vec (concat
           [{:from "SH-07" :to "SH07-C18" :kind :single-milestone-completion-decision
             :source (source-ref (:source (last sequence)))}]
+          (for [n (range 3 30)]
+            {:from (format "SH-%02d" n) :to (format "uniform-gate:SH-%02d" n)
+             :kind :applicable-uniform-completion-rule :source (source-ref (:source shared-rule))})
           (for [[id row] task-map]
             {:from (str "task:" id "/implementation") :to (str "task:" id "/interface")
              :kind :declared-interface :source (source-ref (:source row))})
