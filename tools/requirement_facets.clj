@@ -10,6 +10,15 @@
     (not= :reviewed (get-in facet [:supersession :review-state]))
     (and (:unresolved facet) (not= :acceptance-qualification (:unresolved-category facet)))))
 
+(defn current-requirement-facet? [facet source-bytes by-source]
+  (let [o (get by-source (:source-occurrence-id facet))]
+    (and (not= :historical-superseded (:requirement-role facet))
+         (not (false? (:normative? facet)))
+         (not (#{:layout :nonnormative :navigation :heading} (:kind facet)))
+         (not (str/blank? (String. ^bytes (get source-bytes (:document-id o))
+                                  (int (:start-byte facet)) (int (- (:end-byte facet) (:start-byte facet)))
+                                  java.nio.charset.StandardCharsets/UTF_8))))))
+
 (defn validate-supersession! [manifest by-source facet]
   (when (= :historical-superseded (:requirement-role facet))
     (let [s (:supersession facet)
@@ -31,6 +40,7 @@
   (let [facets (:source-facets manifest) ids (mapv :id facets)
         by-id (into {} (map (juxt :id identity) facets))
         requirement-ids (set (map :id (:requirements manifest)))
+        source-bytes (into {} (map (fn [[id text]] [id (.getBytes ^String text "UTF-8")]) sources))
         unit-facets (reduce (fn [index f]
                               (reduce #(update %1 %2 (fnil conj #{}) (:id f)) index (:unit-ids f)))
                             {} facets)
@@ -69,8 +79,9 @@
             :when (or (seq (:source-facet-ids requirement)) (contains? unit-facets (:id requirement)))]
       (require! (= (set (:source-facet-ids requirement)) (get unit-facets (:id requirement) #{}))
                 "Requirement facets differ from inverse facet/unit relation")
-      (require! (some #(not= :historical-superseded (:requirement-role (get by-id %))) (:source-facet-ids requirement))
-                "Current requirement has only superseded provenance"))
+      (require! (some #(current-requirement-facet? (get by-id %) source-bytes by-source)
+                      (:source-facet-ids requirement))
+                "Current requirement has no substantive current provenance"))
     (doseq [d (:source-dispositions manifest) :when (or (seq (:facet-ids d)) (seq (get grouped (:occurrence-id d))))]
       (let [o (get by-source (:occurrence-id d)) fs (sort-by :start-byte (get grouped (:occurrence-id d)))]
         (require! (and (= (set (:facet-ids d)) (set (map :id fs)))

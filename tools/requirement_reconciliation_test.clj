@@ -331,6 +331,39 @@
                                                                   :source-facet-id "current"
                                                                   :source-fragment-sha256 (:raw-sha256 second-facet)))) sources)))))
 
+(deftest supersession-cannot-retain-only-layout-or-nonnormative-provenance
+  (let [fixture
+        (fn [tail kind]
+          (let [text (str "Quota." tail) authority-text "Remove project work quotas.\n"
+                o (first (rr/source-occurrences "X" text))
+                authority (first (rr/source-occurrences "policy" authority-text))
+                facet (fn [id start end]
+                        {:id id :source-occurrence-id (:id o) :start-byte start :end-byte end
+                         :start-line 1 :end-line 1 :raw-sha256 (rr/sha256 (subs text start end)) :unit-ids ["u"]})
+                quota (facet "old" 0 6) remaining (assoc (facet "remaining" 6 (count text)) :kind kind)
+                decision {:id "remove" :state :accepted :authority "Fixture accounting removal" :source-id "policy"
+                          :scope-version "v1" :authority-source-occurrence-id (:id authority)
+                          :authority-sha256 (:raw-sha256 authority)}
+                supersession {:decision-id "remove" :scope-version "v1" :review-state :reviewed
+                              :authority-source-occurrence-id (:id authority) :authority-sha256 (:raw-sha256 authority)
+                              :source-facet-id "old" :source-fragment-sha256 (:raw-sha256 quota) :reason "Remove the old quota."}]
+            [{:scope-version "v1" :scope-state :reviewed :scope-decisions [decision] :aliases []
+              :requirements [{:id "u" :atomicity :reviewed :nonoverlap :reviewed :source-facet-ids ["old" "remaining"]}]
+              :source-dispositions [{:occurrence-id (:id o) :kind :requirement :requirement-ids ["u"] :facet-ids ["old" "remaining"]}
+                                    {:occurrence-id (:id authority) :kind :nonnormative :rationale "Governing policy."}]
+              :source-facets [(assoc quota :requirement-role :historical-superseded :supersession supersession) remaining]}
+             {"X" text "policy" authority-text}]))]
+    (doseq [[tail kind] [["\n" :layout] ["\n" nil] ["\n" :requirement]
+                         [" Heading.\n" :layout] [" Commentary.\n" :nonnormative]
+                         [" Contents.\n" :navigation] [" Title.\n" :heading]]]
+      (let [[m sources] (fixture tail kind)]
+        (is (thrown-with-msg? Exception #"no substantive current provenance" (rr/project m sources)))))
+    (let [[m sources] (fixture " Validate actual member types.\n" :requirement)]
+      (is (= 1 (:denominator (rr/project m sources))))
+      (is (= 1 (:historical-superseded-facet-count (rr/project m sources))))
+      (is (thrown-with-msg? Exception #"no substantive current provenance"
+                           (rr/project (assoc-in m [:source-facets 1 :normative?] false) sources))))))
+
 (deftest layout-transfer-is-exact-and-snapshot-bound
   (let [base "# Platform\n\nProjects.\n\nProduct.\n"
         live (str "# Platform\n\n" requirement-sources/platform-authority
