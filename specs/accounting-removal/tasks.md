@@ -52,3 +52,21 @@ outcome is tracked in [PR467](https://github.com/burn2delete/uniform/pull/467).
 This increment has no Native
 registration dependency. Other C7/Effects/emitter module pools, recursive
 validation, inference allowances and full ACC-08 acceptance remain open.
+
+## ACC-08 / ACC-13 Core envelope and binding shapes
+
+The independent C7 shape increment removes cardinality admission from the
+module/source/node/origin/root/Core-envelope and binding shape validators. All
+bounded-vector callers migrate together; keyword/hash vectors retain complete
+member validation. Six unused descriptor fields are removed, including the
+root-count field and its two inherited test dependencies. Binding fields keep
+their existing vector-only semantics. Exact hashes, schemas, nonempty graphs,
+root uniqueness/membership, ordering/reachability, declaration equality and
+binding/provenance checks remain.
+
+Independent source and retained-result review accepted this finite scope. Its
+repository integration outcome belongs to the corresponding pull request.
+The carrier preflight, quote/collection limits, ordinary inference allowances,
+Effects/emitter pools and full ACC-08/ACC-13 remain open. In particular, removing
+the Core node-vector cap does not establish admission above the still-enforced
+65,536 carrier width. Historical source/migration pins remain unchanged.
