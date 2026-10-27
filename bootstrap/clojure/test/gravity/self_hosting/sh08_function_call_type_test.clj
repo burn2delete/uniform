@@ -21688,7 +21688,7 @@
         (is (empty? (:pending-return-node-ids result)))))))
 
 (deftest sh08-private-return-path-source-cycle-development-kernel
-  (let [{:keys [nodes] :as input} (private-return-path-input 130)
+  (let [input (private-return-path-input 130)
         self-cycle (assoc-in input [:nodes :body :children] [:body])
         two-cycle (assoc-in input [:nodes :return-frame-1 :children] [:body])]
     (doseq [changed [self-cycle two-cycle]]
