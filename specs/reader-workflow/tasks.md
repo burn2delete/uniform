@@ -27,9 +27,9 @@ Current evidence/status: Open; source leaves above and the two governing contrac
 
 Done when (yes/no): Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete.
 
-- [ ] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure
+- [x] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure
 
-Current evidence/status: Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population.
+Current evidence/status: Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure is preserved. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.
 
 Done when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity.
 
