@@ -143,6 +143,33 @@
         (*progress* {:case label :event :returned :reader-status (:status result)
                      :verification-status (:status verification)})))))
 
+(deftest selected-source-envelope-path-and-binding-guards-remain-fresh
+  ;; Host path/hash checks only; these fixtures grant no product authority.
+  (let [path (source-path ".gravity") selected (reader-path)
+        input (source-bytes selected)
+        expected {:artifact :gravity/sh03-current-source-reader-plan-binding
+                  :source-content-hash (reference/sha256 input)
+                  :source-byte-count (alength input)}
+        invocation {:reader-source-path selected
+                    :authenticated-envelope-options {:source :development-current}}
+        options (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-authenticated-envelope-options))
+        failure (fn [context binding]
+                  (try (options path context binding) nil
+                       (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+    (is (= {:source :development-current} (options path invocation expected)))
+    (doseq [binding [(assoc expected :artifact :other)
+                     (assoc expected :source-content-hash "sha256:stale")
+                     (update expected :source-byte-count inc)]]
+      (is (= "C2-HASH" (:id (failure invocation binding)))))
+    (doseq [context [(assoc invocation :reader-source-path (str selected ".missing"))
+                     (assoc invocation :reader-source-path (source-path ".qst"))
+                     (assoc invocation :reader-source-path nil)
+                     (assoc invocation :extra true)
+                     (assoc invocation :authenticated-envelope-options {})
+                     (assoc invocation :authenticated-envelope-options {:source :unknown})]]
+      (is (= "C2-HASH" (:id (failure context expected)))))
+    (is (= {:source :development-current} (options path invocation expected)))))
+
 (deftest selected-current-decoding-and-source-identity
   (binding [b/*p15-s23-stage2-compiler-artifact-binding*
             @(var-get (ns-resolve 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test
