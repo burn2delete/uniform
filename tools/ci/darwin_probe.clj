@@ -30,7 +30,7 @@
   ;; O_RDONLY (zero) without O_CREAT/O_TRUNC: inspect the existing directory.
   ;; A valid fd is necessary because EBADF can precede flag validation.
   (with-open [arena (Arena/ofConfined)]
-    (let [name (.allocateFrom arena ^String ".")
+    (let [name (.allocateFrom arena ".")
           opened (call/int-call-result runtime arena :open [name (int 0) (int 0)])]
       (when (neg? (:value opened))
         (prn {:read-only-directory "." :open-flags 0 :open-result opened})
