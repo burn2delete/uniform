@@ -48,32 +48,37 @@
           :else (recur)))
       (finally (stop! process @children)))))
 
-(defn execute! [id seconds argv]
-  (.mkdirs (io/file output))
-  (let [started (System/currentTimeMillis)
-        log (io/file output (str id ".log"))
-        receipt (io/file output (str id ".edn"))
-        initial {:id id :argv argv :timeout-seconds seconds
-                 :started-ms started :status :running
-                 :commit (System/getenv "GITHUB_SHA")
-                 :run-id (System/getenv "GITHUB_RUN_ID")
-                 :run-attempt (System/getenv "GITHUB_RUN_ATTEMPT")}]
-    (spit receipt (pr-str initial))
-    (println "CI command" id argv)
-    (let [result
-          (try
-            (let [process (.start (doto (ProcessBuilder. ^java.util.List argv)
-                                    (.redirectErrorStream true)
-                                    (.redirectOutput log)))]
-              (await! process seconds))
-            (catch Exception error
-              (spit log (str error) :append true)
-              {:status :launch-error :exit-code 125}))
-          result (merge initial result {:finished-ms (System/currentTimeMillis)})]
-      (spit receipt (str (pr-str result) "\n"))
-      (print (slurp log))
-      (flush)
-      result)))
+(defn execute!
+  ([id seconds argv] (execute! id seconds argv nil))
+  ([id seconds argv stdin-path]
+   (.mkdirs (io/file output))
+   (let [started (System/currentTimeMillis)
+         log (io/file output (str id ".log"))
+         receipt (io/file output (str id ".edn"))
+         initial {:id id :argv argv :timeout-seconds seconds
+                  :started-ms started :status :running
+                  :commit (System/getenv "GITHUB_SHA")
+                  :run-id (System/getenv "GITHUB_RUN_ID")
+                  :run-attempt (System/getenv "GITHUB_RUN_ATTEMPT")
+                  :stdin-path stdin-path}]
+     (spit receipt (pr-str initial))
+     (println "CI command" id argv)
+     (let [result
+           (try
+             (let [builder (doto (ProcessBuilder. ^java.util.List argv)
+                             (.redirectErrorStream true)
+                             (.redirectOutput log))
+                   _ (when stdin-path (.redirectInput builder (io/file stdin-path)))
+                   process (.start builder)]
+               (await! process seconds))
+             (catch Exception error
+               (spit log (str error) :append true)
+               {:status :launch-error :exit-code 125}))
+           result (merge initial result {:finished-ms (System/currentTimeMillis)})]
+       (spit receipt (str (pr-str result) "\n"))
+       (print (slurp log))
+       (flush)
+       result))))
 
 (defn script [id path & args]
   [id 90 (apply command "512m" "-M" path args)])

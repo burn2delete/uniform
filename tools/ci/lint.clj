@@ -6,6 +6,9 @@
             [clojure.string :as str])
   (:import [java.nio.file Files StandardCopyOption]))
 
+(load-file "tools/ci/lint_context.clj")
+(require '[ci.lint-context :as context])
+
 (defn hunks [patch]
   (mapv (fn [[_ old-start old-count new-start new-count]]
           {:old-start (parse-long old-start) :old-count (if old-count (parse-long old-count) 1)
@@ -80,8 +83,8 @@
   (let [root (io/file output "lint-base")
         _ (when-not (.mkdirs root)
             (throw (ex-info "Lint baseline directory must be fresh" {:path (str root)})))
-        run (fn [id argv allowed-exits]
-              (let [result (execute! id 120 argv)]
+        run (fn [id argv allowed-exits & [stdin-path]]
+              (let [result (if stdin-path (execute! id 120 argv stdin-path) (execute! id 120 argv))]
                 (when-not (and (#{:passed :failed} (:status result))
                                (contains? allowed-exits (:exit-code result)))
                   (throw (ex-info "Lint observation failed closed" result)))
@@ -106,22 +109,73 @@
         lint-argv (fn [files]
                     (into ["clj-kondo" "--repro" "--cache" "false"
                            "--config" "{:output {:format :edn}}" "--lint"] files))
-        baseline-log (run "lint-baseline" (lint-argv (if (seq copied) (vals copied) [(str root)])) #{0 2 3})
-        current-log (run "lint-current" (lint-argv paths) #{0 2 3})
-        baseline (findings! baseline-log (set (vals copied)) (set/map-invert copied))
-        current (findings! current-log (set paths) identity)
+        context-requested? (some #(or (= context/bootstrap %)
+                                      (str/starts-with? % (str context/source-root "gravity/bootstrap_impl/"))) paths)
+        current-plan (when context-requested? (context/plan! context/local-bytes!))
+        context-paths (set (:paths current-plan))
+        _ (doseq [path paths :when (and context-requested?
+                                        (str/ends-with? path ".clj")
+                                        (str/starts-with? path (str context/source-root "gravity/bootstrap_impl/"))
+                                        (not= context/loader path))]
+            (when-not (contains? context-paths path)
+              (throw (ex-info "Changed Bootstrap fragment is absent from load manifest" {:path path}))))
+        base-plan (when current-plan
+                    (let [archive (io/file root "context.zip")
+                          inventory (run "lint-context-base-inventory"
+                                         ["git" "ls-tree" "-rz" base "--" context/source-root] #{0})]
+                      (run "lint-context-base-archive"
+                           ["git" "archive" "--format=zip" (str "--output=" archive)
+                            base "--" context/source-root] #{0})
+                      (context/archived-plan! archive inventory)))
+        contextual (fn [id plan selected]
+                     (if-not plan []
+                             (let [view (context/assemble! (io/file output id) plan)
+                                   log (run id (lint-argv ["-"]) #{0 2 3} (:file view))
+                                   all (mapv #(context/remap! view %)
+                                             (findings! log #{"<stdin>"} identity))]
+                               (doseq [finding all :when (and (= :syntax (:type finding))
+                                                              (not (contains? selected (:filename finding))))]
+                                 (throw (ex-info "Syntax failure in lint context dependency" finding)))
+                               (filterv #(contains? selected (:filename %)) all))))
+        normal (fn [id files]
+                 (vec (mapcat (fn [[index path]]
+                                (let [log (run (str id "-" index) (lint-argv [path]) #{0 2 3})]
+                                  (findings! log #{path} #(get (set/map-invert copied) % %))))
+                              (map-indexed vector files))))
+        whole-context? (some #{context/bootstrap context/manifest context/loader} paths)
+        baseline (into (normal "lint-baseline" (vals (apply dissoc copied context-paths)))
+                       (contextual "lint-context-baseline" base-plan
+                                   (if whole-context? (set (:paths base-plan)) (set (keys copied)))))
+        current (into (normal "lint-current" (remove context-paths paths))
+                      (contextual "lint-context-current" current-plan
+                                  (if whole-context? context-paths (set paths))))
+        source-paths (vec (distinct (concat paths (when whole-context? (:paths current-plan)))))
         sources (into {}
-                      (for [path paths :when (contains? copied path)]
-                        (let [patch (run (str "lint-diff-" (.indexOf paths path))
-                                         ["git" "diff" "--no-ext-diff" "--no-textconv" "--no-renames"
-                                          "--text" "--unified=0" base "HEAD" "--" path] #{0})]
-                          [path {:changes (hunks (slurp patch))
-                                 :before (str/split-lines (slurp (get copied path)))
-                                 :after (str/split-lines (slurp path))}])))
+                      (for [[index path] (map-indexed vector source-paths)
+                            :let [before (if-let [bytes (get-in base-plan [:inputs path])]
+                                           (String. ^bytes bytes java.nio.charset.StandardCharsets/UTF_8)
+                                           (when-let [file (get copied path)] (slurp file)))
+                                  after (if-let [bytes (get-in current-plan [:inputs path])]
+                                          (String. ^bytes bytes java.nio.charset.StandardCharsets/UTF_8)
+                                          (slurp path))]
+                            :when before]
+                        (let [patch (when-not (= before after)
+                                      (run (str "lint-diff-" index)
+                                           ["git" "diff" "--no-ext-diff" "--no-textconv" "--no-renames"
+                                            "--text" "--unified=0" base "HEAD" "--" path] #{0}))]
+                          [path {:changes (if patch (hunks (slurp patch)) [])
+                                 :before (str/split-lines before)
+                                 :after (str/split-lines after)}])))
         config-diff (run "lint-config-diff" ["git" "diff" "--name-only" base "HEAD" "--" ".clj-kondo"] #{0})
         config-unchanged? (str/blank? (slurp config-diff))
         report (merge {:base base :commit (System/getenv "GITHUB_SHA")
-                       :policy :unchanged-source-warnings-only :config-unchanged? config-unchanged?}
+                       :policy :unchanged-source-warnings-only :config-unchanged? config-unchanged?
+                       :context-selection (when current-plan
+                                            {:whole-context? (boolean whole-context?)
+                                             :current (vec (sort (if whole-context? context-paths
+                                                                     (filter context-paths paths))))
+                                             :base (vec (sort (if whole-context? (:paths base-plan)
+                                                                  (filter (set (:paths base-plan)) (keys copied)))))})}
                       (classify (if config-unchanged? baseline []) current sources))]
     (spit (io/file output "changed-lint-report.edn") (str (pr-str report) "\n"))
     (println "Changed-file lint:" (count (:baseline-warnings report)) "unchanged baseline warnings;"
