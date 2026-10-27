@@ -1,20 +1,20 @@
 # Current project task list and remaining reconciliation
 
-Read-only view of canonical task source `254a5b50ea5e2825c424248c9216802cc866c0fd`. Requirement proposal snapshot SHA256 `fb6db7285ff4813b3a015877e702e870d01c4402f37548d4e510ff50e4f3819d`. This view changes no task or acceptance state.
+Read-only view of canonical task source `4325a9f46292472a7f984c5adfef81209874bb5c`. Requirement proposal snapshot SHA256 `39c20f1f2ec02e8b813ef677a79a1411f7340f0eabe797bc1781d0bea96d7c00`. This view changes no task or acceptance state.
 
 ## Current finite component-task list
 
-24 components; 138 implementation outcome records: 1 accepted, 3 partial, 133 open, 1 unassessed. Accepted-outcome fraction is 1/138 (about 0.7%) for this coarse population only. It is not the whole-project implementation percentage. There are no explicit Blocked status labels; dependency/frontier eligibility is separate.
+24 components; 138 implementation outcome records: 2 accepted, 2 partial, 133 open, 1 unassessed. Accepted-outcome fraction is 2/138 (about 1.4%) for this coarse population only. It is not the whole-project implementation percentage. There are no explicit Blocked status labels; dependency/frontier eligibility is separate.
 
-The accepted row is Reader fresh Syntax handoff, with its selected-current/development-unadmitted scope and mixed-suite failure retained in the exact source status. Historical scoped completed work is not erased by Open aggregate rows. Migration checkboxes, selected-scope and SH/FL milestone views are not added to this total.
+The accepted rows are Reader decode/source identity and fresh Syntax handoff, with their selected-current/development-unadmitted scopes and all limitations retained in the exact source statuses. Historical scoped completed work is not erased by Open aggregate rows. Migration checkboxes, selected-scope and SH/FL milestone views are not added to this total.
 
 ## Requirement coverage and concrete remaining gate
 
-All 240 originals plus five declared extension/policy sources are represented: 10,096 nonblank source dispositions and 29,177 exact facets. No original source is missing. The 1,296 candidate records are still proposed as a whole model; their current implementation acceptance is unassessed. There are 25 independently confirmed alias dispositions.
+All 240 originals plus five declared extension/policy sources are represented: 10,096 nonblank source dispositions and 29,177 exact facets. No original source is missing. The 1256 candidate records are still proposed as a whole model; their current implementation acceptance is unassessed. There are 25 independently confirmed alias dispositions and 40 newly applied Compiler aliases pending applied-graph review. All original records and source facets are retained.
 
-638 candidates have a primary task interface, 54 additional interfaces only, and 604 no current canonical task interface. These gaps include constraints and pending folds; they are not automatically 604 new implementation tasks.
+Current task-interface coverage: {:primary-interface 599, :no-current-canonical-task-interface 601, :additional-interface-only 56}. These gaps include constraints and pending folds; they are not automatically new implementation tasks.
 
-All requested family review batches have been delivered. Four batches/738 original records are incorporated; Foundation82, Testing104, Math/Backend134 and Compiler119 (439 records) await central application. The bottleneck is applying the delivered decisions, not waiting for new research. The exact per-ID queue and the full proposed work inventory are in the paired EDN view.
+All requested family review batches have been delivered. Five batches/857 original records are incorporated, including 40 concrete Compiler alias applications; Foundation82, Testing104 and Math/Backend134 (320 records) await central incorporation. Remaining decisions in incorporated batches are still explicit. The bottleneck is applying the delivered decisions, not waiting for new research. The exact per-ID queue and the full proposed work inventory are in the paired EDN view.
 
 ## Delivered decision queue
 
@@ -24,10 +24,10 @@ All requested family review batches have been delivered. Four batches/738 origin
 | ai-build-tools | 245 | true | {:keep 99, :alias 105, :split 39, :correct 2} |
 | safety | 119 | true | {:alias 53, :split 31, :keep 32, :correct-hold 2, :keep-join-hold 1} |
 | language-runtime-domain-schema | 295 | true | {:keep 236, :split 37, :alias 14, :preserve-retired-alias 6, :correct 2} |
+| compiler | 119 | true | {:ownership 25, :alias 40, :keep 53, :correction 1} |
 | foundation | 82 | false | {:split 3, :keep 70, :alias 9} |
 | testing | 104 | false | {:keep 41, :alias 25, :facet-refinement 15, :split 14, :correct 4, :keep-join-hold 1, :conditional-refinement 3, :correction-hold 1} |
 | math-backends | 134 | false | {:keep 124, :correction 7, :split 3} |
-| compiler | 119 | false | {:ownership 25, :alias 40, :keep 53, :correction 1} |
 
 Additional central scope work: BOOT/GOV34; Standard Library67 plus five overlap questions/31 mixed accounting facets; extension/policy43 including binding conduct roles and future product outcomes. Known-scope implementation details stay acceptance qualifications, not new scope blockers.
 
@@ -37,7 +37,7 @@ Freeze gate: apply the finite split/fold/role decisions with source/evidence lin
 
 ### auth / `auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/auth-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/auth-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -47,7 +47,7 @@ Typed provider fixtures with deterministic selection and incompatible-provider r
 
 ### auth / `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/auth-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/auth-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -57,7 +57,7 @@ Real allowed operation and denied widening/revoked/wrong-phase operations
 
 ### auth / `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/auth-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/auth-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -67,7 +67,7 @@ No externally visible operation after denial; explicit grant provenance end to e
 
 ### auth / `auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/auth-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/auth-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -77,7 +77,7 @@ Tamper, stale-policy and wrong-source rejection at actual consuming boundary
 
 ### auth / `auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/auth-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/auth-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -87,7 +87,7 @@ Accepted/rejected matrix and named residual trust roots for each provider
 
 ### backends / `backend-interface`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -105,7 +105,7 @@ MIR/Lower facts; envelope fixtures and individual backends proceed in parallel.
 
 ### backends / `backend-c`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -124,7 +124,7 @@ Runtime and Emit; C expansion does not gate the selected LLVM candidate.
 
 ### backends / `backend-llvm`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -144,7 +144,7 @@ candidate is a stage of this broader outcome, not evidence of all LLVM targets.
 
 ### backends / `backend-wasm`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -164,7 +164,7 @@ completion. Parallel to LLVM; integrates Schema/Auth/Runtime and Emit.
 
 ### backends / `backend-jvm`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -183,7 +183,7 @@ this hosted path does not replace the selected native release.
 
 ### backends / `backend-js`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -202,7 +202,7 @@ one semantic lowering layer. Parallel to JVM/LLVM; integrates Schema/Runtime/UI.
 
 ### backends / `backend-mlir`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -221,7 +221,7 @@ must not become a prerequisite for backends that do not require it.
 
 ### backends / `backend-gpu`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -240,7 +240,7 @@ accelerator availability does not gate the ordinary compiler release.
 
 ### backends / `backend-hdl`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -259,7 +259,7 @@ integration; neither fabrication nor a completed OS is required for emitter work
 
 ### backends / `backend-workflow`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -277,7 +277,7 @@ adapter. Parallel to native backends; depends on Workflow/Schema/Auth interfaces
 
 ### backends / `backend-ai`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -297,7 +297,7 @@ Workflow/Schema/Auth/Runtime; no live model call is required for unrelated build
 
 ### backends / `backend-query`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -316,7 +316,7 @@ Integrates Query domain/Schema/Runtime; no database service gates compiler boots
 
 ### backends / `backend-mobile`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -337,7 +337,7 @@ separate authorized action and does not gate unrelated compiler components.
 
 ### backends / `backend-emission`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -356,7 +356,7 @@ Build/Release consume accepted records later.
 
 ### backends / `backend-conformance`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/backends-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/backends-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -377,7 +377,7 @@ family acceptance awaits its actual backend. No automatic release closure follow
 
 ### build / `build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/build-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/build-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -387,7 +387,7 @@ Real dependency resolution with conflict, profile and capability rejection
 
 ### build / `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/build-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/build-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -397,7 +397,7 @@ Clean build node receipts and undeclared environment/network/shell rejection
 
 ### build / `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/build-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/build-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -407,7 +407,7 @@ Reuse on equal inputs; rebuild on source, compiler, grant, policy or target chan
 
 ### build / `build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/build-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/build-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -417,7 +417,7 @@ Actual published package retrieval/verification fixtures; tamper and missing-rec
 
 ### build / `build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/build-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/build-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -427,7 +427,7 @@ Repeated locked builds with matching identities and explicit failing-target diag
 
 ### cli / `cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/cli-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/cli-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -437,7 +437,7 @@ Command matrix that distinguishes implemented, rejected and unavailable operatio
 
 ### cli / `cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/cli-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/cli-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -447,7 +447,7 @@ Executed success/failure fixtures and artifact paths at public command boundary
 
 ### cli / `cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/cli-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/cli-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -457,7 +457,7 @@ Each declared command has a genuine service result and negative fixture; no meta
 
 ### cli / `cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/cli-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/cli-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -467,7 +467,7 @@ Golden success/error outputs including source, target, grants and redacted secre
 
 ### cli / `cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/cli-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/cli-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -477,7 +477,7 @@ Installed invocation, source-extension provenance and unsupported-option rejecti
 
 ### compiler-api / `pipeline`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/compiler-api-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/compiler-api-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -501,7 +501,7 @@ remain independent of ambient mutable compiler state? All must be yes.
 
 ### compiler-api / `plugins`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/compiler-api-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/compiler-api-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -524,7 +524,7 @@ traceable and reproducible under their declared replay policy? Must be yes.
 
 ### compiler-api / `pass-evidence`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/compiler-api-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/compiler-api-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -547,7 +547,7 @@ All must be yes. No claim of a fully mechanized compiler is implied.
 
 ### compiler-api / `development-boundaries`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/compiler-api-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/compiler-api-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -580,7 +580,7 @@ mass refactor, per-change admission wrapper or task-count gate is required.
 
 ### core / `core/current-evidence-and-remaining-work/core1-lower-core-forms`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/core-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/core-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -590,7 +590,7 @@ Implement quote, if, do, let, fn, loop/recur, def, var, set!, try/throw and matc
 
 ### core / `core/current-evidence-and-remaining-work/core2-preserve-binding-structure`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/core-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/core-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -600,7 +600,7 @@ Represent lexical identity, closure captures, recursion and mutation explicitly;
 
 ### core / `core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/core-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/core-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -610,7 +610,7 @@ Lower surface conveniences while recording source/generated origins, effects, ca
 
 ### core / `core/current-evidence-and-remaining-work/core4-verify-and-serialize`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/core-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/core-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -620,7 +620,7 @@ Reject malformed node graphs, illegal control positions, unresolved required bin
 
 ### core / `core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/core-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/core-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -630,7 +630,7 @@ Use the same core interface for handwritten/generated input and feed Types/Effec
 
 ### diag / `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/diag-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/diag-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -640,7 +640,7 @@ Record/schema parity fixtures from each producer, including malformed-record rej
 
 ### diag / `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/diag-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/diag-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -650,7 +650,7 @@ Macro and optimized-source diagnostics with original and generated locations
 
 ### diag / `diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/diag-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/diag-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -660,7 +660,7 @@ Golden text/JSON equivalence, secret redaction and known-ID explanation
 
 ### diag / `diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/diag-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/diag-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -670,7 +670,7 @@ Same underlying diagnostic identity across public consumers and failure paths
 
 ### domains / `math`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/domains-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/domains-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -691,7 +691,7 @@ adjacent proof/search representation, never ordinary runtime equality authority.
 
 ### domains / `schema`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/domains-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/domains-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -711,7 +711,7 @@ recommendation: shared canonical schema IR with explicit target adapters.
 
 ### domains / `query`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/domains-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/domains-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -729,7 +729,7 @@ contract, not host SQL strings as semantic authority.
 
 ### domains / `workflow`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/domains-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/domains-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -747,7 +747,7 @@ provider boundary for storage rather than a hidden database choice.
 
 ### domains / `ai`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/domains-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/domains-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -766,7 +766,7 @@ artifacts and explicit model identity, never a vendor SDK side path.
 
 ### domains / `gpu`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/domains-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/domains-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -784,7 +784,7 @@ not silently adopted by this roadmap.
 
 ### domains / `ui`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/domains-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/domains-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -802,7 +802,7 @@ semantics defining the language. Backend choice remains an explicit decision.
 
 ### effects / `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/effects-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/effects-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -812,7 +812,7 @@ Classify actual core operations including allocation, IO, FFI, errors, concurren
 
 ### effects / `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/effects-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/effects-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -822,7 +822,7 @@ Compute closure, call, dispatch and recursive-function effect summaries to a val
 
 ### effects / `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/effects-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/effects-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -832,7 +832,7 @@ Reject undeclared effects and forbidden profile behavior, expose capability requ
 
 ### effects / `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/effects-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/effects-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -842,7 +842,7 @@ Track nondeterministic/build effects and replay inputs, rejecting unreplayable h
 
 ### effects / `effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/effects-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/effects-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -852,7 +852,7 @@ Feed profile/capability/safety validation and MIR with real propagated facts, in
 
 ### emit / `emit/current-evidence-and-remaining-work/emit1-reconcile-selected-target-contracts`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/emit-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/emit-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -862,7 +862,7 @@ Record exact target/ABI/runtime tuples, emitted kinds and supported operations f
 
 ### emit / `emit/current-evidence-and-remaining-work/emit2-emit-real-outputs`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/emit-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/emit-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -872,7 +872,7 @@ Produce declared executable/object/library or hosted artifacts through the selec
 
 ### emit / `emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/emit-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/emit-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -882,7 +882,7 @@ Hash actual outputs and attach source/compiler/dependency identity, source/debug
 
 ### emit / `emit/current-evidence-and-remaining-work/emit4-establish-conformance`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/emit-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/emit-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -892,7 +892,7 @@ Execute accepted target fixtures and reject illegal or unsupported inputs; compa
 
 ### emit / `emit/current-evidence-and-remaining-work/emit5-integrate-artifact-consumers`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/emit-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/emit-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -902,7 +902,7 @@ Deliver actual artifact/manifests to Runtime and Build, retaining source-pinned 
 
 ### expand / `expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/expand-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/expand-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -912,7 +912,7 @@ Implement syntax-object invocation and macro environment/version checks, validat
 
 ### expand / `expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/expand-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/expand-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -922,7 +922,7 @@ Preserve definition/call/generated origins, explicit capture and unsafe declarat
 
 ### expand / `expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/expand-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/expand-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -932,7 +932,7 @@ Require declared grants, redacted logs and replay inputs for effectful expansion
 
 ### expand / `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/expand-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/expand-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -942,7 +942,7 @@ Bind cache reuse to every semantic input and replay record; diagnose actual expa
 
 ### expand / `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/expand-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/expand-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -952,7 +952,7 @@ Feed generated core forms through the same resolution/type/effect/profile/safety
 
 ### legality / `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/legality-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/legality-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -962,7 +962,7 @@ Allowed profile matrix and hidden-allocation/reflection/effect rejection before 
 
 ### legality / `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/legality-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/legality-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -972,7 +972,7 @@ Real use-after-move, escape, invalid borrow and linear-resource fixtures with gr
 
 ### legality / `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/legality-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/legality-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -982,7 +982,7 @@ Every dangerous operation classified and unclassified operations rejected
 
 ### legality / `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/legality-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/legality-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -992,7 +992,7 @@ Surviving check/proof/source edges; missing-check and unjustified-elision reject
 
 ### legality / `legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/legality-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/legality-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1002,7 +1002,7 @@ Accepted/rejected source fixtures, emitted facts and diagnostics for each claime
 
 ### lower / `lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/lower-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/lower-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1012,7 +1012,7 @@ Reject unverified/stale IR and incompatible profiles/features; expose explicit s
 
 ### lower / `lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/lower-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/lower-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1022,7 +1022,7 @@ Implement calling conventions, data/closure/error/resource representations and F
 
 ### lower / `lower/current-evidence-and-remaining-work/lower3-select-explicit-providers`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/lower-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/lower-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1032,7 +1032,7 @@ Match runtime services and providers to effects/capabilities/profile; reject hid
 
 ### lower / `lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/lower-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/lower-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1042,7 +1042,7 @@ Map semantic proofs to target metadata only when assumptions hold, preserving so
 
 ### lower / `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/lower-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/lower-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1052,7 +1052,7 @@ Feed Emit accepted backend-ready inputs and rejected unsupported-feature cases f
 
 ### mir / `mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/mir-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/mir-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1062,7 +1062,7 @@ Lower checked-core control flow, calls/closures, data, memory/regions/resources,
 
 ### mir / `mir/current-evidence-and-remaining-work/mir2-attach-fact-tables`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/mir-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/mir-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1072,7 +1072,7 @@ Bind every operation to current types, effects, capabilities, ownership, safety,
 
 ### mir / `mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/mir-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/mir-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1082,7 +1082,7 @@ Check block termination, dominance, operand schemas, effect ordering, guard domi
 
 ### mir / `mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/mir-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/mir-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1092,7 +1092,7 @@ Round-trip operations and shared tables with deterministic identity and preserve
 
 ### mir / `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/mir-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/mir-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1102,7 +1102,7 @@ Run actual verifier on constructed and mutated MIR; retain positive and negative
 
 ### opt / `opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/opt-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/opt-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1112,7 +1112,7 @@ Validate required/preserved/invalidated facts and deterministic ordering, then r
 
 ### opt / `opt/current-evidence-and-remaining-work/opt2-implement-structural-families`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/opt-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/opt-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1122,7 +1122,7 @@ Implement inlining/specialization, closure/allocation/region/resource transforma
 
 ### opt / `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/opt-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/opt-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1132,7 +1132,7 @@ Require governing proof for check elision and domain/math transformations; retai
 
 ### opt / `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/opt-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/opt-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1142,7 +1142,7 @@ Actually verify mutated MIR, regenerate invalidated analyses or keep conservativ
 
 ### opt / `opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/opt-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/opt-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1152,7 +1152,7 @@ Record source/compiler/pass identities, no-change decisions, residual work and r
 
 ### platform / `hardware`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/platform-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/platform-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1162,7 +1162,7 @@ Adopt clock/reset/HDL target contract; implement state-machine lowering and simu
 
 ### platform / `firmware`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/platform-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/platform-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1172,7 +1172,7 @@ Adopt device memory/startup target; implement interrupt/MMIO/startup and explici
 
 ### platform / `kernel`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/platform-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/platform-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1182,7 +1182,7 @@ Adopt kernel ABI/execution model; implement initialization, memory and schedulin
 
 ### platform / `devices`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/platform-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/platform-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1192,7 +1192,7 @@ Adopt device/provider interfaces; implement ownership-aware MMIO/interrupt/trans
 
 ### reader / `reader/finite-remaining-work/contract-coverage-reconciliation`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/reader-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/reader-workflow/tasks.md#implementation-tasks)
 
 Status: Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures.
 
@@ -1202,9 +1202,9 @@ Every required surface/output has a concrete implementation location and accepte
 
 ### reader / `reader/finite-remaining-work/decode-and-source-identity-closure`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/reader-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/reader-workflow/tasks.md#implementation-tasks)
 
-Status: Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population.
+Status: Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure and broker-admission nonexecution are preserved. Separate composed-tree controls passed 15 tests / 51 assertions on `07e5a32d` without source replay. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.
 
 Done criteria:
 
@@ -1212,7 +1212,7 @@ Both extensions preserve actual paths; byte/scalar and line/column spans, explic
 
 ### reader / `reader/finite-remaining-work/lexical-products-and-origins-closure`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/reader-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/reader-workflow/tasks.md#implementation-tasks)
 
 Status: Partial Reader and projection sources. The focused token-spelling reuse increment and its validation limits are recorded in [Reader evidence](https://github.com/burn2delete/uniform/blob/codex/reader-token-spelling-reuse-20261026/specs/reader-workflow/evidence.md#token-spelling-reuse); it does not close the complete lexical surface.
 
@@ -1222,7 +1222,7 @@ All collection/literal/abbreviation/metadata families emit faithful products; ma
 
 ### reader / `reader/finite-remaining-work/extension-policy-closure`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/reader-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/reader-workflow/tasks.md#implementation-tasks)
 
 Status: Extension records/projected views exist; accepted authorization behavior not established here.
 
@@ -1232,7 +1232,7 @@ Registered pure and explicitly granted handlers work; unknown/disallowed tags an
 
 ### reader / `reader/finite-remaining-work/authentication-and-quota-removal-closure`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/reader-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/reader-workflow/tasks.md#implementation-tasks)
 
 Status: Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open.
 
@@ -1242,7 +1242,7 @@ Original-source reconstruction rejects substituted/missing/duplicated graph refe
 
 ### reader / `reader/finite-remaining-work/fresh-syntax-handoff`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/reader-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/reader-workflow/tasks.md#implementation-tasks)
 
 Status: Accepted; selected-current, development-unadmitted boundary in the [finite family reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-fresh-syntax-row-20261027/docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md). Exact candidate `bcf9c72e` / tree `6043bc1d` completed four genuine constructions and fresh owner controls; independent review accepted scoped attribution while preserving the combined natural-exit-1 context failure (26 tests, 733 passes, one failure). Separate compiler-free composition passed 19 tests / 106 assertions on the same identity. PR471/478 retain their original span/provenance and ratio evidence. Other Reader rows, canonical Syntax generated-graph coverage, public admission, C5 and C14 remain open.
 
@@ -1252,7 +1252,7 @@ Fresh Syntax consumes actual Reader output for accepted and malformed/tampered c
 
 ### reader / `reader/finite-remaining-work/component-release-evidence`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/reader-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/reader-workflow/tasks.md#implementation-tasks)
 
 Status: Open; the accepted finite invocation receipt is not the complete Reader release outcome.
 
@@ -1262,7 +1262,7 @@ Owner supplies immutable source/fixture/runtime identities, complete surface res
 
 ### release / `release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/release-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/release-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1272,7 +1272,7 @@ Component outcome receipts, positive/negative programs and explicit unsupported 
 
 ### release / `release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/release-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/release-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1282,7 +1282,7 @@ Fresh stage-to-stage outputs and diagnostics, residual trusted-code inventory
 
 ### release / `release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/release-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/release-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1292,7 +1292,7 @@ Actually invoke the prior Gravity compiler process on the complete declared next
 
 ### release / `release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/release-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/release-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1302,7 +1302,7 @@ Rebuild identity and signature/provenance verification plus tamper rejection
 
 ### release / `release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/release-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/release-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1312,7 +1312,7 @@ Coordinator-reviewed candidate receipts and explicit release disposition
 
 ### resolve / `resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/resolve-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/resolve-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1322,7 +1322,7 @@ Cover locals, loop/recur, vars, macros, types, protocols, constructors, capabili
 
 ### resolve / `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/resolve-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/resolve-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1332,7 +1332,7 @@ Resolve aliases/imports/exports against actual module artifacts; reject absent, 
 
 ### resolve / `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/resolve-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/resolve-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1342,7 +1342,7 @@ Record dependency versions and initialization edges; reject unapproved cycles an
 
 ### resolve / `resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/resolve-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/resolve-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1352,7 +1352,7 @@ Serialize scope/binding graphs and invalidate dependent references when export, 
 
 ### resolve / `resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/resolve-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/resolve-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1362,7 +1362,7 @@ Connect Core/Types and diagnostic/LSP consumers; demonstrate accepted shadowing 
 
 ### runtime / `runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/runtime-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/runtime-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1372,7 +1372,7 @@ Actual service link/load inspection for every claimed profile/target and forbidd
 
 ### runtime / `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/runtime-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/runtime-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1382,7 +1382,7 @@ Executed startup/failure/resource fixtures and manifest-to-service agreement
 
 ### runtime / `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/runtime-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/runtime-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1392,7 +1392,7 @@ Allocation, lifetime, transfer, race and foreign-failure conformance with explic
 
 ### runtime / `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/runtime-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/runtime-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1402,7 +1402,7 @@ Recorded nondeterminism, replay equality, no duplicated external effect, REPL gr
 
 ### runtime / `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/runtime-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/runtime-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1412,7 +1412,7 @@ Denial at actual service hook, redacted diagnostics and source-map preservation
 
 ### stdlib / `stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/stdlib-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/stdlib-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1422,7 +1422,7 @@ Per-export source/implementation/fixture map, with absent exports explicitly ope
 
 ### stdlib / `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/stdlib-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/stdlib-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1432,7 +1432,7 @@ Compiled examples and type/arity/value rejection through real APIs
 
 ### stdlib / `stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/stdlib-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/stdlib-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1442,7 +1442,7 @@ Provider-mediated executions, missing-grant rejection and safe resource teardown
 
 ### stdlib / `stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/stdlib-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/stdlib-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1452,7 +1452,7 @@ APIs consuming corresponding domain/runtime outcomes, with boundary failures exe
 
 ### stdlib / `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/stdlib-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/stdlib-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1462,7 +1462,7 @@ Actual supported platform API fixtures, unsafe audits and compatibility/stabilit
 
 ### syntax / `syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/syntax-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/syntax-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1472,7 +1472,7 @@ Implement every required form kind with stable semantic identity, namespace/prof
 
 ### syntax / `syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/syntax-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/syntax-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1482,7 +1482,7 @@ Record generated producer/input origins, explicit metadata changes, hygiene mark
 
 ### syntax / `syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/syntax-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/syntax-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1492,7 +1492,7 @@ Version attached facts and invalidate them when the producing input or transform
 
 ### syntax / `syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/syntax-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/syntax-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1502,7 +1502,7 @@ Round-trip all required form kinds and generated graphs, including shared origin
 
 ### syntax / `syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/syntax-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/syntax-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1512,7 +1512,7 @@ Exercise Reader -> Syntax -> Expand and Resolve consumption with original/genera
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1522,7 +1522,7 @@ Reader output and semantic syntax identity preserved? Comments retained? Invalid
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1532,7 +1532,7 @@ Rule source/facts and applicability visible? Unsafe fixes rejected? Baseline/fai
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1542,7 +1542,7 @@ Incremental state converges to CLI checks? Visibility/profile rules preserved? S
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1552,7 +1552,7 @@ Source maps resolve? Unavailable versus optimized-away values distinguished? Una
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1562,7 +1562,7 @@ Same legality as compiled code? Grant denial before effect? Load/inspect/evaluat
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1572,7 +1572,7 @@ Version/profile/target and artifact IDs present? Missing/stale stages shown hone
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1582,7 +1582,7 @@ Samples measured rather than generated? Unavailable counters explicit? No unrela
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1592,7 +1592,7 @@ Signatures/effects/profiles match exports? Failing examples and stale docs rejec
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1602,7 +1602,7 @@ Changes produce actual updated artifacts? Incompatible hot reload restarts? Gran
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1612,7 +1612,7 @@ CLI/API package facts agree? Capability changes visible before install? Unauthor
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1622,7 +1622,7 @@ Requested/granted/denied/used authority distinguished? Missing evidence visible?
 
 ### tools / `tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/tools-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/tools-workflow/tasks.md#implementation-tasks)
 
 Status: Open
 
@@ -1632,7 +1632,7 @@ Repository/tool-output instructions remain untrusted data? Unreviewed writes rej
 
 ### types / `types/current-evidence-and-remaining-work/types1-solve-core-constraints`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/types-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/types-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1642,7 +1642,7 @@ Implement literal, binding, function/application, branch, collection and error-r
 
 ### types / `types/current-evidence-and-remaining-work/types2-check-declared-abstractions`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/types-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/types-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1652,7 +1652,7 @@ Validate generics, protocols/dispatch, records and schema-derived types against 
 
 ### types / `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/types-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/types-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1662,7 +1662,7 @@ Require checked casts and representability/numeric conversions where specified; 
 
 ### types / `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/types-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/types-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1672,7 +1672,7 @@ Serialize type solutions and layout requirements with source/profile/ownership/e
 
 ### types / `types/current-evidence-and-remaining-work/types5-integrate-typed-core`
 
-[Owning task source](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/types-workflow/tasks.md#implementation-tasks)
+[Owning task source](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/types-workflow/tasks.md#implementation-tasks)
 
 Status: Open; partial source evidence above is not closure
 
@@ -1687,14 +1687,14 @@ These nine ledgers are also part of the current Spec Kit inventory. Their scopes
 
 | Ledger | Scope | Checked steps | Unchecked steps |
 | --- | --- | ---: | ---: |
-| [.specify/naming-pilot/tasks.md](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/.specify/naming-pilot/tasks.md) | retained-bounded-pilot-or-increment | 4 | 1 |
-| [.specify/reader-core-invocation/tasks.md](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/.specify/reader-core-invocation/tasks.md) | retained-bounded-pilot-or-increment | 8 | 0 |
-| [specs/001-paired-source-core/tasks.md](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/001-paired-source-core/tasks.md) | retained-bounded-pilot-or-increment | 5 | 3 |
-| [specs/accounting-removal/tasks.md](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/accounting-removal/tasks.md) | explicit-ACC-outcomes | 0 | 13 |
-| [specs/build-incremental-helper-names/tasks.md](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/build-incremental-helper-names/tasks.md) | retained-bounded-pilot-or-increment | 6 | 0 |
-| [specs/build-incremental-operation-names/tasks.md](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/build-incremental-operation-names/tasks.md) | retained-bounded-pilot-or-increment | 4 | 2 |
-| [specs/build-incremental-projection-names/tasks.md](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/build-incremental-projection-names/tasks.md) | retained-bounded-pilot-or-increment | 7 | 0 |
-| [specs/mir-carrier-semantic-regressions/tasks.md](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/mir-carrier-semantic-regressions/tasks.md) | bounded-regression-increment | 0 | 1 |
-| [specs/resolve-owner-source-core-verification/tasks.md](https://github.com/burn2delete/uniform/blob/254a5b50ea5e2825c424248c9216802cc866c0fd/specs/resolve-owner-source-core-verification/tasks.md) | retained-bounded-pilot-or-increment | 1 | 0 |
+| [.specify/naming-pilot/tasks.md](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/.specify/naming-pilot/tasks.md) | retained-bounded-pilot-or-increment | 4 | 1 |
+| [.specify/reader-core-invocation/tasks.md](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/.specify/reader-core-invocation/tasks.md) | retained-bounded-pilot-or-increment | 8 | 0 |
+| [specs/001-paired-source-core/tasks.md](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/001-paired-source-core/tasks.md) | retained-bounded-pilot-or-increment | 5 | 3 |
+| [specs/accounting-removal/tasks.md](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/accounting-removal/tasks.md) | explicit-ACC-outcomes | 1 | 12 |
+| [specs/build-incremental-helper-names/tasks.md](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/build-incremental-helper-names/tasks.md) | retained-bounded-pilot-or-increment | 6 | 0 |
+| [specs/build-incremental-operation-names/tasks.md](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/build-incremental-operation-names/tasks.md) | retained-bounded-pilot-or-increment | 4 | 2 |
+| [specs/build-incremental-projection-names/tasks.md](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/build-incremental-projection-names/tasks.md) | retained-bounded-pilot-or-increment | 7 | 0 |
+| [specs/mir-carrier-semantic-regressions/tasks.md](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/mir-carrier-semantic-regressions/tasks.md) | bounded-regression-increment | 0 | 1 |
+| [specs/resolve-owner-source-core-verification/tasks.md](https://github.com/burn2delete/uniform/blob/4325a9f46292472a7f984c5adfef81209874bb5c/specs/resolve-owner-source-core-verification/tasks.md) | retained-bounded-pilot-or-increment | 1 | 0 |
 
 The component workflow files also contain preparation/adoption checkboxes outside their implementation markers. Those remain separate from implementation progress. This snapshot introduces no new task IDs, changes no checkboxes and makes no current-main completion claim from a historical cohort result alone.

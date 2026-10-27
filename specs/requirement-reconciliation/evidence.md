@@ -485,7 +485,7 @@ frozen audit. Its manifest equals the parent, keeping this guard approval
 separate from the later imports. Earlier held receipts remain historical;
 semantic denominator, evidence acceptance and integration remain unfinished.
 
-## Current finite task view and explicit central queue
+## Historical checkpoint 2c761cca task view and central queue
 
 [Current status and done criteria](current-status.md) is a read-only projection,
 with its complete candidate/decision index in [current-status.edn](current-status.edn).
@@ -529,3 +529,47 @@ development-boundary record and Release executor clarification do not auto-upgra
 requirement acceptance. Their nineteen existing API references and changed Reader
 status source require preserved-history rebinding during normal reconciliation;
 the generated task census can report current source statuses independently.
+
+## Integrated task-source adoption and Compiler consolidation
+
+The current derived view now reads integrated main
+`4325a9f46292472a7f984c5adfef81209874bb5c`, tree
+`5316d54c97ed99ad120f0eab499a0d9435b9b80f`. Its 138 component outcomes
+are two accepted, two partial, 133 open and one unassessed. Reader decode/source
+identity and fresh Syntax handoff retain their complete selected-current status
+qualifications. The 2/138 fraction (about 1.4%) applies only to these coarse
+component outcomes. Nine other retained ledgers have 36 checked and 19 unchecked
+steps; their differing scopes remain separate from that population.
+
+Thirty-nine Reader and nineteen Compiler API references adopt those integrated
+task-file versions. Every literal referenced ID and acceptance boundary compares
+exactly with its predecessor. Reader's two scoped accepted-status transitions
+are retained with prior and applying task records; the original three API records
+remain unchanged alongside the new fourth development-boundary record. Original
+references, statuses and source identities stay in task-source-version history.
+No requirement implementation acceptance is inferred from this adoption.
+
+The complete independent Compiler119 advice is now incorporated. Forty explicit
+alias decisions consolidate duplicate operations into their existing owners,
+including decoding, abbreviation expansion, typing, borrowing, build effects,
+domain anchors and proof-authorized check preservation. Each archived candidate
+retains its complete semantic record, source facets, task interfaces and historical
+support. The runtime-ownership route retains its nominated intermediate target
+and resolves through the check-record producer to the surviving safety owner.
+The applied graph still needs independent review; its aliases remain proposed.
+
+The current inventory is 1,256 candidates, 554 bounded atomicity flags and 65
+aliases (25 previously confirmed, 40 newly applied). All 29,177 source facets,
+19,962 occurrences and 245 source views remain conserved. An explicit comparison
+against checkpoint `2c761cca47b77e8825e42640529308a3730637ae` verifies all forty
+archived semantic records, exact facet bytes, route termination, source-support
+unions and task/historical-pointer retention. The focused suite passes 25 tests
+and 186 assertions; the complete source/evidence audit passes with denominator
+and rate withheld. No compiler proof is replayed.
+
+Five delivered review batches now cover 857 original records in the canonical
+draft. Foundation82, Testing104 and Math/Backends134 (320 records) await central
+incorporation, while all remaining split/ownership decisions in incorporated
+batches remain explicit. Known-scope evidence gaps stay visible rather than
+becoming scope exclusions. This is an unfinished reconciliation checkpoint,
+not whole-model acceptance, integration approval or a dashboard update.
