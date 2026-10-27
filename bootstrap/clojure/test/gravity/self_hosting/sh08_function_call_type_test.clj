@@ -5255,7 +5255,7 @@
                                    :original :unchanged :test :zero-elements :static-length :not-required}
                     :storage-policy {:representation :development-persistent-list :empty? :stored-emptiness-test :copy :none}
                     :value-origin {:kind :list-value-query :operation 'empty? :operand-node-id (first (:argument-node-ids call))}
-                    :operand-type-work 1 :application (if normal? :normal :not-invoked)
+                    :application (if normal? :normal :not-invoked)
                     :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
                     :profile (:profile module) :target (:target module)
                     :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
@@ -5526,7 +5526,7 @@
     (assoc (merge alternate (select-keys descriptor [:resolution :operator-node-id :operator-binding-id :call-core-node-id
                                                     :source :operator-source :source-call :source-edge :source-binding :profile :target]))
            :value-origin (assoc (:value-origin alternate) :operand-node-id (get-in descriptor [:value-origin :operand-node-id]))
-           :argument-types [type] :parameter-types [type] :operand-type-work (:operand-type-work descriptor)
+           :argument-types [type] :parameter-types [type]
            :return (:return descriptor) :result-type (:result-type descriptor) :application (:application descriptor))))
 
 (deftest sh08-vector-rest-cold-and-budget-development-kernel
@@ -5735,7 +5735,6 @@
                                                     :source :operator-source :source-call :source-edge :source-binding :profile :target]))
                      :value-origin (assoc (:value-origin alternate) :operand-node-id (get-in descriptor [:value-origin :operand-node-id]))
                      :argument-types [type] :parameter-types [type]
-                     :operand-type-work (:operand-type-work descriptor)
                      :return (:return descriptor) :result-type (:result-type descriptor)
                      :application (:application descriptor))))
 
@@ -5837,7 +5836,7 @@
                    (vector-type [:gravity.type/never])
                    (assoc (vector-type []) :shape :forged)
                    (assoc (vector-type []) :extra true)
-                   (vector-type (vec (repeat 1025 :gravity.type/integer)))]]
+                   (vector-type (assoc (vec (repeat 1025 :gravity.type/integer)) 1024 :gravity.type/unknown))]]
       (is (= :rejected (:status (list-query-derived (list-query-input 'empty? [type]))))))
     (doseq [arguments [[] [:gravity.type/vector :gravity.type/vector]]]
       (is (= :list-query-arity-mismatch (:reason (list-query-derived (list-query-input 'empty? arguments))))))
@@ -5962,8 +5961,8 @@
     (doseq [operation ['first 'rest]]
       (let [input (list-query-input operation [(positional (vec (repeat 1024 s)))])]
         (is (= :accepted (:status (list-query-derived input))))
-        (is (= 1090 (:work-count (list-query-derived input))))))
-    (is (= :rejected (:status (list-query-derived (list-query-input 'rest [(positional (vec (repeat 1025 s)))])))))))
+        (is (= 65 (:work-count (list-query-derived input))))))
+    (is (= :accepted (:status (list-query-derived (list-query-input 'rest [(positional (vec (repeat 1025 s)))])))))))
 
 (defn- bare-list-parameter-input [actual]
   (let [sha #(str "sha256:" (format "%064x" %))
@@ -6289,12 +6288,12 @@
                       #(assoc-in % [:context :ordering-core :function-records 0 :signature :parameters 0 :constructor-syntax-id] "forged")]]
         (is (seq (:diagnostics (bare-list-parameter-constraints (mutate input)))))))
     (is (seq (:diagnostics (bare-list-parameter-constraints (bare-list-parameter-input type)))))
-    (is (= {:status :accepted :work-count 2} (invoke-c7 'sh08-lc-type-work [[type] 2])))
-    (is (= :work-limit (:reason (invoke-c7 'sh08-lc-type-work [[type] 1]))))
-    (is (= :accepted (:status (invoke-c7 'sh08-lc-type-work [[{:kind :gravity.type/vector :shape :literal :element-types [type]}] 3]))))
+    (is (= {:status :accepted} (invoke-c7 'sh08-lc-validate-types [[type]])))
+
+    (is (= :accepted (:status (invoke-c7 'sh08-lc-validate-types [[{:kind :gravity.type/vector :shape :literal :element-types [type]}]]))))
     (doseq [bad [(assoc type :element-type :gravity.type/nil) (assoc type :element-type :gravity.type/character)
                  (assoc type :element-type type) (assoc type :schema :secret) (assoc type :element-types [])]]
-      (is (= :rejected (:status (invoke-c7 'sh08-lc-type-work [[bad] 65536])))))
+      (is (= :rejected (:status (invoke-c7 'sh08-lc-validate-types [[bad]])))))
     (doseq [operation ['rest 'empty?]]
       (let [result (list-query-derived (list-query-input operation [type]))]
         (is (= :accepted (:status result)))
@@ -6639,18 +6638,16 @@
       (is (= :accepted (:status (list-construction-derived (list-construction-input [type]))))))
     (is (= :accepted (:status (list-construction-derived (list-construction-input (vec (repeat 1023 s)))))))
     (is (= :list-construction-arity-mismatch (:reason (list-construction-derived (list-construction-input (vec (repeat 1024 s)))))))
-    (let [check #(invoke-c7 'sh08-lc-type-work [%1 %2])
+    (let [check #(invoke-c7 'sh08-lc-validate-types [%1])
           width {:kind :gravity.type/list :element-types (vec (repeat 1024 s)) :shape :literal}
           chain #(nth (iterate (fn [t] {:kind :gravity.type/list :element-types [t] :shape :literal}) s) %)]
-      (is (= {:status :accepted :work-count 1025} (check [width] 1025)))
-      (is (= {:status :rejected :reason :work-limit :work-count 1024} (check [width] 1024)))
-      (is (= {:status :accepted :work-count 1026} (check [(assoc width :element-types (vec (repeat 1025 s)))] 65536)))
-      (is (= :accepted (:status (check [(chain 128)] 65536))))
-      (is (= {:status :accepted :work-count 130} (check [(chain 129)] 65536)))
-      (let [wide {:kind :gravity.type/list :element-types (vec (repeat 1024 width)) :shape :literal}
-            rejected (check [wide] 4000)]
-        (is (= :rejected (:status rejected)))
-        (is (= 4000 (:work-count rejected)))))))
+      (is (= {:status :accepted} (check [width])))
+
+      (is (= {:status :accepted} (check [(assoc width :element-types (vec (repeat 1025 s)))])))
+      (is (= :accepted (:status (check [(chain 128)]))))
+      (is (= {:status :accepted} (check [(chain 129)])))
+      (let [late (assoc width :element-types (assoc (vec (repeat 1025 s)) 1024 :gravity.type/unknown))]
+                 (is (= :unsupported-type (:reason (check [late]))))))))
 
 (defn- string-concat-input [argument-types]
   (let [input (integral-ordering-input 'str argument-types)]
@@ -8092,7 +8089,7 @@
                   {:kind :gravity.type/set :shape :literal :element-types [] :extra true}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :character-predicate-operand-type-required (:reason (character-predicate-derived (character-predicate-input [type]) 65536)))))
     (let [input (character-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -8118,7 +8115,7 @@
           check #(invoke-c7 'sh08-chp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :character-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -8317,7 +8314,7 @@
                   {:kind :gravity.type/set :shape :literal :element-types [] :extra true}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :nil-predicate-operand-type-required (:reason (nil-predicate-derived (nil-predicate-input [type]) 65536)))))
     (let [input (nil-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -8343,7 +8340,7 @@
           check #(invoke-c7 'sh08-nilp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :nil-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -8484,7 +8481,7 @@
                   {:kind :gravity.type/set :shape :literal :element-types [] :extra true}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :boolean-predicate-operand-type-required (:reason (boolean-predicate-derived (boolean-predicate-input [type]) 65536)))))
     (let [input (boolean-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -8510,7 +8507,7 @@
           check #(invoke-c7 'sh08-boolp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :boolean-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -8651,7 +8648,7 @@
                   {:kind :gravity.type/set :shape :literal :element-types [] :extra true}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :symbol-predicate-operand-type-required (:reason (symbol-predicate-derived (symbol-predicate-input [type]) 65536)))))
     (let [input (symbol-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -8677,7 +8674,7 @@
           check #(invoke-c7 'sh08-symp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :symbol-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -8817,7 +8814,7 @@
                   {:kind :gravity.type/set :shape :literal :element-types [] :extra true}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :set-predicate-operand-type-required (:reason (set-predicate-derived (set-predicate-input [type]) 65536)))))
     (let [input (set-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -8843,7 +8840,7 @@
           check #(invoke-c7 'sh08-setp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :set-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -8975,7 +8972,7 @@
     (doseq [type [nil :gravity.type/unknown :gravity.type/dynamic :gravity.type/function
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :map-predicate-operand-type-required (:reason (map-predicate-derived (map-predicate-input [type]) 65536)))))
     (let [input (map-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -8999,7 +8996,7 @@
           check #(invoke-c7 'sh08-mapp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :map-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -9122,7 +9119,7 @@
                   {:kind :gravity.type/nil-or :value-type :gravity.type/unknown}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :keyword-predicate-operand-type-required (:reason (keyword-predicate-derived (keyword-predicate-input [type]) 65536)))))
     (let [input (keyword-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -9147,7 +9144,7 @@
           check #(invoke-c7 'sh08-kp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :keyword-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -9266,7 +9263,7 @@
                   {:kind :gravity.type/nil-or :value-type :gravity.type/unknown}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :string-predicate-operand-type-required (:reason (string-predicate-derived (string-predicate-input [type]) 65536)))))
     (let [input (string-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -9291,7 +9288,7 @@
           check #(invoke-c7 'sh08-strp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :string-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -9407,7 +9404,7 @@
     (doseq [type [nil :gravity.type/unknown :gravity.type/dynamic :gravity.type/function
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :integer-predicate-operand-type-required (:reason (integer-predicate-derived (integer-predicate-input [type]) 65536)))))
     (let [input (integer-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -9430,7 +9427,7 @@
           check #(invoke-c7 'sh08-ip-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :integer-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -9658,7 +9655,7 @@
     (doseq [type [nil :gravity.type/unknown :gravity.type/dynamic :gravity.type/function
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :vector-predicate-operand-type-required (:reason (vector-predicate-derived (vector-predicate-input [type]) 65536)))))
     (let [input (vector-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -9681,7 +9678,7 @@
           check #(invoke-c7 'sh08-vp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :vector-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -14228,15 +14225,15 @@
       (doseq [[a b expected] [[n n n] [t t t] [nt nt nt] [nv nt nt] [nt nv nt] [nv t t] [nv nv nv]]]
         (is (= expected (normal a b))))
       (is (true? (invoke-c7 'sh08-ni-type? [nt])))
-      (is (= {:status :accepted :work-count 2} (invoke-c7 'sh08-lc-type-work [[nt] 2])))
-      (is (= :work-limit (:reason (invoke-c7 'sh08-lc-type-work [[nt] 1]))))
+      (is (= {:status :accepted} (invoke-c7 'sh08-lc-validate-types [[nt]])))
+
       (doseq [bad [(assoc nt :extra true) (assoc nt :value-type :gravity.type/unknown)
                     (assoc nt :value-type :gravity.type/never) (assoc nt :value-type n)
                     (assoc nt :value-type (nullable t)) (dissoc nt :value-type)
                     (assoc nt :value-type :gravity.type/integer)]]
         (is (false? (invoke-c7 'sh08-ni-type? [bad])))
         (is (false? (invoke-c7 'sh08-ft-known? [bad])))
-        (is (= :rejected (:status (invoke-c7 'sh08-lc-type-work [[bad] 65536]))))
+        (is (= :rejected (:status (invoke-c7 'sh08-lc-validate-types [[bad]]))))
         (is (= :gravity.type/unknown (normal bad bad)))))
     (doseq [[a b] [[n :gravity.type/unknown] [:gravity.type/unknown :gravity.type/keyword]
                     [n :gravity.type/integer] [:gravity.type/keyword :gravity.type/string]
@@ -16566,13 +16563,13 @@
         (is (= descriptor (get-in inferred [:type-table :operator])))
         (is (= result (check (:work-count result))))
         (let [checked-types (assoc types :operator descriptor :call (:type result))
-              checked #(invoke-c7 'sh08-vf-inferred-call [core node call edge nodes bindings checked-types %])
-              paid (checked 65536)]
+              checked #(invoke-c7 'sh08-vf-inferred-call [core node call edge nodes bindings checked-types])
+              paid (checked)]
           (is (= :accepted (:status paid)))
-          (is (= visits (:work-count paid)))
-          (is (= paid (checked visits)))
-          (is (= :vector-first-work-limit (:reason (checked (dec visits)))))
-          (is (= (dec visits) (:work-count (checked (dec visits))))))
+
+          (is (= paid (checked)))
+
+)
         (is (= ["C7-GENERIC" :vector-first-work-limit] ((juxt :rule :reason) (check (dec (:work-count result))))))
         (doseq [changed [(assoc-in descriptor [:bounds-proof :vector-length] 0)
                          (assoc-in descriptor [:bounds-proof :selected-index] 1)
@@ -16597,10 +16594,10 @@
     (let [members (vec (repeat 1024 :gravity.type/character)) input (list-query-input 'first [(finite members)])
           result (list-query-derived input)]
       (is (= :accepted (:status result)))
-      (is (= 1090 (:work-count result)))
+      (is (= 65 (:work-count result)))
       (is (= :vector-first-work-limit (:reason (invoke-c7 'sh08-lq-derive
-                                                 [(:core input) (:node input) (:call input) (:edge input) (:nodes input) (:bindings input) (:types input) (:forms input) 66])))))
-    (is (= :rejected (:status (derive (finite (vec (repeat 1025 :gravity.type/character)))))))
+                                                 [(:core input) (:node input) (:call input) (:edge input) (:nodes input) (:bindings input) (:types input) (:forms input) 64])))))
+    (is (= :accepted (:status (derive (finite (vec (repeat 1025 :gravity.type/character)))))))
     (let [input (list-query-input 'first [(finite [:gravity.type/character :gravity.type/bool])])]
       (doseq [mutate [#(assoc-in % [:node :evaluation :order] [])
                       #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
@@ -16616,9 +16613,11 @@
 (deftest sh08-vector-first-throw-consumer-development-kernel
   ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
   (let [reads (atom 0) backing [:gravity.type/character]
-        members (proxy [clojure.lang.APersistentVector] []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+        members backing
+        foreign (proxy [clojure.lang.APersistentVector] []
+                  (count [] (swap! reads inc) (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i))
+                  (seq [] (swap! reads inc) (seq backing)))
         nested {:kind :gravity.type/vector :shape :literal :element-types members}
         input (list-query-input 'first [nested])
         record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
@@ -16641,36 +16640,29 @@
                                        :capabilities [] :thrown-error-effects []}}
         direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
         check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
-        measured (invoke-c7 'sh08-vf-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
-        ;; Four nodes: outer precharge 110 and owner traversal 4 precede the measured type walk.
-        prefix 114
+        measured (invoke-c7 'sh08-vf-inferred-call [core node (:call input) edge nodes (:bindings input) types])
         _ (reset! reads 0)
         accepted (check core types 65536)]
-    (is (= 3 @reads) "one measured type walk and its source/head projections; no fresh-cap revalidation")
+    (is (= {:status :rejected :reason :malformed-type}
+           (invoke-c7 'sh08-lc-validate-types [[(assoc nested :element-types foreign)]])))
+    (is (zero? @reads) "native rejection precedes foreign count, indexing and traversal")
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
     (is (= [] (get-in accepted [:throws :predicate-function])))
-    (let [limit (+ prefix (dec (:work-count measured)))
-          rejected (check core types limit)]
-      (is (= :rejected (:status rejected)))
-      (is (= ["C7-GENERIC" :vector-first-work-limit]
-             ((juxt :rule :reason) (first (:diagnostics rejected)))))
-      (is (= (+ prefix (:work-count (invoke-c7 'sh08-vf-inferred-call
-                       [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
-             (:work-count rejected))))
+    (is (= {:status :accepted} measured))
     (doseq [[changed-core changed-types]
             [[core (assoc-in types [:operator :query-policy :payload-evaluation] :execute)]
              [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/character)))]
              [core (assoc types :arg0 :gravity.type/unknown)]
              [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
       (let [c (first (:calls changed-core))
-            own (invoke-c7 'sh08-vf-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
+            own (invoke-c7 'sh08-vf-inferred-call [changed-core node c edge nodes (:bindings input) changed-types])
             rejected (check changed-core changed-types 65536)]
         (is (= :rejected (:status own)))
         (is (= :rejected (:status rejected)))
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
-        (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+))))
 
 (deftest sh08-vector-first-local-call-fact-oracle-development-kernel
   ;; Normalized DATA checks the owning fact schema without fresh source products.
@@ -16884,7 +16876,7 @@
     (is (= [] (get-in accepted [:throws :helper-form])))
     (is (= 1 (get @visits 'sh08-mg-inferred-work 0) (get @visits 'sh08-pe-finish 0))
         "The owning consumer measures and reconstructs the private result once")
-    (is (= 6 (get @visits 'sh08-lc-type-work 0))
+    (is (= 6 (get @visits 'sh08-lc-validate-types 0))
         "Three selected Vector representations are paid at each of two entries")
     (is (zero? (get @visits 'sh08-io-descriptor 0)) "Map get skips the unrelated IO probe")
     (is (zero? (get @visits 'sh08-mg-inferred-call-valid? 0)) "The paid result is reused by the scoped consumer")
@@ -18265,13 +18257,13 @@
     (is (true? (invoke 'sh08-is-value-type? [carrier])))
     (is (false? (invoke 'sh08-ds-type? [carrier])))
     (let [produced (:result-type (invoke 'sh08-ssin-type-work [[{:kind :gravity.type/set :shape :literal :element-types []} s] 65536]))
-          checked (invoke 'sh08-lc-type-work [[produced] 2])
+          checked (invoke 'sh08-lc-validate-types [[produced]])
           nested {:kind :gravity.type/list :shape :literal :element-types [produced]}]
       (is (= carrier produced))
-      (is (= {:status :accepted :work-count 2} checked))
-      (is (= {:status :rejected :reason :work-limit :work-count 1} (invoke 'sh08-lc-type-work [[produced] 1])))
-      (is (= {:status :accepted :work-count 3} (invoke 'sh08-lc-type-work [[nested] 3])))
-      (is (= :work-limit (:reason (invoke 'sh08-lc-type-work [[nested] 2]))))
+      (is (= {:status :accepted} checked))
+
+      (is (= {:status :accepted} (invoke 'sh08-lc-validate-types [[nested]])))
+
       (require 'gravity.self-hosting.sh08-function-call-type-test)
       (doseq [[input-name family expected] [['list-construction-input "lc" nested]
                                            ['keyword-predicate-input "kp" b]
@@ -18319,7 +18311,7 @@
                      (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string]))
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'sh08-is-value-type? [wrong])))
-        (is (= :rejected (:status (invoke 'sh08-lc-type-work [[wrong] 65536]))))
+        (is (= :rejected (:status (invoke 'sh08-lc-validate-types [[wrong]]))))
         (is (zero? @callbacks)))))))
 
 (deftest sh08-string-set-carrier-equality-development-kernel
@@ -18549,7 +18541,7 @@
                   {:kind :gravity.type/set :shape :literal :element-types [] :extra true}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
-                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+                  {:kind :gravity.type/vector :shape :literal :element-types (assoc (vec (repeat 1025 :gravity.type/keyword)) 1024 :gravity.type/unknown)}]]
       (is (= :list-predicate-operand-type-required (:reason (list-predicate-derived (list-predicate-input [type]) 65536)))))
     (let [input (list-predicate-input [:gravity.type/keyword])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -18575,7 +18567,7 @@
           check #(invoke-c7 'sh08-listp-inferred-call [core node call edge nodes bindings %1 %2])
           accepted (check typed 65536) work (:work-count accepted)]
       (is (= :accepted (:status accepted)))
-      (is (> work 65))
+      (is (= 65 work))
       (is (= accepted (check typed work)))
       (is (= :list-predicate-work-limit (:reason (check typed (dec work)))))
       (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
@@ -18596,12 +18588,12 @@
           input (list-predicate-input [(finite 1024)]) result (list-predicate-derived input 65536)
           nest (fn [n] (nth (iterate (fn [t] {:kind :gravity.type/vector :shape :literal :element-types [t]}) :gravity.type/string) n))]
       (is (= :accepted (:status result)))
-      (is (= 1025 (get-in result [:descriptor :operand-type-work])))
+      (is (not (contains? (:descriptor result) :operand-type-work)))
       (is (= result (list-predicate-derived input (:work-count result))))
       (is (= :list-predicate-work-limit (:reason (list-predicate-derived input (dec (:work-count result))))))
-      (is (= :list-predicate-operand-type-required (:reason (list-predicate-derived (list-predicate-input [(finite 1025)]) 65536))))
+      (is (= :accepted (:status (list-predicate-derived (list-predicate-input [(finite 1025)]) 65536))))
       (is (= :accepted (:status (list-predicate-derived (list-predicate-input [(nest 128)]) 65536))))
-      (is (= :type-depth (:type-check-reason (list-predicate-derived (list-predicate-input [(nest 129)]) 65536))))
+      (is (= :accepted (:status (list-predicate-derived (list-predicate-input [(nest 129)]) 65536))))
     )
   ))
 
@@ -19925,22 +19917,22 @@
         string-carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
         s :gravity.type/symbol finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}
-        work #(invoke 'sh08-lc-type-work [%1 %2])
+        work #(invoke 'sh08-lc-validate-types [%1])
         produced (:result-type (invoke 'sh08-syin-type-work [[(finite []) s] 65536]))]
     (is (= carrier produced))
     (is (true? (invoke 'sh08-syc-type? [produced])))
     (is (false? (invoke 'sh08-ss-type? [produced])))
     (is (false? (invoke 'sh08-is-value-type? [produced])))
     (is (false? (invoke 'sh08-ds-type? [produced])))
-    (is (= {:status :accepted :work-count 2} (work [produced] 2)))
-    (is (= {:status :rejected :reason :work-limit :work-count 1} (work [produced] 1)))
-    (is (= {:status :rejected :reason :work-limit :work-count 0} (work [produced] 0)))
-    (is (= {:status :accepted :work-count 3} (work [nested] 3)))
-    (is (= {:status :rejected :reason :work-limit :work-count 2} (work [nested] 2)))
-    (is (= {:status :accepted :work-count 2} (work [string-carrier] 2)))
-    (is (= {:status :accepted :work-count 1} (work [:gravity.type/set] 1)))
-    (is (= {:status :accepted :work-count 1} (work [:gravity.type/never] 1)))
-    (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}] 65536))))
+    (is (= {:status :accepted} (work [produced])))
+
+
+    (is (= {:status :accepted} (work [nested])))
+
+    (is (= {:status :accepted} (work [string-carrier])))
+    (is (= {:status :accepted} (work [:gravity.type/set])))
+    (is (= {:status :accepted} (work [:gravity.type/never])))
+    (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}]))))
     (is (= :rejected (:status (invoke 'sh08-syin-type-work [[:gravity.type/set s] 65536]))))
     (is (= :rejected (:status (invoke 'sh08-syin-type-work [[:gravity.type/unknown s] 65536]))))
     (doseq [value [s :gravity.type/never]]
@@ -19960,7 +19952,7 @@
                                          ['keyword-predicate-input "kp" :gravity.type/bool]]]
       (let [input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test input-name) [produced])
             {:keys [core node call edge nodes bindings types module]} input
-            checked (work [produced] 2)
+            checked (work [produced])
             header (invoke (symbol (str "sh08-" family "-source")) [core node call edge nodes bindings types module checked])
             descriptor (invoke (symbol (str "sh08-" family "-finish")) [header])]
         (is (map? header))
@@ -19981,20 +19973,14 @@
                (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} s]))]]
       (doseq [wrong bad]
         (is (false? (invoke 'sh08-syc-type? [wrong])))
-        (doseq [budget [0 1 65536]]
-          (is (= :rejected (:status (work [wrong] budget))))
-          (is (zero? @callbacks)))))
-    (let [nest (fn [n value] (loop [i 0 out value] (if (= i n) out (recur (inc i) {:kind :gravity.type/list :shape :literal :element-types [out]}))))
-          wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
-          row {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 64 carrier))}
-          bulk {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1024 row))}
-          bulk-result (work [bulk] 65536)]
-      (is (= :accepted (:status (work [(nest 127 carrier)] 65536))))
-      (is (= :type-depth (:reason (work [(nest 128 carrier)] 65536))))
-      (is (= :rejected (:status (work [wide] 65536))))
-      (is (= :rejected (:status bulk-result)))
-      (is (contains? #{:type-size :work-limit} (:reason bulk-result)))
-      (is (<= (:work-count bulk-result) 65536)))))
+        (do (is (= :rejected (:status (work [wrong]))))
+(is (zero? (clojure.core/deref callbacks))))))
+    (let [nest (fn [depth value] (loop [remaining depth result value] (if (zero? remaining) result (recur (dec remaining) {:kind :gravity.type/list :shape :literal :element-types [result]}))))
+                     wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
+                     late (assoc wide :element-types (assoc (:element-types wide) 1024 :gravity.type/unknown))]
+                 (doseq [value [(nest 127 carrier) (nest 129 carrier) wide]]
+                   (is (= {:status :accepted} (work [value]))))
+                 (is (= :unsupported-type (:reason (work [late])))))))
   (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol} s :gravity.type/symbol
         finite {:kind :gravity.type/set :shape :literal :element-types []}
         input (list-prepend-input finite s) result (list-prepend-derived input) descriptor (:descriptor result)
@@ -21227,7 +21213,7 @@
             (when (= family :hom)
               (is (= (count (:element-types actual)) (get-in a [:premise :checked-element-count]))))
             (doseq [[key value] [[:operand-type-work 0]
-                                [:operand-type-work (:work-count (body 'body-lc-type-work [actual] 65536))]
+                                [:operand-type-work 1]
                                 [::unknown-field true]]]
               (let [changed-row (assoc-in row [:rhs 0 :compatibility key] value)
                     rejected (acc02-facts-and-context body input [changed-row])
@@ -22049,11 +22035,11 @@
     (if (zero? remaining) value
       (recur (dec remaining) (recursive-validation-positional [value])))))
 
-(defn- recursive-validation-check [owner arguments budget]
+(defn- recursive-validation-check [owner arguments]
   (case owner
-    :C7 (return-premise-c7 'sh08-lc-type-work arguments budget)
-    :Effects (return-premise-effects 'body-lc-type-work arguments budget)
-    :emitter (return-premise-emit 'p15-s23-lc-type-work arguments budget)))
+    :C7 (return-premise-c7 'sh08-lc-validate-types arguments)
+    :Effects (return-premise-effects 'body-lc-validate-types arguments)
+    :emitter (return-premise-emit 'p15-s23-lc-validate-types arguments)))
 
 (defn- recursive-validation-foreign-map [data callbacks]
   (proxy [clojure.lang.APersistentMap] []
@@ -22131,9 +22117,9 @@
     (recursive-validation-link! one-cycle "_rest" one-cycle)
     (doseq [owner [:C7 :Effects :emitter]]
       (doseq [value malformed]
-        (is (= :unsupported-arguments (:reason (recursive-validation-check owner value 100000)))))
+        (is (= :unsupported-arguments (:reason (recursive-validation-check owner value)))))
       (doseq [value [one-foreign one-cycle]]
-        (is (= {:status :accepted :work-count 1} (recursive-validation-check owner value 100000))))
+        (is (= {:status :accepted} (recursive-validation-check owner value))))
       (is (empty? @callbacks)))))
 
 (deftest recursive-validation-native-domain-and-inert-metadata
@@ -22147,20 +22133,20 @@
         view (recursive-validation-view (recursive-validation-view backing 1 4) 0 2)
         cyclic-metadata (recursive-validation-cyclic-metadata)]
     (doseq [owner [:C7 :Effects :emitter]
-            [arguments work]
-            [[nil 0] ['() 0] [[] 0]
-             [(list :gravity.type/string :gravity.type/bool) 2]
-             [(clojure.lang.Cons. :gravity.type/string (list :gravity.type/bool)) 2]
-             [view 2]
-             [[(recursive-validation-positional view)] 3]
-             [[(into clojure.lang.PersistentHashMap/EMPTY (recursive-validation-positional []))] 1]
-             [[(into (sorted-map) (recursive-validation-positional []))] 1]
-             [[(recursive-validation-positional [shared shared])] 5]
-             [[(with-meta shared metadata)] 2]
-             [(with-meta [:gravity.type/string] metadata) 1]
-             [[(with-meta shared cyclic-metadata)] 2]]]
-      (is (= {:status :accepted :work-count work}
-             (recursive-validation-check owner arguments 100000)) (str owner)))
+            arguments
+            [nil '() []
+             (list :gravity.type/string :gravity.type/bool)
+             (clojure.lang.Cons. :gravity.type/string (list :gravity.type/bool))
+             view
+             [(recursive-validation-positional view)]
+             [(into clojure.lang.PersistentHashMap/EMPTY (recursive-validation-positional []))]
+             [(into (sorted-map) (recursive-validation-positional []))]
+             [(recursive-validation-positional [shared shared])]
+             [(with-meta shared metadata)]
+             (with-meta [:gravity.type/string] metadata)
+             [(with-meta shared cyclic-metadata)]]]
+      (is (= {:status :accepted}
+             (recursive-validation-check owner arguments)) (str owner)))
     (is (identical? metadata (meta (with-meta shared metadata))))
     (is (identical? cyclic-metadata (:self cyclic-metadata)))
     (is (empty? @callbacks))))
@@ -22183,11 +22169,11 @@
     (reset! callbacks [])
     (doseq [owner [:C7 :Effects :emitter]]
       (doseq [arguments [foreign-vector foreign-seq]]
-        (is (= :unsupported-arguments (:reason (recursive-validation-check owner arguments 100000)))))
+        (is (= :unsupported-arguments (:reason (recursive-validation-check owner arguments)))))
       (doseq [type [foreign-map bad-key sorted opaque]]
-        (is (= :unsupported-type (:reason (recursive-validation-check owner [type] 100000)))))
+        (is (= :unsupported-type (:reason (recursive-validation-check owner [type])))))
       (is (= :malformed-type
-             (:reason (recursive-validation-check owner [(recursive-validation-positional foreign-vector)] 100000))))
+             (:reason (recursive-validation-check owner [(recursive-validation-positional foreign-vector)]))))
       (is (empty? @callbacks)))))
 
 (deftest recursive-validation-view-links-and-spine-cycles
@@ -22210,13 +22196,13 @@
                     (recursive-validation-view backing 0 3)
                     (recursive-validation-view foreign 0 1)
                     self-view left-view]]
-        (is (= :unsupported-arguments (:reason (recursive-validation-check owner view 100000))))
+        (is (= :unsupported-arguments (:reason (recursive-validation-check owner view))))
         (is (= :malformed-type
-               (:reason (recursive-validation-check owner [(recursive-validation-positional view)] 100000)))))
+               (:reason (recursive-validation-check owner [(recursive-validation-positional view)])))))
       (doseq [spine [cons-cycle list-cycle]]
-        (is (= :cyclic-arguments (:reason (recursive-validation-check owner spine 100000)))))
+        (is (= :cyclic-arguments (:reason (recursive-validation-check owner spine)))))
       (is (= :cyclic-type
-             (:reason (recursive-validation-check owner [(recursive-validation-cyclic-type)] 100000))))
+             (:reason (recursive-validation-check owner [(recursive-validation-cyclic-type)]))))
       (is (empty? @callbacks)))))
 
 (deftest recursive-validation-complete-types-beyond-old-structure-limits
@@ -22226,21 +22212,20 @@
                  (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
                  (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "opaque printing"))))]
     (doseq [owner [:C7 :Effects :emitter]]
-      (is (= {:status :accepted :work-count 130}
-             (recursive-validation-check owner [(recursive-validation-nested 129 :gravity.type/string)] 100000)))
-      (is (= {:status :accepted :work-count 1026}
-             (recursive-validation-check owner [(recursive-validation-positional (vec (repeat 1025 :gravity.type/string)))] 100000)))
+      (is (= {:status :accepted}
+             (recursive-validation-check owner [(recursive-validation-nested 129 :gravity.type/string)])))
+      (is (= {:status :accepted}
+             (recursive-validation-check owner [(recursive-validation-positional (vec (repeat 1025 :gravity.type/string)))])))
       (doseq [leaf [:gravity.type/unknown opaque]]
         (is (= :unsupported-type
-               (:reason (recursive-validation-check owner [(recursive-validation-nested 129 leaf)] 100000))))
+               (:reason (recursive-validation-check owner [(recursive-validation-nested 129 leaf)]))))
         (is (= :unsupported-type
                (:reason (recursive-validation-check owner
-                         [(recursive-validation-positional (assoc (vec (repeat 1025 :gravity.type/string)) 1024 leaf))] 100000)))))
-      (is (= :nested-never (:reason (recursive-validation-check owner [(recursive-validation-positional [:gravity.type/never])] 100000))))
-      (is (= {:status :accepted :work-count 1} (recursive-validation-check owner [:gravity.type/never] 100000)))
-      (is (= :malformed-type (:reason (recursive-validation-check owner [{:kind :gravity.type/map :shape :literal :member-types [:gravity.type/string]}] 100000))))
-      (is (= {:status :rejected :reason :work-limit :work-count 0}
-             (recursive-validation-check owner [:gravity.type/string] 0))))
+                         [(recursive-validation-positional (assoc (vec (repeat 1025 :gravity.type/string)) 1024 leaf))])))))
+      (is (= :nested-never (:reason (recursive-validation-check owner [(recursive-validation-positional [:gravity.type/never])]))))
+      (is (= {:status :accepted} (recursive-validation-check owner [:gravity.type/never])))
+      (is (= :malformed-type (:reason (recursive-validation-check owner [{:kind :gravity.type/map :shape :literal :member-types [:gravity.type/string]}]))))
+)
     (is (empty? @callbacks))))
 
 (deftest recursive-validation-current-consumers-beyond-old-limits
@@ -22260,7 +22245,7 @@
       (is (= :accepted (:status derived)))
       (is (= expected (:type derived) (:return descriptor) (:result-type descriptor)))
       (doseq [[invoke prefix] [[return-premise-effects "body-"] [return-premise-emit "p15-s23-"]]]
-        (let [validation (invoke (symbol (str prefix "lc-type-work")) [operand] 65536)
+        (let [validation (invoke (symbol (str prefix "lc-validate-types")) [operand])
               header (apply invoke (symbol (str prefix "lc-source")) (conj args validation))
               completed (invoke (symbol (str prefix "lc-finish")) header)]
           (is (= descriptor completed))))
@@ -22303,11 +22288,97 @@
                       :pending [(recursive-validation-pending-tree)]
                       :late-pending [(assoc-in (recursive-validation-pending-tree) [:element-types 0] :gravity.type/unknown)])
           expected (case label
-                     :used {:status :accepted :work-count 65537}
-                     :pending {:status :accepted :work-count 67585}
-                     :late-pending {:status :rejected :reason :unsupported-type :work-count 67585})
+                     :used {:status :accepted}
+                     :pending {:status :accepted}
+                     :late-pending {:status :rejected :reason :unsupported-type})
           started (System/nanoTime)
-          result (recursive-validation-check owner arguments 100000)]
+          result (recursive-validation-check owner arguments)]
       (observe {:owner owner :case label :result result
                 :elapsed-ms (/ (- (System/nanoTime) started) 1000000.0)})
       (is (= expected result) (str owner " " label)))))
+
+(deftest recursive-validation-status-cells-and-descriptor-consumers
+  ;; Exercise every escaped LC source-cell interface. These are normalized
+  ;; owner calls, not authenticated public source admission.
+  (doseq [[family operation operand]
+          [["lc" 'list :gravity.type/string]
+           ["lq" 'rest (recursive-validation-positional [:gravity.type/string])]
+           ["mapp" 'map? :gravity.type/string] ["setp" 'set? :gravity.type/string]
+           ["listp" 'list? :gravity.type/string] ["symp" 'symbol? :gravity.type/string]
+           ["boolp" 'boolean? :gravity.type/string] ["chp" 'char? :gravity.type/string]
+           ["nilp" 'nil? :gravity.type/string] ["kp" 'keyword? :gravity.type/string]
+           ["strp" 'string? :gravity.type/string] ["ip" 'integer? :gravity.type/string]
+           ["vp" 'vector? :gravity.type/string]]]
+    (let [{:keys [core node call edge nodes bindings types module]}
+          (integral-ordering-input operation [operand])
+          args [core node call edge nodes bindings types module]
+          descriptors
+          (mapv
+            (fn [[invoke prefix]]
+              (let [validate (symbol (str prefix "lc-validate-types"))
+                    source (symbol (str prefix family "-source"))
+                    finish (symbol (str prefix family "-finish"))
+                    validation (invoke validate [operand])
+                    header (apply invoke source (conj args validation))]
+                (is (= {:status :accepted} validation))
+                (is (map? header) (str prefix family))
+                (doseq [stale [(assoc validation :work-count 0)
+                               (assoc validation :work-count 1)
+                               (assoc validation :budget 65536)
+                               (assoc validation :unknown-field true)]]
+                  (is (nil? (apply invoke source (conj args stale))) (str prefix family)))
+                (let [descriptor (invoke finish header)]
+                  (is (not (contains? descriptor :operand-type-work)))
+                  descriptor)))
+            [[return-premise-c7 "sh08-"] [return-premise-effects "body-"] [return-premise-emit "p15-s23-"]])
+          descriptor (first descriptors)
+          check (fn [candidate]
+                  (let [checked-types (assoc types :operator candidate :call (:result-type candidate))
+                        arguments [core node call edge nodes bindings checked-types]]
+                    (if (contains? #{"lc" "lq"} family)
+                      (apply return-premise-c7 (symbol (str "sh08-" family "-inferred-call-valid?")) arguments)
+                      (= :accepted (:status (apply return-premise-c7
+                                                  (symbol (str "sh08-" family "-inferred-call"))
+                                                  (conj arguments 65536)))))))]
+      (is (apply = descriptors) family)
+      (is (true? (check descriptor)) family)
+      (doseq [stale [(assoc descriptor :operand-type-work 0)
+                     (assoc descriptor :operand-type-work 1)
+                     (assoc descriptor :operand-type-work 65536)]]
+        (is (false? (check stale)) family)))))
+
+(deftest recursive-validation-semantic-failures-without-cost-reports
+  (let [string-list (pr359-prepend-homogeneous :gravity.type/list :gravity.type/string)
+        positional #(pr359-prepend-literal :gravity.type/list %)]
+    (doseq [[arguments reason]
+            [[[:gravity.type/bool :gravity.type/string] :list-prepend-list-type-required]
+             [[string-list :gravity.type/bool] :list-prepend-element-type-mismatch]
+             [[(positional (vec (repeat 1024 :gravity.type/string))) :gravity.type/string]
+              :list-prepend-type-width-limit]
+             [[(positional (assoc (vec (repeat 1025 :gravity.type/string)) 1024 :gravity.type/unknown))
+               :gravity.type/string] :list-prepend-operand-type-required]]]
+      (doseq [[invoke prefix] [[return-premise-c7 "sh08-"] [return-premise-effects "body-"] [return-premise-emit "p15-s23-"]]]
+        (let [checked (invoke (symbol (str prefix "pl-type-work")) arguments 65536)]
+          (is (= [:rejected reason] ((juxt :status :reason) checked)))
+          (is (not (contains? checked :work-count))))))
+    ;; These genuine consumer paths used to eagerly read the failed LC report.
+    (let [{:keys [input context]} (pr359-prepend-case-data string-list :gravity.type/string)
+          changed-input (assoc-in input [:types :arg1] :gravity.type/bool)
+          changed-context (assoc-in context [:types :arg1] :gravity.type/bool)
+          derived (list-prepend-derived changed-input)
+          compiled (return-premise-emit 'p15-s23-typed-compile-node changed-context :call 65536)]
+      (is (= [:rejected :list-prepend-element-type-mismatch] ((juxt :status :reason) derived)))
+      (is (= :rejected (:status compiled))))
+    (require 'gravity.self-hosting.sh09-body-effect-test)
+    (let [make-input (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'prepend-effect-input)
+          {:keys [request facts bindings ids]} (make-input string-list :gravity.type/string 0)
+          changed (assoc-in facts [:type-table (ids :arg1)] :gravity.type/bool)
+          context (return-premise-effects 'body-va-context request changed bindings 65536)]
+      (is (= [:rejected :list-prepend-element-type-mismatch] ((juxt :status :reason) context))))
+    ;; The separate construction allowance still reports its own refusal;
+    ;; removal of LC cost must neither erase nor fabricate that report.
+    (doseq [[invoke prefix] [[return-premise-c7 "sh08-"] [return-premise-effects "body-"] [return-premise-emit "p15-s23-"]]]
+      (let [checked (invoke (symbol (str prefix "pl-type-work"))
+                            [(positional [:gravity.type/string]) :gravity.type/string] 1)]
+        (is (= [:rejected :list-prepend-work-limit 2]
+               ((juxt :status :reason :work-count) checked)))))))

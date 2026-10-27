@@ -9404,10 +9404,10 @@
           (is (false? (invoke 'p15-s23-typed-parameter-declaration? declaration type (mutate context)))))
         (doseq [bad-members [42 s '(x) #{s} {:member s} nil [:gravity.type/unknown] [s :gravity.type/keyword]]]
           (is (= :rejected (:status (invoke 'p15-s23-lp-compatibility core call edge callee 0 (positional bad-members) nodes bindings 65536)))))))
-    (is (= {:status :accepted :work-count 2} (invoke 'p15-s23-lc-type-work [type] 2)))
-    (is (= :work-limit (:reason (invoke 'p15-s23-lc-type-work [type] 1))))
+    (is (= {:status :accepted} (invoke 'p15-s23-lc-validate-types [type])))
+
     (doseq [bad [(assoc type :element-type :gravity.type/nil) (assoc type :element-type type) (assoc type :schema :secret)]]
-      (is (= :rejected (:status (invoke 'p15-s23-lc-type-work [bad] 65536)))))))
+      (is (= :rejected (:status (invoke 'p15-s23-lc-validate-types [bad])))))))
 
 (deftest current-gravity-homogeneous-list-call-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -11957,7 +11957,7 @@
                     (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
                   (if transfer?
                     (do
-                      (is (= #{1} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= {:quote 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
                       (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
                       (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
@@ -11965,7 +11965,7 @@
                       (is (= [:gravity.type/map] (mapv :type (get-in functions ['classify-map :parameters]))))
                       (is (= [:gravity.type/keyword] (mapv :type (get-in functions ['classify-keyword :parameters]))))
                       (is (nil? (:recursive-proof facts)))
-                      (is (= #{1} (set (map :operand-type-work predicates))))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))))
                   (println (pr-str {:ba-map-predicate-positive name :extension extension :function-table-entry-invocations (count results)
                                     :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
                                                  :c8-verification (- t4 t3) :entry-execution-including-expectations (- t6 t5)}
@@ -13602,7 +13602,7 @@
                     (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
                   (if transfer?
                     (do
-                      (is (= #{1} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= {:literal 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
                       (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
                       (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
@@ -13792,7 +13792,7 @@
                     (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
                   (if transfer?
                     (do
-                      (is (= #{1} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= {:literal 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
                       (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
                       (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
@@ -14030,7 +14030,7 @@
                     (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
                   (if transfer?
                     (do
-                      (is (= #{1} (set (map :operand-type-work predicates))))
+                      (is (every? #(not (contains? % :operand-type-work)) predicates))
                       (is (= {:literal 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
                       (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
                       (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
@@ -28762,13 +28762,13 @@
     (is (true? (invoke 'p15-s23-is-value-type? [carrier])))
     (is (false? (invoke 'p15-s23-ds-type? [carrier])))
     (let [produced (:result-type (invoke 'p15-s23-ssin-type-work [[{:kind :gravity.type/set :shape :literal :element-types []} s] 65536]))
-          checked (invoke 'p15-s23-lc-type-work [[produced] 2])
+          checked (invoke 'p15-s23-lc-validate-types [[produced]])
           nested {:kind :gravity.type/list :shape :literal :element-types [produced]}]
       (is (= carrier produced))
-      (is (= {:status :accepted :work-count 2} checked))
-      (is (= {:status :rejected :reason :work-limit :work-count 1} (invoke 'p15-s23-lc-type-work [[produced] 1])))
-      (is (= {:status :accepted :work-count 3} (invoke 'p15-s23-lc-type-work [[nested] 3])))
-      (is (= :work-limit (:reason (invoke 'p15-s23-lc-type-work [[nested] 2]))))
+      (is (= {:status :accepted} checked))
+
+      (is (= {:status :accepted} (invoke 'p15-s23-lc-validate-types [[nested]])))
+
       (require 'gravity.self-hosting.sh08-function-call-type-test)
       (doseq [[input-name family expected] [['list-construction-input "lc" nested]
                                            ['keyword-predicate-input "kp" b]
@@ -28816,7 +28816,7 @@
                      (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous opaque :gravity.type/string]))
                      {:kind :gravity.type/list :shape :homogeneous :element-type [opaque]}]]
         (is (false? (invoke 'p15-s23-is-value-type? [wrong])))
-        (is (= :rejected (:status (invoke 'p15-s23-lc-type-work [[wrong] 65536]))))
+        (is (= :rejected (:status (invoke 'p15-s23-lc-validate-types [[wrong]]))))
         (is (zero? @callbacks)))))))
 
 (deftest current-gravity-string-set-carrier-fixtures-development-kernel
@@ -36264,22 +36264,22 @@ else
         string-carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
         s :gravity.type/symbol finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}
-        work #(invoke 'p15-s23-lc-type-work [%1 %2])
+        work #(invoke 'p15-s23-lc-validate-types [%1])
         produced (:result-type (invoke 'p15-s23-syin-type-work [[(finite []) s] 65536]))]
     (is (= carrier produced))
     (is (true? (invoke 'p15-s23-syc-type? [produced])))
     (is (false? (invoke 'p15-s23-ss-type? [produced])))
     (is (false? (invoke 'p15-s23-is-value-type? [produced])))
     (is (false? (invoke 'p15-s23-ds-type? [produced])))
-    (is (= {:status :accepted :work-count 2} (work [produced] 2)))
-    (is (= {:status :rejected :reason :work-limit :work-count 1} (work [produced] 1)))
-    (is (= {:status :rejected :reason :work-limit :work-count 0} (work [produced] 0)))
-    (is (= {:status :accepted :work-count 3} (work [nested] 3)))
-    (is (= {:status :rejected :reason :work-limit :work-count 2} (work [nested] 2)))
-    (is (= {:status :accepted :work-count 2} (work [string-carrier] 2)))
-    (is (= {:status :accepted :work-count 1} (work [:gravity.type/set] 1)))
-    (is (= {:status :accepted :work-count 1} (work [:gravity.type/never] 1)))
-    (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}] 65536))))
+    (is (= {:status :accepted} (work [produced])))
+
+
+    (is (= {:status :accepted} (work [nested])))
+
+    (is (= {:status :accepted} (work [string-carrier])))
+    (is (= {:status :accepted} (work [:gravity.type/set])))
+    (is (= {:status :accepted} (work [:gravity.type/never])))
+    (is (= :nested-never (:reason (work [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}]))))
     (is (= :rejected (:status (invoke 'p15-s23-syin-type-work [[:gravity.type/set s] 65536]))))
     (is (= :rejected (:status (invoke 'p15-s23-syin-type-work [[:gravity.type/unknown s] 65536]))))
     (doseq [value [s :gravity.type/never]]
@@ -36299,7 +36299,7 @@ else
                                          ['keyword-predicate-input "kp" :gravity.type/bool]]]
       (let [input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test input-name) [produced])
             {:keys [core node call edge nodes bindings types module]} input
-            checked (work [produced] 2)
+            checked (work [produced])
             header (invoke (symbol (str "p15-s23-" family "-source")) [core node call edge nodes bindings types module checked])
             descriptor (invoke (symbol (str "p15-s23-" family "-finish")) [header])]
         (is (map? header))
@@ -36320,20 +36320,14 @@ else
                (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/set :shape :homogeneous {:opaque opaque} s]))]]
       (doseq [wrong bad]
         (is (false? (invoke 'p15-s23-syc-type? [wrong])))
-        (doseq [budget [0 1 65536]]
-          (is (= :rejected (:status (work [wrong] budget))))
-          (is (zero? @callbacks)))))
-    (let [nest (fn [n value] (loop [i 0 out value] (if (= i n) out (recur (inc i) {:kind :gravity.type/list :shape :literal :element-types [out]}))))
-          wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
-          row {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 64 carrier))}
-          bulk {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1024 row))}
-          bulk-result (work [bulk] 65536)]
-      (is (= :accepted (:status (work [(nest 127 carrier)] 65536))))
-      (is (= :type-depth (:reason (work [(nest 128 carrier)] 65536))))
-      (is (= :rejected (:status (work [wide] 65536))))
-      (is (= :rejected (:status bulk-result)))
-      (is (contains? #{:type-size :work-limit} (:reason bulk-result)))
-      (is (<= (:work-count bulk-result) 65536))))
+        (do (is (= :rejected (:status (work [wrong]))))
+(is (zero? (clojure.core/deref callbacks))))))
+    (let [nest (fn [depth value] (loop [remaining depth result value] (if (zero? remaining) result (recur (dec remaining) {:kind :gravity.type/list :shape :literal :element-types [result]}))))
+                     wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
+                     late (assoc wide :element-types (assoc (:element-types wide) 1024 :gravity.type/unknown))]
+                 (doseq [value [(nest 127 carrier) (nest 129 carrier) wide]]
+                   (is (= {:status :accepted} (work [value]))))
+                 (is (= :unsupported-type (:reason (work [late]))))))
 (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         _ (require upstream) c7 (ns-resolve upstream 'invoke-c7)
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol} nested {:kind :gravity.type/list :shape :literal :element-types [carrier]}]
