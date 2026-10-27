@@ -118,6 +118,9 @@ jobs:
           fi
           echo "selected=$selected" >> "$GITHUB_OUTPUT"
           echo "Full fresh leaf fallback selected: $selected. Markdown-only PRs retain projection and bootstrap checks." | tee target/ci/selection.txt
+      - name: Diagnose actual Darwin host and descriptor ABI
+        if: matrix.platform == 'darwin'
+        run: clojure -Srepro -M tools/ci/run.clj darwin-probe
       - name: Fresh catalog fallback
         if: steps.selection.outputs.selected == 'true'
         env:
