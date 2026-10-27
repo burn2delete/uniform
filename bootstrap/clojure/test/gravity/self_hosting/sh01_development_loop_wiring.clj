@@ -23,7 +23,8 @@
            [java.nio.file.attribute BasicFileAttributes FileAttribute
             PosixFilePermission PosixFilePermissions]
            [java.security MessageDigest]
-           [java.util Arrays]))
+           [java.util Arrays]
+           [java.util.jar Attributes$Name JarFile]))
 
 (def ^:private default-timeout-ms (* 60 60 1000))
 (def ^:private child-runtime-token (Object.))
@@ -844,6 +845,22 @@
       (sequential? command) (mapv str command)
       :else [(str command) "-M:test"])))
 
+(defn- archive-loader-inputs-contained?
+  "Listed archive bytes cover manifest loading only when no Class-Path is declared.
+  Unknown archives are outside the reviewed reuse domain. No referenced URL is opened."
+  [^Path path]
+  (try
+    (and (Files/isRegularFile path no-links)
+         (with-open [archive (JarFile. (.toFile path))]
+           (let [manifest (.getManifest archive)]
+             (or (nil? manifest)
+                 (not (.containsKey (.getMainAttributes manifest)
+                                    Attributes$Name/CLASS_PATH))))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
 (defn- explicit-classpath-identities
   [^Path repository-root closure-root]
   (let [separator (java.util.regex.Pattern/quote
@@ -868,8 +885,7 @@
     (when (and (= 2 (count internal-roots))
                (= #{"bootstrap/clojure/src" "bootstrap/clojure/test"}
                   (set internal-roots))
-               (every? #(Files/isRegularFile ^Path % no-links)
-                       external-paths))
+               (every? archive-loader-inputs-contained? external-paths))
       (mapv
        (fn [index ^Path path]
          {:path (format "classpath/entry-%04d" index)
@@ -1510,7 +1526,7 @@
                  (= #{"bootstrap/clojure/src" "bootstrap/clojure/test"}
                     (set internal-relative))
                  (every? #(or (.startsWith ^Path % root)
-                              (Files/isRegularFile ^Path % no-links))
+                              (archive-loader-inputs-contained? %))
                          classpath-paths))
         (let [material
               {:basis current
