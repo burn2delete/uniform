@@ -1,5 +1,66 @@
 # Accounting removal evidence
 
+## ACC-06 intrinsic recursive validation baseline - 2026-10-27 13:44 MDT
+
+Exact base `00cdaf5513d356a0c58ce02ab263e4765b713eed`, tree
+`d75f42d1a6c445423efa7f12699ee667683f9a25`, completed one read-only old-source
+batch: natural exit zero, 47,922 ms, actual 2 GiB heap, complete 4,642-byte
+stdout and empty stderr, exact clean bookends and complete cleanup/root
+termination. Receipt SHA-256:
+`73811130a9f66fffc1c6f2a10fac9d6d56018e7e113c5a9c55db01994797ef54`.
+Independent retained-record review accepted diagnosis only, not candidate
+behavior or whole ACC-06 completion.
+
+Forty actual calls produced 43 durable observations. All owners accept depth
+128 and width 1,024 but reject 129/1,025; all reject the prospective pending
+family. C7 rejects 65,537 primitive operands at its intrinsic work ceiling
+despite supplied budget 100,000. Cyclic type DATA stops at the old depth limit,
+which is not native cycle evidence. Foreign type maps are accepted after
+count/sequence/lookup callbacks. Foreign and cyclic metadata remain inert,
+with zero metadata callbacks. Nil, native List/Cons and visible SubVector
+ordinary cases are accepted. No root-spine cycle was executed on the old
+unbounded normalization path.
+
+Candidate source removes the intrinsic limits coherently from all three LC
+owners, retaining supplied-budget/work-count APIs and all caller debits as
+unfinished work. It uses existing Meta/JVM native headers and identity, not
+the held hosted Native API. Small registered controls cover grammar and
+physical representation; large visited/pending/late-invalid cases are invoked
+only through a manual owner helper under the established guarded route. No
+candidate semantic result is claimed by this baseline. Preliminary fixture-only
+controls initially passed 1/21 without Bootstrap; the amended List fixtures
+passed 1/24, with a controlled reflective final-field fixture warning.
+Form/resource-registration controls passed 1/87 without
+Bootstrap. These are fixture/structural evidence, not compiler acceptance.
+
+Independent preliminary review identified that the existing native header uses
+`PersistentList.next()`, not a raw backing-tail accessor. The candidate therefore
+checks visible count/spine coherence and identity cycles. A count-one List's
+hidden raw tail stays inert, including foreign or cyclic DATA; no total
+validation of arbitrary reflectively corrupted JVM internals is claimed. New
+controls distinguish malformed visible counts from intentionally hidden tails.
+
+## PR359 terminal integration and preserved-source disposition
+
+PR359 merged `00cdaf5513d356a0c58ce02ab263e4765b713eed` with exact independently
+reviewed tree `d75f42d1a6c445423efa7f12699ee667683f9a25`. The accepted source
+batch below remains at its actual `0c64757d` provenance; subsequent documentation
+and current-main reconciliation preserved its consumed source inputs. Final
+repository gates passed 11/23, LOC, docs 240/19 and roadmap. PR run 40563266217
+passed all seven routine jobs. Main run 40564406756 passed those jobs and
+source-only prerelease; only the explicit unavailable Core gate failed at
+`C6-VERIFY/:actual-selected-current-reader-products`, without genuine execution.
+No failed gate was rerun or promoted.
+
+All retained unique historical source is explicitly owned in open draft PR502,
+unchanged `6a4f87f013d0076b81aba9e0667650e70d28e635`, tree
+`f8440ffcf2d2fa7e2f898178ee299ac64ef59d32`. That draft requires a reviewed
+integration/incorporation/rejection or separately owned implementation-draft
+disposition for every unique delta before terminal closure. Historical source
+preservation supplies no acceptance credit and does not duplicate the held
+runtime implementation drafts. No original ACC row closes from this finite
+PR359 increment; ACC-02/03 remain the only closed original rows.
+
 ## PR359 finite reconciliation and preserved work - 2026-10-27 12:39 MDT
 
 Finite source `0c64757dcee79d41272dab8486ce042adad93106`, tree

@@ -5605,25 +5605,9 @@
                       (assoc (:types input) :operator changed :call (:type result))])))))
     (let [nested #(nth (iterate (fn [type] (finite :gravity.type/vector [type])) :gravity.type/bool) %)]
       (is (= :accepted (:status (derive (vector-rest-input (nested 128)) 65536))))
-      (is (= :rejected (:status (derive (vector-rest-input (nested 129)) 65536)))))
-    (let [empty-result (derive (vector-rest-input (finite :gravity.type/vector [])) 65536)
-          reserved (- (:work-count empty-result) (get-in empty-result [:descriptor :operand-type-work])
-                      (get-in empty-result [:descriptor :construction-work]))
-          remaining (- 65536 reserved)
-          member (finite :gravity.type/vector (repeat 1024 :gravity.type/bool))
-          small (finite :gravity.type/vector (repeat 63 member))
-          prefix-work (:work-count (invoke-c7 'sh08-lc-type-work [[small] 65536]))
-          width (- remaining prefix-work 33)
-          near (finite :gravity.type/vector (conj (vec (repeat 63 member))
-                                                   (finite :gravity.type/vector (repeat width :gravity.type/bool))))
-          validated (invoke-c7 'sh08-lc-type-work [[near] remaining])
-          checked (derive (vector-rest-input near) 1000000)]
-      (is (<= 0 width 1024))
-      (is (= :accepted (:status (derive (vector-rest-input small) 65536))))
-      (is (= :accepted (:status validated)))
-      (is (= :rejected (:status checked)))
-      (is (= :vector-rest-work-limit (:reason checked)))
-      (is (> (:work-count checked) 65536)))
+      (let [result (derive (vector-rest-input (nested 129)) 65536)]
+        (is (= :accepted (:status result)))
+        (is (= (finite :gravity.type/list []) (:type result) (get-in result [:descriptor :result-type])))))
 ))
 
 (deftest sh08-vector-rest-current-source-composition
@@ -5725,19 +5709,13 @@
 
 (deftest sh08-vector-empty-type-limits-development-kernel
   (let [finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec %))
-        nested (fn [depth] (nth (iterate #(finite [%]) :gravity.type/bool) depth))
+        nested (fn [depth leaf] (nth (iterate #(finite [%]) leaf) depth))
         derive #(list-query-derived (list-query-input 'empty? [%]))]
-    (is (= :accepted (:status (derive (nested 128)))))
-    (is (= :rejected (:status (derive (nested 129)))))
-    (let [member (finite (repeat 1024 :gravity.type/bool))
-          small (derive (finite (repeat 63 member)))
-          input (list-query-input 'empty? [(finite (repeat 64 member))])
-          large (invoke-c7 'sh08-lq-derive [(:core input) (:node input) (:call input) (:edge input)
-                                          (:nodes input) (:bindings input) (:types input) (:forms input) 1000000])]
-      (is (= :accepted (:status small)))
-      (is (= :rejected (:status large)))
-      (is (= :vector-empty-vector-type-required (:reason large)))
-      (is (<= (:work-count large) 65536)))))
+    (doseq [depth [128 129]]
+      (let [result (derive (nested depth :gravity.type/bool))]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/bool (:type result) (get-in result [:descriptor :result-type])))))
+    (is (= :vector-empty-vector-type-required (:reason (derive (nested 129 :gravity.type/unknown)))))))
 
 
 (defn- vector-empty-cross-family-descriptor [descriptor]
@@ -6190,7 +6168,7 @@
         atomics [:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64
                  :gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]]
-    (doseq [element atomics members [[] [element] (vec (repeat 1024 element))]]
+    (doseq [element atomics members [[] [element] (vec (repeat 1025 element))]]
       (let [{:keys [core record function nodes types bindings forms signature declared-type] :as input}
             (homogeneous-list-return-input (positional members) element 0)
             derive #(invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms %])
@@ -6215,7 +6193,7 @@
           (is (= relation (get-in result [:premise :relation])))))
       (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/string :gravity.type/unknown
                      (positional [s :gravity.type/keyword]) (positional [:gravity.type/never]) (positional [:gravity.type/nil])
-                     (positional [:gravity.type/unknown]) (positional [type]) (positional (vec (repeat 1025 s)))]]
+                     (positional [:gravity.type/unknown]) (positional [type])]]
         (is (= :rejected (:status (invoke-c7 'sh08-lr-type-work [type actual 65536]))) (pr-str actual)))
       (let [{:keys [core record function nodes types bindings forms declaration signature] :as input} (homogeneous-list-return-input (positional [s]) s 0)]
         (doseq [mutate [#(assoc-in % [:record :signature :return :element-binding-id] "forged")
@@ -6267,7 +6245,7 @@
 (deftest sh08-homogeneous-list-parameter-development-kernel
   (let [s :gravity.type/string positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
         type {:kind :gravity.type/list :shape :homogeneous :element-type s}]
-    (doseq [members [[] [s] [s s] (vec (repeat 1024 s))]]
+    (doseq [members [[] [s] [s s] (vec (repeat 1025 s))]]
       (let [actual (positional members)
             {:keys [core call edge callee nodes bindings signature] :as input} (homogeneous-list-parameter-input actual)
             result (bare-list-parameter-constraints input) row (first (:constraints result)) pair (first (:rhs row))
@@ -6294,7 +6272,7 @@
     (doseq [actual [:gravity.type/list :gravity.type/string :gravity.type/nil
                     (assoc type :element-type :gravity.type/keyword)
                     (positional [s :gravity.type/keyword]) (positional [:gravity.type/unknown])
-                    (positional [:gravity.type/never]) (positional (vec (repeat 1025 s)))]]
+                    (positional [:gravity.type/never])]]
       (is (seq (:diagnostics (bare-list-parameter-constraints (homogeneous-list-parameter-input actual)))) (pr-str actual)))
     (let [input (homogeneous-list-parameter-input (positional [s]))]
       (doseq [members [42 s '(x) #{s} {:member s} nil]]
@@ -6661,9 +6639,9 @@
           chain #(nth (iterate (fn [t] {:kind :gravity.type/list :element-types [t] :shape :literal}) s) %)]
       (is (= {:status :accepted :work-count 1025} (check [width] 1025)))
       (is (= {:status :rejected :reason :work-limit :work-count 1024} (check [width] 1024)))
-      (is (= :rejected (:status (check [(assoc width :element-types (vec (repeat 1025 s)))] 65536))))
+      (is (= {:status :accepted :work-count 1026} (check [(assoc width :element-types (vec (repeat 1025 s)))] 65536)))
       (is (= :accepted (:status (check [(chain 128)] 65536))))
-      (is (= :type-depth (:reason (check [(chain 129)] 65536))))
+      (is (= {:status :accepted :work-count 130} (check [(chain 129)] 65536)))
       (let [wide {:kind :gravity.type/list :element-types (vec (repeat 1024 width)) :shape :literal}
             rejected (check [wide] 4000)]
         (is (= :rejected (:status rejected)))
@@ -12542,7 +12520,9 @@
       (is (= reason (:reason (list-prepend-derived (list-prepend-input receiver value))))))
     (let [nested #(nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) k) %)]
       (is (= :accepted (:status (list-prepend-derived (list-prepend-input (positional []) (nested 127))))))
-      (is (= :list-prepend-result-type-required (:reason (list-prepend-derived (list-prepend-input (positional []) (nested 128)))))))
+      (let [value (nested 128) result (list-prepend-derived (list-prepend-input (positional []) value))]
+        (is (= :accepted (:status result)))
+        (is (= (positional [value]) (:type result) (get-in result [:descriptor :result-type])))))
     (doseq [args [[] [:arg0] [:arg0 :arg1 :arg0]]]
       (is (= :list-prepend-arity-mismatch (:reason (list-prepend-derived (assoc-in (list-prepend-input homogeneous s) [:call :argument-node-ids] args))))))
     (let [{:keys [core node call edge nodes bindings types forms]} (list-prepend-input homogeneous s)
@@ -21208,10 +21188,10 @@
             [[:map (acc02-finite-map []) true]
              [:map (acc02-finite-map [:gravity.type/keyword :gravity.type/bool :gravity.type/string :gravity.type/nil]) true]
              [:map (acc02-finite-map [:gravity.type/symbol :gravity.type/string]) true]
-             [:map (acc02-finite-map (vec (mapcat identity (repeat 512 [:gravity.type/keyword :gravity.type/string])))) true]
+             [:map (acc02-finite-map (vec (mapcat identity (repeat 513 [:gravity.type/keyword :gravity.type/string])))) true]
              [:bare (acc02-positional []) true] [:bare (acc02-positional [:gravity.type/string :gravity.type/bool]) true]
              [:hom (acc02-positional []) true] [:hom (acc02-positional [:gravity.type/string :gravity.type/string]) true]
-             [:hom (acc02-positional (vec (repeat 1024 :gravity.type/string))) true]
+             [:hom (acc02-positional (vec (repeat 1025 :gravity.type/string))) true]
              [:map :gravity.type/map false] [:bare :gravity.type/list false] [:hom acc02-homogeneous false]]]
       (testing (str family " adaptation=" adapted?)
         (let [{:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
@@ -21282,13 +21262,13 @@
                  (toString [] (swap! callbacks conj :format) (throw (AssertionError. "opaque formatting"))))]
     (doseq [[family actual] [[:map (acc02-finite-map [:gravity.type/keyword])]
                              [:map (acc02-finite-map [:gravity.type/keyword :gravity.type/unknown])]
-                             [:map (acc02-finite-map (assoc (vec (repeat 1024 :gravity.type/string)) 1023 :gravity.type/unknown))]
-                             [:map (acc02-finite-map (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))]
+                             [:map (acc02-finite-map (assoc (vec (repeat 1026 :gravity.type/string)) 1025 :gravity.type/unknown))]
+                             [:map (acc02-finite-map (assoc (vec (repeat 1026 :gravity.type/string)) 1025 opaque))]
                              [:bare (acc02-positional [:gravity.type/string :gravity.type/unknown])]
-                             [:bare (acc02-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))]
+                             [:bare (acc02-positional (assoc (vec (repeat 1025 :gravity.type/string)) 1024 opaque))]
                              [:hom (acc02-positional [:gravity.type/string :gravity.type/string :gravity.type/keyword])]
-                             [:hom (acc02-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 :gravity.type/keyword))]
-                             [:hom (acc02-positional (assoc (vec (repeat 1024 :gravity.type/string)) 1023 opaque))]
+                             [:hom (acc02-positional (assoc (vec (repeat 1025 :gravity.type/string)) 1024 :gravity.type/keyword))]
+                             [:hom (acc02-positional (assoc (vec (repeat 1025 :gravity.type/string)) 1024 opaque))]
                              [:hom (acc02-positional '())]
                              [:hom (acc02-positional [:gravity.type/never])]
                              [:hom (acc02-positional [:gravity.type/string opaque])]]]
@@ -22054,3 +22034,275 @@
       (is (= :rejected (:status ((pr359-prepend-helper 'list-prepend-derived)
                                  ((pr359-prepend-helper 'list-prepend-input) receiver :gravity.type/string))))))
     (is (zero? @callbacks))))
+
+
+(defn- recursive-validation-positional [children]
+  {:kind :gravity.type/list :shape :literal :element-types children})
+
+(defn- recursive-validation-nested [depth leaf]
+  (loop [remaining depth value leaf]
+    (if (zero? remaining) value
+      (recur (dec remaining) (recursive-validation-positional [value])))))
+
+(defn- recursive-validation-check [owner arguments budget]
+  (case owner
+    :C7 (return-premise-c7 'sh08-lc-type-work arguments budget)
+    :Effects (return-premise-effects 'body-lc-type-work arguments budget)
+    :emitter (return-premise-emit 'p15-s23-lc-type-work arguments budget)))
+
+(defn- recursive-validation-foreign-map [data callbacks]
+  (proxy [clojure.lang.APersistentMap] []
+    (count [] (swap! callbacks conj :count) (count data))
+    (seq [] (swap! callbacks conj :seq) (seq data))
+    (valAt
+      ([key] (swap! callbacks conj :lookup) (get data key))
+      ([key missing] (swap! callbacks conj :lookup) (get data key missing)))
+    (containsKey [key] (swap! callbacks conj :contains) (contains? data key))
+    (entryAt [key] (swap! callbacks conj :entry) (find data key))
+    (assoc [_ _] (throw (AssertionError. "unexpected fixture assoc")))
+    (without [_] (throw (AssertionError. "unexpected fixture without")))
+    (empty [] (throw (AssertionError. "unexpected fixture empty")))
+    (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "foreign hash")))
+    (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "foreign equality")))
+    (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "foreign printing")))))
+
+(defn- recursive-validation-foreign-vector [callbacks]
+  (proxy [clojure.lang.APersistentVector] []
+    (count [] (swap! callbacks conj :count) 2)
+    (nth
+      ([_] (swap! callbacks conj :nth) :gravity.type/string)
+      ([_ _] (swap! callbacks conj :nth) :gravity.type/string))
+    (seq [] (swap! callbacks conj :seq) (seq [:gravity.type/string :gravity.type/bool]))
+    (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "foreign vector hash")))
+    (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "foreign vector equality")))
+    (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "foreign vector printing")))))
+
+(defn- recursive-validation-cyclic-type []
+  (let [backing (object-array [:kind :gravity.type/list :shape :literal :element-types nil])
+        value (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 5 [value])
+    value))
+
+(defn- recursive-validation-cyclic-metadata []
+  (let [backing (object-array [:self nil]) value (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 1 value)
+    value))
+
+(defn- recursive-validation-link! [value field-name target]
+  (let [field (.getDeclaredField (class value) field-name)]
+    (when-not (.trySetAccessible field)
+      (throw (ex-info "Native cycle fixture field is unavailable" {:field field-name})))
+    (.set field value target)
+    value))
+
+(defn- recursive-validation-view [backing start end]
+  (clojure.lang.APersistentVector$SubVector. nil backing start end))
+
+(defn- recursive-validation-hidden-list [callbacks]
+  (reify clojure.lang.IPersistentList
+    (count [_] (swap! callbacks conj :count) (throw (AssertionError. "hidden List count")))
+    (seq [_] (swap! callbacks conj :seq) (throw (AssertionError. "hidden List seq")))
+    (cons [_ _] (throw (AssertionError. "hidden List cons")))
+    (empty [_] (throw (AssertionError. "hidden List empty")))
+    (equiv [_ _] (swap! callbacks conj :equals) (throw (AssertionError. "hidden List equality")))
+    (peek [_] (swap! callbacks conj :peek) (throw (AssertionError. "hidden List peek")))
+    (pop [_] (swap! callbacks conj :pop) (throw (AssertionError. "hidden List pop")))))
+
+(deftest recursive-validation-logical-list-count-coherence
+  ;; The existing native header uses public PersistentList.next(). At count
+  ;; one its raw hidden tail is not logical DATA and stays inert. This does
+  ;; not claim rejection of every reflectively corrupted raw JVM List layout.
+  (let [callbacks (atom [])
+        hidden-foreign (recursive-validation-hidden-list callbacks)
+        one-foreign (list :gravity.type/string)
+        one-cycle (list :gravity.type/string)
+        malformed (mapv (fn [[values extent]]
+                          (recursive-validation-link! values "_count" (Integer/valueOf extent)))
+                        [[(list :gravity.type/string) 0]
+                         [(list :gravity.type/string) -1]
+                         [(list :gravity.type/string) 2]
+                         [(list :gravity.type/string :gravity.type/bool) 3]])]
+    (recursive-validation-link! one-foreign "_rest" hidden-foreign)
+    (recursive-validation-link! one-cycle "_rest" one-cycle)
+    (doseq [owner [:C7 :Effects :emitter]]
+      (doseq [value malformed]
+        (is (= :unsupported-arguments (:reason (recursive-validation-check owner value 100000)))))
+      (doseq [value [one-foreign one-cycle]]
+        (is (= {:status :accepted :work-count 1} (recursive-validation-check owner value 100000))))
+      (is (empty? @callbacks)))))
+
+(deftest recursive-validation-native-domain-and-inert-metadata
+  (let [callbacks (atom []) metadata (recursive-validation-foreign-map {:opaque true} callbacks)
+        shared (recursive-validation-positional [:gravity.type/string])
+        hidden (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "hidden hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "hidden equality")))
+                 (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "hidden printing"))))
+        backing [hidden :gravity.type/string :gravity.type/bool hidden]
+        view (recursive-validation-view (recursive-validation-view backing 1 4) 0 2)
+        cyclic-metadata (recursive-validation-cyclic-metadata)]
+    (doseq [owner [:C7 :Effects :emitter]
+            [arguments work]
+            [[nil 0] ['() 0] [[] 0]
+             [(list :gravity.type/string :gravity.type/bool) 2]
+             [(clojure.lang.Cons. :gravity.type/string (list :gravity.type/bool)) 2]
+             [view 2]
+             [[(recursive-validation-positional view)] 3]
+             [[(into clojure.lang.PersistentHashMap/EMPTY (recursive-validation-positional []))] 1]
+             [[(into (sorted-map) (recursive-validation-positional []))] 1]
+             [[(recursive-validation-positional [shared shared])] 5]
+             [[(with-meta shared metadata)] 2]
+             [(with-meta [:gravity.type/string] metadata) 1]
+             [[(with-meta shared cyclic-metadata)] 2]]]
+      (is (= {:status :accepted :work-count work}
+             (recursive-validation-check owner arguments 100000)) (str owner)))
+    (is (identical? metadata (meta (with-meta shared metadata))))
+    (is (identical? cyclic-metadata (:self cyclic-metadata)))
+    (is (empty? @callbacks))))
+
+(deftest recursive-validation-native-guards-precede-callbacks
+  (let [callbacks (atom [])
+        foreign-map (recursive-validation-foreign-map (recursive-validation-positional []) callbacks)
+        foreign-vector (recursive-validation-foreign-vector callbacks)
+        foreign-seq (reify clojure.lang.Seqable
+                      (seq [_] (swap! callbacks conj :seq) (seq [:gravity.type/string])))
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "opaque printing"))))
+        bad-key (clojure.lang.PersistentArrayMap.
+                 (object-array [:kind :gravity.type/list :shape :literal opaque []]))
+        comparator (reify java.util.Comparator
+                     (compare [_ left right] (swap! callbacks conj :compare) (compare left right)))
+        sorted (into (sorted-map-by comparator) (recursive-validation-positional []))]
+    (reset! callbacks [])
+    (doseq [owner [:C7 :Effects :emitter]]
+      (doseq [arguments [foreign-vector foreign-seq]]
+        (is (= :unsupported-arguments (:reason (recursive-validation-check owner arguments 100000)))))
+      (doseq [type [foreign-map bad-key sorted opaque]]
+        (is (= :unsupported-type (:reason (recursive-validation-check owner [type] 100000)))))
+      (is (= :malformed-type
+             (:reason (recursive-validation-check owner [(recursive-validation-positional foreign-vector)] 100000))))
+      (is (empty? @callbacks)))))
+
+(deftest recursive-validation-view-links-and-spine-cycles
+  (let [callbacks (atom []) foreign (recursive-validation-foreign-vector callbacks)
+        backing [:gravity.type/string :gravity.type/bool]
+        self-view (recursive-validation-view backing 0 1)
+        left-view (recursive-validation-view backing 0 1)
+        right-view (recursive-validation-view backing 0 1)
+        cons-cycle (clojure.lang.Cons. :gravity.type/string nil)
+        list-cycle (list :gravity.type/string :gravity.type/bool)]
+    (recursive-validation-link! self-view "v" self-view)
+    (recursive-validation-link! left-view "v" right-view)
+    (recursive-validation-link! right-view "v" left-view)
+    (recursive-validation-link! cons-cycle "_more" cons-cycle)
+    (recursive-validation-link! list-cycle "_rest" list-cycle)
+    (reset! callbacks [])
+    (doseq [owner [:C7 :Effects :emitter]]
+      (doseq [view [(recursive-validation-view backing -1 1)
+                    (recursive-validation-view backing 1 0)
+                    (recursive-validation-view backing 0 3)
+                    (recursive-validation-view foreign 0 1)
+                    self-view left-view]]
+        (is (= :unsupported-arguments (:reason (recursive-validation-check owner view 100000))))
+        (is (= :malformed-type
+               (:reason (recursive-validation-check owner [(recursive-validation-positional view)] 100000)))))
+      (doseq [spine [cons-cycle list-cycle]]
+        (is (= :cyclic-arguments (:reason (recursive-validation-check owner spine 100000)))))
+      (is (= :cyclic-type
+             (:reason (recursive-validation-check owner [(recursive-validation-cyclic-type)] 100000))))
+      (is (empty? @callbacks)))))
+
+(deftest recursive-validation-complete-types-beyond-old-structure-limits
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks conj :printing) (throw (AssertionError. "opaque printing"))))]
+    (doseq [owner [:C7 :Effects :emitter]]
+      (is (= {:status :accepted :work-count 130}
+             (recursive-validation-check owner [(recursive-validation-nested 129 :gravity.type/string)] 100000)))
+      (is (= {:status :accepted :work-count 1026}
+             (recursive-validation-check owner [(recursive-validation-positional (vec (repeat 1025 :gravity.type/string)))] 100000)))
+      (doseq [leaf [:gravity.type/unknown opaque]]
+        (is (= :unsupported-type
+               (:reason (recursive-validation-check owner [(recursive-validation-nested 129 leaf)] 100000))))
+        (is (= :unsupported-type
+               (:reason (recursive-validation-check owner
+                         [(recursive-validation-positional (assoc (vec (repeat 1025 :gravity.type/string)) 1024 leaf))] 100000)))))
+      (is (= :nested-never (:reason (recursive-validation-check owner [(recursive-validation-positional [:gravity.type/never])] 100000))))
+      (is (= {:status :accepted :work-count 1} (recursive-validation-check owner [:gravity.type/never] 100000)))
+      (is (= :malformed-type (:reason (recursive-validation-check owner [{:kind :gravity.type/map :shape :literal :member-types [:gravity.type/string]}] 100000))))
+      (is (= {:status :rejected :reason :work-limit :work-count 0}
+             (recursive-validation-check owner [:gravity.type/string] 0))))
+    (is (empty? @callbacks))))
+
+(deftest recursive-validation-current-consumers-beyond-old-limits
+  (doseq [operand [(recursive-validation-nested 129 :gravity.type/string)
+                   (recursive-validation-positional (vec (repeat 1025 :gravity.type/string)))]]
+    (let [{:keys [core node call edge nodes bindings types module] :as input} (list-construction-input [operand])
+          derived (list-construction-derived input)
+          descriptor (:descriptor derived)
+          args [core node call edge nodes bindings types module]
+          expected (recursive-validation-positional [operand])
+          context {:core core :nodes nodes :forms (:forms input) :bindings bindings
+                   :types (assoc types :operator descriptor :call expected)
+                   :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                   :call-facts {:call (return-premise-c7 'sh08-lc-call-fact descriptor module)}
+                   :ledger [(return-premise-c7 'sh08-lc-constraint descriptor)]
+                   :locals {:arg0 'value} :parameter-types types}]
+      (is (= :accepted (:status derived)))
+      (is (= expected (:type derived) (:return descriptor) (:result-type descriptor)))
+      (doseq [[invoke prefix] [[return-premise-effects "body-"] [return-premise-emit "p15-s23-"]]]
+        (let [validation (invoke (symbol (str prefix "lc-type-work")) [operand] 65536)
+              header (apply invoke (symbol (str prefix "lc-source")) (conj args validation))
+              completed (invoke (symbol (str prefix "lc-finish")) header)]
+          (is (= descriptor completed))))
+      (is (= :complete (:status (return-premise-emit 'p15-s23-typed-compile-node context :call 65536))))
+      (is (= :rejected
+             (:status (return-premise-emit 'p15-s23-typed-compile-node (assoc context :ledger []) :call 65536)))))
+    (let [{:keys [derived descriptor consumers context]}
+          (pr359-prepend-case-data (recursive-validation-positional []) operand)]
+      (is (= :accepted (:status derived)))
+      (is (every? #(= descriptor %) consumers))
+      (is (= (recursive-validation-positional [operand]) (:type derived) (:result-type descriptor)))
+      (is (= :complete (:status (pr359-prepend-emit 'p15-s23-typed-compile-node context :call 65536))))))
+  (let [members (vec (repeat 1025 :gravity.type/string))]
+    (doseq [[invoke prefix] [[return-premise-c7 "sh08-"] [return-premise-effects "body-"] [return-premise-emit "p15-s23-"]]]
+      (let [check #(invoke (symbol (str prefix "lr-type-work")) return-premise-homogeneous (recursive-validation-positional %) 65536)
+            accepted (check members)
+            invalid (check (assoc members 1024 :gravity.type/unknown))]
+        (is (= :accepted (:status accepted)))
+        (is (= :all-positional-elements-match (:relation accepted)))
+        (is (= 1025 (:checked-member-count accepted)))
+        (is (= :homogeneous-list-return-incompatible (:reason invalid)))
+        (is (= :unsupported-type (:type-check-reason invalid)))))))
+
+(defn- recursive-validation-pending-tree []
+  (loop [remaining 66 value :gravity.type/string]
+    (if (zero? remaining) value
+      (recur (dec remaining)
+             (recursive-validation-positional (conj (vec (repeat 1023 :gravity.type/string)) value))))))
+
+(defn recursive-validation-large-owner-acceptance
+  "Manual owner acceptance, not a registered or automatically invoked test.
+  Use the established Git-common normal, host exclusive and canonical-lock
+  route with 2 GiB heap and 120-second child watchdog. This description does
+  not enforce those guards or create a new permission prerequisite. The
+  observer receives completed scalar results before assertions."
+  [owner observe]
+  (doseq [label [:used :pending :late-pending]]
+    (let [arguments (case label
+                      :used (vec (repeat 65537 :gravity.type/string))
+                      :pending [(recursive-validation-pending-tree)]
+                      :late-pending [(assoc-in (recursive-validation-pending-tree) [:element-types 0] :gravity.type/unknown)])
+          expected (case label
+                     :used {:status :accepted :work-count 65537}
+                     :pending {:status :accepted :work-count 67585}
+                     :late-pending {:status :rejected :reason :unsupported-type :work-count 67585})
+          started (System/nanoTime)
+          result (recursive-validation-check owner arguments 100000)]
+      (observe {:owner owner :case label :result result
+                :elapsed-ms (/ (- (System/nanoTime) started) 1000000.0)})
+      (is (= expected result) (str owner " " label)))))

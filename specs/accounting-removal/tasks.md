@@ -33,6 +33,42 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## ACC-06 recursive type validation - 2026-10-27 13:44 MDT
+
+Accounting owns the three existing LC validator families in C7, Effects and
+emitter and their existing SH08 tests. This finite unit removes intrinsic
+65,536-work/pending, depth-128 and member-width-1,024 admission together. It
+preserves complete nested type grammar, Map parity, root-only Never, every
+member and late malformed/opaque rejection, plus native representation and
+identity-cycle controls. Existing caller-supplied budgets, reported work and
+115 caller/debit interfaces remain explicitly unfinished ACC-06 work.
+
+The old-source baseline at `00cdaf55`, tree `d75f42d1`, is accepted as diagnosis:
+depth 129, width 1,025 and the pending family are refused by all three owners;
+65,537 primitive operands hit the intrinsic C7 work ceiling. Foreign map DATA
+is accepted after host callbacks. New representation controls must precede
+lookup/count/indexing and preserve inert metadata and unused view backing.
+No new Native primitive, hosted dependency or profile relaxation is involved.
+
+Merge acceptance for this finite unit requires exact three-owner source review,
+actual depth/width and native/foreign/cycle controls, actual LC/PL/LR consumer
+composition, and manual guarded large-family acceptance for each owner. Large
+cases are an ordinary helper, not registered tests or an automatic CI request;
+the existing guarded owner route supplies the heap/watchdog/broker limits.
+Repository gates, independent retained-result review, current-main reconciliation
+and normal publication/integration remain required. Candidate semantic execution
+has not yet occurred. ACC-06 remains open; original ACC-02/03 are closed and
+eleven original criteria remain open or partial.
+
+PR359's finite descriptor/alias scope is integrated at `00cdaf55`, tree
+`d75f42d1`. All seven routine main-push jobs and source-only prerelease passed;
+the separate unavailable Core gate failed before genuine execution. Unfinished
+unique historical source remains owned in draft
+[PR502](https://github.com/burn2delete/uniform/pull/502), exact preserved
+`6a4f87f0`, tree `f8440ffc`. It is a preservation/disposition draft, not authority
+to merge the old tree wholesale. Existing PR450/454/462 retain their runtime
+implementation ownership and dependency holds.
+
 ## Finite pull-request completion checklists - 2026-10-27 12:39 MDT
 
 Accounting completion owns PR359, PR450, PR454 and PR462. Native owns the seven
@@ -42,7 +78,7 @@ requirement that every ACC row close before any of these PRs can terminate.
 
 | PR and original criterion | Exact finite outcome | Remaining merge checklist and dependency owner |
 | --- | --- | --- |
-| [359](https://github.com/burn2delete/uniform/pull/359), ACC-04/05/12 | Reconcile ANE/BKA/PMK exported descriptor work and the four PL source variants across C7, Effects and emitter; exact private Map constraint/fact aliases. Inventory every original authored path, preserving unselected unique work explicitly. | Accounting: fresh current-main three-owner complete descriptor/proof parity, Effects joins and typed positives; coherent stale-field, source/type/callee/late-invalid/opaque negatives, Never and public-family controls; review exact current head and preserved-work dispositions; routine CI and normal merge/readback. The older DSE feature is not present on main and is not a field-only repair. This stopping condition does not include all 13 ACC rows. |
+| [359](https://github.com/burn2delete/uniform/pull/359), ACC-04/05/12 | Reconcile ANE/BKA/PMK exported descriptor work and the four PL source variants across C7, Effects and emitter; exact private Map constraint/fact aliases. Inventory every original authored path, preserving unselected unique work explicitly. | Finite scope integrated at `00cdaf55`, exact reviewed tree `d75f42d1`. Current-main 21/1644 acceptance, independent review, repository gates, routine CI and merge/readback are complete. Unique unfinished source is preserved in owned draft PR502; runtime drafts remain separate. The older DSE feature is not present on main and is not a field-only repair. This stopping condition does not include all 13 ACC rows. |
 | [450](https://github.com/burn2delete/uniform/pull/450), ACC-09 | Initializer helper work/depth/size admission and old budget API removed; same original initializer receives hosted native-data preflight before lookup; grammar, quote DATA, complete domain and construction semantics preserved. | Dependency-held: Native446 API registration/integration is unresolved. Its original registration operation is uncertain; no duplicate request or alternate writer. After that owner's verified handoff: reconcile current main, prove consumed-input reuse or run only changed composition, then independent head review, routine CI and normal merge/readback. Preserve whole 33,000-element output/order, deep quote identity, native metadata/views, late invalid/foreign/cycle rejection with zero callbacks, duplicate diagnostics and constructor counts. |
 | [454](https://github.com/burn2delete/uniform/pull/454), ACC-09 | String/Keyword/Integer/Character runtime Set-literal builders, actual dispatch, IR and root type join lose width/content accounting coherently. Root module domains remain String/Keyword. | Dependency-held on verified 446 and 450 integration. Accounting: current-main source/definition/instruction input closure, complete 1,030-member outputs in all four builder domains, Unicode-equivalent duplicates, preflight before comparison/insertion, late invalid/foreign zero-callback controls and module identity; independent composed-head review, routine CI and normal merge/readback. Typed lowering and other Set operations stay separate. |
 | [462](https://github.com/burn2delete/uniform/pull/462), ACC-09 | String/Keyword Vector-to-Set conversion and Keyword List capture remove budget APIs and debit fields, preserving complete validation and conversion deduplication. | Dependency-held on verified 446, 450 and 454 integration. Accounting: current-main actual function/arity census, full conversion/capture outputs, evaluation-once and throwing paths, String/Keyword identity, unsupported List carrier and late invalid/opaque controls; exact input-closure reuse or changed composition, independent head review, routine CI and normal merge/readback. |
