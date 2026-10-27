@@ -136,10 +136,19 @@
     (try
       (binding [*ns* namespace]
         (clojure.core/refer 'clojure.core)
-        (require '[clojure.set :as set] '[gravity.macro-run-storage :as macro-run-storage])
+        (require '[clojure.set :as set])
+        (is (nil? (get (ns-aliases namespace) 'macro-run-storage)))
         (doseq [[name operation] operations] (intern namespace name operation))
         (with-open [reader (java.io.PushbackReader. (io/reader source))]
-          (binding [*read-eval* false] (eval (read reader)))))
+          (binding [*read-eval* false]
+            (let [eof (Object.)]
+              (loop []
+                (let [form (read {:eof eof} reader)]
+                  (when-not (identical? eof form)
+                    (eval form)
+                    (recur)))))))
+        (is (= 'gravity.macro-run-storage
+               (some-> (get (ns-aliases namespace) 'macro-run-storage) ns-name))))
       (let [stage (ns-resolve namespace 'semantic-late-sh05-macro-artifact-verification*-expansion-replay)
             expected [:syntax :parse :defn :expand :defn :expand :trace :trace-id :stream-id]]
         (doseq [runs [[(run)] [(dissoc (run) :resolved-expansion)]]]
@@ -155,4 +164,28 @@
               (let [result (stage state)]
                 (is (= (original runs) (:run-storage-exact? result)))
                 (is (= expected @events)))))))
+      (finally (remove-ns (ns-name namespace))))))
+
+(deftest missing-consumer-require-is-a-load-error
+  ;; Bootstrap's ordered manifest reaches this stage before the public facade.
+  ;; Omitting the stage's require must not be masked by a primed test alias.
+  (let [namespace (create-ns (gensym "macro-storage-unprimed-"))
+        source "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj"]
+    (try
+      (binding [*ns* namespace]
+        (clojure.core/refer 'clojure.core)
+        (require '[clojure.set :as set])
+        (doseq [name '[sh05-source-syntax-stream parse-module sh05-defn-form?
+                       sh05-expanded-syntax-object sh05-package-trace sh05-macro-trace-id
+                       sh05-expanded-syntax-stream-id sh05-macro-version]]
+          (intern namespace name))
+        (is (nil? (get (ns-aliases namespace) 'macro-run-storage)))
+        (with-open [reader (java.io.PushbackReader. (io/reader source))]
+          (binding [*read-eval* false]
+            (let [dependency (read reader) consumer (read reader)
+                  _ (is (= '(require '[gravity.macro-run-storage :as macro-run-storage]) dependency))
+                  failure (caught #(eval consumer))
+                  messages (map #(.getMessage ^Throwable %) (take-while some? (iterate ex-cause failure)))]
+              (is (instance? clojure.lang.Compiler$CompilerException failure))
+              (is (some #(and % (.contains ^String % "No such namespace: macro-run-storage")) messages))))))
       (finally (remove-ns (ns-name namespace))))))

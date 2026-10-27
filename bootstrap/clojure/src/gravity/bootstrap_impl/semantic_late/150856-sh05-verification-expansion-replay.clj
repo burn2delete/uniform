@@ -1,6 +1,8 @@
 ; Semantic decomposition of committed HEAD reader line 150856.
 ; Loaded into gravity.bootstrap; intentionally no ns form.
 
+(require '[gravity.macro-run-storage :as macro-run-storage])
+
 (clojure.core/defn
  semantic-late-sh05-macro-artifact-verification*-expansion-replay
  [state]
