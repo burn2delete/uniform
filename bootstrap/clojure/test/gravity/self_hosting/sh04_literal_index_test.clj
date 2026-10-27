@@ -164,4 +164,4 @@
                   (is (identical? first-index hit))
                   (is (identical? owner (second (first results))))
                   (is (identical? owner (second (second results))))
-                  (is (= 2 (.get calls)))))))))))
+                  (is (= 2 (.get calls))))))))))))
