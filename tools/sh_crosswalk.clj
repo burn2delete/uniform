@@ -13,8 +13,159 @@
 (def p15-final-proof "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn")
 (def release-flags [:status :task :full-language-compiler-self-hosted? :clojure-seed-retired? :clojure-seed-boundary?])
 
-;; Integers below select existing literal IDs from their marked task authority.
-;; They are local routing shorthand, never new task IDs or completion units.
+;; Integers below select pinned literal IDs, never live document/display order.
+;; The mapping keys are local routing shorthand, not tasks or completion units.
+(def stable-task-routing-keys
+  {"auth"
+ ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"],
+ "backends"
+ ["backend-interface"
+  "backend-c"
+  "backend-llvm"
+  "backend-wasm"
+  "backend-jvm"
+  "backend-js"
+  "backend-mlir"
+  "backend-gpu"
+  "backend-hdl"
+  "backend-workflow"
+  "backend-ai"
+  "backend-query"
+  "backend-mobile"
+  "backend-emission"
+  "backend-conformance"],
+ "build"
+ ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+  "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+  "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"],
+ "cli"
+ ["cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families"
+  "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services"
+  "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services"
+  "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction"
+  "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints"],
+ "compiler-api"
+ ["pipeline" "plugins" "pass-evidence" "development-boundaries"],
+ "core"
+ ["core/current-evidence-and-remaining-work/core1-lower-core-forms"
+  "core/current-evidence-and-remaining-work/core2-preserve-binding-structure"
+  "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"],
+ "diag"
+ ["diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema"
+  "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order"
+  "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
+ "domains" ["math" "schema" "query" "workflow" "ai" "gpu" "ui"],
+ "effects"
+ ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+  "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+  "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"],
+ "emit"
+ ["emit/current-evidence-and-remaining-work/emit1-reconcile-selected-target-contracts"
+  "emit/current-evidence-and-remaining-work/emit2-emit-real-outputs"
+  "emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes"
+  "emit/current-evidence-and-remaining-work/emit4-establish-conformance"
+  "emit/current-evidence-and-remaining-work/emit5-integrate-artifact-consumers"],
+ "expand"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"],
+ "legality"
+ ["legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+  "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"],
+ "lower"
+ ["lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
+  "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers"
+  "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins"
+  "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission"],
+ "mir"
+ ["mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir"
+  "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables"
+  "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+  "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules"
+  "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"],
+ "opt"
+ ["opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts"
+  "opt/current-evidence-and-remaining-work/opt2-implement-structural-families"
+  "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"
+  "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate"
+  "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline"],
+ "platform" ["hardware" "firmware" "kernel" "devices"],
+ "reader"
+ ["reader/finite-remaining-work/contract-coverage-reconciliation"
+  "reader/finite-remaining-work/decode-and-source-identity-closure"
+  "reader/finite-remaining-work/lexical-products-and-origins-closure"
+  "reader/finite-remaining-work/extension-policy-closure"
+  "reader/finite-remaining-work/authentication-and-quota-removal-closure"
+  "reader/finite-remaining-work/fresh-syntax-handoff"
+  "reader/finite-remaining-work/component-release-evidence"],
+ "release"
+ ["release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+  "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+  "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+  "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+  "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"],
+ "resolve"
+ ["resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions"
+  "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries"
+  "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality"
+  "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes"
+  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"],
+ "runtime"
+ ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+ "stdlib"
+ ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+  "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
+  "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+  "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
+ "syntax"
+ ["syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax"
+  "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations"
+  "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts"
+  "syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify"
+  "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"],
+ "tools"
+ ["tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer"
+  "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer"],
+ "types"
+ ["types/current-evidence-and-remaining-work/types1-solve-core-constraints"
+  "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+  "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
+  "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"
+  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"]}
+)
+
 (def routes
   [[[["mir" 1] ["lower" 1]] [["backends" "backend-wasm"] ["emit" 2]] [["backends" "backend-conformance"] ["emit" 4]] [["lower" 1] ["backends" "backend-interface"]] [["compiler-api" "pass-evidence"]] [["release" 5]]]
    [[["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]]]
@@ -76,8 +227,8 @@
                :owner-source (str "docs/component-roadmaps/" component ".md")}))
           positions (concat (rest positions) [nil]))))
 (defn task-ref [tasks [component selector]]
-  (let [row (if (integer? selector) (get (tasks component) (dec selector))
-                (first (filter #(= selector (:id %)) (tasks component))))]
+  (let [id (if (integer? selector) (get-in stable-task-routing-keys [component (dec selector)]) selector)
+        row (first (filter #(= id (:id %)) (tasks component)))]
     (when-not row (throw (ex-info "Unknown task route" {:component component :selector selector})))
     (select-keys row [:id :component :path])))
 (defn build []
@@ -88,6 +239,9 @@
             (throw (ex-info "Original source changed; retain lineage before rebinding" {})))
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
+        _ (doseq [[c rows] tasks]
+            (when-not (= (set (map :id rows)) (set (stable-task-routing-keys c)))
+              (throw (ex-info "Task identity population changed; preserve source/ownership routing before amendment" {:component c}))))
         test-files (group-by #(.getName %) (filter #(.isFile %) (file-seq (io/file "bootstrap/clojure/test"))))
         locator (memoize (fn [path] {:path path :sha256 (sh-inventory/sha256 (slurp path))
                                     :source-commit baseline :kind :source-inspection-not-execution
@@ -177,6 +331,7 @@
      :global-requirement-handoff {:sha256 "25be0fe3d53bf133b72f405d50d039ba3ab9fb186499036587ab72a860174954"
                                 :authority :join-proposals-only :accepted-denominator false}
      :source-digests (into (sorted-map) (map (fn [p] [p (sh-inventory/sha256 (slurp p))]) sources))
+     :stable-task-routing-keys stable-task-routing-keys
      :retained-native-history {:path "specs/sh-family-crosswalk/retained-native-evidence.edn"
                               :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/retained-native-evidence.edn"))
                               :relation :bounded-history-not-whole-sh-acceptance

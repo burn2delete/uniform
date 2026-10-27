@@ -253,11 +253,9 @@
 
 (defn source-ref [source] (dissoc source :raw))
 
-(defn task-key [task-map component ordinal]
-  (let [rows (filter #(= component (:component %)) (vals task-map))
-        ordered (sort-by #(get-in % [:source :start-byte]) rows)
-        row (nth ordered (dec ordinal) nil)]
-    (require! row "Missing semantic task route") (:id row)))
+(defn task-key [task-map routing component ordinal]
+  (let [id (get-in routing [component (dec ordinal)]) row (task-map id)]
+    (require! (= component (:component row)) "Missing semantic task route") id))
 
 ;; These selected-output composition requirements come from the consuming
 ;; task's own acceptance block, never from Markdown cross-reference counts.
@@ -301,8 +299,10 @@
         _ (require! (= 180 (count requirements)) "Duplicate SH criterion")
         tasks (vec (mapcat val (:task-authorities crosswalk)))
         task-map (into {} (map (juxt :id identity) tasks))
+        routing (:stable-task-routing-keys crosswalk)
         _ (require! (= (count tasks) (count task-map)) "Duplicate global literal task ID")
         _ (doseq [[component rows] (:task-authorities crosswalk)]
+            (require-population! (set (map :id rows)) (get routing component) (str component " fixed routing key"))
             (require-population! (set (map :id rows))
               (implementation-ids (read-text (str "specs/" component "-workflow/tasks.md")) component)
               (str component " live implementation task")))
@@ -383,7 +383,7 @@
             {:from (str "task:" id "/composition") :to (str "task:" id "/implementation")
              :kind :actual-implementation :source (source-ref (:source row))})
           (for [[consumer n producer p condition] composition-routes
-                :let [from (task-key task-map consumer n) to (task-key task-map producer p)]]
+                :let [from (task-key task-map routing consumer n) to (task-key task-map routing producer p)]]
             {:from (str "task:" from "/composition") :to (str "task:" to "/implementation")
              :kind :selected-producer-implementation :condition condition
              :source (source-ref (:source (task-map from)))})

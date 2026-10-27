@@ -21,6 +21,13 @@
     (is (= 2 (:start-line span) (:end-line span)))
     (is (= "accepted" (:raw span)))))
 
+(deftest literal-task-routing-does-not-depend-on-live-ledger-order
+  (let [rows (sh-crosswalk/task-records "core")
+        expected (sh-crosswalk/task-ref {"core" rows} ["core" 1])]
+    (is (= "core/current-evidence-and-remaining-work/core1-lower-core-forms" (:id expected)))
+    (is (= expected (sh-crosswalk/task-ref {"core" (vec (reverse rows))} ["core" 1])))
+    (is (thrown? Exception (sh-crosswalk/task-ref {"core" (vec (rest rows))} ["core" 1])))))
+
 (deftest real-derived-view-is-deterministic-and-preserves-gate-boundaries
   (let [view (sh-crosswalk/build) text (sh-crosswalk/rollup view)
         n26 (filter #(= "SH-26" (:milestone %)) (:requirements view))]

@@ -54,7 +54,7 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   extraction/check is included in the crosswalk verification.
 - `clojure -J-Xmx256m -M tools/sh_crosswalk.clj --check`: passed for the initial
   generated projection. All 180 source routes and 18 sequence rows are present.
-- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 3 tests / 22 assertions,
+- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 4 tests / 25 assertions,
   zero failures/errors. Missing/malformed/duplicate source populations reject;
   UTF-8 offsets and real deterministic rollup/source/gate boundaries are checked.
 - `clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj`: focused
@@ -84,6 +84,9 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   owning execution, rejects/preserved facts, composition and applicable
   independently accepted stable migration requirements. They add no tasks or
   unconditional development replay. SH00-SH02 keep their original exception.
+- Routing keys now bind fixed literal task IDs rather than the live task order.
+  A reordered ledger therefore preserves the same SH and composition mappings;
+  deleted or renamed required IDs fail with an explicit source/ownership gap.
 
 ## Remaining finite publication gates
 
