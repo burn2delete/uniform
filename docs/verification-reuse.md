@@ -931,7 +931,7 @@ verification call is removed, no compatibility cache is enabled, and RV2/RV4
 whole-outcome acceptance remains open. The earlier failed aliased-array memo
 experiment and original PR480 load failure retain their NONPASS dispositions.
 
-### RV2: shared compatibility initialization, acceptance held
+### RV2: shared compatibility initialization
 
 This finite implementation targets repeated Bootstrap initialization for the
 two original compatibility selections, not narrower result-cache authority.
@@ -1001,7 +1001,7 @@ construction, cache narrowing or the separately held RV1 correction.
 | PR494-2 | Reject sharing for mismatched or unknown policies, narrowed closures, foreign affinity keys and non-normal resources; honor batch-size one. Preserve fail-fast skips and retain an error alongside the other namespace's passing result when fail-fast is off. Preserve String job identities and freshness policy. | Bookended controls on `8fc4b6a3` passed 13 / 78, boundary 6 / 11 and docs 240 / 19, natural exit 0 at 256 MiB with Bootstrap absent. Those control bodies are unchanged at `8204a761`. The initial compile error and incorrect Symbol-normalization expectation remain nonpasses. |
 | PR494-3 | Fresh standalone and combined executions of the actual facade-only C11 namespace and manifest namespace pass on one reviewed tuple. Compare per-namespace status, counters and complete stdout/stderr; the combined child initializes the real Bootstrap once. All interposed roots, including the final artifact factory, must be restored. | Accepted actual evidence on `8204a761`: standalone C11 facade 1 / 14, standalone manifest 1 / 48, combined 2 / 62. Complete per-namespace outcomes match exactly; all declared roots are restored. This is the explicitly reviewed oracle scope below, not product construction. |
 | PR494-4 | Retain full reports, actual natural process exits, heap/watchdog/capture/cleanup results and identical clean source bookends. Use existing common, host-exclusive and canonical guards. No cached report substitutes for any execution or authentication. | All three fresh phases exited naturally 0 at actual 2 GiB, with complete captures, stderr empty, cleanup complete/root dead and identical clean source/private-harness bookends. Independent retained-result review accepted them without replay. Original `8c4026b7` product NONPASS remains separate. |
-| PR494-5 | Reconcile current main normally, conserve incoming blobs and reviewed source/test scope, pass relevant cheap checks and actual configured CI, and obtain independent current-head code/result/integration acceptance before expected-head merge. | Draft remains held until PR494-1 through PR494-4 and final review pass. Source-provider or whole-RV2 acceptance is not a merge claim for this finite batching change. |
+| PR494-5 | Reconcile current main normally, conserve incoming blobs and reviewed source/test scope, pass relevant cheap checks and actual configured CI, and obtain independent current-head code/result/integration acceptance before expected-head merge. | Closed by PR494, merged as `49e7c8f2b86ba5e28ed054310ccac0765cc24c0c`, with full tree identity to independently accepted `d311644f`, tree `7e9d0d987ed34b13553e56f2d0049fb88f1afba3`. Current-head CI run 40566281239 passed seven applicable jobs; source-Core-readiness and experimental-prerelease were skipped. Docs 240 / 19 and exact clean integration preflight passed. Source-provider and whole-RV2 acceptance remain separate. |
 
 The legacy entrypoints have only source `[path text]` and file `[path]`
 arities. The newer public checked-Core/C11 interface is a different API; it
@@ -1070,6 +1070,69 @@ The three full child receipt hashes, in table order, are
 `676e40fdfdf3535b4db89ce348374aec7fb436046646634ab5a070345a0f4020`,
 `5071acecf616bd32d7265e56b490b2da2a78e017888c3488d69fb38c33fa5c1a`,
 and `57ab406be14a65689bd69cb0763347c0d1bf0ff4239cbb9d66c260193120224c`.
-PR494-5 remains the final integration gate: current-head independent review,
-appropriate docs/preflight checks, actual configured CI and expected-head merge.
+PR494-5's final integration gate is closed by the independently reviewed,
+validated merge recorded in its criteria row above.
 The earlier failed product attempt is never relabeled as this facade-only pass.
+
+### RV2: compatibility execution-effect eligibility
+
+At integrated PR494, the three-leaf whitelist in `run-child-unit!` limits
+narrowed cache closures. It does not limit whole-repository result reuse:
+the two compatibility selections' deterministic policy flags also pass the
+separate `reviewed?` condition. A hit can therefore skip their Bootstrap
+initialization. The existing source/resource inventories do not establish its
+complete runtime read/effect closure.
+
+The child runtime guards already constrain startup resources, loaders,
+classpath, basis, environment and properties. Those constraints are meaningful;
+the callback shape check alone also does not demonstrate impurity in the
+default fresh child. This is an unproved eligibility boundary, not a measured
+stale hit or proof that every repeat is necessary.
+
+The correction keeps exactly these two inventoried compatibility selections
+fresh, including mixed and combined selections, before startup-resource,
+runtime-basis, snapshot or result-cache observations. It leaves policy metadata,
+the three reviewed pure-leaf paths, PR494's bounded initialization sharing and
+operation errors unchanged. Its receipt reason is
+`:unreviewed-bootstrap-initialization-effects`. No new effects certificate,
+global JVM audit or broad namespace whitelist is introduced.
+
+The finite acceptance boundary is the actual child entrypoint: both named
+selections, either order and mixed with a supported leaf execute the supplied
+operation with zero lookup/basis/snapshot observations; success and error
+outcomes and thrown errors survive; the three supported leaves still reach
+their existing runtime observer. These injected controls do not construct a
+Bootstrap product.
+
+The new control passed 1 test / 67 assertions at exact source
+`c6a94ef46acb39fab135729a3dfb1735ce0d2aca`, tree
+`015d41040b90166aa23e2cc7da9c7926342ddc42`. The complete wiring regression
+namespace passed 51 / 633. Both processes exited naturally 0 at 256 MiB,
+with identical clean source bookends and Bootstrap absent. Boundary controls
+passed 6 / 11 and documents passed 240 / 19. The first invocation used the
+repository runner alias with a script argument and failed before tests; that
+nonpass is retained. Source, retained-result and integration review remain
+required for this successor; no compiler/provider acceptance follows.
+
+The first configured CI attempt on `6a85dc57` failed its static job on the
+existing temporary-root fixture macro's unresolved `base` binding. Baseline
+and current lint reported the same error; the all-errors gate was preserved.
+The test-only correction expresses the fixture as a function with explicit
+callback bindings and preserves its permissions, return value and `finally`
+cleanup. It changes no production guard or lint policy. Local clj-kondo
+2025.10.23 reports zero errors/warnings for that test source; renewed wiring
+validation at `f4e8624ad8cd79010aaab6ed0cc16388404511c2`, tree
+`5b85853014fa9bbdcf855c4c6b08617aa05f0eac`, passed 51 / 633, natural exit 0
+at 256 MiB with identical clean bookends and Bootstrap absent. A non-evaluating
+source comparison confirms all 43 callback bodies and other forms are unchanged
+after removing only the explicit wrapper; reader-generated argument names and
+regex objects are compared as source data. Its initial object-identity
+comparison was invalid and is not acceptance evidence. Exact successor review,
+current-head configured CI and integration remain required.
+
+Closing unsupported admission does not close original RV2's redundancy
+criterion. Complete compatibility read/effect closure and a reviewed reusable
+representation with real producer/hit/invalidation evidence, or a complete
+source-grounded necessity decision, remain open. RV4 still depends on that
+criterion and the separately held RV1 correction. The uncertain RV1 operation
+and candidate are untouched.
