@@ -54,7 +54,7 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   extraction/check is included in the crosswalk verification.
 - `clojure -J-Xmx256m -M tools/sh_crosswalk.clj --check`: passed for the initial
   generated projection. All 180 source routes and 18 sequence rows are present.
-- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 7 tests / 41 assertions,
+- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 8 tests / 73 assertions,
   zero failures/errors. Missing/malformed/duplicate source populations reject;
   UTF-8 offsets and real deterministic rollup/source/gate boundaries are checked.
 - `clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj`: focused
@@ -134,6 +134,13 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   are pinned separately. All 180 SH whole-criterion states remain unassessed;
   no compiler proof was replayed. The bounded source-version review is pending,
   so mapping-ready is temporarily false rather than inheriting an old review.
+- Bounded source-version/composition review passed conservation at `6b151cc3`
+  but found a P2 guard omission: the Reader-roadmap and ownership explicit pins
+  were not read before writes. The correction validates every explicit pin
+  against the combined whole-file digest sources. Per-path mismatched bytes,
+  unavailable Git objects and missing digest probes all fail before either
+  output write. The source payload remains exactly `ae42fea9...`; no mapping,
+  task status, acceptance predicate or source pin changes in this correction.
 
 ## Remaining finite publication gates
 

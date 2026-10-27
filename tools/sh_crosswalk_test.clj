@@ -38,6 +38,28 @@
     (is (= #{["pinned" "tasks.md"] ["pinned" "test.clj"]} @reads))
     (is (thrown? Exception (sh-crosswalk/validate-pinned-sources! record (fn [_ _] "changed source"))))))
 
+(deftest every-explicit-applying-pin-fails-before-either-output-write
+  (let [paths (vec (keys sh-crosswalk/applying-source-pins))
+        text "pinned source" digest (sh-inventory/sha256 text)
+        fixture {:applying-source-pins (zipmap paths (repeat "commit"))
+                 :source-digests (zipmap paths (repeat digest))}
+        seen (atom #{})]
+    (is (nil? (sh-crosswalk/validate-pinned-sources! fixture
+                (fn [_ path] (swap! seen conj path) text))))
+    (is (= (set paths) @seen))
+    (doseq [path paths mode [:mismatch :unavailable :missing-digest]
+            :let [writes (atom [])
+                  data (if (= mode :missing-digest) (update fixture :source-digests dissoc path) fixture)]]
+      (with-redefs [sh-crosswalk/build (constantly data)
+                    sh-crosswalk/git-source (fn [_ target]
+                                             (if (= path target)
+                                               (case mode :mismatch "wrong pinned bytes"
+                                                 :unavailable (throw (ex-info "Missing Git object" {})) text)
+                                               text))
+                    clojure.core/spit (fn [& args] (swap! writes conj (first args)))]
+        (is (thrown? Exception (sh-crosswalk/run ["--write"])) [path mode])
+        (is (empty? @writes) [path mode])))))
+
 (deftest review-adoption-is-mapping-only-and-bound-to-unchanged-inputs
   (let [source (sh-crosswalk/source-view)
         view (sh-crosswalk/adopt-review source (assoc sh-crosswalk/mapping-review :status :accepted-mapping-only))

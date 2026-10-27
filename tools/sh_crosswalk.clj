@@ -492,8 +492,15 @@
                        :when (and (:path m) (:source-commit m) (:sha256 m))]
                    [(:source-commit m) (:path m) (:sha256 m)])
         task-files (for [[_ rows] (:task-authorities result) row rows]
-                     [(:source-commit row) (:path row) (:file-sha256 row)])]
-    (doseq [[commit path expected] (distinct (concat locators task-files))]
+                     [(:source-commit row) (:path row) (:file-sha256 row)])
+        digests (into (or (:source-digests result) {})
+                      (map (fn [[_ path digest]] [path digest]) (concat locators task-files)))
+        explicit-pins (for [[path commit] (:applying-source-pins result)
+                            :let [digest (get digests path)]]
+                        (do (when-not digest
+                              (throw (ex-info "Explicit applying pin lacks a whole-file digest" {:path path})))
+                            [commit path digest]))]
+    (doseq [[commit path expected] (distinct (concat locators task-files explicit-pins))]
       (when-not (= expected (sh-inventory/sha256 (read-version commit path)))
         (throw (ex-info "Source differs from its applying Git pin; preserve lineage before regeneration"
                         {:path path :source-commit commit}))))))
