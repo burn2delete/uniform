@@ -510,3 +510,79 @@ execution and no counts are summed across scopes.
 | Runtime source | `44bae0bd65ca12ca9a9046876e83d286432443ac042141c6d1b00ebb20a0f5d5` |
 | Census/initializer tests | `6bd206f8ced0e43a5a4a2c3d487db146fb19599caa327803879149113d75e97f` |
 | Runtime caller tests | `e54af3b0eb5a1036b27dbb117b6baa0ea142c21f9b6bf9055651cc6b040b255d` |
+
+## Runtime vector/List Set conversion successor
+
+This is another finite unit of original ACC-09, based on the unchanged literal
+successor `93efcde35fce442d9e3ee289331ad421ee8dbe45`, tree
+`52825a064bc93f61c54e94249174997afef00e2d`. The original initializer and literal
+branches, Native API and pending registration request are not modified.
+
+### Baseline and actual scope
+
+The old runtime diagnostic completed naturally with exit 0 in 8080 ms, observed
+heap 2147483648, 1662 complete stdout bytes, empty stderr and exact clean bookends.
+Actual direct helpers and builtin dispatch deduplicated small String/Keyword
+vectors and Keyword Lists. At 1030 elements, all three routes hit exact width
+refusals. Long String/Keyword vector content hit work refusals. The existing
+native List carrier passed representation validation while Cons remained outside
+the List conversion domain. These observations are a baseline, not removal
+acceptance or typed-source admission.
+
+The replacement interfaces validate the original native operand before count,
+lookup, first/rest capture, equality or hashing. List capture completes its
+homogeneous Keyword validation before constructing a Set; vector conversion
+likewise completes String/Keyword validation first. The existing hosted native
+boundary detects foreign/cyclic metadata, malformed views and cyclic native
+List tails. This is an explicit native-domain requirement, not a claim that old
+quotas established acyclicity or that arbitrary foreign admission is preserved.
+Native metadata/visible views and the original input retain identity; unused
+backing DATA stays inert. Host heap/watchdog/broker/capture limits are unchanged.
+
+Conversion still deduplicates, unlike literal construction. Native String and
+Keyword members have the same content/namespace equality used by the former
+guarded comparisons. Hash collisions, distinct Unicode spellings, duplicate
+values, same-printed Keywords with different namespace/name identity, late
+invalid/opaque members, operand evaluation once, throw/catch forwarding, recur
+and arity rejection, and function-produced inputs are covered. Provider comparison
+counts are no longer fabricated as logical reservations; actual input/capture
+extents and unique insertions remain. No Integer/Character conversion or generic
+sequence family is added. C7/Effects/emitter budgets remain a separate open unit.
+
+### Failed first batch and exact correction
+
+First candidate `e278ce927e43f1661f3a285dc79784305d7a5945`, tree
+`8048cecb5086633cf073719a411cade12c6a60d5`, remains NONPASS: 14 tests,
+637 passing assertions and five failures, natural exit 1 in 30338 ms. Every
+failure was the same stale runtime-function census cardinality: the migrated
+inventory contained 56 functions while the test still expected 57. This count
+is a semantic bijection check, not a budget. Native controls and the two unchanged
+lowering selectors passed in this original batch; they retain this provenance.
+Complete stdout was 3063 bytes, stderr 375 bytes containing only the deliberate
+native List-cycle fixture warning. Bookends and cleanup were exact and complete.
+
+Test-only correction `5bcce79ee37194ef14d725c2397ba1626ce355a7`, tree
+`c8a23c8f051ce45ab430f557152eb4f610e505bf`, changes only that expected
+cardinality to 56. Production/runtime/bootstrap/contract inputs and the native
+test body are identical to the first candidate. The five affected runtime caller
+kernels plus six language tests passed fresh: 11 tests/451 assertions, zero
+failures/errors, natural exit 0 in 25827 ms, observed heap 2147483648, 1615 complete
+stdout bytes, empty stderr, exact clean bookends and complete cleanup. This is
+not a fresh passing 14-test batch, and counts are not summed with retained scopes.
+
+Separate cheap checks on the first candidate passed 11 tests/23 assertions and
+the actual 2031-file repository LOC gate, natural exit 0 in 1392 ms, 489 complete
+stdout bytes and empty stderr. The later change affects one test constant only.
+Independent source and retained-result review, public review and current-main
+integration remain pending. No authenticated/public runtime, C12, release or
+whole accounting acceptance is claimed.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Old conversion baseline receipt | `eca22531662daf48c0f072f6427a1dbdd05f25f0f8f4602869a6b20267af963d` |
+| First candidate NONPASS receipt | `74608d20b88f04854f5b79f59ec2d2f5766856c1664bc28dc432817974f674dd` |
+| Corrected targeted receipt | `c3e21a816e0921b525631cf774819b9f3467d091f3d727828ec1fd4fc2ed178a` |
+| Separate cheap checks receipt | `c4621387b119c6cc84b1a072bbfeeea73c6fd6d814bf4da95a45df2ebf3a0c15` |
+| Runtime source | `a66d7f94822b6a43e9f46c3951ce3b999e7fefd31d2a76fb5e78ae151bd48fdb` |
+| Census/native tests | `e66c216a020776ba7f0540f990ade08994f774b7d34cfb6e13304a27d009afe0` |
+| Runtime caller tests | `7f4de1a0b7fdf1af142e2a110789b9908de86a9c9ac84458b5fbbb3a323d0440` |
