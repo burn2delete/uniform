@@ -1,5 +1,122 @@
 # Accounting removal evidence
 
+## ACC-06 LR validator successor - 2026-10-27 UTC
+
+The source baseline is main `9c093bc671036beb097c37e636082172330cfb5c`, tree
+`4fb4101eb593a69937cd2f8abeb4db751ab7a8be`. Source inspection finds exactly
+three `lr-type-work` definitions and three production calls, one in each
+matching `lr-derive`; remaining references are dynamic tests in the same three
+owned namespaces. The helpers' `1 + member-count` reservation can reject
+otherwise valid relations solely because a caller supplied a smaller budget.
+Their `member-work` has no production reader, while the derives consume
+`work-count`, relation and the semantic checked-member extent.
+
+The finite successor retires only those helper allowances/reports, including
+the three caller debits. Declaration and actual-type native/grammar validation
+must precede homogeneous-type hashing, member reads and equality. Existing
+semantic `type-check-reason`, Never and checked-member extent behavior survive.
+The derive's own source allowance and every full v2 premise/row/source/census
+obligation remain. Independent code and retained-result review accepted this
+finite implementation at `ccc2702da5895c8bbe7bc62fefd390c629553383`, tree
+`6dd6af2eba362c0e964c75d755b9814da61a035d`. Ordinary public CI and integration
+remain separate gates; no whole original row closes from these results.
+
+| Actual stage | Exact source | Result | Receipt SHA-256 |
+| --- | --- | --- | --- |
+| Old allowance baseline | `e2e6b8c0c18b90f9b15f4a8334dc8e19aa843990`, tree `68611686daec70df7e3b3b2b6b2df8f4240a7b0c`; production identical to main `9c093bc6` | 1 test / 39 assertions, zero failures/errors, natural exit 0 / 18,576 ms, actual 2 GiB, complete 105 stdout / 0 stderr bytes | `89b91aafc31fde1f3fabf1be283e1730a3911040fa4764f2e8a4ea6e88330dc6` |
+| Three-owner helper/caller and proof controls | `ccc2702d`, tree `6dd6af2e` | 23 tests / 1,186 assertions, zero failures/errors, natural exit 0 / 32,926 ms, actual 2 GiB, complete 3,010 stdout / 401 stderr bytes | `239da57d219c94c9e414603f434339d786677c27a67fe8e9f110b25ae1e348dc` |
+| Current C7 large relations | `ccc2702d`, tree `6dd6af2e` | 1 test / 2 assertions, zero failures/errors, natural exit 0 / 60,173 ms, actual 2 GiB, complete 479 stdout / 0 stderr | `06821aa41f7a2aea4378b0b130a6b79189860134aef55fe3f616a3ea71da2aa6` |
+| Local strict changed-file lint | `ccc2702d`, tree `6dd6af2e`, versus `9c093bc6` | Existing policy and CI-pinned clj-kondo 2025.10.23: 223 unchanged baseline warnings, zero blockers; natural exit 0 / 16,546 ms, bounded 256 MiB child, complete 76 stdout / 0 stderr | `7a98a9459b2180238af359184fa303dc56da3ed7d755eafa73b3d72472e7e7e0` |
+
+Every receipt has exact clean bookends, complete capture, no timeout/wait/capture
+failure, completed cleanup and a terminated root. Semantic jobs used the
+existing normal Git-common broker, host-exclusive broker, canonical lock and
+unchanged 120-second child bound. The ordinary stderr is only the deliberately
+reflected native SubVector cycle fixture warning; it is not empty or a failure.
+Local lint used the normal broker and 60-second non-Bootstrap bound. No source,
+dependency, lint policy or physical resource limit was changed for validation.
+
+All three old helpers accepted native 1,030-member inputs with budget 65,536
+and refused the same inputs with budget 1,030 because their reservation was
+1,031. Mismatch and malformed-type baseline results remain separate semantic
+observations. The new two-argument helpers expose no supplied allowance or cost
+report. Their declarations undergo complete canonical native/type validation
+before the homogeneous predicate can hash an element type, and actual types
+are fully validated before member access or equality. Invalid declarations,
+incompatible actual types and semantic `type-check-reason` remain distinct.
+Checked extents remain zero for an empty positional list and nil for identity
+or Never; Never cannot bypass an invalid declaration.
+
+The 23 selected variables cover the four new relation/native/graph/source
+controls, nine existing C7 LR consumers, two Effects joins/contexts, two emitter
+contexts/typed definitions and six boundary variables. Every v2 declaration,
+source binding, full premise/row comparison, old/mixed/extra-row rejection and
+census obligation stays intact. Native callback controls reject foreign,
+opaque, cyclic and malformed-view inputs without invoking callbacks. Visible
+native views, unused backing data and inert foreign/cyclic metadata preserve
+their established semantics. Nested DAGs pass canonical physical validation
+but do not become compatible with an atomic homogeneous List declaration.
+
+The separately invoked C7 large helper allocates only inside its manual body;
+no registered test invokes it. It accepted 65,537 matching members with exact
+checked extent, then rejected a valid-type mismatch at index 65,536 with the
+semantic incompatibility reason. Completed scalar observations were persisted
+before assertions. Phase observations were 26,320.305875 and 22,760.221583 ms;
+they make no performance claim. Effects/emitter large executions remain unrun;
+exact three-owner helper parity and fresh ordinary controls support that
+narrower scope. No counts from different jobs are summed into a suite.
+
+Compiler-free reader/interface/conservation controls passed 2 tests / 41
+assertions before application. They compare every unaffected definition,
+semantic argument order, relation expression, checked extent, output/debit
+closure, expected test migrations and three-owner parity. An initial private
+control implementation retained both full syntax trees and exhausted its
+256 MiB heap before compiler execution. It was replaced by streaming readers
+that retain canonical definition strings; the complete checks passed at the
+same heap. That preparation failure is not semantic acceptance or a reason to
+raise a source/runtime allowance.
+
+| Accepted source/test input | SHA-256 |
+| --- | --- |
+| C7 engine | `551541720e1da66ea95aaccc05298a23d0681c28cd883d9d8968f89b39a474b6` |
+| Effects | `fc3acf26319ec5cde0ec05fcca83b4a5d50841dab2f03edb318db739747e0b7c` |
+| Emitter | `e57c8384a5dd056698943b83b6b8584ddd2b8683a1a26949f69b140bc3c22db5` |
+| SH08 tests | `fc536d2c3a45a20efe0a9fe9ffc12b4191606fe6f2fab9da1bce5fc8c098bf48` |
+| SH09 tests | `47fa4b9c4569dcefe65e4664661dad464e4e346ad3c3959ebf3b29756c876d7c` |
+| Runtime iteration tests | `143aa49bbff6fb8917dfefc2690cba40b0bf6f41b6c615b55d2105b03b807da4` |
+
+Fresh main remains `9c093bc6`. Each derive's existing source prefix and budget,
+context/inference pools, PL construction and PE/PC ceilings remain open
+accounting work. Whole-plan foreign ingress, authenticated source, Core, C12,
+public runtime admission and release remain unrun. No held Native/shared
+registration or runtime source is imported. Only ACC-02/03 are closed; the
+other eleven original criteria remain open or partial.
+
+Fresh repository gates at documentation successor
+`59efea4e0cee81ecd8d6f76aa77ee6713d5f078a`, tree
+`6a04cbea28c6125a8d2681d8413432e60b08822d`, passed boundary/LOC 11 tests /
+23 assertions, the actual 2,035-file source census, docs 240/19 and roadmap.
+The normal-broker non-Bootstrap child used 256 MiB and the existing 60-second
+bound, exited naturally with zero in 2,418 ms, complete 456 stdout / 0 stderr,
+exact clean bookends, complete cleanup and a terminated root. Receipt SHA-256:
+`0e03d7a3f852e596941224dd6164f971a9a238e6e8ec6f19c9a5659ec0d0939d`.
+This bookkeeping successor changes only the accounting task/evidence records;
+all six accepted source/test inputs and the gate's consumed normative docs,
+tooling, roadmap and Clojure sources are unchanged. Receipts keep their
+original identities; no semantic or gate rerun is implied by this note.
+
+The preceding PR506 finite caller-interface increment is integrated at that
+baseline. Normal squash merge `9c093bc6` has exactly reviewed candidate
+`5ef17137`'s tree, and its branch is retained. Corrected PR CI `40597498166`
+passed all seven routine jobs. Actual main run `40598401746` passed the same
+seven routine jobs plus the source-only prerelease. Only the explicit
+Core-unavailable job is nonpassing: `C6-VERIFY/:actual-selected-current-reader-products`,
+with no genuine compiler execution attempted. Independent source/result and
+final integration/readback review accepted the finite unit. The original
+semantic NONPASS receipts, first failed CI and narrower C7 large-owner evidence
+below keep their original provenance. No whole ACC-06, authentication, Core,
+C12, language-runtime or release acceptance follows.
+
 ## ACC-06 caller budgets and result plumbing - 2026-10-27 22:21 UTC
 
 Independent code and retained-result review accepted this finite implementation
