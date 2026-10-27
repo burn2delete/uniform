@@ -8,6 +8,12 @@
   (let [handle (java.lang.ProcessHandle/of pid)]
     (and (.isPresent handle) (.isAlive (.get handle)))))
 
+(deftest changed-path-base-is-consistent
+  (doseq [base [nil "" "main;echo bad" (apply str (repeat 40 "0"))]]
+    (is (= "HEAD^" (ci/base-ref base))))
+  (let [sha (apply str (repeat 40 "a"))]
+    (is (= sha (ci/base-ref sha)))))
+
 (deftest success-cleans-owned-descendants
   (let [child (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)")
         expression (str "(let [p (.start (ProcessBuilder. " (pr-str child) "))] "

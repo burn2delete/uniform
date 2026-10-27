@@ -17,14 +17,19 @@
     (vec (.toArray stream))))
 
 (defn stop! [^Process process children]
-  (try
-    (doseq [^ProcessHandle child (reverse children)]
-      (when (.isAlive child)
-        (.destroyForcibly child)
-        (.get (.onExit child) 5 TimeUnit/SECONDS)))
-    (finally
-      (when (.isAlive process) (.destroyForcibly process))
-      (.waitFor process 5 TimeUnit/SECONDS))))
+  (let [errors (atom [])]
+    (try
+      (doseq [^ProcessHandle child (reverse children)]
+        (try
+          (when (.isAlive child)
+            (.destroyForcibly child)
+            (.get (.onExit child) 5 TimeUnit/SECONDS))
+          (catch Exception error (swap! errors conj (str error)))))
+      (finally
+        (when (.isAlive process) (.destroyForcibly process))
+        (.waitFor process 5 TimeUnit/SECONDS)))
+    (when (seq @errors)
+      (throw (ex-info "Owned process cleanup failed" {:errors @errors})))))
 
 (defn await! [^Process process seconds]
   (let [deadline (+ (System/nanoTime) (* seconds 1000000000))
@@ -73,10 +78,12 @@
 (defn script [id path & args]
   [id 90 (apply command "512m" "-M" path args)])
 
+(defn base-ref [base]
+  (if (and base (re-matches #"[0-9a-f]{40}" base)
+           (not= base (apply str (repeat 40 "0")))) base "HEAD^"))
+
 (defn changed-clojure-paths []
-  (let [base (System/getenv "CI_BASE_SHA")
-        base (if (and base (re-matches #"[0-9a-f]{40}" base)
-                      (not= base (apply str (repeat 40 "0")))) base "HEAD^")
+  (let [base (base-ref (System/getenv "CI_BASE_SHA"))
         result (execute! "changed-path-discovery" 30
                          ["git" "diff" "--name-only" "--diff-filter=ACMR" "-z" base "HEAD"])]
     (when-not (= :passed (:status result))
@@ -102,7 +109,7 @@
 (defn commands [mode]
   (case mode
     "static" (let [paths (changed-clojure-paths)
-                   base (or (not-empty (System/getenv "CI_BASE_SHA")) "HEAD^")]
+                   base (base-ref (System/getenv "CI_BASE_SHA"))]
                (concat [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]
                         ["workflow-lint" 30 ["actionlint" "-color"]]
                         ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]]

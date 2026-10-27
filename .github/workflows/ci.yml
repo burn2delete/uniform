@@ -61,7 +61,7 @@ jobs:
         if: always()
         run: |
           mkdir -p target/ci
-          git rev-parse HEAD HEAD^{tree} > target/ci/checkout.txt
+          git rev-parse HEAD 'HEAD^{tree}' > target/ci/checkout.txt
           git status --porcelain > target/ci/worktree.txt
           java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
           clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
@@ -109,7 +109,7 @@ jobs:
         if: always()
         run: |
           mkdir -p target/ci
-          git rev-parse HEAD HEAD^{tree} > target/ci/checkout.txt
+          git rev-parse HEAD 'HEAD^{tree}' > target/ci/checkout.txt
           git diff HEAD > target/ci/source-mutation.diff
           clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
           java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
@@ -138,9 +138,10 @@ jobs:
       - name: Report unavailable genuine integration gate
         run: |
           mkdir -p target/ci
-          git rev-parse HEAD HEAD^{tree} > target/ci/checkout.txt
+          git rev-parse HEAD 'HEAD^{tree}' > target/ci/checkout.txt
           printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
           echo 'unavailable/nonpassing: C6-VERIFY/:actual-selected-current-reader-products; no genuine execution attempted' > target/ci/core-readiness.txt
+          sha256sum target/ci/*.txt > target/ci/SHA256SUMS
           echo '::error::Genuine current-source Core construction and independent fresh verification are unavailable on main. Native owner is repairing the C3 Reader-provenance join (C6-VERIFY/:actual-selected-current-reader-products). No modeled test substitutes for this gate.'
           echo 'Source-to-Core gate: unavailable/nonpassing; no genuine compiler execution claimed.' >> "$GITHUB_STEP_SUMMARY"
           exit 1
@@ -166,6 +167,16 @@ jobs:
       - name: Reject tracked source mutation
         if: always()
         run: git diff --exit-code HEAD
+      - name: Finalize snapshot job provenance even after setup failure
+        if: always()
+        run: |
+          mkdir -p target/ci
+          git rev-parse HEAD 'HEAD^{tree}' > target/ci/checkout.txt
+          git diff HEAD > target/ci/source-mutation.diff
+          java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
+          clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
+          printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
+          find target/ci -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > target/ci/SHA256SUMS
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
@@ -196,6 +207,12 @@ jobs:
         run: |
           cd snapshot/experimental
           sha256sum --check SHA256SUMS
+          test -f "uniform-experimental-source-$GITHUB_SHA.tar.gz"
+          existing="$(gh api "repos/$GH_REPO/git/matching-refs/tags/experimental-source-$GITHUB_SHA" --jq length)"
+          if [[ "$existing" != 0 ]]; then
+            echo 'Refusing to reuse an existing experimental source tag.'
+            exit 1
+          fi
           gh release create "experimental-source-$GITHUB_SHA" \
             --target "$GITHUB_SHA" --prerelease --latest=false \
             --title "Experimental source snapshot $GITHUB_SHA" \
