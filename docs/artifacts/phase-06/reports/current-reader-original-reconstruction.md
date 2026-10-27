@@ -88,6 +88,21 @@ Cheap controls passed 26/26 with Bootstrap unloaded. Independent source, exact
 harness and retained-result reviews accepted only this finite reconstruction
 slice; no reviewer semantic rerun is claimed.
 
+Normal reconciliation with main `19db4a52c6c3a354374acca78354adc738280b5e`
+produced `90144813a4e6cab8826c1b07392fdfb1c3d8c2f1`, tree
+`2f4eed72ec3d1254863b5dfe1ec1325207cd92de`. The test and fixture bytes remain
+identical to the genuine execution. Incoming C7/Effects/emitter changes concern
+List-return type-premise validation and are preserved unchanged. The full
+emitter identity changes; the genuine receipt remains attributed to its original
+tuple, not relabeled as execution of the composed tree.
+
+Separate compiler-free composition checks passed 11 tests / 23 assertions,
+natural exit 0 in 0.903 seconds at 256 MiB, with 19 test-source forms parsed,
+Bootstrap unloaded, no source constructors and matching clean bookends. The
+composition receipt SHA-256 is
+`3af6db87a5b9a47fe3fda31a5963e31a49bc627d4783bfb7eb655d71cf1dcab1`.
+Documentation checks passed 240 documents / 19 phase indexes.
+
 The wider authentication population, quota-removal witnesses, actual machine
 failure reporting, extension-handler authorization, frozen public admission,
 whole Reader release, C3/Core/C5/C14 and backend acceptance remain open. No
