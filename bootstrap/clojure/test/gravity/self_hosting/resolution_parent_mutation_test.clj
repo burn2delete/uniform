@@ -87,7 +87,11 @@
         syntax (b/compiler-c3-syntax-source-artifact
                  source (slurp source) (b/reader-project-context-for-source source)
                  nil nil reader invocation)
+        _ (reset! observations {:phase :constructing-macro
+                                :c3-proof-status (get-in syntax [:capability-based-proof :status])})
         original (b/sh05-macro-artifact-from-c3-artifact source syntax invocation)
+        _ (reset! observations {:phase :constructing-positive-resolve
+                                :parent-proof-status (get-in original [:capability-based-proof :status])})
         {:keys [parent mutate! restore! restored?]} (aliased-parent original)
         inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
         construct #(b/sh06-resolution-artifact-from-sh05-artifact source parent inputs reader invocation)
@@ -103,6 +107,7 @@
       (when-not (= :complete (get-in positive [:value :capability-based-proof :status]))
         (throw (ex-info "Positive construction did not produce a complete proof"
                         {:phase :positive-construction})))
+      (reset! observations {:phase :independent-public-verification :events (:events positive)})
       (let [public (b/sh06-resolution-artifact-verification
                      (:value positive) :gravity.bootstrap/legacy invocation)]
         (reset! public-report public)
@@ -110,6 +115,7 @@
         (when-not (= :passed (:status public))
           (throw (ex-info "Independent fresh positive verification failed"
                           {:phase :independent-positive :failed-checks (:failed-checks public)}))))
+      (reset! observations {:phase :changed-construction})
       (let [changed (try (observe-construction parent invocation mutate! construct)
                          (finally (restore!)))
             error (:error changed) data (ex-data error)
