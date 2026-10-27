@@ -796,3 +796,102 @@
          reader-var (fn [_ selected] (is (= reader-path selected)) reader-binding)}
         #(is (= ["C6-VERIFY" :stable-current-reader-dependency-inputs]
                 (c6-program-diagnostic (fn [] (b/p15-s23-c6c10-current-reader-program! path)))))))))
+
+(defn- expression-program-diagnostic [thunk]
+  (try (thunk) nil
+       (catch clojure.lang.ExceptionInfo error
+         ((juxt :id :missing-fact) (ex-data error)))))
+
+(deftest selected-expression-owner-authenticates-and-executes-ordinary-bool-lowering
+  (let [rule (b/c-backend-stage2-plan-emitter-source-rule! path :jvm)
+        emitter (:emitter rule)
+        selected (b/p15-s23-stage2-compiler-artifact-binding! emitter path :jvm 2)
+        plan (:plan selected)
+        contract c6-contract/current-expression-program
+        validate @(ns-resolve 'gravity.bootstrap 'p15-s23-stage2-validate-current-expression-program!)]
+    (is (= 2 (:source-contract-version selected)))
+    (is (= 692 (:function-count selected)))
+    (is (= (:source-content-hash contract) (:source-content-hash selected)))
+    (is (= (:semantic-hash contract) (:semantic-hash selected)))
+    (is (= (:functions-semantic-hash contract) (:functions-semantic-hash selected)))
+    (is (= (:artifact-hash contract) (:artifact-hash selected)
+           (b/p15-s23-stage2-compiler-artifact-expected-artifact-hash 2)))
+    (is (= (:declared-plan-compiler-labels contract) (:compiler plan)
+           (:declared-plan-compiler-labels selected)))
+    (is (false? (:invoked? selected)))
+    ;; The current program must not gain compiler-only builtin authority from
+    ;; its source name, selected binding, or compiler-artifact-plan flag.
+    (is (false? (b/p15-s23-stage2-compiler-artifact-plan-context? plan)))
+    (is (false? (b/p15-s23-stage2-runtime-augmented-plan-context?
+                 {:engine :gravity-stage2-compiler-artifact-host-runner
+                  :compiler-artifact-plan? true} plan)))
+    (binding [b/*p15-s23-stage2-compiler-artifact-binding* selected]
+      (let [module {:module 'expression.fixture :source-path path :profile :hosted
+                    :target :jvm :effects #{} :capabilities #{} :safety :safe}
+            result (b/p15-s23-stage2-compiler-artifact-invoke
+                     'p15-s23-compile-expr [emitter module {} true])
+            literal (:value result)]
+        (is (= :complete (:status result)))
+        (is (= :literal (:op literal)))
+        (is (true? (:value literal))))
+      ;; Expression-owner fixture only: no C2/C3/Core or public admission.
+      (let [forms '[(ns expression.fixture (:profile :hosted) (:target :jvm)
+                        (:effects #{}) (:capabilities #{}) (:safety :safe) (:exports [main]))
+                    (defn main [] (if true true false))]
+            module (b/parse-module path forms)
+            emitted (b/p15-s23-stage2-construct-emitted-core-plan
+                      emitter path (apply str (interpose "\n" (map pr-str forms))) module (b/stage0-function-table module))
+            compiler (:compiler emitted)
+            record {:artifact :gravity/p15-s23-stage2-expression-lowering-binding
+                    :source-contract-version 2 :source-content-hash (:source-content-hash selected)
+                    :semantic-hash (:semantic-hash selected) :artifact-hash (:artifact-hash selected)
+                    :functions (:functions selected) :functions-semantic-hash (:functions-semantic-hash selected)
+                    :function-count (:function-count selected)
+                    :invoked? (:expression-lowering-invoked? compiler) :generic-bridge-residual? true
+                    :plan-assembly-function (:plan-assembly-function compiler)
+                    :plan-assembly-artifact-hash (:plan-assembly-artifact-hash compiler)
+                    :plan-assembly-source-content-hash (:plan-assembly-source-content-hash compiler)
+                    :plan-assembly-semantic-hash (:plan-assembly-semantic-hash compiler)
+                    :plan-assembly-invoked? (:plan-assembly-invoked? compiler)
+                    :plan-assembly-generic-bridge-residual? (:plan-assembly-generic-bridge-residual? compiler)
+                    :clojure-seed-boundary? true :self-hosted? false}]
+        (is (= 2 (:expression-lowering-source-contract-version compiler)))
+        (is (= (:functions-semantic-hash selected) (:expression-lowering-functions-semantic-hash compiler)))
+        (is (true? (:plan-assembly-invoked? compiler)))
+        (is (b/p15-s23-stage2-compiler-artifact-record-authentic? record 2))
+        (is (not (b/p15-s23-stage2-compiler-artifact-record-authentic? record)))
+        (is (b/p15-s23-stage2-compiler-artifact-record-matches-plan? record emitted 2))
+        (doseq [changed [(dissoc record :source-contract-version)
+                         (assoc record :source-contract-version (int 2))
+                         (assoc record :functions-semantic-hash "sha256:altered")
+                         (assoc record :source-content-hash (get-in contract [:declared-plan-compiler-labels :source-content-hash]))]]
+          (is (not (b/p15-s23-stage2-compiler-artifact-record-authentic? changed 2))))
+        (is (not (b/p15-s23-stage2-compiler-artifact-record-matches-plan?
+                   record (update emitted :compiler dissoc :expression-lowering-source-contract-version) 2)))))
+    (doseq [changed [(assoc-in plan [:source :sha256] "sha256:substitution")
+                     (assoc-in plan [:compiler :source-content-hash] (:source-content-hash selected))
+                     (assoc-in plan [:functions 'p15-s23-compile-expr :arity] 3)
+                     (assoc-in plan [:instruction-summary :literal] -1)]]
+      (is (= ["P15S23Q002" :stage2-current-expression-complete-program-identities]
+             (expression-program-diagnostic #(validate path changed)))))
+    (is (= ["P15S23Q002" :current-expression-recomputable-plan-id]
+           (expression-program-diagnostic #(validate path (assoc plan :plan-id "sha256:altered")))))
+    (is (= ["P15S23Q002" :current-expression-plan-emitter-join]
+           (expression-program-diagnostic
+             #(b/p15-s23-stage2-compiler-artifact-binding! (assoc emitter :engine :altered) path :jvm 2))))
+    (is (= ["P15S23Q002" :expression-lowering-source-contract-version]
+           (expression-program-diagnostic
+             #(b/p15-s23-stage2-compiler-artifact-binding! emitter path :jvm (int 2)))))
+    (is (= ["P15S23Q002" :current-expression-selected-host-source-context]
+           (expression-program-diagnostic #(b/p15-s23-stage2-compiler-artifact-binding! emitter path :js 2))))
+    (let [calls (atom 0) foreign (foreign-map #(do (swap! calls inc) (throw (ex-info "callback invoked" {}))))]
+      (is (= ["P15S23Q002" :current-expression-native-plan-emitter]
+             (expression-program-diagnostic #(b/p15-s23-stage2-compiler-artifact-binding! foreign path :jvm 2))))
+      (is (false? (b/p15-s23-stage2-compiler-artifact-record-authentic? foreign 2)))
+      (is (false? (b/p15-s23-stage2-compiler-artifact-record-matches-plan? foreign foreign 2)))
+      (is (zero? @calls)))
+    (is (= ["P15S23Q002" :current-expression-native-plan-emitter]
+           (expression-program-diagnostic
+             #(b/p15-s23-stage2-compiler-artifact-binding! (with-meta emitter {:untrusted true}) path :jvm 2))))
+    (is (= "sha256:e25ae2c9b7853627f8f9db45eb916b6b3775e28b51fbe6e29ecd734598ca8ac2"
+           (b/p15-s23-stage2-compiler-artifact-expected-artifact-hash)))))
