@@ -18,16 +18,23 @@
       (require! (= 1 (count matched)) "Missing or duplicate canonical task ID")
       (let [block (first matched)
             [_ checked] (re-find #"(?m)^- \[([ x])\]" block)
-            status (second (re-find #"(?m)^Current evidence/status: (.+)$" block))
-            acceptance (second (re-find #"(?m)^Done when \(yes/no\): (.+)$" block))]
-        (require! (and status acceptance) "Canonical task lacks status or acceptance boundary")
+            statuses (re-seq #"(?m)^(Current evidence/status|Status): (.+)$" block)
+            boundaries (re-seq #"(?m)^(Done when \(yes/no\)|Closing evidence|Concrete exit evidence): (.+)$" block)
+            status (nth (first statuses) 2 nil) acceptance (nth (first boundaries) 2 nil)]
+        (require! (and (= 1 (count statuses)) (= 1 (count boundaries)))
+                  (str "Canonical task lacks unique status or acceptance boundary: " id))
         (require! (= (= checked "x") (str/starts-with? status "Accepted;"))
                   "Canonical checkbox and acceptance status disagree")
         {:id id :checked? (= checked "x") :status status :acceptance acceptance}))))
 
 (defn project [requirement read-pinned sha256 source-baseline]
   (let [{:keys [path marker id] :as task} (:task-reference requirement)
-        record (task-record (read-pinned task) marker id)
+        _ (require! (or task (seq (:task-gap requirement))) "Requirement has neither canonical task nor explicit trace gap")
+        record (if task (assoc (task-record (read-pinned task) marker id) :path path :marker marker)
+                   {:state :missing :gap (:task-gap requirement)})
+        interfaces (mapv (fn [{:keys [path marker id] :as ref}]
+                           (assoc (task-record (read-pinned ref) marker id) :path path :marker marker))
+                         (:additional-task-interfaces requirement))
         historical
         (mapv (fn [{:keys [receipt selector expected ledger] :as support}]
                 (let [artifact (edn/read-string (read-pinned receipt))
@@ -49,7 +56,8 @@
                                         :source-baseline :qualification])))
               (:historical-support requirement))]
     {:requirement-id (:id requirement)
-     :canonical-task (assoc record :path path :marker marker)
+     :canonical-task record
+     :additional-task-interfaces interfaces
      :historical-support historical
      :current-acceptance :unassessed
      :qualification "Task status is read from its canonical region. Receipt facets preserve historical support only; applicability, consumed closure and independent implementation acceptance remain unassessed."}))

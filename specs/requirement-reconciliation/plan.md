@@ -81,3 +81,11 @@ unreviewed, so these IDs do not establish an approved denominator. Two have
 dated historical fixture support; stable
 root-relative identity has no qualifying support in those receipts. All project
 scope and evidence qualification work remains visible in the draft.
+
+The complete profile/performance batch adds proposed dispositions for all 1,052
+nonblank blocks in its 23 documents, with 2,485 exact byte/line/hash facets and
+79 proposed behaviors. Those dispositions remain proposed pending batch semantic
+and cross-family equivalence review. Thus the current source ledger has one
+reviewed block, 1,052 proposed blocks and 9,043 blocks with no disposition; the
+last two populations together remain 10,095 unresolved blocks. These are
+classification-work counts, never completion percentages or additive estimates.

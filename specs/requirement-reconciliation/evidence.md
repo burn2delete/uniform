@@ -102,3 +102,23 @@ nonblank blocks remain unresolved. The three local units have reviewed atomicity
 with cross-family nonoverlap still proposed. Their two historical support facets
 remain separate from unassessed current acceptance. Neither the source-disposition
 count nor the unit count is a project completion percentage.
+
+## Complete profile/performance proposal import
+
+The 23-document family proposal is retained by digest
+`a5244367e01e179efadfc41d8b7f366851e77922bb4680f915286e1db6b76648`.
+Its 79 proposed behaviors and 2,485 source facets are imported without source
+text duplication or implementation acceptance. Exact pinned UTF-8 slice hashes,
+line bounds, complete contiguous facet partitions and requirement references
+validate. Proposed dispositions still withhold readiness; unresolved accounting
+facets independently withhold readiness even if a source block is marked reviewed.
+The common task reader preserves the existing Reader, Expand, Auth and Legality
+field labels and rejects ambiguous status/boundary records. Missing task IDs stay
+explicit rather than being replaced by migration checkboxes.
+
+Sixteen focused tests / 90 assertions pass, including facet holes, overlap,
+hash/line drift, dangling references, missing task interfaces and existing task
+label variants. Additional task interfaces are validated rather than dropped.
+Documentation, roadmap and Clojure size checks pass; the language-boundary suite
+passes six tests / 11 assertions. Cross-family equivalence and full behavioral entailment await
+batch review; the 82 candidate IDs currently present are not a denominator.

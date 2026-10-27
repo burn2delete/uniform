@@ -4,6 +4,7 @@
             [clojure.string :as str] [gravity.tooling.strict-json :as json]))
 
 (load-file "tools/requirement_evidence.clj")
+(load-file "tools/requirement_facets.clj")
 
 (def manifest-path "contracts/requirement-reconciliation.edn")
 (defn require! [condition message]
@@ -110,7 +111,8 @@
                     "Duplicate source disposition")
         _ (validate-aliases! requirements (:aliases manifest))
         _ (validate-scope-lineage! manifest)
-        mapped (into {} (map (juxt :occurrence-id identity) dispositions))]
+        mapped (into {} (map (juxt :occurrence-id identity) dispositions))
+        facet-result (requirement-facets/validate! manifest sources by-source sha256)]
     (doseq [{:keys [occurrence-id kind requirement-ids rationale decision-id]} dispositions]
       (require! (contains? by-source occurrence-id) "Disposition targets missing source occurrence")
       (require! (#{:requirement :alias :refinement :nonnormative :superseded :scope-decision} kind)
@@ -135,6 +137,7 @@
                                :when (and (= :source-block (:structural-kind o))
                                           (or (nil? (get mapped (:id o)))
                                               (= :proposed (:review-state (get mapped (:id o))))
+                                              (contains? (:unresolved-occurrence-ids facet-result) (:id o))
                                               (= :scope-decision (:kind (get mapped (:id o))))))]
                            (:id o)))
           unresolved-reqs (filter #(not (and (= :reviewed (:atomicity %))
@@ -145,6 +148,7 @@
       {:authority :source-conservation-and-canonical-traceability-only
        :scope-version (:scope-version manifest)
        :source-documents (count sources) :source-occurrences (count occurrences)
+       :source-facet-count (:facets facet-result)
        :source-dispositions {:reviewed (count (remove #(= :proposed (:review-state %)) dispositions))
                              :proposed (count (filter #(= :proposed (:review-state %)) dispositions))}
        :unresolved-source-occurrences unresolved
@@ -194,7 +198,7 @@
                           (require! (= sha256 (requirement-reconciliation/sha256 text))
                                     (str "Task/evidence source drift: " path))
                           text)) sha256 (:source-baseline manifest)))
-                   (filter :task-reference (:requirements manifest)))
+                   (:requirements manifest))
              :manifest-sha256 (sha256 (read-source (checked-path root manifest-path)))
              :source-digests (into (sorted-map) (map (fn [[id text]] [id (sha256 text)]) texts))))))
 
@@ -203,8 +207,11 @@
             "Usage: clojure -M tools/requirement_reconciliation.clj --check | --source-map DOCUMENT_ID")
   (let [report (audit ".")]
     (if (= ["--check"] (vec args))
-      (prn (-> report (dissoc :source-digests :unresolved-source-occurrences)
-               (assoc :unresolved-source-occurrence-count (count (:unresolved-source-occurrences report)))))
+      (prn (-> report (dissoc :source-digests :unresolved-source-occurrences
+                             :evidence-projections :proposed-requirement-ids)
+               (assoc :proposed-requirement-count (count (:proposed-requirement-ids report))
+                      :evidence-projection-count (count (:evidence-projections report))
+                      :unresolved-source-occurrence-count (count (:unresolved-source-occurrences report)))))
       (let [[_ id & extra] args
             manifest (edn/read-string (read-source manifest-path))
             source (first (filter #(= id (:id %)) (concat (:original-documents manifest) (:extension-sources manifest))))]

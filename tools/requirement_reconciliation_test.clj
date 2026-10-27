@@ -161,4 +161,54 @@
                             (fn [pin] (if (= "ledger.md" (:path pin)) (str row "\n## Evidence Ledger\n")
                                           (get files (:path pin)))) rr/sha256 baseline)))))
 
+(deftest existing-canonical-task-labels-remain-source-authority
+  (doseq [boundary ["Closing evidence" "Concrete exit evidence"]]
+    (let [text (str "<!-- active:start -->\n- [ ] `task` Task\nStatus: Open\n" boundary ": Actual boundary\n<!-- active:end -->")]
+      (is (= "Open" (:status (requirement-evidence/task-record text "active" "task"))))
+      (is (= "Actual boundary" (:acceptance (requirement-evidence/task-record text "active" "task"))))
+      (is (thrown? Exception (requirement-evidence/task-record
+                              (str/replace text "Status: Open" "Status: Open\nCurrent evidence/status: Partial") "active" "task"))))))
+
+(deftest missing-task-interface-is-explicit-and-not-accepted
+  (let [requirement {:id "unmapped/behavior" :task-gap "No stable implementation ID located."}
+        result (requirement-evidence/project requirement (fn [_] (throw (Exception. "Must not read absent task"))) rr/sha256 (apply str (repeat 40 "a")))]
+    (is (= :missing (get-in result [:canonical-task :state])))
+    (is (= :unassessed (:current-acceptance result)))
+    (is (thrown? Exception (requirement-evidence/project (dissoc requirement :task-gap) identity rr/sha256 (apply str (repeat 40 "a")))))))
+
+(deftest exact-facet-partitions-and-pending-semantics
+  (let [[manifest sources] (complete-fixture)
+        text (get sources "X") n (count text)
+        o (first (rr/source-occurrences "X" text))
+        facet (fn [id start end]
+                {:id id :source-occurrence-id (:id o) :start-byte start :end-byte end
+                 :start-line 1 :end-line 1 :raw-sha256 (rr/sha256 (subs text start end))
+                 :unit-ids ["fixture/one-thing"]})
+        m (-> manifest
+              (assoc :source-facets [(facet "f1" 0 3) (facet "f2" 3 n)])
+              (assoc-in [:requirements 0 :source-facet-ids] ["f1" "f2"])
+              (assoc-in [:source-dispositions 0 :facet-ids] ["f1" "f2"]))]
+    (is (= 1 (:denominator (rr/project m sources))))
+    (is (= 2 (:source-facet-count (rr/project m sources))))
+    (is (false? (:denominator-ready? (rr/project (assoc-in m [:source-facets 1 :unresolved] "Mixed source policy") sources))))
+    (doseq [bad [(assoc-in m [:source-facets 0 :raw-sha256] "wrong")
+                 (assoc-in m [:source-facets 0 :unit-ids] ["absent"])
+                 (assoc-in m [:source-facets 0] (facet "f1" 0 2))
+                 (assoc-in m [:source-facets 0] (facet "f1" 0 4))
+                 (assoc-in m [:source-facets 1 :start-line] 2)
+                 (assoc-in m [:source-facets 1 :id] "f1")
+                 (assoc-in m [:source-dispositions 0 :facet-ids] ["f1"])
+                 (assoc-in m [:requirements 0 :source-facet-ids] ["absent"])]]
+      (is (thrown? Exception (rr/project bad sources))))))
+
+(deftest additional-task-interfaces-are-checked-not-silently-dropped
+  (let [text "<!-- active:start -->\n- [ ] `one` One\nStatus: Open\nClosing evidence: First boundary.\n- [ ] `two` Two\nStatus: Open\nClosing evidence: Second boundary.\n<!-- active:end -->"
+        requirement {:id "two-consumers" :task-reference {:path "tasks" :marker "active" :id "one"}
+                     :additional-task-interfaces [{:path "tasks" :marker "active" :id "two"}]}
+        project #(requirement-evidence/project % (fn [_] text) rr/sha256 (apply str (repeat 40 "a")))
+        result (project requirement)]
+    (is (= "one" (get-in result [:canonical-task :id])))
+    (is (= "two" (get-in result [:additional-task-interfaces 0 :id])))
+    (is (thrown? Exception (project (assoc-in requirement [:additional-task-interfaces 0 :id] "missing"))))))
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))
