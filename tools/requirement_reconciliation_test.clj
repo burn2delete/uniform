@@ -356,6 +356,28 @@
       (is (thrown? Exception (view (assoc-in m [:source-version-bridges 0 :live-sha256] (rr/sha256 changed)) changed))))
     (is (thrown? Exception (view (assoc m :source-version-bridges []) live)))
     (is (thrown? Exception (view (assoc-in m [:source-version-bridges 0 :baseline-ref] applying) live)))
-    (is (= base (:text (view m base))))))
+    (is (= base (:text (view m base))))
+    (let [[one one-sources] (complete-fixture)
+          dispositions (for [o (rr/source-occurrences "platform-product" base)
+                             :when (= :source-block (:structural-kind o))]
+                         {:occurrence-id (:id o) :kind :nonnormative :rationale "Fixture source context."})
+          projected (-> (merge one m) (update :source-dispositions into dispositions))
+          sources (assoc one-sources "platform-product" live)]
+      (is (false? (:denominator-ready? (rr/project projected sources))))
+      (is (= 1 (:denominator (rr/project (assoc-in projected [:source-version-bridges 0 :review-state] :reviewed) sources)))))))
+
+(deftest final-transferred-domain-tool-and-platform-records-retain-boundaries
+  (let [domains (slurp "specs/domains-workflow/tasks.md")
+        tools (slurp "specs/tools-workflow/tasks.md")
+        platform (slurp "specs/platform-workflow/tasks.md")]
+    (doseq [id ["math" "schema" "query" "workflow" "ai" "gpu" "ui"]
+            :let [r (requirement-evidence/task-record domains "domains-implementation-tasks" id)]]
+      (is (= "Open" (:status r)))
+      (is (false? (:checked? r)))
+      (is (str/includes? (:acceptance r) "Yes/no acceptance:")))
+    (is (str/includes? (:acceptance (requirement-evidence/task-record tools "tools-implementation-tasks"
+                               "tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer")) "Comments retained?"))
+    (is (str/includes? (:acceptance (requirement-evidence/task-record platform "platform-implementation-tasks" "hardware")) "state-machine lowering and simulation"))
+    (is (thrown? Exception (requirement-evidence/task-record (str/replace domains "Outcome:" "Malformed outcome:") "domains-implementation-tasks" "math")))))
 
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

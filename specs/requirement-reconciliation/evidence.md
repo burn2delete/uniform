@@ -366,3 +366,49 @@ insufficient provenance. Semantic edits, missing/duplicate transfer additions,
 unrecognized drift and unrelated baselines reject. A proposed used bridge still
 withholds scope readiness pending independent review. Twenty-three tests /
 150 assertions pass, including snapshot and semantic-change negative controls.
+
+## Integrated authorities and bounded scope review
+
+The composed source retains all 24 integrated component task authorities.
+The evidence reader supports the complete original Tools closing-evidence
+label and the Domains/Platform projected outcome shapes. Existing literal IDs,
+full acceptance paragraphs and statuses remain authoritative. Sixty-five
+Tools/CLI candidates now have partial implementation interfaces selected from
+the actual contract links and closing boundaries; their previous trace gaps
+remain in history. These references grant no implementation acceptance.
+
+The complete 79-record Profile/Performance review is retained as scoped advice.
+Its 22 bounded atomicity passes survive, with global nonoverlap still proposed.
+Four previously applied aliases have independent confirmation. Kernel atomic
+support adds the P7 context to the existing SAFE8 ordering gate; its complete
+prior record is archived. Fourteen additional profile-specific import, numeric,
+replay, proof, build-effect, compile-time and backend cases consolidate into
+their existing gates with all source conditions, task interfaces and historical
+pointers retained. The active draft has 1,229 candidates and 25 stable aliases;
+neither count is an accepted denominator. Thirty-six compound Profile outcomes
+still require explicit source-preserving partition and owner adjudication.
+
+Three AI candidate predicates now follow their actual source clauses. A9
+retains all six safety-probe categories when relevant. A10 rejects review
+records missing an evidence hash, separately from payload identity; it does not
+invent an evidence-hash requirement for every denial event. A11 monitors record
+denied escalation, override attempts and protected-data exposure attempts; the
+recording clause does not invent autonomous detection or denial. Independent
+whole-document review confirms these corrections within existing scope. Complete
+prior records and clause identities remain available.
+
+The native ABI assessment retains three actual producer outcomes, fourteen
+original facets, dated merged validation reports and separately recovered SH22
+consumer adoption. This is bounded code/fixture and consumer evidence, not just
+metadata presence. Current host/JDK/provider applicability and changed consumed
+Reader/Core dependencies remain qualified and await independent review. Old
+accounting receipt claims remain historical. No C12, native, compiler or Python
+execution is claimed, and no current requirement acceptance is upgraded.
+
+The focused successor checks pass 24 tests / 176 assertions. The source audit
+retains all 245 source views, 19,962 occurrences and 27,425 exact structured
+facets. It reports 10,095 source occurrences still needing semantic closure;
+source readiness, denominator and overall rate remain withheld. Documentation,
+roadmap and Clojure source-size validation pass. The remaining Standard Library
+normalization, compound splits, cross-family equivalence and current evidence
+adjudication are substantive unfinished work, not omitted scope.
