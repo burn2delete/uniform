@@ -122,3 +122,13 @@ label variants. Additional task interfaces are validated rather than dropped.
 Documentation, roadmap and Clojure size checks pass; the language-boundary suite
 passes six tests / 11 assertions. Cross-family equivalence and full behavioral entailment await
 batch review; the 82 candidate IDs currently present are not a denominator.
+
+Independent frozen-candidate review confirmed the actual 23-document import and
+all 2,485 facet records match the primary proposal, including the inverse unit
+relationships. It nevertheless found a synthetic guard hole: individually valid
+IDs could disagree across source and facet relations. The successor requires each
+facet-bearing source's requirement IDs to equal its facet-unit union, and each
+structured unit's facet IDs to equal the complete inverse relation. Legacy L1
+paragraph bindings remain valid. Seventeen tests / 93 assertions pass, including
+the swapped-relationship and omitted-declaration regressions. The import data is
+unchanged; full semantic and equivalence review remains open.

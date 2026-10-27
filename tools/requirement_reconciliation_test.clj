@@ -211,4 +211,23 @@
     (is (= "two" (get-in result [:additional-task-interfaces 0 :id])))
     (is (thrown? Exception (project (assoc-in requirement [:additional-task-interfaces 0 :id] "missing"))))))
 
+(deftest source-and-facet-relations-must-agree-in-both-directions
+  (let [sources {"A" "One.\n" "B" "Two.\n"}
+        os (mapv #(first (rr/source-occurrences % (get sources %))) ["A" "B"])
+        facet (fn [id o unit] {:id id :source-occurrence-id (:id o) :start-byte 0 :end-byte (:end-byte o)
+                               :start-line 1 :end-line 1 :raw-sha256 (:raw-sha256 o) :unit-ids [unit]})
+        manifest (assoc (open-manifest) :scope-state :reviewed
+                        :requirements [{:id "one" :atomicity :reviewed :nonoverlap :reviewed :source-facet-ids ["fa"]}
+                                       {:id "two" :atomicity :reviewed :nonoverlap :reviewed :source-facet-ids ["fb"]}]
+                        :source-facets [(facet "fa" (first os) "one") (facet "fb" (second os) "two")]
+                        :source-dispositions [{:occurrence-id (:id (first os)) :kind :requirement :requirement-ids ["one"] :facet-ids ["fa"]}
+                                              {:occurrence-id (:id (second os)) :kind :requirement :requirement-ids ["two"] :facet-ids ["fb"]}])]
+    (is (= 2 (:denominator (rr/project manifest sources))))
+    (is (thrown? Exception (rr/project (update manifest :requirements #(mapv (fn [r] (dissoc r :source-facet-ids)) %)) sources)))
+    (is (thrown? Exception (rr/project (-> manifest
+                                           (assoc-in [:source-facets 0 :unit-ids] ["two"])
+                                           (assoc-in [:source-facets 1 :unit-ids] ["one"])
+                                           (assoc-in [:requirements 0 :source-facet-ids] ["fb"])
+                                           (assoc-in [:requirements 1 :source-facet-ids] ["fa"])) sources)))))
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

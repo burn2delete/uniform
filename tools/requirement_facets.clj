@@ -9,6 +9,9 @@
   (let [facets (:source-facets manifest) ids (mapv :id facets)
         by-id (into {} (map (juxt :id identity) facets))
         requirement-ids (set (map :id (:requirements manifest)))
+        unit-facets (reduce (fn [index f]
+                              (reduce #(update %1 %2 (fnil conj #{}) (:id f)) index (:unit-ids f)))
+                            {} facets)
         grouped (group-by :source-occurrence-id facets)]
     (require! (= (count ids) (count (set ids))) "Duplicate source facet ID")
     (doseq [{:keys [source-occurrence-id start-byte end-byte start-line end-line raw-sha256 unit-ids]} facets]
@@ -31,9 +34,14 @@
       (require! (and (contains? by-id id)
                      (contains? (set (:unit-ids (get by-id id))) (:id requirement)))
                 "Requirement facet is absent or belongs to another requirement"))
+    (doseq [requirement (:requirements manifest)
+            :when (or (seq (:source-facet-ids requirement)) (contains? unit-facets (:id requirement)))]
+      (require! (= (set (:source-facet-ids requirement)) (get unit-facets (:id requirement) #{}))
+                "Requirement facets differ from inverse facet/unit relation"))
     (doseq [d (:source-dispositions manifest) :when (or (seq (:facet-ids d)) (seq (get grouped (:occurrence-id d))))]
       (let [o (get by-source (:occurrence-id d)) fs (sort-by :start-byte (get grouped (:occurrence-id d)))]
         (require! (and (= (set (:facet-ids d)) (set (map :id fs)))
+                       (= (set (:requirement-ids d)) (set (mapcat :unit-ids fs)))
                        (= (:start-byte o) (:start-byte (first fs)))
                        (= (:end-byte o) (:end-byte (last fs)))
                        (= (map :end-byte (butlast fs)) (map :start-byte (rest fs))))
