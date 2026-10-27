@@ -473,3 +473,18 @@ Historical B28/B47 coverage records describe frozen source identities, already
 different from current main, and are not rewritten to manufacture migration
 acceptance. Authenticated/public source, frozen migration, inference allowance
 removal, C12, release and whole ACC-08/ACC-13 remain open or unrun.
+
+The ledger-only `b97115b9` gate run passed boundary/LOC 11/23, actual repository
+LOC and docs/roadmap validation, with receipt SHA-256
+`3ea8f418c7d6b3feb71ac568d19c035fe08b30a778d55560d0ee229fbb2c4d7c`.
+Its exact-base preflight subsequently rejected a concurrent main advance from
+`82f7e8d` to `bca9ea29`; that is a retained base-mismatch result, not a semantic
+test failure. Normal merge `31001319ad764f53b92cd412b5d5c7af1cae9399`, tree
+`3e32dcc58c579e4059985535cd8521eccd341875`, preserves the Reader/Syntax change.
+Independent consumed-route review confirmed that SH08's compiler-plan seed path
+uses the unchanged host-oracle records and hosted syntax-object-stream wrapper;
+the changed C2 product/scalar projection is not invoked. All actual C7/SH08
+implementation and semantic-test bodies remain identical to the accepted inputs.
+Semantic receipts retain their original identities; composition requires fresh
+repository gates and an exact-base preflight rather than an unchanged semantic
+replay. No Reader/Syntax or authenticated-source acceptance is inferred.
