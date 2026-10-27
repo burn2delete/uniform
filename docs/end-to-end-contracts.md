@@ -142,8 +142,10 @@ type/effect/profile/grant/ownership/safety/origin substitutions reject. Preserve
 runtime checks and proof references through serialization. Confirm currently
 unassigned component ownership and pair each claimed fact with its actual
 producer; constructed fixture declarations cannot fill a missing producer.
-MIR producer #378 remains draft, with guarded semantic regressions and held
-consumer composition. C12 execution remains prohibited; any consumed C12
+The finite producer/consumer composition preserving #378 and #383 ancestry
+merged through #421 at `06a256fdb97f49b5fedea36a6803483302631bbc` (receipt
+below). This accepts the exercised development joins, not the complete analysis
+fact population required by OWN-03. C12 execution remains prohibited; any consumed C12
 dependency remains a blocker, not an excluded passing path.
 
 ### OWN-04 - MIR/Native schema, parameters and DATA continuity
@@ -157,22 +159,55 @@ Contracts: C6/C11/B1. Producer source is C11 above. Native consumer files are
 `00738-p15-s23-c11-mir-validate-operations.clj`,
 `00739-p15-s23-c11-mir-validate-terminator.clj`,
 `00740-p15-s23-c11-mir-validate-effect-edge-placement.clj` and
-`00741-p15-s23-c11-mir-map-blocks.clj` in that same directory. Native #383 adds
+`00741-p15-s23-c11-mir-map-blocks.clj` in that same directory. Native #383 added
 `bootstrap/clojure/test/gravity/self_hosting/sh01_native_original_bool_compatibility_test.clj`;
-that fixture is absent from inspected main and is not current-main coverage.
+that fixture is now integrated through #421. Its absence at the original
+inspection baseline is historical, not the current disposition.
 
 Dependency: OWN-03's exact input tuple and one reviewed shared DATA domain.
 Acceptance: genuine original construction, complete typed DATA preservation,
 independent fresh replay and actual Gravity/Native positives and crossed-source,
 parameter/type/quota negatives on one compatible tuple. The generic SH12 branch
 builder already delegates to the generic C11 builder; another run of that helper
-does not itself exercise a new producer. Native #383 removes stale consumer quota
-expectations in 00734/00736/00741; #421 composes that change with #378. Neither
-draft establishes integration acceptance. Native owns the parameter descriptor
-and shared codec. Controlled codec fixtures preserve scalar classes/metadata and
-container kind but do not prove exact concrete map/vector preservation or the
-actual composite artifact inventory. Agree class/callback policy and review
-before source A/B; do not weaken equality to manufacture a pass.
+does not itself exercise a new producer. Native #383 removed stale consumer quota
+expectations in 00734/00736/00741; merged #421 composes that change with #378 and
+the independently guarded Bool-entry-parameter consumer. Native owns the
+parameter descriptor and shared codec; MIR owns producer/integration semantics.
+The shared V3 DATA domain and genuine source joins below received independent
+review. The earlier controlled codec probe alone was insufficient; the later
+accepted evidence must not be described as that probe or as timeout-only work.
+
+#### Accepted finite OWN-04 joins
+
+[PR421](https://github.com/burn2delete/uniform/pull/421) merged reviewed head
+`d67406b305d93e052f54c9439da8142efbb663c0` as
+`06a256fdb97f49b5fedea36a6803483302631bbc`, with identical full tree
+`6ed68a337f85d9a044d7eb3d08aa1ae8eebccea2`. The
+[frozen receipt](https://github.com/burn2delete/uniform/pull/421#issuecomment-6428826929)
+retains each producer identity; reconciliation does not reissue its source runs.
+
+| Accepted join | Exact producer and evidence | Remaining boundary |
+| --- | --- | --- |
+| Zero-arity source to C6/MIR and Native | `8b9dd46ea38eafba1d3d7a49d8c6ca6b6488563f`, tree `ed9d118e18f5f1a3f04138603e282ade9fb70701`: genuine true `.gravity` and false `.qst` construction, separate fresh C6 verification, Gravity reconstruction verification, Native positives, both source-substitution directions and exact type/quota negatives. Separate children naturally exited 0 at 2 GiB/120 seconds. | B's DATA was inspected in-process but not retained for a later independent saved-artifact rewalk. No other source or parameter family is inferred. |
+| Composed Native consumer | `38f8f6e0`, tree `5b2f86c3`: retained A passed real seal/provenance, Gravity and Native consumption, with type, retired-scope, source-Core and parameter-impostor negatives; 42 tests / 426 assertions, natural exit 0. | This reconsumes A; it is not a new original source construction. |
+| Single Bool entry parameter | The same `38f8f6e0` / `5b2f86c3` tuple: genuine c41 `.gravity` original 1/7 and separate independent fresh replay 1/48, natural exit 0 at 2 GiB/120 seconds. Full typed raw-C6 equality, actual C6/Gravity verification, Native acceptance and parameter negatives passed. | Parameter `.qst` and other parameter families are not accepted by these receipts. |
+| Final main reconciliation | `d67406b3` / `6ed68a33`: independent source/contract review conserved the SH04 projection, fallback, descriptors and fresh authentication; fresh focused/boundary/LOC controls 21/94, docs 240/19 and exact integration preflight passed. | Earlier source evidence retains its original tuple. No emitted-code or final-artifact admission is inferred. |
+
+The parameter handoff's strict V3 typed DATA digest is
+`b065758e2bcc644b75835046d93ba70dec7479beea5974370864563040012958`.
+Its supported concrete collection classes, metadata and backing/view policy
+were reviewed; no equality relaxation replaced the source/callback guards.
+The C11 producer in these receipts is 567399 bytes, SHA256
+`c41d9e0317b398a53e4b28d7bba90be7bebda23c51fa9c74a6a8c91be38ce79e`.
+It must not inherit the full-Reader b9 source receipt or vice versa.
+
+These finite development joins are complete. OWN-04 still requires a disposition
+for each remaining inventoried supported schema/parameter path and its actual
+producer-consumer evidence; unsupported families receive no acceptance credit.
+OWN-03's complete fact population remains separate. Current-source final
+artifact/report successor admission belongs to OWN-06 below, not a reason to
+erase or repeat these accepted development joins. No C12, Opt/Lower, emitted-code,
+release or self-hosting acceptance follows from the counts.
 
 ### OWN-05 - Optimization and lowering consume the same accepted MIR
 
@@ -209,7 +244,14 @@ artifact, verifier report and execution result; original source/facts/report/
 artifact substitution and undeclared runtime services reject at the real consumer.
 `p15-s23-c11-mir-validate-constructed!` accepts Core/MIR and produces a fresh
 report; saved-report equality demonstrates reproducibility, not rejection of a
-supplied report. The frozen final artifact route and admission contract's
+supplied report. The distinct existing final-artifact validator in 00743 accepts
+an artifact-contained report, recomputes it through 00740 and requires ordinary
+and type-sensitive equality. The public C11 verifier in 00744 additionally
+authenticates Core/context and performs independent Gravity builder replay.
+Those APIs do not yet accept the current c41 source through the historical
+330835-byte/cf7 source-rule contract. The MIR producer and Native consumer owners
+are preparing an explicitly versioned successor through these existing APIs;
+design work is not a passing final-admission receipt. The frozen final artifact route and admission contract's
 unfrozen replay-owner policies remain separate open interfaces. No repinning,
 injected pass report, synthetic final artifact or relaxed source guard closes
 them. Runtime writer/acceptance ownership must be confirmed; accounting removal
@@ -235,8 +277,10 @@ inspected main baseline; it does not rerun the owner's construction.
 MIR owner reports composite tree `ed9d118e18f5f1a3f04138603e282ade9fb70701`,
 C11 source 567399 bytes, SHA256
 `c41d9e0317b398a53e4b28d7bba90be7bebda23c51fa9c74a6a8c91be38ce79e`.
-The latter source run timed out at 120 seconds with no completed test counts;
-helper 36/327, harness 10/52 and controlled codec 10/92 receipts do not replace it.
+The initial latter-source run timed out at 120 seconds with no completed test
+counts; it remains a historical nonpass. Helper 36/327, harness 10/52 and
+controlled codec 10/92 receipts did not replace it. The subsequently accepted
+source and composed-consumer receipts are recorded under OWN-04 above.
 These are attributed owner reports, not locally rerun acceptance. Different
 source tuples cannot be joined by comparing counts or relabeling historical pins.
 
