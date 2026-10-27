@@ -17,7 +17,8 @@
                {:form-id :wrapper :kind :metadata-wrapper :children [:form-0]
                 :span (assoc span :byte-start 0) :raw (str "^:private " raw)
                 :value value :expanded-form value :metadata {:private true} :abbrev :metadata
-                :surface-span prefix-span :generated-origin [{:child-form-id :form-0}]}
+                :surface-span prefix-span
+                :generated-origin [{:child-form-id :form-0 :from prefix-span :reason :metadata}]}
                ratio)
         literal {:literal-id :lit-0 :form-id :form-0 :decoded value :raw raw :span span
                  :facts {:numerator-spelling "1" :denominator-spelling (if deferred? "0" "2") :exact? true}}
@@ -50,7 +51,8 @@
       (is (= result (:reader-literal-descriptor
                      (literals/c3-source-facts seed root artifact {:authentic? true}))))
       (is (= (if wrapped? :metadata-wrapper :ratio)
-             (literals/c3-source-form-kind seed root artifact {:authentic? true}))))))
+             (literals/with-operations {:form-kind (constantly :legacy-fallback)}
+               #(literals/c3-source-form-kind seed root artifact {:authentic? true})))))))
 
 (deftest actual-retained-occurrence-keeps-all-legacy-and-explicit-scalar-fields
   (let [{:keys [seed root artifact] :as case} (sample "1/2" false)
