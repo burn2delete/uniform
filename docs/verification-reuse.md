@@ -23,11 +23,12 @@ case construction; current Native/MIR source/composition receipts.
 
 | ID | Exact boundary and files | Dependency and acceptance | Current disposition |
 | --- | --- | --- | --- |
-| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Further removal remains unproved; retain those checks. No repeat fixture experiment or new elision in this change. |
-| RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Corrected Reader increment integrated through PR432. Compatibility loader audit below removes obsolete declarations; narrower bootstrap reuse remains open. No report, cache or receipt schema change. |
+| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Required recursive canonical callback dispatch is classified below as a necessary transitive operation under the current override contract. Further removal of an entire Macro verification remains unproved; retain those checks. |
+| RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | Independently reviewed finite fallback integrated through PR452. In-memory class identity and whole RV1 remain open. |
+| RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Corrected Reader increment integrated through PR432. Current supported-leaf miss/hit/consumed-runner invalidation accepted on `9db7e9f3`, below; earlier unrelated-edit observations retain their original tuples. Narrower bootstrap reuse remains open. No report, cache or receipt schema change. |
 | RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | Integrated through PR432, including conservative Runtime discovery and generic execution rejection. Catalog evidence does not confer source acceptance. |
 | RV3 | `bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj` | Reuse one genuine immutable upstream case for the same diagnostic reference tests; preserve independently constructed changed-source/ordinal cases and resolved verification. | Already integrated at `c3f35fef`; representative case and references are delayed, with an explicit build counter. No duplicate reconstruction of that accepted fix. |
-| RV4 | RV1-RV3 records, exact candidate diff, execution receipts and independent review | Close each inventory row by integrated regression evidence or a source-grounded necessary-check decision. Preserve failed, unrun and stale boundaries. | Open until independent review and integration. |
+| RV4 | RV1-RV3 records, exact candidate diff, execution receipts and independent review | Close each inventory row by integrated regression evidence or a source-grounded necessary-check decision. Preserve failed, unrun and stale boundaries. | Current supported-leaf miss/hit/invalidation evidence is complete on `9db7e9f3`, below. Whole RV4 remains open for RV1's further-elision prerequisites and narrower bootstrap compatibility closure. |
 
 ## Exact Reader leaf closure
 
@@ -77,6 +78,36 @@ integration/regression evidence or proved necessary and classified outside
 redundancy. It does not mean zero verification, a closed compiler pipeline or
 a complete language. Unproved reuse prerequisites, unexplored conservative
 fallbacks, independent review and integration are open boundaries, not credit.
+
+The accepted original finite advances are the Reader leaf closure and fresh
+namespace mappings in PR432, removal of obsolete compatibility declarations
+in PR440, and the SH15 immutable-case reuse already integrated at `c3f35fef`.
+PR448, PR451 and PR452 close specific unsafe startup/resource reuse routes.
+Those safety corrections are prerequisites, not additional compiler or language
+completion. These milestones do not support a measured percentage.
+
+The remaining original criteria are finite and separate:
+
+1. RV1 needs the transitive live-plan, dynamic-dispatch and AE stability plus
+   whole-seam mutation proof required for another construction-check elision,
+   or a source-grounded decision that each retained check is necessary under
+   the current interface. The recursive callback event schedule below is now
+   an explicit necessary-work decision; the remaining Macro checks stay active.
+2. RV2 still needs the read/effect and representation closure for the two
+   inventoried bootstrap-dependent compatibility selections, or evidence
+   proving their retained repeats necessary. A full-repository key is the
+   conservative fallback, not proof that every documentation edit is semantic.
+3. RV4 now has independently reviewed current supported-leaf real
+   miss/hit/consumed-runner invalidation evidence on `9db7e9f3`, recorded below.
+   Closing the whole outcome still requires reviewed, integrated acceptance or
+   necessary-check decisions for the remaining RV1/RV2 rows. Earlier real
+   results retain their original tuples; none is relabeled as a newer execution.
+
+The three-phase pure Reader leaf observation completes this RV4 evidence step.
+The private harness's missing-value and owned-child cleanup findings were
+corrected and independently reviewed before launch. Its first report-path
+nonpass and the corrected actual results remain separate below. This increment
+consumes an original acceptance criterion; it adds no new hardening family.
 
 The finite Reader closure/mapping increment is published in
 [PR #432](https://github.com/burn2delete/uniform/pull/432). Independent code
@@ -379,5 +410,263 @@ The reused reader controls passed 10 tests / 45 assertions; new initialization
 controls passed 7 / 37. The first attempt passed the reader controls but could
 not read the new tool because of an unmatched delimiter; no new controls or
 source audit ran in that attempt. That nonpass is retained. Independent source
-and representation review, documentation/language gates and integration remain
-pending for this unit. Whole RV1/RV4 closure is not implied.
+and representation review, documentation/language gates and integration
+completed for the finite audit-only unit through PR443, recorded below.
+Runtime effect closure and whole RV1/RV4 closure remain open.
+
+### Startup resources before the child cache decision
+
+The initialization observations and audit-only format were integrated through
+PR443 as `a1b991be499d50579a8b4366976c519ae8949224`, with full tree identity to
+reviewed `5ccc754b`, tree `5b62819e511bfc7e6b5eba0527d8c9b5883c5572`.
+The small documentation successor retained all three tested tool blobs; only
+document validation was repeated. This does not close the runtime effect proof.
+
+A subsequent startup audit at `f51a43ae267736a81587d81ffe52839c86c02b2d`
+found a consumed resource outside the old narrowed requests. Installed Clojure
+1.12.5 `RT.doInit` calls `maybeLoadResourceScript("user.clj")` before entering
+the runner. The child cache wraps `run-namespaces`; the selected namespace's
+`require` occurs inside that operation. A cache hit therefore does not freshly
+initialize that namespace or observe its live operation bindings.
+
+A copied-closure control added and changed comment-only `user.clj` fixture
+bytes outside the actual classpath. Its absent, present and changed request
+keys were equal on the old code. No startup code was executed and no production
+stale hit was observed. The source/runtime trace establishes the omitted input;
+the older producer observations retain their original scope and do not prove
+startup closure completeness.
+
+The correction keeps tests fresh for an unreviewed startup domain. Single and
+batch command construction omit the optional cache argument when project
+classpath roots contain `user.clj` or a `clojure/` override location, before the
+child JVM starts. Standard-library overrides are conservatively outside the
+reviewed domain; this is not proof that every file below that prefix is used.
+The child independently checks project locations and the currently resolved
+`user.clj` resource, including external resources. Unknown observations also
+stay fresh, and effective-runtime revalidation repeats that check across the
+operation and hit boundary. These presence observations are not atomic
+attestation or proof of prior nonexecution.
+
+The existing closed cache-option validator is shared by the command builders
+and child parser. Only a valid optional cache argument may be omitted. Malformed
+arguments stay on the child's original `SH01-TEST-USAGE` refusal path; they
+cannot become a successful fresh run by having their invalid option dropped.
+The fields, CLI data validation and target selection are unchanged. Existing
+cache refusal/error handling remains in place for eligible cache attempts;
+unsupported startup configurations run fresh without probing that state.
+No flat closure bound, roles, inventories or public-verification
+authority is changed, and no bootstrap-dependent selection gains narrowed reuse.
+
+New controls cover both project roots, startup source locations, standard-library
+override locations, dangling links, both command builders, malformed-option
+refusal, resolved external startup resources and observation errors. Injected
+child controls require fresh execution with zero cache lookups and no runtime
+measurement when startup resources are unreviewed. Wiring passed 45 tests /
+507 assertions. The first attempt could not compile the new test because its
+`clojure.java.io` alias was missing; no controls ran, and that nonpass is retained.
+Three selected injected runner controls passed 3 tests / 104 assertions;
+language boundary passed 6 / 11 and documents passed 240 / 19. Composition
+with main `06a256fd` repeated wiring and boundary controls (51 / 518) and
+documents (240 / 19); the selected injected runner evidence retains its
+original candidate attribution.
+
+Independent review found that the enclosing runtime observer swallowed a
+startup observation's interruption through its broad exception fallback.
+The correction restores and rethrows interruption before that fallback.
+Injected controls verify zero cache lookups and zero test executions on this
+interruption, while an ordinary observation error still permits fresh tests.
+The corrected wiring controls passed 46 / 518. Independent successor review
+accepted the finite increment, integrated through PR448 as
+`3bf69cbcd16be840fac8e687adfcf8e52b65696e`, tree
+`5d074683014ae871e1d2a9cf71e43e0ef33f2cd8`, identical to the reviewed
+candidate. The initial publication denial remains recorded; one supported
+reassessment using explicit user publication intent succeeded. Complete
+bootstrap initialization/resource closure, a separately reviewed cache
+representation, producer evidence and RV1/RV4 remain open.
+
+### External archive manifest dependency boundary
+
+RV2's next finite family starts at integrated PR448. The installed JDK's
+`URLClassPath` adds a JAR loader's manifest `Class-Path` URLs to its search
+order. Those URLs can name other archives or directories outside the listed
+`java.class.path`. Hashing only the listed archive does not bind those bytes.
+This is a source-backed omission, not a measured production stale hit.
+
+The narrowed classpath admission and actual child runtime observer now require
+each external classpath file to be an inspectable archive without a main
+manifest `Class-Path` attribute. Any such attribute, including an empty value,
+stays outside the reviewed domain. Malformed, absent, directory and symlink
+inputs cannot establish that condition. Unknown archives disable optional reuse;
+the existing child fallback executes tests fresh. No referenced URL is opened
+by this inspection, and no recursive manifest representation is admitted.
+
+A cheap fixture uses a real `URLClassLoader` to read a marker from an archive
+referenced only through the listed archive's manifest. Changing the referenced
+marker changes the observed resource while preserving the listed archive's
+identity. Both observations reject narrowed admission. Separate controls verify
+that a closed archive is accepted for further checks, adding a manifest edge
+rejects it, malformed and missing archives remain unknown, and the actual
+runtime observer applies the same condition. Fixtures load resources only;
+they execute no classes or source. Wiring passed 48 tests / 543 assertions.
+Independent code/result/composition review accepted the finite fallback;
+composed wiring and boundary passed 54 / 554, documents passed 240 / 19, and
+exact clean preflight passed. PR451 integration is recorded below. No provider
+or compiler replay was performed for those gates.
+
+This closes only the manifest dependency fallback rule. It does not establish
+complete JVM image, custom ClassLoader, native library or bootstrap runtime
+effect closure, admit narrower bootstrap reuse, or refresh older producer
+evidence after a consumed runner change. RV1/RV4 remain open.
+
+### RV1-LDR: resource-dispatch fallback
+
+The manifest fallback increment above was integrated through PR451 as
+`662f516f1c476664fc0204eb424c9565ac127962`, tree
+`e6fc4e860be03f5cd2a1e4ad4a684dcf28f5cdc6`, identical to its independently
+reviewed candidate. Its actual resource-mutation evidence stays on that tuple.
+
+The next source audit separates two resource-dispatch interfaces. Installed
+Clojure 1.12.5 `clojure.java.io/resource` uses the current thread's context
+ClassLoader by default. `RT.baseLoader` separately prefers `Compiler.LOADER`
+when bound, then the context loader when configured, otherwise the defining
+loader. These loaders can supply additional resource bytes absent from
+`java.class.path`, even when all declared classpath file hashes are unchanged.
+`DynamicClassLoader` inherits URL resource lookup and exposes `addURL`.
+
+The finite supported domain requires the bootstrap-defined JDK application
+system loader, also defining `Compiler`. Both the current context loader and
+actual `RT.baseLoader` must be that loader or a chain of exact
+`DynamicClassLoader` instances with empty URL lists delegating to it.
+Subclasses, other loader implementations, additional URLs and nil/unknown
+delegation stay outside the domain. Exact class checks precede calls that
+could dispatch to a custom loader implementation. An observation failure
+disables reuse; interruption propagates. The condition applies before child
+startup-resource lookup and basis measurement, at narrowed classpath admission,
+and during existing runtime revalidation. Unknown loaders execute the existing
+fresh operation with reason `:unreviewed-resource-loaders` and no cache lookup.
+
+Resource-only controls mutate an external marker observed through a real
+context loader while the declared classpath stays unchanged. They require two
+fresh operation calls and zero startup, basis or cache lookups. A compiler-bound
+empty dynamic loader is initially inside the resource domain; adding a URL
+exposes a marker through `RT.baseLoader` and rejects the configuration. Custom
+subclass, nil-context and nil-compiler-loader controls also reject, without
+invoking custom URL callbacks. Wiring passed 50 tests / 566 assertions. Initial
+observation attempts failed before observation because the test path was absent
+and then because an inline form was malformed; both nonpasses remain recorded.
+The corrected development-JVM observation and controls completed separately.
+Independent code/result review accepted `b293edb2db8e0109c5323d340bdc54924c6ec198`,
+tree `85b01e6b161390d4fb579cad428a202e36de4587`. Boundary passed 6 / 11,
+final documents passed 240 / 19 and exact clean preflight passed. PR452 merged
+as `7ae18ee6c388db55748b0b2427f2964f60953768`, with full tree identity to
+that reviewed candidate. The source observation failures remain historical;
+no compiler/provider replay or remote CI result is inferred.
+
+This is a current-thread resource-domain observation, not atomic attestation,
+proof of prior nonexecution, or proof of in-memory class identity. A known empty
+dynamic loader can already contain defined classes. Other threads, JVM image,
+native libraries, bootstrap effects, live operation/AE identity and unsampled
+mutation remain separate unresolved prerequisites. No additional Macro check
+is removed, and no whole-RV1 completion or new bootstrap reuse is admitted.
+
+### RV4: current supported-leaf miss, hit and invalidation
+
+The frozen clean source was `9db7e9f30ddf26b1c42138e7abbde04aa2214eb1`, tree
+`f9a573eaf36ff964fac4843273c73f580cea93d1`. Its consumed runner includes the
+integrated startup, manifest and resource-loader guards. The selection was only
+`gravity.c2-artifact-identity-test`, a pure artifact-identity leaf; it does not
+construct or authenticate a current-source Reader product.
+
+The reviewed private supervisor had SHA-256
+`3ab235dce37c3c12318826d786bd75d61505d4e9ad2baa4bd74ba516a2911dba`.
+Before test-child execution, 14 report/data cases, two owned-process cleanup
+cases and two existing report-path cases passed. Missing keys/provenance,
+trailing EDN, wrong selection, zero counts, saturated output, interruption and
+report exceptions reject rather than becoming acceptance evidence. The existing
+child writer's path contract is checked before launch; it was not relaxed.
+
+The corrected supervisor and all three child commands completed with natural
+exit zero. Each child ran under the existing normal broker with a configured
+256 MiB heap and 60-second watchdog. Full reports, process waits/exits, cleanup
+facts and source bookends were retained before compact extraction.
+
+| Phase | Actual result | Attribution |
+| --- | --- | --- |
+| Cold-cache producer | 18 tests / 930 assertions; stored miss | Fresh non-authoritative result on the frozen clean source |
+| Unchanged request | Hit; `tests-executed? false` | Same nonempty key and full original producer provenance; displayed 18 / 930 belongs to that producer |
+| Consumed runner comment changed | Different key; fresh 18 / 930 and stored miss | Same Git HEAD plus the explicit working-tree delta below |
+
+Only `sh01_development_loop_wiring.clj` was temporarily changed, by appending a
+comment. Its original SHA-256 was
+`668b0501e46631430671e20a26967dd356897fb0b4bdecbf815bcab9598e137d`;
+the changed bytes had SHA-256
+`fa32d2c71858f0de74c032382e43e2b7a47b007995861fe45737f4068c65d264`.
+The changed phase is not claimed as a clean-tree execution. Its prelaunch
+snapshot, applying snapshot and producer snapshot record that delta. Final
+restoration returned the exact original bytes and identical clean source
+bookend. Independent result readback accepted all three full reports, natural
+exits, provenance equality and restoration without replay.
+
+The first attempted producer remains a nonpass: its child naturally exited one
+because the harness chose a phase-named report file instead of `result.edn`.
+No passing report or accepted counts were obtained, and its later phases were
+not launched. A possible internal cache result from that failed command was
+not acceptance authority and was not used by the corrected cold-cache attempt.
+That correction received separate review and positive/negative path controls.
+
+This closes the current supported-leaf real-evidence criterion in RV4 and
+renews the Reader leaf evidence in RV2. It does not close the remaining RV1
+identity/mutation prerequisites or the bootstrap compatibility read/effect and
+representation gap. Public/fresh verification, compiler/provider acceptance,
+benchmark, release and whole-outcome completion do not follow from these
+development receipts. The hit still launched a child JVM; no startup avoidance
+or measured speedup is claimed.
+
+### RV1: required recursive canonical callback dispatch
+
+This records a bounded necessity decision within RV1's transitive dispatch
+prerequisite. Within one canonicalization call, the current partial operation override
+interface requires the callback event for each child, including equal children.
+Equality of input values or callback function identity cannot justify suppressing
+one of those events. This classifies that recursive dispatch outside redundancy;
+it does not determine how many whole Macro owner-verification calls are needed.
+
+The source chain is explicit. `c2_artifact_identity.clj` owns `with-operations`,
+`call-entrypoint-body` and recursive interposition. Its `operations.clj` validator
+accepts supplied functions without certifying purity or immutable closure state.
+`c2_artifact_identity/canonical.clj` applies the callback to every vector/list
+child and preserves map/set printer ordering. Bootstrap components
+`00799-c2-artifact-identity-ops.clj`, `00801-c2-artifact-identity-call.clj` and
+`00802-reader-canonical-value.clj` connect the compatibility route to that API.
+Observing outer binding data and unchanged Var roots does not establish the
+absence of mutable state inside a supplied function.
+
+The Reader owner's retained compiler-free leaf probe executed at
+`f40942fe903b25ad6fbaf626aeae246afc815aee`, tree
+`48d8d0118c2e38086d56f78882d27808aebddc8f`. Four existing contract tests passed
+4 tests / 28 assertions, zero failures/errors. An additional actual control
+canonicalized `[7 7]`: the same supplied callback observed both children and
+threw its sentinel on the second call. The identical Throwable object propagated.
+Suppressing the second event would suppress that observed exception, changing
+the current contract rather than removing redundant work.
+
+Those tests also preserve recursive Var interposition, stable printed-sort ties,
+printer call order and exact thrown-object precedence. The driver SHA-256 is
+`7faf723b3a223876e158308e6a66d4b2df360006d6dec263bb17fc24d8aedec1`;
+the original complete receipt SHA-256 is
+`7ed7ab7a91d9ec553913dc85b6a3453c1cb511b4f8e16a241f79ce2d3a5f5dd8`.
+Its source/control bookends match, measured maximum heap is 268435456 bytes,
+and the original process completed with exit zero in 983.636125 ms. The probe
+did not load `gravity.bootstrap` or authenticate a Reader product. All eleven
+recorded source/test inputs remain byte-identical in this successor; the receipt
+retains its original source attribution and was not rerun for this decision.
+
+Any further RV1 proposal must conserve these callback/printer events and error
+identity/order, or separately establish an eligible closed route where the
+proposed reuse preserves its contract. Live-plan and AE identity, invocation
+isolation and whole-seam unsampled mutation remain unresolved for another Macro
+check removal. No new runtime implementation is justified by this leaf result.
+Allocation changes that preserve every event require their own evidence; no
+full-source cost share, speedup or whole-RV1 completion follows here. RV2's
+bootstrap compatibility closure and the existing fresh public verifiers remain
+separate, and the accepted RV4 supported-leaf proof remains unchanged.
