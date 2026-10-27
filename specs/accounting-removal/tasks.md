@@ -20,7 +20,7 @@ including implemented work whose required acceptance has not completed.
 | ACC-13 | Syntax graph/container ceilings; canonical-schema reservations/debits; macro expansion depth; other census discoveries | ACC-01; each actual writer confirmed | Source-grounded remove/retain/history decisions under current verification policy; eligible removals and owner-path acceptance; unknown classifications remain open |
 
 - [ ] ACC-01 Complete and independently review exhaustive dispositions.
-- [ ] ACC-02 Accept and reconcile existing writer's guard and Map/List slice.
+- [x] ACC-02 Accept and reconcile the guard and Map/List slice (main-only closure record below).
 - [ ] ACC-03 Remove LR premise accounting coherently.
 - [ ] ACC-04 Close remaining nonpredicate descriptor accounting.
 - [ ] ACC-05 Remove shared PL accounting.
@@ -154,3 +154,45 @@ runtime chain have accepted implementation slices but have not passed their
 remaining integration gates. Consequently they are progress evidence, not full
 row closure or grounds for invented arithmetic. The dashboard collector remains
 the sole dashboard writer; this dated source assessment supplies its evidence.
+
+## ACC-02 closure and current assessment - 2026-10-26 23:04:48 MDT
+
+This closure record is effective only in an integrated main revision containing
+this reviewed guard/premise implementation and its acceptance evidence.
+Publication in a draft branch is not closure: normal reviewed integration and
+exact readback are required. The earlier 22:28 assessment remains historical;
+this update supersedes its ACC-02 disposition only. All other original IDs
+retain their last independently assessed boundaries, without new owner credit.
+
+ACC-02's complete named scope is the keyword-before-integral-membership guard
+and coherent Map/List parameter premises. Its original four-field consumer
+repair was relative to the earlier producer source. Current main still exports
+two corresponding C7 fields; therefore this implementation removes six fields
+across the actual three owners, not four fields in isolation. No criterion is
+dropped. Complete refinement forgetting, identity/not-applicable/Never behavior,
+homogeneous checked extents, every-member validation and source/callee/row
+rejection remain. Actual C7 production, Effects context/local validation and
+typed emission are accepted; the explicit writer release is already recorded
+in `plan.md`. This establishes no product-release or B47 authentication claim.
+The broader PR359 remains draft and is not integrated or credited wholesale.
+
+| Original ID | Current integrated disposition |
+| --- | --- |
+| ACC-01 | Partial; exhaustive source/contract dispositions remain |
+| ACC-02 | Closed by integration of this complete guard/premise record |
+| ACC-03 | Partial; LR/helper and current-main integration boundaries remain |
+| ACC-04 | Partial; descriptor/live-proof accounting and integration remain |
+| ACC-05 | Partial; shared PL/helper and consumer integration remain |
+| ACC-06 | Open; recursive validation/construction accounting remains |
+| ACC-07 | Open; coherent inference allowance removal and sound convergence remain |
+| ACC-08 | Partial; per-Core/profile/Effects/emitter pools remain |
+| ACC-09 | Partial; held runtime chain and remaining runtime policies remain |
+| ACC-10 | Partial; existing MIR/Native owner acceptance boundaries remain |
+| ACC-11 | Open; existing optimization/lowering owner acceptance remains |
+| ACC-12 | Partial; final whole-outcome reconciliation remains |
+| ACC-13 | Partial; remaining capacity mechanisms and dispositions remain |
+
+There is no revised numerical percentage. The historical 50% remains an
+unmeasured provisional estimate; one original row closing does not supply an
+agreed weighting or exhaustive denominator. Implementation counts and test/PR
+totals are not used as progress arithmetic.
