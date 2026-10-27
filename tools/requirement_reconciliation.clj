@@ -143,8 +143,9 @@
           unresolved-reqs (filter #(not (and (= :reviewed (:atomicity %))
                                              (= :reviewed (:nonoverlap %)))) requirements)
           pending-decisions (filter #(not= :accepted (:state %)) (:scope-decisions manifest))
+          pending-aliases (filter #(not= :reviewed (:review-state %)) (:aliases manifest))
           ready? (and (= :reviewed (:scope-state manifest)) (seq ids)
-                      (empty? unresolved) (empty? unresolved-reqs) (empty? pending-decisions))]
+                      (empty? unresolved) (empty? unresolved-reqs) (empty? pending-decisions) (empty? pending-aliases))]
       {:authority :source-conservation-and-canonical-traceability-only
        :scope-version (:scope-version manifest)
        :source-documents (count sources) :source-occurrences (count occurrences)
@@ -154,6 +155,7 @@
                              :proposed (count (filter #(= :proposed (:review-state %)) dispositions))}
        :unresolved-source-occurrences unresolved
        :proposed-requirement-ids ids :denominator-ready? (boolean ready?)
+       :alias-count (count (:aliases manifest)) :unreviewed-alias-count (count pending-aliases)
        :denominator (when ready? (count req-set))
        :acceptance-projection :not-yet-implemented
        :overall-rate nil

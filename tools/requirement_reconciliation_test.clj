@@ -57,7 +57,9 @@
   (let [[manifest sources] (complete-fixture)]
     (is (thrown? Exception (rr/project (assoc manifest :aliases [{:id "a" :target "b"} {:id "b" :target "a"}]) sources)))
     (is (thrown? Exception (rr/project (assoc manifest :aliases [{:id "a" :target "absent"}]) sources)))
-    (is (= 1 (:denominator (rr/project (assoc manifest :aliases [{:id "view-1" :target "fixture/one-thing"}]) sources))))
+    (is (= 1 (:denominator (rr/project (assoc manifest :aliases [{:id "view-1" :target "fixture/one-thing" :review-state :reviewed}]) sources))))
+    (is (false? (:denominator-ready? (rr/project (assoc manifest :aliases [{:id "view-1" :target "fixture/one-thing"}]) sources))))
+    (is (false? (:denominator-ready? (rr/project (assoc manifest :aliases [{:id "view-1" :target "fixture/one-thing" :review-state :proposed}]) sources))))
     (is (thrown? Exception (rr/validate-amendment! {:previous-ids ["a"] :active-ids [] :added [] :removed [] :authority "review" :reason "scope"})))
     (is (thrown? Exception (rr/validate-amendment! {:previous-ids ["a"] :active-ids [] :added [] :removed ["a"]})))
     (is (nil? (rr/validate-amendment! {:previous-ids ["a"] :active-ids ["b"] :added ["b"] :removed ["a"] :authority "review" :reason "versioned split"})))))

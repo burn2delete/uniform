@@ -292,3 +292,30 @@ source disposition is reviewed, 9,526 are proposed and 569 nonblank blocks await
 structured import. Global atomicity/nonoverlap review and acceptance projection
 remain unfinished; no overall rate is established. Twenty-one focused tests /
 124 assertions pass on the current composition.
+
+## First applied candidate-equivalence batch
+
+Ten repeated outcome candidates now have explicit proposed aliases. Six use the
+complete Language/Runtime relationship review: macro build-effect authorization,
+safe-wrapper admission, generated-program checking, device transfer, certificate
+invalidation and conditional forbidden-service rejection. Four use directly
+reviewed profile/performance sources: cross-profile import admission, host failure
+translation, performance-claim context and reproducible benchmark production.
+
+The surviving outcomes retain every source facet and its original byte identity,
+context, residual and origin lineage. Source/facet/unit incidence is rewired
+reciprocally. All ten former candidate records remain unchanged in the alias
+archive, including original IDs, obligations, task gaps and evidence pointers.
+Existing primary task references survive; qualified additional references and
+strict historical support are unioned without upgrading acceptance. R2's
+service-elimination wording is preserved as an optional evidence-backed path to
+the same no-forbidden-service result, not a new mandatory optimization.
+
+The complete 31-entry Language/Runtime decision set is retained with its input
+identity, pairwise edges, reasons and acceptance qualifications. Distinct
+producer/consumer and domain-security outcomes remain separate. The active
+draft has 1,244 candidates plus ten stable alias IDs; this is still not an
+accepted denominator. Proposed or unreviewed aliases now independently withhold
+readiness, even in an otherwise fully reviewed finite fixture. Twenty-one tests /
+126 assertions pass. Exact semantic and preservation review of this applied
+batch remains required; no implementation task or acceptance state changes.
