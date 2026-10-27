@@ -1,4 +1,5 @@
-(require '[gravity.c6-c10.source-contract :as c6-source-contract])
+(require '[gravity.c6-c10.source-contract :as c6-source-contract]
+         '[gravity.source-interface-header :as source-interface-header])
 (declare p15-s23-trusted-carrier-validation)
 
 (defn- p15-s23-stage2-expression-source-contract [version]
@@ -34,12 +35,24 @@
     :plan-assembly-generic-bridge-residual? :clojure-seed-boundary?
     :self-hosted?})
 
+(defn- p15-s23-stage2-native-keyword-pairs [value]
+  (try
+    (let [pairs (source-interface-header/pairs! value nil)]
+      (loop [pending (seq pairs) seen #{}]
+        (if-let [[key _] (first pending)]
+          (when (and (source-interface-header/native-keyword? key) (not (contains? seen key)))
+            (recur (next pending) (conj seen key)))
+          pairs)))
+    (catch clojure.lang.ExceptionInfo error
+      (if (= :versioned-c11-interface (:missing-fact (ex-data error))) nil (throw error)))))
+
 (defn p15-s23-stage2-compiler-artifact-record-authentic?
   ([record] (p15-s23-stage2-compiler-artifact-record-authentic? record 1))
   ([record version]
   (let [contract (p15-s23-stage2-expression-source-contract version)]
   (and (or (= 1 version)
-           (= :passed (:status (p15-s23-trusted-carrier-validation record :default-only))))
+           (and (some? (p15-s23-stage2-native-keyword-pairs record))
+                (= :passed (:status (p15-s23-trusted-carrier-validation record :default-only)))))
        (map? record)
        (= (cond-> p15-s23-stage2-compiler-artifact-record-keys
             (= 2 version) (conj :source-contract-version :functions-semantic-hash :function-count))
@@ -72,14 +85,23 @@
        (true? (:clojure-seed-boundary? record))
        (false? (:self-hosted? record))))))
 
+(defn- p15-s23-stage2-plan-compiler-view [plan]
+  ;; This predicate compares compiler metadata, not executable plan admission.
+  ;; The native root is inspected before lookup; unconsumed function bodies
+  ;; and other payloads remain inert and acquire no carrier/safety approval.
+  (when-let [pairs (p15-s23-stage2-native-keyword-pairs plan)]
+    (let [compiler (some (fn [[key value]] (when (identical? :compiler key) value)) pairs)]
+      (when (and (some? (p15-s23-stage2-native-keyword-pairs compiler))
+                 (= :passed (:status (p15-s23-trusted-carrier-validation compiler :default-only))))
+        compiler))))
+
 (defn p15-s23-stage2-compiler-artifact-record-matches-plan?
   ([record plan] (p15-s23-stage2-compiler-artifact-record-matches-plan? record plan 1))
   ([record plan version]
   (p15-s23-stage2-expression-source-contract version)
   (and (or (= 1 version)
-           (and (= :passed (:status (p15-s23-trusted-carrier-validation record :default-only)))
-                (= :passed (:status (p15-s23-trusted-carrier-validation plan :default-only)))))
-  (let [compiler (:compiler plan)]
+           (p15-s23-stage2-compiler-artifact-record-authentic? record version))
+  (let [compiler (if (= 1 version) (:compiler plan) (p15-s23-stage2-plan-compiler-view plan))]
     (and (or (= 1 version)
              (and (p15-s23-stage2-compiler-artifact-record-authentic? record version)
                   (identical? Long (class (:expression-lowering-source-contract-version compiler)))
