@@ -64,7 +64,9 @@ identity, source reconstruction and full-row/census contracts stay intact.
 - [x] Obtain independent exact-source and retained-result acceptance at
   `ccc2702d`, tree `6dd6af2e`: ordinary three-owner 23/1,186 and separate current
   C7 large 1/2, with original baseline 1/39 and compiler-free controls 2/41.
-- [ ] Pass repository gates and exact current-main preflight, publish draft and
+- [x] Pass repository gates at `59efea4e`: boundary/LOC 11/23, source census
+  2,035, docs 240/19 and roadmap, with complete clean bounded capture.
+- [ ] Finish exact current-main preflight and outgoing review, publish draft and
   verify current-head CI/readback before ordinary validated integration.
 
 Fresh main readback remains `9c093bc6`; no incoming dependency change invalidates

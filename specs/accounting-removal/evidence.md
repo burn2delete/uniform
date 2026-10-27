@@ -92,6 +92,19 @@ public runtime admission and release remain unrun. No held Native/shared
 registration or runtime source is imported. Only ACC-02/03 are closed; the
 other eleven original criteria remain open or partial.
 
+Fresh repository gates at documentation successor
+`59efea4e0cee81ecd8d6f76aa77ee6713d5f078a`, tree
+`6a04cbea28c6125a8d2681d8413432e60b08822d`, passed boundary/LOC 11 tests /
+23 assertions, the actual 2,035-file source census, docs 240/19 and roadmap.
+The normal-broker non-Bootstrap child used 256 MiB and the existing 60-second
+bound, exited naturally with zero in 2,418 ms, complete 456 stdout / 0 stderr,
+exact clean bookends, complete cleanup and a terminated root. Receipt SHA-256:
+`0e03d7a3f852e596941224dd6164f971a9a238e6e8ec6f19c9a5659ec0d0939d`.
+This bookkeeping successor changes only the accounting task/evidence records;
+all six accepted source/test inputs and the gate's consumed normative docs,
+tooling, roadmap and Clojure sources are unchanged. Receipts keep their
+original identities; no semantic or gate rerun is implied by this note.
+
 The preceding PR506 finite caller-interface increment is integrated at that
 baseline. Normal squash merge `9c093bc6` has exactly reviewed candidate
 `5ef17137`'s tree, and its branch is retained. Corrected PR CI `40597498166`
