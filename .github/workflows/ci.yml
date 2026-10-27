@@ -122,7 +122,7 @@ jobs:
         if: matrix.platform == 'darwin'
         run: clojure -Srepro -M tools/ci/run.clj darwin-probe
       - name: Fresh catalog fallback
-        if: steps.selection.outputs.selected == 'true'
+        if: ${{ !cancelled() && steps.selection.outputs.selected == 'true' }}
         env:
           LEAF_PLATFORM: ${{ matrix.platform }}
         run: clojure -Srepro -M tools/ci/run.clj "leaves-$LEAF_PLATFORM"
