@@ -743,6 +743,10 @@
                (c6-program-diagnostic
                 #(b/p15-s23-c6c10-validate-source-binding!
                   (dissoc original :source-contract-version) 2))))
+        (is (= ["C6-VERIFY" :exact-pinned-gravity-c6-c10-source-binding]
+               (c6-program-diagnostic
+                #(b/p15-s23-c6c10-validate-source-binding!
+                  (assoc original :source-contract-version (int 2)) 2))))
         (is (= ["C6-VERIFY" :explicit-c6-source-contract-version]
                (c6-program-diagnostic #(b/p15-s23-c6c10-source-binding! path (int 2)))))
         (is (= ["C6-VERIFY" :pinned-gravity-c6-c10-source-bytes]
