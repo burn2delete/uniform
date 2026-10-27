@@ -158,8 +158,11 @@
       (is (= (set (keys payloads)) (set (map :tag tagged))))
       (doseq [form tagged]
         (is (= (payloads (:tag form)) (:value (by-form (first (:children form))))))
-        (is (= (:tag form) (get-in form [:value :tag])))
-        (is (= (payloads (:tag form)) (get-in form [:value :payload])))))
+        (case (:tag form)
+          inst (is (= (java.util.Date/from (java.time.Instant/parse "2026-07-18T12:34:56Z"))
+                      (:value form)))
+          uuid (is (= (java.util.UUID/fromString "123e4567-e89b-12d3-a456-426614174000")
+                      (:value form)))))))
     (if retain?
       (do (is (= text (apply str (map :raw tokens))))
           (is (some #(= :comment (:kind %)) tokens))
