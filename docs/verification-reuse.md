@@ -21,16 +21,17 @@ Core construction verification tests; the incremental dependency contract,
 planner, child cache wiring and explicit input revalidation; SH15 diagnostic
 case construction; current Native/MIR source/composition receipts.
 
-Current assessment: **2026-10-27 04:32:34 UTC**, on merged main
-`15a5499e97798621d270c36dd2546ce98ddd62a9`, tree
-`aa5dd1d419594b31f9f9837ba6d09e39894b3562`. The original inventory is unchanged.
+Current assessment: **2026-10-27 05:42:14 UTC**, on candidate source
+`8c4026b7147149a0828b63b5f5f68e55de6f4153`, tree
+`b3c2802673a32c1c4e36ea4d6468ee4b6c94850d`, based on merged main
+`4325a9f46292472a7f984c5adfef81209874bb5c`. The original inventory is unchanged.
 The statuses below describe this cleanup's acceptance criteria, not compiler or
 language completion. Earlier increment receipts had accumulated without a dated
 reconciliation for the dashboard collector; this assessment corrects that gap.
 
 | ID | Exact boundary and files | Dependency and acceptance | Current disposition |
 | --- | --- | --- | --- |
-| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | **Partial.** PR396's construction reuse is present at `d00cc2d5`; PR469's callback and PR477's embedded-proof necessity decisions cover only their named operations. PR480 reduces structural calculation work; PR483 repairs its load regression. None proves whole upstream-report equivalence or every retained repeat necessary. The full identity/mutation boundary, independent negative controls, review and integration remain required. |
+| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | **Partial.** PR396's construction reuse is present at `d00cc2d5`; PR469/477 cover their named necessity decisions and PR480/483 the structural calculation and load repair. PR493 at `e5d0bacd` closes the concrete after-Resolve parent-mutation control with genuine positive/public verification and rejection evidence. It does not prove whole-report equivalence or every retained repeat necessary. Transitive live-plan, Reader invocation, AE/dispatch and closed-over-state equivalence, or a complete necessity decision, remain open. |
 | RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | **Closed for this resource-dispatch prerequisite.** Reviewed fallback and controls integrated through PR452 at `7ae18ee6`. This supplies no in-memory class identity or whole-RV1 proof and is not an additional original outcome counted toward a percentage. |
 | RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | **Partial.** Corrected Reader closure integrated through PR432 at `6e49d6f8`; PR461 at `e93322ef` supplies the actual supported-leaf miss/hit/invalidation proof. Both bootstrap-dependent compatibility selections still need complete runtime read/effect closure, a reviewed representation and separately attributed producer/reuse/invalidation evidence, or proof that their repeats are necessary. Full-repository fallback and audit inventories do not close that obligation. |
 | RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | **Closed for the four-namespace catalog correction.** Source-grounded owners, freshness and conservative execution dispositions integrated through PR432 at `6e49d6f8`. No residual catalog gate for those four namespaces; their component/source authentication acceptance remains separate. |
@@ -52,10 +53,12 @@ fallbacks, PR461's actual supported-leaf evidence, and PR469/477/480's bounded
 RV1 work. PR483 at `c0c7f9c363c709827e95f166e922fe9d1c07caf2` fixes PR480's
 Bootstrap regression; it is a repair, not another closed original criterion.
 The detailed sections preserve exact source/merge identities, failed attempts,
-tested scopes and independent reviews. No implementation PR for this outcome
-remains draft at this assessment time.
+tested scopes and independent reviews. PR493's mutation control is merged;
+the compatibility initialization candidate below is unfinished and must remain
+draft until its real C11 acceptance blocker is resolved.
 
-At the assessment above, unpublished work remained separate: the reserved
+At the earlier **2026-10-27 04:32:34 UTC** assessment, unpublished work remained
+separate: the reserved
 `resolution_parent_mutation_test.clj` candidate and SH06 fresh/unsupported
 execution metadata are in progress. Independent review accepted the proposed
 whole-boundary test scope only; the exact harness/code/result are not accepted.
@@ -903,7 +906,11 @@ Full child receipt SHA-256:
 The exact code and harness were independently approved before this single
 genuine attempt. Independent retained-result review accepted the actual
 positive, mutation, rejection and restoration evidence without replay.
-Integration remains pending at this record's candidate stage.
+That exact result and its code were subsequently integrated through PR493 at
+`e5d0bacdc59611ec9219e37d659532bf04f084a2`, tree
+`7f739ed52784386df7cd63edca42d1679b65f87d`. The merge tree equals the independently
+reviewed composition. The genuine result remains attributed to `b930cdf6`;
+incoming source changes receive no semantic acceptance from it.
 
 Cheap source-form observer controls passed 4 / 20 without entering Bootstrap;
 planner and language-boundary controls passed 67 / 590, injected generic-launch
@@ -921,3 +928,56 @@ necessity decision for the original row, remains required. No additional
 verification call is removed, no compatibility cache is enabled, and RV2/RV4
 whole-outcome acceptance remains open. The earlier failed aliased-array memo
 experiment and original PR480 load failure retain their NONPASS dispositions.
+
+### RV2: shared compatibility initialization, acceptance held
+
+This finite implementation targets repeated Bootstrap initialization for the
+two original compatibility selections, not narrower result-cache authority.
+`sh01_parallel_test_runner.clj` gives the two named normal jobs a common batch
+affinity when their policies match and neither supplies a narrowed closure.
+The actual test bodies and separate namespace results remain unchanged.
+Different policies, narrowed closures, foreign namespaces, other resource
+classes, batch-size limits, standalone selection and fail-fast skips retain
+their existing boundaries. A heterogeneous batch does not inherit one
+component's identity. Full-repository cache fallback remains active.
+
+Independent code/harness review accepted source
+`8c4026b7147149a0828b63b5f5f68e55de6f4153`, tree
+`b3c2802673a32c1c4e36ea4d6468ee4b6c94850d`, before the genuine attempt.
+Its immediate base is Reader PR492, `4325a9f46292472a7f984c5adfef81209874bb5c`;
+the initial handoff incorrectly named PR493 as that immediate base and is
+corrected here. Eleven injected controls passed 66 assertions, language
+boundary passed 6 / 11, and the actual receipt-predicate negatives passed
+1 / 13 without loading Bootstrap.
+
+The single genuine combined child returned NONPASS: natural exit 1, 2 GiB,
+10,315 ms supervisor elapsed, identical clean bookends, complete outer capture
+and completed cleanup with the root dead. It observed exactly one actual
+`gravity/bootstrap_impl/load_order.edn` initialization. All observed Bootstrap,
+C11 and loader-observer roots were restored. Manifest compatibility passed
+1 test / 48 assertions. C11 compatibility passed seven assertions, then raised
+`C2-HASH` with missing field `:exact-regular-pinned-sh03-reader-source`:
+expected Reader bytes 231576, observed 231666. The C11 artifact assertions were
+not reached. Total: 2 tests, 55 passing assertions, zero failures and one error.
+The C11 namespace's inner output was truncated at 8192 of 25720 bytes; the
+failure and available diagnostic facts are retained, not promoted to a pass.
+
+The exact guard is
+`components/self-hosting-sh03-sh07/00808-sh03-reader-expected-source-byte-count.clj`
+under `bootstrap/clojure/src/gravity/bootstrap_impl/`. It binds an authenticated
+Reader source identity, not a work allowance to increase for this test. The
+current accepted Reader source and the legacy C11 facade route disagree.
+The existing MIR owner is asked to identify the intended current invocation
+or required source-owner handoff. No pin, test body or compiler source is changed
+here; no unchanged retry is authorized by this result.
+
+Supervisor receipt SHA-256:
+`1829423660404107fed5e394c2f8dd4faf73d91add813d049183ba57271981ba`.
+Full child receipt SHA-256:
+`2458ea4f04a1ce9221d7570df265934df7c70974bbaccf582bc483d532767ce3`.
+Independent retained-result review confirms the NONPASS and held disposition.
+The initialization observation does not close this implementation's acceptance:
+both real compatibility namespaces must pass with independent result review
+before normal integration. RV2 runtime read/effect closure and the original
+RV1/RV4 residual criteria remain open. CI's separately owned catalog and helper
+registration files are untouched.
