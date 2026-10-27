@@ -1113,6 +1113,7 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00700-static-rebuild-token-cleanup.clj", :reader-line 108552, :owner :bootstrap-p15, :lexical-region 108552, :stage :cleanup}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00701-p15-s23-c6c10-source-relative-path.clj", :reader-line 111285, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-source-relative-path"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00702-p15-s23-c6c10-host-fail.clj", :reader-line 111450, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-host-fail!"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00701a-p15-s23-c6c10-source-program-contract.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "require"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00703-p15-s23-c6c10-canonical-form.clj", :reader-line 111612, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-canonical-form*"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00704-p15-s23-c6c10-carrier-validation.clj", :reader-line 111827, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-carrier-validation"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00705-p15-s23-c6c10-literal-authentication.clj", :reader-line 112005, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-literal-authentication"}
@@ -1131,6 +1132,7 @@
  {:resource "gravity/bootstrap_impl/components/foundation/00718-p15-s23-c6c10-compiled-binding-metrics.clj", :reader-line 114209, :owner :foundation, :first-form "*p15-s23-c6c10-compiled-binding-metrics*"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00719-p15-s23-c6c10-record-compiled-binding-metric.clj", :reader-line 114212, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-record-compiled-binding-metric!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720-p15-s23-c6c10-compiled-binding-cache-key.clj", :reader-line 114439, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-compiled-binding-cache-key"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00720a-p15-s23-c6c10-compiled-binding-cache.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "let"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00721-p15-s23-c6c10-digest-ref-shape.clj", :reader-line 114677, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-digest-ref-shape?"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00722-p15-s23-c6c10-validate-digest-request-graph.clj", :reader-line 114890, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-validate-digest-request-graph!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00723-p15-s23-c6c10-seal-digest-request-result.clj", :reader-line 115079, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-seal-digest-request-result!"}
