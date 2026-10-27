@@ -23,7 +23,7 @@ case construction; current Native/MIR source/composition receipts.
 
 | ID | Exact boundary and files | Dependency and acceptance | Current disposition |
 | --- | --- | --- | --- |
-| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Required recursive canonical callback dispatch is classified below as a necessary transitive operation under the current override contract. Further removal of an entire Macro verification remains unproved; retain those checks. |
+| RV1 | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj`; later Resolve construction proof and public verifier | Any additional Macro check elision requires transitive live-plan, dynamic-dispatch and AE identity stability, plus mutation observation across the whole proposed reuse seam. Same logical parent is insufficient. Preserve error order, fallback, invocation/transaction isolation and fresh public/tamper checks. | PR396 already removed one immediate duplicate (4 to 3). Recursive canonical dispatch and the public embedded-proof comparison are classified below as necessary operations. Sharing the remaining upstream Macro-verification fragment still lacks the required identity/mutation proof; retain those calls. |
 | RV1-LDR | `sh01_development_loop_wiring.clj` and its test under `bootstrap/clojure/test/gravity/self_hosting/` | Establish a conservative resource-dispatch boundary for context and compiler-bound ClassLoaders before startup lookup or cache admission. Resource mutation, URL addition and unknown-delegation controls must preserve fresh fallback. This is a runtime prerequisite, not Macro check-elision authority. | Independently reviewed finite fallback integrated through PR452. In-memory class identity and whole RV1 remain open. |
 | RV2 | `contracts/stage0-incremental-test-dependencies.edn`; `sh01_component_test_dependencies.clj`, `sh01_impact_test_planner.clj`, `sh01_development_loop_wiring.clj` and the latter two test files under `bootstrap/clojure/test/gravity/self_hosting/` | Re-audit the pure Reader artifact-identity facade, five nested files and test; bind existing runners/contracts/classpath/inventories/shadows/runtime. Demonstrate a real test producer, unrelated docs/test-body reuse with original provenance, consumed-input invalidation, and preserved fresh policies. | Corrected Reader increment integrated through PR432. Current supported-leaf miss/hit/consumed-runner invalidation accepted on `9db7e9f3`, below; earlier unrelated-edit observations retain their original tuples. Narrower bootstrap reuse remains open. No report, cache or receipt schema change. |
 | RV2a | Same dependency contract; `docs/self-hosting-slice-ownership.edn`; planner test | Four existing non-slice namespaces block catalog construction on the inventory base. Add exact source-grounded owners and fresh policies for parameter Reader invocation, keyword scalar controls, staged Reader closure and token spelling. Select their existing bodies without running them as cache controls. | Integrated through PR432, including conservative Runtime discovery and generic execution rejection. Catalog evidence does not confer source acceptance. |
@@ -91,8 +91,9 @@ The remaining original criteria are finite and separate:
 1. RV1 needs the transitive live-plan, dynamic-dispatch and AE stability plus
    whole-seam mutation proof required for another construction-check elision,
    or a source-grounded decision that each retained check is necessary under
-   the current interface. The recursive callback event schedule below is now
-   an explicit necessary-work decision; the remaining Macro checks stay active.
+   the current interface. The recursive callback event schedule and public
+   embedded-proof comparison below are explicit necessity decisions; the
+   remaining Macro checks stay active.
 2. RV2 still needs the read/effect and representation closure for the two
    inventoried bootstrap-dependent compatibility selections, or evidence
    proving their retained repeats necessary. A full-repository key is the
@@ -670,3 +671,63 @@ Allocation changes that preserve every event require their own evidence; no
 full-source cost share, speedup or whole-RV1 completion follows here. RV2's
 bootstrap compatibility closure and the existing fresh public verifiers remain
 separate, and the accepted RV4 supported-leaf proof remains unchanged.
+
+### RV1: construction and public verification have different proof inputs
+
+The retained computation considered here is the Resolve verification body
+entered for construction-proof generation and for caller-requested public
+verification. These calls have different semantic modes. The public
+`:embedded-capability-proof-current?` comparison is necessary; a construction
+PASS is not an interchangeable public-verification report.
+The upstream `sh06-resolution-verify-sh05` call is a separate reuse candidate;
+this local comparison does not establish stability of that call's live inputs.
+
+The current `00881-sh06-resolution-finalize-candidate.clj` already avoids an
+immediate duplicate Gravity replay after installing its freshly generated proof.
+That site is not a remaining duplicate to remove. The construction helper in
+`00880-sh06-resolution-artifact-verification.clj` passes `construction? true`;
+the public contained verifier passes false. In
+`00879-sh06-resolution-artifact-verification-bounded-02.clj`, the embedded-proof
+predicate permits a missing proof during construction, while public mode
+requires equality to the expected proof derived from current base checks.
+The identity-input projection in `00877-sh06-resolution-product-projections.clj`
+does not include the embedded proof, so an artifact identity alone does not
+establish this comparison.
+
+A bounded source-expression probe used frozen commit
+`bca9ea29ac5afa077313611c6fa1e2672e36cb41`, tree
+`4933dea927bb19434cd0b94482ea21239b99d108`. It read the actual predicate with
+reader evaluation disabled, selected its exact lexical binding and allowed
+only the required core Boolean/equality operations. It evaluated that expression
+alone using native synthetic maps. No admitted artifact or compiler report was
+supplied or produced; no Bootstrap, Reader, Macro or public-verifier entrypoint
+was loaded/called. These are predicate cases, not C5 acceptance tests.
+
+| Controlled predicate input | Observed Boolean |
+| --- | --- |
+| Construction mode, missing supplied proof | true |
+| Public mode, missing supplied proof | false |
+| Public mode, exact expected proof fixture | true |
+| Public mode, failed proof status | false |
+| Public mode, extra proof field | false |
+| Construction mode, stale supplied proof | false |
+| Same supplied proof, changed current expected-check fixture | false |
+
+All seven cases matched, with the same synthetic parent fixture throughout.
+The process exited zero under the existing normal broker with measured maximum
+heap 268435456 bytes; source/control bookends were identical and clean.
+Target source SHA-256:
+`a355968131742b4875d573371860eb08f1f4617e1700fc56d0117be24b78444c`.
+Driver SHA-256:
+`5af4c77af2472621a922d49d63cf69fb3444fa9a0f406ed0564f1fad6bd2bf7b`.
+Complete receipt SHA-256:
+`3644d1d6836e5718e1b7ed395631579b84701598625b82c7c87e4946770d6569`.
+
+This closes only the necessity decision for the public proof comparison and
+rules out substituting the whole construction report for public verification.
+It does not prove that every upstream Macro recheck must be recomputed.
+Sharing that fragment still requires an owner guarantee for the exact live
+plan, Reader invocation, AE/dispatch identities and mutation boundary; a saved
+PASS, common parent ID or compiled binding DATA does not supply it. No runtime
+change is justified by this predicate result. The original RV1/RV2 remaining
+criteria, fresh public verification and immutable RV4 evidence remain intact.
