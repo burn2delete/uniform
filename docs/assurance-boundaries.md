@@ -51,9 +51,9 @@ does not close the shared transport/fresh replay dependency or complete the
 language. New findings must be added to the owning row with exact affected
 contracts and acceptance evidence, rather than silently excluded.
 
-## Existing dependency evidence
+## Historical dependency evidence
 
-The MIR owner reports PR421 head
+The initial MIR evidence used PR421 head
 `8b9dd46ea38eafba1d3d7a49d8c6ca6b6488563f`, tree
 `ed9d118e18f5f1a3f04138603e282ade9fb70701`, C11 source SHA256
 `c41d9e0317b398a53e4b28d7bba90be7bebda23c51fa9c74a6a8c91be38ce79e`.
@@ -69,9 +69,68 @@ ArrayMap, SubVector becoming Vector, and foreign metadata invoked before class
 rejection. MIR requires exact concrete classes; its actual raw/Core/MIR runtime
 domain is unproven. Native remains the sole codec writer. Shared policy and
 preflight are open dependencies, not permission to weaken class/callback guards
-or create a second serializer. Heavy A/B replay and public admission remain
-unrun for this adaptation. Preserve historical failures and existing specific
+or create a second serializer. At that historical point, heavy A/B replay and
+public admission were unrun. The accepted successor evidence below supersedes
+that transport/replay hold, without replacing these failed receipts. Preserve existing specific
 C12 execution and original C7 publication restrictions.
+
+## Accepted dependency evidence and remaining criteria
+
+PR421 is merged as `06a256fdb97f49b5fedea36a6803483302631bbc`, tree
+`6ed68a337f85d9a044d7eb3d08aa1ae8eebccea2`, exactly the reviewed final
+candidate `d67406b305d93e052f54c9439da8142efbb663c0`. It is no longer a
+draft or timeout-only dependency. Native remained the sole shared codec writer;
+MIR adapted its consumer to the reviewed V3 codec SHA256
+`0f91ef22f305785e8e8d730beff1a31ec9aecce8e9adfd768f0636e3a565daf9`.
+Strict single-form framing, exact native classes before callbacks, metadata and
+SubVector backing/extent conservation, failed-producer nonconsumption, deadline,
+external exit and digest gates received cheap positive and negative controls
+(24 tests / 162 assertions). These controls do not grant source authority.
+
+On original producer head `8b9dd46ea38eafba1d3d7a49d8c6ca6b6488563f`
+and tree `ed9d118e18f5f1a3f04138603e282ade9fb70701`, genuine original A
+and B each completed naturally with observed 2 GiB heaps. A completed 13 and B
+19 harness checkpoints, collectively covering the original 24 predicates;
+these are checkpoints, not Clojure test totals. Each performed actual original
+construction and independent fresh C6 replay, real Gravity/Native positives,
+provenance and immutability checks. B additionally checked both substitution
+directions and exact type and retired-quota-field rejection. Both actual domains contained 12
+full-pair and 11 carried classes; neither observed metadata or SubVector.
+Controlled coverage of those shapes remains distinct. A's handoff was retained
+and independently consumed; B's artifact was not retained, so its domain is
+supported by the in-process inventory and terminal evidence, not a later B
+artifact rewalk. The original timeout remains a nonpass.
+
+Current-main composition was separately checked at
+`38f8f6e00e4ca97c07d3b36ecb499ea93b5c5b29`, tree
+`5b2f86c3843ad0309c951661bc1c8a9b5c1bf1a7`: retained-A current-owner
+validation and affected helper/forwarding controls passed 42 tests / 426
+assertions. Genuine Bool-parameter original and fresh replay passed separately
+with 1/7 and 1/48 tests/assertions on that same tuple and C11 c41 source.
+Final reconciliation at d67406b3 conserved that reviewed evidence with explicit
+SH04 applicability review and a fresh 21/94 leaf/boundary selection, docs
+240/19 and exact integration preflight. Earlier results retain their original
+identities; they are not represented as fresh executions on d67406b3.
+Independent source and retained-record review preceded ordinary integration.
+
+| Original ID | Accepted disposition | Exact remaining acceptance boundary |
+| --- | --- | --- |
+| AS1 | Closed for the inventoried construction, semantic validation, publication and runtime-safety responsibilities; PR431 integrated the reviewed inventory and runner contract. | Preserve those distinct responsibilities when consuming subsequent evidence; this is not completion of every compiler component. |
+| AS2 | Closed by the independently reviewed, validated runner repair in PR431. EOF/capture, no-execution, exit agreement and observation-failure controls remain enforced. | No additional compiler or language feature is required to close this runner increment. |
+| AS3 | Shared V3 transport, actual zero-arity/Bool-parameter domains, genuine original/fresh replay and composed-consumer mechanics accepted through PR438/PR421. | Final public artifact/report admission remains open: exercise the actual 00743 contained-report recomputation and 00744 fresh public replay with genuine supported input, including report/tuple substitutions. Development harness success does not satisfy that entry point. |
+| AS4 | PR431 and the accepted PR421 dependency increments have ordinary reviewed publication and integration dispositions. | Publish this reconciliation and the remaining final-admission evidence through normal independent review and integration. Whole-outcome closure remains open until AS3's final entry-point boundary is evidenced. |
+
+The shortest remaining semantic closure is the genuine supported final-artifact
+constructor/report route and its actual rejection controls, not another optional
+runtime or language family. Current C11 source c41 does not satisfy the historical
+public source rule, and its retained Core's current C6 source does not satisfy
+the historical C6 source rule. A reviewed explicit successor contract is needed
+for that chosen route; historical pins, Core authentication and fresh replay
+must remain enforced. Source identity observations and cheap successor dispatch
+tests are partial implementation evidence, not final admission. This dependency
+does not expand assurance cleanup into completing the language, W4 release,
+other backends or C12 execution. No measured percentage follows from these
+milestones.
 
 ## Runner increment evidence
 
@@ -131,8 +190,8 @@ review did not independently execute the tests. A later documentation-only
 receipt commit does not change tested runner/test bytes or imply another run.
 
 AS1 source inventory and AS2 runner controls are evidenced for this increment.
-AS3 shared codec policy, actual artifact domain, genuine fresh replay and
-public admission remain open with their existing owners. AS4 publication and
-integration must name the final exact head. No compiler construction,
+The initial runner increment did not close AS3. Its later accepted transport,
+domain and replay evidence and remaining public admission boundary are recorded
+above. AS4 publication and integration must name each final exact head. No compiler construction,
 authoritative migration, runtime safety proof, C12 execution or original C7
 publication was performed by these checks. Whole-outcome completion is open.
