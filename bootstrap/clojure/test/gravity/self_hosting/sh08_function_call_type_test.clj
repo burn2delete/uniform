@@ -21777,3 +21777,280 @@
                                            first :dependencies)))
         (is (= [:rejected :private-self-source-value-premise-mismatch]
                ((juxt :status :reason) (invoke name core coherent bindings forms 65536))) (str name))))))
+
+
+; PR359 finite descriptor reconciliation: normalized owner acceptance.
+(defn- pr359-descriptor-helper [name]
+  (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name))
+(defn- pr359-descriptor-c7 [name & args] ((pr359-descriptor-helper 'invoke-c7) name (vec args)))
+(defn- pr359-descriptor-body [name & args]
+  (require 'gravity.self-hosting.sh09-body-effect-test)
+  (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) name args))
+(def ^:private pr359-descriptor-emitter-plan
+  (delay
+    (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)))))
+(defn- pr359-descriptor-emit [name & args]
+  (bootstrap/p15-s23-stage2-runtime-execute-function
+   {:engine :descriptor-reconstruction-test} @pr359-descriptor-emitter-plan name (vec args)))
+(defn- pr359-descriptor-finite [members] {:kind :gravity.type/set :shape :literal :element-types members})
+(def ^:private pr359-descriptor-cases
+  [[:ane [:gravity.type/nil :gravity.type/bool]]
+   [:ane [:gravity.type/keyword :gravity.type/string]]
+   [:ane [{:kind :gravity.type/nil-or :value-type :gravity.type/string}
+          {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}]]
+   [:bka [:gravity.type/set (pr359-descriptor-finite [:gravity.type/keyword])]]
+   [:bka [(pr359-descriptor-finite [:gravity.type/keyword :gravity.type/keyword]) :gravity.type/set]]])
+
+(defn- pr359-descriptor-case-data [family arguments]
+  (let [stem (name family)
+        input ((pr359-descriptor-helper (if (= family :ane) 'atomic-inequality-input 'atomic-equality-input)) arguments)
+        {:keys [core node call edge nodes bindings types forms module]} input
+        derived (pr359-descriptor-c7 (symbol (str "sh08-" stem "-derive")) core node call edge nodes bindings types forms 65536)
+        descriptor (:descriptor derived)
+        context {:core core :nodes nodes :forms forms :bindings bindings
+                 :types (assoc types :operator descriptor :call (:type derived))
+                 :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                 :call-facts {:call (pr359-descriptor-c7 (symbol (str "sh08-" stem "-call-fact")) descriptor module)}
+                 :ledger [(pr359-descriptor-c7 (symbol (str "sh08-" stem "-constraint")) descriptor)]
+                 :locals {:arg0 'left :arg1 'right} :parameter-types types}]
+    {:input input :derived derived :descriptor descriptor :context context :stem stem}))
+
+(defn- pr359-descriptor-consumer-descriptors [family arguments input]
+  (let [{:keys [core node call edge nodes bindings types module]} input
+        args [core node call edge nodes bindings types module]]
+    (if (= family :ane)
+      [(pr359-descriptor-body 'body-ane-finish
+             (apply pr359-descriptor-body 'body-ane-source (conj args (pr359-descriptor-body 'body-ane-type-work arguments 65536))))
+       (pr359-descriptor-emit 'p15-s23-ane-finish
+             (apply pr359-descriptor-emit 'p15-s23-ane-source (conj args (pr359-descriptor-emit 'p15-s23-ane-type-work arguments 65536))))]
+      [(:descriptor (apply pr359-descriptor-body (symbol (str "body-" (name family) "-header")) (conj args 65536)))
+       (:descriptor (apply pr359-descriptor-emit (symbol (str "p15-s23-" (name family) "-header")) (conj args 65536)))])))
+
+(deftest pr359-descriptor-complete-descriptors-and-typed-consumers-agree
+  (doseq [[family arguments] pr359-descriptor-cases]
+    (testing (str family " " arguments)
+      (let [{:keys [input derived descriptor context]} (pr359-descriptor-case-data family arguments)
+            consumers (pr359-descriptor-consumer-descriptors family arguments input)
+            lowered (pr359-descriptor-emit 'p15-s23-typed-compile-node context :call 65536)]
+        (is (= :accepted (:status derived)))
+        (is (every? #(= descriptor %) consumers))
+        (is (every? #(not (contains? % :operand-type-work)) (cons descriptor consumers)))
+        (is (= :complete (:status lowered)))
+        (is (= :gravity.type/bool (:return descriptor) (:result-type descriptor)))))))
+
+(deftest pr359-descriptor-coherent-stale-fields-and-source-tampering-reject
+  (doseq [[family arguments] pr359-descriptor-cases]
+    (let [{:keys [input descriptor context stem]} (pr359-descriptor-case-data family arguments)
+          compile #(pr359-descriptor-emit 'p15-s23-typed-compile-node % :call 65536)
+          coherent (fn [changed]
+                     (-> context
+                         (assoc-in [:types :operator] changed)
+                         (assoc :call-facts {:call (pr359-descriptor-c7 (symbol (str "sh08-" stem "-call-fact")) changed (:module input))}
+                                :ledger [(pr359-descriptor-c7 (symbol (str "sh08-" stem "-constraint")) changed)])))]
+      (is (= :complete (:status (compile context))))
+      (doseq [changed [(assoc descriptor :operand-type-work 0)
+                       (assoc descriptor :extra true)
+                       (assoc-in descriptor [:source :syntax-id] :forged)
+                       (assoc descriptor :profile :hosted)]]
+        (is (= :rejected (:status (compile (coherent changed))))))
+      (doseq [change [#(assoc % :ledger [])
+                      #(update % :ledger into (:ledger %))
+                      #(assoc % :call-facts {})
+                      #(assoc-in % [:nodes :call :evaluation :order] [])
+                      #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :stale)
+                      #(assoc-in % [:types :arg0] :gravity.type/unknown)]]
+        (is (= :rejected (:status (compile (change context)))))))))
+
+(deftest pr359-descriptor-private-map-route-reconstructs-the-complete-descriptor
+  (let [{:keys [core node call edge nodes bindings forms types facts descriptor type-result join-result]}
+        ((pr359-descriptor-helper 'private-map-keys-typed-input))
+        source-args [core node call edge nodes bindings types (:module core) 65536]
+        sources [(apply pr359-descriptor-c7 'sh08-pmk-source source-args)
+                 (apply pr359-descriptor-body 'body-pmk-source source-args) (apply pr359-descriptor-emit 'p15-s23-pmk-source source-args)]
+        complete-args [core node call edge nodes bindings types forms 65536]
+        headers [(apply pr359-descriptor-c7 'sh08-pmk-header complete-args)
+                 (apply pr359-descriptor-body 'body-pmk-header complete-args) (apply pr359-descriptor-emit 'p15-s23-pmk-header complete-args)]
+        request {:canonical-core-artifact core
+                 :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        parameters (pr359-descriptor-body 'body-lp-context request facts bindings 65536)
+        facts (assoc facts :list-parameter-context (:context parameters))
+        prepare #(pr359-descriptor-body 'body-lq-context request % bindings 65536)
+        prepared (prepare facts)
+        context {:core core :nodes nodes :forms forms :bindings bindings :types types
+                 :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                 :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                 :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+                 :call-facts (:call-type-facts facts) :ledger (:constraint-ledger facts)
+                 :current-function (first (:function-records core))
+                 :locals {:span-binding 'span} :parameter-types {:span-binding :gravity.type/map}}
+        compile #(pr359-descriptor-emit 'p15-s23-typed-compile-node % :present-get 65536)]
+    (is (= :accepted (:status type-result) (:status parameters) (:status prepared)))
+    (is (= [] (:diagnostics join-result)))
+    (is (= :gravity.type/applied-private-map-keys (:kind descriptor)))
+    (is (every? #(= :accepted (:status %)) sources))
+    (is (apply = (map :descriptor sources)))
+    (is (not-any? #(contains? (:descriptor %) :operand-type-work) sources))
+    (is (every? #(= :accepted (:status %)) headers))
+    (is (every? #(= descriptor (:descriptor %)) headers))
+    (is (apply = (map #(get-in % [:descriptor :key-domain-proof]) headers)))
+    (is (not-any? #(contains? (:descriptor %) :entry-proof-work) headers))
+    (is (= (pr359-descriptor-c7 'sh08-pmk-constraint descriptor)
+           (pr359-descriptor-c7 'sh08-lq-constraint descriptor)
+           (pr359-descriptor-body 'body-mkeys-constraint descriptor)
+           (pr359-descriptor-body 'body-lq-constraint descriptor)
+           (pr359-descriptor-emit 'p15-s23-mkeys-constraint descriptor)
+           (pr359-descriptor-emit 'p15-s23-lq-constraint descriptor)))
+    (is (= (pr359-descriptor-c7 'sh08-pmk-call-fact descriptor (:module core))
+           (pr359-descriptor-c7 'sh08-lq-call-fact descriptor (:module core))
+           (pr359-descriptor-body 'body-mkeys-call-fact descriptor (:module core))
+           (pr359-descriptor-body 'body-lq-call-fact descriptor (:module core))
+           (pr359-descriptor-emit 'p15-s23-mkeys-call-fact descriptor (:module core))
+           (pr359-descriptor-emit 'p15-s23-lq-call-fact descriptor (:module core))))
+    (is (true? (pr359-descriptor-body 'body-lq-call-valid? core (assoc facts :list-query-context (:context prepared))
+                    bindings node call edge nodes)))
+    (is (= :complete (:status (compile context))))
+    (doseq [changed [(assoc descriptor :operand-type-work 0)
+                     (assoc descriptor :entry-proof-work 0)
+                     (assoc descriptor :operand-type-work 0 :entry-proof-work 2875)
+                     (assoc descriptor :extra true)
+                     (assoc descriptor :kind :gravity.type/applied-map-keys)
+                     (assoc-in descriptor [:key-domain-proof :normal-witness-count] 0)
+                     (assoc-in descriptor [:key-domain-proof :entries] [])
+                     (assoc-in descriptor [:source :syntax-id] :forged)
+                     ((pr359-descriptor-helper 'private-map-keys-cross-family-descriptor) descriptor)]]
+      (let [changed-row (pr359-descriptor-c7 'sh08-mkeys-constraint changed)
+            changed-call (pr359-descriptor-c7 'sh08-mkeys-call-fact changed (:module core))
+            changed-facts (-> facts (assoc-in [:type-table :operator] changed)
+                              (assoc-in [:constraint-ledger 0] changed-row)
+                              (assoc-in [:call-type-facts 0] changed-call))
+            changed-context (-> context (assoc-in [:types :operator] changed)
+                                (assoc-in [:ledger 0] changed-row) (assoc-in [:call-facts 0] changed-call))]
+        (is (= :rejected (:status (prepare changed-facts))))
+        (is (= :rejected (:status (compile changed-context))))))))
+
+(deftest pr359-descriptor-public-map-query-aliases-keep-the-existing-family
+  (doseq [members [[] [:gravity.type/keyword :gravity.type/bool]]]
+    (let [input ((pr359-descriptor-helper 'map-keys-input) {:kind :gravity.type/map :shape :literal :member-types members})
+          {:keys [core node call edge nodes bindings types forms module]} input
+          result (pr359-descriptor-c7 'sh08-mkeys-derive core node call edge nodes bindings types forms 65536)
+          descriptor (:descriptor result)]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/applied-map-keys (:kind descriptor)))
+      (is (= (pr359-descriptor-c7 'sh08-mkeys-constraint descriptor) (pr359-descriptor-body 'body-mkeys-constraint descriptor)
+             (pr359-descriptor-emit 'p15-s23-mkeys-constraint descriptor) (pr359-descriptor-emit 'p15-s23-lq-constraint descriptor)))
+      (is (= (pr359-descriptor-c7 'sh08-mkeys-call-fact descriptor module) (pr359-descriptor-body 'body-mkeys-call-fact descriptor module)
+             (pr359-descriptor-emit 'p15-s23-mkeys-call-fact descriptor module) (pr359-descriptor-emit 'p15-s23-lq-call-fact descriptor module)))
+      (is (= :direct-map-keys (:dispatch (pr359-descriptor-emit 'p15-s23-lq-call-fact descriptor module))))))
+  (let [{:keys [core node call edge nodes bindings types forms]}
+        ((pr359-descriptor-helper 'map-keys-input) :gravity.type/map)]
+    (is (not= :accepted (:status (pr359-descriptor-c7 'sh08-mkeys-derive core node call edge nodes bindings types forms 65536))))))
+
+(defn- pr359-prepend-helper [name] (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name))
+(defn- pr359-prepend-c7 [name & args] ((pr359-prepend-helper 'invoke-c7) name (vec args)))
+(defn- pr359-prepend-body [name & args]
+  (require 'gravity.self-hosting.sh09-body-effect-test)
+  (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) name args))
+(def ^:private pr359-prepend-emitter-plan
+  (delay
+    (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)))))
+(defn- pr359-prepend-emit [name & args]
+  (bootstrap/p15-s23-stage2-runtime-execute-function
+   {:engine :prepend-premise-test} @pr359-prepend-emitter-plan name (vec args)))
+(defn- pr359-prepend-literal [kind members] {:kind kind :shape :literal :element-types members})
+(defn- pr359-prepend-homogeneous [kind element] {:kind kind :shape :homogeneous :element-type element})
+(def ^:private pr359-prepend-cases
+  (concat
+   [[(pr359-prepend-literal :gravity.type/list []) :gravity.type/nil]
+    [(pr359-prepend-literal :gravity.type/list [:gravity.type/bool :gravity.type/string]) :gravity.type/keyword]
+    [:gravity.type/list :gravity.type/string]
+    [(pr359-prepend-homogeneous :gravity.type/list :gravity.type/string) :gravity.type/string]
+    [(pr359-prepend-homogeneous :gravity.type/list :gravity.type/string) :gravity.type/never]]
+   (for [element [:gravity.type/string :gravity.type/keyword :gravity.type/symbol]
+         [receiver value] [[(pr359-prepend-literal :gravity.type/set []) element]
+                           [(pr359-prepend-literal :gravity.type/set [element]) element]
+                           [(pr359-prepend-literal :gravity.type/set [element]) :gravity.type/never]]]
+     [receiver value])
+   (for [element [:gravity.type/string :gravity.type/symbol]]
+     [(pr359-prepend-homogeneous :gravity.type/set element) element])))
+(def ^:private pr359-prepend-obsolete [:operand-type-work :result-type-work :type-construction-work])
+
+(defn- pr359-prepend-case-data [receiver value]
+  (let [{:keys [core node call edge nodes bindings types forms module] :as input}
+        ((pr359-prepend-helper 'list-prepend-input) receiver value)
+        derived ((pr359-prepend-helper 'list-prepend-derived) input)
+        descriptor (:descriptor derived)
+        args [core node call edge nodes bindings types module]
+        consumers [(pr359-prepend-body 'body-pl-finish
+                         (apply pr359-prepend-body 'body-pl-source (conj args (pr359-prepend-body 'body-pl-type-work [receiver value] 65536))))
+                   (pr359-prepend-emit 'p15-s23-pl-finish
+                         (apply pr359-prepend-emit 'p15-s23-pl-source (conj args (pr359-prepend-emit 'p15-s23-pl-type-work [receiver value] 65536))))]
+        context {:core core :nodes nodes :forms forms :bindings bindings
+                 :types (assoc types :operator descriptor :call (:type derived))
+                 :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                 :call-facts {:call (pr359-prepend-c7 'sh08-pl-call-fact descriptor module)}
+                 :ledger [(pr359-prepend-c7 'sh08-pl-constraint descriptor)]
+                 :locals {:arg0 'items :arg1 'value} :parameter-types types}]
+    {:input input :derived derived :descriptor descriptor :consumers consumers :context context}))
+
+(deftest pr359-prepend-complete-descriptors-and-typed-consumers
+  (doseq [[receiver value] pr359-prepend-cases]
+    (testing (str receiver " " value)
+      (let [{:keys [derived descriptor consumers context]} (pr359-prepend-case-data receiver value)]
+        (is (= :accepted (:status derived)))
+        (is (every? #(= descriptor %) consumers))
+        (is (every? #(not-any? (partial contains? %) pr359-prepend-obsolete) (cons descriptor consumers)))
+        (is (= :complete (:status (pr359-prepend-emit 'p15-s23-typed-compile-node context :call 65536))))
+        (is (= (:type derived) (:return descriptor) (:result-type descriptor)))
+        (if (= value :gravity.type/never)
+          (do (is (= :not-invoked (:application descriptor)))
+              (is (= [] (:direct-effects descriptor)))
+              (is (nil? (:result-extent descriptor))))
+          (is (= [:memory/allocate] (:direct-effects descriptor))))))))
+
+(deftest pr359-prepend-coherent-old-costs-and-forgeries-reject
+  (doseq [[receiver value] pr359-prepend-cases]
+    (let [{:keys [input descriptor context]} (pr359-prepend-case-data receiver value)
+          compile #(pr359-prepend-emit 'p15-s23-typed-compile-node % :call 65536)
+          coherent (fn [changed]
+                     (-> context
+                         (assoc-in [:types :operator] changed)
+                         (assoc :call-facts {:call (pr359-prepend-c7 'sh08-pl-call-fact changed (:module input))}
+                                :ledger [(pr359-prepend-c7 'sh08-pl-constraint changed)])))]
+      (is (= :complete (:status (compile context))))
+      (doseq [changed (concat (map #(assoc descriptor % 0) pr359-prepend-obsolete)
+                             [(merge descriptor (zipmap pr359-prepend-obsolete [0 0 0]))
+                              (assoc-in descriptor [:source :syntax-id] :forged)
+                              (assoc descriptor :result-type :gravity.type/unknown)
+                              (assoc descriptor :direct-effects [:io/write])])]
+        (is (= :rejected (:status (compile (coherent changed))))))
+      (doseq [change [#(assoc % :ledger [])
+                      #(update % :ledger into (:ledger %))
+                      #(assoc % :call-facts {})
+                      #(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :stale)
+                      #(assoc-in % [:types :arg0] :gravity.type/unknown)]]
+        (is (= :rejected (:status (compile (change context)))))))))
+
+(deftest pr359-prepend-late-invalid-and-opaque-types-reject-without-callbacks
+  (let [callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque formatting"))))]
+    (doseq [[kind width index] [[:gravity.type/list 1023 1022] [:gravity.type/set 1024 1023]]
+            invalid [:gravity.type/unknown opaque]]
+      (let [receiver (pr359-prepend-literal kind (assoc (vec (repeat width :gravity.type/string)) index invalid))]
+        (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]]
+          (is (= :rejected (:status (invoke (symbol (str prefix "pl-type-work"))
+                                          [receiver :gravity.type/string] 65536)))))))
+    (doseq [receiver [:gravity.type/set
+                      (pr359-prepend-homogeneous :gravity.type/set :gravity.type/keyword)
+                      (pr359-prepend-literal :gravity.type/vector [])]]
+      (is (= :rejected (:status ((pr359-prepend-helper 'list-prepend-derived)
+                                 ((pr359-prepend-helper 'list-prepend-input) receiver :gravity.type/string))))))
+    (is (zero? @callbacks))))

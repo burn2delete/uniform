@@ -33,6 +33,32 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## Finite pull-request completion checklists - 2026-10-27 12:39 MDT
+
+Accounting completion owns PR359, PR450, PR454 and PR462. Native owns the seven
+API files in PR446; verification reuse owns registration metadata. These are
+finite PR boundaries within the original ACC criteria, not new criteria or a
+requirement that every ACC row close before any of these PRs can terminate.
+
+| PR and original criterion | Exact finite outcome | Remaining merge checklist and dependency owner |
+| --- | --- | --- |
+| [359](https://github.com/burn2delete/uniform/pull/359), ACC-04/05/12 | Reconcile ANE/BKA/PMK exported descriptor work and the four PL source variants across C7, Effects and emitter; exact private Map constraint/fact aliases. Inventory every original authored path, preserving unselected unique work explicitly. | Accounting: fresh current-main three-owner complete descriptor/proof parity, Effects joins and typed positives; coherent stale-field, source/type/callee/late-invalid/opaque negatives, Never and public-family controls; review exact current head and preserved-work dispositions; routine CI and normal merge/readback. The older DSE feature is not present on main and is not a field-only repair. This stopping condition does not include all 13 ACC rows. |
+| [450](https://github.com/burn2delete/uniform/pull/450), ACC-09 | Initializer helper work/depth/size admission and old budget API removed; same original initializer receives hosted native-data preflight before lookup; grammar, quote DATA, complete domain and construction semantics preserved. | Dependency-held: Native446 API registration/integration is unresolved. Its original registration operation is uncertain; no duplicate request or alternate writer. After that owner's verified handoff: reconcile current main, prove consumed-input reuse or run only changed composition, then independent head review, routine CI and normal merge/readback. Preserve whole 33,000-element output/order, deep quote identity, native metadata/views, late invalid/foreign/cycle rejection with zero callbacks, duplicate diagnostics and constructor counts. |
+| [454](https://github.com/burn2delete/uniform/pull/454), ACC-09 | String/Keyword/Integer/Character runtime Set-literal builders, actual dispatch, IR and root type join lose width/content accounting coherently. Root module domains remain String/Keyword. | Dependency-held on verified 446 and 450 integration. Accounting: current-main source/definition/instruction input closure, complete 1,030-member outputs in all four builder domains, Unicode-equivalent duplicates, preflight before comparison/insertion, late invalid/foreign zero-callback controls and module identity; independent composed-head review, routine CI and normal merge/readback. Typed lowering and other Set operations stay separate. |
+| [462](https://github.com/burn2delete/uniform/pull/462), ACC-09 | String/Keyword Vector-to-Set conversion and Keyword List capture remove budget APIs and debit fields, preserving complete validation and conversion deduplication. | Dependency-held on verified 446, 450 and 454 integration. Accounting: current-main actual function/arity census, full conversion/capture outputs, evaluation-once and throwing paths, String/Keyword identity, unsupported List carrier and late invalid/opaque controls; exact input-closure reuse or changed composition, independent head review, routine CI and normal merge/readback. |
+
+Accepted evidence remains at its actual source: PR450 `22898a29` (18/1019),
+PR454 `8bda620f` (22/1234), and PR462's corrected `5bcce79e` (11/451) plus
+three unchanged selectors at `e278ce92`. The original PR462 batch remains
+NONPASS (14 tests, 637 passing assertions and five failures); these records are
+not summed into a fresh suite. Draft publication is not integration acceptance.
+
+Original row states remain ACC-02/03 closed and eleven open or partial. PR499
+is integrated at `bffefedf`, tree `ec9e272e`; main run 40556977772 passed all
+seven routine jobs and source-only prerelease. Its separate unavailable Core
+gate failed without genuine Core execution. Neither that partial ACC-13 advance
+nor these checklists changes the historical unmeasured 50% estimate.
+
 ## ACC-13 private-return paths - 2026-10-27 10:53:12 MDT
 
 Accepted source `3e94a6318bc1d598a109cb174d0fdf02944538b7`, tree
