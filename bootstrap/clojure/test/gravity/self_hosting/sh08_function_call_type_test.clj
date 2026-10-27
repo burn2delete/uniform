@@ -5537,7 +5537,8 @@
     (doseq [elements [[] [:gravity.type/bool] [:gravity.type/bool :gravity.type/nil]
                       [:gravity.type/nil :gravity.type/character :gravity.type/string]
                       [(finite :gravity.type/vector [:gravity.type/bool]) (finite :gravity.type/list [:gravity.type/nil])]
-                      (vec (repeat 1024 :gravity.type/bool))]]
+                      (vec (repeat 1024 :gravity.type/bool))
+                      (vec (repeat 1025 :gravity.type/bool))]]
       (let [{:keys [core node call edge nodes bindings types forms products binding-types] :as input}
             (vector-rest-input (finite :gravity.type/vector elements))
             result (derive input 65536) descriptor (:descriptor result)
@@ -5589,8 +5590,12 @@
                  (finite :gravity.type/vector [{:kind :gravity.type/function :parameters [] :return :gravity.type/bool} :gravity.type/character])
                  (finite :gravity.type/vector [:gravity.type/character :gravity.type/unknown])
                  (assoc (finite :gravity.type/vector []) :extra true)
-                 (finite :gravity.type/vector (repeat 1025 :gravity.type/bool))]]
+                 (finite :gravity.type/vector (conj (vec (repeat 1024 :gravity.type/bool)) :gravity.type/unknown))]]
       (is (= :rejected (:status (derive (vector-rest-input bad) 65536)))))
+    (is (= :vector-rest-finite-positional-vector-type-required
+           (:reason (derive (vector-rest-input
+                             (finite :gravity.type/vector
+                                     (conj (vec (repeat 1024 :gravity.type/bool)) :gravity.type/unknown))) 65536))))
     (let [literal-type (invoke-c7 'sh08-ft-collection-type
                         [{:core-form :collection-literal :attributes {:literal-kind :set} :children [:member]}
                          {:member :gravity.type/string}])]
