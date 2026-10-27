@@ -21651,3 +21651,129 @@
       (is (= :not-authorized (get-in descriptor [:bounds-proof :check-elision])))
       (is (true? (valid descriptor)))
       (is (false? (valid (update-in descriptor [:bounds-proof :vector-origin :binding-links] pop)))))))
+
+(defn- private-return-path-input [length]
+  (let [wrappers (mapv #(if (zero? %) :body (keyword (str "return-frame-" %))) (range (dec length)))
+        path (conj wrappers :tail)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        leaf {:node-id :tail :core-form :literal :children []
+              :attributes {:literal-kind :string :value "answer"} :source (source :tail)}]
+    {:record {:body-core-node-id (first path)}
+     :nodes (into {:tail leaf}
+                  (map-indexed (fn [i id]
+                                 [id {:node-id id :core-form :do :children [(get path (inc i))]
+                                      :attributes {} :source (source id)}]) wrappers))
+     :types {:tail :gravity.type/string} :path path}))
+
+(def ^:private private-return-path-owners
+  [[return-premise-c7 'sh08-is-return-witness]
+   [return-premise-effects 'body-is-return-witness]
+   [return-premise-emit 'p15-s23-is-return-witness]])
+
+(defn- private-return-path-results [{:keys [record nodes types]}]
+  (mapv (fn [[invoke name]] (invoke name record nodes types 65536)) private-return-path-owners))
+
+(deftest sh08-private-return-complete-path-development-kernel
+  (doseq [length [1 128 129 130]]
+    (let [{:keys [path] :as input} (private-return-path-input length)
+          results (private-return-path-results input)]
+      (is (apply = results))
+      (doseq [result results]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/string (:return-type result)))
+        (is (= 1 (count (:witnesses result))))
+        (is (= path (get-in result [:witnesses 0 :path])))
+        (is (= (dec length) (count (get-in result [:witnesses 0 :control-records]))))
+        (is (every? #(= :independent-normal-prefix (:rule %)) (get-in result [:witnesses 0 :control-records])))
+        (is (empty? (:pending-return-node-ids result)))))))
+
+(deftest sh08-private-return-path-source-cycle-development-kernel
+  (let [input (private-return-path-input 130)
+        self-cycle (assoc-in input [:nodes :body :children] [:body])
+        two-cycle (assoc-in input [:nodes :return-frame-1 :children] [:body])]
+    (doseq [changed [self-cycle two-cycle]]
+      (doseq [result (private-return-path-results changed)]
+        (is (= [:rejected :private-self-return-cycle] ((juxt :status :reason) result)))))
+    (doseq [changed [(update input :nodes dissoc :tail)
+                     (assoc-in input [:nodes :tail :node-id] :other-node)
+                     (assoc-in input [:nodes :return-frame-128 :children] [""])
+                     (assoc-in input [:record :body-core-node-id] "")]]
+      (doseq [result (private-return-path-results changed)]
+        (is (= [:rejected :private-self-return-source-required] ((juxt :status :reason) result)))))
+    (let [calls (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! calls inc) (throw (AssertionError. "opaque path hash")))
+                   (equals [_] (swap! calls inc) (throw (AssertionError. "opaque path equality"))))]
+      (doseq [changed [(assoc-in input [:record :body-core-node-id] opaque)
+                       (assoc-in input [:nodes :body :children] [opaque])
+                       (assoc-in input [:nodes :tail :node-id] opaque)]]
+        (doseq [result (private-return-path-results changed)]
+          (is (= [:rejected :private-self-return-source-required] ((juxt :status :reason) result)))
+          (is (zero? @calls)))))))
+
+(deftest sh08-private-return-shared-path-semantics-development-kernel
+  (let [make-node (fn [id kind children] {:node-id id :core-form kind :children children :attributes {}
+                                        :source {:form-id id :syntax-id id}})
+        nodes {:body (make-node :body :if [:guard :left :right])
+               :guard (make-node :guard :reference [])
+               :left (make-node :left :do [:tail])
+               :right (make-node :right :let [:tail])
+               :tail (make-node :tail :literal [])}
+        input {:record {:body-core-node-id :body} :nodes nodes
+               :types {:guard :gravity.type/bool :tail :gravity.type/string}}]
+    (doseq [result (private-return-path-results input)]
+      (is (= :accepted (:status result)))
+      (is (= [[:body :left :tail] [:body :right :tail]] (mapv :path (:witnesses result))))
+      (is (= [[:independent-normal-condition :independent-normal-prefix]
+              [:independent-normal-condition :independent-normal-prefix]]
+             (mapv #(mapv :rule (:control-records %)) (:witnesses result)))))
+    (doseq [result (private-return-path-results (assoc-in input [:types :tail] :gravity.type/unknown))]
+      (is (= :private-self-independent-return-required (:reason result)))
+      (is (= [:tail :tail] (:pending-return-node-ids result))))
+    (doseq [result (private-return-path-results (assoc-in input [:types :tail] :gravity.type/never))]
+      (is (= :private-self-independent-return-required (:reason result))))
+    (let [other (-> input (assoc-in [:nodes :right :children] [:other])
+                         (assoc-in [:nodes :other] (make-node :other :literal []))
+                         (assoc-in [:types :other] :gravity.type/bool))]
+      (doseq [result (private-return-path-results other)]
+        (is (= :private-self-return-type-conflict (:reason result)))))
+    (doseq [type [:gravity.type/unknown :gravity.type/never]
+            :let [prefix (-> input (assoc-in [:nodes :left :children] [:prefix :tail])
+                                   (assoc-in [:nodes :right :children] [:prefix :tail])
+                                   (assoc-in [:nodes :prefix] (make-node :prefix :reference []))
+                                   (assoc-in [:types :prefix] type))]]
+      (doseq [result (private-return-path-results prefix)]
+        (is (= :private-self-independent-return-required (:reason result)))))))
+
+(defn- private-return-path-coherent-facts [facts proof]
+  (-> facts (assoc :recursive-proof proof)
+      (update :constraint-ledger
+              #(mapv (fn [row]
+                       (if (= :sh08-private-self-value-v1 (:producer-rule row))
+                         (-> row (assoc :dependencies proof) (assoc-in [:constraint-id-request :premise] proof))
+                         row)) %))))
+
+(deftest sh08-private-return-witness-context-tamper-development-kernel
+  (require 'gravity.self-hosting.sh09-body-effect-test)
+  (let [data ((ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'private-self-value-kernel-data) :string)
+        {:keys [core facts bindings forms]} data
+        facts (assoc facts :scope :private-inferred-monomorphic-named-self-value)
+        proof (:recursive-proof facts)
+        contexts [[return-premise-effects 'body-is-context]
+                  [return-premise-emit 'p15-s23-is-context]
+                  [return-premise-emit 'p15-s23-ix-context]]]
+    (is (= :accepted (:status (:proof data))))
+    (is (seq (get-in proof [:return-witness :witnesses 0 :path])))
+    (is (seq (get-in proof [:return-witness :witnesses 0 :control-records])))
+    (doseq [[invoke name] contexts]
+      (is (= :accepted (:status (invoke name core facts bindings forms 65536))) (str name))
+      (doseq [changed [(assoc-in proof [:return-witness :witnesses 0 :path] [:forged-return-path])
+                       (assoc-in proof [:return-witness :witnesses 0 :control-records] [])]
+              :let [coherent (private-return-path-coherent-facts facts changed)]]
+        (is (= (:inferred-return-type proof) (:inferred-return-type changed)))
+        (is (= changed (:recursive-proof coherent)))
+        (is (= changed (->> (:constraint-ledger coherent)
+                                           (filter #(= :sh08-private-self-value-v1 (:producer-rule %)))
+                                           first :dependencies)))
+        (is (= [:rejected :private-self-source-value-premise-mismatch]
+               ((juxt :status :reason) (invoke name core coherent bindings forms 65536))) (str name))))))

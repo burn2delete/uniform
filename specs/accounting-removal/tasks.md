@@ -33,6 +33,49 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## ACC-13 private-return paths - 2026-10-27 10:53:12 MDT
+
+Accepted source `3e94a6318bc1d598a109cb174d0fdf02944538b7`, tree
+`ff3335194403ec54972babed997cb4fe616fc027`, removes the 128-node return-path
+admission in C7, Effects and the emitter together. Each queued path now carries
+canonical-ID ancestors: cycles reject, while a shared acyclic leaf retains
+separate complete witnesses. Queued return IDs are checked before lookup or
+hashing, and canonical stored IDs are checked before equality.
+
+The three-owner baseline accepted full 1/128-node paths and refused 129 solely
+at the old cutoff. Independent source and retained-result review accepted
+16 tests / 494 assertions covering deep full paths, source/cycle controls,
+independent conditions and prefixes, Never/pending/conflict behavior and
+coherent proof-and-ledger path/control forgeries in Effects and both emitter
+contexts. Existing work formulas, source-bound proof reconstruction and
+inference policies are unchanged.
+
+This completes focused implementation/validation of the original private-return
+path subfamily, subject to the associated PR's current-main gates, publication
+and normal integration. It does not close ACC-07 or ACC-13: outer work pools,
+the full inference allowance/convergence migration, carrier/projection/schema/
+macro mechanisms and exhaustive dispositions remain open. Genuine source
+authentication, language-runtime execution, C12 and product release are unrun.
+
+The recovery check found the preceding accounting turn completed after PR497,
+with no intervening admitted accounting command; preserved checkouts were clean
+at their recorded heads. No uncertain source operation was repeated. The
+original row disposition remains ACC-02/03 closed and eleven criteria open;
+the legacy 50% estimate remains unmeasured and is not recalculated from counts.
+
+[PR499](https://github.com/burn2delete/uniform/pull/499) initially remained draft
+despite passing local semantic and composed gates. Its first normal CI static job
+reported zero errors and 76 warnings in the two changed legacy test files.
+The one newly introduced unused binding is corrected in test-only `fb02ad96`;
+independent review confirmed unchanged assertions and production. The other
+75 warnings predate this patch, including seven helpers with dynamic callers.
+CI-owner PR500, merged `a43facc7`, independently established that all 75 match
+unchanged mapped baseline spans. New warnings and every current error still
+block; changed or incomplete spans fail closed. Normal reconciliation preserves
+that reviewed remedy without editing accounting source/tests. Original failed
+runs remain failed. Fresh current-head CI and normal integration remain gates;
+no dynamic helper is deleted and no check is bypassed.
+
 ## ACC-13 vector-origin binding chains - 2026-10-27 00:12:53 MDT
 
 Assessment source is accepted candidate `903e330ed28dd0fc5e56380d144d48bc67138944`,

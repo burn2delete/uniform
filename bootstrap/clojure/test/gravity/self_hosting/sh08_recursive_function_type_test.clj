@@ -452,11 +452,17 @@
     (is (= result (derive nodes types (:work-count result))))
     (is (= :private-self-work-limit (:reason (derive nodes types (dec (:work-count result))))))
     (is (= :private-self-work-limit (:reason (derive nodes types 0))))
-    (let [chain (into {:tail (node :tail :literal [] {:literal-kind :string} :self)}
+    (let [id #(if (zero? %) :body (keyword (str "return-path-" %)))
+          path (conj (mapv id (range 130)) :tail)
+          chain (into {:tail (node :tail :literal [] {:literal-kind :string} :self)}
                       (for [i (range 130)]
-                        [(if (zero? i) :body i)
-                         (node (if (zero? i) :body i) :do [(if (= i 129) :tail (inc i))] {} :self)]))]
-      (is (= :private-self-return-path-bound (reason chain {:tail :gravity.type/string}))))))
+                        [(id i) (node (id i) :do [(if (= i 129) :tail (id (inc i)))] {} :self)]))
+          result (derive chain {:tail :gravity.type/string} 65536)]
+      (is (= :accepted (:status result)))
+      (is (= path (get-in result [:witnesses 0 :path])))
+      (is (= 130 (count (get-in result [:witnesses 0 :control-records]))))
+      (is (= :private-self-return-source-required
+             (reason (assoc-in chain [:tail :node-id] :wrong) {:tail :gravity.type/string}))))))
 
 (deftest current-gravity-private-self-cold-quote-budget-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)

@@ -1,5 +1,117 @@
 # Accounting removal evidence
 
+## Private-return path admission after recovery
+
+Accepted implementation: `3e94a6318bc1d598a109cb174d0fdf02944538b7` / tree
+`ff3335194403ec54972babed997cb4fe616fc027`, based on main `12407ca1` / tree
+`2ac12a3b`. The three actual return-witness owners had identical 128-node
+admission. One coordinated change removes that branch, validates queued
+keyword/nonempty-string IDs before lookup/hash and canonical stored IDs before
+equality, and propagates per-path ancestor sets through both branch and
+sequence enqueue paths. The diagnostic `:private-self-return-cycle` represents
+a repeated canonical ID, not a replacement size allowance. Shared DAG leaves
+retain both witnesses. Conditions, normal prefixes, Never, pending positions,
+return conflicts, full paths/control records and all work formulas remain.
+
+The old-source baseline completed 9 observations: every owner accepted full
+1/128-node paths, then refused 129 with `:private-self-return-path-bound` at
+33,925 work units, below the existing 65,536 allowance. Natural exit 0 /
+18,457 ms / actual 2 GiB; complete 1,170-byte stdout, empty stderr, exact clean
+bookends and complete cleanup. Receipt SHA-256:
+`0636eb04b24f41a7b0b24115c3ccf6d753fd98d78db9c54d7b44b0c175595cdd`.
+
+Actual candidate validation selected four new kernels, six affected regressions
+and six boundary vars: 16 tests / 494 assertions, zero failures/errors, natural
+exit 0 / 30,574 ms / actual 2 GiB. Complete capture was 2,129-byte stdout and
+empty stderr, exact clean source bookends, child gone and cleanup complete.
+Receipt SHA-256:
+`49cd136f1e521b3cb01d487e8124b396be552882a1269594226032544141d512`.
+
+The new cases exercise all three actual functions at path lengths 1/128/129/130,
+self/two-node cycles, missing/mismatched canonical nodes and malformed queued
+IDs with zero opaque hash/equality callbacks. Shared-leaf paths remain distinct;
+unknown/Never/prefix/conflicting returns preserve their outcomes. The old
+integer-ID 131-node refusal fixture is replaced with a complete normalized-ID
+positive and equally deep malformed endpoint negative. Existing small cases
+remain. Effects and both emitter context constructors accept their ordinary
+private proofs, then reject altered witness paths or control records with
+unchanged return types and coherently rebuilt proof-bearing ledger rows.
+No arbitrary foreign-container or new source-authentication theorem is claimed.
+
+| Accepted path | SHA-256 |
+| --- | --- |
+| `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | `6bf0eb72e0efe43593a9fea32a751bae5e820f6335cb0649dd7636395f1d3c86` |
+| `bootstrap/gravity/src/gravity/effects.gravity` | `bfccf21c8ce5bbb2214a0af627dfb9372bb2f6843b7eb8c89891073090a706ce` |
+| `bootstrap/gravity/p15_s23/emitter.gravity` | `19dce9a30020688bc4b83327113dc36ddc7b05e24038be75fa54e2ad73e42d0f` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj` | `0e8ff033eeb1c4ea485da0b762b73aa7cd5c7e6c75ac94cb62b70c358c282009` |
+| `bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj` | `2d8bc000ff5cb28c8fb564d28081eb5a8ccf96a3bdf6212965114a0994fcf0fd` |
+
+Independent review inspected source, driver, actual counts/capture/receipts and
+their hashes; the reviewer did not execute a duplicate batch. Cheap checks
+included seven compiler-free fixture assertions and reading all five changed
+source/test files without loading Bootstrap. An initial inline fixture-control
+command ended with a command-reader EOF; the corrected saved control passed.
+It is not semantic execution or a candidate acceptance failure.
+
+Normal reconciliation `66d2422b` / tree `fabe1027` preserves all 16 incoming CI
+PR488 paths from main `bf7893da`. All Gravity, selected semantic tests and
+dependency configuration are identical to accepted `3e94a631`. Darwin native
+publication changes are a namespace-load dependency but their native probes
+execute only when opening publication targets, outside this selected route.
+CI/catalog/ownership additions do not replace explicit test selection.
+Independent consumed-input review accepts retention of the original semantic
+receipt, subject to fresh cold Bootstrap load and current-tree repository gates.
+That reconciliation is not fresh execution of 16/494; repository-scanning
+boundary tests are renewed separately. Current PR checks retain their ordinary
+authority; no CI policy is changed by this accounting increment.
+
+The recovery history showed the prior turn completed after PR497 and no
+intervening admitted accounting command. All preserved accounting checkouts
+matched recorded clean heads; the process snapshot found no JVM. No uncertain
+operation was repeated and no held Native/Set registration or publication was
+retried. Final gates and integration belong to the associated PR. ACC-02/03
+remain closed; the other eleven original criteria, including full ACC-07/13,
+remain open. Genuine authentication, language-runtime execution, C12 and product
+release are unrun. Physical broker, heap, watchdog and platform limits survive.
+
+Fresh composed validation on `0453a469` / tree `44dd1637` passed cold Bootstrap
+loading followed by 11 tests / 23 assertions, actual LOC validation for 2,035
+files, 240 documents / 19 indexes and roadmap. Exact-base preflight passed on
+main `bf7893da`; natural exit 0 / 9,162 ms / actual 2 GiB, complete 637-byte
+stdout, empty stderr, exact clean bookends and cleanup. Receipt SHA-256:
+`df6d900ace441d843551d2523940d376213855e290736a3272528f091b1418b1`.
+
+The initial [PR499 CI static job](https://github.com/burn2delete/uniform/actions/runs/40546272191/job/122337633073)
+is NONPASS: changed-file clj-kondo returned zero errors / 76 warnings. One new
+unused test binding was removed in `fb02ad96` without changing an initializer,
+assertion or production code. Independent review accepted original semantic
+evidence reuse for that correction. The remaining 75 pre-existing warnings
+comprise 64 unused bindings, seven private helpers consumed dynamically by
+other tests, two redundant lets, one unused import and one runtime-only
+namespace require. Removing those helpers merely to quiet static analysis would
+break actual consumers. The existing CI owner retains its policy; no accounting
+worker suppresses or bypasses the check. The failed run remains failed, and
+the draft cannot be integrated until the normal check has a reviewed resolution.
+
+CI-owner PR500 supplies that separate reviewed resolution at main `a43facc7` /
+tree `981e6b38`. The exact first-parent baseline `bf7893da` and tested merge
+`764fe0f8` both produce 75 warnings / zero errors; all warnings match unchanged
+mapped spans under the same pinned clj-kondo. The historical pre-fix `0453a469`
+still blocks exactly its new unused binding (76 current / 75 baseline). New
+warnings and every current error block; changed or incomplete spans fail closed.
+The CI owner reports independently reviewed 9 tests / 70 assertions and seven
+routine main jobs passing; this is attributed CI evidence, not accounting,
+source-Core or reviewer execution credit. Explicit unavailable Core readiness
+remains nonpassing on main.
+
+Normal reconciliation `0ed0d800` / tree `3bea5fd9` preserves exactly four
+incoming paths: `docs/ci.md` and `tools/ci/{lint,run,run_test}.clj`. Independent
+consumed-input review confirms no change to the selected compiler, Bootstrap
+load or manual guarded runner routes. Original semantic 16/494 remains at
+`3e94a631`; cold-load/composed 11/23 remains at `0453a469`. No semantic or cold
+load repetition is implied by this CI-only merge. Fresh repository gates,
+exact preflight and automatic current-head CI precede normal integration.
+
 ## Vector-origin binding-chain admission
 
 The accepted implementation is `903e330ed28dd0fc5e56380d144d48bc67138944`, tree
