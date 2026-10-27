@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh01-native-unmetered-helpers-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as b]
+            [gravity.c6-c10.source-contract :as c6-contract]
             [gravity.digest :as digest])
   (:import (java.lang.reflect InvocationHandler Proxy)
            (java.math BigDecimal BigInteger)))
@@ -708,3 +709,86 @@
   (=
    {:x :unchanged}
    (b/p15-s23-c11-mir-versioned-record {:x :unchanged} 1))))
+
+(defn- c6-program-diagnostic [thunk]
+  (try (thunk) nil
+       (catch clojure.lang.ExceptionInfo error
+         ((juxt :id :missing-fact) (ex-data error)))))
+
+(deftest selected-current-c6-program-authenticates-before-cache-reuse
+  (let [metrics (atom {})]
+    (binding [b/*p15-s23-c6c10-compiled-binding-metrics* metrics]
+      (let [original (b/p15-s23-c6c10-source-binding! path 2)
+            again (b/p15-s23-c6c10-source-binding! path 2)]
+        (is (= 2 (:source-contract-version original)))
+        (is (= 170 (get-in original [:function-manifest :function-count])))
+        (is (= [64 64 42] (mapv :count (get-in original [:function-manifest :chunks]))))
+        (is (identical? (:plan original) (:plan again)))
+        ;; The durable test also runs correctly after an earlier selected v2
+        ;; binding in the same JVM. Both routes reauthenticate every lookup.
+        (is (contains? #{{:source-authenticated 2 :emitter-authenticated 2
+                          :cache-miss 1 :compile-start 1 :compile-complete 1 :cache-hit 1}
+                         {:source-authenticated 2 :emitter-authenticated 2 :cache-hit 2}}
+                       @metrics))
+        (prn {:c6-selected-program-metrics @metrics})
+        (doseq [key [:source-content-hash :source-byte-count :plan-semantic-hash
+                     :functions-semantic-hash :builder-semantic-hash :verifier-semantic-hash
+                     :function-shapes :function-manifest :source-contract-version]]
+          (is (= ["C6-VERIFY" :exact-pinned-gravity-c6-c10-source-binding]
+                 (c6-program-diagnostic
+                  #(b/p15-s23-c6c10-validate-source-binding! (assoc original key :altered) 2)))))
+        (is (= ["C6-VERIFY" :exact-pinned-gravity-c6-c10-source-binding]
+               (c6-program-diagnostic #(b/p15-s23-c6c10-validate-source-binding! original))))
+        (is (= ["C6-VERIFY" :exact-pinned-gravity-c6-c10-source-binding]
+               (c6-program-diagnostic
+                #(b/p15-s23-c6c10-validate-source-binding!
+                  (dissoc original :source-contract-version) 2))))
+        (is (= ["C6-VERIFY" :explicit-c6-source-contract-version]
+               (c6-program-diagnostic #(b/p15-s23-c6c10-source-binding! path (int 2)))))
+        (is (= ["C6-VERIFY" :pinned-gravity-c6-c10-source-bytes]
+               (c6-program-diagnostic #(b/p15-s23-c6c10-source-binding! path))))))))
+
+(deftest selected-current-reader-plan-does-not-grant-envelope-authority
+  (let [result (b/p15-s23-c6c10-current-reader-program! path)
+        reader-binding (:binding result)
+        reader-path (:source-path reader-binding)
+        inputs-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-authenticated-source-binding-inputs!)
+        inputs (@inputs-var path 2)
+        validate @(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-validate-current-reader-program!)
+        emitter (:emitter-rule inputs)]
+    (is (= :selected-source-reader-plan (:verification-scope result)))
+    (is (false? (:reader-result-executed? result)))
+    (is (false? (:envelope-state-observed? result)))
+    (is (not (contains? result :admitted?)))
+    (is (= {:reader-source-path reader-path
+            :authenticated-envelope-options {:source :development-current}}
+           (:invocation result)))
+    (doseq [key (keys (:binding c6-contract/current-reader-program))]
+      (is (= ["C6-VERIFY" :selected-current-reader-program-identities]
+             (c6-program-diagnostic #(validate path reader-path (assoc reader-binding key :altered) emitter)))))
+    (is (= ["C6-VERIFY" :selected-current-reader-source-path]
+           (c6-program-diagnostic #(validate path (str reader-path ".substitution") reader-binding emitter))))
+    (is (= ["C6-VERIFY" :selected-current-reader-export-shapes]
+           (c6-program-diagnostic
+            #(validate path reader-path
+                       (assoc-in reader-binding [:plan :functions 'sh03-read-source-unit :arity] 2) emitter))))
+    (doseq [changed [(assoc emitter :source-rule-hash "sha256:altered")
+                     (assoc-in emitter [:rule-record :status] :failed)]]
+      (is (= ["C6-VERIFY" :selected-current-reader-plan-emitter-join]
+             (c6-program-diagnostic #(validate path reader-path reader-binding changed)))))
+    (doseq [key [:emitter-source-rule-hash :emitter-source-content-hash :emitter-semantic-hash]]
+      (is (= ["C6-VERIFY" :selected-current-reader-plan-emitter-join]
+             (c6-program-diagnostic
+              #(validate path reader-path (assoc-in reader-binding [:plan :compiler key] :altered) emitter)))))
+    ;; A negative caller-control fixture only. Genuine owner execution above
+    ;; produced the binding; no supplied binding is accepted by a public route.
+    (let [calls (atom 0)
+          reader-var (ns-resolve 'gravity.bootstrap 'sh03-reader-current-binding!)]
+      (with-redefs-fn
+        {inputs-var (fn [_ version]
+                      (is (= 2 version))
+                      (if (= 1 (swap! calls inc)) inputs
+                          (assoc-in inputs [:source-snapshot :source-content-hash] :stale)))
+         reader-var (fn [_ selected] (is (= reader-path selected)) reader-binding)}
+        #(is (= ["C6-VERIFY" :stable-current-reader-dependency-inputs]
+                (c6-program-diagnostic (fn [] (b/p15-s23-c6c10-current-reader-program! path)))))))))
