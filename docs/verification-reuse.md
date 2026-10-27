@@ -808,7 +808,8 @@ compile error. The resulting helper/consumer controls pass 13 tests / 157
 assertions; they remain Bootstrap-free.
 
 A complete cold Bootstrap namespace load is a separate acceptance requirement
-for this repair. It validates actual entry/load order without executing compiler,
-Reader, AE, provider or C12 bodies. The structural calculation, fallback and
+for this repair. It validates actual entry/load order without requesting compiler,
+Reader, AE, provider or C12 entrypoints; it does not prove namespace initialization
+effect closure. The structural calculation, fallback and
 verification calls are unchanged. The original RV1 mutation candidate is
 preserved separately; neither this repair nor PR480 closes whole RV1/RV2/RV4.
