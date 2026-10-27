@@ -44,9 +44,9 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/actionlint"
           curl --fail --location --retry 3 --max-time 60 \
-            https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
             -o "$RUNNER_TEMP/actionlint/archive.tar.gz"
-          echo "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757  $RUNNER_TEMP/actionlint/archive.tar.gz" | sha256sum --check
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint/archive.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/actionlint/archive.tar.gz" -C "$RUNNER_TEMP/actionlint" actionlint
           echo "$RUNNER_TEMP/actionlint" >> "$GITHUB_PATH"
       - name: Run checks in fresh child processes
@@ -79,17 +79,24 @@ jobs:
           if-no-files-found: error
 
   leaves:
-    name: fresh-leaf-regressions / ${{ matrix.platform }}
+    name: ${{ matrix.check }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         include:
           - platform: portable
+            check: fresh-leaf-regressions / portable
             runner: ubuntu-24.04
             java: 21.0.8+9.0.LTS
           - platform: darwin
+            check: fresh-leaf-regressions / darwin
+            runner: macos-26
+            java: 26.0.1+8
+          - platform: unsupported
+            check: darwin-unsupported-host
             runner: macos-15
             java: 26.0.1+8
     steps:
@@ -122,10 +129,13 @@ jobs:
         if: matrix.platform == 'darwin'
         run: clojure -Srepro -M tools/ci/run.clj darwin-probe
       - name: Fresh catalog fallback
-        if: ${{ !cancelled() && steps.selection.outputs.selected == 'true' }}
+        if: ${{ !cancelled() && steps.selection.outputs.selected == 'true' && matrix.platform != 'unsupported' }}
         env:
           LEAF_PLATFORM: ${{ matrix.platform }}
         run: clojure -Srepro -M tools/ci/run.clj "leaves-$LEAF_PLATFORM"
+      - name: Actual unsupported-kernel refusal before publication I/O
+        if: ${{ !cancelled() && steps.selection.outputs.selected == 'true' && matrix.platform == 'unsupported' }}
+        run: clojure -Srepro -M tools/ci/run.clj darwin-unsupported
       - name: Preserve failure receipts
         if: always()
         run: |

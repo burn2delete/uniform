@@ -28,15 +28,26 @@ and static tool versions. It does not modify
 compiler dependencies or source authentication pins. Hosted runner images can
 change; record the run environment and do not claim hermetic reproduction.
 
-The Darwin source contract declares ARM macOS and JDK 26.0.1. The current
-`macos-15` hosted run is nonpassing: descriptor-relative stat returns EINVAL
-with the required confinement flags. The declared host contract does not yet
-establish which kernel provides those capabilities. CI records the actual
-OS, kernel, SDK, FFM symbol and invalid-descriptor flag probes before running
-the complete publication tests. These read-only probes diagnose ABI acceptance;
-they do not prove path confinement, hardlink refusal or race handling. A newer
-host must pass the full positive and hostile cases before it supplies acceptance.
-No kernel flag or hostile case is removed to obtain a green check.
+The Darwin source contract declares ARM macOS, JDK 26.0.1 and required native
+NOFOLLOW_ANY, RESOLVE_BENEATH and exclusive-rename features. These features were
+already used by publication; the preflight makes their absence an explicit
+`:unsupported-confinement-features` refusal before any publication path opens.
+It checks baseline and required flag admission with invalid descriptors for
+`fstatat` and `renameatx_np`, requiring exactly EBADF. Unexpected success or any
+other error fails closed. It neither opens files nor substitutes weaker flags.
+Flag admission alone does not prove path enforcement: every existing identity,
+link-count, ACL, mode, symlink, hardlink and race guard remains in force.
+
+The actual `macos-15` run 40538478314 on macOS 15.7.9 / Darwin 24.6.0 rejected
+the BENEATH bit with EINVAL and remains a recorded nonpass. A separate hosted
+`darwin-unsupported-host` check exercises the new real refusal on that kernel
+and asserts zero publication opens. The full positive and hostile suite runs
+unchanged, with additional preflight branch controls, on standard ARM `macos-26`.
+GitHub lists that label among its standard public-repository runners at
+<https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories>.
+Runner selection is not acceptance: actual OS, kernel, SDK, FFM diagnostics and
+the full suite must pass on the exact candidate. No universal macOS support or
+compiler acceptance is inferred from these checks; no hostile case is removed.
 
 PR static checks verify that the checkout has exactly two parents and that its
 second parent matches the event's PR head. They compare against the first
@@ -98,6 +109,7 @@ and existing Reader positive/negative tests retain those regressions.
 Before enabling required checks, observe stable real GitHub runs. Proposed
 initial names are `static`, `projections`, `bootstrap`,
 `fresh-leaf-regressions / portable`, and `fresh-leaf-regressions / darwin`.
+Include `darwin-unsupported-host` after its stable real runs are observed.
 Keep `source-Core-readiness` non-required until the
 real public route is reviewed and passing. Main tests check the push SHA,
 not a cherry-picked candidate or synthetic source fixture.

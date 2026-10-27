@@ -24,7 +24,10 @@
    :requires ['clojure.core 'clojure.string]
    :forbids ['gravity.bootstrap 'gravity.diagnostics 'gravity.cli]
    :host {:jdk-feature 26 :jdk-version "26.0.1"
-          :os-name "Mac OS X" :os-arch "aarch64"}
+          :os-name "Mac OS X" :os-arch "aarch64"
+          :required-native-features
+          [:fstatat-nofollow-any :fstatat-resolve-beneath
+           :renameatx-exclusive :renameatx-nofollow-any :renameatx-resolve-beneath]}
    :public? false :release? false :self-hosted? false})
 
 (def provider-version 1)

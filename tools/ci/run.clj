@@ -175,6 +175,13 @@
                     ["darwin-sdk" 15 ["xcrun" "--show-sdk-version"]]
                     ["darwin-abi" 30 (command "256m" "-J--enable-native-access=ALL-UNNAMED"
                                               "-M" "tools/ci/darwin_probe.clj")]]
+    "darwin-unsupported" [["darwin-host" 15 ["sw_vers"]]
+                          ["darwin-kernel" 15 ["uname" "-a"]]
+                          ["darwin-build" 15 ["sysctl" "kern.version" "kern.osversion"]]
+                          ["darwin-sdk" 15 ["xcrun" "--show-sdk-version"]]
+                          ["darwin-unsupported-refusal" 30
+                           (command "256m" "-J--enable-native-access=ALL-UNNAMED"
+                                    "-M" "tools/ci/darwin_unsupported_test.clj")]]
     "leaves-darwin" [["fresh-darwin-leaf-catalog" 180 (leaf-command "darwin")]]
     (throw (ex-info "Unknown CI mode" {:mode mode}))))
 
