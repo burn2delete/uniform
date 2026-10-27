@@ -12,6 +12,7 @@
 (def p15-whole-gate "docs/artifacts/phase-15/bootstrap/p15-s23-whole-language-self-hosting-gate.edn")
 (def p15-final-proof "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn")
 (def release-flags [:status :task :full-language-compiler-self-hosted? :clojure-seed-retired? :clojure-seed-boundary?])
+(def legacy-accounting-facet-ids #{"SH-02.5" "SH-03.4" "SH-04.5" "SH-05.5" "SH-16.6"})
 
 ;; Integers below select pinned literal IDs, never live document/display order.
 ;; The mapping keys are local routing shorthand, not tasks or completion units.
@@ -180,7 +181,7 @@
    [[["legality" 2]] [["legality" 2]] [["legality" 2]] [["legality" 2]] [["legality" 2] ["legality" 4]] [["legality" 4] ["mir" 2]]]
    [[["legality" 3]] [["legality" 3]] [["legality" 3]] [["legality" 4]] [["legality" 3] ["auth" 2]] [["legality" 4] ["mir" 2]]]
    [[["mir" 1]] [["mir" 2]] [["mir" 3]] [["mir" 3] ["mir" 5]] [["mir" 4]] [["mir" 5]]]
-   [[["mir" 1] ["runtime" 2]] [["mir" 1] ["runtime" 2]] [["mir" 1] ["mir" 3]] [["mir" 1] ["runtime" 2]] [["mir" 5]] [["mir" 5] ["emit" 4] ["runtime" 2]]]
+   [[["mir" 1] ["runtime" 2]] [["mir" 1] ["runtime" 2]] [["mir" 1] ["mir" 3] ["emit" 4] ["runtime" 2]] [["mir" 1] ["runtime" 2]] [["mir" 5] ["emit" 4] ["runtime" 2]] [["mir" 5] ["emit" 4] ["runtime" 2]]]
    [[["mir" 1] ["stdlib" 2]] [["mir" 1] ["stdlib" 2]] [["lower" 2] ["mir" 1]] [["runtime" 3] ["legality" 2]] [["runtime" 3] ["lower" 2]] [["lower" 2] ["emit" 4] ["runtime" 3]]]
    [[["diag" 1]] [["diag" 2]] [["diag" 1] ["diag" 3]] [["diag" 4] ["cli" 4]] [["diag" 3]] [["diag" 1] ["diag" 2] ["release" 2]]]
    [[["opt" 1]] [["opt" 1] ["opt" 2]] [["opt" 4]] [["opt" 3]] [["opt" 4] ["compiler-api" "pass-evidence"]] [["opt" 5] ["lower" 1]]]
@@ -288,9 +289,12 @@
                    :relation :acceptance-facet-of-existing-outcomes
                    :completion-prerequisites (vec (sort (sh-graph milestone)))
                    :shared-completion-rule (when (<= 3 n) :sh03-and-later-uniform-completion)
+                   :source-policy-qualification (when (legacy-accounting-facet-ids id) :legacy-project-accounting-wording)
                    :historical-completion (if (< n 7)
                      {:state :retained-accepted-original-scope :source-commit (historical-commits n)
-                      :evidence-source (:source hs) :current-applicability :unassessed}
+                      :evidence-source (:source hs)
+                      :original-audit-classification (some-> (re-find #"\| ([^|]+) \|$" (get-in hs [:source :raw])) second str/trim)
+                      :current-applicability :unassessed}
                      {:state :no-whole-milestone-completion-claim})
                    :current-evidence (cond
                      (#{"SH-05.1" "SH-05.6" "SH-06.6"} id) :partial-current-cohort-open
@@ -356,7 +360,17 @@
                                "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
                                "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"])
        :disposition :operational-c6-requires-c5-bindings-core-interface-can-precede-resolution
-       :qualification "D1 places Core Gravity AST before Name Resolution; C1 places resolve-names before lower-to-core. C5 resolves syntax after expansion and before type/effects; C6 explicitly consumes resolved syntax and C5 bindings. Use that actual C6 consumer edge without requiring completed semantic Core for Resolve. Whether D1 means the identical AST construction event remains an explicit architecture-owner qualification; no source rewrite or invented fused pass."}]
+       :qualification "D1 places Core Gravity AST before Name Resolution; C1 places resolve-names before lower-to-core. C5 resolves syntax after expansion and before type/effects; C6 explicitly consumes resolved syntax and C5 bindings. Use that actual C6 consumer edge without requiring completed semantic Core for Resolve. Whether D1 means the identical AST construction event remains an explicit architecture-owner qualification; no source rewrite or invented fused pass."}
+      {:id :legacy-project-accounting-wording
+       :criterion-ids (vec (sort legacy-accounting-facet-ids))
+       :current-policy-source
+       (let [path "docs/self-hosting-current-migration-cohort.md" text (slurp path)
+             start (str/index-of text "## Current requirements: no project quotas or cost accounting")
+             end (str/index-of text "Assessment revision:")]
+         (sh-inventory/source-span path text start end))
+       :disposition :preserve-mixed-source-with-existing-supersession-qualification
+       :global-equivalence-owner "01a179ad-2198-7392-966a-1e3c31209027"
+       :qualification "Original raw wording and historical checks remain provenance. Existing current direction retires project work/capacity-only refusals; it does not retire malformed/cyclic/tampered/stale rejection, intrinsic type/Unicode/index/arity/target constraints, semantic resource ownership, actual broker/heap/watchdog/capture/platform controls or external provider spending limits. OOM/timeout remains a resource failure. This SH view makes no new global facet/equivalence adjudication."}]
      :task-authorities tasks :requirements requirements
      :sh07-sequence (mapv (fn [{:keys [groups source]}]
                             {:id (nth groups 0) :requirement-scope (str/trim (nth groups 1))
@@ -370,6 +384,8 @@
                              :task-references (case (nth groups 0)
                                "SH07-C01" [(task-ref tasks ["core" 1]) (task-ref tasks ["compiler-api" "pass-evidence"])]
                                "SH07-C03" [(task-ref tasks ["core" 2]) (task-ref tasks ["resolve" 5])]
+                               "SH07-C05" [(task-ref tasks ["core" 1]) (task-ref tasks ["core" 2])]
+                               "SH07-C06" [(task-ref tasks ["core" 1]) (task-ref tasks ["core" 2])]
                                "SH07-C11" [(task-ref tasks ["core" 4])]
                                "SH07-C12" [(task-ref tasks ["core" 4]) (task-ref tasks ["compiler-api" "pipeline"])]
                                "SH07-C13" [(task-ref tasks ["core" 5]) (task-ref tasks ["compiler-api" "pipeline"])]

@@ -54,7 +54,7 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
   extraction/check is included in the crosswalk verification.
 - `clojure -J-Xmx256m -M tools/sh_crosswalk.clj --check`: passed for the initial
   generated projection. All 180 source routes and 18 sequence rows are present.
-- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 4 tests / 25 assertions,
+- `clojure -J-Xmx256m -M tools/sh_crosswalk_test.clj`: 5 tests / 31 assertions,
   zero failures/errors. Missing/malformed/duplicate source populations reject;
   UTF-8 offsets and real deterministic rollup/source/gate boundaries are checked.
 - `clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj`: focused
@@ -87,6 +87,25 @@ record and receipt, with other Reader/Syntax/Core outcomes open.
 - Routing keys now bind fixed literal task IDs rather than the live task order.
   A reordered ledger therefore preserves the same SH and composition mappings;
   deleted or renamed required IDs fail with an explicit source/ownership gap.
+- Independent full-route review identified missing execution owners for SH13.3
+  and SH13.5 and missing binding-structure joins for SH07-C05/C06. The successor
+  adds existing Emit/Runtime execution outcomes and Core binding structure;
+  no new task is created. Regression checks retain these source-required joins.
+- Bounded historical/native conservation review passed on `c1379c80`, with the
+  original inventory/native artifacts unchanged at `ae14c8db`. Receipt SHA256
+  `0a3c303787b25c73bf74faf5315ef9aa03532576e99cbb72343429a1ed072c24`,
+  audit commit `2c9a573fec22b936858a4ec1809909181a941ea8`. It verified all 42
+  criterion/audit spans, seven full commits, 39 S/three P qualifications, the
+  selected three native units/14 facet IDs, distinct P15 conflicts and scoped
+  Reader evidence. It does not approve all routes, new gates or current closure.
+  The native file is explicitly a selected projection; omitted original predicate
+  and receipt details remain pinned in the original owner artifact and review.
+- The successor exposes each historical row's exact raw audit classification
+  explicitly. Generic retained historical completion must not render 42 current
+  accepted requirements. All 180 current whole-criterion states remain unassessed.
+  Five mixed legacy accounting/bound phrases now link to the existing current
+  policy, preserving semantic/authentication/resource safety and actual host
+  controls. No global source-facet or equivalence adjudication is made here.
 
 ## Remaining finite publication gates
 

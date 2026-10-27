@@ -44,5 +44,17 @@
     (is (= 1 (count (get-in view [:requirements 6 :task-references]))))
     (is (= "development-boundaries" (get-in view [:requirements 6 :task-references 0 :id])))))
 
+(deftest executed-control-and-binding-joins-cannot-be-mir-shape-only
+  (let [view (sh-crosswalk/build)
+        requirements (into {} (map (juxt :id identity) (:requirements view)))
+        sequence (into {} (map (juxt :id identity) (:sh07-sequence view)))]
+    (doseq [id ["SH-13.3" "SH-13.5"]]
+      (is (some #(= "runtime" (:component %)) (:task-references (requirements id))))
+      (is (some #(= "emit/current-evidence-and-remaining-work/emit4-establish-conformance" (:id %))
+                (:task-references (requirements id)))))
+    (doseq [id ["SH07-C05" "SH07-C06"]]
+      (is (some #(= "core/current-evidence-and-remaining-work/core2-preserve-binding-structure" (:id %))
+                (:task-references (sequence id)))))))
+
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
