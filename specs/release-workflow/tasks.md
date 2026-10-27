@@ -33,7 +33,7 @@ Status: Open
 
 Evidence baseline: [Binary release status](../../docs/phase-18-binary-distribution-and-seedless-release/README.md)
 
-Closing evidence: Public check/run/compile and output executable demonstrate absent seed boundaries
+Closing evidence: Actually invoke the prior Gravity compiler process on the complete declared next-stage compiler/runtime/library/build closure, retain real outputs and logs/lineage, link/package and execute that next compiler on accepted and rejected compiler inputs without Clojure in candidate compilation/runtime/build; then public check/run/compile and output executable demonstrate absent seed boundaries. SH25 component construction, SH27 equivalence and final release acceptance remain distinct; supplied rebuild records or plans do not prove execution.
 
 - [ ] `release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom` Build reproducible signed distributions with provenance/SBOM
 

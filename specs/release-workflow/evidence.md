@@ -79,3 +79,23 @@ Language boundary passed 6 tests / 11 assertions; dependency tests passed
 full-language roadmap and whitespace passed. All commands exited naturally with
 0. Exact committed-tree preflight and independent disposition belong to the
 public PR receipt; no release command, rebuild or seed-retirement test ran.
+# Actual next-stage rebuild task boundary
+
+The task-authority owner and canonical requirement owner explicitly approved
+the bounded refinement of the existing third Release record. Its literal ID,
+title, Open status, baseline and public check/run/compile/absent-seed obligation
+remain. The closing criterion now explicitly requires real prior-stage process
+invocation on the complete next-stage closure, actual logs/output lineage,
+link/package and accepted/rejected compiler execution without Clojure in that
+candidate boundary. SH25 component construction, SH27 equivalence and final
+release acceptance remain distinct; supplied rebuild records are insufficient.
+This text does not claim that the executor has been implemented.
+
+[Task-authority lineage](../sh-family-crosswalk/task-authority-lineage.edn)
+retains predecessor/new file and acceptance-line hashes, equality of the four
+other Release records and unchanged historical suffix. The population remains
+five records, and the roadmap was regenerated through its owning projector.
+Focused Release projection checks passed 5 tests / 78 assertions, zero
+failures/errors; new controls preserve the executor boundary and original public
+obligation. Independent review/integration remain pending. No compiler/rebuild,
+equivalence, signature, deployment or public seedless execution was performed.
