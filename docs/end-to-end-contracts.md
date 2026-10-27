@@ -235,13 +235,70 @@ that changed facade or reexecute it on the newer tuple. The helper addition
 and this acceptance record require their own reviewed main
 integration; merging them does not reissue the frozen semantic receipts.
 
-These finite development joins are complete. OWN-04 still requires a disposition
-for each remaining inventoried supported schema/parameter path and its actual
-producer-consumer evidence; unsupported families receive no acceptance credit.
-OWN-03's complete fact population remains separate. Current-source final
-artifact/report successor admission belongs to OWN-06 below, not a reason to
-erase or repeat these accepted development joins. No C12, Opt/Lower, emitted-code,
-release or self-hosting acceptance follows from the counts.
+#### Supported-family disposition
+
+The MIR producer and Native consumer independently confirmed the following
+boundary against the unchanged c41 source. This consumes the existing OWN-04
+criterion; it does not add a language or parameter family.
+
+| Current development-adapter row | Disposition | Accountable boundary |
+| --- | --- | --- |
+| Zero-arity literal-Bool diamond, `.gravity` and `.qst` | Accepted source construction/replay, DATA continuity and Native consumption in PR421, with original identities above. No repeat is needed. | Existing MIR producer and Native consumer |
+| Single-Bool entry-parameter diamond, `.gravity` and `.qst` | Accepted `.gravity` evidence in PR421 and `.qst` evidence integrated through [PR465](https://github.com/burn2delete/uniform/pull/465), merge `82f7e8d62c71b4e5bd895f8b62c2c76363e15d3b`. No additional parameter permutation is identified inside this supported adapter. | Existing Native C6 constructor/controller and MIR verifier owners |
+| Other opcode names or carrier classes in generic schema guards | Schema membership is not a claim of an authenticated source family. The reviewed V3 domain and complete actual artifact checks remain accepted; a generic DATA fixture cannot create another source join. | MIR/Native own their existing schemas and guards |
+| Flat zero-arity nil / `:unit` | Outside the current supported/evidence-covered SH12 Bool adapter. No PR421/438/465 source acceptance applies. | Broader MIR construction/fact/verifier/downstream obligations remain open as detailed below |
+
+The current supported Bool development joins and their DATA handoff are
+accounted for. No further evidence run is identified inside that declared
+adapter. OWN-03's complete fact population and OWN-05's Opt/Lower consumption
+remain separate. Current-source final artifact/report successor admission is
+OWN-06, not a reason to erase or repeat these accepted development joins.
+
+The original OWN-04 criteria at this declared interface have the following
+finite closure, rather than a test-count percentage:
+
+- Producer/consumer accountability and schema agreement: confirmed by the
+  existing MIR and Native owners, including the preserved Reader helper handoff.
+- Original construction, independent fresh replay, typed DATA continuity and
+  actual Gravity/Native positives: accepted in PR421 and PR465 on their exact
+  tuples. Shared V3 class, metadata and backing/view rules remain unchanged.
+- Crossed source, type, retired quota-field and parameter/fact/safety negatives:
+  accepted in those same scoped receipts. PR438's parameter consumer work is
+  integrated; its earlier source receipts are not relabeled as c41 executions.
+- Reviewed main integration: PR421/438/465 are merged. The accepted source
+  receipts keep their frozen identities; current-source final/public admission
+  remains the distinct OWN-06 dependency.
+
+These criteria are complete for the currently supported Bool development
+adapter. This does not accept every operation named in the general MIR schema,
+close general C11 product implementation, or grant current-source final
+admission. Unsupported capabilities retain their governing obligations and
+explicit owners instead of being counted as passing joins.
+
+The nil row is a verifier-route boundary, not a demonstrated producer/consumer
+encoding defect. `c11-build-operation` already derives `:unit` from
+`:gravity/nil`, and `c11-build-linear-mir` uses that builder. Native component
+00738 expects the same derivation. However, the executable SH12 constructor and
+verifier require the original-C6 family preflight, which lacks flat nil support.
+The generic `verify-c11-mir-module` returns a `:stage1-source-owned` description;
+its check labels supply no executed verification credit. Skipping SH12 or
+substituting that description cannot close the join.
+
+General C6/C11 nil/unit semantics remain a product implementation/evidence
+obligation under the existing
+[MIR tasks](../specs/mir-workflow/tasks.md#implementation-tasks):
+`mir1-construct-semantic-mir`, `mir2-attach-fact-tables`,
+`mir3-verify-graph-and-legality` and `mir5-gate-downstream-consumption`.
+These tasks are not closed or rescoped by this disposition. If that capability
+is pursued, the MIR producer owns a narrowly reviewed real-family
+preflight/verifier amendment, followed by genuine original/fresh C6 parity and
+actual Gravity/Native verification with type, unit/value, payload, source and
+fact negatives. Native repairs only a demonstrated consumer defect; its unit
+rule and Bool successor scope stay intact. No new implementation or source run
+was performed for this disposition.
+
+No C12, Opt/Lower, emitted-code, release, self-hosting or whole-OWN completion
+follows from this finite acceptance and unsupported-capability record.
 
 ### OWN-05 - Optimization and lowering consume the same accepted MIR
 
