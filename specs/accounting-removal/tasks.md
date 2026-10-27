@@ -88,3 +88,22 @@ review accepted 65/129-entry producers and fresh verifiers under an explicit
 authentication-only test seam. Genuine authenticated-source/public authority,
 foreign-container safety, runtime, carrier/inference removal and whole ACC-13
 remain open; integration outcome belongs to the corresponding pull request.
+
+## ACC-13 Source-proof ancestry paths
+
+The ancestry increment removes the 128-depth admission checks from
+`sh08-si-within?` and `sh08-si-ancestry-path`, and the matching 129-entry checks
+from the successor and vector-loop proof consumers. Iterative visited-ID checks
+reject cycles; paths require actual canonical node records, unique IDs and all
+existing parent-child edges, endpoints, source and guard relationships. The
+existing normalized Keyword/String ID domain has no new size allowance.
+
+Independent source and retained-result review accepted actual successor,
+vector-nth and vector-get derivations beyond the old path limit, and their
+fresh proof validators. Runtime guards remain retained and check elision remains
+unauthorized. This closes implementation and focused validation of this finite
+ancestry family, not full ACC-13. Vector-origin recursion/binding-link limits,
+collection extents, carrier limits, work pools and other original criteria stay
+open. Current-main acceptance and integration are pending an unrelated Bootstrap
+namespace-load failure; the accepted source is based on the last verified main
+tree, and its result does not establish acceptance of the failing main revision.
