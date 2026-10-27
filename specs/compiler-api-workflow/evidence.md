@@ -55,3 +55,26 @@ passed 10 tests / 88 assertions. Documentation passed 240 documents / 19 phase
 indexes; full-language roadmap and whitespace checks passed. All commands exited
 naturally with 0. Exact committed-tree preflight and review are recorded in the
 public PR receipt. These results are structural transfer evidence only.
+# SH-01 task-authority addition
+
+The completed three-record workflow migration is preserved. The migration
+owner explicitly handed over the task/projector/roadmap/evidence paths for this
+separately reviewed addition; the canonical requirement owner confirmed the
+nonoverlap boundary. The fourth literal record, `development-boundaries`, owns
+the existing SH-01 delivery's six acceptance facets as one outcome. It adds
+task traceability, not implementation or acceptance credit. Its current status
+is Open/unassessed; original E01 completion and later S-after-repair evidence
+remain linked at their original source scope.
+
+[Task-authority lineage](../sh-family-crosswalk/task-authority-lineage.edn)
+records predecessor/new full-file hashes and exact equality of the original
+three task blocks and historical suffix. Only the new record is added. The
+existing projector retains the original five-row validation for each old
+record, adds an explicit six-row rule for the new outcome, and still validates
+before writing its fixed generated roadmap regions. Shared helpers are unchanged.
+
+Focused candidate checks: Compiler API projection 5 tests / 72 assertions,
+zero failures/errors. New controls reject missing/extra acceptance facets and
+unassessed-status mutation; original path/write/link/status controls remain.
+Independent review and integration are pending. No compiler execution or
+current SH-01 acceptance was performed for this documentation/tooling change.
