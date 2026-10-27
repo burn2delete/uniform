@@ -143,3 +143,25 @@
                           (finally (.bindRoot #'clojure.core/get original)))))]
       (is (= :returned (ffirst result)))
       (is (zero? @calls)) (is (nil? (second result))))))
+
+(deftest reduction-protocol-callbacks-remain-live-after-a-native-index-hit
+  (doseq [[factory fresh] [[b/c3-form-index indexes/form-index] [b/c3-token-index indexes/token-index]]
+          v [#'clojure.core.protocols/coll-reduce #'clojure.core.protocols/internal-reduce]]
+    (let [a {:form-tree (mapv #(hash-map :form-id (keyword (str "f" %))) (range 65))
+             :token-stream (mapv #(hash-map :token-id (keyword (str "t" %))) (range 65))}
+          original @v owner (ex-info "reduction callback rejects" {})
+          calls (java.util.concurrent.atomic.AtomicLong.)]
+      (transaction a
+        (fn [_]
+          (with-bindings {(pv '*c3-literal-projection-leaf-call?*) true}
+            (l/with-operations ((pv 'c3-literal-projection-ops))
+              (fn []
+                (let [first-index (factory a) hit (factory a)
+                      results (try
+                                (.bindRoot ^clojure.lang.Var v (fn [& _] (.incrementAndGet calls) (throw owner)))
+                                [(outcome #(fresh a)) (outcome #(factory a))]
+                                (finally (.bindRoot ^clojure.lang.Var v original)))]
+                  (is (identical? first-index hit))
+                  (is (identical? owner (second (first results))))
+                  (is (identical? owner (second (second results))))
+                  (is (= 2 (.get calls)))))))))))
