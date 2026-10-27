@@ -214,3 +214,28 @@ scope blockers. This change does not relabel any existing source residual or
 approve a unit; the real scope remains open. Twenty focused tests / 110
 assertions pass, including known-scope acceptance gaps, genuine scope blockers,
 invalid categories and missing qualification rationale.
+
+## Safety, testing and pipeline source join
+
+Safety and Testing add 119 and 104 candidates with complete source partitions.
+Their historical support remains discovery-only. The Testing input explicitly
+separates the dated July 4 ledger's five accepted / eight rejected claim from
+the pinned public-test proof's five accepted / 32 rejected records. Their exact
+applying execution relationship remains unknown; neither identity establishes
+full-language conformance. The existing Backends grouped-task parser now reads
+all nine Testing references to the single Open `backend-conformance` task.
+
+The draft now contains 1,220 candidate records and 26,251 facets, covering 202
+original documents plus all five extension/policy sources with structured
+partitions. The remaining 38 original documents are Bootstrap, Standard Library
+and Governance; their complete first-pass proposals remain conserved inputs.
+No candidate total is an accepted requirement denominator.
+
+One central source join routes D1's complete canonical stage list to the existing
+C1 pipeline-data obligation, retaining the independent profile/capability/fact
+predicates in their other source facets. D1 architecture precedence governs the
+effective expectation. C1/C6's resolver/Core ordering and C1's domain/optimization
+ordering discrepancy remain explicit open acceptance qualifications on the
+pipeline, binding-identity and Core-lowering records. This proposed join invents
+no fused pass, intermediate product or second pipeline and grants no
+implementation acceptance. It awaits independent source/equivalence review.
