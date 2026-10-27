@@ -92,6 +92,9 @@
     (doseq [form forms]
       (is (contains? by-token (:open-token form)))
       (is (contains? by-token (:close-token form)))
+      (when-let [parent (:parent-form-id form)]
+        (is (contains? by-form parent))
+        (is (= 1 (count (filter #{(:form-id form)} (:children (by-form parent)))))))
       (doseq [child (:children form)]
         (is (= (:form-id form) (:parent-form-id (by-form child)))))
       (doseq [id (concat (:leading-trivia-token-ids form) (:trailing-trivia-token-ids form))]
@@ -121,24 +124,42 @@
       (is (= (codepoints large) (:digit-codepoints value))))
     (doseq [form (filter #(= :metadata-wrapper (:kind %)) forms)]
       (let [target (by-form (second (:children form)))]
-        (is (= (:metadata form) (:metadata target)))
+        (is (= (:metadata form) (meta (:value form))))
+        (is (= (:value form) (:value target)))
         (is (seq (:metadata form)))))
     (is (some #(= {:doc "Map metadata" 'compiler/owner :reader} (:metadata %)) forms))
     (is (some #(true? (get-in % [:metadata :private])) forms))
     (is (some #(= 'ReaderTag (get-in % [:metadata :tag])) forms))
     (is (= #{"1/0" "1e1000000000000000000"}
-           (set (map :raw (get-in products [:semantic-error-deferment-record :deferred-literal-records])))))
+           (set (map :raw (:deferred-literal-records products)))))
     (doseq [literal (:literal-decoding-records products)]
       (is (= (:raw literal) (:raw (by-form (:form-id literal))))))
     (let [spelling (str "\"escapes:" "\\n" "\\r" "\\t" "\\b" "\\f" "\\\\" "\\\"" "\"")
           record (first (filter #(= spelling (:raw %)) (:literal-decoding-records products)))]
       (is (= spelling (:raw record)))
+      (is (= (str "escapes:\n\r\t\b\f" "\\" "\"") (:decoded record)))
       (is (= [{:raw "\\n" :character-offset 9} {:raw "\\r" :character-offset 11}
               {:raw "\\t" :character-offset 13} {:raw "\\b" :character-offset 15}
               {:raw "\\f" :character-offset 17} {:raw "\\\\" :character-offset 19}
               {:raw "\\\"" :character-offset 21}]
              (get-in record [:facts :escapes]))))
-    (is (= #{'inst 'uuid} (set (map :tag (filter #(= :tagged-literal (:kind %)) forms)))))
+    (doseq [[spelling facts]
+            [["0xFF" {:radix 16 :sign :unsigned :exact? true}]
+             ["-7" {:radix 10 :sign :negative :exact? true}]
+             ["+9" {:radix 10 :sign :explicit-positive :exact? true}]
+             ["-2.5E-4" {:exponent-spelling "E-4" :exact? false}]
+             ["3/4" {:numerator-spelling "3" :denominator-spelling "4" :exact? true}]]]
+      (let [records (filter #(= spelling (:raw %)) (:literal-decoding-records products))]
+        (is (seq records))
+        (doseq [record records] (is (= facts (:facts record))))))
+    (let [tagged (filter #(= :tagged-literal (:kind %)) forms)
+          payloads {'inst "2026-07-18T12:34:56.000-00:00"
+                    'uuid "123e4567-e89b-12d3-a456-426614174000"}]
+      (is (= (set (keys payloads)) (set (map :tag tagged))))
+      (doseq [form tagged]
+        (is (= (payloads (:tag form)) (:value (by-form (first (:children form))))))
+        (is (= (:tag form) (get-in form [:value :tag])))
+        (is (= (payloads (:tag form)) (get-in form [:value :payload])))))
     (if retain?
       (do (is (= text (apply str (map :raw tokens))))
           (is (some #(= :comment (:kind %)) tokens))
